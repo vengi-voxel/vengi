@@ -75,13 +75,7 @@ local function createBranch(volume, origin, angle, length, droop, branchThicknes
 
 	-- Needle cluster at midpoint
 	if length >= 5 then
-		local midT = 0.5
-		local invT = 0.5
-		local midPos = g_ivec3.new(
-			math.floor(invT * invT * origin.x + 2 * invT * midT * ctrl.x + midT * midT * branchEnd.x),
-			math.floor(invT * invT * origin.y + 2 * invT * midT * ctrl.y + midT * midT * branchEnd.y),
-			math.floor(invT * invT * origin.z + 2 * invT * midT * ctrl.z + midT * midT * branchEnd.z)
-		)
+		local midPos = tree_utils.bezierPointAt(origin, branchEnd, ctrl, 0.5)
 		local midSize = math.max(2, clusterSize - 1)
 		createNeedleCluster(volume, midPos, midSize, leavesColor, leavesColor2)
 	end
@@ -89,12 +83,7 @@ local function createBranch(volume, origin, angle, length, droop, branchThicknes
 	-- Occasional secondary sub-branch
 	if length >= 6 and math.random() > 0.5 then
 		local subT = 0.4 + math.random() * 0.2
-		local invT = 1.0 - subT
-		local subOrigin = g_ivec3.new(
-			math.floor(invT * invT * origin.x + 2 * invT * subT * ctrl.x + subT * subT * branchEnd.x),
-			math.floor(invT * invT * origin.y + 2 * invT * subT * ctrl.y + subT * subT * branchEnd.y),
-			math.floor(invT * invT * origin.z + 2 * invT * subT * ctrl.z + subT * subT * branchEnd.z)
-		)
+		local subOrigin = tree_utils.bezierPointAt(origin, branchEnd, ctrl, subT)
 		local subAngle = angle + (math.random() - 0.5) * 1.2
 		local subDx = math.cos(subAngle)
 		local subDz = math.sin(subAngle)
@@ -119,26 +108,15 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Create the trunk with a slight lean
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-	local topPos = g_ivec3.new(pos.x + curveX, pos.y + trunkHeight, pos.z + curveZ)
-	local ctrl = g_ivec3.new(
-		pos.x + math.floor(curveX * 0.3),
-		pos.y + math.floor(trunkHeight * 0.5),
-		pos.z + math.floor(curveZ * 0.3)
-	)
 	local topThickness = math.max(1, trunkStrength - 1)
-	drawBezier(volume, pos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, trunkColor)
+	local topPos, _, ctrl = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength,
+		trunkCurve, topThickness, trunkColor, 0.3)
 
 	-- Small base flare
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 1) * 2, math.max(1, trunkStrength - 1), (trunkStrength + 1) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 1, math.max(1, trunkStrength - 1), trunkColor)
 
 	-- Pointed tip at the very top
-	local tipTop = g_ivec3.new(topPos.x, topPos.y + 3, topPos.z)
-	g_shape.line(volume, topPos, tipTop, leavesColor, 1)
-	g_shape.cone(volume, g_ivec3.new(topPos.x, topPos.y - 1, topPos.z), 'y', false, 3, 4, 3, leavesColor)
+	tree_utils.createSpireTip(volume, topPos, 3, leavesColor)
 
 	-- Crown begins at crownStart% of the trunk height
 	local crownBaseY = pos.y + math.floor(trunkHeight * crownStart / 100)
@@ -158,10 +136,8 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 
 		-- Interpolate trunk X,Z position at this height
 		local ht = (layerY - pos.y) / trunkHeight
-		local invHt = 1.0 - ht
-		local centerX = math.floor(invHt * invHt * pos.x + 2 * invHt * ht * ctrl.x + ht * ht * topPos.x)
-		local centerZ = math.floor(invHt * invHt * pos.z + 2 * invHt * ht * ctrl.z + ht * ht * topPos.z)
-		local center = g_ivec3.new(centerX, layerY, centerZ)
+		local center = tree_utils.bezierPointAt(pos, topPos, ctrl, ht)
+		center.y = layerY
 
 		-- Branch thickness decreases toward the top
 		local branchThick = 1

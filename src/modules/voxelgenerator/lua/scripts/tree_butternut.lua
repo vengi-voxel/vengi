@@ -32,60 +32,6 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Create root flare at the base
-local function createRootFlare(volume, basePos, numRoots, rootLength, trunkStrength, voxelColor)
-	-- Prominent root flare bulge — butternuts have a wide base
-	local bulgeRadius = trunkStrength + 2
-	g_shape.dome(volume, basePos, 'y', false,
-		bulgeRadius * 2, math.max(2, math.floor(trunkStrength * 0.7)), bulgeRadius * 2, voxelColor)
-
-	if numRoots <= 0 then
-		return
-	end
-	local angleStep = (2 * math.pi) / numRoots
-	local startAngle = math.random() * 2 * math.pi
-	for i = 1, numRoots do
-		local angle = startAngle + (i - 1) * angleStep + (math.random() - 0.5) * 0.5
-		local dx = math.cos(angle)
-		local dz = math.sin(angle)
-		local startP = g_ivec3.new(basePos.x, basePos.y, basePos.z)
-		local endP = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength),
-			basePos.y - math.random(0, 1),
-			math.floor(basePos.z + dz * rootLength)
-		)
-		local ctrl = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength * 0.5),
-			basePos.y + 1,
-			math.floor(basePos.z + dz * rootLength * 0.5)
-		)
-		local rootThickness = math.max(1, math.floor(trunkStrength * 0.5))
-		drawBezier(volume, startP, endP, ctrl, rootThickness, 1, math.max(4, rootLength), voxelColor)
-	end
-end
-
--- Create the stout trunk with slight curve and taper
-local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCurve, voxelColor)
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-
-	local topPos = g_ivec3.new(
-		basePos.x + curveX,
-		basePos.y + trunkHeight,
-		basePos.z + curveZ
-	)
-	local ctrl = g_ivec3.new(
-		basePos.x + math.floor(curveX * 0.3),
-		basePos.y + math.floor(trunkHeight * 0.5),
-		basePos.z + math.floor(curveZ * 0.3)
-	)
-	-- Butternut trunks stay fairly thick — slow taper
-	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
-	drawBezier(volume, basePos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, voxelColor)
-	return topPos, topThickness
-end
-
 -- Create a heavy spreading branch, returning the tip position
 local function createBranch(volume, origin, angle, length, thickness, voxelColor)
 	local dx = math.cos(angle)
@@ -106,19 +52,6 @@ local function createBranch(volume, origin, angle, length, thickness, voxelColor
 	)
 	local tip = drawBezier(volume, origin, branchEnd, ctrl, thickness, 1, math.max(6, length), voxelColor)
 	return tip
-end
-
--- Create a sparse foliage cluster — compound leaves give an airy look
-local function createFoliageCluster(volume, center, radius, height, primaryColor, secondaryColor)
-	-- Main dome
-	g_shape.dome(volume, center, 'y', false, radius * 2, height, radius * 2, primaryColor)
-	-- Light secondary color overlay offset for variation
-	local offX = math.random(-1, 1)
-	local offZ = math.random(-1, 1)
-	local innerR = math.max(1, radius - 1)
-	local innerH = math.max(1, height - 1)
-	local sub = g_ivec3.new(center.x + offX, center.y, center.z + offZ)
-	g_shape.dome(volume, sub, 'y', false, innerR * 2, innerH, innerR * 2, secondaryColor)
 end
 
 -- Create the broad, flat-topped open crown
@@ -166,10 +99,12 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Root flare
-	createRootFlare(volume, pos, roots, rootLength, trunkStrength, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 2, math.max(2, math.floor(trunkStrength * 0.7)), trunkColor)
+	tree_utils.createBezierRoots(volume, pos, roots, rootLength, math.max(1, math.floor(trunkStrength * 0.5)), trunkColor)
 
-	-- Stout trunk
-	local trunkTop, topThickness = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkColor)
+	-- Stout trunk — butternut trunks stay fairly thick (slow taper)
+	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
+	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, topThickness, trunkColor, 0.3)
 
 	-- Main branches — spread wide from upper trunk, some from lower for the open habit
 	local angleStep = (2 * math.pi) / mainBranches
@@ -197,7 +132,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 		local cRadius = foliageSize + math.random(-1, 1)
 		local cHeight = math.max(2, foliageSize - math.random(0, 1))
 		cRadius = math.max(2, cRadius)
-		createFoliageCluster(volume, tip, cRadius, cHeight, leavesColor, leavesColor2)
+		tree_utils.dualColorFoliage(volume, tip, cRadius, cHeight, leavesColor, leavesColor2)
 
 		-- Sub-branches for complexity
 		if math.random() > 0.35 then
@@ -210,7 +145,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 			)
 			local subTip = createBranch(volume, subOrigin, subAngle, subLength, 1, trunkColor)
 			local subR = math.max(2, foliageSize - 1)
-			createFoliageCluster(volume, subTip, subR, math.max(2, subR - 1), leavesColor, leavesColor2)
+			tree_utils.dualColorFoliage(volume, subTip, subR, math.max(2, subR - 1), leavesColor, leavesColor2)
 		end
 
 		-- Occasional drooping secondary sub-branch
@@ -231,7 +166,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 			)
 			drawBezier(volume, tip, droopEnd, droopCtrl, 1, 1, math.max(4, droopLen), trunkColor)
 			local droopR = math.max(2, foliageSize - 2)
-			createFoliageCluster(volume, droopEnd, droopR, math.max(1, droopR - 1), leavesColor, leavesColor2)
+			tree_utils.dualColorFoliage(volume, droopEnd, droopR, math.max(1, droopR - 1), leavesColor, leavesColor2)
 		end
 	end
 

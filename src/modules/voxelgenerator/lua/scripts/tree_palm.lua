@@ -110,12 +110,7 @@ local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCur
 		end
 		for h = ringSpacing, trunkHeight - 2, ringSpacing do
 			local t = h / trunkHeight
-			local invT = 1.0 - t
-			local ringPos = g_ivec3.new(
-				math.floor(invT * invT * basePos.x + 2 * invT * t * ctrl.x + t * t * topPos.x),
-				math.floor(invT * invT * basePos.y + 2 * invT * t * ctrl.y + t * t * topPos.y),
-				math.floor(invT * invT * basePos.z + 2 * invT * t * ctrl.z + t * t * topPos.z)
-			)
+			local ringPos = tree_utils.bezierPointAt(basePos, topPos, ctrl, t)
 			-- Thin ring around the trunk
 			local ringThick = math.max(1, trunkStrength)
 			g_shape.cylinder(volume, ringPos, 'y', ringThick, 1, barkColor)
@@ -123,8 +118,8 @@ local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCur
 	end
 
 	-- Slight base bulge
-	g_shape.dome(volume, basePos, 'y', false,
-		(trunkStrength + 1) * 2, math.max(1, math.floor(trunkStrength * 0.4)), (trunkStrength + 1) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, basePos, trunkStrength + 1,
+		math.max(1, math.floor(trunkStrength * 0.4)), trunkColor)
 
 	return topPos, dir
 end
@@ -187,12 +182,7 @@ local function createFrond(volume, origin, angle, frondLength, frondDroop, frond
 		local last = origin
 		for i = 1, steps do
 			local t = i / steps
-			local invT = 1.0 - t
-			local p = g_ivec3.new(
-				math.floor(invT * invT * origin.x + 2 * invT * t * ctrlPos.x + t * t * endPos.x),
-				math.floor(invT * invT * origin.y + 2 * invT * t * ctrlPos.y + t * t * endPos.y),
-				math.floor(invT * invT * origin.z + 2 * invT * t * ctrlPos.z + t * t * endPos.z)
-			)
+			local p = tree_utils.bezierPointAt(origin, endPos, ctrlPos, t)
 			local col = leavesColor
 			if t > 0.75 then
 				col = leavesColor2

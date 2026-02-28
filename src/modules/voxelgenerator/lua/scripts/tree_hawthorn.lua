@@ -97,12 +97,7 @@ local function createBranch(volume, origin, angle, length, branchColor, thornCol
 	if showThorns and length >= 4 then
 		for t = 1, math.random(1, 3) do
 			local frac = 0.3 + (t - 1) * 0.25
-			local u = 1.0 - frac
-			local thornPos = g_ivec3.new(
-				math.floor(u * u * origin.x + 2 * u * frac * ctrl.x + frac * frac * branchEnd.x),
-				math.floor(u * u * origin.y + 2 * u * frac * ctrl.y + frac * frac * branchEnd.y),
-				math.floor(u * u * origin.z + 2 * u * frac * ctrl.z + frac * frac * branchEnd.z)
-			)
+			local thornPos = tree_utils.bezierPointAt(origin, branchEnd, ctrl, frac)
 			placeThorns(volume, thornPos, thornColor)
 		end
 	end
@@ -111,13 +106,8 @@ local function createBranch(volume, origin, angle, length, branchColor, thornCol
 	for s = 1, subBranches do
 		local subT = 0.25 + (s - 1) * (0.55 / math.max(1, subBranches - 1))
 		if subT > 0.95 then subT = 0.95 end
-		local subU = 1.0 - subT
 
-		local subOrigin = g_ivec3.new(
-			math.floor(subU * subU * origin.x + 2 * subU * subT * ctrl.x + subT * subT * branchEnd.x),
-			math.floor(subU * subU * origin.y + 2 * subU * subT * ctrl.y + subT * subT * branchEnd.y),
-			math.floor(subU * subU * origin.z + 2 * subU * subT * ctrl.z + subT * subT * branchEnd.z)
-		)
+		local subOrigin = tree_utils.bezierPointAt(origin, branchEnd, ctrl, subT)
 
 		local subAngle = angle + (math.random() - 0.5) * 2.2
 		local subDx = math.cos(subAngle)
@@ -184,41 +174,20 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, forkH
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Gnarled, leaning trunk
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-	local topPos = g_ivec3.new(pos.x + curveX, pos.y + trunkHeight, pos.z + curveZ)
-	local ctrl = g_ivec3.new(
-		pos.x + math.floor(curveX * 0.5),
-		pos.y + math.floor(trunkHeight * 0.5),
-		pos.z + math.floor(curveZ * 0.5)
-	)
-	drawBezier(volume, pos, topPos, ctrl, trunkStrength, math.max(1, trunkStrength - 1),
-		trunkHeight, trunkColor)
+	local topPos, _, ctrl = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength,
+		trunkCurve, math.max(1, trunkStrength - 1), trunkColor, 0.5)
 
 	-- Root flare
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 2) * 2, math.max(1, trunkStrength), (trunkStrength + 2) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 2, math.max(1, trunkStrength), trunkColor)
 
 	-- Exposed surface roots
-	for _ = 1, math.random(2, 4) do
-		local rAngle = math.random() * 2 * math.pi
-		local rLen = math.random(2, trunkStrength + 2)
-		local rootEnd = g_ivec3.new(
-			math.floor(pos.x + math.cos(rAngle) * rLen),
-			pos.y - math.random(0, 1),
-			math.floor(pos.z + math.sin(rAngle) * rLen)
-		)
-		g_shape.line(volume, pos, rootEnd, trunkColor, math.max(1, trunkStrength - 1))
-	end
+	tree_utils.createLineRoots(volume, pos, math.random(2, 4), trunkStrength + 2,
+		math.max(1, trunkStrength - 1), trunkColor, true)
 
 	-- Fork point — hawthorns often fork low
 	local forkY = pos.y + math.floor(trunkHeight * forkHeight / 100)
 	local forkHt = (forkY - pos.y) / trunkHeight
-	local forkU = 1.0 - forkHt
-	local forkX = math.floor(forkU * forkU * pos.x + 2 * forkU * forkHt * ctrl.x + forkHt * forkHt * topPos.x)
-	local forkZ = math.floor(forkU * forkU * pos.z + 2 * forkU * forkHt * ctrl.z + forkHt * forkHt * topPos.z)
-	local forkPos = g_ivec3.new(forkX, forkY, forkZ)
+	local forkPos = tree_utils.bezierPointAt(pos, topPos, ctrl, forkHt)
 
 	-- Main scaffold branches radiating from the fork zone and trunk top
 	local angleStep = (2 * math.pi) / mainBranches
@@ -235,12 +204,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, forkH
 			branchOrigin = forkPos
 		else
 			local oT = 0.65 + math.random() * 0.25
-			local oU = 1.0 - oT
-			branchOrigin = g_ivec3.new(
-				math.floor(oU * oU * pos.x + 2 * oU * oT * ctrl.x + oT * oT * topPos.x),
-				math.floor(oU * oU * pos.y + 2 * oU * oT * ctrl.y + oT * oT * topPos.y),
-				math.floor(oU * oU * pos.z + 2 * oU * oT * ctrl.z + oT * oT * topPos.z)
-			)
+			branchOrigin = tree_utils.bezierPointAt(pos, topPos, ctrl, oT)
 		end
 
 		createBranch(volume, branchOrigin, angle, bLen, branchColor, thornColor,
@@ -253,14 +217,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, forkH
 	local canopyCenter = g_ivec3.new(topPos.x, canopyCenterY, topPos.z)
 	local cW = canopySize
 	local cH = math.max(2, math.floor(canopySize * 0.55))
-	g_shape.dome(volume, canopyCenter, 'y', false, cW * 2, cH, cW * 2, leafColor)
-	-- Secondary color layer
-	local topCap = g_ivec3.new(canopyCenter.x, canopyCenter.y + 1, canopyCenter.z)
-	g_shape.dome(volume, topCap, 'y', false, math.floor(cW * 1.2), math.max(1, cH - 1),
-		math.floor(cW * 1.2), leafColor2)
-	-- Under-fill
-	g_shape.dome(volume, canopyCenter, 'y', true, math.floor(cW * 0.8),
-		math.max(1, cH - 2), math.floor(cW * 0.8), leafColor)
+	tree_utils.createCanopyDome(volume, canopyCenter, cW, cH, leafColor, leafColor2, 1.2, 0.8)
 
 	-- Scatter blossoms across the canopy surface
 	if blossoms then

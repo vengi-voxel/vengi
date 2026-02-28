@@ -31,28 +31,6 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Create a single trunk with gentle curve, returning top position
-local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCurve, voxelColor)
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-
-	local topPos = g_ivec3.new(
-		basePos.x + curveX,
-		basePos.y + trunkHeight,
-		basePos.z + curveZ
-	)
-	local ctrl = g_ivec3.new(
-		basePos.x + math.floor(curveX * 0.4),
-		basePos.y + math.floor(trunkHeight * 0.5),
-		basePos.z + math.floor(curveZ * 0.4)
-	)
-	-- Birch trunks stay slender — minimal taper
-	local topThickness = math.max(1, trunkStrength - 1)
-	drawBezier(volume, basePos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, voxelColor)
-	return topPos, topThickness
-end
-
 -- Create an arching branch with a drooping tip
 local function createArchingBranch(volume, origin, angle, length, droopLen, trunkColor, leavesColor, leavesColor2, foliageSize)
 	local dx = math.cos(angle)
@@ -150,8 +128,8 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, secon
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Main trunk
-	local trunkTop, _ = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkColor)
+	-- Main trunk — birch trunks stay slender (minimal taper)
+	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, math.max(1, trunkStrength - 1), trunkColor)
 
 	-- Collect all trunk tops for branch placement
 	local trunkTops = { trunkTop }
@@ -167,7 +145,8 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, secon
 		)
 		local sHeight = trunkHeight - math.random(2, 4)
 		local sCurve = trunkCurve + math.random(-1, 1)
-		local sTop = createTrunk(volume, sBase, math.max(6, sHeight), math.max(1, trunkStrength - 1), math.max(0, sCurve), trunkColor)
+		local sStrength = math.max(1, trunkStrength - 1)
+		local sTop = tree_utils.createCurvedTrunk(volume, sBase, math.max(6, sHeight), sStrength, math.max(0, sCurve), math.max(1, sStrength - 1), trunkColor)
 		table.insert(trunkTops, sTop)
 	end
 

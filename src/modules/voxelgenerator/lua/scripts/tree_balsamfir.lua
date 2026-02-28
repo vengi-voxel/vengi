@@ -93,10 +93,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownLayers, bran
 
 	-- Pointed leader tip at the very top
 	local topPos = g_ivec3.new(pos.x, pos.y + trunkHeight, pos.z)
-	local tipTop = g_ivec3.new(pos.x, pos.y + trunkHeight + tipHeight, pos.z)
-	g_shape.line(volume, topPos, tipTop, leavesColor, 1)
-	-- Small cone at the tip for the spire
-	g_shape.cone(volume, g_ivec3.new(topPos.x, topPos.y - 1, topPos.z), 'y', false, 3, tipHeight + 2, 3, leavesColor)
+	tree_utils.createSpireTip(volume, topPos, tipHeight, leavesColor)
 
 	-- Build whorl layers from top to bottom
 	-- Each layer gets progressively wider, creating the narrow spire shape

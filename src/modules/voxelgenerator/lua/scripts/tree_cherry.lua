@@ -105,14 +105,9 @@ local function createMainBranch(volume, origin, angle, length, archHeight, branc
 	for s = 1, subBranches do
 		local subT = 0.3 + (s - 1) * (0.5 / math.max(1, subBranches - 1))
 		if subT > 0.95 then subT = 0.95 end
-		local invT = 1.0 - subT
 
 		-- Position along the main branch curve
-		local subOrigin = g_ivec3.new(
-			math.floor(invT * invT * origin.x + 2 * invT * subT * ctrl.x + subT * subT * branchEnd.x),
-			math.floor(invT * invT * origin.y + 2 * invT * subT * ctrl.y + subT * subT * branchEnd.y),
-			math.floor(invT * invT * origin.z + 2 * invT * subT * ctrl.z + subT * subT * branchEnd.z)
-		)
+		local subOrigin = tree_utils.bezierPointAt(origin, branchEnd, ctrl, subT)
 
 		-- Sub-branch direction: diverge from main branch angle
 		local subAngle = angle + (math.random() - 0.5) * 2.0
@@ -167,12 +162,8 @@ local function createMainBranch(volume, origin, angle, length, archHeight, branc
 	if blossomDensity >= 4 then
 		for extra = 1, blossomDensity - 2 do
 			local eT = 0.2 + extra * (0.6 / (blossomDensity - 2))
-			local eInvT = 1.0 - eT
-			local ePos = g_ivec3.new(
-				math.floor(eInvT * eInvT * origin.x + 2 * eInvT * eT * ctrl.x + eT * eT * branchEnd.x),
-				math.floor(eInvT * eInvT * origin.y + 2 * eInvT * eT * ctrl.y + eT * eT * branchEnd.y) + 1,
-				math.floor(eInvT * eInvT * origin.z + 2 * eInvT * eT * ctrl.z + eT * eT * branchEnd.z)
-			)
+			local ePos = tree_utils.bezierPointAt(origin, branchEnd, ctrl, eT)
+			ePos.y = ePos.y + 1
 			placeBlossom(volume, ePos, math.max(2, blossomSize - 1), blossomColor1, blossomColor2, blossomColor3, leafColor)
 		end
 	end
@@ -188,40 +179,20 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Gnarled trunk with a characteristic lean
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-	local topPos = g_ivec3.new(pos.x + curveX, pos.y + trunkHeight, pos.z + curveZ)
-	local ctrl = g_ivec3.new(
-		pos.x + math.floor(curveX * 0.6),
-		pos.y + math.floor(trunkHeight * 0.5),
-		pos.z + math.floor(curveZ * 0.6)
-	)
-	drawBezier(volume, pos, topPos, ctrl, trunkStrength, math.max(1, trunkStrength - 1), trunkHeight, trunkColor)
+	local topPos, _, ctrl = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength,
+		trunkCurve, math.max(1, trunkStrength - 1), trunkColor, 0.6)
 
 	-- Root flare at the base
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 2) * 2, math.max(1, trunkStrength - 1), (trunkStrength + 2) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 2, math.max(1, trunkStrength - 1), trunkColor)
 
 	-- Exposed root bumps
-	for _ = 1, math.random(2, 4) do
-		local rootAngle = math.random() * 2 * math.pi
-		local rootLen = math.random(2, trunkStrength + 2)
-		local rootEnd = g_ivec3.new(
-			math.floor(pos.x + math.cos(rootAngle) * rootLen),
-			pos.y - math.random(0, 1),
-			math.floor(pos.z + math.sin(rootAngle) * rootLen)
-		)
-		g_shape.line(volume, pos, rootEnd, trunkColor, math.max(1, trunkStrength - 1))
-	end
+	tree_utils.createLineRoots(volume, pos, math.random(2, 4), trunkStrength + 2,
+		math.max(1, trunkStrength - 1), trunkColor, true)
 
 	-- Fork point — cherry trees often split into main scaffold branches
 	local forkY = pos.y + math.floor(trunkHeight * 0.55)
 	local forkHt = (forkY - pos.y) / trunkHeight
-	local forkInvHt = 1.0 - forkHt
-	local forkX = math.floor(forkInvHt * forkInvHt * pos.x + 2 * forkInvHt * forkHt * ctrl.x + forkHt * forkHt * topPos.x)
-	local forkZ = math.floor(forkInvHt * forkInvHt * pos.z + 2 * forkInvHt * forkHt * ctrl.z + forkHt * forkHt * topPos.z)
-	local forkPos = g_ivec3.new(forkX, forkY, forkZ)
+	local forkPos = tree_utils.bezierPointAt(pos, topPos, ctrl, forkHt)
 
 	-- Main scaffold branches radiating from the fork zone and trunk top
 	local angleStep = (2 * math.pi) / mainBranches
@@ -237,12 +208,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 		else
 			-- Slightly below the very top
 			local originT = 0.7 + math.random() * 0.2
-			local oInvT = 1.0 - originT
-			branchOrigin = g_ivec3.new(
-				math.floor(oInvT * oInvT * pos.x + 2 * oInvT * originT * ctrl.x + originT * originT * topPos.x),
-				math.floor(oInvT * oInvT * pos.y + 2 * oInvT * originT * ctrl.y + originT * originT * topPos.y),
-				math.floor(oInvT * oInvT * pos.z + 2 * oInvT * originT * ctrl.z + originT * originT * topPos.z)
-			)
+			branchOrigin = tree_utils.bezierPointAt(pos, topPos, ctrl, originT)
 		end
 
 		local branchLen = canopySpread + math.random(-2, 2)

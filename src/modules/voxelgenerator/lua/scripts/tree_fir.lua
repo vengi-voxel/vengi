@@ -95,15 +95,11 @@ function main(node, region, color, trunkHeight, trunkStrength, crownLayers, bran
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
 
 	-- Small base flare
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 1) * 2, math.max(1, trunkStrength - 1), (trunkStrength + 1) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 1, math.max(1, trunkStrength - 1), trunkColor)
 
 	-- Pointed spire tip
 	local topPos = g_ivec3.new(pos.x, pos.y + trunkHeight, pos.z)
-	local tipTop = g_ivec3.new(pos.x, pos.y + trunkHeight + tipHeight, pos.z)
-	g_shape.line(volume, topPos, tipTop, leavesColor, 1)
-	-- Small cone at the apex
-	g_shape.cone(volume, g_ivec3.new(topPos.x, topPos.y - 1, topPos.z), 'y', false, 3, tipHeight + 2, 3, leavesColor)
+	local tipTop = tree_utils.createSpireTip(volume, topPos, tipHeight, leavesColor)
 	-- Secondary color accent at very tip
 	g_shape.line(volume, g_ivec3.new(topPos.x, topPos.y + tipHeight - 1, topPos.z), tipTop, leavesColor2, 1)
 

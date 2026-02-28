@@ -43,33 +43,6 @@ local function createFoliageCluster(volume, center, radius, height, voxelColor)
 	g_shape.dome(volume, underCenter, 'y', true, math.floor(radius * 1.6), underHeight, math.floor(radius * 1.6), voxelColor)
 end
 
--- Create surface roots spreading from the trunk base
-local function createRoots(volume, basePos, numRoots, rootLength, trunkStrength, voxelColor)
-	if numRoots <= 0 then
-		return
-	end
-	local stepAngle = (2 * math.pi) / numRoots
-	local startAngle = math.random() * 2 * math.pi
-	for i = 1, numRoots do
-		local angle = startAngle + (i - 1) * stepAngle + (math.random() - 0.5) * 0.5
-		local dx = math.cos(angle)
-		local dz = math.sin(angle)
-		local startP = g_ivec3.new(basePos.x, basePos.y, basePos.z)
-		local endP = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength),
-			basePos.y - math.random(0, 1),
-			math.floor(basePos.z + dz * rootLength)
-		)
-		local ctrl = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength * 0.5),
-			basePos.y + math.random(0, 1),
-			math.floor(basePos.z + dz * rootLength * 0.5)
-		)
-		local rootThickness = math.max(1, math.floor(trunkStrength * 0.6))
-		drawBezierSegment(volume, startP, endP, ctrl, rootThickness, 1, math.max(4, rootLength), voxelColor)
-	end
-end
-
 -- Create a pot (cylinder with rim)
 local function createPot(volume, centerPos, potRadius, potHeight, voxelColor)
 	-- Pot body - cylinder
@@ -121,32 +94,14 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, branc
 	local trunkBase = g_ivec3.new(pos.x, baseY, pos.z)
 
 	-- Create surface roots
-	createRoots(volume, trunkBase, roots, rootLength, trunkStrength, trunkVoxel)
+	tree_utils.createBezierRoots(volume, trunkBase, roots, rootLength, math.max(1, math.floor(trunkStrength * 0.6)), trunkVoxel)
 
-	-- Create curved trunk using bezier
-	-- The trunk curves to one side (classic bonsai lean)
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-
-	local trunkTop = g_ivec3.new(
-		trunkBase.x + curveX,
-		trunkBase.y + trunkHeight,
-		trunkBase.z + curveZ
-	)
-	local trunkControl = g_ivec3.new(
-		trunkBase.x + math.floor(curveX * 0.3),
-		trunkBase.y + math.floor(trunkHeight * 0.4),
-		trunkBase.z + math.floor(curveZ * 0.3)
-	)
+	-- Create curved trunk using bezier (classic bonsai lean)
 	local topThickness = math.max(1, math.floor(trunkStrength * 0.5))
-	drawBezierSegment(volume, trunkBase, trunkTop, trunkControl,
-		trunkStrength, topThickness, trunkHeight, trunkVoxel)
+	local trunkTop, _, trunkControl = tree_utils.createCurvedTrunk(volume, trunkBase, trunkHeight, trunkStrength, trunkCurve, topThickness, trunkVoxel, 0.3)
 
 	-- Add a slight bulge at the trunk base (nebari - surface root flare)
-	local bulgePos = g_ivec3.new(trunkBase.x, trunkBase.y, trunkBase.z)
-	local bulgeRadius = trunkStrength + 1
-	g_shape.dome(volume, bulgePos, 'y', false, bulgeRadius * 2, math.max(1, math.floor(trunkStrength * 0.5)), bulgeRadius * 2, trunkVoxel)
+	tree_utils.createBaseFlare(volume, trunkBase, trunkStrength + 1, math.max(1, math.floor(trunkStrength * 0.5)), trunkVoxel)
 
 	-- Create branches and foliage
 	-- The branches should radiate outward at different heights and angles
@@ -167,12 +122,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, branc
 		end
 
 		-- Interpolate position on the trunk curve
-		local invT = 1.0 - branchT
-		local branchOrigin = g_ivec3.new(
-			math.floor(invT * invT * trunkBase.x + 2 * invT * branchT * trunkControl.x + branchT * branchT * trunkTop.x),
-			math.floor(invT * invT * trunkBase.y + 2 * invT * branchT * trunkControl.y + branchT * branchT * trunkTop.y),
-			math.floor(invT * invT * trunkBase.z + 2 * invT * branchT * trunkControl.z + branchT * branchT * trunkTop.z)
-		)
+		local branchOrigin = tree_utils.bezierPointAt(trunkBase, trunkTop, trunkControl, branchT)
 
 		local dx = math.cos(angle)
 		local dz = math.sin(angle)

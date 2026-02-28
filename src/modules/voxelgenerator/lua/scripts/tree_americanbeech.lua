@@ -69,13 +69,8 @@ local function createBranch(volume, origin, angle, length, branchColor,
 	for s = 1, subBranches do
 		local subT = 0.3 + (s - 1) * (0.5 / math.max(1, subBranches - 1))
 		if subT > 0.9 then subT = 0.9 end
-		local subU = 1.0 - subT
 
-		local subOrigin = g_ivec3.new(
-			math.floor(subU * subU * origin.x + 2 * subU * subT * ctrl.x + subT * subT * branchEnd.x),
-			math.floor(subU * subU * origin.y + 2 * subU * subT * ctrl.y + subT * subT * branchEnd.y),
-			math.floor(subU * subU * origin.z + 2 * subU * subT * ctrl.z + subT * subT * branchEnd.z)
-		)
+		local subOrigin = tree_utils.bezierPointAt(origin, branchEnd, ctrl, subT)
 
 		local subAngle = angle + (math.random() - 0.5) * 1.8
 		local subDx = math.cos(subAngle)
@@ -122,12 +117,8 @@ local function createBranch(volume, origin, angle, length, branchColor,
 		local numFill = math.min(canopyDensity, 4)
 		for e = 1, numFill do
 			local eT = 0.2 + e * (0.6 / numFill)
-			local eU = 1.0 - eT
-			local ePos = g_ivec3.new(
-				math.floor(eU * eU * origin.x + 2 * eU * eT * ctrl.x + eT * eT * branchEnd.x),
-				math.floor(eU * eU * origin.y + 2 * eU * eT * ctrl.y + eT * eT * branchEnd.y) + 1,
-				math.floor(eU * eU * origin.z + 2 * eU * eT * ctrl.z + eT * eT * branchEnd.z)
-			)
+			local ePos = tree_utils.bezierPointAt(origin, branchEnd, ctrl, eT)
+			ePos.y = ePos.y + 1
 			leafCluster(volume, ePos, math.max(2, math.floor(length * 0.3)), leafColor, leafColor2)
 		end
 	end
@@ -143,33 +134,15 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Smooth trunk with slight lean — beech trunks are famously smooth
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-	local topPos = g_ivec3.new(pos.x + curveX, pos.y + trunkHeight, pos.z + curveZ)
-	local ctrl = g_ivec3.new(
-		pos.x + math.floor(curveX * 0.4),
-		pos.y + math.floor(trunkHeight * 0.5),
-		pos.z + math.floor(curveZ * 0.4)
-	)
-	drawBezier(volume, pos, topPos, ctrl, trunkStrength, math.max(1, trunkStrength - 1),
-		trunkHeight, trunkColor)
+	local topPos, _, ctrl = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength,
+		trunkCurve, math.max(1, trunkStrength - 1), trunkColor, 0.4)
 
 	-- Prominent root flare — beech trees have broad, shallow root systems
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 3) * 2, math.max(2, trunkStrength), (trunkStrength + 3) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 3, math.max(2, trunkStrength), trunkColor)
 
 	-- Surface roots — beech roots often protrude above ground
-	for _ = 1, math.random(3, 6) do
-		local rAngle = math.random() * 2 * math.pi
-		local rLen = math.random(2, trunkStrength + 3)
-		local rootEnd = g_ivec3.new(
-			math.floor(pos.x + math.cos(rAngle) * rLen),
-			pos.y - math.random(0, 1),
-			math.floor(pos.z + math.sin(rAngle) * rLen)
-		)
-		g_shape.line(volume, pos, rootEnd, trunkColor, math.max(1, trunkStrength - 1))
-	end
+	tree_utils.createLineRoots(volume, pos, math.random(3, 6), trunkStrength + 3,
+		math.max(1, trunkStrength - 1), trunkColor, true)
 
 	-- Main spreading branches — beech trees have a wide, layered crown
 	local angleStep = (2 * math.pi) / mainBranches
@@ -182,12 +155,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 
 		-- Vary origin height along the upper trunk
 		local originFrac = 0.5 + math.random() * 0.4
-		local oU = 1.0 - originFrac
-		local branchOrigin = g_ivec3.new(
-			math.floor(oU * oU * pos.x + 2 * oU * originFrac * ctrl.x + originFrac * originFrac * topPos.x),
-			math.floor(oU * oU * pos.y + 2 * oU * originFrac * ctrl.y + originFrac * originFrac * topPos.y),
-			math.floor(oU * oU * pos.z + 2 * oU * originFrac * ctrl.z + originFrac * originFrac * topPos.z)
-		)
+		local branchOrigin = tree_utils.bezierPointAt(pos, topPos, ctrl, originFrac)
 
 		createBranch(volume, branchOrigin, angle, bLen, branchColor,
 			leafColor, leafColor2, subBranches, canopyDensity, false)
@@ -199,12 +167,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 		for i = 1, numLow do
 			local lowAngle = startAngle + math.pi / mainBranches + (i - 1) * (2 * math.pi / numLow)
 			local lowFrac = 0.2 + math.random() * 0.15
-			local lowU = 1.0 - lowFrac
-			local lowOrigin = g_ivec3.new(
-				math.floor(lowU * lowU * pos.x + 2 * lowU * lowFrac * ctrl.x + lowFrac * lowFrac * topPos.x),
-				math.floor(lowU * lowU * pos.y + 2 * lowU * lowFrac * ctrl.y + lowFrac * lowFrac * topPos.y),
-				math.floor(lowU * lowU * pos.z + 2 * lowU * lowFrac * ctrl.z + lowFrac * lowFrac * topPos.z)
-			)
+			local lowOrigin = tree_utils.bezierPointAt(pos, topPos, ctrl, lowFrac)
 			local lowLen = math.max(3, branchLength - math.random(2, 4))
 			createBranch(volume, lowOrigin, lowAngle, lowLen, branchColor,
 				leafColor, leafColor2, math.max(1, subBranches - 1), canopyDensity, true)
@@ -216,12 +179,5 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 	local canopyCenter = g_ivec3.new(topPos.x, canopyCenterY, topPos.z)
 	local cW = canopySpread
 	local cH = math.max(3, math.floor(canopySpread * 0.45))
-	g_shape.dome(volume, canopyCenter, 'y', false, cW * 2, cH, cW * 2, leafColor)
-	-- Top layer in secondary color
-	local topCap = g_ivec3.new(canopyCenter.x, canopyCenter.y + 1, canopyCenter.z)
-	g_shape.dome(volume, topCap, 'y', false, math.floor(cW * 1.2), math.max(1, cH - 1),
-		math.floor(cW * 1.2), leafColor2)
-	-- Under-canopy fill
-	g_shape.dome(volume, canopyCenter, 'y', true,
-		math.floor(cW * 0.7), math.max(2, cH - 2), math.floor(cW * 0.7), leafColor)
+	tree_utils.createCanopyDome(volume, canopyCenter, cW, cH, leafColor, leafColor2)
 end

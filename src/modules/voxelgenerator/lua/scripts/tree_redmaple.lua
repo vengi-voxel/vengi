@@ -32,59 +32,6 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Create root flare at the base of the trunk
-local function createRootFlare(volume, basePos, numRoots, rootLength, trunkStrength, voxelColor)
-	-- Bulge at the base
-	local bulgeRadius = trunkStrength + 1
-	g_shape.dome(volume, basePos, 'y', false,
-		bulgeRadius * 2, math.max(2, math.floor(trunkStrength * 0.6)), bulgeRadius * 2, voxelColor)
-
-	if numRoots <= 0 then
-		return
-	end
-	local angleStep = (2 * math.pi) / numRoots
-	local startAngle = math.random() * 2 * math.pi
-	for i = 1, numRoots do
-		local angle = startAngle + (i - 1) * angleStep + (math.random() - 0.5) * 0.5
-		local dx = math.cos(angle)
-		local dz = math.sin(angle)
-		local startP = g_ivec3.new(basePos.x, basePos.y, basePos.z)
-		local endP = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength),
-			basePos.y - math.random(0, 1),
-			math.floor(basePos.z + dz * rootLength)
-		)
-		local ctrl = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLength * 0.5),
-			basePos.y + 1,
-			math.floor(basePos.z + dz * rootLength * 0.5)
-		)
-		local rootThickness = math.max(1, math.floor(trunkStrength * 0.5))
-		drawBezier(volume, startP, endP, ctrl, rootThickness, 1, math.max(4, rootLength), voxelColor)
-	end
-end
-
--- Create the trunk with a slight curve and taper
-local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCurve, voxelColor)
-	local curveDir = math.random() * 2 * math.pi
-	local curveX = math.floor(math.cos(curveDir) * trunkCurve)
-	local curveZ = math.floor(math.sin(curveDir) * trunkCurve)
-
-	local topPos = g_ivec3.new(
-		basePos.x + curveX,
-		basePos.y + trunkHeight,
-		basePos.z + curveZ
-	)
-	local ctrl = g_ivec3.new(
-		basePos.x + math.floor(curveX * 0.4),
-		basePos.y + math.floor(trunkHeight * 0.5),
-		basePos.z + math.floor(curveZ * 0.4)
-	)
-	local topThickness = math.max(1, math.floor(trunkStrength * 0.5))
-	drawBezier(volume, basePos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, voxelColor)
-	return topPos, topThickness, curveDir
-end
-
 -- Create a spreading branch from the trunk, returning tip position
 local function createBranch(volume, origin, angle, length, thickness, voxelColor)
 	local dx = math.cos(angle)
@@ -104,23 +51,6 @@ local function createBranch(volume, origin, angle, length, thickness, voxelColor
 	)
 	local tip = drawBezier(volume, origin, branchEnd, ctrl, thickness, 1, math.max(5, length), voxelColor)
 	return tip
-end
-
--- Create a foliage cluster with mixed red colors for the maple's vivid crown
-local function createFoliageCluster(volume, center, radius, height, primaryColor, secondaryColor)
-	-- Main dome
-	g_shape.dome(volume, center, 'y', false, radius * 2, height, radius * 2, primaryColor)
-	-- Overlay a slightly smaller dome with the secondary color for color variation
-	local innerRadius = math.max(1, radius - 1)
-	local innerHeight = math.max(1, height - 1)
-	-- Offset the secondary color dome slightly for a natural mixed effect
-	local offX = math.random(-1, 1)
-	local offZ = math.random(-1, 1)
-	local offCenter = g_ivec3.new(center.x + offX, center.y, center.z + offZ)
-	g_shape.dome(volume, offCenter, 'y', false, innerRadius * 2, innerHeight, innerRadius * 2, secondaryColor)
-	-- Small bottom fill for volume
-	local underHeight = math.max(1, math.floor(height / 3))
-	g_shape.dome(volume, center, 'y', true, math.floor(radius * 1.4), underHeight, math.floor(radius * 1.4), primaryColor)
 end
 
 -- Fill in the overall crown shape with scattered foliage clusters
@@ -157,10 +87,12 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Create root flare
-	createRootFlare(volume, pos, roots, rootLength, trunkStrength, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 1, math.max(2, math.floor(trunkStrength * 0.6)), trunkColor)
+	tree_utils.createBezierRoots(volume, pos, roots, rootLength, math.max(1, math.floor(trunkStrength * 0.5)), trunkColor)
 
 	-- Create trunk
-	local trunkTop, topThickness, _ = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkColor)
+	local topThickness = math.max(1, math.floor(trunkStrength * 0.5))
+	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, topThickness, trunkColor)
 
 	-- Create main branches radiating from the upper trunk
 	local angleStep = (2 * math.pi) / mainBranches
@@ -189,7 +121,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 		local clusterRadius = foliageSize + math.random(-1, 1)
 		local clusterHeight = math.max(2, foliageSize - math.random(0, 1))
 		clusterRadius = math.max(2, clusterRadius)
-		createFoliageCluster(volume, tip, clusterRadius, clusterHeight, leavesColor, leavesColor2)
+		tree_utils.dualColorFoliage(volume, tip, clusterRadius, clusterHeight, leavesColor, leavesColor2, true)
 
 		-- Occasionally add a sub-branch
 		if math.random() > 0.4 then
@@ -203,7 +135,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 			)
 			local subTip = createBranch(volume, subOrigin, subAngle, subLength, 1, trunkColor)
 			local subCluster = math.max(2, foliageSize - 1)
-			createFoliageCluster(volume, subTip, subCluster, math.max(2, subCluster - 1), leavesColor, leavesColor2)
+			tree_utils.dualColorFoliage(volume, subTip, subCluster, math.max(2, subCluster - 1), leavesColor, leavesColor2, true)
 		end
 	end
 

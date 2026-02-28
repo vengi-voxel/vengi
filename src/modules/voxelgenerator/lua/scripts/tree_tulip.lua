@@ -85,13 +85,8 @@ local function createBranch(volume, origin, angle, length, branchColor,
 	for s = 1, subBranches do
 		local subT = 0.3 + (s - 1) * (0.5 / math.max(1, subBranches - 1))
 		if subT > 0.9 then subT = 0.9 end
-		local subU = 1.0 - subT
 
-		local subOrigin = g_ivec3.new(
-			math.floor(subU * subU * origin.x + 2 * subU * subT * ctrl.x + subT * subT * branchEnd.x),
-			math.floor(subU * subU * origin.y + 2 * subU * subT * ctrl.y + subT * subT * branchEnd.y),
-			math.floor(subU * subU * origin.z + 2 * subU * subT * ctrl.z + subT * subT * branchEnd.z)
-		)
+		local subOrigin = tree_utils.bezierPointAt(origin, branchEnd, ctrl, subT)
 
 		local subAngle = angle + (math.random() - 0.5) * 1.8
 		local subDx = math.cos(subAngle)
@@ -131,12 +126,8 @@ local function createBranch(volume, origin, angle, length, branchColor,
 		local numFill = math.min(canopyDensity, 3)
 		for e = 1, numFill do
 			local eT = 0.25 + e * (0.5 / numFill)
-			local eU = 1.0 - eT
-			local ePos = g_ivec3.new(
-				math.floor(eU * eU * origin.x + 2 * eU * eT * ctrl.x + eT * eT * branchEnd.x),
-				math.floor(eU * eU * origin.y + 2 * eU * eT * ctrl.y + eT * eT * branchEnd.y) + 1,
-				math.floor(eU * eU * origin.z + 2 * eU * eT * ctrl.z + eT * eT * branchEnd.z)
-			)
+			local ePos = tree_utils.bezierPointAt(origin, branchEnd, ctrl, eT)
+			ePos.y = ePos.y + 1
 			leafCluster(volume, ePos, math.max(2, math.floor(length * 0.3)), leafColor, leafColor2)
 		end
 	end
@@ -155,20 +146,10 @@ function main(node, region, color, trunkHeight, trunkStrength, crownStart,
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
 
 	-- Root flare
-	g_shape.dome(volume, pos, 'y', false,
-		(trunkStrength + 2) * 2, math.max(1, trunkStrength), (trunkStrength + 2) * 2, trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 2, math.max(1, trunkStrength), trunkColor)
 
 	-- Buttress roots
-	for _ = 1, math.random(3, 5) do
-		local rAngle = math.random() * 2 * math.pi
-		local rLen = math.random(2, trunkStrength + 2)
-		local rootEnd = g_ivec3.new(
-			math.floor(pos.x + math.cos(rAngle) * rLen),
-			pos.y,
-			math.floor(pos.z + math.sin(rAngle) * rLen)
-		)
-		g_shape.line(volume, pos, rootEnd, trunkColor, math.max(1, trunkStrength - 1))
-	end
+	tree_utils.createLineRoots(volume, pos, math.random(3, 5), trunkStrength + 2, math.max(1, trunkStrength - 1), trunkColor)
 
 	local topPos = g_ivec3.new(pos.x, pos.y + trunkHeight, pos.z)
 
@@ -198,16 +179,8 @@ function main(node, region, color, trunkHeight, trunkStrength, crownStart,
 	local canopyCenterY = topPos.y + math.floor(canopyWidth * 0.05)
 	local canopyCenter = g_ivec3.new(pos.x, canopyCenterY, pos.z)
 	local cW = canopyWidth
-	-- Oval: taller than wide proportionally
 	local cH = math.max(3, math.floor(canopyWidth * 0.55))
-	g_shape.dome(volume, canopyCenter, 'y', false, cW * 2, cH, cW * 2, leafColor)
-	-- Top accent layer
-	local topCap = g_ivec3.new(pos.x, canopyCenterY + 1, pos.z)
-	g_shape.dome(volume, topCap, 'y', false, math.floor(cW * 1.2), math.max(1, cH - 1),
-		math.floor(cW * 1.2), leafColor2)
-	-- Under-fill
-	g_shape.dome(volume, canopyCenter, 'y', true,
-		math.floor(cW * 0.7), math.max(1, cH - 2), math.floor(cW * 0.7), leafColor)
+	tree_utils.createCanopyDome(volume, canopyCenter, cW, cH, leafColor, leafColor2)
 
 	-- Scatter a few flowers on top of the canopy
 	if flowers then

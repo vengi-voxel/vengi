@@ -30,59 +30,6 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Create the root flare at the base of the trunk
-local function createRootFlare(volume, basePos, trunkStrength, voxelColor)
-	local numRoots = math.random(3, 6)
-	local angleStep = (2 * math.pi) / numRoots
-	local startAngle = math.random() * 2 * math.pi
-	for i = 1, numRoots do
-		local angle = startAngle + (i - 1) * angleStep + (math.random() - 0.5) * 0.4
-		local dx = math.cos(angle)
-		local dz = math.sin(angle)
-		local rootLen = math.random(2, trunkStrength + 2)
-		local startP = g_ivec3.new(basePos.x, basePos.y, basePos.z)
-		local endP = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLen),
-			basePos.y - math.random(0, 1),
-			math.floor(basePos.z + dz * rootLen)
-		)
-		local ctrl = g_ivec3.new(
-			math.floor(basePos.x + dx * rootLen * 0.5),
-			basePos.y + 1,
-			math.floor(basePos.z + dz * rootLen * 0.5)
-		)
-		local thickness = math.max(1, math.floor(trunkStrength * 0.5))
-		drawBezier(volume, startP, endP, ctrl, thickness, 1, math.max(4, rootLen), voxelColor)
-	end
-	-- Bulge at base
-	local bulgeRadius = trunkStrength + 1
-	g_shape.dome(volume, basePos, 'y', false,
-		bulgeRadius * 2, math.max(2, math.floor(trunkStrength * 0.6)), bulgeRadius * 2, voxelColor)
-end
-
--- Build the main trunk with optional irregularity
-local function createTrunk(volume, basePos, trunkHeight, trunkStrength, voxelColor)
-	-- Slight lean for natural look
-	local leanAngle = math.random() * 2 * math.pi
-	local leanAmount = math.random(0, 2)
-	local leanX = math.floor(math.cos(leanAngle) * leanAmount)
-	local leanZ = math.floor(math.sin(leanAngle) * leanAmount)
-
-	local topPos = g_ivec3.new(
-		basePos.x + leanX,
-		basePos.y + trunkHeight,
-		basePos.z + leanZ
-	)
-	local ctrl = g_ivec3.new(
-		basePos.x + math.floor(leanX * 0.3),
-		basePos.y + math.floor(trunkHeight * 0.5),
-		basePos.z + math.floor(leanZ * 0.3)
-	)
-	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
-	drawBezier(volume, basePos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, voxelColor)
-	return topPos, topThickness
-end
-
 -- Build a forked secondary trunk
 local function createFork(volume, forkPos, trunkHeight, trunkStrength, voxelColor)
 	local forkAngle = math.random() * 2 * math.pi
@@ -210,10 +157,12 @@ function main(node, region, color, trunkHeight, trunkStrength, crownSpread, main
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Create root flare at the base
-	createRootFlare(volume, pos, trunkStrength, trunkColor)
+	tree_utils.createBezierRoots(volume, pos, math.random(3, 6), trunkStrength + 2, math.max(1, math.floor(trunkStrength * 0.5)), trunkColor)
+	tree_utils.createBaseFlare(volume, pos, trunkStrength + 1, math.max(2, math.floor(trunkStrength * 0.6)), trunkColor)
 
-	-- Create main trunk
-	local trunkTop, topThickness = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
+	-- Create main trunk — slight lean for natural look
+	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
+	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, math.random(0, 2), topThickness, trunkColor, 0.3)
 
 	-- Optionally fork the trunk (characteristic of black willow)
 	local forkTops = {}
