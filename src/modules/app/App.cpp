@@ -941,7 +941,7 @@ void App::zshCompletion() const {
 	Log::printf("_%s_completion() {\n", appname().c_str());
 	Log::printf("\tlocal -a options\n");
 	Log::printf("\toptions=(\n");
-	Log::printf("\t\t'-set[\"Set cvar value\"]:cvar name:->cvars'\n");
+	Log::printf("\t\t'-set[\"Set cvar value\"]:cvar name:->cvars:cvar value:->cvarvalues'\n");
 	for (const Argument & arg : arguments()) {
 		Log::printf("\t\t'%s[\"%s\"]", arg.longArg().c_str(), arg.description().c_str());
 		if (arg.needsFile()) {
@@ -980,10 +980,66 @@ void App::zshCompletion() const {
 	Log::printf("\t\tcvars)\n");
 	Log::printf("\t\t\tlocal -a variable_names=(\n");
 	core::Var::visit([](const core::VarPtr &var) {
-		Log::printf("\t\t\t\t\"%s\"\n", var->name().c_str());
+		if (!var->description().empty()) {
+			core::String desc = core::string::replaceAll(var->description(), ":", "\\:");
+			Log::printf("\t\t\t\t\"%s:%s\"\n", var->name().c_str(), desc.c_str());
+		} else if (!var->title().empty()) {
+			core::String title = core::string::replaceAll(var->title(), ":", "\\:");
+			Log::printf("\t\t\t\t\"%s:%s\"\n", var->name().c_str(), title.c_str());
+		} else {
+			Log::printf("\t\t\t\t\"%s\"\n", var->name().c_str());
+		}
 	});
 	Log::printf("\t\t\t)\n");
 	Log::printf("\t\t\t_describe 'cvars' variable_names\n");
+	Log::printf("\t\t;;\n");
+	Log::printf("\t\tcvarvalues)\n");
+	Log::printf("\t\t\tlocal cvar_name=${words[CURRENT-1]}\n");
+	Log::printf("\t\t\tcase \"$cvar_name\" in\n");
+	{
+		core::String boolCvars;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Boolean) {
+				if (!boolCvars.empty()) {
+					boolCvars += "|";
+				}
+				boolCvars += var->name();
+			}
+		});
+		if (!boolCvars.empty()) {
+			Log::printf("\t\t\t%s)\n", boolCvars.c_str());
+			Log::printf("\t\t\t\tlocal -a values=(true false)\n");
+			Log::printf("\t\t\t\t_describe 'values' values\n");
+			Log::printf("\t\t\t\t;;\n");
+		}
+		core::String pathCvars;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Path) {
+				if (!pathCvars.empty()) {
+					pathCvars += "|";
+				}
+				pathCvars += var->name();
+			}
+		});
+		if (!pathCvars.empty()) {
+			Log::printf("\t\t\t%s)\n", pathCvars.c_str());
+			Log::printf("\t\t\t\t_files\n");
+			Log::printf("\t\t\t\t;;\n");
+		}
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (!var->validValues().empty()) {
+				Log::printf("\t\t\t%s)\n", var->name().c_str());
+				Log::printf("\t\t\t\tlocal -a values=(\n");
+				for (const auto &v : var->validValues()) {
+					Log::printf("\t\t\t\t\t%s\n", v.c_str());
+				}
+				Log::printf("\t\t\t\t)\n");
+				Log::printf("\t\t\t\t_describe 'values' values\n");
+				Log::printf("\t\t\t\t;;\n");
+			}
+		});
+	}
+	Log::printf("\t\t\tesac\n");
 	Log::printf("\t\t;;\n");
 	Log::printf("\tesac\n");
 	Log::printf("}\n");
@@ -1034,10 +1090,65 @@ void App::bashCompletion() const {
 	});
 	Log::printf("\"\n");
 
-	// don't do auto completion on cvar values - we don't know them at this level
+	// complete cvar values based on VarType
 	Log::printf("\tcase $prev_prev in\n");
 	Log::printf("\t-set)\n");
-	Log::printf("\t\treturn 0\n");
+	Log::printf("\t\tcase $prev in\n");
+	// group boolean cvars for true/false completion
+	core::String boolCvars;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (var->type() == core::VarType::Boolean) {
+			if (!boolCvars.empty()) {
+				boolCvars += "|";
+			}
+			boolCvars += var->name();
+		}
+	});
+	if (!boolCvars.empty()) {
+		Log::printf("\t\t%s)\n", boolCvars.c_str());
+		Log::printf("\t\t\tcompopt +o nospace 2>/dev/null\n");
+		Log::printf("\t\t\tCOMPREPLY=( $(compgen -W \"true false\" -- \"$cur\") )\n");
+		Log::printf("\t\t\treturn\n");
+		Log::printf("\t\t\t;;\n");
+	}
+	// group path cvars for file completion
+	core::String pathCvars;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (var->type() == core::VarType::Path) {
+			if (!pathCvars.empty()) {
+				pathCvars += "|";
+			}
+			pathCvars += var->name();
+		}
+	});
+	if (!pathCvars.empty()) {
+		Log::printf("\t\t%s)\n", pathCvars.c_str());
+		Log::printf("\t\t\tcompopt -o nospace 2>/dev/null\n");
+		Log::printf("\t\t\tmapfile -t COMPREPLY < <(compgen -f -- \"$cur\")\n");
+		Log::printf("\t\t\treturn\n");
+		Log::printf("\t\t\t;;\n");
+	}
+	// enum cvars with valid values - each gets its own case
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (!var->validValues().empty()) {
+			Log::printf("\t\t%s)\n", var->name().c_str());
+			Log::printf("\t\t\tcompopt +o nospace 2>/dev/null\n");
+			Log::printf("\t\t\tCOMPREPLY=( $(compgen -W \"");
+			for (size_t n = 0; n < var->validValues().size(); ++n) {
+				if (n > 0) {
+					Log::printf(" ");
+				}
+				Log::printf("%s", var->validValues()[n].c_str());
+			}
+			Log::printf("\" -- \"$cur\") )\n");
+			Log::printf("\t\t\treturn\n");
+			Log::printf("\t\t\t;;\n");
+		}
+	});
+	Log::printf("\t\t*)\n");
+	Log::printf("\t\t\treturn 0\n");
+	Log::printf("\t\t\t;;\n");
+	Log::printf("\t\tesac\n");
 	Log::printf("\t\t;;\n");
 	Log::printf("\tesac\n");
 
