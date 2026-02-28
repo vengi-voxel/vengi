@@ -3,7 +3,9 @@
  */
 
 #include "Client.h"
+#include "core/TimeProvider.h"
 #include "memento/MementoHandler.h"
+#include "protocol/ChatMessage.h"
 #include "protocol/InitSessionMessage.h"
 #include "protocol/NodeAddedMessage.h"
 #include "protocol/NodeKeyFramesMessage.h"
@@ -142,6 +144,45 @@ void Client::executeCommand(const core::String &command) {
 	CommandMessage msg(command, rconPassword);
 	Log::info("Send command to server: %s", command.c_str());
 	_network.sendMessage(msg);
+}
+
+void Client::sendChat(const core::String &message) {
+	if (!isConnected()) {
+		return;
+	}
+	ChatMessage msg(message);
+	_network.sendMessage(msg);
+}
+
+void Client::addChatMessage(const core::String &sender, const core::String &message, bool system) {
+	ChatEntry entry;
+	entry.sender = sender;
+	entry.message = message;
+	entry.timestamp = core::TimeProvider::systemMillis();
+	entry.system = system;
+	_chatLog.push_back(entry);
+	if (!sender.empty()) {
+		_knownUsers.insert(sender);
+	}
+	if (_chatCallback) {
+		_chatCallback(entry);
+	}
+}
+
+const core::DynamicArray<ChatEntry> &Client::chatLog() const {
+	return _chatLog;
+}
+
+const core::StringSet &Client::knownUsers() const {
+	return _knownUsers;
+}
+
+void Client::setChatCallback(const ChatCallback &callback) {
+	_chatCallback = callback;
+}
+
+void Client::clearChat() {
+	_chatLog.clear();
 }
 
 void Client::sendSceneState() {

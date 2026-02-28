@@ -5,6 +5,7 @@
 #include "Server.h"
 #include "ProtocolVersion.h"
 #include "core/Log.h"
+#include "protocol/ChatMessage.h"
 #include "protocol/SceneStateMessage.h"
 #include "protocol/SceneStateRequestMessage.h"
 
@@ -80,6 +81,12 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 		Log::warn("No request nor send of the state for client %u", clientId);
 	}
 
+	if (!localServer && !username.empty()) {
+		core::String joinMsg = core::String::format("%s joined", username.c_str());
+		ChatMessage chatMsg("", joinMsg, true);
+		_network.broadcast(chatMsg);
+	}
+
 	return true;
 }
 
@@ -97,6 +104,11 @@ void Server::onConnect(RemoteClient *client) {
 
 void Server::onDisconnect(RemoteClient *client) {
 	Log::info("remote client disconnect (%i): %s", (int)_network.clientCount(), client->name.c_str());
+	if (!client->name.empty()) {
+		core::String msg = core::String::format("%s left", client->name.c_str());
+		ChatMessage chatMsg("", msg, true);
+		_network.broadcast(chatMsg);
+	}
 }
 
 void Server::construct() {

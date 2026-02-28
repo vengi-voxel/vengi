@@ -28,6 +28,7 @@
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/SessionRecorder.h"
 #include "voxedit-util/network/SessionPlayer.h"
+#include "sound/SoundManager.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -84,6 +85,8 @@ protected:
 	Client _client;
 	SessionRecorder _recorder;
 	SessionPlayer _player;
+	sound::SoundManager _soundManager;
+	sound::SoundHandle _chatSound = nullptr;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -501,6 +504,8 @@ public:
 	Client &client();
 	SessionRecorder &recorder();
 	SessionPlayer &player();
+	sound::SoundManager &soundManager();
+	sound::SoundHandle chatSound() const;
 	const voxelrender::CameraMovement &cameraMovement() const;
 	voxelrender::CameraMovement &cameraMovement();
 
@@ -633,6 +638,14 @@ inline SessionRecorder &SceneManager::recorder() {
 
 inline SessionPlayer &SceneManager::player() {
 	return _player;
+}
+
+inline sound::SoundManager &SceneManager::soundManager() {
+	return _soundManager;
+}
+
+inline sound::SoundHandle SceneManager::chatSound() const {
+	return _chatSound;
 }
 
 inline const voxel::ClipboardData &SceneManager::clipboardData() const {

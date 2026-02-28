@@ -1940,6 +1940,7 @@ void SceneManager::construct() {
 	_camMovement.construct();
 	_server.construct();
 	_client.construct();
+	_soundManager.construct();
 
 	command::Command::registerCommand("resizetoselection")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to resize"})
@@ -2971,6 +2972,11 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the client");
 		return false;
 	}
+	if (_soundManager.init()) {
+		_chatSound = _soundManager.loadSound("chat-ping.wav");
+	} else {
+		Log::warn("Failed to initialize the sound manager");
+	}
 	if (!_mementoHandler.init()) {
 		Log::error("Failed to initialize the memento handler");
 		return false;
@@ -3149,6 +3155,7 @@ bool SceneManager::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 	_server.update(nowSeconds);
 	_client.update(nowSeconds);
+	_soundManager.update(nowSeconds);
 	_player.update(deltaSeconds());
 	bool loadedNewScene = false;
 	if (_loadingFuture.ready()) {
@@ -3253,6 +3260,9 @@ void SceneManager::shutdown() {
 	_player.stopPlayback();
 	_server.shutdown();
 	_client.shutdown();
+	_soundManager.freeSound(_chatSound);
+	_chatSound = nullptr;
+	_soundManager.shutdown();
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");

@@ -24,6 +24,7 @@
 #include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/protocol/CommandMessage.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
+#include "voxedit-util/network/protocol/ChatMessage.h"
 
 namespace voxedit {
 
@@ -121,6 +122,9 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_LOG:
 		msg = new LogMessage(in);
+		break;
+	case PROTO_CHAT:
+		msg = new ChatMessage(in);
 		break;
 	default:
 		Log::error("Unknown protocol message type: %u with size %u", type, size);

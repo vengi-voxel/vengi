@@ -50,6 +50,7 @@ set(SRCS
 	network/protocol/LuaScriptsListMessage.h
 	network/protocol/LuaScriptCreateMessage.h
 	network/protocol/LogMessage.h
+	network/protocol/ChatMessage.h
 
 	network/handler/client/VoxelModificationHandler.h network/handler/client/VoxelModificationHandler.cpp
 	network/handler/client/NodeAddedHandler.h network/handler/client/NodeAddedHandler.cpp
@@ -65,6 +66,7 @@ set(SRCS
 	network/handler/client/SceneStateHandlerClient.h network/handler/client/SceneStateHandlerClient.cpp
 	network/handler/client/SceneGraphAnimationHandler.h network/handler/client/SceneGraphAnimationHandler.cpp
 	network/handler/client/LogMessageHandler.h network/handler/client/LogMessageHandler.cpp
+	network/handler/client/ChatMessageHandler.h network/handler/client/ChatMessageHandler.cpp
 
 	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp
@@ -72,6 +74,7 @@ set(SRCS
 	network/handler/server/LuaScriptsRequestHandler.h network/handler/server/LuaScriptsRequestHandler.cpp
 	network/handler/server/SceneStateHandlerServer.h network/handler/server/SceneStateHandlerServer.cpp
 	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp
+	network/handler/server/ChatHandler.h network/handler/server/ChatHandler.cpp
 
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
@@ -89,7 +92,7 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network)
+set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS

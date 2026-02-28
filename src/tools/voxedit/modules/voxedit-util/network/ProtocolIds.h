@@ -47,5 +47,7 @@ const network::ProtocolId PROTO_LUA_SCRIPT_CREATE = 17;
 const network::ProtocolId PROTO_NODE_IK_CONSTRAINT = 18;
 // log message from the server to the client
 const network::ProtocolId PROTO_LOG = 19;
+// chat message between clients
+const network::ProtocolId PROTO_CHAT = 20;
 
 } // namespace voxedit

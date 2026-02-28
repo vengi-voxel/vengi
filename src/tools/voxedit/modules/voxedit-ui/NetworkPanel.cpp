@@ -12,15 +12,156 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/network/ServerNetwork.h"
+#include "voxedit-util/network/Client.h"
 
 namespace voxedit {
 
 void NetworkPanel::init() {
 }
 
+void NetworkPanel::renderChat() {
+	ImGui::Separator();
+	ImGui::TextUnformatted(ICON_LC_MESSAGE_CIRCLE " Chat");
+
+	const core::DynamicArray<ChatEntry> &chatLog = _sceneMgr->client().chatLog();
+	const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+	if (ImGui::BeginChild("##chatlog", ImVec2(0, -footerHeight), ImGuiChildFlags_Borders)) {
+		for (size_t i = 0; i < chatLog.size(); ++i) {
+			const ChatEntry &entry = chatLog[i];
+			if (entry.system) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+				ImGui::Text("* %s", entry.message.c_str());
+				ImGui::PopStyleColor();
+			} else {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
+				ImGui::Text("%s:", entry.sender.c_str());
+				ImGui::PopStyleColor();
+				ImGui::SameLine();
+				ImGui::TextWrapped("%s", entry.message.c_str());
+			}
+		}
+		if (_scrollToBottom) {
+			ImGui::SetScrollHereY(1.0f);
+			_scrollToBottom = false;
+		}
+	}
+	ImGui::EndChild();
+
+	// Chat input
+	bool sendChat = false;
+	if (_refocusChatInput) {
+		ImGui::SetKeyboardFocusHere();
+		_refocusChatInput = false;
+	}
+	ImGui::PushItemWidth(-60);
+	if (ImGui::InputText("##chatinput", &_chatInput,
+						 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+		sendChat = true;
+	}
+	ImGui::PopItemWidth();
+
+	// Handle @mention autocomplete popup
+	handleMentionAutocomplete();
+
+	ImGui::SameLine();
+	if (ImGui::Button(_("Send"))) {
+		sendChat = true;
+	}
+
+	if (sendChat && !_chatInput.empty()) {
+		_sceneMgr->client().sendChat(_chatInput);
+		_chatInput.clear();
+		_scrollToBottom = true;
+		_refocusChatInput = true;
+	}
+}
+
+void NetworkPanel::handleMentionAutocomplete() {
+	// Find the last @ in the input
+	const size_t atPos = _chatInput.rfind("@");
+	if (atPos == core::String::npos) {
+		return;
+	}
+
+	// Extract the partial name after @
+	const core::String partial = _chatInput.substr(atPos + 1);
+
+	// Collect matching user names
+	core::DynamicArray<core::String> matches;
+
+	// From known users (collected from chat messages)
+	const core::StringSet &knownUsers = _sceneMgr->client().knownUsers();
+	for (auto it = knownUsers.begin(); it != knownUsers.end(); ++it) {
+		const core::String &user = it->key;
+		if (partial.empty() || core::string::icontains(user, partial)) {
+			matches.push_back(user);
+		}
+	}
+
+	// Also from server's connected clients list if we're the server
+	if (_sceneMgr->server().isRunning()) {
+		const RemoteClients &clients = _sceneMgr->server().clients();
+		for (size_t i = 0; i < clients.size(); ++i) {
+			const core::String &name = clients[i].name;
+			if (!name.empty() && (partial.empty() || core::string::icontains(name, partial))) {
+				// Avoid duplicates
+				bool found = false;
+				for (size_t j = 0; j < matches.size(); ++j) {
+					if (matches[j] == name) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					matches.push_back(name);
+				}
+			}
+		}
+	}
+
+	if (matches.empty()) {
+		return;
+	}
+
+	// Show autocomplete popup
+	if (ImGui::IsItemActive() && !matches.empty()) {
+		ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
+		ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(300, 150));
+		if (ImGui::Begin("##mentionpopup", nullptr,
+						 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+							 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize |
+							 ImGuiWindowFlags_NoFocusOnAppearing)) {
+			for (size_t i = 0; i < matches.size(); ++i) {
+				if (ImGui::Selectable(matches[i].c_str())) {
+					// Replace the @partial with @username
+					_chatInput = _chatInput.substr(0, atPos) + "@" + matches[i] + " ";
+				}
+			}
+		}
+		ImGui::End();
+	}
+}
+
 void NetworkPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
 	const core::String title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
+
+	// Register chat callback for notification sounds (once)
+	if (!_chatCallbackRegistered) {
+		const core::String ownName = core::getVar(cfg::AppUserName)->strVal();
+		_sceneMgr->client().setChatCallback([this, ownName](const ChatEntry &entry) {
+			_scrollToBottom = true;
+			// Check for @mention of our own name
+			if (!entry.system && !ownName.empty()) {
+				core::String mention = "@" + ownName;
+				if (core::string::icontains(entry.message, mention)) {
+					_sceneMgr->soundManager().playSound(_sceneMgr->chatSound());
+				}
+			}
+		});
+		_chatCallbackRegistered = true;
+	}
+
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (ImGui::BeginTabBar("##networktabbar")) {
 			if (ImGui::BeginTabItem(_("Client"))) {
@@ -46,6 +187,9 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					if (ImGui::Button(_("Disconnect"))) {
 						command::Command::execute("net_client_disconnect");
 					}
+
+					// Chat section (only when connected)
+					renderChat();
 				}
 				ImGui::EndTabItem();
 			}
@@ -87,6 +231,11 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 							}
 							ImGui::EndTable();
 						}
+					}
+
+					// Chat section on server tab too
+					if (_sceneMgr->client().isConnected()) {
+						renderChat();
 					}
 				} else {
 					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();

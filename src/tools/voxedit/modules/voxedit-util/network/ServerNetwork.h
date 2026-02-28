@@ -11,6 +11,7 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "network/SocketId.h"
 #include "voxedit-util/network/handler/server/BroadcastHandler.h"
+#include "voxedit-util/network/handler/server/ChatHandler.h"
 #include "voxedit-util/network/handler/server/CommandHandlerServer.h"
 #include "voxedit-util/network/handler/server/LuaScriptCreateHandler.h"
 #include "voxedit-util/network/handler/server/LuaScriptsRequestHandler.h"
@@ -89,6 +90,7 @@ protected:
 	InitSessionHandler _initSessionHandler;
 	SceneStateHandlerServer _sceneStateHandler;
 	BroadcastHandler _broadcastHandler;
+	ChatHandler _chatHandler;
 	LuaScriptsRequestHandler _luaScriptsRequestHandler;
 	LuaScriptCreateHandler _luaScriptCreateHandler;
 	core::VarPtr _maxClients;
