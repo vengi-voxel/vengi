@@ -373,7 +373,10 @@ function(engine_add_executable)
 		install(TARGETS ${_EXE_TARGET} DESTINATION ${INSTALL_BIN_DIR} COMPONENT ${_EXE_TARGET})
 	endif()
 	add_custom_target(${_EXE_TARGET}-run
-		COMMAND $<TARGET_FILE:${_EXE_TARGET}>
+		COMMAND ${CMAKE_COMMAND} -E env
+			ASAN_OPTIONS=detect_leaks=1
+			LSAN_OPTIONS=suppressions=${ROOT_DIR}/contrib/asan-suppression
+			$<TARGET_FILE:${_EXE_TARGET}>
 		USES_TERMINAL
 		DEPENDS ${_EXE_TARGET}
 		WORKING_DIRECTORY $<TARGET_FILE_DIR:${_EXE_TARGET}>
