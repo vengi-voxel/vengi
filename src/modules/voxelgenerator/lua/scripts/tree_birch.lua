@@ -29,23 +29,7 @@ function description()
 	return 'Creates a birch tree with a slender white trunk, arching branches and airy canopy'
 end
 
--- Draw a bezier curve with tapering thickness, returning final position
-local function drawBezier(volume, startPos, endPos, control, startThickness, endThickness, steps, voxelColor)
-	local last = startPos
-	for i = 1, steps do
-		local t = i / steps
-		local invT = 1.0 - t
-		local p = g_ivec3.new(
-			math.floor(invT * invT * startPos.x + 2 * invT * t * control.x + t * t * endPos.x),
-			math.floor(invT * invT * startPos.y + 2 * invT * t * control.y + t * t * endPos.y),
-			math.floor(invT * invT * startPos.z + 2 * invT * t * control.z + t * t * endPos.z)
-		)
-		local thickness = math.max(1, math.ceil(startThickness + (endThickness - startThickness) * t))
-		g_shape.line(volume, last, p, voxelColor, thickness)
-		last = p
-	end
-	return last
-end
+local drawBezier = tree_utils.drawBezier
 
 -- Create a single trunk with gentle curve, returning top position
 local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCurve, voxelColor)
@@ -161,11 +145,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, secon
 	mainBranches, branchLength, droopLength, foliageSize, crownWidth, crownHeight,
 	trunkColor, leavesColor, leavesColor2, seed)
 
-	if seed == 0 then
-		math.randomseed(os.time())
-	else
-		math.randomseed(seed)
-	end
+	tree_utils.initSeed(seed)
 
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)

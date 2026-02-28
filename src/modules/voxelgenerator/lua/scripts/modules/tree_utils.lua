@@ -68,4 +68,41 @@ function tree_utils.createBezierTrunk(volume, pos, trunkHeight, trunkWidth, trun
 	return endPos
 end
 
+function tree_utils.initSeed(seed)
+	if seed == 0 then
+		math.randomseed(os.time())
+	else
+		math.randomseed(seed)
+	end
+end
+
+function tree_utils.drawBezier(volume, startPos, endPos, control, startThickness, endThickness, steps, voxelColor)
+	local last = startPos
+	for i = 1, steps do
+		local t = i / steps
+		local invT = 1.0 - t
+		local p = g_ivec3.new(
+			math.floor(invT * invT * startPos.x + 2 * invT * t * control.x + t * t * endPos.x),
+			math.floor(invT * invT * startPos.y + 2 * invT * t * control.y + t * t * endPos.y),
+			math.floor(invT * invT * startPos.z + 2 * invT * t * control.z + t * t * endPos.z)
+		)
+		local thickness = math.max(1, math.ceil(startThickness + (endThickness - startThickness) * t))
+		g_shape.line(volume, last, p, voxelColor, thickness)
+		last = p
+	end
+	return last
+end
+
+function tree_utils.leafCluster(volume, center, size, leafColor, leafColor2)
+	local w = math.max(2, size + math.random(-1, 1))
+	local h = math.max(1, math.floor(w * 0.6) + math.random(-1, 0))
+	local col = leafColor
+	if math.random() > 0.5 then col = leafColor2 end
+	g_shape.dome(volume, center, 'y', false, w * 2, h, w * 2, col)
+	if size >= 3 then
+		g_shape.dome(volume, center, 'y', true,
+			math.floor(w * 0.8), math.max(1, h - 1), math.floor(w * 0.8), leafColor)
+	end
+end
+
 return tree_utils

@@ -31,23 +31,7 @@ function description()
 	return 'Creates a bonsai tree with curved trunk, cloud-like foliage, surface roots and optional pot'
 end
 
--- Draw a bezier curve between two points with a control point, tapering thickness
-local function drawBezierSegment(volume, startPos, endPos, control, startThickness, endThickness, steps, voxelColor)
-	local last = startPos
-	for i = 1, steps do
-		local t = i / steps
-		local invT = 1.0 - t
-		local p = g_ivec3.new(
-			math.floor(invT * invT * startPos.x + 2 * invT * t * control.x + t * t * endPos.x),
-			math.floor(invT * invT * startPos.y + 2 * invT * t * control.y + t * t * endPos.y),
-			math.floor(invT * invT * startPos.z + 2 * invT * t * control.z + t * t * endPos.z)
-		)
-		local thickness = math.max(1, math.ceil(startThickness + (endThickness - startThickness) * t))
-		g_shape.line(volume, last, p, voxelColor, thickness)
-		last = p
-	end
-	return last
-end
+local drawBezierSegment = tree_utils.drawBezier
 
 -- Create a flat, cloud-like foliage cluster (wide dome, short height)
 local function createFoliageCluster(volume, center, radius, height, voxelColor)
@@ -109,11 +93,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, branc
 	branchLength, foliageRadius, foliageHeight, roots, rootLength,
 	pot, potHeight, potRadius, trunkColor, leavesColor, potColor, seed)
 
-	if seed == 0 then
-		math.randomseed(os.time())
-	else
-		math.randomseed(seed)
-	end
+	tree_utils.initSeed(seed)
 
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)

@@ -83,11 +83,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownLayers, bran
 	baseWidth, layerSpacing, branchDroop, tipHeight, density,
 	trunkColor, leavesColor, leavesColor2, seed)
 
-	if seed == 0 then
-		math.randomseed(os.time())
-	else
-		math.randomseed(seed)
-	end
+	tree_utils.initSeed(seed)
 
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)

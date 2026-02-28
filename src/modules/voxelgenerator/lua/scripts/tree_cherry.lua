@@ -32,23 +32,7 @@ function description()
 	return 'Creates a blossoming cherry tree (sakura) with arching branches and dense pink/white blossom clusters'
 end
 
--- Quadratic bezier helper, returns final position
-local function drawBezier(volume, startPos, endPos, control, startThickness, endThickness, steps, voxelColor)
-	local last = startPos
-	for i = 1, steps do
-		local t = i / steps
-		local invT = 1.0 - t
-		local p = g_ivec3.new(
-			math.floor(invT * invT * startPos.x + 2 * invT * t * control.x + t * t * endPos.x),
-			math.floor(invT * invT * startPos.y + 2 * invT * t * control.y + t * t * endPos.y),
-			math.floor(invT * invT * startPos.z + 2 * invT * t * control.z + t * t * endPos.z)
-		)
-		local thickness = math.max(1, math.ceil(startThickness + (endThickness - startThickness) * t))
-		g_shape.line(volume, last, p, voxelColor, thickness)
-		last = p
-	end
-	return last
-end
+local drawBezier = tree_utils.drawBezier
 
 -- Place a blossom cluster — a dome of pink/white with occasional leaf accents
 local function placeBlossom(volume, center, size, blossomColor1, blossomColor2, blossomColor3, leafColor)
@@ -198,11 +182,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 	canopyHeight, mainBranches, subBranches, blossomDensity, blossomSize, fallenPetals,
 	trunkColor, branchColor, blossomColor1, blossomColor2, blossomColor3, leafColor, seed)
 
-	if seed == 0 then
-		math.randomseed(os.time())
-	else
-		math.randomseed(seed)
-	end
+	tree_utils.initSeed(seed)
 
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)

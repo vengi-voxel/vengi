@@ -35,37 +35,9 @@ function description()
 	return 'Creates a hawthorn tree with a gnarled trunk, dense irregular crown, thorns, blossoms and red berries'
 end
 
--- Quadratic bezier, returns final position
-local function drawBezier(volume, startPos, endPos, control, startThick, endThick, steps, col)
-	local last = startPos
-	for i = 1, steps do
-		local t = i / steps
-		local u = 1.0 - t
-		local p = g_ivec3.new(
-			math.floor(u * u * startPos.x + 2 * u * t * control.x + t * t * endPos.x),
-			math.floor(u * u * startPos.y + 2 * u * t * control.y + t * t * endPos.y),
-			math.floor(u * u * startPos.z + 2 * u * t * control.z + t * t * endPos.z)
-		)
-		local th = math.max(1, math.ceil(startThick + (endThick - startThick) * t))
-		g_shape.line(volume, last, p, col, th)
-		last = p
-	end
-	return last
-end
+local drawBezier = tree_utils.drawBezier
 
--- Place a leaf cluster dome
-local function leafCluster(volume, center, size, leafColor, leafColor2)
-	local w = math.max(2, size + math.random(-1, 1))
-	local h = math.max(1, math.floor(w * 0.65) + math.random(-1, 0))
-	local col = leafColor
-	if math.random() > 0.55 then col = leafColor2 end
-	g_shape.dome(volume, center, 'y', false, w * 2, h, w * 2, col)
-	-- Under-fill for volume
-	if size >= 3 then
-		g_shape.dome(volume, center, 'y', true,
-			math.floor(w * 0.9), math.max(1, h - 1), math.floor(w * 0.9), leafColor)
-	end
-end
+local leafCluster = tree_utils.leafCluster
 
 -- Place a small blossom or berry cluster
 local function smallCluster(volume, center, size, col)
@@ -206,11 +178,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, forkH
 	mainBranches, branchLength, subBranches, canopySize, thorns, blossoms, berries,
 	trunkColor, branchColor, thornColor, leafColor, leafColor2, blossomColor, berryColor, seed)
 
-	if seed == 0 then
-		math.randomseed(os.time())
-	else
-		math.randomseed(seed)
-	end
+	tree_utils.initSeed(seed)
 
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
