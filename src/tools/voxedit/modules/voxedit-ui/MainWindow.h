@@ -87,7 +87,8 @@ private:
 	BrushPanel _brushPanel;
 	SceneGraphPanel _sceneGraphPanel;
 	ToolsPanel _toolsPanel;
-	AssetPanel _assetPanel;
+	ModelAssetPanel _modelAssetPanel;
+	ImageAssetPanel _imageAssetPanel;
 	MementoPanel _mementoPanel;
 	NodeInspectorPanel _nodeInspectorPanel;
 	NodePropertiesPanel _nodePropertiesPanel;

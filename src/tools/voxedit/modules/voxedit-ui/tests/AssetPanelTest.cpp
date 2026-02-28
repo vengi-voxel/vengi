@@ -5,15 +5,12 @@
 #include "../AssetPanel.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
-#include "core/StringUtil.h"
 #include "TestUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
-void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
-	_collectionPanel.registerUITests(engine, id);
-
+void ImageAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "drag drop image")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (_texturePool->cache().empty()) {
 			ctx->LogInfo("No images found in asset panel");
@@ -31,16 +28,18 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const size_t n = core_min(3, _texturePool->cache().size());
 		for (size_t i = 0; i < n; ++i) {
 			IM_CHECK(focusWindow(ctx, id));
-			ctx->ItemClick("##assetpaneltabs/Images");
-			const core::String srcRef = core::String::format("##assetpaneltabs/Images/%i", (int)i);
+			const core::String srcRef = core::String::format("##image-%i", (int)i);
 			ctx->ItemDragAndDrop(srcRef.c_str(), viewPortId.c_str());
 		}
 		IM_CHECK(voxelutil::countVoxels(*volume) > 0);
 	};
+}
+
+void ModelAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	_collectionPanel.registerUITests(engine, id);
 
 	IM_REGISTER_TEST(engine, testCategory(), "load remote collection")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->ItemClick("##assetpaneltabs/Models");
 		ctx->Yield();
 
 		// wait for the remote collection to load (async network fetch)

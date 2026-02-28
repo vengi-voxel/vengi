@@ -16,7 +16,8 @@ namespace voxedit {
 void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_animationPanel.registerUITests(engine, TITLE_ANIMATION_SETTINGS);
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
-	_assetPanel.registerUITests(engine, TITLE_ASSET);
+	_modelAssetPanel.registerUITests(engine, TITLE_ASSET_MODELS);
+	_imageAssetPanel.registerUITests(engine, TITLE_ASSET_IMAGES);
 	// collection panel tests belong to the asset panel
 	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);

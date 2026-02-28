@@ -115,7 +115,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
-	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
+	  _modelAssetPanel(app, _sceneMgr, collectionMgr, texturePool),
+	  _imageAssetPanel(app, _sceneMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
 	  _optionsPanel(app),
@@ -216,7 +217,8 @@ bool MainWindow::init() {
 	_nodeInspectorPanel.init();
 	_nodePropertiesPanel.init();
 	_toolsPanel.init();
-	_assetPanel.init();
+	_modelAssetPanel.init();
+	_imageAssetPanel.init();
 	_animationTimeline.init();
 	_animationPanel.init();
 	_menuBar.init();
@@ -264,7 +266,8 @@ void MainWindow::shutdown() {
 	_nodeInspectorPanel.shutdown();
 	_nodePropertiesPanel.shutdown();
 	_toolsPanel.shutdown();
-	_assetPanel.shutdown();
+	_modelAssetPanel.shutdown();
+	_imageAssetPanel.shutdown();
 }
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
@@ -391,6 +394,7 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_HELP, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ASSET_IMAGES, dockId);
 	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
 
@@ -415,6 +419,9 @@ void MainWindow::mainWidget(double nowSeconds) {
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
 	_helpPanel.update(TITLE_HELP);
+	if (viewModeAssetPanel(_viewMode->intVal())) {
+		_imageAssetPanel.update(TITLE_ASSET_IMAGES);
+	}
 	if (viewModeAnimations(_viewMode->intVal()) && isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
@@ -435,7 +442,7 @@ bool MainWindow::isSceneMode() const {
 
 void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_ASSET, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ASSET_MODELS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
@@ -462,7 +469,7 @@ void MainWindow::rightWidget() {
 	// top
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	if (viewModeAssetPanel(_viewMode->intVal())) {
-		_assetPanel.update(TITLE_ASSET, listener);
+		_modelAssetPanel.update(TITLE_ASSET_MODELS, listener);
 	}
 	if (viewModeAnimations(_viewMode->intVal())) {
 		_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
