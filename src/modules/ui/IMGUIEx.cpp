@@ -399,13 +399,7 @@ bool AxisCommandButton(math::Axis axis, const char *name, const char *command, c
 	{
 		ui::ScopedStyle style;
 		_priv::AxisStyleButton(style, axis);
-		char buf[16];
-		if (icon != nullptr) {
-			core::String::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
-		} else {
-			core::String::formatBuf(buf, sizeof(buf), "%s", name);
-		}
-		if (ImGui::Button(buf, ImVec2(width, 0))) {
+		if (ImGui::IconButton(icon, name, ImVec2(width, 0))) {
 			if (command::executeCommands(command, listener) > 0) {
 				return true;
 			}
