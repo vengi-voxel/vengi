@@ -2776,7 +2776,7 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Unreference from model and allow to edit the voxels for this node"));
 
-	command::Command::registerCommand("cam_activate")
+	command::Command::registerCommand("camera_activate")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Camera node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			video::Camera *camera = activeCamera();
@@ -2804,7 +2804,7 @@ void SceneManager::construct() {
 			camera->lerp(nodeCamera);
 		}).setHelp(_("Interpolate to the camera node position and orientation"));
 
-	command::Command::registerCommand("cam_rotation")
+	command::Command::registerCommand("camera_rotation")
 		.addArg({"mode", command::ArgType::String, true, "", "Rotation mode: target|eye (toggles if not specified)"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			video::Camera *camera = activeCamera();

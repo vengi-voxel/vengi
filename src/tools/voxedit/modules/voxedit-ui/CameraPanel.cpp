@@ -20,7 +20,7 @@ void CameraPanel::addToolbar(command::CommandExecutionListener &listener, video:
 		scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 		_sceneMgr->moveNodeToSceneGraph(cameraNode);
 	});
-	toolbar.button(ICON_LC_EYE, "cam_activate", _sceneMgr->activeCameraNode() == nullptr);
+	toolbar.button(ICON_LC_EYE, "camera_activate", _sceneMgr->activeCameraNode() == nullptr);
 }
 
 void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, video::Camera &camera,
@@ -42,7 +42,7 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 		for (int n = 0; n < lengthof(camRotTypes); n++) {
 			const bool isSelected = (currentCamRotType == n);
 			if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-				const core::String &cmd = core::String::format("cam_rotation %s", camRotTypesArgs[n]);
+				const core::String &cmd = core::String::format("camera_rotation %s", camRotTypesArgs[n]);
 				command::executeCommands(cmd.c_str(), listener);
 			}
 			if (isSelected) {

@@ -349,7 +349,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("left_mouse",           "+actionexecute",               "model");
 	_keybindingHandler.registerBinding("escape",               "abortaction",                  "model");
 	_keybindingHandler.registerBinding("c",                    "pickcolor",                    "model");
-	_keybindingHandler.registerBinding("ctrl+r",               "cam_rotation",                 "editing");
+	_keybindingHandler.registerBinding("ctrl+r",               "camera_rotation",              "editing");
 	_keybindingHandler.registerBinding("return",               "setreferencepositiontocursor", "model");
 	_keybindingHandler.registerBinding("keypad_enter",         "setreferencepositiontocursor", "model");
 	_keybindingHandler.registerBinding("shift+r",              "setreferenceposition 0 0 0",   "model");
