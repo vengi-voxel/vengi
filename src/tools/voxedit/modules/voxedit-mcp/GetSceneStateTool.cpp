@@ -22,7 +22,6 @@ GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
 		"If a node uuid is specified, only a single node is returned.";
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"flags"});
 	inputSchema["properties"]["nodeUUID"] = propUUID();
 	inputSchema["properties"]["skipinfo"] =
 		propTypeDescription("string", "Comma separated list things to omit from the json output: " VALID_SKIPINFO_VALUES
