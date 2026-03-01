@@ -2599,10 +2599,16 @@ void SceneManager::construct() {
 		}).setHelp(_("Add a new model node to the current active node (with a given name and width, height, depth)"));
 
 	command::Command::registerCommand("nodebaketransform")
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeForeachGroup([&] (int groupNodeId) {
-				nodeBakeTransform(groupNodeId);
-			});
+			const int nodeId = toNodeId(args, InvalidNodeId);
+			if (nodeId == InvalidNodeId) {
+				nodeForeachGroup([&] (int groupNodeId) {
+					nodeBakeTransform(groupNodeId);
+				});
+			} else {
+				nodeBakeTransform(nodeId);
+			}
 		}).setHelp(_("Bake the current transform into the voxel data for a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodedelete")
