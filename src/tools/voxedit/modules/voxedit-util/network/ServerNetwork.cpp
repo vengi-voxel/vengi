@@ -21,23 +21,25 @@
 
 namespace voxedit {
 
-class ScopedConsoleListenerActivator : public Log::ILogListener {
+class ScopedLogListenerActivator : public Log::ILogListener {
 private:
 	ServerNetwork *_network;
 	network::ClientId _clientId;
 
 public:
-	ScopedConsoleListenerActivator(ServerNetwork *network, network::ClientId clientId)
+	ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId)
 		: _network(network), _clientId(clientId) {
 		Log::registerLogListener(this);
 	}
 
-	~ScopedConsoleListenerActivator() {
+	~ScopedLogListenerActivator() {
 		Log::unregisterLogListener(this);
 	}
 
 	void onLog(Log::Level priority, const char *message) {
 		LogMessage msg(priority, message);
+		// TODO: this should get queued, not directly sent - as it might interfer the out buffer of another message that
+		// is currently in the process of being sent
 		_network->sendToClient(_clientId, msg);
 	}
 };
@@ -414,7 +416,7 @@ void ServerNetwork::update(double nowSeconds) {
 			// Update activity timestamp when we receive a valid message
 			client.lastActivity = nowSeconds;
 			if (network::ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
-				ScopedConsoleListenerActivator activator(this, clientId);
+				ScopedLogListenerActivator activator(this, clientId);
 				handler->execute(clientId, *msg);
 			} else {
 				Log::warn("No server handler for message type %d", msg->getId());
