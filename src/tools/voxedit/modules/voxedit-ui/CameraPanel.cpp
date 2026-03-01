@@ -88,10 +88,13 @@ void CameraPanel::cameraProjectionCombo(video::Camera &camera) {
 	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
 	if (ImGui::BeginCombo("###cameraproj", modes[currentMode])) {
+		const char *projModeArgs[] = {"perspective", "orthogonal"};
+		static_assert(lengthof(projModeArgs) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
 		for (int n = 0; n < lengthof(modes); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(modes[n], isSelected)) {
-				camera.setMode((video::CameraMode)n);
+				const core::String &cmd = core::String::format("camera_projection %s", projModeArgs[n]);
+				command::executeCommands(cmd.c_str(), nullptr);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();

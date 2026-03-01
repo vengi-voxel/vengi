@@ -2829,6 +2829,32 @@ void SceneManager::construct() {
 				Log::error("Unknown camera mode: %s (valid are: target, eye)", modeStr.c_str());
 			}
 		}).setHelp(_("Set or toggle the camera rotation mode (target or eye)")).setArgumentCompleter(command::valueCompleter({"target", "eye"}));
+
+	command::Command::registerCommand("camera_projection")
+		.addArg({"mode", command::ArgType::String, true, "", "Projection mode: perspective|orthogonal (toggles if not specified)"})
+		.setHandler([&] (const command::CommandArgs& args) {
+			video::Camera *camera = activeCamera();
+			if (camera == nullptr) {
+				Log::error("No active camera found");
+				return;
+			}
+			if (!args.has("mode")) {
+				if (camera->mode() == video::CameraMode::Perspective) {
+					camera->setMode(video::CameraMode::Orthogonal);
+				} else {
+					camera->setMode(video::CameraMode::Perspective);
+				}
+				return;
+			}
+			const core::String &modeStr = args.str("mode");
+			if (modeStr == "perspective") {
+				camera->setMode(video::CameraMode::Perspective);
+			} else if (modeStr == "orthogonal") {
+				camera->setMode(video::CameraMode::Orthogonal);
+			} else {
+				Log::error("Unknown projection mode: %s (valid are: perspective, orthogonal)", modeStr.c_str());
+			}
+		}).setHelp(_("Set or toggle the camera projection mode (perspective or orthogonal)")).setArgumentCompleter(command::valueCompleter({"perspective", "orthogonal"}));
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {

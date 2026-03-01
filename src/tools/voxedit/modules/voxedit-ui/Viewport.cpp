@@ -564,6 +564,11 @@ bool Viewport::saveImage(const char *filename) {
 	return image->writePNG(stream);
 }
 
+void Viewport::setCamMode(voxelrender::SceneCameraMode mode) {
+	_camMode = mode;
+	resetCamera();
+}
+
 void Viewport::resetCamera() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	voxel::Region region;

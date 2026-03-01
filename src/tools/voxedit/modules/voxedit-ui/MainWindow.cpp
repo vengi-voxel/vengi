@@ -1148,6 +1148,16 @@ void MainWindow::resetCamera() {
 	}
 }
 
+void MainWindow::setCameraMode(voxelrender::SceneCameraMode mode) {
+	if (Viewport *viewport = hoveredViewport()) {
+		viewport->setCamMode(mode);
+	} else {
+		for (size_t i = 0; i < _viewports.size(); ++i) {
+			_viewports[i]->setCamMode(mode);
+		}
+	}
+}
+
 void MainWindow::toggleScene() {
 	if (Viewport *viewport = hoveredViewport()) {
 		viewport->toggleScene();

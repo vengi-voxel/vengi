@@ -42,6 +42,7 @@
 #if ENABLE_RENDER_PANEL
 #include "voxedit-ui/RenderPanel.h"
 #endif
+#include "voxelrender/RenderUtil.h"
 
 namespace voxedit {
 
@@ -176,6 +177,7 @@ public:
 
 	void toggleScene();
 	void resetCamera();
+	void setCameraMode(voxelrender::SceneCameraMode mode);
 	/**
 	 * called directly after the scene manager has finished loading a new scene
 	 * @sa afterLoad()

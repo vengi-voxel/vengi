@@ -190,6 +190,7 @@ public:
 	const glm::ivec2 &size() const;
 
 	void resetCamera();
+	void setCamMode(voxelrender::SceneCameraMode mode);
 	bool saveImage(const char *filename);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
