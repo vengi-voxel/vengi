@@ -2864,6 +2864,41 @@ void SceneManager::construct() {
 				Log::error("Unknown projection mode: %s (valid are: perspective, orthogonal)", modeStr.c_str());
 			}
 		}).setHelp(_("Set or toggle the camera projection mode (perspective or orthogonal)")).setArgumentCompleter(command::valueCompleter({"perspective", "orthogonal"}));
+
+	command::Command::registerCommand("net_server_start")
+		.addArg({"port", command::ArgType::Int, true, "", "Port to listen on (default: ve_netport cvar)"})
+		.addArg({"iface", command::ArgType::String, true, "", "Interface IP to bind (default: ve_netserverinterface cvar)"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const int port = args.intVal("port", core::getVar(cfg::VoxEditNetPort)->intVal());
+			const core::String iface = args.str("iface", core::getVar(cfg::VoxEditNetServerInterface)->strVal());
+			startLocalServer(port, iface);
+		}).setHelp(_("Start the local voxedit server"));
+
+	command::Command::registerCommand("net_server_stop")
+		.setHandler([this](const command::CommandArgs &) {
+			stopLocalServer();
+		}).setHelp(_("Stop the local voxedit server"));
+
+	command::Command::registerCommand("net_server_kick")
+		.addArg({"clientid", command::ArgType::Int, false, "", "Client ID to kick from the server"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const network::ClientId clientId = (network::ClientId)args.intVal("clientid");
+			server().markForDisconnect(clientId);
+		}).setHelp(_("Kick a client from the server"));
+
+	command::Command::registerCommand("net_client_connect")
+		.addArg({"host", command::ArgType::String, true, "", "Server hostname (default: ve_nethostname cvar)"})
+		.addArg({"port", command::ArgType::Int, true, "", "Server port (default: ve_netport cvar)"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String host = args.str("host", core::getVar(cfg::VoxEditNetHostname)->strVal());
+			const int port = args.intVal("port", core::getVar(cfg::VoxEditNetPort)->intVal());
+			connectToServer(host, port);
+		}).setHelp(_("Connect to a voxedit server"));
+
+	command::Command::registerCommand("net_client_disconnect")
+		.setHandler([this](const command::CommandArgs &) {
+			disconnectFromServer();
+		}).setHelp(_("Disconnect from the current voxedit server"));
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {

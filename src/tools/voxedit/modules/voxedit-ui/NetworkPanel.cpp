@@ -4,7 +4,9 @@
 
 #include "NetworkPanel.h"
 #include "IconsLucide.h"
+#include "command/Command.h"
 #include "core/ConfigVar.h"
+#include "core/StringUtil.h"
 #include "network/NetworkAdapters.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
@@ -28,9 +30,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					ImGui::InputVarString(cfg::VoxEditNetHostname);
 					ImGui::InputVarInt(cfg::VoxEditNetPort);
 					if (ImGui::Button(_("Connect to server"))) {
-						const int port = core::getVar(cfg::VoxEditNetPort)->intVal();
-						const core::String hostname = core::getVar(cfg::VoxEditNetHostname)->strVal();
-						_sceneMgr->connectToServer(hostname, port);
+						command::Command::execute("net_client_connect");
 					}
 				} else {
 					ImGui::TextUnformatted(_("Connected to server"));
@@ -44,7 +44,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 						ImGui::SetKeyboardFocusHere(-1);
 					}
 					if (ImGui::Button(_("Disconnect"))) {
-						_sceneMgr->disconnectFromServer();
+						command::Command::execute("net_client_disconnect");
 					}
 				}
 				ImGui::EndTabItem();
@@ -58,11 +58,35 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 				if (_sceneMgr->server().isRunning()) {
 					ImGui::Text(_("Server is running on port %i"), portVar->intVal());
 					if (ImGui::Button(_("Stop server"))) {
-						_sceneMgr->stopLocalServer();
+						command::Command::execute("net_server_stop");
 					}
-					for (const RemoteClient &client : _sceneMgr->server().clients()) {
-						ImGui::BulletText("%s", client.name.c_str());
-						ImGui::Text(_("Traffic: %i bytes sent, %i bytes received"), (int)client.bytesOut, (int)client.bytesIn);
+					const RemoteClients &clients = _sceneMgr->server().clients();
+					if (!clients.empty()) {
+						constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
+						if (ImGui::BeginTable("##clients", 4, tableFlags)) {
+							ImGui::TableSetupColumn(_("Name"));
+							ImGui::TableSetupColumn(_("Sent"));
+							ImGui::TableSetupColumn(_("Received"));
+							ImGui::TableSetupColumn(_("Actions"));
+							ImGui::TableHeadersRow();
+							for (int i = 0; i < (int)clients.size(); ++i) {
+								const RemoteClient &client = clients[i];
+								ImGui::TableNextRow();
+								ImGui::TableSetColumnIndex(0);
+								ImGui::TextUnformatted(client.name.c_str());
+								ImGui::TableSetColumnIndex(1);
+								ImGui::Text("%s", core::string::humanSize(client.bytesOut).c_str());
+								ImGui::TableSetColumnIndex(2);
+								ImGui::Text("%s", core::string::humanSize(client.bytesIn).c_str());
+								ImGui::TableSetColumnIndex(3);
+								ImGui::PushID(i);
+								if (ImGui::SmallButton(_("Kick"))) {
+									command::Command::execute(core::String::format("net_server_kick %i", i));
+								}
+								ImGui::PopID();
+							}
+							ImGui::EndTable();
+						}
 					}
 				} else {
 					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();
@@ -82,8 +106,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					}
 					ImGui::InputVarInt(portVar);
 					if (ImGui::Button(_("Start Server"))) {
-						const int port = portVar->intVal();
-						_sceneMgr->startLocalServer(port, iface);
+						command::Command::execute("net_server_start");
 					}
 					if (ImGui::IsItemHovered()) {
 						ImGui::SetTooltip("Start a server to allow remote connections");
