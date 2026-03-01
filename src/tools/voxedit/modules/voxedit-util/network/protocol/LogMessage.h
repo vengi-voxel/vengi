@@ -36,7 +36,7 @@ public:
 
 	LogMessage(network::MessageStream &in) {
 		_id = PROTO_LOG;
-		if (!in.readUInt8(_level)) {
+		if (in.readUInt8(_level) != 0) {
 			Log::error("Failed to read log level");
 			return;
 		}
