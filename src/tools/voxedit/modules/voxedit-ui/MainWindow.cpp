@@ -391,6 +391,11 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow("Dear ImGui Metrics/Debugger", dockId);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGui::DockBuilderDockWindow("Dear ImGui Test Engine", dockId);
+#endif
+
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_HELP, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ASSET_MODELS, dockId);
