@@ -1,0 +1,4951 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Voxel editor for linux windows and macosx">
+      
+      
+        <meta name="author" content="Martin Gerhardy">
+      
+      
+      
+        <link rel="prev" href="../FAQ/">
+      
+      
+        <link rel="next" href="../Configuration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>Changelog - vengi - voxel tools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/vengi.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+
+
+  
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="vengi - voxel tools - Changelog" />
+<meta property="og:description" content="Voxel editor for linux windows and macosx" />
+<meta property="og:url" content="None" />
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
+<meta property="og:image:type" content="image/png" />
+
+<meta name="keywords" content="voxel,voxelart,voxeleditor,magicavoxel,cubzh,qubicle,sandbox,minecraft,quake,starmade,cubeworld,goxel,aceofspades,binvox,cnc,gltf,animation" />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@MartinGerhardy" />
+<meta name="twitter:title" content="vengi - voxel tools - Changelog" />
+<meta name="twitter:description" content="Voxel editor for linux windows and macosx" />
+<meta name="twitter:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
+
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="vengi - voxel tools" class="md-header__button md-logo" aria-label="vengi - voxel tools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            vengi - voxel tools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/vengi-voxel/vengi" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="vengi - voxel tools" class="md-nav__button md-logo" aria-label="vengi - voxel tools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    vengi - voxel tools
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/vengi-voxel/vengi" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome to vengi
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQ/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frequently asked questions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#050-2026-xx-xx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.0 (2026-XX-XX)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-02-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.4.0 (2026-02-08)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2025-11-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.0 (2025-11-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2025-10-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.2.1 (2025-10-24)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2025-10-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.2.0 (2025-10-24)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2025-07-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.1.0 (2025-07-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0038-2025-06-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.38 (2025-06-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0037-2025-05-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.37 (2025-05-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0036-2025-04-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.36 (2025-04-21)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0035-2025-02-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.35 (2025-02-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0034-2024-11-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.34 (2024-11-14)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0033-2024-08-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.33 (2024-08-05)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0032-2024-05-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.32 (2024-05-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0031-2024-05-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.31 (2024-05-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0030-2024-03-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.30 (2024-03-23)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0029-2024-03-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.29 (2024-03-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0028-2024-01-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.28 (2024-01-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0027-2023-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.27 (2023-09-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0026-2023-08-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.26 (2023-08-13)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0025-2023-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.25 (2023-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0024-2023-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.24 (2023-03-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0023-2022-12-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.23 (2022-12-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0022-2022-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.22 (2022-10-31)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0021-2022-09-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.21 (2022-09-05)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0020-2022-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.20 (2022-06-14)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0019-2022-03-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.19 (2022-03-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0018-2022-02-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.18 (2022-02-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0017-2022-01-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.17 (2022-01-23)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0016-2021-12-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.16 (2021-12-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0015-2021-12-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.15 (2021-12-18)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0014-2021-11-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.14 (2021-11-21)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0013-2021-10-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.13 (2021-10-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0012-2021-10-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.12 (2021-10-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0011-2021-10-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.11 (2021-10-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0010-2021-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.10 (2021-09-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#009-2020-10-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.9 (2020-10-03)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#008-2020-09-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.8 (2020-09-30)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#007-2020-09-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.7 (2020-09-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#006-2020-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.6 (2020-08-02)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005-2020-07-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.5 (2020-07-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004-2020-06-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.4 (2020-06-07)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003-2020-05-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.3 (2020-05-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002-2020-05-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.2 (2020-05-06)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#001-initial-release-2020-02-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.1 "Initial Release" (2020-02-08)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LUAScript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scripting api
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Palette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Material/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Material
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Meshing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Meshing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Voxelization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Voxelization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Translation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VoxConvert
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    VoxConvert
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxconvert/Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxconvert/Usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxconvert/Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxconvert/Examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxconvert/Screenshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screenshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VoxEdit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    VoxEdit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/SceneAndEditMode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene and edit mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/ReferencePosition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference position
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Brushes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brushes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Assets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Camera/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Console/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/GameMode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/LSystem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSystem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Memento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/NodeInspector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node Inspector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Palette/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Palette
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Renderer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Renderer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/SceneView/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene View
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Scripts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scripts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Animations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Viewport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Viewport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/ViewModes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    View modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/usage/Network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Controls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controls
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Animation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/Screenshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screenshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voxedit/MCP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VoxEdit MCP Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PalConvert
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PalConvert
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../palconvert/Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../palconvert/Usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../palconvert/Examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Thumbnailer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Thumbnailer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../thumbnailer/Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../thumbnailer/Usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../thumbnailer/Examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_26_02/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    February 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_26_01/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    January 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_12/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    December 2025
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New formats and fixes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_09_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiuser mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_09/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Not much vengi this week
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_08_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory consumption improvements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog/devlog_25_08/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Devlog 08/2025
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../VisualTests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ShaderTool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shader integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#050-2026-xx-xx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.5.0 (2026-XX-XX)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-02-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.4.0 (2026-02-08)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2025-11-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.3.0 (2025-11-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021-2025-10-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.2.1 (2025-10-24)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2025-10-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.2.0 (2025-10-24)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2025-07-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.1.0 (2025-07-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0038-2025-06-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.38 (2025-06-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0037-2025-05-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.37 (2025-05-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0036-2025-04-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.36 (2025-04-21)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0035-2025-02-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.35 (2025-02-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0034-2024-11-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.34 (2024-11-14)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0033-2024-08-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.33 (2024-08-05)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0032-2024-05-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.32 (2024-05-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0031-2024-05-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.31 (2024-05-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0030-2024-03-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.30 (2024-03-23)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0029-2024-03-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.29 (2024-03-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0028-2024-01-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.28 (2024-01-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0027-2023-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.27 (2023-09-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0026-2023-08-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.26 (2023-08-13)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0025-2023-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.25 (2023-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0024-2023-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.24 (2023-03-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0023-2022-12-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.23 (2022-12-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0022-2022-10-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.22 (2022-10-31)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0021-2022-09-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.21 (2022-09-05)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0020-2022-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.20 (2022-06-14)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0019-2022-03-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.19 (2022-03-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0018-2022-02-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.18 (2022-02-12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0017-2022-01-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.17 (2022-01-23)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0016-2021-12-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.16 (2021-12-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0015-2021-12-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.15 (2021-12-18)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0014-2021-11-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.14 (2021-11-21)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0013-2021-10-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.13 (2021-10-29)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0012-2021-10-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.12 (2021-10-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0011-2021-10-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.11 (2021-10-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0010-2021-09-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.10 (2021-09-19)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#009-2020-10-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.9 (2020-10-03)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#008-2020-09-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.8 (2020-09-30)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#007-2020-09-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.7 (2020-09-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#006-2020-08-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.6 (2020-08-02)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005-2020-07-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.5 (2020-07-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004-2020-06-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.4 (2020-06-07)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003-2020-05-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.3 (2020-05-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002-2020-05-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.2 (2020-05-06)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#001-initial-release-2020-02-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.0.1 "Initial Release" (2020-02-08)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>A more detailed changelog can be found on <a href="https://github.com/vengi-voxel/vengi/commits/">github</a>.</p>
+<p>Join our <a href="https://vengi-voxel.de/discord">discord server</a>.</p>
+<p>See <a href="https://vengi-voxel.github.io/vengi/">the documentation</a> for further details.</p>
+<p>Known <a href="https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug">issues</a>.</p>
+<h2 id="050-2026-xx-xx">0.5.0 (2026-XX-XX)</h2>
+<p>General:</p>
+<ul>
+<li>Increased <code>vengi</code> binary file version</li>
+<li>Added openstreetmap <code>osm.json</code> format support</li>
+<li>Allow to specify the target colors in a palette for voxelization and other RGB based formats (<code>voxformat_targetcolors</code>)</li>
+<li>Fixed <code>voxformat_voxelizemode</code> <code>1</code> missing voxels</li>
+<li>Speed up the binary mesher usage</li>
+<li>Fixed invalid triangle handling in some <code>gltf</code> files</li>
+<li>Fixed quaternion lua binding issues</li>
+<li>Improved pivot rounding errors when merging nodes</li>
+<li>Extended <code>animate.lua</code> to work with more different character scenes</li>
+<li>Fixed rotation import for <code>gltf</code> files</li>
+<li>Improved <a href="../Configuration/">cvar</a> handling</li>
+<li>Added a few new <a href="../LUAScript/">lua</a> scripts</li>
+<li>Fixed crash when loading large <code>vengi</code> scenes</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added IKConstraint editing and inverse kinematic solver</li>
+<li>Fixed scroll to active node in scene graph panel</li>
+<li>Auto enable a newly created animation</li>
+<li>Fixed pivot change not taking local child transform into acount</li>
+<li>Improved locked axis handling</li>
+<li>Fixed locked plane position change</li>
+<li>Fixed mirror plane rendering</li>
+<li>Improved ui integration tests</li>
+<li>Fixed a stack overflow on mac</li>
+<li>Fixed invalid memento state handling with undoing mirrored actions</li>
+<li>Allow to record a session and play back later or share with others</li>
+<li>Fixed a few missing network messages on undo/redo</li>
+<li>Converted options menu to options dialog</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Extend <code>--json</code> options</li>
+</ul>
+<h2 id="040-2026-02-08">0.4.0 (2026-02-08)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed invalid scaling for fbx imports</li>
+<li>Fixed a lua integration bug for Windows</li>
+<li>Improved palette name support</li>
+<li>Converted the tree generators into lua scripts</li>
+<li>Fixed issues regarding <code>vxl</code>/<code>hva</code> animations (Command &amp; Conquer)</li>
+<li>Added pipe support to send commands from external tools (<code>app_pipe</code> needs to be set <code>true</code>)</li>
+<li>Added new greedy texture mesher that uses a texture atlas to reduce vertex counts</li>
+<li>Added filtering to the cvars dialog</li>
+<li>Added keyboard layout detection</li>
+<li>Improved mime-type handling</li>
+<li>Added support for Axiom Blueprints Minecraft Schematics (<code>bp</code>)</li>
+<li>Optimized volume cropping</li>
+<li>Implement scaling of volumes by fractional values and handle it also in baking transform matrices</li>
+<li>Split <code>vox_meshmode</code> to <code>voxformat_meshmode</code></li>
+<li>Improved argument handling for console commands</li>
+<li>Added CityGML support (<code>gml</code>)</li>
+<li>VoxelMax (<code>vmaxb</code>) loading support fixed</li>
+<li>Improved the quake <code>map</code> format support (still wip though)</li>
+<li>Fixed network issues on Windows</li>
+<li>Improved auto generated lua docs</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Renamed source and target to input and output in the ui to match the command line parameters</li>
+<li>Use <code>voxformat_meshmode</code> if you previously used <code>vox_meshmode</code></li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Bump network protocol version - added two missing messages</li>
+<li>Implemented unselecting and intersections</li>
+<li>Fixed input fields for xyz values in the ui</li>
+<li>Optimized some ui panels</li>
+<li>Optimized node transform calculation</li>
+<li>Improved the L-System editing support and added templates</li>
+<li>Fixed potential memento state corruption</li>
+<li>Added more features to the palette panel</li>
+<li>Fixed normal rendering with binary mesher</li>
+<li>Implemented editing of normals and improved the normal palette panel</li>
+<li>Improved autonormals</li>
+<li>Improved camera movement and allow <code>wasd</code>-based movement in both rotation modes</li>
+<li>Improved game mode settings and allow to tweak more properties</li>
+<li>Fixed broken scrolling in the animation timeline</li>
+<li>Fixed switching animations (cache invalidation was missing)</li>
+<li>Removed tree panel</li>
+<li>Fixed multi color selection in palette panel after sorting the colors</li>
+<li>Added transform baking</li>
+<li>Added offline help markdown to a new panel</li>
+<li>Let the default normal palette also depend on the view mode (the game type that is selected)</li>
+<li>Refactored the selection handling</li>
+<li>Allow to re-configure key bindings in the options</li>
+<li>Added MCP server</li>
+<li>Fixed a few high dpi issues</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Fixed missing <code>--angles</code> radians conversion</li>
+<li>Fixed missing transform handling</li>
+</ul>
+<h2 id="030-2025-11-29">0.3.0 (2025-11-29)</h2>
+<p>General:</p>
+<ul>
+<li>Allow one to export <code>ply</code> vertex positions as integers when <code>voxformat_transform_mesh</code> is set to <code>false</code> and no scale is applied</li>
+<li>Fixed hollowing in some situations</li>
+<li>Fixed a few <code>vxl</code> (Tiberian sun) issues</li>
+<li>Added spritestack write support</li>
+<li>Load a few more world properties for the blip/cubzh base64 encoded world files</li>
+<li>Use own filesystem abstraction for gltf files</li>
+<li>Implemented missing easing functions</li>
+<li>Extended blockbench format support regarding external textures</li>
+<li>Allow one to put rotations into the AceOfSpades <code>vxl</code> export (no scaling yet)</li>
+<li>Performance optimizations for stuff like rotate on axis</li>
+<li>Added support for loading the palette from animatoon files</li>
+<li>Added <code>clouds.lua</code> to generate parameterized clouds</li>
+<li>Fixed a few culling issues</li>
+<li>Fixed debian/ubuntu/mint mimetype errors</li>
+<li>Added <code>palette:size()</code> to lua bindings</li>
+<li>New lua script <code>palette-brighten</code></li>
+<li>Fixed animation interpolation handling</li>
+<li>Added anivoxel <code>voxa</code> support</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Improved the game mode movement (stair handling)</li>
+<li>Fixed physics for nodes that have a pivot applied</li>
+<li>Allow editing in game mode, too (there were key binding conflicts before)</li>
+<li>Stamp brush can get an offset applied which is useful when e.g. placing trees</li>
+<li>Line brush got a continuous mode where the last end is the next start of a line</li>
+<li>Line brush got support for a stipple pattern</li>
+<li>Fixed unclear stamp volume size checks</li>
+<li>The cursor details can now also measure the distance from the reference position (value 3 in the ui)</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li><code>--image</code> (and <code>--isometric</code>) is now also able to write <code>png</code> files</li>
+<li><code>--image</code> is now executed after all other steps are executed (so script output can directly go to images)</li>
+</ul>
+<p>PalConvert:</p>
+<ul>
+<li>Allow to load more than 256 colors for palettes</li>
+<li>Added <code>--quantize</code> option to produce 8 bit palettes</li>
+<li>Added <code>--optimize</code> option that removes duplicates and fully transparent colors</li>
+</ul>
+<h2 id="021-2025-10-24">0.2.1 (2025-10-24)</h2>
+<p>General:</p>
+<ul>
+<li>Minor bugfix release</li>
+</ul>
+<h2 id="020-2025-10-24">0.2.0 (2025-10-24)</h2>
+<p>General:</p>
+<ul>
+<li>Added missing ascii <code>fbx</code> header for saving and support texture coordinates and thumbnails for loading</li>
+<li>Support <code>obj</code> point clouds</li>
+<li>Added cvars <code>voxformat_imagesliceoffsetaxis</code> and <code>voxformat_imagesliceoffset</code> to import spritestacks via Aseprite <code>asprite</code> files</li>
+<li>Fixed symlink handling on linux</li>
+<li>Reduced memory usage</li>
+<li>Optimized palette color mappings</li>
+<li>Added <code>meshoptimizer</code> simplification support for mesh imports (cvar <code>voxformat_mesh_simplify</code>)</li>
+<li>Improved split-by-objects for hollowed objects</li>
+<li>Bump <code>vengi</code> format version</li>
+<li>Improved a few error messages and added missing error handling to some parts</li>
+<li>Optimized voxelization (subdividing triangles)</li>
+<li>Added support for goxel <code>txt</code> file format</li>
+<li>Added support for the veloren server chunk <code>dat</code> files</li>
+<li>Allow one to export all cvars as json</li>
+<li>Optimized loading vengi files</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Allow one to animate point and camera nodes, too</li>
+<li>Allow one to follow an animated camera to fly through a scene</li>
+<li>Fixed <code>resetcamera</code> when transforms are applied in edit mode</li>
+<li>Shared voxel editing with client/server collaboration mode</li>
+<li>Enable undo/redo for big volumes</li>
+<li>Refactored scene rendering settings dialog</li>
+<li>Improved shadow rendering</li>
+<li>Support translations and lua scripts in the web version</li>
+<li>Implemented basic physics that allows you to walk through a scene</li>
+<li>Allow one to move a node in the hierarchy but don't move it in the world</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Transfer existing thumbnails between formats (if supported)</li>
+<li>Allow isometric console output of a scene</li>
+<li>A web version is available now, too</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Added isometric thumbnail support</li>
+<li>Allow one to set sun parameters</li>
+</ul>
+<h2 id="010-2025-07-19">0.1.0 (2025-07-19)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed handling of invalid <code>jpeg</code> files</li>
+<li>Added new normal palette from slab6</li>
+<li>Reduced overall memory usage</li>
+<li>Improved format detection for the file dialog</li>
+<li>New lua script <code>shadow</code> to generate shadows for a scene</li>
+<li>General performance improvements</li>
+<li>Minecraft skin loading and saving</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>New single-non-contiguous voxel placing mode in the brushes</li>
+<li>Added new view modes for Minecraft skins and Ace Of Spades</li>
+</ul>
+<p>PalConvert:</p>
+<ul>
+<li>Allow one to use the built-in as well as lospec palettes from the command line, too</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added <code>--image</code> to voxconvert to print the loaded scene to the colored text console (<a href="https://asciinema.org/a/724333">showcase</a>)</li>
+<li>Thumbnails for formats that support them can now be generated and added to the files</li>
+</ul>
+<h2 id="0038-2025-06-01">0.0.38 (2025-06-01)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed an off-by-one bug in the marching cubes extractor</li>
+<li>Fixed outline rendering in scene mode</li>
+<li>Fixed <code>vxl</code> slab5 loading</li>
+<li>Support <code>binvox</code> version 2 and 3 (unofficial)</li>
+<li>Allow one to save all three versions of <code>binvox</code> files (cvar <code>voxformat_binvoxversion</code>)</li>
+<li>Improved DirectStateAccess (DSA) support for OpenGL</li>
+<li>Quite a few performance improvements</li>
+<li>Support colors on apple and windows terminals, too</li>
+<li>Added lua binding for genland algorithm. See the new <code>g_algorithm.genland</code> function</li>
+<li>Allow one to save scenes as heightmaps (<code>png</code>). See the new <code>voxformat_imagesavetype</code> cvar</li>
+<li>Added support for writing Luanti/Minecraft <code>mts</code> files</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed directory import on Windows systems</li>
+<li>Fixed missing ambient occlusion for the binary mesher mode</li>
+<li>Fixed bloom rendering artifacts</li>
+<li>Fixed material changes not being applied to the palette</li>
+</ul>
+<h2 id="0037-2025-05-12">0.0.37 (2025-05-12)</h2>
+<p>General:</p>
+<ul>
+<li>Added new minecraft block to color mappings</li>
+<li>Improved bash completion scripts</li>
+<li>Fixed <code>vmax.zip</code> loading</li>
+<li>Improved VoxelMax scene loading</li>
+<li>Improved color mapping for minecraft blocks with prefixes</li>
+<li>Fixed some dpi issues with a few dialog sizes</li>
+<li>Added support for Avoyd material template (<code>avmt</code>) files</li>
+<li>Fixed new binary mesher for negative region offsets</li>
+<li>New lua scripts</li>
+<li>Added lua script description</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added new dialog to show the minecraft block to color mappings</li>
+<li>Extended palette function (white-balancing and constrast-stretching)</li>
+<li>Fixed showing a few keybinding hints</li>
+<li>Refactored the node inspector</li>
+<li>Improved the camera panel</li>
+<li>Allow one to change the cvar <code>ve_regionsizes</code> from within the UI</li>
+<li>Fixed crash in memento panel tooltip handling</li>
+<li>Optimized lua script panel</li>
+</ul>
+<p>PalConvert:</p>
+<ul>
+<li>Print palette and color names</li>
+</ul>
+<h2 id="0036-2025-04-21">0.0.36 (2025-04-21)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed emit value handling for palettes</li>
+<li>Fixed <code>KHR_materials_pbrSpecularGlossiness</code> handling for <code>gltf</code> exports</li>
+<li>Added new lua script to create newel stairs</li>
+<li>Fixed missing animation transfer from one scenegraph into other one</li>
+<li>Updated/Added SDL3 support (both SDL2 and SDL3 are supported now)</li>
+<li>Added Adobe ColorBook (<code>acb</code>) palette support</li>
+<li>Fixed <code>xraw</code> palette issue with color slot 0</li>
+<li>Added <code>schematic</code> write support (Minecraft)</li>
+<li>Fixed Adobe Swatch Exchange (<code>ase</code>) palette loading issue</li>
+<li>Use a faster binary-greedy-mesher</li>
+<li>Optimizations</li>
+<li>Fixed node merging with pivots</li>
+<li>Allow one to load other palette image dimensions than 1x256</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Implemented selection invert</li>
+<li>Added palette options to file dialog</li>
+<li>Allow one to execute palette actions on multiple colors</li>
+<li>Allow one to reduce multiple colors at once</li>
+<li>Fixed missing font glyphs in some cases</li>
+</ul>
+<p>PalConvert:</p>
+<ul>
+<li>Added a new tool for dealing with palettes</li>
+</ul>
+<h2 id="0035-2025-02-09">0.0.35 (2025-02-09)</h2>
+<p>General:</p>
+<ul>
+<li>Added support for BenVoxel <code>ben</code> and <code>ben.json</code> format</li>
+<li>Added support for loading vertex colors for <code>3ds</code></li>
+<li>New cvar to define additional texture search paths for voxelization (<code>voxformat_texturepath</code>)</li>
+<li>Fixed an error with loading magicavoxel files without layers</li>
+<li>New lua script to remap colors</li>
+<li>Prevent files from being opened twice (windows doesn't like this)</li>
+<li>Fixed unicode related errors on windows for path handling</li>
+<li>Fixed case-sensitivity in pattern matching. We couldn't find files that had upper-case extensions</li>
+<li>Implemented symlink handling on windows</li>
+<li>Added public domain Ace Of Spades map generator code</li>
+<li>Added new cvar <code>palformat_maxsize</code> to control the max image size for palette quantization</li>
+<li>Added new cvar <code>voxformat_imageheightmapminheight</code> to control the minimum size during a heightmap import</li>
+<li>Fixed handling of <code>gltf</code> embedded images</li>
+<li>Fixed <code>png</code> import palette handling</li>
+<li>Fixed issues with <code>thing</code> format</li>
+<li>Fixed issues with <code>vxl</code> format</li>
+<li>Added support for loading quake <code>map</code> files (but this is still work-in-progress)</li>
+<li>Added new blocks to <code>sment</code> StarMade palette</li>
+<li>Added new lua script <code>flatten</code></li>
+<li>Fixed issue with auto selecting files in the file dialog if the options popup is visible</li>
+<li>Added support for KenneyShape <code>kenshape</code> format</li>
+<li>Added save support for Godot <code>escn</code> scene format</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Removed the file type selection for source and target files in the ui</li>
+<li>Added script support to the ui</li>
+<li><code>--usage</code> shows lua script details now</li>
+<li>Removed <code>--slice</code> (see <code>png</code> format)</li>
+<li>Allow one to specify multiple <code>--script</code> parameters</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added the possibility to render a plane to the viewport for easier orientation</li>
+<li>Show the normals in scene mode, too</li>
+<li>Allow one to edit models in-place in edit mode</li>
+</ul>
+<h2 id="0034-2024-11-14">0.0.34 (2024-11-14)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed invalid uv coordinate handling when importing meshes to voxelize them</li>
+<li>Added support for paint.net palettes</li>
+<li>Added support for Adobe Photoshop ACO palettes</li>
+<li>Added support for <code>bbmodel</code> Blockbench format</li>
+<li>Added support for <code>vxb</code> Sandbox Block format</li>
+<li>Fixed a few errors in the lua bindings of the <code>g_import</code> global</li>
+<li>Extended the lua api (<code>g_sys</code>, <code>g_io</code>)</li>
+<li>Fixed nameless, embedded textures in <code>glb</code></li>
+<li>Fixed off-by-one in <code>voxformat_voxelizemode</code> <code>1</code></li>
+<li>Fixed missing axis flip for <code>md2</code> scale and translate value imports</li>
+<li>Added support for Quake1 <code>mdl</code> files</li>
+<li>Added support for exporting and importing to and from <code>png</code> slices</li>
+<li>Added support for Autodesk <code>3ds</code> files</li>
+<li>Support for loading normals for voxelization (mesh formats) and for voxel formats (<code>vxl</code>)</li>
+<li>Fixed <code>vxl</code> saving for negative coordinates</li>
+<li>Split file dialog options into a new separated dialog</li>
+<li>Added new lua scripts (game of life, mandelbulb, smooth)</li>
+<li>Added support for Pixelorama palette</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Removed <code>--image-as-XXX</code> parameters (now part of the <code>png</code> format)</li>
+<li>Removed <code>--colored-heightmap</code> (this is auto-detected in the <code>png</code> format now)</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Allow one to change the local directory for the asset panel</li>
+<li>Add more online sources to the asset panel</li>
+<li>Added support to apply a checkboard pattern to your voxels just for rendering</li>
+<li>Improved handling for max allowed voxels</li>
+<li>Disable undo/redo for model changes if you exceed a max suggested model size</li>
+<li>Disable autosaves for model changes if you exceed a max suggested model size</li>
+<li>New brush type to project textures into sub areas or on surfaces</li>
+<li>Added an FPS option for the animation timeline</li>
+<li>Added normal palette panel</li>
+<li>Fixed missing memento group for merging nodes</li>
+<li>Improved undo/redo for lua script changes on the scenegraph</li>
+<li>Added a slice mode to only show a particular height level of your volume</li>
+<li>Don't place invalid colored voxels in group lock mode</li>
+<li>Render forward direction in the viewport</li>
+</ul>
+<h2 id="0033-2024-08-05">0.0.33 (2024-08-05)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed invalid log levels</li>
+<li>Added a new node type for named points</li>
+<li>Improved <code>3zh</code> format support</li>
+<li>Added support for <code>ase</code> and <code>aseprite</code> format</li>
+<li>Added cvar <code>voxformat_emptypaletteindex</code></li>
+<li>Create <em>walk</em> and <em>jump</em> animations with the new <code>animate.lua</code> script</li>
+<li>New lua script and bindings (<code>imageasvolume.lua</code>) for importing 2d images with depth</li>
+<li>Added <code>v3b</code> format support (compressed <code>v3a</code> file)</li>
+<li>Translation improvements</li>
+<li>Fixed mesh extraction at chunk borders in some situations</li>
+<li>Added support for libjpeg to speed up save times (and thus avi creation times)</li>
+<li>Improved Windows file attribute handling</li>
+<li><code>writeString</code> lua stream binding has a new default value - check the docs</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added a basic UI for voxconvert</li>
+<li>Removed <code>--dump</code> and added <code>--json &lt;full&gt;</code> to generate a scene graph structure</li>
+</ul>
+<p>VoxBrowser:</p>
+<ul>
+<li>Removed standalone application - it's integrated in voxedit now</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Improved brush support</li>
+<li>Fixed loading voxel collection assets</li>
+<li>Gradient paint brush mode</li>
+<li>Fixed invalid voxel erasing in plane brush</li>
+<li>Extrude with preview (plane brush)</li>
+<li>Fixed a few palette panel issues when re-ordering colors</li>
+<li>Improved the workflow to import a new palette</li>
+</ul>
+<h2 id="0032-2024-05-29">0.0.32 (2024-05-29)</h2>
+<p>General:</p>
+<ul>
+<li>Add meshoptimizer support (new cvar <code>voxformat_optimize</code>)</li>
+<li>Fixed missing region shift for <code>vxl</code> (Command and Conquer)</li>
+<li>Fixed MagicaVoxel <code>vox</code> file loading for files that don't contain instances, but only models</li>
+<li>Added <code>vxc</code> thumbnail support</li>
+<li>Fixed a translation related crash for all apps on windows</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Converted the text-voxel-rendering into a new brush</li>
+<li>Fixed undo node transform changes as first action</li>
+</ul>
+<h2 id="0031-2024-05-09">0.0.31 (2024-05-09)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed memory leak in <code>fbx</code> loading</li>
+<li>Added support for starmade templates <code>smtpl</code> format</li>
+<li>Fixed merging of nodes when pivots are used</li>
+<li>Added support for <code>litematic</code> Minecraft</li>
+<li>Extended supported Minecraft materials</li>
+<li>Extended lua bindings for key frames and transforms</li>
+<li>Extended lua bindings for http requests</li>
+<li>Fixed face culling for negative scale values</li>
+<li>Added command and cvar dialogs to the help menus</li>
+<li>Added cubzh v5 (older version) support (<code>3zh</code>)</li>
+<li>Added support for writing uncompressed qubicle <code>qb</code> files</li>
+<li>Fixed qubicle <code>qb</code> version number</li>
+<li>Added basic support for rooms.xyz <code>thing</code> file support</li>
+<li>Optimized file dialog for large directories</li>
+<li>Added translation support (<code>po</code> files)</li>
+<li>Fixed error in up-scaling volumes</li>
+<li>Fixed x-axis flip for cubzh <code>3zh</code> files</li>
+<li>Added cvar <code>voxformat_rgbweightedaverage</code> to control the color contributions for a triangle</li>
+<li>Added the ability to upload crash dumps</li>
+<li>Improved support for reference nodes in a lot of formats</li>
+<li>Improved pivot support in a lot of formats</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added zip archive support for <code>--input</code></li>
+<li>Added the ability to export into slices with <code>--slice</code> when <code>--output</code> is a png file</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added support for browsing the remote voxel collections to the asset panel</li>
+<li>Added <code>modelmerge all</code> parameter to merge all nodes at once</li>
+<li>Added <code>presentation</code> command to cycle through all models in a scene</li>
+<li>Improved position panel to edit transforms</li>
+<li>Improved start-up times</li>
+<li>Pasting from a different palette will search the closest colors</li>
+<li>Fixed off-by-one error in <code>ve_regionsizes</code> cvar handling</li>
+<li>Re-enabled the yocto-pathtracer panels again</li>
+<li>Moved some ui elements into other panels</li>
+<li>Improved stamp brush features</li>
+<li>Fixed brush regression in combination with the override mode</li>
+<li>Added pathfinder brush preview</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Fixed logic error in skipping camera nodes</li>
+</ul>
+<p>Packaging:</p>
+<ul>
+<li>Renamed AppStream package to <code>io.github.vengi_voxel.vengi.voxedit</code> for DBUS compatibility</li>
+</ul>
+<h2 id="0030-2024-03-23">0.0.30 (2024-03-23)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed material saving and loading for vengi format</li>
+<li>Fixed off-by-one in palette material property handling</li>
+<li>Fixed extrude on region boundaries</li>
+<li>Added dialogs to recover from previous crash by resetting all config values</li>
+</ul>
+<p>VoxBrowser:</p>
+<ul>
+<li>Optimizations for huge voxel collections</li>
+<li>Fixed some download url assembling errors for some online collections</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed segfault when activating simplified mode</li>
+<li>Fixed spanning AABB</li>
+<li>Fixed crash on deleting reference nodes after duplication</li>
+<li>Fixed pivot handling issue for reference nodes</li>
+<li>Spurious reference nodes were visible in edit mode</li>
+<li>Fixed a few memento state handling errors in terms of key frames and pivot points</li>
+<li>Fixed memento state handling errors for reference nodes</li>
+<li>Disable a few of the new panels in simple mode again</li>
+<li>Improved scene mode node selection</li>
+</ul>
+<h2 id="0029-2024-03-15">0.0.29 (2024-03-15)</h2>
+<p>General:</p>
+<ul>
+<li>Expose <code>hollow()</code> to lua bindings</li>
+<li>Add lua sanity checker to the build pipelines</li>
+<li>Fixed randomness in lua script <code>similarcolor.lua</code></li>
+<li>Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates</li>
+<li>Fixed <code>vxl/hva</code> loading and saving</li>
+<li>Fixed missing <code>pcubes</code> write support</li>
+<li>Support palette <a href="../Material/">materials</a></li>
+<li>Optimized qubicle <code>QB</code> color quantization</li>
+<li>Import magicavoxel materials</li>
+<li>Improved <code>GLTF</code> material support</li>
+<li>Made the smooth normals for the cubic mesh extractor optional (<code>voxformat_withnormals</code>)</li>
+<li>Improved texture coordinates for mesh exports</li>
+<li>Improved bash completion script creation</li>
+<li>Improved scene camera centering</li>
+<li>Fixed Anima Toon (<code>scn</code>) volume loading support</li>
+<li>Palette optimizations</li>
+<li>Improved StarMade <code>sment</code>, <code>smd2</code> and <code>smd3</code> support</li>
+</ul>
+<p>VoxBrowser:</p>
+<ul>
+<li>New tool to browse voxel collections</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added <code>--print-formats</code> parameter to print all formats as json the ease the parsing for third party tools</li>
+<li>Support multiple <code>--output</code> parameters to write one (or more) input files into different formats in one step</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Auto create key frames when transform is modified via gizmo, too</li>
+<li>Fixed an error in interpolating between the key frames</li>
+<li>Fixed an error while trying to remove unused colors from a re-sorted palette</li>
+<li>Fixed missing outline for dark voxels</li>
+<li>Update paint features</li>
+<li>Added more features to the palette panel (e.g. duplicating and removing colors)</li>
+<li>Allow one to bind the left- and right-scrolling mouse wheel</li>
+<li>Improved draw color brush darken/brighten to create new colors if needed (and possible)</li>
+<li>Fixed voxel placing on using the camera view manipulator</li>
+<li>Fixed grid culling for orthographic projections</li>
+<li>Selection in ortho fixed side view spans the whole size of the volume</li>
+<li>Updated key bindings</li>
+<li>Added popup for renaming a node</li>
+<li>Fixed a few palette panel issues for sorting and re-ordering</li>
+<li>Improved grid rendering</li>
+<li>Added new models to the new-scene-dialog</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Don't render camera frustums for the thumbnails</li>
+<li>Allow one to change the camera mode (top, left, right, ...)</li>
+</ul>
+<h2 id="0028-2024-01-17">0.0.28 (2024-01-17)</h2>
+<blockquote>
+<p>moved the github project into an organization named <strong>vengi-voxel</strong> - the url changed to <a href="https://github.com/vengi-voxel/vengi">https://github.com/vengi-voxel/vengi</a>.</p>
+</blockquote>
+<p>General:</p>
+<ul>
+<li>Improved SLAB5/6 support of <code>kvx</code>, <code>kv6</code>, <code>kfa</code> and <code>vox</code></li>
+<li>Don't fill the inner voxels of the SLAB5/6 models anymore</li>
+<li>Improved palette support for plane and volume import</li>
+<li>Fixed an error in de-duplicating Magicavoxel models</li>
+<li>Allow one to save/convert only visible nodes</li>
+<li><code>ply</code> format got support for converting polygons into triangles</li>
+<li>Show the full application name as window title</li>
+<li>Improved esc handling for menus and popups</li>
+<li>Added support for particube <code>pcubes</code> and <code>3zh</code> support</li>
+<li>Added support for Photoshop <code>ase</code> palette</li>
+<li>Added support for Paintshop Pro (JASC) <code>pal</code> palette</li>
+<li>Extended support for the Gimp <code>gpl</code> palette format to support the Aseprite alpha channel extension</li>
+<li>Added support to collect anonymous metrics (disabled by default)</li>
+<li>Added support to align all models in a scene - useful for rendering all models for an overview</li>
+<li>Extended lua bindings</li>
+<li>Added automatic bash and zsh completion generation for all apps. Just use e.g. <code>vengi-voxconvert --completion bash</code> (or <code>zsh</code>)</li>
+<li>Calculate normals for the cubic mesh extractor, too</li>
+<li>Added support for cubzh <code>b64</code> maps</li>
+<li>Fixed endian issue on big endian machines in <code>gltf</code> loading</li>
+<li>Fixed non-flipped uv coordinates for some <code>gltf</code> files</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Improved <code>--export-models</code> to work with the output format given by <code>--output</code></li>
+<li>Added <code>--filter-property</code> to filter by node property <code>key&lt;:value&gt;</code></li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added alternative split-object implementation and expose it to the editor tool panel</li>
+<li>Fixed split dialog appearing too late</li>
+<li>Added shader for marching cubes</li>
+<li>Fixed selection handling</li>
+<li>Added tip of the day dialog</li>
+<li>Resize to selection</li>
+<li>Fixed palette panel issue if you changed the order of colors</li>
+<li>Added more templates to the new-scene-dialog</li>
+<li>Made the new-scene-dialog scrollable</li>
+<li>Allow one to change the transform of a node with updating the children</li>
+<li>Fixed a few crashes</li>
+<li>Improved gizmo settings panel</li>
+<li>Added the console next to the animation timeline panel</li>
+<li>Improved color themes (especially the light theme)</li>
+<li>Only show the brush panel if in edit mode</li>
+<li>Converted the script brush back to a normal panel</li>
+<li>Automatically reference all child nodes when creating a new reference</li>
+<li>Allow one to switch between cubes and marching cubes rendering in the editor</li>
+<li>Added <code>clear</code> and <code>fill</code> commands</li>
+<li>Preview for the line brush</li>
+<li>Allow one to render the bones</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Add a few more command line options to control the camera</li>
+</ul>
+<h2 id="0027-2023-09-19">0.0.27 (2023-09-19)</h2>
+<p>Breaking changes:</p>
+<ul>
+<li>Renamed globals for lua scripts. Added a <code>g_</code> prefix to them. You have to adopt your scripts
+     to work with the latest version with vengi (if you use them):<ul>
+<li><code>scenegraph</code> is now <code>g_scenegraph</code></li>
+<li><code>palettemgr</code> is now <code>g_palette</code></li>
+<li><code>noise</code> is now <code>g_noise</code></li>
+<li><code>cmd</code> is now <code>g_cmd</code></li>
+<li><code>var</code> is now <code>g_var</code></li>
+<li><code>XvecX</code> is now <code>g_XvecX</code> (<code>ivec3</code> is for example <code>g_ivec3</code>)</li>
+</ul>
+</li>
+</ul>
+<p>General:</p>
+<ul>
+<li>Added cvar <code>voxformat_pointcloudsize</code> for point cloud formats</li>
+<li>Added Polygon File Format (<code>ply</code>) mesh and point cloud support (ascii and binary)</li>
+<li>Fixed regression with <code>GLTF</code> exports</li>
+<li>Added a new lua script to slice a node into smaller pieces</li>
+<li>Expose shape generators to lua</li>
+<li>Fixed color intensity handling for <code>kvx</code> files</li>
+<li>Added write support for <code>kvx</code> format (used in e.g. voxel doom and eduke3d)</li>
+<li>Added support for Voxel3D <code>v3a</code> format</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed regression about not rendering the shape volumes anymore</li>
+<li>Implemented scene graph panel drag and drop popup</li>
+<li>Added brush support and new editing features</li>
+<li>Fixed spurious crashes for windows</li>
+</ul>
+<h2 id="0026-2023-08-13">0.0.26 (2023-08-13)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed pivot handling in <code>VXR</code> format</li>
+<li>Allow one to export the <code>GLTF</code> vertex colors as byte values</li>
+<li>Added NeuQuant color quantization algorithm</li>
+<li>Optimized <code>GLTF</code> and <code>MD2</code> import</li>
+<li>Fixed Quake1 texture handling</li>
+<li>General optimizations</li>
+<li>Added a new voxelization algorithm and a cvar to use it (set <code>voxformat_voxelizemode</code> to 1)</li>
+<li>Fixed issues with importing images with a depth-map</li>
+<li>Fixed regression for reading minecraft voxel data</li>
+<li>Added support for loading Lospec palettes</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Improved shape handling a lot</li>
+<li>Added (disabled) pathtracer support (Yocto/GL)</li>
+<li>Fixed rendering order of overlapping bounding boxes for the active node</li>
+<li>Added warning popup to split volumes into smaller pieces</li>
+</ul>
+<h2 id="0025-2023-07-28">0.0.25 (2023-07-28)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed invalid x axis handling for Sandbox <code>VXM</code> format</li>
+<li>Fixed pivot handling in <code>VXR</code>/<code>VXA</code> format</li>
+<li>Support model references to build a complex scene</li>
+<li>Extended <code>GLTF</code> support to animation import and export as well as normal export</li>
+<li>Fixed missing base color support for <code>GLTF</code></li>
+<li>Support for some parts of VoxelMax format</li>
+<li>Fixed Sandbox <code>VXA</code> v3 support</li>
+<li>Fixed volume rotation issues</li>
+<li>Fixed volume merging issues</li>
+<li>Added Quake2 Model (<code>md2</code>) support</li>
+<li>Removed cvar <code>voxformat_marchingcubes</code> and replaced with <code>voxel_meshmode</code> (set to <code>1</code> to use marching cubes)</li>
+<li>Added new lua script <code>gradient.lua</code></li>
+<li>Improved <code>csm</code> and <code>nvm</code> format support</li>
+<li>Added lua script for generating mazes</li>
+<li>Added the ability to easily scale a volume up</li>
+<li>Unified naming of commands and parameters (<code>layer</code> is <code>model</code> now, ...)</li>
+<li>Added VoxelBuilder (<code>vbx</code>) support</li>
+<li>Fixed missing group transform handling for MagicaVoxel <code>vox</code> files</li>
+<li>Added support for MagicaVoxel <code>xraw</code> format</li>
+<li>Added alpha support for MagicaVoxel materials</li>
+<li>Added support for loading Sandbox <code>VXM</code> v3</li>
+<li>Added new lua script and extended lua api to replace palettes, resize volumes and move voxels</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Fixed <code>--input</code> handling if the value is a directory</li>
+<li>Added option <code>--wildcard</code> to specify a wildcard in cases where the <code>--input</code> value is a directory</li>
+<li>Added <code>--surface-only</code> parameter that removes any non surface voxel.</li>
+<li>Added <code>--dump-mesh</code> to also show mesh details (like vertex count).</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Allow one to export selections only</li>
+<li>Started to support different keymaps (blender, qubicle, magicavoxel and vengi own)</li>
+<li>Added support for multiple animations in one scene</li>
+<li>Allow one to duplicate all scene graph nodes</li>
+<li>(Re-)implemented WASD controls in camera eye mode</li>
+<li>Fixed copy&amp;paste errors with multiple selections</li>
+<li>Updated new scene dialog to include the templates</li>
+<li>Improved font quality</li>
+<li>Fixed a few crashes</li>
+<li>Added hollow functionality to remove invisible voxels</li>
+<li>Preview of modifier shapes in edit mode</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Improved camera placement</li>
+<li>Fixed threading issue with the mesh extraction for the renderer that could lead to black thumbnails</li>
+<li>Don't render cameras for the thumbnails</li>
+</ul>
+<h2 id="0024-2023-03-12">0.0.24 (2023-03-12)</h2>
+<p>General:</p>
+<ul>
+<li>Support using <code>palette</code> cvar as a destination palette again by setting <code>voxformat_createpalette</code> to <code>false</code></li>
+<li>Added new image formats from SOIL2 (<code>DDS</code>, <code>PKM</code>, <code>PVR</code>)</li>
+<li>Added <code>FBX</code> read support</li>
+<li>Improved texture lookup for mesh formats</li>
+<li>Added multiple color reduction algorithms and expose them to the user by the cvar <code>core_colorreduction</code></li>
+<li>Fixed several issues with AceOfSpades <code>vxl</code> format - switched to libvxl for loading and saving</li>
+<li>Fixed splitting volumes even if not needed (off-by-one error)</li>
+<li>Fixed multi-monitor support</li>
+<li>Fixed colors in the tree generator</li>
+<li>Improved the key binding handling and made it more flexible</li>
+<li>Added support for loading minetest <code>mts</code> files</li>
+<li>Fixed Command&amp;Conquer <code>vxl</code> format writing issue</li>
+<li>Added own format with the extension <code>vengi</code></li>
+<li>Added basic alpha support</li>
+<li>Fixed saving the keybindings with multi click</li>
+<li>Improved keybinding and ui setting saving (added a version)</li>
+<li>Fixed invalid transform on re-parenting a node</li>
+<li>Refactored the file dialog</li>
+<li>Fixed issue in saving MagicaVoxel <code>vox</code> files under some special conditions</li>
+<li>Implemented basic transparency support for voxels</li>
+<li>Fixed invalid clamping for uv based pixel lookup (mesh imports)</li>
+<li>Update renderer to only use uniform buffers</li>
+<li>Fixed rendering issue for windows users</li>
+<li>Fixed fullscreen issues for windows users</li>
+<li>Extended lua script bindings to Allow one to render text as voxels</li>
+<li>Support GLES3 rendering</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Show supported palette and image formats in help screen (<code>--help</code>)</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Disable animation window if there are no animations to show</li>
+<li>Allow one to show the color picker in the palette panel</li>
+<li>Reworked the modifiers panel</li>
+<li>Made undo/redo more visible</li>
+<li>Switched the camera modifier to the right side of the viewport</li>
+<li>Fixed diffuse and ambient color settings mix-up</li>
+<li>Merged layer and scene graph panel into one</li>
+<li>Several gizmo related fixes and improvements</li>
+<li>Added simple UI mode which removes some panels</li>
+<li>Fixed a few memento (undo/redo) related issues</li>
+<li>Added templates to the menu (<code>robo</code>, <code>chess</code>, <code>head</code> and <code>chr_knight</code>)</li>
+<li>Allow one to control the amount of viewports</li>
+<li>Allow one to define pre-defined region sizes (see <code>ve_regionsizes</code> cvar)</li>
+<li>Some ui actions are only available in edit mode</li>
+<li>Edit mode has support for the gizmo now - you can shift the volume boundaries</li>
+<li>Highlight copy&amp;paste volume region</li>
+<li>Visually disable some buttons if they won't work in the current mode anyway</li>
+<li>Don't execute actions for hidden nodes</li>
+<li>New keybindings</li>
+<li>Allow one to sort the palette colors by hue, saturation or brightness</li>
+<li>Allow one to select and drag keyframes in the animation timeline</li>
+<li>Export animations as <code>AVI</code></li>
+<li>Allow one to import a whole directory into a scene</li>
+<li>Allow one to select all node types in the scene graph panel</li>
+<li>Allow one to edit node properties</li>
+<li>Added voxel cursor tooltips about the position in the volume</li>
+<li>WASM/HTML5 port</li>
+</ul>
+<h2 id="0023-2022-12-17">0.0.23 (2022-12-17)</h2>
+<p>General:</p>
+<ul>
+<li>Improved big endian support for voxel formats</li>
+<li>Improved <code>VXL</code> format default palette support</li>
+<li>Improved <code>QBCL</code> scene graph support</li>
+<li>Improved voxelization vertex color support</li>
+<li>Fixed <code>VOX</code> root node handling</li>
+<li>Fixed <code>QBCL</code> and <code>GOX</code> thumbnail handling</li>
+<li>Removed unused code</li>
+<li>Added support for <code>VXA</code> v3</li>
+<li>(Re-)added support for marching cubes</li>
+<li>Fixed a bug in Ace of Spades <code>VXL</code> loading</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added support for embedding screenshots in formats that support it</li>
+<li>Allow one to export palettes</li>
+<li>Allow one to change color intensity of the whole palette</li>
+<li>Allow one to voxelize text</li>
+<li>Fixed orthographic cameras</li>
+<li>Massive performance increase when using multiple viewports</li>
+<li>More than 10 times gpu memory reduction</li>
+<li>Render the camera nodes in scene mode</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Added support for turntable rendering</li>
+</ul>
+<h2 id="0022-2022-10-31">0.0.22 (2022-10-31)</h2>
+<p>General:</p>
+<ul>
+<li>Improved <code>GLTF</code> format support</li>
+<li>Improved <code>VXL</code> format support</li>
+<li>Improved Qubicle <code>QB</code> support</li>
+<li>Fixed block id parsing for StarMade voxel models</li>
+<li>Major improvements in scene graph transform handling</li>
+<li>Improved voxelization of meshes with voxels</li>
+<li>Added <code>kv6</code> write support</li>
+<li>Added slab6 <code>vox</code> write support</li>
+<li>Fixed saving black colors for cubeworld</li>
+<li>Fixed saving palette index 0 for binvox</li>
+<li>Fixed Sandbox <code>VXM</code> palette issue</li>
+<li>Fixed <code>QBCL</code> saving</li>
+<li>Improved <code>qbt</code> scene graph support</li>
+<li>Improved <code>vox</code> saving with multiple palettes</li>
+<li>Improved the file dialog size and special dir handling</li>
+<li>Improved dark mode support</li>
+<li>Improved palette support for some formats</li>
+</ul>
+<p>Packaging:</p>
+<ul>
+<li>There is a snap package available now (<code>io.github.vengi-voxel.vengi.voxedit</code>)</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed layer color selection if you have multiple layers</li>
+<li>Fixed moving nodes in the scene graph panel</li>
+<li>Fixed transforms in scene graph mode (translation, rotation)</li>
+<li>Allow one to add group and camera nodes</li>
+<li>Don't just quit the application if you have unsaved data in your scene</li>
+</ul>
+<h2 id="0021-2022-09-05">0.0.21 (2022-09-05)</h2>
+<p>General:</p>
+<ul>
+<li>Added support for minecraft 1.13 region files</li>
+<li>Added support for loading minecraft <code>level.dat</code> (only with supported region files)</li>
+<li>Added support for WorldEdit <code>schematics</code></li>
+<li>Added support for Minecraft <code>nbt</code> files</li>
+<li>Added support for StarMade voxel models</li>
+<li>Added support for Quake1 and UFO:Alien Invasion</li>
+<li>Reduced memory footprint for voxelizing huge meshes</li>
+<li>Support wrap mode texture settings for gltf voxelization</li>
+<li>Improved sanity check for Qubicle Binary format support</li>
+<li>Fixed texture lookup error in <code>gltf</code> voxelization</li>
+<li>Extended lua vector bindings and Allow one to import heightmaps</li>
+<li>Improved the file dialog filters</li>
+<li>Added new lua scripts and extended lua integration in voxconvert</li>
+<li>Added support for RGB (<code>pal</code>) and Gimp (<code>gpl</code>) palette loading</li>
+<li>Improved the Command &amp; Conquer <code>VXL</code> format support</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed resetting the camera in eye mode</li>
+<li>New asset panel</li>
+<li>Place images, models and colors via drag and drop into the scene</li>
+<li>Extended scene mode modifiers to allow resizing the volumes (double click in scene mode)</li>
+<li>Fixed updating the locked axis plane on change</li>
+<li>Fixed scene graph node panel width</li>
+<li>Fixed mesh extraction on chunk boundaries</li>
+<li>Fixed new volume dialog input handling</li>
+<li>Fixed cursor being invisible with bloom disabled</li>
+<li>Fixed cursor face being on the wrong side of the voxel at the volume edges</li>
+<li>Fixed last opened files with spaces in their names</li>
+<li>Fixed loading files from command line again</li>
+<li>Allow one to select scene graph node from the animation timeline</li>
+<li>Fixed deleting key frames</li>
+<li>Improved adding new key frames</li>
+</ul>
+<h2 id="0020-2022-06-14">0.0.20 (2022-06-14)</h2>
+<p>General:</p>
+<ul>
+<li>Added support for minecraft <code>schematic</code></li>
+<li>Refactored and extended the lua script integration</li>
+<li>Implemented applying depth/height map to a 2d plane</li>
+<li>Added support for new magicavoxel format (animations)</li>
+<li>Preserve node hierarchy when saving <code>vxr</code></li>
+<li><code>GLTF</code> voxelization</li>
+<li>Allow one to enable certain renderer features</li>
+<li>Expose more noise functions to the lua scripts</li>
+<li>Expose more volume functions to the lua scripts</li>
+<li>Allow one to delete voxels from within a lua script</li>
+<li>Improved splitting of volumes (target volume size)</li>
+<li>Expose more region functions to the lua scripts</li>
+<li>Added more lua example scripts</li>
+<li>Improved color sampling for voxelization</li>
+<li>Started to support different palettes in one scene</li>
+<li>Fixed <code>vxc</code> support</li>
+<li>Load the palette from the source file</li>
+<li>Fixed <code>vxm</code> file path when saving <code>vxr</code></li>
+<li>Save <code>vxmc</code> v12 now</li>
+<li>Changed default ambient color and gamma values</li>
+<li>Improved osx dmg file and app bundles</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed start problems on some systems with multisampled framebuffers</li>
+<li>Allow one to drag and drop colors from the palette</li>
+<li>Change between the edit and scene mode is now bound to <code>tab</code></li>
+<li>Updated imgizmo to support clicking the view cube</li>
+<li>Cursor is no volume anymore but a plane</li>
+<li>Implemented plane filling</li>
+<li>Added extrude feature</li>
+<li>Allow one to place a single voxel</li>
+<li>Fixed keyboard input errors that made the ui unusable</li>
+<li>Don't reload the last opened file with every start</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Extended <code>--dump</code> to also show the key frames and the voxel count</li>
+<li>Removed <code>--src-palette</code> (src palette is always used)</li>
+</ul>
+<h2 id="0019-2022-03-27">0.0.19 (2022-03-27)</h2>
+<p>General:</p>
+<ul>
+<li>Replaced minecraft support with own implementation</li>
+<li>Added support for Sandbox <code>VXA</code> format (via <code>VXR</code>) and improved <code>VXR</code></li>
+<li>Allow one to change the ui colors via cvar (<code>ui_style</code>)</li>
+<li>Added bloom render support for vox and vxm</li>
+<li>Added support for loading key frames if the format supports it</li>
+<li>Improved apple support in file dialog</li>
+<li>The palette handling was refactored</li>
+<li>Allow one to save the MATL chunk in magicavoxel <code>vox</code> files</li>
+<li>Ability to scale exported mesh with different values for each axis</li>
+<li>Added stl voxelization support</li>
+<li>Allow one to modify the camera zoom min/max values</li>
+<li>Allow one to load different sizes for AoS <code>VXL</code> files</li>
+<li>Lerp the camera zooming</li>
+<li>Added support for <code>GLTF</code> export</li>
+<li>Added experimental export support for <code>FBX</code> ascii</li>
+<li>Increased the max scene graph model nodes from 256 to 1024</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added new command to fill hollows in models</li>
+<li>Fixed escape key not closing the dialogs</li>
+<li>Added support for drag and drop the nodes of the scene graph</li>
+<li>Scene graph rendering improved</li>
+<li>Removed noise panel (use the lua scripts for noise support)</li>
+<li>Fixed a lot of undo/redo cases and improved the test cases a lot</li>
+<li>Fixed viewport screenshot creation (now also bound to F5)</li>
+<li>Added dialog to configure the mesh and voxel format settings for loading/saving</li>
+<li>Improved the palette panel</li>
+<li>Improved the gizmo for translation and rotation</li>
+<li>Open in scene mode as default</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added <code>--image-as-plane</code> and <code>--image-as-heightmap</code> parameters</li>
+<li>Allow one to create a palette from input files</li>
+</ul>
+<h2 id="0018-2022-02-12">0.0.18 (2022-02-12)</h2>
+<blockquote>
+<p>renamed the github project to <strong>vengi</strong> - the url changed to <a href="https://github.com/vengi-voxel/vengi">https://github.com/vengi-voxel/vengi</a>.</p>
+</blockquote>
+<p>Build:</p>
+<ul>
+<li>Removed own cmake unity-build implementation</li>
+<li>Fixed build when <code>GAMES</code> was set to <code>OFF</code></li>
+</ul>
+<p>General:</p>
+<ul>
+<li>Extended qbcl format support</li>
+<li>Fixed color conversion issue when importing palettes from voxel models</li>
+<li>Voxelization of <code>obj</code> meshes now also fills the inner parts of the mesh with voxels</li>
+<li>Fixed magicavoxel pivot issue (sometimes wrong positions)</li>
+<li>Added support for sandbox <code>vxc</code> format</li>
+<li>Added support for sandbox <code>vxt</code> format</li>
+<li>Added new example lua scripts</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li><code>--input</code> can now also handle directories</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added context actions to scene graph panel</li>
+<li>Fixed mouse input issues in fullscreen mode</li>
+<li>Fixed script editor placement</li>
+</ul>
+<h2 id="0017-2022-01-23">0.0.17 (2022-01-23)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed relative path handling for registered paths</li>
+<li>Stop event loop if window is minimized (reduce cpu usage)</li>
+<li>Support scene graphs in the voxel formats</li>
+<li>Fixed a few issues with the magicavoxel vox format (switched to <code>ogt_vox</code>)</li>
+<li>Load properties from supported voxel formats (<code>vxr</code>, <code>vox</code>, <code>gox</code>)</li>
+<li>Added support for loading minecraft region files (used enkimi)</li>
+<li>Fixed <code>vxm</code> pivot and black color issue</li>
+<li>Added <code>obj</code> voxelization</li>
+<li>Improved <code>obj</code> export</li>
+<li>Improved file dialog</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added <code>--crop</code> parameter that reduces the volumes to their real voxel sizes</li>
+<li>Added <code>--split</code> option to cut volumes into smaller pieces</li>
+<li>Added <code>--export-models</code> to export all the models of a scene into single files</li>
+<li>Added <code>--dump</code> to dump the scene graph of the input file</li>
+<li>Added <code>--resize</code> to resize the volumes by the given x, y and z values</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed torus shape</li>
+<li>Added scene graph panel</li>
+<li>Fixed an issue that delayed the start by a few seconds</li>
+</ul>
+<h2 id="0016-2021-12-27">0.0.16 (2021-12-27)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed magicavoxel vox file saving</li>
+<li>Added support for old magicavoxel (pre RIFF) format</li>
+<li>Fixed bugs in <code>binvox</code> support</li>
+<li>Fixed save dir for <code>vxm</code> files when saving <code>vxr</code></li>
+<li>Save <code>vxm</code> v5 (with included pivot)</li>
+<li>Support bigger volumes for magicavoxel files</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Fixed <code>--force</code> handling for target files</li>
+<li>Allow one to operate on multiple input files</li>
+<li>Added <code>--translate</code> command line option</li>
+<li>Added <code>--pivot</code> command line option</li>
+<li>nippon palette is not loaded if <code>--src-palette</code> is used and it's no hard error anymore if this fails</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Add recently used files to the ui</li>
+</ul>
+<h2 id="0015-2021-12-18">0.0.15 (2021-12-18)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed missing <code>vxm</code> (v4) saving support</li>
+<li>Fixed missing palette value for <code>vxm</code> saving</li>
+<li>Added support for loading only the palettes</li>
+<li>Added support for goxel <code>gox</code> file format</li>
+<li>Added support for sproxel <code>csv</code> file format</li>
+<li>Added support for a lot more image formats</li>
+<li>Improved lod creation for thin surface voxels</li>
+<li>Fixed <code>vxr</code> v9 load support</li>
+<li>Added support for writing <code>vxr</code> files</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added option to keep the input file palette and don't perform quantization</li>
+<li>Allow one to export the palette to <code>png</code></li>
+<li>Allow one to generate models from heightmap images</li>
+<li>Allow one to run lua scripts to modify volumes</li>
+<li>Allow one to export or convert only single layers (<code>--filter</code>)</li>
+<li>Allow one to mirror and rotate the volumes</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Try to use the built-in palette for models</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Allow one to import palettes from volume formats, too</li>
+<li>Implemented camera panning</li>
+<li>Added more layer merge functions</li>
+</ul>
+<h2 id="0014-2021-11-21">0.0.14 (2021-11-21)</h2>
+<p>General:</p>
+<ul>
+<li>License for our own voxel models is now CC-BY-SA</li>
+<li>Support loading just the thumbnails from voxel formats</li>
+<li>Support bigger volume sizes for a few formats</li>
+<li>Don't pollute the home directory with build dir settings</li>
+<li>Fixed gamma handling in shaders</li>
+<li>Added bookmark support to the ui dialog</li>
+</ul>
+<p>Thumbnailer:</p>
+<ul>
+<li>Added <code>qbcl</code> thumbnail support</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Render the inactive layer in grayscale mode</li>
+</ul>
+<h2 id="0013-2021-10-29">0.0.13 (2021-10-29)</h2>
+<p>General:</p>
+<ul>
+<li>Logfile support added</li>
+<li>Fixed windows DLL handling for animation hot reloading</li>
+</ul>
+<p>UI:</p>
+<ul>
+<li>Fixed log notifications taking away the focus from the current widget</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed windows OpenGL error while rendering the viewport</li>
+</ul>
+<h2 id="0012-2021-10-26">0.0.12 (2021-10-26)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed a few windows compilation issues</li>
+<li>Fixed issues in the automated build pipelines to produce windows binaries</li>
+</ul>
+<h2 id="0011-2021-10-25">0.0.11 (2021-10-25)</h2>
+<p>General:</p>
+<ul>
+<li>Added url command</li>
+<li>Reduced memory allocations per frame</li>
+<li>Added key bindings dialog</li>
+<li>Added notifications for warnings and errors in the ui</li>
+<li>Fixed Sandbox Voxedit <code>VXM</code> v12 loading and added saving support</li>
+<li>Fixed MagicaVoxel vox file rotation handling</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Removed old ui and switched to dearimgui</li>
+<li>Added lua script editor</li>
+<li>Added noise api support to the lua scripts</li>
+</ul>
+<h2 id="0010-2021-09-19">0.0.10 (2021-09-19)</h2>
+<p>General:</p>
+<ul>
+<li>Added <code>--version</code> and <code>-v</code> commandline option to show the current version of each application</li>
+<li>Fixed texture coordinate indices for multi layer obj exports</li>
+<li>Improved magicavoxel transform support for some models</li>
+<li>Fixed magicavoxel x-axis handling</li>
+<li>Support newer versions of <code>vxm</code> and <code>vxr</code></li>
+<li>Fixed bug in file dialog which prevents you to delete characters #77</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Improved scene edit mode</li>
+<li>Progress on the ui conversion to dearimgui</li>
+</ul>
+<p>Tools:</p>
+<ul>
+<li>Rewrote the ai debugger</li>
+</ul>
+<h2 id="009-2020-10-03">0.0.9 (2020-10-03)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed obj texcoord export: Sampling the borders of the texel now</li>
+<li>Added multi object support to obj export</li>
+</ul>
+<h2 id="008-2020-09-30">0.0.8 (2020-09-30)</h2>
+<p>General:</p>
+<ul>
+<li>Added obj and ply export support</li>
+<li>Restructured the documentation</li>
+<li>Improved font support for imgui ui</li>
+</ul>
+<p>Backend:</p>
+<ul>
+<li>Reworked ai debugging network protocol</li>
+<li>Optimized behaviour tree filters</li>
+</ul>
+<h2 id="007-2020-09-15">0.0.7 (2020-09-15)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed wrong-name-for-symlinks shown</li>
+<li>Added support for writing qef files</li>
+<li>Added lua script interface to generate voxels</li>
+<li>Added stacktrace support for windows</li>
+<li>Refactored module structure (split app and core)</li>
+<li>Optimized character animations</li>
+<li>Hot reload character animation C++ source changes in debug builds</li>
+<li>Added quaternion lua support</li>
+<li>Updated external dependencies</li>
+<li>Refactored lua bindings</li>
+<li>Support Chronovox-Studio files (<code>csm</code>)</li>
+<li>Support Nick's Voxel Model files (<code>nvm</code>)</li>
+<li>Support more versions of the <code>vxm</code> format</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Converted some voxel generation functions to lua</li>
+<li>Implemented new voxel generator scripts</li>
+</ul>
+<h2 id="006-2020-08-02">0.0.6 (2020-08-02)</h2>
+<p>General:</p>
+<ul>
+<li>Fixed gamma cvar usage</li>
+<li>Enable vsync by default</li>
+<li>Updated external dependencies</li>
+<li>Activated OpenCL in a few tools</li>
+<li>Added symlink support to virtual filesystem</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Fixed loading palette lua script with material definitions</li>
+<li>Fixed error in resetting mirror axis</li>
+<li>Fixed noise generation</li>
+<li>Reduced palette widget size</li>
+<li>Fixed palette widget being invisible on some dpi scales</li>
+</ul>
+<h2 id="005-2020-07-26">0.0.5 (2020-07-26)</h2>
+<p>Client:</p>
+<ul>
+<li>Fixed movement</li>
+</ul>
+<p>Server:</p>
+<ul>
+<li>Fixed visibility check</li>
+<li>Fixed segfault while removing npcs</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Started to add scene mode edit support (move volumes)</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Support different palette files (cvar <code>palette</code>)</li>
+<li>Support writing outside the registered application paths</li>
+<li>Allow one to overwrite existing files</li>
+</ul>
+<p>General:</p>
+<ul>
+<li>Switched to <code>qb</code> as default volume format</li>
+<li>Improved scene graph support for Magicavoxel <code>vox</code> files</li>
+<li>Fixed invisible voxels for <code>qb</code> and <code>qbt</code> (Qubicle) volume format</li>
+<li>Support automatic loading different volume formats for assets</li>
+<li>Support Command&amp;Conquer <code>vxl</code> files</li>
+<li>Support Ace of Spades map files (<code>vxl</code>)</li>
+<li>Support Qubicle exchange format (<code>qef</code>)</li>
+<li>Perform mesh extraction in dedicated threads for simple volume rendering</li>
+<li>Improved gizmo rendering and translation support</li>
+<li>Fixed memory leaks on shutdown</li>
+<li>Improved profiling support via tracy</li>
+</ul>
+<h2 id="004-2020-06-07">0.0.4 (2020-06-07)</h2>
+<p>General:</p>
+<ul>
+<li>Added support for writing <code>binvox</code> files</li>
+<li>Added support for reading <code>kvx</code> (Build-Engine) and <code>kv6</code> (SLAB6) voxel volumes</li>
+<li>Performed some AFL hardening on voxel format code</li>
+<li>Don't execute keybindings if the console is active</li>
+<li>Added basic shader storage buffer support</li>
+<li>Reduced voxel vertex size from 16 to 8 bytes</li>
+<li>Apply checkerboard pattern to water surface</li>
+<li>Improved tracy profiling support</li>
+<li>A few highdpi fixes</li>
+</ul>
+<p>Server:</p>
+<ul>
+<li>Allow one to specify the database port</li>
+<li>Fixed loading database chunks</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Added <code>scale</code> console command to produce LODs</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added ability to merge all layers into one</li>
+</ul>
+<h2 id="003-2020-05-17">0.0.3 (2020-05-17)</h2>
+<p>Assets:</p>
+<ul>
+<li>Added music tracks</li>
+<li>Updated and added some new voxel models</li>
+</ul>
+<p>VoxEdit:</p>
+<ul>
+<li>Made some commands available to the ui</li>
+<li>Tweak <code>thicken</code> command</li>
+<li>Updated default tree generation ui values</li>
+<li>Save layers to all supported formats</li>
+<li>Fixed tree generation issue for some tree types</li>
+<li>Changed default reference position to be at the center bottom</li>
+<li>Reduced max supported volume size</li>
+</ul>
+<p>General:</p>
+<ul>
+<li>Print stacktraces on asserts</li>
+<li>Improved tree generation (mainly used in voxedit)</li>
+<li>Fixed a few asserts in debug mode for the microsoft stl</li>
+<li>Added debian package support</li>
+<li>Fixed a few undefined behaviour issues and integer overflows that could lead to problems</li>
+<li>Reorganized some modules to speed up compilation and linking times</li>
+<li>Improved audio support</li>
+<li>Fixed timing issues</li>
+<li>Fixed invalid GL states after deleting objects</li>
+</ul>
+<p>VoxConvert:</p>
+<ul>
+<li>Added a new tool to convert different voxel volumes between supported formats
+     Currently supported are cub (CubeWorld), vox (MagicaVoxel), vxm (VoxEdit Sandbox), binvox
+     and qb/qbt (Qubicle)</li>
+</ul>
+<p>Client:</p>
+<ul>
+<li>Added footstep and ambience sounds</li>
+</ul>
+<h2 id="002-2020-05-06">0.0.2 (2020-05-06)</h2>
+<p>VoxEdit:</p>
+<ul>
+<li>Static linked VC++ Runtime</li>
+<li>Extract voxels by color into own layers</li>
+<li>Updated tree and noise windows</li>
+<li>Implemented <code>thicken</code> console command</li>
+<li>Escape abort modifier action</li>
+<li>Added L-System panel</li>
+</ul>
+<p>General:</p>
+<ul>
+<li>Fixed <code>binvox</code> header parsing</li>
+<li>Improved compilation speed</li>
+<li>Fixed compile errors with locally installed glm 0.9.9</li>
+<li>Fixed setup-documentation errors</li>
+<li>Fixed shader pipeline rebuilds if included shader files were modified</li>
+<li>Improved palm tree generator</li>
+<li>Optimized mesh extraction for the world (streaming volumes)</li>
+<li>Added new voxel models</li>
+<li>(Re-)added Tracy profiler support and removed own imgui-based implementation</li>
+<li>Fixed writing of key bindings</li>
+<li>Improved compile speed and further removed the STL from a lot of places</li>
+<li>Updated all dependencies to their latest version</li>
+</ul>
+<p>Server/Client:</p>
+<ul>
+<li>Added DBChunkPersister</li>
+<li>Built-in HTTP server to download the chunks</li>
+<li>Replaced ui for the client</li>
+</ul>
+<p>Voxel rendering:</p>
+<ul>
+<li>Implemented reflection for water surfaces</li>
+<li>Apply checkerboard pattern to voxel surfaces</li>
+<li>Up-scaling effect for new voxel chunks while they pop in</li>
+<li>Optimized rendering by not using one giant vbo</li>
+</ul>
+<h2 id="001-initial-release-2020-02-08">0.0.1 "Initial Release" (2020-02-08)</h2>
+<p>VoxEdit:</p>
+<ul>
+<li>initial release</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/mgerhardy" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+      
+    
+    
+    
+      
+      
+    
+    <a href="https://mastodon.social/@mgerhardy" target="_blank" rel="noopener me" title="mastodon.social" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M433 179.1c0-97.2-63.7-125.7-63.7-125.7-62.5-28.7-228.6-28.4-290.5 0 0 0-63.7 28.5-63.7 125.7 0 115.7-6.6 259.4 105.6 289.1 40.5 10.7 75.3 13 103.3 11.4 50.8-2.8 79.3-18.1 79.3-18.1l-1.7-36.9s-36.3 11.4-77.1 10.1c-40.4-1.4-83-4.4-89.6-54-.6-4.6-.9-9.3-.9-13.9 85.6 20.9 158.7 9.1 178.7 6.7 56.1-6.7 105-41.3 111.2-72.9 9.8-49.8 9-121.5 9-121.5zm-75.1 125.2h-46.6V190.1c0-49.7-64-51.6-64 6.9v62.5H201V197c0-58.5-64-56.6-64-6.9v114.2H90.3c0-122.1-5.2-147.9 18.4-175 25.9-28.9 79.8-30.8 103.8 6.1l11.6 19.5 11.6-19.5c24.1-37.1 78.1-34.8 103.8-6.1 23.7 27.3 18.4 53 18.4 175"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://vengi-voxel.de/discord" target="_blank" rel="noopener" title="vengi-voxel.de" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M492.5 69.8c-.2-.3-.4-.6-.8-.7-38.1-17.5-78.4-30-119.7-37.1-.4-.1-.8 0-1.1.1s-.6.4-.8.8c-5.5 9.9-10.5 20.2-14.9 30.6-44.6-6.8-89.9-6.8-134.4 0-4.5-10.5-9.5-20.7-15.1-30.6-.2-.3-.5-.6-.8-.8s-.7-.2-1.1-.2C162.5 39 122.2 51.5 84.1 69c-.3.1-.6.4-.8.7C7.1 183.5-13.8 294.6-3.6 404.2c0 .3.1.5.2.8s.3.4.5.6c44.4 32.9 94 58 146.8 74.2.4.1.8.1 1.1 0s.7-.4.9-.7c11.3-15.4 21.4-31.8 30-48.8.1-.2.2-.5.2-.8s0-.5-.1-.8-.2-.5-.4-.6-.4-.3-.7-.4c-15.8-6.1-31.2-13.4-45.9-21.9-.3-.2-.5-.4-.7-.6s-.3-.6-.3-.9 0-.6.2-.9.3-.5.6-.7c3.1-2.3 6.2-4.7 9.1-7.1.3-.2.6-.4.9-.4s.7 0 1 .1c96.2 43.9 200.4 43.9 295.5 0 .3-.1.7-.2 1-.2s.7.2.9.4c2.9 2.4 6 4.9 9.1 7.2.2.2.4.4.6.7s.2.6.2.9-.1.6-.3.9-.4.5-.6.6c-14.7 8.6-30 15.9-45.9 21.8-.2.1-.5.2-.7.4s-.3.4-.4.7-.1.5-.1.8.1.5.2.8c8.8 17 18.8 33.3 30 48.8.2.3.6.6.9.7s.8.1 1.1 0c52.9-16.2 102.6-41.3 147.1-74.2.2-.2.4-.4.5-.6s.2-.5.2-.8c12.3-126.8-20.5-236.9-86.9-334.5zm-302 267.7c-29 0-52.8-26.6-52.8-59.2s23.4-59.2 52.8-59.2c29.7 0 53.3 26.8 52.8 59.2 0 32.7-23.4 59.2-52.8 59.2m195.4 0c-29 0-52.8-26.6-52.8-59.2s23.4-59.2 52.8-59.2c29.7 0 53.3 26.8 52.8 59.2 0 32.7-23.2 59.2-52.8 59.2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
