@@ -5,6 +5,7 @@
 #include "LUAFunctions.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
+#include "core/BindingContext.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -307,6 +308,7 @@ int clua_checkboolean(lua_State *s, int index) {
 
 static int clua_cmdexecute(lua_State *s) {
 	const char *cmds = luaL_checkstring(s, 1);
+	core::ScopedBindingContext context(core::BindingContext::All);
 	command::executeCommands(cmds);
 	return 0;
 }
