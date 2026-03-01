@@ -8,6 +8,8 @@
 #include "app/I18N.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include "core/Var.h"
 #include "network/NetworkError.h"
 #include "network/NetworkImpl.h"
@@ -21,28 +23,23 @@
 
 namespace voxedit {
 
-class ScopedLogListenerActivator : public Log::ILogListener {
-private:
-	ServerNetwork *_network;
-	network::ClientId _clientId;
+ScopedLogListenerActivator::ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId)
+	: _network(network), _clientId(clientId) {
+	Log::registerLogListener(this);
+}
 
-public:
-	ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId)
-		: _network(network), _clientId(clientId) {
-		Log::registerLogListener(this);
-	}
-
-	~ScopedLogListenerActivator() {
-		Log::unregisterLogListener(this);
-	}
-
-	void onLog(Log::Level priority, const char *message) {
-		LogMessage msg(priority, message);
-		// TODO: this should get queued, not directly sent - as it might interfer the out buffer of another message that
-		// is currently in the process of being sent
+ScopedLogListenerActivator::~ScopedLogListenerActivator() {
+	// Unregister first so no new log messages are queued while flushing
+	Log::unregisterLogListener(this);
+	for (QueuedLogEntry &entry : _queue) {
+		LogMessage msg(entry.priority, entry.message);
 		_network->sendToClient(_clientId, msg);
 	}
-};
+}
+
+void ScopedLogListenerActivator::onLog(Log::Level priority, const char *message) {
+	_queue.emplace_back(priority, message);
+}
 
 RemoteClient::RemoteClient(RemoteClient &&other) noexcept
 	: socket(other.socket), bytesIn(other.bytesIn), bytesOut(other.bytesOut), lastPingTime(other.lastPingTime),

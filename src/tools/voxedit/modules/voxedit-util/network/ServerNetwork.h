@@ -58,6 +58,26 @@ public:
 	}
 };
 
+class ScopedLogListenerActivator : public Log::ILogListener {
+private:
+	ServerNetwork *_network;
+	network::ClientId _clientId;
+
+	struct QueuedLogEntry {
+		Log::Level priority;
+		core::String message;
+		QueuedLogEntry(Log::Level p, const char *m) : priority(p), message(m) {
+		}
+	};
+	core::DynamicArray<QueuedLogEntry> _queue;
+
+public:
+	ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId);
+	~ScopedLogListenerActivator();
+
+	void onLog(Log::Level priority, const char *message) override;
+};
+
 class ServerNetwork : public core::DeltaFrameSeconds {
 protected:
 	network::NetworkImpl *_impl;
