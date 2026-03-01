@@ -393,6 +393,7 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_HELP, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ASSET_MODELS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ASSET_IMAGES, dockId);
 	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
@@ -420,6 +421,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
 	_helpPanel.update(TITLE_HELP);
 	if (viewModeAssetPanel(_viewMode->intVal())) {
+		_modelAssetPanel.update(TITLE_ASSET_MODELS, listener);
 		_imageAssetPanel.update(TITLE_ASSET_IMAGES);
 	}
 	if (viewModeAnimations(_viewMode->intVal()) && isSceneMode()) {
@@ -442,7 +444,6 @@ bool MainWindow::isSceneMode() const {
 
 void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_ASSET_MODELS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
@@ -468,9 +469,6 @@ void MainWindow::rightWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
-	if (viewModeAssetPanel(_viewMode->intVal())) {
-		_modelAssetPanel.update(TITLE_ASSET_MODELS, listener);
-	}
 	if (viewModeAnimations(_viewMode->intVal())) {
 		_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	}
