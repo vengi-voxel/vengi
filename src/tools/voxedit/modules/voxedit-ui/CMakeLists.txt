@@ -3,9 +3,9 @@ set(LIB voxedit-ui)
 set(SRCS
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
-	AssetPanel.h AssetPanel.cpp
+	ImageAssetPanel.h ImageAssetPanel.cpp
+	ModelAssetPanel.h ModelAssetPanel.cpp
 	CameraPanel.h CameraPanel.cpp
-	CollectionPanel.h CollectionPanel.cpp
 	DragAndDropPayload.h
 	GameModePanel.cpp GameModePanel.h
 	Gizmo.h
@@ -40,9 +40,9 @@ if (USE_IMGUITESTENGINE)
 	list(APPEND SRCS
 		tests/AnimationPanelTest.cpp
 		tests/AnimationTimelineTest.cpp
-		tests/AssetPanelTest.cpp
+		tests/ImageAssetPanelTest.cpp
+		tests/ModelAssetPanelTest.cpp
 		tests/CameraPanelTest.cpp
-		tests/CollectionPanelTest.cpp
 		tests/GameModePanelTest.cpp
 		tests/HelpPanelTest.cpp
 		tests/NodeInspectorPanelTest.cpp

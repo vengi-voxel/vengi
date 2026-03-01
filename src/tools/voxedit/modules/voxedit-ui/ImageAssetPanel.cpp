@@ -2,50 +2,19 @@
  * @file
  */
 
-#include "AssetPanel.h"
-#include "ui/IconsLucide.h"
+#include "ImageAssetPanel.h"
 #include "app/Async.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/File.h"
-#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "video/Texture.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxelui/DragAndDropPayload.h"
 
 namespace voxedit {
-
-ModelAssetPanel::ModelAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
-							 const voxelcollection::CollectionManagerPtr &collectionMgr,
-							 const video::TexturePoolPtr &texturePool)
-	: Super(app, "modelasset"), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr),
-	  _collectionPanel(app, sceneMgr, collectionMgr, texturePool) {
-}
-
-void ModelAssetPanel::shutdown() {
-	_collectionPanel.shutdown();
-}
-
-bool ModelAssetPanel::init() {
-	if (!_collectionPanel.init()) {
-		Log::error("Failed to initialize the collection panel");
-		return false;
-	}
-	_collectionMgr->online();
-	return true;
-}
-
-void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &listener) {
-	const core::String title = makeTitle(ICON_LC_LIST, _("Models"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		core_trace_scoped(ModelAssetPanel);
-		_collectionPanel.update();
-	}
-	ImGui::End();
-}
 
 ImageAssetPanel::ImageAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
 							 const io::FilesystemPtr &filesystem)
@@ -57,7 +26,6 @@ void ImageAssetPanel::shutdown() {
 }
 
 bool ImageAssetPanel::init() {
-
 	app::schedule([this, fs = _filesystem] () {
 		const core::String &dir = fs->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Pictures);
 		core::DynamicArray<io::FilesystemEntry> entities;

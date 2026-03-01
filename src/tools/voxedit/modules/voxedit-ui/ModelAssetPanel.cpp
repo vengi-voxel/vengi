@@ -2,30 +2,33 @@
  * @file
  */
 
-#include "CollectionPanel.h"
-#include "IconsLucide.h"
+#include "ModelAssetPanel.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "ui/IMGUIEx.h"
 #include "ui/IMGUIApp.h"
-#include "voxedit-util/SceneManager.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/Modifier.h"
-#include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/DragAndDropPayload.h"
 
 namespace voxedit {
 
-CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
-								 const voxelcollection::CollectionManagerPtr &collectionMgr,
-								 const video::TexturePoolPtr &texturePool)
-	: Super(app, "collection"), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr), _texturePool(texturePool) {
+ModelAssetPanel::ModelAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
+							 const voxelcollection::CollectionManagerPtr &collectionMgr, const video::TexturePoolPtr &texturePool)
+	: Super(app, "modelasset"), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr), _texturePool(texturePool) {
 }
 
-CollectionPanel::~CollectionPanel() {
+void ModelAssetPanel::shutdown() {
+	_filterEntries.clear();
 }
 
-bool CollectionPanel::filtered(const voxelcollection::VoxelFile &voxelFile) const {
+bool ModelAssetPanel::init() {
+	_collectionMgr->online();
+	return true;
+}
+
+bool ModelAssetPanel::filtered(const voxelcollection::VoxelFile &voxelFile) const {
 	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
 		return true;
 	}
@@ -42,11 +45,11 @@ bool CollectionPanel::filtered(const voxelcollection::VoxelFile &voxelFile) cons
 	return true;
 }
 
-bool CollectionPanel::isFilterActive() const {
+bool ModelAssetPanel::isFilterActive() const {
 	return !_currentFilterName.empty() || !_currentFilterLicense.empty() || _currentFilterFormatEntry > 0;
 }
 
-void CollectionPanel::updateFilters() {
+void ModelAssetPanel::updateFilters() {
 	const float itemWidth = ImGui::Size(9.0f);
 	{
 		ImGui::PushItemWidth(itemWidth);
@@ -70,7 +73,6 @@ void CollectionPanel::updateFilters() {
 			}
 			_filterEntries.sort(core::Greater<io::FormatDescription>());
 			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
-			// must be the first entry - see applyFilter()
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
 			_filterFormatTextWidth = core_min(itemWidth * 2.0f, _filterFormatTextWidth);
 		}
@@ -98,84 +100,7 @@ void CollectionPanel::updateFilters() {
 	}
 }
 
-int CollectionPanel::update() {
-	core_trace_scoped(CollectionPanel);
-	int cnt = 0;
-	const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
-	updateFilters();
-
-	if (ImGui::IconButton(ICON_LC_FOLDER, _("Local directory"))) {
-		_app->directoryDialog([&] (const core::String &folderName, const io::FormatDescription *desc) {
-			_collectionMgr->setLocalDir(folderName);
-		}, {});
-	}
-	ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
-
-	const int columns = _thumbnails ? 3 : 2;
-	if (ImGui::BeginTable("##voxelfiles", columns,
-						  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-							  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
-		ImGui::TableSetupScrollFreeze(0, 1);
-		if (_thumbnails) {
-			ImGui::TableSetupColumn(_("Thumbnail"));
-		}
-		ImGui::TableSetupColumn(_("Name"));
-		ImGui::TableSetupColumn(_("License"));
-		ImGui::TableHeadersRow();
-		for (const auto &source : _collectionMgr->sources()) {
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-										   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
-			auto iter = voxelFilesMap.find(source.name);
-			if (iter != voxelFilesMap.end()) {
-				const voxelcollection::VoxelCollection &collection = iter->second;
-				if (isFilterActive() && _collectionMgr->resolved(source)) {
-					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-				} else if (!collection.sorted) {
-					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-				}
-				const int n = (int)collection.files.size();
-				const core::String &label = core::String::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
-				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					if (!collection.sorted) {
-						ImGui::Spinner("##collectionspinner", ImGui::Size(1.0f));
-						ImGui::SameLine();
-						ImGui::TextUnformatted(_("Loading..."));
-					} else {
-						const voxelcollection::VoxelFiles &voxelFiles = collection.files;
-						cnt += buildVoxelTree(voxelFiles);
-					}
-					ImGui::TreePop();
-				}
-				if (source.isLocal()) {
-					ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
-				}
-			} else {
-				if (!_collectionMgr->resolved(source)) {
-					treeFlags |= ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Bullet;
-				}
-				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
-					// if resolved already but no files are available, we are still loading...
-					if (_collectionMgr->resolved(source)) {
-						ImGui::Spinner("##sourcespinner", ImGui::Size(1.0f));
-						ImGui::SameLine();
-						ImGui::TextUnformatted(_("Loading..."));
-					} else {
-						_collectionMgr->resolve(source);
-					}
-					ImGui::TreePop();
-				} else {
-					ImGui::TooltipTextUnformatted(_("Double click to load"));
-				}
-			}
-		}
-		ImGui::EndTable();
-	}
-	return cnt;
-}
-
-void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
+void ModelAssetPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::BeginPopupContextItem()) {
 		if (!voxelFile->downloaded) {
 			_collectionMgr->download(*voxelFile);
@@ -190,8 +115,7 @@ void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 				Log::error("Failed to load stamp brush");
 			}
 		}
-		ImGui::TooltipTextUnformatted(
-			_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+		ImGui::TooltipTextUnformatted(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
 
 		if (ImGui::MenuItem(_("Add to scene"))) {
 			import(voxelFile);
@@ -226,7 +150,7 @@ void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 	}
 }
 
-bool CollectionPanel::import(voxelcollection::VoxelFile *voxelFile) {
+bool ModelAssetPanel::import(voxelcollection::VoxelFile *voxelFile) {
 	if (!voxelFile->downloaded) {
 		_collectionMgr->download(*voxelFile);
 	}
@@ -237,14 +161,14 @@ bool CollectionPanel::import(voxelcollection::VoxelFile *voxelFile) {
 	return _sceneMgr->import(voxelFile->targetFile());
 }
 
-void CollectionPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
+void ModelAssetPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 		import(voxelFile);
 		_selected = *voxelFile;
 	}
 }
 
-void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *voxelFile) {
+void ModelAssetPanel::thumbnailTooltip(voxelcollection::VoxelFile *voxelFile) {
 	if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 		if (ImGui::BeginItemTooltip()) {
 			const video::Id handle = texture->handle();
@@ -255,7 +179,7 @@ void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *voxelFile) {
 	}
 }
 
-void CollectionPanel::handleDragAndDrop(int row, voxelcollection::VoxelFile *voxelFile) {
+void ModelAssetPanel::handleDragAndDrop(int row, voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 		video::Id handle;
 		if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
@@ -267,13 +191,13 @@ void CollectionPanel::handleDragAndDrop(int row, voxelcollection::VoxelFile *vox
 		core::String::formatBuf(mdlId, sizeof(mdlId), "%i", row);
 		ImGui::ImageButton(mdlId, handle, ImVec2(50, 50));
 		_dragAndDropModel = voxelFile->targetFile();
-		ImGui::SetDragDropPayload(voxelui::dragdrop::ModelPayload, (const void *)&_dragAndDropModel,
-								  sizeof(_dragAndDropModel), ImGuiCond_Always);
+		ImGui::SetDragDropPayload(voxelui::dragdrop::ModelPayload, (const void *)&_dragAndDropModel, sizeof(_dragAndDropModel),
+								  ImGuiCond_Always);
 		ImGui::EndDragDropSource();
 	}
 }
 
-int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
+int ModelAssetPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
 	core::Buffer<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
@@ -359,7 +283,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 	return (int)f.size();
 }
 
-video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
+video::TexturePtr ModelAssetPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
 	const core::String &id = voxelFile.id();
 	if (_texturePool->has(id)) {
@@ -368,16 +292,83 @@ video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelF
 	return empty;
 }
 
-void CollectionPanel::shutdown() {
-	_filterEntries.clear();
-}
+void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	core_trace_scoped(ModelAssetPanel);
+	(void)listener;
+	const core::String title = makeTitle(ICON_LC_LIST, _("Models"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+		const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
+		updateFilters();
 
-bool CollectionPanel::init() {
-	return true;
-}
+		if (ImGui::IconButton(ICON_LC_FOLDER, _("Local directory"))) {
+			_app->directoryDialog([&] (const core::String &folderName, const io::FormatDescription *desc) {
+				_collectionMgr->setLocalDir(folderName);
+			}, {});
+		}
+		ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
 
-voxelcollection::VoxelFile &CollectionPanel::selected() {
-	return _selected;
+		const int columns = _thumbnails ? 3 : 2;
+		if (ImGui::BeginTable("##voxelfiles", columns,
+						  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
+							  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
+			ImGui::TableSetupScrollFreeze(0, 1);
+			if (_thumbnails) {
+				ImGui::TableSetupColumn(_("Thumbnail"));
+			}
+			ImGui::TableSetupColumn(_("Name"));
+			ImGui::TableSetupColumn(_("License"));
+			ImGui::TableHeadersRow();
+			for (const auto &source : _collectionMgr->sources()) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
+									   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
+				auto iter = voxelFilesMap.find(source.name);
+				if (iter != voxelFilesMap.end()) {
+					const voxelcollection::VoxelCollection &collection = iter->second;
+					if (isFilterActive() && _collectionMgr->resolved(source)) {
+						treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+					} else if (!collection.sorted) {
+						ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+					}
+					const int n = (int)collection.files.size();
+					const core::String &label = core::String::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
+					if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
+						if (!collection.sorted) {
+							ImGui::Spinner("##collectionspinner", ImGui::Size(1.0f));
+							ImGui::SameLine();
+							ImGui::TextUnformatted(_("Loading..."));
+						} else {
+							const voxelcollection::VoxelFiles &voxelFiles = collection.files;
+							buildVoxelTree(voxelFiles);
+						}
+						ImGui::TreePop();
+					}
+					if (source.isLocal()) {
+						ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
+					}
+				} else {
+					if (!_collectionMgr->resolved(source)) {
+						treeFlags |= ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Bullet;
+					}
+					if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
+						if (_collectionMgr->resolved(source)) {
+							ImGui::Spinner("##sourcespinner", ImGui::Size(1.0f));
+							ImGui::SameLine();
+							ImGui::TextUnformatted(_("Loading..."));
+						} else {
+							_collectionMgr->resolve(source);
+						}
+						ImGui::TreePop();
+					} else {
+						ImGui::TooltipTextUnformatted(_("Double click to load"));
+					}
+				}
+			}
+			ImGui::EndTable();
+		}
+	}
+	ImGui::End();
 }
 
 } // namespace voxedit

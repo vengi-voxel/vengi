@@ -4,22 +4,20 @@
 
 #pragma once
 
+#include "command/CommandHandler.h"
+#include "io/FormatDescription.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
-#include "io/FormatDescription.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 
-#define TITLE_ASSET_LIST "Assets##list"
-
 namespace voxedit {
 
-class SceneManager;
-typedef core::SharedPtr<SceneManager> SceneManagerPtr;
-
-class CollectionPanel : public ui::Panel {
+class ModelAssetPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
+
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
@@ -42,27 +40,22 @@ private:
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
 	void updateFilters();
 	bool isFilterActive() const;
-
-public:
-	CollectionPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
-			   const voxelcollection::CollectionManagerPtr &collectionMgr, const video::TexturePoolPtr &texturePool);
-	virtual ~CollectionPanel();
-
-	bool init();
-	int update();
-	void shutdown();
-
-	void setThumbnails(bool state);
-
 	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 	voxelcollection::VoxelFile &selected();
+
+public:
+	ModelAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
+					const voxelcollection::CollectionManagerPtr &collectionMgr, const video::TexturePoolPtr &texturePool);
+	bool init();
+	void update(const char *id, command::CommandExecutionListener &listener);
+	void shutdown();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 
-inline void CollectionPanel::setThumbnails(bool state) {
-	_thumbnails = state;
+inline voxelcollection::VoxelFile &ModelAssetPanel::selected() {
+	return _selected;
 }
 
 } // namespace voxedit
