@@ -2317,9 +2317,17 @@ msgstr "Server läuft auf Port %i"
 msgid "Stop server"
 msgstr "Stoppe Server"
 
-#, c-format
-msgid "Traffic: %i bytes sent, %i bytes received"
-msgstr "Datenverkehr: %i Bytes gesendet, %i Bytes empfangen"
+msgid "Sent"
+msgstr ""
+
+msgid "Received"
+msgstr ""
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Kick"
+msgstr ""
 
 msgid "Interface"
 msgstr "Schnittstelle"
@@ -3906,6 +3914,21 @@ msgstr "Lege den Kamerarotationsmodus fest oder umschalten (Ziel oder Auge)"
 msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
 msgstr "Legt den Kameraprojektionsmodus fest (Perspektive oder Orthogonal)"
 
+msgid "Start the local voxedit server"
+msgstr ""
+
+msgid "Stop the local voxedit server"
+msgstr ""
+
+msgid "Kick a client from the server"
+msgstr ""
+
+msgid "Connect to a voxedit server"
+msgstr "Mit voxedit Server verbinden"
+
+msgid "Disconnect from the current voxedit server"
+msgstr ""
+
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
 msgstr "Schattierungsmodus: 0=Unlit, 1=Lit, 2=Schatten"
 
@@ -4105,3 +4128,7 @@ msgstr "Maximale Verbindungen"
 msgid "The maximum number of clients that can connect to the server"
 msgstr ""
 "Die maximale Anzahl von Clients, die sich mit dem Server verbinden können"
+
+#, c-format
+#~ msgid "Traffic: %i bytes sent, %i bytes received"
+#~ msgstr "Datenverkehr: %i Bytes gesendet, %i Bytes empfangen"

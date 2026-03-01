@@ -2227,8 +2227,16 @@ msgstr ""
 msgid "Stop server"
 msgstr ""
 
-#, c-format
-msgid "Traffic: %i bytes sent, %i bytes received"
+msgid "Sent"
+msgstr ""
+
+msgid "Received"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Kick"
 msgstr ""
 
 msgid "Interface"
@@ -3676,6 +3684,21 @@ msgid "Set or toggle the camera rotation mode (target or eye)"
 msgstr ""
 
 msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
+msgstr ""
+
+msgid "Start the local voxedit server"
+msgstr ""
+
+msgid "Stop the local voxedit server"
+msgstr ""
+
+msgid "Kick a client from the server"
+msgstr ""
+
+msgid "Connect to a voxedit server"
+msgstr ""
+
+msgid "Disconnect from the current voxedit server"
 msgstr ""
 
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
