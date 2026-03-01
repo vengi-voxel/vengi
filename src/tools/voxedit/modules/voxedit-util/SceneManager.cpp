@@ -3022,7 +3022,7 @@ void SceneManager::animateFrames(double nowSeconds) {
 		node.setVisible(true);
 	}
 	if (_animationResetCamera) {
-		command::Command::execute("resetcamera");
+		command::Command::execute("camera_reset");
 	}
 }
 

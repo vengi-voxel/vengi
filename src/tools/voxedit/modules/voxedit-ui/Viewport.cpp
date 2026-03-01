@@ -439,7 +439,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginIconMenu(ICON_LC_EYE, _("View"))) {
 		menuBarScreenshotOptions(listener);
 		menuBarCaptureOptions();
-		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
+		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "camera_reset", true, listener);
 		CameraPanel::cameraOptions(listener, camera(), _camMode);
 		menuBarPolygonModeOptions();
 		MenuBar::viewportOptions();

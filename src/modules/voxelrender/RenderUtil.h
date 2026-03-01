@@ -25,6 +25,10 @@ static constexpr const char *SceneCameraModeStr[] = {N_("Free"),  N_("Top"),   N
 													 N_("Right"), N_("Front"), N_("Back")};
 static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max,
 			  "Array size doesn't match enum values");
+// Lowercase command argument strings matching SceneCameraMode enum order
+static constexpr const char *SceneCameraModeArgs[] = {"free", "top", "bottom", "left", "right", "front", "back"};
+static_assert(lengthof(SceneCameraModeArgs) == (int)voxelrender::SceneCameraMode::Max,
+			  "Array size doesn't match enum values");
 
 /**
  * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.

@@ -60,8 +60,8 @@ msgstr "Die Version anzeigen und beenden"
 msgid "Print this help and quit"
 msgstr "Diese Hilfe anzeigen und beenden"
 
-msgid "Generate completion for bash and zsh"
-msgstr "Vervollständigung für Bash und ZSH generieren"
+msgid "Generate completion for bash, zsh and powershell"
+msgstr "Vervollständigung für Bash, ZSH und PowerShell generieren"
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
 msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
@@ -926,8 +926,8 @@ msgstr "RGB-Abflachfaktor"
 msgid "The RGB color flatten factor for importing color and mesh formats"
 msgstr "RGB-Abflachfaktor beim Importieren von Farb- und Mesh-Formaten"
 
-msgid "Target colors (0=no limit)"
-msgstr ""
+msgid "Target"
+msgstr "Ziel"
 
 msgid ""
 "Target number of colors after voxelization (0 = no limit, otherwise quantize "
@@ -1613,6 +1613,9 @@ msgstr "Eine neue Szene mit UI-Interaktion erstellen"
 msgid "Reset cameras in viewports"
 msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
 
+msgid "Set the scene camera mode"
+msgstr ""
+
 msgid "The last directory used in the UI"
 msgstr ""
 
@@ -1675,15 +1678,6 @@ msgstr "Keyframes löschen"
 #, c-format
 msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
-
-msgid "Assets"
-msgstr "Assets"
-
-msgid "Models"
-msgstr "Modelle"
-
-msgid "Images"
-msgstr "Bilder"
 
 msgid "Shape"
 msgstr "Form"
@@ -1883,9 +1877,6 @@ msgstr "Kamerarotation"
 msgid "Eye"
 msgstr "Auge"
 
-msgid "Target"
-msgstr "Ziel"
-
 msgid "Camera movement"
 msgstr "Kamerabewegung"
 
@@ -1919,51 +1910,6 @@ msgstr "Sichtfeld in Grad"
 msgid "Aspect ratio"
 msgstr "Seitenverhältnis"
 
-msgid "License"
-msgstr "Lizenz"
-
-msgid "Format"
-msgstr "Format"
-
-msgid "Loading..."
-msgstr "Laden..."
-
-msgid "Double click to load"
-msgstr "Doppelklick zum Laden"
-
-msgid "Use stamp"
-msgstr "Stempel verwenden"
-
-msgid ""
-"This is only possible if the model doesn't exceed the max allowed stamp size"
-msgstr ""
-"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
-"nicht überschreitet"
-
-msgid "Add to scene"
-msgstr "Zur Szene hinzufügen"
-
-msgid "Hide thumbnails"
-msgstr "Miniaturansicht verstecken"
-
-msgid "Show thumbnails"
-msgstr "Miniaturansicht anzeigen"
-
-msgid "Open target file"
-msgstr "Öffne Zieldatei"
-
-msgid "Open target dir"
-msgstr "Öffne Zielverzeichnis"
-
-msgid "Create thumbnail"
-msgstr "Miniaturansicht erzeugen"
-
-msgid "Double click to create thumbnail"
-msgstr "Doppelklick zum Erstellen der Miniaturansicht"
-
-msgid "No match for filter found"
-msgstr "Keine Übereinstimmung für den Filter gefunden"
-
 msgid "Game mode"
 msgstr "Spielmodus"
 
@@ -1991,6 +1937,9 @@ msgstr "Vorwärts"
 
 msgid "Home"
 msgstr "Startseite"
+
+msgid "Images"
+msgstr "Bilder"
 
 msgid "L-System"
 msgstr "L-System"
@@ -2294,6 +2243,54 @@ msgstr "FPS-Statistiken anzeigen"
 
 msgid "Welcome screen"
 msgstr "Willkommensbildschirm"
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Use stamp"
+msgstr "Stempel verwenden"
+
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
+"nicht überschreitet"
+
+msgid "Add to scene"
+msgstr "Zur Szene hinzufügen"
+
+msgid "Hide thumbnails"
+msgstr "Miniaturansicht verstecken"
+
+msgid "Show thumbnails"
+msgstr "Miniaturansicht anzeigen"
+
+msgid "Open target file"
+msgstr "Öffne Zieldatei"
+
+msgid "Open target dir"
+msgstr "Öffne Zielverzeichnis"
+
+msgid "Create thumbnail"
+msgstr "Miniaturansicht erzeugen"
+
+msgid "Double click to create thumbnail"
+msgstr "Doppelklick zum Erstellen der Miniaturansicht"
+
+msgid "No match for filter found"
+msgstr "Keine Übereinstimmung für den Filter gefunden"
+
+msgid "Models"
+msgstr "Modelle"
+
+msgid "Loading..."
+msgstr "Laden..."
+
+msgid "Double click to load"
+msgstr "Doppelklick zum Laden"
 
 msgid "Network"
 msgstr "Netzwerk"
@@ -3101,9 +3098,9 @@ msgstr ""
 "Ziehen Sie ein Modell aus dem Asset-Panel auf den Stempel-Pinsel, um es zu "
 "verwenden."
 
-msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
+msgid "You can reset the camera simply by pressing <cmd:camera_reset>."
 msgstr ""
-"Sie können die Kamera einfach durch Drücken von <cmd:resetcamera> "
+"Sie können die Kamera einfach durch Drücken von <cmd:camera_reset> "
 "zurücksetzen."
 
 msgid ""
@@ -3122,8 +3119,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
-"<cmd:cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
+"cam_rotation>."
 msgstr ""
 "Sie können die Kamerabewegung im Szenenmodus durch Wechsel von "
 "'Kamerabewegung' zu 'Auge' oder 'Ziel' im 'Ansicht'-Menü des "
@@ -3176,8 +3173,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
@@ -3905,6 +3902,9 @@ msgstr "Interpoliere zur Knotenposition und -ausrichtung"
 
 msgid "Set or toggle the camera rotation mode (target or eye)"
 msgstr "Lege den Kamerarotationsmodus fest oder umschalten (Ziel oder Auge)"
+
+msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
+msgstr "Legt den Kameraprojektionsmodus fest (Perspektive oder Orthogonal)"
 
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
 msgstr "Schattierungsmodus: 0=Unlit, 1=Lit, 2=Schatten"

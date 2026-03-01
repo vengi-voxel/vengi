@@ -39,7 +39,7 @@ msgstr ""
 msgid "Print this help and quit"
 msgstr ""
 
-msgid "Generate completion for bash and zsh"
+msgid "Generate completion for bash, zsh and powershell"
 msgstr ""
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
@@ -889,7 +889,7 @@ msgstr ""
 msgid "The RGB color flatten factor for importing color and mesh formats"
 msgstr ""
 
-msgid "Target colors (0=no limit)"
+msgid "Target"
 msgstr ""
 
 msgid ""
@@ -1549,6 +1549,9 @@ msgstr ""
 msgid "Reset cameras in viewports"
 msgstr ""
 
+msgid "Set the scene camera mode"
+msgstr ""
+
 msgid "The last directory used in the UI"
 msgstr ""
 
@@ -1610,15 +1613,6 @@ msgstr ""
 
 #, c-format
 msgid "Delete %i keyframes"
-msgstr ""
-
-msgid "Assets"
-msgstr ""
-
-msgid "Models"
-msgstr ""
-
-msgid "Images"
 msgstr ""
 
 msgid "Shape"
@@ -1815,9 +1809,6 @@ msgstr ""
 msgid "Eye"
 msgstr ""
 
-msgid "Target"
-msgstr ""
-
 msgid "Camera movement"
 msgstr ""
 
@@ -1851,49 +1842,6 @@ msgstr ""
 msgid "Aspect ratio"
 msgstr ""
 
-msgid "License"
-msgstr ""
-
-msgid "Format"
-msgstr ""
-
-msgid "Loading..."
-msgstr ""
-
-msgid "Double click to load"
-msgstr ""
-
-msgid "Use stamp"
-msgstr ""
-
-msgid ""
-"This is only possible if the model doesn't exceed the max allowed stamp size"
-msgstr ""
-
-msgid "Add to scene"
-msgstr ""
-
-msgid "Hide thumbnails"
-msgstr ""
-
-msgid "Show thumbnails"
-msgstr ""
-
-msgid "Open target file"
-msgstr ""
-
-msgid "Open target dir"
-msgstr ""
-
-msgid "Create thumbnail"
-msgstr ""
-
-msgid "Double click to create thumbnail"
-msgstr ""
-
-msgid "No match for filter found"
-msgstr ""
-
 msgid "Game mode"
 msgstr ""
 
@@ -1916,6 +1864,9 @@ msgid "Forward"
 msgstr ""
 
 msgid "Home"
+msgstr ""
+
+msgid "Images"
 msgstr ""
 
 msgid "L-System"
@@ -2203,6 +2154,52 @@ msgid "Show FPS stats"
 msgstr ""
 
 msgid "Welcome screen"
+msgstr ""
+
+msgid "License"
+msgstr ""
+
+msgid "Format"
+msgstr ""
+
+msgid "Use stamp"
+msgstr ""
+
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+
+msgid "Add to scene"
+msgstr ""
+
+msgid "Hide thumbnails"
+msgstr ""
+
+msgid "Show thumbnails"
+msgstr ""
+
+msgid "Open target file"
+msgstr ""
+
+msgid "Open target dir"
+msgstr ""
+
+msgid "Create thumbnail"
+msgstr ""
+
+msgid "Double click to create thumbnail"
+msgstr ""
+
+msgid "No match for filter found"
+msgstr ""
+
+msgid "Models"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Double click to load"
 msgstr ""
 
 msgid "Network"
@@ -2975,7 +2972,7 @@ msgstr ""
 msgid "Drag a model from the assets panel to the stamp brush to use it."
 msgstr ""
 
-msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
+msgid "You can reset the camera simply by pressing <cmd:camera_reset>."
 msgstr ""
 
 msgid ""
@@ -2990,8 +2987,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
-"<cmd:cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
+"cam_rotation>."
 msgstr ""
 
 msgid ""
@@ -3029,8 +3026,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
@@ -3676,6 +3673,9 @@ msgid "Interpolate to the camera node position and orientation"
 msgstr ""
 
 msgid "Set or toggle the camera rotation mode (target or eye)"
+msgstr ""
+
+msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
 msgstr ""
 
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"

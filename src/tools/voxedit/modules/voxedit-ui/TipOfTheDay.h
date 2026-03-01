@@ -10,7 +10,7 @@ static const char *tips[]{
 	N_("When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."),
 	N_("Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."),
 	N_("Drag a model from the assets panel to the stamp brush to use it."),
-	N_("You can reset the camera simply by pressing <cmd:resetcamera>."),
+	N_("You can reset the camera simply by pressing <cmd:camera_reset>."),
 	N_("You can animation a camera and then move around in the scene when hitting the play button in the animation timeline."),
 	N_("The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."),
 	N_("You can switch the camera scene movement by switching the 'Camera movement' to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:cam_rotation>."),

@@ -296,13 +296,29 @@ app::AppState VoxEdit::onConstruct() {
 			_mainWindow->createNew(false);
 		}).setHelp(_("Create a new scene with ui interaction"));
 
-	command::Command::registerCommand("resetcamera")
+	command::Command::registerCommand("camera_reset")
 		.setHandler([this] (const command::CommandArgs& args) {
 			if (_mainWindow == nullptr) {
 				return;
 			}
 			_mainWindow->resetCamera();
 		}).setHelp(_("Reset cameras in viewports"));
+
+	command::Command::registerCommand("camera_mode")
+		.addArg({"mode", command::ArgType::String, false, "", "Scene camera mode: free|top|bottom|left|right|front|back"})
+		.setHandler([this] (const command::CommandArgs& args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			const core::String &modeStr = args.str("mode");
+			for (int i = 0; i < (int)voxelrender::SceneCameraMode::Max; ++i) {
+				if (core::string::iequals(modeStr, voxelrender::SceneCameraModeArgs[i])) {
+					_mainWindow->setCameraMode((voxelrender::SceneCameraMode)i);
+					return;
+				}
+			}
+			Log::error("Unknown camera mode: %s", modeStr.c_str());
+		}).setHelp(_("Set the scene camera mode")).setArgumentCompleter(command::valueCompleter({"free", "top", "bottom", "left", "right", "front", "back"}));
 
 	return state;
 }
@@ -399,7 +415,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
-		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding(",",                      "camera_reset",               "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("alt+left_mouse",         "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("shift+middle_mouse",     "+camera_pan",                "editing");
@@ -409,7 +425,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("1",                      "mirroraxisshapebrushx",      "model");
 		_keybindingHandler.registerBinding("2",                      "mirroraxisshapebrushz",      "model");
 		_keybindingHandler.registerBinding("3",                      "mirroraxisshapebrushy",      "model");
-		_keybindingHandler.registerBinding("4",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding("4",                      "camera_reset",               "editing");
 		_keybindingHandler.registerBinding("6",                      "screenshot",                 "editing");
 		_keybindingHandler.registerBinding("f6",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding("right_mouse",            "+camera_rotate",             "editing");
@@ -424,7 +440,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
-		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding(",",                      "camera_reset",               "editing");
 		_keybindingHandler.registerBinding("left_alt+left_mouse",    "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("right_alt+left_mouse",   "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("right_mouse",            "+camera_rotate",             "editing");
@@ -442,7 +458,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding("e",                      "+actionexecute",             "model");
-		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding(",",                      "camera_reset",               "editing");
 		_keybindingHandler.registerBinding("right_mouse",            "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("right_alt",              "+camera_pan",                "editing");

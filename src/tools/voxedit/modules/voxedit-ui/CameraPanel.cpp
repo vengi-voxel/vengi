@@ -15,7 +15,7 @@ namespace voxedit {
 
 void CameraPanel::addToolbar(command::CommandExecutionListener &listener, video::Camera &camera) {
 	ui::Toolbar toolbar("toolbar", &listener);
-	toolbar.button(ICON_LC_X, "resetcamera");
+	toolbar.button(ICON_LC_X, "camera_reset");
 	toolbar.button(ICON_LC_SQUARE_PLUS, _("Add new camera"), [&]() {
 		scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 		_sceneMgr->moveNodeToSceneGraph(cameraNode);
@@ -70,8 +70,8 @@ void CameraPanel::cameraModeCombo(command::CommandExecutionListener *listener, v
 		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(_(voxelrender::SceneCameraModeStr[n]), isSelected)) {
-				camMode = (voxelrender::SceneCameraMode)n;
-				command::executeCommands("resetcamera", listener);
+				const core::String &cmd = core::String::format("camera_mode %s", voxelrender::SceneCameraModeArgs[n]);
+				command::executeCommands(cmd.c_str(), listener);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();
