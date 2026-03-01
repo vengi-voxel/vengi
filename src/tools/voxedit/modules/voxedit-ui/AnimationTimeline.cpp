@@ -16,7 +16,7 @@ namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS, _("Add"), _animationPlaying->boolVal())) {
-		_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
+		_sceneMgr->nodeGroupAddKeyFrame(currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to the current active node"));
 	ImGui::SameLine();
@@ -26,7 +26,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to all nodes"));
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_MINUS, _("Delete"), _animationPlaying->boolVal())) {
-		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
+		_sceneMgr->nodeGroupRemoveKeyFrame(currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Delete the current keyframe of the active nodes"));
 	ImGui::SameLine();
@@ -157,7 +157,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
 			if (ImGui::IconSelectable(ICON_LC_SQUARE_PLUS, _("Add"))) {
-				_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
+				_sceneMgr->nodeGroupAddKeyFrame(currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
 			}

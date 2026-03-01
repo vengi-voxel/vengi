@@ -152,13 +152,13 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 	return setActivePalette(palette, searchBestColors);
 }
 
-bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int groupNodeId) {
-			calculateNormals(groupNodeId, connectivity, recalcAll, fillAndHollow);
-		});
-		return true;
-	}
+void SceneManager::nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
+	nodeForeachGroup([&] (int groupNodeId) {
+		nodeCalculateNormals(groupNodeId, connectivity, recalcAll, fillAndHollow);
+	});
+}
+
+bool SceneManager::nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId)) {
 		if (!node->hasNormalPalette()) {
 			Log::warn("Node %i has no normal palette", nodeId);
@@ -223,7 +223,7 @@ void SceneManager::autosave() {
 	_lastAutoSave = _timeProvider->tickSeconds();
 }
 
-bool SceneManager::saveNode(int nodeId, const core::String& file) {
+bool SceneManager::nodeSave(int nodeId, const core::String& file) {
 	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		Log::warn("Node with id %i wasn't found", nodeId);
@@ -251,7 +251,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	return false;
 }
 
-void SceneManager::fillHollow() {
+void SceneManager::nodeGroupFillHollow() {
 	nodeForeachGroup([&] (int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
@@ -267,7 +267,7 @@ void SceneManager::fillHollow() {
 	});
 }
 
-void SceneManager::fill() {
+void SceneManager::nodeGroupFill() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
@@ -283,7 +283,7 @@ void SceneManager::fill() {
 	});
 }
 
-void SceneManager::clear() {
+void SceneManager::nodeGroupClear() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
@@ -299,7 +299,7 @@ void SceneManager::clear() {
 	});
 }
 
-void SceneManager::hollow() {
+void SceneManager::nodeGroupHollow() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
@@ -361,7 +361,7 @@ bool SceneManager::saveModels(const core::String& dir) {
 	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String filename = core::string::path(dir, node.name() + "." + extension);
-		state |= saveNode(node.id(), filename);
+		state |= nodeSave(node.id(), filename);
 	}
 	return state;
 }
@@ -561,12 +561,12 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	}
 }
 
-int SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
+int SceneManager::nodeColorToNewNode(const voxel::Voxel voxelColor) {
 	const int nodeId = _sceneGraph.activeNode();
-	return colorToNewNode(nodeId, voxelColor);
+	return nodeColorToNewNode(nodeId, voxelColor);
 }
 
-int SceneManager::colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
+int SceneManager::nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
 	if (v == nullptr) {
@@ -588,7 +588,7 @@ int SceneManager::colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
 	return moveNodeToSceneGraph(newNode, node.parent());
 }
 
-void SceneManager::scaleUp(int nodeId) {
+void SceneManager::nodeScaleUp(int nodeId) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -604,7 +604,7 @@ void SceneManager::scaleUp(int nodeId) {
 	modified(nodeId, destVolume->region());
 }
 
-void SceneManager::scaleDown(int nodeId) {
+void SceneManager::nodeScaleDown(int nodeId) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -625,7 +625,7 @@ void SceneManager::scaleDown(int nodeId) {
 	modified(nodeId, srcRegion);
 }
 
-void SceneManager::splitObjects(int nodeId) {
+void SceneManager::nodeSplitObjects(int nodeId) {
 	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -644,7 +644,7 @@ void SceneManager::splitObjects(int nodeId) {
 	}
 }
 
-void SceneManager::crop(int nodeId) {
+void SceneManager::nodeCrop(int nodeId) {
 	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -743,7 +743,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	}
 }
 
-void SceneManager::resizeAll(const glm::ivec3& size) {
+void SceneManager::nodeGroupResize(const glm::ivec3& size) {
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeResize(groupNodeId, size);
 	});
@@ -1176,7 +1176,7 @@ bool SceneManager::copy(int nodeId) {
 	return _copy;
 }
 
-bool SceneManager::pasteAsNewNode(int nodeId) {
+bool SceneManager::nodePasteAsNewNode(int nodeId) {
 	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
@@ -1214,7 +1214,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 	return true;
 }
 
-bool SceneManager::cut(int nodeId) {
+bool SceneManager::nodeCut(int nodeId) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.volume() == nullptr) {
 		return false;
@@ -1691,7 +1691,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	return newScene(force, name, v);
 }
 
-void SceneManager::rotate(math::Axis axis) {
+void SceneManager::nodeGroupRotate(math::Axis axis) {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId);
 		if (node == nullptr) {
@@ -1766,7 +1766,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	modified(nodeId, v->region());
 }
 
-void SceneManager::move(int x, int y, int z) {
+void SceneManager::nodeGroupMoveVoxels(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeMoveVoxels(groupNodeId, v);
@@ -1789,7 +1789,7 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 	modified(nodeId, region);
 }
 
-void SceneManager::shift(int x, int y, int z) {
+void SceneManager::nodeGroupShift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeShift(groupNodeId, v);
@@ -2123,7 +2123,12 @@ void SceneManager::construct() {
 	command::Command::registerCommand("normpalette_removenormals")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to remove the normals from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeRemoveNormals(toNodeId(args, InvalidNodeId));
+			const int nodeId = toNodeId(args, InvalidNodeId);
+			if (nodeId == InvalidNodeId) {
+				nodeGroupRemoveNormals();
+				return;
+			}
+			nodeRemoveNormals(nodeId);
 		}).setHelp(_("Remove normal information from the palette"));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
@@ -2196,7 +2201,7 @@ void SceneManager::construct() {
 			if (file.empty()) {
 				file = core::String::format("node%i.vengi", nodeId);
 			}
-			if (!saveNode(nodeId, file)) {
+			if (!nodeSave(nodeId, file)) {
 				Log::error("Failed to save node %i to file: %s", nodeId, file.c_str());
 			}
 		}).setHelp(_("Save a single node to the given path with their node names")).setArgumentCompleter(nodeCompleter(_sceneGraph));
@@ -2225,28 +2230,28 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to crop"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			crop(nodeId);
+			nodeCrop(nodeId);
 		}).setHelp(_("Crop the given node to the voxel boundaries"));
 
 	command::Command::registerCommand("splitobjects")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to split"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			splitObjects(nodeId);
+			nodeSplitObjects(nodeId);
 		}).setHelp(_("Split the given node into multiple nodes"));
 
 	command::Command::registerCommand("scaledown")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			scaleDown(nodeId);
+			nodeScaleDown(nodeId);
 		}).setHelp(_("Scale the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("scaleup")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			scaleUp(nodeId);
+			nodeScaleUp(nodeId);
 		}).setHelp(_("Scale the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel")
@@ -2257,10 +2262,10 @@ void SceneManager::construct() {
 			if (args.has("index")) {
 				const uint8_t index = (uint8_t)args.intVal("index");
 				const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-				colorToNewNode(nodeId, voxel);
+				nodeColorToNewNode(nodeId, voxel);
 			} else {
 				const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
-				colorToNewNode(nodeId, voxel);
+				nodeColorToNewNode(nodeId, voxel);
 			}
 		}).setHelp(_("Move the voxels of the current selected palette index or the given index into a new node"));
 
@@ -2271,22 +2276,22 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("fillhollow")
 		.setHandler([&] (const command::CommandArgs& args) {
-			fillHollow();
+			nodeGroupFillHollow();
 		}).setHelp(_("Fill the inner parts of closed models"));
 
 	command::Command::registerCommand("hollow")
 		.setHandler([&] (const command::CommandArgs& args) {
-			hollow();
+			nodeGroupHollow();
 		}).setHelp(_("Remove non visible voxels"));
 
 	command::Command::registerCommand("fill")
 		.setHandler([&] (const command::CommandArgs& args) {
-			fill();
+			nodeGroupFill();
 		}).setHelp(_("Fill voxels in the current selection"));
 
 	command::Command::registerCommand("clear")
 		.setHandler([&] (const command::CommandArgs& args) {
-			clear();
+			nodeGroupClear();
 		}).setHelp(_("Remove all voxels in the current selection"));
 
 	command::Command::registerCommand("setreferenceposition")
@@ -2374,7 +2379,7 @@ void SceneManager::construct() {
 			const int x = args.intVal("x");
 			const int y = args.intVal("y");
 			const int z = args.intVal("z");
-			shift(x, y, z);
+			nodeGroupShift(x, y, z);
 		}).setHelp(_("Shift the volume by the given values"));
 
 	command::Command::registerCommand("center_referenceposition")
@@ -2414,7 +2419,7 @@ void SceneManager::construct() {
 			const int x = args.intVal("x");
 			const int y = args.intVal("y");
 			const int z = args.intVal("z");
-			move(x, y, z);
+			nodeGroupMoveVoxels(x, y, z);
 		}).setHelp(_("Move the voxels inside the volume by the given values without changing the volume bounds"));
 
 	command::Command::registerCommand("copy")
@@ -2443,13 +2448,13 @@ void SceneManager::construct() {
 	command::Command::registerCommand("pastenewnode")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Parent node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			pasteAsNewNode(toNodeId(args, activeNode()));
+			nodePasteAsNewNode(toNodeId(args, activeNode()));
 		}).setHelp(_("Paste clipboard as a new node"));
 
 	command::Command::registerCommand("cut")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to cut from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			cut(toNodeId(args, activeNode()));
+			nodeCut(toNodeId(args, activeNode()));
 		}).setHelp(_("Cut selection"));
 
 	command::Command::registerCommand("undo")
@@ -2470,7 +2475,7 @@ void SceneManager::construct() {
 			const int n = args.intVal("amount", 1);
 			memento::ScopedMementoGroup group(_mementoHandler, "rotate");
 			for (int i = 0; i < n; ++i) {
-				rotate(axis);
+				nodeGroupRotate(axis);
 			}
 		}).setHelp(_("Rotate active nodes around the given axis"));
 
@@ -2566,13 +2571,17 @@ void SceneManager::construct() {
 		.addArg({"axis", command::ArgType::String, false, "", "Axis to flip around: x|y|z"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const math::Axis axis = math::toAxis(args.str("axis"));
-			flip(axis);
+			nodeGroupFlip(axis);
 		}).setHelp(_("Flip the selected nodes around the given axis")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("transformreset")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
+			if (nodeId == InvalidNodeId) {
+				nodeGroupResetTransform(InvalidKeyFrame);
+				return;
+			}
 			nodeResetTransform(nodeId, InvalidKeyFrame);
 		}).setHelp(_("Reset the transform of the current node and keyframe to the default transform"));
 
@@ -2900,7 +2909,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 	return nodeId;
 }
 
-void SceneManager::flip(math::Axis axis) {
+void SceneManager::nodeGroupFlip(math::Axis axis) {
 	nodeForeachGroup([&](int groupNodeId) {
 		voxel::RawVolume *v = volume(groupNodeId);
 		if (v == nullptr) {
@@ -3555,7 +3564,7 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 	return true;
 }
 
-bool SceneManager::nodeUpdatePivotGroup(const glm::vec3 &pivot) {
+bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
 	nodeForeachGroup([&] (int groupNodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 			nodeUpdatePivot(*node, pivot);
@@ -3565,9 +3574,6 @@ bool SceneManager::nodeUpdatePivotGroup(const glm::vec3 &pivot) {
 }
 
 bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
-	if (nodeId == InvalidNodeId) {
-		return false;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdatePivot(*node, pivot);
 	}
@@ -3629,7 +3635,7 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+bool SceneManager::nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 											scenegraph::FrameIndex frameIdx, bool local) {
 	nodeForeachGroup([&] (int groupNodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
@@ -3662,29 +3668,21 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, cons
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int groupNodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
-				nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
-			}
-		});
-		return true;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
 	}
 	return false;
 }
 
+void SceneManager::nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx) {
+	nodeForeachGroup([&] (int groupNodeId) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
+			nodeResetTransform(*node, keyFrameIdx);
+		}
+	});
+}
+
 bool SceneManager::nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int groupNodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
-				nodeResetTransform(*node, keyFrameIdx);
-			}
-		});
-		return true;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeResetTransform(*node, keyFrameIdx);
 	}
@@ -3726,14 +3724,14 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 	return false;
 }
 
+void SceneManager::nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx) {
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
+		nodeAddKeyframe(node, frameIdx);
+	});
+}
+
 bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&](int groupNodeId) {
-			scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
-			nodeAddKeyframe(node, frameIdx);
-		});
-		return true;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeAddKeyframe(*node, frameIdx);
 	}
@@ -3750,14 +3748,14 @@ bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
 	return true;
 }
 
+void SceneManager::nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx) {
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
+		nodeRemoveKeyFrame(node, frameIdx);
+	});
+}
+
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&](int groupNodeId) {
-			scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
-			nodeRemoveKeyFrame(node, frameIdx);
-		});
-		return true;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrame(*node, frameIdx);
 	}
@@ -4276,13 +4274,13 @@ void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 	_sceneGraph.foreachGroup(f);
 }
 
+void SceneManager::nodeGroupRemoveNormals() {
+	nodeForeachGroup([&] (int groupNodeId) {
+		nodeRemoveNormals(groupNodeId);
+	});
+}
+
 bool SceneManager::nodeRemoveNormals(int nodeId) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int groupNodeId) {
-			nodeRemoveNormals(groupNodeId);
-		});
-		return true;
-	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (!node->isAnyModelNode()) {
 			return false;

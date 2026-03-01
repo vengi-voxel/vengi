@@ -868,7 +868,7 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 	}
 	voxel::Voxel targetVoxel(voxel::VoxelType::Generic, 1);
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, targetVoxel));
-	const int newNodeId = sceneMgr()->colorToNewNode(nodeId, targetVoxel);
+	const int newNodeId = sceneMgr()->nodeColorToNewNode(nodeId, targetVoxel);
 	EXPECT_NE(InvalidNodeId, newNodeId);
 	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, newV);
@@ -966,7 +966,7 @@ TEST_F(SceneManagerTest, testCalculateNormals) {
 			}
 		}
 	}
-	EXPECT_TRUE(_sceneMgr->calculateNormals(nodeId, voxel::SixConnected));
+	EXPECT_TRUE(_sceneMgr->nodeCalculateNormals(nodeId, voxel::SixConnected));
 	// check that normals are set for the voxels we placed
 	EXPECT_NE(v->voxel(glm::ivec3(2, 2, 2)).getNormal(), NO_NORMAL);
 	EXPECT_NE(v->voxel(glm::ivec3(3, 2, 2)).getNormal(), NO_NORMAL);

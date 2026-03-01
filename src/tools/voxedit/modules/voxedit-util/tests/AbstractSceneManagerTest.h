@@ -22,8 +22,8 @@ public:
 		return loadSceneGraph(core::move(sceneGraph));
 	}
 
-	int colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
-		return SceneManager::colorToNewNode(nodeId, voxelColor);
+	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
+		return SceneManager::nodeColorToNewNode(nodeId, voxelColor);
 	}
 
 	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
@@ -43,27 +43,27 @@ public:
 	}
 
 	void testFillHollow() {
-		fillHollow();
+		nodeGroupFillHollow();
 	}
 
 	void testHollow() {
-		hollow();
+		nodeGroupHollow();
 	}
 
 	void testFill() {
-		fill();
+		nodeGroupFill();
 	}
 
 	void testClear() {
-		clear();
+		nodeGroupClear();
 	}
 
 	void testFlip(math::Axis axis) {
-		flip(axis);
+		nodeGroupFlip(axis);
 	}
 
 	bool testSaveNode(int nodeId, const core::String &file) {
-		return saveNode(nodeId, file);
+		return nodeSave(nodeId, file);
 	}
 
 	bool testSaveModels(const core::String &dir) {
@@ -71,7 +71,7 @@ public:
 	}
 
 	void testSplitObjects(int nodeId) {
-		splitObjects(nodeId);
+		nodeSplitObjects(nodeId);
 	}
 };
 

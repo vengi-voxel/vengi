@@ -359,7 +359,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 		ImGui::TooltipTextUnformatted(reset);
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
-			_sceneMgr->nodeUpdatePivotGroup(pivot);
+			_sceneMgr->nodeGroupUpdatePivot(pivot);
 		}
 		ImGui::TooltipTextUnformatted(updateTooltip);
 		pivotChanged |= ImGui::InputXYZ(_("Pivot"), pivot, nullptr, ImGuiInputTextFlags_None, 0.1f, 0.1f);
@@ -393,7 +393,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 										   _localSpace->boolVal());
 		}
 	} else if (changeMultiple) {
-		_sceneMgr->nodeUpdateTransformGroup(matrixRotation, matrixScale, matrixTranslation, frameIdx,
+		_sceneMgr->nodeGroupUpdateTransform(matrixRotation, matrixScale, matrixTranslation, frameIdx,
 											_localSpace->boolVal());
 	}
 }

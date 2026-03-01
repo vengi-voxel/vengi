@@ -180,18 +180,18 @@ protected:
 	 * @brief Move the cursor relative by the given steps in each direction
 	 */
 	void moveCursor(int x, int y, int z);
-	void fillHollow();
-	void hollow();
-	void fill();
-	void clear();
+	void nodeGroupFillHollow();
+	void nodeGroupHollow();
+	void nodeGroupFill();
+	void nodeGroupClear();
 
-	int colorToNewNode(int nodeId, const voxel::Voxel voxelColor);
-	int colorToNewNode(const voxel::Voxel voxelColor);
-	void crop(int nodeId);
-	void splitObjects(int nodeId);
-	void scaleDown(int nodeId);
-	void scaleUp(int nodeId);
-	void resizeAll(const glm::ivec3 &size);
+	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor);
+	int nodeColorToNewNode(const voxel::Voxel voxelColor);
+	void nodeCrop(int nodeId);
+	void nodeSplitObjects(int nodeId);
+	void nodeScaleDown(int nodeId);
+	void nodeScaleUp(int nodeId);
+	void nodeGroupResize(const glm::ivec3 &size);
 	int size() const;
 
 	bool doUndo();
@@ -202,12 +202,12 @@ protected:
 	 * @param[in] angleY in degree
 	 * @param[in] angleZ in degree
 	 */
-	void rotate(math::Axis axis);
+	void nodeGroupRotate(math::Axis axis);
 
 	bool saveModels(const core::String &dir);
-	bool saveNode(int nodeId, const core::String &file);
+	bool nodeSave(int nodeId, const core::String &file);
 
-	void flip(math::Axis axis);
+	void nodeGroupFlip(math::Axis axis);
 
 	/**
 	 * we assume that this is going hand in hand with transform states
@@ -323,7 +323,8 @@ public:
 	 */
 	bool loadPalette(const core::String &paletteName, bool searchBestColors, bool save);
 
-	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
+	void nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow);
+	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
 						  bool fillAndHollow = false);
 
 	/**
@@ -346,8 +347,8 @@ public:
 
 	bool copy(int nodeId);
 	bool paste(const glm::ivec3 &pos);
-	bool pasteAsNewNode(int nodeId);
-	bool cut(int nodeId);
+	bool nodePasteAsNewNode(int nodeId);
+	bool nodeCut(int nodeId);
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);
@@ -385,11 +386,11 @@ public:
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
 	 */
-	void shift(int x, int y, int z);
+	void nodeGroupShift(int x, int y, int z);
 	/**
 	 * @brief Move the voxels inside the volume regions
 	 */
-	void move(int x, int y, int z);
+	void nodeGroupMoveVoxels(int x, int y, int z);
 
 	/**
 	 * @brief Import an existing model
@@ -543,20 +544,23 @@ public:
 	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
 	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+	bool nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 								  scenegraph::FrameIndex frameIdx, bool local);
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
+	void nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivotGroup(const glm::vec3 &pivot);
+	bool nodeGroupUpdatePivot(const glm::vec3 &pivot);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
 	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
+	void nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	void nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
@@ -570,6 +574,7 @@ public:
 	bool nodeSetLocked(int nodeId, bool locked);
 	bool nodeActivate(int nodeId);
 	bool nodeUnreference(int nodeId);
+	void nodeGroupRemoveNormals();
 	bool nodeRemoveNormals(int nodeId);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual

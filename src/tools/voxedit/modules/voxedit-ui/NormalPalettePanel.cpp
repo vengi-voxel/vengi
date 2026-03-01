@@ -151,7 +151,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					} else if (currentNormalMode == 2) {
 						connectivity = voxel::Connectivity::TwentySixConnected;
 					}
-					_sceneMgr->calculateNormals(InvalidNodeId, connectivity, _recalcAll, _onlySurfaceVoxels);
+					_sceneMgr->nodeGroupCalulateNormals(connectivity, _recalcAll, _onlySurfaceVoxels);
 				}
 
 				ImGui::EndMenu();
