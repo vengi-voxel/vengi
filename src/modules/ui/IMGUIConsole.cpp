@@ -8,6 +8,7 @@
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
+#include "core/BindingContext.h"
 #include "core/Log.h"
 #include "imgui.h"
 #include "util/Console.h"
@@ -136,7 +137,8 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
 								 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
 							 _priv::ConsoleInputTextCallback, this)) {
-			executeCommandLine(&imguiApp()->commandListener());
+			core::ScopedBindingContext context(core::BindingContext::All);
+			executeCommandLine(&listener);
 			ImGui::SetKeyboardFocusHere(-1);
 		}
 	}

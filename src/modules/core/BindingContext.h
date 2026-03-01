@@ -52,4 +52,15 @@ inline bool isSuitableBindingContext(core::BindingContext context) {
 	return (core::bindingContext() & context) != 0;
 }
 
+class ScopedBindingContext {
+private:
+	const BindingContext _oldContext;
+public:
+	ScopedBindingContext(BindingContext newContext) : _oldContext(core::setBindingContext(newContext)) {
+	}
+	~ScopedBindingContext() {
+		core::setBindingContext(_oldContext);
+	}
+};
+
 }
