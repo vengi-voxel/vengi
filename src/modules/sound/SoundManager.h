@@ -63,6 +63,7 @@ public:
 	 * @brief Load a WAV file
 	 * @param path The file path to the WAV file
 	 * @return An opaque handle to the sound, or @c nullptr on failure
+	 * @sa freeSound()
 	 */
 	SoundHandle loadSound(const core::String &path);
 

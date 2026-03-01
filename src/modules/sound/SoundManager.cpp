@@ -109,7 +109,7 @@ bool SoundManager::init() {
 }
 
 void SoundManager::update(double /*nowSeconds*/) {
-	if (_enabled && _enabled->isDirty()) {
+	if (_enabled->isDirty()) {
 		_enabled->markClean();
 		if (_enabled->boolVal()) {
 			ensureDevice();
@@ -117,7 +117,7 @@ void SoundManager::update(double /*nowSeconds*/) {
 			closeDevice();
 		}
 	}
-	if (_volume && _volume->isDirty()) {
+	if (_volume->isDirty()) {
 		_volume->markClean();
 	}
 }
@@ -223,7 +223,7 @@ void SoundManager::playSound(SoundHandle handle) {
 	if (handle == nullptr) {
 		return;
 	}
-	if (_enabled && !_enabled->boolVal()) {
+	if (!_enabled->boolVal()) {
 		return;
 	}
 	if (!_initialized) {
@@ -231,7 +231,6 @@ void SoundManager::playSound(SoundHandle handle) {
 	}
 
 	SoundData *data = (SoundData *)handle;
-	const int volume = _volume ? _volume->intVal() : 100;
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (data->stream == nullptr) {
@@ -242,6 +241,7 @@ void SoundManager::playSound(SoundHandle handle) {
 		Log::warn("Failed to put audio stream data: %s", SDL_GetError());
 		return;
 	}
+	const int volume = _volume->intVal();
 	if (volume < 100) {
 		SDL_SetAudioStreamGain(data->stream, volume / 100.0f);
 	}
