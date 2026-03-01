@@ -1947,7 +1947,7 @@ void SceneManager::construct() {
 	_client.construct();
 
 	command::Command::registerCommand("resizetoselection")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to resize"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to resize"})
 		.setHandler([&](const command::CommandArgs &args) {
 			const int activeNodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNodeId);
