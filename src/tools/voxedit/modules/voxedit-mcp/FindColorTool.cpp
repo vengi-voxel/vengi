@@ -10,16 +10,16 @@ namespace voxedit {
 FindColorTool::FindColorTool() : Tool("voxedit_find_color") {
 	_tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color.";
 
-	nlohmann::json rProp = propTypeDescription("integer", "Red component (0-255)");
+	nlohmann::json rProp = propTypeDescription("integer", "Red");
 	rProp["minimum"] = 0;
 	rProp["maximum"] = 255;
-	nlohmann::json gProp = propTypeDescription("integer", "Green component (0-255)");
+	nlohmann::json gProp = propTypeDescription("integer", "Green");
 	gProp["minimum"] = 0;
 	gProp["maximum"] = 255;
-	nlohmann::json bProp = propTypeDescription("integer", "Blue component (0-255)");
+	nlohmann::json bProp = propTypeDescription("integer", "Blue");
 	bProp["minimum"] = 0;
 	bProp["maximum"] = 255;
-	nlohmann::json aProp = propTypeDescription("integer", "Alpha component (0-255), defaults to 255");
+	nlohmann::json aProp = propTypeDescription("integer", "Alpha");
 	aProp["minimum"] = 0;
 	aProp["maximum"] = 255;
 	aProp["default"] = 255;

@@ -11,17 +11,17 @@ namespace voxedit {
 
 ScriptCreateTool::ScriptCreateTool() : Tool("voxedit_script_create") {
 	_tool["description"] =
-		"Create (execute via command xs scriptname afterwards) a new Lua script. Script main function receives: node, region, color, [custom args]\n"
-		"Get api details with voxedit_script_api. Always add a description function to your script:"
+		"Create (xs command to run it) Lua scripts. main function receives: node, region, color, [custom args]\n"
+		"Api details via voxedit_script_api. Always add a description function to the script:"
 		"function description() return 'My script description' end\n"
-		"Try to use arguments to make your scripts re-usable. Custom argument handling: function arguments() return { "
+		"Try to use arguments to make the scripts re-usable. Custom argument handling: function arguments() return { "
 		"{ name = 'padding', desc = 'padding between nodes', type = 'int', default = '2' } } end";
 
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
 	inputSchema["required"] = nlohmann::json::array({"name", "code"});
 	inputSchema["properties"]["name"] = propTypeDescription("string", "Script name");
-	inputSchema["properties"]["code"] = propTypeDescription("string", "Lua script code");
+	inputSchema["properties"]["code"] = propTypeDescription("string", "Lua code");
 	inputSchema["properties"]["args"] =
 		propTypeDescription("string", "Script arguments defined by function arguments() in the lua code [custom args]");
 	_tool["inputSchema"] = core::move(inputSchema);

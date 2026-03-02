@@ -9,8 +9,8 @@ namespace voxedit {
 
 AnimationAddTool::AnimationAddTool() : Tool("voxedit_animation_add") {
 	_tool["description"] =
-		"Create a new animation in the scene. After creating, use voxedit_animation_set to switch to it, then "
-		"use voxedit_node_add_keyframe to add keyframes for each node. Fetch the scene state to see existing "
+		"Create a new animation in the scene. Use voxedit_animation_set to switch to it, then "
+		"voxedit_node_add_keyframe to add keyframes for each node. Fetch the scene state to see existing "
 		"animations and their keyframes.";
 
 	nlohmann::json inputSchema;
