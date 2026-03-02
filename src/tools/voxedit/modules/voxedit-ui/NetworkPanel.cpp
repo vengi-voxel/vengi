@@ -193,9 +193,6 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 				} else {
 					ImGui::TextUnformatted(_("Connected to server"));
 					ImGui::InputVarString(cfg::VoxEditNetRconPassword);
-					if (ImGui::Button(_("New Scene"))) {
-						networkClient.executeCommand("newscene");
-					}
 					if (ImGui::InputText(_("Command"), &_command,
 										 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
 						networkClient.executeCommand(_command);
