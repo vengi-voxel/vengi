@@ -20,12 +20,13 @@ function main(node, region, color, spacing, studheight, studradius)
 	local mins = volRegion:mins()
 	local maxs = volRegion:maxs()
 
+	-- Extend the volume upward to make room for studs
+	volume:resize(0, studheight, 0)
+
 	-- Collect stud placement positions before modifying the volume.
 	-- A surface voxel is any non-empty voxel with air (empty) directly above it.
 	-- We only consider grid-aligned positions so the studs form a regular pattern.
-	-- Studs are only placed if there is room within the existing volume bounds.
 	local studs = {}
-	local maxStudY = maxs.y - studheight + 1
 
 	for x = mins.x, maxs.x, spacing do
 		for z = mins.z, maxs.z, spacing do
@@ -33,7 +34,7 @@ function main(node, region, color, spacing, studheight, studradius)
 				local c = volume:voxel(x, y, z)
 				if c ~= -1 then
 					local above = volume:voxel(x, y + 1, z)
-					if above == -1 and y + 1 <= maxStudY then
+					if above == -1 then
 						studs[#studs + 1] = { x = x, y = y + 1, z = z, color = c }
 					end
 				end
