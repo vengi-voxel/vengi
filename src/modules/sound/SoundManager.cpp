@@ -38,7 +38,7 @@ bool SoundManager::ensureDevice() {
 	if (_initialized) {
 		return true;
 	}
-	if (_enabled && !_enabled->boolVal()) {
+	if (!_enabled->boolVal()) {
 		return false;
 	}
 #if SDL_VERSION_ATLEAST(3, 2, 0)
@@ -144,22 +144,24 @@ void SoundManager::shutdown() {
 }
 
 SoundHandle SoundManager::loadSound(const core::String &path) {
+	if (!_enabled->boolVal()) {
+		Log::debug("Sound is disabled, sound %s is not loaded", path.c_str());
+		return nullptr;
+	}
 	if (!ensureDevice()) {
-		Log::warn("Sound device not available - cannot load sound");
+		Log::warn("Sound device not available");
 		return nullptr;
 	}
 
 	SoundData *data = new SoundData();
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-	int length = 0;
-	if (!SDL_LoadWAV(path.c_str(), &data->spec, &data->buffer, (Uint32 *)&length)) {
+	if (!SDL_LoadWAV(path.c_str(), &data->spec, &data->buffer, &data->length)) {
 		Log::warn("Failed to load WAV file '%s': %s", path.c_str(), SDL_GetError());
 		delete data;
 		return nullptr;
 	}
-	data->length = (uint32_t)length;
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
 	data->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &data->spec, nullptr, nullptr);
 	if (data->stream == nullptr) {
 		Log::warn("Failed to open audio device stream: %s", SDL_GetError());
@@ -168,12 +170,6 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 		return nullptr;
 	}
 #else
-	if (SDL_LoadWAV(path.c_str(), &data->spec, &data->buffer, &data->length) == nullptr) {
-		Log::warn("Failed to load WAV file '%s': %s", path.c_str(), SDL_GetError());
-		delete data;
-		return nullptr;
-	}
-
 	if (_device == 0) {
 		_device = SDL_OpenAudioDevice(nullptr, 0, &data->spec, &_deviceSpec, 0);
 		if (_device == 0) {
@@ -186,7 +182,7 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 #endif
 
 	_sounds.push_back(data);
-	Log::info("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
+	Log::debug("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
 	return (SoundHandle)data;
 }
 
