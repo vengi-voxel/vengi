@@ -59,8 +59,11 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 						_textEditor.SetText(_luaApiWidget._activeScript.c_str());
 					}
 					ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
-					if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
+					if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload script"))) {
 						_luaApiWidget.reloadCurrentScript(luaApi);
+					}
+					if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload all scripts"))) {
+						_luaApiWidget.clear();
 					}
 				}
 				ImGui::EndMenu();
