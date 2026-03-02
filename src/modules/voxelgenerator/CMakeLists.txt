@@ -33,6 +33,7 @@ set(LUA_SRCS
 	scripts/grid.lua
 	scripts/house.lua
 	scripts/imageasvolume.lua
+	scripts/lego_studs.lua
 	scripts/mandelbulb.lua
 	scripts/maze.lua
 	scripts/meshy.lua

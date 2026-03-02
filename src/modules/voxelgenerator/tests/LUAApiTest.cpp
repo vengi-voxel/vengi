@@ -473,6 +473,11 @@ TEST_F(LUAApiTest, testScriptGrid) {
 	runFile(sceneGraph, "grid.lua");
 }
 
+TEST_F(LUAApiTest, testScriptLegoStuds) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "lego_studs.lua");
+}
+
 TEST_F(LUAApiTest, testScriptMaze) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "maze.lua");
