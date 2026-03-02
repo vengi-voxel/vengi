@@ -18,6 +18,7 @@ set(LUA_SRCS
 	scripts/aos_sinc.lua
 	scripts/aos_slope.lua
 	scripts/clouds.lua
+	scripts/colosseum.lua
 	scripts/compaction.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
