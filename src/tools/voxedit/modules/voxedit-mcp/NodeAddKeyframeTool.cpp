@@ -13,9 +13,9 @@ namespace voxedit {
 
 NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 	_tool["description"] =
-		"Add a keyframe for a node at a specific frame index in the currently active animation. "
-		"Use voxedit_animation_set first to switch to the desired animation before adding keyframes. "
-		"After adding the keyframe, you can optionally set the transform (translation, rotation, scale) "
+		"Add a keyframe for a node at a frame index in the active animation. "
+		"Use voxedit_animation_set to change the animation by name. "
+		"After adding the keyframe, you can set the transform (translation, rotation, scale) "
 		"for the node at that frame. The transform angles are in degrees (Euler angles). "
 		"To create a walking animation, add keyframes at different frame indices with appropriate "
 		"translations and rotations for leg, arm, and torso nodes. "

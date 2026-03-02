@@ -41,9 +41,9 @@ void LuaScriptsRequestHandler::execute(const network::ClientId &clientId, LuaScr
 			paramInfo.minValue = param.minValue;
 			paramInfo.maxValue = param.maxValue;
 			paramInfo.type = (LuaParameterType)param.type;
-			info.parameters.push_back(paramInfo);
+			info.parameters.emplace_back(core::move(paramInfo));
 		}
-		scriptInfos.push_back(info);
+		scriptInfos.emplace_back(core::move(info));
 	}
 
 	LuaScriptsListMessage response(scriptInfos);
