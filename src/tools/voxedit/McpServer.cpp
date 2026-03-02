@@ -129,13 +129,10 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::SelectBrushTool());
 	_toolRegistry.registerTool(new voxedit::PlaneBrushTool());
 
-	command::Command::visitSorted(
-		[&](const command::Command &c) {
-			if (c.isInput()) {
-				return;
-			}
-			_toolRegistry.registerTool(new voxedit::CommandTool(c));
-		});
+	// Single unified command tool replaces individual per-command tools
+	_toolRegistry.registerTool(new voxedit::CommandTool());
+	_toolRegistry.registerTool(new voxedit::CommandListTool());
+
 	return state;
 }
 
