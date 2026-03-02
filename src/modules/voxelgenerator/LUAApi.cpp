@@ -80,8 +80,10 @@ class LuaRawVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
 	scenegraph::SceneGraphNode *_node;
+	scenegraph::SceneGraph *_sceneGraph;
 public:
-	LuaRawVolumeWrapper(scenegraph::SceneGraphNode *node) : Super(node->volume()), _node(node) {
+	LuaRawVolumeWrapper(scenegraph::SceneGraphNode *node, scenegraph::SceneGraph *sceneGraph)
+		: Super(node->volume()), _node(node), _sceneGraph(sceneGraph) {
 	}
 
 	~LuaRawVolumeWrapper() {
@@ -97,6 +99,9 @@ public:
 			return;
 		}
 		_node->setVolume(volume(), true);
+		if (_sceneGraph) {
+			_sceneGraph->markDirty();
+		}
 	}
 };
 
@@ -328,7 +333,8 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, LuaSceneGraphNode* node) {
 	if (node == nullptr) {
 		return clua_error(s, "No node given - can't push");
 	}
-	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node->node);
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
+	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node->node, sceneGraph);
 	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 

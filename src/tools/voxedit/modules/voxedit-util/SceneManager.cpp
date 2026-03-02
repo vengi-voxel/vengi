@@ -3172,14 +3172,18 @@ bool SceneManager::update(double nowSeconds) {
 		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
 	} else if (state == voxelgenerator::ScriptState::Finished) {
+		if (_sceneGraph.dirty()) {
+			markDirty();
+			// Scripts may replace volumes (e.g., via resize), making MeshState's
+			// volume pointers stale. Clear them before modified() to prevent
+			// use-after-free in scheduleRegionExtraction(). The render loop's
+			// prepareModelNodes() will re-sync volumes on the next frame.
+			_sceneRenderer->clear();
+			_sceneGraph.markClean();
+		}
 		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
 		if (dirtyRegion.isValid()) {
 			modified(activeNode(), dirtyRegion);
-		}
-		if (_sceneGraph.dirty()) {
-			markDirty();
-			_sceneRenderer->clear();
-			_sceneGraph.markClean();
 		}
 		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
