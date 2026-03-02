@@ -11,7 +11,7 @@ namespace voxedit {
 
 ScriptCreateTool::ScriptCreateTool() : Tool("voxedit_script_create") {
 	_tool["description"] =
-		"Create a new Lua script. Script main function receives: node, region, color, [custom args]\n"
+		"Create (execute via command xs scriptname afterwards) a new Lua script. Script main function receives: node, region, color, [custom args]\n"
 		"Get api details with voxedit_script_api. Always add a description function to your script:"
 		"function description() return 'My script description' end\n"
 		"Try to use arguments to make your scripts re-usable. Custom argument handling: function arguments() return { "
