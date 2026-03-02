@@ -230,13 +230,15 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 							for (int i = 0; i < (int)clients.size(); ++i) {
 								const RemoteClient &client = clients[i];
 								ImGui::TableNextRow();
-								ImGui::TableSetColumnIndex(0);
+								ImGui::TableNextColumn();
 								ImGui::TextUnformatted(client.name.c_str());
-								ImGui::TableSetColumnIndex(1);
-								ImGui::Text("%s", core::string::humanSize(client.bytesOut).c_str());
-								ImGui::TableSetColumnIndex(2);
-								ImGui::Text("%s", core::string::humanSize(client.bytesIn).c_str());
-								ImGui::TableSetColumnIndex(3);
+								ImGui::TableNextColumn();
+								const core::String &out = core::string::humanSize(client.bytesOut);
+								ImGui::TextUnformatted(out.c_str());
+								ImGui::TableNextColumn();
+								const core::String &in = core::string::humanSize(client.bytesIn);
+								ImGui::TextUnformatted(in.c_str());
+								ImGui::TableNextColumn();
 								ImGui::PushID(i);
 								if (ImGui::SmallButton(_("Kick"))) {
 									command::Command::execute(core::String::format("net_server_kick %i", i));
