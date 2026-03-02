@@ -5,6 +5,7 @@
 
 #include "ServerNetwork.h"
 #include "core/IComponent.h"
+#include "core/String.h"
 #include "scenegraph/SceneGraph.h"
 
 namespace voxedit {
@@ -18,6 +19,7 @@ protected:
 	void onConnect(RemoteClient *client) override;
 	void onDisconnect(RemoteClient *client) override;
 
+	void broadcastClientList();
 	bool shouldRequestClientState(bool localServer) const;
 	bool shouldSendClientState(bool localServer) const;
 public:
@@ -26,6 +28,12 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+
+	/**
+	 * @return The display name for a connected client - appends #id if another
+	 *         client with the same name is also connected.
+	 */
+	core::String disambiguatedName(const network::ClientId &clientId) const;
 
 	// the scenegraph that is written to
 	void setState(scenegraph::SceneGraph *sceneGraph) {

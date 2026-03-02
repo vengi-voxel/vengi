@@ -161,9 +161,6 @@ void Client::addChatMessage(const core::String &sender, const core::String &mess
 	entry.timestamp = core::TimeProvider::systemMillis();
 	entry.system = system;
 	_chatLog.push_back(entry);
-	if (!sender.empty()) {
-		_knownUsers.insert(sender);
-	}
 	if (_chatCallback) {
 		_chatCallback(entry);
 	}
@@ -173,8 +170,22 @@ const core::DynamicArray<ChatEntry> &Client::chatLog() const {
 	return _chatLog;
 }
 
-const core::StringSet &Client::knownUsers() const {
-	return _knownUsers;
+const core::DynamicArray<ClientInfo> &Client::connectedClients() const {
+	return _connectedClients;
+}
+
+void Client::updateConnectedClients(const core::DynamicArray<ClientInfo> &clients) {
+	_connectedClients = clients;
+	Log::debug("Updated connected clients list: %zu clients", _connectedClients.size());
+}
+
+core::String Client::disambiguatedName(const ClientInfo &info) const {
+	for (const ClientInfo &other : _connectedClients) {
+		if (other.id != info.id && other.name == info.name) {
+			return core::String::format("%s#%u", info.name.c_str(), (uint32_t)info.id);
+		}
+	}
+	return info.name;
 }
 
 void Client::setChatCallback(const ChatCallback &callback) {

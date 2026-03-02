@@ -6,6 +6,7 @@
 #include "ProtocolVersion.h"
 #include "core/Log.h"
 #include "protocol/ChatMessage.h"
+#include "protocol/ClientListMessage.h"
 #include "protocol/SceneStateMessage.h"
 #include "protocol/SceneStateRequestMessage.h"
 
@@ -38,6 +39,36 @@ bool Server::shouldSendClientState(bool localServer) const {
 		return false;
 	}
 	return !_sceneGraph->empty();
+}
+
+void Server::broadcastClientList() {
+	core::DynamicArray<ClientInfo> clientInfos;
+	const RemoteClients &clients = _network.clients();
+	for (size_t i = 0; i < clients.size(); ++i) {
+		if (!clients[i].name.empty()) {
+			ClientInfo info;
+			info.id = (uint8_t)i;
+			info.name = clients[i].name;
+			clientInfos.push_back(info);
+		}
+	}
+	ClientListMessage msg(clientInfos);
+	Log::debug("Broadcasting client list with %zu clients", clientInfos.size());
+	_network.broadcast(msg);
+}
+
+core::String Server::disambiguatedName(const network::ClientId &clientId) const {
+	const RemoteClients &clients = _network.clients();
+	if (clientId >= (network::ClientId)clients.size()) {
+		return "Unknown";
+	}
+	const core::String &name = clients[clientId].name;
+	for (size_t i = 0; i < clients.size(); ++i) {
+		if ((network::ClientId)i != clientId && clients[i].name == name) {
+			return core::String::format("%s#%u", name.c_str(), (uint32_t)clientId);
+		}
+	}
+	return name;
 }
 
 bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
@@ -85,6 +116,8 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 		core::String joinMsg = core::String::format("%s joined", username.c_str());
 		ChatMessage chatMsg("", joinMsg, true);
 		_network.broadcast(chatMsg);
+		// Broadcast updated client list to all clients
+		broadcastClientList();
 	}
 
 	return true;
@@ -108,6 +141,8 @@ void Server::onDisconnect(RemoteClient *client) {
 		core::String msg = core::String::format("%s left", client->name.c_str());
 		ChatMessage chatMsg("", msg, true);
 		_network.broadcast(chatMsg);
+		// Broadcast updated client list to all clients
+		broadcastClientList();
 	}
 }
 

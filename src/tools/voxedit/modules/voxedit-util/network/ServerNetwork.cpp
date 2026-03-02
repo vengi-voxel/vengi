@@ -221,6 +221,8 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_LUA_SCRIPT_CREATE, &_luaScriptCreateHandler);
 	r.registerHandler(PROTO_LOG, &_nopHandler);
 	r.registerHandler(PROTO_CHAT, &_chatHandler);
+	r.registerHandler(PROTO_CLIENT_LIST, &_nopHandler);
+
 	return true;
 }
 

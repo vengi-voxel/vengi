@@ -9,10 +9,11 @@
 #include "core/StringUtil.h"
 #include "network/NetworkAdapters.h"
 #include "ui/IMGUIEx.h"
+#include "ui/Style.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/network/ServerNetwork.h"
 #include "voxedit-util/network/Client.h"
+#include "voxedit-util/network/ServerNetwork.h"
 
 namespace voxedit {
 
@@ -21,7 +22,7 @@ void NetworkPanel::init() {
 
 void NetworkPanel::renderChat() {
 	ImGui::Separator();
-	ImGui::TextUnformatted(ICON_LC_MESSAGE_CIRCLE " Chat");
+	ImGui::Text("%s %s", ICON_LC_MESSAGE_CIRCLE, _("Chat"));
 
 	const core::DynamicArray<ChatEntry> &chatLog = _sceneMgr->client().chatLog();
 	const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -29,11 +30,11 @@ void NetworkPanel::renderChat() {
 		for (size_t i = 0; i < chatLog.size(); ++i) {
 			const ChatEntry &entry = chatLog[i];
 			if (entry.system) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(style::color(style::ColorChatSystem)));
 				ImGui::Text("* %s", entry.message.c_str());
 				ImGui::PopStyleColor();
 			} else {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.8f, 1.0f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(style::color(style::ColorChatSender)));
 				ImGui::Text("%s:", entry.sender.c_str());
 				ImGui::PopStyleColor();
 				ImGui::SameLine();
@@ -52,10 +53,31 @@ void NetworkPanel::renderChat() {
 	if (_refocusChatInput) {
 		ImGui::SetKeyboardFocusHere();
 		_refocusChatInput = false;
+		_justRefocused = true;
 	}
-	ImGui::PushItemWidth(-60);
+	const float sendButtonWidth = ImGui::CalcTextSize(_("Send")).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+	ImGui::PushItemWidth(-sendButtonWidth);
+	struct ChatInputCallbackData {
+		bool *justRefocused;
+		int *pendingCursorPos;
+	};
+	ChatInputCallbackData callbackData{&_justRefocused, &_pendingCursorPos};
+	auto chatInputCallback = [](ImGuiInputTextCallbackData *data) -> int {
+		ChatInputCallbackData *ctx = (ChatInputCallbackData *)data->UserData;
+		if (*ctx->justRefocused) {
+			// Position cursor at the requested location without selecting all text
+			const int pos = (*ctx->pendingCursorPos >= 0) ? *ctx->pendingCursorPos : data->BufTextLen;
+			data->CursorPos = pos;
+			data->SelectionStart = data->SelectionEnd = pos;
+			*ctx->justRefocused = false;
+			*ctx->pendingCursorPos = -1;
+		}
+		return 0;
+	};
 	if (ImGui::InputText("##chatinput", &_chatInput,
-						 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+						 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
+							 ImGuiInputTextFlags_CallbackAlways,
+						 chatInputCallback, &callbackData)) {
 		sendChat = true;
 	}
 	ImGui::PopItemWidth();
@@ -80,76 +102,71 @@ void NetworkPanel::handleMentionAutocomplete() {
 	// Find the last @ in the input
 	const size_t atPos = _chatInput.rfind("@");
 	if (atPos == core::String::npos) {
+		_mentionPopupOpen = false;
 		return;
 	}
 
 	// Extract the partial name after @
 	const core::String partial = _chatInput.substr(atPos + 1);
 
-	// Collect matching user names
+	Client &networkClient = _sceneMgr->client();
 	core::DynamicArray<core::String> matches;
-
-	// From known users (collected from chat messages)
-	const core::StringSet &knownUsers = _sceneMgr->client().knownUsers();
-	for (auto it = knownUsers.begin(); it != knownUsers.end(); ++it) {
-		const core::String &user = it->key;
-		if (partial.empty() || core::string::icontains(user, partial)) {
-			matches.push_back(user);
+	const core::DynamicArray<ClientInfo> &connectedClients = networkClient.connectedClients();
+	for (size_t i = 0; i < connectedClients.size(); ++i) {
+		const ClientInfo &info = connectedClients[i];
+		if (info.name.empty()) {
+			continue;
 		}
-	}
-
-	// Also from server's connected clients list if we're the server
-	if (_sceneMgr->server().isRunning()) {
-		const RemoteClients &clients = _sceneMgr->server().clients();
-		for (size_t i = 0; i < clients.size(); ++i) {
-			const core::String &name = clients[i].name;
-			if (!name.empty() && (partial.empty() || core::string::icontains(name, partial))) {
-				// Avoid duplicates
-				bool found = false;
-				for (size_t j = 0; j < matches.size(); ++j) {
-					if (matches[j] == name) {
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					matches.push_back(name);
-				}
-			}
+		const core::String &dispName = networkClient.disambiguatedName(info);
+		if (partial.empty() || core::string::icontains(dispName, partial)) {
+			matches.push_back(dispName);
 		}
 	}
 
 	if (matches.empty()) {
+		_mentionPopupOpen = false;
 		return;
 	}
 
-	// Show autocomplete popup
-	if (ImGui::IsItemActive() && !matches.empty()) {
-		ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
-		ImGui::SetNextWindowSizeConstraints(ImVec2(200, 0), ImVec2(300, 150));
-		if (ImGui::Begin("##mentionpopup", nullptr,
-						 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-							 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize |
-							 ImGuiWindowFlags_NoFocusOnAppearing)) {
-			for (size_t i = 0; i < matches.size(); ++i) {
-				if (ImGui::Selectable(matches[i].c_str())) {
-					// Replace the @partial with @username
-					_chatInput = _chatInput.substr(0, atPos) + "@" + matches[i] + " ";
-				}
+	// Open popup when the chat input is active; keep it open until user selects or clears @
+	if (ImGui::IsItemActive()) {
+		_mentionPopupOpen = true;
+	}
+
+	if (!_mentionPopupOpen) {
+		return;
+	}
+
+	// Show autocomplete popup below the chat input
+	ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y), ImGuiCond_Always);
+	const float dpiScale = ImGui::GetStyle().FontScaleDpi;
+	ImGui::SetNextWindowSizeConstraints(ImVec2(200.0f * dpiScale, 0), ImVec2(300.0f * dpiScale, 150.0f * dpiScale));
+	constexpr ImGuiWindowFlags popupFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+											ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
+											ImGuiWindowFlags_AlwaysAutoResize;
+	if (ImGui::Begin("##mentionpopup", nullptr, popupFlags)) {
+		for (size_t i = 0; i < matches.size(); ++i) {
+			if (ImGui::Selectable(matches[i].c_str())) {
+				// Replace the @partial with @username and position cursor right after the inserted text
+				_chatInput = _chatInput.substr(0, atPos) + "@" + matches[i] + " ";
+				_pendingCursorPos = (int)(atPos + 1 + matches[i].size() + 1);
+				_mentionPopupOpen = false;
+				_refocusChatInput = true;
 			}
 		}
-		ImGui::End();
 	}
+	ImGui::End();
 }
 
 void NetworkPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
 	const core::String title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
+	Client &networkClient = _sceneMgr->client();
 
 	// Register chat callback for notification sounds (once)
 	if (!_chatCallbackRegistered) {
 		const core::String ownName = core::getVar(cfg::AppUserName)->strVal();
-		_sceneMgr->client().setChatCallback([this, ownName](const ChatEntry &entry) {
+		networkClient.setChatCallback([this, ownName](const ChatEntry &entry) {
 			_scrollToBottom = true;
 			// Check for @mention of our own name
 			if (!entry.system && !ownName.empty()) {
@@ -177,18 +194,17 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					ImGui::TextUnformatted(_("Connected to server"));
 					ImGui::InputVarString(cfg::VoxEditNetRconPassword);
 					if (ImGui::Button(_("New Scene"))) {
-						_sceneMgr->client().executeCommand("newscene");
+						networkClient.executeCommand("newscene");
 					}
 					if (ImGui::InputText(_("Command"), &_command,
 										 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
-						_sceneMgr->client().executeCommand(_command);
+						networkClient.executeCommand(_command);
 						ImGui::SetKeyboardFocusHere(-1);
 					}
 					if (ImGui::Button(_("Disconnect"))) {
 						command::Command::execute("net_client_disconnect");
 					}
 
-					// Chat section (only when connected)
 					renderChat();
 				}
 				ImGui::EndTabItem();
@@ -206,7 +222,8 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					}
 					const RemoteClients &clients = _sceneMgr->server().clients();
 					if (!clients.empty()) {
-						constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
+						constexpr ImGuiTableFlags tableFlags =
+							ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
 						if (ImGui::BeginTable("##clients", 4, tableFlags)) {
 							ImGui::TableSetupColumn(_("Name"));
 							ImGui::TableSetupColumn(_("Sent"));
@@ -233,8 +250,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 						}
 					}
 
-					// Chat section on server tab too
-					if (_sceneMgr->client().isConnected()) {
+					if (networkClient.isConnected()) {
 						renderChat();
 					}
 				} else {

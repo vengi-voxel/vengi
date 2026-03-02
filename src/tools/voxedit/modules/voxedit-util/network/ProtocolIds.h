@@ -49,5 +49,7 @@ const network::ProtocolId PROTO_NODE_IK_CONSTRAINT = 18;
 const network::ProtocolId PROTO_LOG = 19;
 // chat message between clients
 const network::ProtocolId PROTO_CHAT = 20;
+// list of connected clients
+const network::ProtocolId PROTO_CLIENT_LIST = 21;
 
 } // namespace voxedit

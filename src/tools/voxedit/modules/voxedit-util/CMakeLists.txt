@@ -67,6 +67,7 @@ set(SRCS
 	network/handler/client/SceneGraphAnimationHandler.h network/handler/client/SceneGraphAnimationHandler.cpp
 	network/handler/client/LogMessageHandler.h network/handler/client/LogMessageHandler.cpp
 	network/handler/client/ChatMessageHandler.h network/handler/client/ChatMessageHandler.cpp
+	network/handler/client/ClientListHandler.h network/handler/client/ClientListHandler.cpp
 
 	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp

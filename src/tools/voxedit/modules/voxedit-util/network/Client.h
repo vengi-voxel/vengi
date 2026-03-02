@@ -9,6 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "memento/IMementoStateListener.h"
+#include "protocol/ClientListMessage.h"
 #include <functional>
 
 namespace voxedit {
@@ -30,7 +31,7 @@ protected:
 	ClientNetwork _network;
 	bool _locked = false;
 	core::DynamicArray<ChatEntry> _chatLog;
-	core::StringSet _knownUsers;
+	core::DynamicArray<ClientInfo> _connectedClients;
 	ChatCallback _chatCallback;
 
 public:
@@ -56,7 +57,13 @@ public:
 
 	void addChatMessage(const core::String &sender, const core::String &message, bool system);
 	const core::DynamicArray<ChatEntry> &chatLog() const;
-	const core::StringSet &knownUsers() const;
+	const core::DynamicArray<ClientInfo> &connectedClients() const;
+	void updateConnectedClients(const core::DynamicArray<ClientInfo> &clients);
+	/**
+	 * @return The display name for a connected client - appends #id if another
+	 *         client with the same name exists in the list.
+	 */
+	core::String disambiguatedName(const ClientInfo &info) const;
 	void setChatCallback(const ChatCallback &callback);
 	void clearChat();
 

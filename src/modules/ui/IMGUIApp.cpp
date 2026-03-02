@@ -530,6 +530,16 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 			return color::Green();
 		}
 		return color::DarkGreen();
+	case style::ColorChatSystem:
+		if (style == ImGui::StyleLight) {
+			return color::DarkGray();
+		}
+		return color::Gray();
+	case style::ColorChatSender:
+		if (style == ImGui::StyleLight) {
+			return color::DarkBlue();
+		}
+		return color::LightBlue();
 	}
 	return color::White();
 }

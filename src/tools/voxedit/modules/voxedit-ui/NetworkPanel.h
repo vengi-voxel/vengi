@@ -7,7 +7,6 @@
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
-#include "core/collection/DynamicArray.h"
 #include "ui/Panel.h"
 
 namespace voxedit {
@@ -24,6 +23,9 @@ private:
 	bool _scrollToBottom = false;
 	bool _chatCallbackRegistered = false;
 	bool _refocusChatInput = false;
+	bool _justRefocused = false;
+	bool _mentionPopupOpen = false;
+	int _pendingCursorPos = -1; /**< -1 means move to end; >= 0 positions cursor at that offset */
 
 	/**
 	 * @brief Render the chat area (messages + input) shared by client and server tabs

@@ -21,7 +21,8 @@ ClientNetwork::ClientNetwork(SceneManager *sceneMgr)
 	  _nodeKeyFramesHandle(sceneMgr), _nodeMovedHandler(sceneMgr), _nodePaletteChangedHandle(sceneMgr),
 	  _nodeNormalPaletteChangedHandle(sceneMgr), _nodePropertiesHandler(sceneMgr), _nodeIKConstraintHandler(sceneMgr),
 	  _nodeRemovedHandler(sceneMgr), _nodeRenamedHandler(sceneMgr), _sceneStateRequestHandler(sceneMgr),
-	  _sceneStateHandler(sceneMgr), _sceneGraphAnimationHandler(sceneMgr), _chatMessageHandler(sceneMgr) {
+	  _sceneStateHandler(sceneMgr), _sceneGraphAnimationHandler(sceneMgr), _chatMessageHandler(sceneMgr),
+	  _clientListHandler(sceneMgr) {
 }
 
 ClientNetwork::~ClientNetwork() {
@@ -134,6 +135,7 @@ bool ClientNetwork::init() {
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_sceneGraphAnimationHandler);
 	r.registerHandler(PROTO_LOG, &_logMessageHandler);
 	r.registerHandler(PROTO_CHAT, &_chatMessageHandler);
+	r.registerHandler(PROTO_CLIENT_LIST, &_clientListHandler);
 
 	return true;
 }

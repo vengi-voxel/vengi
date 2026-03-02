@@ -21,6 +21,7 @@
 #include "voxedit-util/network/handler/client/VoxelModificationHandler.h"
 #include "voxedit-util/network/handler/client/LogMessageHandler.h"
 #include "voxedit-util/network/handler/client/ChatMessageHandler.h"
+#include "voxedit-util/network/handler/client/ClientListHandler.h"
 #include "voxedit-util/network/handler/client/SceneGraphAnimationHandler.h"
 #include <stdint.h>
 
@@ -50,6 +51,7 @@ protected:
 	SceneGraphAnimationHandler _sceneGraphAnimationHandler;
 	LogMessageHandler _logMessageHandler;
 	ChatMessageHandler _chatMessageHandler;
+	ClientListHandler _clientListHandler;
 	network::MessageStream in;
 
 public:

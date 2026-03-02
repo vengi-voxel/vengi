@@ -23,6 +23,8 @@ enum StyleColor {
 	ColorAxisZ,
 	ColorSliceRegion,
 	ColorActiveBrush,
+	ColorChatSystem,
+	ColorChatSender,
 };
 
 const glm::vec4 &color(StyleColor color);
