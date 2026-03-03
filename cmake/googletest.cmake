@@ -44,7 +44,7 @@ function(gtest_suite_begin name)
 		# add googletest lib dependency
 		if (GTEST_FOUND)
 			target_include_directories(${name} PRIVATE ${GTEST_INCLUDE_DIRS})
-			target_link_libraries(${name} ${GTEST_LIBRARIES})
+			target_link_libraries(${name} PUBLIC ${GTEST_LIBRARIES})
 		endif()
 	endif()
 endfunction()
