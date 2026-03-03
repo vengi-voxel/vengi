@@ -234,6 +234,18 @@ msgctxt "A palette of normal vectors converted to RGBA values"
 msgid "The normal palette"
 msgstr "Die Normalen Palette"
 
+msgid "Enable or disable sound playback"
+msgstr ""
+
+msgid "Sound enabled"
+msgstr ""
+
+msgid "Sound volume"
+msgstr ""
+
+msgid "Sound volume in percent (0-100)"
+msgstr ""
+
 msgid "Camera free look on toggle"
 msgstr "Kamera-Freisicht umschalten"
 
@@ -1571,6 +1583,9 @@ msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"
 msgid "Toggle scene mode on/off"
 msgstr "Szenenmodus ein-/ausschalten"
 
+msgid "Toggle locked mouse look (FPS-style camera rotation)"
+msgstr ""
+
 msgid "Save the current scene to the given file"
 msgstr "Die aktuelle Szene als Volumen in die angegebene Datei speichern"
 
@@ -2291,6 +2306,12 @@ msgstr "Laden..."
 
 msgid "Double click to load"
 msgstr "Doppelklick zum Laden"
+
+msgid "Chat"
+msgstr ""
+
+msgid "Send"
+msgstr ""
 
 msgid "Network"
 msgstr "Netzwerk"
@@ -3038,14 +3059,20 @@ msgstr "Skript bearbeiten"
 msgid "Edit the selected lua script"
 msgstr "Das ausgewählte LUA-Skript bearbeiten"
 
-msgid "Reload"
-msgstr "Neu laden"
+msgid "Reload script"
+msgstr "Skript neu laden"
+
+msgid "Reload all scripts"
+msgstr ""
 
 msgid "Scripting manual"
 msgstr "Skripting-Handbuch"
 
 msgid "Script Editor"
 msgstr "Skripteditor"
+
+msgid "Reload"
+msgstr "Neu laden"
 
 #, c-format
 msgid "Overwrite scripts/%s"
@@ -3243,6 +3270,25 @@ msgstr ""
 "Wechseln Sie im Optionsmenü zwischen verschiedenen UI-Modi (Ace Of Spades, "
 "Command&Conquer, Minecraft, ...), um verschiedene Funktionen ein-/"
 "auszuschalten."
+
+msgid ""
+"You can use the 'View' menu in the viewport to enable/disable various visual "
+"features such as the grid, axis, ..."
+msgstr ""
+
+msgid ""
+"Use you can <cmd:camera_rotationen> to switch between different camera "
+"rotation modes such as 'Orbit' and 'First person'."
+msgstr ""
+
+msgid ""
+"Open the bindings dialog in the options menu to change the default key "
+"bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check "
+"which commands are available."
+msgstr ""
+
+msgid "Rotate all scene models"
+msgstr ""
 
 msgid "Rotate by 90 degree on the x axis"
 msgstr "Um 90 Grad um die x-Achse drehen"
@@ -3780,6 +3826,11 @@ msgstr "Wiederholt den letzten Schritt"
 
 msgid "Rotate active nodes around the given axis"
 msgstr "Rotiert aktive Knoten um die angegebene Achse"
+
+msgid ""
+"Rotate all model nodes around the given axis, preserving their relative "
+"positions"
+msgstr ""
 
 msgid "Merge two given nodes or active model node with the next one"
 msgstr ""

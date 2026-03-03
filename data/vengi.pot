@@ -205,6 +205,18 @@ msgctxt "A palette of normal vectors converted to RGBA values"
 msgid "The normal palette"
 msgstr ""
 
+msgid "Enable or disable sound playback"
+msgstr ""
+
+msgid "Sound enabled"
+msgstr ""
+
+msgid "Sound volume"
+msgstr ""
+
+msgid "Sound volume in percent (0-100)"
+msgstr ""
+
 msgid "Camera free look on toggle"
 msgstr ""
 
@@ -1507,6 +1519,9 @@ msgstr ""
 msgid "Toggle scene mode on/off"
 msgstr ""
 
+msgid "Toggle locked mouse look (FPS-style camera rotation)"
+msgstr ""
+
 msgid "Save the current scene to the given file"
 msgstr ""
 
@@ -2200,6 +2215,12 @@ msgid "Loading..."
 msgstr ""
 
 msgid "Double click to load"
+msgstr ""
+
+msgid "Chat"
+msgstr ""
+
+msgid "Send"
 msgstr ""
 
 msgid "Network"
@@ -2924,13 +2945,19 @@ msgstr ""
 msgid "Edit the selected lua script"
 msgstr ""
 
-msgid "Reload"
+msgid "Reload script"
+msgstr ""
+
+msgid "Reload all scripts"
 msgstr ""
 
 msgid "Scripting manual"
 msgstr ""
 
 msgid "Script Editor"
+msgstr ""
+
+msgid "Reload"
 msgstr ""
 
 #, c-format
@@ -3076,6 +3103,25 @@ msgstr ""
 msgid ""
 "Switch between different ui modes (Ace Of Spades, Command&Conquer, "
 "Minecraft, ...) in the options menu to enable/disable various features."
+msgstr ""
+
+msgid ""
+"You can use the 'View' menu in the viewport to enable/disable various visual "
+"features such as the grid, axis, ..."
+msgstr ""
+
+msgid ""
+"Use you can <cmd:camera_rotationen> to switch between different camera "
+"rotation modes such as 'Orbit' and 'First person'."
+msgstr ""
+
+msgid ""
+"Open the bindings dialog in the options menu to change the default key "
+"bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check "
+"which commands are available."
+msgstr ""
+
+msgid "Rotate all scene models"
 msgstr ""
 
 msgid "Rotate by 90 degree on the x axis"
@@ -3577,6 +3623,11 @@ msgid "Redo your last step"
 msgstr ""
 
 msgid "Rotate active nodes around the given axis"
+msgstr ""
+
+msgid ""
+"Rotate all model nodes around the given axis, preserving their relative "
+"positions"
 msgstr ""
 
 msgid "Merge two given nodes or active model node with the next one"

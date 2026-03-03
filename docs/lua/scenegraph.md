@@ -15,7 +15,7 @@ Global: `g_scenegraph`
 | `getByName(name)` | Get a node by its name. |
 | `getByUUID(uuid)` | Get a node by its UUID. |
 | `hasAnimation(name)` | Check if an animation exists. |
-| `new(name, region, visible, type)` | Create a new node in the scene graph. |
+| `new(name, region, visible, type)` | Create a new node in the scene graph for model nodes the parameters differ. |
 | `nodeIds()` | Get all node IDs in the scene graph. |
 | `setAnimation(name)` | Set the active animation. |
 | `updateTransforms()` | Update all transforms in the scene graph. |
@@ -151,16 +151,16 @@ Check if an animation exists.
 
 ### new
 
-Create a new node in the scene graph.
+Create a new node in the scene graph for model nodes the parameters differ.
 
 **Parameters:**
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `name` | `string` | The node name. |
-| `region` | `region` | The region for model nodes (or boolean for visibility). |
+| `region` | `region` | The region for model nodes. |
 | `visible` | `boolean` | Whether the node is visible (optional, default true). |
-| `type` | `string` | Node type: 'Model', 'Group', 'Camera', 'Point' (optional, default 'Group'). |
+| `type` | `string` | Node type: 'Model', 'Group', 'Camera', 'Point'. Not given for model nodes which have the 2nd parameter as region. |
 
 **Returns:**
 
