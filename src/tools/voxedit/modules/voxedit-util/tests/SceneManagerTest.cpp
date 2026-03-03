@@ -1142,6 +1142,82 @@ TEST_F(SceneManagerTest, testFlip) {
 	EXPECT_EQ(1, voxelCount) << "Flip should preserve the voxel count";
 }
 
+TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
+	const voxel::Region region{0, 0, 0, 3, 3, 6};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "rotate_all_multi_test", region));
+	const int firstNodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v1 = _sceneMgr->volume(firstNodeId);
+	ASSERT_NE(nullptr, v1);
+	v1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	// Set an asymmetric pivot on the first node to verify X<->Z swap
+	const glm::vec3 pivot1(0.25f, 0.0f, 0.75f);
+	_sceneMgr->sceneGraph().node(firstNodeId).setPivot(pivot1);
+
+	const int secondNodeId = _sceneMgr->addModelChild("second node", 4, 8, 4);
+	ASSERT_NE(InvalidNodeId, secondNodeId);
+	voxel::RawVolume *v2 = _sceneMgr->volume(secondNodeId);
+	ASSERT_NE(nullptr, v2);
+	v2->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	// Set an asymmetric pivot on the second node
+	const glm::vec3 pivot2(1.0f, 0.5f, 0.0f);
+	_sceneMgr->sceneGraph().node(secondNodeId).setPivot(pivot2);
+
+	_sceneMgr->sceneGraph().updateTransforms();
+
+	sceneMgr()->testNodeRotateAll(math::Axis::Y);
+
+	// Y-axis rotation swaps X and Z dimensions in the volumes
+	// rotateAxis mapping: (x, y, z) -> (srcMaxs.z - z, y, x)
+
+	// First node: region {0,0,0, 3,3,6} (4x4x7) -> {0,0,0, 6,3,3} (7x4x4)
+	v1 = _sceneMgr->volume(firstNodeId);
+	ASSERT_NE(nullptr, v1);
+	EXPECT_EQ(1, voxelutil::countVoxels(*v1)) << "First node should preserve voxel count after rotation";
+	EXPECT_EQ(v1->region(), (voxel::Region{0, 0, 0, 6, 3, 3})) << "First node region should have X and Z swapped";
+	// Voxel (0,0,0) -> (6-0, 0, 0) = (6, 0, 0)
+	EXPECT_TRUE(voxel::isBlocked(v1->voxel(6, 0, 0).getMaterial()))
+		<< "Voxel should be at (6,0,0) after Y rotation";
+	EXPECT_TRUE(voxel::isAir(v1->voxel(0, 0, 0).getMaterial()))
+		<< "Original position (0,0,0) should be empty after rotation";
+
+	// Second node: region {0,0,0, 3,7,3} (4x8x4) -> {0,0,0, 3,7,3} (4x8x4, same since X==Z)
+	v2 = _sceneMgr->volume(secondNodeId);
+	ASSERT_NE(nullptr, v2);
+	EXPECT_EQ(1, voxelutil::countVoxels(*v2)) << "Second node should preserve voxel count after rotation";
+	EXPECT_EQ(v2->region(), (voxel::Region{0, 0, 0, 3, 7, 3}))
+		<< "Second node region should be unchanged (X and Z dims are equal)";
+	// Voxel (2,2,2) -> (3-2, 2, 2) = (1, 2, 2)
+	EXPECT_TRUE(voxel::isBlocked(v2->voxel(1, 2, 2).getMaterial()))
+		<< "Voxel should be at (1,2,2) after Y rotation";
+	EXPECT_TRUE(voxel::isAir(v2->voxel(2, 2, 2).getMaterial()))
+		<< "Original position (2,2,2) should be empty after rotation";
+
+	// Pivots: Y-axis rotation swaps X<->Z pivot components
+	// pivot1 (0.25, 0.0, 0.75) -> (0.75, 0.0, 0.25)
+	// pivot2 (1.0, 0.5, 0.0) -> (0.0, 0.5, 1.0)
+	const scenegraph::SceneGraphNode &n1 = _sceneMgr->sceneGraph().node(firstNodeId);
+	EXPECT_VEC_NEAR(n1.pivot(), glm::vec3(0.75f, 0.0f, 0.25f), 0.0001f)
+		<< "First node pivot should have X and Z swapped";
+	const scenegraph::SceneGraphNode &n2 = _sceneMgr->sceneGraph().node(secondNodeId);
+	EXPECT_VEC_NEAR(n2.pivot(), glm::vec3(0.0f, 0.5f, 1.0f), 0.0001f)
+		<< "Second node pivot should have X and Z swapped";
+
+	// World translations after rotation around the scene pivot
+	// The scene region (affected by pivots via OBB) accumulates to (-4,-4,-6) to (2,3,3)
+	// Scene center (calcCenterf): (-0.5, 0.0, -1.0)
+	// Node 1: worldCenter(2,2,3.5) rotated around scene center -> (-8.5, 0.0, -0.5)
+	// Node 2 (child, inherits parent translation): worldCenter(-6.5,4,1.5) rotated -> (-5.0, 0.0, -9.0)
+	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n1, 0);
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(-8.5f, 0.0f, -0.5f), 0.001f)
+		<< "First node world translation after rotation";
+
+	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n2, 0);
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(-5.0f, 0.0f, -9.0f), 0.001f)
+		<< "Second node world translation after rotation";
+}
+
 TEST_F(SceneManagerTest, testNodeResizeEnlargeUndoRedo) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "resize_enlarge_test", region));

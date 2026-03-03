@@ -73,6 +73,10 @@ public:
 	void testSplitObjects(int nodeId) {
 		nodeSplitObjects(nodeId);
 	}
+
+	void testNodeRotateAll(math::Axis axis) {
+		nodeRotateAll(axis);
+	}
 };
 
 class AbstractSceneManagerTest : public app::AbstractTest {
