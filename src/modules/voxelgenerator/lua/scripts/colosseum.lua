@@ -20,7 +20,7 @@ function main(node, region, color, seed, arches, damaged)
 	local sqrt = math.sqrt
 	local sin = math.sin
 	local cos = math.cos
-	local atan2 = math.atan2
+	local atan2 = math.atan
 	local abs = math.abs
 	local min = math.min
 	local max = math.max
