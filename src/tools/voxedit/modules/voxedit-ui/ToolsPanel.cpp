@@ -77,6 +77,19 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 			toolbar.button(ICON_LC_ALIGN_VERTICAL_DISTRIBUTE_CENTER, "align");
 		}
 	}
+
+	const float buttonWidth = ImGui::GetFontSize() * 4;
+	if (ImGui::CollapsingHeader(_("Rotate all scene models"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ui::ScopedID id("##rotatevolumeonaxis");
+		ImGui::AxisCommandButton(math::Axis::X, _("X"), "rotateall x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
+		ImGui::SameLine();
+		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "rotateall y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
+		ImGui::SameLine();
+		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "rotateall z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
+	}
 }
 
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {

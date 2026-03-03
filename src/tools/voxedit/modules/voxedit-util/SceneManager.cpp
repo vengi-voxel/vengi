@@ -1746,19 +1746,12 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 	}
 	const glm::vec3 scenePivot = sceneReg.calcCenterf();
 
-	core::DynamicArray<int> modelNodeIds;
-	for (const auto &n : _sceneGraph.nodes()) {
-		if (n->second.isAnyModelNode()) {
-			modelNodeIds.push_back(n->second.id());
-		}
-	}
-
-	for (int nodeId : modelNodeIds) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr) {
+	for (auto *e : _sceneGraph.nodes()) {
+		scenegraph::SceneGraphNode &node = e->value;
+		if (!node.isModelNode()) {
 			continue;
 		}
-		const voxel::RawVolume *v = node->volume();
+		const voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			continue;
 		}
@@ -1769,13 +1762,13 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 		const glm::vec3 oldRegionCenter = v->region().calcCenterf();
 		const glm::vec3 newRegionCenter = newVolume->region().calcCenterf();
 
-		glm::vec3 pivot = node->pivot();
+		glm::vec3 pivot = node.pivot();
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
-		setSceneGraphNodeVolume(*node, newVolume);
-		modified(nodeId, r);
+		setSceneGraphNodeVolume(node, newVolume);
+		modified(node.id(), r);
 
-		for (const auto &kfAnim : node->allKeyFrames()) {
+		for (const auto &kfAnim : node.allKeyFrames()) {
 			for (auto &kf : kfAnim->second) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
 				// Rotate the volume's world-space center around the scene pivot,
@@ -1790,8 +1783,8 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 		const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
 		const int idx2 = (idx1 + 1) % 3;
 		core::exchange(pivot[idx1], pivot[idx2]);
-		node->setPivot(pivot);
-		_mementoHandler.markKeyFramesChange(_sceneGraph, *node);
+		node.setPivot(pivot);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	}
 }
 
