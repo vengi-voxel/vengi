@@ -242,7 +242,7 @@ VarPtr Var::createVar(const VarDef &def) {
 		const uint32_t preserve = v->_flags & CV_PRESERVE;
 		v->_flags = flagsMask | preserve;
 	}
-	if (def.hasMinMax()) {
+	if (!v->_def.hasMinMax()) {
 		v->_def.minValue = def.minValue;
 		v->_def.maxValue = def.maxValue;
 	}
