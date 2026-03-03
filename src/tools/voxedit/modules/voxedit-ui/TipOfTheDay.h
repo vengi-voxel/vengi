@@ -31,6 +31,9 @@ static const char *tips[]{
 	N_("The palette panel is able to directly import lospec palettes by the lospec palette identifier."),
 	N_("Check the status bar to see the last executed console command of the last action."),
 	N_("Imported scenes are placed centered around the reference position."),
-	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features.")
+	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features."),
+	N_("You can use the 'View' menu in the viewport to enable/disable various visual features such as the grid, axis, ..."),
+	N_("Use you can <cmd:camera_rotationen> to switch between different camera rotation modes such as 'Orbit' and 'First person'."),
+	N_("Open the bindings dialog in the options menu to change the default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check which commands are available.")
 	// clang-format on
 };
