@@ -70,6 +70,20 @@ void LUA::openState() {
 
 	luaL_openlibs(_state);
 
+	// Remove deprecated Lua 5.3 compat functions that may be provided by
+	// system Lua builds (e.g. compiled with LUA_COMPAT_5_3). This ensures
+	// consistent behavior across all platforms.
+	luaL_dostring(_state,
+		"math.atan2 = nil "
+		"math.cosh = nil "
+		"math.sinh = nil "
+		"math.tanh = nil "
+		"math.pow = nil "
+		"math.frexp = nil "
+		"math.ldexp = nil "
+		"math.log10 = nil"
+	);
+
 	clua_register(_state);
 
 	static const struct luaL_Reg printlib[] = {
