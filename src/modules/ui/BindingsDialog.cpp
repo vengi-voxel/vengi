@@ -479,7 +479,8 @@ void BindingsDialog::render(bool &show, util::KeyBindingHandler &keybindingHandl
 
 				// Use Selectable spanning all columns for row selection
 				if (ImGui::Selectable(selectableId.c_str(), isSelected,
-									  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+									  ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns |
+										  ImGuiSelectableFlags_AllowOverlap)) {
 					if (_selectedBindingIndex != currentIndex) {
 						_selectedBindingIndex = currentIndex;
 						selectionChanged = true;
@@ -519,7 +520,8 @@ void BindingsDialog::render(bool &show, util::KeyBindingHandler &keybindingHandl
 				}
 
 				ImGui::TableNextColumn();
-				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "##del-key-%i", n);
+				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "###del-key-%i", n);
+				ImGui::SetNextItemAllowOverlap();
 				if (ImGui::Button(deleteButton.c_str())) {
 					command::executeCommands(core::String::format("unbind \"%s\" %s", keyBinding.c_str(),
 																  core::bindingContextString(pair.context).c_str()),
