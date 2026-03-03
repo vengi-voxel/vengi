@@ -408,6 +408,8 @@ void VoxEdit::loadKeymap(int keymap) {
 		}
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
 		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
+		_keybindingHandler.registerBinding("q",                      "+move_up",                   "editing");
+		_keybindingHandler.registerBinding("e",                      "+move_down",                 "editing");
 		_keybindingHandler.registerBinding("space",                  "+jump",                      "game");
 	}
 
