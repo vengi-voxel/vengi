@@ -575,7 +575,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(renderSelectionTint);
 	const core::VarDef renderNormals(cfg::RenderNormals, false, N_("Normals"), _("Render voxel normals"), core::CV_SHADER);
 	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::RenderToneMapping, 0, 0, 3, N_("Tone mapping"), _("Activate tone mapping"), core::CV_SHADER);
+	const core::VarDef toneMapping(cfg::RenderToneMapping, 0, 0, 3, N_("Tone mapping"), _("Enable or disable tone mapping"), core::CV_SHADER);
 	core::Var::registerVar(toneMapping);
 	const core::VarDef clientVSync(cfg::ClientVSync, true, N_("VSync"), _("Limit the framerate to the monitor refresh rate"));
 	core::Var::registerVar(clientVSync);
