@@ -4320,12 +4320,12 @@ static int luaVoxel_scenegraph_align_jsonhelp(lua_State* s) {
 static int luaVoxel_scenegraph_new_node_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "new",
-		"summary": "Create a new node in the scene graph.",
+		"summary": "Create a new node in the scene graph for model nodes the parameters differ.",
 		"parameters": [
 			{"name": "name", "type": "string", "description": "The node name."},
-			{"name": "region", "type": "region", "description": "The region for model nodes (or boolean for visibility)."},
+			{"name": "region", "type": "region", "description": "The region for model nodes."},
 			{"name": "visible", "type": "boolean", "description": "Whether the node is visible (optional, default true)."},
-			{"name": "type", "type": "string", "description": "Node type: 'Model', 'Group', 'Camera', 'Point' (optional, default 'Group')."}
+			{"name": "type", "type": "string", "description": "Node type: 'Model', 'Group', 'Camera', 'Point'. Not given for model nodes which have the 2nd parameter as region."}
 		],
 		"returns": [
 			{"type": "node", "description": "The newly created node."}
