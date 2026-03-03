@@ -135,6 +135,8 @@ protected:
 	int _initialized = 0;
 	glm::ivec2 _mouseCursor{0};
 	glm::ivec2 _mouseCursorDelta{0};
+	bool _mouseLookActive = false;
+	video::CameraRotationType _preMouselookRotationType = video::CameraRotationType::Target;
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 	command::ActionButton _rotate;
@@ -297,6 +299,8 @@ public:
 	 * @brief Update the cursor position used for tracing
 	 */
 	void setMousePos(int x, int y);
+	void setMouseLook(bool active);
+	void setMouseDelta(int dx, int dy);
 
 	/**
 	 * @brief world matrix for the current active node

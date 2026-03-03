@@ -515,6 +515,14 @@ bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, si
 }
 
 void SceneManager::setMousePos(int x, int y) {
+	if (_mouseLookActive) {
+		// In mouselook mode, delta comes from relative mouse input via setMouseDelta().
+		// Still update the cursor position so ray casting / brush placement works.
+		_mouseCursor.x = x;
+		_mouseCursor.y = y;
+		_traceViaMouse = true;
+		return;
+	}
 	if (_mouseCursor.x == x && _mouseCursor.y == y) {
 		_mouseCursorDelta.x = 0;
 		_mouseCursorDelta.y = 0;
@@ -527,6 +535,30 @@ void SceneManager::setMousePos(int x, int y) {
 	// moving the mouse would trigger mouse tracing again
 	// TODO: maybe only do this if a mouse button was pressed?
 	_traceViaMouse = true;
+}
+
+void SceneManager::setMouseLook(bool active) {
+	_mouseLookActive = active;
+	if (active) {
+		if (_camera != nullptr) {
+			_preMouselookRotationType = _camera->rotationType();
+			_camera->setRotationType(video::CameraRotationType::Eye);
+		}
+	} else {
+		if (_camera != nullptr) {
+			if (_preMouselookRotationType == video::CameraRotationType::Target) {
+				const glm::vec3 newTarget = _camera->worldPosition() + _camera->forward() * _camera->targetDistance();
+				_camera->setTarget(newTarget);
+			}
+			_camera->setRotationType(_preMouselookRotationType);
+		}
+		_mouseCursorDelta = {0, 0};
+	}
+}
+
+void SceneManager::setMouseDelta(int dx, int dy) {
+	_mouseCursorDelta.x = dx;
+	_mouseCursorDelta.y = dy;
 }
 
 glm::mat4 SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
@@ -3324,6 +3356,8 @@ bool SceneManager::update(double nowSeconds) {
 		_rotate.execute(nowSeconds, 0.0, [&] () {
 			_camMovement.rotate(*_camera, (float)_mouseCursorDelta.x, (float)_mouseCursorDelta.y);
 		});
+	} else if (_mouseLookActive && _camera != nullptr && !_fixedCamera) {
+		_camMovement.rotate(*_camera, (float)_mouseCursorDelta.x, (float)_mouseCursorDelta.y);
 	}
 
 	animateFrames(nowSeconds);
