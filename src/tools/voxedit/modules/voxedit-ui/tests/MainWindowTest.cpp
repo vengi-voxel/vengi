@@ -8,6 +8,7 @@
 #include "TestUtil.h"
 #include "core/StringUtil.h"
 #include "ui/PopupAbout.h"
+#include "util/KeybindingHandler.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 
@@ -195,6 +196,102 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		}
 		IM_CHECK(!_sceneMgr->isLoading());
 		IM_CHECK_STR_EQ(_sceneMgr->getSuggestedFilename().c_str(), suggestedFilename.c_str());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog delete")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Edit/Bindings");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, "Bindings"));
+
+		// count the bindings before deletion
+		const util::BindMap bindingsBefore = app()->keybindingHandler().bindings();
+		const int countBefore = (int)bindingsBefore.size();
+		IM_CHECK(countBefore > 0);
+
+		// click the first delete button in the bindings table
+		ctx->ItemClick("**/###del-key-0");
+		ctx->Yield();
+
+		const util::BindMap bindingsAfter = app()->keybindingHandler().bindings();
+		const int countAfter = (int)bindingsAfter.size();
+		IM_CHECK_EQ(countAfter, countBefore - 1);
+
+		// close the dialog by clicking the window close button
+		ctx->WindowClose("");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change binding")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Edit/Bindings");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, "Bindings"));
+
+		// double-click first row to start recording a new binding
+		ctx->ItemDoubleClick("**/##row-0");
+		ctx->Yield();
+
+		// press a key to record (F9 is unlikely to conflict)
+		ctx->KeyPress(ImGuiKey_F9);
+		ctx->Yield();
+
+		// capture the bindings before applying
+		const util::BindMap bindingsBefore = app()->keybindingHandler().bindings();
+		const int countBefore = (int)bindingsBefore.size();
+
+		// apply the new binding
+		ctx->ItemClick("Apply");
+		ctx->Yield();
+
+		// validate the binding: count should remain the same (one removed, one added)
+		const util::BindMap bindingsAfter = app()->keybindingHandler().bindings();
+		const int countAfter = (int)bindingsAfter.size();
+		IM_CHECK_EQ(countAfter, countBefore);
+
+		// verify that a binding with F9 key exists
+		bool foundF9 = false;
+		for (auto it = bindingsAfter.begin(); it != bindingsAfter.end(); ++it) {
+			const core::String &keyBinding = util::KeyBindingHandler::toString(it->first, it->second.modifier, it->second.count);
+			if (core::string::icontains(keyBinding, "f9")) {
+				foundF9 = true;
+				break;
+			}
+		}
+		IM_CHECK(foundF9);
+
+		// close the dialog by clicking the window close button
+		ctx->WindowClose("");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Edit/Bindings");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, "Bindings"));
+
+		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
+		const int initialKeyMap = uiKeyMap->intVal();
+
+		// change to a different keymap via the combo
+		// the keymaps are: 0=Magicavoxel, 1=Blender, 2=Vengi, 3=Qubicle
+		const int targetKeyMap = (initialKeyMap == 1) ? 2 : 1;
+		const char *targetName = (targetKeyMap == 1) ? "Blender" : "Vengi";
+		const core::String comboPath = core::String::format("Keymap/%s", targetName);
+		ctx->ComboClick(comboPath.c_str());
+		ctx->Yield();
+
+		IM_CHECK_EQ(uiKeyMap->intVal(), targetKeyMap);
+
+		// restore the original keymap
+		const char *originalName = (initialKeyMap == 0) ? "Magicavoxel" : ((initialKeyMap == 1) ? "Blender" : ((initialKeyMap == 2) ? "Vengi" : "Qubicle"));
+		const core::String restorePath = core::String::format("Keymap/%s", originalName);
+		ctx->ComboClick(restorePath.c_str());
+		ctx->Yield();
+
+		IM_CHECK_EQ(uiKeyMap->intVal(), initialKeyMap);
+
+		// close the dialog by clicking the window close button
+		ctx->WindowClose("");
 	};
 }
 
