@@ -197,12 +197,7 @@ protected:
 	bool doUndo();
 	bool doRedo();
 
-	/**
-	 * @param[in] angleX in degree
-	 * @param[in] angleY in degree
-	 * @param[in] angleZ in degree
-	 */
-	void nodeGroupRotate(math::Axis axis);
+	void nodeRotateAll(math::Axis axis);
 
 	bool saveModels(const core::String &dir);
 	bool nodeSave(int nodeId, const core::String &file);
