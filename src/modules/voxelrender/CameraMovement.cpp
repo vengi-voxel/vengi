@@ -4,6 +4,7 @@
 
 #include "CameraMovement.h"
 #include "app/I18N.h"
+#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "scenegraph/Physics.h"
@@ -95,6 +96,12 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		}
 		if (_movement.right()) {
 			direction += camRight;
+		}
+		if (_movement.up()) {
+			direction += glm::up();
+		}
+		if (_movement.down()) {
+			direction += glm::down();
 		}
 
 		if (glm::dot(direction, direction) > 0.0f) {
