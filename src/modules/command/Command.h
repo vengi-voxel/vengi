@@ -37,7 +37,7 @@ class Command;
  * @param tokens All tokens parsed so far (index 0 = command name, 1 = first arg, etc.)
  * @param matches Output array for completion matches
  */
-typedef std::function<int(const core::String&, const core::Tokens &tokens, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
+typedef std::function<int(const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
 
 /**
  * @brief Definition of a single command argument
