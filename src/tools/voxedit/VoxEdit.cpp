@@ -37,7 +37,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("model", core::BindingContext::Context2);
 	core::registerBindingContext("game", core::BindingContext::Context3);
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
-	_allowRelativeMouseMode = false;
+	_allowRelativeMouseMode = true;
 	_iniVersion = 11;
 	_keybindingsVersion = 4;
 	_wantCrashLogs = true;
@@ -139,6 +139,13 @@ app::AppState VoxEdit::onConstruct() {
 		.setHandler([this](const command::CommandArgs &args) {
 			toggleScene();
 		}).setHelp(_("Toggle scene mode on/off"));
+
+	command::Command::registerCommand("camera_mouselook")
+		.setHandler([this](const command::CommandArgs &args) {
+			const bool active = !isRelativeMouseMode();
+			setRelativeMouseMode(active);
+			_sceneMgr->setMouseLook(active);
+		}).setHelp(_("Toggle locked mouse look (FPS-style camera rotation)"));
 
 	command::Command::registerCommand("save")
 		.addArg({"file", command::ArgType::String, true, "", "Output file path"})
@@ -564,6 +571,10 @@ app::AppState VoxEdit::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
 		return state;
+	}
+
+	if (isRelativeMouseMode()) {
+		_sceneMgr->setMouseDelta((int)_mouseRelativePos.x, (int)_mouseRelativePos.y);
 	}
 
 	_collectionMgr->update(_nowSeconds);
