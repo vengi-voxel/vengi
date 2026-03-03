@@ -808,8 +808,8 @@ msgstr "Normalen"
 msgid "Render voxel normals"
 msgstr "Voxelnormalen rendern"
 
-msgid "Activate tone mapping"
-msgstr "Tone mapping aktivieren"
+msgid "Enable or disable tone mapping"
+msgstr "Tone Mapping aktivieren oder deaktivieren"
 
 msgid "Tone mapping"
 msgstr "Tonemapping"
@@ -1450,60 +1450,6 @@ msgstr "Ausführen"
 msgid "Execute the selected script for the currently loaded voxel volumes"
 msgstr ""
 "Führe das ausgewählte Skript für die aktuell geladenen Voxelvolumen aus"
-
-msgid "Client Gamma"
-msgstr "Client-Gamma"
-
-msgid "The gamma value for the client"
-msgstr ""
-
-msgid "Client Shadow Map"
-msgstr "Client-Schattenkarte"
-
-msgid "Enable or disable the client shadow map"
-msgstr ""
-
-msgid "Render Checker Board"
-msgstr "Schachbrett rendern"
-
-msgid "Enable or disable rendering of the checker board"
-msgstr ""
-
-msgid "Render Outline"
-msgstr "Umriss rendern"
-
-msgid "Enable or disable rendering of the outline"
-msgstr ""
-
-msgid "Render Normals"
-msgstr "Normalen rendern"
-
-msgid "Enable or disable rendering of the normals"
-msgstr ""
-
-msgid "Enable or disable tone mapping"
-msgstr "Tone Mapping aktivieren oder deaktivieren"
-
-msgid "Tone Mapping"
-msgstr "Tone Mapping"
-
-msgid "Client Debug Shadow"
-msgstr ""
-
-msgid "Enable or disable client debug shadow"
-msgstr ""
-
-msgid "Client Debug Shadow Map Cascade"
-msgstr ""
-
-msgid "Enable or disable client debug shadow map cascade"
-msgstr ""
-
-msgid "The mesh mode for voxel rendering"
-msgstr ""
-
-msgid "Voxel Render Mesh Mode"
-msgstr "Voxel-Render-Mesh-Modus"
 
 msgid "2D depth factor"
 msgstr ""
@@ -3154,8 +3100,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
-"cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 "Sie können die Kamerabewegung im Szenenmodus durch Wechsel von "
 "'Kamerabewegung' zu 'Auge' oder 'Ziel' im 'Ansicht'-Menü des "
@@ -3208,8 +3154,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
@@ -4179,7 +4125,3 @@ msgstr "Maximale Verbindungen"
 msgid "The maximum number of clients that can connect to the server"
 msgstr ""
 "Die maximale Anzahl von Clients, die sich mit dem Server verbinden können"
-
-#, c-format
-#~ msgid "Traffic: %i bytes sent, %i bytes received"
-#~ msgstr "Datenverkehr: %i Bytes gesendet, %i Bytes empfangen"

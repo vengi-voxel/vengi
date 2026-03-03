@@ -774,7 +774,7 @@ msgstr ""
 msgid "Render voxel normals"
 msgstr ""
 
-msgid "Activate tone mapping"
+msgid "Enable or disable tone mapping"
 msgstr ""
 
 msgid "Tone mapping"
@@ -1385,60 +1385,6 @@ msgid "Run"
 msgstr ""
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr ""
-
-msgid "Client Gamma"
-msgstr ""
-
-msgid "The gamma value for the client"
-msgstr ""
-
-msgid "Client Shadow Map"
-msgstr ""
-
-msgid "Enable or disable the client shadow map"
-msgstr ""
-
-msgid "Render Checker Board"
-msgstr ""
-
-msgid "Enable or disable rendering of the checker board"
-msgstr ""
-
-msgid "Render Outline"
-msgstr ""
-
-msgid "Enable or disable rendering of the outline"
-msgstr ""
-
-msgid "Render Normals"
-msgstr ""
-
-msgid "Enable or disable rendering of the normals"
-msgstr ""
-
-msgid "Enable or disable tone mapping"
-msgstr ""
-
-msgid "Tone Mapping"
-msgstr ""
-
-msgid "Client Debug Shadow"
-msgstr ""
-
-msgid "Enable or disable client debug shadow"
-msgstr ""
-
-msgid "Client Debug Shadow Map Cascade"
-msgstr ""
-
-msgid "Enable or disable client debug shadow map cascade"
-msgstr ""
-
-msgid "The mesh mode for voxel rendering"
-msgstr ""
-
-msgid "Voxel Render Mesh Mode"
 msgstr ""
 
 msgid "2D depth factor"
@@ -3022,8 +2968,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
-"cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 
 msgid ""
@@ -3061,8 +3007,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
