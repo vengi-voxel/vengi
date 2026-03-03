@@ -1720,6 +1720,81 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 	});
 }
 
+static glm::vec3 rotateVec3AroundPivot(const glm::vec3 &pos, const glm::vec3 &pivot, math::Axis axis) {
+	const glm::vec3 rel = pos - pivot;
+	glm::vec3 result = pos;
+	if (axis == math::Axis::Y) {
+		// CCW in XZ plane - matches voxelutil::rotateAxis(Y) voxel mapping
+		result.x = pivot.x - rel.z;
+		result.z = pivot.z + rel.x;
+	} else if (axis == math::Axis::X) {
+		// CW in YZ plane - matches voxelutil::rotateAxis(X) voxel mapping
+		result.y = pivot.y + rel.z;
+		result.z = pivot.z - rel.y;
+	} else {
+		// CW in XY plane - matches voxelutil::rotateAxis(Z) voxel mapping
+		result.x = pivot.x + rel.y;
+		result.y = pivot.y - rel.x;
+	}
+	return result;
+}
+
+void SceneManager::nodeRotateAll(math::Axis axis) {
+	const voxel::Region sceneReg = _sceneGraph.sceneRegion(_currentFrameIdx);
+	if (!sceneReg.isValid()) {
+		return;
+	}
+	const glm::vec3 scenePivot = sceneReg.calcCenterf();
+
+	core::DynamicArray<int> modelNodeIds;
+	for (const auto &n : _sceneGraph.nodes()) {
+		if (n->second.isAnyModelNode()) {
+			modelNodeIds.push_back(n->second.id());
+		}
+	}
+
+	for (int nodeId : modelNodeIds) {
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			continue;
+		}
+		const voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			continue;
+		}
+		voxel::RawVolume *newVolume = voxelutil::rotateAxis(v, axis);
+		if (newVolume == nullptr) {
+			continue;
+		}
+		const glm::vec3 oldRegionCenter = v->region().calcCenterf();
+		const glm::vec3 newRegionCenter = newVolume->region().calcCenterf();
+
+		glm::vec3 pivot = node->pivot();
+		voxel::Region r = newVolume->region();
+		r.accumulate(v->region());
+		setSceneGraphNodeVolume(*node, newVolume);
+		modified(nodeId, r);
+
+		for (const auto &kfAnim : node->allKeyFrames()) {
+			for (auto &kf : kfAnim->second) {
+				scenegraph::SceneGraphTransform &transform = kf.transform();
+				// Rotate the volume's world-space center around the scene pivot,
+				// then back-compute the new translation so the center lands correctly.
+				const glm::vec3 worldCenter = transform.worldTranslation() + oldRegionCenter;
+				const glm::vec3 newWorldCenter = rotateVec3AroundPivot(worldCenter, scenePivot, axis);
+				transform.setWorldTranslation(newWorldCenter - newRegionCenter);
+			}
+		}
+		_sceneGraph.updateTransforms();
+
+		const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
+		const int idx2 = (idx1 + 1) % 3;
+		core::exchange(pivot[idx1], pivot[idx2]);
+		node->setPivot(pivot);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, *node);
+	}
+}
+
 void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
@@ -2463,17 +2538,44 @@ void SceneManager::construct() {
 			redo();
 		}).setHelp(_("Redo your last step"));
 
+	// Normalize rotation amount: accepts degree multiples of 90 or raw counts (1-4).
+	// Negative values wrap around. Values > 4 (after conversion) return 0 (no-op).
+	auto normalizeRotationAmount = [](int n) -> int {
+		if (n != 0 && n % 90 == 0) {
+			n = n / 90;
+		}
+		if (n < 0) {
+			n = ((n % 4) + 4) % 4;
+		}
+		if (n > 4) {
+			return 0;
+		}
+		return n;
+	};
+
 	command::Command::registerCommand("rotate")
 		.addArg({"axis", command::ArgType::String, false, "", "Axis to rotate around: x|y|z"})
 		.addArg({"amount", command::ArgType::Int, true, "1", "Number of 90-degree rotations"})
-		.setHandler([&] (const command::CommandArgs& args) {
+		.setHandler([&, normalizeRotationAmount] (const command::CommandArgs& args) {
 			const math::Axis axis = math::toAxis(args.str("axis"));
-			const int n = args.intVal("amount", 1);
+			const int n = normalizeRotationAmount(args.intVal("amount", 1));
 			memento::ScopedMementoGroup group(_mementoHandler, "rotate");
 			for (int i = 0; i < n; ++i) {
 				nodeGroupRotate(axis);
 			}
 		}).setHelp(_("Rotate active nodes around the given axis"));
+
+	command::Command::registerCommand("rotateall")
+		.addArg({"axis", command::ArgType::String, false, "", "Axis to rotate around: x|y|z"})
+		.addArg({"amount", command::ArgType::Int, true, "1", "Number of 90-degree rotations"})
+		.setHandler([&, normalizeRotationAmount] (const command::CommandArgs& args) {
+			const math::Axis axis = math::toAxis(args.str("axis"));
+			const int n = normalizeRotationAmount(args.intVal("amount", 1));
+			memento::ScopedMementoGroup group(_mementoHandler, "rotateall");
+			for (int i = 0; i < n; ++i) {
+				nodeRotateAll(axis);
+			}
+		}).setHelp(_("Rotate all model nodes around the given axis, preserving their relative positions"));
 
 	command::Command::registerCommand("modelmerge")
 		.addArg({"nodeid1", command::ArgType::String, true, "", "First node ID or UUID"})

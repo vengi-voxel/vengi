@@ -197,6 +197,7 @@ protected:
 	void nodeScaleDown(int nodeId);
 	void nodeScaleUp(int nodeId);
 	bool nodeSave(int nodeId, const core::String &file);
+	void nodeRotateAll(math::Axis axis);
 
 	bool doUndo();
 	bool doRedo();
