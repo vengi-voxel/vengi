@@ -575,7 +575,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(renderSelectionTint);
 	const core::VarDef renderNormals(cfg::RenderNormals, false, N_("Normals"), _("Render voxel normals"), core::CV_SHADER);
 	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::ToneMapping, 0, 0, 3, N_("Tone mapping"), _("Activate tone mapping"), core::CV_SHADER);
+	const core::VarDef toneMapping(cfg::RenderToneMapping, 0, 0, 3, N_("Tone mapping"), _("Activate tone mapping"), core::CV_SHADER);
 	core::Var::registerVar(toneMapping);
 	const core::VarDef clientVSync(cfg::ClientVSync, true, N_("VSync"), _("Limit the framerate to the monitor refresh rate"));
 	core::Var::registerVar(clientVSync);
@@ -585,7 +585,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientMouseRotationSpeed);
 	const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, 0.1f, 200.0f, N_("Zoom speed"), N_("The zoom speed when using the mouse to zoom the camera"));
 	core::Var::registerVar(clientCameraZoomSpeed);
-	const core::VarDef maxAnisotropy(cfg::MaxAnisotropy, -1, N_("Max anisotropy"), _("The maximum anisotropy level for textures - -1 means use device max"), 0u);
+	const core::VarDef maxAnisotropy(cfg::RenderMaxAnisotropy, -1, N_("Max anisotropy"), _("The maximum anisotropy level for textures - -1 means use device max"), 0u);
 	core::Var::registerVar(maxAnisotropy);
 	const core::VarDef clientCameraMaxZoom(cfg::ClientCameraMaxZoom, 1000.0f, 1.0f, 1000.0f, N_("Max zoom"), _("The maximum zoom level for the camera"), 0u);
 	core::Var::registerVar(clientCameraMaxZoom);

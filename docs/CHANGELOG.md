@@ -25,6 +25,7 @@ General:
    - Improved [cvar](Configuration.md) handling
    - Added a few new [lua](LUAScript.md) scripts
    - Fixed crash when loading large `vengi` scenes
+   - Renamed `vox_meshmode` to `voxel_meshmode`
 
 VoxEdit:
 

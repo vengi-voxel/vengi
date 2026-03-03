@@ -20,7 +20,7 @@ MeshState::MeshState() {
 }
 
 bool MeshState::init() {
-	_meshMode = core::getVar(cfg::VoxRenderMeshMode);
+	_meshMode = core::getVar(cfg::VoxelMeshMode);
 	_meshMode->markClean();
 	return true;
 }
@@ -31,7 +31,7 @@ void MeshState::construct() {
 									 core::CV_READONLY | core::CV_NOPERSIST);
 	_meshSize = core::Var::registerVar(voxelMeshSize);
 	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
-	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary,
+	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary,
 										 (int)voxel::SurfaceExtractionType::Cubic,
 										 (int)voxel::SurfaceExtractionType::Binary, N_("Mesh mode"),
 										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"), core::CV_SHADER);

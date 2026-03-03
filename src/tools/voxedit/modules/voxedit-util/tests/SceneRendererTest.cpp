@@ -34,7 +34,7 @@ protected:
 		core::Var::registerVar(voxEditPlaneSize);
 		const core::VarDef voxEditShowPlane(cfg::VoxEditShowPlane, false, "", "");
 		core::Var::registerVar(voxEditShowPlane);
-		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary, "", "");
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary, "", "");
 		core::Var::registerVar(voxRenderMeshMode);
 		const core::VarDef voxEditShowaabb(cfg::VoxEditShowaabb, "", "", "");
 		core::Var::registerVar(voxEditShowaabb);

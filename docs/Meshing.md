@@ -4,7 +4,7 @@ The Vengi voxel engine provides different meshing algorithms to convert voxel da
 
 There are two configuration variables for mesh modes:
 
-- `vox_meshmode` - Used for rendering in the editor (excludes greedy texture, as it's not supported by the renderer)
+- `voxel_meshmode` - Used for rendering in the editor (excludes greedy texture, as it's not supported by the renderer)
 - `voxformat_meshmode` - Used when exporting/saving mesh formats (supports all mesh types including greedy texture)
 
 > See [configuration](Configuration.md) for more details
@@ -20,13 +20,13 @@ Quick selection guide:
 
 ## Cubic Mesher
 
-**Mode:** `vox_meshmode=0` / `voxformat_meshmode=0`
+**Mode:** `voxel_meshmode=0` / `voxformat_meshmode=0`
 
 The cubic surface mesher creates a mesh where each voxel appears as a perfect cube. This is the classic "Minecraft-style" look where voxels maintain their blocky appearance.
 
 ## Marching Cubes Mesher
 
-**Mode:** `vox_meshmode=1` / `voxformat_meshmode=1`
+**Mode:** `voxel_meshmode=1` / `voxformat_meshmode=1`
 
 Produces smooth, organic-looking meshes by interpolating between voxel colors. This is good for terrains - it doesn't create blocky meshes.
 
@@ -44,7 +44,7 @@ Produces smooth, organic-looking meshes by interpolating between voxel colors. T
 
 ## Binary Greedy Mesher
 
-**Mode:** `vox_meshmode=2` / `voxformat_meshmode=2`
+**Mode:** `voxel_meshmode=2` / `voxformat_meshmode=2`
 
 Like the cubic surface mesher this is creating a "Minecraft-style" look, too.
 

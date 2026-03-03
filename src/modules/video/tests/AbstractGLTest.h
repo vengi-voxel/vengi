@@ -58,13 +58,13 @@ protected:
 		core::Var::registerVar(renderOutline);
 		const core::VarDef renderNormals(cfg::RenderNormals, false, "", "", core::CV_SHADER);
 		core::Var::registerVar(renderNormals);
-		const core::VarDef toneMapping(cfg::ToneMapping, 0, "", "", core::CV_SHADER);
+		const core::VarDef toneMapping(cfg::RenderToneMapping, 0, "", "", core::CV_SHADER);
 		core::Var::registerVar(toneMapping);
 		const core::VarDef clientDebugShadow2(cfg::ClientDebugShadow, false, "", "", core::CV_SHADER);
 		core::Var::registerVar(clientDebugShadow2);
 		const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, "", "", core::CV_SHADER);
 		core::Var::registerVar(clientDebugShadowMapCascade);
-		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "", core::CV_SHADER);
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "", core::CV_SHADER);
 		core::Var::registerVar(voxRenderMeshMode);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
@@ -80,7 +80,7 @@ public:
 		core::Var::registerVar(clientMultiSampleSamples);
 		const core::VarDef clientVSync(cfg::ClientVSync, false, "", "");
 		core::Var::registerVar(clientVSync);
-		const core::VarDef maxAnisotropy(cfg::MaxAnisotropy, 1.0f, "", "");
+		const core::VarDef maxAnisotropy(cfg::RenderMaxAnisotropy, 1.0f, "", "");
 		core::Var::registerVar(maxAnisotropy);
 		const core::VarDef clientDebugSeverity(cfg::ClientDebugSeverity, 3, "", "");
 		core::Var::registerVar(clientDebugSeverity);

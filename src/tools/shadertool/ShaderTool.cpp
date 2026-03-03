@@ -54,7 +54,7 @@ app::AppState ShaderTool::onConstruct() {
 	const core::VarDef renderNormals(cfg::RenderNormals, false, N_("Render Normals"),
 									 N_("Enable or disable rendering of the normals"), core::CV_SHADER);
 	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::ToneMapping, 1, N_("Tone Mapping"), N_("Enable or disable tone mapping"),
+	const core::VarDef toneMapping(cfg::RenderToneMapping, 1, N_("Tone Mapping"), N_("Enable or disable tone mapping"),
 								   core::CV_SHADER);
 	core::Var::registerVar(toneMapping);
 	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, N_("Client Debug Shadow"),
@@ -64,7 +64,7 @@ app::AppState ShaderTool::onConstruct() {
 		cfg::ClientDebugShadowMapCascade, false, N_("Client Debug Shadow Map Cascade"),
 		N_("Enable or disable client debug shadow map cascade"), core::CV_SHADER);
 	core::Var::registerVar(clientDebugShadowMapCascade);
-	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes,
+	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes,
 										 N_("Voxel Render Mesh Mode"), N_("The mesh mode for voxel rendering"),
 										 core::CV_SHADER);
 	core::Var::registerVar(voxRenderMeshMode);

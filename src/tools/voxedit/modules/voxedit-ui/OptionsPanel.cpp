@@ -52,7 +52,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::VoxEditColorWheel) || matchesVarFilter(cfg::VoxEditAnimationSpeed) ||
 			   matchesVarFilter(cfg::VoxEditAutoSaveSeconds) || matchesVarFilter(cfg::VoxEditViewports) ||
 			   matchesVarFilter(cfg::ClientCameraZoomSpeed) || matchesVarFilter(cfg::VoxEditViewdistance) ||
-			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxRenderMeshMode);
+			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode);
 	case OptionCategory::Metrics:
 		return matchesVarFilter(cfg::MetricFlavor);
 	case OptionCategory::Layout:
@@ -66,7 +66,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 		return matchesVarFilter(cfg::RenderOutline) || matchesVarFilter(cfg::RenderSelectionTint) ||
 			   matchesVarFilter(cfg::RenderNormals) || matchesVarFilter(cfg::RenderCheckerBoard) ||
 			   matchesVarFilter(cfg::VoxEditShadingMode) || matchesVarFilter(cfg::ClientBloom) ||
-			   matchesVarFilter(cfg::ToneMapping);
+			   matchesVarFilter(cfg::RenderToneMapping);
 	case OptionCategory::Renderer:
 		return matchesVarFilter(cfg::ClientShadowMapSize) || matchesVarFilter(cfg::ClientGamma) ||
 			   matchesVarFilter(cfg::ClientVSync);
@@ -165,10 +165,10 @@ void OptionsPanel::renderEditor() {
 	if (matchesVarFilter(cfg::CoreColorReduction)) {
 		_app->colorReductionOptions();
 	}
-	if (matchesVarFilter(cfg::VoxRenderMeshMode)) {
+	if (matchesVarFilter(cfg::VoxelMeshMode)) {
 		static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
 			_("Cubes"), _("Marching cubes"), _("Binary")};
-		ImGui::ComboVar(cfg::VoxRenderMeshMode, meshModes);
+		ImGui::ComboVar(cfg::VoxelMeshMode, meshModes);
 	}
 }
 
@@ -212,7 +212,7 @@ void OptionsPanel::renderDisplay() {
 
 void OptionsPanel::renderRendering() {
 	const bool isMarchingCubes =
-		core::getVar(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes;
+		core::getVar(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes;
 	ImGui::BeginDisabled(isMarchingCubes);
 	if (matchesVarFilter(cfg::RenderOutline)) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
@@ -254,8 +254,8 @@ void OptionsPanel::renderRendering() {
 	if (matchesVarFilter(cfg::ClientBloom)) {
 		ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
 	}
-	if (matchesVarFilter(cfg::ToneMapping)) {
-		ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::ToneMapping);
+	if (matchesVarFilter(cfg::RenderToneMapping)) {
+		ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);
 	}
 }
 

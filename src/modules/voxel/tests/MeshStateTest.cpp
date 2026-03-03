@@ -20,7 +20,7 @@ protected:
 		Super::SetUp();
 		const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 16, "", "", core::CV_READONLY);
 		core::Var::registerVar(voxelMeshSize);
-		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary, "", "");
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary, "", "");
 		core::Var::registerVar(voxRenderMeshMode);
 	}
 };

@@ -25,7 +25,7 @@ public:
 		if (!app::AbstractBenchmark::onInitApp()) {
 			return false;
 		}
-		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary,
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary,
 											 (int)voxel::SurfaceExtractionType::Cubic,
 											 (int)voxel::SurfaceExtractionType::Max - 1, "", "");
 		core::Var::registerVar(voxRenderMeshMode);

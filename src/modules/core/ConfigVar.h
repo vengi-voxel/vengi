@@ -16,6 +16,15 @@ constexpr const char *ClientOpenGLVersion = "cl_openglversion";
 constexpr const char *ClientRenderUI = "cl_renderui";
 constexpr const char *ClientWindowDisplay = "cl_display";
 constexpr const char *ClientWindowHighDPI = "cl_highdpi";
+constexpr const char *ClientGamma = "cl_gamma";
+constexpr const char *ClientShadowMap = "cl_shadowmap";
+constexpr const char *ClientBloom = "cl_bloom";
+constexpr const char *ClientCameraMinZoom = "cl_camminzoom";
+constexpr const char *ClientCameraMaxZoom = "cl_cammaxzoom";
+constexpr const char *ClientCameraZoomSpeed = "cl_camzoomspeed";
+constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
+constexpr const char *ClientDebugShadow = "cl_debug_shadow";
+
 constexpr const char *UIShowMetrics = "ui_showmetrics";
 constexpr const char *UIFontSize = "ui_fontsize";
 constexpr const char *UIKeyMap = "ui_keymap";
@@ -23,6 +32,8 @@ constexpr const char *UILastDirectory = "ui_lastdirectory";
 constexpr const char *UILastFilterSave = "ui_lastfiltersave";
 constexpr const char *UILastFilterOpen = "ui_lastfilteropen";
 constexpr const char *UIStyle = "ui_style";
+constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
+
 // filedialog
 constexpr const char *UIFileDialogShowHidden = "ui_filedialogshowhidden";
 constexpr const char *UIFileDialogLastFile = "ui_filedialoglastfile";
@@ -30,44 +41,33 @@ constexpr const char *UIFileDialogLastFiles = "ui_filedialoglastfiles";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";
-constexpr const char *UITestFilter = "ui_testfilter";
 
-constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
+// ImGui Test Engine
+constexpr const char *UITestFilter = "ui_testfilter";
 
 constexpr const char *HttpConnectTimeout = "http_connecttimeout";
 constexpr const char *HttpTimeout = "http_timeout";
 constexpr const char *HttpConnectTimeoutAssets = "http_connecttimeout_assets";
 constexpr const char *HttpTimeoutAssets = "http_timeout_assets";
 
-constexpr const char *ClientGamma = "cl_gamma";
-constexpr const char *ClientShadowMap = "cl_shadowmap";
-constexpr const char *ClientBloom = "cl_bloom";
-constexpr const char *ClientCameraMinZoom = "cl_camminzoom";
-constexpr const char *ClientCameraMaxZoom = "cl_cammaxzoom";
-constexpr const char *ClientCameraZoomSpeed = "cl_camzoomspeed";
-
-constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
-constexpr const char *ClientDebugShadow = "cl_debug_shadow";
-
 constexpr const char *RenderCullBuffers = "r_cullbuffers";
 constexpr const char *RenderCullNodes = "r_cullnodes";
 constexpr const char *RenderOutline = "r_renderoutline";
 constexpr const char *RenderSelectionTint = "r_selectiontint";
 constexpr const char *RenderNormals = "r_normals";
-constexpr const char *ToneMapping = "r_tonemapping";
+constexpr const char *RenderToneMapping = "r_tonemapping";
 constexpr const char *RenderCheckerBoard = "r_checkerboard";
-constexpr const char *MaxAnisotropy = "r_maxanisotropy";
+constexpr const char *RenderMaxAnisotropy = "r_maxanisotropy";
+
+// The size of the mesh chunk
+constexpr const char *VoxelMeshSize = "voxel_meshsize";
+constexpr const char *VoxelMeshMode = "voxel_meshmode";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CorePath = "core_path";
 constexpr const char *CoreColorReduction = "core_colorreduction";
 constexpr const char *CoreLanguage = "core_language";
-
-// The size of the mesh chunk
-constexpr const char *VoxelMeshSize = "voxel_meshsize";
-constexpr const char *VoxRenderMeshMode = "vox_meshmode";
-constexpr const char *VoxformatMeshMode = "voxformat_meshmode";
 
 constexpr const char *AppPipe = "app_pipe";
 constexpr const char *AppHomePath = "app_homepath";
@@ -82,9 +82,12 @@ constexpr const char *MetricUUID = "metric_uuid";
 
 constexpr const char *VoxelPalette = "palette";
 constexpr const char *NormalPalette = "normalpalette";
+
 constexpr const char *PalformatRGB6Bit = "palformat_rgb6bit";
 constexpr const char *PalformatMaxSize = "palformat_maxsize";
 constexpr const char *PalformatGimpRGBA = "palformat_gimprgba";
+
+constexpr const char *VoxformatMeshMode = "voxformat_meshmode";
 constexpr const char *VoxConvertDepthFactor2D = "voxconvert_depthfactor2d";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";

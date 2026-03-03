@@ -30,7 +30,7 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_FRAME, cfg::VoxEditShowPlane);
 	ImGui::IconSliderVarInt(ICON_LC_GRIP, cfg::VoxEditPlaneSize);
 
-	ImGui::BeginDisabled(core::getVar(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
+	ImGui::BeginDisabled(core::getVar(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
 	if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderNormals);
@@ -55,7 +55,7 @@ void MenuBar::viewportOptions() {
 		ImGui::EndCombo();
 	}
 	ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
-	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::ToneMapping);
+	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);
 }
 
 void MenuBar::init() {
