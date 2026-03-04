@@ -26,6 +26,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
 
+	// Clear box region by default; Box3D case sets it below
+	wrapper.node().setSelectionRegion(voxel::Region::InvalidRegion);
+
 	auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (wrapper.modifierType() == ModifierType::Erase) {
 			wrapper.removeFlagAt(x, y, z, voxel::FlagOutline);
@@ -75,6 +78,19 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			wrapper.setFlagAt(startPos.x, startPos.y, startPos.z, voxel::FlagOutline);
 		}
 		voxelutil::visitConnectedByCondition(wrapper, startPos, func);
+		break;
+	}
+	case SelectMode::Box3D: {
+		wrapper.removeFlags(wrapper.region(), voxel::FlagOutline);
+		voxelutil::VisitSolid condition;
+		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
+		// Store the exact box region so ModifierVolumeWrapper::skip() allows
+		// editing any position inside the box (including air voxels)
+		if (wrapper.modifierType() == ModifierType::Erase) {
+			wrapper.node().setSelectionRegion(voxel::Region::InvalidRegion);
+		} else {
+			wrapper.node().setSelectionRegion(selectionRegion);
+		}
 		break;
 	}
 	case SelectMode::Max:

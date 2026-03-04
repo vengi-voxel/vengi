@@ -475,6 +475,15 @@ void SceneGraphNode::clearSelection() {
 		return;
 	}
 	_volume->removeFlags(_volume->region(), voxel::FlagOutline);
+	_selectionRegion = voxel::Region::InvalidRegion;
+}
+
+const voxel::Region &SceneGraphNode::selectionRegion() const {
+	return _selectionRegion;
+}
+
+void SceneGraphNode::setSelectionRegion(const voxel::Region &region) {
+	_selectionRegion = region;
 }
 
 void SceneGraphNode::select(const voxel::Region &region) {

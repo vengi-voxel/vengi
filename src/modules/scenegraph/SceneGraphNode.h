@@ -106,6 +106,7 @@ protected:
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
 	core::Optional<IKConstraint> _ikConstraint;
+	voxel::Region _selectionRegion = voxel::Region::InvalidRegion;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -247,6 +248,8 @@ public:
 	void clearSelection();
 	void select(const voxel::Region &region);
 	void unselect(const voxel::Region &region);
+	const voxel::Region &selectionRegion() const;
+	void setSelectionRegion(const voxel::Region &region);
 
 	const SceneGraphNodeChildren &children() const;
 	const SceneGraphNodeProperties &properties() const;
