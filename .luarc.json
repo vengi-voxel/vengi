@@ -38,6 +38,7 @@
 			"g_io",
 			"g_font",
 			"g_algorithm",
+			"g_lsystem",
 			"tracy"
 		]
 	}

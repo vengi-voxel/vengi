@@ -37,6 +37,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/Genland.h"
+#include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/Hollow.h"
@@ -183,6 +184,10 @@ static const char *luaVoxel_metaimporter() {
 
 static const char *luaVoxel_metaalgorithm() {
 	return "__meta_algorithm";
+}
+
+static const char *luaVoxel_metalsystem() {
+	return "__meta_lsystem";
 }
 
 static const char *luaVoxel_metavoxelfontglobal() {
@@ -1777,6 +1782,121 @@ static int luaVoxel_noise_worley2(lua_State* s) {
 static int luaVoxel_noise_worley3(lua_State* s) {
 	int n = 1;
 	lua_pushnumber(s, noise::worleyNoise(to_vec3(s, n)));
+	return 1;
+}
+
+// LSystem bindings
+
+static int luaVoxel_lsystem_generate(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const char *axiom = luaL_checkstring(s, 2);
+	const char *rulesStr = luaL_checkstring(s, 3);
+	const int colorIndex = (int)luaL_optinteger(s, 4, 0);
+	const float angle = (float)luaL_optnumber(s, 5, 25.0);
+	const float length = (float)luaL_optnumber(s, 6, 1.0);
+	const float width = (float)luaL_optnumber(s, 7, 1.0);
+	const float widthIncrement = (float)luaL_optnumber(s, 8, 0.5);
+	const int iterations = (int)luaL_optinteger(s, 9, 4);
+	const float leafRadius = (float)luaL_optnumber(s, 10, 8.0);
+	const int posX = (int)luaL_optinteger(s, 11, 0);
+	const int posY = (int)luaL_optinteger(s, 12, 0);
+	const int posZ = (int)luaL_optinteger(s, 13, 0);
+
+	voxelgenerator::lsystem::LSystemConfig config;
+	config.axiom = axiom;
+	config.angle = glm::radians(angle);
+	config.length = length;
+	config.width = width;
+	config.widthIncrement = widthIncrement;
+	config.iterations = iterations;
+	config.leafRadius = leafRadius;
+	config.position = glm::ivec3(posX, posY, posZ);
+
+	if (!voxelgenerator::lsystem::parseRules(rulesStr, config.rules)) {
+		return clua_error(s, "Failed to parse L-system rules. Expected format: '{ A rule } { B rule }'");
+	}
+
+	voxelgenerator::lsystem::LSystemState state;
+	voxelgenerator::lsystem::prepareState(config, state);
+
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, colorIndex);
+	voxelgenerator::lsystem::LSystemExecutionState execState;
+	while (voxelgenerator::lsystem::step(*volume, voxel, state, execState)) {
+	}
+
+	return 0;
+}
+
+static int luaVoxel_lsystem_templates(lua_State *s) {
+	const core::DynamicArray<voxelgenerator::lsystem::LSystemTemplate> templates = voxelgenerator::lsystem::defaultTemplates();
+	lua_newtable(s);
+	for (size_t i = 0; i < templates.size(); ++i) {
+		const auto &t = templates[i];
+		lua_newtable(s);
+
+		lua_pushstring(s, t.name.c_str());
+		lua_setfield(s, -2, "name");
+
+		lua_pushstring(s, t.description.c_str());
+		lua_setfield(s, -2, "description");
+
+		lua_pushstring(s, t.config.axiom.c_str());
+		lua_setfield(s, -2, "axiom");
+
+		lua_pushnumber(s, glm::degrees(t.config.angle));
+		lua_setfield(s, -2, "angle");
+
+		lua_pushnumber(s, t.config.length);
+		lua_setfield(s, -2, "length");
+
+		lua_pushnumber(s, t.config.width);
+		lua_setfield(s, -2, "width");
+
+		lua_pushnumber(s, t.config.widthIncrement);
+		lua_setfield(s, -2, "widthIncrement");
+
+		lua_pushinteger(s, t.config.iterations);
+		lua_setfield(s, -2, "iterations");
+
+		lua_pushnumber(s, t.config.leafRadius);
+		lua_setfield(s, -2, "leafRadius");
+
+		// Build rules string in format "{ A rule } { B rule }"
+		core::String rulesStr;
+		for (size_t j = 0; j < t.config.rules.size(); ++j) {
+			const auto &rule = t.config.rules[j];
+			if (j > 0) {
+				rulesStr += " ";
+			}
+			rulesStr += "{ ";
+			rulesStr += rule.a;
+			rulesStr += " ";
+			rulesStr += rule.b;
+			rulesStr += " }";
+		}
+		lua_pushstring(s, rulesStr.c_str());
+		lua_setfield(s, -2, "rules");
+
+		lua_rawseti(s, -2, (int)(i + 1));
+	}
+	return 1;
+}
+
+static int luaVoxel_lsystem_commands(lua_State *s) {
+	const core::DynamicArray<voxelgenerator::lsystem::LSystemCommand> &commands = voxelgenerator::lsystem::getLSystemCommands();
+	lua_newtable(s);
+	for (size_t i = 0; i < commands.size(); ++i) {
+		lua_newtable(s);
+
+		char cmd[2] = { commands[i].command, '\0' };
+		lua_pushstring(s, cmd);
+		lua_setfield(s, -2, "command");
+
+		lua_pushstring(s, commands[i].description);
+		lua_setfield(s, -2, "description");
+
+		lua_rawseti(s, -2, (int)(i + 1));
+	}
 	return 1;
 }
 
@@ -5133,6 +5253,54 @@ static int luaVoxel_import_imageasplane_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_lsystem_generate_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "generate",
+		"summary": "Generate voxels using an L-system (Lindenmayer system). The L-system is executed to completion and the result is placed into the given volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to place the L-system result into."},
+			{"name": "axiom", "type": "string", "description": "The initial axiom string (e.g. 'X' or 'F')."},
+			{"name": "rules", "type": "string", "description": "The production rules in format '{ A rule } { B rule }' (e.g. '{ X F[+X][-X] } { F FF }')."},
+			{"name": "colorIndex", "type": "integer", "description": "The initial palette color index (optional, default 0)."},
+			{"name": "angle", "type": "number", "description": "The rotation angle in degrees (optional, default 25)."},
+			{"name": "length", "type": "number", "description": "The line length per step (optional, default 1)."},
+			{"name": "width", "type": "number", "description": "The initial line width (optional, default 1)."},
+			{"name": "widthIncrement", "type": "number", "description": "Width change per '#' or '!' command (optional, default 0.5)."},
+			{"name": "iterations", "type": "integer", "description": "Number of rule expansion iterations (optional, default 4)."},
+			{"name": "leafRadius", "type": "number", "description": "Radius for leaf spheres (optional, default 8)."},
+			{"name": "posX", "type": "integer", "description": "X position offset (optional, default 0)."},
+			{"name": "posY", "type": "integer", "description": "Y position offset (optional, default 0)."},
+			{"name": "posZ", "type": "integer", "description": "Z position offset (optional, default 0)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_lsystem_templates_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "templates",
+		"summary": "Get all built-in L-system templates. Each template contains name, description, axiom, rules, angle, length, width, widthIncrement, iterations, and leafRadius.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "An array of template tables with fields: name, description, axiom, rules, angle, length, width, widthIncrement, iterations, leafRadius."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_lsystem_commands_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "commands",
+		"summary": "Get the list of available L-system turtle commands and their descriptions.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "An array of command tables with fields: command (single character), description."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_genland_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "genland",
@@ -5541,6 +5709,14 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, algorithmFuncs, luaVoxel_metaalgorithm(), "g_algorithm");
+
+	static const clua_Reg lsystemFuncs[] = {
+		{"generate", luaVoxel_lsystem_generate, luaVoxel_lsystem_generate_jsonhelp},
+		{"templates", luaVoxel_lsystem_templates, luaVoxel_lsystem_templates_jsonhelp},
+		{"commands", luaVoxel_lsystem_commands, luaVoxel_lsystem_commands_jsonhelp},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, lsystemFuncs, luaVoxel_metalsystem(), "g_lsystem");
 
 	clua_imageregister(s);
 	clua_streamregister(s);

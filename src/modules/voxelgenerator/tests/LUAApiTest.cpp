@@ -1190,4 +1190,59 @@ TEST_F(LUAApiTest, testVolumeRenderIsometricImage) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testLSystemGenerate) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			g_lsystem.generate(volume, "F", "{ F FF[+F][-F] }", color, 25.0, 1.0, 1.0, 0.5, 2, 4.0, 0, 0, 0)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testLSystemTemplates) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local templates = g_lsystem.templates()
+			assert(#templates > 0, "Expected at least one template")
+			local t = templates[1]
+			assert(t.name ~= nil, "Expected template name")
+			assert(t.axiom ~= nil, "Expected template axiom")
+			assert(t.rules ~= nil, "Expected template rules")
+			assert(t.angle ~= nil, "Expected template angle")
+			assert(t.iterations ~= nil, "Expected template iterations")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testLSystemCommands) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local commands = g_lsystem.commands()
+			assert(#commands > 0, "Expected at least one command")
+			local c = commands[1]
+			assert(c.command ~= nil, "Expected command character")
+			assert(c.description ~= nil, "Expected command description")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testLSystemTemplateGenerate) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local templates = g_lsystem.templates()
+			local t = templates[1]
+			g_lsystem.generate(volume, t.axiom, t.rules, color, t.angle, t.length, t.width, t.widthIncrement, t.iterations, t.leafRadius)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 } // namespace voxelgenerator

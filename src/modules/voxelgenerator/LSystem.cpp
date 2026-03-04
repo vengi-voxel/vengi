@@ -390,7 +390,11 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 }
 
 bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& rules) {
-	core::Tokenizer tokenizer(rulesStr, " \n");
+	const core::String trimmed = core::string::trim(rulesStr);
+	if (trimmed.empty()) {
+		return true;
+	}
+	core::Tokenizer tokenizer(trimmed, " \n");
 	while (tokenizer.hasNext()) {
 		const core::String block = tokenizer.next();
 		if (block != "{") {

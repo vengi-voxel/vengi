@@ -42,6 +42,7 @@ globals = {
 	"g_sys",
 	"g_io",
 	"g_algorithm",
+	"g_lsystem",
 
 	"tracy"
 }
