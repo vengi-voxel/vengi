@@ -104,4 +104,125 @@ TEST_F(SharedPtrTest, testMove) {
 	EXPECT_FALSE(p3);
 }
 
+// WeakPtr tests
+
+TEST_F(SharedPtrTest, testWeakPtrLock) {
+	FooPtr shared = make_shared<Foo>(10, 20);
+	core::WeakPtr<Foo> weak(shared);
+	EXPECT_FALSE(weak.expired());
+
+	FooPtr locked = weak.lock();
+	ASSERT_TRUE(locked);
+	EXPECT_EQ(10, locked->a);
+	EXPECT_EQ(20, locked->b);
+	EXPECT_EQ((int)*locked.refCnt(), 2);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrExpired) {
+	core::WeakPtr<Foo> weak;
+	{
+		FooPtr shared = make_shared<Foo>(1, 2);
+		weak = shared;
+		EXPECT_FALSE(weak.expired());
+	}
+	// shared went out of scope, weak should be expired
+	EXPECT_TRUE(weak.expired());
+	FooPtr locked = weak.lock();
+	EXPECT_FALSE(locked);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrCopy) {
+	FooPtr shared = make_shared<Foo>(3, 4);
+	core::WeakPtr<Foo> weak1(shared);
+	core::WeakPtr<Foo> weak2(weak1);
+	EXPECT_FALSE(weak1.expired());
+	EXPECT_FALSE(weak2.expired());
+
+	FooPtr locked1 = weak1.lock();
+	FooPtr locked2 = weak2.lock();
+	ASSERT_TRUE(locked1);
+	ASSERT_TRUE(locked2);
+	EXPECT_EQ(locked1.get(), locked2.get());
+}
+
+TEST_F(SharedPtrTest, testWeakPtrMove) {
+	FooPtr shared = make_shared<Foo>(5, 6);
+	core::WeakPtr<Foo> weak1(shared);
+	core::WeakPtr<Foo> weak2(core::move(weak1));
+	EXPECT_TRUE(weak1 == nullptr);
+	EXPECT_FALSE(weak2.expired());
+
+	FooPtr locked = weak2.lock();
+	ASSERT_TRUE(locked);
+	EXPECT_EQ(5, locked->a);
+	EXPECT_EQ(6, locked->b);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrReset) {
+	FooPtr shared = make_shared<Foo>(7, 8);
+	core::WeakPtr<Foo> weak(shared);
+	EXPECT_FALSE(weak.expired());
+	weak.reset();
+	EXPECT_TRUE(weak == nullptr);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrAssignNullptr) {
+	FooPtr shared = make_shared<Foo>(9, 10);
+	core::WeakPtr<Foo> weak(shared);
+	EXPECT_FALSE(weak.expired());
+	weak = nullptr;
+	EXPECT_TRUE(weak == nullptr);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrConvertible) {
+	BarPtr barShared = make_shared<Bar>(1, 2, 3);
+	core::WeakPtr<Foo> weakFoo(barShared);
+	EXPECT_FALSE(weakFoo.expired());
+
+	FooPtr locked = weakFoo.lock();
+	ASSERT_TRUE(locked);
+	EXPECT_EQ(1, locked->a);
+	EXPECT_EQ(2, locked->b);
+}
+
+TEST_F(SharedPtrTest, testWeakPtrMultipleObservers) {
+	core::WeakPtr<Foo> weak1;
+	core::WeakPtr<Foo> weak2;
+	{
+		FooPtr shared = make_shared<Foo>(11, 12);
+		weak1 = shared;
+		weak2 = shared;
+		EXPECT_FALSE(weak1.expired());
+		EXPECT_FALSE(weak2.expired());
+	}
+	// Both should be expired now
+	EXPECT_TRUE(weak1.expired());
+	EXPECT_TRUE(weak2.expired());
+	EXPECT_FALSE(weak1.lock());
+	EXPECT_FALSE(weak2.lock());
+}
+
+TEST_F(SharedPtrTest, testWeakPtrDefaultConstructor) {
+	core::WeakPtr<Foo> weak;
+	EXPECT_TRUE(weak.expired());
+	EXPECT_TRUE(weak == nullptr);
+	EXPECT_FALSE(weak.lock());
+}
+
+TEST_F(SharedPtrTest, testWeakPtrAssignFromShared) {
+	FooPtr shared1 = make_shared<Foo>(1, 2);
+	FooPtr shared2 = make_shared<Foo>(3, 4);
+	core::WeakPtr<Foo> weak(shared1);
+
+	FooPtr locked = weak.lock();
+	ASSERT_TRUE(locked);
+	EXPECT_EQ(1, locked->a);
+	locked.release();
+
+	weak = shared2;
+	locked = weak.lock();
+	ASSERT_TRUE(locked);
+	EXPECT_EQ(3, locked->a);
+}
+
 } // namespace core
