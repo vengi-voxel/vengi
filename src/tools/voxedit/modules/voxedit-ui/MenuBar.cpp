@@ -147,6 +147,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as stamp"), "stampbrushpaste",
 									   _sceneMgr->clipboardData(), &listener);
 			ImGui::Separator();
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_COPY, _("Global copy"), "globalcopy", hasSelection, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Global paste to ref"), "globalpastetoref", true, &listener);
+			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_SETTINGS, _("Options"))) {
 				if (_optionsPanel) {
 					_optionsPanel->toggleVisible();
