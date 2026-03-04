@@ -40,3 +40,7 @@
 When inspecting colors from palettes, you can use `vengi-palconvert --input thefile --type json` to get the colors listed. Also as for the other tools - check out `vengi-palconvert --help` if your task is about colors.
 
 If you need to do this on a non-palette format, you can use voxconvert here, too: `vengi-voxconvert --input thefile --json palette,children`
+
+# Git workflow
+
+Always use a git worktree while starting a refactoring to now clubber the workspace for others.
