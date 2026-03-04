@@ -52,6 +52,8 @@ private:
 	int32_t _aabbMeshIndex = -1;
 	int32_t _boneMeshIndex = -1;
 	int32_t _sliceRegionMeshIndex = -1;
+	int32_t _selectionGizmoMeshIndex = -1;
+	voxel::Region _selectionGizmoRegion = voxel::Region::InvalidRegion;
 
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
@@ -85,6 +87,7 @@ public:
 	const voxel::Region &sliceRegion() const override;
 	void setSliceRegion(const voxel::Region &region) override;
 	bool isSliceModeActive() const override;
+	void updateSelectionGizmo(const voxel::Region &region) override;
 	RendererStats rendererStats() const override;
 };
 

@@ -104,6 +104,11 @@ protected:
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
+
+	mutable voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
+	mutable int _selectionCacheNodeId = -1;
+	BrushType _lastBrushType = BrushType::Max;
+	SelectMode _lastSelectMode = SelectMode::Max;
 	bool _traceViaMouse = true;
 
 	voxelgenerator::lsystem::LSystemConfig _lsystemConfig;
@@ -387,6 +392,7 @@ public:
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);
 	void selectionSelectAll(int nodeId);
+	void selectionSetBounds(int nodeId, const voxel::Region &region);
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
 	voxel::Region selectionCalculateRegion(int nodeId) const;
 

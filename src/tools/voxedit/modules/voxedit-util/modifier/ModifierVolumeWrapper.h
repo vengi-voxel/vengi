@@ -29,10 +29,15 @@ private:
 	bool _paint;
 	bool _normalPaint;
 	bool _hasSelection;
+	voxel::Region _selectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
 		if (!_hasSelection) {
+			return false;
+		}
+		// Box3D region: allow editing anywhere inside the region (including air positions)
+		if (_selectionRegion.isValid() && _selectionRegion.containsPoint(pos)) {
 			return false;
 		}
 		// Check if the voxel has the FlagOutline (selected) flag set
@@ -102,6 +107,7 @@ public:
 		_paint = _modifierType == ModifierType::Paint;
 		_normalPaint = _modifierType == ModifierType::NormalPaint;
 		_hasSelection = _node.hasSelection();
+		_selectionRegion = _node.selectionRegion();
 	}
 	scenegraph::SceneGraphNode &node() const {
 		return _node;

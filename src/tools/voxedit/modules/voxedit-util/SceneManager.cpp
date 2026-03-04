@@ -580,6 +580,13 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 		Log::debug("Modify region for nodeid %i", nodeId);
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
+	if (_selectionCacheNodeId == nodeId) {
+		_selectionCacheNodeId = -1;
+		if (_modifierFacade.brushType() == BrushType::Select &&
+			_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
+			_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
+		}
+	}
 	markDirty();
 	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
 	if (resetTrace) {
@@ -1364,6 +1371,7 @@ void SceneManager::selectionInvert(int nodeId) {
 	volume->toggleFlags(volume->region(), voxel::FlagOutline);
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+	_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
 }
 
 void SceneManager::selectionUnselect(int nodeId) {
@@ -1371,9 +1379,12 @@ void SceneManager::selectionUnselect(int nodeId) {
 	if (node == nullptr) {
 		return;
 	}
+	// Only re-extract where voxels actually had FlagOutline set
+	const voxel::Region dirtyRegion = selectionCalculateRegion(nodeId);
 	node->clearSelection();
-	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
-	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+	_selectionCacheNodeId = -1;
+	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
+	_sceneRenderer->updateSelectionGizmo(voxel::Region::InvalidRegion);
 }
 
 void SceneManager::selectionSelectAll(int nodeId) {
@@ -1388,6 +1399,7 @@ void SceneManager::selectionSelectAll(int nodeId) {
 	node->select(volume->region());
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+	_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
 }
 
 bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
@@ -1404,6 +1416,9 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 }
 
 voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
+	if (_selectionCacheNodeId == nodeId) {
+		return _selectionRegionCache;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || !node->isModelNode()) {
 		return voxel::Region::InvalidRegion;
@@ -1413,6 +1428,8 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
 		return voxel::Region::InvalidRegion;
 	}
 	if (!node->hasSelection()) {
+		_selectionCacheNodeId = nodeId;
+		_selectionRegionCache = voxel::Region::InvalidRegion;
 		return voxel::Region::InvalidRegion;
 	}
 
@@ -1436,7 +1453,44 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
 			}
 		}
 	}
+	_selectionCacheNodeId = nodeId;
+	_selectionRegionCache = selectionRegion;
 	return selectionRegion;
+}
+
+void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	const voxel::Region &vol = node->region();
+	const voxel::Region clamped(glm::max(region.getLowerCorner(), vol.getLowerCorner()),
+								glm::min(region.getUpperCorner(), vol.getUpperCorner()));
+	if (!clamped.isValid()) {
+		return;
+	}
+	// Only re-extract the union of old + new selection: those are the only voxels
+	// whose FlagOutline bit changes. Everything outside is unchanged, so no mesh
+	// re-extraction is needed there.
+	voxel::Region dirtyRegion = clamped;
+	const voxel::Region oldRegion = selectionCalculateRegion(nodeId);
+	if (oldRegion.isValid()) {
+		dirtyRegion.accumulate(oldRegion);
+	}
+	node->clearSelection();
+	node->select(clamped);
+	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
+		node->setSelectionRegion(clamped);
+	}
+	// Pre-clear the cache so modified() doesn't trigger an expensive re-scan
+	_selectionCacheNodeId = -1;
+	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+	// Populate cache directly since we know the exact new selection
+	_selectionCacheNodeId = nodeId;
+	_selectionRegionCache = clamped;
+	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
+		_sceneRenderer->updateSelectionGizmo(clamped);
+	}
 }
 
 void SceneManager::resetLastTrace() {
@@ -3422,6 +3476,20 @@ bool SceneManager::update(double nowSeconds) {
 	// TODO: Set to InvalidFrameIndex if transforms should not get applied
 	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
 	_modifierFacade.update(nowSeconds, camera);
+
+	// Show selection gizmo only in Select/Box3D mode; hide it otherwise
+	const BrushType currentBrushType = _modifierFacade.brushType();
+	const SelectMode currentSelectMode = _modifierFacade.selectBrush().selectMode();
+	if (currentBrushType != _lastBrushType || currentSelectMode != _lastSelectMode) {
+		_lastBrushType = currentBrushType;
+		_lastSelectMode = currentSelectMode;
+		const int activeNodeId = _sceneGraph.activeNode();
+		if (currentBrushType == BrushType::Select && currentSelectMode == SelectMode::Box3D) {
+			_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(activeNodeId));
+		} else {
+			_sceneRenderer->updateSelectionGizmo(voxel::Region::InvalidRegion);
+		}
+	}
 
 	updateDirtyRendererStates();
 

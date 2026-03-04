@@ -27,6 +27,8 @@ enum class SelectMode : uint8_t {
 	FuzzyColor,
 	/** Select voxels connected to the clicked voxel with the same color (flood fill) */
 	Connected,
+	/** Replace the current selection with all solid voxels in the drawn 3D box region */
+	Box3D,
 
 	Max
 };

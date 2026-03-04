@@ -28,6 +28,7 @@
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
 #include <glm/common.hpp>
@@ -244,7 +245,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	int selectModeInt = (int)brush.selectMode();
 
 	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
-								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected")};
+								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
+								   C_("SelectMode", "3D Box")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
@@ -257,6 +259,72 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			brush.setColorThreshold(threshold);
 		}
 		ImGui::TooltipTextUnformatted(_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
+	}
+
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	if (node && node->hasSelection()) {
+		voxel::Region sel = _sceneMgr->selectionCalculateRegion(nodeId);
+		if (sel.isValid()) {
+			ImGui::SeparatorText(_("Selection bounds"));
+			const voxel::Region &vol = node->region();
+			const glm::ivec3 &vMins = vol.getLowerCorner();
+			const glm::ivec3 &vMaxs = vol.getUpperCorner();
+			glm::ivec3 mins = sel.getLowerCorner();
+			glm::ivec3 maxs = sel.getUpperCorner();
+			bool changed = false;
+
+			// Slider with -/+ buttons for fine single-step adjustment
+			auto selSlider = [&changed](const char *id, int *val, int lo, int hi) {
+				ImGui::PushID(id);
+				const float btnW = ImGui::GetFrameHeight();
+				const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+				if (ImGui::Button("-", ImVec2(btnW, 0))) {
+					*val = glm::max(*val - 1, lo);
+					changed = true;
+				}
+				ImGui::SameLine(0, spacing);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+				changed |= ImGui::SliderInt("", val, lo, hi);
+				ImGui::SameLine(0, spacing);
+				if (ImGui::Button("+", ImVec2(btnW, 0))) {
+					*val = glm::min(*val + 1, hi);
+					changed = true;
+				}
+				ImGui::PopID();
+			};
+
+			if (ImGui::BeginTable("##selbounds", 3, ImGuiTableFlags_SizingStretchProp)) {
+				ImGui::TableSetupColumn("##axis", ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn(_("Min"));
+				ImGui::TableSetupColumn(_("Max"));
+				ImGui::TableHeadersRow();
+
+				ImGui::TableNextColumn(); ImGui::AxisButtonX(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn(); selSlider("##minx", &mins.x, vMins.x, vMaxs.x);
+				ImGui::TableNextColumn(); selSlider("##maxx", &maxs.x, vMins.x, vMaxs.x);
+
+				ImGui::TableNextColumn(); ImGui::AxisButtonY(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn(); selSlider("##miny", &mins.y, vMins.y, vMaxs.y);
+				ImGui::TableNextColumn(); selSlider("##maxy", &maxs.y, vMins.y, vMaxs.y);
+
+				ImGui::TableNextColumn(); ImGui::AxisButtonZ(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn(); selSlider("##minz", &mins.z, vMins.z, vMaxs.z);
+				ImGui::TableNextColumn(); selSlider("##maxz", &maxs.z, vMins.z, vMaxs.z);
+
+				ImGui::EndTable();
+			}
+
+			if (changed) {
+				// ensure min <= max after independent dragging
+				const glm::ivec3 newMins = glm::min(mins, maxs);
+				const glm::ivec3 newMaxs = glm::max(mins, maxs);
+				_sceneMgr->selectionSetBounds(nodeId, voxel::Region(newMins, newMaxs));
+			}
+
+			const glm::ivec3 size = sel.getDimensionsInVoxels();
+			ImGui::Text(_("Size: %d x %d x %d"), size.x, size.y, size.z);
+		}
 	}
 }
 
