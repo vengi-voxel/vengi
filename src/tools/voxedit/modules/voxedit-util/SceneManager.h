@@ -381,6 +381,8 @@ public:
 
 	bool copy(int nodeId);
 	bool paste(const glm::ivec3 &pos);
+	bool globalCopy();
+	bool globalPaste(const glm::ivec3 &pos);
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);

@@ -1226,14 +1226,23 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
+		Log::warn("paste: no active model node");
 		return false;
 	}
+	const voxel::Region &destRegion = node->region();
+	Log::debug("paste: clipboard region %s, cursor pos %i:%i:%i, dest volume region %s",
+			  _copy.volume->region().toString().c_str(), pos.x, pos.y, pos.z,
+			  destRegion.toString().c_str());
 	voxel::Region modifiedRegion;
 	voxel::ClipboardData voxelData(node->volume(), node->palette(), false);
 	voxedit::tool::paste(voxelData, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
-		Log::debug("Failed to paste");
+		Log::warn("paste: modifiedRegion is invalid after paste");
 		return false;
+	}
+	if (!voxel::intersects(modifiedRegion, destRegion)) {
+		Log::warn("paste: modified region %s does not intersect destination volume %s - voxels out of bounds",
+				  modifiedRegion.toString().c_str(), destRegion.toString().c_str());
 	}
 	const int64_t dismissMillis = core::getVar(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
@@ -1262,6 +1271,84 @@ bool SceneManager::nodeCut(int nodeId) {
 	}
 	const int64_t dismissMillis = core::getVar(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
+	return true;
+}
+
+bool SceneManager::globalCopy() {
+	// Always try to capture the current selection first.
+	// copy() only updates _copy when a selection exists; if there is no
+	// selection it leaves _copy unchanged, so a previously copied region
+	// is still used as a fallback.
+	copy(activeNode());
+	if (!_copy) {
+		Log::warn("globalcopy: nothing to copy - make a selection first");
+		return false;
+	}
+	scenegraph::SceneGraph newSceneGraph;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	newNode.setVolume(new voxel::RawVolume(*_copy.volume), true);
+	newNode.setPalette(*_copy.palette);
+	newSceneGraph.emplace(core::move(newNode));
+	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+	voxelformat::SaveContext saveCtx;
+	if (!voxelformat::saveFormat(newSceneGraph, clipboardFile, nullptr, archive, saveCtx)) {
+		Log::warn("Failed to write global clipboard to %s", clipboardFile.c_str());
+		return false;
+	}
+	Log::debug("Global clipboard written to %s", clipboardFile.c_str());
+	return true;
+}
+
+bool SceneManager::globalPaste(const glm::ivec3 &pos) {
+	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+	scenegraph::SceneGraph loadedSceneGraph;
+	voxelformat::LoadContext loadCtx;
+	io::FileDescription fileDesc;
+	fileDesc.set(clipboardFile);
+	if (!voxelformat::loadFormat(fileDesc, archive, loadedSceneGraph, loadCtx)) {
+		Log::warn("Failed to read global clipboard from %s", clipboardFile.c_str());
+		return false;
+	}
+	for (auto iter = loadedSceneGraph.beginModel(); iter != loadedSceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &srcNode = *iter;
+		if (srcNode.volume() == nullptr) {
+			continue;
+		}
+		_copy = voxel::ClipboardData(new voxel::RawVolume(*srcNode.volume()), srcNode.palette(), true);
+		break;
+	}
+	if (!_copy) {
+		Log::warn("Global clipboard file contained no model data");
+		return false;
+	}
+
+	// If the clipboard fits entirely within the active node's volume at pos, merge into it
+	const int nodeId = activeNode();
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node != nullptr) {
+		const glm::ivec3 dims = _copy.volume->region().getDimensionsInVoxels();
+		const voxel::Region pasteRegion(pos, pos + dims - 1);
+		if (node->region().containsRegion(pasteRegion)) {
+			Log::debug("globalPaste: merging into active node at %i:%i:%i", pos.x, pos.y, pos.z);
+			return paste(pos);
+		}
+	}
+
+	// Active node can't fit the clipboard at pos — create a new node translated to cursor
+	voxel::RawVolume *vol = new voxel::RawVolume(*_copy.volume);
+	vol->translate(pos - vol->region().getLowerCorner());
+	Log::debug("globalPaste: creating new node at %i:%i:%i (region %s)", pos.x, pos.y, pos.z,
+			  vol->region().toString().c_str());
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	newNode.setName("clipboard");
+	newNode.setVolume(vol, true);
+	newNode.setPalette(*_copy.palette);
+	if (moveNodeToSceneGraph(newNode) == InvalidNodeId) {
+		Log::warn("globalPaste: failed to create node from clipboard");
+		return false;
+	}
 	return true;
 }
 
@@ -2552,6 +2639,21 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeCut(toNodeId(args, activeNode()));
 		}).setHelp(_("Cut selection"));
+
+	command::Command::registerCommand("globalcopy")
+		.setHandler([&] (const command::CommandArgs&) {
+			globalCopy();
+		}).setHelp(_("Copy selection to a file-based clipboard shared across editor instances"));
+
+	command::Command::registerCommand("globalpaste")
+		.setHandler([&] (const command::CommandArgs&) {
+			globalPaste(cursorPosition());
+		}).setHelp(_("Paste from the file-based clipboard shared across editor instances to the cursor position"));
+
+	command::Command::registerCommand("globalpastetoref")
+		.setHandler([&] (const command::CommandArgs&) {
+			globalPaste(referencePosition());
+		}).setHelp(_("Paste from the file-based clipboard shared across editor instances to the reference position"));
 
 	command::Command::registerCommand("undo")
 		.setHandler([&] (const command::CommandArgs& args) {
