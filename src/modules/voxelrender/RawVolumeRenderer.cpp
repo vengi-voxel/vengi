@@ -128,6 +128,7 @@ bool RawVolumeRenderer::init(bool normals) {
 	_bloom = core::getVar(cfg::ClientBloom);
 	_cullBuffers = core::getVar(cfg::RenderCullBuffers);
 	_cullNodes = core::getVar(cfg::RenderCullNodes);
+	_selectionTint = core::getVar(cfg::RenderSelectionTint);
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -852,6 +853,11 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 	}
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
+	{
+		float t[4];
+		_selectionTint->vec4Val(t);
+		_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
+	}
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();

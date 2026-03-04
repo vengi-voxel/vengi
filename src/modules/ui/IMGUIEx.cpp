@@ -590,6 +590,20 @@ bool ColorEdit3Var(const char *varName) {
 	return false;
 }
 
+bool ColorEdit4Var(const char *varName) {
+	glm::vec4 col;
+	const core::VarPtr &var = core::getVar(varName);
+	const core::String label = _priv::varLabel(var);
+	var->vec4Val(&col[0]);
+	if (ImGui::ColorEdit4(label.c_str(), glm::value_ptr(col))) {
+		const core::String &c = core::String::format("%f %f %f %f", col.x, col.y, col.z, col.w);
+		var->setVal(c);
+		return true;
+	}
+	_priv::varTooltip(var);
+	return false;
+}
+
 float CalcTextWidth(const char *label, bool withPadding) {
 	const float w = ImGui::CalcTextSize(label).x;
 	if (!withPadding) {

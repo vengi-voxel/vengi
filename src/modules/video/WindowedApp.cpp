@@ -571,6 +571,8 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientOpenGLVersion);
 	const core::VarDef renderOutline(cfg::RenderOutline, false, N_("Outlines"), _("Render voxel outline"), core::CV_SHADER);
 	core::Var::registerVar(renderOutline);
+	const core::VarDef renderSelectionTint(cfg::RenderSelectionTint, "0 1 0 0.4", N_("Selection tint"), _("Color tint applied to selected voxels (RGBA)"));
+	core::Var::registerVar(renderSelectionTint);
 	const core::VarDef renderNormals(cfg::RenderNormals, false, N_("Normals"), _("Render voxel normals"), core::CV_SHADER);
 	core::Var::registerVar(renderNormals);
 	const core::VarDef toneMapping(cfg::ToneMapping, 0, 0, 3, N_("Tone mapping"), _("Activate tone mapping"), core::CV_SHADER);

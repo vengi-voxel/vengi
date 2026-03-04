@@ -63,9 +63,10 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::VoxEditShowBones) || matchesVarFilter(cfg::VoxEditShowPlane) ||
 			   matchesVarFilter(cfg::VoxEditPlaneSize);
 	case OptionCategory::Rendering:
-		return matchesVarFilter(cfg::RenderOutline) || matchesVarFilter(cfg::RenderNormals) ||
-			   matchesVarFilter(cfg::RenderCheckerBoard) || matchesVarFilter(cfg::VoxEditShadingMode) ||
-			   matchesVarFilter(cfg::ClientBloom) || matchesVarFilter(cfg::ToneMapping);
+		return matchesVarFilter(cfg::RenderOutline) || matchesVarFilter(cfg::RenderSelectionTint) ||
+			   matchesVarFilter(cfg::RenderNormals) || matchesVarFilter(cfg::RenderCheckerBoard) ||
+			   matchesVarFilter(cfg::VoxEditShadingMode) || matchesVarFilter(cfg::ClientBloom) ||
+			   matchesVarFilter(cfg::ToneMapping);
 	case OptionCategory::Renderer:
 		return matchesVarFilter(cfg::ClientShadowMapSize) || matchesVarFilter(cfg::ClientGamma) ||
 			   matchesVarFilter(cfg::ClientVSync);
@@ -215,6 +216,9 @@ void OptionsPanel::renderRendering() {
 	ImGui::BeginDisabled(isMarchingCubes);
 	if (matchesVarFilter(cfg::RenderOutline)) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
+	}
+	if (matchesVarFilter(cfg::RenderSelectionTint)) {
+		ImGui::ColorEdit4Var(cfg::RenderSelectionTint);
 	}
 	if (matchesVarFilter(cfg::RenderNormals)) {
 		if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {

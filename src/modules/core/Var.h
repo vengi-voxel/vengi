@@ -279,6 +279,7 @@ public:
 	bool boolVal() const;
 	void toggleBool();
 	void vec3Val(float out[3]) const;
+	void vec4Val(float out[4]) const;
 	/**
 	 * @return @c true if the value was set, @c false otherwise
 	 */

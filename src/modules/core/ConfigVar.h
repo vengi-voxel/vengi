@@ -52,6 +52,7 @@ constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 constexpr const char *RenderCullBuffers = "r_cullbuffers";
 constexpr const char *RenderCullNodes = "r_cullnodes";
 constexpr const char *RenderOutline = "r_renderoutline";
+constexpr const char *RenderSelectionTint = "r_selectiontint";
 constexpr const char *RenderNormals = "r_normals";
 constexpr const char *ToneMapping = "r_tonemapping";
 constexpr const char *RenderCheckerBoard = "r_checkerboard";
