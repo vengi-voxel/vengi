@@ -166,6 +166,25 @@ void Var::vec3Val(float out[3]) const {
 	out[2] = z;
 }
 
+void Var::vec4Val(float out[4]) const {
+	float x, y, z, w;
+#ifdef _MSC_VER
+	if (::sscanf_s(strVal().c_str(), "%f:%f:%f:%f", &x, &y, &z, &w) != 4) {
+		if (::sscanf_s(strVal().c_str(), "%f %f %f %f", &x, &y, &z, &w) != 4) {
+#else
+	if (::sscanf(strVal().c_str(), "%f:%f:%f:%f", &x, &y, &z, &w) != 4) {
+		if (::sscanf(strVal().c_str(), "%f %f %f %f", &x, &y, &z, &w) != 4) {
+#endif
+			out[0] = out[1] = out[2] = out[3] = 0.0f;
+			return;
+		}
+	}
+	out[0] = x;
+	out[1] = y;
+	out[2] = z;
+	out[3] = w;
+}
+
 VarPtr Var::findVar(const core::String& name) {
 	ScopedLock lock(_lock);
 	VarMap::iterator i = _vars.find(name);

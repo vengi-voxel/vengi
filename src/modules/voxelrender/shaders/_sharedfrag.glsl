@@ -6,6 +6,7 @@ layout(std140) uniform u_frag {
 	vec2 u_depthsize;
 	vec4 u_distances;
 	mat4 u_cascades[4];
+	vec4 u_selectiontint;
 };
 
 layout(location = 0) $out vec4 o_color;
@@ -173,6 +174,8 @@ vec4 brighten(vec4 color) {
 
 // pos is in object space
 vec4 outline(vec3 pos, vec4 color, vec3 normal) {
+	// Apply selection tint over the full face
+	color.rgb = mix(color.rgb, u_selectiontint.rgb, u_selectiontint.a);
 #if 0
 	vec3 f = fract(pos);
 	float edge;
