@@ -385,8 +385,10 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 	int indexOffset = 0;
 	Mesh mesh;
 	const tinyobj::mesh_t &tinyMesh = tinyShape.mesh;
-	mesh.vertices.reserve(tinyMesh.num_face_vertices.size());
-	mesh.indices.reserve(tinyMesh.indices.size());
+	mesh.vertices.reserve(tinyMesh.num_face_vertices.size() * 3);
+	mesh.indices.reserve(tinyMesh.num_face_vertices.size() * 3);
+	Log::debug("Processing mesh %s with %i faces and %i indices", tinyShape.name.c_str(), (int)tinyMesh.num_face_vertices.size(),
+			   (int)tinyMesh.indices.size());
 	for (size_t faceNum = 0; faceNum < tinyMesh.num_face_vertices.size(); ++faceNum) {
 		const int materialIndex = tinyMesh.material_ids[faceNum];
 		const tinyobj::material_t *tinyMaterial = materialIndex < 0 ? nullptr : &tinyMaterials[materialIndex];
@@ -560,6 +562,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		meshMaterials.put(meshMaterial->name, meshMaterialArray.size() - 1);
 	}
 
+	Log::debug("%i shapes", (int)tinyShapes.size());
 	for (tinyobj::shape_t &tinyShape : tinyShapes) {
 		// TODO: VOXELFORMAT: shape.lines
 		if (!tinyShape.mesh.num_face_vertices.empty()) {
