@@ -350,6 +350,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
+	wrapper.growSelectionToNewVoxels();
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);

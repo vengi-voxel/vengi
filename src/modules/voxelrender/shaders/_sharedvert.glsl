@@ -10,7 +10,7 @@ layout(std140) uniform u_vert {
 	mat4 u_viewprojection;
 	mat4 u_model;
 	int u_gray;
-	int u_padding1;
+	int u_has_selection;
 	int u_padding2;
 	int u_padding3;
 };

@@ -48,6 +48,7 @@ private:
 		core::Optional<palette::NormalPalette> _normalPalette;
 		bool _hidden = false;
 		bool _gray = false;
+		bool _hasSelection = false;
 		// if all axes scale positive: cull the back face
 		// if one or three axes are negative, then cull the front face
 		video::Face _cullFace = video::Face::Back;
@@ -193,6 +194,8 @@ public:
 	bool hidden(int idx) const;
 	void gray(int idx, bool gray);
 	bool grayed(int idx) const;
+	void setHasSelection(int idx, bool hasSelection);
+	bool hasSelection(int idx) const;
 
 	// for scaling on 1 or 3 axes negative we need to flip the face culling
 	video::Face cullFace(int idx) const;

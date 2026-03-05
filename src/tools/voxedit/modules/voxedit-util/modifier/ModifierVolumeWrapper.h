@@ -6,8 +6,10 @@
 
 #include "ModifierType.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/Connectivity.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -40,9 +42,28 @@ private:
 		if (_selectionRegion.isValid() && _selectionRegion.containsPoint(pos)) {
 			return false;
 		}
-		// Check if the voxel has the FlagOutline (selected) flag set
 		const voxel::Voxel &voxel = _volume->voxel(pos.x, pos.y, pos.z);
-		return (voxel.getFlags() & voxel::FlagOutline) == 0;
+		// Voxel is explicitly selected
+		if (voxel.getFlags() & voxel::FlagOutline) {
+			return false;
+		}
+		// Air position: allow only if directly adjacent to a selected solid voxel (Place mode only).
+		// Override/Paint/Erase operate on existing voxels, so air is always skipped.
+		if (voxel::isAir(voxel.getMaterial())) {
+			if (_override) {
+				return true;
+			}
+			for (const auto &off : voxel::arrayPathfinderFaces) {
+				const glm::ivec3 n(pos.x + off.x, pos.y + off.y, pos.z + off.z);
+				const voxel::Voxel &nv = _volume->voxel(n.x, n.y, n.z);
+				if (!voxel::isAir(nv.getMaterial()) && (nv.getFlags() & voxel::FlagOutline)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		// Solid voxel without FlagOutline
+		return true;
 	}
 
 public:
@@ -86,7 +107,7 @@ public:
 					*_currentVoxel = voxel;
 				}
 			}
-			// Restore the FlagOutline if it was set on the original voxel
+			// Restore FlagOutline from original solid voxel
 			if (existingFlags & voxel::FlagOutline) {
 				_currentVoxel->setFlags(existingFlags);
 			}
@@ -206,6 +227,20 @@ public:
 			_dirtyRegion = voxel::Region(x, y, z, x, y, z);
 		}
 		return true;
+	}
+
+	/**
+	 * @brief After a brush stroke, mark newly placed voxels as selected if they are
+	 * adjacent to an originally selected voxel. Called once per brush execution.
+	 */
+	void growSelectionToNewVoxels() {
+		if (!_hasSelection || !_dirtyRegion.isValid()) {
+			return;
+		}
+		auto func = [this](int x, int y, int z, const voxel::Voxel & /*solidVoxel*/) {
+			setFlagAt(x, y, z, voxel::FlagOutline);
+		};
+		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
 	}
 
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {

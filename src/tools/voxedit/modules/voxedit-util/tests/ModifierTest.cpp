@@ -163,6 +163,121 @@ TEST_F(ModifierTest, testModifierSelection) {
 	modifier.shutdown();
 }
 
+TEST_F(ModifierTest, testMaskBlocksNonAdjacentPlace) {
+	// With a selection active, placing a voxel that is not adjacent to any
+	// selected voxel must be blocked entirely.
+	voxel::RawVolume volume({-10, 10});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+
+	// (3,0,0) is two steps away from the selected voxel — not adjacent
+	prepare(modifier, glm::ivec3(3, 0, 0), glm::ivec3(3, 0, 0), ModifierType::Place, BrushType::Shape);
+	scenegraph::SceneGraph sceneGraph;
+	int callbackCount = 0;
+	modifier.execute(sceneGraph, node,
+					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { ++callbackCount; });
+	EXPECT_EQ(0, callbackCount) << "Place outside mask (non-adjacent) should not modify anything";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 0, 0).getMaterial()))
+		<< "Voxel should not be placed outside the mask";
+	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testMaskAllowsAdjacentPlace) {
+	// Placing a voxel directly adjacent to a selected voxel must succeed, and
+	// the new voxel must inherit the selection flag (FlagOutline).
+	voxel::RawVolume volume({-10, 10});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+
+	// (1,0,0) is directly adjacent to the selected voxel at (0,0,0)
+	prepare(modifier, glm::ivec3(1, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Place, BrushType::Shape);
+	scenegraph::SceneGraph sceneGraph;
+	bool callbackFired = false;
+	modifier.execute(sceneGraph, node,
+					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
+	EXPECT_TRUE(callbackFired) << "Place adjacent to mask should succeed";
+	EXPECT_FALSE(voxel::isAir(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Voxel should be placed at the adjacent position";
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Newly placed adjacent voxel should inherit the selection flag";
+	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testMaskEraseOnlySelectedVoxels) {
+	// Erase over a region containing both selected and non-selected voxels:
+	// only the selected voxel should be removed.
+	voxel::RawVolume volume({-10, 10});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // will be selected
+	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // not selected
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+
+	// Erase over both voxels
+	prepare(modifier, glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Erase, BrushType::Shape);
+	scenegraph::SceneGraph sceneGraph;
+	modifier.execute(sceneGraph, node);
+
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Selected voxel should be erased";
+	EXPECT_FALSE(voxel::isAir(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Non-selected voxel should not be erased";
+	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testMaskOverrideOnlyAffectsSelectedVoxels) {
+	// Override brush over a region with both selected and non-selected voxels:
+	// only the selected voxel should change color (cursor voxel = color 1 set by prepare()).
+	voxel::RawVolume volume({-10, 10});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // will be selected
+	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // not selected
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+
+	// Override both voxels; prepare() sets the cursor voxel to color index 1
+	prepare(modifier, glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Override, BrushType::Shape);
+	scenegraph::SceneGraph sceneGraph;
+	int callbackCount = 0;
+	modifier.execute(sceneGraph, node,
+					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { ++callbackCount; });
+
+	EXPECT_GT(callbackCount, 0) << "Override brush should have modified at least one voxel";
+	EXPECT_EQ(1, (int)volume.voxel(0, 0, 0).getColor())
+		<< "Selected voxel should have its color changed to cursor color";
+	EXPECT_EQ(0, (int)volume.voxel(1, 0, 0).getColor())
+		<< "Non-selected voxel color should be unchanged";
+	modifier.shutdown();
+}
+
 TEST_F(ModifierTest, testClamp) {
 	scenegraph::SceneGraph sceneGraph;
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
