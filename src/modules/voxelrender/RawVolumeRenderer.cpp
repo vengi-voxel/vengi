@@ -624,6 +624,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
+		_voxelShaderVertData.hasSelection = meshState->hasSelection(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::cullFace(meshState->cullFace(idx));
@@ -690,6 +691,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		updatePalette(meshState, idx);
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
+		_voxelShaderVertData.hasSelection = meshState->hasSelection(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
