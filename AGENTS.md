@@ -43,4 +43,4 @@ If you need to do this on a non-palette format, you can use voxconvert here, too
 
 # Git workflow
 
-Always use a git worktree while starting a refactoring to now clubber the workspace for others.
+Always use a git worktree while starting a refactoring to not pollute the workspace for others.
