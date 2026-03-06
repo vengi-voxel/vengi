@@ -168,6 +168,35 @@ TEST_F(VolumeVisitorTest, testVisitVisibleSurface) {
 	EXPECT_EQ(3, cnt);
 }
 
+TEST_F(VolumeVisitorTest, testVisitFlatSurface) {
+	// Flat 3x3 surface at y=0 with an exposed top face (PositiveY).
+	// All voxels are on the same plane so deviation=0 should visit all 9.
+	const voxel::Region region(0, 0, 0, 2, 2, 2);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int x = 0; x < 3; ++x) {
+		for (int z = 0; z < 3; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+	int cnt = visitFlatSurface(volume, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY);
+	EXPECT_EQ(9, cnt);
+
+	// With a step of 1 at z=1, deviation=0 should not follow the step.
+	voxel::RawVolume volume2(region);
+	for (int x = 0; x < 3; ++x) {
+		volume2.setVoxel(x, 0, 0, solid);
+		volume2.setVoxel(x, 0, 1, solid);
+		volume2.setVoxel(x, 0, 2, solid);
+		volume2.setVoxel(x, 1, 2, solid); // one step up at z=2
+	}
+	int cntNoDeviation = visitFlatSurface(volume2, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, 0);
+	EXPECT_EQ(6, cntNoDeviation); // only the 6 voxels whose PositiveY face is exposed
+
+	int cntWithDeviation = visitFlatSurface(volume2, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, 1);
+	EXPECT_EQ(9, cntWithDeviation); // all 9, including the 3 at y=1
+}
+
 class VolumeVisitorParamTest : public app::AbstractTest, public ::testing::WithParamInterface<VisitorOrder> {};
 
 class VolumeVisitorOrderTest : public VolumeVisitorParamTest {};

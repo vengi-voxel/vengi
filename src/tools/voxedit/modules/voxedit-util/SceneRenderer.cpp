@@ -450,6 +450,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeBuilder.clear();
 			_shapeBuilder.axis(signVec * scale);
 			_shapeRenderer.createOrUpdate(_selectionGizmoMeshIndex, _shapeBuilder);
+			video::ScopedState noDepthTest(video::State::DepthTest, false);
 			_shapeRenderer.render(_selectionGizmoMeshIndex, camera, glm::translate(model, bestCorner));
 		}
 

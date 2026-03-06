@@ -246,7 +246,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
 								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
-								   C_("SelectMode", "3D Box")};
+								   C_("SelectMode", "Flat Surface"), C_("SelectMode", "3D Box")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
@@ -259,6 +259,30 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			brush.setColorThreshold(threshold);
 		}
 		ImGui::TooltipTextUnformatted(_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
+	}
+
+	if (brush.selectMode() == SelectMode::FlatSurface) {
+		int deviation = brush.flatDeviation();
+		const float btnW = ImGui::GetFrameHeight();
+		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		ImGui::TextUnformatted(_("Accepted deviation"));
+		ImGui::TooltipTextUnformatted(_("How many voxels above or below the clicked face the fill may deviate from the start position"));
+		ImGui::PushID("flatdeviation");
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			deviation = glm::max(deviation - 1, 0);
+			brush.setFlatDeviation(deviation);
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##flatdeviation", &deviation, 0, SelectBrush::MaxFlatDeviation)) {
+			brush.setFlatDeviation(deviation);
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			deviation = glm::min(deviation + 1, SelectBrush::MaxFlatDeviation);
+			brush.setFlatDeviation(deviation);
+		}
+		ImGui::PopID();
 	}
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();

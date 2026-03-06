@@ -8,6 +8,7 @@
 #include "color/ColorUtil.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Region.h"
+#include <glm/common.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxedit {
@@ -27,6 +28,8 @@ enum class SelectMode : uint8_t {
 	FuzzyColor,
 	/** Select voxels connected to the clicked voxel with the same color (flood fill) */
 	Connected,
+	/** Flood-fill select all connected solid voxels that share the same exposed face as the clicked voxel */
+	FlatSurface,
 	/** Replace the current selection with all solid voxels in the drawn 3D box region */
 	Box3D,
 
@@ -41,6 +44,7 @@ private:
 	using Super = AABBBrush;
 	SelectMode _selectMode = SelectMode::All;
 	float _colorThreshold = color::ApproximationDistanceModerate;
+	int _flatDeviation = 0;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
@@ -68,6 +72,16 @@ public:
 
 	float colorThreshold() const {
 		return _colorThreshold;
+	}
+
+	static constexpr int MaxFlatDeviation = 32;
+
+	void setFlatDeviation(int deviation) {
+		_flatDeviation = glm::clamp(deviation, 0, MaxFlatDeviation);
+	}
+
+	int flatDeviation() const {
+		return _flatDeviation;
 	}
 };
 
