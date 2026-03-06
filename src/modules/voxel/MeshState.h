@@ -43,6 +43,7 @@ public:
 private:
 	struct VolumeData {
 		voxel::RawVolume *_rawVolume = nullptr;
+		uint32_t _generation = 0;
 		core::Optional<palette::Palette> _palette;
 		core::Optional<palette::NormalPalette> _normalPalette;
 		bool _hidden = false;
@@ -82,14 +83,15 @@ private:
 	core::VarPtr _meshSize;
 
 	struct ExtractRegion {
-		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible)
-			: region(_region), idx(_idx), visible(_visible) {
+		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible, uint32_t _generation)
+			: region(_region), idx(_idx), visible(_visible), generation(_generation) {
 		}
 		ExtractRegion() {
 		}
 		voxel::Region region{};
 		int idx = 0;
 		bool visible = false;
+		uint32_t generation = 0;
 
 		inline bool operator<(const ExtractRegion &rhs) const {
 			return idx < rhs.idx && visible < rhs.visible;

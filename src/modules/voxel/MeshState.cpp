@@ -219,6 +219,9 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			if (v == nullptr) {
 				continue;
 			}
+			if (_volumeData[idx]._generation != extractRegion.generation) {
+				continue;
+			}
 			const voxel::Region finalRegion = extractRegion.region;
 			const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 			if (!copyRegion.isValid()) {
@@ -302,7 +305,7 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 				}
 
 				Log::debug("extract region: %s", finalRegion.toString().c_str());
-				_extractRegions.emplace(finalRegion, bufferIndex, hidden(bufferIndex));
+				_extractRegions.emplace(finalRegion, bufferIndex, hidden(bufferIndex), _volumeData[bufferIndex]._generation);
 			}
 		}
 	}
@@ -362,6 +365,7 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	_volumeData[idx]._rawVolume = v;
+	_volumeData[idx]._generation++;
 	if (meshDelete) {
 		deleteMeshes(idx);
 		meshDeleted = true;
