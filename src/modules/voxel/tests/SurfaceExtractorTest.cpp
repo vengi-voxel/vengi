@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxel/private/BinaryGreedyMesher.h"
 
 namespace voxel {
 
@@ -694,6 +695,126 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherCubeCornerVoxels) {
 	for (size_t i = 0; i < vertices.size(); ++i) {
 		EXPECT_EQ(vertices[i].colorIndex, testColor) << "Vertex " << i << " color mismatch";
 	}
+}
+
+// Binary mesher chunk size is fixed at 62 voxels.
+// These tests verify that exceedsBinaryMesherRegion and getBinaryMesherRegions
+// correctly split large regions into <= 62-voxel chunks along each axis.
+
+TEST_F(SurfaceExtractorTest, testExceedsBinaryMesherRegion_ExactFit) {
+	// A region of exactly 62 voxels per axis must NOT exceed the mesher limit
+	const Region region(0, 0, 0, 61, 61, 61); // dims = 62x62x62
+	EXPECT_FALSE(exceedsBinaryMesherRegion(region));
+}
+
+TEST_F(SurfaceExtractorTest, testExceedsBinaryMesherRegion_OneOver) {
+	// A region of 63 voxels per axis must exceed the mesher limit
+	const Region region(0, 0, 0, 62, 62, 62); // dims = 63x63x63
+	EXPECT_TRUE(exceedsBinaryMesherRegion(region));
+}
+
+TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_62) {
+	// 62 voxels per axis - fits in exactly one chunk without splitting
+	const Region region(0, 0, 0, 61, 61, 61); // dims = 62x62x62
+	const auto regions = getBinaryMesherRegions(region);
+	EXPECT_EQ(regions.size(), 1u) << "62-voxel region should produce 1 sub-region";
+	EXPECT_EQ(regions[0].getLowerCorner(), region.getLowerCorner());
+}
+
+TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_124) {
+	// 124 voxels per axis = exactly 2 * 62, so 2 chunks per axis, 2^3 = 8 total
+	// This is the important edge case: the region boundary sits right on the chunk boundary
+	const Region region(0, 0, 0, 123, 123, 123); // dims = 124x124x124
+	EXPECT_TRUE(exceedsBinaryMesherRegion(region));
+	const auto regions = getBinaryMesherRegions(region);
+	EXPECT_EQ(regions.size(), 8u) << "124-voxel region should split into 2x2x2 = 8 sub-regions";
+
+	// First chunk starts at origin and spans 62 voxels (0..62 inclusive upper corner)
+	bool foundOrigin = false;
+	for (const auto &r : regions) {
+		if (r.getLowerCorner() == glm::ivec3(0, 0, 0)) {
+			foundOrigin = true;
+			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(62, 62, 62))
+				<< "First sub-region upper corner should be (62,62,62)";
+		}
+	}
+	EXPECT_TRUE(foundOrigin) << "One sub-region should start at the origin";
+
+	// Second chunk along each axis starts at coordinate 62
+	bool foundSecond = false;
+	for (const auto &r : regions) {
+		if (r.getLowerCorner() == glm::ivec3(62, 62, 62)) {
+			foundSecond = true;
+			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(123, 123, 123))
+				<< "Last sub-region upper corner should be (123,123,123)";
+		}
+	}
+	EXPECT_TRUE(foundSecond) << "One sub-region should start at (62,62,62)";
+}
+
+TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_128) {
+	// 128 voxels per axis = 2*62 + 4, so 3 chunks per axis (62, 62, 4), 3^3 = 27 total
+	const Region region(0, 0, 0, 127, 127, 127); // dims = 128x128x128
+	EXPECT_TRUE(exceedsBinaryMesherRegion(region));
+	const auto regions = getBinaryMesherRegions(region);
+	EXPECT_EQ(regions.size(), 27u) << "128-voxel region should split into 3x3x3 = 27 sub-regions";
+
+	// The last (remainder) chunk along each axis starts at 124 and ends at 127 (4 voxels)
+	bool foundRemainder = false;
+	for (const auto &r : regions) {
+		if (r.getLowerCorner() == glm::ivec3(124, 124, 124)) {
+			foundRemainder = true;
+			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(127, 127, 127))
+				<< "Remainder sub-region upper corner should be (127,127,127)";
+			const glm::ivec3 dims = r.getDimensionsInVoxels();
+			EXPECT_EQ(dims.x, 4) << "Remainder sub-region should be 4 voxels wide in X";
+			EXPECT_EQ(dims.y, 4) << "Remainder sub-region should be 4 voxels wide in Y";
+			EXPECT_EQ(dims.z, 4) << "Remainder sub-region should be 4 voxels wide in Z";
+		}
+	}
+	EXPECT_TRUE(foundRemainder) << "One sub-region should be the corner remainder at (124,124,124)";
+}
+
+TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_256) {
+	// 256 voxels per axis = 4*62 + 8, so 5 chunks per axis (62,62,62,62,8), 5^3 = 125 total
+	const Region region(0, 0, 0, 255, 255, 255); // dims = 256x256x256
+	EXPECT_TRUE(exceedsBinaryMesherRegion(region));
+	const auto regions = getBinaryMesherRegions(region);
+	EXPECT_EQ(regions.size(), 125u) << "256-voxel region should split into 5x5x5 = 125 sub-regions";
+
+	// Verify the last remainder chunk: starts at 248 (4*62), ends at 255 (8 voxels)
+	bool foundRemainder = false;
+	for (const auto &r : regions) {
+		if (r.getLowerCorner() == glm::ivec3(248, 248, 248)) {
+			foundRemainder = true;
+			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(255, 255, 255))
+				<< "Remainder sub-region upper corner should be (255,255,255)";
+			const glm::ivec3 dims = r.getDimensionsInVoxels();
+			EXPECT_EQ(dims.x, 8) << "Remainder sub-region should be 8 voxels wide in X";
+			EXPECT_EQ(dims.y, 8) << "Remainder sub-region should be 8 voxels wide in Y";
+			EXPECT_EQ(dims.z, 8) << "Remainder sub-region should be 8 voxels wide in Z";
+		}
+	}
+	EXPECT_TRUE(foundRemainder) << "One sub-region should be the corner remainder at (248,248,248)";
+}
+
+TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_NonZeroOrigin) {
+	// Verify that a region not starting at origin is split correctly
+	// 128x128x128 region starting at (10, 20, 30)
+	const Region region(10, 20, 30, 137, 147, 157); // dims = 128x128x128
+	EXPECT_TRUE(exceedsBinaryMesherRegion(region));
+	const auto regions = getBinaryMesherRegions(region);
+	EXPECT_EQ(regions.size(), 27u) << "128-voxel non-zero-origin region should still produce 3x3x3 = 27 sub-regions";
+
+	// First sub-region must start at the region's lower corner
+	bool foundFirst = false;
+	for (const auto &r : regions) {
+		if (r.getLowerCorner() == glm::ivec3(10, 20, 30)) {
+			foundFirst = true;
+			break;
+		}
+	}
+	EXPECT_TRUE(foundFirst) << "First sub-region should start at the region's lower corner (10,20,30)";
 }
 
 } // namespace voxel
