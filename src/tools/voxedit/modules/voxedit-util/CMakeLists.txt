@@ -10,6 +10,7 @@ set(SRCS
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
+	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
 	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
 	modifier/IModifierRenderer.h
@@ -99,6 +100,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
 	tests/ClipboardTest.cpp
+	tests/ExtrudeBrushTest.cpp
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp

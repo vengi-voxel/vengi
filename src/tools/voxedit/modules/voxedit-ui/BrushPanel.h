@@ -52,6 +52,8 @@ private:
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
 	void updateNormalBrushPanel(command::CommandExecutionListener &listener);
+	void updateExtrudeBrushPanel(command::CommandExecutionListener &listener);
+	void executeExtrudeBrush();
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);

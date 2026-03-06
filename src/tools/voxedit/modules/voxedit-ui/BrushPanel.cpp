@@ -25,8 +25,10 @@
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -42,7 +44,7 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
 	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
 	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP, ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
-	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT};
+	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::init() {
@@ -716,6 +718,77 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 	}
 }
 
+void BrushPanel::executeExtrudeBrush() {
+	Modifier &modifier = _sceneMgr->modifier();
+	if (!modifier.beginBrushFromPanel()) {
+		return;
+	}
+	_sceneMgr->nodeForeachGroup([&](int nodeId) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+			if (!node->visible()) {
+				return;
+			}
+			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+				_sceneMgr->modified(nodeId, region, flags);
+			};
+			modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
+		}
+	});
+	modifier.endBrush();
+}
+
+void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	ExtrudeBrush &brush = modifier.extrudeBrush();
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+
+	// Fallback used before a node is loaded; overridden by actual node dimensions below.
+	static constexpr int DefaultMaxExtrudeDepth = 128;
+	int maxDepth = DefaultMaxExtrudeDepth;
+	if (node && node->volume()) {
+		const voxel::Region &r = node->volume()->region();
+		maxDepth = glm::max(r.getWidthInVoxels(), glm::max(r.getHeightInVoxels(), r.getDepthInVoxels()));
+	}
+
+	int depth = brush.depth();
+	ImGui::TextUnformatted(_("Depth"));
+	if (ImGui::Button("-##extrude_depth")) {
+		brush.setDepth(depth - 1);
+		executeExtrudeBrush();
+	}
+	ImGui::SameLine();
+	if (ImGui::SliderInt("##extrude_depth_slider", &depth, -maxDepth, maxDepth)) {
+		brush.setDepth(depth);
+	}
+	if (ImGui::IsItemDeactivatedAfterEdit()) {
+		executeExtrudeBrush();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+##extrude_depth")) {
+		brush.setDepth(depth + 1);
+		executeExtrudeBrush();
+	}
+
+	bool fillSides = brush.fillSides();
+	if (ImGui::Checkbox(_("Fill sides (keep manifold)"), &fillSides)) {
+		brush.setFillSides(fillSides);
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("%s", _("Fill the perpendicular walls of the extruded region to prevent open edges"));
+	}
+
+	const voxel::FaceNames extrudeFace = brush.face();
+	if (extrudeFace == voxel::FaceNames::Max) {
+		ImGui::TextWrappedUnformatted(_("Click a voxel face in the viewport to set the extrusion direction"));
+	} else {
+		ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
+	}
+	if (depth == 0 && (!node || !node->hasSelection())) {
+		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
+	}
+}
+
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	const Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
@@ -740,6 +813,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateTextureBrushPanel(listener);
 		} else if (brushType == BrushType::Normal) {
 			updateNormalBrushPanel(listener);
+		} else if (brushType == BrushType::Extrude) {
+			updateExtrudeBrushPanel(listener);
 		}
 	}
 
