@@ -4,6 +4,7 @@
 
 #include "SelectBrush.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "palette/Palette.h"
@@ -13,7 +14,8 @@ namespace voxedit {
 
 voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 	if (_selectMode == SelectMode::Connected || _selectMode == SelectMode::SameColor ||
-		_selectMode == SelectMode::Surface || _selectMode == SelectMode::FuzzyColor) {
+		_selectMode == SelectMode::Surface || _selectMode == SelectMode::FuzzyColor ||
+		_selectMode == SelectMode::FlatSurface) {
 		return ctx.targetVolumeRegion;
 	}
 	return Super::calcRegion(ctx);
@@ -78,6 +80,17 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			wrapper.setFlagAt(startPos.x, startPos.y, startPos.z, voxel::FlagOutline);
 		}
 		voxelutil::visitConnectedByCondition(wrapper, startPos, func);
+		break;
+	}
+	case SelectMode::FlatSurface: {
+		if (ctx.cursorFace == voxel::FaceNames::Max) {
+			return;
+		}
+		const glm::ivec3 &startPos = ctx.cursorPosition;
+		if (voxel::isAir(wrapper.voxel(startPos).getMaterial())) {
+			return;
+		}
+		voxelutil::visitFlatSurface(wrapper, startPos, ctx.cursorFace, _flatDeviation, func);
 		break;
 	}
 	case SelectMode::Box3D: {

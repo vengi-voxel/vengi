@@ -24,12 +24,13 @@ protected:
 		brush.step(ctx);
 	}
 
-	void executeSelect(SelectBrush &brush, scenegraph::SceneGraphNode &node, const BrushContext &ctx,
+	void executeSelect(SelectBrush &brush, scenegraph::SceneGraphNode &node, BrushContext &ctx,
 					   ModifierType modifierType = ModifierType::Override) {
 		scenegraph::SceneGraph sceneGraph;
 		ModifierVolumeWrapper wrapper(node, modifierType);
 		brush.preExecute(ctx, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, ctx);
+		brush.endBrush(ctx);
 	}
 };
 
@@ -242,6 +243,163 @@ TEST_F(SelectBrushTest, testSelectRemove) {
 	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Interior voxel at (0,0,0) should be deselected";
 
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeFlatSurface) {
+	// 5x5 flat floor at y=0 with PositiveY face exposed (nothing above)
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int x = -2; x <= 2; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::FlatSurface);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// All 5x5 floor voxels should be selected
+	for (int z = -2; z <= 2; ++z) {
+		for (int x = -2; x <= 2; ++x) {
+			EXPECT_TRUE((volume.voxel(x, 0, z).getFlags() & voxel::FlagOutline) != 0)
+				<< "Floor voxel at (" << x << ",0," << z << ") should be selected";
+		}
+	}
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeFlatSurface_stopsAtCoveredVoxel) {
+	// A line of floor voxels at y=0 along the X axis
+	// One voxel's PositiveY face is blocked by a voxel above it
+	voxel::RawVolume volume({-5, 5});
+	for (int x = -3; x <= 3; ++x) {
+		volume.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	}
+	// Block PositiveY face of (0,0,0) by placing a solid voxel above it
+	volume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::FlatSurface);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	// Start from the left end of the line
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(-3, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// Left side (before the blocked voxel) should be selected
+	for (int x = -3; x <= -1; ++x) {
+		EXPECT_TRUE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Voxel at (" << x << ",0,0) should be selected";
+	}
+	// The voxel with a blocked PositiveY face should NOT be selected
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Covered voxel (0,0,0) should not be selected";
+	// Right side (beyond the barrier) should also NOT be selected
+	for (int x = 1; x <= 3; ++x) {
+		EXPECT_FALSE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Voxel at (" << x << ",0,0) should not be selected (beyond blocked voxel)";
+	}
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
+	// Stepped floor: y=0 for x in [-2..0], y=1 for x in [1..3], both along z=0
+	voxel::RawVolume volume({-5, 5});
+	for (int x = -2; x <= 0; ++x) {
+		volume.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	}
+	for (int x = 1; x <= 3; ++x) {
+		volume.setVoxel(x, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::FlatSurface);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	// With deviation=0: only the lower floor (y=0) should be selected
+	brush.setFlatDeviation(0);
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	for (int x = -2; x <= 0; ++x) {
+		EXPECT_TRUE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Lower voxel at (" << x << ",0,0) should be selected with deviation=0";
+	}
+	for (int x = 1; x <= 3; ++x) {
+		EXPECT_FALSE((volume.voxel(x, 1, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Upper voxel at (" << x << ",1,0) should NOT be selected with deviation=0";
+	}
+
+	// Clear selection flags for the next part of the test
+	for (int x = -2; x <= 0; ++x) {
+		voxel::Voxel v = volume.voxel(x, 0, 0);
+		v.setFlags(v.getFlags() & ~voxel::FlagOutline);
+		volume.setVoxel(x, 0, 0, v);
+	}
+
+	// With deviation=1: both floors should be reachable (step of 1 in Y from start)
+	brush.setFlatDeviation(1);
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	for (int x = -2; x <= 0; ++x) {
+		EXPECT_TRUE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Lower voxel at (" << x << ",0,0) should be selected with deviation=1";
+	}
+	for (int x = 1; x <= 3; ++x) {
+		EXPECT_TRUE((volume.voxel(x, 1, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Upper voxel at (" << x << ",1,0) should be selected with deviation=1";
+	}
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeFlatSurface_invalidFace) {
+	voxel::RawVolume volume({-5, 5});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::FlatSurface);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::Max; // invalid face
+	executeSelect(brush, node, ctx);
+
+	// Nothing should be selected when face is invalid
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "No voxel should be selected when face is Max";
 	brush.shutdown();
 }
 

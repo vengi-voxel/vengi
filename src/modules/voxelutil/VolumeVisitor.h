@@ -8,10 +8,12 @@
 #include "color/ColorUtil.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
 #include "core/concurrent/Atomic.h"
 #include "palette/Palette.h"
 #include "voxel/Connectivity.h"
+#include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -1104,6 +1106,132 @@ int visitConnectedByCondition(const Volume &volume, const glm::ivec3 &position, 
 	const voxel::Voxel voxel = volume.voxel(position);
 	VisitedSet visited;
 	return visitConnectedByVoxel_r(volume, voxel, position, visitor, condition, visited);
+}
+
+/**
+ * @brief Condition for flat-surface flood fill.
+ *
+ * A voxel qualifies if it is solid, its given face is exposed (the neighbor in the face
+ * direction is air), and its coordinate along the face axis is within @p deviation of the
+ * start voxel. Pass as the Condition argument to visitFlatSurface.
+ */
+struct VisitFlatSurface {
+	voxel::FaceBits _faceBit;
+	int _faceAxis;    ///< 0=X, 1=Y, 2=Z
+	int _startCoord;  ///< start position coordinate on the face axis
+	int _deviation;   ///< max allowed distance from start along the face axis
+
+	VisitFlatSurface(voxel::FaceNames face, const glm::ivec3 &startPos, int deviation = 0)
+		: _faceBit(voxel::faceBits(face)),
+		  _faceAxis(math::getIndexForAxis(voxel::faceToAxis(face))),
+		  _startCoord(startPos[_faceAxis]),
+		  _deviation(deviation) {}
+
+	template<class Sampler>
+	bool operator()(const Sampler &sampler) const {
+		if (voxel::isAir(sampler.voxel().getMaterial())) {
+			return false;
+		}
+		if (glm::abs(sampler.position()[_faceAxis] - _startCoord) > _deviation) {
+			return false;
+		}
+		return (voxel::visibleFaces(sampler) & _faceBit) != voxel::FaceBits::None;
+	}
+};
+
+/**
+ * @brief Flood-fill starting at @p position, visiting connected voxels accepted by @p condition.
+ *
+ * Explores the 4 neighbors perpendicular to @p face. When @p deviation > 0 the search also
+ * probes candidates at offset face-axis coordinates (within [startCoord±deviation]) so small
+ * height steps can be traversed. Use visitFlatSurface(volume, position, face, deviation, visitor)
+ * for the common case; this overload allows a custom condition functor.
+ *
+ * @param volume     The volume to query
+ * @param position   Start voxel position (must satisfy condition)
+ * @param face       Defines the perpendicular plane and deviation search direction
+ * @param deviation  How many units above/below start to also consider at each step
+ * @param visitor    Called with (x, y, z, voxel) for every accepted voxel including start
+ * @param condition  Callable(Sampler) → bool
+ * @return Number of voxels visited
+ */
+template<class Volume, class Visitor, class Condition>
+int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+					 int deviation, Visitor &&visitor, Condition &&condition) {
+	if (face == voxel::FaceNames::Max) {
+		return 0;
+	}
+	typename Volume::Sampler startSampler(volume);
+	if (!startSampler.setPosition(position)) {
+		return 0;
+	}
+	if (!condition(startSampler)) {
+		return 0;
+	}
+	const int faceAxis   = math::getIndexForAxis(voxel::faceToAxis(face));
+	const int startCoord = position[faceAxis];
+	// 4 directions perpendicular to the face normal
+	const int perpAxis1 = (faceAxis + 1) % 3;
+	const int perpAxis2 = (faceAxis + 2) % 3;
+	glm::ivec3 perpOffsets[4] = {};
+	perpOffsets[0][perpAxis1] =  1;
+	perpOffsets[1][perpAxis1] = -1;
+	perpOffsets[2][perpAxis2] =  1;
+	perpOffsets[3][perpAxis2] = -1;
+	VisitedSet visited;
+	visited.insert(position);
+	visitor(position.x, position.y, position.z, startSampler.voxel());
+	int n = 1;
+	constexpr size_t InitialQueueReserve = 64u;
+	core::DynamicArray<glm::ivec3> queue;
+	queue.reserve(InitialQueueReserve);
+	queue.push_back(position);
+	typename Volume::Sampler sampler(volume);
+	while (!queue.empty()) {
+		const glm::ivec3 current = queue.back();
+		queue.pop();
+		for (int i = 0; i < 4; ++i) {
+			const glm::ivec3 neighborBase = current + perpOffsets[i];
+			// Probe same level first, then ±1, ±2 … up to deviation from start.
+			for (int step = 0; step <= deviation; ++step) {
+				bool claimedAtStep = false;
+				const int ds[2] = {step, -step};
+				const int count  = (step == 0) ? 1 : 2;
+				for (int j = 0; j < count; ++j) {
+					glm::ivec3 neighbor = neighborBase;
+					neighbor[faceAxis]  = startCoord + ds[j];
+					if (!visited.insert(neighbor)) {
+						claimedAtStep = true;
+						break;
+					}
+					if (!sampler.setPosition(neighbor)) {
+						continue;
+					}
+					if (!condition(sampler)) {
+						continue;
+					}
+					visitor(neighbor.x, neighbor.y, neighbor.z, sampler.voxel());
+					++n;
+					queue.push_back(neighbor);
+					claimedAtStep = true;
+					break;
+				}
+				if (claimedAtStep) {
+					break;
+				}
+			}
+		}
+	}
+	return n;
+}
+
+/// Convenience overload: constructs a VisitFlatSurface condition with the given deviation.
+template<class Volume, class Visitor = EmptyVisitor>
+int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+					 int deviation = 0, Visitor &&visitor = Visitor()) {
+	return visitFlatSurface(volume, position, face, deviation,
+							core::forward<Visitor>(visitor),
+							VisitFlatSurface(face, position, deviation));
 }
 
 } // namespace voxelutil
