@@ -14,6 +14,7 @@
 #include "brush/PaintBrush.h"
 #include "brush/PathBrush.h"
 #include "brush/PlaneBrush.h"
+#include "brush/ExtrudeBrush.h"
 #include "brush/SelectBrush.h"
 #include "brush/ShapeBrush.h"
 #include "brush/StampBrush.h"
@@ -95,6 +96,7 @@ protected:
 	SelectBrush _selectBrush;
 	TextureBrush _textureBrush;
 	NormalBrush _normalBrush;
+	ExtrudeBrush _extrudeBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -172,6 +174,11 @@ public:
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
 	bool beginBrush();
+	/**
+	 * @brief Like beginBrush() but passes FaceNames::Max so the brush does not update its stored
+	 * face direction. Use when triggering execution from a UI panel rather than a viewport click.
+	 */
+	bool beginBrushFromPanel();
 protected:
 	void preExecuteBrush(const voxel::RawVolume *volume);
 
@@ -216,6 +223,7 @@ public:
 	SelectBrush &selectBrush();
 	TextureBrush &textureBrush();
 	NormalBrush &normalBrush();
+	ExtrudeBrush &extrudeBrush();
 	const BrushContext &brushContext() const;
 
 	/**
@@ -323,6 +331,10 @@ inline SelectBrush &Modifier::selectBrush() {
 
 inline TextureBrush &Modifier::textureBrush() {
 	return _textureBrush;
+}
+
+inline ExtrudeBrush &Modifier::extrudeBrush() {
+	return _extrudeBrush;
 }
 
 inline int Modifier::gridResolution() const {

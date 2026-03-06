@@ -42,6 +42,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_selectBrush);
 	_brushes.push_back(&_textureBrush);
 	_brushes.push_back(&_normalBrush);
+	_brushes.push_back(&_extrudeBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -193,6 +194,15 @@ void Modifier::reset() {
 bool Modifier::beginBrush() {
 	if (Brush *brush = currentBrush()) {
 		return brush->beginBrush(_brushContext);
+	}
+	return false;
+}
+
+bool Modifier::beginBrushFromPanel() {
+	if (Brush *brush = currentBrush()) {
+		BrushContext ctx = _brushContext;
+		ctx.cursorFace = voxel::FaceNames::Max;
+		return brush->beginBrush(ctx);
 	}
 	return false;
 }
@@ -449,6 +459,9 @@ BrushType Modifier::setBrushType(BrushType type) {
 		// ensure the modifier type is compatible with the brush
 		setModifierType(currentBrush()->modifierType(_brushContext.modifierType));
 	}
+	if (_brushType == BrushType::Extrude) {
+		_extrudeBrush.reset();
+	}
 	return _brushType;
 }
 
@@ -495,6 +508,9 @@ bool Modifier::previewNeedsExistingVolume() const {
 	}
 	if (_brushType == BrushType::Plane) {
 		return isMode(ModifierType::Place);
+	}
+	if (_brushType == BrushType::Extrude) {
+		return true;
 	}
 	return false;
 }
