@@ -263,7 +263,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
-	if (node && node->hasSelection()) {
+	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Box3D) {
 		voxel::Region sel = _sceneMgr->selectionCalculateRegion(nodeId);
 		if (sel.isValid()) {
 			ImGui::SeparatorText(_("Selection bounds"));
