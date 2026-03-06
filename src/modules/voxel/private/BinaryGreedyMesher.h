@@ -40,7 +40,7 @@ struct ChunkMesh;
  * - mesh[1]: Transparent geometry
  *
  * @param volData Source voxel volume to extract from
- * @param region Region of the volume to process (should be chunk-aligned)
+ * @param offset World space offset applied to all vertex positions
  * @param result Output chunk mesh containing opaque and transparent geometry
  * @param translate World space offset applied to all vertex positions
  * @param ambientOcclusion If true, calculates per-vertex AO based on neighboring voxels.
@@ -52,7 +52,7 @@ struct ChunkMesh;
  *
  * @see extractBinaryGreedyMeshType() for the core meshing algorithm
  */
-void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
+void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset, ChunkMesh *result,
 							 const glm::ivec3 &translate, bool ambientOcclusion = true);
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region);

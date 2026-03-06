@@ -718,17 +718,16 @@ bool exceedsBinaryMesherRegion(const voxel::Region &region) {
  * quad counts through aggressive greedy merging while maintaining correct ambient occlusion.
  *
  * @param volData Source voxel volume to extract from
- * @param region Region of the volume to process
+ * @param offset World space offset applied to all vertex positions
  * @param result Output chunk mesh (contains two meshes: opaque and transparent)
  * @param translate World space offset for vertex positions
  * @param ambientOcclusion Whether to calculate ambient occlusion
  */
-void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
+void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset, ChunkMesh *result,
 							 const glm::ivec3 &translate, bool ambientOcclusion) {
 	core_trace_scoped(ExtractBinaryGreedyMesh);
 
 	// Set the offset for the chunk mesh
-	const glm::ivec3 &offset = region.getLowerCorner();
 	result->setOffset(offset);
 
 	/**
