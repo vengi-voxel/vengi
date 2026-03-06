@@ -238,7 +238,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--force|-f", "Overwrite existing files.");
 		addManPageOption("--input|-i infile", "Specify the input file to read from.");
 		addManPageOption("--image", "Print the voxel scene to the console");
-		addManPageOption("--json", "Dump the scene graph of the input file. Use \\fBfull\\fR as parameter to also print mesh details");
+		addManPageOption("--json", "Dump the scene graph of the input file. Use \\fBdefault\\fR, \\fBall\\fR, \\fBpalette\\fR, \\fBmeshdetails\\fR, \\fBnodedetails\\fR, \\fBchildren\\fR, \\fBpalettematerials\\fR as parameter to also print mesh details");
 		addManPageOption("--merge|-m", "Merge models into one volume.");
 		addManPageOption("--mirror axis", "Mirror by the given axis (x, y or z)");
 		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
