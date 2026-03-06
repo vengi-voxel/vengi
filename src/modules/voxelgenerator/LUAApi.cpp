@@ -2098,8 +2098,8 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	lua_getglobal(s, luaVoxel_globalnodeid());
 	int currentNodeId = lua_tointeger(s, -1);
 	lua_pop(s, 1);
-	const int nodeId = scenegraph::moveNodeToSceneGraph(*sceneGraph, node, currentNodeId);
-	if (nodeId == -1) {
+	const int nodeId = sceneGraph->emplace(core::move(node), currentNodeId);
+	if (nodeId == InvalidNodeId) {
 		return clua_error(s, "Failed to add new %s node", scenegraph::SceneGraphNodeTypeStr[(int)type]);
 	}
 
