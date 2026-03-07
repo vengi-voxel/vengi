@@ -74,8 +74,8 @@ protected:
 			EXPECT_NE(ScriptState::Inactive, state);
 		}
 		if (validateDirtyRegion) {
-			const voxel::Region &dirtyRegion = g.dirtyRegion();
-			EXPECT_TRUE(dirtyRegion.isValid());
+			const LuaDirtyRegions &dirtyRegions = g.dirtyRegions();
+			EXPECT_FALSE(dirtyRegions.empty());
 		}
 		g.shutdown();
 	}
