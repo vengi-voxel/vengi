@@ -34,6 +34,13 @@ struct Mesh {
 	void reserveAdditionalTris(size_t numTris);
 	// helper function to add a triangle to the mesh - better add it directly
 	void addTriangle(const voxelformat::MeshTri &tri);
+	/**
+	 * @brief Calculate the AABB of the mesh vertices
+	 * @param[out] mins The minimum corner of the AABB
+	 * @param[out] maxs The maximum corner of the AABB
+	 * @return @c true if the AABB was calculated, @c false if the mesh has no vertices
+	 */
+	bool calculateAABB(glm::vec3 &mins, glm::vec3 &maxs) const;
 };
 
 } // namespace voxelformat

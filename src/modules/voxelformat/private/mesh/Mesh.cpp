@@ -3,6 +3,8 @@
  */
 
 #include "Mesh.h"
+#include <glm/common.hpp>
+#include <limits>
 
 namespace voxelformat {
 
@@ -43,6 +45,20 @@ void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
 	vertices.emplace_back(vertex1);
 	indices.push_back((voxel::IndexType)vertices.size());
 	vertices.emplace_back(vertex2);
+}
+
+bool Mesh::calculateAABB(glm::vec3 &mins, glm::vec3 &maxs) const {
+	if (vertices.empty()) {
+		mins = maxs = glm::vec3(0.0f);
+		return false;
+	}
+	mins = glm::vec3(std::numeric_limits<float>::max());
+	maxs = glm::vec3(std::numeric_limits<float>::lowest());
+	for (const MeshVertex &v : vertices) {
+		mins = glm::min(mins, v.pos);
+		maxs = glm::max(maxs, v.pos);
+	}
+	return true;
 }
 
 } // namespace voxelformat

@@ -75,6 +75,20 @@ glm::vec3 MeshFormat::getInputScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
+glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) {
+	const int voxelSize = core::getVar(cfg::VoxformatVoxelSize)->intVal();
+	if (voxelSize > 0) {
+		const glm::vec3 meshSize = meshMaxs - meshMins;
+		const float largestAxis = glm::max(meshSize.x, glm::max(meshSize.y, meshSize.z));
+		if (largestAxis > 0.0f) {
+			const float uniformScale = (float)voxelSize / largestAxis;
+			Log::info("voxelsize: %i, largest axis: %f, uniform scale: %f", voxelSize, largestAxis, uniformScale);
+			return glm::vec3(uniformScale);
+		}
+	}
+	return getInputScale();
+}
+
 bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth) {
 	if (depth > 16) {
 		const glm::vec3 &mins = meshTri.mins();
@@ -661,7 +675,9 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
 	Log::debug("Total vertices: %i, indices: %i", (int)mesh.vertices.size(), (int)mesh.indices.size());
-	const glm::vec3 &scale = getInputScale();
+	glm::vec3 meshMins, meshMaxs;
+	mesh.calculateAABB(meshMins, meshMaxs);
+	const glm::vec3 &scale = getInputScale(meshMins, meshMaxs);
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
 	MeshTriCollection tris;
 	tris.reserve(maxIndices / 3);

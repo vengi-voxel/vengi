@@ -97,6 +97,11 @@ bool FormatConfig::init() {
 											 N_("Voxelize mode"), N_("0 = high quality, 1 = faster and less memory"),
 											 core::CV_NOPERSIST);
 	core::registerVar(voxformatVoxelizeMode);
+	const core::VarDef voxformatVoxelSize(cfg::VoxformatVoxelSize, 0, 0, 1024,
+										  N_("Voxel size"),
+										  N_("The number of voxels on the largest axis (0 = disabled, use scale cvars instead)"),
+										  core::CV_NOPERSIST);
+	core::registerVar(voxformatVoxelSize);
 	const core::VarDef voxformatQBTPaletteMode(cfg::VoxformatQBTPaletteMode, true, N_("Palette mode"),
 											   N_("Use palette mode in qubicle qbt export"), core::CV_NOPERSIST);
 	core::registerVar(voxformatQBTPaletteMode);
