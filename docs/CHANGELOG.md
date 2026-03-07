@@ -26,6 +26,9 @@ General:
    - Added a few new [lua](LUAScript.md) scripts
    - Fixed crash when loading large `vengi` scenes
    - Renamed `vox_meshmode` to `voxel_meshmode`
+   - Added L-System lua bindings for the voxel generator
+   - Improved OBJ voxelization performance by preventing buffer re-allocations
+   - Allow to skip position compensation when setting the pivot in lua scripts
 
 VoxEdit:
 
@@ -42,6 +45,10 @@ VoxEdit:
    - Allow to record a session and play back later or share with others
    - Fixed a few missing network messages on undo/redo
    - Converted options menu to options dialog
+   - Added extrude brush for face-based extrusion and carving
+   - Added extended selection system
+   - Added `globalcopy`/`globalpaste` commands for cross-instance clipboard sharing
+   - Fixed potential crashes when using brushes in some circumstances
 
 VoxConvert:
 
