@@ -151,13 +151,13 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(_sceneMgr->newScene(true, "selectmenutest", voxel::Region(0, 31)));
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("Select/None");
+		ctx->MenuClick("Mask/None");
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("Select/All");
+		ctx->MenuClick("Mask/All");
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("Select/Invert");
+		ctx->MenuClick("Mask/Invert");
 		ctx->Yield();
 	};
 
