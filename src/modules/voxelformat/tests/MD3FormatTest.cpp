@@ -12,6 +12,9 @@ class MD3FormatTest : public AbstractFormatTest {};
 TEST_F(MD3FormatTest, testVoxelize) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test-md3.md3", 1);
+	if (IsSkipped()) {
+		return;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(node, nullptr);
 	const voxel::Region &region = node->region();
