@@ -82,13 +82,15 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
+		const bool normalPaletteMode = viewModeNormalPalette(_viewMode->intVal());
+
 		// now we can focus the brush panel
 		IM_CHECK(focusWindow(ctx, id));
 
 		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		int buttonIdx = 0;
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
-			if (i == (int)BrushType::Normal) {
+			if (i == (int)BrushType::Normal && !normalPaletteMode) {
 				continue;
 			}
 			const core::String btnid = core::String::format("brushes/###button%d", buttonIdx);
