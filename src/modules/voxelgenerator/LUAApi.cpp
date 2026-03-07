@@ -2574,11 +2574,14 @@ static int luaVoxel_scenegraphnode_hasnormalpalette(lua_State* s) {
 static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const bool translate = clua_optboolean(s, 3, true);
 	const glm::vec3 oldPivot = node->node->pivot();
 	if (node->node->setPivot(val)) {
-		const glm::vec3 deltaPivot = val - oldPivot;
-		const glm::vec3 size = node->node->region().getDimensionsInVoxels();
-		node->node->localTranslate(deltaPivot * size);
+		if (translate) {
+			const glm::vec3 deltaPivot = val - oldPivot;
+			const glm::vec3 size = node->node->region().getDimensionsInVoxels();
+			node->node->localTranslate(deltaPivot * size);
+		}
 		scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 		sceneGraph->updateTransforms();
 	}
@@ -4777,7 +4780,8 @@ static int luaVoxel_scenegraphnode_setpivot_jsonhelp(lua_State* s) {
 		"name": "setPivot",
 		"summary": "Set the pivot point of the node.",
 		"parameters": [
-			{"name": "pivot", "type": "vec3", "description": "The new pivot point."}
+			{"name": "pivot", "type": "vec3", "description": "The new pivot point."},
+			{"name": "translate", "type": "boolean", "optional": true, "description": "Whether to compensate the translation when changing the pivot. Default is true."}
 		],
 		"returns": []})";
 	lua_pushstring(s, json);
