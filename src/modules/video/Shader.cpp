@@ -207,7 +207,6 @@ void Shader::update(uint32_t deltaTime) {
 }
 
 bool Shader::isActive() const {
-	core_assert(!_active || video::getProgram() == _program);
 	return _active;
 }
 

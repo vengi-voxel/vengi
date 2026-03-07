@@ -45,6 +45,9 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	core_assert_msg(ctx.volume != nullptr, "Provided volume cannot be null");
+	const glm::ivec3 &mins = ctx.region.getLowerCorner();
+	const glm::ivec3 &maxs = ctx.region.getUpperCorner();
+	Log::debug("Extracting surface with mode %i in region [%d, %d, %d] - [%d, %d, %d]", (int)ctx.type, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 
 	ctx.mesh.clear();
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
