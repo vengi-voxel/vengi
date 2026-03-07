@@ -34,7 +34,7 @@
 | `setName(name)` | Set the name of the node. |
 | `setNormalPalette(normalpalette)` | Set the normal palette of the node. |
 | `setPalette(palette, remap)` | Set the palette of the node. |
-| `setPivot(pivot)` | Set the pivot point of the node. |
+| `setPivot(pivot, translate)` | Set the pivot point of the node. |
 | `setProperty(key, value)` | Set a custom property on the node. |
 | `show()` | Show the node. |
 | `unlock()` | Unlock the node. |
@@ -372,6 +372,7 @@ Set the pivot point of the node.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `pivot` | `vec3` | The new pivot point. |
+| `translate` | `boolean` | Whether to compensate the translation when changing the pivot. Default is true. |
 
 ### setProperty
 

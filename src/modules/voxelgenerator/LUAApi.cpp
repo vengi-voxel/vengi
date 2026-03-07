@@ -4781,7 +4781,7 @@ static int luaVoxel_scenegraphnode_setpivot_jsonhelp(lua_State* s) {
 		"summary": "Set the pivot point of the node.",
 		"parameters": [
 			{"name": "pivot", "type": "vec3", "description": "The new pivot point."},
-			{"name": "translate", "type": "boolean", "optional": true, "description": "Whether to compensate the translation when changing the pivot. Default is true."}
+			{"name": "translate", "type": "boolean", "description": "Whether to compensate the translation when changing the pivot. Default is true."}
 		],
 		"returns": []})";
 	lua_pushstring(s, json);

@@ -849,6 +849,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "shape";
 	} else if (name == "g_import") {
 		return "import";
+	} else if (name == "g_lsystem") {
+		return "lsystem";
 	} else if (name == "g_font") {
 		return "font";
 	} else if (name == "g_algorithm") {
@@ -950,6 +952,8 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_font";
 	} else if (pageName == "import") {
 		return "g_import";
+	} else if (pageName == "lsystem") {
+		return "g_lsystem";
 	} else if (pageName == "algorithm") {
 		return "g_algorithm";
 	} else if (pageName == "http") {

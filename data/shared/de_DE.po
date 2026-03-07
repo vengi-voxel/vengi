@@ -802,6 +802,12 @@ msgstr "Umrisslinien"
 msgid "Render voxel outline"
 msgstr "Voxel-Umriss rendern"
 
+msgid "Color tint applied to selected voxels (RGBA)"
+msgstr ""
+
+msgid "Selection tint"
+msgstr ""
+
 msgid "Normals"
 msgstr "Normalen"
 
@@ -1715,6 +1721,14 @@ msgctxt "SelectMode"
 msgid "Fuzzy Color"
 msgstr ""
 
+msgctxt "SelectMode"
+msgid "3D Box"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr ""
+
 msgid "Select mode"
 msgstr "Auswahlmodus"
 
@@ -1724,6 +1738,27 @@ msgstr ""
 msgid ""
 "Color distance threshold for fuzzy matching (0 = exact, higher = more "
 "similar colors)"
+msgstr ""
+
+msgid "Accepted deviation"
+msgstr ""
+
+msgid ""
+"How many voxels above or below the clicked face the fill may deviate from "
+"the start position"
+msgstr ""
+
+msgid "Selection bounds"
+msgstr ""
+
+msgid "Min"
+msgstr ""
+
+msgid "Max"
+msgstr ""
+
+#, c-format
+msgid "Size: %d x %d x %d"
 msgstr ""
 
 msgid "Enable normal rendering to see your changes"
@@ -1813,6 +1848,26 @@ msgstr "Verlauf"
 
 msgid "UV editor"
 msgstr "UV-Editor"
+
+msgid "Depth"
+msgstr "Tiefe"
+
+msgid "Fill sides (keep manifold)"
+msgstr ""
+
+msgid ""
+"Fill the perpendicular walls of the extruded region to prevent open edges"
+msgstr ""
+
+msgid "Click a voxel face in the viewport to set the extrusion direction"
+msgstr ""
+
+#, c-format
+msgid "Direction: %s"
+msgstr "Richtung: %s"
+
+msgid "No selection active - use the Select brush first"
+msgstr ""
 
 msgid "Brush settings"
 msgstr "Pinsel-Einstellungen"
@@ -2044,9 +2099,6 @@ msgstr "Leere Szene"
 msgid "Height"
 msgstr "Höhe"
 
-msgid "Depth"
-msgstr "Tiefe"
-
 msgid "Failed to save"
 msgstr "Fehler beim Speichern"
 
@@ -2184,11 +2236,17 @@ msgstr "Als neuen Knoten einfügen"
 msgid "Paste as stamp"
 msgstr "Als Stempel einfügen"
 
+msgid "Global copy"
+msgstr ""
+
+msgid "Global paste to ref"
+msgstr ""
+
+msgid "Mask"
+msgstr ""
+
 msgid "Select"
 msgstr "Auswählen"
-
-msgid "Color picker"
-msgstr "Farbauswahl"
 
 msgid "Invert"
 msgstr "Invertieren"
@@ -3377,6 +3435,9 @@ msgstr "Verwenden Sie das Farbrad zur Bearbeitung der Farben in der Palette"
 msgid "Always show the color picker below the palette"
 msgstr "Den Farbwähler immer unterhalb der Palette anzeigen"
 
+msgid "Color picker"
+msgstr "Farbauswahl"
+
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
 "Millisekunden, in denen eine Region in bestimmten Situationen hervorgehoben "
@@ -3763,6 +3824,19 @@ msgstr "Fügt die Zwischenablage als neuen Knoten ein"
 
 msgid "Cut selection"
 msgstr "Auswahl ausschneiden"
+
+msgid "Copy selection to a file-based clipboard shared across editor instances"
+msgstr ""
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"cursor position"
+msgstr ""
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"reference position"
+msgstr ""
 
 msgid "Undo your last step"
 msgstr "Macht den letzten Schritt rückgängig"

@@ -70,7 +70,7 @@ Print the voxel scene to the console
 
 .TP
 \fB\--json\fR
-Dump the scene graph of the input file. Use \fBfull\fR as parameter to also print mesh details
+Dump the scene graph of the input file. Use \fBdefault\fR, \fBall\fR, \fBpalette\fR, \fBmeshdetails\fR, \fBnodedetails\fR, \fBchildren\fR, \fBpalettematerials\fR as parameter to also print mesh details
 
 .TP
 \fB\--merge|-m\fR

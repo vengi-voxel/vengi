@@ -140,6 +140,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | [g_import](lua/import.md) | Import images, palettes, and scenes |
 | [g_io](lua/io.md) | File I/O operations |
 | [g_log](lua/log.md) | Logging functions |
+| [g_lsystem](lua/lsystem.md) | Logging functions |
 | [g_noise](lua/noise.md) | Noise generation functions |
 | [g_normalpalette](lua/normalpalette.md) | Create and manipulate palettes |
 | [g_palette](lua/palette.md) | Create and manipulate palettes |

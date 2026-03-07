@@ -768,6 +768,12 @@ msgstr ""
 msgid "Render voxel outline"
 msgstr ""
 
+msgid "Color tint applied to selected voxels (RGBA)"
+msgstr ""
+
+msgid "Selection tint"
+msgstr ""
+
 msgid "Normals"
 msgstr ""
 
@@ -1650,6 +1656,14 @@ msgctxt "SelectMode"
 msgid "Fuzzy Color"
 msgstr ""
 
+msgctxt "SelectMode"
+msgid "3D Box"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr ""
+
 msgid "Select mode"
 msgstr ""
 
@@ -1659,6 +1673,27 @@ msgstr ""
 msgid ""
 "Color distance threshold for fuzzy matching (0 = exact, higher = more "
 "similar colors)"
+msgstr ""
+
+msgid "Accepted deviation"
+msgstr ""
+
+msgid ""
+"How many voxels above or below the clicked face the fill may deviate from "
+"the start position"
+msgstr ""
+
+msgid "Selection bounds"
+msgstr ""
+
+msgid "Min"
+msgstr ""
+
+msgid "Max"
+msgstr ""
+
+#, c-format
+msgid "Size: %d x %d x %d"
 msgstr ""
 
 msgid "Enable normal rendering to see your changes"
@@ -1746,6 +1781,26 @@ msgid "Gradient"
 msgstr ""
 
 msgid "UV editor"
+msgstr ""
+
+msgid "Depth"
+msgstr ""
+
+msgid "Fill sides (keep manifold)"
+msgstr ""
+
+msgid ""
+"Fill the perpendicular walls of the extruded region to prevent open edges"
+msgstr ""
+
+msgid "Click a voxel face in the viewport to set the extrusion direction"
+msgstr ""
+
+#, c-format
+msgid "Direction: %s"
+msgstr ""
+
+msgid "No selection active - use the Select brush first"
 msgstr ""
 
 msgid "Brush settings"
@@ -1961,9 +2016,6 @@ msgstr ""
 msgid "Height"
 msgstr ""
 
-msgid "Depth"
-msgstr ""
-
 msgid "Failed to save"
 msgstr ""
 
@@ -2096,10 +2148,16 @@ msgstr ""
 msgid "Paste as stamp"
 msgstr ""
 
-msgid "Select"
+msgid "Global copy"
 msgstr ""
 
-msgid "Color picker"
+msgid "Global paste to ref"
+msgstr ""
+
+msgid "Mask"
+msgstr ""
+
+msgid "Select"
 msgstr ""
 
 msgid "Invert"
@@ -3209,6 +3267,9 @@ msgstr ""
 msgid "Always show the color picker below the palette"
 msgstr ""
 
+msgid "Color picker"
+msgstr ""
+
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
 
@@ -3560,6 +3621,19 @@ msgid "Paste clipboard as a new node"
 msgstr ""
 
 msgid "Cut selection"
+msgstr ""
+
+msgid "Copy selection to a file-based clipboard shared across editor instances"
+msgstr ""
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"cursor position"
+msgstr ""
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"reference position"
 msgstr ""
 
 msgid "Undo your last step"
