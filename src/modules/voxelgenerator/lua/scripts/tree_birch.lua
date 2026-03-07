@@ -99,7 +99,7 @@ end
 
 -- Create the open, airy crown canopy
 local function createCrown(volume, crownCenter, crownWidth, crownHeight, leavesColor, leavesColor2)
-	-- Light, open ellipsoid — birch crowns are airy, not dense
+	-- Light, open ellipsoid - birch crowns are airy, not dense
 	local halfW = math.floor(crownWidth / 2)
 
 	-- Scatter small domes rather than one solid shape
@@ -128,7 +128,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, secon
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Main trunk — birch trunks stay slender (minimal taper)
+	-- Main trunk - birch trunks stay slender (minimal taper)
 	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, math.max(1, trunkStrength - 1), trunkColor)
 
 	-- Collect all trunk tops for branch placement

@@ -41,7 +41,7 @@ local function createVaseLimb(volume, origin, angle, length, archH, branchColor,
 	local dx = math.cos(angle)
 	local dz = math.sin(angle)
 
-	-- Elm limbs grow steeply upward then arch outward — vase shape
+	-- Elm limbs grow steeply upward then arch outward - vase shape
 	local endX = math.floor(origin.x + dx * length)
 	local endZ = math.floor(origin.z + dz * length)
 	local endY = origin.y + archH + math.random(-1, 1)
@@ -58,7 +58,7 @@ local function createVaseLimb(volume, origin, angle, length, archH, branchColor,
 	local tip = drawBezier(volume, origin, branchEnd, ctrl, branchThick, 1,
 		math.max(8, length), branchColor)
 
-	-- Drooping tip extension — classic elm feature
+	-- Drooping tip extension - classic elm feature
 	if droopingTips then
 		local droopLen = math.random(2, math.max(3, math.floor(length * 0.35)))
 		local droopEnd = g_ivec3.new(
@@ -145,7 +145,7 @@ function main(node, region, color, trunkHeight, trunkStrength, forkHeight,
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Tall straight trunk — American Elms have notably straight trunks
+	-- Tall straight trunk - American Elms have notably straight trunks
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
 
 	-- Root flare
@@ -155,7 +155,7 @@ function main(node, region, color, trunkHeight, trunkStrength, forkHeight,
 	tree_utils.createLineRoots(volume, pos, math.random(3, 5), trunkStrength + 1,
 		math.max(1, trunkStrength - 1), trunkColor)
 
-	-- Fork zone — where the trunk fans out into vase limbs
+	-- Fork zone - where the trunk fans out into vase limbs
 	local forkY = pos.y + math.floor(trunkHeight * forkHeight / 100)
 	local forkPos = g_ivec3.new(pos.x, forkY, pos.z)
 
@@ -164,7 +164,7 @@ function main(node, region, color, trunkHeight, trunkStrength, forkHeight,
 	local topThick = math.max(1, trunkStrength - 1)
 	g_shape.line(volume, forkPos, topPos, trunkColor, topThick)
 
-	-- Vase limbs radiating from fork zone — the defining elm silhouette
+	-- Vase limbs radiating from fork zone - the defining elm silhouette
 	local angleStep = (2 * math.pi) / mainBranches
 	local startAngle = math.random() * 2 * math.pi
 

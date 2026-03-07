@@ -41,7 +41,7 @@ end
 local function buildToadstool(volume, pos, height, capRadius, stemThick, showSpots, showRing,
 	capColor, capUnderColor, spotColor, stemColor, ringColor)
 
-	-- Stem — slightly tapered cylinder
+	-- Stem - slightly tapered cylinder
 	local stemTop = g_ivec3.new(pos.x, pos.y + height, pos.z)
 	g_shape.line(volume, pos, stemTop, stemColor, stemThick)
 
@@ -56,7 +56,7 @@ local function buildToadstool(volume, pos, height, capRadius, stemThick, showSpo
 		g_shape.dome(volume, ringPos, 'y', false, ringW * 2, 1, ringW * 2, ringColor)
 	end
 
-	-- Cap — dome on top, inverted dome underneath for gills
+	-- Cap - dome on top, inverted dome underneath for gills
 	local capCenter = g_ivec3.new(pos.x, stemTop.y, pos.z)
 	local capH = math.max(2, math.floor(capRadius * 0.6))
 
@@ -89,7 +89,7 @@ local function buildToadstool(volume, pos, height, capRadius, stemThick, showSpo
 	end
 end
 
--- Shelf / bracket fungus — grows sideways from a surface
+-- Shelf / bracket fungus - grows sideways from a surface
 local function buildShelf(volume, pos, height, capRadius, stemThick,
 	capColor, capUnderColor, stemColor)
 
@@ -125,7 +125,7 @@ local function buildShelf(volume, pos, height, capRadius, stemThick,
 	end
 end
 
--- Tall thin mushroom — long delicate stem with a small cap
+-- Tall thin mushroom - long delicate stem with a small cap
 local function buildTall(volume, pos, height, capRadius, stemThick, showRing,
 	capColor, capUnderColor, stemColor, ringColor)
 
@@ -161,7 +161,7 @@ local function buildTall(volume, pos, height, capRadius, stemThick, showRing,
 		'y', true, smallCap * 2, 1, smallCap * 2, capUnderColor)
 end
 
--- Puffball — round ball sitting on the ground, no real stem
+-- Puffball - round ball sitting on the ground, no real stem
 local function buildPuffball(volume, pos, height, capRadius, showSpots,
 	capColor, spotColor, stemColor)
 
@@ -171,7 +171,7 @@ local function buildPuffball(volume, pos, height, capRadius, showSpots,
 	-- Solid stem column connecting base to ball center
 	g_shape.line(volume, pos, ballCenter, stemColor, math.max(1, math.floor(radius * 0.5)))
 
-	-- Main ball body — solid dome on top
+	-- Main ball body - solid dome on top
 	g_shape.dome(volume, pos, 'y', false, radius * 2, radius * 2, radius * 2, capColor)
 
 	-- Upper hemisphere for roundness
@@ -181,7 +181,7 @@ local function buildPuffball(volume, pos, height, capRadius, showSpots,
 	g_shape.dome(volume, pos, 'y', false, math.floor(radius * 1.0),
 		math.max(1, math.floor(radius * 0.4)), math.floor(radius * 1.0), stemColor)
 
-	-- Surface texture — scattered spots / patches
+	-- Surface texture - scattered spots / patches
 	if showSpots then
 		local numPatches = math.random(5, 10 + radius)
 		for _ = 1, numPatches do
@@ -202,7 +202,7 @@ local function buildPuffball(volume, pos, height, capRadius, showSpots,
 	end
 end
 
--- Morel — honeycomb-like pitted cap on a pale stem
+-- Morel - honeycomb-like pitted cap on a pale stem
 local function buildMorel(volume, pos, height, capRadius, stemThick,
 	capColor, capUnderColor, stemColor)
 
@@ -215,7 +215,7 @@ local function buildMorel(volume, pos, height, capRadius, stemThick,
 	g_shape.dome(volume, pos, 'y', false, (stemThick + 1) * 2, math.max(1, stemThick - 1),
 		(stemThick + 1) * 2, stemColor)
 
-	-- Morel cap — elongated conical/ellipsoid shape with pits
+	-- Morel cap - elongated conical/ellipsoid shape with pits
 	local capH = height - stemHeight
 	capH = math.max(3, capH)
 	local capW = math.max(2, capRadius)
@@ -225,7 +225,7 @@ local function buildMorel(volume, pos, height, capRadius, stemThick,
 	g_shape.dome(volume, g_ivec3.new(pos.x, stemTop.y + capH - 2, pos.z), 'y', false,
 		math.floor(capW * 1.2), math.max(1, math.floor(capW * 0.5)), math.floor(capW * 1.2), capColor)
 
-	-- Pits / honeycomb texture — erase small holes in the cap surface
+	-- Pits / honeycomb texture - erase small holes in the cap surface
 	local numPits = math.random(6, 12 + capW * 2)
 	for _ = 1, numPits do
 		local pitAngle = math.random() * 2 * math.pi

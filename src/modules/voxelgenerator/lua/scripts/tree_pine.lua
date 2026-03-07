@@ -32,7 +32,7 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Create a needle cluster at a position — irregular dome with slight randomness
+-- Create a needle cluster at a position - irregular dome with slight randomness
 local function createNeedleCluster(volume, center, size, primaryColor, secondaryColor)
 	local w = size + math.random(-1, 1)
 	local h = math.max(1, size - math.random(0, 2))

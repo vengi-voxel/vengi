@@ -54,7 +54,7 @@ local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCur
 		basePos.z + curveZ
 	)
 
-	-- Control point for the trunk curve — royal palms are straighter, coconut leans more
+	-- Control point for the trunk curve - royal palms are straighter, coconut leans more
 	local ctrlHeight
 	if variety == 'royal' then
 		ctrlHeight = 0.6
@@ -69,7 +69,7 @@ local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCur
 		basePos.z + math.floor(curveZ * 0.3)
 	)
 
-	-- Taper — royal palms have a distinctive bulge, others taper normally
+	-- Taper - royal palms have a distinctive bulge, others taper normally
 	local topThickness = math.max(1, trunkStrength - 1)
 	if variety == 'royal' then
 		-- Draw lower thicker section then thinner upper
@@ -100,7 +100,7 @@ local function createTrunk(volume, basePos, trunkHeight, trunkStrength, trunkCur
 		drawBezier(volume, basePos, topPos, ctrl, trunkStrength, topThickness, trunkHeight, trunkColor)
 	end
 
-	-- Bark rings — horizontal ring texture along the trunk
+	-- Bark rings - horizontal ring texture along the trunk
 	if barkRings then
 		local ringSpacing
 		if variety == 'date' then
@@ -221,7 +221,7 @@ end
 -- Create a fruit cluster beneath the crown
 local function createFruits(volume, crownPos, numFruits, fruitColor, variety)
 	if variety == 'coconut' then
-		-- Coconut cluster — a few large fruits hanging just below the crown
+		-- Coconut cluster - a few large fruits hanging just below the crown
 		local count = math.random(2, math.min(5, numFruits))
 		local angleStep = (2 * math.pi) / count
 		local startAngle = math.random() * 2 * math.pi
@@ -235,7 +235,7 @@ local function createFruits(volume, crownPos, numFruits, fruitColor, variety)
 			g_shape.dome(volume, fruitPos, 'y', false, 2, 2, 2, fruitColor)
 		end
 	elseif variety == 'date' then
-		-- Date clusters — hanging bunches
+		-- Date clusters - hanging bunches
 		local clusters = math.random(3, 6)
 		local angleStep = (2 * math.pi) / clusters
 		local startAngle = math.random() * 2 * math.pi
@@ -253,13 +253,13 @@ local function createFruits(volume, crownPos, numFruits, fruitColor, variety)
 			g_shape.dome(volume, bunchBot, 'y', false, 2, math.max(1, math.floor(hangLen * 0.5)), 2, fruitColor)
 		end
 	else
-		-- Royal/fan — small decorative fruit cluster
+		-- Royal/fan - small decorative fruit cluster
 		local clusterPos = g_ivec3.new(crownPos.x, crownPos.y - 1, crownPos.z)
 		g_shape.dome(volume, clusterPos, 'y', true, 3, 2, 3, fruitColor)
 	end
 end
 
--- Create the crown — a bulge at the top of trunk where fronds emerge
+-- Create the crown - a bulge at the top of trunk where fronds emerge
 local function createCrownBulge(volume, topPos, trunkStrength, leavesColor, variety)
 	local bulgeR = trunkStrength + 1
 	local bulgeH = math.max(1, trunkStrength)
@@ -326,15 +326,15 @@ function main(node, region, color, variety, trunkHeight, trunkStrength, trunkCur
 		local tierDroop
 
 		if tier == 1 then
-			-- Upper tier — shorter, more upright
+			-- Upper tier - shorter, more upright
 			tierLen = math.max(3, actualFrondLen - math.random(1, 3))
 			tierDroop = math.max(1, actualDroop - math.random(1, 3))
 		elseif tier == 2 then
-			-- Middle tier — standard
+			-- Middle tier - standard
 			tierLen = actualFrondLen
 			tierDroop = actualDroop
 		else
-			-- Lower tier — longer, droopier (older fronds)
+			-- Lower tier - longer, droopier (older fronds)
 			tierLen = actualFrondLen + math.random(0, 2)
 			tierDroop = actualDroop + math.random(1, 3)
 			tierFronds = math.max(3, tierFronds - math.random(1, 3))

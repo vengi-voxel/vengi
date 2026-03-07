@@ -160,7 +160,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownSpread, main
 	tree_utils.createBezierRoots(volume, pos, math.random(3, 6), trunkStrength + 2, math.max(1, math.floor(trunkStrength * 0.5)), trunkColor)
 	tree_utils.createBaseFlare(volume, pos, trunkStrength + 1, math.max(2, math.floor(trunkStrength * 0.6)), trunkColor)
 
-	-- Create main trunk — slight lean for natural look
+	-- Create main trunk - slight lean for natural look
 	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
 	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, math.random(0, 2), topThickness, trunkColor, 0.3)
 

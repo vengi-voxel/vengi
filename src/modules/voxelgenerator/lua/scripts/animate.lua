@@ -114,10 +114,10 @@ local function getNeutralQ(part, context, nodeId)
 
 	if context.tposeInput and isArmPart(part) then
 		if isLeftArm(part) then
-			-- left arm extends +X, rotate -90° Z to hang down (-Y)
+			-- left arm extends +X, rotate -90 degree Z to hang down (-Y)
 			return g_quat.rotateZ(-math.pi / 2.0) * baseQ
 		else
-			-- right arm extends -X, rotate +90° Z to hang down (-Y)
+			-- right arm extends -X, rotate +90 degree Z to hang down (-Y)
 			return g_quat.rotateZ(math.pi / 2.0) * baseQ
 		end
 	end

@@ -38,7 +38,7 @@ local leafCluster = tree_utils.leafCluster
 
 -- Tulip-shaped flower: small cone (cup) with an orange ring at the base
 local function placeFlower(volume, pos, flowerColor1, flowerColor2)
-	-- Petal cup — a small upward cone in yellow-green
+	-- Petal cup - a small upward cone in yellow-green
 	g_shape.cone(volume, g_ivec3.new(pos.x, pos.y - 1, pos.z), 'y', false, 3, 3, 3, flowerColor1)
 	-- Orange band at the base of the petals
 	g_shape.line(volume, g_ivec3.new(pos.x - 1, pos.y, pos.z), g_ivec3.new(pos.x + 1, pos.y, pos.z), flowerColor2, 1)
@@ -142,7 +142,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownStart,
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Tall, very straight trunk — tulip trees are among the straightest hardwoods
+	-- Tall, very straight trunk - tulip trees are among the straightest hardwoods
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
 
 	-- Root flare
@@ -175,7 +175,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownStart,
 			subBranches, canopyDensity, flowers)
 	end
 
-	-- Oval canopy dome — tulip trees have a broad oval crown shape
+	-- Oval canopy dome - tulip trees have a broad oval crown shape
 	local canopyCenterY = topPos.y + math.floor(canopyWidth * 0.05)
 	local canopyCenter = g_ivec3.new(pos.x, canopyCenterY, pos.z)
 	local cW = canopyWidth

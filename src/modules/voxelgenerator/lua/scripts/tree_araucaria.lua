@@ -78,7 +78,7 @@ function main(node, region, color, height, trunkStrength, tiers, branchesPerTier
 	-- Lower portion of the trunk is bare (typical for mature Araucaria)
 	local bareHeight = math.floor(height * 0.25)
 
-	-- Branch tiers — evenly spaced from bareHeight to near the top
+	-- Branch tiers - evenly spaced from bareHeight to near the top
 	local tierSpacing = math.floor((height - bareHeight - 2) / math.max(1, tiers))
 
 	for tier = 1, tiers do
@@ -129,7 +129,7 @@ function main(node, region, color, height, trunkStrength, tiers, branchesPerTier
 			local control = g_ivec3.new(midX, midY - 1, midZ)
 			g_shape.bezier(volume, branchStart, tip, control, trunkColor, math.max(1, math.floor(trunkStrength * 0.6)))
 
-			-- Foliage along the branch — the distinctive dense scale-like covering
+			-- Foliage along the branch - the distinctive dense scale-like covering
 			foliageBranch(volume, branchStart, tip, foliageDensity, leafColor, leafColor2)
 
 			-- Extra cluster at the tip (branches often have a tuft at the end)
@@ -137,7 +137,7 @@ function main(node, region, color, height, trunkStrength, tiers, branchesPerTier
 		end
 	end
 
-	-- Crown dome at top — mature Araucaria has a rounded crown
+	-- Crown dome at top - mature Araucaria has a rounded crown
 	if crownDome then
 		local crownR = math.max(3, math.floor(branchLength * 0.5))
 		local crownH = math.max(2, math.floor(crownR * 0.7))

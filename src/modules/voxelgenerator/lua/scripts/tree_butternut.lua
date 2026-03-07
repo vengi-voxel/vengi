@@ -102,11 +102,11 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, crown
 	tree_utils.createBaseFlare(volume, pos, trunkStrength + 2, math.max(2, math.floor(trunkStrength * 0.7)), trunkColor)
 	tree_utils.createBezierRoots(volume, pos, roots, rootLength, math.max(1, math.floor(trunkStrength * 0.5)), trunkColor)
 
-	-- Stout trunk — butternut trunks stay fairly thick (slow taper)
+	-- Stout trunk - butternut trunks stay fairly thick (slow taper)
 	local topThickness = math.max(2, math.floor(trunkStrength * 0.6))
 	local trunkTop = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, topThickness, trunkColor, 0.3)
 
-	-- Main branches — spread wide from upper trunk, some from lower for the open habit
+	-- Main branches - spread wide from upper trunk, some from lower for the open habit
 	local angleStep = (2 * math.pi) / mainBranches
 	local startAngle = math.random() * 2 * math.pi
 

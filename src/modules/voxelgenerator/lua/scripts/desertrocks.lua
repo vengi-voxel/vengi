@@ -179,7 +179,7 @@ function main(node, region, color, numPillars, maxHeight, minHeight, pillarWidth
 
 	local pillarBaseY = center.y + baseHeight - 1
 
-	-- Generate pillar positions — taller pillars tend toward center
+	-- Generate pillar positions - taller pillars tend toward center
 	local pillars = {}
 	for _ = 1, numPillars do
 		-- Distribute in a roughly clustered pattern

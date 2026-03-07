@@ -46,7 +46,7 @@ local function smallCluster(volume, center, size, col)
 	g_shape.dome(volume, center, 'y', false, w * 2, h, w * 2, col)
 end
 
--- Place thorns — short spikes protruding from a branch point
+-- Place thorns - short spikes protruding from a branch point
 local function placeThorns(volume, pos, thornColor)
 	local numThorns = math.random(1, 3)
 	for _ = 1, numThorns do
@@ -184,7 +184,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, forkH
 	tree_utils.createLineRoots(volume, pos, math.random(2, 4), trunkStrength + 2,
 		math.max(1, trunkStrength - 1), trunkColor, true)
 
-	-- Fork point — hawthorns often fork low
+	-- Fork point - hawthorns often fork low
 	local forkY = pos.y + math.floor(trunkHeight * forkHeight / 100)
 	local forkHt = (forkY - pos.y) / trunkHeight
 	local forkPos = tree_utils.bezierPointAt(pos, topPos, ctrl, forkHt)

@@ -294,7 +294,7 @@ function main(node, region, color, width, depth, stories, storyHeight, roofStyle
 	local volume = node:volume()
 	local mins = region:mins()
 
-	-- base position — inset by roof overhang so the overhang stays inside the region
+	-- base position - inset by roof overhang so the overhang stays inside the region
 	local bx = mins.x + roofOverhang
 	local by = mins.y
 	local bz = mins.z + roofOverhang

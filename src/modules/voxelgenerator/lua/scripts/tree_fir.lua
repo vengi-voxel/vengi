@@ -72,7 +72,7 @@ local function createWhorl(volume, center, numBranches, radius, branchUplift, tr
 		end
 	end
 
-	-- Dense fill between branches — flat ring of foliage
+	-- Dense fill between branches - flat ring of foliage
 	if dense and radius >= 3 then
 		local fillH = math.max(1, branchUplift + 1)
 		local fillCenter = g_ivec3.new(center.x, center.y + math.floor(branchUplift * 0.3), center.z)
@@ -91,7 +91,7 @@ function main(node, region, color, trunkHeight, trunkStrength, crownLayers, bran
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Straight trunk — firs are characteristically very straight
+	-- Straight trunk - firs are characteristically very straight
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkColor)
 
 	-- Small base flare

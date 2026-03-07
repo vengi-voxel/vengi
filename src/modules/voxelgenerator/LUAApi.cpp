@@ -5848,7 +5848,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 
 	const int retCount = lua_gettop(lua) - preTop;
 	if (retCount <= 0) {
-		// arguments() returned nothing — treat as optional
+		// arguments() returned nothing - treat as optional
 		return true;
 	}
 

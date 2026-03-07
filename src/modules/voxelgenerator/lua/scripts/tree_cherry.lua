@@ -34,7 +34,7 @@ end
 
 local drawBezier = tree_utils.drawBezier
 
--- Place a blossom cluster — a dome of pink/white with occasional leaf accents
+-- Place a blossom cluster - a dome of pink/white with occasional leaf accents
 local function placeBlossom(volume, center, size, blossomColor1, blossomColor2, blossomColor3, leafColor)
 	local w = size + math.random(-1, 1)
 	local h = math.max(1, math.floor(size * 0.7) + math.random(-1, 0))
@@ -73,7 +73,7 @@ local function placeBlossom(volume, center, size, blossomColor1, blossomColor2, 
 	end
 end
 
--- Create a main branch that arches upward then curves outward/downward — cherry style
+-- Create a main branch that arches upward then curves outward/downward - cherry style
 local function createMainBranch(volume, origin, angle, length, archHeight, branchColor, trunkColor,
 	blossomColor1, blossomColor2, blossomColor3, leafColor, subBranches, blossomDensity, blossomSize)
 
@@ -189,7 +189,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 	tree_utils.createLineRoots(volume, pos, math.random(2, 4), trunkStrength + 2,
 		math.max(1, trunkStrength - 1), trunkColor, true)
 
-	-- Fork point — cherry trees often split into main scaffold branches
+	-- Fork point - cherry trees often split into main scaffold branches
 	local forkY = pos.y + math.floor(trunkHeight * 0.55)
 	local forkHt = (forkY - pos.y) / trunkHeight
 	local forkPos = tree_utils.bezierPointAt(pos, topPos, ctrl, forkHt)
@@ -218,7 +218,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 			blossomColor1, blossomColor2, blossomColor3, leafColor, subBranches, blossomDensity, blossomSize)
 	end
 
-	-- Central canopy fill — a large blossom mass at the top center
+	-- Central canopy fill - a large blossom mass at the top center
 	local canopyCenterY = topPos.y + math.floor(canopyHeight * 0.3)
 	local canopyCenter = g_ivec3.new(topPos.x, canopyCenterY, topPos.z)
 	local centralW = math.floor(canopySpread * 0.6)

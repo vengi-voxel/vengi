@@ -77,7 +77,7 @@ local function createGnarledBranch(volume, start, angle, length, thickness, bran
 	local tipY = start.y + rise
 	local tip = g_ivec3.new(tipX, tipY, tipZ)
 
-	-- Control point for bezier — slight downward sag in middle
+	-- Control point for bezier - slight downward sag in middle
 	local controlY = start.y + math.floor(rise * 0.3) - math.random(0, 2)
 	local control = g_ivec3.new(midX, controlY, midZ)
 

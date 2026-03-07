@@ -46,7 +46,7 @@ local function createWhorl(volume, center, numBranches, radius, branchDroop, bra
 		local tipPos = g_ivec3.new(tipX, tipY, tipZ)
 		g_shape.line(volume, center, tipPos, trunkColor, branchStrength)
 
-		-- Foliage along the branch — small domes at mid and tip
+		-- Foliage along the branch - small domes at mid and tip
 		local midX = math.floor(center.x + dx * radius * 0.5)
 		local midZ = math.floor(center.z + dz * radius * 0.5)
 		local midY = center.y - math.floor(branchDroop * 0.4)

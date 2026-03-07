@@ -133,18 +133,18 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
-	-- Smooth trunk with slight lean — beech trunks are famously smooth
+	-- Smooth trunk with slight lean - beech trunks are famously smooth
 	local topPos, _, ctrl = tree_utils.createCurvedTrunk(volume, pos, trunkHeight, trunkStrength,
 		trunkCurve, math.max(1, trunkStrength - 1), trunkColor, 0.4)
 
-	-- Prominent root flare — beech trees have broad, shallow root systems
+	-- Prominent root flare - beech trees have broad, shallow root systems
 	tree_utils.createBaseFlare(volume, pos, trunkStrength + 3, math.max(2, trunkStrength), trunkColor)
 
-	-- Surface roots — beech roots often protrude above ground
+	-- Surface roots - beech roots often protrude above ground
 	tree_utils.createLineRoots(volume, pos, math.random(3, 6), trunkStrength + 3,
 		math.max(1, trunkStrength - 1), trunkColor, true)
 
-	-- Main spreading branches — beech trees have a wide, layered crown
+	-- Main spreading branches - beech trees have a wide, layered crown
 	local angleStep = (2 * math.pi) / mainBranches
 	local startAngle = math.random() * 2 * math.pi
 
@@ -161,7 +161,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 			leafColor, leafColor2, subBranches, canopyDensity, false)
 	end
 
-	-- Low sweeping branches — beech trees often have branches close to the ground
+	-- Low sweeping branches - beech trees often have branches close to the ground
 	if lowBranches then
 		local numLow = math.random(2, 3)
 		for i = 1, numLow do
@@ -174,7 +174,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve,
 		end
 	end
 
-	-- Dense central canopy dome — beech canopies are very full
+	-- Dense central canopy dome - beech canopies are very full
 	local canopyCenterY = topPos.y + math.floor(canopySpread * 0.1)
 	local canopyCenter = g_ivec3.new(topPos.x, canopyCenterY, topPos.z)
 	local cW = canopySpread
