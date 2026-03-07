@@ -1,6 +1,6 @@
 # Physics
 
-On the physics side, the editor now includes basic first-person walking, which is especially helpful when building maps for games like *Ace of Spades*. You can move through corridors and examine your work directly in the scene, and game-mode controls have been improved—including better stair navigation and proper handling of pivoted nodes. Editing while in game mode is now possible as well, smoothing out the creative workflow. You can tweak body height, velocity, and other parameters directly in the editor to mimic how other games behave.
+On the physics side, the editor now includes basic first-person walking, which is especially helpful when building maps for games like *Ace of Spades*. You can move through corridors and examine your work directly in the scene, and game-mode controls have been improved-including better stair navigation and proper handling of pivoted nodes. Editing while in game mode is now possible as well, smoothing out the creative workflow. You can tweak body height, velocity, and other parameters directly in the editor to mimic how other games behave.
 
 ![image voxedit game mode](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/vengi-physics-gamemode_2025-11-30.png)
 
@@ -12,7 +12,7 @@ Shadow rendering continues to evolve, and this update includes another important
 
 # Performance
 
-Performance also received some attention again. Several operations that previously triggered many small allocations now use larger, consolidated buffers, reducing overhead throughout the engine. A major slowdown in transparency sorting was resolved after profiling revealed costly iterations over empty objects, and additional optimizations—such as faster axis rotations—help the editor feel more responsive overall. While investigating, I also added a few more trace markers for the excellent Tracy profiler.
+Performance also received some attention again. Several operations that previously triggered many small allocations now use larger, consolidated buffers, reducing overhead throughout the engine. A major slowdown in transparency sorting was resolved after profiling revealed costly iterations over empty objects, and additional optimizations-such as faster axis rotations-help the editor feel more responsive overall. While investigating, I also added a few more trace markers for the excellent Tracy profiler.
 
 # vengi-palconvert
 

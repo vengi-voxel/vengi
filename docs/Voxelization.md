@@ -200,6 +200,6 @@ To limit the import to a specific area, use the `voxformat_gmlregion` cvar to sp
 voxconvert -set voxformat_gmlregion "548000 5930000 0 548500 5930500 100" --input input.gml --output output.vengi
 ```
 
-Only objects whose geometry is **fully contained** within the specified region are imported. Objects that are partially or fully outside the region are skipped. The region filter is only applied when the estimated voxel size exceeds the threshold — for smaller datasets, all objects are imported regardless of the cvar value.
+Only objects whose geometry is **fully contained** within the specified region are imported. Objects that are partially or fully outside the region are skipped. The region filter is only applied when the estimated voxel size exceeds the threshold - for smaller datasets, all objects are imported regardless of the cvar value.
 
 For more details on configuration, see [Configuration.md](Configuration.md).
