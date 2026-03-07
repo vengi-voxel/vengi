@@ -185,7 +185,7 @@ void KeyBindingHandler::construct() {
 				auto range = _bindings.equal_range(keyCode);
 				bool found = false;
 				for (auto it = range.first; it != range.second; ++it) {
-					if (it->second.modifier == pair.modifier && (it->second.context & pair.context) != 0u) {
+					if (it->second.modifier == pair.modifier && (it->second.context == pair.context || (it->second.context & pair.context) != 0u)) {
 						_bindings.erase(it);
 						found = true;
 						Log::info("Removed binding for key '%s' in context '%s'", key.c_str(), context.c_str());
