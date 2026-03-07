@@ -78,6 +78,7 @@ set(SRCS
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MapFormat.h           private/mesh/quake/MapFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
+	private/mesh/quake/MD3Format.h           private/mesh/quake/MD3Format.cpp
 	private/mesh/quake/MDLFormat.h           private/mesh/quake/MDLFormat.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
@@ -158,6 +159,7 @@ set(TEST_SRCS
 	tests/MeshFormatTest.cpp
 	tests/MCRFormatTest.cpp
 	tests/MD2FormatTest.cpp
+	tests/MD3FormatTest.cpp
 	tests/MDLFormatTest.cpp
 	tests/MTSFormatTest.cpp
 	tests/OBJFormatTest.cpp

@@ -49,6 +49,7 @@
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/mesh/gis/OSMFormat.h"
 #include "voxelformat/private/mesh/quake/MD2Format.h"
+#include "voxelformat/private/mesh/quake/MD3Format.h"
 #include "voxelformat/private/mesh/quake/MDLFormat.h"
 #include "voxelformat/private/mesh/quake/MapFormat.h"
 #include "voxelformat/private/mesh/quake/QuakeBSPFormat.h"
@@ -113,6 +114,7 @@ const io::FormatDescription *voxelFormats() {
 												 QuakeBSPFormat::formatQuake1(),
 												 MDLFormat::format(),
 												 MD2Format::format(),
+												 MD3Format::format(),
 												 FBXFormat::format(),
 												 KenShapeFormat::format(),
 												 Autodesk3DSFormat::format(),
@@ -267,6 +269,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<MDLFormat>();
 		} else if (io::isA(MD2Format::format(), desc, ext, magic)) {
 			return core::make_shared<MD2Format>();
+		} else if (io::isA(MD3Format::format(), desc, ext, magic)) {
+			return core::make_shared<MD3Format>();
 		} else if (io::isA(SchematicFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SchematicFormat>();
 		} else if (io::isA(VBXFormat::format(), desc, ext, magic)) {
