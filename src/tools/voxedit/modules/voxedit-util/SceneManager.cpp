@@ -3469,9 +3469,13 @@ bool SceneManager::update(double nowSeconds) {
 			_sceneRenderer->clear();
 			_sceneGraph.markClean();
 		}
-		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
-		if (dirtyRegion.isValid()) {
-			modified(activeNode(), dirtyRegion);
+		const voxelgenerator::LuaDirtyRegions &dirtyRegions = _luaApi.dirtyRegions();
+		for (const auto &entry : dirtyRegions) {
+			const int nodeId = entry->key;
+			const voxel::Region &region = entry->value;
+			if (region.isValid()) {
+				modified(nodeId, region);
+			}
 		}
 		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();

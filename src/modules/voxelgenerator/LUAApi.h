@@ -9,8 +9,10 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicSet.h"
 #include "io/Filesystem.h"
 #include "noise/Noise.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
 
 struct lua_State;
@@ -79,13 +81,15 @@ struct LUAScript {
 
 enum class ScriptState { Running, Finished, Inactive, Error };
 
+using LuaDirtyRegions = core::DynamicMap<int, voxel::Region>;
+
 class LUAApi : public core::IComponent {
 private:
 	noise::Noise _noise;
 	io::FilesystemPtr _filesystem;
 	lua::LUA _lua;
 	core::DynamicArray<LUAParameterDescription> _argsInfo;
-	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
+	LuaDirtyRegions _dirtyRegions;
 	bool _scriptStillRunning = false;
 	int _nargs = 0;
 
@@ -128,7 +132,7 @@ public:
 			  const voxel::Region &region, const voxel::Voxel &voxel,
 			  const core::DynamicArray<core::String> &args = {});
 
-	const voxel::Region &dirtyRegion() const;
+	const LuaDirtyRegions &dirtyRegions() const;
 
 	/**
 	 * @brief Generate a JSON representation of the Lua API to a stream
@@ -142,8 +146,8 @@ inline const core::String &LUAApi::error() const {
 	return _lua.error();
 }
 
-inline const voxel::Region &LUAApi::dirtyRegion() const {
-	return _dirtyRegion;
+inline const LuaDirtyRegions &LUAApi::dirtyRegions() const {
+	return _dirtyRegions;
 }
 
 inline auto scriptCompleter(const io::FilesystemPtr &filesystem) {

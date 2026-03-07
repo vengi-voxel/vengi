@@ -118,8 +118,8 @@ static const char *luaVoxel_globalnoise() {
 	return "__global_noise";
 }
 
-static const char *luaVoxel_globaldirtyregion() {
-	return "__global_region";
+static const char *luaVoxel_globaldirtyregions() {
+	return "__global_dirtyregions";
 }
 
 static const char *luaVoxel_metascenegraphnode() {
@@ -881,11 +881,15 @@ static int luaVoxel_volumewrapper_renderIsometricImage(lua_State *s) {
 static int luaVoxel_volumewrapper_gc(lua_State *s) {
 	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	if (volume->dirtyRegion().isValid()) {
-		voxel::Region* dirtyRegion = luaVoxel_globalData<voxel::Region>(s, luaVoxel_globaldirtyregion());
-		if (dirtyRegion->isValid()) {
-			dirtyRegion->accumulate(volume->dirtyRegion());
+		LuaDirtyRegions* dirtyRegions = luaVoxel_globalData<LuaDirtyRegions>(s, luaVoxel_globaldirtyregions());
+		const int nodeId = volume->node()->id();
+		if (dirtyRegions->hasKey(nodeId)) {
+			voxel::Region region;
+			dirtyRegions->get(nodeId, region);
+			region.accumulate(volume->dirtyRegion());
+			dirtyRegions->put(nodeId, region);
 		} else {
-			*dirtyRegion = volume->dirtyRegion();
+			dirtyRegions->put(nodeId, volume->dirtyRegion());
 		}
 	}
 	delete volume;
@@ -5732,7 +5736,7 @@ bool LUAApi::init() {
 		Log::warn("Failed to initialize noise");
 	}
 	luaVoxel_newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
-	luaVoxel_newGlobalData(_lua, luaVoxel_globaldirtyregion(), &_dirtyRegion);
+	luaVoxel_newGlobalData(_lua, luaVoxel_globaldirtyregions(), &_dirtyRegions);
 	prepareState(_lua);
 	return true;
 }
@@ -6118,7 +6122,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		return false;
 	}
 
-	_dirtyRegion = voxel::Region::InvalidRegion;
+	_dirtyRegions.clear();
 
 	_argsInfo.clear();
 	if (!argumentInfo(luaScript, _argsInfo)) {
