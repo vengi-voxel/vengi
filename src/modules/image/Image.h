@@ -20,11 +20,11 @@ namespace image {
 enum TextureWrap : uint8_t {
 	Repeat, // causes the integer part of the s coordinate to be ignored; the GL uses only the fractional part, thereby
 			// creating a repeating pattern.
-	ClampToEdge, // causes s coordinates to be clamped to the range [1/2N,1−1/2N], where N is the size of the texture in
+	ClampToEdge, // causes s coordinates to be clamped to the range [1/2N,1-1/2N], where N is the size of the texture in
 				 // the direction of clamping.
 	MirroredRepeat, // causes the s coordinate to be set to the fractional part of the texture coordinate if the integer
 					// part of s is even; if the integer part of s is odd, then the s texture coordinate is set to
-					// 1−frac(s), where frac(s) represents the fractional part of s
+// 1-frac(s), where frac(s) represents the fractional part of s
 
 	Max
 };

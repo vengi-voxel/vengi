@@ -17,11 +17,11 @@ namespace palette {
  *
  * @note Accuracy Considerations for TABLE_RES = 32:
  * - The lookup grid becomes 32x32 = 1024 cells covering the unit sphere via octahedral mapping.
- * - Each cell represents a small angular region (~5.6° across), providing much finer approximation
- *   than 16x16 (~11.25°).
+ * - Each cell represents a small angular region (~5.6 degrees across), providing much finer approximation
+ *   than 16x16 (~11.25 degrees).
  * - For a palette of 256 normals, this means each grid cell is significantly smaller than the
  *   average angular spacing between normals, minimizing mismatches.
- * - Memory cost is still minimal (1024 entries ≈ 4 KB), so 32x32 is a good balance between
+ * - Memory cost is still minimal (1024 entries ~= 4 KB), so 32x32 is a good balance between
  *   speed, accuracy, and memory for most rendering or shading use cases.
  */
 class NormalPaletteLookup {

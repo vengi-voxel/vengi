@@ -22,14 +22,14 @@ namespace voxelformat {
  * https://en.wikipedia.org/wiki/STL_(file_format)
  *
  * @p Binary
- * UINT8[80] – Header
- * UINT32 – Number of triangles
+ * UINT8[80] - Header
+ * UINT32 - Number of triangles
  * foreach triangle
- * REAL32[3] – Normal vector
- * REAL32[3] – Vertex 1
- * REAL32[3] – Vertex 2
- * REAL32[3] – Vertex 3
- * UINT16 – Attribute byte count
+ * REAL32[3] - Normal vector
+ * REAL32[3] - Vertex 1
+ * REAL32[3] - Vertex 2
+ * REAL32[3] - Vertex 3
+ * UINT16 - Attribute byte count
  * end
  *
  * @ingroup Formats

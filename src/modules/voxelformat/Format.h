@@ -159,7 +159,7 @@ public:
 	virtual ~Format() = default;
 
 	/**
-	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph
+	 * @brief If a format only supports a single volume. If this returns true, the @c save() method gets a scene graph
 	 * with only one model
 	 * @sa maxSize()
 	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the

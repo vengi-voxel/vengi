@@ -307,7 +307,7 @@ TEST_F(ImageUtilsTest, testRenderFaceToImage) {
 
 	const image::ImagePtr &img = renderFaceToImage(&volume, palette, region, voxel::FaceNames::Front);
 	ASSERT_TRUE(img && img->isLoaded());
-	// Front face (PositiveZ): image dimensions should be x × y = 4 × 4
+	// Front face (PositiveZ): image dimensions should be x * y = 4 * 4
 	EXPECT_EQ(4, img->width());
 	EXPECT_EQ(4, img->height());
 

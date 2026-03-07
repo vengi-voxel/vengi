@@ -41,8 +41,8 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	ExtrudeBrush()
-		: Super(BrushType::Extrude, ModifierType::Place, ModifierType::Place | ModifierType::Erase) {}
+	ExtrudeBrush() : Super(BrushType::Extrude, ModifierType::Place, ModifierType::Place | ModifierType::Erase) {
+	}
 	virtual ~ExtrudeBrush() = default;
 
 	void reset() override;

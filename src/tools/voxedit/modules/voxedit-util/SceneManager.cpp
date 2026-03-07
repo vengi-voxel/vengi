@@ -1348,7 +1348,7 @@ bool SceneManager::globalPaste(const glm::ivec3 &pos) {
 		}
 	}
 
-	// Active node can't fit the clipboard at pos — create a new node translated to cursor
+	// Active node can't fit the clipboard at pos - create a new node translated to cursor
 	voxel::RawVolume *vol = new voxel::RawVolume(*_copy.volume);
 	vol->translate(pos - vol->region().getLowerCorner());
 	Log::debug("globalPaste: creating new node at %i:%i:%i (region %s)", pos.x, pos.y, pos.z,

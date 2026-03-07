@@ -790,7 +790,7 @@
 
                 const res = await runConvert(file, i, function (p, msg) {
                     prog.value = Math.max(0, Math.min(1, p));
-                    title.textContent = file.name + ' — ' + msg;
+                    title.textContent = file.name + ' - ' + msg;
                 });
 
                 pending.removeChild(item);
@@ -802,7 +802,7 @@
 
                 if (res.ok) {
                     card.innerHTML = '<div class="title">' + file.name + '</div>' +
-                        '<div class="meta">Format: ' + fmt + ' — ' + res.outName + '</div>' +
+                        '<div class="meta">Format: ' + fmt + ' - ' + res.outName + '</div>' +
                         '<div class="row"><button class="btn secondary">Download ' + res.outName + '</button>' +
                         '<button class="btn secondary btn-spacing">Remove</button></div>' +
                         '<div class="meta timestamp">' + timestamp + '</div>';

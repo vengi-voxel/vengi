@@ -1143,7 +1143,7 @@ struct VisitFlatSurface {
  * @brief Flood-fill starting at @p position, visiting connected voxels accepted by @p condition.
  *
  * Explores the 4 neighbors perpendicular to @p face. When @p deviation > 0 the search also
- * probes candidates at offset face-axis coordinates (within [startCoord±deviation]) so small
+ * probes candidates at offset face-axis coordinates (within [startCoord+/-deviation]) so small
  * height steps can be traversed. Use visitFlatSurface(volume, position, face, deviation, visitor)
  * for the common case; this overload allows a custom condition functor.
  *
@@ -1152,7 +1152,7 @@ struct VisitFlatSurface {
  * @param face       Defines the perpendicular plane and deviation search direction
  * @param deviation  How many units above/below start to also consider at each step
  * @param visitor    Called with (x, y, z, voxel) for every accepted voxel including start
- * @param condition  Callable(Sampler) → bool
+ * @param condition  Callable(Sampler) -> bool
  * @return Number of voxels visited
  */
 template<class Volume, class Visitor, class Condition>
@@ -1192,7 +1192,7 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
 		queue.pop();
 		for (int i = 0; i < 4; ++i) {
 			const glm::ivec3 neighborBase = current + perpOffsets[i];
-			// Probe same level first, then ±1, ±2 … up to deviation from start.
+			// Probe same level first, then +/-1, +/-2 ... up to deviation from start.
 			for (int step = 0; step <= deviation; ++step) {
 				bool claimedAtStep = false;
 				const int ds[2] = {step, -step};

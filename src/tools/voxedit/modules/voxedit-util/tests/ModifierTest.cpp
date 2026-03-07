@@ -178,7 +178,7 @@ TEST_F(ModifierTest, testMaskBlocksNonAdjacentPlace) {
 	ASSERT_TRUE(modifier.init());
 	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
 
-	// (3,0,0) is two steps away from the selected voxel — not adjacent
+	// (3,0,0) is two steps away from the selected voxel - not adjacent
 	prepare(modifier, glm::ivec3(3, 0, 0), glm::ivec3(3, 0, 0), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	int callbackCount = 0;

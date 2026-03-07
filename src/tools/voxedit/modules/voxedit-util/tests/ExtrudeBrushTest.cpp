@@ -15,12 +15,12 @@
 namespace voxedit {
 
 // Direction convention:
-//   positive depth  → outward (along face normal, place voxels)
-//   negative depth  → inward  (opposite to face normal, erase voxels)
+//   positive depth  -> outward (along face normal, place voxels)
+//   negative depth  -> inward  (opposite to face normal, erase voxels)
 //
 // Example: face = PositiveX (normal = +X), selected voxel at x=0
-//   depth=+1 → new voxel at x=+1  (outward)
-//   depth=-1 → voxel at x=-1 erased (inward / carve)
+//   depth=+1 -> new voxel at x=+1  (outward)
+//   depth=-1 -> voxel at x=-1 erased (inward / carve)
 //
 // FlagOutline is NOT transferred: selected voxels keep their flags unchanged,
 // newly placed voxels use cursorVoxel as-is.
@@ -44,7 +44,7 @@ protected:
 	}
 };
 
-// depth=-1, face=PositiveX → carves inward: voxel at x=-1 is erased
+// depth=-1, face=PositiveX -> carves inward: voxel at x=-1 is erased
 TEST_F(ExtrudeBrushTest, testExtrudeCarveInward) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	// Solid block filling x=-3..0; surface voxel at x=0 is selected.
@@ -81,7 +81,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveInward) {
 	brush.shutdown();
 }
 
-// depth=+1, face=PositiveX → new voxel placed outward at x=+1
+// depth=+1, face=PositiveX -> new voxel placed outward at x=+1
 TEST_F(ExtrudeBrushTest, testExtrudePlaceOutward) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
@@ -156,7 +156,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeOnlySelected) {
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setDepth(-1); // inward for PositiveX → x=-1
+	brush.setDepth(-1); // inward for PositiveX -> x=-1
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -228,7 +228,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeFillSidesOutward) {
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setDepth(1); // outward for PositiveZ → z+1
+	brush.setDepth(1); // outward for PositiveZ -> z+1
 	brush.setFillSides(true);
 
 	BrushContext ctx;

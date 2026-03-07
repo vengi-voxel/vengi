@@ -199,7 +199,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// Local orientation should be: worldOrientation * inverse(parentWorldOrientation)
-	// 90° * inverse(45°) = 45° around Y
+	// 90 degree * inverse(45 degree) = 45 degree around Y
 	const glm::quat expectedLocal = glm::angleAxis(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::quat &actualLocal = childTransform.localOrientation();
 

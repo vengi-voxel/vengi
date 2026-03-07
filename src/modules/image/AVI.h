@@ -135,7 +135,7 @@ private:
 		uint32_t dwSuggestedBufferSize = 0;
 		// Specifies an indicator of the quality of the data in the stream. Quality is represented as a number between 0
 		// and 10,000. For compressed data, this typically represents the value of the quality parameter passed to the
-		// compression software. If set to –1, drivers use the default quality value.
+		// compression software. If set to -1, drivers use the default quality value.
 		uint32_t dwQuality = 0;
 		// Specifies the size of a single sample of data. This is set to zero if the samples can vary in size. If this
 		// number is nonzero, then multiple samples of data can be grouped into a single chunk within the file. If it is

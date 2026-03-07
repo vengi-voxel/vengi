@@ -20,7 +20,7 @@ static unsigned __stdcall alarm_thread(void *param) {
 	// Wait for either cancel or timeout
 	DWORD res = WaitForSingleObject(alarmCancel, seconds * 1000);
 	if (res == WAIT_TIMEOUT) {
-		fprintf(stderr, "alarm_win: timeout (%d seconds) expired — terminating\n", seconds);
+		fprintf(stderr, "alarm_win: timeout (%d seconds) expired - terminating\n", seconds);
 		TerminateProcess(GetCurrentProcess(), 1);
 	}
 	return 0;

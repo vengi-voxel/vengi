@@ -32,7 +32,7 @@ namespace voxelformat {
  * @subsection vxl_format_limits Format Limitations
  *
  * The VXL format enforces a maximum dimension of 255 units per axis, resulting in a maximum bounding
- * volume of 255×255×255 voxels. Models approaching these limits often exhibit graphical artifacts including
+ * volume of 255x255x255 voxels. Models approaching these limits often exhibit graphical artifacts including
  * rendering glitches and palette errors. This constraint can be problematic for large-scale models such as
  * capital ships or long aircraft, though most practical voxel models remain well under 100 units on the
  * longest axis.
@@ -80,7 +80,7 @@ namespace voxelformat {
  * The game engine supports 32,768 unique rotation angles (32 facings per axis) for each voxel model.
  * To optimize performance and memory usage, rotated views are rendered on-demand rather than pre-computed.
  * Once a specific rotation angle is rendered, it is cached for the duration of the game session, balancing
- * visual fidelity with hardware constraints—a critical optimization for the era when these games were developed.
+ * visual fidelity with hardware constraints-a critical optimization for the era when these games were developed.
  *
  * @subsection vxl_rendering_layering Draw Order and Layering
  *
@@ -130,22 +130,22 @@ namespace voxelformat {
  * Body (htnk.vxl):
  * - Min: (-19, -17, 0)
  * - Max: (26, 16.5, 11.5)
- * - Dimensions: 45 × 33.5 × 11.5
+ * - Dimensions: 45 x 33.5 x 11.5
  *
  * Turret (htnktur.vxl):
  * - Min: (-16, -9, 11.5)
  * - Max: (11.5, 9, 20)
- * - Dimensions: 28.5 × 18 × 8.5
+ * - Dimensions: 28.5 x 18 x 8.5
  *
  * Barrel (htnkbarl.vxl):
  * - Min: (12, -1.5, 13)
  * - Max: (30.5, 1.5, 16)
- * - Dimensions: 17.5 × 3 × 29
+ * - Dimensions: 17.5 x 3 x 29
  *
  * Key observations:
  * - The body is positioned at ground level (MinZ = 0)
- * - The turret sits directly atop the body (turret MinZ ≈ body MaxZ)
- * - The barrel extends forward from the turret (barrel MinX ≈ turret MaxX)
+ * - The turret sits directly atop the body (turret MinZ ~= body MaxZ)
+ * - The barrel extends forward from the turret (barrel MinX ~= turret MaxX)
  * - The rotation axes are offset toward the rear due to asymmetric Min/Max X values
  *
  * @subsection vxl_bounds_scaling Scaling and Visual Optimization

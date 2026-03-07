@@ -127,7 +127,7 @@ void ThreadPool::shutdown(bool wait) {
 	_workers.clear();
 }
 
-void ThreadPool::schedule(std::function<void()>&& f) {
+void ThreadPool::schedule(std::function<void()> &&f) {
 	if (_stop) {
 		return;
 	}

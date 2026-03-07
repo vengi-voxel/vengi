@@ -92,9 +92,9 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 							 // The Z axis is mirrored.
 		uint8_t probability; // param1 - ranges from 0 (0%) to 127 (100%). Bit 7 means force node placement,
 							 // i.e. the node will be able to replace non-air nodes as well. (In legacy version 3,
-							 // param1’s probability range was from 0 to 0xFF, there’s no force placement.)
+							 // param1's probability range was from 0 to 0xFF, there's no force placement.)
 		uint8_t param2;		 // param2 - an 8-bit value (0-255), the meaning depends on the node definition.
-							 // See lua_api.md to learn more about param2 (keywords: “param2”, “paramtype2”).
+							 // See lua_api.md to learn more about param2 (keywords: "param2", "paramtype2").
 	};
 
 	const int nodecount = (int)size.x * (int)size.y * (int)size.z;

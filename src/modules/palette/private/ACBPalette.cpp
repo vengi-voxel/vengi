@@ -188,19 +188,19 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 				Log::error("ACBPalette: Failed to read cielab color");
 				return false;
 			}
-			// Convert ACB CMYK (0–255) to standard CMYK (0–100%)
+			// Convert ACB CMYK (0-255) to standard CMYK (0-100%)
 			float C = (255 - cmyk[0]) / 2.55f;
 			float M = (255 - cmyk[1]) / 2.55f;
 			float Y = (255 - cmyk[2]) / 2.55f;
 			float K = (255 - cmyk[3]) / 2.55f;
 
-			// Convert percentage to normalized values (0–1)
+			// Convert percentage to normalized values (0-1)
 			C /= 100.0f;
 			M /= 100.0f;
 			Y /= 100.0f;
 			K /= 100.0f;
 
-			// Convert CMYK to RGB (0–255)
+			// Convert CMYK to RGB (0-255)
 			const uint8_t r = (uint8_t)(glm::round(255 * (1 - C) * (1 - K)));
 			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
 			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
@@ -211,7 +211,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 				Log::error("ACBPalette: Failed to read cielab color");
 				return false;
 			}
-			// Convert ACB Lab (0–255) to standard Lab (0–100)
+			// Convert ACB Lab (0-255) to standard Lab (0-100)
 			float L = lab[0] / 2.55f;
 			float a = lab[1] / 2.55f - 128.0f;
 			float b = lab[2] / 2.55f - 128.0f;

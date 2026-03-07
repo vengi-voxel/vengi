@@ -136,7 +136,7 @@ namespace voxelformat {
  * # Bytes  | Type       | Value
  * -------------------------------------------------------------------------------
  * 1        | byte       | chunk id
- * 4        | uint32     | chunk size
+ * 4        | uint32     | chunk size
  * -------------------------------------------------------------------------------
  *
  * 8. SubChunk id 'OBJECT_ID' (17) : only for serialization in parent id
@@ -217,7 +217,7 @@ namespace voxelformat {
  * -------------------------------------------------------------------------------
  * # Bytes  | Type       | Value
  * -------------------------------------------------------------------------------
- * C * 1    | uint8      | palette index (255 if air block) (C is blockCount)
+ * C * 1    | uint8      | palette index (255 if air block) (C is blockCount)
  * -------------------------------------------------------------------------------
  *
  * 17. SubChunk id 'SHAPE_POINT' (6)

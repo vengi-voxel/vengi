@@ -6,6 +6,7 @@
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -74,8 +75,8 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	const int axisIdx = math::getIndexForAxis(axis);
 	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
 
-	// Positive depth → extrude outward (along face normal, place voxels)
-	// Negative depth → carve inward   (opposite to face normal, erase voxels)
+	// Positive depth -> extrude outward (along face normal, place voxels)
+	// Negative depth -> carve inward (opposite to face normal, erase voxels)
 	const bool carving = _depth < 0;
 	const int steps = glm::abs(_depth);
 	const int dirSign = carving ? -faceSign : faceSign;
@@ -88,7 +89,7 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		if (!volRegion.containsPoint(pos)) {
 			return;
 		}
-		// Linear search — history is small enough that this is fine.
+		// Linear search - history is small enough that this is fine.
 		bool alreadySaved = false;
 		for (const HistoryEntry &entry : _history) {
 			if (entry.pos == pos) {
@@ -107,7 +108,7 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	const voxel::Voxel air{};
 
 	// Compute the bounding box of selected (FlagOutline) voxels so the loops below
-	// only scan the relevant sub-region instead of the full volume (which can be 256³+).
+	// only scan the relevant sub-region instead of the full volume (which can be 256^3+).
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 	{
@@ -139,8 +140,8 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 				if (voxel::isAir(v.getMaterial()) || !(v.getFlags() & voxel::FlagOutline)) {
 					continue;
 				}
-					// Carving starts at the selected voxel itself (step=0) so the surface layer
-					// becomes air. Extrusion starts at step=1 to place new voxels outward.
+				// Carving starts at the selected voxel itself (step=0) so the surface layer
+				// becomes air. Extrusion starts at step=1 to place new voxels outward.
 				const int stepFirst = carving ? 0 : 1;
 				const int stepLast = carving ? steps - 1 : steps;
 				for (int step = stepFirst; step <= stepLast; ++step) {
@@ -154,10 +155,10 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		}
 	}
 
-	// Fill perpendicular side walls — only meaningful when adding material outward.
+	// Fill perpendicular side walls - only meaningful when adding material outward.
 	if (_fillSides && !carving) {
 		static constexpr int NumAxes = 3;
-		static constexpr int NumPerpOffsets = 4; // 2 perpendicular axes × 2 directions each
+		static constexpr int NumPerpOffsets = 4; // 2 perpendicular axes * 2 directions each
 		const int perp1 = (axisIdx + 1) % NumAxes;
 		const int perp2 = (axisIdx + 2) % NumAxes;
 
@@ -175,13 +176,12 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 						continue;
 					}
 					for (int pi = 0; pi < NumPerpOffsets; ++pi) {
-						const glm::ivec3 neighborPos(x + perpOffsets[pi].x,
-													 y + perpOffsets[pi].y,
+						const glm::ivec3 neighborPos(x + perpOffsets[pi].x, y + perpOffsets[pi].y,
 													 z + perpOffsets[pi].z);
 						if (volRegion.containsPoint(neighborPos)) {
 							const voxel::Voxel &nv = vol->voxel(neighborPos);
 							if (!voxel::isAir(nv.getMaterial()) && (nv.getFlags() & voxel::FlagOutline)) {
-								continue; // neighbor is also selected — no open edge
+								continue; // neighbor is also selected - no open edge
 							}
 						}
 						for (int step = 1; step <= steps; ++step) {
@@ -200,17 +200,13 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	}
 
 	// For outward extrusion: remove any voxel that is now fully interior
-	// (all 6 axis-aligned neighbors solid and within bounds) — invisible voxels waste sparse storage.
+	// (all 6 axis-aligned neighbors solid and within bounds) - invisible voxels waste sparse storage.
 	// Running after fill-sides gives accurate neighbor state before pruning.
 	// Pruned selected (FlagOutline) voxels are saved to history so depth changes restore them.
 	if (!carving) {
-		static constexpr int NumNeighborAxes = 6;
-		static const glm::ivec3 neighborOffsets[NumNeighborAxes] = {
-			{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-
 		auto isInterior = [&](const glm::ivec3 &pos) {
-			for (int ni = 0; ni < NumNeighborAxes; ++ni) {
-				const glm::ivec3 nb = pos + neighborOffsets[ni];
+			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
+				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
 				if (!volRegion.containsPoint(nb) || voxel::isAir(vol->voxel(nb).getMaterial())) {
 					return false;
 				}

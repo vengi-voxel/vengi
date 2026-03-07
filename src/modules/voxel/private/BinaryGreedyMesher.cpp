@@ -93,9 +93,9 @@ static constexpr int CS_P2 = CS_P * CS_P;
  *
  * @note The different formulas for each axis rotate the coordinate system
  * so that the result always maps to XYZ order (X innermost):
- * - Axis 0 (X faces): a=right=X, b=forward=Z, c=bit_pos=Y → X + Y*CS_P + Z*CS_P2
- * - Axis 1 (Y faces): a=right=Z, b=forward=Y, c=bit_pos=X → X + Y*CS_P + Z*CS_P2
- * - Axis 2 (Z faces): a=right=Y, b=forward=X, c=bit_pos=Z → X + Y*CS_P + Z*CS_P2
+ * - Axis 0 (X faces): a=right=X, b=forward=Z, c=bit_pos=Y -> X + Y*CS_P + Z*CS_P2
+ * - Axis 1 (Y faces): a=right=Z, b=forward=Y, c=bit_pos=X -> X + Y*CS_P + Z*CS_P2
+ * - Axis 2 (Z faces): a=right=Y, b=forward=X, c=bit_pos=Z -> X + Y*CS_P + Z*CS_P2
  */
 CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const int c) {
 	if (axis == 0)
