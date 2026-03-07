@@ -13,18 +13,18 @@ class UnicodeTest: public testing::Test {
 
 TEST_F(UnicodeTest, testCharLengthUtf16) {
 	EXPECT_EQ(1u, charLengthUtf16("a"));
-	EXPECT_EQ(1u, charLengthUtf16("€")); // 3 bytes in UTF-8, 1 char in UTF-16
-	EXPECT_EQ(2u, charLengthUtf16("𐍈")); // 4 bytes in UTF-8, 2 chars in UTF-16 (surrogate pair)
+	EXPECT_EQ(1u, charLengthUtf16("\xE2\x82\xAC")); // 3 bytes in UTF-8, 1 char in UTF-16
+	EXPECT_EQ(2u, charLengthUtf16("\xF0\x90\x8D\x88")); // 4 bytes in UTF-8, 2 chars in UTF-16 (surrogate pair)
 }
 
 TEST_F(UnicodeTest, testCharLengthUtf8) {
 	EXPECT_EQ(1u, charLengthUtf8("a"));
-	EXPECT_EQ(1u, charLengthUtf8("€"));
-	EXPECT_EQ(1u, charLengthUtf8("𐍈"));
+	EXPECT_EQ(1u, charLengthUtf8("\xE2\x82\xAC"));
+	EXPECT_EQ(1u, charLengthUtf8("\xF0\x90\x8D\x88"));
 }
 
 TEST_F(UnicodeTest, testToUtf16) {
-	const char *utf8 = "a€𐍈";
+	const char *utf8 = "a\xE2\x82\xAC\xF0\x90\x8D\x88";
 	uint16_t utf16[16];
 	const int len = toUtf16(utf8, 8, utf16, sizeof(utf16) / sizeof(utf16[0]));
 	EXPECT_EQ(4, len);
@@ -39,7 +39,7 @@ TEST_F(UnicodeTest, testToUtf8) {
 	char utf8[16];
 	const int len = toUtf8(utf16, 4, utf8, sizeof(utf8));
 	EXPECT_EQ(8, len);
-	EXPECT_STREQ("a€𐍈", utf8);
+	EXPECT_STREQ("a\xE2\x82\xAC\xF0\x90\x8D\x88", utf8);
 }
 
 }
