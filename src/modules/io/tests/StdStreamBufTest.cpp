@@ -16,6 +16,7 @@ TEST_F(StdStreamBufTest, testOStream) {
 	std::ostream ostream(&buf);
 	EXPECT_EQ(0, target.pos());
 	ostream << "test";
+	ostream.flush();
 	EXPECT_EQ(4, target.size());
 	EXPECT_EQ(4, target.pos());
 	target.seek(0);
