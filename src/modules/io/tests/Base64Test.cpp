@@ -87,4 +87,76 @@ TEST_F(Base64Test, roundTrip) {
 	inStream.read(decoded.data(), decoded.size() * sizeof(uint32_t));
 };
 
+TEST_F(Base64Test, testMultiWrite) {
+	// Test writing in multiple small chunks that span block boundaries
+	io::BufferedReadWriteStream target(64);
+	Base64WriteStream ws(target);
+	// Write 1 byte, then 2 bytes - tests the leftover _bytes path
+	ws.write("f", 1);
+	ws.write("oo", 2);
+	ws.write("bar", 3);
+	ws.flush();
+	target.seek(0);
+	core::String result;
+	target.readString((int)target.size(), result, false);
+	EXPECT_EQ("Zm9vYmFy", result);
+}
+
+TEST_F(Base64Test, testReadSmallChunks) {
+	// Test reading byte-by-byte (exercises the _readBuf caching slow path)
+	const char *encoded = "Zm9vYmFy";
+	io::MemoryReadStream memStream(encoded, 8);
+	Base64ReadStream rs(memStream);
+
+	char buf[1];
+	core::String result;
+	while (!rs.eos()) {
+		int n = rs.read(buf, 1);
+		if (n <= 0) {
+			break;
+		}
+		result += buf[0];
+	}
+	EXPECT_EQ("foobar", result);
+}
+
+TEST_F(Base64Test, testBinaryRoundTrip) {
+	// Test with actual binary data containing all byte values
+	uint8_t binaryData[256];
+	for (int i = 0; i < 256; ++i) {
+		binaryData[i] = (uint8_t)i;
+	}
+
+	io::BufferedReadWriteStream encoded(512);
+	{
+		Base64WriteStream ws(encoded);
+		ws.write(binaryData, sizeof(binaryData));
+	}
+	encoded.seek(0);
+
+	Base64ReadStream rs(encoded);
+	uint8_t decoded[256];
+	int n = rs.read(decoded, sizeof(decoded));
+	ASSERT_EQ(256, n);
+	for (int i = 0; i < 256; ++i) {
+		EXPECT_EQ(binaryData[i], decoded[i]) << "Mismatch at byte " << i;
+	}
+	EXPECT_TRUE(rs.eos());
+}
+
+TEST_F(Base64Test, testEmptyInput) {
+	io::BufferedReadWriteStream target(16);
+	{
+		Base64WriteStream ws(target);
+		// Write nothing, flush should succeed
+	}
+	EXPECT_EQ(0, target.size());
+
+	io::MemoryReadStream emptyMem("", 0);
+	Base64ReadStream rs(emptyMem);
+	uint8_t buf[1];
+	EXPECT_EQ(0, rs.read(buf, 1));
+	EXPECT_TRUE(rs.eos());
+}
+
 } // namespace io
