@@ -18,6 +18,7 @@
 #include "voxedit-mcp/FindColorTool.h"
 #include "voxedit-mcp/GetPaletteTool.h"
 #include "voxedit-mcp/GetSceneStateTool.h"
+#include "voxedit-mcp/HistogramTool.h"
 #include "voxedit-mcp/GetVoxelsTool.h"
 #include "voxedit-mcp/LineBrushTool.h"
 #include "voxedit-mcp/MementoCanRedoTool.h"
@@ -110,6 +111,7 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::GetPaletteTool());
 	_toolRegistry.registerTool(new voxedit::GetSceneStateTool());
 	_toolRegistry.registerTool(new voxedit::GetVoxelsTool());
+	_toolRegistry.registerTool(new voxedit::HistogramTool());
 	_toolRegistry.registerTool(new voxedit::MementoCanRedoTool());
 	_toolRegistry.registerTool(new voxedit::MementoCanUndoTool());
 	_toolRegistry.registerTool(new voxedit::MementoRedoTool());

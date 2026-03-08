@@ -22,6 +22,7 @@ set(SRCS
 	GetVoxelsTool.h GetVoxelsTool.cpp
 	PlaceVoxelsTool.h PlaceVoxelsTool.cpp
 	GetPaletteTool.h GetPaletteTool.cpp
+	HistogramTool.h HistogramTool.cpp
 	FindColorTool.h FindColorTool.cpp
 	ScriptApiTool.h ScriptApiTool.cpp
 	ScriptCreateTool.h ScriptCreateTool.cpp
