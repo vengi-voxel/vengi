@@ -59,7 +59,7 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 	lightVolumeRegion.grow(1);
 	LightVolume lightVolume(lightVolumeRegion, 0);
 	LightQueue lightQueue;
-	lightQueue.reserve(lightVolumeRegion.getWidthInVoxels() * lightVolumeRegion.getDepthInVoxels());
+	lightQueue.reserve((size_t)lightVolumeRegion.getWidthInVoxels() * (size_t)lightVolumeRegion.getDepthInVoxels());
 
 	{
 		Log::debug("Seeding top layer with sunlight");
