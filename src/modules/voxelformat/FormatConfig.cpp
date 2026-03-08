@@ -99,7 +99,7 @@ bool FormatConfig::init() {
 	core::registerVar(voxformatVoxelizeMode);
 	const core::VarDef voxformatVoxelSize(cfg::VoxformatVoxelSize, 0, 0, 1024,
 										  N_("Voxel size"),
-										  N_("The number of voxels on the largest axis (0 = disabled, use scale cvars instead)"),
+										  N_("The number of voxels on the largest axis (0 = disabled, use scale cvars instead). This only works for single mesh exports."),
 										  core::CV_NOPERSIST);
 	core::registerVar(voxformatVoxelSize);
 	const core::VarDef voxformatQBTPaletteMode(cfg::VoxformatQBTPaletteMode, true, N_("Palette mode"),
