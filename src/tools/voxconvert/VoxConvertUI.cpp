@@ -168,9 +168,6 @@ void VoxConvertUI::onRenderUI() {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
 				ImGui::Checkbox(_("Overwrite existing output file"), &_overwriteOutputFile);
 			}
-			if (inputDesc) {
-				voxelui::genericOptions(inputDesc);
-			}
 		}
 
 		if (ImGui::CollapsingHeader(_("Input options"), ImGuiTreeNodeFlags_DefaultOpen)) {

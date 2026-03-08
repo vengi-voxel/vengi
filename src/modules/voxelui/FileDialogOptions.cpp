@@ -72,15 +72,17 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 		return false;
 	}
 
+	ImGui::TextUnformatted(desc->name.c_str());
+	ImGui::Separator();
+
 	bool hasOptions;
 	if (_palette) {
 		hasOptions = paletteOptions(mode, desc);
 	} else {
-		hasOptions = genericOptions(desc);
 		if (mode == video::OpenFileMode::Save) {
-			hasOptions |= saveOptions(desc, entry);
+			hasOptions = saveOptions(desc, entry);
 		} else {
-			hasOptions |= loadOptions(desc, entry, _paletteCache);
+			hasOptions = loadOptions(desc, entry, _paletteCache);
 		}
 	}
 	return hasOptions;
@@ -95,8 +97,6 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 	if (desc == nullptr) {
 		return false;
 	}
-	ImGui::TextUnformatted(desc->name.c_str());
-	ImGui::Separator();
 
 	if (*desc == palette::RGBPalette::format()) {
 		ImGui::CheckboxVar(cfg::PalformatRGB6Bit);
@@ -106,24 +106,6 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 		ImGui::CheckboxVar(cfg::PalformatGimpRGBA);
 	}
 	imguiApp()->colorReductionOptions();
-	return false;
-}
-
-bool genericOptions(const io::FormatDescription *desc) {
-	if (desc == nullptr) {
-		return false;
-	}
-	ImGui::TextUnformatted(desc->name.c_str());
-	ImGui::Separator();
-
-	const bool meshFormat = voxelformat::isMeshFormat(*desc);
-	if (meshFormat) {
-		ImGui::InputVarFloat(cfg::VoxformatScale);
-		ImGui::InputVarFloat(cfg::VoxformatScaleX);
-		ImGui::InputVarFloat(cfg::VoxformatScaleY);
-		ImGui::InputVarFloat(cfg::VoxformatScaleZ);
-		return true;
-	}
 	return false;
 }
 
@@ -280,6 +262,20 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 }
 
 static void loadOptionsMesh(const io::FormatDescription *desc) {
+	const bool meshFormat = voxelformat::isMeshFormat(*desc);
+	if (meshFormat) {
+		core::VarPtr voxelSize = core::getVar(cfg::VoxformatVoxelSize);
+		ImGui::InputVarFloat(voxelSize);
+		ImGui::BeginDisabled(voxelSize->intVal() > 0);
+		{
+			ImGui::InputVarFloat(cfg::VoxformatScale);
+			ImGui::InputVarFloat(cfg::VoxformatScaleX);
+			ImGui::InputVarFloat(cfg::VoxformatScaleY);
+			ImGui::InputVarFloat(cfg::VoxformatScaleZ);
+		}
+		ImGui::EndDisabled();
+	}
+
 	ImGui::InputVarString(cfg::VoxformatTexturePath);
 	ImGui::CheckboxVar(cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(cfg::VoxformatPointCloudSize);
