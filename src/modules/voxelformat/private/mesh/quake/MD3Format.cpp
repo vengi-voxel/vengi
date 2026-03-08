@@ -6,6 +6,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -154,8 +155,12 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		Log::error("Failed to seek to shaders");
 		return false;
 	}
+
+	core::String nodeName = core::string::extractFilename(surfHdr.name);
+
+	core::Buffer<MD3Shader> shaders(surfHdr.numShaders);
 	for (int32_t i = 0; i < surfHdr.numShaders; ++i) {
-		MD3Shader shader;
+		MD3Shader &shader = shaders[i];
 		if (!stream.readString(sizeof(shader.name), shader.name)) {
 			Log::error("Failed to read shader name");
 			return false;
@@ -168,7 +173,13 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 			skinName = skinName.substr(1);
 		}
 		const core::String &imageName = lookupTexture(filename, skinName, archive);
-		const image::ImagePtr &image = image::loadImage(imageName);
+		image::ImagePtr image = image::loadImage(imageName);
+		if (!image->isLoaded()) {
+			Log::warn("Failed to load shader image '%s' for surface '%s'", imageName.c_str(), surfHdr.name);
+		}
+		// we don't have shader support yet, and the alpha 0 doesn't mean fully transparent, there are shader attributes for the alphaFunc
+		// we don't have that and thus we make the image fully opaque to avoid invisible meshes
+		image->makeOpaque();
 		surfaceMaterials.push_back(createMaterial(image));
 	}
 
@@ -240,7 +251,7 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		mesh.addTriangle(meshTri);
 	}
 
-	const int nodeId = voxelizeMesh(filename, sceneGraph, core::move(mesh));
+	const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh));
 
 	// advance the surface offset for the next surface
 	surfaceStart = surfaceStart + surfHdr.ofsEnd;
