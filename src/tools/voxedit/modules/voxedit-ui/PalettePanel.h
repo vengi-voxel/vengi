@@ -36,6 +36,7 @@ private:
 	PaletteSelection _selectedIndices;
 	int _selectedIndicesLast = -1;
 	float _intensityChange = 0.0f;
+	int _quantizeTargetCount = 2;
 	int _closestMatchPaletteColorIdx = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
 	bool _colorHovered = false; // caching the hover state per frame

@@ -130,7 +130,22 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 						_sceneMgr->nodeSetColor(node.id(), idx, color::getRGBA(randomColor));
 					}
 				}
-				// TODO: add color quantisation to parts of the palette
+				if (ImGui::BeginIconMenu(ICON_LC_MINIMIZE_2, _("Quantize selected colors"))) {
+					const int maxTarget = (int)_selectedIndices.size() - 1;
+					if (_quantizeTargetCount > maxTarget) {
+						_quantizeTargetCount = maxTarget;
+					}
+					ImGui::SliderInt(_("Target colors"), &_quantizeTargetCount, 1, maxTarget);
+					if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply"))) {
+						core::Buffer<uint8_t> indices;
+						indices.reserve(_selectedIndices.size());
+						for (const auto &e : _selectedIndices) {
+							indices.push_back(e->key);
+						}
+						_sceneMgr->nodeQuantizeColors(node.id(), indices, _quantizeTargetCount);
+					}
+					ImGui::EndMenu();
+				}
 			}
 		}
 

@@ -6,6 +6,8 @@
 
 #include "app/Async.h"
 #include "app/I18N.h"
+#include "color/ColorUtil.h"
+#include "color/Quantize.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
@@ -4537,6 +4539,109 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 bool SceneManager::nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeReduceColors(*node, srcPalIdx, targetPalIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeQuantizeColors(scenegraph::SceneGraphNode &node, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount) {
+	const int selectedCount = (int)selectedIndices.size();
+	if (selectedCount <= 1 || targetColorCount <= 0 || targetColorCount >= selectedCount) {
+		return false;
+	}
+
+	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
+	if (v == nullptr) {
+		return false;
+	}
+
+	palette::Palette &palette = node.palette();
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "quantizecolors");
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
+
+	// collect the RGBA colors for the selected indices
+	color::RGBA inputColors[palette::PaletteMaxColors];
+	for (int i = 0; i < selectedCount; ++i) {
+		inputColors[i] = palette.color(selectedIndices[i]);
+	}
+
+	// quantize to target count
+	color::RGBA quantizedColors[palette::PaletteMaxColors];
+	const color::ColorReductionType reductionType =
+		color::toColorReductionType(core::getVar(cfg::CoreColorReduction)->strVal().c_str());
+	const int quantizedCount = color::quantize(quantizedColors, (size_t)targetColorCount, inputColors, (size_t)selectedCount, reductionType);
+	if (quantizedCount <= 0) {
+		return false;
+	}
+
+	// for each selected palette index, find the closest quantized color
+	// group[i] = index into quantizedColors that this selected index maps to
+	int mapping[palette::PaletteMaxColors];
+	for (int i = 0; i < selectedCount; ++i) {
+		float minDist = FLT_MAX;
+		int bestMatch = 0;
+		const color::RGBA c = inputColors[i];
+		for (int q = 0; q < quantizedCount; ++q) {
+			const float dist = color::getDistance(c, quantizedColors[q], color::Distance::Approximation);
+			if (dist < minDist) {
+				minDist = dist;
+				bestMatch = q;
+			}
+		}
+		mapping[i] = bestMatch;
+	}
+
+	// for each quantized color group, pick the first selected index as the "keeper",
+	// remap voxels from all other indices in the group to the keeper, then clear them
+	for (int q = 0; q < quantizedCount; ++q) {
+		int keeperSelectedIdx = -1;
+		core::Buffer<uint8_t> srcPalIdx;
+		for (int i = 0; i < selectedCount; ++i) {
+			if (mapping[i] != q) {
+				continue;
+			}
+			if (keeperSelectedIdx == -1) {
+				keeperSelectedIdx = i;
+			} else {
+				srcPalIdx.push_back(selectedIndices[i]);
+			}
+		}
+		if (keeperSelectedIdx == -1) {
+			continue;
+		}
+		const uint8_t keeperPalIdx = selectedIndices[keeperSelectedIdx];
+		// set the keeper to the quantized color
+		palette.setColor(keeperPalIdx, quantizedColors[q]);
+
+		if (!srcPalIdx.empty()) {
+			// remap voxels from the other indices to the keeper
+			const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, keeperPalIdx);
+			voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+			auto func = [&wrapper, &srcPalIdx, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
+				for (uint8_t srcPal : srcPalIdx) {
+					if (voxel.getColor() == srcPal) {
+						wrapper.setVoxel(x, y, z, replacementVoxel);
+						break;
+					}
+				}
+			};
+			voxelutil::visitVolumeParallel(wrapper, func);
+			modified(node.id(), wrapper.dirtyRegion());
+
+			// clear the colors that were quantized away
+			for (uint8_t idx : srcPalIdx) {
+				palette.setColor(idx, color::RGBA(0, 0, 0, 0));
+			}
+		}
+	}
+
+	palette.markSave();
+	palette.markDirty();
+	return true;
+}
+
+bool SceneManager::nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeQuantizeColors(*node, selectedIndices, targetColorCount);
 	}
 	return false;
 }

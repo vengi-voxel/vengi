@@ -1313,4 +1313,50 @@ TEST_F(SceneManagerTest, testNodeResizeShrinkUndoRedo) {
 	}
 }
 
+TEST_F(SceneManagerTest, testNodeQuantizeColors) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "testscene", voxel::Region{0, 3}));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(nodeId);
+	palette::Palette &palette = node.palette();
+
+	// set up 4 similar red colors in the palette
+	palette.setColor(0, color::RGBA(255, 0, 0, 255));   // pure red
+	palette.setColor(1, color::RGBA(250, 5, 5, 255));   // near-red
+	palette.setColor(2, color::RGBA(0, 0, 255, 255));   // pure blue
+	palette.setColor(3, color::RGBA(5, 5, 250, 255));   // near-blue
+
+	// place voxels with each color
+	EXPECT_TRUE(testSetVoxel(glm::ivec3(0, 0, 0), 0));
+	EXPECT_TRUE(testSetVoxel(glm::ivec3(1, 0, 0), 1));
+	EXPECT_TRUE(testSetVoxel(glm::ivec3(2, 0, 0), 2));
+	EXPECT_TRUE(testSetVoxel(glm::ivec3(3, 0, 0), 3));
+
+	// quantize all 4 colors down to 2
+	core::Buffer<uint8_t> selectedIndices;
+	selectedIndices.push_back(0);
+	selectedIndices.push_back(1);
+	selectedIndices.push_back(2);
+	selectedIndices.push_back(3);
+	EXPECT_TRUE(_sceneMgr->nodeQuantizeColors(nodeId, selectedIndices, 2));
+
+	// count how many palette slots are still active (alpha > 0)
+	int activeColors = 0;
+	for (int i = 0; i < 4; ++i) {
+		if (palette.color(i).a > 0) {
+			activeColors++;
+		}
+	}
+	EXPECT_EQ(activeColors, 2) << "After quantizing 4 colors to 2, exactly 2 should remain active";
+
+	// verify voxels are still present and use only active colors
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	for (int x = 0; x < 4; ++x) {
+		const voxel::Voxel &voxel = v->voxel(x, 0, 0);
+		EXPECT_TRUE(voxel::isBlocked(voxel.getMaterial())) << "Voxel at x=" << x << " should still exist";
+		const uint8_t colorIdx = voxel.getColor();
+		EXPECT_GT(palette.color(colorIdx).a, 0) << "Voxel at x=" << x << " should reference an active color";
+	}
+}
+
 } // namespace voxedit
