@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -20,6 +21,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/Voxel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -93,6 +95,131 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 			_sceneMgr->nodeResize(node.id(), newRegion);
 		}
 		ImGui::EndTable();
+	}
+
+	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_BAR, _("Color Histogram"))) {
+		if (_cachedHistogramNodeId != node.id()) {
+			_cachedHistogram.clear();
+			_cachedHistogramNodeId = -1;
+		}
+
+		if (ImGui::Button(_cachedHistogram.empty() ? _("Analyze") : _("Refresh"))) {
+			_cachedHistogram = node.colorHistogram();
+			_cachedHistogramNodeId = node.id();
+		}
+
+		if (!_cachedHistogram.empty()) {
+			const palette::Palette &palette = node.palette();
+
+			struct ColorBar {
+				int index;
+				int count;
+				float percentage;
+			};
+			core::DynamicArray<ColorBar> bars;
+			for (int i = 0; i < (int)_cachedHistogram.size(); i++) {
+				const scenegraph::ColorHistogramEntry &entry = _cachedHistogram[i];
+				if (entry.count > 0) {
+					bars.push_back({i, entry.count, entry.percentage});
+				}
+			}
+
+			// sort by count descending for the chart
+			bars.sort([](const ColorBar &a, const ColorBar &b) {
+				return a.count > b.count;
+			});
+
+			ImGui::Text(_("%i colors used"), (int)bars.size());
+
+			const int n = (int)bars.size();
+			const ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend;
+			if (n > 0 && ImPlot::BeginPlot("##colorhistogram", ImVec2(-1, ImGui::GetTextLineHeight() * 12), flags)) {
+				ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+				ImPlot::SetupAxis(ImAxis_Y1, _("Voxels"), ImPlotAxisFlags_AutoFit);
+				ImPlot::SetupAxisLimits(ImAxis_X1, -0.5, n - 0.5, ImGuiCond_Always);
+				for (int i = 0; i < n; i++) {
+					const ColorBar &bar = bars[i];
+					const glm::vec4 &c = palette.color4(bar.index);
+					const core::String label = core::String::format("Color %d##c%d", bar.index, bar.index);
+					const double x = (double)i;
+					const double y = (double)bar.count;
+					ImPlotSpec spec;
+					spec.FillColor = ImVec4(c.r, c.g, c.b, 1.0f);
+					spec.LineColor = ImVec4(c.r, c.g, c.b, 1.0f);
+					ImPlot::PlotBars(label.c_str(), &x, &y, 1, 0.7, spec);
+				}
+				ImPlot::EndPlot();
+			}
+
+			static const uint32_t histTableFlags =
+				ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings |
+				ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
+			const float tableHeight = ImGui::GetTextLineHeightWithSpacing() * 8;
+			if (ImGui::BeginTable("##histdetails", 4, histTableFlags, ImVec2(0, tableHeight))) {
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableSetupColumn(_("Color"), ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort);
+				ImGui::TableSetupColumn(_("Index"), ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn(_("Count"), ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_PreferSortDescending | ImGuiTableColumnFlags_DefaultSort);
+				ImGui::TableSetupColumn("%", ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableHeadersRow();
+
+				if (ImGuiTableSortSpecs *sortSpecs = ImGui::TableGetSortSpecs()) {
+					if (sortSpecs->SpecsDirty && sortSpecs->SpecsCount > 0) {
+						const ImGuiTableColumnSortSpecs &sortSpec = sortSpecs->Specs[0];
+						const bool asc = sortSpec.SortDirection == ImGuiSortDirection_Ascending;
+						switch (sortSpec.ColumnIndex) {
+						case 1:
+							bars.sort([asc](const ColorBar &a, const ColorBar &b) {
+								return asc ? a.index < b.index : a.index > b.index;
+							});
+							break;
+						case 2:
+							bars.sort([asc](const ColorBar &a, const ColorBar &b) {
+								return asc ? a.count < b.count : a.count > b.count;
+							});
+							break;
+						case 3:
+							bars.sort([asc](const ColorBar &a, const ColorBar &b) {
+								return asc ? a.percentage < b.percentage : a.percentage > b.percentage;
+							});
+							break;
+						}
+						sortSpecs->SpecsDirty = false;
+					}
+				}
+
+				const uint8_t hoveredColorIdx = _sceneMgr->hitCursorVoxel().getColor();
+				ImGuiListClipper clipper;
+				clipper.Begin(n);
+				while (clipper.Step()) {
+					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
+						const ColorBar &bar = bars[row];
+						const glm::vec4 &c = palette.color4(bar.index);
+						const ImVec4 col(c.r, c.g, c.b, 1.0f);
+						ImGui::TableNextRow();
+						if (bar.index == (int)hoveredColorIdx) {
+							ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, IM_COL32(255, 255, 255, 50));
+						}
+						ImGui::TableNextColumn();
+						ImGui::PushID(bar.index);
+						if (ImGui::ColorButton("##col", col, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker,
+							ImVec2(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight()))) {
+							_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, bar.index));
+						}
+						ImGui::PopID();
+						ImGui::TableNextColumn();
+						ImGui::Text("%d", bar.index);
+						ImGui::TableNextColumn();
+						ImGui::Text("%d", bar.count);
+						ImGui::TableNextColumn();
+						ImGui::Text("%.1f%%", bar.percentage);
+					}
+				}
+				ImGui::EndTable();
+			}
+		} else {
+			ImGui::TextUnformatted(_("Press Analyze to compute"));
+		}
 	}
 }
 

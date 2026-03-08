@@ -7,7 +7,9 @@
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
 
 #include <glm/vec3.hpp>
@@ -34,6 +36,9 @@ private:
 	SceneManagerPtr _sceneMgr;
 	core::String _propertyKey;
 	core::String _propertyValue;
+
+	core::DynamicArray<scenegraph::ColorHistogramEntry> _cachedHistogram;
+	int _cachedHistogramNodeId = InvalidNodeId;
 
 	void modelRegions(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
 	void updateModelRegionSizes();

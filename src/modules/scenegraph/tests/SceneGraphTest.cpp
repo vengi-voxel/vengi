@@ -972,4 +972,47 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 		<< "Child transform should be updated after parent transform change";
 }
 
+TEST_F(SceneGraphTest, testColorHistogramEmpty) {
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 3)), true);
+	const core::DynamicArray<ColorHistogramEntry> &histogram = node.colorHistogram();
+	for (int i = 0; i < (int)histogram.size(); i++) {
+		EXPECT_EQ(0, histogram[i].count);
+	}
+}
+
+TEST_F(SceneGraphTest, testColorHistogramSingleColor) {
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)), true);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 5);
+	ASSERT_TRUE(node.volume()->setVoxel(0, 0, 0, voxel));
+	ASSERT_TRUE(node.volume()->setVoxel(1, 0, 0, voxel));
+	ASSERT_TRUE(node.volume()->setVoxel(2, 0, 0, voxel));
+
+	const core::DynamicArray<ColorHistogramEntry> &histogram = node.colorHistogram();
+	const ColorHistogramEntry &entry = histogram[voxel.getColor()];
+	EXPECT_EQ(3, entry.count);
+	EXPECT_FLOAT_EQ(100.0f, entry.percentage);
+}
+
+TEST_F(SceneGraphTest, testColorHistogramMultipleColors) {
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)), true);
+
+	const voxel::Voxel v1 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	node.volume()->setVoxel(0, 0, 0, v1);
+	node.volume()->setVoxel(1, 0, 0, v1);
+	node.volume()->setVoxel(2, 0, 0, v1);
+
+	const voxel::Voxel v2 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	node.volume()->setVoxel(0, 1, 0, v2);
+	node.volume()->setVoxel(1, 1, 0, v2);
+
+	const core::DynamicArray<ColorHistogramEntry> &histogram = node.colorHistogram();
+	EXPECT_EQ(3, histogram[v1.getColor()].count);
+	EXPECT_EQ(2, histogram[v2.getColor()].count);
+	EXPECT_FLOAT_EQ(60.0f, histogram[v1.getColor()].percentage);
+	EXPECT_FLOAT_EQ(40.0f, histogram[v2.getColor()].percentage);
+}
+
 } // namespace scenegraph

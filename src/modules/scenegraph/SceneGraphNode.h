@@ -31,6 +31,12 @@ class SceneGraph;
 class SceneGraphNode;
 #define DEFAULT_ANIMATION "Default"
 
+struct ColorHistogramEntry {
+	uint8_t colorIndex = 0;
+	int count = 0;
+	float percentage = 0.0f;
+};
+
 enum class SceneGraphNodeType : uint8_t {
 	Root,
 	Model,
@@ -317,6 +323,12 @@ public:
 	/**
 	 * @note Only use this accessor if you know that the given key frame index exists
 	 */
+	/**
+	 * @brief Compute color histogram with edge/interior classification
+	 * @return Array of ColorHistogramEntry sorted by count descending
+	 */
+	core::DynamicArray<ColorHistogramEntry> colorHistogram(bool includeEmpty = true) const;
+
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrame *keyFrame(KeyFrameIndex keyFrameIdx) const;
 };

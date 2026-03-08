@@ -842,4 +842,33 @@ FrameIndex SceneGraphNode::maxFrame() const {
 	return maxFrameIdx;
 }
 
+core::DynamicArray<ColorHistogramEntry> SceneGraphNode::colorHistogram(bool includeEmpty) const {
+	core::DynamicArray<ColorHistogramEntry> result;
+	const voxel::RawVolume *v = volume();
+	if (v == nullptr) {
+		return result;
+	}
+	int colorCounts[palette::PaletteMaxColors] = {};
+
+	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const uint8_t color = voxel.getColor();
+		colorCounts[color]++;
+	};
+	int totalVoxels = voxelutil::visitVolume(*v, func);
+
+	result.reserve(palette::PaletteMaxColors);
+	for (int i = 0; i < palette::PaletteMaxColors; i++) {
+		ColorHistogramEntry entry;
+		entry.colorIndex = i;
+		entry.count = colorCounts[i];
+		if (colorCounts[i] > 0) {
+			entry.percentage = totalVoxels > 0 ? (float)colorCounts[i] / (float)totalVoxels * 100.0f : 0.0f;
+		} else if (!includeEmpty) {
+			continue;
+		}
+		result.emplace_back(core::move(entry));
+	}
+	return result;
+}
+
 } // namespace scenegraph
