@@ -842,6 +842,29 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			showFileDialog = false;
 			return false;
 		}
+		if (_acceptInput && ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
+			const char *clipboardText = ImGui::GetClipboardText();
+			if (clipboardText != nullptr && clipboardText[0] != '\0') {
+				const core::String clipboardPath(clipboardText);
+				if (io::Filesystem::sysExists(clipboardPath)) {
+					const io::FilesystemEntry entry = io::createFilesystemEntry(clipboardPath);
+					if (entry.isDirectory()) {
+						setCurrentPath(type, clipboardPath);
+					} else if (entry.isFile()) {
+						const core::String &dir = core::string::extractDir(clipboardPath);
+						setCurrentPath(type, dir);
+						_selectedEntry = entry;
+						for (size_t i = 0; i < _filteredEntities.size(); ++i) {
+							if (_filteredEntities[i]->name == entry.name) {
+								_entryIndex = i;
+								_scrollToSelection = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 		bool openSelectedEntry = false;
 		currentPathPanel(type);
 		openSelectedEntry |= quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
