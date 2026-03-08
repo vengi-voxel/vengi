@@ -27,6 +27,7 @@
 
 #include "json/JSON.h"
 #include <glm/trigonometric.hpp>
+#include <limits>
 
 namespace voxelformat {
 
@@ -325,6 +326,30 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 		bbElement.cube.faces[(int)faceType].color = faceData.value("color", -1);
 	}
 	return true;
+}
+
+static void computeElementsAABB(const nlohmann::json &elementsJson, glm::vec3 &mins, glm::vec3 &maxs) {
+	mins = glm::vec3(std::numeric_limits<float>::max());
+	maxs = glm::vec3(std::numeric_limits<float>::lowest());
+	for (const auto &elementJson : elementsJson) {
+		if (elementJson.find("from") != elementJson.end() && elementJson.find("to") != elementJson.end()) {
+			const glm::vec3 from = priv::toVec3(elementJson, "from");
+			const glm::vec3 to = priv::toVec3(elementJson, "to");
+			mins = glm::min(mins, glm::min(from, to));
+			maxs = glm::max(maxs, glm::max(from, to));
+		} else if (elementJson.find("vertices") != elementJson.end()) {
+			const nlohmann::json &verticesJson = elementJson["vertices"];
+			if (verticesJson.is_object()) {
+				for (const auto &entry : verticesJson.items()) {
+					if (entry.value().is_array() && entry.value().size() == 3) {
+						const glm::vec3 pos(entry.value()[0], entry.value()[1], entry.value()[2]);
+						mins = glm::min(mins, pos);
+						maxs = glm::max(maxs, pos);
+					}
+				}
+			}
+		}
+	}
 }
 
 static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
@@ -852,7 +877,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	const glm::vec3 scale = getInputScale();
+	glm::vec3 elementsMins, elementsMaxs;
+	priv::computeElementsAABB(elementsJson, elementsMins, elementsMaxs);
+	const glm::vec3 scale = getInputScale(elementsMins, elementsMaxs);
 	BBElementMap bbElementMap;
 	if (!priv::parseElements(scale, filename, bbMeta, elementsJson, meshMaterialArray, bbElementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");

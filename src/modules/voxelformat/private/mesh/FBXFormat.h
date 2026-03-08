@@ -33,15 +33,16 @@ private:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
+				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
+				  const glm::vec3 &scale) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addGroupNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-					 int parent) const;
+					 int parent, const glm::vec3 &scale) const;
 	void importAnimation(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-						 scenegraph::SceneGraphNode &sceneGraphNode) const;
+						 scenegraph::SceneGraphNode &sceneGraphNode, const glm::vec3 &scale) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-					  int parent) const;
+					  int parent, const glm::vec3 &scale) const;
 	bool saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 						   const core::String &filename, io::SeekableWriteStream &stream, uint32_t sentinelLength);
 

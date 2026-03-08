@@ -30,6 +30,7 @@
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/gtc/color_space.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <limits>
 
 #define ufbx_assert core_assert
 #include "voxelformat/external/ufbx.h"
@@ -1004,7 +1005,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 }
 
 void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
-								scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &sceneGraphNode) const {
+								scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &sceneGraphNode,
+								const glm::vec3 &scale) const {
 	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
 		const core::String &animId = priv::_ufbx_to_string(stack->name);
 		const double duration = stack->time_end - stack->time_begin;
@@ -1037,26 +1039,26 @@ void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *uf
 					   sceneGraphNode.name().c_str());
 			scenegraph::SceneGraphKeyFrame &keyFrame = sceneGraphNode.keyFrame(keyFrameIdx);
 			keyFrame.interpolation = scenegraph::InterpolationType::Linear;
-			priv::_ufbx_to_transform(keyFrame.transform(), ufbxTransform, getInputScale());
+			priv::_ufbx_to_transform(keyFrame.transform(), ufbxTransform, scale);
 		}
 	}
 }
 
 int FBXFormat::addGroupNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
-							int parent) const {
+							int parent, const glm::vec3 &scale) const {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName(priv::_ufbx_to_string(ufbxNode->name));
 
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
+	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, scale);
 	node.setTransform(keyFrameIdx, transform);
 
 	return sceneGraph.emplace(core::move(node), parent);
 }
 
 int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
-							 int parent) const {
+							 int parent, const glm::vec3 &scale) const {
 	Log::debug("Add camera node");
 	const ufbx_camera *ufbxCamera = ufbxNode->camera;
 	core_assert(ufbxCamera != nullptr);
@@ -1075,7 +1077,7 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 		camNode.setHeight((int)ufbxCamera->orthographic_size.y);
 	}
 	scenegraph::SceneGraphTransform transform;
-	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
+	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, scale);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	camNode.setTransform(keyFrameIdx, transform);
 
@@ -1083,24 +1085,25 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 }
 
 int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
-						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
+						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
+						 const glm::vec3 &scale) const {
 	int nodeId = parent;
 	if (ufbxNode->attrib_type == UFBX_ELEMENT_MESH) {
 		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent);
 	} else if (ufbxNode->attrib_type == UFBX_ELEMENT_CAMERA) {
-		nodeId = addCameraNode(ufbxScene, ufbxNode, sceneGraph, parent);
+		nodeId = addCameraNode(ufbxScene, ufbxNode, sceneGraph, parent, scale);
 	} else {
-		nodeId = addGroupNode(ufbxScene, ufbxNode, sceneGraph, parent);
+		nodeId = addGroupNode(ufbxScene, ufbxNode, sceneGraph, parent, scale);
 	}
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add node with parent %i", parent);
 		return nodeId;
 	}
 
-	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraph.node(nodeId));
+	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraph.node(nodeId), scale);
 
 	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
-		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId);
+		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId, scale);
 		if (newNodeId == InvalidNodeId) {
 			const core::String name = priv::_ufbx_to_string(ufbxNode->name);
 			Log::error("Failed to add child node '%s'", name.c_str());
@@ -1179,7 +1182,20 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		sceneGraph.addAnimation(priv::_ufbx_to_string(stack->name));
 	}
 
-	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
+	glm::vec3 sceneMins{std::numeric_limits<float>::max()};
+	glm::vec3 sceneMaxs{std::numeric_limits<float>::lowest()};
+	for (size_t mi = 0; mi < ufbxScene->meshes.count; ++mi) {
+		const ufbx_mesh *ufbxMesh = ufbxScene->meshes[mi];
+		for (size_t vi = 0; vi < ufbxMesh->vertex_position.values.count; ++vi) {
+			const ufbx_vec3 v = priv::_ufbx_axes_to_engine(ufbxMesh->vertex_position.values[vi], ufbxScene->settings.axes);
+			const glm::vec3 gv = priv::_ufbx_to_vec3(v);
+			sceneMins = glm::min(sceneMins, gv);
+			sceneMaxs = glm::max(sceneMaxs, gv);
+		}
+	}
+	const glm::vec3 scale = getInputScale(sceneMins, sceneMaxs);
+
+	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale) < 0) {
 		Log::error("Failed to add root child node");
 		ufbx_free_scene(ufbxScene);
 		return false;

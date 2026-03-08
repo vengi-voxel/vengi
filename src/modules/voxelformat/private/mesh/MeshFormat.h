@@ -103,7 +103,6 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
-	static glm::vec3 getInputScale();
 	static glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs);
 
 	/**
