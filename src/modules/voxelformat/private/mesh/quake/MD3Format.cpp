@@ -193,6 +193,10 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 	for (int32_t i = 0; i < surfHdr.numVerts; ++i) {
 		wrap(stream.readFloat(uvs[i].x))
 		wrap(stream.readFloat(uvs[i].y))
+		// MD3 UVs use top-left origin (V=0 at top of texture image, matching Q3's
+		// OpenGL pipeline where glTexImage2D maps row 0 to texel Y=0). Flip V to
+		// match vengi's bottom-left origin sampling convention.
+		uvs[i].y = 1.0f - uvs[i].y;
 	}
 
 	// read vertices from frame 0 only
