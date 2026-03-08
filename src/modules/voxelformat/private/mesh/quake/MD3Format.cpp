@@ -9,6 +9,7 @@
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
@@ -92,6 +93,11 @@ bool MD3Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			Log::error("Failed to load surface %i", i);
 			return false;
 		}
+	}
+
+	if (!loadTags(*stream, startOffset, hdr, sceneGraph)) {
+		Log::error("Failed to load tags");
+		return false;
 	}
 
 	return !sceneGraph.empty();
@@ -236,6 +242,44 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 	surfaceStart = surfaceStart + surfHdr.ofsEnd;
 
 	return nodeId != InvalidNodeId;
+}
+
+bool MD3Format::loadTags(io::SeekableReadStream &stream, int64_t startOffset, const MD3Header &hdr,
+						 scenegraph::SceneGraph &sceneGraph) {
+	if (hdr.numTags <= 0) {
+		return true;
+	}
+	if (stream.seek(startOffset + hdr.ofsTags) == -1) {
+		Log::error("Failed to seek to tags");
+		return false;
+	}
+	// Only import tags for frame 0
+	for (int32_t i = 0; i < hdr.numTags; ++i) {
+		MD3Tag tag;
+		if (!stream.readString(sizeof(tag.name), tag.name)) {
+			Log::error("Failed to read tag name");
+			return false;
+		}
+		wrap(stream.readFloat(tag.origin[0]))
+		wrap(stream.readFloat(tag.origin[1]))
+		wrap(stream.readFloat(tag.origin[2]))
+		for (int r = 0; r < 3; ++r) {
+			wrap(stream.readFloat(tag.axis[r][0]))
+			wrap(stream.readFloat(tag.axis[r][1]))
+			wrap(stream.readFloat(tag.axis[r][2]))
+		}
+		// MD3 Z-up -> Y-up: swap Y and Z
+		const glm::vec3 origin(tag.origin[0], tag.origin[2], tag.origin[1]);
+		Log::debug("  Tag '%s' at (%f, %f, %f)", tag.name, origin.x, origin.y, origin.z);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
+		node.setName(tag.name);
+		scenegraph::KeyFrameIndex frameIdx = 0;
+		scenegraph::SceneGraphKeyFrame &frame = node.keyFrame(frameIdx);
+		scenegraph::SceneGraphTransform &transform = frame.transform();
+		transform.setWorldTranslation(origin);
+		sceneGraph.emplace(core::move(node));
+	}
+	return true;
 }
 
 #undef wrap

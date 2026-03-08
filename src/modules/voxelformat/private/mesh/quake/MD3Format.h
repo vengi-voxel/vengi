@@ -94,6 +94,8 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool loadSurface(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 					 int64_t &surfaceStart, const MD3Header &hdr, scenegraph::SceneGraph &sceneGraph);
+	bool loadTags(io::SeekableReadStream &stream, int64_t startOffset, const MD3Header &hdr,
+				  scenegraph::SceneGraph &sceneGraph);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
