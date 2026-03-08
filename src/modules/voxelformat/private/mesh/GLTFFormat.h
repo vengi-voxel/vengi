@@ -86,7 +86,8 @@ private:
 	using MaterialMap = core::Map<uint64_t, core::Array<int, palette::PaletteMaxColors>>;
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 					  const scenegraph::SceneGraphNode &graphNode, Stack &stack,
-					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
+					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations,
+					  bool hasMesh);
 	uint32_t writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::SeekableWriteStream &os, bool withColor,
 						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
 						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);

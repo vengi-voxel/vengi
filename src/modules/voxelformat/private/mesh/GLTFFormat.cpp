@@ -354,14 +354,15 @@ void GLTFFormat::createPointMesh(tinygltf::Model &gltfModel, const scenegraph::S
 
 void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 							  const scenegraph::SceneGraphNode &node, Stack &stack,
-							  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations) {
+							  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations,
+							  bool hasMesh) {
 	tinygltf::Node gltfNode;
-	if (node.isAnyModelNode()) {
+	if (hasMesh && node.isAnyModelNode()) {
 		gltfNode.mesh = (int)gltfModel.meshes.size();
 	}
 	if (node.type() == scenegraph::SceneGraphNodeType::Point) {
 		createPointMesh(gltfModel, node);
-		gltfNode.mesh = (int)gltfModel.meshes.size();
+		gltfNode.mesh = (int)gltfModel.meshes.size() - 1;
 	}
 	gltfNode.name = node.name().c_str();
 	Log::debug("process node %s", gltfNode.name.c_str());
@@ -416,6 +417,11 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 	const voxel::NormalArray &normals = mesh->getNormalVector();
 	const voxel::IndexArray &indices = mesh->getIndexVector();
 
+	// first pass: mark referenced vertices
+	core::Buffer<bool> referenced(nv, false);
+	core::Buffer<uint32_t> filteredIndices;
+	filteredIndices.reserve(ni);
+
 	for (int i = 0; i < ni; i += 3) {
 		// include the whole triangle if any vertex matches the color index
 		if (vertices[indices[i]].colorIndex != idx && vertices[indices[i + 1]].colorIndex != idx &&
@@ -424,20 +430,41 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 		}
 		for (int j = 0; j < 3; ++j) {
 			const uint32_t index = indices[i + j];
-			if (bounds.maxIndex < index) {
-				bounds.maxIndex = index;
-			}
-			if (index < bounds.minIndex) {
-				bounds.minIndex = index;
-			}
-			os.writeUInt32(index);
-			++bounds.ni;
+			referenced[index] = true;
+			filteredIndices.push_back(index);
 		}
 	}
+
+	// second pass: assign sequential remap indices in ascending original index order
+	core::Buffer<uint32_t> remapTable(nv, UINT_MAX);
+	for (int i = 0; i < nv; i++) {
+		if (referenced[i]) {
+			remapTable[i] = bounds.nv;
+			++bounds.nv;
+		}
+	}
+
+	// write remapped indices
+	for (uint32_t origIdx : filteredIndices) {
+		const uint32_t newIdx = remapTable[origIdx];
+		if (bounds.maxIndex < newIdx) {
+			bounds.maxIndex = newIdx;
+		}
+		if (newIdx < bounds.minIndex) {
+			bounds.minIndex = newIdx;
+		}
+		os.writeUInt32(newIdx);
+		++bounds.ni;
+	}
+
 	static_assert(sizeof(voxel::IndexType) == 4, "if not 4 bytes - we might need padding here");
 	const uint32_t indexOffset = (uint32_t)os.size();
 
+	// write only the referenced vertices in remapped order
 	for (int i = 0; i < nv; i++) {
+		if (remapTable[i] == UINT_MAX) {
+			continue;
+		}
 		glm::vec3 pos = vertices[i].position;
 		if (applyTransform) {
 			pos += pivotOffset;
@@ -452,7 +479,6 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 				bounds.minVertex[coordIndex] = pos[coordIndex];
 			}
 		}
-		++bounds.nv;
 
 		if (exportNormals) {
 			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
@@ -1119,7 +1145,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		palette::Palette palette = node.palette();
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
-			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, false);
+			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, false, false);
 			continue;
 		}
 
@@ -1214,7 +1240,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 											  texcoordIndex, paletteMaterialIndices);
 				}
 			}
-			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, exportAnimations);
+			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, exportAnimations, true);
 			gltfModel.meshes.emplace_back(core::move(gltfMesh));
 		}
 	}
