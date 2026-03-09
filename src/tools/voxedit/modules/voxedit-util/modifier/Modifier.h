@@ -16,6 +16,7 @@
 #include "brush/PlaneBrush.h"
 #include "brush/ExtrudeBrush.h"
 #include "brush/SelectBrush.h"
+#include "brush/TransformBrush.h"
 #include "brush/ShapeBrush.h"
 #include "brush/StampBrush.h"
 #include "brush/TextBrush.h"
@@ -97,6 +98,7 @@ protected:
 	TextureBrush _textureBrush;
 	NormalBrush _normalBrush;
 	ExtrudeBrush _extrudeBrush;
+	TransformBrush _transformBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -224,6 +226,7 @@ public:
 	TextureBrush &textureBrush();
 	NormalBrush &normalBrush();
 	ExtrudeBrush &extrudeBrush();
+	TransformBrush &transformBrush();
 	const BrushContext &brushContext() const;
 
 	/**
@@ -335,6 +338,10 @@ inline TextureBrush &Modifier::textureBrush() {
 
 inline ExtrudeBrush &Modifier::extrudeBrush() {
 	return _extrudeBrush;
+}
+
+inline TransformBrush &Modifier::transformBrush() {
+	return _transformBrush;
 }
 
 inline int Modifier::gridResolution() const {
