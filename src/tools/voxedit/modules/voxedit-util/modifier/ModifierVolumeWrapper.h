@@ -243,6 +243,23 @@ public:
 		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
 	}
 
+	/**
+	 * @brief Clear any existing selection and select all solid voxels in the dirty region.
+	 * Used by auto-select to select newly placed shapes.
+	 */
+	void autoSelectNewVoxels() {
+		if (!_dirtyRegion.isValid()) {
+			return;
+		}
+		if (_hasSelection) {
+			_node.clearSelection();
+		}
+		auto func = [this](int x, int y, int z, const voxel::Voxel & /*solidVoxel*/) {
+			setFlagAt(x, y, z, voxel::FlagOutline);
+		};
+		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
+	}
+
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
 		Sampler sampler(*this);
 		if (!sampler.setPosition(x, y, z)) {

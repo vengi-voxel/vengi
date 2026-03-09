@@ -112,6 +112,7 @@ protected:
 	core::ScopedPtr<voxel::RawVolume> _previewVolume;
 	core::ScopedPtr<voxel::RawVolume> _previewMirrorVolume;
 	core::VarPtr _maxSuggestedVolumeSizePreview;
+	core::VarPtr _autoSelect;
 	BrushPreview _brushPreview;
 
 	bool previewNeedsExistingVolume() const;
@@ -271,6 +272,9 @@ public:
 	void setGridResolution(int gridSize);
 	int gridResolution() const;
 
+	bool autoSelect() const;
+	void setAutoSelect(bool enable);
+
 	void reset();
 };
 
@@ -407,6 +411,14 @@ inline voxel::RawVolume *Modifier::previewVolume() const {
 
 inline voxel::RawVolume *Modifier::previewMirrorVolume() const {
 	return _previewMirrorVolume;
+}
+
+inline bool Modifier::autoSelect() const {
+	return _autoSelect->boolVal();
+}
+
+inline void Modifier::setAutoSelect(bool enable) {
+	_autoSelect->setVal(enable);
 }
 
 } // namespace voxedit

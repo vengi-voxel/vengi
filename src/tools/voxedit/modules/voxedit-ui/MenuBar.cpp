@@ -166,6 +166,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Select"), "brushselect", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Invert"), "select invert", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("All"), "select all", true, &listener);
+			ImGui::Separator();
+			ImGui::CheckboxVar(cfg::VoxEditAutoSelect);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {
