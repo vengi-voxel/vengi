@@ -842,6 +842,12 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			showFileDialog = false;
 			return false;
 		}
+		if (_acceptInput && ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_C)) {
+			if (!_selectedEntry.name.empty()) {
+				const core::String &fullPath = assemblePath(_currentPath, _selectedEntry);
+				ImGui::SetClipboardText(fullPath.c_str());
+			}
+		}
 		if (_acceptInput && ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
 			const char *clipboardText = ImGui::GetClipboardText();
 			if (clipboardText != nullptr && clipboardText[0] != '\0') {
