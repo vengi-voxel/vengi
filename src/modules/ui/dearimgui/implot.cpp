@@ -1686,8 +1686,10 @@ void PadAndDatumAxesX(ImPlotPlot& plot, float& pad_T, float& pad_B, ImPlotAlignm
         if (opp) {
             if (count_T++ > 0)
                 pad_T += K + P;
-            if (label)
-                pad_T += T + P;
+            if (label) {
+                ImVec2 label_size = ImGui::CalcTextSize(plot.GetAxisLabel(axis));
+                pad_T += label_size.y + P;
+            }
             if (ticks)
                 pad_T += ImMax(T, axis.Ticker.MaxSize.y) + P + (time ? T + P : 0);
             axis.Datum1 = plot.CanvasRect.Min.y + pad_T;
@@ -1697,8 +1699,10 @@ void PadAndDatumAxesX(ImPlotPlot& plot, float& pad_T, float& pad_B, ImPlotAlignm
         else {
             if (count_B++ > 0)
                 pad_B += K + P;
-            if (label)
-                pad_B += T + P;
+            if (label) {
+                ImVec2 label_size = ImGui::CalcTextSize(plot.GetAxisLabel(axis));
+                pad_B += label_size.y + P;
+            }
             if (ticks)
                 pad_B += ImMax(T, axis.Ticker.MaxSize.y) + P + (time ? T + P : 0);
             axis.Datum1 = plot.CanvasRect.Max.y - pad_B;
@@ -2026,6 +2030,9 @@ bool UpdateInput(ImPlotPlot& plot) {
         float tx = ImRemap(IO.MousePos.x, plot.PlotRect.Min.x, plot.PlotRect.Max.x, 0.0f, 1.0f);
         float ty = ImRemap(IO.MousePos.y, plot.PlotRect.Min.y, plot.PlotRect.Max.y, 0.0f, 1.0f);
 
+        // Track which axis to use as reference for equal aspect
+        ImPlotAxis* equal_ref_axis = nullptr;
+
         for (int i = 0; i < IMPLOT_NUM_X_AXES; i++) {
             ImPlotAxis& x_axis = plot.XAxis(i);
             const bool equal_zoom   = axis_equal && x_axis.OrthoAxis != nullptr;
@@ -2033,13 +2040,12 @@ bool UpdateInput(ImPlotPlot& plot) {
             if (x_hov[i] && !x_axis.IsInputLocked() && !equal_locked) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, plot.ID);
                 if (zoom_rate != 0.0f) {
-                    float correction = (plot.Hovered && equal_zoom) ? 0.5f : 1.0f;
-                    const double plot_l = x_axis.PixelsToPlot(plot.PlotRect.Min.x - rect_size.x * tx * zoom_rate * correction);
-                    const double plot_r = x_axis.PixelsToPlot(plot.PlotRect.Max.x + rect_size.x * (1 - tx) * zoom_rate * correction);
+                    const double plot_l = x_axis.PixelsToPlot(plot.PlotRect.Min.x - rect_size.x * tx * zoom_rate);
+                    const double plot_r = x_axis.PixelsToPlot(plot.PlotRect.Max.x + rect_size.x * (1 - tx) * zoom_rate);
                     x_axis.SetMin(x_axis.IsInverted() ? plot_r : plot_l);
                     x_axis.SetMax(x_axis.IsInverted() ? plot_l : plot_r);
-                    if (axis_equal && x_axis.OrthoAxis != nullptr)
-                        x_axis.OrthoAxis->SetAspect(x_axis.GetAspect());
+                    if (equal_zoom)
+                        equal_ref_axis = &x_axis;
                     changed = true;
                 }
             }
@@ -2051,16 +2057,20 @@ bool UpdateInput(ImPlotPlot& plot) {
             if (y_hov[i] && !y_axis.IsInputLocked() && !equal_locked) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, plot.ID);
                 if (zoom_rate != 0.0f) {
-                    float correction = (plot.Hovered && equal_zoom) ? 0.5f : 1.0f;
-                    const double plot_t = y_axis.PixelsToPlot(plot.PlotRect.Min.y - rect_size.y * ty * zoom_rate * correction);
-                    const double plot_b = y_axis.PixelsToPlot(plot.PlotRect.Max.y + rect_size.y * (1 - ty) * zoom_rate * correction);
+                    const double plot_t = y_axis.PixelsToPlot(plot.PlotRect.Min.y - rect_size.y * ty * zoom_rate);
+                    const double plot_b = y_axis.PixelsToPlot(plot.PlotRect.Max.y + rect_size.y * (1 - ty) * zoom_rate);
                     y_axis.SetMin(y_axis.IsInverted() ? plot_t : plot_b);
                     y_axis.SetMax(y_axis.IsInverted() ? plot_b : plot_t);
-                    if (axis_equal && y_axis.OrthoAxis != nullptr)
-                        y_axis.OrthoAxis->SetAspect(y_axis.GetAspect());
+                    if (equal_zoom)
+                        equal_ref_axis = &y_axis;
                     changed = true;
                 }
             }
+        }
+
+        // Apply equal aspect constraint after zooming both axes
+        if (equal_ref_axis != nullptr && equal_ref_axis->OrthoAxis != nullptr) {
+            equal_ref_axis->OrthoAxis->SetAspect(equal_ref_axis->GetAspect());
         }
     }
 
@@ -2247,6 +2257,8 @@ void SetupAxisTicks(ImAxis idx, double v_min, double v_max, int n_ticks, const c
     ImPlotContext& gp = *GImPlot;
     IM_ASSERT_USER_ERROR(gp.CurrentPlot != nullptr && !gp.CurrentPlot->SetupLocked,
                          "Setup needs to be called after BeginPlot and before any setup locking functions (e.g. PlotX)!");
+    IM_ASSERT_USER_ERROR(labels == nullptr || n_ticks >= 2,
+                         "When providing custom labels, n_ticks must be at least 2!");
     n_ticks = n_ticks < 2 ? 2 : n_ticks;
     FillRange(gp.TempDouble1, n_ticks, v_min, v_max);
     SetupAxisTicks(idx, gp.TempDouble1.Data, n_ticks, labels, show_default);
@@ -2622,6 +2634,17 @@ void SetupFinish() {
         if (axis.WillRender() && axis.ShowDefaultTicks && plot_width > 0) {
             axis.Locator(axis.Ticker, axis.Range, plot_width, false, axis.Formatter, axis.FormatterData);
         }
+    }
+
+    // (4.5) recalc padding now that we have actual X-axis tick labels (handles multi-line labels)
+    // Save title padding before resetting
+    const float title_pad = (title_size.x > 0) ? (title_size.y + gp.Style.LabelPadding.y) : 0.0f;
+    pad_top = title_pad;
+    pad_bot = 0;
+    PadAndDatumAxesX(plot,pad_top,pad_bot,gp.CurrentAlignmentH);
+    // Update AxesRect to account for title padding (was done in step 0)
+    if (title_size.x > 0) {
+        plot.AxesRect.Min.y = plot.FrameRect.Min.y + gp.Style.PlotPadding.y + title_pad;
     }
 
     // (5) calc plot bb
