@@ -153,7 +153,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::ScopedID id("##cursor");
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
-		if (ImGui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
+		if (ImGui::AxisCheckboxFlags(math::Axis::X, _("X"), &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}
 		ImGui::TooltipCommand("lockx");
@@ -164,7 +164,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (ImGui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
+		if (ImGui::AxisCheckboxFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
 			command::executeCommands("locky", &listener);
 		}
 		ImGui::TooltipCommand("locky");
@@ -174,7 +174,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (ImGui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
+		if (ImGui::AxisCheckboxFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
 			command::executeCommands("lockz", &listener);
 		}
 		ImGui::TooltipCommand("lockz");

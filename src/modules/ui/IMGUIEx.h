@@ -104,7 +104,7 @@ IMGUI_API bool AxisButtonX(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFla
 IMGUI_API bool AxisButtonY(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
 IMGUI_API bool AxisButtonZ(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
 IMGUI_API bool InputAxisInt(math::Axis axis, const char *name, int* value, int step = 1);
-IMGUI_API bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value);
+IMGUI_API bool AxisCheckboxFlags(math::Axis axis, const char *name, math::Axis* value);
 
 IMGUI_API bool CancelButton(const ImVec2 &size = ImVec2(0, 0));
 IMGUI_API bool OkButton(const ImVec2 &size = ImVec2(0, 0));

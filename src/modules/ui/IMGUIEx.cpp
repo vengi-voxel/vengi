@@ -475,7 +475,7 @@ bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
 	return ImGui::InputInt(name, value, step);
 }
 
-bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value) {
+bool AxisCheckboxFlags(math::Axis axis, const char *name, math::Axis* value) {
 	ui::ScopedStyle style;
 	ImGui::AxisStyleText(style, axis);
 	int intvalue = (int)core::enumVal(*value);
