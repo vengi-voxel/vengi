@@ -361,8 +361,8 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
 	_keybindingHandler.registerBinding("ctrl+d",               "select none",                  "model");
 	_keybindingHandler.registerBinding("ctrl+i",               "select invert",                "model");
-	_keybindingHandler.registerBinding("+",                    "resize 1",                     "model");
-	_keybindingHandler.registerBinding("-",                    "resize -1",                    "model");
+	_keybindingHandler.registerBinding("+",                    "modelsize 1",                  "model");
+	_keybindingHandler.registerBinding("-",                    "modelsize -1",                 "model");
 	_keybindingHandler.registerBinding("left",                 "+movecursorleft",              "model");
 	_keybindingHandler.registerBinding("right",                "+movecursorright",             "model");
 	_keybindingHandler.registerBinding("up",                   "+movecursorforward",           "model");

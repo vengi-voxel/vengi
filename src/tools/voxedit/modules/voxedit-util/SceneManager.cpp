@@ -2603,9 +2603,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Set the reference position to the current cursor position"));
 
 	command::Command::registerCommand("modelsize")
-		.addArg({"x", command::ArgType::Int, true, "1", "X size"})
-		.addArg({"y", command::ArgType::Int, true, "1", "Y size"})
-		.addArg({"z", command::ArgType::Int, true, "1", "Z size"})
+		.addArg({"x", command::ArgType::Int, true, "", "X size"})
+		.addArg({"y", command::ArgType::Int, true, "", "Y size"})
+		.addArg({"z", command::ArgType::Int, true, "", "Z size"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to resize"})
 		.setHandler([this] (const command::CommandArgs& args) {
 			const int x = args.intVal("x", 1);
