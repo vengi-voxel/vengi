@@ -181,6 +181,29 @@ static bool SliderVarInt(const char* label, const core::VarPtr& var, const char*
 	return false;
 }
 
+static bool SliderIntMinMax(const char *id, int *val, int lo, int hi) {
+	bool changed = false;
+	ui::ScopedID idScope(id);
+	ImGui::BeginDisabled(*val <= lo);
+	if (ImGui::Button("-")) {
+		*val = glm::max(*val - 1, lo);
+		changed = true;
+	}
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(-1);
+	if (ImGui::SliderInt("", val, lo, hi)) {
+		changed = true;
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(*val >= hi);
+	if (ImGui::Button("+")) {
+		*val = glm::min(*val + 1, hi);
+		changed = true;
+	}
+	ImGui::EndDisabled();
+	return changed;
+}
 
 } // namespace _priv
 
@@ -374,6 +397,37 @@ void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	default:
 		break;
 	}
+}
+
+bool AxisSliders(glm::ivec3 &vec, int mins, int maxs) {
+	bool changed = false;
+	ImGui::AxisButtonX();
+	ImGui::SameLine();
+	changed |= _priv::SliderIntMinMax("##x", &vec.x, mins, maxs);
+	ImGui::AxisButtonY();
+	ImGui::SameLine();
+	changed |= _priv::SliderIntMinMax("##y", &vec.y, mins, maxs);
+	ImGui::AxisButtonZ();
+	ImGui::SameLine();
+	changed |= _priv::SliderIntMinMax("##z", &vec.z, mins, maxs);
+	return changed;
+}
+
+bool AxisSliders(glm::vec3 &vec, float mins, float maxs, const char *format) {
+	bool changed = false;
+	ImGui::AxisButtonX();
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(-1);
+	changed |= ImGui::SliderFloat("##x", &vec.x, mins, maxs, format);
+	ImGui::AxisButtonY();
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(-1);
+	changed |= ImGui::SliderFloat("##y", &vec.y, mins, maxs, format);
+	ImGui::AxisButtonZ();
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(-1);
+	changed |= ImGui::SliderFloat("##z", &vec.z, mins, maxs, format);
+	return changed;
 }
 
 bool AxisButtonX(const ImVec2& size_arg, ImGuiButtonFlags flags) {

@@ -880,108 +880,54 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 		ImGui::EndCombo();
 	}
 
-	const float btnW = ImGui::GetFrameHeight();
-	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-
-	// Callback that syncs current UI values to the brush before executing the transform.
-	// This is necessary because the brush parameters must be up-to-date before generate() runs.
-	auto syncAndExecute = [&]() {
-		switch (brush.transformMode()) {
-		case TransformMode::Move:
-			brush.setMoveOffset(_transformMoveOffset);
-			break;
-		case TransformMode::Shear:
-			brush.setShearOffset(_transformShearOffset);
-			break;
-		case TransformMode::Scale:
-			brush.setScale(_transformScale);
-			break;
-		case TransformMode::Rotate:
-			brush.setRotationDegrees(_transformRotation);
-			break;
-		default:
-			break;
-		}
-		executeTransformBrush();
-	};
-
-	auto intSlider = [&](const char *label, const char *id, int *val, int lo, int hi) {
-		ImGui::TextUnformatted(label);
-		ImGui::PushID(id);
-		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			*val = glm::max(*val - 1, lo);
-			syncAndExecute();
-		}
-		ImGui::SameLine(0, spacing);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("", val, lo, hi)) {
-		}
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			syncAndExecute();
-		}
-		ImGui::SameLine(0, spacing);
-		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			*val = glm::min(*val + 1, hi);
-			syncAndExecute();
-		}
-		ImGui::PopID();
-	};
-
-	auto floatSlider = [&](const char *label, const char *id, float *val, float lo, float hi, const char *fmt = "%.1f") {
-		ImGui::TextUnformatted(label);
-		ImGui::PushID(id);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::SliderFloat("", val, lo, hi, fmt)) {
-		}
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			syncAndExecute();
-		}
-		ImGui::PopID();
-	};
-
 	switch (brush.transformMode()) {
 	case TransformMode::Move: {
 		_transformMoveOffset = brush.moveOffset();
-		intSlider(_("X offset"), "##move_x", &_transformMoveOffset.x, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
-		intSlider(_("Y offset"), "##move_y", &_transformMoveOffset.y, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
-		intSlider(_("Z offset"), "##move_z", &_transformMoveOffset.z, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
-		brush.setMoveOffset(_transformMoveOffset);
+		if (ImGui::AxisSliders(_transformMoveOffset, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset)) {
+			brush.setMoveOffset(_transformMoveOffset);
+			executeTransformBrush();
+		}
 		break;
 	}
 
 	case TransformMode::Shear: {
 		_transformShearOffset = brush.shearOffset();
-		intSlider(_("X shear"), "##shear_x", &_transformShearOffset.x, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
-		intSlider(_("Y shear"), "##shear_y", &_transformShearOffset.y, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
-		intSlider(_("Z shear"), "##shear_z", &_transformShearOffset.z, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
-		brush.setShearOffset(_transformShearOffset);
+		if (ImGui::AxisSliders(_transformShearOffset, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset)) {
+			brush.setShearOffset(_transformShearOffset);
+			executeTransformBrush();
+		}
 		break;
 	}
 
 	case TransformMode::Scale: {
 		_transformScale = brush.scale();
-		floatSlider(_("X scale"), "##scale_x", &_transformScale.x, 0.01f, 4.0f, "%.2f");
-		floatSlider(_("Y scale"), "##scale_y", &_transformScale.y, 0.01f, 4.0f, "%.2f");
-		floatSlider(_("Z scale"), "##scale_z", &_transformScale.z, 0.01f, 4.0f, "%.2f");
-		brush.setScale(_transformScale);
+		if (ImGui::AxisSliders(_transformScale, 0.01f, 4.0f, "%.2f")) {
+			brush.setScale(_transformScale);
+			executeTransformBrush();
+		}
 
 		int samplingInt = (int)brush.scaleSampling();
-		const char *SamplingUIStr[(int)ScaleSampling::Max];
-		for (int idx = 0; idx < (int)ScaleSampling::Max; ++idx) {
-			SamplingUIStr[idx] = C_("Scale Sampling", ScaleSamplingStr[idx]);
-		}
-		if (ImGui::Combo(_("Sampling"), &samplingInt, SamplingUIStr, (int)ScaleSampling::Max)) {
-			brush.setScaleSampling((ScaleSampling)samplingInt);
+		if (ImGui::BeginCombo(_("Sampling"), _(ScaleSamplingStr[samplingInt]))) {
+			for (int i = 0; i < (int)ScaleSampling::Max; ++i) {
+				const bool selected = samplingInt == i;
+				if (ImGui::Selectable(_(ScaleSamplingStr[i]), selected)) {
+					brush.setScaleSampling((ScaleSampling)i);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
 		}
 		break;
 	}
 
 	case TransformMode::Rotate: {
 		_transformRotation = brush.rotationDegrees();
-		floatSlider(_("X rotation"), "##rot_x", &_transformRotation.x, -360.0f, 360.0f, "%.1f");
-		floatSlider(_("Y rotation"), "##rot_y", &_transformRotation.y, -360.0f, 360.0f, "%.1f");
-		floatSlider(_("Z rotation"), "##rot_z", &_transformRotation.z, -360.0f, 360.0f, "%.1f");
-		brush.setRotationDegrees(_transformRotation);
+		if (ImGui::AxisSliders(_transformRotation, -360.0f, 360.0f, "%.1f")) {
+			brush.setRotationDegrees(_transformRotation);
+			executeTransformBrush();
+		}
 		break;
 	}
 

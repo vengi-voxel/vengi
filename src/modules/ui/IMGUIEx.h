@@ -95,6 +95,8 @@ IMGUI_API void InputFolder(const char *label, core::String *folder, ImGuiInputTe
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
 IMGUI_API void AxisStyleText(ui::ScopedStyle &style, math::Axis axis);
+IMGUI_API bool AxisSliders(glm::ivec3 &vec, int mins, int maxs);
+IMGUI_API bool AxisSliders(glm::vec3 &vec, float mins, float maxs, const char *format = "%.1f");
 
 IMGUI_API bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip,
 	float width, command::CommandExecutionListener *listener);
