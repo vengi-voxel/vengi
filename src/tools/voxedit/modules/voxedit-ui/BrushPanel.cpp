@@ -743,7 +743,8 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	Modifier &modifier = _sceneMgr->modifier();
 	ExtrudeBrush &brush = modifier.extrudeBrush();
 
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 
 	// Fallback used before a node is loaded; overridden by actual node dimensions below.
 	static constexpr int DefaultMaxExtrudeDepth = 128;
@@ -831,7 +832,6 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 			executeExtrudeBrush();
 		}
 	}
-
 }
 
 void BrushPanel::executeTransformBrush() {
@@ -839,7 +839,7 @@ void BrushPanel::executeTransformBrush() {
 	if (!modifier.beginBrushFromPanel()) {
 		return;
 	}
-	_sceneMgr->nodeForeachGroup([&](int nodeId) {
+	auto func = [&](int nodeId) {
 		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 			if (!node->visible()) {
 				return;
@@ -849,7 +849,8 @@ void BrushPanel::executeTransformBrush() {
 			};
 			modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
 		}
-	});
+	};
+	_sceneMgr->nodeForeachGroup(func);
 	modifier.endBrush();
 }
 
