@@ -11,6 +11,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace voxedit {
 
@@ -412,6 +413,63 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		}
 		wrapper.addToDirtyRegion(toPrune);
 	}
+}
+
+bool ExtrudeBrush::wantBrushGizmo(const BrushContext &ctx) const {
+	return _cachedSelBBoxValid && _face != voxel::FaceNames::Max;
+}
+
+void ExtrudeBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	if (!_cachedSelBBoxValid || _face == voxel::FaceNames::Max) {
+		state.operations = BrushGizmo_None;
+		return;
+	}
+
+	const glm::vec3 center = glm::vec3(_cachedSelBBox.getCenter());
+	const glm::vec3 normal = voxel::faceNormal(_face);
+
+	// Position the gizmo at the selection center, offset by current depth along the face normal
+	state.matrix = glm::translate(glm::mat4(1.0f), center + normal * (float)_depth);
+
+	// Only allow translation along the extrusion axis
+	const math::Axis axis = voxel::faceToAxis(_face);
+	switch (axis) {
+	case math::Axis::X:
+		state.operations = BrushGizmo_TranslateX;
+		break;
+	case math::Axis::Y:
+		state.operations = BrushGizmo_TranslateY;
+		break;
+	case math::Axis::Z:
+		state.operations = BrushGizmo_TranslateZ;
+		break;
+	default:
+		state.operations = BrushGizmo_None;
+		return;
+	}
+
+	state.snap = 1.0f;
+	state.localMode = false;
+}
+
+bool ExtrudeBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+								   const glm::mat4 &deltaMatrix, uint32_t operation) {
+	if (_face == voxel::FaceNames::Max) {
+		return false;
+	}
+
+	const math::Axis axis = voxel::faceToAxis(_face);
+	const int axisIdx = math::getIndexForAxis(axis);
+	const glm::vec3 translation(deltaMatrix[3]);
+	const int delta = (int)glm::round(translation[axisIdx]);
+	if (delta == 0) {
+		return false;
+	}
+
+	// Convert the axis translation to a signed depth change
+	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
+	setDepth(_depth + delta * faceSign);
+	return true;
 }
 
 } // namespace voxedit
