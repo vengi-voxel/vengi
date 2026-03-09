@@ -723,6 +723,23 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Quake 3 Model",
+      "extensions": [
+        "md3"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x49445033"
+        }
+      ],
+      "mimetype": "application/x-quake-3-model",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "FBX",
       "extensions": [
         "fbx"

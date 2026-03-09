@@ -69,6 +69,7 @@
 | Quake 1                    | bsp       | X       |           |            |
 | Quake 1 Model              | mdl       | X       |           |            |
 | Quake 2 Model              | md2       | X       |           |            |
+| Quake 3 Model              | md3       | X       |           |            |
 | Quake Map                  | map       | X       |           |            |
 | Standard Triangle Language | stl       | X       | X         |            |
 | UFO:Alien Invasion         | bsp       | X       |           |            |

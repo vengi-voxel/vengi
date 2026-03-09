@@ -115,6 +115,9 @@
 		<RegistryKey Root="HKCR" Key=".md2">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".md3">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".fbx">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -552,6 +555,15 @@
 		<RegistryValue Root="HKCR" Key=".md2\OpenWithProgids" Name="vengi-voxedit.md2" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.md2" Description="Quake 2 Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="md2" ContentType="application/x-quake-2-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".md3" Value="vengi-voxedit.md3" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".md3" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".md3\OpenWithProgids" Name="vengi-voxedit.md3" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.md3" Description="Quake 3 Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="md3" ContentType="application/x-quake-3-model">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

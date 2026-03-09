@@ -541,6 +541,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Quake 3 Model</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quake-3-model</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>md3</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>FBX</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

@@ -997,6 +997,14 @@ msgstr ""
 msgid "Voxelize mode"
 msgstr ""
 
+msgid "Voxel size"
+msgstr ""
+
+msgid ""
+"The number of voxels on the largest axis (0 = disabled, use scale cvars "
+"instead). This only works for single mesh exports."
+msgstr ""
+
 msgid "Palette mode"
 msgstr ""
 
@@ -1783,16 +1791,6 @@ msgstr ""
 msgid "UV editor"
 msgstr ""
 
-msgid "Depth"
-msgstr ""
-
-msgid "Fill sides (keep manifold)"
-msgstr ""
-
-msgid ""
-"Fill the perpendicular walls of the extruded region to prevent open edges"
-msgstr ""
-
 msgid "Click a voxel face in the viewport to set the extrusion direction"
 msgstr ""
 
@@ -1801,6 +1799,55 @@ msgid "Direction: %s"
 msgstr ""
 
 msgid "No selection active - use the Select brush first"
+msgstr ""
+
+msgid "Depth"
+msgstr ""
+
+#, c-format
+msgid "Offset %s"
+msgstr ""
+
+msgid "Transform mode"
+msgstr ""
+
+msgid "X offset"
+msgstr ""
+
+msgid "Y offset"
+msgstr ""
+
+msgid "Z offset"
+msgstr ""
+
+msgid "X shear"
+msgstr ""
+
+msgid "Y shear"
+msgstr ""
+
+msgid "Z shear"
+msgstr ""
+
+msgid "X scale"
+msgstr ""
+
+msgid "Y scale"
+msgstr ""
+
+msgid "Z scale"
+msgstr ""
+
+msgid "Sampling"
+msgstr ""
+
+msgid "X rotation"
+msgstr ""
+
+msgid "Y rotation"
+msgstr ""
+
+msgid "Z rotation"
 msgstr ""
 
 msgid "Brush settings"
@@ -2273,6 +2320,31 @@ msgstr ""
 msgid "Region"
 msgstr ""
 
+msgid "Color Histogram"
+msgstr ""
+
+msgid "Analyze"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+#, c-format
+msgid "%i colors used"
+msgstr ""
+
+msgid "Voxels"
+msgstr ""
+
+msgid "Index"
+msgstr ""
+
+msgid "Count"
+msgstr ""
+
+msgid "Press Analyze to compute"
+msgstr ""
+
 msgid "Tools"
 msgstr ""
 
@@ -2526,6 +2598,12 @@ msgid "Reduce to selected"
 msgstr ""
 
 msgid "Randomize selected colors"
+msgstr ""
+
+msgid "Quantize selected colors"
+msgstr ""
+
+msgid "Target colors"
 msgstr ""
 
 msgid "Release CTRL to change the voxel color"
@@ -3918,6 +3996,34 @@ msgid "Reset the uv coordinates"
 msgstr ""
 
 msgid "Create a texture from the active model's face colors"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Scale"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Linear"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Nearest"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Cubic"
 msgstr ""
 
 msgid "Host name"

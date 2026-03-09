@@ -184,6 +184,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 .PP
+\fBvoxformat_voxelsize\fP: The number of voxels on the largest axis (0 = disabled, use scale cvars instead). This only works for single mesh exports.
+.PP
 \fBvoxformat_vxllodhva\fP: Load the hva for animations
 .PP
 \fBvoxformat_withcolor\fP: Export with vertex colors
@@ -267,6 +269,8 @@ Quake 1 (*.bsp)
 Quake 1 Model (*.mdl)
 .TP
 Quake 2 Model (*.md2)
+.TP
+Quake 3 Model (*.md3)
 .TP
 Quake Map (*.map)
 .TP

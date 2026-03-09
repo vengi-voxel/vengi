@@ -221,6 +221,13 @@
 			<match type="string" offset="0" value="IDP2"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-quake-3-model">
+		<comment>Quake 3 Model</comment>
+		<glob pattern="*.md3"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IDP3"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-fbx">
 		<comment>FBX</comment>
 		<glob pattern="*.fbx"/>

@@ -98,6 +98,8 @@ Quake 1 Model (*.mdl)
 .TP
 Quake 2 Model (*.md2)
 .TP
+Quake 3 Model (*.md3)
+.TP
 Quake Map (*.map)
 .TP
 Qubicle Binary (*.qb)
