@@ -13,7 +13,10 @@
 #include "voxel/Voxel.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/common.hpp>
 
@@ -524,6 +527,97 @@ void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &w
 	// Apply the current transform from the original snapshot
 	applyTransform(wrapper, ctx);
 	markDirty();
+}
+
+bool TransformBrush::wantBrushGizmo(const BrushContext &ctx) const {
+	return _hasSnapshot || ctx.targetVolumeRegion.isValid();
+}
+
+void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	state.snap = (float)ctx.gridResolution;
+	state.localMode = true;
+
+	const glm::vec3 center = _hasSnapshot ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+
+	switch (_transformMode) {
+	case TransformMode::Move:
+		state.operations = BrushGizmo_Translate;
+		state.matrix = glm::translate(glm::mat4(1.0f), center + glm::vec3(_moveOffset));
+		break;
+	case TransformMode::Rotate: {
+		state.operations = BrushGizmo_Rotate;
+		const glm::vec3 radians = glm::radians(_rotationDegrees);
+		const glm::mat4 rot = glm::eulerAngleYXZ(radians.y, radians.x, radians.z);
+		state.matrix = glm::translate(glm::mat4(1.0f), center) * rot;
+		state.snap = 15.0f; // 15 degree snap for rotation
+		break;
+	}
+	case TransformMode::Scale:
+		state.operations = BrushGizmo_Scale;
+		state.matrix = glm::translate(glm::mat4(1.0f), center) * glm::scale(glm::mat4(1.0f), _scale);
+		state.snap = 0.1f;
+		break;
+	case TransformMode::Shear:
+		// Shear is not supported by vanilla ImGuizmo - will be handled by ImGuizmoEx later
+		state.operations = BrushGizmo_None;
+		break;
+	default:
+		state.operations = BrushGizmo_None;
+		break;
+	}
+}
+
+bool TransformBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+									 const glm::mat4 &deltaMatrix, uint32_t operation) {
+	const glm::vec3 center = _hasSnapshot ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+
+	switch (_transformMode) {
+	case TransformMode::Move: {
+		// Extract absolute position from the gizmo matrix and compute offset from center
+		const glm::vec3 newPos(matrix[3]);
+		const glm::ivec3 offset = glm::ivec3(glm::round(newPos - center));
+		if (offset != _moveOffset) {
+			setMoveOffset(offset);
+			markDirty();
+			return true;
+		}
+		break;
+	}
+	case TransformMode::Rotate: {
+		// Extract rotation from manipulated matrix (translation removed)
+		glm::vec3 scale;
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+		const glm::vec3 euler = glm::degrees(glm::eulerAngles(orientation));
+		if (euler != _rotationDegrees) {
+			setRotationDegrees(euler);
+			markDirty();
+			return true;
+		}
+		break;
+	}
+	case TransformMode::Scale: {
+		// Extract scale from manipulated matrix
+		glm::vec3 newScale;
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(matrix, newScale, orientation, translation, skew, perspective);
+		if (newScale != _scale) {
+			setScale(newScale);
+			markDirty();
+			return true;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return false;
 }
 
 } // namespace voxedit

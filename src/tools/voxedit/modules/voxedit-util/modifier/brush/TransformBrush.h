@@ -207,6 +207,11 @@ public:
 	bool hasSnapshot() const {
 		return _hasSnapshot;
 	}
+
+	bool wantBrushGizmo(const BrushContext &ctx) const override;
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
+	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+						 const glm::mat4 &deltaMatrix, uint32_t operation) override;
 };
 
 } // namespace voxedit
