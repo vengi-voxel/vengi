@@ -120,6 +120,9 @@ void Modifier::construct() {
 	const core::VarDef voxEditMaxSuggestedVolumeSizePreview(cfg::VoxEditMaxSuggestedVolumeSizePreview, 32, 16, (int)voxedit::MaxVolumeSize, N_("Max preview size"), N_("The maximum size of the preview volume"), -1);
 	_maxSuggestedVolumeSizePreview = core::Var::registerVar(voxEditMaxSuggestedVolumeSizePreview);
 
+	const core::VarDef voxEditAutoSelect(cfg::VoxEditAutoSelect, false, N_("Auto select added"), N_("Automatically select newly placed voxels"));
+	_autoSelect = core::Var::registerVar(voxEditAutoSelect);
+
 	for (Brush *b : _brushes) {
 		b->construct();
 	}
@@ -361,10 +364,18 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
-	// Extrude manages voxel flags (FlagOutline) directly via its history mechanism.
-	// growSelectionToNewVoxels would incorrectly select all solid voxels in the dirty region.
-	if (brush->type() != BrushType::Transform && brush->type() != BrushType::Extrude) {
-		wrapper.growSelectionToNewVoxels();
+	// Extrude and Transform manage voxel flags (FlagOutline) directly via their own mechanisms.
+	// growSelectionToNewVoxels/autoSelectNewVoxels would incorrectly select all solid voxels in the dirty region.
+	const bool managesOwnSelection = brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude;
+	if (!managesOwnSelection) {
+		const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
+			&& brush->type() != BrushType::Normal;
+		const bool isPlacementModifier = modifierType == ModifierType::Place;
+		if (autoSelect() && isPlacementBrush && isPlacementModifier) {
+			wrapper.autoSelectNewVoxels();
+		} else {
+			wrapper.growSelectionToNewVoxels();
+		}
 	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
