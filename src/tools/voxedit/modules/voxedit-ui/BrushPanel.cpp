@@ -25,10 +25,11 @@
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "math/Axis.h"
+#include "voxel/Face.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
-#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -39,6 +40,8 @@
 #include <glm/trigonometric.hpp>
 
 namespace voxedit {
+
+static constexpr ImVec4 WarningTextColor(1.0f, 0.3f, 0.3f, 1.0f);
 
 static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
@@ -751,7 +754,19 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 		maxDepth = glm::max(r.getWidthInVoxels(), glm::max(r.getHeightInVoxels(), r.getDepthInVoxels()));
 	}
 
+	const voxel::FaceNames extrudeFace = brush.face();
+
+	if (extrudeFace == voxel::FaceNames::Max) {
+		ImGui::TextColored(WarningTextColor, "%s", _("Click a voxel face in the viewport to set the extrusion direction"));
+		return;
+	}
+
+	ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
+
 	int depth = brush.depth();
+	if (depth == 0 && (!node || !node->hasSelection())) {
+		ImGui::TextColored(WarningTextColor, "%s", _("No selection active - use the Select brush first"));
+	}
 	ImGui::TextUnformatted(_("Depth"));
 	if (ImGui::Button("-##extrude_depth")) {
 		brush.setDepth(depth - 1);
@@ -770,23 +785,53 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 		executeExtrudeBrush();
 	}
 
-	bool fillSides = brush.fillSides();
-	if (ImGui::Checkbox(_("Fill sides (keep manifold)"), &fillSides)) {
-		brush.setFillSides(fillSides);
-	}
-	if (ImGui::IsItemHovered()) {
-		ImGui::SetTooltip("%s", _("Fill the perpendicular walls of the extruded region to prevent open edges"));
+	// Lateral offset sliders - only shown when depth is non-zero.
+	if (depth != 0) {
+		static constexpr int NumAxes = 3;
+		static constexpr const char *AxisLabels[] = {"X", "Y", "Z"};
+		const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(extrudeFace));
+		const int perp1 = (axisIdx + 1) % NumAxes;
+		const int perp2 = (axisIdx + 2) % NumAxes;
+
+		int offsetU = brush.offsetU();
+		ImGui::Text(_("Offset %s"), AxisLabels[perp1]);
+		if (ImGui::Button("-##extrude_offsetU")) {
+			brush.setOffsetU(offsetU - 1);
+			executeExtrudeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##extrude_offsetU_slider", &offsetU, -maxDepth, maxDepth)) {
+			brush.setOffsetU(offsetU);
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			executeExtrudeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##extrude_offsetU")) {
+			brush.setOffsetU(offsetU + 1);
+			executeExtrudeBrush();
+		}
+
+		int offsetV = brush.offsetV();
+		ImGui::Text(_("Offset %s"), AxisLabels[perp2]);
+		if (ImGui::Button("-##extrude_offsetV")) {
+			brush.setOffsetV(offsetV - 1);
+			executeExtrudeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##extrude_offsetV_slider", &offsetV, -maxDepth, maxDepth)) {
+			brush.setOffsetV(offsetV);
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			executeExtrudeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##extrude_offsetV")) {
+			brush.setOffsetV(offsetV + 1);
+			executeExtrudeBrush();
+		}
 	}
 
-	const voxel::FaceNames extrudeFace = brush.face();
-	if (extrudeFace == voxel::FaceNames::Max) {
-		ImGui::TextWrappedUnformatted(_("Click a voxel face in the viewport to set the extrusion direction"));
-	} else {
-		ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
-	}
-	if (depth == 0 && (!node || !node->hasSelection())) {
-		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
-	}
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {

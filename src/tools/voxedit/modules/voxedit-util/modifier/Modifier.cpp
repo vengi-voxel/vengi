@@ -360,7 +360,11 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
-	wrapper.growSelectionToNewVoxels();
+	// Extrude manages voxel flags (FlagOutline) directly via its history mechanism.
+	// growSelectionToNewVoxels would incorrectly select all solid voxels in the dirty region.
+	if (_brushType != BrushType::Extrude) {
+		wrapper.growSelectionToNewVoxels();
+	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);

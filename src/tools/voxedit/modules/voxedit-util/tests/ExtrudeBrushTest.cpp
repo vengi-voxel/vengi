@@ -22,15 +22,17 @@ namespace voxedit {
 //   depth=+1 -> new voxel at x=+1  (outward)
 //   depth=-1 -> voxel at x=-1 erased (inward / carve)
 //
-// FlagOutline is NOT transferred: selected voxels keep their flags unchanged,
-// newly placed voxels use cursorVoxel as-is.
+// FlagOutline handling:
+//   - Original selected voxels have FlagOutline cleared during extrusion.
+//   - Only the outermost (tip) layer gets FlagOutline for chaining extrudes.
+//   - On carve, the voxel behind the deepest carved layer gets FlagOutline.
 
 class ExtrudeBrushTest : public app::AbstractTest {
 protected:
 	static voxel::Voxel selectedVoxel(uint8_t color = 1) {
-		voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, color);
-		v.setFlags(voxel::FlagOutline);
-		return v;
+		voxel::Voxel vx = voxel::createVoxel(voxel::VoxelType::Generic, color);
+		vx.setFlags(voxel::FlagOutline);
+		return vx;
 	}
 
 	void executeExtrude(ExtrudeBrush &brush, scenegraph::SceneGraphNode &node, BrushContext &ctx,
@@ -214,12 +216,54 @@ TEST_F(ExtrudeBrushTest, testExtrudePushThenPull) {
 	brush.shutdown();
 }
 
-// Fill sides: outward push (-) on 3x3 face should add side caps
-TEST_F(ExtrudeBrushTest, testExtrudeFillSidesOutward) {
+// Fill sides: extrude next to an existing wall fills the gap between extrusion and wall
+TEST_F(ExtrudeBrushTest, testExtrudeFillSidesWithWall) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
+	// Selected voxel at (0,0,0) recessed inside a box. Wall neighbor at (1,0,0) extends
+	// upward to (1,0,3). Extruding by 2 should fill the gap at (1,0,1) and (1,0,2).
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	// Wall column next to the selection, extending upward
+	for (int z = 0; z <= 3; ++z) {
+		volume.setVoxel(2, 0, z, solid);
+	}
+	// Neighbor at (1,0,0) with solid above it at (1,0,1) triggers fill-sides
+	volume.setVoxel(1, 0, 0, solid);
+	volume.setVoxel(1, 0, 1, solid);
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(2); // outward for PositiveZ -> z+1, z+2
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// Extruded voxels at z=1 and z=2
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial())) << "Extruded voxel at (0,0,1) expected";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 2).getMaterial())) << "Tip voxel at (0,0,2) expected";
+	// Side wall fills gap: (1,0,2) was air, should now be filled by fill-sides
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 2).getMaterial()))
+		<< "Side wall at (1,0,2) should fill gap next to existing wall";
+
+	brush.shutdown();
+}
+
+// No fill sides on flat surface: single voxel extrusion should not create rim
+TEST_F(ExtrudeBrushTest, testExtrudeNoRimOnFlatSurface) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	// 3x3 flat surface at z=0, center voxel selected
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
-			volume.setVoxel(x, y, 0, selectedVoxel());
+			volume.setVoxel(x, y, 0, (x == 0 && y == 0) ? selectedVoxel() : solid);
 		}
 	}
 
@@ -229,7 +273,6 @@ TEST_F(ExtrudeBrushTest, testExtrudeFillSidesOutward) {
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setDepth(1); // outward for PositiveZ -> z+1
-	brush.setFillSides(true);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -239,22 +282,95 @@ TEST_F(ExtrudeBrushTest, testExtrudeFillSidesOutward) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Outward slab at z=1
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial())) << "Outward voxel at (0,0,1) expected";
-	// Side caps adjacent to slab
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 0, 1).getMaterial())) << "Side cap at (2,0,1) expected";
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(-2, 0, 1).getMaterial())) << "Side cap at (-2,0,1) expected";
+	// Only 1 extruded voxel expected, no rim
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial())) << "Extruded voxel at (0,0,1) expected";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 0, 1).getMaterial())) << "No rim voxel at (1,0,1)";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(-1, 0, 1).getMaterial())) << "No rim voxel at (-1,0,1)";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 1, 1).getMaterial())) << "No rim voxel at (0,1,1)";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, -1, 1).getMaterial())) << "No rim voxel at (0,-1,1)";
 
 	brush.shutdown();
 }
 
-// Without fill sides: no side caps
-TEST_F(ExtrudeBrushTest, testExtrudeNoFillSides) {
+// Lateral offset: depth=2 with offsetU=2 on PositiveZ face shifts along first perpendicular axis
+TEST_F(ExtrudeBrushTest, testExtrudeWithOffsetU) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
-	for (int x = -1; x <= 1; ++x) {
-		for (int y = -1; y <= 1; ++y) {
-			volume.setVoxel(x, y, 0, selectedVoxel());
-		}
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(2);
+	brush.setOffsetU(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// PositiveZ face: axis=Z(2), perp1=(2+1)%3=X(0), perp2=(2+2)%3=Y(1)
+	// offsetU=2 along X: step 1 shift = int(1.0*1)=1, step 2 shift = int(1.0*2)=2
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 1).getMaterial()))
+		<< "Step 1 voxel at (1,0,1) expected";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 0, 2).getMaterial()))
+		<< "Step 2 (tip) voxel at (2,0,2) expected";
+	// Original position should not have a new voxel at z=1 without offset
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 1).getMaterial()))
+		<< "No voxel at (0,0,1) - offset shifts it to (1,0,1)";
+
+	brush.shutdown();
+}
+
+// Tip-only selection: only outermost extruded layer gets FlagOutline
+TEST_F(ExtrudeBrushTest, testExtrudeTipOnlySelection) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// Original voxel should have FlagOutline cleared
+	const voxel::Voxel origVoxel = volume.voxel(0, 0, 0);
+	EXPECT_FALSE(origVoxel.getFlags() & voxel::FlagOutline)
+		<< "Original voxel at (0,0,0) should not have FlagOutline after extrusion";
+	// Step 1 (intermediate) should NOT have FlagOutline
+	const voxel::Voxel midVoxel = volume.voxel(1, 0, 0);
+	EXPECT_TRUE(voxel::isBlocked(midVoxel.getMaterial()));
+	EXPECT_FALSE(midVoxel.getFlags() & voxel::FlagOutline)
+		<< "Intermediate voxel at (1,0,0) should not have FlagOutline";
+	// Step 2 (tip) should have FlagOutline
+	const voxel::Voxel tipVoxel = volume.voxel(2, 0, 0);
+	EXPECT_TRUE(voxel::isBlocked(tipVoxel.getMaterial()));
+	EXPECT_TRUE(tipVoxel.getFlags() & voxel::FlagOutline)
+		<< "Tip voxel at (2,0,0) should have FlagOutline for chaining";
+
+	brush.shutdown();
+}
+
+// Carve-behind selection: after carving, the voxel behind the deepest carved layer gets FlagOutline
+TEST_F(ExtrudeBrushTest, testExtrudeCarveBehindSelection) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	// Solid block from x=-3 to x=0, surface at x=0 is selected
+	for (int x = -3; x <= 0; ++x) {
+		volume.setVoxel(x, 0, 0, x == 0 ? selectedVoxel() : solid);
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -262,19 +378,23 @@ TEST_F(ExtrudeBrushTest, testExtrudeNoFillSides) {
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setDepth(1); // outward
-	brush.setFillSides(false);
+	brush.setDepth(-1);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial())) << "Outward voxel at (0,0,1) expected";
-	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 0, 1).getMaterial())) << "No side cap at (2,0,1) expected";
+	// Carved voxel at x=0 should be air
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
+	// Behind the carved layer at x=-1 should now have FlagOutline
+	const voxel::Voxel behindVoxel = volume.voxel(-1, 0, 0);
+	EXPECT_TRUE(voxel::isBlocked(behindVoxel.getMaterial()));
+	EXPECT_TRUE(behindVoxel.getFlags() & voxel::FlagOutline)
+		<< "Voxel behind carved layer at (-1,0,0) should have FlagOutline for selection continuity";
 
 	brush.shutdown();
 }
