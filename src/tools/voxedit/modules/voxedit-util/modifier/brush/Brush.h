@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "BrushGizmo.h"
 #include "BrushType.h"
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
@@ -404,6 +405,44 @@ public:
 	 * @return The position defining the mirror plane
 	 */
 	const glm::ivec3 &mirrorPos() const;
+
+	/**
+	 * @brief Query whether this brush wants to display a gizmo in the viewport
+	 *
+	 * Called each frame by the viewport. Return true when the brush has an active
+	 * gizmo to render (e.g. TransformBrush with a snapshot, AABBBrush spanning a region).
+	 *
+	 * @param ctx The current brush context
+	 * @return true if the brush contributes a gizmo
+	 */
+	virtual bool wantBrushGizmo(const BrushContext &ctx) const;
+
+	/**
+	 * @brief Fill in the gizmo state for rendering
+	 *
+	 * Called when wantBrushGizmo() returns true. The brush populates the
+	 * BrushGizmoState with its transform matrix, supported operations,
+	 * and optional bounds.
+	 *
+	 * @param ctx The current brush context
+	 * @param[out] state The gizmo state to populate
+	 */
+	virtual void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const;
+
+	/**
+	 * @brief Apply the result of gizmo manipulation back to the brush
+	 *
+	 * Called when ImGuizmo::Manipulate() returns true (user interacted with the gizmo).
+	 * The brush should decompose the matrix/delta and update its internal parameters.
+	 *
+	 * @param ctx The brush context
+	 * @param matrix The manipulated world matrix
+	 * @param deltaMatrix The frame delta matrix
+	 * @param operation Which BrushGizmoOperation was active
+	 * @return true if the brush state changed and needs re-execution
+	 */
+	virtual bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+								const glm::mat4 &deltaMatrix, uint32_t operation);
 };
 
 inline const glm::ivec3 &Brush::mirrorPos() const {

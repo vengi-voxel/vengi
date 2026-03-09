@@ -1,5 +1,6 @@
 set(SRCS
 	modifier/brush/AABBBrush.cpp modifier/brush/AABBBrush.h
+	modifier/brush/BrushGizmo.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
 	modifier/brush/NormalBrush.cpp modifier/brush/NormalBrush.h

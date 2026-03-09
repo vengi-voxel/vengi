@@ -46,6 +46,7 @@ bool ToolsPanel::init() {
 	_gizmoOperations = core::getVar(cfg::VoxEditGizmoOperations);
 	_showGizmoScene = core::getVar(cfg::VoxEditShowaxis);
 	_showGizmoModel = core::getVar(cfg::VoxEditModelGizmo);
+	_showGizmoBrush = core::getVar(cfg::VoxEditBrushGizmo);
 	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
 	_cursorDetails = core::getVar(cfg::VoxEditCursorDetails);
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
@@ -240,6 +241,8 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			ImGui::IconCheckboxVar(ICON_LC_MAGNET, cfg::VoxEditGizmoSnap);
 			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, cfg::VoxEditGizmoAllowAxisFlip);
 			ImGui::CheckboxVar(_localSpace);
+			ImGui::IconCheckboxVar(ICON_LC_HAND, _showGizmoBrush);
+			ImGui::TooltipTextUnformatted(_("Show gizmo for brushes that support it"));
 
 			if (!gizmoVar->boolVal())
 				ImGui::EndDisabled();

@@ -153,4 +153,16 @@ void Brush::shutdown() {
 	command::Command::unregisterCommand("mirroraxis" + cmdName + "none");
 }
 
+bool Brush::wantBrushGizmo(const BrushContext &ctx) const {
+	return false;
+}
+
+void Brush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+}
+
+bool Brush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+							const glm::mat4 &deltaMatrix, uint32_t operation) {
+	return false;
+}
+
 } // namespace voxedit

@@ -35,6 +35,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/Brush.h"
+#include "voxedit-util/modifier/brush/BrushGizmo.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -87,6 +88,7 @@ bool Viewport::init() {
 	_renderNormals = core::getVar(cfg::RenderNormals);
 	_animationPlaying = core::getVar(cfg::VoxEditAnimationPlaying);
 	_clipping = core::getVar(cfg::GameModeClipping);
+	_brushGizmo = core::getVar(cfg::VoxEditBrushGizmo);
 	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
 	// crisp rendering on HiDPI displays
 	if (!_renderContext.init(_app->frameBufferDimension())) {
@@ -917,6 +919,79 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	return true;
 }
 
+bool Viewport::runBrushGizmo(const video::Camera &camera) {
+	if (isSceneMode()) {
+		return false;
+	}
+
+	Modifier &modifier = _sceneMgr->modifier();
+	Brush *brush = modifier.currentBrush();
+	if (brush == nullptr) {
+		return false;
+	}
+
+	const BrushContext &ctx = modifier.brushContext();
+	if (!brush->wantBrushGizmo(ctx)) {
+		return false;
+	}
+
+	BrushGizmoState state;
+	brush->brushGizmoState(ctx, state);
+	if (state.operations == BrushGizmo_None) {
+		return false;
+	}
+
+	// Map BrushGizmoOperation to ImGuizmo::OPERATION
+	uint32_t imguizmoOp = 0;
+	if (state.operations & BrushGizmo_Translate) {
+		imguizmoOp |= ImGuizmo::TRANSLATE;
+	}
+	if (state.operations & BrushGizmo_TranslateX) {
+		imguizmoOp |= ImGuizmo::TRANSLATE_X;
+	}
+	if (state.operations & BrushGizmo_TranslateY) {
+		imguizmoOp |= ImGuizmo::TRANSLATE_Y;
+	}
+	if (state.operations & BrushGizmo_TranslateZ) {
+		imguizmoOp |= ImGuizmo::TRANSLATE_Z;
+	}
+	if (state.operations & BrushGizmo_Rotate) {
+		imguizmoOp |= ImGuizmo::ROTATE;
+	}
+	if (state.operations & BrushGizmo_Scale) {
+		imguizmoOp |= ImGuizmo::SCALE;
+	}
+	if (state.operations & BrushGizmo_Bounds) {
+		imguizmoOp |= ImGuizmo::BOUNDS;
+	}
+
+	if (imguizmoOp == 0) {
+		return false;
+	}
+
+	const ImGuizmo::MODE mode = state.localMode ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
+	const float snap[] = {state.snap, state.snap, state.snap};
+	const float *snapPtr = state.snap > 0.0f ? snap : nullptr;
+	const float *boundsPtr = state.hasBounds ? state.bounds : nullptr;
+	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
+
+	glm::mat4 matrix = state.matrix;
+	glm::mat4 deltaMatrix(1.0f);
+	float *mPtr = glm::value_ptr(matrix);
+	float *dMatPtr = glm::value_ptr(deltaMatrix);
+	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
+	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
+
+	const bool manipulated = ImGuizmo::Manipulate(vMatPtr, pMatPtr, (ImGuizmo::OPERATION)imguizmoOp, mode, mPtr,
+												  dMatPtr, snapPtr, boundsPtr, boundsSnap);
+	if (!manipulated) {
+		return false;
+	}
+
+	BrushContext &mutableCtx = modifier.brushContext();
+	return brush->applyBrushGizmo(mutableCtx, matrix, deltaMatrix, imguizmoOp);
+}
+
 void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) {
 	if (isFixedCamera()) {
 		return;
@@ -969,15 +1044,26 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetWindow();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
-	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal());
 	ImGuizmo::AllowAxisFlip(_gizmoAllowAxisFlip->boolVal());
 	ImGuizmo::SetAxisMask(s_hideAxis[0], s_hideAxis[1], s_hideAxis[2]);
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
+
+	// Run per-brush gizmo (edit mode only) - uses a separate ImGuizmo ID
+	bool brushGizmoModified = false;
+	if (!isSceneMode() && _brushGizmo->boolVal()) {
+		ImGuizmo::PushID("brushgizmo");
+		ImGuizmo::Enable(true);
+		brushGizmoModified = runBrushGizmo(camera);
+		ImGuizmo::PopID();
+	}
+
+	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal());
 	const bool editModeModified = runGizmo(camera);
+
 	renderCameraManipulator(camera, headerSize);
 	ImGuizmo::PopID();
-	return editModeModified;
+	return editModeModified || brushGizmoModified;
 }
 
 void Viewport::renderToFrameBuffer() {

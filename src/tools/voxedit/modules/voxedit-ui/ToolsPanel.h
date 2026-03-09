@@ -22,6 +22,7 @@ private:
 	core::VarPtr _gizmoOperations;
 	core::VarPtr _showGizmoScene;
 	core::VarPtr _showGizmoModel;
+	core::VarPtr _showGizmoBrush;
 	core::VarPtr _localSpace;
 	core::VarPtr _cursorDetails;
 	core::VarPtr _gridSize;

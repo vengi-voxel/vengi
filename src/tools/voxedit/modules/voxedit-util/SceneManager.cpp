@@ -2148,6 +2148,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditGizmoSnap);
 	const core::VarDef voxEditModelGizmo(cfg::VoxEditModelGizmo, false, N_("Model gizmo"), N_("Show the gizmo to also translate the region"));
 	core::Var::registerVar(voxEditModelGizmo);
+	const core::VarDef voxEditBrushGizmo(cfg::VoxEditBrushGizmo, true, N_("Brush gizmo"), N_("Show the gizmo for brushes that support it"));
+	core::Var::registerVar(voxEditBrushGizmo);
 	const core::VarDef voxEditLastPalette(cfg::VoxEditLastPalette, palette::Palette::builtIn[0], N_("Last palette"), N_("The last used palette"));
 	core::Var::registerVar(voxEditLastPalette);
 	const core::VarDef voxEditViewports(cfg::VoxEditViewports, 2, 1, cfg::MaxViewports, N_("Viewports"), N_("The amount of viewports (not in simple ui mode)"));

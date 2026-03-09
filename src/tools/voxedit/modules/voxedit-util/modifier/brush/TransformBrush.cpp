@@ -83,7 +83,7 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 	for (int z = regionLo.z; z <= regionHi.z; ++z) {
 		for (int y = regionLo.y; y <= regionHi.y; ++y) {
 			for (int x = regionLo.x; x <= regionHi.x; ++x) {
-				const voxel::Voxel currentVoxel = volume->voxel(x, y, z);
+				const voxel::Voxel &currentVoxel = volume->voxel(x, y, z);
 				if (voxel::isAir(currentVoxel.getMaterial())) {
 					continue;
 				}
@@ -148,7 +148,7 @@ glm::ivec3 TransformBrush::transformPosition(const glm::ivec3 &pos) const {
 
 	case TransformMode::Shear: {
 		// Shear transform: each slice along a perpendicular axis shifts proportionally
-		// to its distance from the center — like pushing the top of a bread stack sideways.
+		// to its distance from the center - like pushing the top of a bread stack sideways.
 		// X shear: each Y-layer shifts in X (top goes +X, bottom goes -X)
 		// Y shear: each Z-layer shifts in Y (front goes +Y, back goes -Y)
 		// Z shear: each X-layer shifts in Z (right goes +Z, left goes -Z)
@@ -250,7 +250,7 @@ void TransformBrush::writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wr
 }
 
 const TransformBrush::VoxelEntry *TransformBrush::findNearestSnapshotVoxel(const glm::vec3 &srcPos) const {
-	// Half-diagonal of a unit cube — maximum distance for nearest-neighbor sampling
+	// Half-diagonal of a unit cube - maximum distance for nearest-neighbor sampling
 	static constexpr float MaxSampleDistance = 0.87f;
 
 	const glm::ivec3 rounded = glm::ivec3(glm::round(srcPos));
@@ -477,7 +477,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 
 	// Prune interior voxels: remove any transformed voxel that is fully enclosed
 	// by 6 solid neighbors. These are invisible and waste sparse storage.
-	// Collect all positions first (read-only), then prune — mutating during
+	// Collect all positions first (read-only), then prune - mutating during
 	// iteration would cause adjacent voxels to appear non-interior (checkerboard).
 	auto isInterior = [&](const glm::ivec3 &pos) {
 		for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {

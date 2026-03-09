@@ -777,7 +777,7 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
 	// Carving (negative depth) applies directly to the real volume because the preview
-	// system can only render solid voxels — carved (air) positions are invisible as ghosts.
+	// system can only render solid voxels - carved (air) positions are invisible as ghosts.
 	// Positive extrusion uses preview-only (ghost overlay of new voxels).
 	// depth==0 also applies to restore the real volume when transitioning back from carving
 	// (the history mechanism undoes the carve, restoring the original selected voxels).

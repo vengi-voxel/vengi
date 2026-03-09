@@ -103,6 +103,7 @@ private:
 	core::VarPtr _renderNormals;
 	core::VarPtr _animationPlaying;
 	core::VarPtr _clipping;
+	core::VarPtr _brushGizmo;
 
 	bool wantGizmo() const;
 	/**
@@ -125,6 +126,11 @@ private:
 	 * @sa renderGizmo()
 	 */
 	bool runGizmo(const video::Camera &camera);
+	/**
+	 * @brief Run the per-brush gizmo if the active brush provides one
+	 * @return true if the brush gizmo was interacted with
+	 */
+	bool runBrushGizmo(const video::Camera &camera);
 	void manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix);
 	void manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 								 scenegraph::KeyFrameIndex &keyFrameIdx, const glm::mat4 &worldMatrix);
