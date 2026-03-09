@@ -11,6 +11,7 @@ set(SRCS
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
 	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
+	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
 	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
 	modifier/IModifierRenderer.h
@@ -101,6 +102,7 @@ set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
 	tests/ClipboardTest.cpp
 	tests/ExtrudeBrushTest.cpp
+	tests/TransformBrushTest.cpp
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp

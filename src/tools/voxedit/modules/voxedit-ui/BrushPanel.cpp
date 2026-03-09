@@ -26,6 +26,7 @@
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
+#include "voxedit-util/modifier/brush/TransformBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/Face.h"
@@ -44,7 +45,7 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
 	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
 	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP, ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
-	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND};
+	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND, ICON_LC_MOVE_3D};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::init() {
@@ -789,6 +790,155 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	}
 }
 
+void BrushPanel::executeTransformBrush() {
+	Modifier &modifier = _sceneMgr->modifier();
+	if (!modifier.beginBrushFromPanel()) {
+		return;
+	}
+	_sceneMgr->nodeForeachGroup([&](int nodeId) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+			if (!node->visible()) {
+				return;
+			}
+			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+				_sceneMgr->modified(nodeId, region, flags);
+			};
+			modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
+		}
+	});
+	modifier.endBrush();
+}
+
+void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	TransformBrush &brush = modifier.transformBrush();
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	if (!node || !node->hasSelection()) {
+		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
+		return;
+	}
+
+	int modeInt = (int)brush.transformMode();
+	const char *TransformModeUIStr[(int)TransformMode::Max];
+	for (int idx = 0; idx < (int)TransformMode::Max; ++idx) {
+		TransformModeUIStr[idx] = C_("Transform Modes", TransformModeStr[idx]);
+	}
+
+	if (ImGui::Combo(_("Transform mode"), &modeInt, TransformModeUIStr, (int)TransformMode::Max)) {
+		brush.setTransformMode((TransformMode)modeInt);
+	}
+
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+	// Callback that syncs current UI values to the brush before executing the transform.
+	// This is necessary because the brush parameters must be up-to-date before generate() runs.
+	auto syncAndExecute = [&]() {
+		switch (brush.transformMode()) {
+		case TransformMode::Move:
+			brush.setMoveOffset(_transformMoveOffset);
+			break;
+		case TransformMode::Shear:
+			brush.setShearOffset(_transformShearOffset);
+			break;
+		case TransformMode::Scale:
+			brush.setScale(_transformScale);
+			break;
+		case TransformMode::Rotate:
+			brush.setRotationDegrees(_transformRotation);
+			break;
+		default:
+			break;
+		}
+		executeTransformBrush();
+	};
+
+	auto intSlider = [&](const char *label, const char *id, int *val, int lo, int hi) {
+		ImGui::TextUnformatted(label);
+		ImGui::PushID(id);
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			*val = glm::max(*val - 1, lo);
+			syncAndExecute();
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("", val, lo, hi)) {
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			syncAndExecute();
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			*val = glm::min(*val + 1, hi);
+			syncAndExecute();
+		}
+		ImGui::PopID();
+	};
+
+	auto floatSlider = [&](const char *label, const char *id, float *val, float lo, float hi, const char *fmt = "%.1f") {
+		ImGui::TextUnformatted(label);
+		ImGui::PushID(id);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::SliderFloat("", val, lo, hi, fmt)) {
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			syncAndExecute();
+		}
+		ImGui::PopID();
+	};
+
+	switch (brush.transformMode()) {
+	case TransformMode::Move: {
+		_transformMoveOffset = brush.moveOffset();
+		intSlider(_("X offset"), "##move_x", &_transformMoveOffset.x, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
+		intSlider(_("Y offset"), "##move_y", &_transformMoveOffset.y, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
+		intSlider(_("Z offset"), "##move_z", &_transformMoveOffset.z, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset);
+		brush.setMoveOffset(_transformMoveOffset);
+		break;
+	}
+
+	case TransformMode::Shear: {
+		_transformShearOffset = brush.shearOffset();
+		intSlider(_("X shear"), "##shear_x", &_transformShearOffset.x, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
+		intSlider(_("Y shear"), "##shear_y", &_transformShearOffset.y, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
+		intSlider(_("Z shear"), "##shear_z", &_transformShearOffset.z, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset);
+		brush.setShearOffset(_transformShearOffset);
+		break;
+	}
+
+	case TransformMode::Scale: {
+		_transformScale = brush.scale();
+		floatSlider(_("X scale"), "##scale_x", &_transformScale.x, 0.01f, 4.0f, "%.2f");
+		floatSlider(_("Y scale"), "##scale_y", &_transformScale.y, 0.01f, 4.0f, "%.2f");
+		floatSlider(_("Z scale"), "##scale_z", &_transformScale.z, 0.01f, 4.0f, "%.2f");
+		brush.setScale(_transformScale);
+
+		int samplingInt = (int)brush.scaleSampling();
+		const char *SamplingUIStr[(int)ScaleSampling::Max];
+		for (int idx = 0; idx < (int)ScaleSampling::Max; ++idx) {
+			SamplingUIStr[idx] = C_("Scale Sampling", ScaleSamplingStr[idx]);
+		}
+		if (ImGui::Combo(_("Sampling"), &samplingInt, SamplingUIStr, (int)ScaleSampling::Max)) {
+			brush.setScaleSampling((ScaleSampling)samplingInt);
+		}
+		break;
+	}
+
+	case TransformMode::Rotate: {
+		_transformRotation = brush.rotationDegrees();
+		floatSlider(_("X rotation"), "##rot_x", &_transformRotation.x, -360.0f, 360.0f, "%.1f");
+		floatSlider(_("Y rotation"), "##rot_y", &_transformRotation.y, -360.0f, 360.0f, "%.1f");
+		floatSlider(_("Z rotation"), "##rot_z", &_transformRotation.z, -360.0f, 360.0f, "%.1f");
+		brush.setRotationDegrees(_transformRotation);
+		break;
+	}
+
+	default:
+		break;
+	}
+}
+
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	const Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
@@ -815,6 +965,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateNormalBrushPanel(listener);
 		} else if (brushType == BrushType::Extrude) {
 			updateExtrudeBrushPanel(listener);
+		} else if (brushType == BrushType::Transform) {
+			updateTransformBrushPanel(listener);
 		}
 	}
 

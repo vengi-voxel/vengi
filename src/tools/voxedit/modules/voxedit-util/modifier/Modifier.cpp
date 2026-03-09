@@ -43,6 +43,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_textureBrush);
 	_brushes.push_back(&_normalBrush);
 	_brushes.push_back(&_extrudeBrush);
+	_brushes.push_back(&_transformBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -360,7 +361,9 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
-	wrapper.growSelectionToNewVoxels();
+	if (brush->type() != BrushType::Transform) {
+		wrapper.growSelectionToNewVoxels();
+	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);
@@ -461,6 +464,9 @@ BrushType Modifier::setBrushType(BrushType type) {
 	}
 	if (_brushType == BrushType::Extrude) {
 		_extrudeBrush.reset();
+	}
+	if (_brushType == BrushType::Transform) {
+		_transformBrush.reset();
 	}
 	return _brushType;
 }

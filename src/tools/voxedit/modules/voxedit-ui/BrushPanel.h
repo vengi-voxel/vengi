@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
+#include <glm/vec3.hpp>
 
 namespace command {
 struct CommandExecutionListener;
@@ -33,6 +34,12 @@ private:
 	core::VarPtr _renderNormals;
 	core::VarPtr _viewMode;
 
+	// Cached transform UI values - synced to brush before execute
+	glm::ivec3 _transformMoveOffset{0};
+	glm::ivec3 _transformShearOffset{0};
+	glm::vec3 _transformScale{1.0f};
+	glm::vec3 _transformRotation{0.0f};
+
 	void createPopups(command::CommandExecutionListener &listener);
 
 	void addModifiers(command::CommandExecutionListener &listener);
@@ -54,6 +61,8 @@ private:
 	void updateNormalBrushPanel(command::CommandExecutionListener &listener);
 	void updateExtrudeBrushPanel(command::CommandExecutionListener &listener);
 	void executeExtrudeBrush();
+	void updateTransformBrushPanel(command::CommandExecutionListener &listener);
+	void executeTransformBrush();
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
