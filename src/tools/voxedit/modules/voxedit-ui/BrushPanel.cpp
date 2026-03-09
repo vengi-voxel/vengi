@@ -42,8 +42,6 @@
 
 namespace voxedit {
 
-static constexpr ImVec4 WarningTextColor(1.0f, 0.3f, 0.3f, 1.0f);
-
 static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
 	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
@@ -757,8 +755,9 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 
 	const voxel::FaceNames extrudeFace = brush.face();
 
+	const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
 	if (extrudeFace == voxel::FaceNames::Max) {
-		ImGui::TextColored(WarningTextColor, "%s", _("Click a voxel face in the viewport to set the extrusion direction"));
+		ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the extrusion direction"));
 		return;
 	}
 
@@ -766,7 +765,7 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 
 	int depth = brush.depth();
 	if (depth == 0 && (!node || !node->hasSelection())) {
-		ImGui::TextColored(WarningTextColor, "%s", _("No selection active - use the Select brush first"));
+		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
 	ImGui::TextUnformatted(_("Depth"));
 	if (ImGui::Button("-##extrude_depth")) {

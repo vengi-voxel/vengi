@@ -540,6 +540,8 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 			return color::DarkBlue();
 		}
 		return color::LightBlue();
+	case style::ColorWarningText:
+		return color::LightRed();
 	}
 	return color::White();
 }
