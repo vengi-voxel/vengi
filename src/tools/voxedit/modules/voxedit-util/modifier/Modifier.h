@@ -65,6 +65,8 @@ struct BrushPreview {
  *
  * There are several modes available. E.g. having the starting point of the aabb on a corner - or
  * at the center, mirroring the modifications and so on.
+ *
+ * This class owns all brush instances and orchestrates preview volume generation
  */
 class Modifier : public core::IComponent {
 public:
