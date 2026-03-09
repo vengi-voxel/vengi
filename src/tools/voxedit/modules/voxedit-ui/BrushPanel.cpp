@@ -813,20 +813,26 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	Modifier &modifier = _sceneMgr->modifier();
 	TransformBrush &brush = modifier.transformBrush();
 
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	if (!node || !node->hasSelection()) {
 		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
 		return;
 	}
 
-	int modeInt = (int)brush.transformMode();
-	const char *TransformModeUIStr[(int)TransformMode::Max];
-	for (int idx = 0; idx < (int)TransformMode::Max; ++idx) {
-		TransformModeUIStr[idx] = C_("Transform Modes", TransformModeStr[idx]);
-	}
-
-	if (ImGui::Combo(_("Transform mode"), &modeInt, TransformModeUIStr, (int)TransformMode::Max)) {
-		brush.setTransformMode((TransformMode)modeInt);
+	const TransformMode currentTransformMode = brush.transformMode();
+	if (ImGui::BeginCombo(_("Transform mode"), _(TransformModeStr[(int)currentTransformMode]), ImGuiComboFlags_None)) {
+		for (int i = 0; i < (int)TransformMode::Max; ++i) {
+			const TransformMode mode = (TransformMode)i;
+			const bool selected = mode == currentTransformMode;
+			if (ImGui::Selectable(_(TransformModeStr[i]), selected)) {
+				brush.setTransformMode(mode);
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
 	}
 
 	const float btnW = ImGui::GetFrameHeight();
