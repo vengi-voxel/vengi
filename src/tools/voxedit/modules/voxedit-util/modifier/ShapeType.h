@@ -15,6 +15,7 @@ enum ShapeType {
 	Cone,
 	Dome,
 	Ellipse,
+	Circle,
 
 	Max,
 	Min = AABB,
@@ -27,7 +28,8 @@ static constexpr const char *ShapeTypeStr[ShapeType::Max]{
 	"Cylinder",
 	"Cone",
 	"Dome",
-	"Ellipse"
+	"Ellipse",
+	"Circle"
 };
 // clang-format on
 static_assert(lengthof(ShapeTypeStr) == (int)ShapeType::Max, "Array size mismatch");

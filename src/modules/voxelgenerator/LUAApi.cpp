@@ -966,6 +966,18 @@ static int luaVoxel_shape_cone(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_shape_circle(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::vec3& centerBottom = clua_tovec<glm::vec3>(s, 2);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const int radius = (int)luaL_checkinteger(s, 4);
+	const int height = (int)luaL_checkinteger(s, 5);
+	const int thickness = (int)luaL_optinteger(s, 6, 1);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 7);
+	shape::createHollowCylinder(*volume, centerBottom, axis, radius, height, thickness, voxel);
+	return 0;
+}
+
 static int luaVoxel_shape_line(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
@@ -3528,6 +3540,24 @@ static int luaVoxel_shape_bezier_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_shape_circle_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "circle",
+		"summary": "Create a hollow cylinder (tube) shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "centerBottom", "type": "vec3", "description": "The center bottom position."},
+			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "radius", "type": "integer", "description": "The outer radius of the cylinder."},
+			{"name": "height", "type": "integer", "description": "The height of the cylinder."},
+			{"name": "thickness", "type": "integer", "description": "The wall thickness in voxels (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // Noise jsonhelp functions
 static int luaVoxel_noise_simplex2_jsonhelp(lua_State* s) {
 	const char *json = R"({
@@ -5698,6 +5728,7 @@ static void prepareState(lua_State* s) {
 		{"cone", luaVoxel_shape_cone, luaVoxel_shape_cone_jsonhelp},
 		{"line", luaVoxel_shape_line, luaVoxel_shape_line_jsonhelp},
 		{"bezier", luaVoxel_shape_bezier, luaVoxel_shape_bezier_jsonhelp},
+		{"circle", luaVoxel_shape_circle, luaVoxel_shape_circle_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
