@@ -58,6 +58,7 @@ void ExtrudeBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *v
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 	const glm::ivec3 &vlo = volRegion.getLowerCorner();
 	const glm::ivec3 &vhi = volRegion.getUpperCorner();
+	// TODO: voxelutil visitor pattern for non-parallel iterations for solid voxels
 	for (int z = vlo.z; z <= vhi.z; ++z) {
 		for (int y = vlo.y; y <= vhi.y; ++y) {
 			for (int x = vlo.x; x <= vhi.x; ++x) {

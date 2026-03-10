@@ -36,6 +36,7 @@ private:
 	};
 	// For each position overwritten by the current extrude session, stores the original voxel.
 	// Cleared in reset() when the brush is deselected.
+	// TODO: use a SparseVolume here?
 	core::DynamicArray<HistoryEntry> _history;
 
 	// Cached bounding box of selected (FlagOutline) voxels, computed in preExecute().
