@@ -22,10 +22,9 @@ enum BrushGizmoOperation : uint32_t {
 	BrushGizmo_Rotate = (1u << 1),
 	BrushGizmo_Scale = (1u << 2),
 	BrushGizmo_Bounds = (1u << 3),
-	BrushGizmo_Shear = (1u << 4), // Custom - not in vanilla ImGuizmo
-	BrushGizmo_TranslateX = (1u << 5),
-	BrushGizmo_TranslateY = (1u << 6),
-	BrushGizmo_TranslateZ = (1u << 7),
+	BrushGizmo_TranslateX = (1u << 4),
+	BrushGizmo_TranslateY = (1u << 5),
+	BrushGizmo_TranslateZ = (1u << 6),
 };
 
 /**

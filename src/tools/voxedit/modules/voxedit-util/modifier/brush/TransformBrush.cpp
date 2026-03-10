@@ -576,8 +576,8 @@ void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &s
 		state.snap = 0.1f;
 		break;
 	case TransformMode::Shear:
-		// Shear is not supported by vanilla ImGuizmo - will be handled by ImGuizmoEx later
-		state.operations = BrushGizmo_None;
+		state.operations = BrushGizmo_Translate;
+		state.matrix = glm::translate(glm::mat4(1.0f), center + glm::vec3(_shearOffset));
 		break;
 	default:
 		state.operations = BrushGizmo_None;
@@ -596,6 +596,17 @@ bool TransformBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
 		const glm::ivec3 offset = glm::ivec3(glm::round(newPos - center));
 		if (offset != _moveOffset) {
 			setMoveOffset(offset);
+			markDirty();
+			return true;
+		}
+		break;
+	}
+	case TransformMode::Shear: {
+		// Extract absolute position from the gizmo matrix and compute offset from center
+		const glm::vec3 newPos(matrix[3]);
+		const glm::ivec3 offset = glm::ivec3(glm::round(newPos - center));
+		if (offset != _shearOffset) {
+			setShearOffset(offset);
 			markDirty();
 			return true;
 		}
