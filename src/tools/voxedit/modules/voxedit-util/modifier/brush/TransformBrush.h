@@ -78,18 +78,23 @@ private:
 	bool _hasSnapshot = false;
 
 	// Original selected voxels captured at brush activation
+	// TODO: could also be a SparseVolume maybe?
 	core::DynamicArray<VoxelEntry> _snapshot;
 	// Selection bounding box at capture time
+	// TODO: if _snapshot is a SparseVolume this would be just the volume region
 	voxel::Region _snapshotRegion;
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so interior pruning can find all modified positions.
+	// TODO: could also be a SparseVolume maybe?
 	core::DynamicArray<HistoryEntry> _history;
+	// TODO: use a SparseVolume here
 	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> _historyPositions;
 
 	// Spatial lookup: snapshot position -> index into _snapshot for O(1) access
+	// TODO: use a SparseVolume here
 	core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> _snapshotLookup;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)

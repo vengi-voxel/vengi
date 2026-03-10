@@ -434,6 +434,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 	const bool useInverseMapping = (_transformMode == TransformMode::Scale ||
 									_transformMode == TransformMode::Rotate);
 
+	// TODO: use VolumeRotator.h and VolumeRescaler.h code here
 	if (useInverseMapping) {
 		// Inverse mapping: compute the destination bounding box by transforming all
 		// 8 corners of the snapshot region, then iterate every destination position
