@@ -622,19 +622,22 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 	MaterialWeight materials[MaxMaterials] = {};
 	int materialCount = 0;
 
-	// TODO: PERF: use move API of the sampler to speed up the traversal instead
+	sampler.setPosition(center.x - HalfExtent + 1, center.y - HalfExtent + 1, center.z - HalfExtent + 1);
 	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
+		Sampler ySampler = sampler;
 		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
+			Sampler xSampler = ySampler;
 			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
-				const glm::ivec3 samplePos(center.x + dx, center.y + dy, center.z + dz);
-				if (!sampler.setPosition(samplePos)) {
+				if (!xSampler.currentPositionValid()) {
+					xSampler.movePositiveX();
 					continue;
 				}
-				const voxel::Voxel v = sampler.voxel();
+				const voxel::Voxel v = xSampler.voxel();
+				xSampler.movePositiveX();
 				if (voxel::isAir(v.getMaterial())) {
 					continue;
 				}
-				const float dist = glm::length(glm::vec3(samplePos) - pos);
+				const float dist = glm::length(glm::vec3(xSampler.position()) - pos);
 				if (dist > MaxCubicDistance) {
 					continue;
 				}
@@ -652,7 +655,9 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 					materials[materialCount++] = {v, weight};
 				}
 			}
+			ySampler.movePositiveY();
 		}
+		sampler.movePositiveZ();
 	}
 
 	if (materialCount == 0) {
