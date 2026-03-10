@@ -100,7 +100,8 @@ namespace voxelutil {
 						break;
 					}
 					case ScaleSampling::Cubic: {
-						voxel = voxel::sampleCubic(*srcVolume, srcPos);
+						voxel::RawVolume::Sampler srcSampler(srcVolume);
+						voxel = voxel::sampleCubic(srcSampler, srcPos);
 						break;
 					}
 					case ScaleSampling::Nearest:
