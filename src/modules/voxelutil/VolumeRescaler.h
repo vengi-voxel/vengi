@@ -18,6 +18,17 @@
 namespace voxelutil {
 
 /**
+ * @brief Sampling type for scale interpolation
+ */
+enum class ScaleSampling : uint8_t {
+	Nearest,
+	Linear,
+	Cubic,
+
+	Max
+};
+
+/**
  * @brief Rescales a volume by sampling two voxels to produce one output voxel.
  * @param[in] sourceVolume The source volume to resample
  * @param[in] destVolume The destination volume to resample into
@@ -223,15 +234,17 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 [[nodiscard]] voxel::RawVolume *scaleUp(const voxel::RawVolume &sourceVolume);
 
 /**
- * @brief Scale a volume by a given factor using backward mapping with trilinear sampling.
- * Supports fractional scaling factors.
+ * @brief Scale a volume by a given factor using backward mapping.
+ * Supports fractional scaling factors and different sampling modes.
  * @param[in] srcVolume The source volume to scale
  * @param[in] scale The scale factor for each axis (can be fractional)
  * @param[in] normalizedPivot The pivot point as normalized coordinates (0-1) within the volume.
  *            Default is (0,0,0) which scales from the lower corner. Use (0.5,0.5,0.5) for center scaling.
+ * @param[in] sampling The sampling mode to use for interpolation (default: Nearest)
  * @return A new RawVolume. It's the caller's responsibility to free this memory.
  */
 [[nodiscard]] voxel::RawVolume *scaleVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &scale,
-											const glm::vec3 &normalizedPivot = glm::vec3(0.0f));
+											const glm::vec3 &normalizedPivot = glm::vec3(0.0f),
+											ScaleSampling sampling = ScaleSampling::Nearest);
 
 } // namespace voxelutil

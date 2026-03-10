@@ -602,4 +602,69 @@ static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
 	return result;
 }
 
+/**
+ * @brief Cubic sampling: check a 4x4x4 neighborhood centered on the position.
+ * Each voxel votes with a weight inversely proportional to its distance.
+ * The voxel color with the highest total weight wins.
+ */
+template<class Volume>
+static voxel::Voxel sampleCubic(const Volume &volume, const glm::vec3 &pos) {
+	static constexpr int HalfExtent = 2;
+	static constexpr float MaxCubicDistance = 3.5f;
+	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
+
+	const glm::ivec3 center = glm::ivec3(glm::round(pos));
+
+	struct MaterialWeight {
+		voxel::Voxel voxel;
+		float weight;
+	};
+	MaterialWeight materials[MaxMaterials] = {};
+	int materialCount = 0;
+
+	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
+		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
+			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
+				const glm::ivec3 samplePos(center.x + dx, center.y + dy, center.z + dz);
+				if (!volume.region().containsPoint(samplePos)) {
+					continue;
+				}
+				const voxel::Voxel &v = volume.voxel(samplePos);
+				if (voxel::isAir(v.getMaterial())) {
+					continue;
+				}
+				const float dist = glm::length(glm::vec3(samplePos) - pos);
+				if (dist > MaxCubicDistance) {
+					continue;
+				}
+				const float weight = 1.0f / (dist + 0.001f);
+				const uint8_t color = v.getColor();
+				bool found = false;
+				for (int mi = 0; mi < materialCount; ++mi) {
+					if (materials[mi].voxel.getColor() == color) {
+						materials[mi].weight += weight;
+						found = true;
+						break;
+					}
+				}
+				if (!found && materialCount < MaxMaterials) {
+					materials[materialCount++] = {v, weight};
+				}
+			}
+		}
+	}
+
+	if (materialCount == 0) {
+		return voxel::Voxel();
+	}
+
+	int bestIdx = 0;
+	for (int mi = 1; mi < materialCount; ++mi) {
+		if (materials[mi].weight > materials[bestIdx].weight) {
+			bestIdx = mi;
+		}
+	}
+	return materials[bestIdx].voxel;
+}
+
 } // namespace voxel
