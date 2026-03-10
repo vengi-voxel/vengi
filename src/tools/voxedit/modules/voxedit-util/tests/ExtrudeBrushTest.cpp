@@ -23,9 +23,8 @@ namespace voxedit {
 //   depth=-1 -> voxel at x=-1 erased (inward / carve)
 //
 // FlagOutline handling:
-//   - Original selected voxels have FlagOutline cleared during extrusion.
-//   - Only the outermost (tip) layer gets FlagOutline for chaining extrudes.
-//   - On carve, the voxel behind the deepest carved layer gets FlagOutline.
+//   - Selected voxels (FlagOutline) are left unchanged during extrusion.
+//   - New extruded voxels do not get FlagOutline.
 
 class ExtrudeBrushTest : public app::AbstractTest {
 protected:
@@ -326,8 +325,8 @@ TEST_F(ExtrudeBrushTest, testExtrudeWithOffsetU) {
 	brush.shutdown();
 }
 
-// Tip-only selection: only outermost extruded layer gets FlagOutline
-TEST_F(ExtrudeBrushTest, testExtrudeTipOnlySelection) {
+// Extrusion preserves FlagOutline on originals and does not set it on new voxels
+TEST_F(ExtrudeBrushTest, testExtrudePreservesSelection) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -346,26 +345,25 @@ TEST_F(ExtrudeBrushTest, testExtrudeTipOnlySelection) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Original voxel should have FlagOutline cleared
+	// Original voxel should still have FlagOutline
 	const voxel::Voxel origVoxel = volume.voxel(0, 0, 0);
-	EXPECT_FALSE(origVoxel.getFlags() & voxel::FlagOutline)
-		<< "Original voxel at (0,0,0) should not have FlagOutline after extrusion";
-	// Step 1 (intermediate) should NOT have FlagOutline
+	EXPECT_TRUE(origVoxel.getFlags() & voxel::FlagOutline)
+		<< "Original voxel at (0,0,0) should keep FlagOutline after extrusion";
+	// New extruded voxels should NOT have FlagOutline
 	const voxel::Voxel midVoxel = volume.voxel(1, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(midVoxel.getMaterial()));
 	EXPECT_FALSE(midVoxel.getFlags() & voxel::FlagOutline)
-		<< "Intermediate voxel at (1,0,0) should not have FlagOutline";
-	// Step 2 (tip) should have FlagOutline
-	const voxel::Voxel tipVoxel = volume.voxel(2, 0, 0);
-	EXPECT_TRUE(voxel::isBlocked(tipVoxel.getMaterial()));
-	EXPECT_TRUE(tipVoxel.getFlags() & voxel::FlagOutline)
-		<< "Tip voxel at (2,0,0) should have FlagOutline for chaining";
+		<< "Extruded voxel at (1,0,0) should not have FlagOutline";
+	const voxel::Voxel endVoxel = volume.voxel(2, 0, 0);
+	EXPECT_TRUE(voxel::isBlocked(endVoxel.getMaterial()));
+	EXPECT_FALSE(endVoxel.getFlags() & voxel::FlagOutline)
+		<< "Extruded voxel at (2,0,0) should not have FlagOutline";
 
 	brush.shutdown();
 }
 
-// Carve-behind selection: after carving, the voxel behind the deepest carved layer gets FlagOutline
-TEST_F(ExtrudeBrushTest, testExtrudeCarveBehindSelection) {
+// Carving does not modify FlagOutline on remaining voxels
+TEST_F(ExtrudeBrushTest, testExtrudeCarveNoFlagChange) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	// Solid block from x=-3 to x=0, surface at x=0 is selected
@@ -390,11 +388,11 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveBehindSelection) {
 
 	// Carved voxel at x=0 should be air
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
-	// Behind the carved layer at x=-1 should now have FlagOutline
+	// Behind the carved layer at x=-1 should NOT have FlagOutline added
 	const voxel::Voxel behindVoxel = volume.voxel(-1, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(behindVoxel.getMaterial()));
-	EXPECT_TRUE(behindVoxel.getFlags() & voxel::FlagOutline)
-		<< "Voxel behind carved layer at (-1,0,0) should have FlagOutline for selection continuity";
+	EXPECT_FALSE(behindVoxel.getFlags() & voxel::FlagOutline)
+		<< "Voxel behind carved layer at (-1,0,0) should not have FlagOutline";
 
 	brush.shutdown();
 }

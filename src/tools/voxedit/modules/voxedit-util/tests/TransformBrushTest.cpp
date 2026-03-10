@@ -27,7 +27,6 @@ protected:
 		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
 		brush.preExecute(ctx, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, ctx);
-		brush.endBrush(ctx);
 	}
 };
 
@@ -48,6 +47,7 @@ TEST_F(TransformBrushTest, testMovePositiveX) {
 
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
 		<< "Original position should be empty after move";
@@ -77,12 +77,14 @@ TEST_F(TransformBrushTest, testMoveReversible) {
 	brush.setMoveOffset(glm::ivec3(3, 0, 0));
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()));
 
 	// Move back to 0 (same snapshot, different offset)
 	brush.setMoveOffset(glm::ivec3(0, 0, 0));
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
 		<< "Voxel should be back at original position";
 	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 0, 0).getMaterial()))
@@ -113,6 +115,7 @@ TEST_F(TransformBrushTest, testScaleUp) {
 
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 
 	// Scaled up 2x: center should still have a voxel, and edges should be further out
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
@@ -145,6 +148,7 @@ TEST_F(TransformBrushTest, testRotate90) {
 
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 
 	// After 90-degree Z rotation, line along X should become line along Y
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 2, 0).getMaterial()))
@@ -189,6 +193,7 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 	// Execute move
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()));
 
 	// Switch to scale: should commit the move (not jump back)
@@ -197,6 +202,14 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 		<< "Moved voxel should stay at (3,0,0) after mode switch";
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
 		<< "Original position should remain empty after mode switch";
+
+	// Now execute scale from the new position (3,0,0)
+	brush.setScale(glm::vec3(1.0f));
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()))
+		<< "Identity scale should keep voxel at (3,0,0)";
 
 	brush.shutdown();
 }

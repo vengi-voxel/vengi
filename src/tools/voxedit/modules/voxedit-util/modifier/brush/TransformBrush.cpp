@@ -30,6 +30,8 @@ void TransformBrush::reset() {
 	_history.clear();
 	_historyPositions.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
+	_cachedRegion = voxel::Region::InvalidRegion;
+	_cachedRegionValid = false;
 	_snapshotCenter = glm::vec3(0.0f);
 	_moveOffset = glm::ivec3(0);
 	_shearOffset = glm::ivec3(0);
@@ -52,14 +54,25 @@ void TransformBrush::endBrush(BrushContext &) {
 }
 
 bool TransformBrush::active() const {
-	return _active;
+	return _active || _hasSnapshot;
+}
+
+void TransformBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
+	if (!_hasSnapshot && volume != nullptr) {
+		captureSnapshot(volume, ctx.targetVolumeRegion);
+	}
+	_cachedRegion = computeTransformedRegion();
+	_cachedRegionValid = _cachedRegion.isValid();
 }
 
 voxel::Region TransformBrush::calcRegion(const BrushContext &ctx) const {
+	if (_cachedRegionValid) {
+		return _cachedRegion;
+	}
 	return ctx.targetVolumeRegion;
 }
 
-void TransformBrush::captureSnapshot(voxel::RawVolume *volume, const voxel::Region &volRegion) {
+void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
 	_snapshot.clear();
 	_snapshotLookup.clear();
 	glm::ivec3 selLo(volRegion.getUpperCorner());
@@ -97,14 +110,31 @@ void TransformBrush::captureSnapshot(voxel::RawVolume *volume, const voxel::Regi
 	_hasSnapshot = true;
 }
 
-void TransformBrush::restoreHistory(voxel::RawVolume *volume, ModifierVolumeWrapper &wrapper) {
-	for (const HistoryEntry &entry : _history) {
-		if (volume->setVoxel(entry.pos, entry.original)) {
-			wrapper.addToDirtyRegion(entry.pos);
-		}
+voxel::Region TransformBrush::computeTransformedRegion() const {
+	if (!_hasSnapshot || _snapshot.empty()) {
+		return voxel::Region::InvalidRegion;
 	}
-	_history.clear();
-	_historyPositions.clear();
+	const glm::ivec3 &srcLo = _snapshotRegion.getLowerCorner();
+	const glm::ivec3 &srcHi = _snapshotRegion.getUpperCorner();
+	glm::ivec3 dstLo = srcLo;
+	glm::ivec3 dstHi = srcHi;
+
+	static constexpr int NumCorners = 8;
+	for (int corner = 0; corner < NumCorners; ++corner) {
+		const glm::ivec3 cornerPos(
+			(corner & 1) ? srcHi.x : srcLo.x,
+			(corner & 2) ? srcHi.y : srcLo.y,
+			(corner & 4) ? srcHi.z : srcLo.z);
+		const glm::ivec3 transformed = transformPosition(cornerPos);
+		dstLo = glm::min(dstLo, transformed);
+		dstHi = glm::max(dstHi, transformed);
+	}
+
+	// Union of original and transformed regions with a small margin for rounding
+	static constexpr int Margin = 2;
+	const glm::ivec3 unionLo = glm::min(srcLo, dstLo) - Margin;
+	const glm::ivec3 unionHi = glm::max(srcHi, dstHi) + Margin;
+	return voxel::Region(unionLo, unionHi);
 }
 
 glm::ivec3 TransformBrush::transformPosition(const glm::ivec3 &pos) const {
@@ -447,6 +477,8 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 
 	// Prune interior voxels: remove any transformed voxel that is fully enclosed
 	// by 6 solid neighbors. These are invisible and waste sparse storage.
+	// Collect all positions first (read-only), then prune — mutating during
+	// iteration would cause adjacent voxels to appear non-interior (checkerboard).
 	auto isInterior = [&](const glm::ivec3 &pos) {
 		for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
 			const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
@@ -457,34 +489,41 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 		return true;
 	};
 
+	core::DynamicArray<glm::ivec3> toPrune;
+	toPrune.reserve(_history.size());
 	for (const HistoryEntry &entry : _history) {
 		const glm::ivec3 &pos = entry.pos;
 		const voxel::Voxel &current = vol->voxel(pos);
 		if (!voxel::isAir(current.getMaterial()) && isInterior(pos)) {
-			vol->setVoxel(pos, air);
-			wrapper.addToDirtyRegion(pos);
+			toPrune.push_back(pos);
 		}
 	}
+	for (const glm::ivec3 &pos : toPrune) {
+		vol->setVoxel(pos, air);
+	}
+	wrapper.addToDirtyRegion(toPrune);
 }
 
 void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							  const voxel::Region &) {
-	voxel::RawVolume *vol = wrapper.volume();
-	const voxel::Region &volRegion = vol->region();
-
-	// Capture snapshot on first use
 	if (!_hasSnapshot) {
-		captureSnapshot(vol, volRegion);
-		if (!_hasSnapshot) {
-			return;
-		}
+		return;
 	}
 
+	voxel::RawVolume *vol = wrapper.volume();
+
 	// Restore previously transformed state before re-applying
-	restoreHistory(vol, wrapper);
+	for (const HistoryEntry &entry : _history) {
+		if (vol->setVoxel(entry.pos, entry.original)) {
+			wrapper.addToDirtyRegion(entry.pos);
+		}
+	}
+	_history.clear();
+	_historyPositions.clear();
 
 	// Apply the current transform from the original snapshot
 	applyTransform(wrapper, ctx);
+	markDirty();
 }
 
 } // namespace voxedit

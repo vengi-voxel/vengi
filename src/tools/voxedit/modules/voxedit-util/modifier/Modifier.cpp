@@ -531,6 +531,9 @@ bool Modifier::previewNeedsExistingVolume() const {
 	if (_brushType == BrushType::Extrude) {
 		return true;
 	}
+	if (_brushType == BrushType::Transform) {
+		return true;
+	}
 	return false;
 }
 
@@ -648,6 +651,11 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 	// Handle brush preview with deferred updates
 	if (!isMode(ModifierType::ColorPicker)) {
 		ctx.brushActive = brush && brush->active();
+		// Bootstrap: TransformBrush/ExtrudeBrush need preview before internal state exists
+		if (!ctx.brushActive && brush &&
+			(brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude)) {
+			ctx.brushActive = true;
+		}
 	}
 
 	if (ctx.brushActive) {
