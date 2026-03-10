@@ -607,8 +607,8 @@ static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
  * Each voxel votes with a weight inversely proportional to its distance.
  * The voxel color with the highest total weight wins.
  */
-template<class Volume>
-static voxel::Voxel sampleCubic(const Volume &volume, const glm::vec3 &pos) {
+template<class Sampler>
+static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 	static constexpr int HalfExtent = 2;
 	static constexpr float MaxCubicDistance = 3.5f;
 	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
@@ -622,14 +622,15 @@ static voxel::Voxel sampleCubic(const Volume &volume, const glm::vec3 &pos) {
 	MaterialWeight materials[MaxMaterials] = {};
 	int materialCount = 0;
 
+	// TODO: PERF: use move API of the sampler to speed up the traversal instead
 	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
 		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
 			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
 				const glm::ivec3 samplePos(center.x + dx, center.y + dy, center.z + dz);
-				if (!volume.region().containsPoint(samplePos)) {
+				if (!sampler.setPosition(samplePos)) {
 					continue;
 				}
-				const voxel::Voxel &v = volume.voxel(samplePos);
+				const voxel::Voxel v = sampler.voxel();
 				if (voxel::isAir(v.getMaterial())) {
 					continue;
 				}
