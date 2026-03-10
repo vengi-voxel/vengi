@@ -218,6 +218,45 @@ TEST_F(ShapeGeneratorTest, testCreateCylinder) {
 	verify("cylinder.qb");
 }
 
+TEST_F(ShapeGeneratorTest, testCreateCircleOutline) {
+	voxel::RawVolumeWrapper wrapper(_volume);
+	glm::ivec3 center = _center;
+	center.y = _region.getLowerY();
+	const int radius = 10;
+	const int thickness = 2;
+	shape::createCircleOutline(wrapper, center, math::Axis::Y, radius * 2, radius * 2, radius, thickness, _voxel);
+	const int count = voxelutil::countVoxels(*_volume);
+	EXPECT_GT(count, 0);
+
+	// verify the center is empty (hollow)
+	EXPECT_TRUE(voxel::isAir(_volume->voxel(center.x, center.y, center.z).getMaterial()));
+}
+
+TEST_F(ShapeGeneratorTest, testCreateHollowCylinder) {
+	voxel::RawVolumeWrapper wrapper(_volume);
+	glm::ivec3 centerBottom = _center;
+	centerBottom.y = _region.getLowerY();
+	const int radius = 10;
+	const int thickness = 2;
+	shape::createHollowCylinder(wrapper, centerBottom, math::Axis::Y, radius, _height, thickness, _voxel);
+	const int hollowCount = voxelutil::countVoxels(*_volume);
+
+	// compare with filled cylinder - hollow should have fewer voxels
+	voxel::RawVolume filledVolume(_region);
+	voxel::RawVolumeWrapper filledWrapper(&filledVolume);
+	shape::createCylinder(filledWrapper, centerBottom, math::Axis::Y, radius, _height, _voxel);
+	const int filledCount = voxelutil::countVoxels(filledVolume);
+
+	EXPECT_GT(hollowCount, 0);
+	EXPECT_LT(hollowCount, filledCount);
+
+	// verify the center column is empty
+	for (int y = centerBottom.y; y < centerBottom.y + _height; ++y) {
+		EXPECT_TRUE(voxel::isAir(_volume->voxel(centerBottom.x, y, centerBottom.z).getMaterial()))
+			<< "Center should be empty at y=" << y;
+	}
+}
+
 TEST_F(ShapeGeneratorTest, testCreateCirclePlaneX) {
 	testCreateCirclePlane(math::Axis::X);
 	save("circleplaneX.qb");

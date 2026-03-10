@@ -54,6 +54,67 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis
 }
 
 /**
+ * @brief Creates a circle outline (ring) - only the perimeter voxels
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] axis The axis perpendicular to the circle plane
+ * @param[in] width The width of the bounding box
+ * @param[in] depth The depth of the bounding box
+ * @param[in] radius The outer radius that defines the circle
+ * @param[in] thickness The wall thickness in voxels
+ * @param[in] voxel The Voxel to build the object with
+ */
+template<class Volume, class VoxelType>
+void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, int thickness, const VoxelType& voxel) {
+	const double xRadius = width / 2.0;
+	const double zRadius = depth / 2.0;
+	const double innerRadius = core_max(0.0, radius - thickness);
+
+	for (double z = -zRadius; z <= zRadius; ++z) {
+		const double distanceZ = glm::pow(z, 2.0);
+		for (double x = -xRadius; x <= xRadius; ++x) {
+			const double distance = glm::sqrt(glm::pow(x, 2.0) + distanceZ);
+			if (distance > radius || distance < innerRadius) {
+				continue;
+			}
+			if (axis == math::Axis::X) {
+				volume.setVoxel(center.x, center.y + x, center.z + z, voxel);
+			} else if (axis == math::Axis::Y) {
+				volume.setVoxel(center.x + x, center.y, center.z + z, voxel);
+			} else {
+				volume.setVoxel(center.x + x, center.y + z, center.z, voxel);
+			}
+		}
+	}
+}
+
+/**
+ * @brief Creates a hollow cylinder (tube) by stacking circle outlines
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
+ * @param[in] centerBottom The bottom center position
+ * @param[in] axis The axis along which the cylinder extends
+ * @param[in] radius The outer radius of the cylinder
+ * @param[in] height The height of the cylinder
+ * @param[in] thickness The wall thickness in voxels
+ * @param[in] voxel The Voxel to build the object with
+ */
+template<class Volume, class VoxelType>
+void createHollowCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, int thickness, const VoxelType& voxel) {
+	if (axis == math::Axis::None) {
+		return;
+	}
+
+	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
+	for (int i = 0; i < height; ++i) {
+		createCircleOutline(volume, circleCenter, axis, radius * 2, radius * 2, radius, thickness, voxel);
+		circleCenter += offset;
+	}
+}
+
+/**
  * @brief Creates a cube with the given position being the center of the cube
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at

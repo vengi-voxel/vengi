@@ -116,14 +116,29 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	case ShapeType::Ellipse:
 		voxelgenerator::shape::createEllipse(wrapper, centerBottom, axis, width, height, depth, voxel);
 		break;
+	case ShapeType::Circle: {
+		const int radius = (int)glm::round(size / 2.0);
+		voxelgenerator::shape::createHollowCylinder(wrapper, centerBottom, axis, radius, height, _thickness, voxel);
+		break;
+	}
 	case ShapeType::Max:
 		Log::warn("Invalid shape type selected - can't perform action");
 	}
 }
 
+int ShapeBrush::thickness() const {
+	return _thickness;
+}
+
+void ShapeBrush::setThickness(int thickness) {
+	_thickness = core_max(1, thickness);
+	markDirty();
+}
+
 void ShapeBrush::reset() {
 	Super::reset();
 	_shapeType = ShapeType::AABB;
+	_thickness = 1;
 }
 
 } // namespace voxedit

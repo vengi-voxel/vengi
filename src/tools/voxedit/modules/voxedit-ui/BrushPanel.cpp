@@ -73,6 +73,13 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 		}
 		ImGui::EndCombo();
 	}
+
+	if (currentSelectedShapeType == ShapeType::Circle) {
+		int thickness = modifier.shapeBrush().thickness();
+		if (ImGui::InputInt(_("Thickness"), &thickness)) {
+			modifier.shapeBrush().setThickness(thickness);
+		}
+	}
 }
 
 bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener,

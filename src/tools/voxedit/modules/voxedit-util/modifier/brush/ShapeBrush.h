@@ -21,6 +21,7 @@ namespace voxedit {
  * - **Cone**: Tapered cylinder
  * - **Dome**: Half-ellipse/sphere
  * - **Ellipse**: Stretched sphere
+ * - **Circle**: Hollow cylinder (tube) with configurable wall thickness
  *
  * The shape is oriented based on which face was hit when starting the AABB. The
  * face normal determines the "up" direction for shapes like cones and cylinders.
@@ -52,6 +53,7 @@ protected:
 										int &depth) const;
 
 	ShapeType _shapeType = ShapeType::AABB; ///< Current shape being generated
+	int _thickness = 1; ///< Wall thickness for hollow shapes (e.g., Circle)
 
 	/**
 	 * @brief Generate the selected shape within the given region
@@ -79,6 +81,16 @@ public:
 	 * @return The currently active shape type
 	 */
 	ShapeType shapeType() const;
+
+	/**
+	 * @return The wall thickness for hollow shapes
+	 */
+	int thickness() const;
+
+	/**
+	 * @brief Set the wall thickness for hollow shapes
+	 */
+	void setThickness(int thickness);
 };
 
 } // namespace voxedit
