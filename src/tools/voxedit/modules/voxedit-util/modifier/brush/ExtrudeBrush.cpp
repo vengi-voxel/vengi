@@ -15,6 +15,13 @@
 
 namespace voxedit {
 
+void ExtrudeBrush::onSceneChange() {
+	Super::onSceneChange();
+	_active = false;
+	_history.clear();
+	_cachedSelBBoxValid = false;
+}
+
 void ExtrudeBrush::reset() {
 	Super::reset();
 	_depth = 0;

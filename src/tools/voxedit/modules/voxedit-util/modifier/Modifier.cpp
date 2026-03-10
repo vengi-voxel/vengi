@@ -181,6 +181,12 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	}
 }
 
+void Modifier::onSceneChange() {
+	for (Brush *b : _brushes) {
+		b->onSceneChange();
+	}
+}
+
 void Modifier::reset() {
 	_brushContext.gridResolution = 1;
 	_brushContext.cursorPosition = glm::ivec3(0);

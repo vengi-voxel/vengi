@@ -266,6 +266,17 @@ public:
 	}
 
 	/**
+	 * @brief Called when the scene has changed externally (e.g. via undo/redo)
+	 *
+	 * Brushes should override this to invalidate any cached state that depends
+	 * on the volume data (snapshots, history, cached regions, active operations)
+	 * without resetting user preferences (mirror settings, brush configuration, etc.).
+	 *
+	 * The default implementation just marks the preview as dirty.
+	 */
+	virtual void onSceneChange();
+
+	/**
 	 * @brief Reset the brush to initial state
 	 *
 	 * Clears all brush state including mirroring, clamping, and internal modes.

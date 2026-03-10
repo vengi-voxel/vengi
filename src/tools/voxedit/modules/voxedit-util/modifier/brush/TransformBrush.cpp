@@ -24,6 +24,23 @@ namespace voxedit {
 
 using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
 
+void TransformBrush::onSceneChange() {
+	Super::onSceneChange();
+	_active = false;
+	_hasSnapshot = false;
+	_snapshot.clear();
+	_snapshotLookup.clear();
+	_history.clear();
+	_historyPositions.clear();
+	_snapshotRegion = voxel::Region::InvalidRegion;
+	_cachedRegion = voxel::Region::InvalidRegion;
+	_cachedRegionValid = false;
+	_moveOffset = glm::ivec3(0);
+	_shearOffset = glm::ivec3(0);
+	_scale = glm::vec3(1.0f);
+	_rotationDegrees = glm::vec3(0.0f);
+}
+
 void TransformBrush::reset() {
 	Super::reset();
 	_active = false;

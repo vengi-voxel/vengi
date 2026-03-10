@@ -163,6 +163,7 @@ public:
 			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
 	virtual ~AABBBrush() = default;
 	void construct() override;
+	void onSceneChange() override;
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 

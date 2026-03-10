@@ -275,6 +275,7 @@ public:
 	bool autoSelect() const;
 	void setAutoSelect(bool enable);
 
+	void onSceneChange();
 	void reset();
 };
 

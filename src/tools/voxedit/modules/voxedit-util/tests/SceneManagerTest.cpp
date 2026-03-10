@@ -1359,4 +1359,58 @@ TEST_F(SceneManagerTest, testNodeQuantizeColors) {
 	}
 }
 
+TEST_F(SceneManagerTest, testUndoInvalidatesTransformBrush) {
+	// place a voxel, then activate the transform brush and capture a snapshot
+	ASSERT_TRUE(testSetVoxel(testMins()));
+
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.endBrush();
+	modifier.setBrushType(BrushType::Transform);
+	TransformBrush &tb = modifier.transformBrush();
+
+	// begin + preExecute to capture a snapshot
+	EXPECT_TRUE(tb.beginBrush(modifier.brushContext()));
+	tb.preExecute(modifier.brushContext(), testVolume());
+	EXPECT_TRUE(tb.active());
+
+	// undo the voxel placement - transform brush should be deactivated
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_FALSE(tb.active());
+}
+
+TEST_F(SceneManagerTest, testUndoInvalidatesAABBBrush) {
+	ASSERT_TRUE(testSetVoxel(testMins()));
+
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.endBrush();
+	modifier.setBrushType(BrushType::Shape);
+	ShapeBrush &sb = modifier.shapeBrush();
+
+	// begin spanning an AABB
+	modifier.setCursorPosition(testMins(), voxel::FaceNames::NegativeX);
+	EXPECT_TRUE(sb.beginBrush(modifier.brushContext()));
+
+	// undo - AABB mode should be cancelled
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_FALSE(sb.aabbMode());
+}
+
+TEST_F(SceneManagerTest, testRedoInvalidatesBrushState) {
+	ASSERT_TRUE(testSetVoxel(testMins()));
+	EXPECT_TRUE(_sceneMgr->undo());
+
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.endBrush();
+	modifier.setBrushType(BrushType::Transform);
+	TransformBrush &tb = modifier.transformBrush();
+
+	EXPECT_TRUE(tb.beginBrush(modifier.brushContext()));
+	tb.preExecute(modifier.brushContext(), testVolume());
+	EXPECT_TRUE(tb.active());
+
+	// redo should also invalidate the transform brush state
+	EXPECT_TRUE(_sceneMgr->redo());
+	EXPECT_FALSE(tb.active());
+}
+
 } // namespace voxedit

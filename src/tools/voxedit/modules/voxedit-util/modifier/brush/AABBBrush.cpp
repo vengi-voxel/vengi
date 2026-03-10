@@ -42,6 +42,13 @@ void AABBBrush::construct() {
 		}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button - but don't overwrite the last voxel"));
 }
 
+void AABBBrush::onSceneChange() {
+	Super::onSceneChange();
+	_secondPosValid = false;
+	_aabbMode = false;
+	_aabbFace = voxel::FaceNames::Max;
+}
+
 void AABBBrush::reset() {
 	Super::reset();
 	_secondPosValid = false;

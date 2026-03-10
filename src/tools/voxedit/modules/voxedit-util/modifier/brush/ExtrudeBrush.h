@@ -53,6 +53,7 @@ public:
 	}
 	virtual ~ExtrudeBrush() = default;
 
+	void onSceneChange() override;
 	void reset() override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;

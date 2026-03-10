@@ -1096,6 +1096,7 @@ bool SceneManager::undo(int n) {
 			return false;
 		}
 	}
+	_modifierFacade.onSceneChange();
 	return true;
 }
 
@@ -1106,6 +1107,7 @@ bool SceneManager::redo(int n) {
 			return false;
 		}
 	}
+	_modifierFacade.onSceneChange();
 	return true;
 }
 
