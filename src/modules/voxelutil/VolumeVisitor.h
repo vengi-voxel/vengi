@@ -240,7 +240,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveZ(zOff);
 						continue;
@@ -260,7 +260,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveX(xOff);
 						continue;
@@ -280,7 +280,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -300,7 +300,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -320,7 +320,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -340,7 +340,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -360,7 +360,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -380,7 +380,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -400,7 +400,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -420,7 +420,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -440,7 +440,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -460,7 +460,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveZ(zOff);
 						continue;
@@ -480,7 +480,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -500,7 +500,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -520,7 +520,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveZ(zOff);
 						continue;
@@ -540,7 +540,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveX(xOff);
 						continue;
@@ -560,7 +560,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeX(xOff);
 						continue;
@@ -580,7 +580,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeX(xOff);
 						continue;
@@ -600,7 +600,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveX(xOff);
 						continue;
@@ -620,7 +620,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveZ(zOff);
 						continue;
@@ -640,7 +640,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeZ(zOff);
 						continue;
@@ -660,7 +660,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeZ(zOff);
 						continue;
@@ -680,7 +680,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeX(xOff);
 						continue;
@@ -700,7 +700,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -720,7 +720,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
@@ -740,7 +740,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveZ(zOff);
 						continue;
@@ -760,7 +760,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -780,7 +780,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeZ(zOff);
 						continue;
@@ -800,7 +800,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.movePositiveY(yOff);
 						continue;
@@ -820,7 +820,7 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-					const voxel::Voxel &voxel = sampler3.voxel();
+					const voxel::Voxel voxel = sampler3.voxel();
 					if (!condition(sampler3)) {
 						sampler3.moveNegativeY(yOff);
 						continue;
