@@ -75,19 +75,58 @@ void ExtrudeBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *v
 }
 
 bool ExtrudeBrush::active() const {
-	return _active;
+	return _active || _cachedSelBBoxValid;
 }
 
 voxel::Region ExtrudeBrush::calcRegion(const BrushContext &ctx) const {
 	if (!_cachedSelBBoxValid || _face == voxel::FaceNames::Max) {
 		return ctx.targetVolumeRegion;
 	}
-	// Expand the cached selection bbox to include all voxels that may be affected
-	// by the extrusion: depth steps + lateral offsets + side wall margin.
+	// Expand the selection bbox along the extrusion direction to cover the
+	// extruded/carved voxels, plus lateral offsets and a small side-wall margin
+	// on perpendicular axes. Only expand in the direction that is actually affected
+	// to keep the region tight (large regions exceed maxPreviewRegion).
+	const math::Axis axis = voxel::faceToAxis(_face);
+	const int axisIdx = math::getIndexForAxis(axis);
+	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
+	const bool carving = _depth < 0;
+	const int dirSign = carving ? -faceSign : faceSign;
+	const int steps = glm::abs(_depth);
+
+	static constexpr int NumAxes = 3;
+	const int perp1 = (axisIdx + 1) % NumAxes;
+	const int perp2 = (axisIdx + 2) % NumAxes;
+
+	glm::ivec3 lo = _cachedSelBBox.getLowerCorner();
+	glm::ivec3 hi = _cachedSelBBox.getUpperCorner();
+
+	// Extend along extrusion axis by depth steps
+	if (dirSign > 0) {
+		hi[axisIdx] += steps;
+	} else {
+		lo[axisIdx] -= steps;
+	}
+
+	// Lateral offset shifts
+	if (_offsetU > 0) {
+		hi[perp1] += _offsetU;
+	} else if (_offsetU < 0) {
+		lo[perp1] += _offsetU;
+	}
+	if (_offsetV > 0) {
+		hi[perp2] += _offsetV;
+	} else if (_offsetV < 0) {
+		lo[perp2] += _offsetV;
+	}
+
+	// Small margin for side walls on perpendicular axes
 	static constexpr int SideWallMargin = 1;
-	const int expand = glm::abs(_depth) + glm::abs(_offsetU) + glm::abs(_offsetV) + SideWallMargin;
-	voxel::Region region = _cachedSelBBox;
-	region.grow(expand);
+	lo[perp1] -= SideWallMargin;
+	hi[perp1] += SideWallMargin;
+	lo[perp2] -= SideWallMargin;
+	hi[perp2] += SideWallMargin;
+
+	voxel::Region region(lo, hi);
 	region.cropTo(ctx.targetVolumeRegion);
 	return region;
 }
@@ -189,10 +228,6 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	};
 
 	const voxel::Voxel air{};
-	// Tip voxel: same as cursor but with FlagOutline so the outermost extrusion layer
-	// stays selected for chaining extrudes (e.g. building a column then bending it).
-	voxel::Voxel tipVoxel = ctx.cursorVoxel;
-	tipVoxel.setFlags(ctx.cursorVoxel.getFlags() | voxel::FlagOutline);
 
 	// Collect selected (FlagOutline) voxel positions to avoid scanning the full volume
 	// (which can be 256^3+) in the extrusion and fill-sides loops.
@@ -222,16 +257,6 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	const glm::ivec3 &lo = selLo;
 	const glm::ivec3 &hi = selHi;
 
-	// Clear FlagOutline on original selected voxels so only the tip stays selected.
-	// Save them to history so depth changes can restore the original selection state.
-	if (!carving) {
-		for (const glm::ivec3 &pos : selectedPositions) {
-			const voxel::Voxel origVoxel = vol->voxel(pos);
-			writeVoxel(pos, voxel::Voxel(origVoxel.getMaterial(), origVoxel.getColor(), origVoxel.getNormal(),
-										 origVoxel.getFlags() & ~voxel::FlagOutline, origVoxel.getBoneIdx()));
-		}
-	}
-
 	// Carve or extrude each selected voxel along dir.
 	for (const glm::ivec3 &selPos : selectedPositions) {
 		// Carving starts at the selected voxel itself (step=0) so the surface layer
@@ -244,29 +269,12 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 			if (!volRegion.containsPoint(newPos)) {
 				break;
 			}
-			// Only the outermost layer gets FlagOutline.
-			const bool isTip = (step == stepLast) && !carving;
-			writeVoxel(newPos, carving ? air : (isTip ? tipVoxel : ctx.cursorVoxel));
-		}
-		// After carving, mark the voxel behind the deepest carved layer
-		// with FlagOutline so the selection moves inward (mirrors tip selection
-		// for positive extrusion). This keeps visual masking active.
-		if (carving) {
-			const glm::ivec3 shift = lateralShift(steps);
-			const glm::ivec3 behindPos = selPos + dir * steps + shift;
-			if (volRegion.containsPoint(behindPos)) {
-				const voxel::Voxel behind = vol->voxel(behindPos);
-				if (!voxel::isAir(behind.getMaterial())) {
-					voxel::Voxel flagged = behind;
-					flagged.setFlags(behind.getFlags() | voxel::FlagOutline);
-					writeVoxel(behindPos, flagged);
-				}
-			}
+			writeVoxel(newPos, carving ? air : ctx.cursorVoxel);
 		}
 	}
 
-	// Expanded bounding box covering tip voxels after lateral offset + side wall margin.
-	// The fill-sides and pruning loops need to find FlagOutline voxels which may have been
+	// Expanded bounding box covering extruded voxels after lateral offset + side wall margin.
+	// The fill-sides and pruning loops need to find selected voxels which may have been
 	// shifted outside the original selection bbox (lo..hi) by the lateral offset.
 	const glm::ivec3 tipShift = lateralShift(steps);
 	const glm::ivec3 extLo = glm::max(glm::min(lo, lo + dir * steps + tipShift) - glm::ivec3(1),
@@ -344,7 +352,9 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	// For outward extrusion: remove any voxel that is now fully interior
 	// (all 6 axis-aligned neighbors solid and within bounds) - invisible voxels waste sparse storage.
 	// Running after fill-sides gives accurate neighbor state before pruning.
-	// Pruned selected (FlagOutline) voxels are saved to history so depth changes restore them.
+	// Important: collect ALL positions to prune first (read-only pass), then remove them.
+	// Pruning one-by-one would mutate the volume mid-iteration, making adjacent voxels
+	// appear non-interior and creating a checkerboard artifact.
 	if (!carving) {
 		auto isInterior = [&](const glm::ivec3 &pos) {
 			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
@@ -356,16 +366,19 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 			return true;
 		};
 
-		// Prune newly placed voxels (already in history).
+		// Collect all interior positions before modifying the volume.
+		core::DynamicArray<glm::ivec3> toPrune;
+		toPrune.reserve(_history.size());
+
+		// Check newly placed voxels (already in history).
 		for (const HistoryEntry &entry : _history) {
 			const glm::ivec3 &pos = entry.pos;
 			if (!voxel::isAir(vol->voxel(pos).getMaterial()) && isInterior(pos)) {
-				vol->setVoxel(pos, air);
-				wrapper.addToDirtyRegion(pos);
+				toPrune.push_back(pos);
 			}
 		}
 
-		// Prune tip voxels that outward extrusion has now fully surrounded.
+		// Check selected voxels that outward extrusion has now fully surrounded.
 		// Save them to history first so a depth change can restore them.
 		for (int z = extLo.z; z <= extHi.z; ++z) {
 			for (int y = extLo.y; y <= extHi.y; ++y) {
@@ -388,11 +401,16 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 					if (!alreadySaved) {
 						_history.push_back({pos, sv});
 					}
-					vol->setVoxel(pos, air);
-					wrapper.addToDirtyRegion(pos);
+					toPrune.push_back(pos);
 				}
 			}
 		}
+
+		// Now prune all collected positions at once.
+		for (const glm::ivec3 &pos : toPrune) {
+			vol->setVoxel(pos, air);
+		}
+		wrapper.addToDirtyRegion(toPrune);
 	}
 }
 

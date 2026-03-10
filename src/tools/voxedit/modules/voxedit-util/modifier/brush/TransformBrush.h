@@ -50,7 +50,8 @@ static_assert(lengthof(ScaleSamplingStr) == (int)ScaleSampling::Max, "ScaleSampl
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
  *
- * When the brush becomes active it captures the original selected voxels.
+ * When the brush becomes active it captures the original selected voxels
+ * in preExecute() from the real volume.
  * Consecutive parameter changes always re-transform from the original snapshot
  * so transforms are absolute, not incremental.
  * On finalize (reset/brush switch) the final state is committed to the undo stack.
@@ -83,13 +84,17 @@ private:
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
 
-	// For each position overwritten, stores the original voxel for rollback
+	// Per-generate bookkeeping: tracks positions written during a single generate()
+	// call so interior pruning can find all modified positions.
 	core::DynamicArray<HistoryEntry> _history;
-	// Fast O(1) lookup for history positions to avoid linear scans
 	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> _historyPositions;
 
 	// Spatial lookup: snapshot position -> index into _snapshot for O(1) access
 	core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> _snapshotLookup;
+
+	// Cached region for preview (union of snapshot + transformed bounding box)
+	voxel::Region _cachedRegion;
+	bool _cachedRegionValid = false;
 
 	// Transform parameters
 	glm::ivec3 _moveOffset{0};
@@ -97,9 +102,9 @@ private:
 	glm::vec3 _scale{1.0f, 1.0f, 1.0f};
 	glm::vec3 _rotationDegrees{0.0f, 0.0f, 0.0f};
 
-	void captureSnapshot(voxel::RawVolume *volume, const voxel::Region &volRegion);
+	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
 	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
-	void restoreHistory(voxel::RawVolume *volume, ModifierVolumeWrapper &wrapper);
+	voxel::Region computeTransformedRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
 	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
@@ -122,6 +127,7 @@ public:
 	virtual ~TransformBrush() = default;
 
 	void reset() override;
+	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;
 	bool active() const override;
@@ -150,6 +156,8 @@ public:
 		_snapshot.clear();
 		_snapshotLookup.clear();
 		_hasSnapshot = false;
+		_cachedRegionValid = false;
+		_cachedRegion = voxel::Region::InvalidRegion;
 		_moveOffset = glm::ivec3(0);
 		_shearOffset = glm::ivec3(0);
 		_scale = glm::vec3(1.0f);
