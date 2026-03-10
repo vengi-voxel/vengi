@@ -927,10 +927,10 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 
 		int samplingInt = (int)brush.scaleSampling();
 		if (ImGui::BeginCombo(_("Sampling"), _(ScaleSamplingStr[samplingInt]))) {
-			for (int i = 0; i < (int)ScaleSampling::Max; ++i) {
+			for (int i = 0; i < (int)voxelutil::ScaleSampling::Max; ++i) {
 				const bool selected = samplingInt == i;
 				if (ImGui::Selectable(_(ScaleSamplingStr[i]), selected)) {
-					brush.setScaleSampling((ScaleSampling)i);
+					brush.setScaleSampling((voxelutil::ScaleSampling)i);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();

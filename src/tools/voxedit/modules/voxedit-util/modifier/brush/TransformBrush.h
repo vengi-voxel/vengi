@@ -7,10 +7,9 @@
 #include "app/I18N.h"
 #include "Brush.h"
 #include "core/GLM.h"
-#include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicMap.h"
-#include "core/collection/DynamicSet.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeRescaler.h"
 
 #include <glm/vec3.hpp>
 
@@ -32,20 +31,9 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-/**
- * @brief Sampling type for scale interpolation
- */
-enum class ScaleSampling : uint8_t {
-	Nearest,
-	Linear,
-	Cubic,
-
-	Max
-};
-
 static constexpr const char *ScaleSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
-static_assert(lengthof(ScaleSamplingStr) == (int)ScaleSampling::Max, "ScaleSamplingStr size mismatch");
+static_assert(lengthof(ScaleSamplingStr) == (int)voxelutil::ScaleSampling::Max, "ScaleSamplingStr size mismatch");
 
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
@@ -62,40 +50,22 @@ class TransformBrush : public Brush {
 private:
 	using Super = Brush;
 
-	struct VoxelEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-
-	struct HistoryEntry {
-		glm::ivec3 pos;
-		voxel::Voxel original;
-	};
-
 	TransformMode _transformMode = TransformMode::Move;
-	ScaleSampling _scaleSampling = ScaleSampling::Nearest;
+	voxelutil::ScaleSampling _scaleSampling = voxelutil::ScaleSampling::Nearest;
 	bool _active = false;
 	bool _hasSnapshot = false;
 
 	// Original selected voxels captured at brush activation
-	// TODO: could also be a SparseVolume maybe?
-	core::DynamicArray<VoxelEntry> _snapshot;
-	// Selection bounding box at capture time
-	// TODO: if _snapshot is a SparseVolume this would be just the volume region
+	voxel::SparseVolume _snapshotVolume;
+	// Selection bounding box at capture time (cached from _snapshotVolume)
 	voxel::Region _snapshotRegion;
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so interior pruning can find all modified positions.
-	// TODO: could also be a SparseVolume maybe?
-	core::DynamicArray<HistoryEntry> _history;
-	// TODO: use a SparseVolume here
-	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> _historyPositions;
-
-	// Spatial lookup: snapshot position -> index into _snapshot for O(1) access
-	// TODO: use a SparseVolume here
-	core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> _snapshotLookup;
+	// Stores the original voxel at each modified position for undo.
+	voxel::SparseVolume _historyVolume;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
@@ -111,14 +81,9 @@ private:
 	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 	voxel::Region computeTransformedRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
-	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
-	void writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
+	void writeVoxel(ModifierVolumeWrapper &wrapper,
 					const glm::ivec3 &pos, const voxel::Voxel &voxel);
-	const VoxelEntry *findNearestSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *findLinearSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *findCubicSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *sampleSnapshotVoxel(const glm::vec3 &srcPos) const;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -128,6 +93,7 @@ public:
 	static constexpr int MaxMoveOffset = 128;
 	static constexpr int MaxShearOffset = 128;
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
+		_historyVolume.setStoreEmptyVoxels(true);
 	}
 	virtual ~TransformBrush() = default;
 
@@ -157,10 +123,8 @@ public:
 	 * result of the previous one rather than jumping back to the original.
 	 */
 	void commitCurrentTransform() {
-		_history.clear();
-		_historyPositions.clear();
-		_snapshot.clear();
-		_snapshotLookup.clear();
+		_historyVolume.clear();
+		_snapshotVolume.clear();
 		_hasSnapshot = false;
 		_cachedRegionValid = false;
 		_cachedRegion = voxel::Region::InvalidRegion;
@@ -170,11 +134,11 @@ public:
 		_rotationDegrees = glm::vec3(0.0f);
 	}
 
-	ScaleSampling scaleSampling() const {
+	voxelutil::ScaleSampling scaleSampling() const {
 		return _scaleSampling;
 	}
 
-	void setScaleSampling(ScaleSampling sampling) {
+	void setScaleSampling(voxelutil::ScaleSampling sampling) {
 		_scaleSampling = sampling;
 	}
 
