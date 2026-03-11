@@ -4,7 +4,6 @@
 
 #include "ExtrudeBrush.h"
 #include "math/Axis.h"
-#include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
@@ -15,11 +14,21 @@
 
 namespace voxedit {
 
+using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+
 void ExtrudeBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
 	_history.clear();
 	_cachedSelBBoxValid = false;
+}
+
+void ExtrudeBrush::onActivated() {
+	reset();
+}
+
+bool ExtrudeBrush::onDeactivated() {
+	return _depth != 0 && _hasCachedSelection;
 }
 
 void ExtrudeBrush::reset() {
@@ -30,7 +39,14 @@ void ExtrudeBrush::reset() {
 	_face = voxel::FaceNames::Max;
 	_active = false;
 	_history.clear();
+	_cachedSelectedPositions.clear();
+	_cachedWallCandidates.clear();
+	_cachedSelectedBBox = voxel::Region::InvalidRegion;
+	_hasCachedSelection = false;
+	_capturedVolumeLower = glm::ivec3(0);
 	_cachedSelBBoxValid = false;
+	_fillWalls = true;
+	_lastVolume = nullptr;
 }
 
 bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
@@ -47,6 +63,38 @@ bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
 }
 
 void ExtrudeBrush::endBrush(BrushContext &) {
+	// Prune interior voxels after final commit — voxels fully enclosed by 6 solid
+	// neighbors are invisible and waste sparse storage.
+	if (_lastVolume && _depth > 0) {
+		const voxel::Region &volRegion = _lastVolume->region();
+		const voxel::Voxel air;
+		auto isInterior = [&](const glm::ivec3 &pos) {
+			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
+				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
+				if (!volRegion.containsPoint(nb) || voxel::isAir(_lastVolume->voxel(nb).getMaterial())) {
+					return false;
+				}
+			}
+			return true;
+		};
+
+		core::DynamicArray<glm::ivec3> toPrune;
+		toPrune.reserve(_history.size() + _cachedSelectedPositions.size());
+		for (const HistoryEntry &entry : _history) {
+			if (!voxel::isAir(_lastVolume->voxel(entry.pos).getMaterial()) && isInterior(entry.pos)) {
+				toPrune.push_back(entry.pos);
+			}
+		}
+		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+			if (!voxel::isAir(_lastVolume->voxel(selPos).getMaterial()) && isInterior(selPos)) {
+				toPrune.push_back(selPos);
+			}
+		}
+		for (const glm::ivec3 &pos : toPrune) {
+			_lastVolume->setVoxel(pos, air);
+		}
+	}
+	_lastVolume = nullptr;
 	_active = false;
 	// _face is intentionally kept: the user sets it by clicking a voxel face in the viewport,
 	// then adjusts depth via the panel without needing to hover the viewport again.
@@ -58,27 +106,26 @@ void ExtrudeBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *v
 	if (!volume) {
 		return;
 	}
-	// Scan for selected (FlagOutline) voxels and cache their bounding box.
-	// This is used by calcRegion() to return a tight region for preview.
+
 	const voxel::Region &volRegion = volume->region();
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
-	const glm::ivec3 &vlo = volRegion.getLowerCorner();
-	const glm::ivec3 &vhi = volRegion.getUpperCorner();
-	// TODO: voxelutil visitor pattern for non-parallel iterations for solid voxels
-	for (int z = vlo.z; z <= vhi.z; ++z) {
-		for (int y = vlo.y; y <= vhi.y; ++y) {
-			for (int x = vlo.x; x <= vhi.x; ++x) {
-				const voxel::Voxel vx = volume->voxel(x, y, z);
-				if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline)) {
-					selLo = glm::min(selLo, glm::ivec3(x, y, z));
-					selHi = glm::max(selHi, glm::ivec3(x, y, z));
-				}
-			}
+
+	// Detect volume region shift and adjust cached data
+	if (_hasCachedSelection) {
+		const glm::ivec3 delta = volRegion.getLowerCorner() - _capturedVolumeLower;
+		if (delta != glm::ivec3(0)) {
+			adjustCacheForRegionShift(delta);
 		}
 	}
-	if (selLo.x <= selHi.x) {
-		_cachedSelBBox = voxel::Region(selLo, selHi);
+
+	// Build the full selection cache (positions + wall candidates) once when
+	// the face is set and no cache exists yet. Subsequent frames reuse it.
+	if (!_hasCachedSelection && _face != voxel::FaceNames::Max) {
+		cacheSelection(volume, volRegion);
+	}
+
+	// Use cached bbox for calcRegion() if available
+	if (_hasCachedSelection) {
+		_cachedSelBBox = _cachedSelectedBBox;
 		_cachedSelBBoxValid = true;
 	}
 }
@@ -164,21 +211,112 @@ void ExtrudeBrush::setOffsetV(int offset) {
 	markDirty();
 }
 
+void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Region &volRegion) {
+	_cachedSelectedPositions.clear();
+	_cachedWallCandidates.clear();
+	_hasCachedSelection = false;
+
+	if (_face == voxel::FaceNames::Max) {
+		return;
+	}
+
+	// Collect selected (FlagOutline) voxel positions
+	glm::ivec3 selLo(volRegion.getUpperCorner());
+	glm::ivec3 selHi(volRegion.getLowerCorner());
+	PositionSet selectedSet;
+
+	const glm::ivec3 &vlo = volRegion.getLowerCorner();
+	const glm::ivec3 &vhi = volRegion.getUpperCorner();
+	for (int z = vlo.z; z <= vhi.z; ++z) {
+		for (int y = vlo.y; y <= vhi.y; ++y) {
+			for (int x = vlo.x; x <= vhi.x; ++x) {
+				const voxel::Voxel vx = vol->voxel(x, y, z);
+				if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline)) {
+					const glm::ivec3 pos(x, y, z);
+					_cachedSelectedPositions.push_back(pos);
+					selectedSet.insert(pos);
+					selLo = glm::min(selLo, pos);
+					selHi = glm::max(selHi, pos);
+				}
+			}
+		}
+	}
+
+	if (_cachedSelectedPositions.empty()) {
+		return;
+	}
+
+	_cachedSelectedBBox = voxel::Region(selLo, selHi);
+
+	// Compute wall candidates: for each selected voxel, check 4 perpendicular neighbors.
+	// A wall candidate is a (selectedPos, perpOffset) pair where the perpendicular neighbor
+	// is solid and not selected — indicating an edge that needs sealing during extrusion.
+	const math::Axis axis = voxel::faceToAxis(_face);
+	const int axisIdx = math::getIndexForAxis(axis);
+	static constexpr int NumAxes = 3;
+	const int perp1 = (axisIdx + 1) % NumAxes;
+	const int perp2 = (axisIdx + 2) % NumAxes;
+
+	static constexpr int NumPerpOffsets = 4;
+	glm::ivec3 perpOffsets[NumPerpOffsets] = {};
+	perpOffsets[0][perp1] = 1;
+	perpOffsets[1][perp1] = -1;
+	perpOffsets[2][perp2] = 1;
+	perpOffsets[3][perp2] = -1;
+
+	for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+		for (int pi = 0; pi < NumPerpOffsets; ++pi) {
+			const glm::ivec3 neighborPos = selPos + perpOffsets[pi];
+			if (!volRegion.containsPoint(neighborPos)) {
+				continue;
+			}
+			const voxel::Voxel &nv = vol->voxel(neighborPos);
+			if (voxel::isAir(nv.getMaterial())) {
+				continue;
+			}
+			if (selectedSet.has(neighborPos)) {
+				continue;
+			}
+			_cachedWallCandidates.push_back({selPos, perpOffsets[pi]});
+		}
+	}
+
+	_capturedVolumeLower = volRegion.getLowerCorner();
+	_hasCachedSelection = true;
+}
+
+void ExtrudeBrush::adjustCacheForRegionShift(const glm::ivec3 &delta) {
+	for (glm::ivec3 &pos : _cachedSelectedPositions) {
+		pos += delta;
+	}
+	_cachedSelectedBBox.shift(delta.x, delta.y, delta.z);
+
+	for (WallCandidate &wc : _cachedWallCandidates) {
+		wc.basePos += delta;
+	}
+
+	for (HistoryEntry &entry : _history) {
+		entry.pos += delta;
+	}
+
+	_capturedVolumeLower += delta;
+}
+
 void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							const voxel::Region &) {
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
+	_lastVolume = vol;
 
-	// Restore all positions from a previous extrude in this session before re-applying.
-	// This makes depth changes fully reversible without touching the undo stack.
+	// Step 1: Restore all positions modified by the previous generate() call.
+	// This makes depth/offset changes fully reversible without touching the undo stack.
 	for (const HistoryEntry &entry : _history) {
-		if (vol->setVoxel(entry.pos, entry.original)) {
-			wrapper.addToDirtyRegion(entry.pos);
-		}
+		vol->setVoxel(entry.pos, entry.original);
+		wrapper.addToDirtyRegion(entry.pos);
 	}
 	_history.clear();
 
-	if (_depth == 0 || _face == voxel::FaceNames::Max) {
+	if (_depth == 0 || _face == voxel::FaceNames::Max || !_hasCachedSelection) {
 		return;
 	}
 
@@ -186,8 +324,6 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	const int axisIdx = math::getIndexForAxis(axis);
 	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
 
-	// Positive depth -> extrude outward (along face normal, place voxels)
-	// Negative depth -> carve inward (opposite to face normal, erase voxels)
 	const bool carving = _depth < 0;
 	const int steps = glm::abs(_depth);
 	const int dirSign = carving ? -faceSign : faceSign;
@@ -195,13 +331,10 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 	glm::ivec3 dir(0);
 	dir[axisIdx] = dirSign;
 
-	// Perpendicular axes used for lateral offset (sweep) and side-wall filling.
 	static constexpr int NumAxes = 3;
 	const int perp1 = (axisIdx + 1) % NumAxes;
 	const int perp2 = (axisIdx + 2) % NumAxes;
 
-	// Compute lateral shift at a given extrusion step via linear interpolation.
-	// shift = offset * step / depth (truncated toward zero).
 	const float stepU = static_cast<float>(_offsetU) / steps;
 	const float stepV = static_cast<float>(_offsetV) / steps;
 	auto lateralShift = [&](int step) -> glm::ivec3 {
@@ -215,211 +348,55 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		return shift;
 	};
 
-	// Save original voxel at pos (only once per session) then write the new voxel.
+	// Step 2: Save original voxel before writing — uses a set for O(1) dedup.
+	// Saves both air and solid voxels so restore is always complete.
+	PositionSet savedPositions;
 	auto writeVoxel = [&](const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
 		if (!volRegion.containsPoint(pos)) {
 			return;
 		}
-		// Linear search - history is small enough that this is fine.
-		bool alreadySaved = false;
-		for (const HistoryEntry &entry : _history) {
-			if (entry.pos == pos) {
-				alreadySaved = true;
-				break;
-			}
-		}
-		if (!alreadySaved) {
+		if (!savedPositions.has(pos)) {
 			_history.push_back({pos, vol->voxel(pos)});
+			savedPositions.insert(pos);
 		}
-		if (vol->setVoxel(pos, newVoxel)) {
-			wrapper.addToDirtyRegion(pos);
-		}
+		vol->setVoxel(pos, newVoxel);
+		wrapper.addToDirtyRegion(pos);
 	};
 
 	const voxel::Voxel air{};
 
-	// Collect selected (FlagOutline) voxel positions to avoid scanning the full volume
-	// (which can be 256^3+) in the extrusion and fill-sides loops.
-	core::DynamicArray<glm::ivec3> selectedPositions;
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
-	{
-		const glm::ivec3 &vlo = volRegion.getLowerCorner();
-		const glm::ivec3 &vhi = volRegion.getUpperCorner();
-		for (int z = vlo.z; z <= vhi.z; ++z) {
-			for (int y = vlo.y; y <= vhi.y; ++y) {
-				for (int x = vlo.x; x <= vhi.x; ++x) {
-					const voxel::Voxel vx = vol->voxel(x, y, z);
-					if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline)) {
-						const glm::ivec3 pos(x, y, z);
-						selectedPositions.push_back(pos);
-						selLo = glm::min(selLo, pos);
-						selHi = glm::max(selHi, pos);
-					}
-				}
-			}
-		}
-	}
-	if (selectedPositions.empty()) {
-		return; // no selected voxels
-	}
-	const glm::ivec3 &lo = selLo;
-	const glm::ivec3 &hi = selHi;
-
-	// Carve or extrude each selected voxel along dir.
-	for (const glm::ivec3 &selPos : selectedPositions) {
-		// Carving starts at the selected voxel itself (step=0) so the surface layer
-		// becomes air. Extrusion starts at step=1 to place new voxels outward.
-		const int stepFirst = carving ? 0 : 1;
-		const int stepLast = carving ? steps - 1 : steps;
-		for (int step = stepFirst; step <= stepLast; ++step) {
-			const glm::ivec3 shift = lateralShift(step);
-			const glm::ivec3 newPos = selPos + dir * step + shift;
-			if (!volRegion.containsPoint(newPos)) {
-				break;
-			}
-			writeVoxel(newPos, carving ? air : ctx.cursorVoxel);
-		}
-	}
-
-	// Expanded bounding box covering extruded voxels after lateral offset + side wall margin.
-	// The fill-sides and pruning loops need to find selected voxels which may have been
-	// shifted outside the original selection bbox (lo..hi) by the lateral offset.
-	const glm::ivec3 tipShift = lateralShift(steps);
-	const glm::ivec3 extLo = glm::max(glm::min(lo, lo + dir * steps + tipShift) - glm::ivec3(1),
-									   volRegion.getLowerCorner());
-	const glm::ivec3 extHi = glm::min(glm::max(hi, hi + dir * steps + tipShift) + glm::ivec3(1),
-									   volRegion.getUpperCorner());
-
-	// Fill perpendicular side walls - only meaningful when extruding straight outward
-	// (no lateral offset). With lateral offsets the extrusion is a sweep/shear and
-	// wall placement doesn't make geometric sense.
-	// Side walls are only placed when the neighbor already has pre-existing solid
-	// material extending in the extrusion direction (e.g. an existing wall/structure).
-	// This avoids creating unwanted rim voxels when extruding on a flat surface.
-	const bool hasLateralOffset = _offsetU != 0 || _offsetV != 0;
-	if (!carving && !hasLateralOffset) {
-		static constexpr int NumPerpOffsets = 4; // 2 perpendicular axes * 2 directions each
-
-		glm::ivec3 perpOffsets[NumPerpOffsets] = {};
-		perpOffsets[0][perp1] = 1;
-		perpOffsets[1][perp1] = -1;
-		perpOffsets[2][perp2] = 1;
-		perpOffsets[3][perp2] = -1;
-
-		for (const glm::ivec3 &selPos : selectedPositions) {
-			for (int pi = 0; pi < NumPerpOffsets; ++pi) {
-				const glm::ivec3 neighborPos = selPos + perpOffsets[pi];
-				if (!volRegion.containsPoint(neighborPos)) {
-					continue;
-				}
-				const voxel::Voxel &nv = vol->voxel(neighborPos);
-				if (voxel::isAir(nv.getMaterial())) {
-					continue; // air neighbor - no edge to seal
-				}
-				// Skip if the neighbor is also a selected voxel (no open edge between them).
-				bool neighborSelected = false;
-				for (const glm::ivec3 &other : selectedPositions) {
-					if (other == neighborPos) {
-						neighborSelected = true;
-						break;
-					}
-				}
-				if (neighborSelected) {
-					continue;
-				}
-				// Only fill when the neighbor has pre-existing geometry extending in the
-				// extrusion direction. On a flat surface the neighbor has nothing above
-				// its base level, so no wall is needed. Check the original (pre-extrusion)
-				// voxel state via history to avoid false positives from extrusion overlap.
-				const glm::ivec3 aboveNeighbor = neighborPos + dir;
-				if (!volRegion.containsPoint(aboveNeighbor)) {
-					continue;
-				}
-				voxel::Voxel aboveOriginal = vol->voxel(aboveNeighbor);
-				for (const HistoryEntry &entry : _history) {
-					if (entry.pos == aboveNeighbor) {
-						aboveOriginal = entry.original;
-						break;
-					}
-				}
-				if (voxel::isAir(aboveOriginal.getMaterial())) {
-					continue;
-				}
-				for (int step = 1; step <= steps; ++step) {
-					const glm::ivec3 shift = lateralShift(step);
-					const glm::ivec3 sidePos = selPos + perpOffsets[pi] + dir * step + shift;
-					if (!volRegion.containsPoint(sidePos)) {
-						break;
-					}
+	// Step 3: Apply extrusion or carving
+	if (carving) {
+		// Loop 1: Place walls at each depth step before carving
+		if (_fillWalls) {
+			for (int step = 0; step < steps; ++step) {
+				const glm::ivec3 shift = lateralShift(step);
+				for (const WallCandidate &wc : _cachedWallCandidates) {
+					const glm::ivec3 sidePos = wc.basePos + wc.perpOffset + dir * step + shift;
 					writeVoxel(sidePos, ctx.cursorVoxel);
 				}
 			}
 		}
-	}
-
-	// For outward extrusion: remove any voxel that is now fully interior
-	// (all 6 axis-aligned neighbors solid and within bounds) - invisible voxels waste sparse storage.
-	// Running after fill-sides gives accurate neighbor state before pruning.
-	// Important: collect ALL positions to prune first (read-only pass), then remove them.
-	// Pruning one-by-one would mutate the volume mid-iteration, making adjacent voxels
-	// appear non-interior and creating a checkerboard artifact.
-	if (!carving) {
-		auto isInterior = [&](const glm::ivec3 &pos) {
-			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
-				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
-				if (!volRegion.containsPoint(nb) || voxel::isAir(vol->voxel(nb).getMaterial())) {
-					return false;
-				}
+		// Loop 2: Carve out cached selected positions at each depth step
+		for (int step = 0; step < steps; ++step) {
+			const glm::ivec3 shift = lateralShift(step);
+			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+				writeVoxel(selPos + dir * step + shift, air);
 			}
-			return true;
-		};
-
-		// Collect all interior positions before modifying the volume.
-		core::DynamicArray<glm::ivec3> toPrune;
-		toPrune.reserve(_history.size());
-
-		// Check newly placed voxels (already in history).
-		for (const HistoryEntry &entry : _history) {
-			const glm::ivec3 &pos = entry.pos;
-			if (!voxel::isAir(vol->voxel(pos).getMaterial()) && isInterior(pos)) {
-				toPrune.push_back(pos);
+		}
+	} else {
+		// Positive depth: place selected voxels at each step from 1 to depth
+		for (int step = 1; step <= steps; ++step) {
+			const glm::ivec3 shift = lateralShift(step);
+			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+				writeVoxel(selPos + dir * step + shift, ctx.cursorVoxel);
 			}
 		}
 
-		// Check selected voxels that outward extrusion has now fully surrounded.
-		// Save them to history first so a depth change can restore them.
-		for (int z = extLo.z; z <= extHi.z; ++z) {
-			for (int y = extLo.y; y <= extHi.y; ++y) {
-				for (int x = extLo.x; x <= extHi.x; ++x) {
-					const voxel::Voxel &sv = vol->voxel(x, y, z);
-					if (voxel::isAir(sv.getMaterial()) || !(sv.getFlags() & voxel::FlagOutline)) {
-						continue;
-					}
-					const glm::ivec3 pos(x, y, z);
-					if (!isInterior(pos)) {
-						continue;
-					}
-					bool alreadySaved = false;
-					for (const HistoryEntry &entry : _history) {
-						if (entry.pos == pos) {
-							alreadySaved = true;
-							break;
-						}
-					}
-					if (!alreadySaved) {
-						_history.push_back({pos, sv});
-					}
-					toPrune.push_back(pos);
-				}
-			}
+		// Remove original selected voxels — extrude moves the face outward
+		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+			writeVoxel(selPos, air);
 		}
-
-		// Now prune all collected positions at once.
-		for (const glm::ivec3 &pos : toPrune) {
-			vol->setVoxel(pos, air);
-		}
-		wrapper.addToDirtyRegion(toPrune);
 	}
 }
 

@@ -191,7 +191,8 @@ static bool SliderIntMinMax(const char *id, int *val, int lo, int hi) {
 	}
 	ImGui::EndDisabled();
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(-1);
+	const float buttonWidth = ImGui::CalcTextSize("+").x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
+	ImGui::SetNextItemWidth(-(buttonWidth));
 	if (ImGui::SliderInt("", val, lo, hi)) {
 		changed = true;
 	}

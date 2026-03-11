@@ -78,6 +78,9 @@ protected:
 	// this can be useful when the user is interaction with the ui elements
 	// and we don't want to modify the volume
 	bool _locked = false;
+	// set to true while the brush gizmo is being interacted with
+	// prevents the action button from committing intermediate transforms
+	bool _brushGizmoActive = false;
 
 	/**
 	 * timer value which indicates the next execution time in case you keep the
@@ -146,6 +149,13 @@ public:
 	void unlock();
 	inline bool isLocked() const {
 		return _locked;
+	}
+
+	inline void setBrushGizmoActive(bool active) {
+		_brushGizmoActive = active;
+	}
+	inline bool isBrushGizmoActive() const {
+		return _brushGizmoActive;
 	}
 
 	math::Axis lockedAxis() const;

@@ -776,33 +776,24 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	if (depth == 0 && (!node || !node->hasSelection())) {
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
-	// Carving (negative depth) applies directly to the real volume because the preview
-	// system can only render solid voxels - carved (air) positions are invisible as ghosts.
-	// Positive extrusion uses preview-only (ghost overlay of new voxels).
-	// depth==0 also applies to restore the real volume when transitioning back from carving
-	// (the history mechanism undoes the carve, restoring the original selected voxels).
-	auto applyIfCarving = [&]() {
-		if (brush.depth() <= 0) {
-			executeExtrudeBrush();
-		}
-	};
-
+	// All depth/offset changes are preview-only. The preview system creates a fresh
+	// volume copy each frame and generate() writes to it. Commit happens on brush switch.
 	ImGui::TextUnformatted(_("Depth"));
 	if (ImGui::Button("-##extrude_depth")) {
 		brush.setDepth(depth - 1);
-		applyIfCarving();
 	}
 	ImGui::SameLine();
 	if (ImGui::SliderInt("##extrude_depth_slider", &depth, -maxDepth, maxDepth)) {
 		brush.setDepth(depth);
 	}
-	if (ImGui::IsItemDeactivatedAfterEdit()) {
-		applyIfCarving();
-	}
 	ImGui::SameLine();
 	if (ImGui::Button("+##extrude_depth")) {
 		brush.setDepth(depth + 1);
-		applyIfCarving();
+	}
+
+	bool fillWalls = brush.fillWalls();
+	if (ImGui::Checkbox(_("Fill walls"), &fillWalls)) {
+		brush.setFillWalls(fillWalls);
 	}
 
 	// Lateral offset sliders - only shown when depth is non-zero.
@@ -817,38 +808,28 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 		ImGui::Text(_("Offset %s"), AxisLabels[perp1]);
 		if (ImGui::Button("-##extrude_offsetU")) {
 			brush.setOffsetU(offsetU - 1);
-			applyIfCarving();
 		}
 		ImGui::SameLine();
 		if (ImGui::SliderInt("##extrude_offsetU_slider", &offsetU, -maxDepth, maxDepth)) {
 			brush.setOffsetU(offsetU);
 		}
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			applyIfCarving();
-		}
 		ImGui::SameLine();
 		if (ImGui::Button("+##extrude_offsetU")) {
 			brush.setOffsetU(offsetU + 1);
-			applyIfCarving();
 		}
 
 		int offsetV = brush.offsetV();
 		ImGui::Text(_("Offset %s"), AxisLabels[perp2]);
 		if (ImGui::Button("-##extrude_offsetV")) {
 			brush.setOffsetV(offsetV - 1);
-			applyIfCarving();
 		}
 		ImGui::SameLine();
 		if (ImGui::SliderInt("##extrude_offsetV_slider", &offsetV, -maxDepth, maxDepth)) {
 			brush.setOffsetV(offsetV);
 		}
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			applyIfCarving();
-		}
 		ImGui::SameLine();
 		if (ImGui::Button("+##extrude_offsetV")) {
 			brush.setOffsetV(offsetV + 1);
-			applyIfCarving();
 		}
 	}
 }
@@ -890,6 +871,9 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 			const TransformMode mode = (TransformMode)i;
 			const bool selected = mode == currentTransformMode;
 			if (ImGui::Selectable(_(TransformModeStr[i]), selected)) {
+				if (brush.hasSnapshot()) {
+					executeTransformBrush();
+				}
 				brush.setTransformMode(mode);
 			}
 			if (selected) {

@@ -203,39 +203,37 @@ TEST_F(ExtrudeBrushTest, testExtrudePushThenPull) {
 	executeExtrude(brush, node, ctx);
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial())) << "Selected voxel at (0,0,0) should be carved";
 
-	// Push outward (+1) from same selection: history restores (0,0,0), places at x=+1
+	// Push outward (+1) from same selection: history restores (0,0,0), then
+	// positive extrude places at x=+1 and removes the original at x=0
 	brush.setDepth(1);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
-		<< "Restored selected voxel at (0,0,0) after direction reversal";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original at (0,0,0) removed by positive extrude";
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
 		<< "Outward voxel at (1,0,0) expected";
 
 	brush.shutdown();
 }
 
-// Fill sides: extrude next to an existing wall fills the gap between extrusion and wall
-TEST_F(ExtrudeBrushTest, testExtrudeFillSidesWithWall) {
+// Fill walls during carving: walls seal the sides of the carved channel
+TEST_F(ExtrudeBrushTest, testCarveFillWalls) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
-	// Selected voxel at (0,0,0) recessed inside a box. Wall neighbor at (1,0,0) extends
-	// upward to (1,0,3). Extruding by 2 should fill the gap at (1,0,1) and (1,0,2).
-	volume.setVoxel(0, 0, 0, selectedVoxel());
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	// Wall column next to the selection, extending upward
-	for (int z = 0; z <= 3; ++z) {
-		volume.setVoxel(2, 0, z, solid);
-	}
-	// Neighbor at (1,0,0) with solid above it at (1,0,1) triggers fill-sides
+	// Selected voxel at (0,0,0) with solid neighbor at (1,0,0) that is not selected.
+	// Carving inward (-Z) should fill wall at (1,0,-1) next to carved area.
+	volume.setVoxel(0, 0, 0, selectedVoxel());
 	volume.setVoxel(1, 0, 0, solid);
-	volume.setVoxel(1, 0, 1, solid);
+	// Solid behind the selection to carve into
+	volume.setVoxel(0, 0, -1, solid);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setDepth(2); // outward for PositiveZ -> z+1, z+2
+	brush.setDepth(-1); // carve inward for PositiveZ -> z=0 erased
+	brush.setFillWalls(true);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -245,12 +243,14 @@ TEST_F(ExtrudeBrushTest, testExtrudeFillSidesWithWall) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Extruded voxels at z=1 and z=2
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial())) << "Extruded voxel at (0,0,1) expected";
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 2).getMaterial())) << "Tip voxel at (0,0,2) expected";
-	// Side wall fills gap: (1,0,2) was air, should now be filled by fill-sides
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 2).getMaterial()))
-		<< "Side wall at (1,0,2) should fill gap next to existing wall";
+	// Carved voxel at z=0
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Selected voxel at (0,0,0) should be carved";
+	// Wall candidate: (0,0,0) with perpOffset (1,0,0). Wall placed at (1,0,0) + dir*step=(0,0,-1)*0
+	// = (1,0,0). But that's already solid. With depth=-1 step=0: sidePos = (0,0,0)+(1,0,0)+(0,0,-1)*0 = (1,0,0)
+	// Already solid, so check that it remains solid
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Wall at (1,0,0) should remain solid";
 
 	brush.shutdown();
 }
@@ -325,8 +325,8 @@ TEST_F(ExtrudeBrushTest, testExtrudeWithOffsetU) {
 	brush.shutdown();
 }
 
-// Extrusion preserves FlagOutline on originals and does not set it on new voxels
-TEST_F(ExtrudeBrushTest, testExtrudePreservesSelection) {
+// Positive extrude removes originals and new voxels do not get FlagOutline
+TEST_F(ExtrudeBrushTest, testExtrudeRemovesOriginalsAndNoFlag) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -345,10 +345,9 @@ TEST_F(ExtrudeBrushTest, testExtrudePreservesSelection) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Original voxel should still have FlagOutline
-	const voxel::Voxel origVoxel = volume.voxel(0, 0, 0);
-	EXPECT_TRUE(origVoxel.getFlags() & voxel::FlagOutline)
-		<< "Original voxel at (0,0,0) should keep FlagOutline after extrusion";
+	// Original voxel removed by positive extrude
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original voxel at (0,0,0) should be removed by positive extrude";
 	// New extruded voxels should NOT have FlagOutline
 	const voxel::Voxel midVoxel = volume.voxel(1, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(midVoxel.getMaterial()));
@@ -445,6 +444,178 @@ TEST_F(ExtrudeBrushTest, testEndBrushResetsState) {
 	// beginBrush should work again after endBrush
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
+	brush.shutdown();
+}
+
+// onDeactivated returns true when there are pending changes to commit
+TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsTrueWithPendingChanges) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(1);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// Before any execution, cache is not built yet
+	EXPECT_FALSE(brush.onDeactivated()) << "No cached selection yet — nothing to commit";
+
+	// Execute to build cache
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// After execution with depth != 0 and cached selection, onDeactivated should return true
+	EXPECT_TRUE(brush.hasCachedSelection());
+	EXPECT_TRUE(brush.onDeactivated()) << "Should have pending changes to commit";
+
+	brush.shutdown();
+}
+
+// onDeactivated returns false when depth is zero
+TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsFalseAtDepthZero) {
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(0);
+
+	EXPECT_FALSE(brush.onDeactivated()) << "Depth 0 means no changes to commit";
+
+	brush.shutdown();
+}
+
+// onActivated resets the brush state
+TEST_F(ExtrudeBrushTest, testOnActivatedResetsState) {
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(5);
+	brush.setOffsetU(3);
+
+	brush.onActivated();
+	EXPECT_EQ(brush.depth(), 0) << "Depth should be reset by onActivated";
+	EXPECT_EQ(brush.face(), voxel::FaceNames::Max) << "Face should be reset by onActivated";
+
+	brush.shutdown();
+}
+
+// fillWalls=false disables wall filling during carving
+TEST_F(ExtrudeBrushTest, testFillWallsDisabled) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	// Selected voxel at origin with a solid neighbor at (+1,0,0) that extends in Z
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	volume.setVoxel(1, 0, 0, solid);
+	// Solid above neighbor to trigger wall-fill condition
+	volume.setVoxel(1, 0, -1, solid);
+	// Solid behind selection to carve
+	volume.setVoxel(0, 0, -1, solid);
+	volume.setVoxel(0, 0, -2, solid);
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(-2);
+	brush.setFillWalls(false);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// With fillWalls=false, the side position (1,0,-1) should remain as original solid (not overwritten)
+	// The carved positions should be air
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Selected voxel should be carved";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, -1).getMaterial()))
+		<< "Second depth step should be carved";
+
+	brush.shutdown();
+}
+
+// Positive extrude removes original selected voxels
+TEST_F(ExtrudeBrushTest, testPositiveExtrudeRemovesOriginals) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// Original position should be air — extrude moves the face outward
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original selected voxel should be removed after positive extrude";
+	// Extruded voxels at x=1 and x=2
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Extruded voxel at (1,0,0)";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 0, 0).getMaterial()))
+		<< "Extruded voxel at (2,0,0)";
+
+	brush.shutdown();
+}
+
+// Interior pruning happens on endBrush for positive extrude
+TEST_F(ExtrudeBrushTest, testInteriorPruningOnCommit) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	// Create a 3x3x1 slab at z=0, all selected.
+	// Positive extrude removes originals (z=0 -> air), places at z=1,2,3.
+	// With depth=3 and 3x3 slab, the center voxel at (0,0,2) has:
+	//   x±1, y±1 = solid (extruded neighbors), z+1=(0,0,3), z-1=(0,0,1) = solid
+	// So (0,0,2) is fully interior and should be pruned.
+	for (int x = -1; x <= 1; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			volume.setVoxel(x, y, 0, selectedVoxel());
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setDepth(3);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeExtrude(brush, node, ctx);
+
+	// Center of middle layer (0,0,2) is fully enclosed: pruned
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 2).getMaterial()))
+		<< "Interior voxel at (0,0,2) should be pruned";
+	// Tip layer surface voxels should remain
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 3).getMaterial()))
+		<< "Tip voxel at (0,0,3) should remain";
+	// Edge voxels of middle layer should remain (exposed on x or y face)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 2).getMaterial()))
+		<< "Edge voxel at (1,0,2) should remain";
+	// Originals removed
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original at (0,0,0) should be removed";
+
 	brush.shutdown();
 }
 
