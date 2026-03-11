@@ -12,7 +12,7 @@ ClientListHandler::ClientListHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMg
 }
 
 void ClientListHandler::execute(const network::ClientId &, ClientListMessage *msg) {
-	Log::debug("Received client list update with %zu clients", msg->clients().size());
+	Log::debug("Received client list update with %d clients", (int)msg->clients().size());
 	_sceneMgr->client().updateConnectedClients(msg->clients());
 }
 

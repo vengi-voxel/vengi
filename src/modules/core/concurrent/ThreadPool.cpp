@@ -37,7 +37,7 @@ void ThreadPool::dump() const {
 		threads = (int)_threads;
 		active = (int)_activeWorkers;
 	}
-	Log::info("ThreadPool '%s' dump: %d threads, %zu queued tasks, %d active workers", _name, threads, queued, active);
+	Log::info("ThreadPool '%s' dump: %d threads, %d queued tasks, %d active workers", _name, threads, (int)queued, active);
 }
 
 void ThreadPool::init() {

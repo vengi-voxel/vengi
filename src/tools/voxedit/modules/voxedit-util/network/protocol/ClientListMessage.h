@@ -39,11 +39,11 @@ public:
 		}
 		for (size_t i = 0; i < _clients.size(); ++i) {
 			if (!writeUInt8(_clients[i].id)) {
-				Log::error("Failed to write client id %zu in ClientListMessage ctor", i);
+				Log::error("Failed to write client id %d in ClientListMessage ctor", (int)i);
 				return;
 			}
 			if (!writePascalStringUInt16LE(_clients[i].name)) {
-				Log::error("Failed to write client name %zu in ClientListMessage ctor", i);
+				Log::error("Failed to write client name %d in ClientListMessage ctor", (int)i);
 				return;
 			}
 		}
@@ -86,11 +86,11 @@ public:
 		}
 		for (size_t i = 0; i < _clients.size(); ++i) {
 			if (!writeUInt8(_clients[i].id)) {
-				Log::error("Failed to write client id %zu in ClientListMessage::writeBack", i);
+				Log::error("Failed to write client id %d in ClientListMessage::writeBack", (int)i);
 				return;
 			}
 			if (!writePascalStringUInt16LE(_clients[i].name)) {
-				Log::error("Failed to write client name %zu in ClientListMessage::writeBack", i);
+				Log::error("Failed to write client name %d in ClientListMessage::writeBack", (int)i);
 				return;
 			}
 		}

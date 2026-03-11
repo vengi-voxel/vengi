@@ -53,7 +53,7 @@ void Server::broadcastClientList() {
 		}
 	}
 	ClientListMessage msg(clientInfos);
-	Log::debug("Broadcasting client list with %zu clients", clientInfos.size());
+	Log::debug("Broadcasting client list with %d clients", (int)clientInfos.size());
 	_network.broadcast(msg);
 }
 

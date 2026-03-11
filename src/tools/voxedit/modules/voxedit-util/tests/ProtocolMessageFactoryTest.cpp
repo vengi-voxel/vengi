@@ -169,7 +169,7 @@ protected:
 		if (messageName != "SceneStateMessage") {
 			deserializedMsg->seek(0);
 			deserializedMsg->writeBack();
-			EXPECT_EQ(deserializedMsg->size(), originalMsg->size()) << messageName + ": Size mismatch after writeBack";
+			EXPECT_EQ(deserializedMsg->size(), originalMsg->size()) << messageName << ": Size mismatch after writeBack";
 		}
 
 		delete deserializedMsg;
@@ -201,56 +201,56 @@ protected:
 	void verifyMessageContent(voxedit::InitSessionMessage *original,
 							  voxedit::InitSessionMessage *deserialized, const core::String &messageName) {
 		EXPECT_EQ(original->protocolVersion(), deserialized->protocolVersion())
-			<< messageName + ": Protocol version mismatch";
+			<< messageName << ": Protocol version mismatch";
 		EXPECT_EQ(original->applicationVersion(), deserialized->applicationVersion())
-			<< messageName + ": Application version mismatch";
-		EXPECT_EQ(original->username(), deserialized->username()) << messageName + ": Username mismatch";
+			<< messageName << ": Application version mismatch";
+		EXPECT_EQ(original->username(), deserialized->username()) << messageName << ": Username mismatch";
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeAddedMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName + ": Parent UUID mismatch";
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
-		EXPECT_EQ(state.referenceUUID, deserialized->referenceUUID()) << messageName + ": Reference UUID mismatch";
-		EXPECT_EQ(state.name, deserialized->name()) << messageName + ": Name mismatch";
-		EXPECT_EQ(state.nodeType, deserialized->nodeType()) << messageName + ": Node type mismatch";
-		EXPECT_VEC_NEAR(state.pivot, deserialized->pivot(), 0.001f) << messageName + ": Pivot mismatch";
+		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName << ": Parent UUID mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
+		EXPECT_EQ(state.referenceUUID, deserialized->referenceUUID()) << messageName << ": Reference UUID mismatch";
+		EXPECT_EQ(state.name, deserialized->name()) << messageName << ": Name mismatch";
+		EXPECT_EQ(state.nodeType, deserialized->nodeType()) << messageName << ": Node type mismatch";
+		EXPECT_VEC_NEAR(state.pivot, deserialized->pivot(), 0.001f) << messageName << ": Pivot mismatch";
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeRemovedMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeMovedMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
-		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName + ": Parent UUID mismatch";
-		EXPECT_EQ(state.referenceUUID, deserialized->referenceUUID()) << messageName + ": Reference UUID mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
+		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName << ": Parent UUID mismatch";
+		EXPECT_EQ(state.referenceUUID, deserialized->referenceUUID()) << messageName << ": Reference UUID mismatch";
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeRenamedMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
-		EXPECT_EQ(state.name, deserialized->name()) << messageName + ": Name mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
+		EXPECT_EQ(state.name, deserialized->name()) << messageName << ": Name mismatch";
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodePropertiesMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
 
 		const scenegraph::SceneGraphNodeProperties &stateProps = state.properties;
 		const scenegraph::SceneGraphNodeProperties &deserializedProps = deserialized->properties();
-		EXPECT_EQ(stateProps.size(), deserializedProps.size()) << messageName + ": Properties count mismatch";
+		EXPECT_EQ(stateProps.size(), deserializedProps.size()) << messageName << ": Properties count mismatch";
 
 		for (const auto &entry : stateProps) {
-			EXPECT_TRUE(deserializedProps.hasKey(entry->key)) << messageName + ": Missing property key: " + entry->key;
+			EXPECT_TRUE(deserializedProps.hasKey(entry->key)) << messageName << ": Missing property key: " << entry->key;
 			core::String deserializedValue;
 			if (deserializedProps.get(entry->key, deserializedValue)) {
 				EXPECT_EQ(entry->value, deserializedValue)
-					<< messageName + ": Property value mismatch for key: " + entry->key;
+					<< messageName << ": Property value mismatch for key: " << entry->key;
 			} else {
-				FAIL() << messageName + ": Failed to get property value for key: " + entry->key;
+				FAIL() << messageName << ": Failed to get property value for key: " << entry->key;
 			}
 		}
 	}
@@ -262,35 +262,35 @@ protected:
 
 		const palette::Palette &statePalette = state.palette;
 		const palette::Palette &deserializedPalette = deserialized->palette();
-		EXPECT_EQ(statePalette.name(), deserializedPalette.name()) << messageName + ": Palette name mismatch";
-		EXPECT_EQ(statePalette.size(), deserializedPalette.size()) << messageName + ": Palette size mismatch";
+		EXPECT_EQ(statePalette.name(), deserializedPalette.name()) << messageName << ": Palette name mismatch";
+		EXPECT_EQ(statePalette.size(), deserializedPalette.size()) << messageName << ": Palette size mismatch";
 
 		for (size_t i = 0; i < statePalette.size(); ++i) {
 			EXPECT_EQ(statePalette.color(i).rgba, deserializedPalette.color(i).rgba)
-				<< messageName + ": Palette color mismatch at index " + core::String::format("%zu", i);
+				<< messageName << ": Palette color mismatch at index " << i;
 		}
 	}
 
 	void verifyMessageContent(const memento::MementoState &state,
 							  voxedit::VoxelModificationMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
-		EXPECT_EQ(state.dataRegion(), deserialized->region()) << messageName + ": Region mismatch";
-		EXPECT_EQ(state.data.size(), deserialized->compressedSize()) << messageName + ": Compressed size mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
+		EXPECT_EQ(state.dataRegion(), deserialized->region()) << messageName << ": Region mismatch";
+		EXPECT_EQ(state.data.size(), deserialized->compressedSize()) << messageName << ": Compressed size mismatch";
 
 		if (state.data.size() > 0 && deserialized->compressedData() != nullptr) {
 			EXPECT_EQ(0, memcmp(state.data.buffer(), deserialized->compressedData(), state.data.size()))
-				<< messageName + ": Compressed data mismatch";
+				<< messageName << ": Compressed data mismatch";
 		}
 	}
 
 	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeKeyFramesMessage *deserialized,
 							  const core::String &messageName) {
-		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
+		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName << ": Node UUID mismatch";
 
 		const auto &stateKeyFrames = state.keyFrames;
 		const auto &deserializedKeyFrames = deserialized->keyFrames();
-		EXPECT_EQ(stateKeyFrames.size(), deserializedKeyFrames.size()) << messageName + ": KeyFrames map size mismatch";
+		EXPECT_EQ(stateKeyFrames.size(), deserializedKeyFrames.size()) << messageName << ": KeyFrames map size mismatch";
 
 		for (const auto &stateEntry : stateKeyFrames) {
 			const core::String &animationName = stateEntry->first;
@@ -298,20 +298,20 @@ protected:
 
 			auto deserializedIter = deserializedKeyFrames.find(animationName);
 			ASSERT_NE(deserializedIter, deserializedKeyFrames.end())
-				<< messageName + ": Missing animation: " + animationName;
+				<< messageName << ": Missing animation: " << animationName;
 
 			const auto &deserializedFrames = deserializedIter->second;
 			EXPECT_EQ(stateFrames.size(), deserializedFrames.size())
-				<< messageName + ": KeyFrames count mismatch for animation: " + animationName;
+				<< messageName << ": KeyFrames count mismatch for animation: " << animationName;
 
 			for (size_t i = 0; i < stateFrames.size(); ++i) {
 				const auto &stateFrame = stateFrames[i];
 				const auto &deserializedFrame = deserializedFrames[i];
-				EXPECT_EQ(stateFrame.frameIdx, deserializedFrame.frameIdx) << messageName + ": Frame index mismatch";
+				EXPECT_EQ(stateFrame.frameIdx, deserializedFrame.frameIdx) << messageName << ": Frame index mismatch";
 				EXPECT_EQ(stateFrame.longRotation, deserializedFrame.longRotation)
-					<< messageName + ": Long rotation mismatch";
+					<< messageName << ": Long rotation mismatch";
 				EXPECT_EQ(stateFrame.interpolation, deserializedFrame.interpolation)
-					<< messageName + ": Interpolation mismatch";
+					<< messageName << ": Interpolation mismatch";
 
 				// Compare transformation matrices
 				const glm::mat4 stateMatrix = stateFrame.transform().calculateLocalMatrix();
@@ -319,8 +319,7 @@ protected:
 				for (int row = 0; row < 4; ++row) {
 					for (int col = 0; col < 4; ++col) {
 						EXPECT_FLOAT_EQ(stateMatrix[row][col], deserializedMatrix[row][col])
-							<< messageName + ": Transform matrix mismatch at [" + core::String::format("%d", row) +
-								   "][" + core::String::format("%d", col) + "]";
+							<< messageName << ": Transform matrix mismatch at [" << row << "][" << col << "]";
 					}
 				}
 			}

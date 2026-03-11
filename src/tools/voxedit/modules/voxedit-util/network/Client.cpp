@@ -176,7 +176,7 @@ const core::DynamicArray<ClientInfo> &Client::connectedClients() const {
 
 void Client::updateConnectedClients(const core::DynamicArray<ClientInfo> &clients) {
 	_connectedClients = clients;
-	Log::debug("Updated connected clients list: %zu clients", _connectedClients.size());
+	Log::debug("Updated connected clients list: %d clients", (int)_connectedClients.size());
 }
 
 core::String Client::disambiguatedName(const ClientInfo &info) const {
