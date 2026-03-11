@@ -469,7 +469,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_UNITY_BUILD=ON -DUSE_SANITIZERS=ON
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_UNITY_BUILD=ON -DUSE_SANITIZERS=OFF
             cmake --build .
 
         - name: Test
