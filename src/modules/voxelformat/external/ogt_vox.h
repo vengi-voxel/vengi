@@ -531,6 +531,9 @@
     #include <stdio.h>
     #define _USE_MATH_DEFINES
     #include <math.h>
+    #ifndef M_PI
+    #define M_PI 3.14159265358979323846
+    #endif
 
     // MAKE_VOX_CHUNK_ID: used to construct a literal to describe a chunk in a .vox file.
     #define MAKE_VOX_CHUNK_ID(c0,c1,c2,c3)     ( (c0<<0) | (c1<<8) | (c2<<16) | (c3<<24) )
