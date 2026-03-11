@@ -537,6 +537,46 @@ protected:
 #undef CAN_GO_NEG_Z
 #undef CAN_GO_POS_Z
 
+/**
+ * @brief Nearest-neighbor sampling: find the closest non-air voxel in a 3x3x3 neighborhood.
+ */
+template<class Sampler>
+static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
+	static constexpr float MaxSampleDistance = 0.87f; // half-diagonal of a unit cube
+
+	const glm::ivec3 rounded = glm::ivec3(glm::round(pos));
+	if (sampler.setPosition(rounded) && !voxel::isAir(sampler.voxel().getMaterial())) {
+		return sampler.voxel();
+	}
+
+	voxel::Voxel best;
+	float bestDist = MaxSampleDistance + 1.0f;
+	for (int dz = -1; dz <= 1; ++dz) {
+		for (int dy = -1; dy <= 1; ++dy) {
+			for (int dx = -1; dx <= 1; ++dx) {
+				const glm::ivec3 neighbor(rounded.x + dx, rounded.y + dy, rounded.z + dz);
+				if (!sampler.setPosition(neighbor)) {
+					continue;
+				}
+				const voxel::Voxel &v = sampler.voxel();
+				if (voxel::isAir(v.getMaterial())) {
+					continue;
+				}
+				const float dist = glm::length(glm::vec3(neighbor) - pos);
+				if (dist < bestDist) {
+					bestDist = dist;
+					best = v;
+				}
+			}
+		}
+	}
+
+	if (bestDist <= MaxSampleDistance) {
+		return best;
+	}
+	return voxel::Voxel();
+}
+
 // Generic trilinear sampling
 template<class Sampler>
 static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
