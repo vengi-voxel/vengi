@@ -319,10 +319,10 @@ voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ive
 								  const voxel::Voxel &replaceVoxel, int thickness) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames) {
 		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::ModificationRecorder &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
+	auto exec = [=](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), -1, check, exec, thickness);
 	return recorder.dirtyRegion();
@@ -367,10 +367,10 @@ int erasePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::Fa
 
 voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 							   const voxel::Voxel &groundVoxel, int thickness) {
-	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames) {
 		return checkEraseFunc(in, p, groundVoxel, face);
 	};
-	auto exec = [](voxel::ModificationRecorder &in, const glm::ivec3 &p) { return in.setVoxel(p, voxel::Voxel()); };
+	auto exec = [](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) { return in.setVoxel(p, voxel::Voxel()); };
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), 0, check, exec, thickness);
 	return recorder.dirtyRegion();
@@ -392,11 +392,11 @@ static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos, voxe
 
 voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 								 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
-	auto check = [&](voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames direction) {
+	auto check = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames direction) {
 		return checkExtrudeFunc(in, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
 
-	auto exec = [&](voxel::ModificationRecorder &in, const glm::ivec3 &p) {
+	auto exec = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) {
 		in.setVoxel(p, newPlaneVoxel);
 		return true;
 	};

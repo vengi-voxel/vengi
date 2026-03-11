@@ -2,29 +2,29 @@
  * @file
  */
 
-#include "RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
 
 /**
- * @brief A class that records modifications to a RawVolume - but doesn't actually modify it.
+ * @brief A class that records modifications to a Volume - but doesn't actually modify it.
  */
+template<typename Volume>
 class ModificationRecorder {
 private:
-	const RawVolume &_volume;
+	const Volume &_volume;
 	SparseVolume _modifications;
 
 public:
-	ModificationRecorder(const RawVolume &volume) : _volume(volume) {
+	ModificationRecorder(const Volume &volume) : _volume(volume) {
 		_modifications.setStoreEmptyVoxels(true);
 	}
 
 public:
-	class Sampler : public RawVolume::Sampler {
+	class Sampler : public Volume::Sampler {
 	private:
-		using Super = RawVolume::Sampler;
+		using Super = typename Volume::Sampler;
 
 	public:
 		Sampler(const ModificationRecorder *volume) : Super(volume->_volume) {
