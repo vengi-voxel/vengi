@@ -11,6 +11,7 @@
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicSet.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeRescaler.h"
 
 #include <glm/vec3.hpp>
 
@@ -32,20 +33,9 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-/**
- * @brief Sampling type for scale interpolation
- */
-enum class ScaleSampling : uint8_t {
-	Nearest,
-	Linear,
-	Cubic,
-
-	Max
-};
-
 static constexpr const char *ScaleSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
-static_assert(lengthof(ScaleSamplingStr) == (int)ScaleSampling::Max, "ScaleSamplingStr size mismatch");
+static_assert(lengthof(ScaleSamplingStr) == (int)voxelutil::ScaleSampling::Max, "ScaleSamplingStr size mismatch");
 
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
@@ -73,7 +63,7 @@ private:
 	};
 
 	TransformMode _transformMode = TransformMode::Move;
-	ScaleSampling _scaleSampling = ScaleSampling::Nearest;
+	voxelutil::ScaleSampling _scaleSampling = voxelutil::ScaleSampling::Nearest;
 	bool _active = false;
 	bool _hasSnapshot = false;
 	voxel::RawVolume *_lastVolume = nullptr;
@@ -176,11 +166,11 @@ public:
 		_rotationDegrees = glm::vec3(0.0f);
 	}
 
-	ScaleSampling scaleSampling() const {
+	voxelutil::ScaleSampling scaleSampling() const {
 		return _scaleSampling;
 	}
 
-	void setScaleSampling(ScaleSampling sampling) {
+	void setScaleSampling(voxelutil::ScaleSampling sampling) {
 		_scaleSampling = sampling;
 	}
 

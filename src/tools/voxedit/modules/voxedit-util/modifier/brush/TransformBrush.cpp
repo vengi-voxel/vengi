@@ -67,7 +67,7 @@ void TransformBrush::reset() {
 	_scale = glm::vec3(1.0f);
 	_rotationDegrees = glm::vec3(0.0f);
 	_transformMode = TransformMode::Move;
-	_scaleSampling = ScaleSampling::Nearest;
+	_scaleSampling = voxelutil::ScaleSampling::Nearest;
 	_lastVolume = nullptr;
 }
 
@@ -496,11 +496,11 @@ const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const g
 
 const TransformBrush::VoxelEntry *TransformBrush::sampleSnapshotVoxel(const glm::vec3 &srcPos) const {
 	switch (_scaleSampling) {
-	case ScaleSampling::Linear:
+	case voxelutil::ScaleSampling::Linear:
 		return findLinearSnapshotVoxel(srcPos);
-	case ScaleSampling::Cubic:
+	case voxelutil::ScaleSampling::Cubic:
 		return findCubicSnapshotVoxel(srcPos);
-	case ScaleSampling::Nearest:
+	case voxelutil::ScaleSampling::Nearest:
 	default:
 		return findNearestSnapshotVoxel(srcPos);
 	}
