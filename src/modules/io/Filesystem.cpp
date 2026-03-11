@@ -18,9 +18,7 @@
 #include "io/FilesystemEntry.h"
 #include "system/System.h"
 #include "core/sdl/SDLSystem.h"
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include <locale>
-#else
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #ifdef __EMSCRIPTEN__
@@ -34,10 +32,6 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::init(const core::String &organisation, const core::String &appname) {
-#if defined(_WIN32) || defined(__CYGWIN__)
-	// https://github.com/tronkko/dirent/issues/39
-	std::locale::global(std::locale("LC_CTYPE=.utf8"));
-#endif
 	_organisation = organisation;
 	_appname = appname;
 

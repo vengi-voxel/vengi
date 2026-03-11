@@ -1171,21 +1171,24 @@ dirent_mbstowcs_s(
 	size_t *pReturnValue, wchar_t *wcstr,
 	size_t sizeInWords, const char *mbstr, size_t count)
 {
-	/* Older Visual Studio or non-Microsoft compiler */
-	size_t n = mbstowcs(wcstr, mbstr, sizeInWords);
-	if (wcstr && n >= count)
+	/* Use Win32 API with CP_UTF8 to avoid locale dependency */
+	int len = (int)strlen(mbstr);
+	int n = MultiByteToWideChar(CP_UTF8, 0, mbstr, len, wcstr, wcstr ? (int)sizeInWords : 0);
+	if (n == 0 && len > 0)
+		return /*error*/ 1;
+	if (wcstr && (size_t)n >= count)
 		return /*error*/ 1;
 
 	/* Zero-terminate output buffer */
 	if (wcstr && sizeInWords) {
-		if (n >= sizeInWords)
-			n = sizeInWords - 1;
+		if ((size_t)n >= sizeInWords)
+			n = (int)(sizeInWords - 1);
 		wcstr[n] = 0;
 	}
 
-	/* Length of multi-byte string with zero terminator */
+	/* Length of wide string with zero terminator */
 	if (pReturnValue) {
-		*pReturnValue = n + 1;
+		*pReturnValue = (size_t)n + 1;
 	}
 
 	/* Success */
@@ -1200,22 +1203,25 @@ dirent_wcstombs_s(
 	size_t *pReturnValue, char *mbstr,
 	size_t sizeInBytes, const wchar_t *wcstr, size_t count)
 {
-	/* Older Visual Studio or non-Microsoft compiler */
-	size_t n = wcstombs(mbstr, wcstr, sizeInBytes);
-	if (mbstr && n >= count)
+	/* Use Win32 API with CP_UTF8 to avoid locale dependency */
+	int len = (int)wcslen(wcstr);
+	int n = WideCharToMultiByte(CP_UTF8, 0, wcstr, len, mbstr, mbstr ? (int)sizeInBytes : 0, NULL, NULL);
+	if (n == 0 && len > 0)
+		return /*error*/1;
+	if (mbstr && (size_t)n >= count)
 		return /*error*/1;
 
 	/* Zero-terminate output buffer */
 	if (mbstr && sizeInBytes) {
-		if (n >= sizeInBytes) {
-			n = sizeInBytes - 1;
+		if ((size_t)n >= sizeInBytes) {
+			n = (int)(sizeInBytes - 1);
 		}
 		mbstr[n] = '\0';
 	}
 
 	/* Length of resulting multi-bytes string WITH zero-terminator */
 	if (pReturnValue) {
-		*pReturnValue = n + 1;
+		*pReturnValue = (size_t)n + 1;
 	}
 
 	/* Success */

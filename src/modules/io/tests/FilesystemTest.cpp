@@ -118,7 +118,7 @@ TEST_F(FilesystemTest, testIsRelativePath) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(io::Filesystem::sysIsRelativePath("./foo"));
-#ifdef WIN32
+#ifdef _WIN32
 	EXPECT_FALSE(io::Filesystem::sysIsRelativePath("C:"));
 #endif
 	EXPECT_TRUE(io::Filesystem::sysIsRelativePath("foo"));
