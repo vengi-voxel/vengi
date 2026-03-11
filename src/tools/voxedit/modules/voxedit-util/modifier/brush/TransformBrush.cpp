@@ -10,6 +10,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -393,22 +394,11 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 		}
 	} else {
 		// Forward mapping: Move and Shear produce 1:1 mappings without gaps
-		const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
-		const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-		// TODO: PERF: visitor here
-		for (int z = lo.z; z <= hi.z; ++z) {
-			for (int y = lo.y; y <= hi.y; ++y) {
-				for (int x = lo.x; x <= hi.x; ++x) {
-					if (!_snapshot.hasVoxel(x, y, z)) {
-						continue;
-					}
-					const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
-					writeVoxel(wrapper, newPos, _snapshot.voxel(x, y, z));
-				}
-			}
-		}
+		voxelutil::visitVolume(_snapshot, _snapshotRegion, [&](int x, int y, int z, const voxel::Voxel &v) {
+			const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
+			writeVoxel(wrapper, newPos, v);
+		}, voxelutil::VisitSolid());
 	}
-
 }
 
 void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
