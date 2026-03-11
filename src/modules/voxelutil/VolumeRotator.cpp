@@ -27,7 +27,7 @@ namespace voxelutil {
  * Uses inverse transformation (backward mapping) with trilinear sampling to avoid holes.
  */
 voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat4 &mat,
-							   const glm::vec3 &normalizedPivot) {
+							   const glm::vec3 &normalizedPivot, voxel::VoxelSampling sampling) {
 	const glm::mat4 &invMat = glm::inverse(mat);
 	const voxel::Region srcRegion = srcVolume->region();
 
@@ -47,7 +47,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat
 					const glm::vec3 srcPos = math::transform(invMat, glm::vec3(x, y, z), pivot);
 					// Sample from source volume using generic trilinear interpolation via sampler
 					voxel::RawVolume::Sampler srcSampler(srcVolume);
-					const voxel::Voxel voxel = voxel::sampleTrilinear(srcSampler, srcPos);
+					const voxel::Voxel voxel = voxel::sampleVoxel(srcSampler, sampling, srcPos);
 					if (!voxel::isAir(voxel.getMaterial())) {
 						destVolume->setVoxel(x, y, z, voxel);
 					}
@@ -61,12 +61,12 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat
 }
 
 voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
-									  const glm::vec3 &normalizedPivot) {
+									  const glm::vec3 &normalizedPivot, voxel::VoxelSampling sampling) {
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
 	const float roll = glm::radians((float)angles.z);
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
-	return rotateVolume(srcVolume, mat, normalizedPivot);
+	return rotateVolume(srcVolume, mat, normalizedPivot, sampling);
 }
 
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis) {

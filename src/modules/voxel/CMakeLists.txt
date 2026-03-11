@@ -32,6 +32,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 	VoxelNormalUtil.h
+	VoxelSampling.h
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer app)
 engine_target_optimize(${LIB})

@@ -8,20 +8,10 @@
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxel/VoxelSampling.h"
 #include <stdint.h>
 
 namespace voxel {
-
-/**
- * @brief Sampling type for interpolation
- */
-enum class VoxelSampling : uint8_t {
-	Nearest,
-	Linear,
-	Cubic,
-
-	Max
-};
 
 #define CAN_GO_NEG_X(val) ((val) > region.getLowerX())
 #define CAN_GO_POS_X(val) ((val) < region.getUpperX())
