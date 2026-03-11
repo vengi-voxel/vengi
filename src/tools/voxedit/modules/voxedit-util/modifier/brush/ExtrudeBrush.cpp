@@ -227,6 +227,7 @@ void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Regi
 
 	const glm::ivec3 &vlo = volRegion.getLowerCorner();
 	const glm::ivec3 &vhi = volRegion.getUpperCorner();
+	// TODO: PERF: use volume visitor
 	for (int z = vlo.z; z <= vhi.z; ++z) {
 		for (int y = vlo.y; y <= vhi.y; ++y) {
 			for (int x = vlo.x; x <= vhi.x; ++x) {
