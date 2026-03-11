@@ -29,7 +29,6 @@ void TransformBrush::onSceneChange() {
 	_active = false;
 	_hasSnapshot = false;
 	_snapshot.clear();
-	_snapshotLookup.clear();
 	_history.clear();
 	_historyPositions.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
@@ -54,7 +53,6 @@ void TransformBrush::reset() {
 	_active = false;
 	_hasSnapshot = false;
 	_snapshot.clear();
-	_snapshotLookup.clear();
 	_history.clear();
 	_historyPositions.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
@@ -140,7 +138,6 @@ voxel::Region TransformBrush::calcRegion(const BrushContext &ctx) const {
 
 void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
 	_snapshot.clear();
-	_snapshotLookup.clear();
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 
@@ -157,9 +154,7 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 					continue;
 				}
 				const glm::ivec3 pos(x, y, z);
-				const int index = (int)_snapshot.size();
-				_snapshot.push_back({pos, currentVoxel});
-				_snapshotLookup.put(pos, index);
+				_snapshot.setVoxel(pos, currentVoxel);
 				selLo = glm::min(selLo, pos);
 				selHi = glm::max(selHi, pos);
 			}
@@ -178,19 +173,32 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 }
 
 void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
-	for (VoxelEntry &entry : _snapshot) {
-		entry.pos += delta;
+	// Collect and re-insert with shifted positions
+	struct ShiftEntry {
+		glm::ivec3 pos;
+		voxel::Voxel voxel;
+	};
+	core::DynamicArray<ShiftEntry> entries;
+	const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
+	const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
+	for (int z = lo.z; z <= hi.z; ++z) {
+		for (int y = lo.y; y <= hi.y; ++y) {
+			for (int x = lo.x; x <= hi.x; ++x) {
+				if (!_snapshot.hasVoxel(x, y, z)) {
+					continue;
+				}
+				entries.push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), _snapshot.voxel(x, y, z)});
+			}
+		}
+	}
+	_snapshot.clear();
+	for (const ShiftEntry &e : entries) {
+		_snapshot.setVoxel(e.pos, e.voxel);
 	}
 
 	_snapshotRegion.shift(delta.x, delta.y, delta.z);
 	_snapshotCenter += glm::vec3(delta);
 	_capturedVolumeLower += delta;
-
-	// Rebuild spatial lookup with shifted positions
-	_snapshotLookup.clear();
-	for (int i = 0; i < (int)_snapshot.size(); ++i) {
-		_snapshotLookup.put(_snapshot[i].pos, i);
-	}
 
 	// Shift history positions in-place
 	_historyPositions.clear();
@@ -339,32 +347,30 @@ void TransformBrush::writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wr
 	}
 }
 
-const TransformBrush::VoxelEntry *TransformBrush::findNearestSnapshotVoxel(const glm::vec3 &srcPos) const {
+const voxel::Voxel *TransformBrush::findNearestSnapshotVoxel(const glm::vec3 &srcPos) const {
 	// Half-diagonal of a unit cube - maximum distance for nearest-neighbor sampling
 	static constexpr float MaxSampleDistance = 0.87f;
 
 	const glm::ivec3 rounded = glm::ivec3(glm::round(srcPos));
 	// Fast path: exact match via hash lookup
-	auto iter = _snapshotLookup.find(rounded);
-	if (iter != _snapshotLookup.end()) {
-		return &_snapshot[iter->value];
+	if (_snapshot.hasVoxel(rounded)) {
+		return &_snapshot.voxel(rounded);
 	}
 
 	// Check immediate neighbors (3x3x3 cube around the rounded position)
-	const VoxelEntry *best = nullptr;
+	const voxel::Voxel *best = nullptr;
 	float bestDist = MaxSampleDistance + 1.0f;
 	for (int dz = -1; dz <= 1; ++dz) {
 		for (int dy = -1; dy <= 1; ++dy) {
 			for (int dx = -1; dx <= 1; ++dx) {
 				const glm::ivec3 neighbor(rounded.x + dx, rounded.y + dy, rounded.z + dz);
-				auto neighborIter = _snapshotLookup.find(neighbor);
-				if (neighborIter == _snapshotLookup.end()) {
+				if (!_snapshot.hasVoxel(neighbor)) {
 					continue;
 				}
 				const float dist = glm::length(glm::vec3(neighbor) - srcPos);
 				if (dist < bestDist) {
 					bestDist = dist;
-					best = &_snapshot[neighborIter->value];
+					best = &_snapshot.voxel(neighbor);
 				}
 			}
 		}
@@ -376,7 +382,7 @@ const TransformBrush::VoxelEntry *TransformBrush::findNearestSnapshotVoxel(const
 	return nullptr;
 }
 
-const TransformBrush::VoxelEntry *TransformBrush::findLinearSnapshotVoxel(const glm::vec3 &srcPos) const {
+const voxel::Voxel *TransformBrush::findLinearSnapshotVoxel(const glm::vec3 &srcPos) const {
 	// Trilinear-style sampling for voxels: check the 2x2x2 cell containing srcPos.
 	// Since voxel materials are discrete, we pick the most common non-air material
 	// (majority vote) among the 8 corners of the cell.
@@ -386,7 +392,7 @@ const TransformBrush::VoxelEntry *TransformBrush::findLinearSnapshotVoxel(const 
 
 	// Count occurrences of each material in the 2x2x2 cell
 	struct MaterialCount {
-		const VoxelEntry *entry;
+		const voxel::Voxel *voxel;
 		int count;
 	};
 	static constexpr int MaxMaterials = CellCorners;
@@ -397,22 +403,21 @@ const TransformBrush::VoxelEntry *TransformBrush::findLinearSnapshotVoxel(const 
 		for (int dy = 0; dy < CellSize; ++dy) {
 			for (int dx = 0; dx < CellSize; ++dx) {
 				const glm::ivec3 pos(base.x + dx, base.y + dy, base.z + dz);
-				auto iter = _snapshotLookup.find(pos);
-				if (iter == _snapshotLookup.end()) {
+				if (!_snapshot.hasVoxel(pos)) {
 					continue;
 				}
-				const VoxelEntry *entry = &_snapshot[iter->value];
-				const uint8_t color = entry->voxel.getColor();
+				const voxel::Voxel *v = &_snapshot.voxel(pos);
+				const uint8_t color = v->getColor();
 				bool found = false;
 				for (int mi = 0; mi < materialCount; ++mi) {
-					if (materials[mi].entry->voxel.getColor() == color) {
+					if (materials[mi].voxel->getColor() == color) {
 						materials[mi].count++;
 						found = true;
 						break;
 					}
 				}
 				if (!found) {
-					materials[materialCount++] = {entry, 1};
+					materials[materialCount++] = {v, 1};
 				}
 			}
 		}
@@ -429,10 +434,10 @@ const TransformBrush::VoxelEntry *TransformBrush::findLinearSnapshotVoxel(const 
 			bestIdx = mi;
 		}
 	}
-	return materials[bestIdx].entry;
+	return materials[bestIdx].voxel;
 }
 
-const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const glm::vec3 &srcPos) const {
+const voxel::Voxel *TransformBrush::findCubicSnapshotVoxel(const glm::vec3 &srcPos) const {
 	// Cubic sampling: check a 4x4x4 neighborhood centered on srcPos.
 	// Each source voxel votes with a weight inversely proportional to its distance.
 	// The material with the highest total weight wins.
@@ -442,7 +447,7 @@ const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const g
 	const glm::ivec3 center = glm::ivec3(glm::round(srcPos));
 
 	struct MaterialWeight {
-		const VoxelEntry *entry;
+		const voxel::Voxel *voxel;
 		float weight;
 	};
 	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
@@ -453,8 +458,7 @@ const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const g
 		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
 			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
 				const glm::ivec3 pos(center.x + dx, center.y + dy, center.z + dz);
-				auto iter = _snapshotLookup.find(pos);
-				if (iter == _snapshotLookup.end()) {
+				if (!_snapshot.hasVoxel(pos)) {
 					continue;
 				}
 				const float dist = glm::length(glm::vec3(pos) - srcPos);
@@ -463,18 +467,18 @@ const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const g
 				}
 				// Weight: inverse distance (closer voxels contribute more)
 				const float weight = 1.0f / (dist + 0.001f);
-				const VoxelEntry *entry = &_snapshot[iter->value];
-				const uint8_t color = entry->voxel.getColor();
+				const voxel::Voxel *v = &_snapshot.voxel(pos);
+				const uint8_t color = v->getColor();
 				bool found = false;
 				for (int mi = 0; mi < materialCount; ++mi) {
-					if (materials[mi].entry->voxel.getColor() == color) {
+					if (materials[mi].voxel->getColor() == color) {
 						materials[mi].weight += weight;
 						found = true;
 						break;
 					}
 				}
 				if (!found && materialCount < MaxMaterials) {
-					materials[materialCount++] = {entry, weight};
+					materials[materialCount++] = {v, weight};
 				}
 			}
 		}
@@ -491,10 +495,10 @@ const TransformBrush::VoxelEntry *TransformBrush::findCubicSnapshotVoxel(const g
 			bestIdx = mi;
 		}
 	}
-	return materials[bestIdx].entry;
+	return materials[bestIdx].voxel;
 }
 
-const TransformBrush::VoxelEntry *TransformBrush::sampleSnapshotVoxel(const glm::vec3 &srcPos) const {
+const voxel::Voxel *TransformBrush::sampleSnapshotVoxel(const glm::vec3 &srcPos) const {
 	switch (_scaleSampling) {
 	case voxelutil::ScaleSampling::Linear:
 		return findLinearSnapshotVoxel(srcPos);
@@ -512,9 +516,21 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 	const voxel::Voxel air;
 
 	// Erase all original selected voxels (saving to history)
-	for (const VoxelEntry &entry : _snapshot) {
-		if (volRegion.containsPoint(entry.pos)) {
-			writeVoxel(vol, wrapper, entry.pos, air);
+	{
+		const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
+		const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
+		for (int z = lo.z; z <= hi.z; ++z) {
+			for (int y = lo.y; y <= hi.y; ++y) {
+				for (int x = lo.x; x <= hi.x; ++x) {
+					if (!_snapshot.hasVoxel(x, y, z)) {
+						continue;
+					}
+					const glm::ivec3 pos(x, y, z);
+					if (volRegion.containsPoint(pos)) {
+						writeVoxel(vol, wrapper, pos, air);
+					}
+				}
+			}
 		}
 	}
 
@@ -551,18 +567,27 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);
 					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
-					const VoxelEntry *source = sampleSnapshotVoxel(srcPos);
+					const voxel::Voxel *source = sampleSnapshotVoxel(srcPos);
 					if (source) {
-						writeVoxel(vol, wrapper, dstPos, source->voxel);
+						writeVoxel(vol, wrapper, dstPos, *source);
 					}
 				}
 			}
 		}
 	} else {
 		// Forward mapping: Move and Shear produce 1:1 mappings without gaps
-		for (const VoxelEntry &entry : _snapshot) {
-			const glm::ivec3 newPos = transformPosition(entry.pos);
-			writeVoxel(vol, wrapper, newPos, entry.voxel);
+		const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
+		const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
+		for (int z = lo.z; z <= hi.z; ++z) {
+			for (int y = lo.y; y <= hi.y; ++y) {
+				for (int x = lo.x; x <= hi.x; ++x) {
+					if (!_snapshot.hasVoxel(x, y, z)) {
+						continue;
+					}
+					const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
+					writeVoxel(vol, wrapper, newPos, _snapshot.voxel(x, y, z));
+				}
+			}
 		}
 	}
 

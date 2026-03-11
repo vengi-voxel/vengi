@@ -8,8 +8,8 @@
 #include "Brush.h"
 #include "core/GLM.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicSet.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeRescaler.h"
 
@@ -52,11 +52,6 @@ class TransformBrush : public Brush {
 private:
 	using Super = Brush;
 
-	struct VoxelEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-
 	struct HistoryEntry {
 		glm::ivec3 pos;
 		voxel::Voxel original;
@@ -69,10 +64,8 @@ private:
 	voxel::RawVolume *_lastVolume = nullptr;
 
 	// Original selected voxels captured at brush activation
-	// TODO: could also be a SparseVolume maybe?
-	core::DynamicArray<VoxelEntry> _snapshot;
+	voxel::SparseVolume _snapshot;
 	// Selection bounding box at capture time
-	// TODO: if _snapshot is a SparseVolume this would be just the volume region
 	voxel::Region _snapshotRegion;
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
@@ -85,10 +78,6 @@ private:
 	core::DynamicArray<HistoryEntry> _history;
 	// TODO: use a SparseVolume here
 	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> _historyPositions;
-
-	// Spatial lookup: snapshot position -> index into _snapshot for O(1) access
-	// TODO: use a SparseVolume here
-	core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> _snapshotLookup;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
@@ -109,10 +98,10 @@ private:
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
 	void writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
 					const glm::ivec3 &pos, const voxel::Voxel &voxel);
-	const VoxelEntry *findNearestSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *findLinearSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *findCubicSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const VoxelEntry *sampleSnapshotVoxel(const glm::vec3 &srcPos) const;
+	const voxel::Voxel *findNearestSnapshotVoxel(const glm::vec3 &srcPos) const;
+	const voxel::Voxel *findLinearSnapshotVoxel(const glm::vec3 &srcPos) const;
+	const voxel::Voxel *findCubicSnapshotVoxel(const glm::vec3 &srcPos) const;
+	const voxel::Voxel *sampleSnapshotVoxel(const glm::vec3 &srcPos) const;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -156,7 +145,6 @@ public:
 		_history.clear();
 		_historyPositions.clear();
 		_snapshot.clear();
-		_snapshotLookup.clear();
 		_hasSnapshot = false;
 		_cachedRegionValid = false;
 		_cachedRegion = voxel::Region::InvalidRegion;
