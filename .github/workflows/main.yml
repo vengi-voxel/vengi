@@ -431,3 +431,49 @@ jobs:
             args: build/*.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    msys2:
+        timeout-minutes: 60
+        runs-on: windows-latest
+
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Setup MSYS2
+          uses: msys2/setup-msys2@v2
+          with:
+            msystem: MINGW64
+            update: false
+            install: >-
+              mingw-w64-x86_64-gcc
+              mingw-w64-x86_64-cmake
+              mingw-w64-x86_64-ninja
+              mingw-w64-x86_64-ccache
+              mingw-w64-x86_64-pkg-config
+              mingw-w64-x86_64-SDL2
+              mingw-w64-x86_64-freetype
+              mingw-w64-x86_64-libjpeg-turbo
+              mingw-w64-x86_64-libpng
+              mingw-w64-x86_64-zlib
+              mingw-w64-x86_64-curl
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: D:/a/_temp/msys64/home/runneradmin/.ccache
+            key: msys2-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: msys2-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: Build
+          shell: msys2 {0}
+          run: |
+            mkdir build
+            cd build
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=OFF
+            cmake --build .
+
+        - name: Test
+          shell: msys2 {0}
+          run: |
+            cd build
+            ctest -V .
