@@ -8,7 +8,7 @@
 
 namespace network {
 
-#ifdef WIN32
+#ifdef _WIN32
 using SocketId = uintptr_t;
 #else
 using SocketId = int;

@@ -95,7 +95,7 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 #ifdef O_NONBLOCK
 	fcntl(_impl->socketFD, F_SETFL, O_NONBLOCK);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 	unsigned long mode = 1;
 	ioctlsocket(_impl->socketFD, FIONBIO, &mode);
 #endif
@@ -106,7 +106,7 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 }
 
 bool ClientNetwork::init() {
-#ifdef WIN32
+#ifdef _WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (wsaResult != NO_ERROR) {
@@ -175,7 +175,7 @@ void ClientNetwork::update(double nowSeconds) {
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
-#ifdef WIN32
+#ifdef _WIN32
 	const int ready = select(0, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #else
 	const int ready = select(_impl->socketFD + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);

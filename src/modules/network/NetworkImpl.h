@@ -7,7 +7,7 @@
 
 #include "SocketId.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -41,7 +41,7 @@
 namespace network {
 
 static inline bool isValidSocketId(SocketId socket) {
-#ifdef WIN32
+#ifdef _WIN32
 	// on windows the SocketId can be any value except InvalidSocketId
 	return socket != InvalidSocketId;
 #else

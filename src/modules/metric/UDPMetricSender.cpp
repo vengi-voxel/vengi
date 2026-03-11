@@ -35,7 +35,7 @@ UDPMetricSender::UDPMetricSender(const core::String& host, int port) :
 
 bool UDPMetricSender::init() {
 	Log::debug("metric udp sender %s:%i", _host.c_str(), (int)_port);
-#ifdef WIN32
+#ifdef _WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (wsaResult != NO_ERROR) {
@@ -98,7 +98,7 @@ bool UDPMetricSender::send(const char* buffer) const {
 	const size_t len = (size_t)SDL_strlen(buffer);
 	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
 	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
-#ifdef WIN32
+#ifdef _WIN32
 	const int ret = (int)sendto(_socket, buffer, len, 0, sock, socksize);
 #else
 	const void* buf = (const void*)buffer;

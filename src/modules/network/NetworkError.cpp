@@ -3,7 +3,7 @@
  */
 
 #include "NetworkError.h"
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <stdio.h>
 #endif
@@ -13,7 +13,7 @@
 namespace network {
 
 const char *getNetworkErrorString() {
-#ifdef WIN32
+#ifdef _WIN32
 	char buf[256];
 	DWORD errCode = GetLastError();
 	DWORD len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, errCode,
