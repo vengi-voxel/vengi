@@ -550,6 +550,7 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 		return sampler.voxel();
 	}
 
+	// TODO: use the sampler peek functions and make the sampler const
 	voxel::Voxel best;
 	float bestDist = MaxSampleDistance + 1.0f;
 	for (int dz = -1; dz <= 1; ++dz) {
