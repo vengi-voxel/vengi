@@ -433,7 +433,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     msys2:
-        timeout-minutes: 60
+        timeout-minutes: 30
         runs-on: windows-latest
 
         steps:
@@ -469,7 +469,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=OFF
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_UNITY_BUILD=ON -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Test
