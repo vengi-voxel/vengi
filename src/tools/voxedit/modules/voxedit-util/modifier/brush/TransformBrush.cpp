@@ -3,11 +3,9 @@
  */
 
 #include "TransformBrush.h"
-#include "core/collection/DynamicSet.h"
-#include "math/Axis.h"
+#include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Connectivity.h"
-#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -22,15 +20,12 @@
 
 namespace voxedit {
 
-using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
-
 void TransformBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
 	_hasSnapshot = false;
 	_snapshot.clear();
 	_history.clear();
-	_historyPositions.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
@@ -54,7 +49,6 @@ void TransformBrush::reset() {
 	_hasSnapshot = false;
 	_snapshot.clear();
 	_history.clear();
-	_historyPositions.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
@@ -96,9 +90,18 @@ void TransformBrush::endBrush(BrushContext &) {
 		};
 
 		core::DynamicArray<glm::ivec3> toPrune;
-		toPrune.reserve(_history.size());
-		for (const HistoryEntry &entry : _history) {
-			const glm::ivec3 &pos = entry.pos;
+		struct PositionCollector {
+			core::DynamicArray<glm::ivec3> *positions;
+			bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
+				positions->push_back(glm::ivec3(x, y, z));
+				return true;
+			}
+		};
+		core::DynamicArray<glm::ivec3> allPositions;
+		allPositions.reserve(_history.size());
+		PositionCollector collector{&allPositions};
+		_history.copyTo(collector);
+		for (const glm::ivec3 &pos : allPositions) {
 			if (!voxel::isAir(_lastVolume->voxel(pos).getMaterial()) && isInterior(pos)) {
 				toPrune.push_back(pos);
 			}
@@ -200,11 +203,22 @@ void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 	_snapshotCenter += glm::vec3(delta);
 	_capturedVolumeLower += delta;
 
-	// Shift history positions in-place
-	_historyPositions.clear();
-	for (HistoryEntry &entry : _history) {
-		entry.pos += delta;
-		_historyPositions.insert(entry.pos);
+	// Shift history positions: collect, clear, reinsert shifted
+	struct EntryCollector {
+		core::DynamicArray<ShiftEntry> *entries;
+		glm::ivec3 delta;
+		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
+			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
+			return true;
+		}
+	};
+	core::DynamicArray<ShiftEntry> historyEntries;
+	historyEntries.reserve(_history.size());
+	EntryCollector collector{&historyEntries, delta};
+	_history.copyTo(collector);
+	_history.clear();
+	for (const ShiftEntry &e : historyEntries) {
+		_history.setVoxel(e.pos, e.voxel);
 	}
 }
 
@@ -329,11 +343,10 @@ glm::vec3 TransformBrush::inverseTransformPosition(const glm::ivec3 &pos) const 
 }
 
 void TransformBrush::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
-	if (_historyPositions.has(pos)) {
+	if (_history.hasVoxel(pos)) {
 		return;
 	}
-	_historyPositions.insert(pos);
-	_history.push_back({pos, vol->voxel(pos)});
+	_history.setVoxel(pos, vol->voxel(pos));
 }
 
 void TransformBrush::writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
@@ -603,13 +616,19 @@ void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &w
 	_lastVolume = vol;
 
 	// Restore previously transformed state before re-applying
-	for (const HistoryEntry &entry : _history) {
-		if (vol->setVoxel(entry.pos, entry.original)) {
-			wrapper.addToDirtyRegion(entry.pos);
+	struct HistoryRestorer {
+		voxel::RawVolume *vol;
+		ModifierVolumeWrapper *wrapper;
+		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
+			if (vol->setVoxel(x, y, z, voxel)) {
+				wrapper->addToDirtyRegion(glm::ivec3(x, y, z));
+			}
+			return true;
 		}
-	}
+	};
+	HistoryRestorer restorer{vol, &wrapper};
+	_history.copyTo(restorer);
 	_history.clear();
-	_historyPositions.clear();
 
 	// Apply the current transform from the original snapshot
 	applyTransform(wrapper, ctx);

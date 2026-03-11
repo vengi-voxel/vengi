@@ -7,8 +7,6 @@
 #include "app/I18N.h"
 #include "Brush.h"
 #include "core/GLM.h"
-#include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicSet.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeRescaler.h"
@@ -52,11 +50,6 @@ class TransformBrush : public Brush {
 private:
 	using Super = Brush;
 
-	struct HistoryEntry {
-		glm::ivec3 pos;
-		voxel::Voxel original;
-	};
-
 	TransformMode _transformMode = TransformMode::Move;
 	voxelutil::ScaleSampling _scaleSampling = voxelutil::ScaleSampling::Nearest;
 	bool _active = false;
@@ -74,10 +67,8 @@ private:
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so interior pruning can find all modified positions.
-	// TODO: could also be a SparseVolume maybe?
-	core::DynamicArray<HistoryEntry> _history;
-	// TODO: use a SparseVolume here
-	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> _historyPositions;
+	// Stores the original voxel at each modified position (with empty voxel storage enabled).
+	voxel::SparseVolume _history;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
@@ -111,6 +102,7 @@ public:
 	static constexpr int MaxMoveOffset = 128;
 	static constexpr int MaxShearOffset = 128;
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
+		_history.setStoreEmptyVoxels(true);
 	}
 	virtual ~TransformBrush() = default;
 
@@ -143,7 +135,6 @@ public:
 	 */
 	void commitCurrentTransform() {
 		_history.clear();
-		_historyPositions.clear();
 		_snapshot.clear();
 		_hasSnapshot = false;
 		_cachedRegionValid = false;
