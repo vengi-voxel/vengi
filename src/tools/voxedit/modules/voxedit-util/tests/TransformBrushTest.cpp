@@ -335,6 +335,46 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	brush.shutdown();
 }
 
+// Non-selected voxels must not be moved
+TEST_F(TransformBrushTest, testMoveDoesNotAffectNonSelectedVoxels) {
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+	// Place a selected voxel at (0,0,0)
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+	// Place a non-selected voxel at (1,0,0) — no FlagOutline
+	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setTransformMode(TransformMode::Move);
+	brush.setMoveOffset(glm::ivec3(5, 0, 0));
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// Selected voxel should have moved to (5,0,0)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(5, 0, 0).getMaterial()))
+		<< "Selected voxel should be at new position (5,0,0)";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original selected position should be empty";
+
+	// Non-selected voxel should remain at (1,0,0)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Non-selected voxel should remain at (1,0,0)";
+	EXPECT_EQ(volume.voxel(1, 0, 0).getColor(), 2)
+		<< "Non-selected voxel should retain its color";
+	EXPECT_FALSE(volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline)
+		<< "Non-selected voxel should still have no selection flag";
+
+	brush.shutdown();
+}
+
 // Shear preserves all voxels (forward mapping, no pruning)
 TEST_F(TransformBrushTest, testShearPreservesAllVoxels) {
 	voxel::RawVolume volume(voxel::Region(-10, 10));
