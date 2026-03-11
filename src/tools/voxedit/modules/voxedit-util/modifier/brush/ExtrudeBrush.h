@@ -41,6 +41,8 @@ private:
 	// Cleared in reset() when the brush is deselected.
 	core::DynamicArray<HistoryEntry> _history;
 
+	using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+
 	// Cached selected voxel positions, captured once on first generate() call.
 	// Re-used for all subsequent depth/offset changes to prevent selection bleeding.
 	core::DynamicArray<glm::ivec3> _cachedSelectedPositions;
@@ -67,6 +69,7 @@ private:
 
 	void cacheSelection(const voxel::RawVolume *vol, const voxel::Region &volRegion);
 	void adjustCacheForRegionShift(const glm::ivec3 &delta);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const glm::ivec3 &pos, const voxel::Voxel &newVoxel);
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,

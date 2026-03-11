@@ -14,8 +14,6 @@
 
 namespace voxedit {
 
-using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
-
 void ExtrudeBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
@@ -303,10 +301,23 @@ void ExtrudeBrush::adjustCacheForRegionShift(const glm::ivec3 &delta) {
 	_capturedVolumeLower += delta;
 }
 
+void ExtrudeBrush::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
+	voxel::RawVolume *vol = wrapper.volume();
+	const voxel::Region &volRegion = vol->region();
+	if (!volRegion.containsPoint(pos)) {
+		return;
+	}
+	if (!savedPositions.has(pos)) {
+		_history.push_back({pos, vol->voxel(pos)});
+		savedPositions.insert(pos);
+	}
+	vol->setVoxel(pos, newVoxel);
+	wrapper.addToDirtyRegion(pos);
+}
+
 void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							const voxel::Region &) {
 	voxel::RawVolume *vol = wrapper.volume();
-	const voxel::Region &volRegion = vol->region();
 	_lastVolume = vol;
 
 	// Step 1: Restore all positions modified by the previous generate() call.
@@ -349,20 +360,9 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		return shift;
 	};
 
-	// Step 2: Save original voxel before writing — uses a set for O(1) dedup.
+	// Step 2: Save original voxel before writing - uses a set for O(1) dedup.
 	// Saves both air and solid voxels so restore is always complete.
 	PositionSet savedPositions;
-	auto writeVoxel = [&](const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
-		if (!volRegion.containsPoint(pos)) {
-			return;
-		}
-		if (!savedPositions.has(pos)) {
-			_history.push_back({pos, vol->voxel(pos)});
-			savedPositions.insert(pos);
-		}
-		vol->setVoxel(pos, newVoxel);
-		wrapper.addToDirtyRegion(pos);
-	};
 
 	const voxel::Voxel air{};
 
@@ -374,7 +374,7 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 				const glm::ivec3 shift = lateralShift(step);
 				for (const WallCandidate &wc : _cachedWallCandidates) {
 					const glm::ivec3 sidePos = wc.basePos + wc.perpOffset + dir * step + shift;
-					writeVoxel(sidePos, ctx.cursorVoxel);
+					writeVoxel(wrapper, savedPositions, sidePos, ctx.cursorVoxel);
 				}
 			}
 		}
@@ -382,7 +382,7 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		for (int step = 0; step < steps; ++step) {
 			const glm::ivec3 shift = lateralShift(step);
 			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-				writeVoxel(selPos + dir * step + shift, air);
+				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, air);
 			}
 		}
 	} else {
@@ -390,13 +390,13 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 		for (int step = 1; step <= steps; ++step) {
 			const glm::ivec3 shift = lateralShift(step);
 			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-				writeVoxel(selPos + dir * step + shift, ctx.cursorVoxel);
+				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, ctx.cursorVoxel);
 			}
 		}
 
 		// Remove original selected voxels — extrude moves the face outward
 		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-			writeVoxel(selPos, air);
+			writeVoxel(wrapper, savedPositions, selPos, air);
 		}
 	}
 }
