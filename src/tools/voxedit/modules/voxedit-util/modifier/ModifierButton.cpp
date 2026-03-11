@@ -25,6 +25,9 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		return initialDown;
 	}
 	if (initialDown) {
+		if (modifier.isBrushGizmoActive()) {
+			return initialDown;
+		}
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
 			modifier.setModifierType(_newType);
@@ -43,6 +46,10 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	}
 	if (allUp) {
 		Modifier &modifier = _sceneMgr->modifier();
+		if (modifier.isBrushGizmoActive()) {
+			modifier.endBrush();
+			return allUp;
+		}
 		_furtherAction = modifier.needsAdditionalAction();
 		if (_furtherAction) {
 			modifier.executeAdditionalAction();

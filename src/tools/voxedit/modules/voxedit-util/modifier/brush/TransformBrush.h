@@ -76,6 +76,7 @@ private:
 	ScaleSampling _scaleSampling = ScaleSampling::Nearest;
 	bool _active = false;
 	bool _hasSnapshot = false;
+	voxel::RawVolume *_lastVolume = nullptr;
 
 	// Original selected voxels captured at brush activation
 	// TODO: could also be a SparseVolume maybe?
@@ -85,6 +86,8 @@ private:
 	voxel::Region _snapshotRegion;
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
+	// Volume region lower corner at snapshot capture time (to detect region shifts)
+	glm::ivec3 _capturedVolumeLower{0};
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so interior pruning can find all modified positions.
@@ -108,6 +111,7 @@ private:
 	glm::vec3 _rotationDegrees{0.0f, 0.0f, 0.0f};
 
 	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
+	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
 	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 	voxel::Region computeTransformedRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
@@ -132,6 +136,8 @@ public:
 	virtual ~TransformBrush() = default;
 
 	void reset() override;
+	void onActivated() override;
+	bool onDeactivated() override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;

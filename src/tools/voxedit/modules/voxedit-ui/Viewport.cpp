@@ -927,17 +927,20 @@ bool Viewport::runBrushGizmo(const video::Camera &camera) {
 	Modifier &modifier = _sceneMgr->modifier();
 	Brush *brush = modifier.currentBrush();
 	if (brush == nullptr) {
+		modifier.setBrushGizmoActive(false);
 		return false;
 	}
 
 	const BrushContext &ctx = modifier.brushContext();
 	if (!brush->wantBrushGizmo(ctx)) {
+		modifier.setBrushGizmoActive(false);
 		return false;
 	}
 
 	BrushGizmoState state;
 	brush->brushGizmoState(ctx, state);
 	if (state.operations == BrushGizmo_None) {
+		modifier.setBrushGizmoActive(false);
 		return false;
 	}
 
@@ -966,6 +969,7 @@ bool Viewport::runBrushGizmo(const video::Camera &camera) {
 	}
 
 	if (imguizmoOp == 0) {
+		modifier.setBrushGizmoActive(false);
 		return false;
 	}
 
@@ -984,6 +988,11 @@ bool Viewport::runBrushGizmo(const video::Camera &camera) {
 
 	const bool manipulated = ImGuizmo::Manipulate(vMatPtr, pMatPtr, (ImGuizmo::OPERATION)imguizmoOp, mode, mPtr,
 												  dMatPtr, snapPtr, boundsPtr, boundsSnap);
+
+	// Track whether the brush gizmo is being interacted with so the action
+	// button (ModifierButton) does not commit intermediate transforms
+	modifier.setBrushGizmoActive(ImGuizmo::IsUsing());
+
 	if (!manipulated) {
 		return false;
 	}
@@ -1056,6 +1065,8 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 		ImGuizmo::Enable(true);
 		brushGizmoModified = runBrushGizmo(camera);
 		ImGuizmo::PopID();
+	} else {
+		_sceneMgr->modifier().setBrushGizmoActive(false);
 	}
 
 	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal());

@@ -24,6 +24,14 @@ namespace voxedit {
 
 using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
 
+void TransformBrush::onActivated() {
+	reset();
+}
+
+bool TransformBrush::onDeactivated() {
+	return _hasSnapshot;
+}
+
 void TransformBrush::reset() {
 	Super::reset();
 	_active = false;
@@ -36,12 +44,14 @@ void TransformBrush::reset() {
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
 	_snapshotCenter = glm::vec3(0.0f);
+	_capturedVolumeLower = glm::ivec3(0);
 	_moveOffset = glm::ivec3(0);
 	_shearOffset = glm::ivec3(0);
 	_scale = glm::vec3(1.0f);
 	_rotationDegrees = glm::vec3(0.0f);
 	_transformMode = TransformMode::Move;
 	_scaleSampling = ScaleSampling::Nearest;
+	_lastVolume = nullptr;
 }
 
 bool TransformBrush::beginBrush(const BrushContext &ctx) {
@@ -53,6 +63,36 @@ bool TransformBrush::beginBrush(const BrushContext &ctx) {
 }
 
 void TransformBrush::endBrush(BrushContext &) {
+	// Prune interior voxels on final commit. Only for Scale/Rotate which can
+	// create new interior voxels. Move/Shear are 1:1 mappings that preserve topology.
+	const bool useInverseMapping = (_transformMode == TransformMode::Scale ||
+									_transformMode == TransformMode::Rotate);
+	if (_lastVolume && useInverseMapping) {
+		const voxel::Region &volRegion = _lastVolume->region();
+		const voxel::Voxel air;
+		auto isInterior = [&](const glm::ivec3 &pos) {
+			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
+				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
+				if (!volRegion.containsPoint(nb) || voxel::isAir(_lastVolume->voxel(nb).getMaterial())) {
+					return false;
+				}
+			}
+			return true;
+		};
+
+		core::DynamicArray<glm::ivec3> toPrune;
+		toPrune.reserve(_history.size());
+		for (const HistoryEntry &entry : _history) {
+			const glm::ivec3 &pos = entry.pos;
+			if (!voxel::isAir(_lastVolume->voxel(pos).getMaterial()) && isInterior(pos)) {
+				toPrune.push_back(pos);
+			}
+		}
+		for (const glm::ivec3 &pos : toPrune) {
+			_lastVolume->setVoxel(pos, air);
+		}
+	}
+	_lastVolume = nullptr;
 	_active = false;
 }
 
@@ -63,6 +103,12 @@ bool TransformBrush::active() const {
 void TransformBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
 	if (!_hasSnapshot && volume != nullptr) {
 		captureSnapshot(volume, ctx.targetVolumeRegion);
+	} else if (_hasSnapshot) {
+		// Detect volume region shift (e.g. node was moved) and adjust cached data
+		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
+		if (delta != glm::ivec3(0)) {
+			adjustSnapshotForRegionShift(delta);
+		}
 	}
 	_cachedRegion = computeTransformedRegion();
 	_cachedRegionValid = _cachedRegion.isValid();
@@ -110,7 +156,31 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 
 	_snapshotRegion = voxel::Region(selLo, selHi);
 	_snapshotCenter = glm::vec3(selLo + selHi) * 0.5f;
+	_capturedVolumeLower = volRegion.getLowerCorner();
 	_hasSnapshot = true;
+}
+
+void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
+	for (VoxelEntry &entry : _snapshot) {
+		entry.pos += delta;
+	}
+
+	_snapshotRegion.shift(delta.x, delta.y, delta.z);
+	_snapshotCenter += glm::vec3(delta);
+	_capturedVolumeLower += delta;
+
+	// Rebuild spatial lookup with shifted positions
+	_snapshotLookup.clear();
+	for (int i = 0; i < (int)_snapshot.size(); ++i) {
+		_snapshotLookup.put(_snapshot[i].pos, i);
+	}
+
+	// Shift history positions in-place
+	_historyPositions.clear();
+	for (HistoryEntry &entry : _history) {
+		entry.pos += delta;
+		_historyPositions.insert(entry.pos);
+	}
 }
 
 voxel::Region TransformBrush::computeTransformedRegion() const {
@@ -479,33 +549,6 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 		}
 	}
 
-	// Prune interior voxels: remove any transformed voxel that is fully enclosed
-	// by 6 solid neighbors. These are invisible and waste sparse storage.
-	// Collect all positions first (read-only), then prune - mutating during
-	// iteration would cause adjacent voxels to appear non-interior (checkerboard).
-	auto isInterior = [&](const glm::ivec3 &pos) {
-		for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
-			const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
-			if (!volRegion.containsPoint(nb) || voxel::isAir(vol->voxel(nb).getMaterial())) {
-				return false;
-			}
-		}
-		return true;
-	};
-
-	core::DynamicArray<glm::ivec3> toPrune;
-	toPrune.reserve(_history.size());
-	for (const HistoryEntry &entry : _history) {
-		const glm::ivec3 &pos = entry.pos;
-		const voxel::Voxel &current = vol->voxel(pos);
-		if (!voxel::isAir(current.getMaterial()) && isInterior(pos)) {
-			toPrune.push_back(pos);
-		}
-	}
-	for (const glm::ivec3 &pos : toPrune) {
-		vol->setVoxel(pos, air);
-	}
-	wrapper.addToDirtyRegion(toPrune);
 }
 
 void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -515,6 +558,7 @@ void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &w
 	}
 
 	voxel::RawVolume *vol = wrapper.volume();
+	_lastVolume = vol;
 
 	// Restore previously transformed state before re-applying
 	for (const HistoryEntry &entry : _history) {

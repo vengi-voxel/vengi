@@ -214,4 +214,164 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 	brush.shutdown();
 }
 
+// onDeactivated returns true when snapshot exists
+TEST_F(TransformBrushTest, testOnDeactivatedWithSnapshot) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setTransformMode(TransformMode::Move);
+	brush.setMoveOffset(glm::ivec3(1, 0, 0));
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	// Before execute, no snapshot
+	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot yet";
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// After execute, snapshot exists
+	EXPECT_TRUE(brush.hasSnapshot());
+	EXPECT_TRUE(brush.onDeactivated()) << "Should commit pending transform";
+
+	brush.shutdown();
+}
+
+// onDeactivated returns false when no snapshot
+TEST_F(TransformBrushTest, testOnDeactivatedWithoutSnapshot) {
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+
+	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot — nothing to commit";
+
+	brush.shutdown();
+}
+
+// onActivated resets the brush
+TEST_F(TransformBrushTest, testOnActivatedResetsState) {
+	voxel::RawVolume volume(voxel::Region(-5, 5));
+	volume.setVoxel(0, 0, 0, selectedVoxel());
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setTransformMode(TransformMode::Move);
+	brush.setMoveOffset(glm::ivec3(3, 0, 0));
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+	EXPECT_TRUE(brush.hasSnapshot());
+
+	brush.onActivated();
+	EXPECT_FALSE(brush.hasSnapshot()) << "Snapshot should be cleared by onActivated";
+	EXPECT_EQ(brush.moveOffset(), glm::ivec3(0)) << "Move offset should be reset";
+
+	brush.shutdown();
+}
+
+// Move preserves all surface voxels (no pruning for forward mapping)
+TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+	// Create a 3x3x3 cube of selected voxels
+	for (int x = -1; x <= 1; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			for (int z = -1; z <= 1; ++z) {
+				volume.setVoxel(x, y, z, selectedVoxel());
+			}
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setTransformMode(TransformMode::Move);
+	brush.setMoveOffset(glm::ivec3(5, 0, 0));
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// Count voxels at new position — all 27 should be there (no pruning for move)
+	int count = 0;
+	for (int x = 4; x <= 6; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			for (int z = -1; z <= 1; ++z) {
+				if (voxel::isBlocked(volume.voxel(x, y, z).getMaterial())) {
+					++count;
+				}
+			}
+		}
+	}
+	EXPECT_EQ(count, 27) << "All 27 voxels should be preserved after move (no pruning)";
+
+	// Original positions should be empty
+	for (int x = -1; x <= 1; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			for (int z = -1; z <= 1; ++z) {
+				EXPECT_TRUE(voxel::isAir(volume.voxel(x, y, z).getMaterial()))
+					<< "Original position (" << x << "," << y << "," << z << ") should be empty";
+			}
+		}
+	}
+
+	brush.shutdown();
+}
+
+// Shear preserves all voxels (forward mapping, no pruning)
+TEST_F(TransformBrushTest, testShearPreservesAllVoxels) {
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+	// Vertical column along Y so shear X (which shifts by Y-layer) has effect.
+	// Center = (0, 0, 0). shearOffset.x=4 shifts each Y-layer by (relative.y/halfSize.y)*4.
+	// Voxel at y=+2: relative.y=2, halfSize.y=2.5 -> shift.x = (2/2.5)*4 = 3.2 -> 3
+	// Voxel at y=-2: shift.x = (-2/2.5)*4 = -3.2 -> -3
+	for (int y = -2; y <= 2; ++y) {
+		volume.setVoxel(0, y, 0, selectedVoxel());
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TransformBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setTransformMode(TransformMode::Shear);
+	brush.setShearOffset(glm::ivec3(4, 0, 0));
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeTransform(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// Top voxel (y=+2) should have shifted in +X
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 2, 0).getMaterial()))
+		<< "Top voxel should be sheared to x=+3";
+	// Bottom voxel (y=-2) should have shifted in -X
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(-3, -2, 0).getMaterial()))
+		<< "Bottom voxel should be sheared to x=-3";
+	// Center voxel (y=0) should stay at x=0 (relative.y=0)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Center voxel should remain at origin";
+
+	brush.shutdown();
+}
+
 } // namespace voxedit

@@ -470,16 +470,36 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 }
 
 BrushType Modifier::setBrushType(BrushType type) {
+	if (_brushType == type) {
+		return _brushType;
+	}
+
+	// Auto-commit pending changes from the current brush before switching.
+	// Must happen before changing _brushType so currentBrush() returns the old brush.
+	Brush *oldBrush = currentBrush();
+	if (oldBrush && oldBrush->onDeactivated()) {
+		if (beginBrushFromPanel()) {
+			_sceneMgr->nodeForeachGroup([&](int nodeId) {
+				if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+					if (!node->visible()) {
+						return;
+					}
+					auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
+						_sceneMgr->modified(nodeId, region, flags);
+					};
+					execute(_sceneMgr->sceneGraph(), *node, callback);
+				}
+			});
+			endBrush();
+		}
+		oldBrush->reset();
+	}
+
 	_brushType = type;
-	if (_brushType != BrushType::None) {
-		// ensure the modifier type is compatible with the brush
-		setModifierType(currentBrush()->modifierType(_brushContext.modifierType));
-	}
-	if (_brushType == BrushType::Extrude) {
-		_extrudeBrush.reset();
-	}
-	if (_brushType == BrushType::Transform) {
-		_transformBrush.reset();
+	Brush *newBrush = currentBrush();
+	if (newBrush) {
+		setModifierType(newBrush->modifierType(_brushContext.modifierType));
+		newBrush->onActivated();
 	}
 	return _brushType;
 }

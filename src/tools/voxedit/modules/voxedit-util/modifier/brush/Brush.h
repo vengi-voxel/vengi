@@ -266,6 +266,21 @@ public:
 	}
 
 	/**
+	 * @brief Called when this brush becomes the active brush.
+	 */
+	virtual void onActivated() {
+	}
+
+	/**
+	 * @brief Called when this brush is about to be replaced by another brush.
+	 * @return true if the brush has pending changes that should be committed
+	 * to the real volume before deactivation (via the normal execute path).
+	 */
+	virtual bool onDeactivated() {
+		return false;
+	}
+
+	/**
 	 * @brief Reset the brush to initial state
 	 *
 	 * Clears all brush state including mirroring, clamping, and internal modes.
