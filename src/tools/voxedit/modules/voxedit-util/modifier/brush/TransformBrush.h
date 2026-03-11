@@ -78,8 +78,7 @@ private:
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
 	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
-	void writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
-					const glm::ivec3 &pos, const voxel::Voxel &voxel);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,

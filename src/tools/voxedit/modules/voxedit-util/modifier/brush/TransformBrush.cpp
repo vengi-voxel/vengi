@@ -351,13 +351,14 @@ void TransformBrush::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos)
 	_history.setVoxel(pos, vol->voxel(pos));
 }
 
-void TransformBrush::writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
+void TransformBrush::writeVoxel(ModifierVolumeWrapper &wrapper,
 								const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
-	if (!vol->region().containsPoint(pos)) {
+	voxel::RawVolume *volume = wrapper.volume();
+	if (!volume->region().containsPoint(pos)) {
 		return;
 	}
-	saveToHistory(vol, pos);
-	if (vol->setVoxel(pos, newVoxel)) {
+	saveToHistory(volume, pos);
+	if (volume->setVoxel(pos, newVoxel)) {
 		wrapper.addToDirtyRegion(pos);
 	}
 }
@@ -379,7 +380,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 					}
 					const glm::ivec3 pos(x, y, z);
 					if (volRegion.containsPoint(pos)) {
-						writeVoxel(vol, wrapper, pos, air);
+						writeVoxel(wrapper, pos, air);
 					}
 				}
 			}
@@ -422,7 +423,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
 					const voxel::Voxel source = voxel::sampleVoxel(snapshotSampler, _voxelSampling, srcPos);
 					if (!voxel::isAir(source.getMaterial())) {
-						writeVoxel(vol, wrapper, dstPos, source);
+						writeVoxel(wrapper, dstPos, source);
 					}
 				}
 			}
@@ -438,7 +439,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 						continue;
 					}
 					const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
-					writeVoxel(vol, wrapper, newPos, _snapshot.voxel(x, y, z));
+					writeVoxel(wrapper, newPos, _snapshot.voxel(x, y, z));
 				}
 			}
 		}
