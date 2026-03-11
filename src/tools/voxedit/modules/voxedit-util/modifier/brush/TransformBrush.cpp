@@ -8,6 +8,8 @@
 #include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/SparseVolume.h"
+#include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -59,7 +61,7 @@ void TransformBrush::reset() {
 	_scale = glm::vec3(1.0f);
 	_rotationDegrees = glm::vec3(0.0f);
 	_transformMode = TransformMode::Move;
-	_scaleSampling = voxelutil::ScaleSampling::Nearest;
+	_scaleSampling = voxel::VoxelSampling::Nearest;
 	_lastVolume = nullptr;
 }
 
@@ -360,169 +362,6 @@ void TransformBrush::writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wr
 	}
 }
 
-const voxel::Voxel *TransformBrush::findNearestSnapshotVoxel(const glm::vec3 &srcPos) const {
-	// Half-diagonal of a unit cube - maximum distance for nearest-neighbor sampling
-	static constexpr float MaxSampleDistance = 0.87f;
-
-	const glm::ivec3 rounded = glm::ivec3(glm::round(srcPos));
-	// Fast path: exact match via hash lookup
-	if (_snapshot.hasVoxel(rounded)) {
-		return &_snapshot.voxel(rounded);
-	}
-
-	// Check immediate neighbors (3x3x3 cube around the rounded position)
-	const voxel::Voxel *best = nullptr;
-	float bestDist = MaxSampleDistance + 1.0f;
-	for (int dz = -1; dz <= 1; ++dz) {
-		for (int dy = -1; dy <= 1; ++dy) {
-			for (int dx = -1; dx <= 1; ++dx) {
-				const glm::ivec3 neighbor(rounded.x + dx, rounded.y + dy, rounded.z + dz);
-				if (!_snapshot.hasVoxel(neighbor)) {
-					continue;
-				}
-				const float dist = glm::length(glm::vec3(neighbor) - srcPos);
-				if (dist < bestDist) {
-					bestDist = dist;
-					best = &_snapshot.voxel(neighbor);
-				}
-			}
-		}
-	}
-
-	if (best && bestDist <= MaxSampleDistance) {
-		return best;
-	}
-	return nullptr;
-}
-
-const voxel::Voxel *TransformBrush::findLinearSnapshotVoxel(const glm::vec3 &srcPos) const {
-	// Trilinear-style sampling for voxels: check the 2x2x2 cell containing srcPos.
-	// Since voxel materials are discrete, we pick the most common non-air material
-	// (majority vote) among the 8 corners of the cell.
-	const glm::ivec3 base = glm::ivec3(glm::floor(srcPos));
-	static constexpr int CellSize = 2;
-	static constexpr int CellCorners = 8;
-
-	// Count occurrences of each material in the 2x2x2 cell
-	struct MaterialCount {
-		const voxel::Voxel *voxel;
-		int count;
-	};
-	static constexpr int MaxMaterials = CellCorners;
-	MaterialCount materials[MaxMaterials] = {};
-	int materialCount = 0;
-
-	for (int dz = 0; dz < CellSize; ++dz) {
-		for (int dy = 0; dy < CellSize; ++dy) {
-			for (int dx = 0; dx < CellSize; ++dx) {
-				const glm::ivec3 pos(base.x + dx, base.y + dy, base.z + dz);
-				if (!_snapshot.hasVoxel(pos)) {
-					continue;
-				}
-				const voxel::Voxel *v = &_snapshot.voxel(pos);
-				const uint8_t color = v->getColor();
-				bool found = false;
-				for (int mi = 0; mi < materialCount; ++mi) {
-					if (materials[mi].voxel->getColor() == color) {
-						materials[mi].count++;
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					materials[materialCount++] = {v, 1};
-				}
-			}
-		}
-	}
-
-	if (materialCount == 0) {
-		return nullptr;
-	}
-
-	// Return the material with the highest count
-	int bestIdx = 0;
-	for (int mi = 1; mi < materialCount; ++mi) {
-		if (materials[mi].count > materials[bestIdx].count) {
-			bestIdx = mi;
-		}
-	}
-	return materials[bestIdx].voxel;
-}
-
-const voxel::Voxel *TransformBrush::findCubicSnapshotVoxel(const glm::vec3 &srcPos) const {
-	// Cubic sampling: check a 4x4x4 neighborhood centered on srcPos.
-	// Each source voxel votes with a weight inversely proportional to its distance.
-	// The material with the highest total weight wins.
-	static constexpr int HalfExtent = 2;
-	static constexpr float MaxCubicDistance = 3.5f;
-
-	const glm::ivec3 center = glm::ivec3(glm::round(srcPos));
-
-	struct MaterialWeight {
-		const voxel::Voxel *voxel;
-		float weight;
-	};
-	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
-	MaterialWeight materials[MaxMaterials] = {};
-	int materialCount = 0;
-
-	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
-		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
-			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
-				const glm::ivec3 pos(center.x + dx, center.y + dy, center.z + dz);
-				if (!_snapshot.hasVoxel(pos)) {
-					continue;
-				}
-				const float dist = glm::length(glm::vec3(pos) - srcPos);
-				if (dist > MaxCubicDistance) {
-					continue;
-				}
-				// Weight: inverse distance (closer voxels contribute more)
-				const float weight = 1.0f / (dist + 0.001f);
-				const voxel::Voxel *v = &_snapshot.voxel(pos);
-				const uint8_t color = v->getColor();
-				bool found = false;
-				for (int mi = 0; mi < materialCount; ++mi) {
-					if (materials[mi].voxel->getColor() == color) {
-						materials[mi].weight += weight;
-						found = true;
-						break;
-					}
-				}
-				if (!found && materialCount < MaxMaterials) {
-					materials[materialCount++] = {v, weight};
-				}
-			}
-		}
-	}
-
-	if (materialCount == 0) {
-		return nullptr;
-	}
-
-	// Return the material with the highest accumulated weight
-	int bestIdx = 0;
-	for (int mi = 1; mi < materialCount; ++mi) {
-		if (materials[mi].weight > materials[bestIdx].weight) {
-			bestIdx = mi;
-		}
-	}
-	return materials[bestIdx].voxel;
-}
-
-const voxel::Voxel *TransformBrush::sampleSnapshotVoxel(const glm::vec3 &srcPos) const {
-	switch (_scaleSampling) {
-	case voxelutil::ScaleSampling::Linear:
-		return findLinearSnapshotVoxel(srcPos);
-	case voxelutil::ScaleSampling::Cubic:
-		return findCubicSnapshotVoxel(srcPos);
-	case voxelutil::ScaleSampling::Nearest:
-	default:
-		return findNearestSnapshotVoxel(srcPos);
-	}
-}
-
 void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
@@ -575,14 +414,15 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 		dstLo = glm::max(dstLo, volRegion.getLowerCorner());
 		dstHi = glm::min(dstHi, volRegion.getUpperCorner());
 
+		voxel::SparseVolume::Sampler snapshotSampler(_snapshot);
 		for (int dz = dstLo.z; dz <= dstHi.z; ++dz) {
 			for (int dy = dstLo.y; dy <= dstHi.y; ++dy) {
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);
 					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
-					const voxel::Voxel *source = sampleSnapshotVoxel(srcPos);
-					if (source) {
-						writeVoxel(vol, wrapper, dstPos, *source);
+					const voxel::Voxel source = voxel::sampleVoxel(snapshotSampler, _scaleSampling, srcPos);
+					if (!voxel::isAir(source.getMaterial())) {
+						writeVoxel(vol, wrapper, dstPos, source);
 					}
 				}
 			}

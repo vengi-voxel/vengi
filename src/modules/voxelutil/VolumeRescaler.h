@@ -13,20 +13,10 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 
 namespace voxelutil {
-
-/**
- * @brief Sampling type for scale interpolation
- */
-enum class ScaleSampling : uint8_t {
-	Nearest,
-	Linear,
-	Cubic,
-
-	Max
-};
 
 /**
  * @brief Rescales a volume by sampling two voxels to produce one output voxel.
@@ -245,6 +235,6 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
  */
 [[nodiscard]] voxel::RawVolume *scaleVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &scale,
 											const glm::vec3 &normalizedPivot = glm::vec3(0.0f),
-											ScaleSampling sampling = ScaleSampling::Nearest);
+											voxel::VoxelSampling sampling = voxel::VoxelSampling::Nearest);
 
 } // namespace voxelutil

@@ -9,7 +9,6 @@
 #include "core/GLM.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeRescaler.h"
 
 #include <glm/vec3.hpp>
 
@@ -33,7 +32,7 @@ static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformM
 
 static constexpr const char *ScaleSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
-static_assert(lengthof(ScaleSamplingStr) == (int)voxelutil::ScaleSampling::Max, "ScaleSamplingStr size mismatch");
+static_assert(lengthof(ScaleSamplingStr) == (int)voxel::VoxelSampling::Max, "ScaleSamplingStr size mismatch");
 
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
@@ -51,7 +50,7 @@ private:
 	using Super = Brush;
 
 	TransformMode _transformMode = TransformMode::Move;
-	voxelutil::ScaleSampling _scaleSampling = voxelutil::ScaleSampling::Nearest;
+	voxel::VoxelSampling _scaleSampling = voxel::VoxelSampling::Nearest;
 	bool _active = false;
 	bool _hasSnapshot = false;
 	voxel::RawVolume *_lastVolume = nullptr;
@@ -89,10 +88,6 @@ private:
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
 	void writeVoxel(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper,
 					const glm::ivec3 &pos, const voxel::Voxel &voxel);
-	const voxel::Voxel *findNearestSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const voxel::Voxel *findLinearSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const voxel::Voxel *findCubicSnapshotVoxel(const glm::vec3 &srcPos) const;
-	const voxel::Voxel *sampleSnapshotVoxel(const glm::vec3 &srcPos) const;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -145,11 +140,11 @@ public:
 		_rotationDegrees = glm::vec3(0.0f);
 	}
 
-	voxelutil::ScaleSampling scaleSampling() const {
+	voxel::VoxelSampling scaleSampling() const {
 		return _scaleSampling;
 	}
 
-	void setScaleSampling(voxelutil::ScaleSampling sampling) {
+	void setScaleSampling(voxel::VoxelSampling sampling) {
 		_scaleSampling = sampling;
 	}
 

@@ -47,7 +47,7 @@ namespace voxelutil {
 }
 
 [[nodiscard]] voxel::RawVolume *scaleVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &scale,
-										   const glm::vec3 &normalizedPivot, ScaleSampling sampling) {
+										   const glm::vec3 &normalizedPivot, voxel::VoxelSampling sampling) {
 	if (srcVolume == nullptr) {
 		return nullptr;
 	}
@@ -92,27 +92,8 @@ namespace voxelutil {
 					const glm::vec3 destPos(x, y, z);
 					const glm::vec3 srcPos = srcPivot + (destPos - srcPivot) * invScale;
 
-					voxel::Voxel voxel;
-					switch (sampling) {
-					case ScaleSampling::Linear: {
-						voxel::RawVolume::Sampler srcSampler(srcVolume);
-						voxel = voxel::sampleTrilinear(srcSampler, srcPos);
-						break;
-					}
-					case ScaleSampling::Cubic: {
-						voxel::RawVolume::Sampler srcSampler(srcVolume);
-						voxel = voxel::sampleCubic(srcSampler, srcPos);
-						break;
-					}
-					case ScaleSampling::Nearest:
-					default: {
-						const glm::ivec3 rounded = glm::ivec3(glm::round(srcPos));
-						if (srcRegion.containsPoint(rounded)) {
-							voxel = srcVolume->voxel(rounded);
-						}
-						break;
-					}
-					}
+					voxel::RawVolume::Sampler srcSampler(srcVolume);
+					voxel::Voxel voxel = voxel::sampleVoxel(srcSampler, sampling, srcPos);
 					if (!voxel::isAir(voxel.getMaterial())) {
 						destVolume->setVoxel(x, y, z, voxel);
 					}

@@ -12,6 +12,17 @@
 
 namespace voxel {
 
+/**
+ * @brief Sampling type for interpolation
+ */
+enum class VoxelSampling : uint8_t {
+	Nearest,
+	Linear,
+	Cubic,
+
+	Max
+};
+
 #define CAN_GO_NEG_X(val) ((val) > region.getLowerX())
 #define CAN_GO_POS_X(val) ((val) < region.getUpperX())
 #define CAN_GO_NEG_Y(val) ((val) > region.getLowerY())
@@ -711,6 +722,19 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 		}
 	}
 	return materials[bestIdx].voxel;
+}
+
+template<class Sampler>
+voxel::Voxel sampleVoxel(Sampler &sampler, VoxelSampling sampling, const glm::vec3 &srcPos) {
+	switch (sampling) {
+	case VoxelSampling::Linear:
+		return sampleTrilinear(sampler, srcPos);
+	case VoxelSampling::Cubic:
+		return sampleCubic(sampler, srcPos);
+	case VoxelSampling::Nearest:
+	default:
+		return sampleNearest(sampler, srcPos);
+	}
 }
 
 } // namespace voxel
