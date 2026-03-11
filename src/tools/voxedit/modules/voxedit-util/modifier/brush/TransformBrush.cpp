@@ -148,6 +148,7 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 
 	const glm::ivec3 &regionLo = volRegion.getLowerCorner();
 	const glm::ivec3 &regionHi = volRegion.getUpperCorner();
+	// TODO: PERF: use visitor
 	for (int z = regionLo.z; z <= regionHi.z; ++z) {
 		for (int y = regionLo.y; y <= regionHi.y; ++y) {
 			for (int x = regionLo.x; x <= regionHi.x; ++x) {
