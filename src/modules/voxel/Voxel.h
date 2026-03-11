@@ -68,6 +68,7 @@ public:
 	CORE_FORCE_INLINE Voxel(const Voxel& other) {
 		_material = other._material;
 		_flags = other._flags;
+		_unused = other._unused;
 		_colorIndex = other._colorIndex;
 		_normalIndex = other._normalIndex;
 		_boneIdx = other._boneIdx;
@@ -81,6 +82,7 @@ public:
 		}
 		_material = other._material;
 		_flags = other._flags;
+		_unused = other._unused;
 		_colorIndex = other._colorIndex;
 		_boneIdx = other._boneIdx;
 		return *this;

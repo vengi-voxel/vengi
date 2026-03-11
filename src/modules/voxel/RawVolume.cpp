@@ -661,8 +661,10 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 		return;
 	}
 	const size_t size = _region.stride() * depth();
-	core_memset4((void *)_data, *(uint32_t*)&voxel, size);
-	static_assert(sizeof(Voxel) == 4, "Voxel is expected to be 4 bytes");
+	uint32_t val;
+	core_memcpy(&val, &voxel, sizeof(val));
+	core_memset4((void *)_data, val, size);
+	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
 }
 
 } // namespace voxel
