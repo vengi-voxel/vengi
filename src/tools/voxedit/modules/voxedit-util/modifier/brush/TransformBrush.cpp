@@ -395,7 +395,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 		// Forward mapping: Move and Shear produce 1:1 mappings without gaps
 		const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
 		const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-		// TODO: PERF: use a sampler here
+		// TODO: PERF: visitor here
 		for (int z = lo.z; z <= hi.z; ++z) {
 			for (int y = lo.y; y <= hi.y; ++y) {
 				for (int x = lo.x; x <= hi.x; ++x) {
