@@ -49,6 +49,14 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND, ICON_LC_MOVE_3D};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
+static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
+												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
+static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
+
+static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
+												   NC_("Scale Sampling", "Cubic")};
+static_assert(lengthof(VoxelSamplingStr) == (int)voxel::VoxelSampling::Max, "VoxelSamplingStr size mismatch");
+
 void BrushPanel::init() {
 	_renderNormals = core::getVar(cfg::RenderNormals);
 	_viewMode = core::getVar(cfg::VoxEditViewMode);
@@ -908,20 +916,6 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 			brush.setScale(_transformScale);
 			executeTransformBrush();
 		}
-
-		int samplingInt = (int)brush.scaleSampling();
-		if (ImGui::BeginCombo(_("Sampling"), _(ScaleSamplingStr[samplingInt]))) {
-			for (int i = 0; i < (int)voxelutil::VoxelSampling::Max; ++i) {
-				const bool selected = samplingInt == i;
-				if (ImGui::Selectable(_(ScaleSamplingStr[i]), selected)) {
-					brush.setScaleSampling((voxelutil::VoxelSampling)i);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
 		break;
 	}
 
@@ -936,6 +930,22 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 
 	default:
 		break;
+	}
+
+	if (brush.transformMode() == TransformMode::Scale || brush.transformMode() == TransformMode::Rotate	) {
+		int samplingInt = (int)brush.voxelSampling();
+		if (ImGui::BeginCombo(_("Sampling"), _(VoxelSamplingStr[samplingInt]))) {
+			for (int i = 0; i < (int)voxel::VoxelSampling::Max; ++i) {
+				const bool selected = samplingInt == i;
+				if (ImGui::Selectable(_(VoxelSamplingStr[i]), selected)) {
+					brush.setVoxelSampling((voxel::VoxelSampling)i);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 	}
 }
 

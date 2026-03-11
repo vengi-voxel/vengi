@@ -26,14 +26,6 @@ enum class TransformMode : uint8_t {
 	Max
 };
 
-static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
-												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
-static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
-
-static constexpr const char *ScaleSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
-												   NC_("Scale Sampling", "Cubic")};
-static_assert(lengthof(ScaleSamplingStr) == (int)voxel::VoxelSampling::Max, "ScaleSamplingStr size mismatch");
-
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
  *
@@ -50,7 +42,7 @@ private:
 	using Super = Brush;
 
 	TransformMode _transformMode = TransformMode::Move;
-	voxel::VoxelSampling _scaleSampling = voxel::VoxelSampling::Nearest;
+	voxel::VoxelSampling _voxelSampling = voxel::VoxelSampling::Nearest;
 	bool _active = false;
 	bool _hasSnapshot = false;
 	voxel::RawVolume *_lastVolume = nullptr;
@@ -140,12 +132,12 @@ public:
 		_rotationDegrees = glm::vec3(0.0f);
 	}
 
-	voxel::VoxelSampling scaleSampling() const {
-		return _scaleSampling;
+	voxel::VoxelSampling voxelSampling() const {
+		return _voxelSampling;
 	}
 
-	void setScaleSampling(voxel::VoxelSampling sampling) {
-		_scaleSampling = sampling;
+	void setVoxelSampling(voxel::VoxelSampling sampling) {
+		_voxelSampling = sampling;
 	}
 
 	const glm::ivec3 &moveOffset() const {

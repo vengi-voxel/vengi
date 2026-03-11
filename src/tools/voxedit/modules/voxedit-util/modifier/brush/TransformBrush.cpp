@@ -61,7 +61,7 @@ void TransformBrush::reset() {
 	_scale = glm::vec3(1.0f);
 	_rotationDegrees = glm::vec3(0.0f);
 	_transformMode = TransformMode::Move;
-	_scaleSampling = voxel::VoxelSampling::Nearest;
+	_voxelSampling = voxel::VoxelSampling::Nearest;
 	_lastVolume = nullptr;
 }
 
@@ -420,7 +420,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);
 					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
-					const voxel::Voxel source = voxel::sampleVoxel(snapshotSampler, _scaleSampling, srcPos);
+					const voxel::Voxel source = voxel::sampleVoxel(snapshotSampler, _voxelSampling, srcPos);
 					if (!voxel::isAir(source.getMaterial())) {
 						writeVoxel(vol, wrapper, dstPos, source);
 					}
