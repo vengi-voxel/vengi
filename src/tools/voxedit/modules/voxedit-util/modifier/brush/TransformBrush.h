@@ -57,7 +57,7 @@ private:
 	glm::ivec3 _capturedVolumeLower{0};
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
-	// call so interior pruning can find all modified positions.
+	// call so the previous state can be restored before re-applying the transform.
 	// Stores the original voxel at each modified position (with empty voxel storage enabled).
 	voxel::SparseVolume _history;
 

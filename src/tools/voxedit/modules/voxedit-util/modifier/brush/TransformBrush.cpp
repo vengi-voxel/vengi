@@ -5,7 +5,6 @@
 #include "TransformBrush.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
@@ -74,44 +73,6 @@ bool TransformBrush::beginBrush(const BrushContext &ctx) {
 }
 
 void TransformBrush::endBrush(BrushContext &) {
-	// Prune interior voxels on final commit. Only for Scale/Rotate which can
-	// create new interior voxels. Move/Shear are 1:1 mappings that preserve topology.
-	const bool useInverseMapping = (_transformMode == TransformMode::Scale ||
-									_transformMode == TransformMode::Rotate);
-	if (_lastVolume && useInverseMapping) {
-		const voxel::Region &volRegion = _lastVolume->region();
-		const voxel::Voxel air;
-		auto isInterior = [&](const glm::ivec3 &pos) {
-			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
-				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
-				if (!volRegion.containsPoint(nb) || voxel::isAir(_lastVolume->voxel(nb).getMaterial())) {
-					return false;
-				}
-			}
-			return true;
-		};
-
-		core::DynamicArray<glm::ivec3> toPrune;
-		struct PositionCollector {
-			core::DynamicArray<glm::ivec3> *positions;
-			bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
-				positions->push_back(glm::ivec3(x, y, z));
-				return true;
-			}
-		};
-		core::DynamicArray<glm::ivec3> allPositions;
-		allPositions.reserve(_history.size());
-		PositionCollector collector{&allPositions};
-		_history.copyTo(collector);
-		for (const glm::ivec3 &pos : allPositions) {
-			if (!voxel::isAir(_lastVolume->voxel(pos).getMaterial()) && isInterior(pos)) {
-				toPrune.push_back(pos);
-			}
-		}
-		for (const glm::ivec3 &pos : toPrune) {
-			_lastVolume->setVoxel(pos, air);
-		}
-	}
 	_lastVolume = nullptr;
 	_active = false;
 }
@@ -159,6 +120,7 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 				if (!(currentVoxel.getFlags() & voxel::FlagOutline)) {
 					continue;
 				}
+
 				const glm::ivec3 pos(x, y, z);
 				_snapshot.setVoxel(pos, currentVoxel);
 				selLo = glm::min(selLo, pos);

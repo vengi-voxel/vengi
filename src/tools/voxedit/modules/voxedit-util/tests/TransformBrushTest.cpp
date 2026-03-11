@@ -282,7 +282,7 @@ TEST_F(TransformBrushTest, testOnActivatedResetsState) {
 	brush.shutdown();
 }
 
-// Move preserves all surface voxels (no pruning for forward mapping)
+// Move preserves all voxels
 TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	voxel::RawVolume volume(voxel::Region(-10, 10));
 	// Create a 3x3x3 cube of selected voxels
@@ -309,7 +309,7 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	executeTransform(brush, node, ctx);
 	brush.endBrush(ctx);
 
-	// Count voxels at new position — all 27 should be there (no pruning for move)
+	// Count voxels at new position — all 27 should be there
 	int count = 0;
 	for (int x = 4; x <= 6; ++x) {
 		for (int y = -1; y <= 1; ++y) {
@@ -320,7 +320,7 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 			}
 		}
 	}
-	EXPECT_EQ(count, 27) << "All 27 voxels should be preserved after move (no pruning)";
+	EXPECT_EQ(count, 27) << "All 27 voxels should be preserved after move";
 
 	// Original positions should be empty
 	for (int x = -1; x <= 1; ++x) {
@@ -375,7 +375,7 @@ TEST_F(TransformBrushTest, testMoveDoesNotAffectNonSelectedVoxels) {
 	brush.shutdown();
 }
 
-// Shear preserves all voxels (forward mapping, no pruning)
+// Shear preserves all voxels
 TEST_F(TransformBrushTest, testShearPreservesAllVoxels) {
 	voxel::RawVolume volume(voxel::Region(-10, 10));
 	// Vertical column along Y so shear X (which shifts by Y-layer) has effect.
