@@ -1654,8 +1654,51 @@ msgstr "Keyframes löschen"
 msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
 
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr "Verschieben"
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr "Scheren"
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr "Drehen"
+
+msgctxt "Transform Modes"
+msgid "Scale"
+msgstr "Skalieren"
+
+msgctxt "Sculpt Modes"
+msgid "Erode"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Flatten"
+msgstr "Abflachen"
+
+msgctxt "Sculpt Modes"
+msgid "Grow"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Linear"
+msgstr "Linear"
+
+msgctxt "Scale Sampling"
+msgid "Nearest"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Cubic"
+msgstr ""
+
 msgid "Shape"
 msgstr "Form"
+
+msgid "Thickness"
+msgstr "Dicke"
 
 msgid "Disable mirror"
 msgstr "Spiegelung deaktivieren"
@@ -1737,6 +1780,14 @@ msgctxt "SelectMode"
 msgid "Flat Surface"
 msgstr ""
 
+msgctxt "SelectMode"
+msgid "Circle"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Slope"
+msgstr ""
+
 msgid "Select mode"
 msgstr "Auswahlmodus"
 
@@ -1754,6 +1805,46 @@ msgstr ""
 msgid ""
 "How many voxels above or below the clicked face the fill may deviate from "
 "the start position"
+msgstr ""
+
+msgid "Max deviation"
+msgstr "Maximale Abweichung"
+
+msgid ""
+"Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
+"to be included in the selection"
+msgstr ""
+
+msgid "Sample distance"
+msgstr ""
+
+msgid ""
+"How far apart (in voxels) to sample when computing the initial slope plane. "
+"Larger values give smoother slope detection on staircases"
+msgstr ""
+
+msgid "Circle selection"
+msgstr ""
+
+#, c-format
+msgid "Radius %s"
+msgstr "Radius %s"
+
+#, c-format
+msgid "Depth %s"
+msgstr "Tiefe %s"
+
+msgid ""
+"How far from the center the selection extends along the face-normal axis (0 "
+"= single layer)"
+msgstr ""
+
+msgid "3D ellipsoid"
+msgstr ""
+
+msgid ""
+"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
+"a 2D ellipse with depth"
 msgstr ""
 
 msgid "Selection bounds"
@@ -1836,9 +1927,6 @@ msgstr "Text"
 msgid "Horizontal spacing"
 msgstr "Horizontaler Abstand"
 
-msgid "Thickness"
-msgstr "Dicke"
-
 msgid "Font"
 msgstr "Schriftart"
 
@@ -1870,6 +1958,9 @@ msgstr ""
 msgid "Depth"
 msgstr "Tiefe"
 
+msgid "Fill walls"
+msgstr ""
+
 #, c-format
 msgid "Offset %s"
 msgstr ""
@@ -1877,43 +1968,22 @@ msgstr ""
 msgid "Transform mode"
 msgstr ""
 
-msgid "X offset"
-msgstr ""
-
-msgid "Y offset"
-msgstr ""
-
-msgid "Z offset"
-msgstr ""
-
-msgid "X shear"
-msgstr ""
-
-msgid "Y shear"
-msgstr ""
-
-msgid "Z shear"
-msgstr ""
-
-msgid "X scale"
-msgstr ""
-
-msgid "Y scale"
-msgstr ""
-
-msgid "Z scale"
-msgstr ""
-
 msgid "Sampling"
 msgstr ""
 
-msgid "X rotation"
+msgid "Select voxels first, then switch to sculpt"
 msgstr ""
 
-msgid "Y rotation"
+msgid "Sculpt mode"
 msgstr ""
 
-msgid "Z rotation"
+msgid "Click a voxel face in the viewport to set the flatten direction"
+msgstr ""
+
+msgid "Iterations"
+msgstr "Iterationen"
+
+msgid "Strength"
 msgstr ""
 
 msgid "Brush settings"
@@ -2054,9 +2124,6 @@ msgstr "Breiteninkrement"
 
 msgid "The amount to increment/decrement the width"
 msgstr "Der Betrag zum Erhöhen/Verringern der Breite"
-
-msgid "Iterations"
-msgstr "Iterationen"
 
 msgid "The number of iterations to run"
 msgstr "Die Anzahl der auszuführenden Iterationen"
@@ -3417,6 +3484,9 @@ msgstr "Verschieben"
 msgid "Activate the translate operation"
 msgstr "Die Verschiebeoperation aktivieren"
 
+msgid "Show gizmo for brushes that support it"
+msgstr ""
+
 msgid "Simple"
 msgstr "Einfach"
 
@@ -3669,6 +3739,12 @@ msgstr "Modell-Gizmo"
 msgid "Show the gizmo to also translate the region"
 msgstr "Zeige das Gizmo, um auch die Region zu verschieben"
 
+msgid "Brush gizmo"
+msgstr ""
+
+msgid "Show the gizmo for brushes that support it"
+msgstr ""
+
 msgid "Last palette"
 msgstr "Letzte Palette"
 
@@ -3847,6 +3923,9 @@ msgstr "Füllt Voxel in der aktuellen Auswahl"
 
 msgid "Remove all voxels in the current selection"
 msgstr "Entfernt alle Voxel in der aktuellen Auswahl"
+
+msgid "Remove selected voxels"
+msgstr ""
 
 msgid "Set the reference position to the specified position"
 msgstr "Setzt die Referenzposition auf die angegebene Position"
@@ -4141,6 +4220,12 @@ msgstr "Maximale Vorschaugröße"
 msgid "The maximum size of the preview volume"
 msgstr "Die maximale Größe des Vorschauvolumens"
 
+msgid "Auto select added"
+msgstr ""
+
+msgid "Automatically select newly placed voxels"
+msgstr ""
+
 msgid "Set center plane building"
 msgstr "Setzt den Bau des Zentrumsplans"
 
@@ -4238,34 +4323,6 @@ msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
 
 msgid "Create a texture from the active model's face colors"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Move"
-msgstr "Verschieben"
-
-msgctxt "Transform Modes"
-msgid "Shear"
-msgstr "Scheren"
-
-msgctxt "Transform Modes"
-msgid "Rotate"
-msgstr "Drehen"
-
-msgctxt "Transform Modes"
-msgid "Scale"
-msgstr "Skalieren"
-
-msgctxt "Scale Sampling"
-msgid "Linear"
-msgstr "Linear"
-
-msgctxt "Scale Sampling"
-msgid "Nearest"
-msgstr ""
-
-msgctxt "Scale Sampling"
-msgid "Cubic"
 msgstr ""
 
 msgid "Host name"

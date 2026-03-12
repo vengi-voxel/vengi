@@ -151,6 +151,9 @@
 		<RegistryKey Root="HKCR" Key=".vbx">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".bin">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".obj">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -663,6 +666,15 @@
 		<RegistryValue Root="HKCR" Key=".vbx\OpenWithProgids" Name="vengi-voxedit.vbx" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vbx" Description="VoxelBuilder" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vbx" ContentType="application/x-voxelbuilder">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bin" Value="vengi-voxedit.bin" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bin" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".bin\OpenWithProgids" Name="vengi-voxedit.bin" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.bin" Description="Teardown bin" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bin" ContentType="application/x-teardown-bin">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

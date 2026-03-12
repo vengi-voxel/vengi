@@ -134,6 +134,8 @@ StarMade Blueprint (*.sment, *.smd2, *.smd3)
 .TP
 StarMade Template (*.smtpl)
 .TP
+Teardown bin (*.bin)
+.TP
 Tiberian Sun (*.vxl)
 .TP
 UFO:Alien Invasion (*.bsp)

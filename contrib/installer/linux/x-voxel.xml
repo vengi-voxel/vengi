@@ -272,6 +272,10 @@
 			<match type="string" offset="0" value="; Vo"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-teardown-bin">
+		<comment>Teardown bin</comment>
+		<glob pattern="*.bin"/>
+	</mime-type>
 	<mime-type type="text/plain">
 		<comment>Wavefront Object</comment>
 		<glob pattern="*.obj"/>

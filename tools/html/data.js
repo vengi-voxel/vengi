@@ -853,6 +853,17 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Teardown bin",
+      "extensions": [
+        "bin"
+      ],
+      "magics": [],
+      "mimetype": "application/x-teardown-bin",
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Wavefront Object",
       "extensions": [
         "obj"

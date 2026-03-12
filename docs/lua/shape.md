@@ -7,6 +7,7 @@ Global: `g_shape`
 | Function | Description |
 | -------- | ----------- |
 | `bezier(volume, start, end, control, color, thickness)` | Draw a quadratic bezier curve in the volume. |
+| `circle(volume, centerBottom, axis, radius, height, thickness, color)` | Create a hollow cylinder (tube) shape in the volume. |
 | `cone(volume, centerBottom, axis, negative, width, height, depth, color)` | Create a cone shape in the volume. |
 | `cube(volume, position, width, height, depth, color)` | Create a cube shape in the volume. |
 | `cylinder(volume, centerBottom, axis, radius, height, color)` | Create a cylinder shape in the volume. |
@@ -31,6 +32,22 @@ Draw a quadratic bezier curve in the volume.
 | `control` | `ivec3` | The control point. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `thickness` | `integer` | The line thickness (optional, default 1). |
+
+### circle
+
+Create a hollow cylinder (tube) shape in the volume.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `volume` | `volume` | The volume to draw in. |
+| `centerBottom` | `vec3` | The center bottom position. |
+| `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
+| `radius` | `integer` | The outer radius of the cylinder. |
+| `height` | `integer` | The height of the cylinder. |
+| `thickness` | `integer` | The wall thickness in voxels (optional, default 1). |
+| `color` | `integer` | The color index (optional, default 1). |
 
 ### cone
 

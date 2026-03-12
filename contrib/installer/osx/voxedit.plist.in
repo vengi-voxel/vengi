@@ -723,6 +723,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Teardown bin</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-teardown-bin</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bin</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Wavefront Object</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

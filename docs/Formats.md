@@ -47,6 +47,7 @@
 | Sproxel csv                | csv         | X       | X      |            | X       |            |
 | StarMade Blueprint         | sment       | X       |        |            | X       |            |
 | StarMade Template          | smtpl       | X       | X      |            | X       |            |
+| Teardown bin               | bin         | X       |        |            |         |            |
 | Tiberian Sun               | vxl         | X       | X      |            | X       | X          |
 | Veloren terrain            | dat         | X       | X      |            | X       |            |
 | Vengi                      | vengi       | X       | X      |            | X       | X          |

@@ -1590,7 +1590,50 @@ msgstr ""
 msgid "Delete %i keyframes"
 msgstr ""
 
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Scale"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Erode"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Flatten"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Grow"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Linear"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Nearest"
+msgstr ""
+
+msgctxt "Scale Sampling"
+msgid "Cubic"
+msgstr ""
+
 msgid "Shape"
+msgstr ""
+
+msgid "Thickness"
 msgstr ""
 
 msgid "Disable mirror"
@@ -1672,6 +1715,14 @@ msgctxt "SelectMode"
 msgid "Flat Surface"
 msgstr ""
 
+msgctxt "SelectMode"
+msgid "Circle"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Slope"
+msgstr ""
+
 msgid "Select mode"
 msgstr ""
 
@@ -1689,6 +1740,46 @@ msgstr ""
 msgid ""
 "How many voxels above or below the clicked face the fill may deviate from "
 "the start position"
+msgstr ""
+
+msgid "Max deviation"
+msgstr ""
+
+msgid ""
+"Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
+"to be included in the selection"
+msgstr ""
+
+msgid "Sample distance"
+msgstr ""
+
+msgid ""
+"How far apart (in voxels) to sample when computing the initial slope plane. "
+"Larger values give smoother slope detection on staircases"
+msgstr ""
+
+msgid "Circle selection"
+msgstr ""
+
+#, c-format
+msgid "Radius %s"
+msgstr ""
+
+#, c-format
+msgid "Depth %s"
+msgstr ""
+
+msgid ""
+"How far from the center the selection extends along the face-normal axis (0 "
+"= single layer)"
+msgstr ""
+
+msgid "3D ellipsoid"
+msgstr ""
+
+msgid ""
+"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
+"a 2D ellipse with depth"
 msgstr ""
 
 msgid "Selection bounds"
@@ -1770,9 +1861,6 @@ msgstr ""
 msgid "Horizontal spacing"
 msgstr ""
 
-msgid "Thickness"
-msgstr ""
-
 msgid "Font"
 msgstr ""
 
@@ -1804,6 +1892,9 @@ msgstr ""
 msgid "Depth"
 msgstr ""
 
+msgid "Fill walls"
+msgstr ""
+
 #, c-format
 msgid "Offset %s"
 msgstr ""
@@ -1811,43 +1902,22 @@ msgstr ""
 msgid "Transform mode"
 msgstr ""
 
-msgid "X offset"
-msgstr ""
-
-msgid "Y offset"
-msgstr ""
-
-msgid "Z offset"
-msgstr ""
-
-msgid "X shear"
-msgstr ""
-
-msgid "Y shear"
-msgstr ""
-
-msgid "Z shear"
-msgstr ""
-
-msgid "X scale"
-msgstr ""
-
-msgid "Y scale"
-msgstr ""
-
-msgid "Z scale"
-msgstr ""
-
 msgid "Sampling"
 msgstr ""
 
-msgid "X rotation"
+msgid "Select voxels first, then switch to sculpt"
 msgstr ""
 
-msgid "Y rotation"
+msgid "Sculpt mode"
 msgstr ""
 
-msgid "Z rotation"
+msgid "Click a voxel face in the viewport to set the flatten direction"
+msgstr ""
+
+msgid "Iterations"
+msgstr ""
+
+msgid "Strength"
 msgstr ""
 
 msgid "Brush settings"
@@ -1981,9 +2051,6 @@ msgid "Width increment"
 msgstr ""
 
 msgid "The amount to increment/decrement the width"
-msgstr ""
-
-msgid "Iterations"
 msgstr ""
 
 msgid "The number of iterations to run"
@@ -3251,6 +3318,9 @@ msgstr ""
 msgid "Activate the translate operation"
 msgstr ""
 
+msgid "Show gizmo for brushes that support it"
+msgstr ""
+
 msgid "Simple"
 msgstr ""
 
@@ -3490,6 +3560,12 @@ msgstr ""
 msgid "Show the gizmo to also translate the region"
 msgstr ""
 
+msgid "Brush gizmo"
+msgstr ""
+
+msgid "Show the gizmo for brushes that support it"
+msgstr ""
+
 msgid "Last palette"
 msgstr ""
 
@@ -3649,6 +3725,9 @@ msgid "Fill voxels in the current selection"
 msgstr ""
 
 msgid "Remove all voxels in the current selection"
+msgstr ""
+
+msgid "Remove selected voxels"
 msgstr ""
 
 msgid "Set the reference position to the specified position"
@@ -3905,6 +3984,12 @@ msgstr ""
 msgid "The maximum size of the preview volume"
 msgstr ""
 
+msgid "Auto select added"
+msgstr ""
+
+msgid "Automatically select newly placed voxels"
+msgstr ""
+
 msgid "Set center plane building"
 msgstr ""
 
@@ -3996,34 +4081,6 @@ msgid "Reset the uv coordinates"
 msgstr ""
 
 msgid "Create a texture from the active model's face colors"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Move"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Shear"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Rotate"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Scale"
-msgstr ""
-
-msgctxt "Scale Sampling"
-msgid "Linear"
-msgstr ""
-
-msgctxt "Scale Sampling"
-msgid "Nearest"
-msgstr ""
-
-msgctxt "Scale Sampling"
-msgid "Cubic"
 msgstr ""
 
 msgid "Host name"
