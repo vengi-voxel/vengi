@@ -394,6 +394,8 @@ public:
 	void selectionUnselect(int nodeId);
 	void selectionSelectAll(int nodeId);
 	void selectionSetBounds(int nodeId, const voxel::Region &region);
+	void selectionSetEllipse(int nodeId);
+	void selectionSetSlope(int nodeId);
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
 	voxel::Region selectionCalculateRegion(int nodeId) const;
 

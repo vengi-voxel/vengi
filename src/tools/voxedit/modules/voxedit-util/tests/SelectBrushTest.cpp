@@ -403,4 +403,327 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_invalidFace) {
 	brush.shutdown();
 }
 
+TEST_F(SelectBrushTest, testSelectModeCircle) {
+	// Create a flat 11x11 floor at y=0
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -5; z <= 5; ++z) {
+		for (int x = -5; x <= 5; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Circle);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+
+	// Click at center (0,0,0), drag to (3,0,0) -> radius = 3
+	// Set cursorFace before prepare() so _aabbFace locks to PositiveY
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	EXPECT_TRUE(brush.active());
+	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	brush.step(ctx);
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// Center should be selected
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Center voxel should be selected";
+
+	// Voxels within radius 3 should be selected
+	EXPECT_TRUE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel within radius should be selected";
+	EXPECT_TRUE((volume.voxel(0, 0, 2).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel within radius should be selected";
+	EXPECT_TRUE((volume.voxel(3, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at exactly the radius should be selected";
+
+	// Voxels outside the radius should NOT be selected
+	EXPECT_FALSE((volume.voxel(5, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel far outside radius should not be selected";
+	EXPECT_FALSE((volume.voxel(0, 0, 5).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel far outside radius should not be selected";
+
+	// Diagonal at distance sqrt(3^2+3^2) = ~4.24 > 3 should NOT be selected
+	EXPECT_FALSE((volume.voxel(3, 0, 3).getFlags() & voxel::FlagOutline) != 0)
+		<< "Diagonal voxel outside radius should not be selected";
+
+	// Diagonal at distance sqrt(2^2+2^2) = ~2.83 <= 3 should be selected
+	EXPECT_TRUE((volume.voxel(2, 0, 2).getFlags() & voxel::FlagOutline) != 0)
+		<< "Diagonal voxel within radius should be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -5; z <= 5; ++z) {
+		for (int x = -5; x <= 5; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Circle);
+	EXPECT_FALSE(brush.ellipseValid());
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	// Set cursorFace before beginBrush so _aabbFace locks to PositiveY
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	EXPECT_TRUE(brush.active());
+	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	brush.step(ctx);
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// After execution, ellipse params should be cached
+	EXPECT_TRUE(brush.ellipseValid());
+	EXPECT_EQ(brush.ellipseCenter(), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(brush.ellipseRadiusU(), 3);
+	EXPECT_EQ(brush.ellipseRadiusV(), 3);
+	EXPECT_EQ(brush.ellipseFace(), voxel::FaceNames::PositiveY);
+
+	// Changing select mode should invalidate ellipse
+	brush.setSelectMode(SelectMode::All);
+	EXPECT_FALSE(brush.ellipseValid());
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeCircle_invalidFace) {
+	voxel::RawVolume volume({-5, 5});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Circle);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	// Set invalid face before beginBrush so _aabbFace locks to Max
+	ctx.cursorFace = voxel::FaceNames::Max;
+	ctx.cursorPosition = glm::ivec3(-5, -5, -5);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	ctx.cursorPosition = glm::ivec3(5, 5, 5);
+	brush.step(ctx);
+	executeSelect(brush, node, ctx);
+
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "No voxel should be selected when face is invalid";
+	EXPECT_FALSE(brush.ellipseValid());
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeCircle_onlySurface) {
+	// Create a solid 5x5x5 cube - circle should only select surface voxels
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Circle);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	// Set cursorFace before beginBrush so _aabbFace locks to PositiveY
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	EXPECT_TRUE(brush.active());
+	ctx.cursorPosition = glm::ivec3(5, 0, 0);
+	brush.step(ctx);
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// Interior voxels should NOT be selected (only surface voxels)
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Interior voxel should not be selected";
+
+	// Surface voxels within radius should be selected
+	EXPECT_TRUE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Surface voxel within radius should be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
+	// 5x5 flat floor at y=0 -gradient is zero everywhere, so any angle should select all
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int x = -2; x <= 2; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Slope);
+	brush.setSlopeDeviation(10);
+	brush.setSlopeSampleDistance(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// All floor voxels should be selected (gradient is zero everywhere)
+	for (int z = -2; z <= 2; ++z) {
+		for (int x = -2; x <= 2; ++x) {
+			EXPECT_TRUE((volume.voxel(x, 0, z).getFlags() & voxel::FlagOutline) != 0)
+				<< "Floor voxel at (" << x << ",0," << z << ") should be selected";
+		}
+	}
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
+	// Floor at y=0 and a vertical wall at x=3. The wall voxels aren't surface
+	// voxels on the +Y face, so slope fill from the floor should not include them.
+	voxel::RawVolume volume({-5, 5});
+	// Floor
+	for (int z = -1; z <= 1; ++z) {
+		for (int x = -3; x <= 3; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	// Wall going up from x=3 (blocks +Y face of floor voxels at x=3 for y>=1)
+	for (int y = 1; y <= 4; ++y) {
+		for (int z = -1; z <= 1; ++z) {
+			volume.setVoxel(3, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Slope);
+	brush.setSlopeDeviation(45);
+	brush.setSlopeSampleDistance(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// Floor voxels should be selected
+	EXPECT_TRUE((volume.voxel(-3, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Floor voxel at (-3,0,0) should be selected";
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Floor voxel at (0,0,0) should be selected";
+
+	// Wall voxels should NOT be selected (they face +X, not +Y -not surface voxels for this face)
+	EXPECT_FALSE((volume.voxel(3, 2, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Wall voxel at (3,2,0) should not be selected";
+	EXPECT_FALSE((volume.voxel(3, 4, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Wall voxel at (3,4,0) should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
+	// 45-degree staircase: each step goes +1 in X and +1 in Y.
+	// All steps have the same gradient, so slope fill should select them all.
+	voxel::RawVolume volume({-5, 10});
+	// Build a filled staircase so each step has +Y exposed
+	for (int step = 0; step < 6; ++step) {
+		// Each step column goes from y=0 up to y=step
+		for (int y = 0; y <= step; ++y) {
+			for (int z = -1; z <= 1; ++z) {
+				volume.setVoxel(step, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Slope);
+	brush.setSlopeDeviation(10); // Small threshold -staircase gradient should be consistent
+	brush.setSlopeSampleDistance(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(10, 10, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// Each stair top should be selected (consistent 45-degree slope)
+	for (int step = 0; step < 6; ++step) {
+		EXPECT_TRUE((volume.voxel(step, step, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Stair top at (" << step << "," << step << ",0) should be selected";
+	}
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
+	// Two separate flat surfaces -slope fill should not jump the gap
+	voxel::RawVolume volume({-5, 5});
+	// Surface 1 at x=[-2..0]
+	for (int x = -2; x <= 0; ++x) {
+		volume.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	}
+	// Surface 2 at x=[2..4] -gap at x=1
+	for (int x = 2; x <= 4; ++x) {
+		volume.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Slope);
+	brush.setSlopeDeviation(90);
+	brush.setSlopeSampleDistance(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	executeSelect(brush, node, ctx);
+
+	// Surface 1 should be selected
+	for (int x = -2; x <= 0; ++x) {
+		EXPECT_TRUE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Voxel at (" << x << ",0,0) should be selected";
+	}
+
+	// Surface 2 should NOT be selected (disconnected)
+	for (int x = 2; x <= 4; ++x) {
+		EXPECT_FALSE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+			<< "Disconnected voxel at (" << x << ",0,0) should not be selected";
+	}
+
+	brush.shutdown();
+}
+
 } // namespace voxedit

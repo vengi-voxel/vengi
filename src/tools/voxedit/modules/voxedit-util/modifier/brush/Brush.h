@@ -331,6 +331,15 @@ public:
 	SceneModifiedFlags sceneModifiedFlags() const;
 
 	/**
+	 * @return true if this brush directly manages voxel selection flags (FlagOutline).
+	 * When true, growSelectionToNewVoxels/autoSelectNewVoxels are skipped after execution
+	 * to avoid overwriting the brush's own selection logic.
+	 */
+	virtual bool managesOwnSelection() const {
+		return false;
+	}
+
+	/**
 	 * @brief Calculate the region this brush will modify
 	 *
 	 * Each brush defines its own logic for determining the affected region.

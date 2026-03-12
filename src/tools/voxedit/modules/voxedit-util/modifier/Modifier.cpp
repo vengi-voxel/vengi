@@ -370,10 +370,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
-	// Extrude and Transform manage voxel flags (FlagOutline) directly via their own mechanisms.
-	// growSelectionToNewVoxels/autoSelectNewVoxels would incorrectly select all solid voxels in the dirty region.
-	const bool managesOwnSelection = brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude;
-	if (!managesOwnSelection) {
+	if (!brush->managesOwnSelection()) {
 		const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
 			&& brush->type() != BrushType::Normal;
 		const bool isPlacementModifier = modifierType == ModifierType::Place;
@@ -621,6 +618,11 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
 	bool simplePreview = isSimplePreview(brush, region);
 	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
+		const bool isCircleSelect = _brushType == BrushType::Select &&
+			_selectBrush.selectMode() == SelectMode::Circle;
+		if (isCircleSelect) {
+			_selectBrush.setPreviewMode(true);
+		}
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
@@ -633,6 +635,9 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_previewVolume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+		if (isCircleSelect) {
+			_selectBrush.setPreviewMode(false);
+		}
 	} else if (simplePreview) {
 		_brushPreview.useSimplePreview = true;
 		_brushPreview.simplePreviewRegion = region;
