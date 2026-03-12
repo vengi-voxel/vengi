@@ -706,4 +706,52 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 	modifier.shutdown();
 }
 
+TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
+	SceneManager mgr(_testApp->timeProvider(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	modifier.setAutoSelect(true);
+
+	voxel::RawVolume volume({-10, 10});
+	// Place a selected voxel at origin
+	voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	selected.setFlags(voxel::FlagOutline);
+	volume.setVoxel(0, 0, 0, selected);
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	modifier.setBrushType(BrushType::Extrude);
+	modifier.setModifierType(ModifierType::Place);
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveX);
+	ExtrudeBrush &brush = modifier.extrudeBrush();
+	brush.setDepth(1);
+
+	BrushContext &ctx = modifier.brushContext();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ASSERT_TRUE(modifier.beginBrush());
+
+	scenegraph::SceneGraph sceneGraph;
+	bool callbackFired = false;
+	modifier.execute(sceneGraph, node,
+					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
+	modifier.endBrush();
+	EXPECT_TRUE(callbackFired) << "Extrude should succeed";
+
+	// Extruded voxel at x=1 should have FlagOutline from auto-select
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
+		<< "Extruded voxel at (1,0,0) should exist";
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Extruded voxel at (1,0,0) should be auto-selected";
+	// Original voxel should also be auto-selected (autoSelectNewVoxels selects all solid in dirty region)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original voxel at (0,0,0) should be kept";
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Original voxel at (0,0,0) should be auto-selected";
+	modifier.shutdown();
+}
+
 } // namespace voxedit

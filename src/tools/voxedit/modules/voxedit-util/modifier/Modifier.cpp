@@ -370,15 +370,13 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
-	if (!brush->managesOwnSelection()) {
-		const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
-			&& brush->type() != BrushType::Normal;
-		const bool isPlacementModifier = modifierType == ModifierType::Place;
-		if (autoSelect() && isPlacementBrush && isPlacementModifier) {
-			wrapper.autoSelectNewVoxels();
-		} else {
-			wrapper.growSelectionToNewVoxels();
-		}
+	const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
+		&& brush->type() != BrushType::Normal;
+	const bool isPlacementModifier = modifierType == ModifierType::Place;
+	if (autoSelect() && isPlacementBrush && isPlacementModifier) {
+		wrapper.autoSelectNewVoxels();
+	} else if (!brush->managesOwnSelection()) {
+		wrapper.growSelectionToNewVoxels();
 	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {

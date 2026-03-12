@@ -204,12 +204,12 @@ TEST_F(ExtrudeBrushTest, testExtrudePushThenPull) {
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial())) << "Selected voxel at (0,0,0) should be carved";
 
 	// Push outward (+1) from same selection: history restores (0,0,0), then
-	// positive extrude places at x=+1 and removes the original at x=0
+	// positive extrude places at x=+1 and keeps the original at x=0
 	brush.setDepth(1);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
-	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
-		<< "Original at (0,0,0) removed by positive extrude";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original at (0,0,0) kept by positive extrude";
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
 		<< "Outward voxel at (1,0,0) expected";
 
@@ -325,8 +325,8 @@ TEST_F(ExtrudeBrushTest, testExtrudeWithOffsetU) {
 	brush.shutdown();
 }
 
-// Positive extrude removes originals and new voxels do not get FlagOutline
-TEST_F(ExtrudeBrushTest, testExtrudeRemovesOriginalsAndNoFlag) {
+// Positive extrude keeps originals and new voxels do not get FlagOutline
+TEST_F(ExtrudeBrushTest, testExtrudeKeepsOriginalsAndNoFlag) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -345,9 +345,9 @@ TEST_F(ExtrudeBrushTest, testExtrudeRemovesOriginalsAndNoFlag) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Original voxel removed by positive extrude
-	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
-		<< "Original voxel at (0,0,0) should be removed by positive extrude";
+	// Original voxel kept by positive extrude
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original voxel at (0,0,0) should be kept by positive extrude";
 	// New extruded voxels should NOT have FlagOutline
 	const voxel::Voxel midVoxel = volume.voxel(1, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(midVoxel.getMaterial()));
@@ -542,8 +542,8 @@ TEST_F(ExtrudeBrushTest, testFillWallsDisabled) {
 	brush.shutdown();
 }
 
-// Positive extrude removes original selected voxels
-TEST_F(ExtrudeBrushTest, testPositiveExtrudeRemovesOriginals) {
+// Positive extrude keeps original selected voxels
+TEST_F(ExtrudeBrushTest, testPositiveExtrudeKeepsOriginals) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -562,9 +562,9 @@ TEST_F(ExtrudeBrushTest, testPositiveExtrudeRemovesOriginals) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Original position should be air — extrude moves the face outward
-	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
-		<< "Original selected voxel should be removed after positive extrude";
+	// Original position should be solid — extrude adds outward without removing
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original selected voxel should be kept after positive extrude";
 	// Extruded voxels at x=1 and x=2
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()))
 		<< "Extruded voxel at (1,0,0)";
@@ -578,10 +578,10 @@ TEST_F(ExtrudeBrushTest, testPositiveExtrudeRemovesOriginals) {
 TEST_F(ExtrudeBrushTest, testInteriorPruningOnCommit) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	// Create a 3x3x1 slab at z=0, all selected.
-	// Positive extrude removes originals (z=0 -> air), places at z=1,2,3.
-	// With depth=3 and 3x3 slab, the center voxel at (0,0,2) has:
-	//   x±1, y±1 = solid (extruded neighbors), z+1=(0,0,3), z-1=(0,0,1) = solid
-	// So (0,0,2) is fully interior and should be pruned.
+	// Positive extrude keeps originals (z=0 solid), places at z=1,2,3.
+	// With depth=3 and 3x3 slab, the center voxels at (0,0,1) and (0,0,2) have:
+	//   x+-1, y+-1 = solid (neighbors), z+-1 = solid (slab at z=0 and layers above)
+	// So (0,0,1) and (0,0,2) are fully interior and should be pruned.
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			volume.setVoxel(x, y, 0, selectedVoxel());
@@ -603,7 +603,9 @@ TEST_F(ExtrudeBrushTest, testInteriorPruningOnCommit) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Center of middle layer (0,0,2) is fully enclosed: pruned
+	// Center of layers z=1 and z=2 are fully enclosed: pruned
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 1).getMaterial()))
+		<< "Interior voxel at (0,0,1) should be pruned";
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 2).getMaterial()))
 		<< "Interior voxel at (0,0,2) should be pruned";
 	// Tip layer surface voxels should remain
@@ -612,9 +614,9 @@ TEST_F(ExtrudeBrushTest, testInteriorPruningOnCommit) {
 	// Edge voxels of middle layer should remain (exposed on x or y face)
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 2).getMaterial()))
 		<< "Edge voxel at (1,0,2) should remain";
-	// Originals removed
-	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()))
-		<< "Original at (0,0,0) should be removed";
+	// Originals kept
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original at (0,0,0) should be kept";
 
 	brush.shutdown();
 }
