@@ -63,6 +63,8 @@ private:
 	void executeExtrudeBrush();
 	void updateTransformBrushPanel(command::CommandExecutionListener &listener);
 	void executeTransformBrush();
+	void updateSculptBrushPanel(command::CommandExecutionListener &listener);
+	void executeSculptBrush();
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);

@@ -44,6 +44,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_normalBrush);
 	_brushes.push_back(&_extrudeBrush);
 	_brushes.push_back(&_transformBrush);
+	_brushes.push_back(&_sculptBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -555,6 +556,9 @@ bool Modifier::previewNeedsExistingVolume() const {
 	if (_brushType == BrushType::Transform) {
 		return true;
 	}
+	if (_brushType == BrushType::Sculpt) {
+		return true;
+	}
 	return false;
 }
 
@@ -682,7 +686,7 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 		ctx.brushActive = brush && brush->active();
 		// Bootstrap: TransformBrush/ExtrudeBrush need preview before internal state exists
 		if (!ctx.brushActive && brush &&
-			(brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude)) {
+			(brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude || brush->type() == BrushType::Sculpt)) {
 			ctx.brushActive = true;
 		}
 	}
