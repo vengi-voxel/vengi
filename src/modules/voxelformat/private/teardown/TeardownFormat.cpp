@@ -48,60 +48,38 @@ static void setTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &pos,
 	node.setTransform(keyFrameIdx, transform);
 }
 
-bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
-								int &nodeId) {
+bool TeardownFormat::readEntity(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	EntityType entityType;
 	wrap(s.readUInt8(*(uint8_t *)&entityType))
 	uint32_t handle;
 	wrap(s.readUInt32(handle))
+	Log::debug("Handle: %u, type: %u", handle, (uint8_t)entityType);
 	uint8_t tagCount;
 	wrap(s.readUInt8(tagCount))
-	scenegraph::SceneGraphNodeProperties properties;
 	for (uint8_t t = 0; t < tagCount; ++t) {
 		core::String tag;
 		wrapBool(s.readString(TDStringLength, tag, true))
 		core::String val;
 		wrapBool(s.readString(TDStringLength * 10, val, true))
-		Log::debug("Tag: '%s': '%s'", tag.c_str(), val.c_str());
-		properties.put(tag, val);
 	}
 	core::String desc;
 	wrapBool(s.readString(TDStringLength * 10, desc, true))
-	Log::debug("Entity type: %u", (uint8_t)entityType);
-	Log::debug("Description: '%s'", desc.c_str());
-	Log::debug("Handle: %u", handle);
-	Log::debug("Parent: %i", parent);
 	// Reset nodeId for this entity - prevents leaking from previous sibling entities
 	nodeId = InvalidNodeId;
 
 	switch (entityType) {
 	case EntityType::Body:
 		wrapBool(readBody(sceneGraph, s, parent, nodeId))
-		if (nodeId != InvalidNodeId) {
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			node.setProperty(scenegraph::PropDescription, desc);
-			node.properties() = core::move(properties);
-		}
 		break;
 	case EntityType::Shape: {
-		wrapBool(readShape(header, sceneGraph, s, parent, nodeId))
-		if (nodeId != InvalidNodeId) {
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			node.setProperty(scenegraph::PropDescription, desc);
-			node.properties() = core::move(properties);
-		}
+		wrapBool(readShape(sceneGraph, s, parent, nodeId))
 		break;
 	}
 	case EntityType::Light:
 		wrapBool(readLight(s))
 		break;
 	case EntityType::Location: {
-		wrapBool(readLocation(sceneGraph, s, parent, nodeId))
-		if (nodeId != InvalidNodeId) {
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			node.setProperty(scenegraph::PropDescription, desc);
-			node.properties() = core::move(properties);
-		}
+		wrapBool(readLocation(s))
 		break;
 	}
 	case EntityType::Water:
@@ -111,7 +89,7 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 		wrapBool(readJoint(s))
 		break;
 	case EntityType::Vehicle:
-		wrapBool(readVehicle(header, s))
+		wrapBool(readVehicle(s))
 		break;
 	case EntityType::Wheel:
 		wrapBool(readWheel(s))
@@ -126,7 +104,10 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 		wrapBool(readScript(s))
 		break;
 	case EntityType::Animator:
-		wrapBool(readAnimator(header, s, parent, nodeId))
+		wrapBool(readAnimator(s))
+		break;
+	case EntityType::Rig:
+		wrapBool(readRig(s))
 		break;
 	default:
 		Log::error("Invalid entity type: %d", (uint8_t)entityType);
@@ -139,7 +120,7 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 	int parentId = (nodeId != InvalidNodeId) ? nodeId : parent;
 	for (uint32_t c = 0; c < children; ++c) {
 		int childNodeId = InvalidNodeId;
-		if (!readEntity(header, sceneGraph, s, parentId, childNodeId)) {
+		if (!readEntity(sceneGraph, s, parentId, childNodeId)) {
 			Log::error("Failed to read children %u/%u", c, children);
 			return false;
 		}
@@ -175,14 +156,19 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		wrap(s.readUInt8(version[i]))
 	}
 
-	Header header;
-	header.version = version[0] * 100 + version[1] * 10 + version[2];
 	Log::debug("Teardown bin version: %u.%u.%u", version[0], version[1], version[2]);
 
-	wrapBool(s.readString(TDStringLength, header.levelId, true))
-	wrapBool(s.readString(TDStringLength, header.levelPath, true))
-	wrapBool(s.readString(TDStringLength, header.layers, true))
-	wrapBool(s.readString(TDStringLength, header.mod, true))
+	core::String levelId;
+	wrapBool(s.readString(TDStringLength, levelId, true))
+	core::String levelPath;
+	wrapBool(s.readString(TDStringLength, levelPath, true))
+	core::String layers;
+	wrapBool(s.readString(TDStringLength, layers, true))
+	core::String mod;
+	wrapBool(s.readString(TDStringLength, mod, true))
+
+	uint32_t sceneUnk1;
+	wrap(s.readUInt32(sceneUnk1))
 
 	uint32_t aaa1;
 	wrap(s.readUInt32(aaa1))
@@ -190,6 +176,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		Log::error("Invalid aaa1 sentinel: 0x%X (expected 0xAAA1)", aaa1);
 		return false;
 	}
+
 	uint32_t enabledMods;
 	wrap(s.readUInt32(enabledMods))
 	for (uint32_t i = 0; i < enabledMods; ++i) {
@@ -197,7 +184,6 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		core::String value;
 		wrapBool(s.readString(TDStringLength, key, true))
 		wrapBool(s.readString(TDStringLength, value, true))
-		header.mods.put(key, value);
 	}
 
 	uint32_t spawnedMods;
@@ -207,48 +193,36 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		core::String value;
 		wrapBool(s.readString(TDStringLength, key, true))
 		wrapBool(s.readString(TDStringLength, value, true))
-		header.spawnedMods.put(key, value);
 	}
-
-	uint32_t drivenVehicle;
-	wrap(s.readUInt32(drivenVehicle))
 
 	glm::vec3 shadowVolume;
 	wrapBool(io::readVec3(s, shadowVolume))
 
-	if (header.version >= 170) {
-		glm::vec3 gravity;
-		wrapBool(io::readVec3(s, gravity))
-	}
+	glm::vec3 gravity;
+	wrapBool(io::readVec3(s, gravity))
 
 	glm::vec3 spawnPos;
-	wrapBool(io::readVec3(s, spawnPos))
-
 	glm::quat spawnRot;
-	wrapBool(io::readQuat(s, spawnRot))
+	wrapBool(readTransform(s, spawnPos, spawnRot))
 
 	uint32_t worldBody;
 	wrap(s.readUInt32(worldBody))
 
-	uint32_t flashLight;
-	wrap(s.readUInt32(flashLight))
-
 	uint32_t explosionLua;
 	wrap(s.readUInt32(explosionLua))
 
+	uint32_t characterLua;
+	wrap(s.readUInt32(characterLua))
+
 	uint32_t achievementLua;
 	wrap(s.readUInt32(achievementLua))
-	if (header.version >= 160) {
-		uint32_t characterLua;
-		wrap(s.readUInt32(characterLua))
-	}
 
 	// post processing
 	float brightness;
 	wrap(s.readFloat(brightness))
 
 	glm::vec4 color;
-	wrapBool(io::readVec4(s, color));
+	wrapBool(io::readVec4(s, color))
 
 	float saturation;
 	wrap(s.readFloat(saturation))
@@ -259,47 +233,91 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float bloom;
 	wrap(s.readFloat(bloom))
 
-	glm::vec3 playerPos;
-	wrapBool(io::readVec3(s, playerPos))
+	uint32_t playerCount;
+	wrap(s.readUInt32(playerCount))
+	for (uint32_t i = 0; i < playerCount; ++i) {
+		uint32_t playerId;
+		wrap(s.readUInt32(playerId))
+	}
 
-	glm::quat playerRot;
-	wrapBool(io::readQuat(s, playerRot))
+	for (uint32_t i = 0; i < playerCount; ++i) {
+		glm::vec3 playerPos;
+		glm::quat playerRot;
+		wrapBool(readTransform(s, playerPos, playerRot))
 
-	float pitch;
-	wrap(s.readFloat(pitch))
+		float pitch;
+		wrap(s.readFloat(pitch))
 
-	float yaw;
-	wrap(s.readFloat(yaw))
+		float yaw;
+		wrap(s.readFloat(yaw))
 
-	if (header.version >= 170) {
 		glm::quat orientation;
 		wrapBool(io::readQuat(s, orientation))
 
 		glm::quat cameraOrientation;
 		wrapBool(io::readQuat(s, cameraOrientation))
-	}
 
-	glm::vec3 velocity;
-	wrapBool(io::readVec3(s, velocity))
+		glm::vec3 velocity;
+		wrapBool(io::readVec3(s, velocity))
 
-	float health;
-	wrap(s.readFloat(health))
+		float health;
+		wrap(s.readFloat(health))
 
-	float transitionTimer;
-	wrap(s.readFloat(transitionTimer))
+		float bluetideTimer;
+		wrap(s.readFloat(bluetideTimer))
 
-	float timeUnderwater;
-	wrap(s.readFloat(timeUnderwater))
+		float timeUnderwater;
+		wrap(s.readFloat(timeUnderwater))
 
-	float bluetideTimer;
-	wrap(s.readFloat(bluetideTimer))
+		uint32_t drivenVehicle;
+		wrap(s.readUInt32(drivenVehicle))
 
-	float bluetidePower;
-	wrap(s.readFloat(bluetidePower))
+		int flashlight1;
+		wrap(s.readInt32(flashlight1))
 
-	if (header.version >= 160) {
-		float animator;
-		wrap(s.readFloat(animator))
+		int flashlight2;
+		wrap(s.readInt32(flashlight2))
+
+		uint32_t unk1;
+		wrap(s.readUInt32(unk1))
+
+		uint32_t unk2;
+		wrap(s.readUInt32(unk2))
+
+		float unk3;
+		wrap(s.readFloat(unk3))
+
+		float unk4;
+		wrap(s.readFloat(unk4))
+
+		int animator1;
+		wrap(s.readInt32(animator1))
+
+		uint32_t unk5;
+		wrap(s.readUInt32(unk5))
+
+		int animator2;
+		wrap(s.readInt32(animator2))
+
+		for (uint32_t j = 0; j < 17; ++j) {
+			readToolInfo(s);
+		}
+
+		uint32_t modToolsCount;
+		wrap(s.readUInt32(modToolsCount))
+
+		for (uint32_t j = 0; j < modToolsCount; ++j) {
+			readToolInfo(s);
+			core::String path;
+			wrapBool(s.readString(TDStringLength, path, true))
+			core::String file;
+			wrapBool(s.readString(TDStringLength, file, true))
+			uint32_t group;
+			wrap(s.readUInt32(group))
+		}
+
+		core::String currentTool;
+		wrapBool(s.readString(TDStringLength, currentTool, true))
 	}
 
 	// environment
@@ -357,19 +375,17 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float envBrightness;
 	wrap(s.readFloat(envBrightness))
 
-	uint8_t type = 0;
-	if (header.version >= 160) {
-		wrap(s.readUInt8(type))
-	}
+	uint8_t type;
+	wrap(s.readUInt8(type))
+
 	glm::vec4 fogColor;
 	wrapBool(io::readColor(s, fogColor))
 
 	glm::vec4 fogParameters;
 	wrapBool(io::readVec4(s, fogParameters))
-	float fogHeightOffset = 0.0f;
-	if (header.version >= 160) {
-		wrap(s.readFloat(fogHeightOffset))
-	}
+
+	float fogHeightOffset;
+	wrap(s.readFloat(fogHeightOffset))
 
 	float waterWetness;
 	wrap(s.readFloat(waterWetness))
@@ -387,7 +403,6 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 
 	core::String envAmbientPath;
 	wrapBool(s.readString(TDStringLength, envAmbientPath, true))
-	Log::debug("Env ambient path: %s", envAmbientPath.c_str());
 
 	float envAmbientVolume;
 	wrap(s.readFloat(envAmbientVolume))
@@ -412,11 +427,8 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float envWaterHurt;
 	wrap(s.readFloat(envWaterHurt))
 
-	if (header.version >= 163) {
-		core::String envLensDirt;
-		wrapBool(s.readString(TDStringLength, envLensDirt, true))
-		Log::debug("Env lens dirt: %s", envLensDirt.c_str());
-	}
+	core::String envLensDirt;
+	wrapBool(s.readString(TDStringLength, envLensDirt, true))
 
 	// boundary
 	uint32_t vertexCount;
@@ -436,6 +448,26 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float boundaryMaxHeight;
 	wrap(s.readFloat(boundaryMaxHeight))
 
+	uint32_t projectileCount;
+	wrap(s.readUInt32(projectileCount))
+	for (uint32_t i = 0; i < projectileCount; ++i) {
+		glm::vec3 origin;
+		wrapBool(io::readVec3(s, origin))
+		glm::vec3 direction;
+		wrapBool(io::readVec3(s, direction))
+		float dist;
+		wrap(s.readFloat(dist))
+		float maxDist;
+		wrap(s.readFloat(maxDist))
+		float strength;
+		wrap(s.readFloat(strength))
+		uint32_t projType;
+		wrap(s.readUInt32(projType))
+		uint32_t playerId;
+		wrap(s.readUInt32(playerId))
+		/*bool impact = */ s.readBool();
+	}
+
 	uint32_t fireCount;
 	wrap(s.readUInt32(fireCount))
 	for (uint32_t i = 0; i < fireCount; ++i) {
@@ -453,11 +485,14 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		wrap(s.readUInt32(fireSpawnCount))
 	}
 
+	uint32_t sceneUnk2;
+	wrap(s.readUInt32(sceneUnk2))
+
 	uint32_t paletteCount;
 	wrap(s.readUInt32(paletteCount))
-	header.palettes.resize(paletteCount);
+	palettes.resize(paletteCount);
 	for (uint32_t i = 0; i < paletteCount; ++i) {
-		palette::Palette &palette = header.palettes[i];
+		palette::Palette &palette = palettes[i];
 		palette.setSize(256);
 		for (int j = 0; j < 256; j++) {
 			uint8_t mattype;
@@ -514,42 +549,19 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 			palette.setMaterial(j, material);
 		}
 		/*bool hasTransparent =*/s.readBool();
-#if 1
+
+		// black / yellow / rgba tint indices
 		s.skip(256 * 3 * sizeof(color::RGBA));
-#else
-		color::RGBA blackTint[256];
-		for (int k = 0; k < 256; ++k) {
-			if (!io::readColor(s, blackTint[k])) {
-				Log::error("Could not read black tint for palette %u index %u", i, k);
-				return false;
-			}
-		}
-		color::RGBA yellowTint[256];
-		for (int k = 0; k < 256; ++k) {
-			if (!io::readColor(s, yellowTint[k])) {
-				Log::error("Could not read yellow tint for palette %u index %u", i, k);
-				return false;
-			}
-		}
-		color::RGBA rgbaTint[256];
-		for (int k = 0; k < 256; ++k) {
-			if (!io::readColor(s, rgbaTint[k])) {
-				Log::error("Could not read RGBA tint for palette %u index %u", i, k);
-				return false;
-			}
-		}
-#endif
 	}
 
 	uint32_t registryCount;
 	wrap(s.readUInt32(registryCount))
-	scenegraph::SceneGraphNode &root = sceneGraph.node(0);
 	for (uint32_t i = 0; i < registryCount; ++i) {
 		core::String key;
 		wrapBool(s.readString(TDStringLength, key, true))
 		core::String value;
 		wrapBool(s.readString(TDStringLength * 10, value, true))
-		root.setProperty(key, value);
+		/*bool sync =*/s.readBool();
 	}
 
 	uint32_t topEntityCount;
@@ -557,47 +569,32 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	Log::debug("%u top entities", topEntityCount);
 	for (uint32_t i = 0; i < topEntityCount; ++i) {
 		int nodeId = InvalidNodeId;
-		if (!readEntity(header, sceneGraph, s, sceneGraph.root().id(), nodeId)) {
+		if (!readEntity(sceneGraph, s, sceneGraph.root().id(), nodeId)) {
 			Log::error("Failed to read top entity %u/%u", i, topEntityCount);
 			return false;
 		}
 	}
 
-	uint32_t projectileCount;
-	wrap(s.readUInt32(projectileCount))
-	Log::debug("Projectile count: %u", projectileCount);
-	for (uint32_t i = 0; i < projectileCount; ++i) {
-		glm::vec3 origin;
-		wrapBool(io::readVec3(s, origin))
-
-		glm::vec3 direction;
-		wrapBool(io::readVec3(s, direction))
-
-		float dist;
-		wrap(s.readFloat(dist))
-
-		float maxDist;
-		wrap(s.readFloat(maxDist))
-
-		uint32_t projectileType;
-		wrap(s.readUInt32(projectileType))
-
-		float strength;
-		wrap(s.readFloat(strength))
-	}
-
-	/* bool hasSnow = */ s.readBool();
-	uint32_t assetCount;
-	wrap(s.readUInt32(assetCount))
-	Log::debug("Asset count: %u", assetCount);
-	for (uint32_t i = 0; i < assetCount; ++i) {
-		core::String folder;
-		wrapBool(s.readString(TDStringLength, folder, true))
-		/* bool doOverride = */ s.readBool();
-	}
-
 	sceneGraph.updateTransforms();
 
+	return true;
+}
+
+bool TeardownFormat::readToolInfo(io::ReadStream &s) {
+	/*bool enabled =*/s.readBool();
+	core::String id;
+	wrapBool(s.readString(TDStringLength, id, true))
+	core::String name;
+	wrapBool(s.readString(TDStringLength, name, true))
+	glm::vec3 pos;
+	glm::quat rot;
+	wrapBool(readTransform(s, pos, rot))
+	float ammoPickupAmount;
+	wrap(s.readFloat(ammoPickupAmount))
+	if (ammoPickupAmount > 0) {
+		int ammo;
+		wrap(s.readInt32(ammo))
+	}
 	return true;
 }
 
@@ -625,13 +622,14 @@ bool TeardownFormat::readBody(scenegraph::SceneGraph &sceneGraph, io::ReadStream
 
 	// Create a Group node for the body to maintain proper scene hierarchy
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+	pos = pos * 10.0f; // 1 position unit (meters) = 10 voxels
 	setTransform(node, pos, rot);
 	node.setName("Body");
 	nodeId = sceneGraph.emplace(core::move(node), parent);
 	return true;
 }
 
-bool TeardownFormat::readVoxels(const Header &header, scenegraph::SceneGraphNode &node, io::ReadStream &s) {
+bool TeardownFormat::readVoxels(scenegraph::SceneGraphNode &node, io::ReadStream &s) {
 	uint32_t sx, sy, sz;
 	wrap(s.readUInt32(sx))
 	wrap(s.readUInt32(sy))
@@ -676,8 +674,8 @@ bool TeardownFormat::readVoxels(const Header &header, scenegraph::SceneGraphNode
 	}
 	uint32_t paletteId;
 	wrap(s.readUInt32(paletteId))
-	if (paletteId < header.palettes.size()) {
-		node.setPalette(header.palettes[paletteId]);
+	if (paletteId < palettes.size()) {
+		node.setPalette(palettes[paletteId]);
 	}
 	float scale;
 	wrap(s.readFloat(scale))
@@ -689,8 +687,7 @@ bool TeardownFormat::readVoxels(const Header &header, scenegraph::SceneGraphNode
 	return true;
 }
 
-bool TeardownFormat::readShape(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
-							   int &nodeId) {
+bool TeardownFormat::readShape(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	glm::vec3 pos;
@@ -724,8 +721,9 @@ bool TeardownFormat::readShape(const Header &header, scenegraph::SceneGraph &sce
 	uint8_t hasVoxels;
 	wrap(s.readUInt8(hasVoxels))
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	wrapBool(readVoxels(header, node, s))
+	wrapBool(readVoxels(node, s))
 	if (hasVoxels && node.volume() != nullptr) {
+		pos = pos * 10.0f; // 1 position unit (meters) = 10 voxels
 		setTransform(node, pos, rot);
 		node.setName("Shape");
 		nodeId = sceneGraph.emplace(core::move(node), parent);
@@ -733,10 +731,8 @@ bool TeardownFormat::readShape(const Header &header, scenegraph::SceneGraph &sce
 
 	uint8_t origin;
 	wrap(s.readUInt8(origin))
-	if (header.version >= 160) {
-		uint32_t animator;
-		wrap(s.readUInt32(animator))
-	}
+	uint32_t animator;
+	wrap(s.readUInt32(animator))
 	return true;
 }
 
@@ -788,16 +784,12 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 	return true;
 }
 
-bool TeardownFormat::readLocation(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
+bool TeardownFormat::readLocation(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	glm::vec3 pos;
 	glm::quat rot;
 	wrapBool(readTransform(s, pos, rot))
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
-	setTransform(node, pos, rot);
-	node.setName("Location");
-	nodeId = sceneGraph.emplace(core::move(node), parent);
 	return true;
 }
 
@@ -819,6 +811,22 @@ bool TeardownFormat::readWater(io::ReadStream &s) {
 	wrap(s.readFloat(foam))
 	glm::vec4 color;
 	wrapBool(io::readColor(s, color))
+
+	for (uint32_t i = 0; i < 5; ++i) {
+		float unk;
+		wrap(s.readFloat(unk))
+	}
+	float drag;
+	wrap(s.readFloat(drag))
+	uint8_t unk2;
+	wrap(s.readUInt8(unk2))
+	for (uint32_t i = 0; i < 25; ++i) {
+		float unk;
+		wrap(s.readFloat(unk))
+	}
+	uint8_t unk6;
+	wrap(s.readUInt8(unk6))
+
 	float visibility;
 	wrap(s.readFloat(visibility))
 	uint32_t vertexCount;
@@ -898,7 +906,7 @@ bool TeardownFormat::readJoint(io::ReadStream &s) {
 	return true;
 }
 
-bool TeardownFormat::readVehicle(const Header &header, io::ReadStream &s) {
+bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	uint32_t body;
@@ -948,6 +956,8 @@ bool TeardownFormat::readVehicle(const Header &header, io::ReadStream &s) {
 	wrapBool(io::readVec3(s, camera))
 	glm::vec3 player;
 	wrapBool(io::readVec3(s, player))
+	glm::vec3 driver_seat;
+	wrapBool(io::readVec3(s, driver_seat))
 	glm::vec3 exit;
 	wrapBool(io::readVec3(s, exit))
 	glm::vec3 propeller;
@@ -980,27 +990,36 @@ bool TeardownFormat::readVehicle(const Header &header, io::ReadStream &s) {
 	wrap(s.readUInt32(vitalCount))
 	for (uint32_t i = 0; i < vitalCount; ++i) {
 		uint32_t b;
-		wrap(s.readUInt32(b));
+		wrap(s.readUInt32(b))
 		glm::vec3 pos;
 		wrapBool(io::readVec3(s, pos))
 		float r;
-		wrap(s.readFloat(r));
+		wrap(s.readFloat(r))
 		uint32_t nv;
-		wrap(s.readUInt32(nv));
+		wrap(s.readUInt32(nv))
 	}
-	if (header.version >= 160) {
-		uint32_t animCount;
-		wrap(s.readUInt32(animCount))
-		for (uint32_t i = 0; i < animCount; ++i) {
-			core::String name;
-			wrapBool(s.readString(TDStringLength, name, true))
-			glm::vec3 pos;
-			glm::quat rot;
-			wrapBool(readTransform(s, pos, rot))
-			uint32_t h;
-			wrap(s.readUInt32(h))
-		}
+	uint32_t animCount;
+	wrap(s.readUInt32(animCount))
+	for (uint32_t i = 0; i < animCount; ++i) {
+		core::String name;
+		wrapBool(s.readString(TDStringLength, name, true))
+		glm::vec3 pos;
+		glm::quat rot;
+		wrapBool(readTransform(s, pos, rot))
+		uint32_t h;
+		wrap(s.readUInt32(h))
 	}
+
+	uint32_t passengerCount;
+	wrap(s.readUInt32(passengerCount))
+	for (uint32_t i = 0; i < passengerCount; ++i) {
+		int unk1[3];
+		wrap(s.readInt32(unk1[0]))
+		wrap(s.readInt32(unk1[1]))
+		wrap(s.readInt32(unk1[2]))
+		/* bool unk2 = */ s.readBool();
+	}
+
 	float bounds;
 	wrap(s.readFloat(bounds))
 	/* bool noroll = */ s.readBool();
@@ -1115,26 +1134,21 @@ bool TeardownFormat::readTrigger(io::ReadStream &s) {
 	return true;
 }
 
-bool TeardownFormat::readScript(io::ReadStream &s) {
-	uint16_t flags;
-	wrap(s.readUInt16(flags))
-	core::String file;
-	wrapBool(s.readString(TDStringLength, file, true))
-	Log::debug("Script file %s", file.c_str());
-
+bool TeardownFormat::readScriptCore(io::ReadStream &s) {
 	uint32_t entries;
 	wrap(s.readUInt32(entries))
 	for (uint32_t i = 0; i < entries; ++i) {
 		core::String k, v;
 		wrapBool(s.readString(TDStringLength, k, true))
 		wrapBool(s.readString(TDStringLength * 10, v, true))
-		Log::debug("Key: '%s': '%s'", k.c_str(), v.c_str());
 	}
 
 	float tick;
 	wrap(s.readFloat(tick))
 	float update;
 	wrap(s.readFloat(update))
+	/*bool unk1 = */ s.readBool();
+	/*bool unk2 = */ s.readBool();
 
 	uint32_t varCount;
 	wrap(s.readUInt32(varCount))
@@ -1151,7 +1165,9 @@ bool TeardownFormat::readScript(io::ReadStream &s) {
 	wrap(s.readUInt32(soundCount))
 	for (uint32_t i = 0; i < soundCount; ++i) {
 		uint32_t t;
-		wrap(s.readUInt32(t));
+		wrap(s.readUInt32(t))
+		core::String p;
+		wrapBool(s.readString(TDStringLength, p, true))
 		core::String n;
 		wrapBool(s.readString(TDStringLength, n, true))
 	}
@@ -1162,13 +1178,51 @@ bool TeardownFormat::readScript(io::ReadStream &s) {
 		core::String var;
 		wrapBool(s.readString(TDStringLength, var, true))
 		uint8_t trans;
-		wrap(s.readUInt8(trans));
+		wrap(s.readUInt8(trans))
 		float tt, ct, cv, tv;
 		wrap(s.readFloat(tt))
 		wrap(s.readFloat(ct))
 		wrap(s.readFloat(cv))
 		wrap(s.readFloat(tv))
 	}
+
+	uint32_t unk3Count;
+	wrap(s.readUInt32(unk3Count))
+	for (uint32_t i = 0; i < unk3Count; ++i) {
+		uint32_t handle;
+		wrap(s.readUInt32(handle))
+		core::String path;
+		wrapBool(s.readString(TDStringLength, path, true))
+	}
+
+	// Note: vector size type is uint16_t
+	uint16_t unk4Count;
+	wrap(s.readUInt16(unk4Count))
+	for (uint16_t i = 0; i < unk4Count; ++i) {
+		uint32_t first, second;
+		wrap(s.readUInt32(first))
+		wrap(s.readUInt32(second))
+	}
+
+	return true;
+}
+
+bool TeardownFormat::readScript(io::ReadStream &s) {
+	uint16_t flags;
+	wrap(s.readUInt16(flags))
+	uint32_t unk1;
+	wrap(s.readUInt32(unk1))
+	core::String file;
+	wrapBool(s.readString(TDStringLength, file, true))
+	core::String unk2;
+	wrapBool(s.readString(TDStringLength, unk2, true))
+	/*bool unk3 =*/s.readBool();
+	/*bool unk4 =*/s.readBool();
+	bool hasServer = s.readBool();
+	if (hasServer) {
+		wrapBool(readScriptCore(s))
+	}
+	wrapBool(readScriptCore(s))
 	return true;
 }
 
@@ -1177,6 +1231,8 @@ bool TeardownFormat::readLuaValue(io::ReadStream &s, int typeId) {
 	// NIL = 0, Boolean = 1, Number = 3, String = 4, Table = 5, Reference = 0xFFFFFFFB
 	const uint32_t refType = 0xFFFFFFFBu;
 	switch ((uint32_t)typeId) {
+	case 0u: // NIL
+		return true;
 	case 1u: // Boolean
 		(void)s.readBool();
 		return true;
@@ -1194,50 +1250,31 @@ bool TeardownFormat::readLuaValue(io::ReadStream &s, int typeId) {
 		uint32_t ref;
 		return s.readUInt32(ref) == 0;
 	}
-	case 0u: // NIL
 	default:
-		return true;
+		Log::error("readLuaValue: invalid type %u", typeId);
+		return false;
 	}
 }
 
 bool TeardownFormat::readLuaTable(io::ReadStream &s) {
-	Log::debug("Read Lua table");
 	// sequence of (key_type, key, value_type, value) terminated by key_type == NIL (0)
-	uint32_t entryIdx = 0;
-	const uint32_t refType = 0xFFFFFFFBu;
 	for (;;) {
 		uint32_t keyType;
 		wrap(s.readUInt32(keyType))
 		if (keyType == 0u) {
 			// NIL marks end
-			Log::debug("readLuaTable: terminated after %u entries", entryIdx);
 			return true;
 		}
-		// Accept the expected LuaType values: 0,1,3,4,5 and the special Reference value 0xFFFFFFFB
-		if (!(keyType == 0u || keyType == 1u || keyType == 3u || keyType == 4u || keyType == 5u ||
-			  keyType == refType)) {
-			Log::error("readLuaTable: invalid keyType %u at entry %u", keyType, entryIdx);
-			return false;
-		}
-
 		wrapBool(readLuaValue(s, (int)keyType))
 
 		uint32_t valueType;
 		wrap(s.readUInt32(valueType))
-		if (!(valueType == 0u || valueType == 1u || valueType == 3u || valueType == 4u || valueType == 5u ||
-			  valueType == refType)) {
-			Log::error("readLuaTable: invalid valueType %u at entry %u", valueType, entryIdx);
-			return false;
-		}
-
 		wrapBool(readLuaValue(s, (int)valueType))
-
-		entryIdx++;
 	}
 	return true;
 }
 
-bool TeardownFormat::readAnimator(const Header &header, io::ReadStream &s, int parent, int &nodeId) {
+bool TeardownFormat::readAnimator(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	glm::vec3 pos;
@@ -1253,7 +1290,7 @@ bool TeardownFormat::readAnimator(const Header &header, io::ReadStream &s, int p
 		uint32_t a, b, c;
 		wrap(s.readUInt32(a))
 		wrap(s.readUInt32(b))
-		wrap(s.readUInt32(c));
+		wrap(s.readUInt32(c))
 		core::String str;
 		wrapBool(s.readString(TDStringLength, str, true))
 	}
@@ -1291,9 +1328,6 @@ bool TeardownFormat::readAnimator(const Header &header, io::ReadStream &s, int p
 	}
 
 	wrap(s.readUInt32(entries))
-	// scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
-	// groupNode.setName(path);
-	// nodeId = sceneGraph.emplace(core::move(groupNode), parent);
 	for (uint32_t i = 0; i < entries; ++i) {
 		uint32_t i1;
 		wrap(s.readUInt32(i1))
@@ -1313,7 +1347,7 @@ bool TeardownFormat::readAnimator(const Header &header, io::ReadStream &s, int p
 		wrap(s.readUInt8(b4))
 		(void)s.readBool();
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		wrapBool(readVoxels(header, node, s))
+		wrapBool(readVoxels(node, s))
 		// setTransform(node, p2, r2);
 		// sceneGraph.emplace(core::move(node), nodeId);
 	}
@@ -1397,6 +1431,30 @@ bool TeardownFormat::readAnimator(const Header &header, io::ReadStream &s, int p
 		glm::quat r3;
 		wrapBool(readTransform(s, p3, r3))
 	}
+	return true;
+}
+
+bool TeardownFormat::readRig(io::ReadStream &s) {
+	uint16_t flags;
+	wrap(s.readUInt16(flags))
+	uint32_t locCount;
+	wrap(s.readUInt32(locCount))
+	for (uint32_t i = 0; i < locCount; ++i) {
+		core::String tags;
+		wrapBool(s.readString(TDStringLength, tags, true))
+		glm::vec3 pos;
+		glm::quat rot;
+		wrapBool(readTransform(s, pos, rot))
+		s.readBool();
+	}
+	glm::vec3 pos;
+	glm::quat rot;
+	wrapBool(readTransform(s, pos, rot))
+	s.readBool();
+	uint32_t vehicle;
+	wrap(s.readUInt32(vehicle))
+	uint32_t unk2;
+	wrap(s.readUInt32(unk2))
 	return true;
 }
 
