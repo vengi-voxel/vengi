@@ -393,11 +393,9 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, ctx.cursorVoxel);
 			}
 		}
-
-		// Remove original selected voxels — extrude moves the face outward
-		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-			writeVoxel(wrapper, savedPositions, selPos, air);
-		}
+		// Include the original selected positions in the dirty region so that
+		// auto-select will re-select them along with the newly extruded voxels
+		wrapper.addToDirtyRegion(_cachedSelectedPositions);
 	}
 }
 
