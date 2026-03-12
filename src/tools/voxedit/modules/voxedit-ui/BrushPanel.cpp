@@ -29,6 +29,7 @@
 #include "voxel/Face.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
+#include "voxedit-util/modifier/brush/SculptBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/RawVolume.h"
@@ -46,12 +47,15 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
 	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
 	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP, ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
-	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND, ICON_LC_MOVE_3D};
+	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND, ICON_LC_MOVE_3D, ICON_LC_BLEND};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
+
+static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten")};
+static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
@@ -1076,6 +1080,91 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	}
 }
 
+void BrushPanel::executeSculptBrush() {
+	Modifier &modifier = _sceneMgr->modifier();
+	if (!modifier.beginBrushFromPanel()) {
+		return;
+	}
+	auto func = [&](int nodeId) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+			if (!node->visible()) {
+				return;
+			}
+			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+				_sceneMgr->modified(nodeId, region, flags);
+			};
+			modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
+		}
+	};
+	_sceneMgr->nodeForeachGroup(func);
+	modifier.endBrush();
+}
+
+void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	SculptBrush &brush = modifier.sculptBrush();
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	if (node == nullptr || (!node->hasSelection() && !brush.hasSnapshot())) {
+		ImGui::TextWrappedUnformatted(_("Select voxels first, then switch to sculpt"));
+		return;
+	}
+
+	const SculptMode currentMode = brush.sculptMode();
+	if (ImGui::BeginCombo(_("Sculpt mode"), _(SculptModeStr[(int)currentMode]), ImGuiComboFlags_None)) {
+		for (int i = 0; i < (int)SculptMode::Max; ++i) {
+			const SculptMode mode = (SculptMode)i;
+			const bool selected = mode == currentMode;
+			if (ImGui::Selectable(_(SculptModeStr[i]), selected)) {
+				brush.setSculptMode(mode);
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (currentMode == SculptMode::Flatten) {
+		const voxel::FaceNames flattenFace = brush.flattenFace();
+		if (flattenFace == voxel::FaceNames::Max) {
+			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
+			ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the flatten direction"));
+			return;
+		}
+		ImGui::Text(_("Direction: %s"), voxel::faceNameString(flattenFace));
+
+		int iterations = brush.iterations();
+		ImGui::TextUnformatted(_("Iterations"));
+		if (ImGui::Button("-##sculpt_iter")) {
+			brush.setIterations(iterations - 1);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##sculpt_iter_slider", &iterations, 1, SculptBrush::MaxFlattenIterations)) {
+			brush.setIterations(iterations);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##sculpt_iter")) {
+			brush.setIterations(iterations + 1);
+			executeSculptBrush();
+		}
+	} else {
+		float strength = brush.strength();
+		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
+			brush.setStrength(strength);
+			executeSculptBrush();
+		}
+
+		int iterations = brush.iterations();
+		if (ImGui::SliderInt(_("Iterations"), &iterations, 1, SculptBrush::MaxIterations)) {
+			brush.setIterations(iterations);
+			executeSculptBrush();
+		}
+	}
+}
+
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	const Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
@@ -1104,6 +1193,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateExtrudeBrushPanel(listener);
 		} else if (brushType == BrushType::Transform) {
 			updateTransformBrushPanel(listener);
+		} else if (brushType == BrushType::Sculpt) {
+			updateSculptBrushPanel(listener);
 		}
 	}
 
