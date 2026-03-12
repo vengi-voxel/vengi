@@ -1234,4 +1234,215 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
 							VisitFlatSurface(face, position, deviation));
 }
 
+/**
+ * @brief Flood-fill along a surface using a global slope plane to accept/reject voxels.
+ *
+ * The clicked face defines a "height" axis. A slope plane is fitted once from the seed's
+ * neighborhood using 2D linear regression, then frozen. The BFS expands outward and checks
+ * each candidate voxel against the frozen plane: if its actual height deviates from the
+ * plane's predicted height by more than @p maxDeviation, it is rejected.
+ *
+ * This approach is robust at surface edges (no per-voxel gradient needed) and naturally
+ * handles L-shaped staircase kinks (they are small deviations on a well-fitted plane).
+ * Freezing the plane prevents gradual drift around sharp angle changes.
+ *
+ * Uses 26-connectivity so the BFS can traverse diagonal staircase steps.
+ *
+ * @param volume          The volume to query
+ * @param position        Start voxel position (must be solid surface voxel on @p face)
+ * @param face            The clicked face - defines which axis is "height"
+ * @param maxDeviation    Maximum allowed height deviation (in voxels) from the global slope plane
+ * @param sampleDistance  How many voxels to probe around the seed to compute the initial plane
+ * @param visitor         Called with (x, y, z, voxel) for every accepted voxel including start
+ * @return Number of voxels visited
+ */
+template<class Volume, class Visitor = EmptyVisitor>
+int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+					  int maxDeviation, int sampleDistance, Visitor &&visitor = Visitor()) {
+	if (face == voxel::FaceNames::Max) {
+		return 0;
+	}
+	typename Volume::Sampler sampler(volume);
+	if (!sampler.setPosition(position)) {
+		return 0;
+	}
+	if (voxel::isAir(sampler.voxel().getMaterial())) {
+		return 0;
+	}
+	const voxel::FaceBits startFaces = voxel::visibleFaces(sampler);
+	if (startFaces == voxel::FaceBits::None) {
+		return 0;
+	}
+
+	const int heightAxis = math::getIndexForAxis(voxel::faceToAxis(face));
+	const int uAxis = (heightAxis + 1) % 3;
+	const int vAxis = (heightAxis + 2) % 3;
+	const bool positiveNormal = voxel::isPositiveFace(face);
+	const voxel::Region &volRegion = volume.region();
+
+	// Find the outermost surface height at a given (u, v) coordinate.
+	// Scans from outside inward to avoid hitting interior shell surfaces.
+	const int searchRange = sampleDistance * 2;
+	auto findSurfaceHeight = [&](int uCoord, int vCoord, int expectedHeight, int &outHeight) -> bool {
+		const int startH = expectedHeight + (positiveNormal ? searchRange : -searchRange);
+		const int endH = expectedHeight + (positiveNormal ? -searchRange : searchRange);
+		const int stepH = positiveNormal ? -1 : 1;
+		for (int scanH = startH; (positiveNormal ? (scanH >= endH) : (scanH <= endH)); scanH += stepH) {
+			glm::ivec3 probe;
+			probe[heightAxis] = scanH;
+			probe[uAxis] = uCoord;
+			probe[vAxis] = vCoord;
+			if (!volRegion.containsPoint(probe)) {
+				continue;
+			}
+			if (voxel::isAir(volume.voxel(probe).getMaterial())) {
+				continue;
+			}
+			glm::ivec3 above = probe;
+			above[heightAxis] += positiveNormal ? 1 : -1;
+			if (!volRegion.containsPoint(above) || voxel::isAir(volume.voxel(above).getMaterial())) {
+				outHeight = scanH;
+				return true;
+			}
+		}
+		return false;
+	};
+
+	// Running 2D linear regression: fits h = a + b*u + c*v to all accepted surface voxels.
+	// Uses relative coordinates (du = u - seedU, dv = v - seedV) for numerical stability.
+	// The plane predicts height at any (u,v): predictedH = seedH + gradU*du + gradV*dv
+	const int seedU = position[uAxis];
+	const int seedV = position[vAxis];
+	const int seedH = position[heightAxis];
+
+	// Accumulators for 2D regression: h = gradU*du + gradV*dv + intercept
+	// Normal equations: [Σdu² Σdu·dv] [gradU]   [Σdu·dh]
+	//                   [Σdu·dv Σdv²] [gradV] = [Σdv·dh]
+	double sumDU = 0.0, sumDV = 0.0, sumDH = 0.0;
+	double sumDU2 = 0.0, sumDV2 = 0.0, sumDUDV = 0.0;
+	double sumDUDH = 0.0, sumDVDH = 0.0;
+	int planeN = 0;
+	float gradU = 0.0f;
+	float gradV = 0.0f;
+
+	auto addToPlane = [&](int uCoord, int vCoord, int height) {
+		const double du = static_cast<double>(uCoord - seedU);
+		const double dv = static_cast<double>(vCoord - seedV);
+		const double dh = static_cast<double>(height - seedH);
+		sumDU += du;
+		sumDV += dv;
+		sumDH += dh;
+		sumDU2 += du * du;
+		sumDV2 += dv * dv;
+		sumDUDV += du * dv;
+		sumDUDH += du * dh;
+		sumDVDH += dv * dh;
+		++planeN;
+	};
+
+	static constexpr int MinPlaneSamples = 3;
+	static constexpr double MinDeterminant = 0.001;
+
+	auto updatePlaneGradients = [&]() {
+		if (planeN < MinPlaneSamples) {
+			return;
+		}
+		// Solve normal equations for 2D regression (with intercept absorbed by centering)
+		const double sampleCount = static_cast<double>(planeN);
+		const double meanDU = sumDU / sampleCount;
+		const double meanDV = sumDV / sampleCount;
+		const double meanDH = sumDH / sampleCount;
+		// Centered second moments
+		const double suu = sumDU2 - sampleCount * meanDU * meanDU;
+		const double svv = sumDV2 - sampleCount * meanDV * meanDV;
+		const double suv = sumDUDV - sampleCount * meanDU * meanDV;
+		const double suh = sumDUDH - sampleCount * meanDU * meanDH;
+		const double svh = sumDVDH - sampleCount * meanDV * meanDH;
+		const double det = suu * svv - suv * suv;
+		if (glm::abs(det) > MinDeterminant) {
+			gradU = static_cast<float>((svv * suh - suv * svh) / det);
+			gradV = static_cast<float>((suu * svh - suv * suh) / det);
+		}
+	};
+
+	auto predictHeight = [&](int uCoord, int vCoord) -> float {
+		return static_cast<float>(seedH) + gradU * static_cast<float>(uCoord - seedU) + gradV * static_cast<float>(vCoord - seedV);
+	};
+
+	// Bootstrap the plane from the seed's neighborhood
+	for (int du = -sampleDistance; du <= sampleDistance; ++du) {
+		for (int dv = -sampleDistance; dv <= sampleDistance; ++dv) {
+			int surfaceHeight = 0;
+			if (du == 0 && dv == 0) {
+				surfaceHeight = seedH;
+			} else if (!findSurfaceHeight(seedU + du, seedV + dv, seedH, surfaceHeight)) {
+				continue;
+			}
+			addToPlane(seedU + du, seedV + dv, surfaceHeight);
+		}
+	}
+	updatePlaneGradients();
+
+	const float maxDev = static_cast<float>(maxDeviation);
+
+	VisitedSet visited;
+	visited.insert(position);
+	visitor(position.x, position.y, position.z, sampler.voxel());
+	int nVisited = 1;
+
+	constexpr size_t InitialQueueReserve = 64u;
+	core::DynamicArray<glm::ivec3> queue;
+	queue.reserve(InitialQueueReserve);
+	queue.push_back(position);
+
+	// 26-connectivity: staircase steps are edge/corner-connected, not face-connected.
+	static constexpr int NeighborCount = 26;
+	static constexpr glm::ivec3 neighbors[NeighborCount] = {
+		// 6 face neighbors
+		{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
+		// 12 edge neighbors
+		{1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0},
+		{1, 0, 1}, {1, 0, -1}, {-1, 0, 1}, {-1, 0, -1},
+		{0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1},
+		// 8 corner neighbors
+		{1, 1, 1}, {1, 1, -1}, {1, -1, 1}, {1, -1, -1},
+		{-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1}};
+
+	while (!queue.empty()) {
+		const glm::ivec3 current = queue.back();
+		queue.pop();
+		for (int i = 0; i < NeighborCount; ++i) {
+			const glm::ivec3 neighborPos = current + neighbors[i];
+			if (!visited.insert(neighborPos)) {
+				continue;
+			}
+			if (!volRegion.containsPoint(neighborPos)) {
+				continue;
+			}
+			if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
+				continue;
+			}
+			// Must be a surface voxel (has the clicked face exposed)
+			glm::ivec3 above = neighborPos;
+			above[heightAxis] += positiveNormal ? 1 : -1;
+			if (volRegion.containsPoint(above) && !voxel::isAir(volume.voxel(above).getMaterial())) {
+				continue;
+			}
+			// Check if this voxel's height fits the slope plane (frozen after bootstrap)
+			const float predicted = predictHeight(neighborPos[uAxis], neighborPos[vAxis]);
+			const float actual = static_cast<float>(neighborPos[heightAxis]);
+			if (glm::abs(actual - predicted) > maxDev) {
+				continue;
+			}
+			if (!sampler.setPosition(neighborPos)) {
+				continue;
+			}
+			visitor(neighborPos.x, neighborPos.y, neighborPos.z, sampler.voxel());
+			++nVisited;
+			queue.push_back(neighborPos);
+		}
+	}
+	return nVisited;
+}
+
 } // namespace voxelutil

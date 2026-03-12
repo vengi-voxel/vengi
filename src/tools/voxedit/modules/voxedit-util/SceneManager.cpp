@@ -1502,6 +1502,127 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	}
 }
 
+void SceneManager::selectionSetEllipse(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	SelectBrush &brush = _modifierFacade.selectBrush();
+	if (!brush.ellipseValid()) {
+		return;
+	}
+	const glm::ivec3 &center = brush.ellipseCenter();
+	const int radiusU = brush.ellipseRadiusU();
+	const int radiusV = brush.ellipseRadiusV();
+	const int depth = brush.ellipseDepth();
+	const voxel::FaceNames face = brush.ellipseFace();
+	int uAxis;
+	int vAxis;
+	SelectBrush::ellipseAxes(face, uAxis, vAxis);
+	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
+	const bool is3D = brush.ellipse3D();
+	const bool positiveNormal = voxel::isPositiveFace(face);
+
+	// Calculate the bounding region of the new ellipse
+	const voxel::Region &vol = node->region();
+	glm::ivec3 mins = center;
+	glm::ivec3 maxs = center;
+	mins[uAxis] -= radiusU;
+	maxs[uAxis] += radiusU;
+	mins[vAxis] -= radiusV;
+	maxs[vAxis] += radiusV;
+	if (positiveNormal) {
+		mins[faceAxisIdx] -= depth;
+	} else {
+		maxs[faceAxisIdx] += depth;
+	}
+	voxel::Region ellipseRegion(mins, maxs);
+	ellipseRegion.cropTo(vol);
+
+	voxel::RawVolume *volume = node->volume();
+
+	// Clear only the positions flagged by the previous ellipse (not all selections)
+	voxel::Region dirtyRegion = ellipseRegion;
+	core::DynamicArray<glm::ivec3> &history = brush.ellipseHistory();
+	for (const glm::ivec3 &pos : history) {
+		const voxel::Voxel &v = volume->voxel(pos);
+		if (!voxel::isAir(v.getMaterial())) {
+			voxel::Voxel modified = v;
+			modified.setFlags(modified.getFlags() & ~voxel::FlagOutline);
+			volume->setVoxel(pos, modified);
+			dirtyRegion.accumulate(pos);
+		}
+	}
+	history.clear();
+
+	// Apply the new ellipse selection and record positions
+	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
+		const glm::ivec3 pos(x, y, z);
+		if (SelectBrush::insideSelection(pos, center, radiusU, radiusV, depth, is3D,
+										 uAxis, vAxis, faceAxisIdx, positiveNormal)) {
+			voxel::Voxel modified = v;
+			modified.setFlags(modified.getFlags() | voxel::FlagOutline);
+			volume->setVoxel(x, y, z, modified);
+			history.push_back(pos);
+		}
+	};
+	if (depth > 1) {
+		voxelutil::VisitSolid condition;
+		voxelutil::visitVolume(*volume, ellipseRegion, selectFunc, condition);
+	} else {
+		voxelutil::visitSurfaceVolume(*volume, selectFunc);
+	}
+
+	_selectionCacheNodeId = -1;
+	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+}
+
+void SceneManager::selectionSetSlope(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	SelectBrush &brush = _modifierFacade.selectBrush();
+	if (!brush.slopeValid()) {
+		return;
+	}
+	voxel::RawVolume *volume = node->volume();
+
+	// Clear only the positions flagged by the previous slope selection
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+	core::DynamicArray<glm::ivec3> &history = brush.slopeHistory();
+	for (const glm::ivec3 &pos : history) {
+		const voxel::Voxel &v = volume->voxel(pos);
+		if (!voxel::isAir(v.getMaterial())) {
+			voxel::Voxel modified = v;
+			modified.setFlags(modified.getFlags() & ~voxel::FlagOutline);
+			volume->setVoxel(pos, modified);
+			dirtyRegion.accumulate(pos);
+		}
+	}
+	history.clear();
+
+	// Re-execute the slope flood fill with current parameters
+	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &) {
+		const glm::ivec3 pos(x, y, z);
+		const voxel::Voxel &v = volume->voxel(pos);
+		if (!voxel::isAir(v.getMaterial())) {
+			voxel::Voxel modified = v;
+			modified.setFlags(modified.getFlags() | voxel::FlagOutline);
+			volume->setVoxel(pos, modified);
+			history.push_back(pos);
+			dirtyRegion.accumulate(pos);
+		}
+	};
+	voxelutil::visitSlopeSurface(*volume, brush.slopeSeedPos(), brush.slopeFace(),
+								 brush.slopeDeviation(), brush.slopeSampleDistance(), selectFunc);
+
+	_selectionCacheNodeId = -1;
+	if (dirtyRegion.isValid()) {
+		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+	}
+}
+
 void SceneManager::resetLastTrace() {
 	if (!_traceViaMouse) {
 		return;

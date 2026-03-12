@@ -265,7 +265,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
 								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
-								   C_("SelectMode", "Flat Surface"), C_("SelectMode", "3D Box")};
+								   C_("SelectMode", "Flat Surface"), C_("SelectMode", "3D Box"),
+								   C_("SelectMode", "Circle"), C_("SelectMode", "Slope")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
@@ -306,6 +307,132 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+
+	if (brush.selectMode() == SelectMode::Slope) {
+		const float btnW = ImGui::GetFrameHeight();
+		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		bool changed = false;
+
+		int deviation = brush.slopeDeviation();
+		ImGui::TextUnformatted(_("Max deviation"));
+		ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel to be included in the selection"));
+		ImGui::PushID("slopedeviation");
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			deviation = glm::max(deviation - 1, 0);
+			brush.setSlopeDeviation(deviation);
+			changed = true;
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##slopedeviation", &deviation, 0, SelectBrush::MaxSlopeDeviation)) {
+			brush.setSlopeDeviation(deviation);
+			changed = true;
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			deviation = glm::min(deviation + 1, SelectBrush::MaxSlopeDeviation);
+			brush.setSlopeDeviation(deviation);
+			changed = true;
+		}
+		ImGui::PopID();
+
+		int sampleDist = brush.slopeSampleDistance();
+		ImGui::TextUnformatted(_("Sample distance"));
+		ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. Larger values give smoother slope detection on staircases"));
+		ImGui::PushID("slopesample");
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			sampleDist = glm::max(sampleDist - 1, SelectBrush::MinSlopeSampleDistance);
+			brush.setSlopeSampleDistance(sampleDist);
+			changed = true;
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance, SelectBrush::MaxSlopeSampleDistance)) {
+			brush.setSlopeSampleDistance(sampleDist);
+			changed = true;
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			sampleDist = glm::min(sampleDist + 1, SelectBrush::MaxSlopeSampleDistance);
+			brush.setSlopeSampleDistance(sampleDist);
+			changed = true;
+		}
+		ImGui::PopID();
+
+		if (changed && brush.slopeValid()) {
+			_sceneMgr->selectionSetSlope(nodeId);
+		}
+	}
+
+	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {
+		ImGui::SeparatorText(_("Circle selection"));
+		const voxel::Region &vol = node->region();
+		const glm::ivec3 &vMins = vol.getLowerCorner();
+		const glm::ivec3 &vMaxs = vol.getUpperCorner();
+		glm::ivec3 center = brush.ellipseCenter();
+		int radiusU = brush.ellipseRadiusU();
+		int radiusV = brush.ellipseRadiusV();
+		bool changed = false;
+
+		int uAxis;
+		int vAxis;
+		SelectBrush::ellipseAxes(brush.ellipseFace(), uAxis, vAxis);
+		const char *axisNames[] = {"X", "Y", "Z"};
+
+		auto ellipseSlider = [&changed](const char *id, int *val, int lo, int hi) {
+			ImGui::PushID(id);
+			const float btnW = ImGui::GetFrameHeight();
+			const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+			if (ImGui::Button("-", ImVec2(btnW, 0))) {
+				*val = glm::max(*val - 1, lo);
+				changed = true;
+			}
+			ImGui::SameLine(0, spacing);
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+			changed |= ImGui::SliderInt("", val, lo, hi);
+			ImGui::SameLine(0, spacing);
+			if (ImGui::Button("+", ImVec2(btnW, 0))) {
+				*val = glm::min(*val + 1, hi);
+				changed = true;
+			}
+			ImGui::PopID();
+		};
+
+		ImGui::TextUnformatted(_("Center"));
+		ellipseSlider("##cx", &center[uAxis], vMins[uAxis], vMaxs[uAxis]);
+		ellipseSlider("##cy", &center[vAxis], vMins[vAxis], vMaxs[vAxis]);
+
+		// Max radius is half the volume dimension on each axis
+		const int maxRadiusU = (vMaxs[uAxis] - vMins[uAxis]) / 2;
+		const int maxRadiusV = (vMaxs[vAxis] - vMins[vAxis]) / 2;
+		ImGui::Text(_("Radius %s"), axisNames[uAxis]);
+		ellipseSlider("##ru", &radiusU, 0, maxRadiusU);
+		ImGui::Text(_("Radius %s"), axisNames[vAxis]);
+		ellipseSlider("##rv", &radiusV, 0, maxRadiusV);
+
+		const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(brush.ellipseFace()));
+		const int maxDepth = (vMaxs[faceAxisIdx] - vMins[faceAxisIdx]) / 2;
+		int depth = brush.ellipseDepth();
+		ImGui::Text(_("Depth %s"), axisNames[faceAxisIdx]);
+		ImGui::TooltipTextUnformatted(_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
+		ellipseSlider("##depth", &depth, 1, maxDepth);
+
+		bool is3D = brush.ellipse3D();
+		if (ImGui::Checkbox(_("3D ellipsoid"), &is3D)) {
+			brush.setEllipse3D(is3D);
+			changed = true;
+		}
+		ImGui::TooltipTextUnformatted(_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
+
+		if (changed) {
+			brush.setEllipseCenter(center);
+			brush.setEllipseRadiusU(radiusU);
+			brush.setEllipseRadiusV(radiusV);
+			brush.setEllipseDepth(depth);
+			_sceneMgr->selectionSetEllipse(nodeId);
+		}
+	}
+
 	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Box3D) {
 		voxel::Region sel = _sceneMgr->selectionCalculateRegion(nodeId);
 		if (sel.isValid()) {

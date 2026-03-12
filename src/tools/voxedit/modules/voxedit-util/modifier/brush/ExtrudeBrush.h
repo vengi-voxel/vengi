@@ -86,6 +86,9 @@ public:
 	void endBrush(BrushContext &ctx) override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
+	bool managesOwnSelection() const override {
+		return true;
+	}
 
 	void setDepth(int depth);
 	int depth() const {
