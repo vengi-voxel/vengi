@@ -193,6 +193,7 @@ protected:
 	void nodeGroupHollow();
 	void nodeGroupFill();
 	void nodeGroupClear();
+	void nodeGroupDeleteSelected();
 	void nodeGroupRotate(math::Axis axis);
 	void nodeGroupFlip(math::Axis axis);
 	void nodeGroupResize(const glm::ivec3 &size);

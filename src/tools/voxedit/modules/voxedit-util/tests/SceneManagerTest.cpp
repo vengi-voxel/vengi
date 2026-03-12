@@ -1034,6 +1034,52 @@ TEST_F(SceneManagerTest, testClear) {
 	EXPECT_EQ(0, voxelutil::countVoxels(*v));
 }
 
+TEST_F(SceneManagerTest, testDeleteSelected) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "deleteselected_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// Fill the entire volume
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	const int totalVoxels = voxelutil::countVoxels(*v);
+	ASSERT_EQ(216, totalVoxels);
+
+	// Select only a sub-region
+	const voxel::Region selRegion{0, 2};
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(selRegion);
+	ASSERT_TRUE(node->hasSelection());
+
+	sceneMgr()->testDeleteSelected();
+
+	const int voxelsAfter = voxelutil::countVoxels(*v);
+	const int selectedVoxels = selRegion.getWidthInVoxels() * selRegion.getHeightInVoxels() * selRegion.getDepthInVoxels();
+	EXPECT_EQ(totalVoxels - selectedVoxels, voxelsAfter)
+		<< "Only selected voxels should have been removed";
+}
+
+TEST_F(SceneManagerTest, testDeleteSelectedNoSelection) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	const int voxelsBefore = voxelutil::countVoxels(*v);
+	EXPECT_GT(voxelsBefore, 0);
+
+	// No selection - deleteSelected should be a no-op
+	sceneMgr()->testDeleteSelected();
+	EXPECT_EQ(voxelsBefore, voxelutil::countVoxels(*v));
+}
+
 TEST_F(SceneManagerTest, testHollow) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "hollow_test", region));

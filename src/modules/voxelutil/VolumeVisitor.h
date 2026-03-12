@@ -1396,50 +1396,48 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 	queue.push_back(position);
 
 	// 26-connectivity: staircase steps are edge/corner-connected, not face-connected.
-	static constexpr int NeighborCount = 26;
-	static constexpr glm::ivec3 neighbors[NeighborCount] = {
-		// 6 face neighbors
-		{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
-		// 12 edge neighbors
-		{1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0},
-		{1, 0, 1}, {1, 0, -1}, {-1, 0, 1}, {-1, 0, -1},
-		{0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1},
-		// 8 corner neighbors
-		{1, 1, 1}, {1, 1, -1}, {1, -1, 1}, {1, -1, -1},
-		{-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1}};
-
+	// Uses face/edge/corner offset arrays from voxel::Connectivity.h
 	while (!queue.empty()) {
 		const glm::ivec3 current = queue.back();
 		queue.pop();
-		for (int i = 0; i < NeighborCount; ++i) {
-			const glm::ivec3 neighborPos = current + neighbors[i];
+		auto visitNeighbor = [&](const glm::ivec3 &offset) {
+			const glm::ivec3 neighborPos = current + offset;
 			if (!visited.insert(neighborPos)) {
-				continue;
+				return;
 			}
 			if (!volRegion.containsPoint(neighborPos)) {
-				continue;
+				return;
 			}
 			if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
-				continue;
+				return;
 			}
 			// Must be a surface voxel (has the clicked face exposed)
 			glm::ivec3 above = neighborPos;
 			above[heightAxis] += positiveNormal ? 1 : -1;
 			if (volRegion.containsPoint(above) && !voxel::isAir(volume.voxel(above).getMaterial())) {
-				continue;
+				return;
 			}
 			// Check if this voxel's height fits the slope plane (frozen after bootstrap)
 			const float predicted = predictHeight(neighborPos[uAxis], neighborPos[vAxis]);
 			const float actual = static_cast<float>(neighborPos[heightAxis]);
 			if (glm::abs(actual - predicted) > maxDev) {
-				continue;
+				return;
 			}
 			if (!sampler.setPosition(neighborPos)) {
-				continue;
+				return;
 			}
 			visitor(neighborPos.x, neighborPos.y, neighborPos.z, sampler.voxel());
 			++nVisited;
 			queue.push_back(neighborPos);
+		};
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+			visitNeighbor(offset);
+		}
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
+			visitNeighbor(offset);
+		}
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
+			visitNeighbor(offset);
 		}
 	}
 	return nVisited;
