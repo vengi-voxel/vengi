@@ -3,18 +3,28 @@
 #include <std/sys.pat>
 #include <std/math.pat>
 
-#pragma pattern_limit 131072
 #pragma array_limit 65536
+#pragma pattern_limit 131072
 
 struct SmallVec<T> {
     u8 size [[hidden]];
     T data[size] [[inline]];
 };
 
-struct Vec<T> {
-    u32 size;
+struct MediumVec<T> {
+    u16 size [[hidden]];
     T data[size] [[inline]];
 };
+
+struct Vec<T> {
+    u32 size [[hidden]];
+    T data[size] [[inline]];
+};
+
+struct Vec2 {
+    float x;
+    float y;
+} [[static, sealed]];
 
 struct Vec3 {
     float x, y, z;
@@ -26,7 +36,11 @@ fn format_vec(ref auto vec) {
 
 struct Quat {
     float x, y, z, w;
-} [[static]];
+} [[static, sealed, format("format_quat")]];
+
+fn format_quat(ref auto quat) {
+    return std::format("Quat({}, {}, {}, {})", quat.x, quat.y, quat.z, quat.w);
+};
 
 struct Transform {
     Vec3 pos;
@@ -45,13 +59,10 @@ fn format_color(ref auto color) {
     return std::format("{}, {}, {}, {}", color.r, color.g, color.b, color.a);
 };
 
-struct Vec2 {       // vertex
-    float pos[2];   // pos
-} [[static]];
-
 struct Registry {
     char key[];
     char value[];
+    bool sync;
 };
 
 struct Tag {
@@ -65,100 +76,84 @@ struct Sound {
 };
 
 struct PostProcessing {
-    float brightness;       // brightness
-    RGBA colorbalance;      // colorbalance
-    float saturation;       // saturation
-    float gamma;            // gamma
-    float bloom;            // bloom
-} [[static, single_color]];
-
-struct Player {
-    Transform transform;
-    float pitch;
-    float yaw;
-	Quat orientation;
-	Quat camera_orientation;
-    Vec3 velocity;
-    float health;
-    float transition_timer;
-    float time_underwater;
-    float bluetide_timer;
-    float bluetide_power;
-    u32 animator;
+    float brightness;
+    RGBA colorbalance;
+    float saturation;
+    float gamma;
+    float bloom;
 } [[static, single_color]];
 
 struct Sun {
     Vec3 tint_brightness;
-    RGBA colortint;     // sunColorTint
-    Vec3 dir;           // sunDir
-    float brightness;   // sunBrightness
-    float spread;       // sunSpread
-    float length;       // sunLength
-    float fogscale;     // sunFogScale
-    float glare;        // sunGlare
+    RGBA colortint;
+    Vec3 dir;
+    float brightness;
+    float spread;
+    float length;
+    float fogscale;
+    float glare;
 } [[static]];
 
 struct Skybox {
-    char texture[];         // skybox
-    RGBA tint;             // skyboxtint
-    float brightness;       // skyboxbrightness
-    float rot;             // skyboxrot in radians
-    Sun sun;                // sun
+    char texture[];
+    RGBA tint;
+    float brightness;
+    float rot;
+    Sun sun;
     bool auto_sun_dir;
-    RGBA constant;         // constant
-    float ambient;         // ambient
-    float ambientexponent;  // ambientexponent
+    RGBA constant;
+    float ambient;
+    float ambientexponent;
 };
 
 struct Fog {
     u8 type;
-    RGBA color;         // fogColor
-    // fogParams:
+    RGBA color;
     float start;
-    float distance;     // end = start + distance
+    float distance;
     float amount;
     float exponent;
     float height_offset;
 } [[static]];
 
 struct EnvWater {
-    float wetness;      // wetness
-    float puddleamount; // puddleamount
-    float puddlesize;   // puddlesize =  0.01 / this
-    float rain;         // rain
+    float wetness;
+    float puddleamount;
+    float puddlesize;
+    float rain;
 } [[static]];
 
 struct Snow {
-    Vec3 dir;       // snowdir
-    float spread;   // snowdir spread
-    float amount;   // snowamount
+    Vec3 dir;
+    float spread;
+    float amount;
     float speed;
-    bool onground;  // snowonground
+    bool onground;
 } [[static]];
 
 struct Environment {
-    Skybox skybox;      // skybox
-    float exposure[2];  // exposure
-    float brightness;   // brightness
-    Fog fog;            // fog
-    EnvWater water;     // water
-    bool nightlight;    // nightlight
-    Sound ambience;     // ambience
-    float slippery;     // slippery
-    float fogscale;     // fogscale
-    Snow snow;         // snow
-    Vec3 wind;         // wind
-    float waterhurt;    // waterhurt
-    char lensdirt[];    // lensdirt
+    Skybox skybox;
+    float exposure[2];
+    float brightness;
+    Fog fog;
+    EnvWater water;
+    bool nightlight;
+    Sound ambience;
+    float slippery;
+    float fogscale;
+    Snow snow;
+    Vec3 wind;
+    float waterhurt;
+    char lensdirt[];
 } [[single_color]];
 
 struct Boundary {
     Vec<Vec2> vertices;
-    float padleft;      // -padleft
-    float padtop;       // -padtop
-    float padright;     // padright
-    float padbottom;    // padbottom
-    float maxheight;    // maxheight
+    float padleft;
+    float padtop;
+    float padright;
+    float padbottom;
+    float maxheight;
 } [[single_color]];
 
 struct Fire {
@@ -220,6 +215,7 @@ enum EntityType : u8 {
     Trigger,
     Script,
     Animator,
+    Rig,
 };
 
 enum BodyMode : u8 {
@@ -234,7 +230,7 @@ struct Body {
     Transform transform;
     Vec3 velocity;
     Vec3 angular_velocity;
-    bool dynamic;           // dynamic
+    bool dynamic;
     u8 body_flags;
     float friction;
     BodyMode friction_mode;
@@ -242,44 +238,36 @@ struct Body {
     BodyMode restitution_mode;
 } [[static]];
 
-enum ShapeOrigin : u8 {
-    Tool = 1,
-    MapInit,
-    Debris,
-    CreateShape,
-    Spawn,
-};
-
 struct Voxels {
     u32 sizex;
     u32 sizey;
     u32 sizez;
     if (sizex * sizey * sizez > 0)
         Vec<u8> palette_indexes;
-    u32 palette;                // palette
-    float scale;                // scale = 10.0 * this
-    u8 light_mask[8];           // - - - - | f r b -
+    u32 palette;
+    float scale;
+    u8 light_mask[8];
     bool is_disconnected;
 };
 
 struct Shape {
     u16 flags;
     Transform transform;
-    u16 shape_flags;            // collide: 0x10
+    u16 shape_flags;
     u8 collision_layer;
     u8 collision_mask;
-    float density;             // density
-    float strength;           // strength
-    u16 texture_tile;           // texture
-    u16 blendtexture_tile;      // blendtexture
-    float texture_weight;       // texture
-    float blendtexture_weight;  // blendtexture
+    float density;
+    float strength;
+    u16 texture_tile;
+    u16 blendtexture_tile;
+    float texture_weight;
+    float blendtexture_weight;
     Vec3 texture_offset;
     float emissive_scale;
     u8 is_broken;
     u8 has_voxels;
-    Voxels voxels;             // voxels
-    ShapeOrigin origin;
+    Voxels voxels;
+    u8 origin;
     u32 z_u32;
 };
 
@@ -292,24 +280,25 @@ enum LightType : u8 {
 
 struct Light {
     bool is_on;
-    LightType type;     // type
+    LightType type;
     Transform transform;
-    RGBA color;         // color = pow(this, 0.454545)
-    float scale;        // scale
-    float reach;        // reach
-    float size;         // size
-    float unshadowed;   // unshadowed
-    float angle;        // angle = 2.0 * deg(acos(this))
-    float penumbra;     // penumbra = 2.0 * deg(acos(angle) - acos(this))
-    float fogiter;      // fogiter
-    float fogscale;     // fogscale
-    float area_size[2]; // size = 2.0 * this
-    float capsule_size; // size.x = 2.0 * this
+    RGBA color;
+    float scale;
+    float reach;
+    float size;
+    float unshadowed;
+    float angle;
+    float penumbra;
+    float fogiter;
+    float fogscale;
+    float area_size[2];
+    float capsule_size;
     Vec3 position;
     u8 index;
     float flickering;
-    Sound sound;        // sound
-    float glare;        // glare
+    Sound sound;
+    float glare;
+    char breaksound[];
 } [[static]];
 
 struct Location {
@@ -320,14 +309,20 @@ struct Location {
 struct Water {
     u16 flags;
     Transform transform;
-    float depth;        // depth
-    float wave;         // wave
-    float ripple;       // ripple
-    float motion;       // motion
-    float foam;         // foam
-    RGBA color;         // color
-    float visibility;   // visibility
-    Vec<Vec2> vertices; // vertices
+    float depth;
+    float wave;
+    float ripple;
+    float motion;
+    float foam;
+    RGBA color;
+
+    float unk1[5];
+    float drag;
+    u8 unk2;
+    float unk3[25];
+    u8 unk6;
+    float visibility;
+    Vec<Vec2> vertices;
 };
 
 struct Segment {
@@ -336,11 +331,11 @@ struct Segment {
 } [[static]];
 
 struct Rope {
-    RGBA color;     // color
+    RGBA color;
     float zero;
-    float strength;     // strength
-    float maxstretch;   // maxstretch
-    float slack;        // slack = this - length
+    float strength;
+    float maxstretch;
+    float slack;
     float segment_length;
     u8 active;
     Vec<Segment> segments;
@@ -355,47 +350,42 @@ enum JointType : u32 {
 };
 
 struct Joint {
-    JointType type;           // type
+    JointType type;
     u32 shapes[2];
     Vec3 positions[2];
     Vec3 axis[2];
     bool connected;
-    bool collide;               // collide
-    float rotstrength;         // rotstrength
-    float rotspring;            // rotspring
+    bool collide;
+    float rotstrength;
+    float rotspring;
     Quat hinge_rot;
-    float limits[2];            // limits (in degrees for hinge, meters for prismatic)
+    float limits[2];
     float max_velocity;
     float strength;
-    float size;             // size
-    bool sound;             // sound
-    bool autodisable;           // autodisable
+    float size;
+    bool sound;
+    bool autodisable;
     float connection_strength;
     float disconnect_dist;
     if (type == JointType::Rope)
         Rope rope;
 };
 
-struct VehicleSound {
-    char name[];
-    float pitch;
-};
-
 struct VehicleProperties {
-    float topspeed;     // topspeed = 3.6 * this
+    float topspeed;
     float top_speed_clamp;
-    float spring;       // spring
-    float damping;      // damping
-    float acceleration; // acceleration
-    float strength;     // strength
-    float friction;     // friction
+    float spring;
+    float damping;
+    float acceleration;
+    float strength;
+    float friction;
     float max_steering_angle;
     bool handbrake;
-    float antispin;     // antispin
-    float steerassist;  // steerassist
+    float antispin;
+    float steerassist;
     float assist_multiplier;
-    float antiroll;     // antiroll
-    VehicleSound sound; // sound
+    float antiroll;
+    Sound sound;
 };
 
 struct Exhaust {
@@ -416,6 +406,12 @@ struct VehicleLocation {
     u32 handle;
 };
 
+struct VehiclePassenger {
+    s32 rig;
+    u32 unk1[2];
+    bool unk2;
+};
+
 struct Vehicle {
     u16 flags;
     u32 body;
@@ -423,19 +419,21 @@ struct Vehicle {
     Transform transform2;
     Vec<u32> wheels;
     VehicleProperties properties;
-    Vec3 camera;            // camera
-    Vec3 player;            // player
-    Vec3 exit;             // exit
-    Vec3 propeller;         // propeller
-    float difflock;         // difflock
+    Vec3 camera;
+    Vec3 player;
+    Vec3 driver_seat;
+    Vec3 exit;
+    Vec3 propeller;
+    float difflock;
     float health;
-    u32 body_voxel_count;
+    u32 main_voxel_count;
     bool braking;
     float passive_brake;
-    Vec<u32> refs;
-    Vec<Exhaust> exhausts;  // exhaust
-    Vec<Vital> vitals;      // vital
+    Vec<u32> bodies;
+    Vec<Exhaust> exhausts;
+    Vec<Vital> vitals;
     Vec<VehicleLocation> locations;
+    Vec<VehiclePassenger> passengers;
     float bounds_dist;
     bool noroll;
     float brokenthreshold;
@@ -453,9 +451,9 @@ struct Wheel {
     bool on_ground;
     Transform transform;
     Transform transform2;
-    float steer;            // steer
-    float drive;            // drive
-    float travel[2];        // travel
+    float steer;
+    float drive;
+    float travel[2];
     float radius;
     float width;
     float angular_speed;
@@ -466,16 +464,16 @@ struct Wheel {
 struct Screen {
     u16 flags;
     Transform transform;
-    float size[2];         // size
-    float bulge;            // bulge
-    u32 resolution[2];      // resolution
-    char script[];         // script
-    bool enabled;           // enabled
-    bool interactive;       // interactive
-    float emissive;         // emissive
-    float fxraster;         // fxraster
-    float fxca;           // fxca
-    float fxnoise;         // fxnoise
+    float size[2];
+    float bulge;
+    u32 resolution[2];
+    char script[];
+    bool enabled;
+    bool interactive;
+    float emissive;
+    float fxraster;
+    float fxca;
+    float fxnoise;
     float fxglitch;
 };
 
@@ -486,19 +484,19 @@ enum TriggerType : u32 {
 };
 
 struct TriggerSound {
-    char path[];        // sound
-    float ramp;         // soundramp
+    char path[];
+    float ramp;
     u8 type;
-    float volume;       // sound
+    float volume;
 };
 
 struct Trigger {
     u16 flags;
     Transform transform;
-    TriggerType type;           // type
-    float sphere_size;         // size
-    Vec3 box_size;             // size = 2.0 * this
-    float polygon_size;         // size
+    TriggerType type;
+    float sphere_size;
+    Vec3 box_size;
+    float polygon_size;
     Vec<Vec2> polygon_vertices;
     TriggerSound sound;
 };
@@ -513,6 +511,7 @@ enum SoundType : u32 {
 
 struct ScriptSound {
     SoundType type;
+    char path[];
     char name[];
 };
 
@@ -557,8 +556,9 @@ struct LuaTableEntry {
             LuaTable key;
         else if (key_type == LuaType::Reference)
             u32 key;
-
-        LuaType value_type;
+    }
+    LuaType value_type;
+    if (value_type != LuaType::NIL) {
         if (value_type == LuaType::Boolean)
             bool value;
         else if (value_type == LuaType::Number)
@@ -577,18 +577,42 @@ struct LuaTable {
     u32 end;
 };
 
-struct Script {
-    u16 flags;
-    char file[];            // file
-    Vec<Registry> params;   // param%d
+struct ScriptSprite {
+    u32 type;
+    char path[];
+};
 
+struct IntPair {
+    u32 first;
+    u32 second;
+};
+
+struct ScriptCore {
+	Vec<Tag> params;
     float tick_time;
     float update_time;
+    bool unk1;
+    bool unk2;
     u32 variables_count;
     LuaTable table;
     Vec<u32> entities;
     Vec<ScriptSound> sounds;
     Vec<ValueTransition> transitions;
+    Vec<ScriptSprite> unk3;
+    MediumVec<IntPair> unk4;
+};
+
+struct Script {
+    u16 flags;
+    u32 unk_size;
+    char file[];
+    char unk_path[];
+    bool unk_bool1;
+    bool unk_bool2;
+    bool is_server;
+    if (is_server)
+        ScriptCore server_core;
+    ScriptCore client_core;
 };
 
 struct Bone {
@@ -674,48 +698,51 @@ struct AnimListH {
 
 struct Animator {
     u16 flags;
-
     Transform transform;
     char path[];
-
     bool is_ragdoll;
-
     Vec<Bone> skeleton;
     Vec<AnimListB> vec_b;
     Vec<AnimListC> vec_c;
     Vec<AnimListD> vec_d;
     Vec<AnimListE> vec_e;   // Animation Instances
-
     u32 z_size1;
-
     Vec<AnimListF> vec_f;   // Playing instances
-
     u32 z_size2;
-
     u32 mul_1;
     u8 array1[8 * mul_1];   // Animation Group
-
     Vec<AnimListG> vec_g;
-
     u32 mul_2;
     u8 array2[28 * mul_2];
-
     u32 mul_3;
     u8 array3[28 * mul_3];
-
     u32 mul_4;
     u8 array4[4 * mul_4];
-
     Vec<AnimListH> vec_h;   // IK Transform
+};
+
+struct RigLoc {
+    char name[];
+    Transform transform;
+    bool unk1;
+};
+
+struct Rig {
+    u16 flags;
+    Vec<RigLoc> locations;
+    Transform transform;
+    bool unk1;
+    s32 vehicle;
+    u32 unk3;
 };
 
 using Entity;
 
 struct Entity {
     EntityType type;
-    u32 handle;
-    SmallVec<Tag> tags; // tags
-    char desc[];        // desc
+    s32 handle;
+    SmallVec<Tag> tags;
+    char desc[];
     if (type == EntityType::Body)
         Body body;
     else if (type == EntityType::Shape)
@@ -740,6 +767,8 @@ struct Entity {
         Script script;
     else if (type == EntityType::Animator)
         Animator animator;
+    else if (type == EntityType::Rig)
+        Rig rig;
     else
         std::assert(true, "Invalid entity type");
     Vec<Entity> children;
@@ -747,19 +776,63 @@ struct Entity {
     std::assert(beef_beef == 0xBEEFBEEF, "Invalid cow");
 } [[single_color]];
 
+struct Path {
+    char folder[];
+    bool do_override;
+} [[single_color]];
+
+struct ToolInfo {
+    bool enabled;
+    char id[];
+    char name[];
+    Transform transform;
+    float ammo_pickup_amount;
+    if (ammo_pickup_amount > 0)
+        u32 ammo;
+};
+
+struct ToolInfoExtended {
+    ToolInfo base;
+    char path[];
+    char file[];
+    u32 group;
+};
+
+struct Player {
+    Transform transform;
+    float pitch;
+    float yaw;
+    Quat orientation;
+    Quat camera_orientation;
+    Vec3 velocity;
+    float health;
+    float bluetide_timer; // wrong???
+    float time_underwater;
+    s32 driven_vehicle;
+    s32 flashlight;
+    s32 flashlight2;
+    u32 unk1;
+    u32 unk2;
+    float unk3; // bluetide_timer???
+    float unk4;
+    s32 animator;
+    u32 unk5;
+    s32 animator2;
+    ToolInfo tools_info[17];
+    Vec<ToolInfoExtended> mod_tools_info;
+    char current_tool[];
+} [[single_color]];
+
 struct Projectile {
     Vec3 origin;
     Vec3 direction;
     float dist;
     float max_dist;
-    u32 type;
     float strength;
-} [[static, single_color]];
-
-struct Path {
-    char folder[];
-    bool do_override;
-} [[single_color]];
+    u32 type;
+    u32 player_id;
+    bool impact;
+} [[static]];
 
 struct Scene {
     char magic[5];
@@ -769,32 +842,33 @@ struct Scene {
     char layers[];
     char mod[];
 
+    u32 unk1; // (?) value:
     u32 aaa1;
-    Vec<Registry> enabled_mods [[single_color]];
-    Vec<Registry> spawn_mods [[single_color]];
+    Vec<Tag> active_mods [[single_color]];
+    Vec<Tag> spawn_mods [[single_color]];
 
-    u32 driven_vehicle;
     Vec3 shadow_volume;
     Vec3 gravity;
     Transform spawnpoint;
+
     u32 world_body;
-    u32 flashlight;
-    u32 explosion_lua;
+    u32 explosionclient_lua;
+    u32 characters_lua;
     u32 achievements_lua;
-    u32 character_lua;
+
     PostProcessing postpro;
-    Player player;
+    Vec<u32> player_ids;
+    Player player[player_ids.size];
     Environment environment;
     Boundary boundary;
+    Vec<Projectile> projectiles [[single_color]];
     Vec<Fire> fires [[single_color]];
+
+    u32 unk2; // (?) vec<{int, int}> (entities) player rig, <id, rig>
     Vec<Palette> palettes [[single_color]];
     Vec<Registry> registry [[single_color]];
     Vec<Entity> entities;
-    u32 entity_count;
-    u32 broken_voxels;
-    Vec<Projectile> projectiles;
-    bool has_snow;
-    Vec<Path> assets;
+    // ...
 } [[inline]];
 
 fn format_version(ref auto version) {
