@@ -39,42 +39,35 @@ protected:
 		Trigger = 10,
 		Script = 11,
 		Animator = 12,
+		Rig = 13,
 
 		Max
 	};
 
-	struct Header {
-		// version read from the file header (e.g. 170 for 1.7.0)
-		uint32_t version;
-		core::DynamicArray<palette::Palette> palettes;
-		core::String levelId;
-		core::String levelPath;
-		core::String layers;
-		core::String mod;
-		scenegraph::SceneGraphNodeProperties mods;
-		scenegraph::SceneGraphNodeProperties spawnedMods;
-	};
-	bool readEntity(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
-					int &nodeId);
+	core::DynamicArray<palette::Palette> palettes;
+
+	bool readEntity(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
 
 	bool readBody(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
-	bool readShape(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
-				   int &nodeId);
+	bool readShape(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
 	bool readLight(io::ReadStream &s);
-	bool readLocation(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
+	bool readLocation(io::ReadStream &s);
 	bool readWater(io::ReadStream &s);
 	bool readJoint(io::ReadStream &s);
-	bool readVehicle(const Header &header, io::ReadStream &s);
+	bool readVehicle(io::ReadStream &s);
 	bool readWheel(io::ReadStream &s);
 	bool readScreen(io::ReadStream &s);
 	bool readTrigger(io::ReadStream &s);
 	bool readScript(io::ReadStream &s);
-	bool readAnimator(const Header &header, io::ReadStream &s, int parent, int &nodeId);
+	bool readAnimator(io::ReadStream &s);
+	bool readRig(io::ReadStream &s);
 
-	bool readVoxels(const Header &header, scenegraph::SceneGraphNode &node, io::ReadStream &s);
+	bool readVoxels(scenegraph::SceneGraphNode &node, io::ReadStream &s);
 	bool readRope(io::ReadStream &s);
 	bool readLuaTable(io::ReadStream &s);
 	bool readLuaValue(io::ReadStream &s, int typeId);
+	bool readToolInfo(io::ReadStream &s);
+	bool readScriptCore(io::ReadStream &s);
 
 public:
 	static const io::FormatDescription &format() {
