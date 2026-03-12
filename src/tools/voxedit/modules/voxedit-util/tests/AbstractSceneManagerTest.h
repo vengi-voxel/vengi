@@ -58,6 +58,10 @@ public:
 		nodeGroupClear();
 	}
 
+	void testDeleteSelected() {
+		nodeGroupDeleteSelected();
+	}
+
 	void testFlip(math::Axis axis) {
 		nodeGroupFlip(axis);
 	}

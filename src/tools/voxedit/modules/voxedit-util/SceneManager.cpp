@@ -301,6 +301,33 @@ void SceneManager::nodeGroupClear() {
 	});
 }
 
+void SceneManager::nodeGroupDeleteSelected() {
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
+		if (node == nullptr) {
+			return;
+		}
+		if (!node->hasSelection()) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		if (!selRegion.isValid()) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+				wrapper.setVoxel(x, y, z, voxel::Voxel());
+			}
+		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		modified(groupNodeId, wrapper.dirtyRegion());
+	});
+}
+
 void SceneManager::nodeGroupHollow() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
@@ -2662,6 +2689,11 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupClear();
 		}).setHelp(_("Remove all voxels in the current selection"));
+
+	command::Command::registerCommand("deleteselected")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupDeleteSelected();
+		}).setHelp(_("Remove selected voxels"));
 
 	command::Command::registerCommand("setreferenceposition")
 		.addArg({"x", command::ArgType::Int, false, "", "X coordinate"})
