@@ -4,6 +4,7 @@
 
 #include "VolumeSculpt.h"
 #include "core/GLM.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicSet.h"
@@ -37,6 +38,7 @@ static int countFaceNeighbors(const voxel::BitVolume &solid, const voxel::BitVol
 
 void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				 float strength, int iterations) {
+	core_trace_scoped(SculptErode);
 	const int removeThreshold = (int)glm::mix(0.0f, 5.0f, strength);
 	const voxel::Region &region = solid.region();
 	const glm::ivec3 &lo = region.getLowerCorner();
@@ -77,6 +79,7 @@ void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const v
 
 void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				float strength, int iterations, const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptGrow);
 	const int addThreshold = (int)glm::mix(7.0f, 1.0f, strength);
 	const voxel::Region &region = solid.region();
 	const glm::ivec3 &lo = region.getLowerCorner();
@@ -140,6 +143,7 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 		return;
 	}
 
+	core_trace_scoped(SculptFlatten);
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool fromPositive = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
@@ -226,6 +230,7 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 	if (face == voxel::FaceNames::Max || heightThreshold < 1) {
 		return;
 	}
+	core_trace_scoped(SculptSmoothAdditive);
 
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
@@ -340,6 +345,8 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 	if (face == voxel::FaceNames::Max) {
 		return;
 	}
+
+	core_trace_scoped(SculptSmoothErode);
 
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
@@ -597,6 +604,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 // Helper to build solid, voxelMap, and anchor sets from a volume region
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
 							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
+	core_trace_scoped(BuildFromVolume);
 	const glm::ivec3 &lo = region.getLowerCorner();
 	const glm::ivec3 &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
@@ -641,17 +649,19 @@ static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region 
 // Helper to write position set changes back to a volume
 static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &region, const voxel::BitVolume &solid,
 							   const voxel::SparseVolume &voxelMap) {
+	core_trace_scoped(WriteResultToVolume);
 	int changed = 0;
 	const voxel::Voxel air;
 
 	// Remove voxels that were solid in the region but are no longer
+	// TODO: PERF: use visitor
 	const glm::ivec3 &lo = region.getLowerCorner();
 	const glm::ivec3 &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
 				const voxel::Voxel &v = volume.voxel(x, y, z);
-				if (!voxel::isBlocked(v.getMaterial())) {
+				if (voxel::isAir(v.getMaterial())) {
 					continue;
 				}
 				if (!solid.hasValue(x, y, z)) {
@@ -685,6 +695,7 @@ static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &re
 }
 
 int sculptErode(voxel::RawVolume &volume, const voxel::Region &region, float strength, int iterations) {
+	core_trace_scoped(SculptErodeVolume);
 	voxel::BitVolume solid(region);
 	voxel::SparseVolume voxelMap;
 	// Grow anchor region by 1 to capture adjacent voxels outside the sculpt region
@@ -699,6 +710,7 @@ int sculptErode(voxel::RawVolume &volume, const voxel::Region &region, float str
 
 int sculptGrow(voxel::RawVolume &volume, const voxel::Region &region, float strength, int iterations,
 			   const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptGrowVolume);
 	voxel::BitVolume solid(region);
 	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
@@ -711,6 +723,7 @@ int sculptGrow(voxel::RawVolume &volume, const voxel::Region &region, float stre
 }
 
 int sculptFlatten(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face, int iterations) {
+	core_trace_scoped(SculptFlattenVolume);
 	voxel::BitVolume solid(region);
 	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
@@ -724,6 +737,7 @@ int sculptFlatten(voxel::RawVolume &volume, const voxel::Region &region, voxel::
 
 int sculptSmoothAdditive(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
 						 int heightThreshold, int iterations, const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptSmoothAdditiveVolume);
 	voxel::BitVolume solid(region);
 	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
@@ -737,6 +751,7 @@ int sculptSmoothAdditive(voxel::RawVolume &volume, const voxel::Region &region, 
 
 int sculptSmoothErode(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face, int iterations,
 					  bool preserveTopHeight, int trimPerStep) {
+	core_trace_scoped(SculptSmoothErodeVolume);
 	voxel::BitVolume solid(region);
 	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;

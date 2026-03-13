@@ -3,6 +3,7 @@
  */
 
 #include "SculptBrush.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/GLM.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -104,6 +105,7 @@ voxel::Region SculptBrush::calcRegion(const BrushContext &ctx) const {
 }
 
 void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
+	core_trace_scoped(SculptBrushCaptureSnapshot);
 	_snapshot.clear();
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
@@ -139,6 +141,7 @@ void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::R
 }
 
 void SculptBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
+	core_trace_scoped(SculptBrushAdjustSnapshotForRegionShift);
 	struct ShiftEntry {
 		glm::ivec3 pos;
 		voxel::Voxel voxel;
@@ -202,6 +205,7 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 }
 
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	core_trace_scoped(SculptBrushApplySculpt);
 	voxel::BitVolume currentSolid(_snapshotRegion);
 	voxel::SparseVolume voxelMap;
 

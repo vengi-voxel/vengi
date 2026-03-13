@@ -3,6 +3,7 @@
  */
 
 #include "TransformBrush.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
@@ -107,6 +108,7 @@ voxel::Region TransformBrush::calcRegion(const BrushContext &ctx) const {
 }
 
 void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
+	core_trace_scoped(CaptureSnapshot);
 	_snapshot.clear();
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
@@ -145,6 +147,7 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 }
 
 void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
+	core_trace_scoped(AdjustSnapshotForRegionShift);
 	// Collect and re-insert with shifted positions
 	struct ShiftEntry {
 		glm::ivec3 pos;
@@ -192,6 +195,7 @@ void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 }
 
 voxel::Region TransformBrush::computeTransformedRegion() const {
+	core_trace_scoped(ComputeTransformedRegion);
 	if (!_hasSnapshot || _snapshot.empty()) {
 		return voxel::Region::InvalidRegion;
 	}
@@ -331,6 +335,7 @@ void TransformBrush::writeVoxel(ModifierVolumeWrapper &wrapper,
 }
 
 void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	core_trace_scoped(ApplyTransform);
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 	const voxel::Voxel air;
@@ -406,6 +411,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 
 void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							  const voxel::Region &) {
+	core_trace_scoped(Generate);
 	if (!_hasSnapshot) {
 		return;
 	}
@@ -473,6 +479,7 @@ void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &s
 
 bool TransformBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
 									 const glm::mat4 &deltaMatrix, uint32_t operation) {
+	core_trace_scoped(ApplyBrushGizmo);
 	const glm::vec3 center = _hasSnapshot ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
 
 	switch (_transformMode) {

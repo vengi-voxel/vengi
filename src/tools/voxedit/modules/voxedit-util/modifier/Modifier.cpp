@@ -7,6 +7,7 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -341,6 +342,7 @@ static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region 
 }
 
 void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
+	core_trace_scoped(ModifierPrepareBrush);
 	Brush *brush = currentBrush();
 	if (!brush) {
 		return;
@@ -358,6 +360,7 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const ModifiedRegionCallback &callback) {
+	core_trace_scoped(ModifierExecuteBrush);
 	Brush *brush = currentBrush();
 	if (!brush) {
 		return false;
