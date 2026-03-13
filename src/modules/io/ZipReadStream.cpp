@@ -8,6 +8,7 @@
 #if USE_LIBDEFLATE
 #include "core/collection/Buffer.h"
 #include <libdeflate.h>
+#include "io/external/miniz.h"
 #elif USE_ZLIB
 #define ZLIB_CONST
 #ifndef Z_DEFAULT_WINDOW_BITS
@@ -274,9 +275,60 @@ int ZipReadStream::read(void *buf, size_t size) {
 			} else if (res == LIBDEFLATE_INSUFFICIENT_SPACE) {
 				outSize *= 2;
 			} else {
-				_err = true;
-				Log::error("Failed to decompress zip stream");
-				return -1;
+				// libdeflate requires properly terminated streams (BFINAL bit set).
+				// Some applications produce streams using Z_SYNC_FLUSH
+				// without a final block. Fall back to miniz streaming decompression.
+				Log::debug("libdeflate failed (res=%d), falling back to streaming decompression", (int)res);
+				int windowBits;
+				if (state->type == CompressionType::Zlib) {
+					windowBits = MZ_DEFAULT_WINDOW_BITS;
+				} else {
+					windowBits = -MZ_DEFAULT_WINDOW_BITS;
+				}
+
+				mz_stream mzStream;
+				core_memset(&mzStream, 0, sizeof(mzStream));
+				mzStream.next_in = compressedData.data();
+				mzStream.avail_in = (unsigned int)compressedData.size();
+
+				if (mz_inflateInit2(&mzStream, windowBits) != MZ_OK) {
+					_err = true;
+					Log::error("Failed to initialize fallback decompression");
+					return -1;
+				}
+
+				size_t bufSize = outSize;
+				state->uncompressedData.resize(bufSize);
+				mzStream.next_out = state->uncompressedData.data();
+				mzStream.avail_out = (unsigned int)bufSize;
+
+				while (true) {
+					int ret = mz_inflate(&mzStream, MZ_NO_FLUSH);
+					if (ret == MZ_STREAM_END) {
+						break;
+					}
+					if (ret != MZ_OK) {
+						if (mzStream.avail_in == 0) {
+							break;
+						}
+						mz_inflateEnd(&mzStream);
+						_err = true;
+						Log::error("Failed to decompress zip stream");
+						return -1;
+					}
+					if (mzStream.avail_out == 0) {
+						bufSize *= 2;
+						state->uncompressedData.resize(bufSize);
+						mzStream.next_out = state->uncompressedData.data() + mzStream.total_out;
+						mzStream.avail_out = (unsigned int)(bufSize - mzStream.total_out);
+					}
+				}
+
+				mz_inflateEnd(&mzStream);
+				state->uncompressedData.resize(mzStream.total_out);
+				_uncompressedSize = (int)mzStream.total_out;
+				_remaining = 0;
+				break;
 			}
 		}
 	}
