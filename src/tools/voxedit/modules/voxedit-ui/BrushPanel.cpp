@@ -1046,7 +1046,19 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 
 	case TransformMode::Scale: {
 		_transformScale = brush.scale();
-		if (ImGui::AxisSliders(_transformScale, 0.01f, 4.0f, "%.2f")) {
+		ImGui::Checkbox(_("Uniform"), &_transformUniformScale);
+		bool scaleChanged = false;
+		if (_transformUniformScale) {
+			float uniform = _transformScale.x;
+			ImGui::SetNextItemWidth(-1);
+			if (ImGui::SliderFloat("##uniform_scale", &uniform, 0.01f, 4.0f, "%.2f")) {
+				_transformScale = glm::vec3(uniform);
+				scaleChanged = true;
+			}
+		} else {
+			scaleChanged = ImGui::AxisSliders(_transformScale, 0.01f, 4.0f, "%.2f");
+		}
+		if (scaleChanged) {
 			brush.setScale(_transformScale);
 			if (brush.snapshotVoxelCount() <= DeferredTransformThreshold) {
 				executeTransformBrush();

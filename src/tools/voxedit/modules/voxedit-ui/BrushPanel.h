@@ -40,6 +40,7 @@ private:
 	glm::vec3 _transformScale{1.0f};
 	glm::vec3 _transformRotation{0.0f};
 	bool _transformDirty = false;
+	bool _transformUniformScale = true;
 
 	void createPopups(command::CommandExecutionListener &listener);
 
