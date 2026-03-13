@@ -112,6 +112,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_LC_X, "clear");
 		toolbar.button(ICON_LC_TRASH, "deleteselected");
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fill");
+		toolbar.button(ICON_LC_MERGE, "splatmerge");
 	}
 
 	const float buttonWidth = ImGui::GetFontSize() * 4;

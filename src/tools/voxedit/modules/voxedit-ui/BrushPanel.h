@@ -39,6 +39,7 @@ private:
 	glm::ivec3 _transformShearOffset{0};
 	glm::vec3 _transformScale{1.0f};
 	glm::vec3 _transformRotation{0.0f};
+	bool _transformDirty = false;
 
 	void createPopups(command::CommandExecutionListener &listener);
 
