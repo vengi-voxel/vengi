@@ -383,8 +383,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);
 		if (callback) {
-			SceneModifiedFlags flags = brush->sceneModifiedFlags();
-			flags |= SceneModifiedFlags::MarkUndo;
+			const SceneModifiedFlags flags = brush->sceneModifiedFlags();
 			callback(modifiedRegion, _brushContext.modifierType, flags);
 		}
 	}

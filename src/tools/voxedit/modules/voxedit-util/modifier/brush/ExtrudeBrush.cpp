@@ -23,14 +23,17 @@ void ExtrudeBrush::onSceneChange() {
 
 void ExtrudeBrush::onActivated() {
 	reset();
+	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
 bool ExtrudeBrush::onDeactivated() {
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	return _depth != 0 && _hasCachedSelection;
 }
 
 void ExtrudeBrush::reset() {
 	Super::reset();
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_depth = 0;
 	_offsetU = 0;
 	_offsetV = 0;

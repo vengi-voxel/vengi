@@ -39,14 +39,17 @@ void TransformBrush::onSceneChange() {
 
 void TransformBrush::onActivated() {
 	reset();
+	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
 bool TransformBrush::onDeactivated() {
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	return _hasSnapshot;
 }
 
 void TransformBrush::reset() {
 	Super::reset();
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
 	_hasSnapshot = false;
 	_snapshot.clear();

@@ -17,6 +17,7 @@ set(SRCS
 	VolumeCropper.h VolumeCropper.cpp
 	VolumeSplitter.h VolumeSplitter.cpp
 	VolumeVisitor.h
+	VolumeSculpt.h VolumeSculpt.cpp
 	VoxelUtil.h VoxelUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
@@ -35,6 +36,7 @@ set(TEST_SRCS
 	tests/VolumeMoverTest.cpp
 	tests/VolumeCropperTest.cpp
 	tests/VolumeVisitorTest.cpp
+	tests/VolumeSculptTest.cpp
 	tests/VoxelUtilTest.cpp
 )
 

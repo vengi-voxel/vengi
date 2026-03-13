@@ -4,19 +4,15 @@
 
 #include "SculptBrush.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicMap.h"
-#include "core/collection/DynamicSet.h"
 #include "core/GLM.h"
-#include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
-#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeVisitor.h"
-#include <climits>
+#include "voxelutil/VolumeSculpt.h"
 
 namespace voxedit {
 
@@ -33,14 +29,19 @@ void SculptBrush::onSceneChange() {
 
 void SculptBrush::onActivated() {
 	reset();
+	// Suppress undo registration during preview - only the final commit should create an undo entry
+	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
 bool SculptBrush::onDeactivated() {
+	// Restore undo registration so the final execute in setBrushType() records the undo entry
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	return _hasSnapshot;
 }
 
 void SculptBrush::reset() {
 	Super::reset();
+	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
 	_hasSnapshot = false;
 	_snapshot.clear();
@@ -51,6 +52,9 @@ void SculptBrush::reset() {
 	_capturedVolumeLower = glm::ivec3(0);
 	_strength = 0.5f;
 	_iterations = 1;
+	_heightThreshold = 1;
+	_preserveTopHeight = false;
+	_trimPerStep = 1;
 	_sculptMode = SculptMode::Erode;
 	_flattenFace = voxel::FaceNames::Max;
 }
@@ -59,7 +63,8 @@ bool SculptBrush::beginBrush(const BrushContext &ctx) {
 	if (_active) {
 		return false;
 	}
-	if (_sculptMode == SculptMode::Flatten && ctx.cursorFace != voxel::FaceNames::Max) {
+	const bool needsFace = _sculptMode == SculptMode::Flatten || _sculptMode == SculptMode::SmoothAdditive || _sculptMode == SculptMode::SmoothErode;
+	if (needsFace && ctx.cursorFace != voxel::FaceNames::Max) {
 		_flattenFace = ctx.cursorFace;
 	}
 	_active = true;
@@ -196,13 +201,9 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 	}
 }
 
-void SculptBrush::applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
-	using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
-
-	// Build the current solid set from the snapshot
-	PositionSet currentSolid;
-	// Map positions to their voxel data for color preservation
-	core::DynamicMap<glm::ivec3, voxel::Voxel, 1031, glm::hash<glm::ivec3>> voxelMap;
+void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	voxel::BitVolume currentSolid(_snapshotRegion);
+	voxel::SparseVolume voxelMap;
 
 	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
 	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
@@ -212,9 +213,8 @@ void SculptBrush::applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext
 				if (!_snapshot.hasVoxel(x, y, z)) {
 					continue;
 				}
-				const glm::ivec3 pos(x, y, z);
-				currentSolid.insert(pos);
-				voxelMap.put(pos, _snapshot.voxel(x, y, z));
+				currentSolid.setVoxel(x, y, z, true);
+				voxelMap.setVoxel(x, y, z, _snapshot.voxel(x, y, z));
 			}
 		}
 	}
@@ -223,175 +223,56 @@ void SculptBrush::applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext
 	const voxel::Region &volRegion = vol->region();
 
 	// Build anchor set: non-selected solid neighbors that act as immovable constraints.
-	PositionSet anchorSolid;
-	for (auto iter = currentSolid.begin(); iter != currentSolid.end(); ++iter) {
-		const glm::ivec3 &pos = iter->key;
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-			const glm::ivec3 neighbor = pos + offset;
-			if (currentSolid.has(neighbor)) {
-				continue;
-			}
-			if (!volRegion.containsPoint(neighbor)) {
-				continue;
-			}
-			const voxel::Voxel &v = vol->voxel(neighbor);
-			if (voxel::isBlocked(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
-				anchorSolid.insert(neighbor);
+	voxel::Region anchorRegion = _snapshotRegion;
+	anchorRegion.grow(1);
+	anchorRegion.cropTo(volRegion);
+	voxel::BitVolume anchorSolid(anchorRegion);
+	for (int z = snapLo.z; z <= snapHi.z; ++z) {
+		for (int y = snapLo.y; y <= snapHi.y; ++y) {
+			for (int x = snapLo.x; x <= snapHi.x; ++x) {
+				if (!currentSolid.hasValue(x, y, z)) {
+					continue;
+				}
+				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+					const glm::ivec3 neighbor = glm::ivec3(x, y, z) + offset;
+					if (currentSolid.hasValue(neighbor.x, neighbor.y, neighbor.z)) {
+						continue;
+					}
+					if (!volRegion.containsPoint(neighbor)) {
+						continue;
+					}
+					const voxel::Voxel &v = vol->voxel(neighbor);
+					if (voxel::isBlocked(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
+						anchorSolid.setVoxel(neighbor, true);
+					}
+				}
 			}
 		}
 	}
 
-	auto isSolid = [&](const glm::ivec3 &pos) -> bool {
-		return currentSolid.has(pos) || anchorSolid.has(pos);
-	};
-
-	// Count solid 6-face neighbors
-	auto countFaceNeighbors = [&](const glm::ivec3 &pos) -> int {
-		int count = 0;
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-			if (isSolid(pos + offset)) {
-				count++;
-			}
-		}
-		return count;
-	};
-
 	if (_sculptMode == SculptMode::Erode) {
-		// Erode: remove surface voxels based on their solid face-neighbor count.
-		// Voxels with fewer solid neighbors are more exposed (protrusions/corners/edges).
-		// Strength controls the threshold - which connectivity tier gets removed:
-		//   strength=0 -> threshold=0 (nothing removed)
-		//   strength~0.25 -> threshold=2 (isolated protrusions with 0-1 neighbors)
-		//   strength~0.5 -> threshold=3 (also corners with 2 neighbors)
-		//   strength~0.75 -> threshold=4 (also edges with 3 neighbors)
-		//   strength=1.0 -> threshold=5 (also flat faces with 4 neighbors)
-		// Each iteration peels one layer at the current threshold.
-		// Anchors (non-selected solid) count as neighbors, so voxels touching
-		// non-selected geometry are more connected and less likely to be removed.
-		const int removeThreshold = (int)glm::mix(0.0f, 5.0f, _strength);
-
-		core::DynamicArray<glm::ivec3> toRemove;
-		for (int iter = 0; iter < _iterations; ++iter) {
-			toRemove.clear();
-
-			for (auto it = currentSolid.begin(); it != currentSolid.end(); ++it) {
-				const glm::ivec3 &pos = it->key;
-				const int neighborCount = countFaceNeighbors(pos);
-				if (neighborCount == 6) {
-					continue;
-				}
-
-				if (neighborCount < removeThreshold) {
-					toRemove.push_back(pos);
-				}
-			}
-
-			if (toRemove.empty()) {
-				break;
-			}
-
-			for (const glm::ivec3 &pos : toRemove) {
-				currentSolid.remove(pos);
-				voxelMap.remove(pos);
-			}
-		}
+		voxelutil::sculptErode(currentSolid, voxelMap, anchorSolid, _strength, _iterations);
 	} else if (_sculptMode == SculptMode::Grow) {
-		// Grow: fill air positions adjacent to the surface based on their neighbor count.
-		// Air with more solid neighbors is more "surrounded" (concavity/gap).
-		// Strength controls the minimum neighbor count needed to fill:
-		//   strength=0 -> addThreshold=7 (nothing added, impossible)
-		//   strength~0.25 -> addThreshold=5 (only deeply recessed holes)
-		//   strength~0.5 -> addThreshold=4 (moderate concavities)
-		//   strength=1.0 -> addThreshold=1 (any air touching a solid voxel)
-		// Each iteration grows one layer at the current threshold.
-		const int addThreshold = (int)glm::mix(7.0f, 1.0f, _strength);
-
-		core::DynamicArray<glm::ivec3> toAdd;
-		PositionSet airCandidates;
-		for (int iter = 0; iter < _iterations; ++iter) {
-			toAdd.clear();
-			airCandidates.clear();
-
-			for (auto it = currentSolid.begin(); it != currentSolid.end(); ++it) {
-				const glm::ivec3 &pos = it->key;
-				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-					const glm::ivec3 neighbor = pos + offset;
-					if (!isSolid(neighbor) && volRegion.containsPoint(neighbor)) {
-						airCandidates.insert(neighbor);
-					}
-				}
-			}
-
-			for (auto it = airCandidates.begin(); it != airCandidates.end(); ++it) {
-				const glm::ivec3 &pos = it->key;
-				const int myCount = countFaceNeighbors(pos);
-				if (myCount >= addThreshold) {
-					toAdd.push_back(pos);
-				}
-			}
-
-			if (toAdd.empty()) {
-				break;
-			}
-
-			for (const glm::ivec3 &pos : toAdd) {
-				currentSolid.insert(pos);
-				// Pick color from nearest solid face-neighbor
-				voxel::Voxel newVoxel = ctx.cursorVoxel;
-				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-					const glm::ivec3 neighbor = pos + offset;
-					auto found = voxelMap.find(neighbor);
-					if (found != voxelMap.end()) {
-						newVoxel = found->second;
-						break;
-					}
-				}
-				newVoxel.setFlags(voxel::FlagOutline);
-				voxelMap.put(pos, newVoxel);
-			}
-		}
+		voxel::Voxel fillVoxel = ctx.cursorVoxel;
+		fillVoxel.setFlags(voxel::FlagOutline);
+		voxelutil::sculptGrow(currentSolid, voxelMap, anchorSolid, _strength, _iterations, fillVoxel);
 	} else if (_sculptMode == SculptMode::Flatten && _flattenFace != voxel::FaceNames::Max) {
-		// Flatten: peel layers from the outermost surface along the clicked face normal.
-		// The face encodes both axis and direction. PositiveY means peel from top (remove highest Y layer).
-		const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
-		const bool fromPositive = voxel::isPositiveFace(_flattenFace);
-
-		core::DynamicArray<glm::ivec3> toRemove;
-		for (int iter = 0; iter < _iterations; ++iter) {
-			int extremeVal = fromPositive ? INT_MIN : INT_MAX;
-			for (auto it = currentSolid.begin(); it != currentSolid.end(); ++it) {
-				const glm::ivec3 &pos = it->key;
-				if (fromPositive) {
-					extremeVal = glm::max(extremeVal, pos[axisIdx]);
-				} else {
-					extremeVal = glm::min(extremeVal, pos[axisIdx]);
-				}
-			}
-
-			toRemove.clear();
-			for (auto it = currentSolid.begin(); it != currentSolid.end(); ++it) {
-				const glm::ivec3 &pos = it->key;
-				if (pos[axisIdx] == extremeVal) {
-					toRemove.push_back(pos);
-				}
-			}
-
-			if (toRemove.empty()) {
-				break;
-			}
-
-			for (const glm::ivec3 &pos : toRemove) {
-				currentSolid.remove(pos);
-				voxelMap.remove(pos);
-			}
-		}
+		voxelutil::sculptFlatten(currentSolid, voxelMap, _flattenFace, _iterations);
+	} else if (_sculptMode == SculptMode::SmoothAdditive && _flattenFace != voxel::FaceNames::Max) {
+		voxel::Voxel fillVoxel = ctx.cursorVoxel;
+		fillVoxel.setFlags(voxel::FlagOutline);
+		voxelutil::sculptSmoothAdditive(currentSolid, voxelMap, anchorSolid, _flattenFace, _heightThreshold,
+										_iterations, fillVoxel);
+	} else if (_sculptMode == SculptMode::SmoothErode && _flattenFace != voxel::FaceNames::Max) {
+		voxelutil::sculptSmoothErode(currentSolid, voxelMap, anchorSolid, _flattenFace, _iterations, _preserveTopHeight,
+								_trimPerStep);
 	}
 
 	// Write the result: remove voxels that were in snapshot but not in result,
 	// add voxels that are in result but not in snapshot
 	const voxel::Voxel air;
 
-	// Remove snapshot voxels that were smoothed away
+	// Remove snapshot voxels that were sculpted away
 	for (int z = snapLo.z; z <= snapHi.z; ++z) {
 		for (int y = snapLo.y; y <= snapHi.y; ++y) {
 			for (int x = snapLo.x; x <= snapHi.x; ++x) {
@@ -399,7 +280,7 @@ void SculptBrush::applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext
 					continue;
 				}
 				const glm::ivec3 pos(x, y, z);
-				if (!currentSolid.has(pos)) {
+				if (!currentSolid.hasValue(x, y, z)) {
 					writeVoxel(wrapper, pos, air);
 				}
 			}
@@ -407,13 +288,19 @@ void SculptBrush::applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext
 	}
 
 	// Write all solid voxels with FlagOutline
-	for (auto it = currentSolid.begin(); it != currentSolid.end(); ++it) {
-		const glm::ivec3 &pos = it->key;
-		auto found = voxelMap.find(pos);
-		if (found != voxelMap.end()) {
-			voxel::Voxel v = found->second;
-			v.setFlags(voxel::FlagOutline);
-			writeVoxel(wrapper, pos, v);
+	for (int z = snapLo.z; z <= snapHi.z; ++z) {
+		for (int y = snapLo.y; y <= snapHi.y; ++y) {
+			for (int x = snapLo.x; x <= snapHi.x; ++x) {
+				if (!currentSolid.hasValue(x, y, z)) {
+					continue;
+				}
+				const glm::ivec3 pos(x, y, z);
+				if (voxelMap.hasVoxel(x, y, z)) {
+					voxel::Voxel v = voxelMap.voxel(x, y, z);
+					v.setFlags(voxel::FlagOutline);
+					writeVoxel(wrapper, pos, v);
+				}
+			}
 		}
 	}
 }
@@ -441,7 +328,7 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	_history.copyTo(restorer);
 	_history.clear();
 
-	applySmooth(wrapper, ctx);
+	applySculpt(wrapper, ctx);
 	markDirty();
 }
 

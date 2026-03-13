@@ -51,6 +51,7 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "voxelutil/VolumeSculpt.h"
 #include "voxelutil/VoxelUtil.h"
 
 #define GENERATOR_LUA_SANTITY 1
@@ -184,6 +185,10 @@ static const char *luaVoxel_metaimporter() {
 
 static const char *luaVoxel_metaalgorithm() {
 	return "__meta_algorithm";
+}
+
+static const char *luaVoxel_metasculpt() {
+	return "__meta_sculpt";
 }
 
 static const char *luaVoxel_metalsystem() {
@@ -1955,6 +1960,147 @@ static int luaVoxel_shadow(lua_State *s) {
 	const int lightStep = (int)luaL_optinteger(s, 2, 8);
 	voxelutil::shadow(*volume, volume->node()->palette(), lightStep);
 	return 0;
+}
+
+// Sculpt bindings
+
+static int luaVoxel_sculpt_erode(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const float strength = (float)luaL_optnumber(s, 2, 0.5);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const int changed = voxelutil::sculptErode(*volume->volume(), volume->volume()->region(), strength, iterations);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_erode_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "erode",
+		"summary": "Erode surface voxels based on their solid face-neighbor count. Voxels with fewer neighbors are more exposed and get removed first.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to erode."},
+			{"name": "strength", "type": "number", "description": "Erosion strength in [0, 1] (optional, default 0.5)."},
+			{"name": "iterations", "type": "integer", "description": "Number of erosion passes (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_grow(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const float strength = (float)luaL_optnumber(s, 2, 0.5);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const int color = (int)luaL_optinteger(s, 4, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed =
+		voxelutil::sculptGrow(*volume->volume(), volume->volume()->region(), strength, iterations, fillVoxel);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_grow_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "grow",
+		"summary": "Grow into air positions adjacent to the surface. Air with more solid neighbors fills first.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to grow."},
+			{"name": "strength", "type": "number", "description": "Growth strength in [0, 1] (optional, default 0.5)."},
+			{"name": "iterations", "type": "integer", "description": "Number of growth passes (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_flatten(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const int changed = voxelutil::sculptFlatten(*volume->volume(), volume->volume()->region(), face, iterations);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_flatten_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "flatten",
+		"summary": "Flatten by peeling layers from the outermost surface along a face normal direction.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to flatten."},
+			{"name": "face", "type": "string", "description": "Face direction: 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "iterations", "type": "integer", "description": "Number of layers to peel (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothadditive(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int heightThreshold = (int)luaL_optinteger(s, 3, 1);
+	const int iterations = (int)luaL_optinteger(s, 4, 1);
+	const int color = (int)luaL_optinteger(s, 5, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed = voxelutil::sculptSmoothAdditive(*volume->volume(), volume->volume()->region(), face,
+														heightThreshold, iterations, fillVoxel);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothadditive_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "smoothadditive",
+		"summary": "Fill height gaps by scanning layers along a face normal. Air voxels on solid ground get filled when a neighbor column is significantly taller. Each iteration adds at most one voxel per column.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to smooth."},
+			{"name": "face", "type": "string", "description": "Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "heightThreshold", "type": "integer", "description": "Minimum height difference in voxels for filling (optional, default 1). 1 = aggressive, higher = conservative."},
+			{"name": "iterations", "type": "integer", "description": "Number of smoothing passes (optional, default 1). Each pass adds at most one voxel per column."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smootherode(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const bool preserveTopHeight = lua_toboolean(s, 4) != 0;
+	const int trimPerStep = (int)luaL_optinteger(s, 5, 1);
+	const int changed = voxelutil::sculptSmoothErode(*volume->volume(), volume->volume()->region(), face, iterations, preserveTopHeight, trimPerStep);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smootherode_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "smootherode",
+		"summary": "Remove edge voxels from the top of columns along a face normal. Scans top-to-bottom, removing top-of-column voxels that have fewer than 4 solid planar neighbors. Each iteration removes at most one voxel per column.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to erode."},
+			{"name": "face", "type": "string", "description": "Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "iterations", "type": "integer", "description": "Number of erosion passes (optional, default 1). Each pass removes at most one voxel per column."},
+			{"name": "preserveTopHeight", "type": "boolean", "description": "If true, use island-based slope trimming to create pyramid shapes instead of uniform erosion (optional, default false)."},
+			{"name": "trimPerStep", "type": "integer", "description": "When preserveTopHeight is true, number of voxels trimmed per unit distance from island center (optional, default 1). Higher values create steeper slopes."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
 }
 
 // VoxelFont bindings
@@ -5749,6 +5895,16 @@ static void prepareState(lua_State* s) {
 	};
 	clua_registerfuncsglobal(s, algorithmFuncs, luaVoxel_metaalgorithm(), "g_algorithm");
 
+	static const clua_Reg sculptFuncs[] = {
+		{"erode", luaVoxel_sculpt_erode, luaVoxel_sculpt_erode_jsonhelp},
+		{"grow", luaVoxel_sculpt_grow, luaVoxel_sculpt_grow_jsonhelp},
+		{"flatten", luaVoxel_sculpt_flatten, luaVoxel_sculpt_flatten_jsonhelp},
+		{"smoothadditive", luaVoxel_sculpt_smoothadditive, luaVoxel_sculpt_smoothadditive_jsonhelp},
+		{"smootherode", luaVoxel_sculpt_smootherode, luaVoxel_sculpt_smootherode_jsonhelp},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");
+
 	static const clua_Reg lsystemFuncs[] = {
 		{"generate", luaVoxel_lsystem_generate, luaVoxel_lsystem_generate_jsonhelp},
 		{"templates", luaVoxel_lsystem_templates, luaVoxel_lsystem_templates_jsonhelp},
@@ -6341,6 +6497,8 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 					metaName = luaVoxel_metaimporter();
 				} else if (SDL_strcmp(name, "g_algorithm") == 0) {
 					metaName = luaVoxel_metaalgorithm();
+				} else if (SDL_strcmp(name, "g_sculpt") == 0) {
+					metaName = luaVoxel_metasculpt();
 				} else if (SDL_strcmp(name, "g_font") == 0) {
 					metaName = luaVoxel_metavoxelfontglobal();
 				} else if (SDL_strcmp(name, "g_http") == 0) {
