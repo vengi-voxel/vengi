@@ -147,7 +147,7 @@ void SculptBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 		voxel::Voxel voxel;
 	};
 	core::DynamicArray<ShiftEntry> entries;
-	entries.reserve(_snapshot.size());
+	entries.reserve(_snapshotRegion.voxels());
 	const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
 	const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
