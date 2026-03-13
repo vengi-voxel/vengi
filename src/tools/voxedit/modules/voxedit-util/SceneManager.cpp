@@ -73,6 +73,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VoxelUtil.h"
 
 #include "Clipboard.h"
@@ -1261,6 +1262,47 @@ bool SceneManager::nodePasteAsNewNode(int nodeId) {
 	return moveNodeToSceneGraph(newNode, node->parent()) != InvalidNodeId;
 }
 
+void SceneManager::autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region) {
+	if (node == nullptr) {
+		return;
+	}
+	if (!core::getVar(cfg::VoxEditAutoSelect)->boolVal()) {
+		return;
+	}
+	node->clearSelection();
+	voxel::RawVolume *volume = node->volume();
+	voxelutil::visitVolumeParallel(*volume, region,
+		[volume](int x, int y, int z, const voxel::Voxel &srcVoxel) {
+			voxel::Voxel selected = srcVoxel;
+			selected.setFlags(selected.getFlags() | voxel::FlagOutline);
+			volume->setVoxel(x, y, z, selected);
+		},
+		voxelutil::VisitSolid());
+}
+
+bool SceneManager::loadGlobalClipboard(voxel::ClipboardData &clipData) {
+	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+	scenegraph::SceneGraph loadedSceneGraph;
+	voxelformat::LoadContext loadCtx;
+	io::FileDescription fileDesc;
+	fileDesc.set(clipboardFile);
+	if (!voxelformat::loadFormat(fileDesc, archive, loadedSceneGraph, loadCtx)) {
+		Log::warn("Failed to read global clipboard from %s", clipboardFile.c_str());
+		return false;
+	}
+	for (auto iter = loadedSceneGraph.beginModel(); iter != loadedSceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &srcNode = *iter;
+		if (srcNode.volume() == nullptr) {
+			continue;
+		}
+		clipData = voxel::ClipboardData(new voxel::RawVolume(*srcNode.volume()), srcNode.palette(), true);
+		return true;
+	}
+	Log::warn("Global clipboard file contained no model data");
+	return false;
+}
+
 bool SceneManager::paste(const glm::ivec3& pos) {
 	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
@@ -1287,6 +1329,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		Log::warn("paste: modified region %s does not intersect destination volume %s - voxels out of bounds",
 				  modifiedRegion.toString().c_str(), destRegion.toString().c_str());
 	}
+	autoSelectSolidVoxels(node, modifiedRegion);
 	const int64_t dismissMillis = core::getVar(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
@@ -1343,27 +1386,30 @@ bool SceneManager::globalCopy() {
 	return true;
 }
 
-bool SceneManager::globalPaste(const glm::ivec3 &pos) {
-	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
-	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
-	scenegraph::SceneGraph loadedSceneGraph;
-	voxelformat::LoadContext loadCtx;
-	io::FileDescription fileDesc;
-	fileDesc.set(clipboardFile);
-	if (!voxelformat::loadFormat(fileDesc, archive, loadedSceneGraph, loadCtx)) {
-		Log::warn("Failed to read global clipboard from %s", clipboardFile.c_str());
+bool SceneManager::globalCopyVisible() {
+	const scenegraph::SceneGraph::MergeResult &merged = _sceneGraph.merge(true);
+	if (!merged.hasVolume()) {
+		Log::warn("globalcopyvisible: no visible model nodes to copy");
 		return false;
 	}
-	for (auto iter = loadedSceneGraph.beginModel(); iter != loadedSceneGraph.end(); ++iter) {
-		scenegraph::SceneGraphNode &srcNode = *iter;
-		if (srcNode.volume() == nullptr) {
-			continue;
-		}
-		_copy = voxel::ClipboardData(new voxel::RawVolume(*srcNode.volume()), srcNode.palette(), true);
-		break;
+	scenegraph::SceneGraph newSceneGraph;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	newNode.setVolume(merged.volume(), true);
+	newNode.setPalette(merged.palette);
+	newSceneGraph.emplace(core::move(newNode));
+	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+	voxelformat::SaveContext saveCtx;
+	if (!voxelformat::saveFormat(newSceneGraph, clipboardFile, nullptr, archive, saveCtx)) {
+		Log::warn("Failed to write global clipboard to %s", clipboardFile.c_str());
+		return false;
 	}
-	if (!_copy) {
-		Log::warn("Global clipboard file contained no model data");
+	Log::debug("Global clipboard (visible nodes) written to %s", clipboardFile.c_str());
+	return true;
+}
+
+bool SceneManager::globalPaste(const glm::ivec3 &pos) {
+	if (!loadGlobalClipboard(_copy)) {
 		return false;
 	}
 
@@ -1388,9 +1434,118 @@ bool SceneManager::globalPaste(const glm::ivec3 &pos) {
 	newNode.setName("clipboard");
 	newNode.setVolume(vol, true);
 	newNode.setPalette(*_copy.palette);
-	if (moveNodeToSceneGraph(newNode) == InvalidNodeId) {
+	const int newNodeId = moveNodeToSceneGraph(newNode);
+	if (newNodeId == InvalidNodeId) {
 		Log::warn("globalPaste: failed to create node from clipboard");
 		return false;
+	}
+	scenegraph::SceneGraphNode *addedNode = sceneGraphModelNode(newNodeId);
+	autoSelectSolidVoxels(addedNode, vol->region());
+	return true;
+}
+
+bool SceneManager::globalPasteNode(const glm::ivec3 &pos) {
+	voxel::ClipboardData clipData;
+	if (!loadGlobalClipboard(clipData)) {
+		return false;
+	}
+
+	voxel::RawVolume *vol = new voxel::RawVolume(*clipData.volume);
+	vol->translate(pos - vol->region().getLowerCorner());
+	Log::debug("globalPasteNode: creating new node at %i:%i:%i (region %s)", pos.x, pos.y, pos.z,
+			  vol->region().toString().c_str());
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	newNode.setName("clipboard");
+	newNode.setVolume(vol, true);
+	newNode.setPalette(*clipData.palette);
+	const int newNodeId = moveNodeToSceneGraph(newNode);
+	if (newNodeId == InvalidNodeId) {
+		Log::warn("globalPasteNode: failed to create node from clipboard");
+		return false;
+	}
+	autoSelectSolidVoxels(sceneGraphModelNode(newNodeId), vol->region());
+	return true;
+}
+
+bool SceneManager::splatMerge(int sourceNodeId) {
+	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(sourceNodeId);
+	if (sourceNode == nullptr) {
+		Log::warn("splatmerge: no valid source node");
+		return false;
+	}
+	const voxel::RawVolume *sourceVolume = _sceneGraph.resolveVolume(*sourceNode);
+	if (sourceVolume == nullptr) {
+		Log::warn("splatmerge: source node has no volume");
+		return false;
+	}
+
+	// Bake source into world space (apply scene graph transform if any)
+	const scenegraph::FrameTransform &srcTransform =
+		_sceneGraph.transformForFrame(*sourceNode, _currentFrameIdx);
+	core::ScopedPtr<voxel::RawVolume> bakedSource;
+	const voxel::RawVolume *worldSource = sourceVolume;
+	if (!srcTransform.isIdentity()) {
+		bakedSource = voxelutil::applyTransformToVolume(
+			*sourceVolume, srcTransform.worldMatrix(), sourceNode->pivot());
+		worldSource = &(*bakedSource);
+	}
+	const voxel::Region &sourceWorldRegion = worldSource->region();
+	const palette::Palette &sourcePalette = sourceNode->palette();
+
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "splatmerge");
+
+	int mergedCount = 0;
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &targetNode = *iter;
+		if (targetNode.id() == sourceNodeId) {
+			continue;
+		}
+		if (!targetNode.isModelNode()) {
+			continue;
+		}
+		voxel::RawVolume *targetVolume = targetNode.volume();
+		if (targetVolume == nullptr) {
+			continue;
+		}
+
+		// Get the target's world-space region (accounts for scene graph transforms)
+		const voxel::Region targetWorldRegion =
+			_sceneGraph.sceneRegion(targetNode, _currentFrameIdx);
+		if (!targetWorldRegion.isValid()) {
+			continue;
+		}
+		if (!voxel::intersects(sourceWorldRegion, targetWorldRegion)) {
+			continue;
+		}
+
+		// Compute the overlapping region in world coordinates
+		voxel::Region worldOverlap = sourceWorldRegion;
+		worldOverlap.cropTo(targetWorldRegion);
+
+		// Map world overlap back to target local coordinates
+		const glm::ivec3 worldToLocal =
+			targetVolume->region().getLowerCorner() - targetWorldRegion.getLowerCorner();
+		const voxel::Region targetLocalOverlap(
+			worldOverlap.getLowerCorner() + worldToLocal,
+			worldOverlap.getUpperCorner() + worldToLocal);
+
+		const int count = voxelutil::mergeVolumes(targetVolume, targetNode.palette(),
+			worldSource, sourcePalette, targetLocalOverlap, worldOverlap);
+		if (count > 0) {
+			modified(targetNode.id(), targetLocalOverlap, SceneModifiedFlags::All);
+			mergedCount += count;
+		}
+	}
+
+	if (mergedCount == 0) {
+		Log::warn("splatmerge: no overlapping nodes found for source node %i", sourceNodeId);
+		return false;
+	}
+
+	Log::info("splatmerge: merged %i voxels into overlapping nodes", mergedCount);
+	_mementoHandler.markNodeRemove(_sceneGraph, *sourceNode);
+	if (_sceneGraph.removeNode(sourceNodeId, false)) {
+		_sceneRenderer->removeNode(sourceNodeId);
 	}
 	return true;
 }
@@ -2863,6 +3018,11 @@ void SceneManager::construct() {
 			globalCopy();
 		}).setHelp(_("Copy selection to a file-based clipboard shared across editor instances"));
 
+	command::Command::registerCommand("globalcopyvisible")
+		.setHandler([&] (const command::CommandArgs&) {
+			globalCopyVisible();
+		}).setHelp(_("Merge all visible nodes and copy to the file-based clipboard"));
+
 	command::Command::registerCommand("globalpaste")
 		.setHandler([&] (const command::CommandArgs&) {
 			globalPaste(cursorPosition());
@@ -2872,6 +3032,16 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs&) {
 			globalPaste(referencePosition());
 		}).setHelp(_("Paste from the file-based clipboard shared across editor instances to the reference position"));
+
+	command::Command::registerCommand("globalpastenode")
+		.setHandler([&] (const command::CommandArgs&) {
+			globalPasteNode(cursorPosition());
+		}).setHelp(_("Paste from the file-based clipboard as a new node at the cursor position"));
+
+	command::Command::registerCommand("splatmerge")
+		.setHandler([&] (const command::CommandArgs&) {
+			splatMerge(activeNode());
+		}).setHelp(_("Merge active node voxels into all overlapping nodes and remove the source node"));
 
 	command::Command::registerCommand("undo")
 		.setHandler([&] (const command::CommandArgs& args) {

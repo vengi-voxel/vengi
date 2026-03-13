@@ -61,6 +61,8 @@ static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Neares
 												   NC_("Scale Sampling", "Cubic")};
 static_assert(lengthof(VoxelSamplingStr) == (int)voxel::VoxelSampling::Max, "VoxelSamplingStr size mismatch");
 
+static constexpr size_t DeferredTransformThreshold = 10000;
+
 void BrushPanel::init() {
 	_renderNormals = core::getVar(cfg::RenderNormals);
 	_viewMode = core::getVar(cfg::VoxEditViewMode);
@@ -1010,8 +1012,9 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 			const TransformMode mode = (TransformMode)i;
 			const bool selected = mode == currentTransformMode;
 			if (ImGui::Selectable(_(TransformModeStr[i]), selected)) {
-				if (brush.hasSnapshot()) {
+				if (_transformDirty || brush.hasSnapshot()) {
 					executeTransformBrush();
+					_transformDirty = false;
 				}
 				brush.setTransformMode(mode);
 			}
@@ -1045,7 +1048,11 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 		_transformScale = brush.scale();
 		if (ImGui::AxisSliders(_transformScale, 0.01f, 4.0f, "%.2f")) {
 			brush.setScale(_transformScale);
-			executeTransformBrush();
+			if (brush.snapshotVoxelCount() <= DeferredTransformThreshold) {
+				executeTransformBrush();
+			} else {
+				_transformDirty = true;
+			}
 		}
 		break;
 	}
@@ -1054,7 +1061,11 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 		_transformRotation = brush.rotationDegrees();
 		if (ImGui::AxisSliders(_transformRotation, -360.0f, 360.0f, "%.1f")) {
 			brush.setRotationDegrees(_transformRotation);
-			executeTransformBrush();
+			if (brush.snapshotVoxelCount() <= DeferredTransformThreshold) {
+				executeTransformBrush();
+			} else {
+				_transformDirty = true;
+			}
 		}
 		break;
 	}
@@ -1063,13 +1074,20 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 		break;
 	}
 
-	if (brush.transformMode() == TransformMode::Scale || brush.transformMode() == TransformMode::Rotate	) {
+	if (brush.transformMode() == TransformMode::Scale || brush.transformMode() == TransformMode::Rotate) {
+		if (_transformDirty) {
+			if (ImGui::ButtonFullWidth(_("Apply"))) {
+				executeTransformBrush();
+				_transformDirty = false;
+			}
+		}
 		int samplingInt = (int)brush.voxelSampling();
 		if (ImGui::BeginCombo(_("Sampling"), _(VoxelSamplingStr[samplingInt]))) {
 			for (int i = 0; i < (int)voxel::VoxelSampling::Max; ++i) {
 				const bool selected = samplingInt == i;
 				if (ImGui::Selectable(_(VoxelSamplingStr[i]), selected)) {
 					brush.setVoxelSampling((voxel::VoxelSampling)i);
+					_transformDirty = true;
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();

@@ -3,6 +3,7 @@
  */
 
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/Config.h"
 #include "AbstractSceneManagerTest.h"
 #include "image/Image.h"
 #include "io/FilesystemArchive.h"
@@ -1439,6 +1440,142 @@ TEST_F(SceneManagerTest, testUndoInvalidatesAABBBrush) {
 	// undo - AABB mode should be cancelled
 	EXPECT_TRUE(_sceneMgr->undo());
 	EXPECT_FALSE(sb.aabbMode());
+}
+
+TEST_F(SceneManagerTest, testSplatMerge) {
+	// Create a scene with two sibling model nodes that overlap at region [0,9]
+	const voxel::Region region{0, 9};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "splatmerge_test", region));
+
+	// Target node (first model node from newScene)
+	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	ASSERT_NE(nullptr, targetVol);
+	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(targetNodeId, targetVol->region());
+
+	// Create source as sibling (parent = root) so transforms are independent
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
+	sourceNode.setVolume(new voxel::RawVolume(region), true);
+	sourceNode.setName("source");
+	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
+	ASSERT_NE(InvalidNodeId, sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	ASSERT_NE(nullptr, sourceVol);
+	sourceVol->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	sourceVol->setVoxel(6, 6, 6, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+
+	ASSERT_TRUE(_sceneMgr->splatMerge(sourceNodeId));
+
+	// Source node should be removed
+	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
+
+	// Target should have the original voxel plus the merged ones
+	EXPECT_FALSE(voxel::isAir(targetVol->voxel(0, 0, 0).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(targetVol->voxel(5, 5, 5).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(targetVol->voxel(6, 6, 6).getMaterial()));
+	EXPECT_EQ(3, voxelutil::countVoxels(*targetVol));
+}
+
+TEST_F(SceneManagerTest, testSplatMergeNoOverlap) {
+	const voxel::Region region{0, 4};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "splatmerge_nooverlap", region));
+
+	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	ASSERT_NE(nullptr, targetVol);
+	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(targetNodeId, targetVol->region());
+
+	// Create source at a non-overlapping region
+	const voxel::Region farRegion{100, 104};
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
+	sourceNode.setVolume(new voxel::RawVolume(farRegion), true);
+	sourceNode.setName("source_far");
+	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
+	ASSERT_NE(InvalidNodeId, sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	ASSERT_NE(nullptr, sourceVol);
+	sourceVol->setVoxel(100, 100, 100, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+
+	// splatMerge should fail - no overlapping nodes
+	EXPECT_FALSE(_sceneMgr->splatMerge(sourceNodeId));
+
+	// Source node should still exist since merge failed
+	EXPECT_NE(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
+}
+
+TEST_F(SceneManagerTest, testGlobalCopyVisibleAndPasteNode) {
+	const voxel::Region region{0, 4};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "globalcopyvisible_test", region));
+
+	// Fill first node
+	const int node1Id = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v1 = _sceneMgr->volume(node1Id);
+	ASSERT_NE(nullptr, v1);
+	v1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(node1Id, v1->region());
+
+	// Create and fill second visible node
+	const int node2Id = _sceneMgr->addModelChild("visible", 5, 5, 5);
+	ASSERT_NE(-1, node2Id);
+	ASSERT_TRUE(_sceneMgr->nodeActivate(node2Id));
+	voxel::RawVolume *v2 = _sceneMgr->volume(node2Id);
+	ASSERT_NE(nullptr, v2);
+	v2->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(node2Id, v2->region());
+
+	// Global copy visible should succeed
+	ASSERT_TRUE(_sceneMgr->globalCopyVisible());
+
+	// Now paste as new node
+	const size_t nodeCountBefore = _sceneMgr->sceneGraph().size();
+	ASSERT_TRUE(_sceneMgr->globalPasteNode(glm::ivec3(0)));
+
+	// A new node should have been created
+	EXPECT_GT(_sceneMgr->sceneGraph().size(), nodeCountBefore);
+}
+
+TEST_F(SceneManagerTest, testAutoSelectOnPaste) {
+	const voxel::Region region{0, 4};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "autoselect_paste", region));
+
+	// Enable auto-select
+	core::getVar(cfg::VoxEditAutoSelect)->setVal("true");
+
+	// Set a voxel and select it for copy
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(voxel::Region{glm::ivec3(0), glm::ivec3(1, 0, 0)});
+	ASSERT_TRUE(node->hasSelection());
+
+	// Copy and then paste
+	ASSERT_TRUE(_sceneMgr->copy(nodeId));
+	ASSERT_TRUE(_sceneMgr->paste(glm::ivec3(2, 0, 0)));
+
+	// The pasted voxels should have FlagOutline set
+	const voxel::Voxel &pasted1 = v->voxel(2, 0, 0);
+	const voxel::Voxel &pasted2 = v->voxel(3, 0, 0);
+	EXPECT_FALSE(voxel::isAir(pasted1.getMaterial()));
+	EXPECT_FALSE(voxel::isAir(pasted2.getMaterial()));
+	EXPECT_TRUE((pasted1.getFlags() & voxel::FlagOutline) != 0) << "Pasted voxel should be auto-selected";
+	EXPECT_TRUE((pasted2.getFlags() & voxel::FlagOutline) != 0) << "Pasted voxel should be auto-selected";
+
+	// The original voxels should NOT have FlagOutline (clearSelection was called)
+	const voxel::Voxel &orig = v->voxel(0, 0, 0);
+	EXPECT_TRUE((orig.getFlags() & voxel::FlagOutline) == 0) << "Original voxels should be deselected";
+
+	// Disable auto-select for cleanup
+	core::getVar(cfg::VoxEditAutoSelect)->setVal("false");
 }
 
 TEST_F(SceneManagerTest, testRedoInvalidatesBrushState) {

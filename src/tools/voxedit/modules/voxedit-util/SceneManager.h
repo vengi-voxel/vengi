@@ -151,6 +151,9 @@ protected:
 
 	voxelutil::PickResult _result;
 
+	void autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region);
+	bool loadGlobalClipboard(voxel::ClipboardData &clipData);
+
 	/**
 	 * @note This might return @c nullptr in the case where the active node is no model node
 	 */
@@ -389,7 +392,10 @@ public:
 	bool copy(int nodeId);
 	bool paste(const glm::ivec3 &pos);
 	bool globalCopy();
+	bool globalCopyVisible();
 	bool globalPaste(const glm::ivec3 &pos);
+	bool globalPasteNode(const glm::ivec3 &pos);
+	bool splatMerge(int sourceNodeId);
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);
