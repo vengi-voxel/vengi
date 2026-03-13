@@ -181,6 +181,7 @@ set(TEST_SRCS
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/MeshTriTest.cpp
+	tests/TeardownFormatTest.cpp
 	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
