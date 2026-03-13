@@ -54,7 +54,7 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten")};
+static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
@@ -1125,42 +1125,79 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::EndCombo();
 	}
 
-	if (currentMode == SculptMode::Flatten) {
+	const bool needsFace = currentMode == SculptMode::Flatten || currentMode == SculptMode::SmoothAdditive || currentMode == SculptMode::SmoothErode;
+	if (needsFace) {
 		const voxel::FaceNames flattenFace = brush.flattenFace();
 		if (flattenFace == voxel::FaceNames::Max) {
 			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
-			ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the flatten direction"));
+			ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the direction"));
 			return;
 		}
 		ImGui::Text(_("Direction: %s"), voxel::faceNameString(flattenFace));
+	}
 
-		int iterations = brush.iterations();
-		ImGui::TextUnformatted(_("Iterations"));
-		if (ImGui::Button("-##sculpt_iter")) {
-			brush.setIterations(iterations - 1);
+	if (currentMode == SculptMode::SmoothAdditive) {
+		int threshold = brush.heightThreshold();
+		if (ImGui::SliderInt(_("Height threshold"), &threshold, 1, SculptBrush::MaxHeightThreshold)) {
+			brush.setHeightThreshold(threshold);
 			executeSculptBrush();
 		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##sculpt_iter_slider", &iterations, 1, SculptBrush::MaxFlattenIterations)) {
-			brush.setIterations(iterations);
+	} else if (currentMode == SculptMode::SmoothErode) {
+		bool preserve = brush.preserveTopHeight();
+		if (ImGui::Checkbox(_("Preserve top height"), &preserve)) {
+			brush.setPreserveTopHeight(preserve);
 			executeSculptBrush();
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##sculpt_iter")) {
-			brush.setIterations(iterations + 1);
-			executeSculptBrush();
+		if (preserve) {
+			int trimPerStep = brush.trimPerStep();
+			ImGui::TextUnformatted(_("Trim per step"));
+			if (ImGui::Button("-##sculpt_trim")) {
+				brush.setTrimPerStep(trimPerStep - 1);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::SliderInt("##sculpt_trim_slider", &trimPerStep, 1, SculptBrush::MaxTrimPerStep)) {
+				brush.setTrimPerStep(trimPerStep);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("+##sculpt_trim")) {
+				brush.setTrimPerStep(trimPerStep + 1);
+				executeSculptBrush();
+			}
 		}
-	} else {
+	} else if (currentMode != SculptMode::Flatten) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
 			executeSculptBrush();
 		}
+	}
 
+	{
+		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
-		if (ImGui::SliderInt(_("Iterations"), &iterations, 1, SculptBrush::MaxIterations)) {
-			brush.setIterations(iterations);
-			executeSculptBrush();
+		if (needsFace) {
+			ImGui::TextUnformatted(_("Iterations"));
+			if (ImGui::Button("-##sculpt_iter")) {
+				brush.setIterations(iterations - 1);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::SliderInt("##sculpt_iter_slider", &iterations, 1, maxIter)) {
+				brush.setIterations(iterations);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("+##sculpt_iter")) {
+				brush.setIterations(iterations + 1);
+				executeSculptBrush();
+			}
+		} else {
+			if (ImGui::SliderInt(_("Iterations"), &iterations, 1, maxIter)) {
+				brush.setIterations(iterations);
+				executeSculptBrush();
+			}
 		}
 	}
 }

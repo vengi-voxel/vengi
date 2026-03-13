@@ -19,6 +19,8 @@ enum class SculptMode : uint8_t {
 	Erode,
 	Grow,
 	Flatten,
+	SmoothAdditive,
+	SmoothErode,
 
 	Max
 };
@@ -39,6 +41,9 @@ private:
 	SculptMode _sculptMode = SculptMode::Erode;
 	float _strength = 0.5f;
 	int _iterations = 1;
+	int _heightThreshold = 1;
+	bool _preserveTopHeight = false;
+	int _trimPerStep = 1;
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
 	bool _active = false;
 	bool _hasSnapshot = false;
@@ -60,7 +65,7 @@ private:
 
 	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
 	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
-	void applySmooth(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
+	void applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
 	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
@@ -94,7 +99,9 @@ public:
 	}
 
 	void setSculptMode(SculptMode mode) {
-		if (mode == SculptMode::Flatten && _sculptMode != SculptMode::Flatten) {
+		const bool needsFace = mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode;
+		const bool hadFace = _sculptMode == SculptMode::Flatten || _sculptMode == SculptMode::SmoothAdditive || _sculptMode == SculptMode::SmoothErode;
+		if (needsFace && !hadFace) {
 			_flattenFace = voxel::FaceNames::Max;
 		}
 		_sculptMode = mode;
@@ -122,6 +129,34 @@ public:
 
 	voxel::FaceNames flattenFace() const {
 		return _flattenFace;
+	}
+
+	static constexpr int MaxHeightThreshold = 10;
+
+	int heightThreshold() const {
+		return _heightThreshold;
+	}
+
+	void setHeightThreshold(int threshold) {
+		_heightThreshold = glm::clamp(threshold, 1, MaxHeightThreshold);
+	}
+
+	bool preserveTopHeight() const {
+		return _preserveTopHeight;
+	}
+
+	void setPreserveTopHeight(bool preserve) {
+		_preserveTopHeight = preserve;
+	}
+
+	static constexpr int MaxTrimPerStep = 16;
+
+	int trimPerStep() const {
+		return _trimPerStep;
+	}
+
+	void setTrimPerStep(int value) {
+		_trimPerStep = glm::clamp(value, 1, MaxTrimPerStep);
 	}
 };
 
