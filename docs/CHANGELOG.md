@@ -27,8 +27,18 @@ General:
    - Fixed crash when loading large `vengi` scenes
    - Renamed `vox_meshmode` to `voxel_meshmode`
    - Added L-System lua bindings for the voxel generator
-   - Improved OBJ voxelization performance by preventing buffer re-allocations
+   - Improved `obj` voxelization performance by preventing buffer re-allocations
    - Allow to skip position compensation when setting the pivot in lua scripts
+   - Added `hexcolor` parameter type for lua scripts with color picker widget
+   - Added `md3` format support (Quake 3)
+   - Added sound module for `wav` playback
+   - Added PowerShell completion support and improved zsh/bash completions with cvar value completion
+   - Added animated `gif` support for viewport recording
+   - Fixed race condition in `SparseVolume`
+   - Fixed GLTF animation rotation quaternion reading
+   - Fixed GLTF invalid mesh index for point nodes
+   - Fixed undefined behaviour in `RawVolume::clear()` when building with msys2
+   - Added Teardown `bin` format support
 
 VoxEdit:
 
@@ -49,6 +59,12 @@ VoxEdit:
    - Added extended selection system
    - Added `globalcopy`/`globalpaste` commands for cross-instance clipboard sharing
    - Fixed potential crashes when using brushes in some circumstances
+   - Added new brushes
+   - Added camera commands (`camera_mouselook`, `camera_reset`, `camera_mode`, `camera_projection`)
+   - Added network chat feature
+   - Split image/model asset panel and file panel into dedicated panels
+   - Fixed loading a new scene not stopping a previously running animation
+   - Added searchable combo box for script selection
 
 VoxConvert:
 
