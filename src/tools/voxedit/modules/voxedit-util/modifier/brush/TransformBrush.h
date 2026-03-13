@@ -74,6 +74,8 @@ private:
 	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
 	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
 	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
+	void eraseSnapshotPositions(ModifierVolumeWrapper &wrapper);
+	void applyInverseMapping(ModifierVolumeWrapper &wrapper);
 	voxel::Region computeTransformedRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
 	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;

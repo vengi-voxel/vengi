@@ -3,6 +3,7 @@
  */
 
 #include "TransformBrush.h"
+#include "app/Async.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -334,72 +335,117 @@ void TransformBrush::writeVoxel(ModifierVolumeWrapper &wrapper,
 	}
 }
 
-void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
-	core_trace_scoped(ApplyTransform);
+void TransformBrush::eraseSnapshotPositions(ModifierVolumeWrapper &wrapper) {
+	core_trace_scoped(EraseSnapshotPositions);
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 	const voxel::Voxel air;
 
-	// Erase all original selected voxels (saving to history)
-	{
-		const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
-		const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-		for (int z = lo.z; z <= hi.z; ++z) {
-			for (int y = lo.y; y <= hi.y; ++y) {
-				for (int x = lo.x; x <= hi.x; ++x) {
-					if (!_snapshot.hasVoxel(x, y, z)) {
-						continue;
-					}
-					const glm::ivec3 pos(x, y, z);
-					if (volRegion.containsPoint(pos)) {
-						writeVoxel(wrapper, pos, air);
-					}
-				}
+	// Iterate only the populated entries in the sparse snapshot instead of the
+	// full bounding box - avoids hash lookups for empty positions.
+	struct Eraser {
+		voxel::RawVolume *vol;
+		ModifierVolumeWrapper *wrapper;
+		TransformBrush *brush;
+		const voxel::Region *volRegion;
+		voxel::Voxel air;
+		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
+			const glm::ivec3 pos(x, y, z);
+			if (volRegion->containsPoint(pos)) {
+				brush->writeVoxel(*wrapper, pos, air);
 			}
+			return true;
 		}
+	};
+	Eraser eraser{vol, &wrapper, this, &volRegion, air};
+	_snapshot.copyTo(eraser);
+}
+
+void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
+	core_trace_scoped(ApplyInverseMapping);
+	voxel::RawVolume *vol = wrapper.volume();
+	const voxel::Region &volRegion = vol->region();
+
+	// Convert sparse snapshot to a temporary RawVolume for fast lock-free reads.
+	// SparseVolume::Sampler acquires a mutex per voxel lookup which causes massive
+	// contention under parallel access. RawVolume is a flat array - cache-friendly
+	// and requires no locks for concurrent reads.
+	voxel::RawVolume snapshotRaw(_snapshotRegion);
+	_snapshot.copyTo(snapshotRaw);
+
+	const glm::ivec3 &srcLo = _snapshotRegion.getLowerCorner();
+	const glm::ivec3 &srcHi = _snapshotRegion.getUpperCorner();
+	glm::ivec3 dstLo(INT_MAX);
+	glm::ivec3 dstHi(INT_MIN);
+
+	static constexpr int NumCorners = 8;
+	for (int corner = 0; corner < NumCorners; ++corner) {
+		const glm::ivec3 cornerPos(
+			(corner & 1) ? srcHi.x : srcLo.x,
+			(corner & 2) ? srcHi.y : srcLo.y,
+			(corner & 4) ? srcHi.z : srcLo.z);
+		const glm::ivec3 transformed = transformPosition(cornerPos);
+		dstLo = glm::min(dstLo, transformed);
+		dstHi = glm::max(dstHi, transformed);
 	}
 
-	const bool useInverseMapping = (_transformMode == TransformMode::Scale ||
-									_transformMode == TransformMode::Rotate);
+	// Clamp to volume bounds
+	dstLo = glm::max(dstLo, volRegion.getLowerCorner());
+	dstHi = glm::min(dstHi, volRegion.getUpperCorner());
 
-	// TODO: use VolumeRotator.h and VolumeRescaler.h code here
-	if (useInverseMapping) {
-		// Inverse mapping: compute the destination bounding box by transforming all
-		// 8 corners of the snapshot region, then iterate every destination position
-		// and inverse-map back into the source to find the voxel that fills it.
-		const glm::ivec3 &srcLo = _snapshotRegion.getLowerCorner();
-		const glm::ivec3 &srcHi = _snapshotRegion.getUpperCorner();
-		glm::ivec3 dstLo(INT_MAX);
-		glm::ivec3 dstHi(INT_MIN);
+	const int zSlices = dstHi.z - dstLo.z + 1;
+	if (zSlices <= 0) {
+		return;
+	}
 
-		static constexpr int NumCorners = 8;
-		for (int corner = 0; corner < NumCorners; ++corner) {
-			const glm::ivec3 cornerPos(
-				(corner & 1) ? srcHi.x : srcLo.x,
-				(corner & 2) ? srcHi.y : srcLo.y,
-				(corner & 4) ? srcHi.z : srcLo.z);
-			const glm::ivec3 transformed = transformPosition(cornerPos);
-			dstLo = glm::min(dstLo, transformed);
-			dstHi = glm::max(dstHi, transformed);
-		}
+	// Collect transformed voxels in parallel, then write sequentially.
+	// Writing must be sequential because writeVoxel updates history (hash map).
+	struct TransformedVoxel {
+		glm::ivec3 pos;
+		voxel::Voxel voxel;
+	};
 
-		// Clamp to volume bounds
-		dstLo = glm::max(dstLo, volRegion.getLowerCorner());
-		dstHi = glm::min(dstHi, volRegion.getUpperCorner());
+	// One result array per Z slice - no contention between threads
+	core::DynamicArray<core::DynamicArray<TransformedVoxel>> sliceResults;
+	sliceResults.resize(zSlices);
 
-		voxel::SparseVolume::Sampler snapshotSampler(_snapshot);
-		for (int dz = dstLo.z; dz <= dstHi.z; ++dz) {
+	app::for_parallel(dstLo.z, dstHi.z + 1, [this, &snapshotRaw, &sliceResults, dstLo, dstHi](int startZ, int endZ) {
+		voxel::RawVolume::Sampler sampler(snapshotRaw);
+		for (int dz = startZ; dz < endZ; ++dz) {
+			const int sliceIdx = dz - dstLo.z;
+			core::DynamicArray<TransformedVoxel> &results = sliceResults[sliceIdx];
 			for (int dy = dstLo.y; dy <= dstHi.y; ++dy) {
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);
 					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
-					const voxel::Voxel source = voxel::sampleVoxel(snapshotSampler, _voxelSampling, srcPos);
+					const voxel::Voxel source = voxel::sampleVoxel(sampler, _voxelSampling, srcPos);
 					if (!voxel::isAir(source.getMaterial())) {
-						writeVoxel(wrapper, dstPos, source);
+						results.push_back({dstPos, source});
 					}
 				}
 			}
 		}
+	});
+
+	// Write results sequentially
+	for (const auto &results : sliceResults) {
+		for (const auto &tv : results) {
+			writeVoxel(wrapper, tv.pos, tv.voxel);
+		}
+	}
+}
+
+void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	core_trace_scoped(ApplyTransform);
+
+	// Erase all original selected voxels (saving to history)
+	eraseSnapshotPositions(wrapper);
+
+	if (_transformMode == TransformMode::Scale || _transformMode == TransformMode::Rotate) {
+		// Inverse mapping with parallelized computation for Scale and Rotate.
+		// Scale needs inverse mapping to fill gaps on scale-up.
+		// Rotate needs it because forward mapping leaves holes at non-90-degree angles.
+		applyInverseMapping(wrapper);
 	} else {
 		// Forward mapping: Move and Shear produce 1:1 mappings without gaps
 		voxelutil::visitVolume(_snapshot, _snapshotRegion, [&](int x, int y, int z, const voxel::Voxel &v) {
