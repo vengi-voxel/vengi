@@ -21,6 +21,7 @@ EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
 CMAKE_INTERNAL_OPTIONS ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_LINK_TIME_OPTIMIZATION=OFF -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G"$(GENERATOR)" --graphviz=$(BUILDDIR)/deps.dot -DUSE_LIBS_FORCE_LOCAL=$(LIBS_LOCAL)
 CMAKE_OPTIONS          ?=
+CLANGBUILDANALYZER     ?= $(shell command -v ClangBuildAnalyzer 2>/dev/null || command -v ClangBuildAnalyzer-linux 2>/dev/null || echo ClangBuildAnalyzer)
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
 else
@@ -73,10 +74,10 @@ analysebuild:
 	$(Q)rm -rf $(BUILDDIR)/analyse
 	$(Q)mkdir -p $(BUILDDIR)/analyse
 	$(Q)CC=clang CXX=clang++ $(CMAKE) -H$(CURDIR) -B$(BUILDDIR)/analyse $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DUSE_SANITIZERS=OFF
-	$(Q)ClangBuildAnalyzer --start $(BUILDDIR)/analyse
+	$(Q)$(CLANGBUILDANALYZER) --start $(BUILDDIR)/analyse
 	$(Q)$(CMAKE) --build $(BUILDDIR)/analyse --target $(ALLTARGET)
-	$(Q)ClangBuildAnalyzer --stop $(BUILDDIR)/analyse $(BUILDDIR)/analyse/capture_file
-	$(Q)ClangBuildAnalyzer --analyze $(BUILDDIR)/analyse/capture_file
+	$(Q)$(CLANGBUILDANALYZER) --stop $(BUILDDIR)/analyse $(BUILDDIR)/analyse/capture_file
+	$(Q)$(CLANGBUILDANALYZER) --analyze $(BUILDDIR)/analyse/capture_file
 
 %.png: data/voxedit/%.vengi
 	$(Q)$(call EXEC_PATH,thumbnailer) -s 128 --use-scene-camera --input $< --output data/voxedit/$@
