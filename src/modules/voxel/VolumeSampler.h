@@ -650,9 +650,9 @@ static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
  * The voxel color with the highest total weight wins.
  */
 template<class Sampler>
-static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
+static voxel::Voxel sampleCubic(const Sampler &sampler, const glm::vec3 &pos) {
 	static constexpr int HalfExtent = 2;
-	static constexpr float MaxCubicDistance = 3.5f;
+	static constexpr float MaxCubicDistanceSq = 3.5f * 3.5f;
 	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
 
 	const glm::ivec3 center = glm::ivec3(glm::round(pos));
@@ -664,9 +664,10 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 	MaterialWeight materials[MaxMaterials] = {};
 	int materialCount = 0;
 
-	sampler.setPosition(center.x - HalfExtent + 1, center.y - HalfExtent + 1, center.z - HalfExtent + 1);
+	Sampler zSampler = sampler;
+	zSampler.setPosition(center.x - HalfExtent + 1, center.y - HalfExtent + 1, center.z - HalfExtent + 1);
 	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
-		Sampler ySampler = sampler;
+		Sampler ySampler = zSampler;
 		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
 			Sampler xSampler = ySampler;
 			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
@@ -679,11 +680,12 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 				if (voxel::isAir(v.getMaterial())) {
 					continue;
 				}
-				const float dist = glm::length(glm::vec3(xSampler.position()) - pos);
-				if (dist > MaxCubicDistance) {
+				const glm::vec3 d = glm::vec3(xSampler.position()) - pos;
+				const float dist2 = glm::dot(d, d);
+				if (dist2 > MaxCubicDistanceSq) {
 					continue;
 				}
-				const float weight = 1.0f / (dist + 0.001f);
+				const float weight = 1.0f / (dist2 + 0.001f);
 				const uint8_t color = v.getColor();
 				bool found = false;
 				for (int mi = 0; mi < materialCount; ++mi) {
@@ -699,7 +701,7 @@ static voxel::Voxel sampleCubic(Sampler &sampler, const glm::vec3 &pos) {
 			}
 			ySampler.movePositiveY();
 		}
-		sampler.movePositiveZ();
+		zSampler.movePositiveZ();
 	}
 
 	if (materialCount == 0) {
