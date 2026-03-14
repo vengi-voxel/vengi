@@ -151,6 +151,8 @@ if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
 		benchmarks/ModifierVolumeWrapperBenchmark.cpp
 		benchmarks/SculptBrushBenchmark.cpp
+		benchmarks/TransformBrushBenchmark.cpp
+		benchmarks/ExtrudeBrushBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
