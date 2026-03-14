@@ -2,19 +2,20 @@
  * @file
  */
 
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
 
 /**
  * @brief A class that records modifications to a Volume - but doesn't actually modify it.
+ * @note Not thread-safe
  */
 template<typename Volume>
 class ModificationRecorder {
 private:
 	const Volume &_volume;
-	ConcurrentSparseVolume _modifications;
+	SparseVolume _modifications;
 
 public:
 	ModificationRecorder(const Volume &volume) : _volume(volume) {
