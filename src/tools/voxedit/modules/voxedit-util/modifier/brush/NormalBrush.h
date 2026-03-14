@@ -5,7 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
-#include "app/I18N.h"
+#include "app/I18NMarkers.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
 namespace palette {

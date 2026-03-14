@@ -3,6 +3,8 @@
  */
 
 #include "ClipboardData.h"
+#include "palette/Palette.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 
