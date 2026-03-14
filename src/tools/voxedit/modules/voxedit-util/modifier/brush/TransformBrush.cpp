@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
@@ -150,26 +151,11 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 	core_trace_scoped(AdjustSnapshotForRegionShift);
 	// Collect and re-insert with shifted positions
-	struct ShiftEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-	core::DynamicArray<ShiftEntry> entries;
-	const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-	for (int z = lo.z; z <= hi.z; ++z) {
-		for (int y = lo.y; y <= hi.y; ++y) {
-			for (int x = lo.x; x <= hi.x; ++x) {
-				if (!_snapshot.hasVoxel(x, y, z)) {
-					continue;
-				}
-				entries.push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), _snapshot.voxel(x, y, z)});
-			}
-		}
-	}
+	voxel::DynamicVoxelArray entries;
+	_snapshot.copyTo(entries, _snapshotRegion);
 	_snapshot.clear();
-	for (const ShiftEntry &e : entries) {
-		_snapshot.setVoxel(e.pos, e.voxel);
+	for (const voxel::VoxelPosition &e : entries) {
+		_snapshot.setVoxel(delta + e.pos, e.voxel);
 	}
 
 	_snapshotRegion.shift(delta.x, delta.y, delta.z);
@@ -178,19 +164,19 @@ void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 
 	// Shift history positions: collect, clear, reinsert shifted
 	struct EntryCollector {
-		core::DynamicArray<ShiftEntry> *entries;
+		voxel::DynamicVoxelArray *entries;
 		glm::ivec3 delta;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
 			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
 			return true;
 		}
 	};
-	core::DynamicArray<ShiftEntry> historyEntries;
+	voxel::DynamicVoxelArray historyEntries;
 	historyEntries.reserve(_history.size());
 	EntryCollector collector{&historyEntries, delta};
 	_history.copyTo(collector);
 	_history.clear();
-	for (const ShiftEntry &e : historyEntries) {
+	for (const voxel::VoxelPosition &e : historyEntries) {
 		_history.setVoxel(e.pos, e.voxel);
 	}
 }
@@ -400,20 +386,15 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 
 	// Collect transformed voxels in parallel, then write sequentially.
 	// Writing must be sequential because writeVoxel updates history (hash map).
-	struct TransformedVoxel {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-
 	// One result array per Z slice - no contention between threads
-	core::DynamicArray<core::DynamicArray<TransformedVoxel>> sliceResults;
+	core::DynamicArray<voxel::DynamicVoxelArray> sliceResults;
 	sliceResults.resize(zSlices);
 
 	app::for_parallel(dstLo.z, dstHi.z + 1, [this, &snapshotRaw, &sliceResults, dstLo, dstHi](int startZ, int endZ) {
 		voxel::RawVolume::Sampler sampler(snapshotRaw);
 		for (int dz = startZ; dz < endZ; ++dz) {
 			const int sliceIdx = dz - dstLo.z;
-			core::DynamicArray<TransformedVoxel> &results = sliceResults[sliceIdx];
+			voxel::DynamicVoxelArray &results = sliceResults[sliceIdx];
 			for (int dy = dstLo.y; dy <= dstHi.y; ++dy) {
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);

@@ -228,6 +228,26 @@ public:
 	}
 
 	template<class Volume>
+	void copyTo(Volume &target, const voxel::Region &region) const {
+		core::ScopedLock mapLock(_chunkLock);
+		for (auto iter = _chunks.begin(); iter != _chunks.end(); ++iter) {
+			const glm::ivec3 &chunkPos = iter->first;
+			const ChunkPtr &chunk = iter->second;
+			if (!chunk) {
+				continue;
+			}
+			core::ScopedLock chunkGuard(chunk->lock);
+			for (auto voxelIter = chunk->voxels.begin(); voxelIter != chunk->voxels.end(); ++voxelIter) {
+				const glm::ivec3 pos = worldPosition(chunkPos, voxelIter->key);
+				if (!region.containsPoint(pos)) {
+					continue;
+				}
+				target.setVoxel(pos.x, pos.y, pos.z, voxelIter->value);
+			}
+		}
+	}
+
+	template<class Volume>
 	void copyFrom(const Volume &source) {
 		auto func = [this](int x, int y, int z, const voxel::Voxel &voxel) { setVoxel(x, y, z, voxel); };
 		voxelutil::visitVolume(source, func);
