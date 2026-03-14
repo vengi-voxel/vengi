@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include <glm/gtc/epsilon.hpp>
 #include "voxel/private/BinaryGreedyMesher.h"
 
 namespace voxel {

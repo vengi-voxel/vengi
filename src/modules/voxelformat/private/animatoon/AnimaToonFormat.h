@@ -6,6 +6,7 @@
 
 #include "core/collection/Buffer.h"
 #include "voxelformat/Format.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 

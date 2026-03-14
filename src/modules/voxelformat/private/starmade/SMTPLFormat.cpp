@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 

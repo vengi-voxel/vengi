@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "math/Axis.h"
 #include "voxelformat/Format.h"
 
 struct ase_t;

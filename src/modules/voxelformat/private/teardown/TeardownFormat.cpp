@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxel/RawVolume.h"
 #include "TeardownFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
