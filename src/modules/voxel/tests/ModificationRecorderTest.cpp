@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include <gtest/gtest.h>
 
