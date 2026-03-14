@@ -395,6 +395,7 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 		for (int dz = startZ; dz < endZ; ++dz) {
 			const int sliceIdx = dz - dstLo.z;
 			voxel::DynamicVoxelArray &results = sliceResults[sliceIdx];
+			results.reserve((dstHi.x - dstLo.x + 1) * (dstHi.y - dstLo.y + 1));
 			for (int dy = dstLo.y; dy <= dstHi.y; ++dy) {
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
 					const glm::ivec3 dstPos(dx, dy, dz);
