@@ -11,6 +11,7 @@ protected:
 
 	void runTransform(voxedit::TransformMode mode) {
 		brush.setTransformMode(mode);
+		brush.setVoxelSampling(voxel::VoxelSampling::Cubic);
 
 		switch (mode) {
 		case voxedit::TransformMode::Move:
