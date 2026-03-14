@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "app/Async.h"
+#include "app/ForParallel.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"

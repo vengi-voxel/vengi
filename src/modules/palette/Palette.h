@@ -13,7 +13,7 @@
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "palette/PaletteView.h"
-#include "image/Image.h"
+#include "image/ImageFwd.h"
 #include "palette/Material.h"
 #include <glm/vec4.hpp>
 #include <stdint.h>

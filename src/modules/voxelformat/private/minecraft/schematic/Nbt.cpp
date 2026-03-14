@@ -4,6 +4,7 @@
 
 #include "Nbt.h"
 #include "Util.h"
+#include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include <limits>
 

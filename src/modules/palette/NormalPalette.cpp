@@ -9,6 +9,7 @@
 #include "core/Hash.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "palette/private/PaletteFormat.h"
