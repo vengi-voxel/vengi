@@ -352,10 +352,7 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 
-	// Convert sparse snapshot to a temporary RawVolume for fast lock-free reads.
-	// ConcurrentSparseVolume::Sampler acquires a mutex per voxel lookup which causes massive
-	// contention under parallel access. RawVolume is a flat array - cache-friendly
-	// and requires no locks for concurrent reads.
+	// Convert sparse snapshot to a temporary RawVolume as it is a cache-friendly flat array
 	voxel::RawVolume snapshotRaw(_snapshotRegion);
 	_snapshot.copyTo(snapshotRaw);
 

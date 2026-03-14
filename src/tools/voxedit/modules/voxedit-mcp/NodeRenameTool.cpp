@@ -9,22 +9,25 @@
 namespace voxedit {
 
 NodeRenameTool::NodeRenameTool() : Tool("voxedit_node_rename") {
-	_tool["description"] = "Rename a scene node by UUID";
+	_tool.set("description", "Rename a scene node by UUID");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "name"});
-	inputSchema["properties"]["nodeUUID"] = propUUID();
-	inputSchema["properties"]["name"] = propTypeDescription("string", "New name for the node");
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("name");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("nodeUUID", propUUID());
+	inputSchema.get("properties").set("name", propTypeDescription("string", "New name for the node"));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool NodeRenameTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool NodeRenameTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
-	const core::String &newName = args["name"].get<std::string>().c_str();
+	const core::String &newName = args.get("name").str().c_str();
 	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);

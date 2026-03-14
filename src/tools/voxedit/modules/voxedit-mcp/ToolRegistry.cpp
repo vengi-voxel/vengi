@@ -36,7 +36,7 @@ bool ToolRegistry::unregisterTool(const core::String &toolName) {
 	return false;
 }
 
-bool ToolRegistry::call(const core::String &toolName, const nlohmann::json &id, const nlohmann::json &input,
+bool ToolRegistry::call(const core::String &toolName, const json::Json &id, const json::Json &input,
 						ToolContext &ctx) {
 	const auto it = _tools.find(toolName);
 	if (it != _tools.end()) {
@@ -47,9 +47,9 @@ bool ToolRegistry::call(const core::String &toolName, const nlohmann::json &id, 
 	return false;
 }
 
-void ToolRegistry::addRegisteredTools(nlohmann::json &tools) {
+void ToolRegistry::addRegisteredTools(json::Json &tools) {
 	for (const auto &pair : _tools) {
-		tools.emplace_back(pair->second->inputSchema());
+		tools.push(pair->second->inputSchema());
 	}
 }
 

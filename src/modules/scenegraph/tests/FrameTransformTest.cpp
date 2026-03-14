@@ -7,6 +7,9 @@
 #include "math/tests/TestMathHelper.h"
 #include <glm/gtc/epsilon.hpp>
 #include <glm/gtc/quaternion.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
 

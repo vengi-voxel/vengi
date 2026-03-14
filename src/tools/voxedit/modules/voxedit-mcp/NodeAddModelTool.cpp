@@ -12,31 +12,34 @@ namespace voxedit {
 
 // TODO: MCP: not only model nodes, but all other node types, too
 NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
-	_tool["description"] = "Create a new model node. Provide parent UUID from the scene graph state, name and optinally the size";
+	_tool.set("description", "Create a new model node. Provide parent UUID from the scene graph state, name and optinally the size");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"parentUUID", "name"});
-	inputSchema["properties"]["parentUUID"] = propParentUUID();
-	inputSchema["properties"]["name"] = propTypeDescription("string", "Name of the new node");
-	inputSchema["properties"]["width"] = propTypeDescription("integer", "Width of the model node volume region");
-	inputSchema["properties"]["width"]["default"] = 32;
-	inputSchema["properties"]["height"] = propTypeDescription("integer", "Height of the model node volume region");
-	inputSchema["properties"]["height"]["default"] = 32;
-	inputSchema["properties"]["depth"] = propTypeDescription("integer", "Depth of the model node volume region");
-	inputSchema["properties"]["depth"]["default"] = 32;
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("parentUUID");
+	_requiredArr.push("name");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("parentUUID", propParentUUID());
+	inputSchema.get("properties").set("name", propTypeDescription("string", "Name of the new node"));
+	inputSchema.get("properties").set("width", propTypeDescription("integer", "Width of the model node volume region"));
+	inputSchema.get("properties").get("width").set("default", 32);
+	inputSchema.get("properties").set("height", propTypeDescription("integer", "Height of the model node volume region"));
+	inputSchema.get("properties").get("height").set("default", 32);
+	inputSchema.get("properties").set("depth", propTypeDescription("integer", "Depth of the model node volume region"));
+	inputSchema.get("properties").get("depth").set("default", 32);
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool NodeAddModelTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool NodeAddModelTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID parentUUID = argsParentUUID(args);
 	if (!parentUUID.isValid()) {
 		return ctx.result(id, "Invalid parent UUID - fetch the scene state first", true);
 	}
-	const core::String name = args.value("name", "newnode").c_str();
-	const int w = args.value("width", 32);
-	const int h = args.value("height", 32);
-	const int d = args.value("depth", 32);
+	const core::String name = args.strVal("name", "newnode").c_str();
+	const int w = args.intVal("width", 32);
+	const int h = args.intVal("height", 32);
+	const int d = args.intVal("depth", 32);
 	if (w <= 0 || h <= 0 || d <= 0) {
 		return ctx.result(id, "Invalid dimensions", true);
 	}

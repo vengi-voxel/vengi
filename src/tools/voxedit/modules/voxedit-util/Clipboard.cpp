@@ -4,6 +4,7 @@
 
 #include "Clipboard.h"
 #include "core/Log.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"

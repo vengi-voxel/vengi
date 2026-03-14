@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Brush.h"
-#include "app/App.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 

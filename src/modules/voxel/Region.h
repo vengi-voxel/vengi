@@ -7,15 +7,14 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/fwd.hpp>
-#include <glm/common.hpp>
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/type_aligned.hpp>
 #include <stdint.h>
+
+namespace glm {
+GLM_ALIGNED_TYPEDEF(ivec4, aligned_ivec4, 16);
+}
 
 namespace voxel {
 

@@ -13,6 +13,7 @@
 #include "io/Archive.h"
 #include "io/File.h"
 #include "io/FilesystemArchive.h"
+#include "scenegraph/SceneGraph.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"

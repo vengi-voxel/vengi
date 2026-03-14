@@ -53,21 +53,21 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	json::Json json = json::Json::parse(jsonStr);
 
 	int maxDepth = 0;
 	// parse tiles
-	const nlohmann::json &tiles = json["tiles"];
+	const json::Json &tiles = json.get("tiles");
 	core::Buffer<KenTile> kenTiles;
 	for (const auto &tile : tiles) {
-		const int shape = tile.value("shape", 0);
-		const int angle = tile.value("angle", 0);
-		const int color = tile.value("color", -1);
-		const int depth = tile.value("depth", 0);
-		const bool enabled = tile.value("enabled", true);
-		const bool visited = tile.value("visited", false);
-		const int colorBack = tile.value("colorBack", -1);
-		const int depthBack = tile.value("depthBack", -1);
+		const int shape = tile.intVal("shape", 0);
+		const int angle = tile.intVal("angle", 0);
+		const int color = tile.intVal("color", -1);
+		const int depth = tile.intVal("depth", 0);
+		const bool enabled = tile.boolVal("enabled", true);
+		const bool visited = tile.boolVal("visited", false);
+		const int colorBack = tile.intVal("colorBack", -1);
+		const int depthBack = tile.intVal("depthBack", -1);
 		kenTiles.emplace_back(shape, angle, color, depth, enabled, visited, colorBack, depthBack);
 		maxDepth = core_max(maxDepth, depth);
 		maxDepth = core_max(maxDepth, depthBack);
@@ -78,10 +78,10 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 		Log::error("Missing colors in %s", filename.c_str());
 		return false;
 	}
-	const nlohmann::json &colors = json["colors"];
+	const json::Json &colors = json.get("colors");
 	int n = 0;
 	for (const auto &color : colors) {
-		const std::string &hex = color.get<std::string>();
+		const core::String hex = color.str();
 		color::RGBA rgba(0, 0, 0, 255);
 		core::string::parseHex(hex.c_str(), rgba.r, rgba.g, rgba.b, rgba.a);
 		palette.setColor(n, rgba);
@@ -96,11 +96,11 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	node.setName(json::toStr(json, "title"));
 	node.setProperty(scenegraph::PropVersion, json::toStr(json, "version"));
 	node.setProperty(scenegraph::PropAuthor, json::toStr(json, "author"));
-	auto size = json["size"];
-	const int w = size.value("x", 1) - 1;
-	const int h = size.value("y", 1) - 1;
-	const int alignment = json.value("alignment", 0);
-	const int depthMultiplier = json.value("depthMultiplier", 0);
+	auto size = json.get("size");
+	const int w = size.intVal("x", 1) - 1;
+	const int h = size.intVal("y", 1) - 1;
+	const int alignment = json.intVal("alignment", 0);
+	const int depthMultiplier = json.intVal("depthMultiplier", 0);
 	Log::debug("size: w(%d) h(%d)", w, h);
 	Log::debug("alignment: %d", alignment);
 	Log::debug("depthMultiplier: %d", depthMultiplier);
@@ -182,15 +182,15 @@ size_t KenShapeFormat::loadPalette(const core::String &filename, const io::Archi
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	json::Json json = json::Json::parse(jsonStr);
 	if (!json.contains("colors")) {
 		Log::error("Missing colors in %s", filename.c_str());
 		return false;
 	}
-	const nlohmann::json &colors = json["colors"];
+	const json::Json &colors = json.get("colors");
 	int n = 0;
 	for (const auto &color : colors) {
-		const std::string &hex = color.get<std::string>();
+		const core::String hex = color.str();
 		color::RGBA rgba(0, 0, 0, 255);
 		core::string::parseHex(hex.c_str(), rgba.r, rgba.g, rgba.b, rgba.a);
 		palette.setColor(n, rgba);

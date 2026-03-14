@@ -3,6 +3,9 @@ set(SRCS
 	AppCommand.cpp AppCommand.h
 	Async.cpp Async.h
 	CommandlineApp.h CommandlineApp.cpp
+	ForParallel.h
+	I18N.h
+	I18NMarkers.h
 	Pipe.cpp Pipe.h
 
 	i18n/Dictionary.cpp i18n/Dictionary.h

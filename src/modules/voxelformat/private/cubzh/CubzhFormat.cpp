@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "io/Archive.h"
 #include "io/StreamUtil.h"
 #include "io/ZipReadStream.h"
@@ -1055,7 +1056,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	return saveAnimations(sceneGraph, filename, archive, ctx);
 }
 
-static scenegraph::InterpolationType toInterpolationType(const std::string &type) {
+static scenegraph::InterpolationType toInterpolationType(const core::String &type) {
 	for (int i = 0; i < lengthof(scenegraph::InterpolationTypeStr); ++i) {
 		if (type == scenegraph::InterpolationTypeStr[i]) {
 			return (scenegraph::InterpolationType)i;
@@ -1172,29 +1173,29 @@ bool CubzhFormat::loadAnimations(const core::String &filename, const io::Archive
 		return false;
 	}
 
-	nlohmann::json j = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	json::Json j = json::Json::parse(jsonStr);
 
 	if (j.contains("animations")) {
-		const auto &animations = j.at("animations");
-		for (const auto &animation : animations.items()) {
-			const auto &key = animation.key();
+		const auto &animations = j.get("animations");
+		for (auto animIt = animations.begin(); animIt != animations.end(); ++animIt) {
+			const core::String key = animIt.key();
 			sceneGraph.addAnimation(key.c_str());
 			sceneGraph.setAnimation(key.c_str());
-			const auto &animationObject = animation.value();
+			const json::Json animationObject = *animIt;
 			if (!animationObject.contains("shapes")) {
 				continue;
 			}
-			const auto &shapes = animationObject.at("shapes");
-			for (const auto &shape : shapes.items()) {
-				const core::String name = shape.key().c_str();
+			const auto &shapes = animationObject.get("shapes");
+			for (auto shapeIt = shapes.begin(); shapeIt != shapes.end(); ++shapeIt) {
+				const core::String name = shapeIt.key();
 				if (scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name.c_str())) {
-					const auto &shapeObject = shape.value();
+					const json::Json shapeObject = *shapeIt;
 					if (!shapeObject.contains("frames")) {
 						continue;
 					}
-					const auto &frames = shapeObject.at("frames");
-					for (const auto &frame : frames.items()) {
-						const scenegraph::FrameIndex frameIdx = core::string::toInt(frame.key().c_str());
+					const auto &frames = shapeObject.get("frames");
+					for (auto frameIt = frames.begin(); frameIt != frames.end(); ++frameIt) {
+						const scenegraph::FrameIndex frameIdx = core::string::toInt(frameIt.key().c_str());
 						scenegraph::KeyFrameIndex keyFrameIdx = node->addKeyFrame(frameIdx);
 						if (keyFrameIdx == InvalidKeyFrame) {
 							keyFrameIdx = node->keyFrameForFrame(frameIdx);
@@ -1207,22 +1208,22 @@ bool CubzhFormat::loadAnimations(const core::String &filename, const io::Archive
 
 						glm::vec3 localTranslation{0.0f};
 						glm::quat localOrientation = glm::quat_identity<float, glm::defaultp>();
-						const auto &frameObject = frame.value();
+						const json::Json frameObject = *frameIt;
 						if (frameObject.contains("position")) {
-							const auto &position = frameObject.at("position");
-							localTranslation.x = position.at("_x").get<float>();
-							localTranslation.y = position.at("_y").get<float>();
-							localTranslation.z = position.at("_z").get<float>();
+							const auto &position = frameObject.get("position");
+							localTranslation.x = position.get("_x").floatVal();
+							localTranslation.y = position.get("_y").floatVal();
+							localTranslation.z = position.get("_z").floatVal();
 						}
 						if (frameObject.contains("rotation")) {
-							const auto &rotation = frameObject.at("rotation");
-							localOrientation.x = rotation.at("_x").get<float>();
-							localOrientation.y = rotation.at("_y").get<float>();
-							localOrientation.z = rotation.at("_z").get<float>();
-							localOrientation.w = rotation.at("_w").get<float>();
+							const auto &rotation = frameObject.get("rotation");
+							localOrientation.x = rotation.get("_x").floatVal();
+							localOrientation.y = rotation.get("_y").floatVal();
+							localOrientation.z = rotation.get("_z").floatVal();
+							localOrientation.w = rotation.get("_w").floatVal();
 						}
 						if (frameObject.contains("interpolation")) {
-							keyFrame.interpolation = toInterpolationType(frameObject.at("interpolation"));
+							keyFrame.interpolation = toInterpolationType(frameObject.get("interpolation").str());
 							if (keyFrame.interpolation == scenegraph::InterpolationType::Max) {
 								Log::error("Invalid interpolation type");
 								keyFrame.interpolation = scenegraph::InterpolationType::Linear;

@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelformat {
 

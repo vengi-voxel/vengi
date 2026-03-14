@@ -12,14 +12,16 @@
 namespace voxedit {
 
 GetVoxelsTool::GetVoxelsTool() : Tool("voxedit_get_voxels") {
-	_tool["description"] = "Get voxel data from a model node. Returns compact binary data (base64) "
-						   "in either SPARSE or RLE format, whichever is smaller.";
+	_tool.set("description", "Get voxel data from a model node. Returns compact binary data (base64) "
+						   "in either SPARSE or RLE format, whichever is smaller.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID"});
-	inputSchema["properties"]["nodeUUID"] = propUUID();
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("nodeUUID", propUUID());
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
 static void encodeSparse(const voxel::RawVolume *volume, io::BufferedReadWriteStream &stream) {
@@ -91,7 +93,7 @@ static core::String encodeVolumeToResponse(const voxel::RawVolume *volume) {
 	return result;
 }
 
-bool GetVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool GetVoxelsTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);

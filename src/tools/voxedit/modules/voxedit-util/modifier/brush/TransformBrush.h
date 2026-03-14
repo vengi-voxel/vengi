@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "app/I18N.h"
 #include "Brush.h"
 #include "core/GLM.h"
 #include "voxel/SparseVolume.h"

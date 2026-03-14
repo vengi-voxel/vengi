@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "palette/ColorPalette.h"
 #include "palette/Palette.h"

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {

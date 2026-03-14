@@ -7,6 +7,7 @@
 #include "core/ScopedPtr.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelformat {
 

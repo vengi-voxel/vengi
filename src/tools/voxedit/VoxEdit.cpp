@@ -13,6 +13,7 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/concurrent/Concurrency.h"
+#include "core/concurrent/ThreadPool.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"

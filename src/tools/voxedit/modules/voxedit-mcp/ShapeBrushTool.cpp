@@ -14,31 +14,41 @@
 namespace voxedit {
 
 ShapeBrushTool::ShapeBrushTool() : BrushTool("voxedit_shape_brush") {
-	_tool["description"] = "Create geometric shapes (AABB, Torus, Cylinder, Cone, Dome, Ellipse) in a node's volume";
+	_tool.set("description", "Create geometric shapes (AABB, Torus, Cylinder, Cone, Dome, Ellipse) in a node's volume");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "region"});
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("region");
+	inputSchema.set("required", _requiredArr);
 
-	nlohmann::json properties;
-	properties["nodeUUID"] = propUUID();
-	properties["region"] = propRegion();
-	properties["colorIndex"] = propColorIndex();
-	properties["modifierType"] = propModifierType();
+	json::Json properties = json::Json::object();
+	properties.set("nodeUUID", propUUID());
+	properties.set("region", propRegion());
+	properties.set("colorIndex", propColorIndex());
+	properties.set("modifierType", propModifierType());
 
 	// Shape type property
-	nlohmann::json shapeTypeProp;
-	shapeTypeProp["type"] = "string";
-	shapeTypeProp["description"] = "The shape type to create";
-	shapeTypeProp["enum"] = nlohmann::json::array({"aabb", "torus", "cylinder", "cone", "dome", "ellipse"});
-	shapeTypeProp["default"] = "aabb";
-	properties["shapeType"] = shapeTypeProp;
+	json::Json shapeTypeProp = json::Json::object();
+	shapeTypeProp.set("type", "string");
+	shapeTypeProp.set("description", "The shape type to create");
+	json::Json _enumArr = json::Json::array();
+	_enumArr.push("aabb");
+	_enumArr.push("torus");
+	_enumArr.push("cylinder");
+	_enumArr.push("cone");
+	_enumArr.push("dome");
+	_enumArr.push("ellipse");
+	shapeTypeProp.set("enum", _enumArr);
+	shapeTypeProp.set("default", "aabb");
+	properties.set("shapeType", shapeTypeProp);
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool ShapeBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool ShapeBrushTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -47,16 +57,16 @@ bool ShapeBrushTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 	if (!args.contains("region")) {
 		return ctx.result(id, "Missing region argument", true);
 	}
-	const nlohmann::json &region = args["region"];
+	json::Json region = args.get("region");
 
-	const glm::ivec3 mins(region.value("minX", 0), region.value("minY", 0), region.value("minZ", 0));
-	const glm::ivec3 maxs(region.value("maxX", 0), region.value("maxY", 0), region.value("maxZ", 0));
+	const glm::ivec3 mins(region.intVal("minX", 0), region.intVal("minY", 0), region.intVal("minZ", 0));
+	const glm::ivec3 maxs(region.intVal("maxX", 0), region.intVal("maxY", 0), region.intVal("maxZ", 0));
 
-	const int colorIndex = args.value("colorIndex", 0);
-	const core::String modifierTypeStr = args.value("modifierType", "place").c_str();
+	const int colorIndex = args.intVal("colorIndex", 0);
+	const core::String modifierTypeStr = args.strVal("modifierType", "place").c_str();
 	const ModifierType modifierType = parseModifierType(modifierTypeStr);
 
-	const core::String shapeTypeStr = args.value("shapeType", "aabb").c_str();
+	const core::String shapeTypeStr = args.strVal("shapeType", "aabb").c_str();
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {

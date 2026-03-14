@@ -6,6 +6,7 @@
 #include "../MinecraftPaletteMap.h"
 #include "IntReader.h"
 #include "Util.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
 #include "voxel/RawVolume.h"
 

@@ -5,6 +5,7 @@
 #include "Litematic.h"
 #include "../MinecraftPaletteMap.h"
 #include "Util.h"
+#include "core/Log.h"
 #include "voxel/RawVolume.h"
 
 namespace voxelformat {

@@ -3,5 +3,5 @@ set(SRCS
 )
 
 set(LIB json)
-set(LIBS core)
+set(LIBS core cjson)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})

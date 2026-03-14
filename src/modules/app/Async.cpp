@@ -5,6 +5,7 @@
 #include "Async.h"
 #include "app/App.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/ThreadPool.h"
 
 namespace app {
 
@@ -48,7 +49,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 
 	for (int i = start; i < end; i += chunkSize) {
 		uint32_t chunk_end = core_min(i + chunkSize, end);
-		futures.emplace_back(app::App::getInstance()->enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
+		futures.emplace_back(app::App::getInstance()->threadPool()->enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
 	}
 
 	if (!wait) {

@@ -19,27 +19,28 @@ namespace voxelformat {
 
 namespace benv {
 
-static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
+static bool loadMetadataJson(const json::Json &json, Metadata &metadata) {
 	// metadata is optional
-	if (json.find("metadata") == json.end()) {
+	if (!json.contains("metadata")) {
 		return true;
 	}
-	const nlohmann::json &metadataJson = json["metadata"];
-	if (metadataJson.find("palettes") != metadataJson.end()) {
-		const nlohmann::json &palettesJson = metadataJson["palettes"];
-		for (const auto &paletteJsonEntry : palettesJson.items()) {
-			const core::String &name = paletteJsonEntry.key().c_str();
+	json::Json metadataJson = json.get("metadata");
+	if (metadataJson.contains("palettes")) {
+		json::Json palettesJson = metadataJson.get("palettes");
+		for (auto it = palettesJson.begin(); it != palettesJson.end(); ++it) {
+			const core::String name = it.key();
 			palette::Palette palette;
 			palette.setName(name);
-			const nlohmann::json &paletteJson = paletteJsonEntry.value();
-			if (paletteJson.is_array()) {
+			json::Json paletteJson = *it;
+			if (paletteJson.isArray()) {
 				int idx = 0;
-				for (const auto &paletteColorJson : paletteJson) {
-					if (paletteColorJson.find("rgba") == paletteColorJson.end()) {
+				for (auto cIt = paletteJson.begin(); cIt != paletteJson.end(); ++cIt) {
+					json::Json paletteColorJson = *cIt;
+					if (!paletteColorJson.contains("rgba")) {
 						Log::error("RGBA not found in json file");
 						return false;
 					}
-					const std::string &rgba = paletteColorJson["rgba"];
+					const core::String rgba = paletteColorJson.get("rgba").str();
 					color::RGBA colorRGBA = color::fromHex(rgba.c_str());
 					palette.setColor(idx, colorRGBA);
 					++idx;
@@ -49,25 +50,24 @@ static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
 		}
 	}
 
-	if (metadataJson.find("properties") != metadataJson.end()) {
-		const nlohmann::json &propertiesJson = metadataJson["properties"];
-		for (const auto &propertyJson : propertiesJson.items()) {
-			const core::String &name = propertyJson.key().c_str();
-			const nlohmann::json &valueJson = propertyJson.value();
-			if (valueJson.is_string()) {
-				const std::string &valueStr = valueJson;
-				metadata.properties.emplace(name, valueStr.c_str());
+	if (metadataJson.contains("properties")) {
+		json::Json propertiesJson = metadataJson.get("properties");
+		for (auto it = propertiesJson.begin(); it != propertiesJson.end(); ++it) {
+			const core::String name = it.key();
+			json::Json valueJson = *it;
+			if (valueJson.isString()) {
+				metadata.properties.put(name, valueJson.str());
 			}
 		}
 	}
 
-	if (metadataJson.find("points") != metadataJson.end()) {
-		const nlohmann::json &pointsJson = metadataJson["points"];
-		for (const auto &pointJson : pointsJson.items()) {
-			const core::String &name = pointJson.key().c_str();
-			const nlohmann::json &valueJson = pointJson.value();
-			if (valueJson.is_array() && valueJson.size() == 3) {
-				const glm::vec3 pointPos(valueJson[0], valueJson[2], valueJson[1]);
+	if (metadataJson.contains("points")) {
+		json::Json pointsJson = metadataJson.get("points");
+		for (auto it = pointsJson.begin(); it != pointsJson.end(); ++it) {
+			const core::String name = it.key();
+			json::Json valueJson = *it;
+			if (valueJson.isArray() && valueJson.size() == 3) {
+				const glm::vec3 pointPos(valueJson.get(0).floatVal(), valueJson.get(2).floatVal(), valueJson.get(1).floatVal());
 				metadata.points.emplace_back(name, pointPos);
 			} else {
 				Log::error("Invalid format for vec3 property: %s", name.c_str());
@@ -78,15 +78,15 @@ static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
 }
 
 bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &jsonStr) {
-	nlohmann::json json = nlohmann::json::parse(jsonStr.c_str());
-	if (json.is_null()) {
+	json::Json json = json::Json::parse(jsonStr.c_str());
+	if (json.isNull()) {
 		Log::error("Failed to parse json file");
 		return false;
 	}
 
-	std::string version = "0.0";
-	if (json.find("version") != json.end()) {
-		version = json["version"];
+	core::String version = "0.0";
+	if (json.contains("version")) {
+		version = json.get("version").str();
 	}
 	scenegraph::SceneGraphNode &root = sceneGraph.node(0);
 	root.setProperty("version", version.c_str());
@@ -97,56 +97,56 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 		return false;
 	}
 
-	if (json.find("models") == json.end()) {
+	if (!json.contains("models")) {
 		Log::error("Models not found in json file");
 		return false;
 	}
 
-	const nlohmann::json &modelsJson = json["models"];
-	for (const auto &modelJsonEntry : modelsJson.items()) {
-		const core::String &name = modelJsonEntry.key().c_str();
-		const nlohmann::json &modelJson = modelJsonEntry.value();
-		if (modelJson.find("geometry") == modelJson.end()) {
+	json::Json modelsJson = json.get("models");
+	for (auto it = modelsJson.begin(); it != modelsJson.end(); ++it) {
+		const core::String name = it.key();
+		json::Json modelJson = *it;
+		if (!modelJson.contains("geometry")) {
 			Log::error("Geometry not found in json file");
 			return false;
 		}
 
 		Metadata metadata;
-		if (modelJson.find("metadata") != modelJson.end()) {
+		if (modelJson.contains("metadata")) {
 			if (!loadMetadataJson(modelJson, metadata)) {
 				Log::error("Failed to load metadata for model");
 				return false;
 			}
 		}
 
-		const nlohmann::json &geometryJson = modelJson["geometry"];
-		if (geometryJson.find("size") == geometryJson.end()) {
+		json::Json geometryJson = modelJson.get("geometry");
+		if (!geometryJson.contains("size")) {
 			Log::error("Size not found in json file");
 			return false;
 		}
 
-		const nlohmann::json &sizeJson = geometryJson["size"];
+		json::Json sizeJson = geometryJson.get("size");
 		if (sizeJson.size() != 3) {
 			Log::error("Size must have 3 elements");
 			return false;
 		}
 
-		const int width = sizeJson[0];
-		const int depth = sizeJson[1];
-		const int height = sizeJson[2];
+		const int width = sizeJson.get(0).intVal();
+		const int depth = sizeJson.get(1).intVal();
+		const int height = sizeJson.get(2).intVal();
 		Log::debug("Model: '%s', size: %dx%dx%d", name.c_str(), width, height, depth);
 
-		if (geometryJson.find("z85") == geometryJson.end()) {
+		if (!geometryJson.contains("z85")) {
 			Log::error("Z85 not found in json file");
 			return false;
 		}
 
-		const std::string &z85 = geometryJson["z85"];
+		const core::String z85 = geometryJson.get("z85").str();
 		if (z85.empty()) {
 			Log::error("Empty z85 encoded data");
 			return false;
 		}
-		io::MemoryReadStream z85InStream(z85.data(), z85.size());
+		io::MemoryReadStream z85InStream(z85.c_str(), z85.size());
 
 		io::BufferedReadWriteStream z85Stream(z85.size());
 		if (!io::Z85::decode(z85Stream, z85InStream)) {
@@ -179,70 +179,79 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 	return true;
 }
 
-static bool writeMetadataJson(nlohmann::json &json, const scenegraph::SceneGraph &sceneGraph,
+static bool writeMetadataJson(json::Json &json, const scenegraph::SceneGraph &sceneGraph,
 							  const scenegraph::SceneGraphNode &node) {
 	Metadata metadata = createMetadata(sceneGraph, node);
-	nlohmann::json &metadataJson = json["metadata"];
-	nlohmann::json &palettesJson = metadataJson["palettes"];
+
+	json::Json metadataJson = json::Json::object();
+
+	json::Json palettesJson = json::Json::object();
 	for (const auto &entry : metadata.palettes) {
 		const core::String &name = entry->first;
 		const palette::Palette &palette = entry->second;
-		nlohmann::json &paletteJson = palettesJson[name.c_str()];
-		nlohmann::json &colorsJson = paletteJson["colors"];
+		json::Json colorsJson = json::Json::array();
 		for (int i = 0; i < (int)palette.size(); ++i) {
 			const color::RGBA &color = palette.color(i);
-			nlohmann::json &colorJson = colorsJson[i];
-			colorJson["rgba"] = color::toHex(color);
+			json::Json colorJson = json::Json::object();
+			colorJson.set("rgba", color::toHex(color));
+			colorsJson.push_back(colorJson);
 		}
+		json::Json paletteJson = json::Json::object();
+		paletteJson.set("colors", colorsJson);
+		palettesJson.set(name.c_str(), paletteJson);
 	}
+	metadataJson.set("palettes", palettesJson);
 
-	nlohmann::json &propertiesJson = metadataJson["properties"];
+	json::Json propertiesJson = json::Json::object();
 	for (const auto &entry : metadata.properties) {
 		const core::String &name = entry->first;
 		const core::String &value = entry->second;
-		propertiesJson[name.c_str()] = value.c_str();
+		propertiesJson.set(name.c_str(), value.c_str());
 	}
+	metadataJson.set("properties", propertiesJson);
 
-	nlohmann::json &pointsJson = metadataJson["points"];
+	json::Json pointsJson = json::Json::object();
 	for (const PointNode &pointNode : metadata.points) {
-		nlohmann::json &pointJson = pointsJson[pointNode.name.c_str()];
-		pointJson.push_back(pointNode.pointPos.x);
-		pointJson.push_back(pointNode.pointPos.z);
-		pointJson.push_back(pointNode.pointPos.y);
+		json::Json pointArr = json::Json::array();
+		pointArr.push_back((double)pointNode.pointPos.x);
+		pointArr.push_back((double)pointNode.pointPos.z);
+		pointArr.push_back((double)pointNode.pointPos.y);
+		pointsJson.set(pointNode.name.c_str(), pointArr);
 	}
+	metadataJson.set("points", pointsJson);
 
+	json.set("metadata", metadataJson);
 	return true;
 }
 
 bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
-	nlohmann::json json;
-	json["version"] = "0.0";
+	json::Json json = json::Json::object();
+	json.set("version", "0.0");
 
 	writeMetadataJson(json, sceneGraph, sceneGraph.root());
 
-	nlohmann::json &modelsJson = json["models"];
+	json::Json modelsJson = json::Json::object();
 	for (const auto &entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->value;
 		if (!node.isAnyModelNode()) {
 			continue;
 		}
 		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
-		nlohmann::json &modelJson = modelsJson[node.name().c_str()];
 
-		nlohmann::json &metadataJson = modelJson["metadata"];
-		if (!writeMetadataJson(metadataJson, sceneGraph, node)) {
-			Log::error("Failed to write metadata");
-			return false;
-		}
+		json::Json modelJson = json::Json::object();
 
-		nlohmann::json &geometryJson = modelJson["geometry"];
+		// Write per-model metadata
+		writeMetadataJson(modelJson, sceneGraph, node);
 
-		nlohmann::json &sizeJson = geometryJson["size"];
+		json::Json geometryJson = json::Json::object();
+
+		json::Json sizeArr = json::Json::array();
 		const voxel::Region &region = volume->region();
 		const glm::ivec3 &dim = region.getDimensionsInVoxels();
-		sizeJson.push_back(dim.x);
-		sizeJson.push_back(dim.z);
-		sizeJson.push_back(dim.y);
+		sizeArr.push_back(dim.x);
+		sizeArr.push_back(dim.z);
+		sizeArr.push_back(dim.y);
+		geometryJson.set("size", sizeArr);
 
 		io::BufferedReadWriteStream wrapper;
 		io::ZipWriteStream zipStream(wrapper, 6, true);
@@ -259,10 +268,14 @@ bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream 
 			return false;
 		}
 		const core::String &z85 = io::Z85::encode(wrapper);
-		geometryJson["z85"] = z85.c_str();
-	}
+		geometryJson.set("z85", z85.c_str());
 
-	const auto &jsonString = json.dump();
+		modelJson.set("geometry", geometryJson);
+		modelsJson.set(node.name().c_str(), modelJson);
+	}
+	json.set("models", modelsJson);
+
+	const core::String &jsonString = json.dump();
 	if (!stream.writeString(jsonString.c_str(), false)) {
 		Log::error("Failed to write json file");
 		return false;

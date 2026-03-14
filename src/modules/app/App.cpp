@@ -251,6 +251,14 @@ void App::threadsDump() const {
 	_threadPool->dump();
 }
 
+const core::ThreadPoolPtr &App::threadPool() const {
+	return _threadPool;
+}
+
+int App::threads() const {
+	return _threadPool->size();
+}
+
 void App::init(const core::String &organisation, const core::String &appname) {
 	_organisation = organisation;
 	_appname = appname;

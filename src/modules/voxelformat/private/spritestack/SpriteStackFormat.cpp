@@ -47,8 +47,8 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 	}
 	core::String jsonString;
 	jsonStream->readString(jsonStream->remaining(), jsonString);
-	nlohmann::json json = nlohmann::json::parse(jsonString, nullptr, false, true);
-	if (json.is_discarded()) {
+	json::Json json = json::Json::parse(jsonString);
+	if (!json.isValid()) {
 		Log::error("Failed to parse JSON: %s", jsonString.c_str());
 		return false;
 	}
@@ -63,20 +63,20 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 		core::DynamicArray<int> trims;	 // for optimized format
 	} info;
 
-	if (json.contains("slices") && json["slices"].is_number_integer()) {
-		info.slices = json["slices"].get<int>();
+	if (json.contains("slices") && json.get("slices").isNumberInteger()) {
+		info.slices = json.get("slices").intVal();
 	}
-	if (json.contains("frames") && json["frames"].is_number_integer()) {
-		info.frames = json["frames"].get<int>();
+	if (json.contains("frames") && json.get("frames").isNumberInteger()) {
+		info.frames = json.get("frames").intVal();
 	}
-	if (json.contains("width") && json["width"].is_number_integer()) {
-		info.width = json["width"].get<int>();
+	if (json.contains("width") && json.get("width").isNumberInteger()) {
+		info.width = json.get("width").intVal();
 	}
-	if (json.contains("height") && json["height"].is_number_integer()) {
-		info.height = json["height"].get<int>();
+	if (json.contains("height") && json.get("height").isNumberInteger()) {
+		info.height = json.get("height").intVal();
 	}
-	if (json.contains("angles") && json["angles"].is_number_integer()) {
-		info.angles = json["angles"].get<int>();
+	if (json.contains("angles") && json.get("angles").isNumberInteger()) {
+		info.angles = json.get("angles").intVal();
 		isSpritesheetFormat = true;
 		// For spritesheet format, angles defines the number of slices
 		if (info.slices == 0) {
@@ -85,19 +85,19 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 	}
 
 	// Handle optimized spritesheet format with regions and trims
-	if (json.contains("regions") && json["regions"].is_array()) {
-		const auto &regions = json["regions"];
+	if (json.contains("regions") && json.get("regions").isArray()) {
+		const auto &regions = json.get("regions");
 		for (const auto &val : regions) {
-			if (val.is_number_integer()) {
-				info.regions.push_back(val.get<int>());
+			if (val.isNumberInteger()) {
+				info.regions.push_back(val.intVal());
 			}
 		}
 	}
-	if (json.contains("trims") && json["trims"].is_array()) {
-		const auto &trims = json["trims"];
+	if (json.contains("trims") && json.get("trims").isArray()) {
+		const auto &trims = json.get("trims");
 		for (const auto &val : trims) {
-			if (val.is_number_integer()) {
-				info.trims.push_back(val.get<int>());
+			if (val.isNumberInteger()) {
+				info.trims.push_back(val.intVal());
 			}
 		}
 	}
@@ -305,11 +305,11 @@ bool SpriteStackFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, con
 			return false;
 		}
 
-		nlohmann::json json;
-		json["slices"] = slices;
-		json["frames"] = 1;
-		json["width"] = width;
-		json["height"] = height;
+		json::Json json = json::Json::object();
+		json.set("slices", slices);
+		json.set("frames", 1);
+		json.set("width", width);
+		json.set("height", height);
 
 		const core::String jsonString(json.dump(2).c_str());
 		{

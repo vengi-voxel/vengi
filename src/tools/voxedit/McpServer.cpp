@@ -77,7 +77,7 @@ void McpServer::usage() const {
 
 	for (const auto &toolPair : _toolRegistry.tools()) {
 		const voxedit::Tool *tool = toolPair->second;
-		Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema()["description"].get<std::string>().c_str());
+		Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema().strVal("description", "").c_str());
 	}
 
 	usageFooter();
@@ -100,7 +100,7 @@ app::AppState McpServer::onConstruct() {
 		.setHandler([this](const command::CommandArgs &args) {
 			for (const auto &toolPair : _toolRegistry.tools()) {
 				const voxedit::Tool *tool = toolPair->second;
-				Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema()["description"].get<std::string>().c_str());
+				Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema().strVal("description", "").c_str());
 			}
 		});
 
@@ -252,14 +252,14 @@ bool McpServer::handleStdin() {
 	}
 
 	const char *line = lineStr.c_str();
-	if (!nlohmann::json::accept(line)) {
-		sendError(nullptr, PARSE_ERROR, "Parse error");
+	if (!json::Json::accept(line)) {
+		sendError(json::Json(), PARSE_ERROR, "Parse error");
 		return true;
 	}
 
-	const nlohmann::json &request = nlohmann::json::parse(line);
-	if (request.is_discarded()) {
-		sendError(nullptr, PARSE_ERROR, "Parse error");
+	json::Json request = json::Json::parse(line);
+	if (!request.isValid()) {
+		sendError(json::Json(), PARSE_ERROR, "Parse error");
 		return true;
 	}
 
@@ -267,19 +267,19 @@ bool McpServer::handleStdin() {
 	return true;
 }
 
-void McpServer::handleRequest(const nlohmann::json &request) {
-	auto id = request.value("id", nlohmann::json());
-	if (!request.contains("jsonrpc") || request["jsonrpc"] != "2.0") {
+void McpServer::handleRequest(const json::Json &request) {
+	json::Json id = request.get("id");
+	if (!request.contains("jsonrpc") || request.get("jsonrpc").str() != "2.0") {
 		sendError(id, INVALID_REQUEST, "Invalid JSON-RPC version");
 		return;
 	}
 
-	if (!request.contains("method") || !request["method"].is_string()) {
+	if (!request.contains("method") || !request.get("method").isString()) {
 		sendError(id, INVALID_REQUEST, "Missing method");
 		return;
 	}
 
-	const std::string &method = request["method"];
+	const core::String method = request.get("method").str();
 	Log::debug("Received MCP request for method %s", method.c_str());
 
 	if (method == "initialize") {
@@ -298,110 +298,124 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 	} else if (method == "tools/call") {
 		handleToolsCall(request);
 	} else if (method == "ping") {
-		nlohmann::json response;
-		response["jsonrpc"] = "2.0";
-		response["id"] = id;
-		response["result"] = {};
+		json::Json response = json::Json::object();
+		response.set("jsonrpc", "2.0");
+		response.set("id", id);
+		response.set("result", json::Json::object());
 		sendResponse(response);
 	} else {
 		sendError(id, METHOD_NOT_FOUND, "Method not found");
 	}
 }
 
-void McpServer::handleInitialize(const nlohmann::json &request) {
+void McpServer::handleInitialize(const json::Json &request) {
 	Log::info("Received initialize request");
-	if (request.contains("params") && request["params"].contains("clientInfo")) {
-		const auto &clientInfo = request["params"]["clientInfo"];
-		const core::String &clientName = clientInfo.value("name", "unknown").c_str();
-		const core::String &clientVersion = clientInfo.value("version", "unknown").c_str();
+	if (request.contains("params") && request.get("params").contains("clientInfo")) {
+		const json::Json clientInfo = request.get("params").get("clientInfo");
+		const core::String clientName = clientInfo.strVal("name", "unknown");
+		const core::String clientVersion = clientInfo.strVal("version", "unknown");
 		Log::info("Client: %s (version %s)", clientName.c_str(), clientVersion.c_str());
 	}
 	_initialized = true;
 
-	nlohmann::json result;
-	result["protocolVersion"] = "2024-11-05";
-	result["capabilities"]["tools"]["listChanged"] = true;
-	result["serverInfo"]["name"] = appname().c_str();
-	result["serverInfo"]["version"] = PROJECT_VERSION;
+	json::Json result = json::Json::object();
+	result.set("protocolVersion", "2024-11-05");
 
-	nlohmann::json response;
-	response["jsonrpc"] = "2.0";
-	response["id"] = request.value("id", nlohmann::json());
-	response["result"] = core::move(result);
+	json::Json capabilities = json::Json::object();
+	json::Json tools = json::Json::object();
+	tools.set("listChanged", true);
+	capabilities.set("tools", tools);
+	result.set("capabilities", capabilities);
+
+	json::Json serverInfo = json::Json::object();
+	serverInfo.set("name", appname().c_str());
+	serverInfo.set("version", PROJECT_VERSION);
+	result.set("serverInfo", serverInfo);
+
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", request.get("id"));
+	response.set("result", result);
 	sendResponse(response);
 }
 
-void McpServer::handleToolsList(const nlohmann::json &request) {
+void McpServer::handleToolsList(const json::Json &request) {
 	Log::info("Received tools list request");
-	nlohmann::json tools = nlohmann::json::array();
-	_toolRegistry.addRegisteredTools(tools);
-	nlohmann::json result;
-	result["tools"] = core::move(tools);
+	json::Json toolsArr = json::Json::array();
+	_toolRegistry.addRegisteredTools(toolsArr);
+	json::Json result = json::Json::object();
+	result.set("tools", toolsArr);
 
-	nlohmann::json response;
-	response["jsonrpc"] = "2.0";
-	response["id"] = request.value("id", nlohmann::json());
-	response["result"] = core::move(result);
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", request.get("id"));
+	response.set("result", result);
 	sendResponse(response);
 }
 
-void McpServer::handleToolsCall(const nlohmann::json &request) {
-	if (!request.contains("params") || !request["params"].contains("name")) {
-		sendError(request.value("id", nlohmann::json()), INVALID_PARAMS, "Missing tool name");
+void McpServer::handleToolsCall(const json::Json &request) {
+	if (!request.contains("params") || !request.get("params").contains("name")) {
+		sendError(request.get("id"), INVALID_PARAMS, "Missing tool name");
 		return;
 	}
 
-	const std::string &toolName = request["params"]["name"];
-	const auto &args = request["params"].value("arguments", nlohmann::json::object());
-	const nlohmann::json &id = request["id"];
+	const core::String toolName = request.get("params").get("name").str();
+	json::Json args = request.get("params").get("arguments");
+	if (!args.isValid()) {
+		args = json::Json::object();
+	}
+	const json::Json id = request.get("id");
 
 	Log::info("Received tool call for %s", toolName.c_str());
 
 	voxedit::ToolContext ctx;
 	ctx.sceneMgr = _sceneMgr.get();
 	ctx.result = sendToolResult;
-	if (!_toolRegistry.call(toolName.c_str(), id, args, ctx)) {
+	if (!_toolRegistry.call(toolName, id, args, ctx)) {
 		sendError(id, INVALID_PARAMS, "Unknown tool");
 	}
 }
 
-bool McpServer::sendToolResult(const nlohmann::json &id, const core::String &text, bool isError) {
+bool McpServer::sendToolResult(const json::Json &id, const core::String &text, bool isError) {
 	if (isError) {
 		Log::warn("Tool result error: %s", text.c_str());
 	}
-	nlohmann::json result;
-	result["content"] = nlohmann::json::array();
-	nlohmann::json content;
-	content["type"] = "text";
-	content["text"] = text.c_str();
-	result["content"].push_back(content);
+	json::Json result = json::Json::object();
+	json::Json contentArr = json::Json::array();
+	json::Json content = json::Json::object();
+	content.set("type", "text");
+	content.set("text", text.c_str());
+	contentArr.push(content);
+	result.set("content", contentArr);
 	if (isError) {
-		result["isError"] = true;
+		result.set("isError", true);
 	}
 
-	nlohmann::json response;
-	response["jsonrpc"] = "2.0";
-	response["id"] = id;
-	response["result"] = core::move(result);
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", id);
+	response.set("result", result);
 	sendResponse(response);
 	return !isError;
 }
 
-void McpServer::sendResponse(const nlohmann::json &response) {
-	const std::string out = response.dump();
+void McpServer::sendResponse(const json::Json &response) {
+	const core::String out = response.dump();
 	Log::debug("Sending MCP response: %s", out.c_str());
-	core_assert(out.find('\n') == std::string::npos); // ensure single line output
+	core_assert(out.find("\n") == core::String::npos);
 	fprintf(stdout, "%s\n", out.c_str());
 	fflush(stdout);
 }
 
-void McpServer::sendError(const nlohmann::json &id, int code, const core::String &message) {
+void McpServer::sendError(const json::Json &id, int code, const core::String &message) {
 	Log::warn("Sending error %d: %s", code, message.c_str());
-	nlohmann::json response;
-	response["jsonrpc"] = "2.0";
-	response["id"] = id;
-	response["error"]["code"] = code;
-	response["error"]["message"] = message.c_str();
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", id);
+	json::Json error = json::Json::object();
+	error.set("code", code);
+	error.set("message", message.c_str());
+	response.set("error", error);
 	sendResponse(response);
 }
 

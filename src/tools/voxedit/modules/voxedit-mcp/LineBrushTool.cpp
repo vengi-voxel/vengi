@@ -13,31 +13,35 @@
 namespace voxedit {
 
 LineBrushTool::LineBrushTool() : BrushTool("voxedit_line_brush") {
-	_tool["description"] = "Draw a straight line of voxels between two positions";
+	_tool.set("description", "Draw a straight line of voxels between two positions");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "start", "end"});
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("start");
+	_requiredArr.push("end");
+	inputSchema.set("required", _requiredArr);
 
-	nlohmann::json properties;
-	properties["nodeUUID"] = propUUID();
-	properties["start"] = propPosition("The starting position of the line");
-	properties["end"] = propPosition("The ending position of the line");
-	properties["colorIndex"] = propColorIndex();
-	properties["modifierType"] = propModifierType();
+	json::Json properties = json::Json::object();
+	properties.set("nodeUUID", propUUID());
+	properties.set("start", propPosition("The starting position of the line"));
+	properties.set("end", propPosition("The ending position of the line"));
+	properties.set("colorIndex", propColorIndex());
+	properties.set("modifierType", propModifierType());
 
 	// Continuous mode property
-	nlohmann::json continuousProp;
-	continuousProp["type"] = "boolean";
-	continuousProp["description"] = "If true, the end position becomes the start of the next line segment";
-	continuousProp["default"] = false;
-	properties["continuous"] = continuousProp;
+	json::Json continuousProp = json::Json::object();
+	continuousProp.set("type", "boolean");
+	continuousProp.set("description", "If true, the end position becomes the start of the next line segment");
+	continuousProp.set("default", false);
+	properties.set("continuous", continuousProp);
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool LineBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -50,16 +54,16 @@ bool LineBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args
 		return ctx.result(id, "Missing end position argument", true);
 	}
 
-	const nlohmann::json &startPos = args["start"];
-	const nlohmann::json &endPos = args["end"];
+	json::Json startPos = args.get("start");
+	json::Json endPos = args.get("end");
 
-	const glm::ivec3 start(startPos.value("x", 0), startPos.value("y", 0), startPos.value("z", 0));
-	const glm::ivec3 end(endPos.value("x", 0), endPos.value("y", 0), endPos.value("z", 0));
+	const glm::ivec3 start(startPos.intVal("x", 0), startPos.intVal("y", 0), startPos.intVal("z", 0));
+	const glm::ivec3 end(endPos.intVal("x", 0), endPos.intVal("y", 0), endPos.intVal("z", 0));
 
-	const int colorIndex = args.value("colorIndex", 0);
-	const core::String modifierTypeStr = args.value("modifierType", "place").c_str();
+	const int colorIndex = args.intVal("colorIndex", 0);
+	const core::String modifierTypeStr = args.strVal("modifierType", "place").c_str();
 	const ModifierType modifierType = parseModifierType(modifierTypeStr);
-	const bool continuous = args.value("continuous", false);
+	const bool continuous = args.boolVal("continuous", false);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
