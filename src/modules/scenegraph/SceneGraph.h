@@ -13,18 +13,14 @@
 #include "core/Common.h"
 #include "core/DirtyState.h"
 #include "core/Trace.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicParallelMap.h"
 #include "core/concurrent/Lock.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
-#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/FrameTransformCache.h"
 #include "scenegraph/Physics.h"
-#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphListener.h"
-#include "voxel/Region.h"
 
 namespace voxel {
 class RawVolume;

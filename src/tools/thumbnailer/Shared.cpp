@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "io/Filesystem.h"
+#include "voxel/RawVolume.h"
 #include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelformat/Format.h"

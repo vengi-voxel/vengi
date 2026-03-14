@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "io/StreamUtil.h"
+#include "io/StreamUtilQuat.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
