@@ -3,8 +3,12 @@
  */
 
 #include "Shared.h"
+#include "app/App.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"

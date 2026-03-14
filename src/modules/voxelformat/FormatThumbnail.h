@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "image/Image.h"
+#include "image/ImageFwd.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

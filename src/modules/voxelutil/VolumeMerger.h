@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "app/Async.h"
+#include "app/ForParallel.h"
 #include "core/collection/Buffer.h"
 #include "core/concurrent/Atomic.h"
 #include "palette/PaletteLookup.h"

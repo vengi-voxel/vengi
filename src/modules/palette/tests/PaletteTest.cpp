@@ -8,6 +8,7 @@
 #include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
 #include "core/Enum.h"
+#include "image/Image.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
 #include "util/VarUtil.h"
