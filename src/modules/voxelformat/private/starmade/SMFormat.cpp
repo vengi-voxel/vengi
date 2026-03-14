@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxel/RawVolume.h"
 #include "SMFormat.h"
 #include "core/ArrayLength.h"
 #include "core/Bits.h"

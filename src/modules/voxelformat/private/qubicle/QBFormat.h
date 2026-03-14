@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxelformat/Format.h"
+#include "voxel/Voxel.h"
 
 namespace palette {
 class PaletteLookup;

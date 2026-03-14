@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "io/Archive.h"
 #include "io/StreamUtil.h"
 #include "io/ZipReadStream.h"

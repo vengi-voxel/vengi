@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>

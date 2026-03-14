@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "image/Image.h"
 #include "VXCFormat.h"
 #include "VXCArchive.h"
 #include "VXRFormat.h"

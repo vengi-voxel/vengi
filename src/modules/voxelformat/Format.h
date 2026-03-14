@@ -9,12 +9,8 @@
 #pragma once
 
 #include "palette/RGBABuffer.h"
-#include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
-#include "io/Stream.h"
-#include "palette/Palette.h"
-#include "voxel/RawVolume.h"
 #include "voxelformat/FormatThumbnail.h"
 #include <glm/fwd.hpp>
 
@@ -24,6 +20,8 @@ class Palette;
 
 namespace voxel {
 class Mesh;
+class RawVolume;
+class Region;
 } // namespace voxel
 
 namespace scenegraph {

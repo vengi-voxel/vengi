@@ -6,8 +6,13 @@
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include <glm/common.hpp>
 #include <glm/vector_relational.hpp>
 #include <glm/mat4x4.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/type_aligned.hpp>
 #include <stdint.h>
 #include <limits.h>
 

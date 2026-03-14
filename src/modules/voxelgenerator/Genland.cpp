@@ -28,6 +28,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include <glm/ext/scalar_constants.hpp>
 #include "voxel/Region.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Voxel.h"

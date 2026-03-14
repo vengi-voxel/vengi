@@ -9,6 +9,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
 #include <stdint.h>
 
 namespace voxel {

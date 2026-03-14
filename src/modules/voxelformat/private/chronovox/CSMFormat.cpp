@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
 
