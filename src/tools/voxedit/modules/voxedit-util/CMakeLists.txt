@@ -47,7 +47,7 @@ set(SRCS
 	network/protocol/NodeRenamedMessage.h
 	network/protocol/PingMessage.h
 	network/protocol/SceneGraphAnimationMessage.h
-	network/protocol/SceneStateMessage.h
+	network/protocol/SceneStateMessage.h network/protocol/SceneStateMessage.cpp
 	network/protocol/SceneStateRequestMessage.h
 	network/protocol/VoxelModificationMessage.h
 	network/protocol/LuaScriptsRequestMessage.h

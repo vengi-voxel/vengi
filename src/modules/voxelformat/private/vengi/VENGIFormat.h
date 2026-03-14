@@ -5,8 +5,10 @@
 #pragma once
 
 #include "voxelformat/Format.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "voxel/RawVolume.h"
+
+namespace scenegraph {
+class SceneGraphKeyFrame;
+}
 
 namespace voxelformat {
 

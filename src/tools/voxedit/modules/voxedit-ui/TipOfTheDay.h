@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app/I18N.h"
+#include "app/I18NMarkers.h"
 
 static const char *tips[]{
 	// clang-format off

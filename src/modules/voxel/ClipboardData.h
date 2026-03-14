@@ -2,10 +2,15 @@
  * @file
  */
 
-#include "palette/Palette.h"
-#include "voxel/RawVolume.h"
+#pragma once
+
+namespace palette {
+class Palette;
+}
 
 namespace voxel {
+
+class RawVolume;
 
 class ClipboardData {
 private:

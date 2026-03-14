@@ -5,6 +5,9 @@
 #pragma once
 
 #include "voxel/ClipboardData.h"
+#include "voxel/Region.h"
+
+#include <glm/fwd.hpp>
 
 namespace scenegraph {
 class SceneGraphNode;
