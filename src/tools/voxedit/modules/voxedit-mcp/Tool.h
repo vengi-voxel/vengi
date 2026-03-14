@@ -5,8 +5,12 @@
 #pragma once
 
 #include "core/String.h"
-#include "network/ProtocolMessage.h"
+#include "core/UUID.h"
 #include "json/JSON.h"
+
+namespace network {
+class ProtocolMessage;
+}
 
 namespace voxedit {
 
@@ -14,27 +18,27 @@ class SceneManager;
 
 struct ToolContext {
 	SceneManager *sceneMgr = nullptr;
-	bool (*result)(const nlohmann::json &id, const core::String &text, bool isError);
+	bool (*result)(const json::Json &id, const core::String &text, bool isError);
 };
 
 class Tool {
 protected:
 	const core::String _name;
-	nlohmann::json _tool;
+	json::Json _tool;
 
 	bool sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg);
-	bool sendCommand(ToolContext &ctx, const core::String &cmd, const nlohmann::json &id);
+	bool sendCommand(ToolContext &ctx, const core::String &cmd, const json::Json &id);
 	const core::String &rconPassword() const;
 
-	core::UUID argsUUID(const nlohmann::json &args) const;
-	core::UUID argsParentUUID(const nlohmann::json &args) const;
-	core::UUID argsReferenceUUID(const nlohmann::json &args) const;
+	core::UUID argsUUID(const json::Json &args) const;
+	core::UUID argsParentUUID(const json::Json &args) const;
+	core::UUID argsReferenceUUID(const json::Json &args) const;
 
-	static nlohmann::json propVoxels();
-	static nlohmann::json propUUID();
-	static nlohmann::json propParentUUID();
-	static nlohmann::json propReferenceUUID();
-	static nlohmann::json propTypeDescription(const core::String &type, const core::String &description);
+	static json::Json propVoxels();
+	static json::Json propUUID();
+	static json::Json propParentUUID();
+	static json::Json propReferenceUUID();
+	static json::Json propTypeDescription(const core::String &type, const core::String &description);
 
 public:
 	/**
@@ -51,14 +55,14 @@ public:
 	/**
 	 * @brief Returns the input schema for this tool - created in the ctor
 	 */
-	inline const nlohmann::json &inputSchema() const {
+	inline const json::Json &inputSchema() const {
 		return _tool;
 	}
 
 	/**
 	 * @brief Enery end point of this function must call @c ctx.result()
 	 */
-	virtual bool execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) = 0;
+	virtual bool execute(const json::Json &id, const json::Json &args, ToolContext &ctx) = 0;
 };
 
 } // namespace voxedit

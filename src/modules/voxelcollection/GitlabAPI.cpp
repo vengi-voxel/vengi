@@ -15,12 +15,12 @@
 namespace voxelcollection {
 namespace gitlab {
 
-static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
 	const core::String json = http::HttpCacheStream::string(archive, file, url);
 	if (json.empty()) {
 		return {};
 	}
-	return nlohmann::json::parse(json, nullptr, false, true);
+	return json::Json::parse(json);
 }
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
@@ -58,20 +58,20 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		core::String file = core::String::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
 		core::string::replaceAllChars(file, '/', '-');
 		const auto &json = cachedJson(archive, file, url);
-		if (!json.is_array()) {
+		if (!json.isArray()) {
 			const core::String str = json.dump().c_str();
 			Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 			return entries;
 		}
 		Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)json.size());
 		for (const auto &entry : json) {
-			const auto type = entry.value("type", "");
+			const auto type = entry.strVal("type", "");
 			if (type != "blob") {
 				Log::debug("No blob entry, but %s", type.c_str());
 				continue;
 			}
 			TreeEntry treeEntry;
-			treeEntry.path = entry.value("path", "").c_str();
+			treeEntry.path = entry.strVal("path", "").c_str();
 			if (!path.empty() && !core::string::startsWith(treeEntry.path, path)) {
 				Log::debug("Ignore entry %s - not in path %s", treeEntry.path.c_str(), path.c_str());
 				continue;

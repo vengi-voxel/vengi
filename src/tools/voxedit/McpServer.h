@@ -65,14 +65,14 @@ private:
 
 	/** @brief Read JSON-RPC from stdin - only line at a time */
 	bool handleStdin();
-	void handleRequest(const nlohmann::json &request);
-	void handleInitialize(const nlohmann::json &request);
-	void handleToolsList(const nlohmann::json &request);
-	void handleToolsCall(const nlohmann::json &request);
+	void handleRequest(const json::Json &request);
+	void handleInitialize(const json::Json &request);
+	void handleToolsList(const json::Json &request);
+	void handleToolsCall(const json::Json &request);
 
-	static void sendResponse(const nlohmann::json &response);
-	static void sendError(const nlohmann::json &id, int code, const core::String &message);
-	static bool sendToolResult(const nlohmann::json &id, const core::String &text, bool isError = false);
+	static void sendResponse(const json::Json &response);
+	static void sendError(const json::Json &id, int code, const core::String &message);
+	static bool sendToolResult(const json::Json &id, const core::String &text, bool isError = false);
 
 public:
 	McpServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);

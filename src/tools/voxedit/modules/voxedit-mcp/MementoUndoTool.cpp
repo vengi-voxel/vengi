@@ -8,19 +8,19 @@
 namespace voxedit {
 
 MementoUndoTool::MementoUndoTool() : Tool("voxedit_memento_undo") {
-	_tool["description"] = "Undo the last action (optional n argument)";
+	_tool.set("description", "Undo the last action (optional n argument)");
 
-	nlohmann::json nprop = propTypeDescription("integer", "Number of undo steps");
-	nprop["default"] = 1;
+	json::Json nprop = propTypeDescription("integer", "Number of undo steps");
+	nprop.set("default", 1);
 
-	nlohmann::json in;
-	in["type"] = "object";
-	in["properties"]["n"] = core::move(nprop);
-	_tool["inputSchema"] = core::move(in);
+	json::Json in = json::Json::object();
+	in.set("type", "object");
+	in.get("properties").set("n", core::move(nprop));
+	_tool.set("inputSchema", core::move(in));
 }
 
-bool MementoUndoTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
-	const int n = args.value("n", 1);
+bool MementoUndoTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
+	const int n = args.intVal("n", 1);
 	if (!ctx.sceneMgr->undo(n)) {
 		return ctx.result(id, "Failed to undo", false);
 	}

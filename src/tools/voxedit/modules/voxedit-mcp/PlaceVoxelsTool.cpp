@@ -11,17 +11,20 @@
 namespace voxedit {
 
 PlaceVoxelsTool::PlaceVoxelsTool() : Tool("voxedit_place_voxels") {
-	_tool["description"] = "Place voxels at specified positions in a node.";
+	_tool.set("description", "Place voxels at specified positions in a node.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
-	inputSchema["properties"]["voxels"] = propVoxels();
-	inputSchema["properties"]["nodeUUID"] = propUUID();
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("voxels");
+	_requiredArr.push("nodeUUID");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("voxels", propVoxels());
+	inputSchema.get("properties").set("nodeUUID", propUUID());
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool PlaceVoxelsTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -30,8 +33,8 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 	if (!args.contains("voxels")) {
 		return ctx.result(id, "Missing voxels argument", true);
 	}
-	const nlohmann::json &voxelsArray = args["voxels"];
-	if (!voxelsArray.is_array() || voxelsArray.empty()) {
+	json::Json voxelsArray = args.get("voxels");
+	if (!voxelsArray.isArray() || voxelsArray.empty()) {
 		return ctx.result(id, "voxels must be a non-empty array", true);
 	}
 
@@ -47,10 +50,10 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 
 	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 	for (const auto &voxelData : voxelsArray) {
-		const int x = voxelData["x"].get<int>();
-		const int y = voxelData["y"].get<int>();
-		const int z = voxelData["z"].get<int>();
-		const int colorIndex = voxelData.value("idx", 1);
+		const int x = voxelData.get("x").intVal();
+		const int y = voxelData.get("y").intVal();
+		const int z = voxelData.get("z").intVal();
+		const int colorIndex = voxelData.intVal("idx", 1);
 		if (!wrapper.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex))) {
 			return ctx.result(id, core::String::format("Failed to set voxel with colorIndex %i at %i,%i,%i", colorIndex, x, y, z), true);
 		}

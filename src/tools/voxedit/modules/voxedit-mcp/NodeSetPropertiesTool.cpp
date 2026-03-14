@@ -9,18 +9,21 @@
 namespace voxedit {
 
 NodeSetPropertiesTool::NodeSetPropertiesTool() : Tool("voxedit_node_set_properties") {
-	_tool["description"] = "Set arbitrary node properties. Provide nodeUUID and a properties object";
+	_tool.set("description", "Set arbitrary node properties. Provide nodeUUID and a properties object");
 
-	nlohmann::json inps;
-	inps["type"] = "object";
-	inps["required"] = nlohmann::json::array({"nodeUUID", "properties"});
-	inps["properties"]["nodeUUID"] = propUUID();
-	inps["properties"]["properties"] = propTypeDescription("object", "Properties map (string->string)");
-	_tool["inputSchema"] = core::move(inps);
+	json::Json inps = json::Json::object();
+	inps.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("properties");
+	inps.set("required", _requiredArr);
+	inps.get("properties").set("nodeUUID", propUUID());
+	inps.get("properties").set("properties", propTypeDescription("object", "Properties map (string->string)"));
+	_tool.set("inputSchema", core::move(inps));
 }
 
-bool NodeSetPropertiesTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
-	if (!args.contains("properties") || !args["properties"].is_object()) {
+bool NodeSetPropertiesTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
+	if (!args.contains("properties") || !args.get("properties").isObject()) {
 		return ctx.result(id, "Missing properties", true);
 	}
 	const core::UUID nodeUUID = argsUUID(args);
@@ -31,8 +34,8 @@ bool NodeSetPropertiesTool::execute(const nlohmann::json &id, const nlohmann::js
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);
 	}
-	for (auto it = args["properties"].begin(); it != args["properties"].end(); ++it) {
-		node->setProperty(it.key().c_str(), it.value().get<std::string>().c_str());
+	for (auto it = args.get("properties").begin(); it != args.get("properties").end(); ++it) {
+		node->setProperty(it.key().c_str(), (*it).str().c_str());
 	}
 	return ctx.result(id, "Node properties updated successfully", false);
 }
