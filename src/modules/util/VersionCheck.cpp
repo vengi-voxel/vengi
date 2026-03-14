@@ -80,12 +80,12 @@ bool isNewVersionAvailable(int timeout) {
 		Log::error("Failed to read string");
 		return false;
 	}
-	nlohmann::json release = nlohmann::json::parse(response, nullptr, false, true);
+	json::Json release = json::Json::parse(response);
 	if (!release.contains("tag_name")) {
 		Log::warn("github response doesn't contain a tag_name node");
 		return false;
 	}
-	core::String latestVersion = release["tag_name"].get<std::string>().c_str();
+	core::String latestVersion = release.get("tag_name").str().c_str();
 	// our tags usually have a v in front of it
 	if (latestVersion[0] == 'v') {
 		latestVersion = latestVersion.substr(1);

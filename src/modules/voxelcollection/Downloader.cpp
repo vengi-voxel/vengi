@@ -74,41 +74,41 @@ VoxelSources Downloader::sources() {
 
 VoxelSources Downloader::sources(const core::String &json) {
 	VoxelSources voxelSources;
-	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
+	json::Json jsonResponse = json::Json::parse(json);
 	if (!jsonResponse.contains("sources")) {
 		Log::error("Unexpected json data");
 		return voxelSources;
 	}
 
-	jsonResponse = jsonResponse["sources"];
-	for (auto &entry : jsonResponse) {
+	const json::Json sourcesArray = jsonResponse.get("sources");
+	for (const auto &entry : sourcesArray) {
 		VoxelSource source;
-		source.name = entry.value("name", "").c_str();
-		source.license = entry.value("license", "").c_str();
-		source.thumbnail = entry.value("thumbnail", "").c_str();
+		source.name = entry.strVal("name", "").c_str();
+		source.license = entry.strVal("license", "").c_str();
+		source.thumbnail = entry.strVal("thumbnail", "").c_str();
 		if (entry.contains("github")) {
 			source.provider = "github";
-			const auto &githubNode = entry["github"];
-			source.github.repo = githubNode.value("repo", "").c_str();
-			source.github.commit = githubNode.value("commit", "").c_str();
-			source.github.path = githubNode.value("path", "").c_str();
-			source.github.enableMeshes = githubNode.value("enableMeshes", false);
+			const auto &githubNode = entry.get("github");
+			source.github.repo = githubNode.strVal("repo", "").c_str();
+			source.github.commit = githubNode.strVal("commit", "").c_str();
+			source.github.path = githubNode.strVal("path", "").c_str();
+			source.github.enableMeshes = githubNode.boolVal("enableMeshes", false);
 			// the github license is a file in the repo, so we need to query the tree for it
 			// and download it
-			source.github.license = githubNode.value("license", "").c_str();
+			source.github.license = githubNode.strVal("license", "").c_str();
 		} else if (entry.contains("gitlab")) {
 			source.provider = "gitlab";
-			const auto &gitlabNode = entry["gitlab"];
-			source.gitlab.repo = gitlabNode.value("repo", "").c_str();
-			source.gitlab.commit = gitlabNode.value("commit", "").c_str();
-			source.gitlab.path = gitlabNode.value("path", "").c_str();
-			source.gitlab.enableMeshes = gitlabNode.value("enableMeshes", false);
+			const auto &gitlabNode = entry.get("gitlab");
+			source.gitlab.repo = gitlabNode.strVal("repo", "").c_str();
+			source.gitlab.commit = gitlabNode.strVal("commit", "").c_str();
+			source.gitlab.path = gitlabNode.strVal("path", "").c_str();
+			source.gitlab.enableMeshes = gitlabNode.boolVal("enableMeshes", false);
 			// the gitlab license is a file in the repo, so we need to query the tree for it
 			// and download it
-			source.gitlab.license = gitlabNode.value("license", "").c_str();
+			source.gitlab.license = gitlabNode.strVal("license", "").c_str();
 		} else if (entry.contains("single")) {
 			source.provider = "single";
-			source.single.url = entry["single"].value("url", "").c_str();
+			source.single.url = entry.get("single").strVal("url", "").c_str();
 		}
 		voxelSources.push_back(source);
 	}

@@ -8,24 +8,25 @@
 namespace voxedit {
 
 AnimationSetTool::AnimationSetTool() : Tool("voxedit_animation_set") {
-	_tool["description"] =
+	_tool.set("description",
 		"Switch the active animation by name. This must be called before adding keyframes to a specific animation. "
 		"After switching, use voxedit_node_add_keyframe to create keyframes for nodes in this animation. "
-		"Fetch the scene state to see the list of available animations.";
+		"Fetch the scene state to see the list of available animations.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"name"});
-	inputSchema["properties"]["name"] =
-		propTypeDescription("string", "Name of the animation to switch to (e.g. 'walk', 'run', 'idle', 'Default')");
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("name");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("name", propTypeDescription("string", "Name of the animation to switch to (e.g. 'walk', 'run', 'idle', 'Default')"));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool AnimationSetTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
-	if (!args.contains("name") || !args["name"].is_string()) {
+bool AnimationSetTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
+	if (!args.contains("name") || !args.get("name").isString()) {
 		return ctx.result(id, "Missing or invalid 'name' parameter", true);
 	}
-	const core::String name = args["name"].get<std::string>().c_str();
+	const core::String name = args.get("name").str().c_str();
 	if (name.empty()) {
 		return ctx.result(id, "Animation name must not be empty", true);
 	}

@@ -9,15 +9,17 @@
 namespace voxedit {
 
 GetPaletteTool::GetPaletteTool() : Tool("voxedit_get_palette") {
-	_tool["description"] = "Get the color palette of a specific node.";
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID"});
-	inputSchema["properties"]["nodeUUID"] = propUUID();
-	_tool["inputSchema"] = core::move(inputSchema);
+	_tool.set("description", "Get the color palette of a specific node.");
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("nodeUUID", propUUID());
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool GetPaletteTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool GetPaletteTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -29,30 +31,32 @@ bool GetPaletteTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 	}
 
 	const palette::Palette &palette = node->palette();
-	nlohmann::json paletteJson;
-	paletteJson["name"] = palette.name().c_str();
-	paletteJson["colorCount"] = palette.colorCount();
-	paletteJson["colors"] = nlohmann::json::array();
+	json::Json paletteJson = json::Json::object();
+	paletteJson.set("name", palette.name().c_str());
+	paletteJson.set("colorCount", palette.colorCount());
+	paletteJson.set("colors", json::Json::array());
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const color::RGBA &color = palette.color(i);
-		nlohmann::json colorJson;
-		colorJson["index"] = (int)i;
-		colorJson["r"] = color.r;
-		colorJson["g"] = color.g;
-		colorJson["b"] = color.b;
-		colorJson["a"] = color.a;
+		json::Json colorJson = json::Json::object();
+		colorJson.set("index", (int)i);
+		colorJson.set("r", color.r);
+		colorJson.set("g", color.g);
+		colorJson.set("b", color.b);
+		colorJson.set("a", color.a);
 		if (!palette.colorName(i).empty()) {
-			colorJson["name"] = palette.colorName(i).c_str();
+			colorJson.set("name", palette.colorName(i).c_str());
 		}
 		const palette::Material &mat = palette.material(i);
-		colorJson["material"] = nlohmann::json::array();
+		colorJson.set("material", json::Json::array());
 		for (int j = 0; j < (int)palette::MaterialProperty::MaterialMax; ++j) {
 			const palette::MaterialProperty prop = (palette::MaterialProperty)j;
 			if (mat.has(prop)) {
-				colorJson["material"][palette::MaterialPropertyName(prop)] = mat.value(prop);
+				json::Json matEntry = json::Json::object();
+				matEntry.set(palette::MaterialPropertyName(prop), mat.value(prop));
+				colorJson.get("material").push(matEntry);
 			}
 		}
-		paletteJson["colors"].emplace_back(core::move(colorJson));
+		paletteJson.get("colors").push(colorJson);
 	}
 	return ctx.result(id, paletteJson.dump().c_str(), false);
 }

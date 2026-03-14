@@ -39,73 +39,88 @@ uint32_t BrushTool::parseBrushMode(const core::String &mode) {
 	return BRUSH_MODE_AABB;
 }
 
-nlohmann::json BrushTool::propModifierType() {
-	nlohmann::json prop;
-	prop["type"] = "string";
-	prop["description"] = "The modifier type: 'place' (add voxels), 'erase' (remove voxels), 'override' (replace "
-						  "voxels), 'paint' (change color only)";
-	prop["enum"] = nlohmann::json::array({"place", "erase", "override", "paint"});
-	prop["default"] = "place";
+json::Json BrushTool::propModifierType() {
+	json::Json prop = json::Json::object();
+	prop.set("type", "string");
+	prop.set("description", "The modifier type: 'place' (add voxels), 'erase' (remove voxels), 'override' (replace "
+						  "voxels), 'paint' (change color only)");
+	json::Json enumArr = json::Json::array();
+	enumArr.push("place");
+	enumArr.push("erase");
+	enumArr.push("override");
+	enumArr.push("paint");
+	prop.set("enum", enumArr);
+	prop.set("default", "place");
 	return prop;
 }
 
-nlohmann::json BrushTool::propBrushMode() {
-	nlohmann::json prop;
-	prop["type"] = "string";
-	prop["description"] = "The brush mode: 'aabb' (span rectangular region), 'single' (place single voxels), 'center' "
-						  "(expand from center point)";
-	prop["enum"] = nlohmann::json::array({"aabb", "single", "center"});
-	prop["default"] = "aabb";
+json::Json BrushTool::propBrushMode() {
+	json::Json prop = json::Json::object();
+	prop.set("type", "string");
+	prop.set("description", "The brush mode: 'aabb' (span rectangular region), 'single' (place single voxels), 'center' "
+						  "(expand from center point)");
+	json::Json enumArr = json::Json::array();
+	enumArr.push("aabb");
+	enumArr.push("single");
+	enumArr.push("center");
+	prop.set("enum", enumArr);
+	prop.set("default", "aabb");
 	return prop;
 }
 
-nlohmann::json BrushTool::propRegion() {
-	nlohmann::json prop;
-	prop["type"] = "object";
-	prop["description"] = "The AABB region to operate on";
-	prop["required"] = nlohmann::json::array({"minX", "minY", "minZ", "maxX", "maxY", "maxZ"});
-	prop["properties"]["minX"]["type"] = "integer";
-	prop["properties"]["minX"]["description"] = "Minimum X coordinate";
-	prop["properties"]["minY"]["type"] = "integer";
-	prop["properties"]["minY"]["description"] = "Minimum Y coordinate";
-	prop["properties"]["minZ"]["type"] = "integer";
-	prop["properties"]["minZ"]["description"] = "Minimum Z coordinate";
-	prop["properties"]["maxX"]["type"] = "integer";
-	prop["properties"]["maxX"]["description"] = "Maximum X coordinate";
-	prop["properties"]["maxY"]["type"] = "integer";
-	prop["properties"]["maxY"]["description"] = "Maximum Y coordinate";
-	prop["properties"]["maxZ"]["type"] = "integer";
-	prop["properties"]["maxZ"]["description"] = "Maximum Z coordinate";
+json::Json BrushTool::propRegion() {
+	json::Json prop = json::Json::object();
+	prop.set("type", "object");
+	prop.set("description", "The AABB region to operate on");
+	json::Json required = json::Json::array();
+	required.push("minX");
+	required.push("minY");
+	required.push("minZ");
+	required.push("maxX");
+	required.push("maxY");
+	required.push("maxZ");
+	prop.set("required", required);
+	json::Json properties = json::Json::object();
+	properties.set("minX", propTypeDescription("integer", "Minimum X coordinate"));
+	properties.set("minY", propTypeDescription("integer", "Minimum Y coordinate"));
+	properties.set("minZ", propTypeDescription("integer", "Minimum Z coordinate"));
+	properties.set("maxX", propTypeDescription("integer", "Maximum X coordinate"));
+	properties.set("maxY", propTypeDescription("integer", "Maximum Y coordinate"));
+	properties.set("maxZ", propTypeDescription("integer", "Maximum Z coordinate"));
+	prop.set("properties", properties);
 	return prop;
 }
 
-nlohmann::json BrushTool::propColorIndex() {
-	nlohmann::json prop;
-	prop["type"] = "integer";
-	prop["description"] = "The palette color index (0-255)";
-	prop["minimum"] = 0;
-	prop["maximum"] = 255;
-	prop["default"] = 1;
+json::Json BrushTool::propColorIndex() {
+	json::Json prop = json::Json::object();
+	prop.set("type", "integer");
+	prop.set("description", "The palette color index (0-255)");
+	prop.set("minimum", 0);
+	prop.set("maximum", 255);
+	prop.set("default", 1);
 	return prop;
 }
 
-nlohmann::json BrushTool::propPosition(const core::String &description) {
-	nlohmann::json prop;
-	prop["type"] = "object";
-	prop["description"] = description.c_str();
-	prop["required"] = nlohmann::json::array({"x", "y", "z"});
-	prop["properties"]["x"]["type"] = "integer";
-	prop["properties"]["x"]["description"] = "X coordinate";
-	prop["properties"]["y"]["type"] = "integer";
-	prop["properties"]["y"]["description"] = "Y coordinate";
-	prop["properties"]["z"]["type"] = "integer";
-	prop["properties"]["z"]["description"] = "Z coordinate";
+json::Json BrushTool::propPosition(const core::String &description) {
+	json::Json prop = json::Json::object();
+	prop.set("type", "object");
+	prop.set("description", description.c_str());
+	json::Json required = json::Json::array();
+	required.push("x");
+	required.push("y");
+	required.push("z");
+	prop.set("required", required);
+	json::Json properties = json::Json::object();
+	properties.set("x", propTypeDescription("integer", "X coordinate"));
+	properties.set("y", propTypeDescription("integer", "Y coordinate"));
+	properties.set("z", propTypeDescription("integer", "Z coordinate"));
+	prop.set("properties", properties);
 	return prop;
 }
 
 bool BrushTool::executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, BrushType brushType,
 							 ModifierType modifierType, int colorIndex, const glm::ivec3 &mins, const glm::ivec3 &maxs,
-							 const nlohmann::json &id) {
+							 const json::Json &id) {
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found - fetch the scene state first", true);

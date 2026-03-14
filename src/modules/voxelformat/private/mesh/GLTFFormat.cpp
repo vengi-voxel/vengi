@@ -46,6 +46,8 @@
 #define TINYGLTF_NO_INCLUDE_STB_IMAGE
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
+#define TINYGLTF_NO_INCLUDE_JSON
+#include "json/NlohmannJson.h"
 #include "voxelformat/external/tiny_gltf.h"
 
 namespace voxelformat {

@@ -29,48 +29,56 @@ static SelectMode parseSelectMode(const core::String &mode) {
 }
 
 SelectBrushTool::SelectBrushTool() : BrushTool("voxedit_select_brush") {
-	_tool["description"] =
-		"Select voxels in a region with various modes (All, Surface, SameColor, FuzzyColor, Connected)";
+	_tool.set("description", "Select voxels in a region with various modes (All, Surface, SameColor, FuzzyColor, Connected)");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "region"});
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("region");
+	inputSchema.set("required", _requiredArr);
 
-	nlohmann::json properties;
-	properties["nodeUUID"] = propUUID();
-	properties["region"] = propRegion();
+	json::Json properties = json::Json::object();
+	properties.set("nodeUUID", propUUID());
+	properties.set("region", propRegion());
 
 	// Select mode property
-	nlohmann::json selectModeProp;
-	selectModeProp["type"] = "string";
-	selectModeProp["description"] =
+	json::Json selectModeProp = json::Json::object();
+	selectModeProp.set("type", "string");
+	selectModeProp.set("description",
 		"The selection mode: 'all' (all voxels), 'surface' (visible surface only), 'samecolor' (exact color match), "
-		"'fuzzycolor' (similar colors), 'connected' (flood fill same color)";
-	selectModeProp["enum"] = nlohmann::json::array({"all", "surface", "samecolor", "fuzzycolor", "connected"});
-	selectModeProp["default"] = "all";
-	properties["selectMode"] = selectModeProp;
+		"'fuzzycolor' (similar colors), 'connected' (flood fill same color)");
+	json::Json _enumArr = json::Json::array();
+	_enumArr.push("all");
+	_enumArr.push("surface");
+	_enumArr.push("samecolor");
+	_enumArr.push("fuzzycolor");
+	_enumArr.push("connected");
+	selectModeProp.set("enum", _enumArr);
+	selectModeProp.set("default", "all");
+	properties.set("selectMode", selectModeProp);
 
 	// Color threshold for fuzzy color mode
-	nlohmann::json thresholdProp;
-	thresholdProp["type"] = "number";
-	thresholdProp["description"] = "Color similarity threshold for fuzzycolor mode (0.0 = exact, 1.0 = very fuzzy)";
-	thresholdProp["default"] = 0.3;
-	thresholdProp["minimum"] = 0.0;
-	thresholdProp["maximum"] = 1.0;
-	properties["colorThreshold"] = thresholdProp;
+	json::Json thresholdProp = json::Json::object();
+	thresholdProp.set("type", "number");
+	thresholdProp.set("description", "Color similarity threshold for fuzzycolor mode (0.0 = exact, 1.0 = very fuzzy)");
+	thresholdProp.set("default", 0.3);
+	thresholdProp.set("minimum", 0.0);
+	thresholdProp.set("maximum", 1.0);
+	properties.set("colorThreshold", thresholdProp);
 
 	// Clear selection option
-	nlohmann::json clearProp;
-	clearProp["type"] = "boolean";
-	clearProp["description"] = "If true, clear the selection instead of adding to it (uses erase modifier)";
-	clearProp["default"] = false;
-	properties["clearSelection"] = clearProp;
+	json::Json clearProp = json::Json::object();
+	clearProp.set("type", "boolean");
+	clearProp.set("description", "If true, clear the selection instead of adding to it (uses erase modifier)");
+	clearProp.set("default", false);
+	properties.set("clearSelection", clearProp);
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool SelectBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -79,15 +87,15 @@ bool SelectBrushTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 	if (!args.contains("region")) {
 		return ctx.result(id, "Missing region argument", true);
 	}
-	const nlohmann::json &region = args["region"];
+	json::Json region = args.get("region");
 
-	const glm::ivec3 mins(region.value("minX", 0), region.value("minY", 0), region.value("minZ", 0));
-	const glm::ivec3 maxs(region.value("maxX", 0), region.value("maxY", 0), region.value("maxZ", 0));
+	const glm::ivec3 mins(region.intVal("minX", 0), region.intVal("minY", 0), region.intVal("minZ", 0));
+	const glm::ivec3 maxs(region.intVal("maxX", 0), region.intVal("maxY", 0), region.intVal("maxZ", 0));
 
-	const core::String selectModeStr = args.value("selectMode", "all").c_str();
+	const core::String selectModeStr = args.strVal("selectMode", "all").c_str();
 	const SelectMode selectMode = parseSelectMode(selectModeStr);
-	const float colorThreshold = args.value("colorThreshold", 0.3f);
-	const bool clearSelection = args.value("clearSelection", false);
+	const float colorThreshold = args.floatVal("colorThreshold", 0.3f);
+	const bool clearSelection = args.boolVal("clearSelection", false);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {

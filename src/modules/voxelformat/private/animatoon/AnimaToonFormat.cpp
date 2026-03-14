@@ -44,8 +44,8 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
-	core::String sceneName = json.value("SceneName", "unknown").c_str();
+	json::Json json = json::Json::parse(jsonStr);
+	core::String sceneName = json.strVal("SceneName", "unknown").c_str();
 	Log::debug("Name: %s", sceneName.c_str());
 
 	// there are a few different scenes in animatoon 3.0 - each scene has one definition
@@ -213,7 +213,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	Log::debug("scene size: %d %d %d", regionSize.x, regionSize.y, regionSize.z);
 
 	core::Buffer<int> modelNodeIds;
-	for (const auto &e : json["ModelSave"]) {
+	for (const auto &e : json.get("ModelSave")) {
 		const int modelIdx = (int)modelNodeIds.size();
 		regionSize = sceneDefinition->size;
 		if (sceneName == "Quad_Simple") {
@@ -236,7 +236,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		}
 		int parent = 0;
 		node.setPalette(palette);
-		const std::string &modelBase64 = e.get<std::string>();
+		const core::String modelBase64 = e.str();
 		io::MemoryReadStream inputStream(modelBase64.c_str(), modelBase64.size());
 		io::Base64ReadStream base64Stream(inputStream);
 		io::ZipReadStream readStream(base64Stream, -1, io::CompressionType::Gzip);
@@ -298,20 +298,20 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	glm::vec3 cameraPos(0.0f);
 	glm::quat cameraRot = glm::quat_identity<float, glm::defaultp>();
 	glm::vec3 cameraTarget(0.0f);
-	auto mainCamPosIter = json.find("MainCamPosition");
-	if (mainCamPosIter != json.end()) {
-		cameraPos = glm::vec3((*mainCamPosIter).value("x", 0.0f), (*mainCamPosIter).value("y", 0.0f),
-							  (*mainCamPosIter).value("z", 0.0f));
+	if (json.contains("MainCamPosition")) {
+		json::Json mainCamPos = json.get("MainCamPosition");
+		cameraPos = glm::vec3(mainCamPos.floatVal("x", 0.0f), mainCamPos.floatVal("y", 0.0f),
+							  mainCamPos.floatVal("z", 0.0f));
 	}
-	auto mainCamRotIter = json.find("MainCamRotation");
-	if (mainCamRotIter != json.end()) {
-		cameraRot = glm::quat((*mainCamRotIter).value("x", 0.0f), (*mainCamRotIter).value("y", 0.0f),
-							  (*mainCamRotIter).value("z", 0.0f), (*mainCamRotIter)["w"]);
+	if (json.contains("MainCamRotation")) {
+		json::Json mainCamRot = json.get("MainCamRotation");
+		cameraRot = glm::quat(mainCamRot.floatVal("x", 0.0f), mainCamRot.floatVal("y", 0.0f),
+							  mainCamRot.floatVal("z", 0.0f), mainCamRot.floatVal("w", 0.0f));
 	}
-	auto camTargetPosIter = json.find("CamTargetPostion");
-	if (camTargetPosIter != json.end()) {
-		cameraTarget = glm::vec3((*camTargetPosIter).value("x", 0.0f), (*camTargetPosIter).value("y", 0.0f),
-								 (*camTargetPosIter).value("z", 0.0f));
+	if (json.contains("CamTargetPostion")) {
+		json::Json camTargetPos = json.get("CamTargetPostion");
+		cameraTarget = glm::vec3(camTargetPos.floatVal("x", 0.0f), camTargetPos.floatVal("y", 0.0f),
+								 camTargetPos.floatVal("z", 0.0f));
 	}
 
 	{
@@ -329,49 +329,49 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 
 #if 0
 	core::DynamicArray<AnimaToonPosition> positions;
-	for (const auto &savedPos : json["savedPositionsList"]) {
-		const std::string innerJson = savedPos.get<std::string>();
-		nlohmann::json inner = nlohmann::json::parse(innerJson);
+	for (const auto &savedPos : json.get("savedPositionsList")) {
+		const std::string innerJson = savedPos.str();
+		json::Json inner = json::Json::parse(innerJson);
 		AnimaToonPosition pos;
-		pos.isModified = inner.value("isModified", false);
-		pos.isLeftHandClosed = inner.value("isLeftHandClosed", false);
-		pos.isRightHandClosed = inner.value("isRightHandClosed", false);
-		for (const auto &meshPos : inner["meshPositions"]) {
-			const float x = meshPos.value("x", 0.0f);
-			const float y = meshPos.value("y", 0.0f);
-			const float z = meshPos.value("z", 0.0f);
+		pos.isModified = inner.boolVal("isModified", false);
+		pos.isLeftHandClosed = inner.boolVal("isLeftHandClosed", false);
+		pos.isRightHandClosed = inner.boolVal("isRightHandClosed", false);
+		for (const auto &meshPos : inner.get("meshPositions")) {
+			const float x = meshPos.floatVal("x", 0.0f);
+			const float y = meshPos.floatVal("y", 0.0f);
+			const float z = meshPos.floatVal("z", 0.0f);
 			pos.meshPositions.push_back(glm::vec3(x, y, z));
 		}
-		for (const auto &meshRot : inner["meshRotations"]) {
-			const float x = meshRot.value("x", 0.0f);
-			const float y = meshRot.value("y", 0.0f);
-			const float z = meshRot.value("z", 0.0f);
-			const float w = meshRot.value("w", 0.0f);
+		for (const auto &meshRot : inner.get("meshRotations")) {
+			const float x = meshRot.floatVal("x", 0.0f);
+			const float y = meshRot.floatVal("y", 0.0f);
+			const float z = meshRot.floatVal("z", 0.0f);
+			const float w = meshRot.floatVal("w", 0.0f);
 			pos.meshRotations.push_back(glm::quat::wxyz(w, x, y, z));
 		}
-		for (const auto &ikPos : inner["IKPositions"]) {
-			const float x = ikPos.value("x", 0.0f);
-			const float y = ikPos.value("y", 0.0f);
-			const float z = ikPos.value("z", 0.0f);
+		for (const auto &ikPos : inner.get("IKPositions")) {
+			const float x = ikPos.floatVal("x", 0.0f);
+			const float y = ikPos.floatVal("y", 0.0f);
+			const float z = ikPos.floatVal("z", 0.0f);
 			pos.ikPositions.push_back(glm::vec3(x, y, z));
 		}
-		for (const auto &ikRot : inner["IKRotations"]) {
-			const float x = ikRot.value("x", 0.0f);
-			const float y = ikRot.value("y", 0.0f);
-			const float z = ikRot.value("z", 0.0f);
-			const float w = ikRot.value("w", 0.0f);
+		for (const auto &ikRot : inner.get("IKRotations")) {
+			const float x = ikRot.floatVal("x", 0.0f);
+			const float y = ikRot.floatVal("y", 0.0f);
+			const float z = ikRot.floatVal("z", 0.0f);
+			const float w = ikRot.floatVal("w", 0.0f);
 			pos.ikRotations.push_back(glm::quat::wxyz(w, x, y, z));
 		}
-		for (const auto &ikMod : inner["IKModified"]) {
+		for (const auto &ikMod : inner.get("IKModified")) {
 			pos.ikModified.push_back(ikMod);
 		}
-		positions.emplace_back(core::move(pos));
+		positions.push_back(pos);
 	}
 
 	// ImportModelSave contains imported external models as base64 encoded data
 	// These would need to be loaded similarly to ModelSave but as separate imported nodes
-	for (const auto &e : json["ImportModelSave"]) {
-		const core::String modelBase64 = e.get<std::string>().c_str();
+	for (const auto &e : json.get("ImportModelSave")) {
+		const core::String modelBase64 = e.str().c_str();
 		if (modelBase64.empty()) {
 			continue;
 		}
@@ -432,19 +432,19 @@ size_t AnimaToonFormat::loadPalette(const core::String &filename, const io::Arch
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
-	auto it = json.find("customColors");
-	if (it == json.end() || !it->is_array()) {
+	json::Json json = json::Json::parse(jsonStr);
+	if (!json.contains("customColors") || !json.get("customColors").isArray()) {
 		return 0u;
 	}
 
+	json::Json customColors = json.get("customColors");
 	// TODO: VOXELFORMAT: quantize colors if they exceed the max allowed palette size
 	int idx = 0;
-	for (const auto &e : *it) {
-		const uint8_t r = (uint8_t)(e.value("r", 0.0f) * 255.0f);
-		const uint8_t g = (uint8_t)(e.value("g", 0.0f) * 255.0f);
-		const uint8_t b = (uint8_t)(e.value("b", 0.0f) * 255.0f);
-		const uint8_t a = (uint8_t)(e.value("a", 1.0f) * 255.0f);
+	for (const auto &e : customColors) {
+		const uint8_t r = (uint8_t)(e.floatVal("r", 0.0f) * 255.0f);
+		const uint8_t g = (uint8_t)(e.floatVal("g", 0.0f) * 255.0f);
+		const uint8_t b = (uint8_t)(e.floatVal("b", 0.0f) * 255.0f);
+		const uint8_t a = (uint8_t)(e.floatVal("a", 1.0f) * 255.0f);
 		if (idx < palette::PaletteMaxColors) {
 			palette.setColor(idx++, color::RGBA(r, g, b, a));
 		} else {
