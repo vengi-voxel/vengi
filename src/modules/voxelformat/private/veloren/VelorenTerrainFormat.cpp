@@ -11,7 +11,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include <cstdint>
 
@@ -104,7 +104,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	wrap(stream->readUInt64(count))
 
 	palette::PaletteLookup palLookup(palette);
-	voxel::ConcurrentSparseVolume v;
+	voxel::SparseVolume v;
 	for (uint64_t i = 0; i < count; ++i) {
 		int32_t x = 0, y = 0, z = 0;
 		if constexpr (version == 1) {

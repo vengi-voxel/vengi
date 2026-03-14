@@ -10,7 +10,7 @@
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"

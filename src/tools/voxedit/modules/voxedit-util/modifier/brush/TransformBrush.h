@@ -7,7 +7,7 @@
 #include "app/I18N.h"
 #include "Brush.h"
 #include "core/GLM.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 
 #include <glm/vec3.hpp>
@@ -48,7 +48,7 @@ private:
 	voxel::RawVolume *_lastVolume = nullptr;
 
 	// Original selected voxels captured at brush activation
-	voxel::ConcurrentSparseVolume _snapshot;
+	voxel::SparseVolume _snapshot;
 	// Selection bounding box at capture time
 	voxel::Region _snapshotRegion;
 	// Center of selection (used as pivot for scale/rotate)
@@ -59,7 +59,7 @@ private:
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so the previous state can be restored before re-applying the transform.
 	// Stores the original voxel at each modified position (with empty voxel storage enabled).
-	voxel::ConcurrentSparseVolume _history;
+	voxel::SparseVolume _history;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;

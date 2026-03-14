@@ -6,7 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/BitVolume.h"
 #include "voxel/RawVolume.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -167,7 +167,7 @@ TEST_F(VolumeSculptTest, testSetLevelErode) {
 	// Test the set-level API directly
 	voxel::Region region(0, 0, 0, 2, 1, 2);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	voxel::BitVolume anchors(region);
 	const voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 

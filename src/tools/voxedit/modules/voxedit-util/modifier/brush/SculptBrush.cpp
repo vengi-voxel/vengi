@@ -11,7 +11,7 @@
 #include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
 
@@ -207,7 +207,7 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	core_trace_scoped(SculptBrushApplySculpt);
 	voxel::BitVolume currentSolid(_snapshotRegion);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 
 	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
 	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();

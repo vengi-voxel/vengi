@@ -16,7 +16,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/RawVolume.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <stdint.h>
@@ -160,7 +160,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 	wrap(stream.readUInt16(numBlocks))
 	Log::debug("numBlocks: %i", (int)numBlocks);
 
-	voxel::ConcurrentSparseVolume v;
+	voxel::SparseVolume v;
 	for (int i = 0; i < (int)numBlocks; ++i) {
 		core::String key;
 		wrapBool(stream.readPascalStringUInt16LE(key))

@@ -6,7 +6,7 @@
 
 #include "voxel/BitVolume.h"
 #include "voxel/Face.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 
 namespace voxel {
 class RawVolume;
@@ -29,7 +29,7 @@ namespace voxelutil {
  * @param strength Erosion strength in [0, 1].
  * @param iterations Number of erosion passes.
  */
-void sculptErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				 float strength, int iterations);
 
 /**
@@ -47,7 +47,7 @@ void sculptErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMa
  * @param iterations Number of growth passes.
  * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
  */
-void sculptGrow(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				float strength, int iterations, const voxel::Voxel &fillVoxel);
 
 /**
@@ -62,7 +62,7 @@ void sculptGrow(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap
  * @param face The face direction that determines which axis and side to peel from.
  * @param iterations Number of layers to peel.
  */
-void sculptFlatten(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, voxel::FaceNames face, int iterations);
+void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::FaceNames face, int iterations);
 
 /**
  * @brief Smooth additive: fill height gaps by scanning layers along a face normal.
@@ -82,7 +82,7 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxel
  * @param iterations Number of passes. Each pass adds at most one voxel per column.
  * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
  */
-void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 						  voxel::FaceNames face, int heightThreshold, int iterations, const voxel::Voxel &fillVoxel);
 
 /**
@@ -99,7 +99,7 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume
  * @param face The face direction that defines "up".
  * @param iterations Number of passes. Each pass removes at most one voxel per column.
  */
-void sculptSmoothErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 					   voxel::FaceNames face, int iterations, bool preserveTopHeight = false,
 					   int trimPerStep = 1);
 

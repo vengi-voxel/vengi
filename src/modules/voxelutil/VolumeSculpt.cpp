@@ -14,7 +14,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include <cfloat>
 #include <climits>
@@ -36,7 +36,7 @@ static int countFaceNeighbors(const voxel::BitVolume &solid, const voxel::BitVol
 	return count;
 }
 
-void sculptErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				 float strength, int iterations) {
 	core_trace_scoped(SculptErode);
 	const int removeThreshold = (int)glm::mix(0.0f, 5.0f, strength);
@@ -77,7 +77,7 @@ void sculptErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMa
 	}
 }
 
-void sculptGrow(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				float strength, int iterations, const voxel::Voxel &fillVoxel) {
 	core_trace_scoped(SculptGrow);
 	const int addThreshold = (int)glm::mix(7.0f, 1.0f, strength);
@@ -138,7 +138,7 @@ void sculptGrow(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap
 	}
 }
 
-void sculptFlatten(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, voxel::FaceNames face, int iterations) {
+void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::FaceNames face, int iterations) {
 	if (face == voxel::FaceNames::Max) {
 		return;
 	}
@@ -224,7 +224,7 @@ static void getPlanarOffsets(int axisIdx, glm::ivec3 offsets[4]) {
 	}
 }
 
-void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 						  voxel::FaceNames face, int heightThreshold, int iterations,
 						  const voxel::Voxel &fillVoxel) {
 	if (face == voxel::FaceNames::Max || heightThreshold < 1) {
@@ -340,7 +340,7 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume
 	}
 }
 
-void sculptSmoothErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, const voxel::BitVolume &anchors,
+void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 					   voxel::FaceNames face, int iterations, bool preserveTopHeight, int trimPerStep) {
 	if (face == voxel::FaceNames::Max) {
 		return;
@@ -603,7 +603,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &v
 
 // Helper to build solid, voxelMap, and anchor sets from a volume region
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
-							voxel::BitVolume &solid, voxel::ConcurrentSparseVolume &voxelMap, voxel::BitVolume &anchors) {
+							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
 	core_trace_scoped(BuildFromVolume);
 	const glm::ivec3 &lo = region.getLowerCorner();
 	const glm::ivec3 &hi = region.getUpperCorner();
@@ -648,7 +648,7 @@ static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region 
 
 // Helper to write position set changes back to a volume
 static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &region, const voxel::BitVolume &solid,
-							   const voxel::ConcurrentSparseVolume &voxelMap) {
+							   const voxel::SparseVolume &voxelMap) {
 	core_trace_scoped(WriteResultToVolume);
 	int changed = 0;
 	const voxel::Voxel air;
@@ -697,7 +697,7 @@ static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &re
 int sculptErode(voxel::RawVolume &volume, const voxel::Region &region, float strength, int iterations) {
 	core_trace_scoped(SculptErodeVolume);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	// Grow anchor region by 1 to capture adjacent voxels outside the sculpt region
 	voxel::Region anchorRegion = region;
 	anchorRegion.grow(1);
@@ -712,7 +712,7 @@ int sculptGrow(voxel::RawVolume &volume, const voxel::Region &region, float stre
 			   const voxel::Voxel &fillVoxel) {
 	core_trace_scoped(SculptGrowVolume);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volume.region());
@@ -725,7 +725,7 @@ int sculptGrow(voxel::RawVolume &volume, const voxel::Region &region, float stre
 int sculptFlatten(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face, int iterations) {
 	core_trace_scoped(SculptFlattenVolume);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volume.region());
@@ -739,7 +739,7 @@ int sculptSmoothAdditive(voxel::RawVolume &volume, const voxel::Region &region, 
 						 int heightThreshold, int iterations, const voxel::Voxel &fillVoxel) {
 	core_trace_scoped(SculptSmoothAdditiveVolume);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volume.region());
@@ -753,7 +753,7 @@ int sculptSmoothErode(voxel::RawVolume &volume, const voxel::Region &region, vox
 					  bool preserveTopHeight, int trimPerStep) {
 	core_trace_scoped(SculptSmoothErodeVolume);
 	voxel::BitVolume solid(region);
-	voxel::ConcurrentSparseVolume voxelMap;
+	voxel::SparseVolume voxelMap;
 	voxel::Region anchorRegion = region;
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volume.region());

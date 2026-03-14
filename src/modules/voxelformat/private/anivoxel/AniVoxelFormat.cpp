@@ -17,7 +17,7 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include "voxel/ConcurrentSparseVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
@@ -173,7 +173,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 				Log::error("Invalid region in VOXA model %s: %i:%i:%i", name.c_str(), w, h, d);
 				return false;
 			}
-			voxel::ConcurrentSparseVolume v;
+			voxel::SparseVolume v;
 			for (int32_t j = 0; j < numVoxels; ++j) {
 				int32_t x, y, z;
 				wrap(stream.readInt32(x));
@@ -222,7 +222,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 			Log::error("Invalid region in VOXA model");
 			return false;
 		}
-		voxel::ConcurrentSparseVolume v;
+		voxel::SparseVolume v;
 		for (int32_t i = 0; i < numVoxels; ++i) {
 			int32_t x, y, z;
 			wrap(stream.readInt32(x));

@@ -37,7 +37,7 @@ TEST_F(ModificationRecorderTest, testRecord) {
 }
 
 TEST_F(ModificationRecorderTest, testRecordSparse) {
-	voxel::ConcurrentSparseVolume v;
+	voxel::SparseVolume v;
 	testRecorder(v);
 }
 
