@@ -27,12 +27,12 @@ TEST_F(RequestTest, DISABLED_testGetRequest) {
 	stream.seek(0);
 	core::String response;
 	stream.readString((int)stream.size(), response);
-	nlohmann::json jsonResponse = nlohmann::json::parse(response, nullptr, false, true);
+	json::Json jsonResponse = json::Json::parse(response);
 	ASSERT_TRUE(jsonResponse.contains("headers")) << response;
-	ASSERT_FALSE(jsonResponse["headers"].contains("Content-Length")) << response;
-	ASSERT_FALSE(jsonResponse["headers"].contains("Content-Type")) << response;
-	ASSERT_TRUE(jsonResponse["headers"].contains("User-Agent")) << response;
-	EXPECT_STREQ(userAgent.c_str(), jsonResponse["headers"]["User-Agent"].get<std::string>().c_str()) << response;
+	ASSERT_FALSE(jsonResponse.get("headers").contains("Content-Length")) << response;
+	ASSERT_FALSE(jsonResponse.get("headers").contains("Content-Type")) << response;
+	ASSERT_TRUE(jsonResponse.get("headers").contains("User-Agent")) << response;
+	EXPECT_STREQ(userAgent.c_str(), jsonResponse.get("headers").get("User-Agent").str().c_str()) << response;
 }
 
 // disabled because it requires network access
@@ -51,14 +51,14 @@ TEST_F(RequestTest, DISABLED_testPostRequest) {
 	stream.seek(0);
 	core::String response;
 	stream.readString((int)stream.size(), response);
-	nlohmann::json jsonResponse = nlohmann::json::parse(response, nullptr, false, true);
+	json::Json jsonResponse = json::Json::parse(response);
 	ASSERT_TRUE(jsonResponse.contains("headers")) << response;
-	ASSERT_TRUE(jsonResponse["headers"].contains("User-Agent")) << response;
-	EXPECT_STREQ(userAgent.c_str(), jsonResponse["headers"]["User-Agent"].get<std::string>().c_str()) << response;
-	ASSERT_TRUE(jsonResponse["headers"].contains("Content-Type")) << response;
-	EXPECT_EQ("application/json", jsonResponse["headers"]["Content-Type"].get<std::string>()) << response;
-	ASSERT_TRUE(jsonResponse["headers"].contains("Content-Length")) << response;
-	EXPECT_EQ("2", jsonResponse["headers"]["Content-Length"].get<std::string>()) << response;
+	ASSERT_TRUE(jsonResponse.get("headers").contains("User-Agent")) << response;
+	EXPECT_STREQ(userAgent.c_str(), jsonResponse.get("headers").get("User-Agent").str().c_str()) << response;
+	ASSERT_TRUE(jsonResponse.get("headers").contains("Content-Type")) << response;
+	EXPECT_EQ("application/json", jsonResponse.get("headers").get("Content-Type").str()) << response;
+	ASSERT_TRUE(jsonResponse.get("headers").contains("Content-Length")) << response;
+	EXPECT_EQ("2", jsonResponse.get("headers").get("Content-Length").str()) << response;
 }
 
 } // namespace http

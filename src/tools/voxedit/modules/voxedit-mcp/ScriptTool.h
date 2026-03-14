@@ -15,7 +15,7 @@ public:
 	~ScriptTool() override = default;
 
     static core::String toolName(const voxedit::LuaScriptInfo &info);
-	bool execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) override;
+	bool execute(const json::Json &id, const json::Json &args, ToolContext &ctx) override;
 };
 
 } // namespace voxedit

@@ -33,50 +33,50 @@
 namespace voxelformat {
 
 #define jsonVec(json, name, obj)                                                                                       \
-	if ((json).find(#name) == (json).end() || !(json)[#name].is_array()) {                                             \
-		const std::string dump = (json).dump();                                                                        \
+	if (!(json).contains(#name) || !(json).get(#name).isArray()) {                                                     \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json array '" #name "': %s", dump.c_str());                                          \
 	} else {                                                                                                           \
 		for (int i = 0; i < (obj).name.length(); ++i) {                                                                \
-			(obj).name[i] = (json)[#name][i].get<float>();                                                             \
+			(obj).name[i] = (json).get(#name).get(i).floatVal();                                                       \
 		}                                                                                                              \
 	}
 
 #define jsonInt(json, name, obj)                                                                                       \
-	if ((json).find(#name) == (json).end() || !(json)[#name].is_number_integer()) {                                    \
-		const std::string dump = (json).dump();                                                                        \
+	if (!(json).contains(#name) || !(json).get(#name).isNumberInteger()) {                                             \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json integer '" #name "': %s", dump.c_str());                                        \
 	} else {                                                                                                           \
-		(obj).name = (json)[#name].get<int>();                                                                         \
+		(obj).name = (json).get(#name).intVal();                                                                       \
 	}
 
 #define jsonFloat(json, name, obj)                                                                                     \
-	if ((json).find(#name) == (json).end()) {                                                                          \
-		const std::string dump = (json).dump();                                                                        \
+	if (!(json).contains(#name)) {                                                                                     \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json float " #name ": %s", dump.c_str());                                          \
-	} else if ((json)[#name].is_number_float()) {                                                                      \
-		(obj).name = (json)[#name].get<float>();                                                                       \
-	} else if ((json)[#name].is_number_integer()) {                                                                    \
-		(obj).name = (float)(json)[#name].get<int>();                                                                  \
+	} else if ((json).get(#name).isNumberFloat()) {                                                                    \
+		(obj).name = (json).get(#name).floatVal();                                                                     \
+	} else if ((json).get(#name).isNumberInteger()) {                                                                  \
+		(obj).name = (float)(json).get(#name).intVal();                                                                \
 	} else {                                                                                                           \
-		const std::string dump = (json).dump();                                                                        \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json float '" #name "': %s", dump.c_str());                                          \
 	}
 
 #define jsonBool(json, name, obj)                                                                                      \
-	if ((json).find(#name) == (json).end() || !(json)[#name].is_boolean()) {                                           \
-		const std::string dump = (json).dump();                                                                        \
+	if (!(json).contains(#name) || !(json).get(#name).isBool()) {                                                      \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json bool '" #name "': %s", dump.c_str());                                           \
 	} else {                                                                                                           \
-		(obj).name = (json)[#name].get<bool>();                                                                        \
+		(obj).name = (json).get(#name).boolVal();                                                                      \
 	}
 
 #define jsonString(json, name, obj)                                                                                    \
-	if ((json).find(#name) == (json).end() || !(json)[#name].is_string()) {                                            \
-		const std::string dump = (json).dump();                                                                        \
+	if (!(json).contains(#name) || !(json).get(#name).isString()) {                                                    \
+		const core::String dump = (json).dump();                                                                       \
 		Log::debug("Failed to parse json string '" #name "': %s", dump.c_str());                                         \
 	} else {                                                                                                           \
-		(obj).name = (json)[#name].get<std::string>().c_str();                                                         \
+		(obj).name = (json).get(#name).str().c_str();                                                                  \
 	}
 
 #define wrap(action)                                                                                                   \
@@ -98,8 +98,8 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 
 	core::String jsonStr;
 	stream->readString(stream->size(), jsonStr);
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
-	if (json.is_null()) {
+	json::Json json = json::Json::parse(jsonStr);
+	if (json.isNull()) {
 		Log::error("Failed to parse the json");
 		return false;
 	}
@@ -124,12 +124,12 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 	jsonBool(json, ssr, scene);
 	jsonFloat(json, lint, scene);
 
-	auto objects = json.find("objects");
-	if (objects == json.end() || !objects->is_array()) {
+	if (!json.contains("objects") || !json.get("objects").isArray()) {
 		Log::error("Failed to parse the scene json - expected an array of objects");
 		return false;
 	}
-	for (const auto &obj : objects.value()) {
+	const json::Json objects = json.get("objects");
+	for (const json::Json &obj : objects) {
 		VMaxObject o;
 		jsonBool(obj, s, o);
 		jsonBool(obj, h, o);
@@ -156,9 +156,9 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 		scene.objects.push_back(o);
 	}
 
-	auto groups = json.find("groups");
-	if (groups != json.end() && groups->is_array()) {
-		for (const auto &obj : groups.value()) {
+	if (json.contains("groups") && json.get("groups").isArray()) {
+		const json::Json groups = json.get("groups");
+		for (const json::Json &obj : groups) {
 			VMaxGroup o;
 			jsonBool(obj, s, o);
 			jsonString(obj, pid, o);

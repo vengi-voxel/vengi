@@ -996,14 +996,14 @@ void FormatPrinter::printLuaApiMarkdown() {
 	core::String jsonStr;
 	stream.readString((int)stream.size(), jsonStr);
 
-	nlohmann::json apiJson = nlohmann::json::parse(jsonStr.c_str(), nullptr, false, true);
-	if (apiJson.is_discarded()) {
+	json::Json apiJson = json::Json::parse(jsonStr.c_str());
+	if (!apiJson.isValid()) {
 		Log::error("Failed to parse Lua API JSON");
 		return;
 	}
 
 	// Group by documentation page
-	core::DynamicStringMap<nlohmann::json> pageContent;
+	core::DynamicStringMap<json::Json> pageContent;
 
 	for (auto it = apiJson.begin(); it != apiJson.end(); ++it) {
 		const core::String name = it.key().c_str();
@@ -1011,13 +1011,13 @@ void FormatPrinter::printLuaApiMarkdown() {
 
 		auto found = pageContent.find(pageName);
 		if (found == pageContent.end()) {
-			pageContent.put(pageName, nlohmann::json::array());
+			pageContent.put(pageName, json::Json::array());
 		}
 
-		nlohmann::json entry;
-		entry["name"] = name.c_str();
-		entry["type"] = it.value().value("type", "");
-		entry["methods"] = it.value().value("methods", nlohmann::json::array());
+		json::Json entry = json::Json::object();
+		entry.set("name", name.c_str());
+		entry.set("type", (*it).strVal("type", ""));
+		entry.set("methods", (*it).get("methods"));
 		auto iter = pageContent.find(pageName);
 		if (iter != pageContent.end()) {
 			iter->value.push_back(entry);
@@ -1027,7 +1027,7 @@ void FormatPrinter::printLuaApiMarkdown() {
 	// Generate markdown for each page
 	for (auto it = pageContent.begin(); it != pageContent.end(); ++it) {
 		const core::String &pageName = it->key;
-		const nlohmann::json &entries = it->value;
+		const json::Json &entries = it->value;
 
 		Log::printf("--- BEGIN FILE: lua/%s.md ---\n", pageName.c_str());
 		Log::printf("# %s\n\n", getDocTitle(pageName).c_str());
@@ -1038,20 +1038,20 @@ void FormatPrinter::printLuaApiMarkdown() {
 		}
 
 		// Collect all methods across all entries (for vector types there are multiple globals)
-		core::DynamicStringMap<nlohmann::json> allMethods;
+		core::DynamicStringMap<json::Json> allMethods;
 		core::DynamicArray<core::String> sortedMethodNames;
 		bool isMetatable = false;
 
 		for (const auto &entry : entries) {
-			const std::string entryType = entry.value("type", "");
-			const auto &methods = entry.value("methods", nlohmann::json::array());
+			const core::String entryType = entry.strVal("type", "").c_str();
+			const json::Json methods = entry.get("methods");
 
 			if (entryType == "metatable") {
 				isMetatable = true;
 			}
 
 			for (const auto &method : methods) {
-				const std::string methodName = method.value("name", "");
+				const core::String methodName = method.strVal("name", "").c_str();
 				if (methodName.empty() || methodName[0] == '_') {
 					continue; // Skip metamethods
 				}
@@ -1083,18 +1083,18 @@ void FormatPrinter::printLuaApiMarkdown() {
 			if (mit == allMethods.end()) {
 				continue;
 			}
-			const nlohmann::json &method = mit->value;
-			const std::string summary = method.value("summary", "");
+			const json::Json &method = mit->value;
+			const core::String summary = method.strVal("summary", "").c_str();
 
 			// Build parameter signature
 			core::String params;
 			if (method.contains("parameters")) {
 				bool first = true;
-				for (const auto &param : method["parameters"]) {
+				for (const auto &param : method.get("parameters")) {
 					if (!first) {
 						params += ", ";
 					}
-					params += param.value("name", "").c_str();
+					params += param.strVal("name", "").c_str();
 					first = false;
 				}
 			}
@@ -1109,9 +1109,9 @@ void FormatPrinter::printLuaApiMarkdown() {
 			if (mit == allMethods.end()) {
 				continue;
 			}
-			const nlohmann::json &method = mit->value;
+			const json::Json &method = mit->value;
 
-			const std::string summary = method.value("summary", "");
+			const core::String summary = method.strVal("summary", "").c_str();
 
 			Log::printf("### %s\n\n", methodName.c_str());
 
@@ -1119,26 +1119,26 @@ void FormatPrinter::printLuaApiMarkdown() {
 				Log::printf("%s\n\n", summary.c_str());
 			}
 
-			if (method.contains("parameters") && !method["parameters"].empty()) {
+			if (method.contains("parameters") && !method.get("parameters").empty()) {
 				Log::printf("**Parameters:**\n\n");
 				Log::printf("| Name | Type | Description |\n");
 				Log::printf("| ---- | ---- | ----------- |\n");
-				for (const auto &param : method["parameters"]) {
-					const std::string pname = param.value("name", "");
-					const std::string ptype = param.value("type", "");
-					const std::string pdesc = param.value("description", "");
+				for (const auto &param : method.get("parameters")) {
+					const core::String pname = param.strVal("name", "").c_str();
+					const core::String ptype = param.strVal("type", "").c_str();
+					const core::String pdesc = param.strVal("description", "").c_str();
 					Log::printf("| `%s` | `%s` | %s |\n", pname.c_str(), ptype.c_str(), pdesc.c_str());
 				}
 				Log::printf("\n");
 			}
 
-			if (method.contains("returns") && !method["returns"].empty()) {
+			if (method.contains("returns") && !method.get("returns").empty()) {
 				Log::printf("**Returns:**\n\n");
 				Log::printf("| Type | Description |\n");
 				Log::printf("| ---- | ----------- |\n");
-				for (const auto &ret : method["returns"]) {
-					const std::string rtype = ret.value("type", "");
-					const std::string rdesc = ret.value("description", "");
+				for (const auto &ret : method.get("returns")) {
+					const core::String rtype = ret.strVal("type", "").c_str();
+					const core::String rdesc = ret.strVal("description", "").c_str();
 					Log::printf("| `%s` | %s |\n", rtype.c_str(), rdesc.c_str());
 				}
 				Log::printf("\n");

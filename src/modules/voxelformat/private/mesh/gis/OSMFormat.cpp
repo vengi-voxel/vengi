@@ -367,8 +367,8 @@ bool OSMFormat::treeToVoxels(scenegraph::SceneGraph &sceneGraph, const OSMElemen
 }
 
 bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<OSMElement> &elements) const {
-	nlohmann::json doc = nlohmann::json::parse(json.c_str(), nullptr, false, true);
-	if (doc.is_discarded()) {
+	json::Json doc = json::Json::parse(json.c_str());
+	if (!doc.isValid()) {
 		Log::error("OSM: Failed to parse JSON");
 		return false;
 	}
@@ -377,33 +377,33 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 		return false;
 	}
 
-	const auto &jsonElements = doc["elements"];
-	if (!jsonElements.is_array()) {
+	const auto &jsonElements = doc.get("elements");
+	if (!jsonElements.isArray()) {
 		Log::error("OSM: 'elements' is not an array");
 		return false;
 	}
 
 	for (const auto &je : jsonElements) {
-		const std::string type = je.value("type", "");
+		const core::String type = je.strVal("type", "");
 
 		OSMElement elem;
-		elem.id = je.value("id", (int64_t)0);
+		elem.id = je.intVal("id", (int64_t)0);
 
 		if (type == "node") {
 			// Point feature - lat/lon at top level
 			GeomPoint pt;
-			pt.lat = je.value("lat", 0.0);
-			pt.lon = je.value("lon", 0.0);
+			pt.lat = je.doubleVal("lat", 0.0);
+			pt.lon = je.doubleVal("lon", 0.0);
 			elem.geometry.push_back(pt);
 		} else if (type == "way" || type == "relation") {
 			// Extract inline geometry from 'out geom'
-			if (!je.contains("geometry") || !je["geometry"].is_array()) {
+			if (!je.contains("geometry") || !je.get("geometry").isArray()) {
 				continue;
 			}
-			for (const auto &gp : je["geometry"]) {
+			for (const auto &gp : je.get("geometry")) {
 				GeomPoint pt;
-				pt.lat = gp.value("lat", 0.0);
-				pt.lon = gp.value("lon", 0.0);
+				pt.lat = gp.doubleVal("lat", 0.0);
+				pt.lon = gp.doubleVal("lon", 0.0);
 				elem.geometry.push_back(pt);
 			}
 			if (elem.geometry.size() < 2) {
@@ -414,12 +414,12 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 		}
 
 		// Parse tags
-		if (je.contains("tags") && je["tags"].is_object()) {
-			const auto &tags = je["tags"];
+		if (je.contains("tags") && je.get("tags").isObject()) {
+			const auto &tags = je.get("tags");
 
 			for (auto it = tags.begin(); it != tags.end(); ++it) {
-				const std::string &key = it.key();
-				const std::string &value = it.value().get<std::string>();
+				const core::String key = it.key();
+				const core::String value = (*it).str();
 				elem.properties.put(key.c_str(), value.c_str());
 			}
 
@@ -427,11 +427,11 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 
 			// Height
 			if (tags.contains("height")) {
-				const core::String hStr = tags.value("height", "").c_str();
+				const core::String hStr = tags.strVal("height", "").c_str();
 				elem.height = (float)core::string::toFloat(hStr.c_str());
 			}
 			if (tags.contains("min_height")) {
-				const core::String mhStr = tags.value("min_height", "").c_str();
+				const core::String mhStr = tags.strVal("min_height", "").c_str();
 				elem.minHeight = (float)core::string::toFloat(mhStr.c_str());
 			}
 			if (tags.contains("building:levels")) {
@@ -447,11 +447,11 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 				elem.roofLevels = core::string::toInt(rlStr);
 			}
 			if (tags.contains("roof:height")) {
-				const core::String rhStr = tags.value("roof:height", "").c_str();
+				const core::String rhStr = tags.strVal("roof:height", "").c_str();
 				elem.roofHeight = (float)core::string::toFloat(rhStr.c_str());
 			}
 			if (tags.contains("roof:angle")) {
-				const core::String raStr = tags.value("roof:angle", "").c_str();
+				const core::String raStr = tags.strVal("roof:angle", "").c_str();
 				elem.roofAngle = (float)core::string::toFloat(raStr.c_str());
 			}
 			if (tags.contains("roof:shape")) {
@@ -503,7 +503,7 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 			}
 
 			// Skip underground structures
-			if (tags.contains("location") && tags.value("location", "") == "underground") {
+			if (tags.contains("location") && tags.strVal("location", "") == "underground") {
 				continue;
 			}
 			if (tags.contains("layer")) {

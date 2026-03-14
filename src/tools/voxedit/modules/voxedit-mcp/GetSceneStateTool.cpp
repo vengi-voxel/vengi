@@ -16,21 +16,21 @@ namespace voxedit {
 #define VALID_SKIPINFO_VALUES "palette, meshdetails, nodedetails, children, palettematerials"
 
 GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
-	_tool["description"] =
+	_tool.set("description",
 		"Get the current scene graph state. This should be your first action after connecting to the MCP server to get "
 		"the UUIDs of the existing nodes and their structure. Do this call from time to time to get an updated state. "
-		"If a node uuid is specified, only a single node is returned.";
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["properties"]["nodeUUID"] = propUUID();
-	inputSchema["properties"]["skipinfo"] =
+		"If a node uuid is specified, only a single node is returned.");
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	inputSchema.get("properties").set("nodeUUID", propUUID());
+	inputSchema.get("properties").set("skipinfo",
 		propTypeDescription("string", "Comma separated list things to omit from the json output: " VALID_SKIPINFO_VALUES
 									  ". Useful to reduce the output size if you only need a "
-									  "subset of the information. By default, all details are included.");
-	_tool["inputSchema"] = core::move(inputSchema);
+									  "subset of the information. By default, all details are included."));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool GetSceneStateTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool GetSceneStateTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const scenegraph::SceneGraph &sceneGraph = ctx.sceneMgr->sceneGraph();
 	if (sceneGraph.empty()) {
 		return ctx.result(id, "Scene graph is empty - not connected or no scene loaded", true);
@@ -39,7 +39,7 @@ bool GetSceneStateTool::execute(const nlohmann::json &id, const nlohmann::json &
 	io::BufferedReadWriteStream stream;
 	uint32_t flags = scenegraph::JSONEXPORTER_ALL;
 	if (args.contains("skipinfo")) {
-		const core::String &skipInfoStr = args.value("skipinfo", "").c_str();
+		const core::String &skipInfoStr = args.strVal("skipinfo", "").c_str();
 		core::DynamicArray<core::String> skipInfo;
 		core::string::splitString(skipInfoStr, skipInfo, ",");
 		for (const core::String &skip : skipInfo) {

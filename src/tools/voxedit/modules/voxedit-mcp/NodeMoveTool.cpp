@@ -8,17 +8,20 @@
 namespace voxedit {
 
 NodeMoveTool::NodeMoveTool() : Tool("voxedit_node_move") {
-	_tool["description"] = "Move a node to a new parent (and optional reference)";
+	_tool.set("description", "Move a node to a new parent (and optional reference)");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "parentUUID"});
-	inputSchema["properties"]["nodeUUID"] = Tool::propUUID();
-	inputSchema["properties"]["parentUUID"] = Tool::propParentUUID();
-	_tool["inputSchema"] = core::move(inputSchema);
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("parentUUID");
+	inputSchema.set("required", _requiredArr);
+	inputSchema.get("properties").set("nodeUUID", Tool::propUUID());
+	inputSchema.get("properties").set("parentUUID", Tool::propParentUUID());
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool NodeMoveTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool NodeMoveTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);

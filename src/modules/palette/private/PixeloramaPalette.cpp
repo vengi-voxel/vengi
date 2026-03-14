@@ -19,15 +19,16 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	json::Json json = json::Json::parse(jsonStr);
 	if (!json.contains("colors")) {
 		Log::error("No colors found in json file");
 		return false;
 	}
 	int maxIdx = 0;
-	for (const auto &color : json["colors"]) {
-		const std::string &colorString = color["color"];
-		const int idx = color["index"];
+	for (auto it = json.get("colors").begin(); it != json.get("colors").end(); ++it) {
+		json::Json color = *it;
+		const core::String colorString = color.get("color").str();
+		const int idx = color.get("index").intVal();
 		glm::vec4 c{0.0f, 0.0f, 0.0f, 1.0f};
 		if (SDL_sscanf(colorString.c_str(), "(%f, %f, %f, %f)", &c.r, &c.g, &c.b, &c.a) != 4) {
 			Log::warn("Unexpected color format: '%s'", colorString.c_str());
@@ -36,7 +37,7 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 		maxIdx = core_max(idx, maxIdx);
 	}
 	if (json.contains("comment")) {
-		const std::string &comment = json["comment"];
+		const core::String comment = json.get("comment").str();
 		palette.setName(comment.c_str());
 	}
 	palette.setSize(maxIdx + 1);

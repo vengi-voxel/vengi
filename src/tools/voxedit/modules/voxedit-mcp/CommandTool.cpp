@@ -9,45 +9,47 @@
 namespace voxedit {
 
 CommandTool::CommandTool() : Tool("voxedit_cmd") {
-	_tool["description"] = "Execute a command by name with optional arguments. Use voxedit_cmd_list to discover commands.";
+	_tool.set("description", "Execute a command by name with optional arguments. Use voxedit_cmd_list to discover commands.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
 
-	nlohmann::json properties = nlohmann::json::object();
-	properties["command"] = propTypeDescription("string", "Command name to execute");
+	json::Json properties = json::Json::object();
+	properties.set("command", propTypeDescription("string", "Command name to execute"));
 
-	nlohmann::json argsProp;
-	argsProp["type"] = "array";
-	argsProp["description"] = "Command arguments as strings in order";
-	nlohmann::json itemSchema;
-	itemSchema["type"] = "string";
-	argsProp["items"] = core::move(itemSchema);
-	properties["args"] = core::move(argsProp);
+	json::Json argsProp = json::Json::object();
+	argsProp.set("type", "array");
+	argsProp.set("description", "Command arguments as strings in order");
+	json::Json itemSchema = json::Json::object();
+	itemSchema.set("type", "string");
+	argsProp.set("items", core::move(itemSchema));
+	properties.set("args", core::move(argsProp));
 
-	inputSchema["properties"] = core::move(properties);
-	inputSchema["required"] = nlohmann::json::array({"command"});
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("command");
+	inputSchema.set("required", _requiredArr);
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool CommandTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
-	if (!args.contains("command") || !args["command"].is_string()) {
+bool CommandTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
+	if (!args.contains("command") || !args.get("command").isString()) {
 		return ctx.result(id, "Missing required parameter 'command'", true);
 	}
 
-	core::String cmd = args["command"].get<std::string>().c_str();
+	core::String cmd = args.get("command").str().c_str();
 	core::DynamicArray<core::String> rawArgs;
-	if (args.contains("args") && args["args"].is_array()) {
-		rawArgs.reserve(args["args"].size());
-		for (const auto &arg : args["args"]) {
-			if (arg.is_string()) {
-				rawArgs.push_back(arg.get<std::string>().c_str());
-			} else if (arg.is_number_integer()) {
-				rawArgs.push_back(core::String::format("%d", arg.get<int>()));
-			} else if (arg.is_number_float()) {
-				rawArgs.push_back(core::String::format("%f", arg.get<double>()));
-			} else if (arg.is_boolean()) {
-				rawArgs.push_back(arg.get<bool>() ? "true" : "false");
+	if (args.contains("args") && args.get("args").isArray()) {
+		rawArgs.reserve(args.get("args").size());
+		for (const auto &arg : args.get("args")) {
+			if (arg.isString()) {
+				rawArgs.push_back(arg.str().c_str());
+			} else if (arg.isNumberInteger()) {
+				rawArgs.push_back(core::String::format("%d", arg.intVal()));
+			} else if (arg.isNumberFloat()) {
+				rawArgs.push_back(core::String::format("%f", arg.doubleVal()));
+			} else if (arg.isBool()) {
+				rawArgs.push_back(arg.boolVal() ? "true" : "false");
 			}
 		}
 	}
@@ -59,25 +61,25 @@ bool CommandTool::execute(const nlohmann::json &id, const nlohmann::json &args, 
 }
 
 CommandListTool::CommandListTool() : Tool("voxedit_cmd_list") {
-	_tool["description"] = "List available commands with help text and arguments. Optionally filter by name prefix.";
+	_tool.set("description", "List available commands with help text and arguments. Optionally filter by name prefix.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
 
-	nlohmann::json properties = nlohmann::json::object();
-	properties["filter"] = propTypeDescription("string", "Optional prefix to filter commands");
+	json::Json properties = json::Json::object();
+	properties.set("filter", propTypeDescription("string", "Optional prefix to filter commands"));
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool CommandListTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool CommandListTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	core::String filter;
-	if (args.contains("filter") && args["filter"].is_string()) {
-		filter = args["filter"].get<std::string>().c_str();
+	if (args.contains("filter") && args.get("filter").isString()) {
+		filter = args.get("filter").str().c_str();
 	}
 
-	nlohmann::json commands = nlohmann::json::array();
+	json::Json commands = json::Json::array();
 	command::Command::visitSorted([&](const command::Command &c) {
 		if (c.isInput()) {
 			return;
@@ -85,42 +87,42 @@ bool CommandListTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		if (!filter.empty() && !core::string::startsWith(c.name(), filter)) {
 			return;
 		}
-		nlohmann::json entry;
-		entry["name"] = c.name().c_str();
+		json::Json entry = json::Json::object();
+		entry.set("name", c.name().c_str());
 		if (!c.help().empty()) {
-			entry["help"] = c.help().c_str();
+			entry.set("help", c.help().c_str());
 		}
 		if (!c.args().empty()) {
-			nlohmann::json cmdArgs = nlohmann::json::array();
+			json::Json cmdArgs = json::Json::array();
 			for (const command::CommandArg &arg : c.args()) {
-				nlohmann::json a;
-				a["name"] = arg.name.c_str();
+				json::Json a = json::Json::object();
+				a.set("name", arg.name.c_str());
 				if (!arg.description.empty()) {
-					a["desc"] = arg.description.c_str();
+					a.set("desc", arg.description.c_str());
 				}
 				switch (arg.type) {
 				case command::ArgType::String:
-					a["type"] = "string";
+					a.set("type", "string");
 					break;
 				case command::ArgType::Int:
-					a["type"] = "int";
+					a.set("type", "int");
 					break;
 				case command::ArgType::Float:
-					a["type"] = "float";
+					a.set("type", "float");
 					break;
 				case command::ArgType::Bool:
-					a["type"] = "bool";
+					a.set("type", "bool");
 					break;
 				}
-				a["optional"] = arg.optional;
+				a.set("optional", arg.optional);
 				if (!arg.defaultVal.empty()) {
-					a["default"] = arg.defaultVal.c_str();
+					a.set("default", arg.defaultVal.c_str());
 				}
-				cmdArgs.emplace_back(core::move(a));
+				cmdArgs.push(a);
 			}
-			entry["args"] = core::move(cmdArgs);
+			entry.set("args", core::move(cmdArgs));
 		}
-		commands.emplace_back(core::move(entry));
+		commands.push(entry);
 	});
 
 	return ctx.result(id, commands.dump().c_str(), false);

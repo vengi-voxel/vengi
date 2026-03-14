@@ -442,6 +442,16 @@ def update_miniz():
         ]
     )
 
+def update_cjson():
+    update_target(
+        "cJSON",
+        "https://github.com/DaveGamble/cJSON.git",
+        [
+            (f"cJSON.c", "contrib/libs/cjson/cJSON.c"),
+            (f"cJSON.h", "contrib/libs/cjson/cJSON.h")
+        ]
+    )
+
 def update_tinyxml2():
     update_target(
         "tinyxml2",
@@ -481,6 +491,7 @@ def main():
         update_tinyobjloader,
         update_simplecpp,
         update_simplexnoise,
+        update_cjson,
         update_tinyxml2,
         update_flextgl,
         update_libvxl,

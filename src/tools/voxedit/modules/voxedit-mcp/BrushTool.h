@@ -7,6 +7,7 @@
 #include "Tool.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include <glm/fwd.hpp>
 
 namespace voxedit {
 
@@ -35,27 +36,27 @@ protected:
 	/**
 	 * @brief Common JSON properties for modifier type selection
 	 */
-	static nlohmann::json propModifierType();
+	static json::Json propModifierType();
 
 	/**
 	 * @brief Common JSON properties for brush mode selection
 	 */
-	static nlohmann::json propBrushMode();
+	static json::Json propBrushMode();
 
 	/**
 	 * @brief Common JSON properties for AABB region (mins and maxs)
 	 */
-	static nlohmann::json propRegion();
+	static json::Json propRegion();
 
 	/**
 	 * @brief Common JSON property for color index
 	 */
-	static nlohmann::json propColorIndex();
+	static json::Json propColorIndex();
 
 	/**
 	 * @brief Common JSON property for position
 	 */
-	static nlohmann::json propPosition(const core::String &description);
+	static json::Json propPosition(const core::String &description);
 
 	/**
 	 * @brief Execute a brush operation with the given parameters
@@ -71,7 +72,7 @@ protected:
 	 * @return true if the operation succeeded
 	 */
 	bool executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, BrushType brushType, ModifierType modifierType,
-					  int colorIndex, const glm::ivec3 &mins, const glm::ivec3 &maxs, const nlohmann::json &id);
+					  int colorIndex, const glm::ivec3 &mins, const glm::ivec3 &maxs, const json::Json &id);
 
 public:
 	BrushTool(const core::String &name);

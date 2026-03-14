@@ -13,10 +13,6 @@ class ToolRegistry {
 private:
 	core::DynamicStringMap<Tool *> _tools;
 
-protected:
-	const core::String _name;
-	nlohmann::json _tool;
-
 public:
 	ToolRegistry() = default;
 	~ToolRegistry();
@@ -27,8 +23,8 @@ public:
 	/**
 	 * @return @c true if the call was succesfully executed - @c false otherwise
 	 */
-	bool call(const core::String &toolName, const nlohmann::json &id, const nlohmann::json &input, ToolContext &ctx);
-	void addRegisteredTools(nlohmann::json &tools);
+	bool call(const core::String &toolName, const json::Json &id, const json::Json &input, ToolContext &ctx);
+	void addRegisteredTools(json::Json &tools);
 
 	inline const core::DynamicStringMap<Tool *> &tools() const {
 		return _tools;

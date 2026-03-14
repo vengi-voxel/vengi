@@ -12,12 +12,12 @@
 namespace voxelcollection {
 namespace github {
 
-static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
 	const core::String json = http::HttpCacheStream::string(archive, file, url);
 	if (json.empty()) {
 		return {};
 	}
-	return nlohmann::json::parse(json, nullptr, false, true);
+	return json::Json::parse(json);
 }
 
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
@@ -32,7 +32,7 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 		core::string::replaceAllChars(file, '/', '-');
 		const auto &json = cachedJson(archive, file, url);
 		if (json.contains("download_url")) {
-			const auto &dlurl = json.value("download_url", "");
+			const auto &dlurl = json.strVal("download_url", "");
 			return dlurl.c_str();
 		}
 		const core::String &str = json.dump().c_str();
@@ -54,22 +54,22 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 		return entries;
 	}
-	const nlohmann::json &treeJson = json["tree"];
+	const json::Json &treeJson = json.get("tree");
 	Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)treeJson.size());
 
 	for (const auto &entry : treeJson) {
-		const auto &type = entry.value("type", "");
+		const auto &type = entry.strVal("type", "");
 		if (type != "blob") {
 			Log::debug("No blob entry, but %s", type.c_str());
 			continue;
 		}
 		TreeEntry treeEntry;
-		treeEntry.path = entry.value("path", "").c_str();
+		treeEntry.path = entry.strVal("path", "").c_str();
 		if (!path.empty() && !core::string::startsWith(treeEntry.path, path)) {
 			Log::debug("Ignore entry %s - not in path %s", treeEntry.path.c_str(), path.c_str());
 			continue;
 		}
-		treeEntry.size = entry.value("size", -1);
+		treeEntry.size = entry.intVal("size", -1);
 		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path, treeEntry.size);
 		entries.push_back(treeEntry);
 	}

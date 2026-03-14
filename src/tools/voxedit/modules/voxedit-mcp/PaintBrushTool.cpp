@@ -29,42 +29,50 @@ static PaintBrush::PaintMode parsePaintMode(const core::String &mode) {
 }
 
 PaintBrushTool::PaintBrushTool() : BrushTool("voxedit_paint_brush") {
-	_tool["description"] =
-		"Paint/recolor existing voxels in a region with various modes (Replace, Brighten, Darken, Random, Variation)";
+	_tool.set("description", "Paint/recolor existing voxels in a region with various modes (Replace, Brighten, Darken, Random, Variation)");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "region"});
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("region");
+	inputSchema.set("required", _requiredArr);
 
-	nlohmann::json properties;
-	properties["nodeUUID"] = propUUID();
-	properties["region"] = propRegion();
-	properties["colorIndex"] = propColorIndex();
+	json::Json properties = json::Json::object();
+	properties.set("nodeUUID", propUUID());
+	properties.set("region", propRegion());
+	properties.set("colorIndex", propColorIndex());
 
 	// Paint mode property
-	nlohmann::json paintModeProp;
-	paintModeProp["type"] = "string";
-	paintModeProp["description"] =
+	json::Json paintModeProp = json::Json::object();
+	paintModeProp.set("type", "string");
+	paintModeProp.set("description",
 		"The paint mode: 'replace' (change to new color), 'brighten' (make lighter), 'darken' (make darker), "
-		"'random' (random palette colors), 'variation' (random brightness variation)";
-	paintModeProp["enum"] = nlohmann::json::array({"replace", "brighten", "darken", "random", "variation"});
-	paintModeProp["default"] = "replace";
-	properties["paintMode"] = paintModeProp;
+		"'random' (random palette colors), 'variation' (random brightness variation)");
+	json::Json _enumArr = json::Json::array();
+	_enumArr.push("replace");
+	_enumArr.push("brighten");
+	_enumArr.push("darken");
+	_enumArr.push("random");
+	_enumArr.push("variation");
+	paintModeProp.set("enum", _enumArr);
+	paintModeProp.set("default", "replace");
+	properties.set("paintMode", paintModeProp);
 
 	// Factor property for brighten/darken
-	nlohmann::json factorProp;
-	factorProp["type"] = "number";
-	factorProp["description"] = "Brightness factor for brighten/darken modes (1.0 = no change, >1.0 = brighter, <1.0 = darker)";
-	factorProp["default"] = 1.2;
-	factorProp["minimum"] = 0.1;
-	factorProp["maximum"] = 3.0;
-	properties["factor"] = factorProp;
+	json::Json factorProp = json::Json::object();
+	factorProp.set("type", "number");
+	factorProp.set("description", "Brightness factor for brighten/darken modes (1.0 = no change, >1.0 = brighter, <1.0 = darker)");
+	factorProp.set("default", 1.2);
+	factorProp.set("minimum", 0.1);
+	factorProp.set("maximum", 3.0);
+	properties.set("factor", factorProp);
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool PaintBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -73,15 +81,15 @@ bool PaintBrushTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 	if (!args.contains("region")) {
 		return ctx.result(id, "Missing region argument", true);
 	}
-	const nlohmann::json &region = args["region"];
+	json::Json region = args.get("region");
 
-	const glm::ivec3 mins(region.value("minX", 0), region.value("minY", 0), region.value("minZ", 0));
-	const glm::ivec3 maxs(region.value("maxX", 0), region.value("maxY", 0), region.value("maxZ", 0));
+	const glm::ivec3 mins(region.intVal("minX", 0), region.intVal("minY", 0), region.intVal("minZ", 0));
+	const glm::ivec3 maxs(region.intVal("maxX", 0), region.intVal("maxY", 0), region.intVal("maxZ", 0));
 
-	const int colorIndex = args.value("colorIndex", 0);
-	const core::String paintModeStr = args.value("paintMode", "replace").c_str();
+	const int colorIndex = args.intVal("colorIndex", 0);
+	const core::String paintModeStr = args.strVal("paintMode", "replace").c_str();
 	const PaintBrush::PaintMode paintMode = parsePaintMode(paintModeStr);
-	const float factor = args.value("factor", 1.2f);
+	const float factor = args.floatVal("factor", 1.2f);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {

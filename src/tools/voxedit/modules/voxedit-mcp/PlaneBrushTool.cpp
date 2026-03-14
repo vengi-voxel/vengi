@@ -36,41 +36,55 @@ static voxel::FaceNames parseFace(const core::String &face) {
 }
 
 PlaneBrushTool::PlaneBrushTool() : BrushTool("voxedit_plane_brush") {
-	_tool["description"] =
-		"Extrude or fill a plane of voxels along a face direction. Fills all connected voxels on the hit surface.";
+	_tool.set("description", "Extrude or fill a plane of voxels along a face direction. Fills all connected voxels on the hit surface.");
 
-	nlohmann::json inputSchema;
-	inputSchema["type"] = "object";
-	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "position"});
+	json::Json inputSchema = json::Json::object();
+	inputSchema.set("type", "object");
+	json::Json _requiredArr = json::Json::array();
+	_requiredArr.push("nodeUUID");
+	_requiredArr.push("position");
+	inputSchema.set("required", _requiredArr);
 
-	nlohmann::json properties;
-	properties["nodeUUID"] = propUUID();
-	properties["position"] = propPosition("The position to start the plane extrusion from");
-	properties["colorIndex"] = propColorIndex();
-	properties["modifierType"] = propModifierType();
+	json::Json properties = json::Json::object();
+	properties.set("nodeUUID", propUUID());
+	properties.set("position", propPosition("The position to start the plane extrusion from"));
+	properties.set("colorIndex", propColorIndex());
+	properties.set("modifierType", propModifierType());
 
 	// Face direction property
-	nlohmann::json faceProp;
-	faceProp["type"] = "string";
-	faceProp["description"] = "The face direction for the plane extrusion";
-	faceProp["enum"] = nlohmann::json::array({"+x", "-x", "+y", "-y", "+z", "-z", "positivex", "negativex", "positivey",
-											  "negativey", "positivez", "negativez"});
-	faceProp["default"] = "+y";
-	properties["face"] = faceProp;
+	json::Json faceProp = json::Json::object();
+	faceProp.set("type", "string");
+	faceProp.set("description", "The face direction for the plane extrusion");
+	json::Json faceEnum = json::Json::array();
+	faceEnum.push("+x");
+	faceEnum.push("-x");
+	faceEnum.push("+y");
+	faceEnum.push("-y");
+	faceEnum.push("+z");
+	faceEnum.push("-z");
+	faceEnum.push("positivex");
+	faceEnum.push("negativex");
+	faceEnum.push("positivey");
+	faceEnum.push("negativey");
+	faceEnum.push("positivez");
+	faceEnum.push("negativez");
+	faceProp.set("enum", faceEnum);
+	faceProp.set("default", "+y");
+	properties.set("face", faceProp);
 
 	// Thickness property
-	nlohmann::json thicknessProp;
-	thicknessProp["type"] = "integer";
-	thicknessProp["description"] = "The thickness of the extrusion in voxels";
-	thicknessProp["default"] = 1;
-	thicknessProp["minimum"] = 1;
-	properties["thickness"] = thicknessProp;
+	json::Json thicknessProp = json::Json::object();
+	thicknessProp.set("type", "integer");
+	thicknessProp.set("description", "The thickness of the extrusion in voxels");
+	thicknessProp.set("default", 1);
+	thicknessProp.set("minimum", 1);
+	properties.set("thickness", thicknessProp);
 
-	inputSchema["properties"] = core::move(properties);
-	_tool["inputSchema"] = core::move(inputSchema);
+	inputSchema.set("properties", core::move(properties));
+	_tool.set("inputSchema", core::move(inputSchema));
 }
 
-bool PlaneBrushTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
+bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
@@ -79,15 +93,15 @@ bool PlaneBrushTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 	if (!args.contains("position")) {
 		return ctx.result(id, "Missing position argument", true);
 	}
-	const nlohmann::json &posJson = args["position"];
+	json::Json posJson = args.get("position");
 
-	const glm::ivec3 position(posJson.value("x", 0), posJson.value("y", 0), posJson.value("z", 0));
-	const int colorIndex = args.value("colorIndex", 0);
-	const core::String modifierTypeStr = args.value("modifierType", "place").c_str();
+	const glm::ivec3 position(posJson.intVal("x", 0), posJson.intVal("y", 0), posJson.intVal("z", 0));
+	const int colorIndex = args.intVal("colorIndex", 0);
+	const core::String modifierTypeStr = args.strVal("modifierType", "place").c_str();
 	const ModifierType modifierType = parseModifierType(modifierTypeStr);
-	const core::String faceStr = args.value("face", "+y").c_str();
+	const core::String faceStr = args.strVal("face", "+y").c_str();
 	const voxel::FaceNames face = parseFace(faceStr);
-	const int thickness = args.value("thickness", 1);
+	const int thickness = args.intVal("thickness", 1);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
