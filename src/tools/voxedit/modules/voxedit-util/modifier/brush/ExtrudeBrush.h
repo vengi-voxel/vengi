@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -33,13 +34,9 @@ private:
 	int _offsetU = 0; // lateral offset along first perpendicular axis
 	int _offsetV = 0; // lateral offset along second perpendicular axis
 	bool _fillWalls = true;
-	struct HistoryEntry {
-		glm::ivec3 pos;
-		voxel::Voxel original;
-	};
 	// For each position overwritten by the current extrude session, stores the original voxel.
 	// Cleared in reset() when the brush is deselected.
-	core::DynamicArray<HistoryEntry> _history;
+	voxel::DynamicVoxelArray _history;
 
 	using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
 

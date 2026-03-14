@@ -6,10 +6,12 @@
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Connectivity.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace voxedit {
@@ -81,7 +83,7 @@ void ExtrudeBrush::endBrush(BrushContext &) {
 
 		core::DynamicArray<glm::ivec3> toPrune;
 		toPrune.reserve(_history.size() + _cachedSelectedPositions.size());
-		for (const HistoryEntry &entry : _history) {
+		for (const voxel::VoxelPosition &entry : _history) {
 			if (!voxel::isAir(_lastVolume->voxel(entry.pos).getMaterial()) && isInterior(entry.pos)) {
 				toPrune.push_back(entry.pos);
 			}
@@ -226,23 +228,15 @@ void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Regi
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 	PositionSet selectedSet;
 
-	const glm::ivec3 &vlo = volRegion.getLowerCorner();
-	const glm::ivec3 &vhi = volRegion.getUpperCorner();
-	// TODO: PERF: use volume visitor
-	for (int z = vlo.z; z <= vhi.z; ++z) {
-		for (int y = vlo.y; y <= vhi.y; ++y) {
-			for (int x = vlo.x; x <= vhi.x; ++x) {
-				const voxel::Voxel vx = vol->voxel(x, y, z);
-				if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline)) {
-					const glm::ivec3 pos(x, y, z);
-					_cachedSelectedPositions.push_back(pos);
-					selectedSet.insert(pos);
-					selLo = glm::min(selLo, pos);
-					selHi = glm::max(selHi, pos);
-				}
-			}
+	voxelutil::visitVolume(*vol, volRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (voxel.getFlags() & voxel::FlagOutline) {
+			const glm::ivec3 pos(x, y, z);
+			_cachedSelectedPositions.push_back(pos);
+			selectedSet.insert(pos);
+			selLo = glm::min(selLo, pos);
+			selHi = glm::max(selHi, pos);
 		}
-	}
+	}, voxelutil::VisitSolid());
 
 	if (_cachedSelectedPositions.empty()) {
 		return;
@@ -297,7 +291,7 @@ void ExtrudeBrush::adjustCacheForRegionShift(const glm::ivec3 &delta) {
 		wc.basePos += delta;
 	}
 
-	for (HistoryEntry &entry : _history) {
+	for (voxel::VoxelPosition &entry : _history) {
 		entry.pos += delta;
 	}
 
@@ -325,8 +319,8 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 
 	// Step 1: Restore all positions modified by the previous generate() call.
 	// This makes depth/offset changes fully reversible without touching the undo stack.
-	for (const HistoryEntry &entry : _history) {
-		vol->setVoxel(entry.pos, entry.original);
+	for (const voxel::VoxelPosition &entry : _history) {
+		vol->setVoxel(entry.pos, entry.voxel);
 		wrapper.addToDirtyRegion(entry.pos);
 	}
 	_history.clear();
