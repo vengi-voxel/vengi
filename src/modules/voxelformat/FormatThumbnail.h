@@ -5,6 +5,7 @@
 #pragma once
 
 #include "image/ImageFwd.h"
+#include "core/String.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

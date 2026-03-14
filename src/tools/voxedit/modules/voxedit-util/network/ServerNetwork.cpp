@@ -5,7 +5,7 @@
 #include "ServerNetwork.h"
 #include "ProtocolIds.h"
 #include "ProtocolMessageFactory.h"
-#include "app/I18N.h"
+#include "app/I18NMarkers.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -20,6 +20,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
+#include <errno.h>
 
 namespace voxedit {
 

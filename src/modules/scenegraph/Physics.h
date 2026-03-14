@@ -6,7 +6,7 @@
 
 #include "core/collection/DynamicArray.h"
 #include "math/Axis.h"
-#include "scenegraph/FrameTransform.h"
+#include <glm/mat4x4.hpp>
 
 namespace voxel {
 class RawVolume;

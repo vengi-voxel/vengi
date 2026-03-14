@@ -8,7 +8,6 @@
 
 #include "color/RGBA.h"
 #include "io/Stream.h"
-#include <glm/gtc/quaternion.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -73,10 +72,6 @@ inline bool readVec3(io::ReadStream &s, glm::u16vec3 &v) {
 
 inline bool readVec4(io::ReadStream &s, glm::u16vec4 &v) {
 	return s.readUInt16(v.x) == 0 && s.readUInt16(v.y) == 0 && s.readUInt16(v.z) == 0 && s.readUInt16(v.w) == 0;
-}
-
-inline bool readQuat(io::ReadStream &s, glm::quat &q) {
-	return s.readFloat(q.x) == 0 && s.readFloat(q.y) == 0 && s.readFloat(q.z) == 0 && s.readFloat(q.w) == 0;
 }
 
 inline bool readColor(io::ReadStream &s, glm::vec4 &color) {

@@ -15,6 +15,7 @@
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "io/StreamUtil.h"
+#include "io/StreamUtilQuat.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"

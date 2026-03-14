@@ -6,10 +6,6 @@
 
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/type_aligned.hpp>
 
 namespace voxel {
 class Region;
