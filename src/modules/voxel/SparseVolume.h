@@ -5,20 +5,21 @@
 #pragma once
 
 #include "core/GLM.h"
-#include "core/Trace.h"
 #include "core/SharedPtr.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicMap.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "math/Axis.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "voxel/VolumeSamplerUtil.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {
 
 /**
  * Sparse volume implementation which stores data in a hashmap. This is useful for volumes where most of the voxels are
- * empty.
+ * empty. This is using mutexes to be thread safe for the parallel voxel algorithms. But when doing a lot of single
+ * voxel operations, you should use a RawVolume - also for cache locallity.
  */
 class SparseVolume {
 private:
@@ -67,7 +68,7 @@ public:
 	public:
 		Sampler(const SparseVolume &volume);
 		Sampler(const SparseVolume *volume);
-		Sampler(const Sampler &other) = default;  // Explicitly allow default copy to preserve chunk cache
+		Sampler(const Sampler &other) = default; // Explicitly allow default copy to preserve chunk cache
 		virtual ~Sampler();
 
 		const Voxel &voxel() const;
@@ -234,7 +235,8 @@ public:
 };
 
 template<>
-inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
+inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, int nx, int nz, const Voxel *voxels,
+									int amount) {
 	const voxel::Region &region = volume.region();
 	if (region.isValid()) {
 		const int xDiff = region.getLowerX() - x;
@@ -276,7 +278,7 @@ inline int32_t SparseVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
-inline const Region& SparseVolume::Sampler::region() const {
+inline const Region &SparseVolume::Sampler::region() const {
 	return _volume->region();
 }
 

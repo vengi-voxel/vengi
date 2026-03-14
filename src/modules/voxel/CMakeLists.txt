@@ -14,6 +14,7 @@ set(SRCS
 	ChunkMesh.h
 	ClipboardData.h ClipboardData.cpp
 	CoordinateSystemVolume.h
+	DynamicVoxelArray.h DynamicVoxelArray.cpp
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
