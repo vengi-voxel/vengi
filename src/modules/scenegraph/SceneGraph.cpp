@@ -26,7 +26,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/external/stb_rect_pack.h"
 #include "voxelutil/VolumeRotator.h"
@@ -1223,7 +1223,7 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	return n.volume();
 }
 
-void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &target, const SceneGraphNode &node, const palette::Palette &paletteConversion) const {
+void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::ConcurrentSparseVolume &target, const SceneGraphNode &node, const palette::Palette &paletteConversion) const {
 	const voxel::RawVolume *v = resolveVolume(node);
 	core_assert(v != nullptr);
 	core_assert(v->region().isValid());
@@ -1261,7 +1261,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
 
-	voxel::SparseVolume merged;
+	voxel::ConcurrentSparseVolume merged;
 	visitChildren(root().id(), true, [&](const SceneGraphNode &node) {
 		if (!node.isAnyModelNode()) {
 			return;

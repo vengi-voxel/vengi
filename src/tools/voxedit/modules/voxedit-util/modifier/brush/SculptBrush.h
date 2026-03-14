@@ -8,7 +8,7 @@
 #include "Brush.h"
 #include "core/GLM.h"
 #include "voxel/Face.h"
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 #include "voxel/Voxel.h"
 
 #include <glm/vec3.hpp>
@@ -49,7 +49,7 @@ private:
 	bool _hasSnapshot = false;
 
 	// Original selected voxels captured at brush activation
-	voxel::SparseVolume _snapshot;
+	voxel::ConcurrentSparseVolume _snapshot;
 	// Selection bounding box at capture time
 	voxel::Region _snapshotRegion;
 	// Volume region lower corner at snapshot capture time (to detect region shifts)
@@ -57,7 +57,7 @@ private:
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so the previous state can be restored before re-applying.
-	voxel::SparseVolume _history;
+	voxel::ConcurrentSparseVolume _history;
 
 	// Cached region for preview
 	voxel::Region _cachedRegion;

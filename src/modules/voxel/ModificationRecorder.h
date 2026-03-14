@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
@@ -14,7 +14,7 @@ template<typename Volume>
 class ModificationRecorder {
 private:
 	const Volume &_volume;
-	SparseVolume _modifications;
+	ConcurrentSparseVolume _modifications;
 
 public:
 	ModificationRecorder(const Volume &volume) : _volume(volume) {

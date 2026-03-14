@@ -4,22 +4,22 @@
 
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/Vector.h"
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 
-class SparseVolumeBenchmark : public app::AbstractBenchmark {
+class ConcurrentSparseVolumeBenchmark : public app::AbstractBenchmark {
 protected:
-	voxel::SparseVolume v{voxel::Region{0, 0, 0, 143, 22, 134}};
-	voxel::SparseVolume vunlimit{};
+	voxel::ConcurrentSparseVolume v{voxel::Region{0, 0, 0, 143, 22, 134}};
+	voxel::ConcurrentSparseVolume vunlimit{};
 };
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxel)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxel)(benchmark::State &state) {
 	for (auto _ : state) {
 		v.setVoxel(96, 6, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
 		v.setVoxel(96, 7, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, CalculateRegion)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, CalculateRegion)(benchmark::State &state) {
 	for (auto _ : state) {
 		for (int i = 0; i < 10; ++i)
 			v.setVoxel(96, i, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
@@ -27,8 +27,8 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, CalculateRegion)(benchmark::State &sta
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler)(benchmark::State &state) {
-	voxel::SparseVolume::Sampler sampler(&v);
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler)(benchmark::State &state) {
+	voxel::ConcurrentSparseVolume::Sampler sampler(&v);
 	for (auto _ : state) {
 		sampler.setPosition(96, 6, 62);
 		sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 47));
@@ -37,15 +37,15 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler)(benchmark::State &sta
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxel_unlimit)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxel_unlimit)(benchmark::State &state) {
 	for (auto _ : state) {
 		vunlimit.setVoxel(96, 6, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
 		vunlimit.setVoxel(96, 7, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit)(benchmark::State &state) {
-	voxel::SparseVolume::Sampler sampler(&vunlimit);
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler_unlimit)(benchmark::State &state) {
+	voxel::ConcurrentSparseVolume::Sampler sampler(&vunlimit);
 	for (auto _ : state) {
 		sampler.setPosition(96, 6, 62);
 		sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 47));
@@ -54,7 +54,7 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit)(benchmark::St
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelsY)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxelsY)(benchmark::State &state) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	core::Vector<voxel::Voxel, 22> voxels;
 	voxels.assign(voxel, voxels.capacity());
@@ -63,7 +63,7 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelsY)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxels)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxels)(benchmark::State &state) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	core::Vector<voxel::Voxel, 22> voxels;
 	voxels.assign(voxel, voxels.capacity());
@@ -74,10 +74,10 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxels)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel_unlimit);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, CalculateRegion);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelsY);
-BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxels);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxel);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxel_unlimit);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler_unlimit);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, CalculateRegion);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelsY);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxels);

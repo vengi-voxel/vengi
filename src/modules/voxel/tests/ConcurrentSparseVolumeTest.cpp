@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 #include "app/tests/AbstractTest.h"
 #include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
@@ -15,10 +15,10 @@
 
 namespace voxel {
 
-class SparseVolumeTest : public app::AbstractTest {};
+class ConcurrentSparseVolumeTest : public app::AbstractTest {};
 
-TEST_F(SparseVolumeTest, testSetVoxel) {
-	voxel::SparseVolume v(voxel::Region(0, 10));
+TEST_F(ConcurrentSparseVolumeTest, testSetVoxel) {
+	voxel::ConcurrentSparseVolume v(voxel::Region(0, 10));
 	ASSERT_EQ(0u, v.size());
 	ASSERT_TRUE(v.empty());
 	ASSERT_TRUE(v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 0)));
@@ -35,10 +35,10 @@ TEST_F(SparseVolumeTest, testSetVoxel) {
 	ASSERT_FALSE(v.empty());
 }
 
-TEST_F(SparseVolumeTest, testCopyToRawVolume) {
+TEST_F(ConcurrentSparseVolumeTest, testCopyToRawVolume) {
 	const voxel::Region region(0, 30);
 	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 0);
-	voxel::SparseVolume v(region);
+	voxel::ConcurrentSparseVolume v(region);
 	voxel::RawVolume rv(region);
 	for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
@@ -58,20 +58,20 @@ TEST_F(SparseVolumeTest, testCopyToRawVolume) {
 	}
 }
 
-TEST_F(SparseVolumeTest, testSetVoxels) {
+TEST_F(ConcurrentSparseVolumeTest, testSetVoxels) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	core::Vector<voxel::Voxel, 6> voxels;
 	voxels.assign(voxel, voxels.capacity());
-	voxel::SparseVolume v{voxel::Region{0, 0, 0, 3, 6, 3}};
+	voxel::ConcurrentSparseVolume v{voxel::Region{0, 0, 0, 3, 6, 3}};
 	voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
 				v.region().getHeightInVoxels());
 	const int vxls = voxelutil::countVoxels(v);
 	ASSERT_EQ(v.region().voxels(), vxls);
 }
 
-TEST_F(SparseVolumeTest, testFullSamplerLoop) {
+TEST_F(ConcurrentSparseVolumeTest, testFullSamplerLoop) {
 	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(64));
-	SparseVolume v(region);
+	ConcurrentSparseVolume v(region);
 	v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
 
 	v.setVoxel(0, 1, 0, voxel::createVoxel(VoxelType::Generic, 0));
@@ -93,7 +93,7 @@ TEST_F(SparseVolumeTest, testFullSamplerLoop) {
 	v.setVoxel(0, 0, 2, voxel::createVoxel(VoxelType::Generic, 7));
 	v.setVoxel(1, 0, 2, voxel::createVoxel(VoxelType::Generic, 8));
 	v.setVoxel(2, 0, 2, voxel::createVoxel(VoxelType::Generic, 9));
-	SparseVolume::Sampler volumeSampler(v);
+	ConcurrentSparseVolume::Sampler volumeSampler(v);
 
 	ASSERT_EQ(0, region.getLowerX());
 	ASSERT_EQ(0, region.getLowerY());
@@ -302,8 +302,8 @@ TEST_F(SparseVolumeTest, testFullSamplerLoop) {
 	}
 }
 
-TEST_F(SparseVolumeTest, testChunkBoundariesAndRegion) {
-	SparseVolume v;
+TEST_F(ConcurrentSparseVolumeTest, testChunkBoundariesAndRegion) {
+	ConcurrentSparseVolume v;
 	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 2);
 	ASSERT_TRUE(v.setVoxel(255, 255, 255, voxel));
 	ASSERT_TRUE(v.setVoxel(256, 0, 0, voxel));
@@ -324,8 +324,8 @@ TEST_F(SparseVolumeTest, testChunkBoundariesAndRegion) {
 	EXPECT_EQ(255, region.getUpperZ());
 }
 
-TEST_F(SparseVolumeTest, testThreadSafeChunkedSetVoxel) {
-	SparseVolume v;
+TEST_F(ConcurrentSparseVolumeTest, testThreadSafeChunkedSetVoxel) {
+	ConcurrentSparseVolume v;
 	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 3);
 	const int threadCount = 4;
 	const int voxelsPerThread = 64;

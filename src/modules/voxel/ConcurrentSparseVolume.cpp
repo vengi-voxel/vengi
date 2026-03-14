@@ -2,14 +2,14 @@
  * @file
  */
 
-#include "SparseVolume.h"
+#include "ConcurrentSparseVolume.h"
 
 namespace voxel {
 
-SparseVolume::SparseVolume(const voxel::Region &region) : _region(region), _isRegionValid(_region.isValid()) {
+ConcurrentSparseVolume::ConcurrentSparseVolume(const voxel::Region &region) : _region(region), _isRegionValid(_region.isValid()) {
 }
 
-SparseVolume::Chunk *SparseVolume::findChunkUnsafe(const glm::ivec3 &chunkPos) const {
+ConcurrentSparseVolume::Chunk *ConcurrentSparseVolume::findChunkUnsafe(const glm::ivec3 &chunkPos) const {
 	const auto iter = _chunks.find(chunkPos);
 	if (iter != _chunks.end()) {
 		return iter->value.get();
@@ -17,7 +17,7 @@ SparseVolume::Chunk *SparseVolume::findChunkUnsafe(const glm::ivec3 &chunkPos) c
 	return nullptr;
 }
 
-SparseVolume::ChunkPtr SparseVolume::findChunk(const glm::ivec3 &chunkPos) const {
+ConcurrentSparseVolume::ChunkPtr ConcurrentSparseVolume::findChunk(const glm::ivec3 &chunkPos) const {
 	core::ScopedLock lock(_chunkLock);
 	const auto iter = _chunks.find(chunkPos);
 	if (iter != _chunks.end()) {
@@ -26,7 +26,7 @@ SparseVolume::ChunkPtr SparseVolume::findChunk(const glm::ivec3 &chunkPos) const
 	return ChunkPtr();
 }
 
-SparseVolume::ChunkPtr SparseVolume::findOrCreateChunk(const glm::ivec3 &chunkPos) {
+ConcurrentSparseVolume::ChunkPtr ConcurrentSparseVolume::findOrCreateChunk(const glm::ivec3 &chunkPos) {
 	core::ScopedLock lock(_chunkLock);
 	const auto iter = _chunks.find(chunkPos);
 	if (iter != _chunks.end()) {
@@ -37,7 +37,7 @@ SparseVolume::ChunkPtr SparseVolume::findOrCreateChunk(const glm::ivec3 &chunkPo
 	return chunk;
 }
 
-void SparseVolume::removeChunkIfEmpty(const glm::ivec3 &chunkPos, const ChunkPtr &chunk) {
+void ConcurrentSparseVolume::removeChunkIfEmpty(const glm::ivec3 &chunkPos, const ChunkPtr &chunk) {
 	core::ScopedLock mapLock(_chunkLock);
 	const auto iter = _chunks.find(chunkPos);
 	if (iter == _chunks.end() || iter->value != chunk) {
@@ -49,7 +49,7 @@ void SparseVolume::removeChunkIfEmpty(const glm::ivec3 &chunkPos, const ChunkPtr
 	}
 }
 
-bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
+bool ConcurrentSparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
@@ -119,7 +119,7 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 	return true;
 }
 
-void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel) {
+void ConcurrentSparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel) {
 	// Batch set voxels in a horizontal row - optimized for cache locality
 	const bool isEmptyVoxel = !_storeEmptyVoxels && isAir(voxel.getMaterial());
 
@@ -192,7 +192,7 @@ void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &vox
 	}
 }
 
-const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
+const Voxel &ConcurrentSparseVolume::voxel(const glm::ivec3 &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return _emptyVoxel;
 	}
@@ -214,7 +214,7 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 	return _emptyVoxel;
 }
 
-bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
+bool ConcurrentSparseVolume::hasVoxel(const glm::ivec3 &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
@@ -232,15 +232,15 @@ bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
 	return chunk->voxels.hasKey(packedLocalPos);
 }
 
-const Voxel &SparseVolume::voxel(int32_t x, int32_t y, int32_t z) const {
+const Voxel &ConcurrentSparseVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 	return voxel(glm::ivec3(x, y, z));
 }
 
-bool SparseVolume::hasVoxel(int x, int y, int z) const {
+bool ConcurrentSparseVolume::hasVoxel(int x, int y, int z) const {
 	return hasVoxel(glm::ivec3(x, y, z));
 }
 
-void SparseVolume::clear() {
+void ConcurrentSparseVolume::clear() {
 	core::ScopedLock mapLock(_chunkLock);
 	_chunks.clear();
 	_size = 0;
@@ -248,44 +248,44 @@ void SparseVolume::clear() {
 	_cachedChunkPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
 }
 
-SparseVolume::Sampler::Sampler(const SparseVolume *volume) : _volume(const_cast<SparseVolume *>(volume)) {
+ConcurrentSparseVolume::Sampler::Sampler(const ConcurrentSparseVolume *volume) : _volume(const_cast<ConcurrentSparseVolume *>(volume)) {
 }
 
-SparseVolume::Sampler::Sampler(const SparseVolume &volume) : _volume(const_cast<SparseVolume *>(&volume)) {
+ConcurrentSparseVolume::Sampler::Sampler(const ConcurrentSparseVolume &volume) : _volume(const_cast<ConcurrentSparseVolume *>(&volume)) {
 }
 
-SparseVolume::Sampler::~Sampler() {
+ConcurrentSparseVolume::Sampler::~Sampler() {
 }
 
-void SparseVolume::Sampler::updateChunkCache() const {
-	const glm::ivec3 chunkPos = SparseVolume::chunkPosition(_posInVolume);
+void ConcurrentSparseVolume::Sampler::updateChunkCache() const {
+	const glm::ivec3 chunkPos = ConcurrentSparseVolume::chunkPosition(_posInVolume);
 	if (_cachedChunk && _cachedChunkPos == chunkPos) {
-		const glm::u8vec3 localPos = SparseVolume::localPosition(_posInVolume, chunkPos);
-		_cachedPackedLocal = SparseVolume::packLocal(localPos);
+		const glm::u8vec3 localPos = ConcurrentSparseVolume::localPosition(_posInVolume, chunkPos);
+		_cachedPackedLocal = ConcurrentSparseVolume::packLocal(localPos);
 		return; // Same chunk, just update local coords
 	}
 	core::ScopedLock mapLock(_volume->_chunkLock);
 	_cachedChunk = _volume->findChunkUnsafe(chunkPos);
 	_cachedChunkPos = chunkPos;
-	const glm::u8vec3 localPos = SparseVolume::localPosition(_posInVolume, chunkPos);
-	_cachedPackedLocal = SparseVolume::packLocal(localPos);
+	const glm::u8vec3 localPos = ConcurrentSparseVolume::localPosition(_posInVolume, chunkPos);
+	_cachedPackedLocal = ConcurrentSparseVolume::packLocal(localPos);
 }
 
-void SparseVolume::Sampler::invalidateChunkCache() {
+void ConcurrentSparseVolume::Sampler::invalidateChunkCache() {
 	_cachedChunk = nullptr;
 }
 
-bool SparseVolume::Sampler::setVoxel(const Voxel &voxel) {
+bool ConcurrentSparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 	if (_currentPositionInvalid) {
 		return false;
 	}
 
 	// Fast path: use cached chunk if valid
 	if (_cachedChunk) {
-		const glm::ivec3 currentChunkPos = SparseVolume::chunkPosition(_posInVolume);
+		const glm::ivec3 currentChunkPos = ConcurrentSparseVolume::chunkPosition(_posInVolume);
 		if (currentChunkPos == _cachedChunkPos) {
-			const glm::u8vec3 localPos = SparseVolume::localPosition(_posInVolume, _cachedChunkPos);
-			const uint32_t packedLocalPos = SparseVolume::packLocal(localPos);
+			const glm::u8vec3 localPos = ConcurrentSparseVolume::localPosition(_posInVolume, _cachedChunkPos);
+			const uint32_t packedLocalPos = ConcurrentSparseVolume::packLocal(localPos);
 			const bool isEmptyVoxel = !_volume->_storeEmptyVoxels && isAir(voxel.getMaterial());
 
 			core::ScopedLock chunkGuard(_cachedChunk->lock);
@@ -293,7 +293,7 @@ bool SparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 				if (_cachedChunk->voxels.remove(packedLocalPos)) {
 					_volume->_size.decrement(1);
 				}
-				_currentVoxel = SparseVolume::_emptyVoxel;
+				_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 			} else {
 				const auto iter = _cachedChunk->voxels.find(packedLocalPos);
 				const bool hadVoxel = iter != _cachedChunk->voxels.end();
@@ -314,7 +314,7 @@ bool SparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 	return true;
 }
 
-bool SparseVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
+bool ConcurrentSparseVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_posInVolume.x = xPos;
 	_posInVolume.y = yPos;
 	_posInVolume.z = zPos;
@@ -342,17 +342,17 @@ bool SparseVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos
 			if (iter != _cachedChunk->voxels.end()) {
 				_currentVoxel = iter->second;
 			} else {
-				_currentVoxel = SparseVolume::_emptyVoxel;
+				_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 			}
 		} else {
-			_currentVoxel = SparseVolume::_emptyVoxel;
+			_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 		}
 		return true;
 	}
 	return false;
 }
 
-void SparseVolume::Sampler::movePositive(math::Axis axis, uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::movePositive(math::Axis axis, uint32_t offset) {
 	switch (axis) {
 	case math::Axis::X:
 		movePositiveX(offset);
@@ -368,7 +368,7 @@ void SparseVolume::Sampler::movePositive(math::Axis axis, uint32_t offset) {
 	}
 }
 
-void SparseVolume::Sampler::movePositiveX(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::movePositiveX(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.x += (int)offset;
@@ -392,15 +392,15 @@ void SparseVolume::Sampler::movePositiveX(uint32_t offset) {
 			if (iter != _cachedChunk->voxels.end()) {
 				_currentVoxel = iter->second;
 			} else {
-				_currentVoxel = SparseVolume::_emptyVoxel;
+				_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 			}
 		} else {
-			_currentVoxel = SparseVolume::_emptyVoxel;
+			_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 		}
 	}
 }
 
-void SparseVolume::Sampler::movePositiveY(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::movePositiveY(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.y += (int)offset;
@@ -424,15 +424,15 @@ void SparseVolume::Sampler::movePositiveY(uint32_t offset) {
 			if (iter != _cachedChunk->voxels.end()) {
 				_currentVoxel = iter->second;
 			} else {
-				_currentVoxel = SparseVolume::_emptyVoxel;
+				_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 			}
 		} else {
-			_currentVoxel = SparseVolume::_emptyVoxel;
+			_currentVoxel = ConcurrentSparseVolume::_emptyVoxel;
 		}
 	}
 }
 
-void SparseVolume::Sampler::movePositiveZ(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::movePositiveZ(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.z += (int)offset;
@@ -453,7 +453,7 @@ void SparseVolume::Sampler::movePositiveZ(uint32_t offset) {
 	}
 }
 
-void SparseVolume::Sampler::moveNegative(math::Axis axis, uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::moveNegative(math::Axis axis, uint32_t offset) {
 	switch (axis) {
 	case math::Axis::X:
 		moveNegativeX(offset);
@@ -469,7 +469,7 @@ void SparseVolume::Sampler::moveNegative(math::Axis axis, uint32_t offset) {
 	}
 }
 
-void SparseVolume::Sampler::moveNegativeX(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::moveNegativeX(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.x -= (int)offset;
@@ -490,7 +490,7 @@ void SparseVolume::Sampler::moveNegativeX(uint32_t offset) {
 	}
 }
 
-void SparseVolume::Sampler::moveNegativeY(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::moveNegativeY(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.y -= (int)offset;
@@ -511,7 +511,7 @@ void SparseVolume::Sampler::moveNegativeY(uint32_t offset) {
 	}
 }
 
-void SparseVolume::Sampler::moveNegativeZ(uint32_t offset) {
+void ConcurrentSparseVolume::Sampler::moveNegativeZ(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.z -= (int)offset;
@@ -532,7 +532,7 @@ void SparseVolume::Sampler::moveNegativeZ(uint32_t offset) {
 	}
 }
 
-Region SparseVolume::calculateRegion() const {
+Region ConcurrentSparseVolume::calculateRegion() const {
 	if (_size == 0) {
 		return Region::InvalidRegion;
 	}

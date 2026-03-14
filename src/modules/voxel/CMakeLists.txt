@@ -25,7 +25,7 @@ set(SRCS
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
 	Region.h Region.cpp
-	SparseVolume.h SparseVolume.cpp
+	ConcurrentSparseVolume.h ConcurrentSparseVolume.cpp
 	VolumeData.h
 	VolumeSampler.h
 	VolumeSamplerUtil.h
@@ -51,7 +51,7 @@ set(TEST_SRCS
 	tests/RawVolumeTest.cpp
 	tests/RawVolumeViewTest.cpp
 	tests/RegionTest.cpp
-	tests/SparseVolumeTest.cpp
+	tests/ConcurrentSparseVolumeTest.cpp
 	tests/SurfaceExtractorTest.cpp
 	tests/TextureSurfaceExtractorTest.cpp
 	tests/RawVolumeWrapperTest.cpp
@@ -71,7 +71,7 @@ if (USE_BENCHMARKS)
 		benchmarks/RawVolumeMoveWrapperBenchmark.cpp
 		benchmarks/RawVolumeWrapperBenchmark.cpp
 		benchmarks/RegionBenchmark.cpp
-		benchmarks/SparseVolumeBenchmark.cpp
+		benchmarks/ConcurrentSparseVolumeBenchmark.cpp
 		benchmarks/SurfaceExtractorBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)

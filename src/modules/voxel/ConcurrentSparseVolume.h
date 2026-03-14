@@ -21,11 +21,11 @@ namespace voxel {
  * empty. This is using mutexes to be thread safe for the parallel voxel algorithms. But when doing a lot of single
  * voxel operations, you should use a RawVolume - also for cache locallity.
  */
-class SparseVolume {
+class ConcurrentSparseVolume {
 private:
 	struct Chunk {
 		core::DynamicMap<uint32_t, voxel::Voxel, 1031> voxels;
-		mutable core_trace_mutex(core::Lock, lock, "SparseVolumeChunk");
+		mutable core_trace_mutex(core::Lock, lock, "ConcurrentSparseVolumeChunk");
 	};
 
 	using ChunkPtr = core::SharedPtr<Chunk>;
@@ -34,7 +34,7 @@ private:
 	static constexpr int ChunkMask = ChunkSide - 1;
 
 	core::DynamicMap<glm::ivec3, ChunkPtr, 1031, glm::hash<glm::ivec3>> _chunks;
-	mutable core_trace_mutex(core::Lock, _chunkLock, "SparseVolumeChunks");
+	mutable core_trace_mutex(core::Lock, _chunkLock, "ConcurrentSparseVolumeChunks");
 	core::AtomicInt _size{0};
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
 	/** if this is a valid region, we limit the volume to this region */
@@ -66,8 +66,8 @@ public:
 		static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
 
 	public:
-		Sampler(const SparseVolume &volume);
-		Sampler(const SparseVolume *volume);
+		Sampler(const ConcurrentSparseVolume &volume);
+		Sampler(const ConcurrentSparseVolume *volume);
 		Sampler(const Sampler &other) = default; // Explicitly allow default copy to preserve chunk cache
 		virtual ~Sampler();
 
@@ -122,7 +122,7 @@ public:
 		const Voxel &peekVoxel1px1py1pz() const;
 
 	protected:
-		SparseVolume *_volume;
+		ConcurrentSparseVolume *_volume;
 
 		// The current position in the volume
 		glm::ivec3 _posInVolume{0, 0, 0};
@@ -143,7 +143,7 @@ public:
 	};
 
 	// invalid region means unlimited size
-	SparseVolume(const voxel::Region &limitRegion = voxel::Region::InvalidRegion);
+	ConcurrentSparseVolume(const voxel::Region &limitRegion = voxel::Region::InvalidRegion);
 
 	void setStoreEmptyVoxels(bool storeEmptyVoxels) {
 		_storeEmptyVoxels = storeEmptyVoxels;
@@ -255,7 +255,7 @@ public:
 };
 
 template<>
-inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, int nx, int nz, const Voxel *voxels,
+inline bool setVoxels<ConcurrentSparseVolume>(ConcurrentSparseVolume &volume, int x, int y, int z, int nx, int nz, const Voxel *voxels,
 									int amount) {
 	const voxel::Region &region = volume.region();
 	if (region.isValid()) {
@@ -286,153 +286,153 @@ inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, i
 	return true;
 }
 
-inline int32_t SparseVolume::width() const {
+inline int32_t ConcurrentSparseVolume::width() const {
 	return _region.getWidthInVoxels();
 }
 
-inline int32_t SparseVolume::height() const {
+inline int32_t ConcurrentSparseVolume::height() const {
 	return _region.getHeightInVoxels();
 }
 
-inline int32_t SparseVolume::depth() const {
+inline int32_t ConcurrentSparseVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
-inline const Region &SparseVolume::Sampler::region() const {
+inline const Region &ConcurrentSparseVolume::Sampler::region() const {
 	return _volume->region();
 }
 
-inline const glm::ivec3 &SparseVolume::Sampler::position() const {
+inline const glm::ivec3 &ConcurrentSparseVolume::Sampler::position() const {
 	return _posInVolume;
 }
 
-inline const Voxel &SparseVolume::Sampler::voxel() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::voxel() const {
 	if (this->currentPositionValid()) {
 		return _currentVoxel;
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z);
 }
 
-inline bool SparseVolume::Sampler::currentPositionValid() const {
+inline bool ConcurrentSparseVolume::Sampler::currentPositionValid() const {
 	return !_currentPositionInvalid;
 }
 
-inline bool SparseVolume::Sampler::setPosition(const glm::ivec3 &v3dNewPos) {
+inline bool ConcurrentSparseVolume::Sampler::setPosition(const glm::ivec3 &v3dNewPos) {
 	return setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1ny1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1ny1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1ny0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1ny0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1ny1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1ny1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx0py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx0py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx0py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx0py0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx0py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx0py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1py0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1nx1py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1nx1py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1ny1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1ny1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1ny0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1ny0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1ny1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1ny1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px0py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px0py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px0py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px0py0pz() const {
 	if (this->currentPositionValid()) {
 		return _currentVoxel;
 	}
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px0py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px0py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1py0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel0px1py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel0px1py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1ny1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1ny1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1ny0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1ny0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1ny1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1ny1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px0py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px0py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px0py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px0py0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px0py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px0py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1py1nz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1py1nz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1py0pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1py0pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z);
 }
 
-inline const Voxel &SparseVolume::Sampler::peekVoxel1px1py1pz() const {
+inline const Voxel &ConcurrentSparseVolume::Sampler::peekVoxel1px1py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 }
 
-inline glm::ivec3 SparseVolume::chunkPosition(const glm::ivec3 &pos) {
+inline glm::ivec3 ConcurrentSparseVolume::chunkPosition(const glm::ivec3 &pos) {
 	auto chunkCoord = [](int value) -> int {
 		if (value >= 0) {
 			return value >> 8; // divide by 256
@@ -442,24 +442,24 @@ inline glm::ivec3 SparseVolume::chunkPosition(const glm::ivec3 &pos) {
 	return glm::ivec3(chunkCoord(pos.x), chunkCoord(pos.y), chunkCoord(pos.z));
 }
 
-inline glm::ivec3 SparseVolume::chunkBase(const glm::ivec3 &chunkPos) {
+inline glm::ivec3 ConcurrentSparseVolume::chunkBase(const glm::ivec3 &chunkPos) {
 	return chunkPos * ChunkSide;
 }
 
-inline glm::u8vec3 SparseVolume::localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos) {
+inline glm::u8vec3 ConcurrentSparseVolume::localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos) {
 	const glm::ivec3 base = chunkBase(chunkPos);
 	return glm::u8vec3(pos.x - base.x, pos.y - base.y, pos.z - base.z);
 }
 
-inline uint32_t SparseVolume::packLocal(const glm::u8vec3 &localPos) {
+inline uint32_t ConcurrentSparseVolume::packLocal(const glm::u8vec3 &localPos) {
 	return (uint32_t(localPos.x) << 16) | (uint32_t(localPos.y) << 8) | uint32_t(localPos.z);
 }
 
-inline glm::u8vec3 SparseVolume::unpackLocal(uint32_t packedLocalPos) {
+inline glm::u8vec3 ConcurrentSparseVolume::unpackLocal(uint32_t packedLocalPos) {
 	return glm::u8vec3((packedLocalPos >> 16) & 0xFFu, (packedLocalPos >> 8) & 0xFFu, packedLocalPos & 0xFFu);
 }
 
-inline glm::ivec3 SparseVolume::worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos) {
+inline glm::ivec3 ConcurrentSparseVolume::worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos) {
 	const glm::ivec3 &base = chunkBase(chunkPos);
 	const glm::u8vec3 &local = unpackLocal(packedLocalPos);
 	return glm::ivec3(base.x + (int)local.x, base.y + (int)local.y, base.z + (int)local.z);

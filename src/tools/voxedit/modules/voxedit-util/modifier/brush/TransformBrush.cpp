@@ -10,7 +10,7 @@
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/SparseVolume.h"
+#include "voxel/ConcurrentSparseVolume.h"
 #include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -353,7 +353,7 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 	const voxel::Region &volRegion = vol->region();
 
 	// Convert sparse snapshot to a temporary RawVolume for fast lock-free reads.
-	// SparseVolume::Sampler acquires a mutex per voxel lookup which causes massive
+	// ConcurrentSparseVolume::Sampler acquires a mutex per voxel lookup which causes massive
 	// contention under parallel access. RawVolume is a flat array - cache-friendly
 	// and requires no locks for concurrent reads.
 	voxel::RawVolume snapshotRaw(_snapshotRegion);
