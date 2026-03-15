@@ -6,7 +6,10 @@
 #include "ServerNetwork.h"
 #include "core/IComponent.h"
 #include "core/String.h"
-#include "scenegraph/SceneGraph.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxedit {
 

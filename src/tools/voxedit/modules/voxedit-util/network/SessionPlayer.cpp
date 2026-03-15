@@ -8,21 +8,23 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/network/ProtocolMessageFactory.h"
 #include <string.h>
 
 namespace voxedit {
 
-SessionPlayer::SessionPlayer(SceneManager *sceneMgr) : _sceneMgr(sceneMgr), _network(sceneMgr) {
+SessionPlayer::SessionPlayer(SceneManager *sceneMgr) : _sceneMgr(sceneMgr), _network(new ClientNetwork(sceneMgr)) {
 }
 
 SessionPlayer::~SessionPlayer() {
 	stopPlayback();
+	delete _network;
 }
 
 bool SessionPlayer::startPlayback(const core::String &filename) {
 	stopPlayback();
 
-	if (!_network.init()) {
+	if (!_network->init()) {
 		Log::error("Failed to initialize playback network handlers");
 		return false;
 	}
@@ -34,7 +36,7 @@ bool SessionPlayer::startPlayback(const core::String &filename) {
 		delete _fileStream;
 		_fileStream = nullptr;
 		_file = {};
-		_network.shutdown();
+		_network->shutdown();
 		return false;
 	}
 
@@ -45,7 +47,7 @@ bool SessionPlayer::startPlayback(const core::String &filename) {
 		delete _fileStream;
 		_fileStream = nullptr;
 		_file = {};
-		_network.shutdown();
+		_network->shutdown();
 		return false;
 	}
 	if (magic != FourCC('V', 'R', 'E', 'C')) {
@@ -53,7 +55,7 @@ bool SessionPlayer::startPlayback(const core::String &filename) {
 		delete _fileStream;
 		_fileStream = nullptr;
 		_file = {};
-		_network.shutdown();
+		_network->shutdown();
 		return false;
 	}
 
@@ -64,7 +66,7 @@ bool SessionPlayer::startPlayback(const core::String &filename) {
 		delete _fileStream;
 		_fileStream = nullptr;
 		_file = {};
-		_network.shutdown();
+		_network->shutdown();
 		return false;
 	}
 	if (version != PROTOCOL_VERSION) {
@@ -72,7 +74,7 @@ bool SessionPlayer::startPlayback(const core::String &filename) {
 		delete _fileStream;
 		_fileStream = nullptr;
 		_file = {};
-		_network.shutdown();
+		_network->shutdown();
 		return false;
 	}
 
@@ -101,7 +103,7 @@ void SessionPlayer::stopPlayback() {
 	_file = {};
 	_messageStream.seek(0);
 	_messageStream.reset();
-	_network.shutdown();
+	_network->shutdown();
 	Log::info("Stopped playback");
 }
 
@@ -182,7 +184,7 @@ bool SessionPlayer::processNextMessage() {
 		// Lock the recorder listener to prevent recording during playback
 		Client &client = _sceneMgr->client();
 		client.lockListener();
-		if (network::ProtocolHandler *handler = _network.protocolHandler(*msg)) {
+		if (network::ProtocolHandler *handler = _network->protocolHandler(*msg)) {
 			handler->execute(0, *msg);
 		} else {
 			Log::debug("No handler for playback message type %d", (int)msg->getId());

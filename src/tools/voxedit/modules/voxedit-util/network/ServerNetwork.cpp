@@ -25,25 +25,40 @@
 
 namespace voxedit {
 
-ScopedLogListenerActivator::ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId)
-	: _network(network), _clientId(clientId) {
-	Log::registerLogListener(this);
-}
+class ScopedLogListenerActivator : public Log::ILogListener {
+private:
+	ServerNetwork *_network;
+	network::ClientId _clientId;
 
-ScopedLogListenerActivator::~ScopedLogListenerActivator() {
-	// Unregister first so no new log messages are queued while flushing
-	Log::unregisterLogListener(this);
-	for (QueuedLogEntry &entry : _queue) {
-		LogMessage msg(entry.priority, entry.message);
-		_network->sendToClient(_clientId, msg);
+	struct QueuedLogEntry {
+		Log::Level priority;
+		core::String message;
+		QueuedLogEntry(Log::Level p, const char *m) : priority(p), message(m) {
+		}
+	};
+	core::DynamicArray<QueuedLogEntry> _queue;
+
+public:
+	ScopedLogListenerActivator(ServerNetwork *network, network::ClientId clientId)
+		: _network(network), _clientId(clientId) {
+		Log::registerLogListener(this);
 	}
-	AckMessage ackMsg;
-	_network->sendToClient(_clientId, ackMsg);
-}
 
-void ScopedLogListenerActivator::onLog(Log::Level priority, const char *message) {
-	_queue.emplace_back(priority, message);
-}
+	~ScopedLogListenerActivator() {
+		// Unregister first so no new log messages are queued while flushing
+		Log::unregisterLogListener(this);
+		for (QueuedLogEntry &entry : _queue) {
+			LogMessage msg(entry.priority, entry.message);
+			_network->sendToClient(_clientId, msg);
+		}
+		AckMessage ackMsg;
+		_network->sendToClient(_clientId, ackMsg);
+	}
+
+	void onLog(Log::Level priority, const char *message) override {
+		_queue.emplace_back(priority, message);
+	}
+};
 
 RemoteClient::RemoteClient(RemoteClient &&other) noexcept
 	: socket(other.socket), bytesIn(other.bytesIn), bytesOut(other.bytesOut), lastPingTime(other.lastPingTime),

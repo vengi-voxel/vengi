@@ -8,10 +8,12 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "memento/IMementoStateListener.h"
-#include "network/ProtocolMessage.h"
+
+namespace network {
+class ProtocolMessage;
+}
 
 namespace voxedit {
-
 class SceneManager;
 
 /**

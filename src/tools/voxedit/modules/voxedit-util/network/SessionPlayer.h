@@ -4,15 +4,17 @@
 
 #pragma once
 
-#include "ClientNetwork.h"
-#include "ProtocolMessageFactory.h"
 #include "core/String.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
-#include "io/FileStream.h"
+#include "network/MessageStream.h"
+
+namespace io {
+class FileStream;
+}
 
 namespace voxedit {
 
+class ClientNetwork;
 class SceneManager;
 
 /**
@@ -31,7 +33,7 @@ class SceneManager;
 class SessionPlayer {
 private:
 	SceneManager *_sceneMgr;
-	ClientNetwork _network;
+	ClientNetwork *_network;
 	io::FilePtr _file;
 	io::FileStream *_fileStream = nullptr;
 	network::MessageStream _messageStream;
