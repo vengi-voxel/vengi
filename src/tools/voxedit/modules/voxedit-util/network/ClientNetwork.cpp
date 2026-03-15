@@ -13,6 +13,8 @@
 #include "network/NetworkError.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/network/protocol/AckMessage.h"
+#include "voxedit-util/network/protocol/LogMessage.h"
 
 namespace voxedit {
 
@@ -136,6 +138,7 @@ bool ClientNetwork::init() {
 	r.registerHandler(PROTO_LOG, &_logMessageHandler);
 	r.registerHandler(PROTO_CHAT, &_chatMessageHandler);
 	r.registerHandler(PROTO_CLIENT_LIST, &_clientListHandler);
+	r.registerHandler(PROTO_ACK, &_nopHandler);
 
 	return true;
 }

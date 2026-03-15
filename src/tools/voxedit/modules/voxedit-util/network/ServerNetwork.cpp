@@ -20,6 +20,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
+#include "voxedit-util/network/protocol/AckMessage.h"
 #include <errno.h>
 
 namespace voxedit {
@@ -36,6 +37,8 @@ ScopedLogListenerActivator::~ScopedLogListenerActivator() {
 		LogMessage msg(entry.priority, entry.message);
 		_network->sendToClient(_clientId, msg);
 	}
+	AckMessage ackMsg;
+	_network->sendToClient(_clientId, ackMsg);
 }
 
 void ScopedLogListenerActivator::onLog(Log::Level priority, const char *message) {
@@ -223,6 +226,7 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_LOG, &_nopHandler);
 	r.registerHandler(PROTO_CHAT, &_chatHandler);
 	r.registerHandler(PROTO_CLIENT_LIST, &_nopHandler);
+	r.registerHandler(PROTO_ACK, &_nopHandler);
 
 	return true;
 }

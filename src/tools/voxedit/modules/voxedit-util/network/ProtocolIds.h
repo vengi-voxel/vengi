@@ -51,5 +51,7 @@ const network::ProtocolId PROTO_LOG = 19;
 const network::ProtocolId PROTO_CHAT = 20;
 // list of connected clients
 const network::ProtocolId PROTO_CLIENT_LIST = 21;
+// acknowledgment message sent after command processing is complete
+const network::ProtocolId PROTO_ACK = 22;
 
 } // namespace voxedit
