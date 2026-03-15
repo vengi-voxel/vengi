@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/UUID.h"
+#include "core/collection/DynamicArray.h"
 #include "json/JSON.h"
 
 namespace network {
@@ -28,6 +29,7 @@ protected:
 
 	bool sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg);
 	bool sendCommand(ToolContext &ctx, const core::String &cmd, const json::Json &id);
+	bool waitForServerResponse(ToolContext &ctx, core::DynamicArray<core::String> &logs, bool &hadErrors);
 	const core::String &rconPassword() const;
 
 	core::UUID argsUUID(const json::Json &args) const;

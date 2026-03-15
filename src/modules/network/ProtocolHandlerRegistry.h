@@ -27,7 +27,11 @@ public:
 	}
 
 	inline ProtocolHandler *getHandler(const ProtocolMessage &msg) {
-		ProtocolHandlers::iterator i = _registry.find(msg.getId());
+		return getHandler(msg.getId());
+	}
+
+	inline ProtocolHandler *getHandler(ProtocolId id) {
+		ProtocolHandlers::iterator i = _registry.find(id);
 		if (i != _registry.end())
 			return i->second;
 
