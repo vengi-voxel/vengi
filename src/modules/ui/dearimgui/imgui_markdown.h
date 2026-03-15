@@ -444,6 +444,7 @@ namespace ImGui
         enum State {
             NONE,
             LEFT,
+            FENCED,
         };
         State state = NONE;
         TextBlock text;
@@ -659,6 +660,64 @@ namespace ImGui
                 }
             }
 
+            // Handle fenced code block content
+            if( code.state == Code::FENCED )
+            {
+                if( c == '\n' )
+                {
+                    // Render current line as code
+                    line.lineEnd = i;
+                    line.isCode = true;
+                    if( line.lineEnd > line.lineStart )
+                    {
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    }
+                    else
+                    {
+                        ImGui::NewLine();
+                    }
+                    prevLine = line;
+                    line = Line();
+                    line.lineStart = i + 1;
+                    line.lastRenderPosition = i;
+                    textRegion.ResetIndent();
+                    continue;
+                }
+
+                // Check for closing ``` at start of line (only spaces before)
+                if( c == '`' && i + 2 < (int)markdownLength_
+                    && markdown_[i + 1] == '`' && markdown_[i + 2] == '`' )
+                {
+                    bool atLineStart = true;
+                    for( int j = line.lineStart; j < i; ++j )
+                    {
+                        if( markdown_[j] != ' ' )
+                        {
+                            atLineStart = false;
+                            break;
+                        }
+                    }
+                    if( atLineStart )
+                    {
+                        code.state = Code::NONE;
+                        // Skip the closing ```
+                        i += 2;
+                        // Skip rest of closing line
+                        while( i + 1 < (int)markdownLength_ && markdown_[i + 1] != '\n' )
+                        {
+                            i++;
+                        }
+                        line = Line();
+                        line.lineStart = i + 1;
+                        line.lastRenderPosition = i;
+                        continue;
+                    }
+                }
+
+                // Consume all characters inside fenced code block
+                continue;
+            }
+
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
             {
@@ -812,6 +871,44 @@ namespace ImGui
 
             if( code.state == Code::NONE && c == '`' && !line.isHeading && link.state == Link::NO_LINK )
             {
+                // Check for fenced code block (triple backticks at start of line)
+                if( i + 2 < (int)markdownLength_ && markdown_[i + 1] == '`' && markdown_[i + 2] == '`' )
+                {
+                    bool atLineStart = true;
+                    for( int j = line.lineStart; j < i; ++j )
+                    {
+                        if( markdown_[j] != ' ' )
+                        {
+                            atLineStart = false;
+                            break;
+                        }
+                    }
+                    if( atLineStart )
+                    {
+                        // Render any preceding text
+                        int lineEnd = i;
+                        if( lineEnd > line.lineStart )
+                        {
+                            line.lineEnd = lineEnd;
+                            RenderLine( markdown_, line, textRegion, mdConfig_ );
+                            line.isUnorderedListStart = false;
+                            line.leadSpaceCount = 0;
+                        }
+                        code.state = Code::FENCED;
+                        // Skip the opening ```
+                        i += 2;
+                        // Skip the rest of the line (optional language specifier)
+                        while( i + 1 < (int)markdownLength_ && markdown_[i + 1] != '\n' )
+                        {
+                            i++;
+                        }
+                        line = Line();
+                        line.lineStart = i + 2;
+                        line.lastRenderPosition = i + 1;
+                        continue;
+                    }
+                }
+
                 int lineEnd = i;
                 if( lineEnd > line.lineStart )
                 {
@@ -1099,7 +1196,10 @@ namespace ImGui
                 prevLine = line;
 				line = Line();
                 em = Emphasis();
-                code = Code();
+                if( code.state != Code::FENCED )
+                {
+                    code = Code();
+                }
 
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
@@ -1135,6 +1235,10 @@ namespace ImGui
                 if( 0 == markdown_[ line.lineEnd - 1 ] )
                 {
                     --line.lineEnd;
+                }
+                if( code.state == Code::FENCED )
+                {
+                    line.isCode = true;
                 }
                 RenderLine( markdown_, line, textRegion, mdConfig_ );
             }
