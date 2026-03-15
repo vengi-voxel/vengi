@@ -9,7 +9,7 @@
 namespace voxedit {
 
 CommandTool::CommandTool() : Tool("voxedit_cmd") {
-	_tool.set("description", "Execute a command by name with optional arguments. Use voxedit_cmd_list to discover commands.");
+	_tool.set("description", "Execute a command on the voxedit server by name with optional arguments. Use voxedit_cmd_list to discover commands.");
 
 	json::Json inputSchema = json::Json::object();
 	inputSchema.set("type", "object");
