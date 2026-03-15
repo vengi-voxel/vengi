@@ -67,7 +67,7 @@ void ThreadPool::init() {
 					core::ScopedLock lock(this->_queueMutex);
 					// wait until stop or a task is available
 					this->_queueCondition.wait(this->_queueMutex,
-											   [this] { return this->_stop || !this->_tasks.empty(); });
+											   [this]() core_thread_no_thread_safety_analysis { return this->_stop || !this->_tasks.empty(); });
 
 					if (this->_stop && (this->_force || this->_tasks.empty())) {
 						shouldExit = true;
