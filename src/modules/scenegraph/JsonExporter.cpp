@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace scenegraph {
 

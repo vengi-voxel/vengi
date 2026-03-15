@@ -6,7 +6,7 @@
 
 #include "SceneGraphAnimation.h"
 #include "math/Axis.h"
-#include <glm/gtc/quaternion.hpp>
+#include <glm/ext/quaternion_float.hpp>
 
 namespace scenegraph {
 

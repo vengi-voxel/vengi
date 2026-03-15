@@ -3,6 +3,7 @@
  */
 
 #include "ShapeBrushTool.h"
+#include "command/Command.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"

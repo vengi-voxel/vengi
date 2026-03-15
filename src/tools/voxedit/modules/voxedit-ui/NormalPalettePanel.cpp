@@ -7,6 +7,7 @@
 #include "color/Color.h"
 #include "command/CommandHandler.h"
 #include "core/Trace.h"
+#include "math/Math.h"
 #include "imgui.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"

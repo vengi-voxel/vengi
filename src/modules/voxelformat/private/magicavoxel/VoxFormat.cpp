@@ -16,6 +16,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/gtc/quaternion.hpp>
 #include "MagicaVoxel.h"
 #include "palette/Palette.h"
 

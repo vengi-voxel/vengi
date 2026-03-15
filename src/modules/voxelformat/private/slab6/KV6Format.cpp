@@ -22,6 +22,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
+#include <glm/gtc/quaternion.hpp>
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"

@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "core/Endian.h"
+#include <glm/gtc/quaternion.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif

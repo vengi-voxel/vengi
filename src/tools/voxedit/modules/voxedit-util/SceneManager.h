@@ -8,12 +8,9 @@
 #include "ISceneRenderer.h"
 #include "LUAApiListener.h"
 #include "command/ActionButton.h"
-#include "command/Command.h"
 #include "core/DeltaFrameSeconds.h"
-#include "core/Enum.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
 #include "core/concurrent/Future.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -21,24 +18,22 @@
 #include "modifier/IModifierRenderer.h"
 #include "modifier/Modifier.h"
 #include "modifier/SceneModifiedFlags.h"
-#include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphAnimation.h"
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/SessionRecorder.h"
 #include "voxedit-util/network/SessionPlayer.h"
 #include "sound/SoundManager.h"
-#include "voxel/Face.h"
-#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/Format.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelrender/CameraMovement.h"
-#include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/Picking.h"
 #include <functional>
+
+namespace command {
+class CommandArgs;
+}
 
 namespace voxedit {
 

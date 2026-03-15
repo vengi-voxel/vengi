@@ -24,6 +24,7 @@
 #include "voxelformat/Format.h"
 #include "json/JSON.h"
 #include <glm/common.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
