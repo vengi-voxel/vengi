@@ -8,6 +8,9 @@ set(SRCS
 	LineBrushTool.h LineBrushTool.cpp
 	SelectBrushTool.h SelectBrushTool.cpp
 	PlaneBrushTool.h PlaneBrushTool.cpp
+	SculptBrushTool.h SculptBrushTool.cpp
+	TransformBrushTool.h TransformBrushTool.cpp
+	ExtrudeBrushTool.h ExtrudeBrushTool.cpp
 	NodeAddKeyframeTool.h NodeAddKeyframeTool.cpp
 	NodeRenameTool.h NodeRenameTool.cpp
 	NodeMoveTool.h NodeMoveTool.cpp

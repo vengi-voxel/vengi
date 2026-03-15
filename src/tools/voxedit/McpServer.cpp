@@ -15,6 +15,7 @@
 #include "voxedit-mcp/AnimationAddTool.h"
 #include "voxedit-mcp/AnimationSetTool.h"
 #include "voxedit-mcp/CommandTool.h"
+#include "voxedit-mcp/ExtrudeBrushTool.h"
 #include "voxedit-mcp/FindColorTool.h"
 #include "voxedit-mcp/GetPaletteTool.h"
 #include "voxedit-mcp/GetSceneStateTool.h"
@@ -37,8 +38,10 @@
 #include "voxedit-mcp/ScriptApiTool.h"
 #include "voxedit-mcp/ScriptCreateTool.h"
 #include "voxedit-mcp/ScriptTool.h"
+#include "voxedit-mcp/SculptBrushTool.h"
 #include "voxedit-mcp/SelectBrushTool.h"
 #include "voxedit-mcp/ShapeBrushTool.h"
+#include "voxedit-mcp/TransformBrushTool.h"
 #include "voxedit-mcp/Tool.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/Client.h"
@@ -130,6 +133,9 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::LineBrushTool());
 	_toolRegistry.registerTool(new voxedit::SelectBrushTool());
 	_toolRegistry.registerTool(new voxedit::PlaneBrushTool());
+	_toolRegistry.registerTool(new voxedit::SculptBrushTool());
+	_toolRegistry.registerTool(new voxedit::TransformBrushTool());
+	_toolRegistry.registerTool(new voxedit::ExtrudeBrushTool());
 	_toolRegistry.registerTool(new voxedit::CommandTool());
 	_toolRegistry.registerTool(new voxedit::CommandListTool());
 
