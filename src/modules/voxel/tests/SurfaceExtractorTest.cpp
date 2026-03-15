@@ -244,8 +244,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherPlane) {
 	// The greedy meshing should merge the large flat surfaces, but we still get multiple quads
 	// With the region being 0,0,0 to 4,0,4 and voxels at y=0, we get 6 quads total (perimeter exposed)
 	// Each quad = 4 vertices, so we get 24 vertices and 36 indices
-	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 24) << "3x3 plane should have 24 vertices";
-	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 36) << "3x3 plane should have 36 indices";
+	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 24u) << "3x3 plane should have 24 vertices";
+	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 36u) << "3x3 plane should have 36 indices";
 
 	// Verify color
 	const VertexArray &vertices = opaqueMesh.getVertexVector();
@@ -284,8 +284,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherAmbientOcclusion) {
 	const Mesh &noAoMesh = meshWithoutAO.mesh[0];
 
 	// Both should have vertices, but with different AO values
-	EXPECT_GT(aoMesh.getNoOfVertices(), 0) << "Mesh with AO should have vertices";
-	EXPECT_GT(noAoMesh.getNoOfVertices(), 0) << "Mesh without AO should have vertices";
+	EXPECT_GT(aoMesh.getNoOfVertices(), 0u) << "Mesh with AO should have vertices";
+	EXPECT_GT(noAoMesh.getNoOfVertices(), 0u) << "Mesh without AO should have vertices";
 
 	// Check that AO values vary in the AO mesh
 	const VertexArray &aoVertices = aoMesh.getVertexVector();
@@ -357,8 +357,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoAdjacentVoxels) {
 
 	// Each voxel should contribute 5 faces (the shared face is culled)
 	// Total: 10 faces = 20 triangles = 60 indices
-	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0) << "Should have vertices";
-	EXPECT_GT(opaqueMesh.getNoOfIndices(), 0) << "Should have indices";
+	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0u) << "Should have vertices";
+	EXPECT_GT(opaqueMesh.getNoOfIndices(), 0u) << "Should have indices";
 
 	// Verify both colors are present
 	int color1Triangles = countTrianglesWithColor(opaqueMesh, color1);
@@ -390,8 +390,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShape) {
 
 	// L-shape can't be merged into a single quad, so we expect more vertices/triangles
 	// than a 5-voxel straight line would produce
-	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0) << "L-shape should have vertices";
-	EXPECT_GT(opaqueMesh.getNoOfIndices(), 0) << "L-shape should have indices";
+	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0u) << "L-shape should have vertices";
+	EXPECT_GT(opaqueMesh.getNoOfIndices(), 0u) << "L-shape should have indices";
 
 	// All vertices should have the same color
 	const VertexArray &vertices = opaqueMesh.getVertexVector();
@@ -420,7 +420,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 	const Mesh &transMesh = mesh.mesh[1];
 
 	// Opaque mesh should have the Generic voxel
-	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0) << "Opaque mesh should have vertices";
+	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0u) << "Opaque mesh should have vertices";
 
 	// Transparent mesh should have the Transparent voxel
 	EXPECT_GT(transMesh.getNoOfVertices(), 0) << "Transparent mesh should have vertices";
@@ -449,10 +449,10 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherEmptyRegion) {
 	const Mesh &opaqueMesh = mesh.mesh[0];
 	const Mesh &transMesh = mesh.mesh[1];
 
-	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 0) << "Empty region should have no opaque vertices";
-	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 0) << "Empty region should have no opaque indices";
-	EXPECT_EQ(transMesh.getNoOfVertices(), 0) << "Empty region should have no transparent vertices";
-	EXPECT_EQ(transMesh.getNoOfIndices(), 0) << "Empty region should have no transparent indices";
+	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 0u) << "Empty region should have no opaque vertices";
+	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 0u) << "Empty region should have no opaque indices";
+	EXPECT_EQ(transMesh.getNoOfVertices(), 0u) << "Empty region should have no transparent vertices";
+	EXPECT_EQ(transMesh.getNoOfIndices(), 0u) << "Empty region should have no transparent indices";
 }
 
 TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxelDetailedPositions) {
