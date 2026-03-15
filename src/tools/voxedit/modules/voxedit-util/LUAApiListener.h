@@ -4,8 +4,15 @@
 
 #pragma once
 
-#include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphListener.h"
+
+namespace memento {
+class MementoHandler;
+}
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxedit {
 
