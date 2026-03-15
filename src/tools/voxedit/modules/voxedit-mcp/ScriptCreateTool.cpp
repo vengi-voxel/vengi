@@ -5,6 +5,7 @@
 #include "ScriptCreateTool.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/network/protocol/LuaScriptCreateMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
 #include "voxelgenerator/LUAApi.h"
 
 namespace voxedit {

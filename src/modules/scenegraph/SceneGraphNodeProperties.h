@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/collection/DynamicStringMap.h"
+
 namespace scenegraph {
 
 static constexpr const char *PropCopyright = "Copyright";
@@ -25,5 +27,7 @@ static constexpr const char *PropCamFov = "cam_fov";
 static constexpr const char *PropCamFrustum = "frustum";
 static constexpr const char *PropParent = "parent";
 static constexpr const char *PropParentUUID = "parent-uuid";
+
+using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 
 } // namespace scenegraph

@@ -22,14 +22,14 @@ int for_parallel_size(int start, int end) {
 	return (end - start) / chunkSize + 1;
 }
 
-void for_not_parallel(int start, int end, const std::function<void(int, int)> &f) {
+void for_not_parallel_impl(int start, int end, ForParallelFunc fn, void *ctx) {
 	core_trace_scoped(for_not_parallel);
 	if (start >= end)
 		return;
-	f(start, end);
+	fn(ctx, start, end);
 }
 
-void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda, bool wait) {
+void for_parallel_impl(int start, int end, ForParallelFunc fn, void *ctx, bool wait) {
 	core_trace_scoped(for_parallel);
 	if (start >= end)
 		return;
@@ -37,7 +37,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 	const int threadPoolSize = app::App::getInstance()->threads();
 	if (end - start == 1 || threadPoolSize <= 1) {
 		// if we are not on the main thread, we can just call the taskLambda directly
-		taskLambda(start, end);
+		fn(ctx, start, end);
 		return;
 	}
 
@@ -49,7 +49,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 
 	for (int i = start; i < end; i += chunkSize) {
 		uint32_t chunk_end = core_min(i + chunkSize, end);
-		futures.emplace_back(app::App::getInstance()->threadPool()->enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
+		futures.emplace_back(app::App::getInstance()->threadPool()->enqueue([i, chunk_end, fn, ctx]() { fn(ctx, i, chunk_end); }));
 	}
 
 	if (!wait) {

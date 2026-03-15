@@ -8,8 +8,11 @@
 #include "network/ProtocolHandler.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "network/ProtocolMessage.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/network/ClientNetwork.h"
 #include "voxedit-util/network/ProtocolIds.h"
+#include "voxedit-util/network/protocol/CommandMessage.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
 
 #ifdef _WIN32

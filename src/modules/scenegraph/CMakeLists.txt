@@ -13,6 +13,7 @@ set(SRCS
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphNodeCamera.h SceneGraphNodeCamera.cpp
 	SceneGraphNodeProperties.h
+	SceneGraphNodeType.h
 	SceneGraphTransform.h SceneGraphTransform.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
 	SceneUtil.h SceneUtil.cpp

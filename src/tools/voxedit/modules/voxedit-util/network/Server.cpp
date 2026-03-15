@@ -9,15 +9,30 @@
 #include "protocol/ClientListMessage.h"
 #include "protocol/SceneStateMessage.h"
 #include "protocol/SceneStateRequestMessage.h"
+#include "voxedit-util/network/ServerNetwork.h"
+#include "voxelgenerator/LUAApi.h"
 
 namespace voxedit {
 
-Server::Server(voxelgenerator::LUAApi *luaApi, SceneManager *sceneMgr) : _network(this, luaApi, sceneMgr) {
-	_network.addListener(this);
+Server::Server(voxelgenerator::LUAApi *luaApi, SceneManager *sceneMgr) : _network(new ServerNetwork(this, luaApi, sceneMgr)) {
+	_network->addListener(this);
 }
 
 Server::~Server() {
 	shutdown();
+	delete _network;
+}
+
+bool Server::broadcast(network::ProtocolMessage &msg, network::ClientId except) {
+	return _network->broadcast(msg, except);
+}
+
+void Server::setSceneGraph(scenegraph::SceneGraph &&sceneGraph) {
+	if (_sceneGraph == nullptr) {
+		return;
+	}
+	*_sceneGraph = core::move(sceneGraph);
+	_sceneGraph->updateTransforms();
 }
 
 bool Server::shouldRequestClientState(bool localServer) const {
@@ -28,7 +43,7 @@ bool Server::shouldRequestClientState(bool localServer) const {
 		return false;
 	}
 	// the headless server is a client, itself. So the second client is basically the one we request the state from.
-	return _network.clientCount() == 2;
+	return _network->clientCount() == 2;
 }
 
 bool Server::shouldSendClientState(bool localServer) const {
@@ -43,7 +58,7 @@ bool Server::shouldSendClientState(bool localServer) const {
 
 void Server::broadcastClientList() {
 	core::DynamicArray<ClientInfo> clientInfos;
-	const RemoteClients &clients = _network.clients();
+	const RemoteClients &clients = _network->clients();
 	for (size_t i = 0; i < clients.size(); ++i) {
 		if (!clients[i].name.empty()) {
 			ClientInfo info;
@@ -54,11 +69,11 @@ void Server::broadcastClientList() {
 	}
 	ClientListMessage msg(clientInfos);
 	Log::debug("Broadcasting client list with %d clients", (int)clientInfos.size());
-	_network.broadcast(msg);
+	_network->broadcast(msg);
 }
 
 core::String Server::disambiguatedName(const network::ClientId &clientId) const {
-	const RemoteClients &clients = _network.clients();
+	const RemoteClients &clients = _network->clients();
 	if (clientId >= (network::ClientId)clients.size()) {
 		return "Unknown";
 	}
@@ -87,7 +102,7 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 	Log::info("Client %u connected with application version %s and username %s", clientId, applicationVersion.c_str(),
 			  username.c_str());
 
-	if (RemoteClient *c = _network.client(clientId)) {
+	if (RemoteClient *c = _network->client(clientId)) {
 		c->name = username;
 	} else {
 		Log::error("Client %u not found", clientId);
@@ -97,14 +112,14 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 	if (shouldRequestClientState(localServer)) {
 		Log::info("Requesting scene state from client %u", clientId);
 		SceneStateRequestMessage msg;
-		if (!_network.sendToClient(clientId, msg)) {
+		if (!_network->sendToClient(clientId, msg)) {
 			Log::error("Failed to request scene state from client %u", clientId);
 			return false;
 		}
 	} else if (shouldSendClientState(localServer)) {
 		Log::info("Sending scene state to client %u", clientId);
 		SceneStateMessage msg(*_sceneGraph);
-		if (!_network.sendToClient(clientId, msg)) {
+		if (!_network->sendToClient(clientId, msg)) {
 			Log::error("Failed to send scene state to client %u", clientId);
 			return false;
 		}
@@ -115,7 +130,7 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 	if (!localServer && !username.empty()) {
 		core::String joinMsg = core::String::format("%s joined", username.c_str());
 		ChatMessage chatMsg("", joinMsg, true);
-		_network.broadcast(chatMsg);
+		_network->broadcast(chatMsg);
 		// Broadcast updated client list to all clients
 		broadcastClientList();
 	}
@@ -124,59 +139,59 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 }
 
 void Server::disconnect(const network::ClientId &clientId) {
-	_network.disconnect(clientId);
+	_network->disconnect(clientId);
 }
 
 void Server::markForDisconnect(const network::ClientId &clientId) {
-	_network.markForDisconnect(clientId);
+	_network->markForDisconnect(clientId);
 }
 
 void Server::onConnect(RemoteClient *client) {
-	Log::info("remote client connect (%i)", (int)_network.clientCount());
+	Log::info("remote client connect (%i)", (int)_network->clientCount());
 }
 
 void Server::onDisconnect(RemoteClient *client) {
-	Log::info("remote client disconnect (%i): %s", (int)_network.clientCount(), client->name.c_str());
+	Log::info("remote client disconnect (%i): %s", (int)_network->clientCount(), client->name.c_str());
 	if (!client->name.empty()) {
 		core::String msg = core::String::format("%s left", client->name.c_str());
 		ChatMessage chatMsg("", msg, true);
-		_network.broadcast(chatMsg);
+		_network->broadcast(chatMsg);
 		// Broadcast updated client list to all clients
 		broadcastClientList();
 	}
 }
 
 void Server::construct() {
-	_network.construct();
+	_network->construct();
 }
 
 bool Server::init() {
-	return _network.init();
+	return _network->init();
 }
 
 bool Server::start(uint16_t port, const core::String &iface) {
-	return _network.start(port, iface);
+	return _network->start(port, iface);
 }
 
 void Server::stop() {
-	_network.stop();
+	_network->stop();
 }
 
 bool Server::isRunning() const {
-	return _network.isRunning();
+	return _network->isRunning();
 }
 
 void Server::update(double nowSeconds) {
-	_network.update(nowSeconds);
+	_network->update(nowSeconds);
 }
 
 void Server::shutdown() {
-	_network.removeListener(this);
-	_network.shutdown();
+	_network->removeListener(this);
+	_network->shutdown();
 }
 
 const RemoteClients &Server::clients() const {
-	return _network.clients();
+	return _network->clients();
 }
 
 

@@ -9,7 +9,8 @@
 #include "handler/server/SceneStateHandlerServer.h"
 #include "network/ProtocolHandler.h"
 #include "network/ProtocolHandlerRegistry.h"
-#include "network/SocketId.h"
+#include "voxedit-util/network/NetworkListener.h"
+#include "voxedit-util/network/RemoteClient.h"
 #include "voxedit-util/network/handler/server/BroadcastHandler.h"
 #include "voxedit-util/network/handler/server/ChatHandler.h"
 #include "voxedit-util/network/handler/server/CommandHandlerServer.h"
@@ -28,37 +29,6 @@ class LUAApi;
 namespace voxedit {
 
 class ProtocolMessage;
-
-struct RemoteClient {
-	explicit RemoteClient(network::SocketId _socket) : socket(_socket) {
-	}
-	RemoteClient(RemoteClient &&other) noexcept;
-	RemoteClient &operator=(RemoteClient &&other) noexcept;
-
-	RemoteClient(const RemoteClient &) = delete;
-	RemoteClient &operator=(const RemoteClient &) = delete;
-
-	network::SocketId socket;
-	uint64_t bytesIn = 0u;
-	uint64_t bytesOut = 0u;
-	double lastPingTime = 0.0;
-	double lastActivity = 0.0;
-	network::MessageStream in;
-	network::MessageStream out;
-	core::String name;
-};
-using RemoteClients = core::DynamicArray<RemoteClient>;
-
-class NetworkListener {
-public:
-	virtual ~NetworkListener() {
-	}
-
-	virtual void onConnect(RemoteClient *) {
-	}
-	virtual void onDisconnect(RemoteClient *) {
-	}
-};
 
 class ServerNetwork : public core::DeltaFrameSeconds {
 protected:

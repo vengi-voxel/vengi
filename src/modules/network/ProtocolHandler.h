@@ -3,13 +3,12 @@
  */
 #pragma once
 
-#include "ProtocolMessage.h"
-#include "core/Log.h"
 #include "core/SharedPtr.h"
 
 namespace network {
 
 typedef uint8_t ClientId;
+class ProtocolMessage;
 
 /**
  * @brief Interface for the execution of assigned IProtocolMessage
@@ -40,9 +39,7 @@ public:
 
 class NopHandler : public ProtocolHandler {
 public:
-	void execute(const ClientId & /*clientId*/, ProtocolMessage &message) override {
-		Log::debug("NOP handler called for message ID %d", message.getId());
-	}
+	void execute(const ClientId & /*clientId*/, ProtocolMessage &message) override;
 };
 
 typedef core::SharedPtr<ProtocolHandler> ProtocolHandlerPtr;

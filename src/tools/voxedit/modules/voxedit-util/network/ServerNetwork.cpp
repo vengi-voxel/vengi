@@ -18,7 +18,6 @@
 #include "network/SocketId.h"
 #include "protocol/PingMessage.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
 #include "voxedit-util/network/protocol/AckMessage.h"
 #include <errno.h>

@@ -7,7 +7,9 @@
 #include "SessionRecorder.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "io/FileStream.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/network/ClientNetwork.h"
 #include "voxedit-util/network/ProtocolMessageFactory.h"
 #include <string.h>
 

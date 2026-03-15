@@ -8,13 +8,16 @@
 #include "core/IComponent.h"
 #include "core/Optional.h"
 #include "core/String.h"
+#include "core/UUID.h"
 #include "core/collection/RingBuffer.h"
 #include "core/concurrent/Lock.h"
+#include "core/Trace.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/IKConstraint.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
+#include "scenegraph/SceneGraphNodeType.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <stddef.h>
@@ -22,6 +25,11 @@
 
 namespace voxel {
 class RawVolume;
+}
+
+namespace scenegraph {
+class SceneGraph;
+class SceneGraphNode;
 }
 
 namespace memento {

@@ -9,6 +9,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "network/ProtocolHandler.h"
 #include "voxedit-util/network/protocol/PingMessage.h"
+#include "voxedit-util/network/ClientNetwork.h"
 
 namespace voxedit {
 

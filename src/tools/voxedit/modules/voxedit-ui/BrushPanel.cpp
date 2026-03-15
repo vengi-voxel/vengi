@@ -18,6 +18,7 @@
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"

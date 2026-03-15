@@ -5,6 +5,7 @@
 
 #include "ProtocolHandler.h"
 #include "core/collection/Map.h"
+#include "network/ProtocolMessage.h"
 
 namespace network {
 

@@ -8,7 +8,6 @@
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
-#include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -19,6 +18,10 @@ class Palette;
 
 namespace voxel {
 class RawVolume;
+}
+
+namespace video {
+class Camera;
 }
 
 namespace voxedit {

@@ -8,12 +8,10 @@
 #include "color/RGBA.h"
 #include "core/String.h"
 #include "core/UUID.h"
-#include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicStringMap.h"
-#include "SceneGraphKeyFrame.h"
-#include "palette/NormalPalette.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphNodeType.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/IKConstraint.h"
 #include "voxel/Region.h"
@@ -23,6 +21,7 @@ class RawVolume;
 }
 namespace palette {
 class Palette;
+class NormalPalette;
 }
 
 namespace scenegraph {
@@ -37,37 +36,7 @@ struct ColorHistogramEntry {
 	float percentage = 0.0f;
 };
 
-enum class SceneGraphNodeType : uint8_t {
-	Root,
-	Model,
-	ModelReference,
-	Group,
-	Camera,
-	Point, // a point in space with a transform and a name
-	Unknown,
-
-	Max,
-
-	AllModels, // Fake type for the iterator
-	All
-};
-
-// these identifiers are using in the vengi format for the different node types
-// if you change these, VENGIFormat might need a migration path
-static constexpr const char* SceneGraphNodeTypeStr[] {
-	"Root",
-	"Model",
-	"ModelReference",
-	"Group",
-	"Camera",
-	"Point",
-	"Unknown",
-	"None"
-};
-static_assert((int)(scenegraph::SceneGraphNodeType::Max) + 1 == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
-
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
-using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 
 #define InvalidNodeId (-1)
 

@@ -3,7 +3,7 @@ set(SRCS
 	NetworkError.cpp NetworkError.h
 	NetworkAdapters.cpp NetworkAdapters.h
 	ProtocolHandlerRegistry.h
-	ProtocolHandler.h
+	ProtocolHandler.h ProtocolHandler.cpp
 	ProtocolMessage.h
 	NetworkImpl.h
 	SocketId.h

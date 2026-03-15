@@ -8,7 +8,6 @@
 #include "command/CommandHandler.h"
 #include "core/Trace.h"
 #include "math/Math.h"
-#include "imgui.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "ui/IMGUIApp.h"
@@ -18,6 +17,7 @@
 #include "video/Camera.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
 

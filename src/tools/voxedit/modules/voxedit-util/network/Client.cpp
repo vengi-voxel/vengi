@@ -20,43 +20,48 @@
 #include "voxedit-util/SceneManager.h"
 #include "protocol/NodeNormalPaletteChangedMessage.h"
 #include "protocol/SceneGraphAnimationMessage.h"
+#include "voxedit-util/network/ClientNetwork.h"
+#include "voxedit-util/network/protocol/CommandMessage.h"
 
 namespace voxedit {
+
+Client::Client(SceneManager *sceneMgr) : _sceneMgr(sceneMgr), _network(new ClientNetwork(sceneMgr)) {
+}
 
 Client::~Client() {
 	shutdown();
 }
 
 void Client::construct() {
-	_network.construct();
+	_network->construct();
 }
 
 bool Client::init() {
-	return _network.init();
+	return _network->init();
 }
 
 bool Client::connect(const core::String &hostname, uint16_t port, bool localServer) {
-	if (_network.connect(hostname, port)) {
+	if (_network->connect(hostname, port)) {
 		InitSessionMessage initMsg(localServer);
-		return _network.sendMessage(initMsg);
+		return _network->sendMessage(initMsg);
 	}
 	return false;
 }
 
 bool Client::isConnected() const {
-	return _network.isConnected();
+	return _network->isConnected();
 }
 
 void Client::disconnect() {
-	_network.disconnect();
+	_network->disconnect();
 }
 
 void Client::update(double nowSeconds) {
-	_network.update(nowSeconds);
+	_network->update(nowSeconds);
 }
 
 void Client::shutdown() {
-	_network.shutdown();
+	_network->shutdown();
 }
 
 void Client::lockListener() {
@@ -78,57 +83,57 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 	switch (state.type) {
 	case memento::MementoType::Modification: {
 		VoxelModificationMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeMove: {
 		NodeMovedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeAdded: {
 		NodeAddedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeRemoved: {
 		NodeRemovedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeRenamed: {
 		NodeRenamedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodePaletteChanged: {
 		NodePaletteChangedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeKeyFrames: {
 		NodeKeyFramesMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeProperties: {
 		NodePropertiesMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeIKConstraint: {
 		NodeIKConstraintMessage ikMsg(state, _sceneMgr->sceneGraph());
-		_network.sendMessage(ikMsg);
+		_network->sendMessage(ikMsg);
 		break;
 	}
 	case memento::MementoType::SceneNodeNormalPaletteChanged: {
 		NodeNormalPaletteChangedMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneGraphAnimation: {
 		SceneGraphAnimationMessage msg(state);
-		_network.sendMessage(msg);
+		_network->sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::Max:
@@ -143,7 +148,7 @@ void Client::executeCommand(const core::String &command) {
 	const core::String rconPassword = core::getVar(cfg::VoxEditNetRconPassword)->strVal();
 	CommandMessage msg(command, rconPassword);
 	Log::info("Send command to server: %s", command.c_str());
-	_network.sendMessage(msg);
+	_network->sendMessage(msg);
 }
 
 void Client::sendChat(const core::String &message) {
@@ -151,7 +156,7 @@ void Client::sendChat(const core::String &message) {
 		return;
 	}
 	ChatMessage msg(message);
-	_network.sendMessage(msg);
+	_network->sendMessage(msg);
 }
 
 void Client::addChatMessage(const core::String &sender, const core::String &message, bool system) {
@@ -202,7 +207,7 @@ void Client::sendSceneState() {
 	}
 	SceneStateMessage msg(_sceneMgr->sceneGraph());
 	Log::info("Send scene state to server (%i bytes)", (int)msg.size());
-	_network.sendMessage(msg);
+	_network->sendMessage(msg);
 }
 
 

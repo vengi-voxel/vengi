@@ -46,6 +46,7 @@
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
+#include "voxedit-util/network/ServerNetwork.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"

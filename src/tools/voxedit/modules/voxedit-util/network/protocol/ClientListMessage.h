@@ -4,20 +4,11 @@
 
 #pragma once
 
-#include "core/String.h"
-#include "core/collection/DynamicArray.h"
 #include "voxedit-util/network/ProtocolIds.h"
+#include "voxedit-util/network/protocol/ClientInfo.h"
 #include <stdint.h>
 
 namespace voxedit {
-
-/**
- * @brief A connected client entry with server-assigned id and display name.
- */
-struct ClientInfo {
-	uint8_t id;
-	core::String name;
-};
 
 /**
  * @brief Message containing the list of connected clients (id + name).

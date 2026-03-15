@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "ClientNetwork.h"
 #include "core/IComponent.h"
+#include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/StringSet.h"
 #include "memento/IMementoStateListener.h"
-#include "protocol/ClientListMessage.h"
+#include "voxedit-util/network/protocol/ClientInfo.h"
 #include <functional>
 
 namespace voxedit {
 
 class SceneManager;
+class ClientNetwork;
 
 struct ChatEntry {
 	core::String sender;
@@ -28,19 +28,18 @@ using ChatCallback = std::function<void(const ChatEntry &)>;
 class Client : public core::IComponent, public memento::IMementoStateListener {
 protected:
 	SceneManager *_sceneMgr = nullptr;
-	ClientNetwork _network;
+	ClientNetwork *_network;
 	bool _locked = false;
 	core::DynamicArray<ChatEntry> _chatLog;
 	core::DynamicArray<ClientInfo> _connectedClients;
 	ChatCallback _chatCallback;
 
 public:
-	Client(SceneManager *sceneMgr) : _sceneMgr(sceneMgr), _network(sceneMgr) {
-	}
+	Client(SceneManager *sceneMgr);
 	virtual ~Client();
 
 	ClientNetwork &network() {
-		return _network;
+		return *_network;
 	}
 
 	void construct() override;

@@ -17,6 +17,7 @@
 #include "core/concurrent/Lock.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/FrameTransformCache.h"
 #include "scenegraph/Physics.h"

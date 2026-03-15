@@ -3,21 +3,27 @@
  */
 #pragma once
 
-#include "ServerNetwork.h"
 #include "core/IComponent.h"
 #include "core/String.h"
+#include "network/ProtocolHandler.h"
+#include "voxedit-util/network/NetworkListener.h"
+#include "voxedit-util/network/RemoteClient.h"
 
 namespace scenegraph {
 class SceneGraph;
 }
 
+namespace voxelgenerator {
+class LUAApi;
+}
 namespace voxedit {
 
+class ServerNetwork;
 class SceneManager;
 
 class Server : public NetworkListener, public core::IComponent {
 protected:
-	ServerNetwork _network;
+	ServerNetwork *_network;
 	// the state of the scene graph that the server is broadcasting to the clients
 	scenegraph::SceneGraph *_sceneGraph = nullptr;
 
@@ -45,17 +51,16 @@ public:
 		_sceneGraph = sceneGraph;
 	}
 
-	void setSceneGraph(scenegraph::SceneGraph &&sceneGraph) {
-		if (_sceneGraph == nullptr) {
-			return;
-		}
-		*_sceneGraph = core::move(sceneGraph);
-		_sceneGraph->updateTransforms();
-	}
+	void setSceneGraph(scenegraph::SceneGraph &&sceneGraph);
 
 	ServerNetwork &network() {
-		return _network;
+		return *_network;
 	}
+
+	/**
+	 * @return @c false if there are no clients
+	 */
+	bool broadcast(network::ProtocolMessage &msg, network::ClientId except = 0xFF);
 
 	/**
 	 * @brief Start to listen on the specified port and interface

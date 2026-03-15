@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Clipboard.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"

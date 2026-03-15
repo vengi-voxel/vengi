@@ -35,6 +35,8 @@ set(SRCS
 	network/SessionPlayer.h network/SessionPlayer.cpp
 
 	network/protocol/NodeAddedMessage.h
+	network/protocol/ClientListMessage.h
+	network/protocol/ClientInfo.h
 	network/protocol/CommandMessage.h
 	network/protocol/InitSessionMessage.h
 	network/protocol/NodeKeyFramesMessage.h
