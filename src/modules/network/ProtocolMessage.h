@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include "MessageStream.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
@@ -17,7 +18,6 @@
 namespace network {
 
 using ProtocolId = uint8_t;
-using MessageStream = io::BufferedReadWriteStream;
 
 class ProtocolMessage : public io::BufferedReadWriteStream {
 protected:

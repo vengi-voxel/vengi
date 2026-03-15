@@ -1,4 +1,5 @@
 set(SRCS
+	MessageStream.h
 	NetworkError.cpp NetworkError.h
 	NetworkAdapters.cpp NetworkAdapters.h
 	ProtocolHandlerRegistry.h
