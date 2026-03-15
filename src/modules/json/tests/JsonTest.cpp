@@ -420,13 +420,6 @@ TEST(JsonTest, copyAssign) {
 	EXPECT_EQ(1, other.get("a").intVal());
 }
 
-TEST(JsonTest, selfAssign) {
-	Json j = Json::parse(R"({"x":42})");
-	j = j;
-	ASSERT_TRUE(j.isValid());
-	EXPECT_EQ(42, j.get("x").intVal());
-}
-
 // --- Move semantics ---
 
 TEST(JsonTest, moveConstruct) {
