@@ -54,10 +54,12 @@ bool CommandTool::execute(const json::Json &id, const json::Json &args, ToolCont
 		}
 	}
 
-	if (command::Command::execute(cmd, rawArgs)) {
-		return ctx.result(id, core::String::format("Executed command '%s'", cmd.c_str()), false);
+	core::String fullCmd = cmd;
+	for (const core::String &arg : rawArgs) {
+		fullCmd.append(" ");
+		fullCmd.append(arg);
 	}
-	return ctx.result(id, core::String::format("Failed to execute command '%s'", cmd.c_str()), true);
+	return sendCommand(ctx, fullCmd, id);
 }
 
 CommandListTool::CommandListTool() : Tool("voxedit_cmd_list") {
