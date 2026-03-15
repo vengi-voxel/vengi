@@ -53,5 +53,7 @@ const network::ProtocolId PROTO_CHAT = 20;
 const network::ProtocolId PROTO_CLIENT_LIST = 21;
 // acknowledgment message sent after command processing is complete
 const network::ProtocolId PROTO_ACK = 22;
+// execute a lua script synchronously (for MCP server)
+const network::ProtocolId PROTO_LUA_SCRIPT_EXEC = 23;
 
 } // namespace voxedit

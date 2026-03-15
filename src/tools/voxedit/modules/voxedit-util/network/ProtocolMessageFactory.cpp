@@ -27,6 +27,7 @@
 #include "voxedit-util/network/protocol/ChatMessage.h"
 #include "voxedit-util/network/protocol/ClientListMessage.h"
 #include "voxedit-util/network/protocol/AckMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptExecMessage.h"
 
 namespace voxedit {
 
@@ -133,6 +134,9 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_ACK:
 		msg = new AckMessage();
+		break;
+	case PROTO_LUA_SCRIPT_EXEC:
+		msg = new LuaScriptExecMessage(in);
 		break;
 	default:
 		Log::error("Unknown protocol message type: %u with size %u", type, size);

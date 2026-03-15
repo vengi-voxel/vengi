@@ -53,6 +53,7 @@ set(SRCS
 	network/protocol/LuaScriptsRequestMessage.h
 	network/protocol/LuaScriptsListMessage.h
 	network/protocol/LuaScriptCreateMessage.h
+	network/protocol/LuaScriptExecMessage.h
 	network/protocol/LogMessage.h
 	network/protocol/ChatMessage.h
 
@@ -76,6 +77,7 @@ set(SRCS
 	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp
 	network/handler/server/LuaScriptCreateHandler.h network/handler/server/LuaScriptCreateHandler.cpp
+	network/handler/server/LuaScriptExecHandler.h network/handler/server/LuaScriptExecHandler.cpp
 	network/handler/server/LuaScriptsRequestHandler.h network/handler/server/LuaScriptsRequestHandler.cpp
 	network/handler/server/SceneStateHandlerServer.h network/handler/server/SceneStateHandlerServer.cpp
 	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp

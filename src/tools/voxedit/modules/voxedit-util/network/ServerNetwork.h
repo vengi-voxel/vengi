@@ -14,6 +14,7 @@
 #include "voxedit-util/network/handler/server/ChatHandler.h"
 #include "voxedit-util/network/handler/server/CommandHandlerServer.h"
 #include "voxedit-util/network/handler/server/LuaScriptCreateHandler.h"
+#include "voxedit-util/network/handler/server/LuaScriptExecHandler.h"
 #include "voxedit-util/network/handler/server/LuaScriptsRequestHandler.h"
 
 namespace network {
@@ -93,6 +94,7 @@ protected:
 	ChatHandler _chatHandler;
 	LuaScriptsRequestHandler _luaScriptsRequestHandler;
 	LuaScriptCreateHandler _luaScriptCreateHandler;
+	LuaScriptExecHandler _luaScriptExecHandler;
 	core::VarPtr _maxClients;
 
 	RemoteClients _clients;
@@ -105,7 +107,7 @@ protected:
 	bool sendToClient(RemoteClient &client, network::ProtocolMessage &msg);
 
 public:
-	ServerNetwork(Server *server, voxelgenerator::LUAApi *luaApi);
+	ServerNetwork(Server *server, voxelgenerator::LUAApi *luaApi, SceneManager *sceneMgr);
 	virtual ~ServerNetwork();
 
 	bool start(uint16_t port = 10001u, const core::String &iface = "0.0.0.0");

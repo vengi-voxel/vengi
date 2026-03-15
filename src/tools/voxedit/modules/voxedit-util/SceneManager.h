@@ -442,6 +442,11 @@ public:
 
 	bool isScriptRunning() const;
 	bool runScript(const core::String &luaCode, const core::DynamicArray<core::String> &args);
+	/**
+	 * @brief Run a lua script synchronously to completion, including all coroutine yields.
+	 * This is used by the MCP server to execute scripts and wait for them to finish.
+	 */
+	bool runScriptSync(const core::String &luaCode, const core::DynamicArray<core::String> &args);
 
 	/**
 	 * @brief Take ownership of the volume if this returns @c true, otherwise the caller must free the memory

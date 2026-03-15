@@ -139,6 +139,7 @@ bool ClientNetwork::init() {
 	r.registerHandler(PROTO_CHAT, &_chatMessageHandler);
 	r.registerHandler(PROTO_CLIENT_LIST, &_clientListHandler);
 	r.registerHandler(PROTO_ACK, &_nopHandler);
+	r.registerHandler(PROTO_LUA_SCRIPT_EXEC, &_nopHandler);
 
 	return true;
 }

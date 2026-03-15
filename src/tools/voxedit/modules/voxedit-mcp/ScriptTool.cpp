@@ -4,6 +4,7 @@
 
 #include "ScriptTool.h"
 #include "core/StringUtil.h"
+#include "voxedit-util/network/protocol/LuaScriptExecMessage.h"
 
 namespace voxedit {
 
@@ -136,8 +137,28 @@ bool ScriptTool::execute(const json::Json &id, const json::Json &args, ToolConte
 		}
 	}
 
-	const core::String &cmd = core::String::format("xs %s %s", _scriptName.c_str(), builtArgs.c_str());
-	return sendCommand(ctx, cmd, id);
+	const core::String scriptName = _scriptName;
+	if (!sendMessage(ctx, voxedit::LuaScriptExecMessage(scriptName, builtArgs, rconPassword()))) {
+		return ctx.result(id, core::String::format("Failed to send script exec for %s", scriptName.c_str()), true);
+	}
+
+	core::DynamicArray<core::String> logs;
+	bool hadErrors = false;
+	const bool ackReceived = waitForServerResponse(ctx, logs, hadErrors);
+
+	core::String result;
+	if (ackReceived) {
+		result = core::String::format("Executed script: %s", scriptName.c_str());
+	} else {
+		result = core::String::format("Executed script: %s (timeout waiting for server response)", scriptName.c_str());
+	}
+
+	for (const core::String &log : logs) {
+		result.append("\n");
+		result.append(log);
+	}
+
+	return ctx.result(id, result, hadErrors);
 }
 
 } // namespace voxedit

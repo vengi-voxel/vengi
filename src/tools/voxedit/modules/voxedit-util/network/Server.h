@@ -10,6 +10,8 @@
 
 namespace voxedit {
 
+class SceneManager;
+
 class Server : public NetworkListener, public core::IComponent {
 protected:
 	ServerNetwork _network;
@@ -23,7 +25,7 @@ protected:
 	bool shouldRequestClientState(bool localServer) const;
 	bool shouldSendClientState(bool localServer) const;
 public:
-	Server(voxelgenerator::LUAApi *luaApi);
+	Server(voxelgenerator::LUAApi *luaApi, SceneManager *sceneMgr);
 	virtual ~Server();
 	void construct() override;
 	bool init() override;

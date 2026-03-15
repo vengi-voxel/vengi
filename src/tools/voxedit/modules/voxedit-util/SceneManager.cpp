@@ -93,7 +93,7 @@ SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
-	  _server(&_luaApi), _client(this), _recorder(this), _player(this) {
+	  _server(&_luaApi, this), _client(this), _recorder(this), _player(this) {
 	server().setState(&_sceneGraph);
 }
 
@@ -3647,6 +3647,46 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 		return false;
 	}
 	return true;
+}
+
+bool SceneManager::runScriptSync(const core::String &luaCode, const core::DynamicArray<core::String> &args) {
+	if (!runScript(luaCode, args)) {
+		return false;
+	}
+
+	// run the coroutine to completion
+	for (;;) {
+		const voxelgenerator::ScriptState state = _luaApi.update(0.0);
+		if (state == voxelgenerator::ScriptState::Error) {
+			_sceneGraph.unregisterListener(&_luaApiListener);
+			_mementoHandler.endGroup();
+			return false;
+		}
+		if (state == voxelgenerator::ScriptState::Finished) {
+			if (_sceneGraph.dirty()) {
+				markDirty();
+				_sceneRenderer->clear();
+				_sceneGraph.markClean();
+			}
+			const voxelgenerator::LuaDirtyRegions &dirtyRegions = _luaApi.dirtyRegions();
+			for (const auto &entry : dirtyRegions) {
+				const int dirtyNodeId = entry->key;
+				const voxel::Region &dirtyRegion = entry->value;
+				if (dirtyRegion.isValid()) {
+					modified(dirtyNodeId, dirtyRegion);
+				}
+			}
+			_sceneGraph.unregisterListener(&_luaApiListener);
+			_mementoHandler.endGroup();
+			return true;
+		}
+		if (state == voxelgenerator::ScriptState::Inactive) {
+			_sceneGraph.unregisterListener(&_luaApiListener);
+			_mementoHandler.endGroup();
+			return false;
+		}
+		// ScriptState::Running - continue the loop
+	}
 }
 
 bool SceneManager::frameAnimationActive() const {
