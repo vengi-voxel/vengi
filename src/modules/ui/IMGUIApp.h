@@ -30,6 +30,7 @@ class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
 	void loadFonts();
+	ImFont* _monospace = nullptr;
 
 protected:
 	command::CommandExecutionListener _lastExecutedCommand;
@@ -158,7 +159,7 @@ public:
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
 	const glm::vec4 &color(style::StyleColor color);
-
+	ImFont* monospace() const { return _monospace; }
 	void languageOption();
 	void colorReductionOptions();
 	bool keyMapOption();

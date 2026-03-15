@@ -52,6 +52,30 @@ static ImGui::MarkdownImageData MarkdownImageCallback(ImGui::MarkdownLinkCallbac
 
 	return imageData;
 }
+
+
+static void MarkdownFormatCallback(const ImGui::MarkdownFormatInfo& info, bool start) {
+    if (info.type == ImGui::MarkdownFormatType::LINK) {
+        if (start) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextLink]);
+        } else {
+            ImGui::PopStyleColor();
+
+            ImGui::UnderLine(ImGui::GetStyle().Colors[ImGuiCol_TextLink]);
+        }
+    }else if (info.type == ImGui::MarkdownFormatType::CODE){
+        ImFont* mono = imguiApp()->monospace();
+        if (start) {
+            if (mono) ImGui::PushFont(mono, 0.0f);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        } else {
+            ImGui::PopStyleColor();
+            if (mono) ImGui::PopFont();
+        }
+    }
+}
+
+
 } // namespace _priv
 
 void Markdown(const core::String &markdown, MarkdownLinkCallback *linkCallback, MarkdownImageCallback *imageCallback,
@@ -61,6 +85,7 @@ void Markdown(const core::String &markdown, MarkdownLinkCallback *linkCallback, 
 	}
 	ImGui::MarkdownConfig cfg;
 	cfg.linkCallback = linkCallback;
+	cfg.formatCallback = _priv::MarkdownFormatCallback;
 	cfg.userData = user;
 	cfg.tooltipCallback = nullptr;
 	cfg.formatFlags = ImGuiMarkdownFormatFlags_GithubStyle | ImGuiMarkdownFormatFlags_IgnoreHtml;
