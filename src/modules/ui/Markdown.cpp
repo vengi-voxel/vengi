@@ -63,14 +63,18 @@ static void MarkdownFormatCallback(const ImGui::MarkdownFormatInfo& info, bool s
 
             ImGui::UnderLine(ImGui::GetStyle().Colors[ImGuiCol_TextLink]);
         }
-    }else if (info.type == ImGui::MarkdownFormatType::CODE){
+    } else if (info.type == ImGui::MarkdownFormatType::CODE) {
         ImFont* mono = imguiApp()->monospace();
         if (start) {
-            if (mono) ImGui::PushFont(mono, 0.0f);
+            if (mono) {
+				ImGui::PushFont(mono, 0.0f);
+			}
             ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
         } else {
             ImGui::PopStyleColor();
-            if (mono) ImGui::PopFont();
+            if (mono) {
+				ImGui::PopFont();
+			}
         }
     }
 }
