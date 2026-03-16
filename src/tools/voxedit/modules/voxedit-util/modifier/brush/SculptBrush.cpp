@@ -45,6 +45,7 @@ void SculptBrush::reset() {
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
 	_hasSnapshot = false;
+	_paramsDirty = true;
 	_snapshot.clear();
 	_history.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
@@ -56,6 +57,8 @@ void SculptBrush::reset() {
 	_heightThreshold = 1;
 	_preserveTopHeight = false;
 	_trimPerStep = 1;
+	_kernelSize = 4;
+	_sigma = 4.0f;
 	_sculptMode = SculptMode::Erode;
 	_flattenFace = voxel::FaceNames::Max;
 }
@@ -64,9 +67,10 @@ bool SculptBrush::beginBrush(const BrushContext &ctx) {
 	if (_active) {
 		return false;
 	}
-	const bool needsFace = _sculptMode == SculptMode::Flatten || _sculptMode == SculptMode::SmoothAdditive || _sculptMode == SculptMode::SmoothErode;
+	const bool needsFace = modeNeedsFace(_sculptMode);
 	if (needsFace && ctx.cursorFace != voxel::FaceNames::Max) {
 		_flattenFace = ctx.cursorFace;
+		_paramsDirty = true;
 	}
 	_active = true;
 	return true;
@@ -206,22 +210,35 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	core_trace_scoped(SculptBrushApplySculpt);
+
 	voxel::BitVolume currentSolid(_snapshotRegion);
 	voxel::SparseVolume voxelMap;
 
 	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
 	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
-	for (int z = snapLo.z; z <= snapHi.z; ++z) {
-		for (int y = snapLo.y; y <= snapHi.y; ++y) {
-			for (int x = snapLo.x; x <= snapHi.x; ++x) {
-				if (!_snapshot.hasVoxel(x, y, z)) {
-					continue;
-				}
-				currentSolid.setVoxel(x, y, z, true);
-				voxelMap.setVoxel(x, y, z, _snapshot.voxel(x, y, z));
-			}
+
+	// Collect snapshot entries: positions + voxels for reuse in write-back phase
+	struct SnapshotEntry {
+		glm::ivec3 pos;
+		voxel::Voxel voxel;
+	};
+	core::DynamicArray<SnapshotEntry> snapshotEntries;
+	snapshotEntries.reserve(_snapshot.size());
+
+	struct SnapshotLoader {
+		voxel::BitVolume *solid;
+		voxel::SparseVolume *voxelMap;
+		core::DynamicArray<SnapshotEntry> *entries;
+		bool setVoxel(int x, int y, int z, const voxel::Voxel &v) {
+			const glm::ivec3 pos(x, y, z);
+			solid->setVoxel(x, y, z, true);
+			voxelMap->setVoxel(pos, v);
+			entries->push_back({pos, v});
+			return true;
 		}
-	}
+	};
+	SnapshotLoader loader{&currentSolid, &voxelMap, &snapshotEntries};
+	_snapshot.copyTo(loader);
 
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
@@ -254,6 +271,10 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		}
 	}
 
+	// Save snapshot positions as a BitVolume before sculpt modifies currentSolid.
+	// Used later to distinguish original vs newly grown positions (O(1) bit test).
+	voxel::BitVolume snapshotSolid(currentSolid);
+
 	if (_sculptMode == SculptMode::Erode) {
 		voxelutil::sculptErode(currentSolid, voxelMap, anchorSolid, _strength, _iterations);
 	} else if (_sculptMode == SculptMode::Grow) {
@@ -270,32 +291,43 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	} else if (_sculptMode == SculptMode::SmoothErode && _flattenFace != voxel::FaceNames::Max) {
 		voxelutil::sculptSmoothErode(currentSolid, voxelMap, anchorSolid, _flattenFace, _iterations, _preserveTopHeight,
 								_trimPerStep);
+	} else if (_sculptMode == SculptMode::SmoothGaussian && _flattenFace != voxel::FaceNames::Max) {
+		voxel::Voxel fillVoxel = ctx.cursorVoxel;
+		fillVoxel.setFlags(voxel::FlagOutline);
+		voxelutil::sculptSmoothGaussian(currentSolid, voxelMap, anchorSolid, _flattenFace, _kernelSize, _sigma,
+										_iterations, fillVoxel);
+	} else if (_sculptMode == SculptMode::BridgeGap) {
+		voxel::Voxel fillVoxel = ctx.cursorVoxel;
+		fillVoxel.setFlags(voxel::FlagOutline);
+		voxelutil::sculptBridgeGap(currentSolid, voxelMap, anchorSolid, fillVoxel);
 	}
 
-	// Write the result: remove voxels that were in snapshot but not in result,
-	// add voxels that are in result but not in snapshot
+	// Write results using the collected snapshot entries - no hash lookups needed.
+	// Snapshot entries have the original positions and colors. After sculpt,
+	// currentSolid tells us what survived (BitVolume, O(1) bit test).
 	const voxel::Voxel air;
 
-	// Remove snapshot voxels that were sculpted away
-	for (int z = snapLo.z; z <= snapHi.z; ++z) {
-		for (int y = snapLo.y; y <= snapHi.y; ++y) {
-			for (int x = snapLo.x; x <= snapHi.x; ++x) {
-				if (!_snapshot.hasVoxel(x, y, z)) {
-					continue;
-				}
-				const glm::ivec3 pos(x, y, z);
-				if (!currentSolid.hasValue(x, y, z)) {
-					writeVoxel(wrapper, pos, air);
-				}
-			}
+	// Pass 1: remove sculpted-away voxels + write surviving snapshot voxels
+	for (const SnapshotEntry &entry : snapshotEntries) {
+		if (!currentSolid.hasValue(entry.pos.x, entry.pos.y, entry.pos.z)) {
+			writeVoxel(wrapper, entry.pos, air);
+		} else {
+			voxel::Voxel v = entry.voxel;
+			v.setFlags(voxel::FlagOutline);
+			writeVoxel(wrapper, entry.pos, v);
 		}
 	}
 
-	// Write all solid voxels with FlagOutline
+	// Pass 2: write newly grown voxels (added by sculpt, not in original snapshot).
+	// Scan the bounding box with O(1) bit tests: currentSolid && !snapshotSolid.
+	// Only new positions need voxelMap hash lookup for color.
 	for (int z = snapLo.z; z <= snapHi.z; ++z) {
 		for (int y = snapLo.y; y <= snapHi.y; ++y) {
 			for (int x = snapLo.x; x <= snapHi.x; ++x) {
 				if (!currentSolid.hasValue(x, y, z)) {
+					continue;
+				}
+				if (snapshotSolid.hasValue(x, y, z)) {
 					continue;
 				}
 				const glm::ivec3 pos(x, y, z);
@@ -314,6 +346,10 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	if (!_hasSnapshot) {
 		return;
 	}
+	if (!_paramsDirty) {
+		return;
+	}
+	_paramsDirty = false;
 
 	voxel::RawVolume *vol = wrapper.volume();
 

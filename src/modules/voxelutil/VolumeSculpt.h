@@ -104,6 +104,43 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 					   int trimPerStep = 1);
 
 /**
+ * @brief Bridge gap: connect boundary voxels by drawing 3D lines between them.
+ *
+ * Finds all boundary voxels (solid with at least one air face-neighbor) and draws
+ * 6-connected lines between every pair, filling air voxels along each line. This
+ * bridges gaps and cracks by connecting edges across openings. No face direction
+ * needed - works in full 3D.
+ *
+ * @param[in,out] solid BitVolume marking solid positions. New positions are set.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param[in] anchors Immovable solid positions that participate in boundary detection.
+ * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
+ */
+void sculptBridgeGap(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+					 const voxel::Voxel &fillVoxel);
+
+/**
+ * @brief Smooth gaussian: blur the height map using a 2D Gaussian kernel along a face normal.
+ *
+ * The face defines "up". Builds a height map of all columns. For each iteration,
+ * computes a Gaussian-weighted average of neighbor column heights within the kernel
+ * radius. Columns taller than the target are trimmed, columns shorter are filled.
+ * Uses circular sampling (only neighbors within the kernel radius are included).
+ *
+ * @param[in,out] solid BitVolume marking solid positions. Modified to match blurred heights.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param[in] anchors Immovable solid positions included in height computation.
+ * @param face The face direction that defines "up".
+ * @param kernelSize Radius of the Gaussian kernel (1=3x3, 2=5x5, 3=7x7, 4=9x9).
+ * @param sigma Standard deviation of the Gaussian bell curve. Lower = sharper, higher = broader.
+ * @param iterations Number of blur passes.
+ * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
+ */
+void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+						  voxel::FaceNames face, int kernelSize, float sigma, int iterations,
+						  const voxel::Voxel &fillVoxel);
+
+/**
  * @brief Erode surface voxels in a volume region.
  *
  * Convenience wrapper that builds BitVolume/SparseVolume from all solid voxels in
@@ -144,5 +181,21 @@ int sculptSmoothAdditive(voxel::RawVolume &volume, const voxel::Region &region, 
  */
 int sculptSmoothErode(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face, int iterations,
 					  bool preserveTopHeight = false, int trimPerStep = 1);
+
+/**
+ * @brief Bridge gap on a volume region by drawing lines between boundary voxels.
+ *
+ * @return The number of voxels added.
+ */
+int sculptBridgeGap(voxel::RawVolume &volume, const voxel::Region &region,
+					const voxel::Voxel &fillVoxel);
+
+/**
+ * @brief Smooth gaussian on a volume region along a face normal.
+ *
+ * @return The number of voxels changed.
+ */
+int sculptSmoothGaussian(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+						 int kernelSize, float sigma, int iterations, const voxel::Voxel &fillVoxel);
 
 } // namespace voxelutil
