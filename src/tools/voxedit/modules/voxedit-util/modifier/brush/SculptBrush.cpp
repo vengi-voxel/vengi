@@ -10,6 +10,7 @@
 #include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
@@ -34,10 +35,21 @@ void SculptBrush::onActivated() {
 	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
+bool SculptBrush::hasPendingChanges() const {
+	return _hasSnapshot;
+}
+
+voxel::Region SculptBrush::revertChanges(voxel::RawVolume *volume) {
+	voxel::RawVolumeWrapper wrapper(volume);
+	_history.copyTo(wrapper);
+	_history.clear();
+	return wrapper.dirtyRegion();
+}
+
 bool SculptBrush::onDeactivated() {
 	// Restore undo registration so the final execute in setBrushType() records the undo entry
 	_sceneModifiedFlags = SceneModifiedFlags::All;
-	return _hasSnapshot;
+	return hasPendingChanges();
 }
 
 void SculptBrush::reset() {

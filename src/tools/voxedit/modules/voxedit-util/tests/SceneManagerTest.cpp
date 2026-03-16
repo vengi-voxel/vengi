@@ -1596,4 +1596,104 @@ TEST_F(SceneManagerTest, testRedoInvalidatesBrushState) {
 	EXPECT_FALSE(tb.active());
 }
 
+TEST_F(SceneManagerTest, testColorSelected) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "colorselected_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	const uint8_t originalColor = 1;
+	const uint8_t newColor = 5;
+	for (int x = 0; x <= 3; ++x) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int z = 0; z <= 3; ++z) {
+				v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, originalColor));
+			}
+		}
+	}
+
+	// Select a sub-region
+	const voxel::Region selRegion{0, 1};
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(selRegion);
+
+	sceneMgr()->testColorSelected(newColor);
+
+	// Selected voxels should have new color
+	EXPECT_EQ(newColor, v->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(newColor, v->voxel(1, 1, 1).getColor());
+	// Non-selected voxels should keep original color
+	EXPECT_EQ(originalColor, v->voxel(2, 2, 2).getColor());
+	EXPECT_EQ(originalColor, v->voxel(3, 3, 3).getColor());
+}
+
+TEST_F(SceneManagerTest, testColorSelectedNoSelection) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	const uint8_t colorBefore = v->voxel(testMins()).getColor();
+
+	sceneMgr()->testColorSelected(5);
+	EXPECT_EQ(colorBefore, v->voxel(testMins()).getColor());
+}
+
+TEST_F(SceneManagerTest, testDeselectColor) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "deselectcolor_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// Place voxels with two different colors
+	const uint8_t colorA = 1;
+	const uint8_t colorB = 2;
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorA));
+	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorB));
+	v->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorA));
+
+	// Select all three
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(voxel::Region{glm::ivec3(0, 0, 0), glm::ivec3(2, 0, 0)});
+
+	// Deselect colorA
+	sceneMgr()->testDeselectColor(colorA);
+
+	// colorA voxels should no longer be selected
+	EXPECT_FALSE((v->voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	// colorB voxel should still be selected
+	EXPECT_TRUE((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+}
+
+TEST_F(SceneManagerTest, testSelectOnlyColor) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "selectonlycolor_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	const uint8_t colorA = 1;
+	const uint8_t colorB = 2;
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorA));
+	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorB));
+	v->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, colorA));
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(voxel::Region{glm::ivec3(0, 0, 0), glm::ivec3(2, 0, 0)});
+
+	// Keep only colorA selected
+	sceneMgr()->testSelectOnlyColor(colorA);
+
+	// colorA voxels should still be selected
+	EXPECT_TRUE((v->voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	// colorB voxel should be deselected
+	EXPECT_FALSE((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+}
+
 } // namespace voxedit

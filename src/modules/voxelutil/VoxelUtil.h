@@ -118,6 +118,16 @@ void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite
 void clear(voxel::RawVolumeWrapper &in);
 
 /**
+ * @brief Recolor all selected (FlagOutline) voxels in the given region to the specified color index
+ * @param in The volume wrapper to modify
+ * @param volume The source volume to read voxels from
+ * @param region The region to scan for selected voxels
+ * @param colorIndex The new color index to apply
+ */
+void recolorSelected(voxel::RawVolumeWrapper &in, const voxel::RawVolume &volume, const voxel::Region &region,
+					 uint8_t colorIndex);
+
+/**
  * @brief Remaps or converts the voxel colors to the new given palette by searching for the closest color
  * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g.
  * search for replacements

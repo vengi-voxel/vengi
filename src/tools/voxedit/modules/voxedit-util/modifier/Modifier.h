@@ -214,6 +214,11 @@ public:
 	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 				 const ModifiedRegionCallback &callback = {});
 	void endBrush();
+	/**
+	 * @brief Apply pending brush changes without switching brushes.
+	 * Commits any accumulated state (e.g. sculpt iterations, extrude depth).
+	 */
+	void brushApply();
 	void abort();
 	/**
 	 * @brief Actions could get aborted by some external action like hitting esc

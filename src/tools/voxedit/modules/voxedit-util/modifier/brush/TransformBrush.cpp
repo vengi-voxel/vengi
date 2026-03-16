@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/VolumeSampler.h"
@@ -45,9 +46,20 @@ void TransformBrush::onActivated() {
 	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
+bool TransformBrush::hasPendingChanges() const {
+	return _hasSnapshot;
+}
+
+voxel::Region TransformBrush::revertChanges(voxel::RawVolume *volume) {
+	voxel::RawVolumeWrapper wrapper(volume);
+	_history.copyTo(wrapper);
+	_history.clear();
+	return wrapper.dirtyRegion();
+}
+
 bool TransformBrush::onDeactivated() {
 	_sceneModifiedFlags = SceneModifiedFlags::All;
-	return _hasSnapshot;
+	return hasPendingChanges();
 }
 
 void TransformBrush::reset() {
