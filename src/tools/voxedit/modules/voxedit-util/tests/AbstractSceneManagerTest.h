@@ -62,6 +62,18 @@ public:
 		nodeGroupDeleteSelected();
 	}
 
+	void testColorSelected(uint8_t colorIndex) {
+		nodeGroupColorSelected(colorIndex);
+	}
+
+	void testDeselectColor(uint8_t colorIndex) {
+		nodeGroupDeselectColor(colorIndex);
+	}
+
+	void testSelectOnlyColor(uint8_t colorIndex) {
+		nodeGroupSelectOnlyColor(colorIndex);
+	}
+
 	void testFlip(math::Axis axis) {
 		nodeGroupFlip(axis);
 	}

@@ -496,4 +496,14 @@ voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume
 	return v;
 }
 
+void recolorSelected(voxel::RawVolumeWrapper &in, const voxel::RawVolume &volume, const voxel::Region &region,
+					 uint8_t colorIndex) {
+	voxelutil::visitVolume(volume, region, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if ((voxel.getFlags() & voxel::FlagOutline) != 0 && voxel.getColor() != colorIndex) {
+			voxel::Voxel recolored = voxel::createVoxel(voxel.getMaterial(), colorIndex, voxel.getNormal(), voxel.getFlags(), voxel.getBoneIdx());
+			in.setVoxel(x, y, z, recolored);
+		}
+	}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+}
+
 } // namespace voxelutil

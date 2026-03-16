@@ -464,9 +464,56 @@ void Modifier::endBrush() {
 }
 
 void Modifier::abort() {
-	if (Brush* brush = currentBrush()) {
-		brush->abort(_brushContext);
+	Brush *brush = currentBrush();
+	if (!brush) {
+		return;
 	}
+	if (brush->hasPendingChanges()) {
+		_sceneMgr->nodeForeachGroup([&](int nodeId) {
+			scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+			if (node == nullptr || !node->visible()) {
+				return;
+			}
+			voxel::RawVolume *volume = node->volume();
+			if (volume == nullptr) {
+				return;
+			}
+			const voxel::Region dirtyRegion = brush->revertChanges(volume);
+			if (dirtyRegion.isValid()) {
+				_sceneMgr->modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+			}
+		});
+		brush->reset();
+		brush->onActivated();
+		return;
+	}
+	brush->abort(_brushContext);
+}
+
+void Modifier::brushApply() {
+	Brush *brush = currentBrush();
+	if (!brush) {
+		return;
+	}
+	if (!brush->onDeactivated()) {
+		return;
+	}
+	if (beginBrushFromPanel()) {
+		_sceneMgr->nodeForeachGroup([&](int nodeId) {
+			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+				if (!node->visible()) {
+					return;
+				}
+				auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
+					_sceneMgr->modified(nodeId, region, flags);
+				};
+				execute(_sceneMgr->sceneGraph(), *node, callback);
+			}
+		});
+		endBrush();
+	}
+	brush->reset();
+	brush->onActivated();
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {

@@ -330,6 +330,68 @@ void SceneManager::nodeGroupDeleteSelected() {
 	});
 }
 
+void SceneManager::nodeGroupColorSelected(uint8_t colorIndex) {
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
+		if (node == nullptr) {
+			return;
+		}
+		if (!node->hasSelection()) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		if (!selRegion.isValid()) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxelutil::recolorSelected(wrapper, *v, selRegion, colorIndex);
+		modified(groupNodeId, wrapper.dirtyRegion());
+	});
+}
+
+void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMatching) {
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
+		if (node == nullptr) {
+			return;
+		}
+		if (!node->hasSelection()) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		if (!selRegion.isValid()) {
+			return;
+		}
+		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const bool matches = voxel.getColor() == colorIndex;
+			if ((voxel.getFlags() & voxel::FlagOutline) != 0 && (matches == deselectMatching)) {
+				voxel::Voxel updated = voxel;
+				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
+				v->setVoxel(x, y, z, updated);
+			}
+		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		_selectionCacheNodeId = -1;
+		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
+		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
+	});
+}
+
+void SceneManager::nodeGroupDeselectColor(uint8_t colorIndex) {
+	nodeGroupFilterSelection(colorIndex, true);
+}
+
+void SceneManager::nodeGroupSelectOnlyColor(uint8_t colorIndex) {
+	nodeGroupFilterSelection(colorIndex, false);
+}
+
 void SceneManager::nodeGroupHollow() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
@@ -2826,6 +2888,11 @@ void SceneManager::construct() {
 			_modifierFacade.abort();
 		}).setHelp(_("Aborts the current modifier action"));
 
+	command::Command::registerCommand("brushapply")
+		.setHandler([&] (const command::CommandArgs& args) {
+			_modifierFacade.brushApply();
+		}).setHelp(_("Apply pending brush changes without switching brushes"));
+
 	command::Command::registerCommand("fillhollow")
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupFillHollow();
@@ -2850,6 +2917,21 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupDeleteSelected();
 		}).setHelp(_("Remove selected voxels"));
+
+	command::Command::registerCommand("colorselected")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupColorSelected(_modifierFacade.cursorVoxel().getColor());
+		}).setHelp(_("Recolor selected voxels with the active palette color"));
+
+	command::Command::registerCommand("deselectcolor")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupDeselectColor(_modifierFacade.cursorVoxel().getColor());
+		}).setHelp(_("Deselect all voxels matching the active palette color"));
+
+	command::Command::registerCommand("selectonlycolor")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupSelectOnlyColor(_modifierFacade.cursorVoxel().getColor());
+		}).setHelp(_("Deselect all voxels not matching the active palette color"));
 
 	command::Command::registerCommand("setreferenceposition")
 		.addArg({"x", command::ArgType::Int, false, "", "X coordinate"})

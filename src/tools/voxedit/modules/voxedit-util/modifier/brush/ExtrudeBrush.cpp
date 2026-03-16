@@ -28,9 +28,27 @@ void ExtrudeBrush::onActivated() {
 	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 }
 
+bool ExtrudeBrush::hasPendingChanges() const {
+	return _depth != 0 && _hasCachedSelection;
+}
+
 bool ExtrudeBrush::onDeactivated() {
 	_sceneModifiedFlags = SceneModifiedFlags::All;
-	return _depth != 0 && _hasCachedSelection;
+	return hasPendingChanges();
+}
+
+voxel::Region ExtrudeBrush::revertChanges(voxel::RawVolume *volume) {
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+	for (const voxel::VoxelPosition &entry : _history) {
+		volume->setVoxel(entry.pos, entry.voxel);
+		if (dirtyRegion.isValid()) {
+			dirtyRegion.accumulate(entry.pos);
+		} else {
+			dirtyRegion = voxel::Region(entry.pos, entry.pos);
+		}
+	}
+	_history.clear();
+	return dirtyRegion;
 }
 
 void ExtrudeBrush::reset() {

@@ -88,7 +88,9 @@ public:
 	void onSceneChange() override;
 	void reset() override;
 	void onActivated() override;
+	bool hasPendingChanges() const override;
 	bool onDeactivated() override;
+	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;

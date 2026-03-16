@@ -266,6 +266,14 @@ public:
 	}
 
 	/**
+	 * @brief Revert any NoUndo preview changes on the volume by restoring from
+	 * the brush's internal history. Returns the region that was modified.
+	 */
+	virtual voxel::Region revertChanges(voxel::RawVolume *volume) {
+		return voxel::Region::InvalidRegion;
+	}
+
+	/**
 	 * @brief Called when the scene has changed externally (e.g. via undo/redo)
 	 *
 	 * Brushes should override this to invalidate any cached state that depends
@@ -280,6 +288,14 @@ public:
 	 * @brief Called when this brush becomes the active brush.
 	 */
 	virtual void onActivated() {
+	}
+
+	/**
+	 * @brief Check if the brush has pending preview changes on the real volume
+	 * that have not been committed to the undo stack yet.
+	 */
+	virtual bool hasPendingChanges() const {
+		return false;
 	}
 
 	/**

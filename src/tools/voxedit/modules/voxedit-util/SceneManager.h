@@ -192,6 +192,10 @@ protected:
 	void nodeGroupFill();
 	void nodeGroupClear();
 	void nodeGroupDeleteSelected();
+	void nodeGroupColorSelected(uint8_t colorIndex);
+	void nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMatching);
+	void nodeGroupDeselectColor(uint8_t colorIndex);
+	void nodeGroupSelectOnlyColor(uint8_t colorIndex);
 	void nodeGroupRotate(math::Axis axis);
 	void nodeGroupFlip(math::Axis axis);
 	void nodeGroupResize(const glm::ivec3 &size);
