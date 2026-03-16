@@ -2103,6 +2103,63 @@ static int luaVoxel_sculpt_smootherode_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_sculpt_bridgegap(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int color = (int)luaL_optinteger(s, 2, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed = voxelutil::sculptBridgeGap(*volume->volume(), volume->volume()->region(), fillVoxel);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_bridgegap_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "bridgegap",
+		"summary": "Connect boundary voxels by drawing 3D lines between all pairs, filling air along each line. Bridges gaps and cracks across openings.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to bridge."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothgaussian(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int kernelSize = (int)luaL_optinteger(s, 3, 1);
+	const float sigma = (float)luaL_optnumber(s, 4, 1.0);
+	const int iterations = (int)luaL_optinteger(s, 5, 1);
+	const int color = (int)luaL_optinteger(s, 6, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed = voxelutil::sculptSmoothGaussian(*volume->volume(), volume->volume()->region(), face,
+														kernelSize, sigma, iterations, fillVoxel);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothgaussian_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "smoothgaussian",
+		"summary": "Blur the height map using a 2D Gaussian kernel along a face normal. Columns taller than the weighted average are trimmed, shorter ones are filled. Uses circular sampling within the kernel radius.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to smooth."},
+			{"name": "face", "type": "string", "description": "Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "kernelSize", "type": "integer", "description": "Radius of the Gaussian kernel (optional, default 1). 1=3x3, 2=5x5, 3=7x7, 4=9x9."},
+			{"name": "sigma", "type": "number", "description": "Standard deviation of the Gaussian bell curve (optional, default 1.0). Lower = sharper, higher = broader smoothing."},
+			{"name": "iterations", "type": "integer", "description": "Number of blur passes (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // VoxelFont bindings
 
 static int luaVoxel_voxelfont_new(lua_State *s) {
@@ -5901,6 +5958,8 @@ static void prepareState(lua_State* s) {
 		{"flatten", luaVoxel_sculpt_flatten, luaVoxel_sculpt_flatten_jsonhelp},
 		{"smoothadditive", luaVoxel_sculpt_smoothadditive, luaVoxel_sculpt_smoothadditive_jsonhelp},
 		{"smootherode", luaVoxel_sculpt_smootherode, luaVoxel_sculpt_smootherode_jsonhelp},
+		{"smoothgaussian", luaVoxel_sculpt_smoothgaussian, luaVoxel_sculpt_smoothgaussian_jsonhelp},
+		{"bridgegap", luaVoxel_sculpt_bridgegap, luaVoxel_sculpt_bridgegap_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");

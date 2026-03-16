@@ -20,6 +20,8 @@ enum class SculptMode : uint8_t {
 	Flatten,
 	SmoothAdditive,
 	SmoothErode,
+	SmoothGaussian,
+	BridgeGap,
 
 	Max
 };
@@ -43,9 +45,12 @@ private:
 	int _heightThreshold = 1;
 	bool _preserveTopHeight = false;
 	int _trimPerStep = 1;
+	int _kernelSize = 4;
+	float _sigma = 4.0f;
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
 	bool _active = false;
 	bool _hasSnapshot = false;
+	bool _paramsDirty = true;
 
 	// Original selected voxels captured at brush activation
 	voxel::SparseVolume _snapshot;
@@ -93,17 +98,25 @@ public:
 		return true;
 	}
 
+	static bool modeNeedsFace(SculptMode mode) {
+		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian;
+	}
+
 	SculptMode sculptMode() const {
 		return _sculptMode;
 	}
 
 	void setSculptMode(SculptMode mode) {
-		const bool needsFace = mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode;
-		const bool hadFace = _sculptMode == SculptMode::Flatten || _sculptMode == SculptMode::SmoothAdditive || _sculptMode == SculptMode::SmoothErode;
+		const bool needsFace = modeNeedsFace(mode);
+		const bool hadFace = modeNeedsFace(_sculptMode);
 		if (needsFace && !hadFace) {
 			_flattenFace = voxel::FaceNames::Max;
 		}
+		if (mode == SculptMode::SmoothGaussian && _sculptMode != SculptMode::SmoothGaussian) {
+			_iterations = 3;
+		}
 		_sculptMode = mode;
+		_paramsDirty = true;
 	}
 
 	float strength() const {
@@ -112,6 +125,7 @@ public:
 
 	void setStrength(float strength) {
 		_strength = glm::clamp(strength, 0.0f, 1.0f);
+		_paramsDirty = true;
 	}
 
 	int iterations() const {
@@ -120,6 +134,7 @@ public:
 
 	void setIterations(int iterations) {
 		_iterations = glm::clamp(iterations, 1, MaxFlattenIterations);
+		_paramsDirty = true;
 	}
 
 	bool hasSnapshot() const {
@@ -138,6 +153,7 @@ public:
 
 	void setHeightThreshold(int threshold) {
 		_heightThreshold = glm::clamp(threshold, 1, MaxHeightThreshold);
+		_paramsDirty = true;
 	}
 
 	bool preserveTopHeight() const {
@@ -146,6 +162,7 @@ public:
 
 	void setPreserveTopHeight(bool preserve) {
 		_preserveTopHeight = preserve;
+		_paramsDirty = true;
 	}
 
 	static constexpr int MaxTrimPerStep = 16;
@@ -156,6 +173,30 @@ public:
 
 	void setTrimPerStep(int value) {
 		_trimPerStep = glm::clamp(value, 1, MaxTrimPerStep);
+		_paramsDirty = true;
+	}
+
+	static constexpr int MaxKernelSize = 7;
+
+	int kernelSize() const {
+		return _kernelSize;
+	}
+
+	void setKernelSize(int size) {
+		_kernelSize = glm::clamp(size, 1, MaxKernelSize);
+		_paramsDirty = true;
+	}
+
+	static constexpr float MaxSigma = 8.0f;
+	static constexpr float MinSigma = 0.1f;
+
+	float sigma() const {
+		return _sigma;
+	}
+
+	void setSigma(float sigma) {
+		_sigma = glm::clamp(sigma, MinSigma, MaxSigma);
+		_paramsDirty = true;
 	}
 };
 

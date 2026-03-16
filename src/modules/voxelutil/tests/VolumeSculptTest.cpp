@@ -512,4 +512,178 @@ TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeightNoSinkBelowBottom) {
 	}
 }
 
+TEST_F(VolumeSculptTest, testSmoothGaussianLevelsColumns) {
+	// Two columns side by side: one is 4 tall, the other is 0 tall.
+	// Gaussian smoothing should bring the tall one down and fill the short one.
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// Tall column at (3, 0..3, 3) - height 4
+	for (int y = 0; y <= 3; ++y) {
+		volume.setVoxel(3, y, 3, solid);
+	}
+	// Neighbor column at (4, 0, 3) - height 1
+	volume.setVoxel(4, 0, 3, solid);
+
+	const int before = countSolid(volume);
+	// kernelSize=1, sigma=1.0, 1 iteration
+	sculptSmoothGaussian(volume, region, voxel::FaceNames::PositiveY, 1, 1.0f, 1, fill);
+	// Heights should redistribute: total count may change but smoothing should occur
+	const int after = countSolid(volume);
+	EXPECT_NE(before, after);
+}
+
+TEST_F(VolumeSculptTest, testSmoothGaussianNoChangeWhenFlat) {
+	// A flat 3x3 surface at y=0 should not change under Gaussian smoothing
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+
+	const int before = countSolid(volume);
+	sculptSmoothGaussian(volume, region, voxel::FaceNames::PositiveY, 1, 1.0f, 3, fill);
+	EXPECT_EQ(countSolid(volume), before);
+}
+
+TEST_F(VolumeSculptTest, testSmoothGaussianMultipleIterations) {
+	// Spike on flat surface should be progressively smoothed
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// 5x5 flat base at y=0
+	for (int x = 1; x <= 5; ++x) {
+		for (int z = 1; z <= 5; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+	// Spike at center (3, 1..4, 3) - 4 voxels tall above base
+	for (int y = 1; y <= 4; ++y) {
+		volume.setVoxel(3, y, 3, solid);
+	}
+
+	// Multiple iterations should flatten the spike
+	sculptSmoothGaussian(volume, region, voxel::FaceNames::PositiveY, 2, 1.5f, 5, fill);
+	// The very top of the spike should be gone
+	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 4, 3).getMaterial()));
+	// Base should still be intact
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 3).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothGaussianLargerKernel) {
+	// With kernel size 2 (5x5), smoothing should be more aggressive
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// 5x5 flat base at y=0
+	for (int x = 1; x <= 5; ++x) {
+		for (int z = 1; z <= 5; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+	// 3x3 tower at center (2..4, 1..3, 2..4)
+	for (int x = 2; x <= 4; ++x) {
+		for (int z = 2; z <= 4; ++z) {
+			for (int y = 1; y <= 3; ++y) {
+				volume.setVoxel(x, y, z, solid);
+			}
+		}
+	}
+
+	const int before = countSolid(volume);
+	// kernel=2, sigma=2.0, 3 iterations: should significantly smooth the step
+	sculptSmoothGaussian(volume, region, voxel::FaceNames::PositiveY, 2, 2.0f, 3, fill);
+	// Center base should still exist
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 3).getMaterial()));
+	// Smoothing should change the voxel count (may grow or shrink depending on geometry)
+	EXPECT_NE(countSolid(volume), before);
+}
+
+TEST_F(VolumeSculptTest, testBridgeGapFillsBetweenSurfaces) {
+	// Two solid blocks separated by a gap. Lines between boundary voxels fill it.
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// Bottom block at y=1
+	volume.setVoxel(3, 1, 3, solid);
+	// Top block at y=5
+	volume.setVoxel(3, 5, 3, solid);
+
+	const int before = countSolid(volume);
+	sculptBridgeGap(volume, region, fill);
+	EXPECT_GT(countSolid(volume), before);
+	// Gap at y=2,3,4 should be filled
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 2, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 4, 3).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testBridgeGapNoChangeWhenSolid) {
+	// A solid column with no gaps should not change
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	for (int y = 1; y <= 3; ++y) {
+		volume.setVoxel(2, y, 2, solid);
+	}
+
+	const int before = countSolid(volume);
+	sculptBridgeGap(volume, region, fill);
+	EXPECT_EQ(countSolid(volume), before);
+}
+
+TEST_F(VolumeSculptTest, testBridgeGapTwoFlatSurfaces) {
+	// Two flat surfaces with a gap between them
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	// Bottom surface at y=1
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			volume.setVoxel(x, 1, z, solid);
+		}
+	}
+	// Top surface at y=4
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			volume.setVoxel(x, 4, z, solid);
+		}
+	}
+
+	sculptBridgeGap(volume, region, fill);
+	// Center columns should have y=2 and y=3 filled
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 2, 2).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 3, 2).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testBridgeGapSingleVoxelNoChange) {
+	// A single isolated voxel has no gap to bridge
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fill = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+
+	volume.setVoxel(2, 2, 2, solid);
+	const int before = countSolid(volume);
+	sculptBridgeGap(volume, region, fill);
+	EXPECT_EQ(countSolid(volume), before);
+}
+
 } // namespace voxelutil

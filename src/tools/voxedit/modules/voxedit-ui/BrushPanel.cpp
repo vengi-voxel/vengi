@@ -55,7 +55,7 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode")};
+static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
@@ -1148,6 +1148,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			const bool selected = mode == currentMode;
 			if (ImGui::Selectable(_(SculptModeStr[i]), selected)) {
 				brush.setSculptMode(mode);
+				executeSculptBrush();
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
@@ -1156,7 +1157,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::EndCombo();
 	}
 
-	const bool needsFace = currentMode == SculptMode::Flatten || currentMode == SculptMode::SmoothAdditive || currentMode == SculptMode::SmoothErode;
+	const bool needsFace = SculptBrush::modeNeedsFace(currentMode);
 	if (needsFace) {
 		const voxel::FaceNames flattenFace = brush.flattenFace();
 		if (flattenFace == voxel::FaceNames::Max) {
@@ -1197,7 +1198,29 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 				executeSculptBrush();
 			}
 		}
-	} else if (currentMode != SculptMode::Flatten) {
+	} else if (currentMode == SculptMode::SmoothGaussian) {
+		int kernelSize = brush.kernelSize();
+		ImGui::TextUnformatted(_("Kernel size"));
+		if (ImGui::Button("-##sculpt_kernel")) {
+			brush.setKernelSize(kernelSize - 1);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##sculpt_kernel_slider", &kernelSize, 1, SculptBrush::MaxKernelSize)) {
+			brush.setKernelSize(kernelSize);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##sculpt_kernel")) {
+			brush.setKernelSize(kernelSize + 1);
+			executeSculptBrush();
+		}
+		float sigma = brush.sigma();
+		if (ImGui::SliderFloat(_("Sigma"), &sigma, SculptBrush::MinSigma, SculptBrush::MaxSigma)) {
+			brush.setSigma(sigma);
+			executeSculptBrush();
+		}
+	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
@@ -1205,7 +1228,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	{
+	if (currentMode != SculptMode::BridgeGap) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {

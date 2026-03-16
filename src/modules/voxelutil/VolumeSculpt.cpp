@@ -3,6 +3,7 @@
  */
 
 #include "VolumeSculpt.h"
+#include "app/ForParallel.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
@@ -601,6 +602,303 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 	}
 }
 
+void sculptBridgeGap(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+					 const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptBridgeGap);
+
+	const voxel::Region &region = solid.region();
+	const glm::ivec3 &lo = region.getLowerCorner();
+	const glm::ivec3 &hi = region.getUpperCorner();
+
+	// Step 1: Find boundary voxels (solid with at least one air face-neighbor)
+	core::DynamicArray<glm::ivec3> boundary;
+	for (int z = lo.z; z <= hi.z; ++z) {
+		for (int y = lo.y; y <= hi.y; ++y) {
+			for (int x = lo.x; x <= hi.x; ++x) {
+				const glm::ivec3 pos(x, y, z);
+				if (!isSolid(solid, anchors, pos)) {
+					continue;
+				}
+				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+					const glm::ivec3 neighbor = pos + offset;
+					if (region.containsPoint(neighbor) && !isSolid(solid, anchors, neighbor)) {
+						boundary.push_back(pos);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (boundary.size() < 2) {
+		return;
+	}
+
+	// Step 2: For each pair of boundary voxels, draw a 3D line and fill air along it.
+	const int numBoundary = (int)boundary.size();
+	for (int idxA = 0; idxA < numBoundary; ++idxA) {
+		for (int idxB = idxA + 1; idxB < numBoundary; ++idxB) {
+			const glm::ivec3 diff = boundary[idxB] - boundary[idxA];
+			const int distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+			// Skip pairs that are already adjacent (face/edge/corner neighbors)
+			if (distSq <= 3) {
+				continue;
+			}
+
+			const glm::ivec3 &start = boundary[idxA];
+			const glm::ivec3 &end = boundary[idxB];
+			const int dx = glm::abs(end.x - start.x);
+			const int dy = glm::abs(end.y - start.y);
+			const int dz = glm::abs(end.z - start.z);
+			const int sx = (end.x > start.x) ? 1 : (end.x < start.x) ? -1 : 0;
+			const int sy = (end.y > start.y) ? 1 : (end.y < start.y) ? -1 : 0;
+			const int sz = (end.z > start.z) ? 1 : (end.z < start.z) ? -1 : 0;
+			const int totalSteps = dx + dy + dz;
+
+			glm::ivec3 pos = start;
+			int ex = 0;
+			int ey = 0;
+			int ez = 0;
+			for (int step = 0; step <= totalSteps; ++step) {
+				if (!solid.hasValue(pos.x, pos.y, pos.z) && region.containsPoint(pos)) {
+					solid.setVoxel(pos, true);
+					voxel::Voxel newVoxel = fillVoxel;
+					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+						const glm::ivec3 neighbor = pos + offset;
+						if (voxelMap.hasVoxel(neighbor)) {
+							newVoxel = voxelMap.voxel(neighbor);
+							break;
+						}
+					}
+					voxelMap.setVoxel(pos, newVoxel);
+				}
+				ex += dx;
+				ey += dy;
+				ez += dz;
+				if (ex >= ey && ex >= ez) {
+					pos.x += sx;
+					ex -= totalSteps;
+				} else if (ey >= ez) {
+					pos.y += sy;
+					ey -= totalSteps;
+				} else {
+					pos.z += sz;
+					ez -= totalSteps;
+				}
+			}
+		}
+	}
+}
+
+void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+						  voxel::FaceNames face, int kernelSize, float sigma, int iterations,
+						  const voxel::Voxel &fillVoxel) {
+	if (face == voxel::FaceNames::Max || kernelSize < 1 || sigma <= 0.0f) {
+		return;
+	}
+
+	core_trace_scoped(SculptSmoothGaussian);
+
+	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
+	const bool positiveUp = voxel::isPositiveFace(face);
+	const voxel::Region &region = solid.region();
+	const glm::ivec3 &lo = region.getLowerCorner();
+	const glm::ivec3 &hi = region.getUpperCorner();
+	const int step = positiveUp ? 1 : -1;
+
+	const int axis1 = (axisIdx == 0) ? 1 : 0;
+	const int axis2 = (axisIdx == 2) ? 1 : 2;
+
+	// 2D grid extents on the two planar axes
+	const int base1 = lo[axis1];
+	const int base2 = lo[axis2];
+	const int extent1 = hi[axis1] - base1 + 1;
+	const int extent2 = hi[axis2] - base2 + 1;
+	const int numColumns = extent1 * extent2;
+
+	// Sentinel value for empty columns
+	static constexpr int EMPTY = INT_MIN;
+
+	// Precompute kernel entries: only non-zero weight (da, db) pairs stored with flat index offsets
+	struct KernelEntry {
+		int da;
+		int db;
+		int offset; // flat index offset: da * extent2 + db
+		float weight;
+	};
+	const int kernelDiameter = kernelSize * 2 + 1;
+	core::DynamicArray<KernelEntry> kernelEntries;
+	kernelEntries.reserve(kernelDiameter * kernelDiameter);
+	const float twoSigmaSq = 2.0f * sigma * sigma;
+	const float radiusSq = (float)(kernelSize * kernelSize);
+	for (int da = -kernelSize; da <= kernelSize; ++da) {
+		for (int db = -kernelSize; db <= kernelSize; ++db) {
+			const float distSq = (float)(da * da + db * db);
+			if (distSq > radiusSq) {
+				continue;
+			}
+			KernelEntry entry;
+			entry.da = da;
+			entry.db = db;
+			entry.offset = da * extent2 + db;
+			entry.weight = glm::exp(-distSq / twoSigmaSq);
+			kernelEntries.push_back(entry);
+		}
+	}
+	const int numKernelEntries = (int)kernelEntries.size();
+	const KernelEntry *kernelData = kernelEntries.data();
+
+	// Flat 2D arrays for column top/bottom coordinates (reused across iterations)
+	core::DynamicArray<int> colTopArr(numColumns);
+	core::DynamicArray<int> colBotArr(numColumns);
+	core::DynamicArray<int> targetArr(numColumns);
+
+	for (int iter = 0; iter < iterations; ++iter) {
+		// Step 1: Build column top/bottom from the solid BitVolume
+		// Initialize all columns to empty
+		for (int i = 0; i < numColumns; ++i) {
+			colTopArr[i] = EMPTY;
+			colBotArr[i] = EMPTY;
+		}
+
+		const int axisLo = lo[axisIdx];
+		const int axisHi = hi[axisIdx];
+		for (int a1 = 0; a1 < extent1; ++a1) {
+			for (int a2 = 0; a2 < extent2; ++a2) {
+				const int flatIdx = a1 * extent2 + a2;
+				const int coord1 = base1 + a1;
+				const int coord2 = base2 + a2;
+				int topVal = EMPTY;
+				int botVal = EMPTY;
+				for (int av = axisLo; av <= axisHi; ++av) {
+					glm::ivec3 pos;
+					pos[axis1] = coord1;
+					pos[axis2] = coord2;
+					pos[axisIdx] = av;
+					if (!isSolid(solid, anchors, pos)) {
+						continue;
+					}
+					if (topVal == EMPTY) {
+						topVal = av;
+						botVal = av;
+					} else if (positiveUp) {
+						topVal = glm::max(topVal, av);
+						botVal = glm::min(botVal, av);
+					} else {
+						topVal = glm::min(topVal, av);
+						botVal = glm::max(botVal, av);
+					}
+				}
+				colTopArr[flatIdx] = topVal;
+				colBotArr[flatIdx] = botVal;
+			}
+		}
+
+		// Step 2: Gaussian convolution on the height map (parallel over rows)
+		// Initialize targets to EMPTY (no change needed)
+		for (int i = 0; i < numColumns; ++i) {
+			targetArr[i] = EMPTY;
+		}
+
+		bool anyChange = false;
+		const int *topData = colTopArr.data();
+
+		app::for_parallel(0, extent1, [&](int startRow, int endRow) {
+			for (int a1 = startRow; a1 < endRow; ++a1) {
+				for (int a2 = 0; a2 < extent2; ++a2) {
+					const int flatIdx = a1 * extent2 + a2;
+					const int myTop = topData[flatIdx];
+					if (myTop == EMPTY) {
+						continue;
+					}
+
+					float weightSum = 0.0f;
+					float heightSum = 0.0f;
+
+					for (int ki = 0; ki < numKernelEntries; ++ki) {
+						const int na1 = a1 + kernelData[ki].da;
+						const int na2 = a2 + kernelData[ki].db;
+						if (na1 < 0 || na1 >= extent1 || na2 < 0 || na2 >= extent2) {
+							continue;
+						}
+						const int neighborTop = topData[flatIdx + kernelData[ki].offset];
+						if (neighborTop == EMPTY) {
+							continue;
+						}
+						heightSum += kernelData[ki].weight * (float)neighborTop;
+						weightSum += kernelData[ki].weight;
+					}
+
+					if (weightSum > 0.0f) {
+						const int target = (int)glm::round(heightSum / weightSum);
+						if (target != myTop) {
+							targetArr[flatIdx] = target;
+						}
+					}
+				}
+			}
+		});
+
+		// Step 3: Apply height changes (sequential - mutates shared BitVolume/SparseVolume)
+		for (int a1 = 0; a1 < extent1; ++a1) {
+			for (int a2 = 0; a2 < extent2; ++a2) {
+				const int flatIdx = a1 * extent2 + a2;
+				const int target = targetArr[flatIdx];
+				if (target == EMPTY) {
+					continue;
+				}
+				const int currentTop = colTopArr[flatIdx];
+				const int currentBottom = colBotArr[flatIdx];
+				const int coord1 = base1 + a1;
+				const int coord2 = base2 + a2;
+
+				if ((positiveUp && target < currentTop) || (!positiveUp && target > currentTop)) {
+					// Trim from top down to target, but not below column bottom
+					const int trimLimit = positiveUp
+						? glm::max(target + 1, currentBottom)
+						: glm::min(target - 1, currentBottom);
+					for (int v = currentTop; v != trimLimit; v -= step) {
+						glm::ivec3 pos;
+						pos[axis1] = coord1;
+						pos[axis2] = coord2;
+						pos[axisIdx] = v;
+						if (solid.hasValue(pos.x, pos.y, pos.z)) {
+							solid.setVoxel(pos, false);
+							voxelMap.setVoxel(pos, voxel::Voxel());
+							anyChange = true;
+						}
+					}
+				} else if ((positiveUp && target > currentTop) || (!positiveUp && target < currentTop)) {
+					// Grow from current top up to target
+					for (int v = currentTop + step; v != target + step; v += step) {
+						glm::ivec3 pos;
+						pos[axis1] = coord1;
+						pos[axis2] = coord2;
+						pos[axisIdx] = v;
+						if (region.containsPoint(pos) && !solid.hasValue(pos.x, pos.y, pos.z)) {
+							solid.setVoxel(pos, true);
+							voxel::Voxel newVoxel = fillVoxel;
+							for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+								const glm::ivec3 neighbor = pos + offset;
+								if (voxelMap.hasVoxel(neighbor)) {
+									newVoxel = voxelMap.voxel(neighbor);
+									break;
+								}
+							}
+							voxelMap.setVoxel(pos, newVoxel);
+							anyChange = true;
+						}
+					}
+				}
+			}
+		}
+
+		if (!anyChange) {
+			break;
+		}
+	}
+}
+
 // Helper to build solid, voxelMap, and anchor sets from a volume region
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
 							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
@@ -760,6 +1058,34 @@ int sculptSmoothErode(voxel::RawVolume &volume, const voxel::Region &region, vox
 	voxel::BitVolume anchors(anchorRegion);
 	buildFromVolume(volume, region, solid, voxelMap, anchors);
 	sculptSmoothErode(solid, voxelMap, anchors, face, iterations, preserveTopHeight, trimPerStep);
+	return writeResultToVolume(volume, region, solid, voxelMap);
+}
+
+int sculptBridgeGap(voxel::RawVolume &volume, const voxel::Region &region,
+					const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptBridgeGapVolume);
+	voxel::BitVolume solid(region);
+	voxel::SparseVolume voxelMap;
+	voxel::Region anchorRegion = region;
+	anchorRegion.grow(1);
+	anchorRegion.cropTo(volume.region());
+	voxel::BitVolume anchors(anchorRegion);
+	buildFromVolume(volume, region, solid, voxelMap, anchors);
+	sculptBridgeGap(solid, voxelMap, anchors, fillVoxel);
+	return writeResultToVolume(volume, region, solid, voxelMap);
+}
+
+int sculptSmoothGaussian(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+						 int kernelSize, float sigma, int iterations, const voxel::Voxel &fillVoxel) {
+	core_trace_scoped(SculptSmoothGaussianVolume);
+	voxel::BitVolume solid(region);
+	voxel::SparseVolume voxelMap;
+	voxel::Region anchorRegion = region;
+	anchorRegion.grow(1);
+	anchorRegion.cropTo(volume.region());
+	voxel::BitVolume anchors(anchorRegion);
+	buildFromVolume(volume, region, solid, voxelMap, anchors);
+	sculptSmoothGaussian(solid, voxelMap, anchors, face, kernelSize, sigma, iterations, fillVoxel);
 	return writeResultToVolume(volume, region, solid, voxelMap);
 }
 
