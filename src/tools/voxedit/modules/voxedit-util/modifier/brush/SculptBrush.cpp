@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
@@ -218,17 +219,13 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
 
 	// Collect snapshot entries: positions + voxels for reuse in write-back phase
-	struct SnapshotEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-	core::DynamicArray<SnapshotEntry> snapshotEntries;
+	voxel::DynamicVoxelArray snapshotEntries;
 	snapshotEntries.reserve(_snapshot.size());
 
 	struct SnapshotLoader {
 		voxel::BitVolume *solid;
 		voxel::SparseVolume *voxelMap;
-		core::DynamicArray<SnapshotEntry> *entries;
+		voxel::DynamicVoxelArray *entries;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &v) {
 			const glm::ivec3 pos(x, y, z);
 			solid->setVoxel(x, y, z, true);
@@ -308,7 +305,7 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	const voxel::Voxel air;
 
 	// Pass 1: remove sculpted-away voxels + write surviving snapshot voxels
-	for (const SnapshotEntry &entry : snapshotEntries) {
+	for (const voxel::VoxelPosition &entry : snapshotEntries) {
 		if (!currentSolid.hasValue(entry.pos.x, entry.pos.y, entry.pos.z)) {
 			writeVoxel(wrapper, entry.pos, air);
 		} else {
