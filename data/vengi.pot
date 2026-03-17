@@ -1071,6 +1071,14 @@ msgid ""
 "colors to a new palette"
 msgstr ""
 
+msgid "Save as point cloud"
+msgstr ""
+
+msgid ""
+"Export visible voxels as point samples for mesh formats that support point "
+"cloud saving"
+msgstr ""
+
 msgid "Point cloud size"
 msgstr ""
 
@@ -1607,6 +1615,10 @@ msgid "Scale"
 msgstr ""
 
 msgctxt "Sculpt Modes"
+msgid "Bridge Gap"
+msgstr ""
+
+msgctxt "Sculpt Modes"
 msgid "Erode"
 msgstr ""
 
@@ -1616,6 +1628,18 @@ msgstr ""
 
 msgctxt "Sculpt Modes"
 msgid "Grow"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Additive"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Erode"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Gaussian"
 msgstr ""
 
 msgctxt "Scale Sampling"
@@ -1902,6 +1926,9 @@ msgstr ""
 msgid "Transform mode"
 msgstr ""
 
+msgid "Uniform"
+msgstr ""
+
 msgid "Sampling"
 msgstr ""
 
@@ -1911,13 +1938,28 @@ msgstr ""
 msgid "Sculpt mode"
 msgstr ""
 
-msgid "Click a voxel face in the viewport to set the flatten direction"
+msgid "Click a voxel face in the viewport to set the direction"
 msgstr ""
 
-msgid "Iterations"
+msgid "Height threshold"
+msgstr ""
+
+msgid "Preserve top height"
+msgstr ""
+
+msgid "Trim per step"
+msgstr ""
+
+msgid "Kernel size"
+msgstr ""
+
+msgid "Sigma"
 msgstr ""
 
 msgid "Strength"
+msgstr ""
+
+msgid "Iterations"
 msgstr ""
 
 msgid "Brush settings"
@@ -2262,10 +2304,16 @@ msgstr ""
 msgid "Paste as stamp"
 msgstr ""
 
-msgid "Global copy"
+msgid "Global copy selected"
+msgstr ""
+
+msgid "Global copy visible"
 msgstr ""
 
 msgid "Global paste to ref"
+msgstr ""
+
+msgid "Global paste as node"
 msgstr ""
 
 msgid "Mask"
@@ -2278,6 +2326,15 @@ msgid "Invert"
 msgstr ""
 
 msgid "All"
+msgstr ""
+
+msgid "Color Selected"
+msgstr ""
+
+msgid "Deselect Color"
+msgstr ""
+
+msgid "Select Only Color"
 msgstr ""
 
 msgid "UI"
@@ -3715,6 +3772,9 @@ msgstr ""
 msgid "Aborts the current modifier action"
 msgstr ""
 
+msgid "Apply pending brush changes without switching brushes"
+msgstr ""
+
 msgid "Fill the inner parts of closed models"
 msgstr ""
 
@@ -3728,6 +3788,15 @@ msgid "Remove all voxels in the current selection"
 msgstr ""
 
 msgid "Remove selected voxels"
+msgstr ""
+
+msgid "Recolor selected voxels with the active palette color"
+msgstr ""
+
+msgid "Deselect all voxels matching the active palette color"
+msgstr ""
+
+msgid "Deselect all voxels not matching the active palette color"
 msgstr ""
 
 msgid "Set the reference position to the specified position"
@@ -3783,6 +3852,9 @@ msgstr ""
 msgid "Copy selection to a file-based clipboard shared across editor instances"
 msgstr ""
 
+msgid "Merge all visible nodes and copy to the file-based clipboard"
+msgstr ""
+
 msgid ""
 "Paste from the file-based clipboard shared across editor instances to the "
 "cursor position"
@@ -3791,6 +3863,15 @@ msgstr ""
 msgid ""
 "Paste from the file-based clipboard shared across editor instances to the "
 "reference position"
+msgstr ""
+
+msgid ""
+"Paste from the file-based clipboard as a new node at the cursor position"
+msgstr ""
+
+msgid ""
+"Merge active node voxels into all overlapping nodes and remove the source "
+"node"
 msgstr ""
 
 msgid "Undo your last step"

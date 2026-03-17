@@ -159,6 +159,7 @@ static void saveOptionsMesh(const io::FormatDescription *desc) {
 	ImGui::CheckboxVar(cfg::VoxformatAmbientocclusion);
 	ImGui::CheckboxVar(cfg::VoxformatTransform);
 	ImGui::CheckboxVar(cfg::VoxformatOptimize);
+	ImGui::CheckboxVar(cfg::VoxformatPointCloud);
 	ImGui::CheckboxVar(cfg::VoxformatQuads);
 	ImGui::CheckboxVar(cfg::VoxformatWithColor);
 	ImGui::CheckboxVar(cfg::VoxformatWithNormals);

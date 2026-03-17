@@ -359,6 +359,45 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	return true;
 }
 
+bool OBJFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud,
+							   const core::String &filename, const io::ArchivePtr &archive,
+							   const glm::vec3 &scale, bool withColor) const {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+
+	stream->writeStringFormat(false, "# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	wrapBool(stream->writeStringFormat(false, "\n"))
+	wrapBool(stream->writeStringFormat(false, "o PointCloud\n"))
+
+	for (const PointCloudVertex &point : pointCloud) {
+		const glm::vec3 pos = point.position * scale;
+		if (withColor) {
+			const glm::vec4 color = color::fromRGBA(point.color);
+			if (!stream->writeStringFormat(false, "v %.04f %.04f %.04f %.03f %.03f %.03f\n", pos.x, pos.y,
+								   pos.z, color.r, color.g, color.b)) {
+				Log::error("Failed to write obj point vertex with color");
+				return false;
+			}
+		} else {
+			if (!stream->writeStringFormat(false, "v %.04f %.04f %.04f\n", pos.x, pos.y, pos.z)) {
+				Log::error("Failed to write obj point vertex");
+				return false;
+			}
+		}
+	}
+
+	for (int i = 0; i < (int)pointCloud.size(); ++i) {
+		if (!stream->writeStringFormat(false, "p %i\n", i + 1)) {
+			Log::error("Failed to write obj point primitive");
+			return false;
+		}
+	}
+	return true;
+}
+
 #undef wrapBool
 
 void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &tinyShape, PointCloud &pointCloud) {

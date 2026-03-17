@@ -34,7 +34,9 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxel/VolumeSampler.h"
 #include "voxelutil/FillHollow.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <array>
 #include <glm/ext/scalar_constants.hpp>
@@ -794,6 +796,84 @@ void MeshFormat::simplifyPointCloud(PointCloud &vertices) const {
 	// meshoptimizer expects 3 or 4 float values for the color
 }
 
+bool MeshFormat::savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+								 const io::ArchivePtr &archive, const glm::vec3 &scale,
+								 bool withColor) const {
+	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
+	const int pointSize = core_max(1, core::getVar(cfg::VoxformatPointCloudSize)->intVal());
+	PointCloud pointCloud;
+	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.isPointNode()) {
+			PointCloudVertex point;
+			if (applyTransform) {
+				point.position = sceneGraph.transformForFrame(node, 0).worldTranslation();
+			} else {
+				point.position = node.transform(0).localTranslation();
+			}
+			point.color = node.color();
+			pointCloud.push_back(point);
+			continue;
+		}
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		if (volume == nullptr) {
+			continue;
+		}
+		const palette::Palette &palette = sceneGraph.resolvePalette(node);
+		const voxel::Region region = sceneGraph.resolveRegion(node);
+		const glm::vec3 dimensions(region.getDimensionsInVoxels());
+		const glm::mat4 worldMatrix = sceneGraph.transformForFrame(node, 0).calculateWorldMatrix(node.pivot(), dimensions);
+		if (pointSize <= 1) {
+			voxelutil::visitVolume(*volume, [&pointCloud, &palette, applyTransform, &worldMatrix] (int x, int y, int z, const voxel::Voxel &voxel) {
+				PointCloudVertex point;
+				point.position = glm::vec3((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f);
+				if (applyTransform) {
+					point.position = glm::vec3(worldMatrix * glm::vec4(point.position, 1.0f));
+				}
+				point.color = palette.color(voxel.getColor());
+				pointCloud.push_back(point);
+			}, voxelutil::VisitSolid());
+		} else {
+			const glm::ivec3 &lower = region.getLowerCorner();
+			const glm::ivec3 &upper = region.getUpperCorner();
+			voxel::RawVolume::Sampler sampler(volume);
+			for (int z = lower.z; z <= upper.z; z += pointSize) {
+				for (int y = lower.y; y <= upper.y; y += pointSize) {
+					for (int x = lower.x; x <= upper.x; x += pointSize) {
+						const int maxX = glm::min(x + pointSize - 1, upper.x);
+						const int maxY = glm::min(y + pointSize - 1, upper.y);
+						const int maxZ = glm::min(z + pointSize - 1, upper.z);
+						const glm::vec3 srcPos((float)x + (float)(maxX - x + 1) * 0.5f,
+											  (float)y + (float)(maxY - y + 1) * 0.5f,
+											  (float)z + (float)(maxZ - z + 1) * 0.5f);
+						const voxel::Voxel v = voxel::sampleVoxel(sampler, voxel::VoxelSampling::Linear, srcPos);
+						if (voxel::isAir(v.getMaterial())) {
+							continue;
+						}
+						PointCloudVertex point;
+						point.position = srcPos;
+						if (applyTransform) {
+							point.position = glm::vec3(worldMatrix * glm::vec4(point.position, 1.0f));
+						}
+						point.color = palette.color(v.getColor());
+						pointCloud.push_back(point);
+					}
+				}
+			}
+		}
+	}
+
+	if (pointCloud.empty()) {
+		Log::warn("Empty scene can't get saved as point cloud");
+		return false;
+	}
+	return savePointCloud(sceneGraph, pointCloud, filename, archive, scale, withColor);
+}
+
 bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,
 								const LoadContext &) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
@@ -802,8 +882,12 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &saveCtx) {
-	const bool quads = core::getVar(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::getVar(cfg::VoxformatWithColor)->boolVal();
+	if (core::getVar(cfg::VoxformatPointCloud)->boolVal()) {
+		return savePointClouds(sceneGraph, filename, archive, glm::vec3(1.0f), withColor);
+	}
+
+	const bool quads = core::getVar(cfg::VoxformatQuads)->boolVal();
 	const bool withTexCoords = core::getVar(cfg::VoxformatWithtexcoords)->boolVal();
 	const voxel::SurfaceExtractionType type =
 		(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();

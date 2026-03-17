@@ -127,6 +127,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_optimize`          | Apply mesh optimizations when saving mesh based formats                                  | true/false   |
 | `voxformat_osmmeterspervoxel` | The number of real-world meters each voxel represents in OSM imports                     | 1            |
 | `voxformat_osmurl`            | The openstreetmap overpass url                                                           |              |
+| `voxformat_pointcloud`        | Export visible voxels as point samples when saving to mesh formats that support point clouds | true/false   |
 | `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        | 1            |
 | `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   | true/false   |
 | `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            | true/false   |

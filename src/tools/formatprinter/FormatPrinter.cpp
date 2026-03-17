@@ -847,6 +847,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "noise";
 	} else if (name == "g_shape") {
 		return "shape";
+	} else if (name == "g_sculpt") {
+		return "sculpt";
 	} else if (name == "g_import") {
 		return "import";
 	} else if (name == "g_lsystem") {
@@ -948,6 +950,8 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_noise";
 	} else if (pageName == "shape") {
 		return "g_shape";
+	} else if (pageName == "sculpt") {
+		return "g_sculpt";
 	} else if (pageName == "font") {
 		return "g_font";
 	} else if (pageName == "import") {

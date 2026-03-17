@@ -136,6 +136,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_osmurl\fP: The URL of the Overpass API endpoint
 .PP
+\fBvoxformat_pointcloud\fP: Export visible voxels as point samples for mesh formats that support point cloud saving
+.PP
 \fBvoxformat_pointcloudsize\fP: Specify the side length for the voxels when loading a point cloud
 .PP
 \fBvoxformat_qbsavecompressed\fP: Save RLE compressed

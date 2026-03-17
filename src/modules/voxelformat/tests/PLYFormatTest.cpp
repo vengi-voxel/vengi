@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "voxelformat/private/mesh/PLYFormat.h"
 
 namespace voxelformat {
 
@@ -14,6 +15,11 @@ TEST_F(PLYFormatTest, testVoxelizeAscii) {
 
 TEST_F(PLYFormatTest, testVoxelizeCube) {
 	testLoad("cube.ply");
+}
+
+TEST_F(PLYFormatTest, testSaveLoadPointCloud) {
+	PLYFormat format;
+	testSaveLoadPointCloud("pointcloud-saveload.ply", &format);
 }
 
 } // namespace voxelformat

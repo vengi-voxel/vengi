@@ -101,9 +101,17 @@ protected:
 							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
+	virtual bool savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
+								const core::String &filename, const io::ArchivePtr &archive,
+								const glm::vec3 &scale = glm::vec3(1.0f), bool withColor = true) const {
+		return false;
+	}
 
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
 	static glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs);
+	bool savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							 const io::ArchivePtr &archive, const glm::vec3 &scale = glm::vec3(1.0f),
+							 bool withColor = true) const;
 
 	/**
 	 * @brief Voxelizes the input mesh

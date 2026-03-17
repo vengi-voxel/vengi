@@ -607,6 +607,64 @@ void AbstractFormatTest::testSaveLoadVolumes(const core::String &filename, const
 	voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, flags, maxDelta);
 }
 
+void AbstractFormatTest::testSaveLoadPointCloud(const core::String &filename, Format *format, float maxColorDelta) {
+	SCOPED_TRACE(filename.c_str());
+	palette::Palette palette;
+	palette.nippon();
+
+	const color::RGBA nipponRed = palette.color(37);
+	const color::RGBA nipponGreen = palette.color(149);
+
+	scenegraph::SceneGraph sceneGraph;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(1, 0, 0)));
+		volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 37));
+		volume->setVoxel(1, 0, 0, voxel::createVoxel(palette, 149));
+		node.setVolume(volume, true);
+		node.setPalette(palette);
+		sceneGraph.emplace(core::move(node));
+	}
+
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	{
+		util::ScopedVarChange pointCloud(cfg::VoxformatPointCloud, "true");
+		util::ScopedVarChange withColor(cfg::VoxformatWithColor, "true");
+		ASSERT_TRUE(format->save(sceneGraph, filename, archive, testSaveCtx))
+			<< "Could not save point cloud " << filename.c_str();
+	}
+
+	scenegraph::SceneGraph loadedSceneGraph;
+	ASSERT_TRUE(format->load(filename, archive, loadedSceneGraph, testLoadCtx))
+		<< "Could not load point cloud " << filename.c_str();
+
+	const scenegraph::SceneGraphNode *loadedNode = loadedSceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, loadedNode) << "No model node found after loading point cloud";
+	const voxel::RawVolume *loadedVolume = loadedNode->volume();
+	ASSERT_NE(nullptr, loadedVolume);
+	ASSERT_EQ(2, voxelutil::countVoxels(*loadedVolume))
+		<< "Expected 2 voxels, got " << voxelutil::countVoxels(*loadedVolume);
+
+	bool foundRed = false;
+	bool foundGreen = false;
+	const palette::Palette &loadedPalette = loadedNode->palette();
+	voxelutil::visitVolume(
+		*loadedVolume, [&](int, int, int, const voxel::Voxel &voxel) {
+			const color::RGBA color = loadedPalette.color(voxel.getColor());
+			const float deltaRed = color::getDistance(color, nipponRed, color::Distance::HSB);
+			const float deltaGreen = color::getDistance(color, nipponGreen, color::Distance::HSB);
+			if (deltaRed <= maxColorDelta) {
+				foundRed = true;
+			}
+			if (deltaGreen <= maxColorDelta) {
+				foundGreen = true;
+			}
+		},
+		voxelutil::VisitAll());
+	EXPECT_TRUE(foundRed) << "Red voxel color not found after point cloud round-trip";
+	EXPECT_TRUE(foundGreen) << "Green voxel color not found after point cloud round-trip";
+}
+
 #undef WRITE_TO_FILE
 
 io::FilePtr AbstractFormatTest::open(const core::String &filename, io::FileMode mode) {

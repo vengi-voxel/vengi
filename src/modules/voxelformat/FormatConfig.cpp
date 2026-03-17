@@ -139,6 +139,11 @@ bool FormatConfig::init() {
 		N_("Create own palette from textures or colors or remap the existing palette colors to a new palette"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxelCreatePalette);
+	const core::VarDef voxformatPointCloud(
+		cfg::VoxformatPointCloud, false, N_("Save as point cloud"),
+		N_("Export visible voxels as point samples for mesh formats that support point cloud saving"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatPointCloud);
 	const core::VarDef voxformatPointCloudSize(cfg::VoxformatPointCloudSize, 1, N_("Point cloud size"),
 											   N_("Specify the side length for the voxels when loading a point cloud"),
 											   core::CV_NOPERSIST);

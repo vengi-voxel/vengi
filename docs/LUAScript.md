@@ -147,6 +147,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | [g_quat](lua/quat.md) | Quaternion creation |
 | [g_region](lua/region.md) | Create and work with regions |
 | [g_scenegraph](lua/scenegraph.md) | Access to scene graph for creating and managing nodes |
+| [g_sculpt](lua/sculpt.md) | Sculpting functions |
 | [g_shape](lua/shape.md) | Shape generation functions |
 | [g_sys](lua/sys.md) | System utilities |
 | [g_var](lua/var.md) | Console variable access |

@@ -79,6 +79,8 @@ protected:
 	void testSaveMesh(const core::String &inputFile, const core::String &filename, Format *format,
 					  voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 
+	void testSaveLoadPointCloud(const core::String &filename, Format *format, float maxColorDelta = 0.02f);
+
 	void testSaveLoadVoxel(const core::String &filename, Format *format, int mins = 0, int maxs = 1,
 						   voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 	void testSaveLoadCube(const core::String &filename, Format *format,

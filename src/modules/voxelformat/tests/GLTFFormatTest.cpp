@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "AbstractFormatTest.h"
+#include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -43,6 +44,11 @@ TEST_F(GLTFFormatTest, testSaveCC) {
 	GLTFFormat format;
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Transform);
 	testSaveMesh("cc.vxl", "cc.gltf", &format, flags);
+}
+
+TEST_F(GLTFFormatTest, testSaveLoadPointCloud) {
+	GLTFFormat format;
+	testSaveLoadPointCloud("pointcloud-saveload.gltf", &format);
 }
 
 TEST_F(GLTFFormatTest, testImportAnimation) {

@@ -4,12 +4,14 @@
 
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "color/Color.h"
+#include "core/ConfigVar.h"
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "util/VarUtil.h"
 #include "video/ShapeBuilder.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -157,6 +159,46 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	EXPECT_COLOR_NEAR(nipponBlue, nodePal.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponGreen, nodePal.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
+}
+
+TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
+	class TestMesh : public MeshFormat {
+	public:
+		mutable PointCloud savedPointCloud;
+
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+
+		bool savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud, const core::String &,
+							const io::ArchivePtr &, const glm::vec3 &, bool) const override {
+			savedPointCloud = pointCloud;
+			return true;
+		}
+	};
+
+	TestMesh testMesh;
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(1, 0, 0)));
+	palette::Palette palette;
+	palette.nippon();
+	const color::RGBA nipponRed = palette.color(37);
+	volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 37));
+	volume->setVoxel(1, 0, 0, voxel::createVoxel(palette, 37));
+	node.setVolume(volume, true);
+	node.setPalette(palette);
+	sceneGraph.emplace(core::move(node));
+
+	util::ScopedVarChange pointCloudVarChange(cfg::VoxformatPointCloud, "true");
+	ASSERT_TRUE(testMesh.saveGroups(sceneGraph, "test.ply", nullptr, {}));
+
+	ASSERT_EQ(2u, testMesh.savedPointCloud.size());
+	EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), testMesh.savedPointCloud[0].position);
+	EXPECT_EQ(glm::vec3(1.5f, 0.5f, 0.5f), testMesh.savedPointCloud[1].position);
+	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[0].color);
+	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[1].color);
 }
 
 } // namespace voxelformat

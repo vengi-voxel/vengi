@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "io/Stream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
@@ -29,6 +30,11 @@ TEST_F(OBJFormatTest, testSaveCC) {
 	OBJFormat format;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::IgnoreHollow;
 	testSaveMesh("cc.vxl", "cc.obj", &format, flags);
+}
+
+TEST_F(OBJFormatTest, testSaveLoadPointCloud) {
+	OBJFormat format;
+	testSaveLoadPointCloud("pointcloud-saveload.obj", &format);
 }
 
 // https://github.com/vengi-voxel/vengi/issues/393

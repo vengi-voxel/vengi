@@ -109,6 +109,7 @@ constexpr const char *VoxformatWithNormals = "voxformat_withnormals";
 constexpr const char *VoxformatWithMaterials = "voxformat_withmaterials";
 constexpr const char *VoxformatColorAsFloat = "voxformat_colorasfloat";
 constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
+constexpr const char *VoxformatPointCloud = "voxformat_pointcloud";
 constexpr const char *VoxformatPointCloudSize = "voxformat_pointcloudsize";
 constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
 constexpr const char *VoxformatOptimize = "voxformat_optimize";

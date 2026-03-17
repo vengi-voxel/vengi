@@ -1284,6 +1284,115 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
+bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
+								const core::String &filename, const io::ArchivePtr &archive,
+								const glm::vec3 &scale, bool withColor) const {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	const core::String &ext = core::string::extractExtension(filename);
+	const bool writeBinary = ext == "glb";
+
+	tinygltf::TinyGLTF gltf;
+	tinygltf::Model gltfModel;
+	tinygltf::Scene gltfScene;
+
+	const core::String &appname = app::App::getInstance()->fullAppname();
+	const core::String &generator = core::String::format("%s " PROJECT_VERSION, appname.c_str());
+	gltfModel.asset.generator = generator.c_str();
+	gltfModel.asset.version = "2.0";
+	gltfModel.asset.copyright = sceneGraph.root().property(scenegraph::PropCopyright).c_str();
+	gltfModel.accessors.reserve(withColor ? 2 : 1);
+
+	tinygltf::Mesh gltfMesh;
+	gltfMesh.name = "PointCloud";
+	tinygltf::Primitive primitive;
+	primitive.mode = TINYGLTF_MODE_POINTS;
+
+	io::BufferedReadWriteStream positions((int64_t)(pointCloud.size() * 3 * sizeof(float)));
+	glm::vec3 minPos{std::numeric_limits<float>::max()};
+	glm::vec3 maxPos{std::numeric_limits<float>::lowest()};
+	for (const PointCloudVertex &point : pointCloud) {
+		const glm::vec3 pos = point.position * scale;
+		positions.writeFloat(pos.x);
+		positions.writeFloat(pos.y);
+		positions.writeFloat(pos.z);
+		minPos = glm::min(minPos, pos);
+		maxPos = glm::max(maxPos, pos);
+	}
+	const int positionBuffer = _priv::addBuffer(gltfModel, positions, "positions");
+	{
+		tinygltf::BufferView view;
+		view.buffer = positionBuffer;
+		view.byteOffset = 0;
+		view.byteLength = positions.size();
+		view.byteStride = 0;
+		view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+		gltfModel.bufferViews.emplace_back(core::move(view));
+	}
+	primitive.attributes["POSITION"] = (int)gltfModel.accessors.size();
+	{
+		tinygltf::Accessor accessor;
+		accessor.bufferView = (int)gltfModel.bufferViews.size() - 1;
+		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		accessor.type = TINYGLTF_TYPE_VEC3;
+		accessor.count = pointCloud.size();
+		accessor.minValues = {minPos.x, minPos.y, minPos.z};
+		accessor.maxValues = {maxPos.x, maxPos.y, maxPos.z};
+		gltfModel.accessors.emplace_back(core::move(accessor));
+	}
+
+	if (withColor) {
+		io::BufferedReadWriteStream colors((int64_t)(pointCloud.size() * 4 * sizeof(uint8_t)));
+		for (const PointCloudVertex &point : pointCloud) {
+			colors.writeUInt8(point.color.r);
+			colors.writeUInt8(point.color.g);
+			colors.writeUInt8(point.color.b);
+			colors.writeUInt8(point.color.a);
+		}
+		const int colorBuffer = _priv::addBuffer(gltfModel, colors, "colors");
+		{
+			tinygltf::BufferView view;
+			view.buffer = colorBuffer;
+			view.byteOffset = 0;
+			view.byteLength = colors.size();
+			view.byteStride = 0;
+			view.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+			gltfModel.bufferViews.emplace_back(core::move(view));
+		}
+		primitive.attributes["COLOR_0"] = (int)gltfModel.accessors.size();
+		{
+			tinygltf::Accessor accessor;
+			accessor.bufferView = (int)gltfModel.bufferViews.size() - 1;
+			accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+			accessor.type = TINYGLTF_TYPE_VEC4;
+			accessor.count = pointCloud.size();
+			accessor.normalized = true;
+			gltfModel.accessors.emplace_back(core::move(accessor));
+		}
+	}
+
+	gltfMesh.primitives.emplace_back(core::move(primitive));
+	gltfModel.meshes.emplace_back(core::move(gltfMesh));
+
+	tinygltf::Node gltfNode;
+	gltfNode.name = "PointCloud";
+	gltfNode.mesh = 0;
+	gltfScene.nodes.push_back((int)gltfModel.nodes.size());
+	gltfModel.nodes.emplace_back(core::move(gltfNode));
+	gltfModel.scenes.emplace_back(core::move(gltfScene));
+
+	io::StdOStreamBuf buf(*stream);
+	std::ostream gltfStream(&buf);
+	if (!gltf.WriteGltfSceneToStream(&gltfModel, gltfStream, false, writeBinary)) {
+		Log::error("Could not save to file");
+		return false;
+	}
+	return true;
+}
+
 void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node,
 							   tinygltf::Animation &gltfAnimation) {
 	const core::String animationId = gltfAnimation.name.c_str();

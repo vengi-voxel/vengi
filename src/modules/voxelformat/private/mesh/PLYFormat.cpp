@@ -804,4 +804,39 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	}
 	return sceneGraph.firstPalette().save(paletteName.c_str());
 }
+
+bool PLYFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud,
+							   const core::String &filename, const io::ArchivePtr &archive,
+							   const glm::vec3 &scale, bool withColor) const {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+
+	stream->writeStringFormat(false, "ply\nformat ascii 1.0\n");
+	stream->writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	stream->writeStringFormat(false, "element vertex %i\n", (int)pointCloud.size());
+	stream->writeStringFormat(false, "property float x\n");
+	stream->writeStringFormat(false, "property float z\n");
+	stream->writeStringFormat(false, "property float y\n");
+	if (withColor) {
+		stream->writeStringFormat(false, "property uchar red\n");
+		stream->writeStringFormat(false, "property uchar green\n");
+		stream->writeStringFormat(false, "property uchar blue\n");
+		stream->writeStringFormat(false, "property uchar alpha\n");
+	}
+	stream->writeStringFormat(false, "end_header\n");
+
+	for (const PointCloudVertex &point : pointCloud) {
+		const glm::vec3 pos = point.position * scale;
+		stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
+		if (withColor) {
+			stream->writeStringFormat(false, " %u %u %u %u", point.color.r, point.color.g, point.color.b,
+								 point.color.a);
+		}
+		stream->writeStringFormat(false, "\n");
+	}
+	return true;
+}
 } // namespace voxelformat
