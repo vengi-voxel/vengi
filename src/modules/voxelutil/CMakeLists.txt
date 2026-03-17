@@ -18,6 +18,7 @@ set(SRCS
 	VolumeSplitter.h VolumeSplitter.cpp
 	VolumeVisitor.h
 	VolumeSculpt.h VolumeSculpt.cpp
+	SmoothMeshExtractor.h SmoothMeshExtractor.cpp
 	VoxelUtil.h VoxelUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
@@ -37,6 +38,7 @@ set(TEST_SRCS
 	tests/VolumeCropperTest.cpp
 	tests/VolumeVisitorTest.cpp
 	tests/VolumeSculptTest.cpp
+	tests/SmoothMeshExtractorTest.cpp
 	tests/VoxelUtilTest.cpp
 )
 

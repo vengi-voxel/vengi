@@ -7,6 +7,10 @@
 #include "MeshFormat.h"
 #include "core/collection/DynamicArray.h"
 
+namespace scenegraph {
+class SceneGraph;
+}
+
 namespace voxelformat {
 
 /** TODO:
@@ -94,7 +98,13 @@ protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 
+	bool savePointCloud(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						const io::ArchivePtr &archive);
+
 public:
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
 					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override;

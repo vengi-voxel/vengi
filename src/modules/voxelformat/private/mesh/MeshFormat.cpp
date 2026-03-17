@@ -35,6 +35,7 @@
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelutil/FillHollow.h"
+#include "voxelutil/SmoothMeshExtractor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <array>
 #include <glm/ext/scalar_constants.hpp>
@@ -805,6 +806,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool quads = core::getVar(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::getVar(cfg::VoxformatWithColor)->boolVal();
 	const bool withTexCoords = core::getVar(cfg::VoxformatWithtexcoords)->boolVal();
+	const bool smoothMesh = core::getVar(cfg::VoxformatSmoothMesh)->boolVal();
 	const voxel::SurfaceExtractionType type =
 		(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
 
@@ -812,7 +814,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	meshes.resize(sceneGraph.nodes().size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
-	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, &meshes] (int start, int end) {
+	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, smoothMesh, &meshes] (int start, int end) {
 		const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 		const bool optimizeMesh = core::getVar(cfg::VoxformatOptimize)->boolVal();
 		const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
@@ -827,27 +829,36 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			auto volume = sceneGraph.resolveVolume(node);
 			auto region = sceneGraph.resolveRegion(node);
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
-			voxel::Region regionExt = region;
-			// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
-			regionExt.shiftUpperCorner(1, 1, 1);
-			voxel::SurfaceExtractionContext ctx = voxel::createContext(
-				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
-			voxel::extractSurface(ctx);
-			if (withNormals) {
-				Log::debug("Calculate normals");
-				mesh->calculateNormals();
-			}
 
-			meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
-			if (!ctx.textureData.empty()) {
-				core::String texName = node.name();
-				if (texName.empty()) {
-					texName = core::String::format("texture%i", i);
+			if (smoothMesh) {
+				const int smoothIterations = core::getVar(cfg::VoxformatSmoothIterations)->intVal();
+				const voxelutil::SmoothFilter smoothFilter =
+					(voxelutil::SmoothFilter)core::getVar(cfg::VoxformatSmoothFilter)->intVal();
+				const float smoothSharpness = core::getVar(cfg::VoxformatSmoothSharpness)->floatVal();
+				voxelutil::extractSmoothMesh(volume, smoothIterations, smoothFilter, smoothSharpness, mesh);
+				meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
+			} else {
+				voxel::Region regionExt = region;
+				// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
+				regionExt.shiftUpperCorner(1, 1, 1);
+				voxel::SurfaceExtractionContext ctx = voxel::createContext(
+					type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
+				voxel::extractSurface(ctx);
+				if (withNormals) {
+					Log::debug("Calculate normals");
+					mesh->calculateNormals();
 				}
-				texName = core::string::sanitizeFilename(texName);
-				texName += ".png";
-				meshes[i].texture = image::createEmptyImage(texName);
-				meshes[i].texture->loadRGBA(ctx.textureData.data(), ctx.textureWidth, ctx.textureHeight);
+				meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
+				if (!ctx.textureData.empty()) {
+					core::String texName = node.name();
+					if (texName.empty()) {
+						texName = core::String::format("texture%i", i);
+					}
+					texName = core::string::sanitizeFilename(texName);
+					texName += ".png";
+					meshes[i].texture = image::createEmptyImage(texName);
+					meshes[i].texture->loadRGBA(ctx.textureData.data(), ctx.textureWidth, ctx.textureHeight);
+				}
 			}
 		}
 	});
@@ -856,13 +867,25 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	core::Map<int, int> meshIdxNodeMap;
 	// filter out empty meshes
+	int meshIdx = 0;
 	for (auto iter = meshes.begin(); iter != meshes.end(); ++iter) {
-		if (!iter->mesh || iter->mesh->isEmpty()) {
+		if (!iter->mesh) {
+			Log::debug("Mesh %d: null pointer", meshIdx);
+			++meshIdx;
 			continue;
 		}
+		if (iter->mesh->isEmpty()) {
+			Log::debug("Mesh %d: empty (nodeId=%d)", meshIdx, iter->nodeId);
+			++meshIdx;
+			continue;
+		}
+		Log::debug("Mesh %d: %zu vertices, %zu indices (nodeId=%d)", meshIdx,
+				  iter->mesh->mesh[0].getNoOfVertices(), iter->mesh->mesh[0].getNoOfIndices(), iter->nodeId);
 		nonEmptyMeshes.emplace_back(*iter);
 		meshIdxNodeMap.put(iter->nodeId, (int)nonEmptyMeshes.size() - 1);
+		++meshIdx;
 	}
+	Log::debug("Found %d non-empty meshes out of %d total", (int)nonEmptyMeshes.size(), (int)meshes.size());
 	bool state;
 	if (nonEmptyMeshes.empty() && sceneGraph.empty(scenegraph::SceneGraphNodeType::Point)) {
 		Log::warn("Empty scene can't get saved as mesh");

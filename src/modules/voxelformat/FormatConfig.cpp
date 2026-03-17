@@ -9,6 +9,7 @@
 #include "core/Var.h"
 #include "palette/FormatConfig.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelutil/SmoothMeshExtractor.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 
@@ -233,6 +234,31 @@ bool FormatConfig::init() {
 		cfg::VoxformatOSMMetersPerVoxel, 1.0f, N_("Meters per voxel"),
 		N_("The number of real-world meters each voxel represents in OSM imports"), core::CV_NOPERSIST);
 	core::registerVar(voxformatOSMMetersPerVoxel);
+	const core::VarDef voxformatPointCloudExport(cfg::VoxformatPointCloudExport, false, N_("Point cloud export"),
+												 N_("Export PLY as point cloud with normals instead of a mesh"),
+												 core::CV_NOPERSIST);
+	core::registerVar(voxformatPointCloudExport);
+	const core::VarDef voxformatPointCloudNormalRadius(
+		cfg::VoxformatPointCloudNormalRadius, 3, 1, 8, N_("Normal radius"),
+		N_("Neighborhood radius for normal estimation during point cloud export"), core::CV_NOPERSIST);
+	core::registerVar(voxformatPointCloudNormalRadius);
+	const core::VarDef voxformatSmoothMesh(cfg::VoxformatSmoothMesh, false, N_("Smooth mesh"),
+										   N_("Export a smoothed mesh using marching cubes with optional mesh smoothing"), core::CV_NOPERSIST);
+	core::registerVar(voxformatSmoothMesh);
+	const core::VarDef voxformatSmoothIterations(cfg::VoxformatSmoothIterations, 0, 0, 200, N_("Smooth iterations"),
+												 N_("Post-MC smoothing passes (0 = none, clean manifold mesh only)"),
+												 core::CV_NOPERSIST);
+	core::registerVar(voxformatSmoothIterations);
+	const core::VarDef voxformatSmoothFilter(
+		cfg::VoxformatSmoothFilter, (int)voxelutil::SmoothFilter::Laplacian, 0,
+		voxelutil::SmoothFilterMax - 1, N_("Smooth filter"),
+		NC_("Smooth filter type", "0 = Laplacian, 1 = Taubin"), core::CV_NOPERSIST);
+	core::registerVar(voxformatSmoothFilter);
+	const core::VarDef voxformatSmoothSharpness(
+		cfg::VoxformatSmoothSharpness, 0.5f, N_("Smoothing strength"),
+		N_("How much each smoothing iteration moves vertices (0.01 = subtle, 0.5 = moderate, 0.9 = aggressive)"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatSmoothSharpness);
 
 	return true;
 }

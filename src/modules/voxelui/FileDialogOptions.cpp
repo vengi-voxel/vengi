@@ -19,6 +19,7 @@
 #include "video/OpenFileMode.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelutil/SmoothMeshExtractor.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/image/AsepriteFormat.h"
@@ -26,6 +27,7 @@
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "voxelformat/private/minecraft/SkinFormat.h"
@@ -154,6 +156,28 @@ static void saveOptionsPng(const io::FilesystemEntry &entry) {
 }
 
 static void saveOptionsMesh(const io::FormatDescription *desc) {
+	if (*desc == voxelformat::PLYFormat::format()) {
+		ImGui::CheckboxVar(cfg::VoxformatPointCloudExport);
+		const bool pointCloud = core::getVar(cfg::VoxformatPointCloudExport)->boolVal();
+		if (pointCloud) {
+			ImGui::InputVarInt(cfg::VoxformatPointCloudNormalRadius);
+			ImGui::CheckboxVar(cfg::VoxformatTransform);
+			return;
+		}
+	}
+	ImGui::CheckboxVar(cfg::VoxformatSmoothMesh);
+	const bool smoothMesh = core::getVar(cfg::VoxformatSmoothMesh)->boolVal();
+	if (smoothMesh) {
+		static const core::Array<core::String, voxelutil::SmoothFilterMax> filterModes = {
+			_("Laplacian"), _("Taubin")};
+		ImGui::ComboVar(cfg::VoxformatSmoothFilter, filterModes);
+		ImGui::InputVarInt(cfg::VoxformatSmoothIterations);
+		ImGui::InputVarFloat(cfg::VoxformatSmoothSharpness);
+		ImGui::CheckboxVar(cfg::VoxformatTransform);
+		ImGui::CheckboxVar(cfg::VoxformatWithColor);
+		ImGui::CheckboxVar(cfg::VoxformatOptimize);
+		return;
+	}
 	ImGui::CheckboxVar(cfg::VoxformatMergequads);
 	ImGui::CheckboxVar(cfg::VoxformatReusevertices);
 	ImGui::CheckboxVar(cfg::VoxformatAmbientocclusion);

@@ -17,9 +17,14 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "app/Async.h"
+#include "core/concurrent/Atomic.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -655,6 +660,205 @@ bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 #undef wrapBool
 #undef wrap
+
+/**
+ * @brief Compute the face normal for a surface voxel by checking which faces are exposed to air.
+ * This always gives the correct outward direction regardless of wall thickness.
+ */
+static glm::vec3 computeFaceNormal(const voxel::RawVolume &volume, const glm::ivec3 &pos) {
+	const voxel::Region &region = volume.region();
+	glm::vec3 faceNormal(0.0f);
+	static const glm::ivec3 faceOffsets[6] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+	for (int face = 0; face < 6; ++face) {
+		const glm::ivec3 neighbor = pos + faceOffsets[face];
+		if (!region.containsPoint(neighbor) || voxel::isAir(volume.voxel(neighbor).getMaterial())) {
+			faceNormal += glm::vec3(faceOffsets[face]);
+		}
+	}
+	const float len2 = glm::dot(faceNormal, faceNormal);
+	if (len2 < 0.0001f) {
+		return glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+	return glm::normalize(faceNormal);
+}
+
+/**
+ * @brief Estimate a smooth outward-facing normal for a surface voxel by weighted-average
+ * of solid neighbor offsets within the given radius.
+ *
+ * First computes the exact face normal (always correct direction), then smooths it using
+ * a weighted average of solid neighbor offsets. The face normal is used as a reference to
+ * prevent normal flips on thin walls and concave surfaces.
+ */
+static glm::vec3 estimateWeightedNormal(const voxel::RawVolume &volume, const glm::ivec3 &pos, int radius) {
+	const glm::vec3 faceNormal = computeFaceNormal(volume, pos);
+	if (radius <= 1) {
+		return faceNormal;
+	}
+
+	const voxel::Region &region = volume.region();
+	glm::vec3 sum(0.0f);
+	for (int dz = -radius; dz <= radius; ++dz) {
+		for (int dy = -radius; dy <= radius; ++dy) {
+			for (int dx = -radius; dx <= radius; ++dx) {
+				if (dx == 0 && dy == 0 && dz == 0) {
+					continue;
+				}
+				const glm::ivec3 neighbor = pos + glm::ivec3(dx, dy, dz);
+				if (!region.containsPoint(neighbor)) {
+					continue;
+				}
+				const float distSq = (float)(dx * dx + dy * dy + dz * dz);
+				if (distSq > (float)(radius * radius)) {
+					continue;
+				}
+				const voxel::Voxel &v = volume.voxel(neighbor);
+				if (voxel::isAir(v.getMaterial())) {
+					continue;
+				}
+				const float weight = 1.0f / glm::sqrt(distSq);
+				sum += glm::vec3((float)dx, (float)dy, (float)dz) * weight;
+			}
+		}
+	}
+	if (glm::dot(sum, sum) < 0.0001f) {
+		return faceNormal;
+	}
+	glm::vec3 smoothed = glm::normalize(-sum);
+	// If the smoothed normal flips relative to the face normal, correct it
+	if (glm::dot(smoothed, faceNormal) < 0.0f) {
+		smoothed = -smoothed;
+	}
+	return smoothed;
+}
+
+bool PLYFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							   const io::ArchivePtr &archive) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+
+	const int normalRadius = core::getVar(cfg::VoxformatPointCloudNormalRadius)->intVal();
+	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
+
+	struct PointVertex {
+		glm::vec3 pos;
+		glm::vec3 normal;
+		color::RGBA color;
+	};
+
+	core::DynamicArray<PointVertex> allPoints;
+
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		if (volume == nullptr) {
+			continue;
+		}
+		const palette::Palette &palette = node.palette();
+
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+
+		// Pass 1: collect surface voxel positions and colors (fast)
+		struct SurfaceVoxel {
+			glm::ivec3 pos;
+			color::RGBA color;
+		};
+		core::DynamicArray<SurfaceVoxel> surfaceVoxels;
+		const voxel::Region &volRegion = volume->region();
+		const size_t estimatedSurface = (size_t)volRegion.voxels() / 6;
+		surfaceVoxels.reserve(estimatedSurface);
+		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			SurfaceVoxel sv;
+			sv.pos = glm::ivec3(x, y, z);
+			sv.color = palette.color(voxel.getColor());
+			surfaceVoxels.push_back(sv);
+		};
+		voxelutil::visitSurfaceVolume(*volume, visitor);
+
+		// Pass 2: compute normals in parallel (expensive)
+		const int count = (int)surfaceVoxels.size();
+		Log::debug("Computing normals for %i surface voxels (radius %i)", count, normalRadius);
+		core::DynamicArray<PointVertex> nodePoints;
+		nodePoints.resize(count);
+		core::AtomicInt processed(0);
+		const int logInterval = count / 10 > 0 ? count / 10 : 1;
+		app::for_parallel(0, count, [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				const SurfaceVoxel &sv = surfaceVoxels[i];
+				nodePoints[i].pos = glm::vec3(sv.pos) + glm::vec3(0.5f);
+				nodePoints[i].normal = estimateWeightedNormal(*volume, sv.pos, normalRadius);
+				nodePoints[i].color = sv.color;
+				const int done = processed.increment() + 1;
+				if (done % logInterval == 0) {
+					Log::debug("Normal estimation: %i%%", (int)(done * 100 / count));
+				}
+			}
+		});
+		Log::debug("Normal estimation complete");
+
+		if (applyTransform) {
+			const glm::vec3 pivot = node.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			const glm::mat4 &mat = transform.worldMatrix();
+			const glm::mat3 normalMat = glm::mat3(glm::transpose(glm::inverse(mat)));
+			for (PointVertex &pv : nodePoints) {
+				pv.pos = glm::vec3(mat * glm::vec4(pv.pos - pivot, 1.0f));
+				pv.normal = glm::normalize(normalMat * pv.normal);
+			}
+		}
+
+		allPoints.reserve(allPoints.size() + nodePoints.size());
+		for (const PointVertex &pv : nodePoints) {
+			allPoints.push_back(pv);
+		}
+	}
+
+	if (allPoints.empty()) {
+		Log::warn("No surface voxels found for point cloud export");
+		return false;
+	}
+
+	Log::info("Point cloud export: %i surface voxels", (int)allPoints.size());
+
+	stream->writeStringFormat(false, "ply\nformat ascii 1.0\n");
+	stream->writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	stream->writeStringFormat(false, "comment Point cloud export from voxel data\n");
+	stream->writeStringFormat(false, "element vertex %i\n", (int)allPoints.size());
+	stream->writeStringFormat(false, "property float x\n");
+	stream->writeStringFormat(false, "property float y\n");
+	stream->writeStringFormat(false, "property float z\n");
+	stream->writeStringFormat(false, "property float nx\n");
+	stream->writeStringFormat(false, "property float ny\n");
+	stream->writeStringFormat(false, "property float nz\n");
+	stream->writeStringFormat(false, "property uchar red\n");
+	stream->writeStringFormat(false, "property uchar green\n");
+	stream->writeStringFormat(false, "property uchar blue\n");
+	stream->writeStringFormat(false, "property uchar alpha\n");
+	stream->writeStringFormat(false, "end_header\n");
+
+	for (const PointVertex &pv : allPoints) {
+		stream->writeStringFormat(false, "%f %f %f %f %f %f %u %u %u %u\n", pv.pos.x, pv.pos.y, pv.pos.z,
+								  pv.normal.x, pv.normal.y, pv.normal.z, pv.color.r, pv.color.g, pv.color.b,
+								  pv.color.a);
+	}
+
+	return true;
+}
+
+bool PLYFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	const bool pointCloudExport = core::getVar(cfg::VoxformatPointCloudExport)->boolVal();
+	if (pointCloudExport) {
+		return savePointCloud(sceneGraph, filename, archive);
+	}
+	return MeshFormat::saveGroups(sceneGraph, filename, archive, ctx);
+}
 
 bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,

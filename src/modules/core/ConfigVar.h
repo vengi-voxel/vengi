@@ -142,7 +142,12 @@ constexpr const char *VoxformatGMLRegion = "voxformat_gmlregion";
 constexpr const char *VoxformatGMLFilenameFilter = "voxformat_gmlfilenamefilter";
 constexpr const char *VoxformatOSMURL = "voxformat_osmurl";
 constexpr const char *VoxformatOSMMetersPerVoxel = "voxformat_osmmeterspervoxel";
-
+constexpr const char *VoxformatPointCloudExport = "voxformat_pointcloudexport";
+constexpr const char *VoxformatPointCloudNormalRadius = "voxformat_pointcloudnormalradius";
+constexpr const char *VoxformatSmoothMesh = "voxformat_smoothmesh";
+constexpr const char *VoxformatSmoothIterations = "voxformat_smoothiterations";
+constexpr const char *VoxformatSmoothFilter = "voxformat_smoothfilter";
+constexpr const char *VoxformatSmoothSharpness = "voxformat_smoothsharpness";
 constexpr const char *GameModeClipping = "g_clipping";
 constexpr const char *GameModeApplyGravity = "g_applygravity";
 constexpr const char *GameModeJumpVelocity = "g_jumpvelocity";
