@@ -26,6 +26,10 @@ TEST_F(VoxFormatTest, testLoad) {
 	testLoad("magicavoxel.vox");
 }
 
+TEST_F(VoxFormatTest, DISABLED_testTeardownLoad) {
+	testLoad("teardown.vox");
+}
+
 TEST_F(VoxFormatTest, testLoadMaterials) {
 	VoxFormat f;
 	scenegraph::SceneGraph mvSceneGraph;

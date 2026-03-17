@@ -353,6 +353,7 @@ set(TEST_FILES
 	"tests/sylvie/46.ase"
 	"tests/sylvie/line.ase"
 	"tests/sylvie/mapmenu.ase"
+	"tests/teardown.vox"
 	"tests/test2.kv6"
 	"tests/test2.vxm"
 	"tests/testao.vox"
