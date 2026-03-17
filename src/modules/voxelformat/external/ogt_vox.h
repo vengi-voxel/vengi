@@ -534,6 +534,8 @@
     #ifndef M_PI
     #define M_PI 3.14159265358979323846
     #endif
+    #include "io/ZipReadStream.h"
+    #include "io/MemoryReadStream.h"
 
     // MAKE_VOX_CHUNK_ID: used to construct a literal to describe a chunk in a .vox file.
     #define MAKE_VOX_CHUNK_ID(c0,c1,c2,c3)     ( (c0<<0) | (c1<<8) | (c2<<16) | (c3<<24) )
@@ -542,6 +544,7 @@
     static const uint32_t CHUNK_ID_MAIN = MAKE_VOX_CHUNK_ID('M','A','I','N');
     static const uint32_t CHUNK_ID_SIZE = MAKE_VOX_CHUNK_ID('S','I','Z','E');
     static const uint32_t CHUNK_ID_XYZI = MAKE_VOX_CHUNK_ID('X','Y','Z','I');
+    static const uint32_t CHUNK_ID_TDCZ = MAKE_VOX_CHUNK_ID('T','D','C','Z');
     static const uint32_t CHUNK_ID_RGBA = MAKE_VOX_CHUNK_ID('R','G','B','A');
     static const uint32_t CHUNK_ID_nTRN = MAKE_VOX_CHUNK_ID('n','T','R','N');
     static const uint32_t CHUNK_ID_nGRP = MAKE_VOX_CHUNK_ID('n','G','R','P');
@@ -1605,10 +1608,46 @@
                     }
                     break;
                 }
+                case CHUNK_ID_TDCZ:
+                {
+                    _vox_file_read_uint32(fp, &size_x);
+                    _vox_file_read_uint32(fp, &size_y);
+                    _vox_file_read_uint32(fp, &size_z);
+                    ogt_assert(size_x && size_y && size_z, "TDCZ chunk has zero size");
+
+                    uint32_t voxel_count = size_x * size_y * size_z;
+                    ogt_vox_model * model = (ogt_vox_model*)_vox_calloc(sizeof(ogt_vox_model) + voxel_count);        // 1 byte for each voxel
+                    if (!model)
+                        return NULL;
+                    uint8_t * voxel_data = (uint8_t*)&model[1];
+
+                    // insert the model into the model array
+                    model_ptrs.push_back(model);
+
+                    // now setup the model
+                    model->size_x = size_x;
+                    model->size_y = size_y;
+                    model->size_z = size_z;
+                    model->voxel_data = voxel_data;
+
+                    const uint8_t * compressed_voxel_data = (const uint8_t*)_vox_file_data_pointer(fp);
+                    const uint32_t bytes_to_read = _vox_min(_vox_file_bytes_remaining(fp), chunk_size - 3 * sizeof(uint32_t));
+
+                    io::MemoryReadStream data_stream(compressed_voxel_data, bytes_to_read);
+                    io::ZipReadStream stream(data_stream, (int)data_stream.size());
+                    stream.read(voxel_data, voxel_count * sizeof(uint8_t));
+
+                    _vox_file_seek_forwards(fp, bytes_to_read);
+
+                    // compute the hash of the voxels in this model-- used to accelerate duplicate models checking.
+                    model->voxel_hash = _vox_hash(voxel_data, size_x * size_y * size_z);
+                    break;
+                }
                 case CHUNK_ID_RGBA:
                 {
-                    ogt_assert(chunk_size == sizeof(palette), "unexpected chunk size for RGBA chunk");
-                    _vox_file_read(fp, &palette, sizeof(palette));
+                    uint32_t num_palette_entries = chunk_size / sizeof(ogt_vox_rgba);
+                    ogt_assert(num_palette_entries <= 256, "too many palette entries in RGBA chunk");
+                    _vox_file_read(fp, &palette, num_palette_entries * sizeof(ogt_vox_rgba));
                     break;
                 }
                 case CHUNK_ID_nTRN:
