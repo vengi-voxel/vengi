@@ -8,6 +8,7 @@
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -125,6 +126,60 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(nodeAfterSelect->hasSelection());
 
 		command::executeCommands("select none");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "select color actions")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(node != nullptr);
+		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+
+		auto selectedCount = [&]() {
+			int count = 0;
+			voxelutil::visitVolume(*node->volume(), [&count](int x, int y, int z, const voxel::Voxel &v) {
+				if ((v.getFlags() & voxel::FlagOutline) != 0u) {
+					++count;
+				}
+			});
+			return count;
+		};
+
+		command::executeCommands("select all");
+		ctx->Yield(3);
+		IM_CHECK(node->hasSelection());
+		IM_CHECK_EQ(selectedCount(), 3);
+
+		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("Select Only Color");
+		ctx->Yield(3);
+		IM_CHECK_EQ(selectedCount(), 2);
+		voxel::RawVolume *v = node->volume()
+		IM_CHECK((v->voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0u);
+		IM_CHECK((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0u);
+		IM_CHECK((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) == 0u);
+
+		ctx->ItemClick("Deselect Color");
+		ctx->Yield(3);
+		IM_CHECK_EQ(selectedCount(), 0);
+
+		command::executeCommands("select all");
+		ctx->Yield(3);
+		IM_CHECK_EQ(selectedCount(), 3);
+
+		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("Color Selected");
+		ctx->Yield(3);
+		IM_CHECK_EQ(v->voxel(0, 0, 0).getColor(), 2);
+		IM_CHECK_EQ(v->voxel(1, 0, 0).getColor(), 2);
+		IM_CHECK_EQ(v->voxel(2, 0, 0).getColor(), 2);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush")->TestFunc = [=](ImGuiTestContext *ctx) {

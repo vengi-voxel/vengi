@@ -280,6 +280,16 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		brush.setSelectMode((SelectMode)selectModeInt);
 	}
 
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	const bool hasSelection = node != nullptr && node->hasSelection();
+	ImGui::SeparatorText(_("Selection actions"));
+	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select Only Color"), "selectonlycolor", listener);
+	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Color Selected"), "colorselected", listener);
+	ImGui::BeginDisabled(!hasSelection);
+	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", listener);
+	ImGui::EndDisabled();
+
 	if (brush.selectMode() == SelectMode::FuzzyColor) {
 		float threshold = brush.colorThreshold();
 		if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin, color::ApproximationDistanceLoose, "%.0f")) {
@@ -311,9 +321,6 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		}
 		ImGui::PopID();
 	}
-
-	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 
 	if (brush.selectMode() == SelectMode::Slope) {
 		const float btnW = ImGui::GetFrameHeight();
