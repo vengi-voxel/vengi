@@ -4,7 +4,7 @@ set(SRCS
 	Async.cpp Async.h
 	CommandlineApp.h CommandlineApp.cpp
 	ForParallel.h
-	I18N.h
+	I18N.cpp I18N.h
 	I18NMarkers.h
 	Pipe.cpp Pipe.h
 

@@ -10,7 +10,12 @@
 #define _(x) x
 #define C_(ctx, x) x
 #else
-#include "App.h"
-#define _(x) app::App::getInstance()->translate(x)
-#define C_(ctx, x) app::App::getInstance()->translateCtxt(ctx, x)
+
+namespace app {
+const char *translate(const char *msgid);
+const char *translateCtxt(const char *msgctxt, const char *msgid);
+}
+
+#define _(x) app::translate(x)
+#define C_(ctx, x) app::translateCtxt(ctx, x)
 #endif

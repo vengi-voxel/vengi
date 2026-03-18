@@ -3,6 +3,7 @@
  */
 
 #include "Pipe.h"
+#include "app/App.h"
 #include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
