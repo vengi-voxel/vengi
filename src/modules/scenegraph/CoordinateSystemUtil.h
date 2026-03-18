@@ -5,6 +5,7 @@
 #pragma once
 
 #include "math/CoordinateSystem.h"
+#include "scenegraph/SceneGraphTransform.h"
 
 namespace scenegraph {
 

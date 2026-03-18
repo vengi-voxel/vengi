@@ -6,12 +6,12 @@
 
 #include "app/I18NMarkers.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "video/Camera.h"
+#include "voxel/Region.h"
 
 namespace scenegraph {
 class SceneGraph;
 }
-#include "video/Camera.h"
-#include "voxel/Region.h"
 
 namespace voxelrender {
 

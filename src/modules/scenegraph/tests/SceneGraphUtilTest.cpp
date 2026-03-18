@@ -3,6 +3,7 @@
  */
 
 #include "scenegraph/SceneGraphUtil.h"
+#include "scenegraph/SceneGraph.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"

@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "scenegraph/Physics.h"
+#include "scenegraph/SceneGraph.h"
 
 namespace voxelrender {
 

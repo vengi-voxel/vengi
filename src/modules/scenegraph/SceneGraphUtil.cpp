@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraphUtil.h"
+#include "scenegraph/SceneGraph.h"
 #include "core/Log.h"
 #include <glm/ext/scalar_constants.hpp>
 #include "core/collection/DynamicArray.h"

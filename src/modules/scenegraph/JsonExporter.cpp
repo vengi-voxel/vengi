@@ -3,6 +3,7 @@
  */
 
 #include "JsonExporter.h"
+#include "scenegraph/SceneGraph.h"
 #include "core/Var.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraphNodeCamera.h"

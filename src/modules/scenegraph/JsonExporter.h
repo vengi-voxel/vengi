@@ -7,10 +7,8 @@
 #include "io/Stream.h"
 
 namespace scenegraph {
-class SceneGraph;
-}
 
-namespace scenegraph {
+class SceneGraph;
 
 enum JsonExporterFlags : uint32_t {
 	JSONEXPORTER_PALETTE = 1 << 0,

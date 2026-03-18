@@ -3,6 +3,7 @@
  */
 
 #include "CoordinateSystemUtil.h"
+#include "scenegraph/SceneGraph.h"
 #include "math/CoordinateSystemUtil.h"
 
 namespace scenegraph {

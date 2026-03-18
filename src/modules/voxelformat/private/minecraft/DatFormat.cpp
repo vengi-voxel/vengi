@@ -15,6 +15,7 @@
 #include "io/Archive.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/Voxel.h"
