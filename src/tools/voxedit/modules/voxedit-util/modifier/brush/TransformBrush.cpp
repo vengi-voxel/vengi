@@ -319,27 +319,20 @@ void TransformBrush::writeVoxel(ModifierVolumeWrapper &wrapper,
 
 void TransformBrush::eraseSnapshotPositions(ModifierVolumeWrapper &wrapper) {
 	core_trace_scoped(EraseSnapshotPositions);
-	voxel::RawVolume *vol = wrapper.volume();
-	const voxel::Region &volRegion = vol->region();
-	const voxel::Voxel air;
 
 	// Iterate only the populated entries in the sparse snapshot instead of the
 	// full bounding box - avoids hash lookups for empty positions.
 	struct Eraser {
-		voxel::RawVolume *vol;
 		ModifierVolumeWrapper *wrapper;
 		TransformBrush *brush;
-		const voxel::Region *volRegion;
-		voxel::Voxel air;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
+			constexpr voxel::Voxel air;
 			const glm::ivec3 pos(x, y, z);
-			if (volRegion->containsPoint(pos)) {
-				brush->writeVoxel(*wrapper, pos, air);
-			}
+			brush->writeVoxel(*wrapper, pos, air);
 			return true;
 		}
 	};
-	Eraser eraser{vol, &wrapper, this, &volRegion, air};
+	Eraser eraser{&wrapper, this};
 	_snapshot.copyTo(eraser);
 }
 
