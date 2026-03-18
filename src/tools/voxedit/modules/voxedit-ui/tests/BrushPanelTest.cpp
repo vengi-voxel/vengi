@@ -160,7 +160,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("Select Only Color");
 		ctx->Yield(3);
 		IM_CHECK_EQ(selectedCount(), 2);
-		voxel::RawVolume *v = node->volume()
+		voxel::RawVolume *v = node->volume();
 		IM_CHECK((v->voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0u);
 		IM_CHECK((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0u);
 		IM_CHECK((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) == 0u);
