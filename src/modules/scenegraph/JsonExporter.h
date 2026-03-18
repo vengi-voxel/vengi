@@ -5,7 +5,10 @@
 #pragma once
 
 #include "io/Stream.h"
-#include "scenegraph/SceneGraph.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace scenegraph {
 

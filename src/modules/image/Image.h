@@ -7,13 +7,15 @@
 #include "core/NonCopyable.h"
 #include "color/RGBA.h"
 #include "core/SharedPtr.h"
+#include "core/String.h"
 #include "image/ImageType.h"
-#include "io/File.h"
 #include "io/IOResource.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 
 namespace io {
+class File;
+typedef core::SharedPtr<File> FilePtr;
 class ReadStream;
 class SeekableReadStream;
 class SeekableWriteStream;

@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "scenegraph/SceneGraph.h"
+#include "core/collection/Buffer.h"
+#include "scenegraph/SceneGraphNode.h"
 #include <functional>
 
 namespace scenegraph {

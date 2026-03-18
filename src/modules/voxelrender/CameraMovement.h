@@ -7,11 +7,13 @@
 #include "core/IComponent.h"
 #include "core/Var.h"
 #include "scenegraph/Physics.h"
-#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
 #include "video/Camera.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxelrender {
 

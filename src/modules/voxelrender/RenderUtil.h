@@ -5,8 +5,11 @@
 #pragma once
 
 #include "app/I18NMarkers.h"
-#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 #include "video/Camera.h"
 #include "voxel/Region.h"
 

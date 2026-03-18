@@ -7,8 +7,11 @@
 #include "core/collection/DynamicStringMap.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
-#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxelformat {
 

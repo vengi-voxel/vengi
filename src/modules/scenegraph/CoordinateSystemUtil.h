@@ -5,9 +5,10 @@
 #pragma once
 
 #include "math/CoordinateSystem.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace scenegraph {
+
+class SceneGraph;
 
 /**
  * @param[in] from This specifies the coordinate system of the format
