@@ -10,9 +10,14 @@
 #include "image/ImageType.h"
 #include "io/File.h"
 #include "io/IOResource.h"
-#include "io/Stream.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
+
+namespace io {
+class ReadStream;
+class SeekableReadStream;
+class SeekableWriteStream;
+}
 
 namespace image {
 
