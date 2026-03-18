@@ -32,12 +32,15 @@ static SculptMode parseSculptMode(const core::String &mode) {
 	if (mode == "bridgegap") {
 		return SculptMode::BridgeGap;
 	}
+	if (mode == "squashtoplane") {
+		return SculptMode::SquashToPlane;
+	}
 	return SculptMode::Erode;
 }
 
 SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	_tool.set("description",
-			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap). "
+			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap, SquashToPlane). "
 			  "Requires a selection first (use voxedit_select_brush to select voxels before sculpting).");
 
 	json::Json inputSchema = json::Json::object();
@@ -56,7 +59,8 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 					   "The sculpt mode: 'erode' (remove surface voxels), 'grow' (add voxels to surface), "
 					   "'flatten' (flatten surface along a face), 'smoothadditive' (smooth by adding), "
 					   "'smootherode' (smooth by removing), 'smoothgaussian' (Gaussian height blur), "
-				   "'bridgegap' (connect boundary voxels with lines to bridge gaps)");
+				   "'bridgegap' (connect boundary voxels with lines to bridge gaps), "
+				   "'squashtoplane' (project all voxels onto the clicked plane)");
 	json::Json enumArr = json::Json::array();
 	enumArr.push("erode");
 	enumArr.push("grow");
@@ -65,6 +69,7 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	enumArr.push("smootherode");
 	enumArr.push("smoothgaussian");
 	enumArr.push("bridgegap");
+	enumArr.push("squashtoplane");
 	sculptModeProp.set("enum", enumArr);
 	sculptModeProp.set("default", "erode");
 	properties.set("sculptMode", sculptModeProp);

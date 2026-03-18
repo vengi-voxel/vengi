@@ -55,7 +55,7 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap")};
+static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap"), NC_("Sculpt Modes", "Squash to Plane")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
@@ -1227,7 +1227,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setSigma(sigma);
 			executeSculptBrush();
 		}
-	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap) {
+	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
@@ -1235,7 +1235,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	if (currentMode != SculptMode::BridgeGap) {
+	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {

@@ -686,4 +686,88 @@ TEST_F(VolumeSculptTest, testBridgeGapSingleVoxelNoChange) {
 	EXPECT_EQ(countSolid(volume), before);
 }
 
+// --- SquashToPlane tests ---
+
+TEST_F(VolumeSculptTest, testSquashToPlaneProjectsToClickedLayer) {
+	// 3x3x3 cube. Squash to Y=2 plane. Every column has solid voxels, so all should
+	// project to Y=2. Other layers become air.
+	voxel::Region region(0, 4);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	fillRegion(volume, voxel::Region(1, 3), solid);
+
+	const int changed = sculptSquashToPlane(volume, region, voxel::FaceNames::PositiveY, 2);
+	EXPECT_GT(changed, 0);
+	// Y=2 layer should be fully solid (3x3)
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			EXPECT_TRUE(voxel::isBlocked(volume.voxel(x, 2, z).getMaterial()));
+		}
+	}
+	// Y=1 and Y=3 layers should be air
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			EXPECT_TRUE(voxel::isAir(volume.voxel(x, 1, z).getMaterial()));
+			EXPECT_TRUE(voxel::isAir(volume.voxel(x, 3, z).getMaterial()));
+		}
+	}
+	// Total solid count should be 9 (one layer of 3x3)
+	EXPECT_EQ(countSolid(volume), 9);
+}
+
+TEST_F(VolumeSculptTest, testSquashToPlanePreservesNearestColor) {
+	// Column with different colors at different heights. The voxel nearest to the
+	// plane should donate its color.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+
+	// Column at (2,*,2): color 10 at Y=1, color 20 at Y=3
+	volume.setVoxel(2, 1, 2, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	volume.setVoxel(2, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, 20));
+
+	// Squash to Y=3 plane — the voxel AT Y=3 (color 20) is nearest (dist=0)
+	sculptSquashToPlane(volume, region, voxel::FaceNames::PositiveY, 3);
+	EXPECT_EQ(volume.voxel(2, 3, 2).getColor(), 20);
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 1, 2).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSquashToPlaneEmptyColumnNoChange) {
+	// Columns without any solid voxels should remain empty.
+	voxel::Region region(0, 4);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Only fill a single column at (2,1..3,2)
+	for (int y = 1; y <= 3; ++y) {
+		volume.setVoxel(2, y, 2, solid);
+	}
+
+	sculptSquashToPlane(volume, region, voxel::FaceNames::PositiveY, 2);
+	// The filled column should have exactly 1 voxel at Y=2
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 2, 2).getMaterial()));
+	EXPECT_EQ(countSolid(volume), 1);
+	// Adjacent empty column should still be empty
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 2, 1).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSquashToPlaneNegativeX) {
+	// Test with NegativeX face — squash along X axis to X=2 plane.
+	voxel::Region region(0, 4);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	fillRegion(volume, voxel::Region(1, 3), solid);
+
+	sculptSquashToPlane(volume, region, voxel::FaceNames::NegativeX, 2);
+	// X=2 plane should have 3x3 solid voxels
+	for (int y = 1; y <= 3; ++y) {
+		for (int z = 1; z <= 3; ++z) {
+			EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, y, z).getMaterial()));
+		}
+	}
+	// X=1 and X=3 should be air
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 2, 2).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 2, 2).getMaterial()));
+	EXPECT_EQ(countSolid(volume), 9);
+}
+
 } // namespace voxelutil
