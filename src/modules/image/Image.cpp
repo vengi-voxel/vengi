@@ -140,7 +140,7 @@ static ImageType getImageType(io::SeekableReadStream &stream) {
 /**
  * @brief Detect image type by file extension
  */
-static ImageType getImageType(const core::String &filename) {
+ImageType getImageType(const core::String &filename) {
 	const struct Mapping {
 		const char *ext;
 		ImageType type;

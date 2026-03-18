@@ -342,6 +342,8 @@ inline ImagePtr createEmptyImage(const core::String &name) {
 	return core::make_shared<Image>(name);
 }
 
+ImageType getImageType(const core::String &filename);
+
 ImagePtr loadImage(const io::FilePtr &file);
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
 ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &stream, int w, int h);

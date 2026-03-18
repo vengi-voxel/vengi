@@ -21,6 +21,7 @@
 #include "engine-config.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
+#include "image/ImageType.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
