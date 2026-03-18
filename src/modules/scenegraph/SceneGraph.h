@@ -9,7 +9,6 @@
 #pragma once
 
 #include "SceneGraphNode.h"
-#include "FrameTransform.h"
 #include "core/Common.h"
 #include "core/DirtyState.h"
 #include "core/Trace.h"
@@ -19,8 +18,9 @@
 #include "math/OBB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
+#include "scenegraph/CollisionNode.h"
+#include "scenegraph/FrameTransform.h"
 #include "scenegraph/FrameTransformCache.h"
-#include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraphListener.h"
 
 namespace voxel {
