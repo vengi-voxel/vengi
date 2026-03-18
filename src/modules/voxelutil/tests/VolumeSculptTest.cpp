@@ -1069,8 +1069,8 @@ TEST_F(VolumeSculptTest, testReskinNoClipboardNoChange) {
 		}
 	}
 
-	// Empty skin (0-size region)
-	voxel::Region skinRegion(glm::ivec3(0), glm::ivec3(-1));
+	// Empty skin (1x1x1 all-air volume)
+	voxel::Region skinRegion(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume skin(skinRegion);
 
 	ReskinConfig config;
