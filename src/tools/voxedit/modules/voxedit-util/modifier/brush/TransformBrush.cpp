@@ -127,16 +127,12 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 
 	auto func = [&] (int x, int y, int z, const voxel::Voxel &voxel) {
-		if (!(voxel.getFlags() & voxel::FlagOutline)) {
-			return;
-		}
-
 		const glm::ivec3 pos(x, y, z);
 		_snapshot.setVoxel(pos, voxel);
 		selLo = glm::min(selLo, pos);
 		selHi = glm::max(selHi, pos);
 	};
-	voxelutil::visitVolume(*volume, volRegion, func, voxelutil::VisitSolid());
+	voxelutil::visitVolume(*volume, volRegion, func, voxelutil::VisitSolidOutline());
 	if (_snapshot.empty()) {
 		_hasSnapshot = false;
 		return;

@@ -16,6 +16,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -127,25 +128,12 @@ void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::R
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 
-	const glm::ivec3 &regionLo = volRegion.getLowerCorner();
-	const glm::ivec3 &regionHi = volRegion.getUpperCorner();
-	for (int z = regionLo.z; z <= regionHi.z; ++z) {
-		for (int y = regionLo.y; y <= regionHi.y; ++y) {
-			for (int x = regionLo.x; x <= regionHi.x; ++x) {
-				const voxel::Voxel &currentVoxel = volume->voxel(x, y, z);
-				if (voxel::isAir(currentVoxel.getMaterial())) {
-					continue;
-				}
-				if (!(currentVoxel.getFlags() & voxel::FlagOutline)) {
-					continue;
-				}
-				const glm::ivec3 pos(x, y, z);
-				_snapshot.setVoxel(pos, currentVoxel);
-				selLo = glm::min(selLo, pos);
-				selHi = glm::max(selHi, pos);
-			}
-		}
-	}
+	voxelutil::visitVolume(*volume, volRegion, [&] (int x, int y, int z, const voxel::Voxel &voxel) {
+		const glm::ivec3 pos(x, y, z);
+		_snapshot.setVoxel(pos, voxel);
+		selLo = glm::min(selLo, pos);
+		selHi = glm::max(selHi, pos);
+	}, voxelutil::VisitSolidOutline());
 
 	if (_snapshot.empty()) {
 		_hasSnapshot = false;
