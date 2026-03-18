@@ -112,9 +112,15 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 		}
 	}
 	if (_hasSnapshot) {
-		// Expand by iterations since smoothing can grow surface by 1 voxel per iteration
 		_cachedRegion = _snapshotRegion;
-		_cachedRegion.grow(_iterations);
+		if (_sculptMode == SculptMode::Reskin) {
+			// Expand along face normal for z offset + skin layers growing outward
+			const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
+			_cachedRegion.grow(expand);
+		} else {
+			// Expand by iterations since smoothing can grow surface by 1 voxel per iteration
+			_cachedRegion.grow(_iterations);
+		}
 		_cachedRegionValid = true;
 	}
 }
@@ -216,7 +222,24 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	core_trace_scoped(SculptBrushApplySculpt);
 
-	voxel::BitVolume currentSolid(_snapshotRegion);
+	// For Reskin mode, expand the working region along the face normal to accommodate
+	// the z offset and skin layers growing outward from the surface.
+	voxel::Region workRegion = _snapshotRegion;
+	if (_sculptMode == SculptMode::Reskin && _flattenFace != voxel::FaceNames::Max) {
+		const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
+		const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
+		glm::ivec3 lo = workRegion.getLowerCorner();
+		glm::ivec3 hi = workRegion.getUpperCorner();
+		lo[axisIdx] -= expand;
+		hi[axisIdx] += expand;
+		// Clamp to volume bounds
+		const voxel::Region &volRegion = wrapper.volume()->region();
+		lo = glm::max(lo, volRegion.getLowerCorner());
+		hi = glm::min(hi, volRegion.getUpperCorner());
+		workRegion = voxel::Region(lo, hi);
+	}
+
+	voxel::BitVolume currentSolid(workRegion);
 	voxel::SparseVolume voxelMap;
 
 	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
@@ -303,6 +326,8 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		voxelutil::sculptBridgeGap(currentSolid, voxelMap, anchorSolid, fillVoxel);
 	} else if (_sculptMode == SculptMode::SquashToPlane && _flattenFace != voxel::FaceNames::Max) {
 		voxelutil::sculptSquashToPlane(currentSolid, voxelMap, _flattenFace, _squashPlaneCoord);
+	} else if (_sculptMode == SculptMode::Reskin && _skinVolume != nullptr && _flattenFace != voxel::FaceNames::Max) {
+		voxelutil::sculptReskin(currentSolid, voxelMap, *_skinVolume, _flattenFace, _reskinConfig);
 	}
 
 	// Write results using the collected snapshot entries - no hash lookups needed.
@@ -310,10 +335,16 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	// currentSolid tells us what survived (BitVolume, O(1) bit test).
 	const voxel::Voxel air;
 
-	// Pass 1: remove sculpted-away voxels + write surviving snapshot voxels
+	// Pass 1: remove sculpted-away voxels + write surviving snapshot voxels.
+	// Read from voxelMap (not snapshot) so color changes from reskin are applied.
+	// For non-reskin modes, voxelMap entries match the snapshot for surviving positions.
 	for (const voxel::VoxelPosition &entry : snapshotEntries) {
 		if (!currentSolid.hasValue(entry.pos.x, entry.pos.y, entry.pos.z)) {
 			writeVoxel(wrapper, entry.pos, air);
+		} else if (voxelMap.hasVoxel(entry.pos)) {
+			voxel::Voxel v = voxelMap.voxel(entry.pos);
+			v.setFlags(voxel::FlagOutline);
+			writeVoxel(wrapper, entry.pos, v);
 		} else {
 			voxel::Voxel v = entry.voxel;
 			v.setFlags(voxel::FlagOutline);
@@ -322,11 +353,13 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	}
 
 	// Pass 2: write newly grown voxels (added by sculpt, not in original snapshot).
-	// Scan the bounding box with O(1) bit tests: currentSolid && !snapshotSolid.
+	// Scan the working region (may be expanded for reskin) with O(1) bit tests.
 	// Only new positions need voxelMap hash lookup for color.
-	for (int z = snapLo.z; z <= snapHi.z; ++z) {
-		for (int y = snapLo.y; y <= snapHi.y; ++y) {
-			for (int x = snapLo.x; x <= snapHi.x; ++x) {
+	const glm::ivec3 &workLo = workRegion.getLowerCorner();
+	const glm::ivec3 &workHi = workRegion.getUpperCorner();
+	for (int z = workLo.z; z <= workHi.z; ++z) {
+		for (int y = workLo.y; y <= workHi.y; ++y) {
+			for (int x = workLo.x; x <= workHi.x; ++x) {
 				if (!currentSolid.hasValue(x, y, z)) {
 					continue;
 				}

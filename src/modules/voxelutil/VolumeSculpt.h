@@ -4,9 +4,12 @@
 
 #pragma once
 
+#include "math/Axis.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Face.h"
 #include "voxel/SparseVolume.h"
+
+#include <stdint.h>
 
 namespace voxel {
 class RawVolume;
@@ -14,6 +17,69 @@ class Region;
 } // namespace voxel
 
 namespace voxelutil {
+
+enum class ReskinMode : uint8_t {
+	Replace, ///< Skin solid overwrites surface; skin air removes surface voxels
+	Blend,   ///< Skin solid overwrites surface; skin air preserves surface voxels
+	Negate,  ///< Skin solid removes surface voxels; skin air preserves surface voxels
+
+	Max
+};
+
+enum class ReskinFollow : uint8_t {
+	None,   ///< Flat plane at max/min surface height
+	Median, ///< Flat plane at median surface height
+	Voxel,  ///< Per-column surface following
+
+	Max
+};
+
+enum class ReskinAnchor : uint8_t {
+	MinMin, ///< UV origin at min-U, min-V corner
+	MinMax, ///< UV origin at min-U, max-V corner
+	MaxMin, ///< UV origin at max-U, min-V corner
+	MaxMax, ///< UV origin at max-U, max-V corner
+
+	Max
+};
+
+enum class ReskinRotation : uint8_t {
+	R0,   ///< No rotation
+	R90,  ///< 90 degrees clockwise
+	R180, ///< 180 degrees
+	R270, ///< 270 degrees clockwise
+
+	Max
+};
+
+enum class ReskinTile : uint8_t {
+	Once,    ///< Apply skin once, stop at skin boundary
+	Repeat,  ///< Tile across selection, with optional mirroring
+	Stretch, ///< Scale skin to fill selection UV extents
+
+	Max
+};
+
+/**
+ * @brief Configuration for the reskin sculpt operation.
+ */
+struct ReskinConfig {
+	ReskinMode mode = ReskinMode::Blend;
+	ReskinFollow follow = ReskinFollow::Voxel;
+	ReskinAnchor anchor = ReskinAnchor::MinMin;
+	ReskinRotation rotation = ReskinRotation::R0;
+	ReskinTile tile = ReskinTile::Repeat;
+	bool mirrorU = false;
+	bool mirrorV = false;
+	int offsetU = 0;
+	int offsetV = 0;
+	int skinDepth = 1;
+	/// Vertical offset: positive = skin floats above surface, negative = sinks below
+	int zOffset = 0;
+	bool invertSkin = false;
+	/// Which axis of the skin volume is the outward direction (default Y = natural up in editor)
+	math::Axis skinUpAxis = math::Axis::Y;
+};
 
 /**
  * @brief Erode surface voxels based on their solid face-neighbor count.
@@ -220,5 +286,34 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
  */
 int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
 						int planeCoord);
+
+/**
+ * @brief Reskin: apply a skin volume (texture pattern) onto the selected surface.
+ *
+ * The face defines the surface normal ("up"). The skin volume's +Z axis maps to the
+ * face normal direction. For each (U,V) column in the selection, the algorithm:
+ * 1. Finds the surface height along the face normal
+ * 2. Erodes erodeDepth layers inward from the surface
+ * 3. Applies skinDepth layers of the skin pattern from the original surface inward
+ *
+ * Tiling, rotation, mirroring, and anchor point control how the skin maps onto the
+ * selection's UV plane. ReskinMode controls how skin voxels interact with existing surface.
+ *
+ * @param[in,out] solid BitVolume marking solid positions.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param[in] skin The skin volume to apply. Its +Z axis is treated as the surface normal.
+ * @param face The face direction that defines the surface normal.
+ * @param config Reskin configuration parameters.
+ */
+void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::RawVolume &skin,
+				  voxel::FaceNames face, const ReskinConfig &config);
+
+/**
+ * @brief Reskin on a volume region.
+ *
+ * @return The number of voxels changed.
+ */
+int sculptReskin(voxel::RawVolume &volume, const voxel::Region &region, const voxel::RawVolume &skin,
+				 voxel::FaceNames face, const ReskinConfig &config);
 
 } // namespace voxelutil

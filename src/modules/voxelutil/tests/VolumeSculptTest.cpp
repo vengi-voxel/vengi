@@ -770,4 +770,360 @@ TEST_F(VolumeSculptTest, testSquashToPlaneNegativeX) {
 	EXPECT_EQ(countSolid(volume), 9);
 }
 
+// --- Reskin tests ---
+
+TEST_F(VolumeSculptTest, testReskinBlendTiling) {
+	// 4x4 flat surface at y=0, 2x2 skin with two colors. Blend mode, Repeat tile.
+	// Skin should tile across the surface replacing colors.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// 4x4 flat surface
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 2x2x1 skin: checkerboard pattern
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
+	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+
+	ReskinConfig config;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	config.skinUpAxis = math::Axis::Z;
+
+	const int changed = sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	EXPECT_GT(changed, 0);
+	// Verify tiling: (0,0) and (2,0) should have same color (period 2 in both axes)
+	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), volume.voxel(2, 0, 0).getColor());
+	EXPECT_EQ(volume.voxel(1, 0, 0).getColor(), volume.voxel(3, 0, 0).getColor());
+	// And the two should be different
+	EXPECT_NE(volume.voxel(0, 0, 0).getColor(), volume.voxel(1, 0, 0).getColor());
+	// All voxels still solid
+	EXPECT_EQ(countSolid(volume), 16);
+}
+
+TEST_F(VolumeSculptTest, testReskinBlendWithOffset) {
+	// Same 4x4 surface but with offset (1,1). The pattern should shift.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
+	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+
+	// First apply without offset
+	ReskinConfig config;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	const uint8_t colorAtOriginNoOffset = volume.voxel(0, 0, 0).getColor();
+
+	// Reset surface
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// Apply with offset
+	config.offsetU = 1;
+	config.offsetV = 1;
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	const uint8_t colorAtOriginWithOffset = volume.voxel(0, 0, 0).getColor();
+
+	// Offset should shift the pattern
+	EXPECT_NE(colorAtOriginNoOffset, colorAtOriginWithOffset);
+}
+
+TEST_F(VolumeSculptTest, testReskinNegateCarves) {
+	// Negate mode: skin solid voxels carve into the surface
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// 4x4 flat surface
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 2x2x1 skin: only one voxel solid (at 0,0,0), rest air
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Negate;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+
+	const int before = countSolid(volume);
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Some voxels should be removed (where skin has solid at tiled positions)
+	EXPECT_LT(countSolid(volume), before);
+}
+
+TEST_F(VolumeSculptTest, testReskinReplaceRemovesWhereAir) {
+	// Replace mode: skin air voxels should remove surface voxels
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 2; ++x) {
+		for (int z = 0; z < 2; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 2x2x1 skin: only top-left is solid
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	// (1,0,0), (0,1,0), (1,1,0) are air
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Replace;
+	config.tile = ReskinTile::Once;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Only 1 voxel should remain (where skin had solid)
+	EXPECT_EQ(countSolid(volume), 1);
+}
+
+TEST_F(VolumeSculptTest, testReskinFollowSurface) {
+	// Stepped surface: y=0 at x=0, y=1 at x=1. With Follow::Voxel, skin should follow the step.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Low step
+	volume.setVoxel(0, 0, 0, surface);
+	// High step
+	volume.setVoxel(1, 0, 0, surface);
+	volume.setVoxel(1, 1, 0, surface);
+
+	// 1x1x2 skin: 2 layers deep, both solid with different colors
+	voxel::Region skinRegion(0, 0, 0, 0, 0, 1);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 20)); // top layer
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 21)); // deeper layer
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 2;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Skin base (Z=0, color 21) placed at surface, peak (Z=1, color 20) one layer above.
+	// Low column surface at y=0: base goes to y=0
+	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 21);
+	// High column surface at y=1: base goes to y=1
+	EXPECT_EQ(volume.voxel(1, 1, 0).getColor(), 21);
+	// High column y=0 is below the surface — not touched by skin, keeps original color
+	EXPECT_EQ(volume.voxel(1, 0, 0).getColor(), 1);
+}
+
+TEST_F(VolumeSculptTest, testReskinZOffsetNegative) {
+	// 4x4 surface 2 voxels thick. zOffset=-1 should apply skin one layer below surface.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// 2-voxel thick floor
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+			volume.setVoxel(x, 1, z, surface);
+		}
+	}
+
+	// 1x1x1 solid skin
+	voxel::Region skinRegion(0, 0, 0, 0, 0, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 30));
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	config.zOffset = -1;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Surface is y=1. zOffset=-1 shifts down: skin applies at y=0.
+	// y=0 should have skin color (30)
+	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 30);
+	// y=1 should keep original color (not touched by skin)
+	EXPECT_EQ(volume.voxel(0, 1, 0).getColor(), 1);
+	EXPECT_EQ(countSolid(volume), 32);
+}
+
+TEST_F(VolumeSculptTest, testReskinZOffsetPositive) {
+	// zOffset=+1 should apply skin one layer above the surface (floating).
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Single layer floor at y=0
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 1x1x1 solid skin
+	voxel::Region skinRegion(0, 0, 0, 0, 0, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 30));
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	config.zOffset = 1;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Surface is y=0. zOffset=+1 shifts up: skin applies at y=1 (above surface).
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 1, 0).getMaterial()));
+	EXPECT_EQ(volume.voxel(0, 1, 0).getColor(), 30);
+	// Original surface untouched
+	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 1);
+}
+
+TEST_F(VolumeSculptTest, testReskinInvertSkin) {
+	// Invert: skin solid becomes "remove", skin air becomes "keep" (in Negate mode).
+	// Combined with invert: skin solid → keep, skin air → remove.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 2; ++x) {
+		for (int z = 0; z < 2; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 2x2x1 skin: only (0,0,0) is solid
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+
+	// Negate + Invert: where skin is solid → treated as air → keep. Where air → treated as solid → remove.
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Negate;
+	config.tile = ReskinTile::Once;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	config.invertSkin = true;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Position (0,0,0) had skin solid → inverted to air → Negate keeps it
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()));
+	// Position (1,0,0) had skin air → inverted to solid → Negate removes it
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 0, 0).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testReskinNoClipboardNoChange) {
+	// Empty skin volume should cause no changes
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// Empty skin (0-size region)
+	voxel::Region skinRegion(glm::ivec3(0), glm::ivec3(-1));
+	voxel::RawVolume skin(skinRegion);
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	const int before = countSolid(volume);
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	EXPECT_EQ(countSolid(volume), before);
+}
+
+TEST_F(VolumeSculptTest, testReskinStretchMode) {
+	// 4x4 surface with 2x2 skin in Stretch mode using BitVolume/SparseVolume API directly.
+	// PositiveY face: perp1=Z(U), perp2=X(V). 4x4 grid at Y=0.
+	voxel::Region selRegion(0, 0, 0, 3, 0, 3);
+	voxel::BitVolume solid(selRegion);
+	voxel::SparseVolume voxelMap;
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			solid.setVoxel(x, 0, z, true);
+			voxelMap.setVoxel(glm::ivec3(x, 0, z), surface);
+		}
+	}
+
+	// 2x2x1 skin: quadrants with different colors
+	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
+	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+
+	ReskinConfig config;
+	config.skinUpAxis = math::Axis::Z;
+	config.mode = ReskinMode::Blend;
+	config.tile = ReskinTile::Stretch;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+
+	sculptReskin(solid, voxelMap, skin, voxel::FaceNames::PositiveY, config);
+	// With PositiveY face: U=Z, V=X. Stretch maps V(X) 0..3 to skin V(Y) 0..1.
+	// Nearest-neighbor: X=0,1,2 -> skinV=0, X=3 -> skinV=1.
+	// Corner (X=0,Z=0) and corner (X=3,Z=3) should have different colors.
+	const voxel::Voxel v00 = voxelMap.voxel(glm::ivec3(0, 0, 0));
+	const voxel::Voxel v30 = voxelMap.voxel(glm::ivec3(3, 0, 0));
+	const voxel::Voxel v03 = voxelMap.voxel(glm::ivec3(0, 0, 3));
+	const voxel::Voxel v33 = voxelMap.voxel(glm::ivec3(3, 0, 3));
+	// X=0 and X=3 should differ (different V mapping)
+	EXPECT_NE(v00.getColor(), v30.getColor());
+	// Z=0 and Z=3 should differ (different U mapping)
+	EXPECT_NE(v00.getColor(), v03.getColor());
+	// Opposite corners should differ
+	EXPECT_NE(v00.getColor(), v33.getColor());
+}
+
 } // namespace voxelutil

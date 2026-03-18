@@ -2137,6 +2137,49 @@ static int luaVoxel_sculpt_squashtoplane(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_sculpt_reskin(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *skinVolume = luaVoxel_tovolumewrapper(s, 2);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 3);
+	const char *modeStr = luaL_optstring(s, 4, "blend");
+	const char *followStr = luaL_optstring(s, 5, "voxel");
+	const int skinDepth = (int)luaL_optinteger(s, 6, 0);
+	const int surfaceOffset = (int)luaL_optinteger(s, 7, 0);
+	const char *skinUpStr = luaL_optstring(s, 8, "y");
+
+	voxelutil::ReskinConfig config;
+
+	if (core::string::iequals(modeStr, "replace")) {
+		config.mode = voxelutil::ReskinMode::Replace;
+	} else if (core::string::iequals(modeStr, "negate")) {
+		config.mode = voxelutil::ReskinMode::Negate;
+	} else {
+		config.mode = voxelutil::ReskinMode::Blend;
+	}
+
+	if (core::string::iequals(followStr, "none")) {
+		config.follow = voxelutil::ReskinFollow::None;
+	} else if (core::string::iequals(followStr, "median")) {
+		config.follow = voxelutil::ReskinFollow::Median;
+	} else {
+		config.follow = voxelutil::ReskinFollow::Voxel;
+	}
+
+	const math::Axis parsedAxis = math::toAxis(skinUpStr);
+	config.skinUpAxis = (parsedAxis != math::Axis::None) ? parsedAxis : math::Axis::Y;
+
+	const voxel::Region &skinRegion = skinVolume->volume()->region();
+	const int skinUpIdx = math::getIndexForAxis(config.skinUpAxis);
+	const int defaultDepth = skinRegion.getUpperCorner()[skinUpIdx] - skinRegion.getLowerCorner()[skinUpIdx] + 1;
+	config.skinDepth = skinDepth > 0 ? skinDepth : defaultDepth;
+	config.zOffset = surfaceOffset;
+
+	const int changed = voxelutil::sculptReskin(*volume->volume(), volume->volume()->region(),
+												*skinVolume->volume(), face, config);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
 static int luaVoxel_sculpt_squashtoplane_jsonhelp(lua_State *s) {
 	const char *json = R"({
 		"name": "squashtoplane",
@@ -2145,6 +2188,27 @@ static int luaVoxel_sculpt_squashtoplane_jsonhelp(lua_State *s) {
 			{"name": "volume", "type": "volume", "description": "The volume to squash."},
 			{"name": "face", "type": "string", "description": "Face direction defining the column axis: 'up', 'down', 'left', 'right', 'front', 'back'."},
 			{"name": "planeCoord", "type": "integer", "description": "The coordinate along the face axis where voxels are projected to."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sculpt_reskin_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "reskin",
+		"summary": "Apply a skin volume (texture pattern) onto the selected surface. The skin tiles across the selection and can replace, blend, or carve voxels.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The target volume to reskin."},
+			{"name": "skin", "type": "volume", "description": "The skin volume providing the pattern."},
+			{"name": "face", "type": "string", "description": "Face direction defining surface normal: 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "mode", "type": "string", "description": "Reskin mode: 'replace' (skin overwrites, air removes), 'blend' (skin overwrites, air preserves), 'negate' (skin removes, air preserves) (optional, default 'blend')."},
+			{"name": "follow", "type": "string", "description": "Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column) (optional, default 'voxel')."},
+			{"name": "skinDepth", "type": "integer", "description": "Number of skin layers to apply (optional, default: full skin depth along up axis)."},
+			{"name": "surfaceOffset", "type": "integer", "description": "Offset from surface: positive = above, negative = below (optional, default 0)."},
+			{"name": "skinUpAxis", "type": "string", "description": "Which skin axis is outward: 'x', 'y', 'z' (optional, default 'y')."}
 		],
 		"returns": [
 			{"type": "integer", "description": "Number of voxels changed."}
@@ -5987,6 +6051,7 @@ static void prepareState(lua_State* s) {
 		{"smoothgaussian", luaVoxel_sculpt_smoothgaussian, luaVoxel_sculpt_smoothgaussian_jsonhelp},
 		{"bridgegap", luaVoxel_sculpt_bridgegap, luaVoxel_sculpt_bridgegap_jsonhelp},
 		{"squashtoplane", luaVoxel_sculpt_squashtoplane, luaVoxel_sculpt_squashtoplane_jsonhelp},
+		{"reskin", luaVoxel_sculpt_reskin, luaVoxel_sculpt_reskin_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");

@@ -8,6 +8,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
+#include "voxel/ClipboardData.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 
@@ -35,13 +36,17 @@ static SculptMode parseSculptMode(const core::String &mode) {
 	if (mode == "squashtoplane") {
 		return SculptMode::SquashToPlane;
 	}
+	if (mode == "reskin") {
+		return SculptMode::Reskin;
+	}
 	return SculptMode::Erode;
 }
 
 SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	_tool.set("description",
-			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap, SquashToPlane). "
-			  "Requires a selection first (use voxedit_select_brush to select voxels before sculpting).");
+			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap, SquashToPlane, Reskin). "
+			  "Requires a selection first (use voxedit_select_brush to select voxels before sculpting). "
+			  "Reskin mode applies a skin pattern from the clipboard onto the selected surface.");
 
 	json::Json inputSchema = json::Json::object();
 	inputSchema.set("type", "object");
@@ -60,7 +65,8 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 					   "'flatten' (flatten surface along a face), 'smoothadditive' (smooth by adding), "
 					   "'smootherode' (smooth by removing), 'smoothgaussian' (Gaussian height blur), "
 				   "'bridgegap' (connect boundary voxels with lines to bridge gaps), "
-				   "'squashtoplane' (project all voxels onto the clicked plane)");
+				   "'squashtoplane' (project all voxels onto the clicked plane), "
+				   "'reskin' (apply skin pattern from clipboard onto surface)");
 	json::Json enumArr = json::Json::array();
 	enumArr.push("erode");
 	enumArr.push("grow");
@@ -70,6 +76,7 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	enumArr.push("smoothgaussian");
 	enumArr.push("bridgegap");
 	enumArr.push("squashtoplane");
+	enumArr.push("reskin");
 	sculptModeProp.set("enum", enumArr);
 	sculptModeProp.set("default", "erode");
 	properties.set("sculptMode", sculptModeProp);
@@ -156,6 +163,16 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	sculptBrush.setSculptMode(sculptMode);
 	sculptBrush.setStrength(strength);
 	sculptBrush.setIterations(iterations);
+
+	// For Reskin mode, set up the skin volume from the global clipboard
+	if (sculptMode == SculptMode::Reskin) {
+		const voxel::ClipboardData &clip = ctx.sceneMgr->clipboardData();
+		if (clip && clip.volume != nullptr) {
+			sculptBrush.setSkinVolume(clip.volume);
+		} else {
+			return ctx.result(id, "Reskin mode requires voxels in the clipboard - copy voxels first", true);
+		}
+	}
 
 	// Begin and execute the brush
 	sculptBrush.beginBrush(brushContext);
