@@ -38,17 +38,12 @@ bool ExtrudeBrush::onDeactivated() {
 }
 
 voxel::Region ExtrudeBrush::revertChanges(voxel::RawVolume *volume) {
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+	voxel::RawVolumeWrapper wrapper(volume);
 	for (const voxel::VoxelPosition &entry : _history) {
-		volume->setVoxel(entry.pos, entry.voxel);
-		if (dirtyRegion.isValid()) {
-			dirtyRegion.accumulate(entry.pos);
-		} else {
-			dirtyRegion = voxel::Region(entry.pos, entry.pos);
-		}
+		wrapper.setVoxel(entry.pos, entry.voxel);
 	}
 	_history.clear();
-	return dirtyRegion;
+	return wrapper.dirtyRegion();
 }
 
 void ExtrudeBrush::reset() {
