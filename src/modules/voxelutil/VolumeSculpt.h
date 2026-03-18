@@ -198,4 +198,27 @@ int sculptBridgeGap(voxel::RawVolume &volume, const voxel::Region &region,
 int sculptSmoothGaussian(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
 						 int kernelSize, float sigma, int iterations, const voxel::Voxel &fillVoxel);
 
+/**
+ * @brief Squash all selected voxels onto a single plane.
+ *
+ * Projects all solid voxels along the face normal axis onto the specified plane coordinate.
+ * For each column: if any solid voxel exists, place one at the plane coordinate using the
+ * color of the voxel nearest to the plane. All other voxels in the column are removed.
+ *
+ * @param[in,out] solid BitVolume marking solid positions.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param face The face direction that defines the column axis.
+ * @param planeCoord The coordinate along the face axis where voxels are squashed to.
+ */
+void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::FaceNames face,
+						 int planeCoord);
+
+/**
+ * @brief Squash all solid voxels in a volume region onto a single plane.
+ *
+ * @return The number of voxels changed.
+ */
+int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+						int planeCoord);
+
 } // namespace voxelutil

@@ -84,6 +84,10 @@ bool SculptBrush::beginBrush(const BrushContext &ctx) {
 	const bool needsFace = modeNeedsFace(_sculptMode);
 	if (needsFace && ctx.cursorFace != voxel::FaceNames::Max) {
 		_flattenFace = ctx.cursorFace;
+		if (_sculptMode == SculptMode::SquashToPlane) {
+			const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(ctx.cursorFace));
+			_squashPlaneCoord = ctx.cursorPosition[axisIdx];
+		}
 		_paramsDirty = true;
 	}
 	_active = true;
@@ -297,6 +301,8 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		voxel::Voxel fillVoxel = ctx.cursorVoxel;
 		fillVoxel.setFlags(voxel::FlagOutline);
 		voxelutil::sculptBridgeGap(currentSolid, voxelMap, anchorSolid, fillVoxel);
+	} else if (_sculptMode == SculptMode::SquashToPlane && _flattenFace != voxel::FaceNames::Max) {
+		voxelutil::sculptSquashToPlane(currentSolid, voxelMap, _flattenFace, _squashPlaneCoord);
 	}
 
 	// Write results using the collected snapshot entries - no hash lookups needed.

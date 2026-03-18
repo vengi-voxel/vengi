@@ -899,6 +899,77 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 	}
 }
 
+void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::FaceNames face,
+						 int planeCoord) {
+	if (face == voxel::FaceNames::Max) {
+		return;
+	}
+
+	core_trace_scoped(SculptSquashToPlane);
+
+	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
+	const int perp1 = (axisIdx + 1) % 3;
+	const int perp2 = (axisIdx + 2) % 3;
+
+	const voxel::Region &region = solid.region();
+	const glm::ivec3 &lo = region.getLowerCorner();
+	const glm::ivec3 &hi = region.getUpperCorner();
+
+	// For each (perp1, perp2) column, find if any solid voxel exists and pick
+	// the color from the voxel nearest to the plane coordinate.
+	for (int a1 = lo[perp1]; a1 <= hi[perp1]; ++a1) {
+		for (int a2 = lo[perp2]; a2 <= hi[perp2]; ++a2) {
+			bool hasAnySolid = false;
+			int bestDist = INT_MAX;
+			voxel::Voxel bestVoxel;
+
+			// Scan the column to find the nearest solid voxel to the plane
+			for (int av = lo[axisIdx]; av <= hi[axisIdx]; ++av) {
+				glm::ivec3 pos;
+				pos[axisIdx] = av;
+				pos[perp1] = a1;
+				pos[perp2] = a2;
+				if (!solid.hasValue(pos.x, pos.y, pos.z)) {
+					continue;
+				}
+				hasAnySolid = true;
+				const int dist = glm::abs(av - planeCoord);
+				if (dist < bestDist && voxelMap.hasVoxel(pos)) {
+					bestDist = dist;
+					bestVoxel = voxelMap.voxel(pos);
+				}
+			}
+
+			if (!hasAnySolid) {
+				continue;
+			}
+
+			// Clear all voxels in the column
+			for (int av = lo[axisIdx]; av <= hi[axisIdx]; ++av) {
+				glm::ivec3 pos;
+				pos[axisIdx] = av;
+				pos[perp1] = a1;
+				pos[perp2] = a2;
+				if (solid.hasValue(pos.x, pos.y, pos.z)) {
+					solid.setVoxel(pos, false);
+					voxelMap.setVoxel(pos, voxel::Voxel());
+				}
+			}
+
+			// Place the single voxel at the plane coordinate
+			glm::ivec3 planePos;
+			planePos[axisIdx] = planeCoord;
+			planePos[perp1] = a1;
+			planePos[perp2] = a2;
+			if (region.containsPoint(planePos)) {
+				bestVoxel.setFlags(voxel::FlagOutline);
+				solid.setVoxel(planePos, true);
+				voxelMap.setVoxel(planePos, bestVoxel);
+			}
+		}
+	}
+}
+
 // Helper to build solid, voxelMap, and anchor sets from a volume region
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
 							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
@@ -1086,6 +1157,20 @@ int sculptSmoothGaussian(voxel::RawVolume &volume, const voxel::Region &region, 
 	voxel::BitVolume anchors(anchorRegion);
 	buildFromVolume(volume, region, solid, voxelMap, anchors);
 	sculptSmoothGaussian(solid, voxelMap, anchors, face, kernelSize, sigma, iterations, fillVoxel);
+	return writeResultToVolume(volume, region, solid, voxelMap);
+}
+
+int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+					   int planeCoord) {
+	core_trace_scoped(SculptSquashToPlaneVolume);
+	voxel::BitVolume solid(region);
+	voxel::SparseVolume voxelMap;
+	voxel::Region anchorRegion = region;
+	anchorRegion.grow(1);
+	anchorRegion.cropTo(volume.region());
+	voxel::BitVolume anchors(anchorRegion);
+	buildFromVolume(volume, region, solid, voxelMap, anchors);
+	sculptSquashToPlane(solid, voxelMap, face, planeCoord);
 	return writeResultToVolume(volume, region, solid, voxelMap);
 }
 

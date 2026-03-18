@@ -22,6 +22,7 @@ enum class SculptMode : uint8_t {
 	SmoothErode,
 	SmoothGaussian,
 	BridgeGap,
+	SquashToPlane,
 
 	Max
 };
@@ -48,6 +49,7 @@ private:
 	int _kernelSize = 4;
 	float _sigma = 4.0f;
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
+	int _squashPlaneCoord = 0;
 	bool _active = false;
 	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
@@ -101,7 +103,7 @@ public:
 	}
 
 	static bool modeNeedsFace(SculptMode mode) {
-		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian;
+		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane;
 	}
 
 	SculptMode sculptMode() const {

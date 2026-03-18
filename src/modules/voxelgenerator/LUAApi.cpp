@@ -2128,6 +2128,31 @@ static int luaVoxel_sculpt_bridgegap_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_sculpt_squashtoplane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int planeCoord = (int)luaL_checkinteger(s, 3);
+	const int changed = voxelutil::sculptSquashToPlane(*volume->volume(), volume->volume()->region(), face, planeCoord);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_squashtoplane_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "squashtoplane",
+		"summary": "Project all solid voxels onto a single plane. For each column along the face normal, if any voxel exists, one is placed at the plane coordinate. All others are removed.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to squash."},
+			{"name": "face", "type": "string", "description": "Face direction defining the column axis: 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "planeCoord", "type": "integer", "description": "The coordinate along the face axis where voxels are projected to."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_sculpt_smoothgaussian(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
@@ -5961,6 +5986,7 @@ static void prepareState(lua_State* s) {
 		{"smootherode", luaVoxel_sculpt_smootherode, luaVoxel_sculpt_smootherode_jsonhelp},
 		{"smoothgaussian", luaVoxel_sculpt_smoothgaussian, luaVoxel_sculpt_smoothgaussian_jsonhelp},
 		{"bridgegap", luaVoxel_sculpt_bridgegap, luaVoxel_sculpt_bridgegap_jsonhelp},
+		{"squashtoplane", luaVoxel_sculpt_squashtoplane, luaVoxel_sculpt_squashtoplane_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");
