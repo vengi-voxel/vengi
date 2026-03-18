@@ -30,6 +30,7 @@ Client::Client(SceneManager *sceneMgr) : _sceneMgr(sceneMgr), _network(new Clien
 
 Client::~Client() {
 	shutdown();
+	delete _network;
 }
 
 void Client::construct() {
