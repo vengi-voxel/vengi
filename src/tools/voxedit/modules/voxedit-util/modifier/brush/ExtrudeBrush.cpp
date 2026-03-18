@@ -242,14 +242,12 @@ void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Regi
 	PositionSet selectedSet;
 
 	voxelutil::visitVolume(*vol, volRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		if (voxel.getFlags() & voxel::FlagOutline) {
-			const glm::ivec3 pos(x, y, z);
-			_cachedSelectedPositions.push_back(pos);
-			selectedSet.insert(pos);
-			selLo = glm::min(selLo, pos);
-			selHi = glm::max(selHi, pos);
-		}
-	}, voxelutil::VisitSolid());
+		const glm::ivec3 pos(x, y, z);
+		_cachedSelectedPositions.push_back(pos);
+		selectedSet.insert(pos);
+		selLo = glm::min(selLo, pos);
+		selHi = glm::max(selHi, pos);
+	}, voxelutil::VisitSolidOutline());
 
 	if (_cachedSelectedPositions.empty()) {
 		return;
