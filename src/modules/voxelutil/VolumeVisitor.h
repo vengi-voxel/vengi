@@ -109,7 +109,7 @@ struct VisitSolidFlag {
 		if (isAir(sampler.voxel().getMaterial())) {
 			return false;
 		}
-		return (sampler.voxel().getFlags() & _flag) == 0u;
+		return (sampler.voxel().getFlags() & _flag) != 0u;
 	}
 };
 
