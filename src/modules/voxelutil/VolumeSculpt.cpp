@@ -17,6 +17,7 @@
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "core/Algorithm.h"
 #include <cfloat>
 #include <climits>
 
@@ -970,6 +971,300 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 	}
 }
 
+void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::RawVolume &skin,
+				  voxel::FaceNames face, const ReskinConfig &config) {
+	if (face == voxel::FaceNames::Max) {
+		return;
+	}
+
+	core_trace_scoped(SculptReskin);
+
+	const voxel::Region &skinRegion = skin.region();
+	if (!skinRegion.isValid()) {
+		return;
+	}
+
+	// Determine which skin axis is the outward direction based on config
+	const int skinUpIdx = math::getIndexForAxis(config.skinUpAxis);
+	const int skinUIdx = (skinUpIdx + 1) % 3; // first tiling axis of skin
+	const int skinVIdx = (skinUpIdx + 2) % 3; // second tiling axis of skin
+
+	const glm::ivec3 &skinLo = skinRegion.getLowerCorner();
+	const glm::ivec3 &skinHi = skinRegion.getUpperCorner();
+	const int skinUExtent = skinHi[skinUIdx] - skinLo[skinUIdx] + 1; // tiling dim 1
+	const int skinVExtent = skinHi[skinVIdx] - skinLo[skinVIdx] + 1; // tiling dim 2
+	const int skinDExtent = skinHi[skinUpIdx] - skinLo[skinUpIdx] + 1; // depth dim
+
+	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
+	const int perp1 = (axisIdx + 1) % 3; // U axis
+	const int perp2 = (axisIdx + 2) % 3; // V axis
+	const bool positiveUp = voxel::isPositiveFace(face);
+	const int inwardStep = positiveUp ? -1 : 1;
+
+	const voxel::Region &selRegion = solid.region();
+	const glm::ivec3 &lo = selRegion.getLowerCorner();
+	const glm::ivec3 &hi = selRegion.getUpperCorner();
+
+	const int uMin = lo[perp1];
+	const int uMax = hi[perp1];
+	const int vMin = lo[perp2];
+	const int vMax = hi[perp2];
+	const int selW = uMax - uMin + 1;
+	const int selH = vMax - vMin + 1;
+
+	// Effective tile dimensions based on rotation
+	int tileW;
+	int tileH;
+	if (config.rotation == ReskinRotation::R0 || config.rotation == ReskinRotation::R180) {
+		tileW = skinUExtent;
+		tileH = skinVExtent;
+	} else {
+		tileW = skinVExtent;
+		tileH = skinUExtent;
+	}
+
+	// Build surface height map per (u,v) column
+	static constexpr int EMPTY = INT_MIN;
+	const int numCols = selW * selH;
+	core::DynamicArray<int> surfaceHeight(numCols);
+	for (int i = 0; i < numCols; ++i) {
+		surfaceHeight[i] = EMPTY;
+	}
+
+	for (int z = lo.z; z <= hi.z; ++z) {
+		for (int y = lo.y; y <= hi.y; ++y) {
+			for (int x = lo.x; x <= hi.x; ++x) {
+				if (!solid.hasValue(x, y, z)) {
+					continue;
+				}
+				const glm::ivec3 pos(x, y, z);
+				const int uCoord = pos[perp1];
+				const int vCoord = pos[perp2];
+				const int h = pos[axisIdx];
+				const int idx = (uCoord - uMin) * selH + (vCoord - vMin);
+				if (surfaceHeight[idx] == EMPTY) {
+					surfaceHeight[idx] = h;
+				} else if (positiveUp) {
+					surfaceHeight[idx] = glm::max(surfaceHeight[idx], h);
+				} else {
+					surfaceHeight[idx] = glm::min(surfaceHeight[idx], h);
+				}
+			}
+		}
+	}
+
+	// Compute reference height for None/Median modes
+	int referenceHeight = 0;
+	if (config.follow == ReskinFollow::None || config.follow == ReskinFollow::Median) {
+		core::DynamicArray<int> heights;
+		heights.reserve(numCols);
+		for (int i = 0; i < numCols; ++i) {
+			if (surfaceHeight[i] != EMPTY) {
+				heights.push_back(surfaceHeight[i]);
+			}
+		}
+		if (heights.empty()) {
+			return;
+		}
+
+		if (config.follow == ReskinFollow::None) {
+			referenceHeight = heights[0];
+			for (size_t i = 1; i < heights.size(); ++i) {
+				if (positiveUp) {
+					referenceHeight = glm::max(referenceHeight, heights[i]);
+				} else {
+					referenceHeight = glm::min(referenceHeight, heights[i]);
+				}
+			}
+		} else {
+			core::sort(heights.begin(), heights.end(), [](int a, int b) { return a < b; });
+			referenceHeight = heights[heights.size() / 2];
+		}
+	}
+
+	// Process each (u,v) column
+	const int maxDepth = glm::min(config.skinDepth, skinDExtent);
+	const voxel::Voxel air;
+
+	for (int uIdx = 0; uIdx < selW; ++uIdx) {
+		for (int vIdx = 0; vIdx < selH; ++vIdx) {
+			const int colIdx = uIdx * selH + vIdx;
+			if (surfaceHeight[colIdx] == EMPTY) {
+				continue;
+			}
+
+			const int uCoord = uMin + uIdx;
+			const int vCoord = vMin + vIdx;
+			const int surface = surfaceHeight[colIdx];
+
+			// Start height for skin application, with z offset
+			// Positive zOffset = outward (above surface), negative = inward (below surface)
+			const int outwardStep = -inwardStep;
+			int startHeight;
+			if (config.follow == ReskinFollow::Voxel) {
+				startHeight = surface + config.zOffset * outwardStep;
+			} else {
+				startHeight = referenceHeight + config.zOffset * outwardStep;
+			}
+
+			// Map (u,v) to skin coordinates
+			int localU;
+			int localV;
+			switch (config.anchor) {
+			case ReskinAnchor::MinMin:
+				localU = uIdx;
+				localV = vIdx;
+				break;
+			case ReskinAnchor::MinMax:
+				localU = uIdx;
+				localV = selH - 1 - vIdx;
+				break;
+			case ReskinAnchor::MaxMin:
+				localU = selW - 1 - uIdx;
+				localV = vIdx;
+				break;
+			case ReskinAnchor::MaxMax:
+				localU = selW - 1 - uIdx;
+				localV = selH - 1 - vIdx;
+				break;
+			default:
+				localU = uIdx;
+				localV = vIdx;
+				break;
+			}
+
+			// Apply offset (not for Stretch mode)
+			if (config.tile != ReskinTile::Stretch) {
+				localU += config.offsetU;
+				localV += config.offsetV;
+			}
+
+			// Apply tiling to get position in effective skin space [0, tileW) x [0, tileH)
+			int tU = 0;
+			int tV = 0;
+			bool skipColumn = false;
+			switch (config.tile) {
+			case ReskinTile::Once:
+				if (localU < 0 || localU >= tileW || localV < 0 || localV >= tileH) {
+					skipColumn = true;
+				}
+				tU = localU;
+				tV = localV;
+				break;
+			case ReskinTile::Repeat: {
+				tU = ((localU % tileW) + tileW) % tileW;
+				tV = ((localV % tileH) + tileH) % tileH;
+				if (config.mirrorU) {
+					const int tileIdxU = localU >= 0 ? localU / tileW : (localU - tileW + 1) / tileW;
+					if (glm::abs(tileIdxU) % 2 == 1) {
+						tU = tileW - 1 - tU;
+					}
+				}
+				if (config.mirrorV) {
+					const int tileIdxV = localV >= 0 ? localV / tileH : (localV - tileH + 1) / tileH;
+					if (glm::abs(tileIdxV) % 2 == 1) {
+						tV = tileH - 1 - tV;
+					}
+				}
+				break;
+			}
+			case ReskinTile::Stretch:
+				if (selW > 1) {
+					tU = localU * (tileW - 1) / (selW - 1);
+				}
+				if (selH > 1) {
+					tV = localV * (tileH - 1) / (selH - 1);
+				}
+				tU = glm::clamp(tU, 0, tileW - 1);
+				tV = glm::clamp(tV, 0, tileH - 1);
+				break;
+			default:
+				break;
+			}
+
+			if (skipColumn) {
+				continue;
+			}
+
+			// Apply rotation: tiled coords -> skin tiling plane offsets
+			// skinSU/skinSV are 0-based offsets along the skin's U and V axes
+			int skinSU;
+			int skinSV;
+			switch (config.rotation) {
+			case ReskinRotation::R0:
+				skinSU = tU;
+				skinSV = tV;
+				break;
+			case ReskinRotation::R90:
+				skinSU = skinUExtent - 1 - tV;
+				skinSV = tU;
+				break;
+			case ReskinRotation::R180:
+				skinSU = skinUExtent - 1 - tU;
+				skinSV = skinVExtent - 1 - tV;
+				break;
+			case ReskinRotation::R270:
+				skinSV = skinVExtent - 1 - tU;
+				skinSU = tV;
+				break;
+			default:
+				skinSU = tU;
+				skinSV = tV;
+				break;
+			}
+
+			// Step 3: Apply skin layers.
+			// Skin BASE sits at startHeight, layers grow OUTWARD from surface.
+			// d=0 = base of skin (skinLo along up axis), d=N = peak (skinHi along up axis).
+			for (int d = 0; d < maxDepth; ++d) {
+				glm::ivec3 worldPos;
+				worldPos[perp1] = uCoord;
+				worldPos[perp2] = vCoord;
+				worldPos[axisIdx] = startHeight + d * outwardStep;
+
+				// Build skin sample position using axis-independent indexing
+				glm::ivec3 skinPos;
+				skinPos[skinUIdx] = skinLo[skinUIdx] + skinSU;
+				skinPos[skinVIdx] = skinLo[skinVIdx] + skinSV;
+				skinPos[skinUpIdx] = skinLo[skinUpIdx] + d;
+				const voxel::Voxel skinVoxel = skin.voxel(skinPos.x, skinPos.y, skinPos.z);
+				const bool skinIsSolid = voxel::isBlocked(skinVoxel.getMaterial());
+				const bool effectiveSolid = config.invertSkin ? !skinIsSolid : skinIsSolid;
+
+				switch (config.mode) {
+				case ReskinMode::Replace:
+					if (effectiveSolid) {
+						voxel::Voxel v = skinVoxel;
+						v.setFlags(voxel::FlagOutline);
+						solid.setVoxel(worldPos, true);
+						voxelMap.setVoxel(worldPos, v);
+					} else {
+						solid.setVoxel(worldPos, false);
+						voxelMap.setVoxel(worldPos, air);
+					}
+					break;
+				case ReskinMode::Blend:
+					if (effectiveSolid) {
+						voxel::Voxel v = skinVoxel;
+						v.setFlags(voxel::FlagOutline);
+						solid.setVoxel(worldPos, true);
+						voxelMap.setVoxel(worldPos, v);
+					}
+					break;
+				case ReskinMode::Negate:
+					if (effectiveSolid) {
+						solid.setVoxel(worldPos, false);
+						voxelMap.setVoxel(worldPos, air);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+}
+
 // Helper to build solid, voxelMap, and anchor sets from a volume region
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
 							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
@@ -1172,6 +1467,45 @@ int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, v
 	buildFromVolume(volume, region, solid, voxelMap, anchors);
 	sculptSquashToPlane(solid, voxelMap, face, planeCoord);
 	return writeResultToVolume(volume, region, solid, voxelMap);
+}
+
+int sculptReskin(voxel::RawVolume &volume, const voxel::Region &region, const voxel::RawVolume &skin,
+				 voxel::FaceNames face, const ReskinConfig &config) {
+	core_trace_scoped(SculptReskinVolume);
+	voxel::BitVolume solid(region);
+	voxel::SparseVolume voxelMap;
+	voxel::Region anchorRegion = region;
+	anchorRegion.grow(1);
+	anchorRegion.cropTo(volume.region());
+	voxel::BitVolume anchors(anchorRegion);
+	buildFromVolume(volume, region, solid, voxelMap, anchors);
+	sculptReskin(solid, voxelMap, skin, face, config);
+
+	// Custom write-back that also handles color changes (not just add/remove)
+	int changed = 0;
+	const voxel::Voxel air;
+	const glm::ivec3 &lo = region.getLowerCorner();
+	const glm::ivec3 &hi = region.getUpperCorner();
+	for (int z = lo.z; z <= hi.z; ++z) {
+		for (int y = lo.y; y <= hi.y; ++y) {
+			for (int x = lo.x; x <= hi.x; ++x) {
+				const voxel::Voxel &current = volume.voxel(x, y, z);
+				const bool wasSolid = voxel::isBlocked(current.getMaterial());
+				const bool nowSolid = solid.hasValue(x, y, z);
+				if (wasSolid && !nowSolid) {
+					volume.setVoxel(x, y, z, air);
+					changed++;
+				} else if (nowSolid && voxelMap.hasVoxel(x, y, z)) {
+					const voxel::Voxel &newVoxel = voxelMap.voxel(x, y, z);
+					if (!wasSolid || current.getColor() != newVoxel.getColor()) {
+						volume.setVoxel(x, y, z, newVoxel);
+						changed++;
+					}
+				}
+			}
+		}
+	}
+	return changed;
 }
 
 } // namespace voxelutil

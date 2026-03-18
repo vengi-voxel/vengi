@@ -10,6 +10,7 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Bits.h"
+#include "core/Log.h"
 #include "core/Enum.h"
 #include "core/StringUtil.h"
 #include "dearimgui/imgui_internal.h"
@@ -27,7 +28,11 @@
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "math/Axis.h"
+#include "io/FilesystemArchive.h"
+#include "scenegraph/SceneGraph.h"
+#include "voxel/ClipboardData.h"
 #include "voxel/Face.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
@@ -55,8 +60,26 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
-static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap"), NC_("Sculpt Modes", "Squash to Plane")};
+static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap"), NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
+
+static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), NC_("Reskin Modes", "Blend"), NC_("Reskin Modes", "Negate")};
+static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
+
+static constexpr const char *ReskinFollowStr[] = {NC_("Reskin Follow", "None"), NC_("Reskin Follow", "Median"), NC_("Reskin Follow", "Voxel")};
+static_assert(lengthof(ReskinFollowStr) == (int)voxelutil::ReskinFollow::Max, "ReskinFollowStr size mismatch");
+
+static constexpr const char *ReskinAnchorStr[] = {NC_("Reskin Anchor", "Min/Min"), NC_("Reskin Anchor", "Min/Max"), NC_("Reskin Anchor", "Max/Min"), NC_("Reskin Anchor", "Max/Max")};
+static_assert(lengthof(ReskinAnchorStr) == (int)voxelutil::ReskinAnchor::Max, "ReskinAnchorStr size mismatch");
+
+static constexpr const char *ReskinRotationStr[] = {NC_("Reskin Rotation", "0"), NC_("Reskin Rotation", "90"), NC_("Reskin Rotation", "180"), NC_("Reskin Rotation", "270")};
+static_assert(lengthof(ReskinRotationStr) == (int)voxelutil::ReskinRotation::Max, "ReskinRotationStr size mismatch");
+
+static constexpr const char *ReskinTileStr[] = {NC_("Reskin Tile", "Once"), NC_("Reskin Tile", "Repeat"), NC_("Reskin Tile", "Stretch")};
+static_assert(lengthof(ReskinTileStr) == (int)voxelutil::ReskinTile::Max, "ReskinTileStr size mismatch");
+
+static constexpr const char *ReskinSkinAxisStr[] = {NC_("Reskin Skin Axis", "X"), NC_("Reskin Skin Axis", "Y"), NC_("Reskin Skin Axis", "Z")};
+static_assert(lengthof(ReskinSkinAxisStr) == 3, "ReskinSkinAxisStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
@@ -1138,6 +1161,31 @@ void BrushPanel::executeSculptBrush() {
 	modifier.endBrush();
 }
 
+void BrushPanel::loadSkinFromFile(const core::String &filename) {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_app->filesystem());
+	scenegraph::SceneGraph sceneGraph;
+	voxelformat::LoadContext loadCtx;
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	if (!voxelformat::loadFormat(fileDesc, archive, sceneGraph, loadCtx)) {
+		Log::error("Failed to load skin file: %s", filename.c_str());
+		return;
+	}
+
+	scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+	// volume() transfers ownership (nullifies internal pointer)
+	voxel::RawVolume *volume = merged.volume();
+	if (volume == nullptr) {
+		Log::error("No model node found in skin file: %s", filename.c_str());
+		return;
+	}
+
+	Modifier &modifier = _sceneMgr->modifier();
+	SculptBrush &brush = modifier.sculptBrush();
+	brush.setOwnedSkinVolume(volume, filename);
+	executeSculptBrush();
+}
+
 void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	SculptBrush &brush = modifier.sculptBrush();
@@ -1149,6 +1197,16 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 	}
 
 	const SculptMode currentMode = brush.sculptMode();
+
+	// Keep skin volume up to date for Reskin mode so it's ready when the user clicks a face.
+	// Only recompute the color remap when the clipboard volume pointer changes.
+	if (currentMode == SculptMode::Reskin) {
+		const voxel::ClipboardData &clip = _sceneMgr->clipboardData();
+		if (clip && clip.volume != nullptr && clip.volume != brush.skinVolume()) {
+			brush.setSkinVolume(clip.volume);
+		}
+	}
+
 	if (ImGui::BeginCombo(_("Sculpt mode"), _(SculptModeStr[(int)currentMode]), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)SculptMode::Max; ++i) {
 			const SculptMode mode = (SculptMode)i;
@@ -1227,6 +1285,227 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setSigma(sigma);
 			executeSculptBrush();
 		}
+	} else if (currentMode == SculptMode::Reskin) {
+		if (brush.skinVolume() == nullptr) {
+			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
+			ImGui::TextColored(warningTextColor, "%s", _("Copy voxels to clipboard or load a skin file"));
+		}
+
+		// Load skin from file / Reload buttons
+		if (ImGui::Button(_("Load skin"))) {
+			_app->openDialog(
+				[this](const core::String &filename, const io::FormatDescription *) {
+					loadSkinFromFile(filename);
+				},
+				{}, voxelformat::voxelLoad());
+		}
+		const core::String &skinPath = brush.skinFilePath();
+		if (!skinPath.empty()) {
+			ImGui::SameLine();
+			if (ImGui::Button(_("Reload"))) {
+				loadSkinFromFile(skinPath);
+			}
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip("%s", skinPath.c_str());
+			}
+		}
+
+		const voxelutil::ReskinConfig &cfg = brush.reskinConfig();
+
+		// Skin up axis combo (which axis of the skin is outward)
+		{
+			static constexpr math::Axis skinAxisValues[] = {math::Axis::X, math::Axis::Y, math::Axis::Z};
+			const int currentAxisIdx = math::getIndexForAxis(cfg.skinUpAxis);
+			if (ImGui::BeginCombo(_("Skin up axis"), _(ReskinSkinAxisStr[currentAxisIdx]), ImGuiComboFlags_None)) {
+				for (int i = 0; i < 3; ++i) {
+					const bool selected = i == currentAxisIdx;
+					if (ImGui::Selectable(_(ReskinSkinAxisStr[i]), selected)) {
+						brush.setReskinSkinUpAxis(skinAxisValues[i]);
+						executeSculptBrush();
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", _("Which axis of the skin points outward from the surface. "
+									  "Set to Y if your skin was built with the pattern facing up."));
+		}
+
+		// Reskin mode combo
+		if (ImGui::BeginCombo(_("Reskin mode"), _(ReskinModeStr[(int)cfg.mode]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::ReskinMode::Max; ++i) {
+				const bool selected = i == (int)cfg.mode;
+				if (ImGui::Selectable(_(ReskinModeStr[i]), selected)) {
+					brush.setReskinMode((voxelutil::ReskinMode)i);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		// Follow mode combo
+		if (ImGui::BeginCombo(_("Follow surface"), _(ReskinFollowStr[(int)cfg.follow]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::ReskinFollow::Max; ++i) {
+				const bool selected = i == (int)cfg.follow;
+				if (ImGui::Selectable(_(ReskinFollowStr[i]), selected)) {
+					brush.setReskinFollow((voxelutil::ReskinFollow)i);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		// Anchor combo
+		if (ImGui::BeginCombo(_("Anchor"), _(ReskinAnchorStr[(int)cfg.anchor]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::ReskinAnchor::Max; ++i) {
+				const bool selected = i == (int)cfg.anchor;
+				if (ImGui::Selectable(_(ReskinAnchorStr[i]), selected)) {
+					brush.setReskinAnchor((voxelutil::ReskinAnchor)i);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		// Rotation combo
+		if (ImGui::BeginCombo(_("Rotation"), _(ReskinRotationStr[(int)cfg.rotation]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::ReskinRotation::Max; ++i) {
+				const bool selected = i == (int)cfg.rotation;
+				if (ImGui::Selectable(_(ReskinRotationStr[i]), selected)) {
+					brush.setReskinRotation((voxelutil::ReskinRotation)i);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		// Tile mode combo
+		if (ImGui::BeginCombo(_("Tile"), _(ReskinTileStr[(int)cfg.tile]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::ReskinTile::Max; ++i) {
+				const bool selected = i == (int)cfg.tile;
+				if (ImGui::Selectable(_(ReskinTileStr[i]), selected)) {
+					brush.setReskinTile((voxelutil::ReskinTile)i);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		// Mirror checkboxes (only for Repeat tile mode)
+		if (cfg.tile == voxelutil::ReskinTile::Repeat) {
+			bool mirrorU = cfg.mirrorU;
+			if (ImGui::Checkbox(_("Mirror U"), &mirrorU)) {
+				brush.setReskinMirrorU(mirrorU);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			bool mirrorV = cfg.mirrorV;
+			if (ImGui::Checkbox(_("Mirror V"), &mirrorV)) {
+				brush.setReskinMirrorV(mirrorV);
+				executeSculptBrush();
+			}
+		}
+
+		// Offset sliders (not for Stretch)
+		if (cfg.tile != voxelutil::ReskinTile::Stretch) {
+			int offsetU = cfg.offsetU;
+			ImGui::TextUnformatted(_("Offset U"));
+			if (ImGui::Button("-##reskin_ou")) {
+				brush.setReskinOffsetU(offsetU - 1);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::SliderInt("##reskin_ou_slider", &offsetU, -32, 32)) {
+				brush.setReskinOffsetU(offsetU);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("+##reskin_ou")) {
+				brush.setReskinOffsetU(offsetU + 1);
+				executeSculptBrush();
+			}
+
+			int offsetV = cfg.offsetV;
+			ImGui::TextUnformatted(_("Offset V"));
+			if (ImGui::Button("-##reskin_ov")) {
+				brush.setReskinOffsetV(offsetV - 1);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::SliderInt("##reskin_ov_slider", &offsetV, -32, 32)) {
+				brush.setReskinOffsetV(offsetV);
+				executeSculptBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("+##reskin_ov")) {
+				brush.setReskinOffsetV(offsetV + 1);
+				executeSculptBrush();
+			}
+		}
+
+		// Surface offset and skin depth
+		int surfaceOffset = cfg.zOffset;
+		ImGui::TextUnformatted(_("Surface offset"));
+		if (ImGui::Button("-##reskin_so")) {
+			brush.setReskinZOffset(surfaceOffset - 1);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth, SculptBrush::MaxReskinDepth)) {
+			brush.setReskinZOffset(surfaceOffset);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##reskin_so")) {
+			brush.setReskinZOffset(surfaceOffset + 1);
+			executeSculptBrush();
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", _("Positive = skin floats above surface, negative = sinks below"));
+		}
+
+		int skinDepth = cfg.skinDepth;
+		ImGui::TextUnformatted(_("Skin layers"));
+		if (ImGui::Button("-##reskin_sd")) {
+			brush.setReskinSkinDepth(skinDepth - 1);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##reskin_sd_slider", &skinDepth, 1, SculptBrush::MaxReskinDepth)) {
+			brush.setReskinSkinDepth(skinDepth);
+			executeSculptBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##reskin_sd")) {
+			brush.setReskinSkinDepth(skinDepth + 1);
+			executeSculptBrush();
+		}
+
+		// Invert checkbox
+		bool invertSkin = cfg.invertSkin;
+		if (ImGui::Checkbox(_("Invert skin"), &invertSkin)) {
+			brush.setReskinInvertSkin(invertSkin);
+			executeSculptBrush();
+		}
 	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
@@ -1235,7 +1514,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane) {
+	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane && currentMode != SculptMode::Reskin) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {

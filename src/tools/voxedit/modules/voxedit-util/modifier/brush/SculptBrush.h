@@ -6,11 +6,18 @@
 
 #include "Brush.h"
 #include "core/GLM.h"
+#include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "voxel/Face.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeSculpt.h"
 
 #include <glm/vec3.hpp>
+
+namespace voxel {
+class RawVolume;
+}
 
 namespace voxedit {
 
@@ -23,6 +30,7 @@ enum class SculptMode : uint8_t {
 	SmoothGaussian,
 	BridgeGap,
 	SquashToPlane,
+	Reskin,
 
 	Max
 };
@@ -53,6 +61,12 @@ private:
 	bool _active = false;
 	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
+
+	// Reskin parameters
+	voxelutil::ReskinConfig _reskinConfig;
+	const voxel::RawVolume *_skinVolume = nullptr;
+	core::ScopedPtr<voxel::RawVolume> _ownedSkinVolume;
+	core::String _skinFilePath;
 
 	// Original selected voxels captured at brush activation
 	voxel::SparseVolume _snapshot;
@@ -103,7 +117,7 @@ public:
 	}
 
 	static bool modeNeedsFace(SculptMode mode) {
-		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane;
+		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::Reskin;
 	}
 
 	SculptMode sculptMode() const {
@@ -201,6 +215,115 @@ public:
 	void setSigma(float sigma) {
 		_sigma = glm::clamp(sigma, MinSigma, MaxSigma);
 		_paramsDirty = true;
+	}
+
+	// Reskin accessors
+	static constexpr int MaxReskinDepth = 32;
+
+	const voxelutil::ReskinConfig &reskinConfig() const {
+		return _reskinConfig;
+	}
+
+	void setReskinMode(voxelutil::ReskinMode mode) {
+		_reskinConfig.mode = mode;
+		_paramsDirty = true;
+	}
+
+	void setReskinFollow(voxelutil::ReskinFollow follow) {
+		_reskinConfig.follow = follow;
+		_paramsDirty = true;
+	}
+
+	void setReskinAnchor(voxelutil::ReskinAnchor anchor) {
+		_reskinConfig.anchor = anchor;
+		_paramsDirty = true;
+	}
+
+	void setReskinRotation(voxelutil::ReskinRotation rotation) {
+		_reskinConfig.rotation = rotation;
+		_paramsDirty = true;
+	}
+
+	void setReskinTile(voxelutil::ReskinTile tile) {
+		_reskinConfig.tile = tile;
+		_paramsDirty = true;
+	}
+
+	void setReskinMirrorU(bool mirror) {
+		_reskinConfig.mirrorU = mirror;
+		_paramsDirty = true;
+	}
+
+	void setReskinMirrorV(bool mirror) {
+		_reskinConfig.mirrorV = mirror;
+		_paramsDirty = true;
+	}
+
+	void setReskinOffsetU(int offset) {
+		_reskinConfig.offsetU = offset;
+		_paramsDirty = true;
+	}
+
+	void setReskinOffsetV(int offset) {
+		_reskinConfig.offsetV = offset;
+		_paramsDirty = true;
+	}
+
+	void setReskinSkinDepth(int depth) {
+		_reskinConfig.skinDepth = glm::clamp(depth, 1, MaxReskinDepth);
+		_paramsDirty = true;
+	}
+
+	void setReskinZOffset(int offset) {
+		_reskinConfig.zOffset = glm::clamp(offset, -MaxReskinDepth, MaxReskinDepth);
+		_paramsDirty = true;
+	}
+
+	void setReskinInvertSkin(bool invert) {
+		_reskinConfig.invertSkin = invert;
+		_paramsDirty = true;
+	}
+
+	void setReskinSkinUpAxis(math::Axis axis) {
+		_reskinConfig.skinUpAxis = axis;
+		// Re-populate skin depth for the new axis
+		if (_skinVolume != nullptr) {
+			setSkinVolume(_skinVolume);
+		}
+		_paramsDirty = true;
+	}
+
+	/**
+	 * @brief Set the skin volume for reskin mode.
+	 * @param skinVolume The skin volume to apply (not owned, must outlive the brush operation).
+	 */
+	void setSkinVolume(const voxel::RawVolume *skinVolume) {
+		_skinVolume = skinVolume;
+		// Auto-populate skin depth from the skin volume's depth along the configured up axis
+		if (skinVolume != nullptr) {
+			const voxel::Region &sr = skinVolume->region();
+			const int upIdx = math::getIndexForAxis(_reskinConfig.skinUpAxis);
+			const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
+			_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+		}
+		_paramsDirty = true;
+	}
+
+	/**
+	 * @brief Set an owned skin volume loaded from a file. The brush takes ownership.
+	 */
+	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath) {
+		_ownedSkinVolume = skinVolume;
+		_skinFilePath = filePath;
+		setSkinVolume(skinVolume);
+	}
+
+	const voxel::RawVolume *skinVolume() const {
+		return _skinVolume;
+	}
+
+	const core::String &skinFilePath() const {
+		return _skinFilePath;
 	}
 };
 

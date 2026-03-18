@@ -67,6 +67,7 @@ private:
 	void executeTransformBrush();
 	void updateSculptBrushPanel(command::CommandExecutionListener &listener);
 	void executeSculptBrush();
+	void loadSkinFromFile(const core::String &filename);
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
