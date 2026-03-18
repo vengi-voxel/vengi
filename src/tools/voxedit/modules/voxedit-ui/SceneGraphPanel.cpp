@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
 #include "color/Color.h"

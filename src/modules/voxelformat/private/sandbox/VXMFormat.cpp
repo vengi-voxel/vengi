@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "VXMFormat.h"
 #include "color/Color.h"
 #include "core/Common.h"

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "Format.h"
 #include "VolumeFormat.h"
 #include "app/App.h"

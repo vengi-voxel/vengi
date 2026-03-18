@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "SMTPLFormat.h"
 #include "SMPalette.h"
 #include "color/Color.h"

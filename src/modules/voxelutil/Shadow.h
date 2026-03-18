@@ -1,5 +1,6 @@
 #include "app/ForParallel.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/Log.h"
 #include "core/collection/Queue.h"
 #include "palette/Palette.h"

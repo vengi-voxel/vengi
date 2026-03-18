@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"

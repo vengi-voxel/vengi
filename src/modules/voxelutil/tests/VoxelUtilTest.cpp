@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "voxelutil/VoxelUtil.h"
 #include "app/tests/AbstractTest.h"

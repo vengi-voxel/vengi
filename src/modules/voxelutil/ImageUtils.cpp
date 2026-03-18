@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "ImageUtils.h"
 #include "app/Async.h"
 #include "core/Assert.h"

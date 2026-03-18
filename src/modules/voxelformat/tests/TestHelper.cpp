@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "TestHelper.h"
 #include "core/Common.h"
 #include "core/Log.h"

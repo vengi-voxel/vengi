@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "app/App.h"
 #include "color/Color.h"
 #include "core/ScopedPtr.h"

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "ASEPalette.h"
 #include "color/CMYK.h"
 #include "core/FourCC.h"

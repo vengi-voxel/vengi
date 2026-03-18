@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PixeloramaPalette.h"
 #include "SDL_stdinc.h"
 #include "color/Color.h"

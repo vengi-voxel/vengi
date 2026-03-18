@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PhotoshopPalette.h"
 #include "AdobeColorSpace.h"
 #include "color/CMYK.h"

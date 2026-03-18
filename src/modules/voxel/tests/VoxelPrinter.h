@@ -5,6 +5,7 @@
 #pragma once
 
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "color/RGBA.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PaletteView.h"
 #include "app/Async.h"
 #include "color/Color.h"

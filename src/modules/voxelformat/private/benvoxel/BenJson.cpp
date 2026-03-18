@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "BenJson.h"
 #include "BenShared.h"
 #include "color/Color.h"

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "AVMTPalette.h"
 #include "AVMTHelper.h"
 #include "core/Log.h"

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "Panel.h"

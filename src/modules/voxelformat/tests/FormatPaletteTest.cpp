@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"

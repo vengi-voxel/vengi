@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PaintNetPalette.h"
 #include "engine-config.h"
 

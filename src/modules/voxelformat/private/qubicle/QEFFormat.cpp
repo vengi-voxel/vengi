@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "QEFFormat.h"
 #include "color/Color.h"
 #include "core/GLM.h"

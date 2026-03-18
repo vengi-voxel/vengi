@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "OBJFormat.h"
 #include "color/Color.h"
 #include "core/Log.h"

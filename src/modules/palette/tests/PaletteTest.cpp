@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "palette/Palette.h"
 #include "app/tests/AbstractTest.h"
 #include "color/Color.h"

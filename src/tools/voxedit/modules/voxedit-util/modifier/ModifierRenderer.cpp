@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "ModifierRenderer.h"
 #include "../AxisUtil.h"
 #include "color/Color.h"

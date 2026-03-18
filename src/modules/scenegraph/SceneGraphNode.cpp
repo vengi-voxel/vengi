@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
 #include "color/Color.h"

@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/ForParallel.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "palette/Palette.h"

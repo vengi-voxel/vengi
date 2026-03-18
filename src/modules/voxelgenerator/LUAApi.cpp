@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "LUAApi.h"
 #include "app/App.h"
 #include "commonlua/LUA.h"

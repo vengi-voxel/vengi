@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "ACBPalette.h"
 #include "core/FourCC.h"
 #include "core/Log.h"

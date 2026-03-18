@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "color/ColorUtil.h"
+#include "color/Distance.h"
 #include "core/DirtyState.h"
 #include "core/Optional.h"
 #include "color/RGBA.h"

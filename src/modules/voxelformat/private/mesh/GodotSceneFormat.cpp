@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "GodotSceneFormat.h"
 #include "color/Color.h"
 #include "core/Hash.h"

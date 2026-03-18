@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "SceneRenderer.h"
 #include "app/App.h"
 #include "app/I18N.h"

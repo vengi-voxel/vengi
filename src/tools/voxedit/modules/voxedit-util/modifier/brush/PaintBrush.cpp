@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PaintBrush.h"
 #include "color/Color.h"
 #include "palette/Palette.h"

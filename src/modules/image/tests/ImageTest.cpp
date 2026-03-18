@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "image/Image.h"
 #include "app/tests/AbstractTest.h"
 #include "core/tests/TestColorHelper.h"

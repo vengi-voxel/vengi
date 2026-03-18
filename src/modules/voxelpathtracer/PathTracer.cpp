@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "PathTracer.h"
 #include "color/Color.h"
 #include "core/Log.h"

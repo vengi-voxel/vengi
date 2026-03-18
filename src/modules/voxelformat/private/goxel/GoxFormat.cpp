@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "GoxFormat.h"
 #include "app/Async.h"
 #include "core/Common.h"

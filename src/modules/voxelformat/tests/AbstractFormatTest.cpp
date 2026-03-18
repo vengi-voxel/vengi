@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "AbstractFormatTest.h"
 #include "app/App.h"
 #include "core/ConfigVar.h"

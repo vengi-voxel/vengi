@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "voxelutil/ImageUtils.h"
 #include "app/tests/AbstractTest.h"
 #include "color/Color.h"

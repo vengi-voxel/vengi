@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "color/ColorUtil.h"
 #include "voxel/RawVolume.h"
 #include "SMFormat.h"
 #include "core/ArrayLength.h"
