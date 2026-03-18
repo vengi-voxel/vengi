@@ -5,6 +5,8 @@
 #pragma once
 
 #include "core/UUID.h"
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"

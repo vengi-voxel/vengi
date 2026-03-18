@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "QBCLFormat.h"
 #include "core/Assert.h"
 #include "color/Color.h"

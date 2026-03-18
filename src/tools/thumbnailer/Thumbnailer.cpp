@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "Thumbnailer.h"
 #include "Shared.h"
 #include "core/Log.h"

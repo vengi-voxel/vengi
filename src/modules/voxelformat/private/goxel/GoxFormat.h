@@ -6,6 +6,7 @@
 
 #include "core/collection/StringMap.h"
 #include "palette/Palette.h"
+#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"

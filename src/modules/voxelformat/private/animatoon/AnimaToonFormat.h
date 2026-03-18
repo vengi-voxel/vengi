@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/collection/Buffer.h"
+#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include <glm/gtc/quaternion.hpp>
 

@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "color/ColorUtil.h"
 #include "Format.h"
 #include "VolumeFormat.h"

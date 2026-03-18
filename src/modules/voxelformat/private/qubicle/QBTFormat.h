@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 
 namespace voxelformat {

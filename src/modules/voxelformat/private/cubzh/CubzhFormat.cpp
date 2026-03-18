@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "CubzhFormat.h"
 #include "CubzhShared.h"
 #include "core/Log.h"

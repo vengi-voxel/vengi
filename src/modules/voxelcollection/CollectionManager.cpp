@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "CollectionManager.h"
 #include "app/Async.h"
 #include "app/I18N.h"

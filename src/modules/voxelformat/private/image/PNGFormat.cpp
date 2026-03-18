@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/FormatThumbnail.h"
 #include "PNGFormat.h"
 #include "app/Async.h"
 #include "core/ConfigVar.h"

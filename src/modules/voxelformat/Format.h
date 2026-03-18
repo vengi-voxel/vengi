@@ -11,7 +11,7 @@
 #include "palette/RGBABuffer.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
-#include "voxelformat/FormatThumbnail.h"
+#include "voxelformat/FormatThumbnailFwd.h"
 #include <glm/fwd.hpp>
 
 namespace palette {

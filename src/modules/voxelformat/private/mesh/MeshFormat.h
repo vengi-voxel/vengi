@@ -16,6 +16,8 @@
 #include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/Mesh.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"

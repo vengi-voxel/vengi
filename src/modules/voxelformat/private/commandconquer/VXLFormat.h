@@ -5,6 +5,7 @@
 #pragma once
 
 #include "VXLShared.h"
+#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
