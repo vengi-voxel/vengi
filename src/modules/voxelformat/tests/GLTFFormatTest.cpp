@@ -96,8 +96,8 @@ TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
 class VoxelizeLantern : public AbstractFormatTest, public ::testing::WithParamInterface<bool> {};
 
 TEST_P(VoxelizeLantern, exec) {
-	bool params = GetParam();
-	util::ScopedVarChange var(cfg::VoxelCreatePalette, params);
+	bool createPalette = GetParam();
+	util::ScopedVarChange var(cfg::VoxelCreatePalette, createPalette);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -117,7 +117,9 @@ TEST_P(VoxelizeLantern, exec) {
 	// EXPECT_EQ(89, v->voxel(-8, 9, 0).getColor());
 	const color::RGBA expected(69, 58, 46, 255);
 	const color::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
-	voxel::colorComparatorDistance(expected, is, 0.01f);
+	// when not creating a palette from the mesh, the default palette quantization has more color error
+	const float maxDelta = createPalette ? 0.01f : 0.03f;
+	voxel::colorComparatorDistance(expected, is, maxDelta);
 }
 
 INSTANTIATE_TEST_SUITE_P(
