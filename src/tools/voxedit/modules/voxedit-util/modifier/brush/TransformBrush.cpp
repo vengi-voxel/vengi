@@ -3,7 +3,6 @@
  */
 
 #include "TransformBrush.h"
-#include "app/Async.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -127,28 +126,17 @@ void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 
-	const glm::ivec3 &regionLo = volRegion.getLowerCorner();
-	const glm::ivec3 &regionHi = volRegion.getUpperCorner();
-	// TODO: PERF: use visitor
-	for (int z = regionLo.z; z <= regionHi.z; ++z) {
-		for (int y = regionLo.y; y <= regionHi.y; ++y) {
-			for (int x = regionLo.x; x <= regionHi.x; ++x) {
-				const voxel::Voxel &currentVoxel = volume->voxel(x, y, z);
-				if (voxel::isAir(currentVoxel.getMaterial())) {
-					continue;
-				}
-				if (!(currentVoxel.getFlags() & voxel::FlagOutline)) {
-					continue;
-				}
-
-				const glm::ivec3 pos(x, y, z);
-				_snapshot.setVoxel(pos, currentVoxel);
-				selLo = glm::min(selLo, pos);
-				selHi = glm::max(selHi, pos);
-			}
+	auto func = [&] (int x, int y, int z, const voxel::Voxel &voxel) {
+		if (!(voxel.getFlags() & voxel::FlagOutline)) {
+			return;
 		}
-	}
 
+		const glm::ivec3 pos(x, y, z);
+		_snapshot.setVoxel(pos, voxel);
+		selLo = glm::min(selLo, pos);
+		selHi = glm::max(selHi, pos);
+	};
+	voxelutil::visitVolume(*volume, volRegion, func, voxelutil::VisitSolid());
 	if (_snapshot.empty()) {
 		_hasSnapshot = false;
 		return;
