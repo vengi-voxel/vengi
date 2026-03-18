@@ -99,6 +99,25 @@ struct VisitSolid {
 	}
 };
 
+struct VisitSolidFlag {
+	const uint8_t _flag;
+	VisitSolidFlag(uint8_t flag) : _flag(flag) {
+	}
+
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		if (isAir(sampler.voxel().getMaterial())) {
+			return false;
+		}
+		return (sampler.voxel().getFlags() & _flag) == 0u;
+	}
+};
+
+struct VisitSolidOutline : public VisitSolidFlag {
+	VisitSolidOutline() : VisitSolidFlag(voxel::FlagOutline) {
+	}
+};
+
 /**
  * @note Visitor condition
  */
