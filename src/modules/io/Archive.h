@@ -8,11 +8,13 @@
 #include "core/SharedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
-#include "io/Stream.h"
 
 namespace io {
 
 class Filesystem;
+class ReadStream;
+class SeekableReadStream;
+class SeekableWriteStream;
 
 using ArchiveFiles = core::DynamicArray<io::FilesystemEntry>;
 using FilesystemPtr = core::SharedPtr<Filesystem>;
