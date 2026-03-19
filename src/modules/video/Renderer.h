@@ -9,7 +9,6 @@
 #pragma once
 
 #include "RendererInterface.h"
-#include <type_traits>
 
 namespace video {
 
@@ -34,7 +33,7 @@ DataType mapIndexTypeBySize(size_t size);
  */
 template <typename DATATYPE>
 constexpr inline DataType mapType() {
-	static_assert(std::is_fundamental<typename _priv::to_type<DATATYPE>::type>::value,
+	static_assert(core::is_fundamental<typename _priv::to_type<DATATYPE>::type>::value,
 				  "Given datatype is not fundamental");
 
 	constexpr size_t size = sizeof(typename _priv::to_type<DATATYPE>::type);
@@ -44,14 +43,14 @@ constexpr inline DataType mapType() {
 	static_assert(size != 36u, "Invalid data type given (size 36)");
 	static_assert(size != 64u, "Invalid data type given (size 64)");
 	static_assert(size == 1u || size == 2u || size == 4u, "Only datatypes of size 1, 2 or 4 are supported");
-	if (std::is_floating_point<typename _priv::to_type<DATATYPE>::type>()) {
+	if (core::is_floating_point<typename _priv::to_type<DATATYPE>::type>::value) {
 		// if constexpr (size == 4u) {
 		return DataType::Float;
 		// }
 		// return DataType::Double;
 	}
 
-	constexpr bool isUnsigned = std::is_unsigned<typename _priv::to_type<DATATYPE>::type>();
+	constexpr bool isUnsigned = core::is_unsigned<typename _priv::to_type<DATATYPE>::type>::value;
 	if constexpr (size == 1u) {
 		if constexpr (isUnsigned) {
 			return DataType::UnsignedByte;

@@ -8,7 +8,6 @@
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include <new>
-#include <type_traits>
 #include <stddef.h>
 
 namespace core {
@@ -28,10 +27,6 @@ class SharedPtr {
 private:
 	template <typename U> friend class SharedPtr;
 	template <typename U> friend class WeakPtr;
-
-	struct __enableIfHelper {
-		int b;
-	};
 
 	priv::SharedPtrControlBlock *_ctrl;
 
@@ -85,13 +80,13 @@ public:
 	}
 
 	template <class U>
-	SharedPtr(const SharedPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+	SharedPtr(const SharedPtr<U> &obj, typename core::enable_if<core::is_convertible<U*, T*>::value, int>::type = 0) :
 			_ctrl(obj._ctrl) {
 		increase();
 	}
 
 	template <class U>
-	SharedPtr(SharedPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+	SharedPtr(SharedPtr<U> &&obj, typename core::enable_if<core::is_convertible<U*, T*>::value, int>::type = 0) :
 			_ctrl(obj._ctrl) {
 		obj._ctrl = nullptr;
 	}
@@ -249,7 +244,7 @@ public:
 	}
 
 	template <class U>
-	WeakPtr(const SharedPtr<U> &shared, typename std::enable_if<std::is_convertible<U*, T*>::value, int>::type = 0) :
+	WeakPtr(const SharedPtr<U> &shared, typename core::enable_if<core::is_convertible<U*, T*>::value, int>::type = 0) :
 			_ctrl(shared._ctrl) {
 		increaseWeak();
 	}
@@ -263,13 +258,13 @@ public:
 	}
 
 	template <class U>
-	WeakPtr(const WeakPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, int>::type = 0) :
+	WeakPtr(const WeakPtr<U> &obj, typename core::enable_if<core::is_convertible<U*, T*>::value, int>::type = 0) :
 			_ctrl(obj._ctrl) {
 		increaseWeak();
 	}
 
 	template <class U>
-	WeakPtr(WeakPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, int>::type = 0) :
+	WeakPtr(WeakPtr<U> &&obj, typename core::enable_if<core::is_convertible<U*, T*>::value, int>::type = 0) :
 			_ctrl(obj._ctrl) {
 		obj._ctrl = nullptr;
 	}

@@ -137,6 +137,7 @@ set(TEST_SRCS
 	tests/DynamicArrayTest.cpp
 	tests/DynamicListTest.cpp
 	tests/DynamicStackTest.cpp
+	tests/FunctionTest.cpp
 	tests/HashTest.cpp
 	tests/ListTest.cpp
 	tests/MapTest.cpp

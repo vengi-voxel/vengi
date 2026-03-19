@@ -6,7 +6,7 @@
 
 #include "app/ForParallel.h"
 #include "core/collection/Map.h"
-#include <functional>
+#include "core/Function.h"
 
 namespace core {
 
@@ -27,7 +27,7 @@ protected:
 
 public:
 	using Super::Map;
-	void for_parallel(const std::function<void(const KEYTYPE &, const VALUETYPE &)> &fn) const {
+	void for_parallel(const core::Function<void(const KEYTYPE &, const VALUETYPE &)> &fn) const {
 		auto func = [this, &fn](int start, int end) {
 			for (int i = start; i < end; ++i) {
 				const typename Super::KeyValue *entry = _buckets[i];

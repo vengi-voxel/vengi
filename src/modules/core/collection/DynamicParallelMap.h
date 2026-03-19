@@ -6,7 +6,7 @@
 
 #include "app/ForParallel.h"
 #include "core/collection/DynamicMap.h"
-#include <functional>
+#include "core/Function.h"
 
 namespace core {
 
@@ -26,7 +26,7 @@ protected:
 
 public:
 	using Super::DynamicMap;
-	void for_parallel(const std::function<void(const KEYTYPE &, VALUETYPE &)> &fn) const {
+	void for_parallel(const core::Function<void(const KEYTYPE &, VALUETYPE &)> &fn) const {
 		auto func = [this, &fn](int start, int end) {
 			for (int i = start; i < end; ++i) {
 				typename Super::KeyValue *entry = _buckets[i];

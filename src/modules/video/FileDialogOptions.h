@@ -9,7 +9,7 @@
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
 
-#include <functional>
+#include "core/Function.h"
 
 namespace io {
 struct FormatDescription;
@@ -17,8 +17,8 @@ struct FormatDescription;
 
 namespace video {
 
-using FileDialogSelectionCallback = std::function<void(const core::String &, const io::FormatDescription *desc)>;
+using FileDialogSelectionCallback = core::Function<void(const core::String &, const io::FormatDescription *desc)>;
 using FileDialogOptions =
-	std::function<bool(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry)>;
+	core::Function<bool(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry)>;
 
 } // namespace video

@@ -60,8 +60,8 @@ void for_parallel_impl(int start, int end, ForParallelFunc fn, void *ctx, bool w
 	}
 }
 
-void schedule(std::function<void()> &&f) {
-	app::App::getInstance()->schedule(core::forward<std::function<void()>>(f));
+void schedule(core::Function<void()> &&f) {
+	app::App::getInstance()->schedule(core::forward<core::Function<void()>>(f));
 }
 
 } // namespace app

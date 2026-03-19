@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <functional>
+#include "core/Function.h"
 
 #define POPUP_TITLE_ABOUT "###popuptitle"
 
 namespace ui {
 
 void metricOption();
-void popupAbout(const std::function<void()> &customTabs = {}, bool isNewVersionAvailable = false);
+void popupAbout(const core::Function<void()> &customTabs = {}, bool isNewVersionAvailable = false);
 
 } // namespace ui

@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include <stddef.h>
-#include <type_traits>
 
 #define CORE_ENUM_BIT_OPERATIONS(EnumClassName) \
 	inline constexpr EnumClassName operator&(EnumClassName __x, EnumClassName __y) { \
@@ -35,8 +35,8 @@
 
 namespace core {
 template<typename T>
-constexpr typename std::underlying_type<T>::type enumVal(const T& val) {
-	return static_cast<typename std::underlying_type<T>::type>(val);
+constexpr typename core::underlying_type<T>::type enumVal(const T& val) {
+	return static_cast<typename core::underlying_type<T>::type>(val);
 }
 }
 

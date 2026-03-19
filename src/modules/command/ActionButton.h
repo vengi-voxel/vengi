@@ -5,7 +5,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <functional>
+#include "core/Function.h"
 #include "core/BindingContext.h"
 
 namespace command {
@@ -45,7 +45,7 @@ struct ActionButton {
 	 */
 	bool pressed() const;
 
-	bool execute(double nowSeconds, double delayBetweenExecutions, const std::function<void()>& executionCallback);
+	bool execute(double nowSeconds, double delayBetweenExecutions, const core::Function<void()>& executionCallback);
 
 	/**
 	 * @return @c true if the action button was initially triggered

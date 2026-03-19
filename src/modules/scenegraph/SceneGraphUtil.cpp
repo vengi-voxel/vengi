@@ -121,7 +121,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 	return nodeId;
 }
 
-int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const std::function<void(int)> &onNodeAdded) {
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const core::Function<void(int)> &onNodeAdded) {
 	SceneGraphNode newNode(node.type(), node.uuid());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -137,7 +137,7 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 	return newNodeId;
 }
 
-static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent, const std::function<void(int)> &onNodeAdded) {
+static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent, const core::Function<void(int)> &onNodeAdded) {
 	const int newNodeId = moveNodeToSceneGraph(target, sourceNode, parent);
 	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
@@ -154,7 +154,7 @@ static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, Sce
 	return nodesAdded;
 }
 
-int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const std::function<void(int)> &onNodeAdded) {
+int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const core::Function<void(int)> &onNodeAdded) {
 	const SceneGraphNode &sourceRoot = source.root();
 	int nodesAdded = 0;
 	target.node(parent).addProperties(sourceRoot.properties());

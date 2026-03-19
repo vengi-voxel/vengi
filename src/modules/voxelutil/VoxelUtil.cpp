@@ -19,7 +19,7 @@
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <functional>
+#include "core/Function.h"
 #include <glm/geometric.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -163,8 +163,8 @@ void clear(voxel::RawVolumeWrapper &in) {
 }
 
 using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
-using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &, voxel::FaceNames)>;
-using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
+using WalkCheckCallback = core::Function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &, voxel::FaceNames)>;
+using WalkExecCallback = core::Function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
 template<class CHECK, class EXEC, class Volume>
 static int walkPlane_r(IVec3Set &visited, Volume &volume, const voxel::Region &region, CHECK &&check, EXEC &&exec,

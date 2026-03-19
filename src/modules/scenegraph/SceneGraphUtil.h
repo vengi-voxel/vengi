@@ -7,7 +7,7 @@
 
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphNode.h"
-#include <functional>
+#include "core/Function.h"
 
 namespace scenegraph {
 
@@ -21,9 +21,9 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 /**
  * @brief this doesn't copy but transfer the volume ownership
  */
-int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const std::function<void(int)> &onNodeAdded = {});
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const core::Function<void(int)> &onNodeAdded = {});
 
-int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const std::function<void(int)> &onNodeAdded = {});
+int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const core::Function<void(int)> &onNodeAdded = {});
 
 core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
 
