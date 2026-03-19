@@ -386,12 +386,9 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 template<class Volume, class VoxelType>
 void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const VoxelType& voxel, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
-	const float s = 1.0f / (float) steps;
-	for (int i = 0; i < steps; ++i) {
-		const float t = s * (float)i;
-		const glm::ivec3& pos = b.getPoint(t);
+	b.visitPoints(steps, [&] (const glm::ivec3& pos) {
 		volume.setVoxel(pos, voxel);
-	}
+	});
 }
 
 /**
@@ -407,14 +404,9 @@ void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end
 template<class Volume, class F, class VoxelType>
 void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const VoxelType& voxel, F&& func, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
-	const float s = 1.0f / (float) steps;
-	glm::ivec3 lastPos = b.getPoint(0.0f);
-	for (int i = 1; i <= steps; ++i) {
-		const float t = s * (float)i;
-		const glm::ivec3& pos = b.getPoint(t);
+	b.visitSegments(steps, [&] (const glm::ivec3& lastPos, const glm::ivec3& pos) {
 		func(volume, lastPos, pos, voxel);
-		lastPos = pos;
-	}
+	});
 }
 
 template<class Volume, class VoxelType>
