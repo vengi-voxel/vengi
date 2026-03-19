@@ -31,6 +31,18 @@ inline bool useStipplePattern(const Pattern& stipplePattern, int stippleState) {
 	return stipplePattern[stippleState % bits];
 }
 
+inline int chebyshevDistance(const glm::ivec3& a, const glm::ivec3& b) {
+	const glm::ivec3 delta = glm::abs(a - b);
+	return glm::max(delta.x, glm::max(delta.y, delta.z));
+}
+
+inline bool isCollinear(const math::BezierSegment& segment) {
+	const glm::ivec3 startToEnd = segment.end - segment.start;
+	const glm::ivec3 startToControl = segment.control - segment.start;
+	const glm::ivec3 cross = glm::cross(glm::vec3(startToEnd), glm::vec3(startToControl));
+	return glm::abs(cross.x) < 0.0001f && glm::abs(cross.y) < 0.0001f && glm::abs(cross.z) < 0.0001f;
+}
+
 inline voxel::Region bezierRegion(const math::BezierSegment& segment) {
 	glm::ivec3 mins = glm::min(segment.start, segment.end);
 	glm::ivec3 maxs = glm::max(segment.start, segment.end);
@@ -393,21 +405,35 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 }
 
 template<class Volume, class VoxelType, class Pattern>
-void drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel,
+bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel,
 						 const Pattern& stipplePattern, int& stippleState, bool skipFirst = false) {
 	bool firstPoint = true;
+	bool consumedPoint = false;
+	bool sawVisitedPoint = false;
+	glm::ivec3 lastVisited(0);
 	voxelutil::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
 		if (skipFirst && firstPoint) {
 			firstPoint = false;
 			return true;
 		}
 		firstPoint = false;
+		sawVisitedPoint = true;
+		lastVisited = sampler.position();
+		consumedPoint = true;
 		if (useStipplePattern(stipplePattern, stippleState)) {
 			sampler.setVoxel(voxel);
 		}
 		++stippleState;
 		return true;
 	});
+	if (!(skipFirst && start == end) && volume.region().containsPoint(end) && (!sawVisitedPoint || lastVisited != end)) {
+		consumedPoint = true;
+		if (useStipplePattern(stipplePattern, stippleState)) {
+			volume.setVoxel(end.x, end.y, end.z, voxel);
+		}
+		++stippleState;
+	}
+	return consumedPoint;
 }
 
 /**
@@ -452,18 +478,66 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 	if (!clipped.cropTo(volume.region())) {
 		return;
 	}
-	const math::Bezier<int> bezier(segment.start, segment.end, segment.control);
-	const int steps = bezier.estimateSteps();
+	if (isCollinear(segment)) {
+		int stippleState = 0;
+		(void)drawStippledLine(volume, segment.start, segment.end, voxel, stipplePattern, stippleState, false);
+		return;
+	}
+	using EvalVec = typename math::Bezier<int>::EvalVec;
+	auto roundPoint = [&] (const EvalVec& point) {
+		return glm::ivec3(glm::round(point));
+	};
+	auto curveRegion = [&] (const EvalVec& start, const EvalVec& control, const EvalVec& end) {
+		const glm::ivec3 startPos = roundPoint(start);
+		const glm::ivec3 controlPos = roundPoint(control);
+		const glm::ivec3 endPos = roundPoint(end);
+		glm::ivec3 mins = glm::min(startPos, endPos);
+		glm::ivec3 maxs = glm::max(startPos, endPos);
+		mins = glm::min(mins, controlPos);
+		maxs = glm::max(maxs, controlPos);
+		return voxel::Region(mins, maxs);
+	};
+
 	int stippleState = 0;
-	bool firstSegment = true;
-	bezier.visitSegments(steps, [&] (const glm::ivec3& from, const glm::ivec3& to) {
-		voxel::Region lineRegion(glm::min(from, to), glm::max(from, to));
-		if (!lineRegion.cropTo(volume.region())) {
+	bool hasLastPoint = false;
+	glm::ivec3 lastPoint(0);
+	constexpr int MaxSubdivisionDepth = 24;
+	const EvalVec start(segment.start);
+	const EvalVec control(segment.control);
+	const EvalVec end(segment.end);
+	auto subdivide = [&] (auto&& self, const EvalVec& subStart, const EvalVec& subControl, const EvalVec& subEnd,
+						 int depth) -> void {
+		voxel::Region region = curveRegion(subStart, subControl, subEnd);
+		if (!region.cropTo(volume.region())) {
 			return;
 		}
-		drawStippledLine(volume, from, to, voxel, stipplePattern, stippleState, !firstSegment);
-		firstSegment = false;
-	});
+		const glm::ivec3 startPos = roundPoint(subStart);
+		const glm::ivec3 endPos = roundPoint(subEnd);
+		if (depth >= MaxSubdivisionDepth || chebyshevDistance(startPos, endPos) <= 1) {
+			const bool skipFirst = hasLastPoint && lastPoint == startPos;
+			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst)) {
+				hasLastPoint = true;
+				lastPoint = endPos;
+			}
+			return;
+		}
+
+		const EvalVec leftControl = (subStart + subControl) * 0.5f;
+		const EvalVec rightControl = (subControl + subEnd) * 0.5f;
+		const EvalVec mid = (leftControl + rightControl) * 0.5f;
+		if (roundPoint(mid) == startPos && roundPoint(mid) == endPos) {
+			const bool skipFirst = hasLastPoint && lastPoint == startPos;
+			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst)) {
+				hasLastPoint = true;
+				lastPoint = endPos;
+			}
+			return;
+		}
+
+		self(self, subStart, leftControl, mid, depth + 1);
+		self(self, mid, rightControl, subEnd, depth + 1);
+	};
+	subdivide(subdivide, start, control, end, 0);
 }
 
 template<class Volume, class VoxelType>
