@@ -1266,7 +1266,7 @@ bool TeardownFormat::readLuaTable(io::ReadStream &s) {
 		wrap(s.readUInt32(keyType))
 		if (keyType == 0u) {
 			// NIL marks end
-			return true;
+			break;
 		}
 		wrapBool(readLuaValue(s, (int)keyType))
 

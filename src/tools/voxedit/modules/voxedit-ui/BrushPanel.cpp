@@ -690,7 +690,7 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 	const bool hasSelection = node && node->hasSelection();
-	ImGui::BeginDisabled(!node->hasSelection());
+	ImGui::BeginDisabled(!hasSelection);
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Use selection"), "texturebrushfromface", listener);
 	ImGui::EndDisabled();
 
