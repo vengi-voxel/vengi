@@ -946,7 +946,7 @@ bool Viewport::runBrushGizmo(const video::Camera &camera) {
 
 	// Map BrushGizmoOperation to ImGuizmo::OPERATION
 	uint32_t imguizmoOp = 0;
-	if (state.operations & BrushGizmo_Translate) {
+	if (state.operations & (BrushGizmo_Translate | BrushGizmo_BezierControl)) {
 		imguizmoOp |= ImGuizmo::TRANSLATE;
 	}
 	if (state.operations & BrushGizmo_TranslateX) {

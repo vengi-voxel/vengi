@@ -270,6 +270,63 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 		brush.setContinuous(continuous);
 	}
 	ImGui::TooltipCommand("togglelinebrushcontinuous");
+	bool bezier = brush.bezier();
+	if (ImGui::Checkbox(_("Bezier"), &bezier)) {
+		if (!bezier && brush.hasPendingChanges()) {
+			modifier.brushApply();
+		}
+		brush.setBezier(bezier);
+	}
+	ImGui::TooltipCommand("togglelinebrushbezier");
+	ImGui::TooltipTextUnformatted(_("First click locks the segment end, the gizmo edits its control point, and pending segments commit when you apply or leave the brush"));
+	if (bezier && brush.pendingSegmentCount() > 0) {
+		ImGui::SeparatorText(_("Pending segments"));
+		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg |
+										   ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_SizingStretchProp;
+		if (ImGui::BeginTable("##beziersegments", 3, tableFlags)) {
+			const uint32_t fixedCol = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize;
+			ImGui::TableSetupColumn("##segidx", fixedCol);
+			ImGui::TableSetupColumn(_("Coordinates"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##segdel", fixedCol);
+
+			int removeIdx = -1;
+			for (int i = 0; i < brush.pendingSegmentCount(); ++i) {
+				const math::BezierSegment *segment = brush.segment(i);
+				if (segment == nullptr) {
+					continue;
+				}
+				ImGui::PushID(i);
+				const bool selected = brush.selectedSegment() == i;
+
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				const core::String idx = core::String::format("%i", i + 1);
+				if (ImGui::Selectable(idx.c_str(), selected,
+									  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
+					brush.selectSegment(i);
+				}
+
+				ImGui::TableNextColumn();
+				ImGui::Text("(%i, %i, %i) " ICON_LC_ARROW_RIGHT " (%i, %i, %i)",
+							segment->start.x, segment->start.y, segment->start.z,
+							segment->end.x, segment->end.y, segment->end.z);
+				ImGui::TextDisabled(_("ctrl: (%i, %i, %i)"),
+									segment->control.x, segment->control.y, segment->control.z);
+
+				ImGui::TableNextColumn();
+				if (ImGui::IconButton(ICON_LC_TRASH_2, "")) {
+					removeIdx = i;
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+
+			if (removeIdx != -1) {
+				brush.removeSegment(removeIdx);
+			}
+		}
+		ImGui::TooltipTextUnformatted(_("Select a pending segment to edit its control point with the gizmo"));
+	}
 
 	ImGui::TextUnformatted(_("Stipple Pattern:"));
 	LineStipplePattern &stipplePattern = brush.stipplePattern();
