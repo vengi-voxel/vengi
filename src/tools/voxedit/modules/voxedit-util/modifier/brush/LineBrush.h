@@ -7,6 +7,8 @@
 #include "Brush.h"
 #include "LineState.h"
 #include "core/collection/BitSet.h"
+#include "core/collection/DynamicArray.h"
+#include "math/Bezier.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
@@ -42,11 +44,40 @@ class LineBrush : public Brush {
 private:
 	using Super = Brush;
 
-protected:
-	LineState _state;					///< Cached state for detecting changes requiring preview update
-	bool _continuous = false;			///< If true, end position becomes next reference position
-	LineStipplePattern _stipplePattern; ///< 9-bit pattern controlling which voxels are placed
+public:
+	using BezierSegment = math::BezierSegment;
 
+protected:
+	/** Cached state for detecting changes requiring preview update */
+	LineState _state;
+	/** Finalized preview-only bezier segments */
+	core::DynamicArray<BezierSegment> _segments;
+	/** Volume passed into preExecute(); used to distinguish preview from commit */
+	const voxel::RawVolume *_lastVolume = nullptr;
+	/** Currently selected pending bezier segment for gizmo editing */
+	int _selectedSegment = -1;
+	/** True between beginBrush() and endBrush() */
+	bool _active = false;
+	/** Set while auto-commit calls execute() during brush deactivation */
+	bool _commitPending = false;
+	/** If true, end position becomes next reference position */
+	bool _continuous = false;
+	/** If true, draw a quadratic bezier instead of a straight line */
+	bool _bezier = false;
+	/** True once the control point was moved explicitly */
+	bool _hasCustomControlPoint = false;
+	/** Quadratic bezier control point */
+	glm::ivec3 _controlPoint{0};
+	/** 9-bit pattern controlling which voxels are placed */
+	LineStipplePattern _stipplePattern;
+
+	glm::ivec3 defaultControlPoint(const BrushContext &ctx) const;
+	glm::ivec3 previewControlPoint(const BrushContext &ctx) const;
+	glm::ivec3 controlPoint(const BrushContext &ctx) const;
+	void syncControlPoint(const BrushContext &ctx);
+	void lockSegment(const BrushContext &ctx);
+	void clearPendingSegments();
+	static bool allowNextBezierPreview(const BrushContext &ctx, int selectedSegment, int segmentCount);
 	/**
 	 * @brief Place voxels along the line using raycasting
 	 *
@@ -65,7 +96,13 @@ public:
 		}
 	}
 	virtual ~LineBrush() = default;
+	void onActivated() override;
+	bool onDeactivated() override;
+	bool hasPendingChanges() const override;
 	void construct() override;
+	bool beginBrush(const BrushContext &ctx) override;
+	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
+	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	/**
@@ -78,19 +115,33 @@ public:
 	 * @brief In continuous mode, update reference position for next segment
 	 */
 	void endBrush(BrushContext &ctx) override;
+	void shutdown() override;
 
 	void reset() override;
+	bool active() const override;
+	bool wantBrushGizmo(const BrushContext &ctx) const override;
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
+	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+						 uint32_t operation) override;
 
 	/**
 	 * @return True if continuous line mode is enabled
 	 */
 	bool continuous() const;
+	bool bezier() const;
 
 	/**
 	 * @brief Enable or disable continuous line mode
 	 * @param[in] continuous If true, lines chain together
 	 */
 	void setContinuous(bool continuous);
+	void setBezier(bool bezier);
+	void setControlPoint(const glm::ivec3 &controlPoint);
+	int pendingSegmentCount() const;
+	int selectedSegment() const;
+	bool selectSegment(int index);
+	bool removeSegment(int index);
+	const BezierSegment *segment(int index) const;
 
 	/**
 	 * @brief Set a specific bit in the stipple pattern
@@ -109,8 +160,57 @@ inline bool LineBrush::continuous() const {
 	return _continuous;
 }
 
+inline bool LineBrush::bezier() const {
+	return _bezier;
+}
+
 inline void LineBrush::setContinuous(bool continuous) {
 	_continuous = continuous;
+}
+
+inline void LineBrush::setBezier(bool bezier) {
+	if (_bezier == bezier) {
+		return;
+	}
+	_bezier = bezier;
+	_hasCustomControlPoint = false;
+	markDirty();
+}
+
+inline void LineBrush::setControlPoint(const glm::ivec3 &controlPoint) {
+	if (_hasCustomControlPoint && _controlPoint == controlPoint) {
+		return;
+	}
+	_controlPoint = controlPoint;
+	_hasCustomControlPoint = true;
+	markDirty();
+}
+
+inline int LineBrush::pendingSegmentCount() const {
+	return (int)_segments.size();
+}
+
+inline int LineBrush::selectedSegment() const {
+	return _selectedSegment;
+}
+
+inline const LineBrush::BezierSegment *LineBrush::segment(int index) const {
+	if (index < 0 || index >= (int)_segments.size()) {
+		return nullptr;
+	}
+	return &_segments[index];
+}
+
+inline bool LineBrush::removeSegment(int index) {
+	if (index < 0 || index >= (int)_segments.size()) {
+		return false;
+	}
+	_segments.erase(index);
+	if (_selectedSegment >= (int)_segments.size()) {
+		_selectedSegment = (int)_segments.size() - 1;
+	}
+	markDirty();
+	return true;
 }
 
 inline LineStipplePattern &LineBrush::stipplePattern() {

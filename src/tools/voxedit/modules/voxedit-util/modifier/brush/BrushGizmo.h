@@ -25,6 +25,7 @@ enum BrushGizmoOperation : uint32_t {
 	BrushGizmo_TranslateX = (1u << 4),
 	BrushGizmo_TranslateY = (1u << 5),
 	BrushGizmo_TranslateZ = (1u << 6),
+	BrushGizmo_BezierControl = (1u << 7),
 };
 
 /**
