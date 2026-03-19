@@ -589,6 +589,20 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 	}
 }
 
+static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggestedExtent) {
+	if (!region.isValid()) {
+		return false;
+	}
+	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+	if (dimensions.x <= 0 || dimensions.y <= 0 || dimensions.z <= 0) {
+		return false;
+	}
+	const int64_t maxExtent = (int64_t)maxSuggestedExtent;
+	const int64_t maxVoxels = maxExtent * maxExtent * maxExtent;
+	const int64_t voxels = (int64_t)dimensions.x * (int64_t)dimensions.y * (int64_t)dimensions.z;
+	return voxels > 0 && voxels <= maxVoxels;
+}
+
 bool Modifier::previewNeedsExistingVolume() const {
 	if (isMode(ModifierType::Paint)) {
 		return true;
@@ -666,9 +680,9 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 	if (!region.isValid()) {
 		return;
 	}
-	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
+	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
 	bool simplePreview = isSimplePreview(brush, region);
-	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
+	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		const bool isCircleSelect = _brushType == BrushType::Select &&
 			_selectBrush.selectMode() == SelectMode::Circle;
 		if (isCircleSelect) {
