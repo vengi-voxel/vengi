@@ -192,7 +192,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev
+            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev xvfb
 
         - name: ccache
           uses: actions/cache@v4
@@ -212,6 +212,7 @@ jobs:
             cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_IMGUITESTENGINE=On -DUSE_BENCHMARKS=Off -DUNITTESTS=Off
             cmake --build . --target engine_codegen
             cmake --build . --target tests-voxedit
+            xvfb-run -a ctest -V -R '^tests-voxedit$'
 
     linux:
         timeout-minutes: 60
