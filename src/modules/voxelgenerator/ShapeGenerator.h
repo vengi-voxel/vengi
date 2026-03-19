@@ -452,10 +452,9 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 	if (!clipped.cropTo(volume.region())) {
 		return;
 	}
-	const glm::ivec3& dimensions = clipped.getDimensionsInVoxels();
-	const int steps = glm::max(1, dimensions.x + dimensions.y + dimensions.z);
-	int stippleState = 0;
 	const math::Bezier<int> bezier(segment.start, segment.end, segment.control);
+	const int steps = bezier.estimateSteps();
+	int stippleState = 0;
 	bool firstSegment = true;
 	bezier.visitSegments(steps, [&] (const glm::ivec3& from, const glm::ivec3& to) {
 		voxel::Region lineRegion(glm::min(from, to), glm::max(from, to));
