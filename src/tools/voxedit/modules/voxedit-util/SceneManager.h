@@ -29,7 +29,7 @@
 #include "voxelgenerator/LUAApi.h"
 #include "voxelrender/CameraMovement.h"
 #include "voxelutil/Picking.h"
-#include <functional>
+#include "core/Function.h"
 
 namespace command {
 class CommandArgs;
@@ -641,7 +641,7 @@ public:
 	/**
 	 * @note This is not related to the group node type
 	 */
-	void nodeForeachGroup(const std::function<void(int)> &f);
+	void nodeForeachGroup(const core::Function<void(int)> &f);
 };
 
 inline const voxelrender::CameraMovement &SceneManager::cameraMovement() const {

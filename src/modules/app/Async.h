@@ -21,7 +21,7 @@ auto async(F &&f) -> core::Future<core::invoke_result_t<F>> {
 }
 
 // add new work item to the pool
-void schedule(std::function<void()> &&f);
+void schedule(core::Function<void()> &&f);
 
 /**
  * @note This sort is unstable

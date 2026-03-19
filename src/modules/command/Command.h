@@ -11,8 +11,8 @@
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
+#include "core/Function.h"
 #include "command/ActionButton.h"
-#include <functional>
 
 namespace command {
 
@@ -37,7 +37,7 @@ class Command;
  * @param tokens All tokens parsed so far (index 0 = command name, 1 = first arg, etc.)
  * @param matches Output array for completion matches
  */
-typedef std::function<int(const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
+typedef core::Function<int(const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
 
 /**
  * @brief Definition of a single command argument
@@ -146,7 +146,7 @@ struct ActionButtonCommands {
 class Command {
 private:
 	typedef core::StringMap<Command> CommandMap;
-	typedef std::function<void(const CommandArgs&)> FunctionType;
+	typedef core::Function<void(const CommandArgs&)> FunctionType;
 
 	static CommandMap _cmds core_thread_guarded_by(_lock);
 	static core::Lock _lock;
@@ -160,7 +160,7 @@ private:
 	core::String _help;
 	FunctionType _func;
 	core::DynamicArray<CommandArg> _args;
-	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
+	typedef core::Function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
@@ -206,7 +206,7 @@ public:
 	 */
 	template<class Functor>
 	Command& setHandler(Functor&& func) {
-		_func = std::forward<Functor>(func);
+		_func = core::forward<Functor>(func);
 		return *this;
 	}
 

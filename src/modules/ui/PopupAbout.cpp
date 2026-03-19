@@ -25,7 +25,7 @@ void metricOption() {
 	ImGui::TooltipTextUnformatted(_("Send anonymous usage statistics"));
 }
 
-void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
+void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvailable) {
 	int popupWidth = ImGui::Size(60);
 	int popupHeight = ImGui::Height(20);
 	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);

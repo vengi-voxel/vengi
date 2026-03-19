@@ -9,7 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include "memento/IMementoStateListener.h"
 #include "voxedit-util/network/protocol/ClientInfo.h"
-#include <functional>
+#include "core/Function.h"
 
 namespace voxedit {
 
@@ -23,7 +23,7 @@ struct ChatEntry {
 	bool system = false;
 };
 
-using ChatCallback = std::function<void(const ChatEntry &)>;
+using ChatCallback = core::Function<void(const ChatEntry &)>;
 
 class Client : public core::IComponent, public memento::IMementoStateListener {
 protected:

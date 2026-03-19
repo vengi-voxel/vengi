@@ -126,6 +126,24 @@ struct is_trivially_destructible {
 #endif
 };
 
+template<typename T>
+struct is_enum {
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+	static constexpr bool value = __is_enum(T);
+#else
+	#error "Compiler not supported for is_enum trait"
+#endif
+};
+
+template<typename T>
+struct underlying_type {
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+	typedef __underlying_type(T) type;
+#else
+	#error "Compiler not supported for underlying_type trait"
+#endif
+};
+
 template<bool Condition, typename TrueType, typename FalseType>
 struct conditional {
 	using type = TrueType;
@@ -162,6 +180,110 @@ template<typename T>
 struct remove_const {
 	typedef T type;
 };
+
+template<typename T>
+struct remove_const<const T> {
+	typedef T type;
+};
+
+template<typename T>
+struct remove_volatile {
+	typedef T type;
+};
+
+template<typename T>
+struct remove_volatile<volatile T> {
+	typedef T type;
+};
+
+template<typename T>
+struct remove_cv {
+	typedef typename remove_volatile<typename remove_const<T>::type>::type type;
+};
+
+template<typename T>
+struct decay {
+	typedef typename remove_cv<typename remove_reference<T>::type>::type type;
+};
+
+template<typename T, typename U>
+struct is_same {
+	static constexpr bool value = false;
+};
+
+template<typename T>
+struct is_same<T, T> {
+	static constexpr bool value = true;
+};
+
+template<bool B, typename T = void>
+struct enable_if {};
+
+template<typename T>
+struct enable_if<true, T> {
+	typedef T type;
+};
+
+namespace detail {
+template<typename T>
+T &&declval_helper(int);
+template<typename T>
+T declval_helper(long);
+
+template<typename From, typename To>
+struct is_convertible_test {
+	static void accept(To);
+	template<typename F, typename = decltype(accept(declval_helper<F>(0)))>
+	static constexpr bool test(int) { return true; }
+	template<typename>
+	static constexpr bool test(...) { return false; }
+	static constexpr bool value = test<From>(0);
+};
+} // namespace detail
+
+template<typename From, typename To>
+struct is_convertible {
+	static constexpr bool value = detail::is_convertible_test<From, To>::value;
+};
+
+template<typename T>
+typename remove_reference<T>::type &&declval() noexcept;
+
+template<typename T> struct is_integral { static constexpr bool value = false; };
+template<> struct is_integral<bool> { static constexpr bool value = true; };
+template<> struct is_integral<char> { static constexpr bool value = true; };
+template<> struct is_integral<signed char> { static constexpr bool value = true; };
+template<> struct is_integral<unsigned char> { static constexpr bool value = true; };
+template<> struct is_integral<short> { static constexpr bool value = true; };
+template<> struct is_integral<unsigned short> { static constexpr bool value = true; };
+template<> struct is_integral<int> { static constexpr bool value = true; };
+template<> struct is_integral<unsigned int> { static constexpr bool value = true; };
+template<> struct is_integral<long> { static constexpr bool value = true; };
+template<> struct is_integral<unsigned long> { static constexpr bool value = true; };
+template<> struct is_integral<long long> { static constexpr bool value = true; };
+template<> struct is_integral<unsigned long long> { static constexpr bool value = true; };
+
+template<typename T> struct is_floating_point { static constexpr bool value = false; };
+template<> struct is_floating_point<float> { static constexpr bool value = true; };
+template<> struct is_floating_point<double> { static constexpr bool value = true; };
+template<> struct is_floating_point<long double> { static constexpr bool value = true; };
+
+template<typename T>
+struct is_arithmetic {
+	static constexpr bool value = is_integral<T>::value || is_floating_point<T>::value;
+};
+
+template<typename T>
+struct is_fundamental {
+	static constexpr bool value = is_arithmetic<T>::value || is_same<typename remove_cv<T>::type, void>::value || is_same<typename remove_cv<T>::type, decltype(nullptr)>::value;
+};
+
+template<typename T> struct is_unsigned { static constexpr bool value = false; };
+template<> struct is_unsigned<unsigned char> { static constexpr bool value = true; };
+template<> struct is_unsigned<unsigned short> { static constexpr bool value = true; };
+template<> struct is_unsigned<unsigned int> { static constexpr bool value = true; };
+template<> struct is_unsigned<unsigned long> { static constexpr bool value = true; };
+template<> struct is_unsigned<unsigned long long> { static constexpr bool value = true; };
 
 template <typename T, typename>
 struct remove_pointer_helper { typedef T type; };

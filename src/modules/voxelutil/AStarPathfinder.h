@@ -14,7 +14,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
-#include <functional>
+#include "core/Function.h"
 
 namespace voxelutil {
 
@@ -33,8 +33,8 @@ namespace voxelutil {
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
-			uint32_t uMaxNoOfNodes = 10000, voxel::Connectivity requiredConnectivity = voxel::Connectivity::TwentySixConnected, std::function<void(float)> funcProgressCallback = nullptr) :
+	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, core::Function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
+			uint32_t uMaxNoOfNodes = 10000, voxel::Connectivity requiredConnectivity = voxel::Connectivity::TwentySixConnected, core::Function<void(float)> funcProgressCallback = nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
 					core::move(funcIsVoxelValidForPath)), progressCallback(core::move(funcProgressCallback)) {
 	}
@@ -76,14 +76,14 @@ public:
 	/// This function is called to determine whether the path can pass though a given voxel.
 	/// For example, if you always want a path to follow a surface then
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
-	std::function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
+	core::Function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
 
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
 	/// the goal. The progress is reported by computing the distance from the closest node found
 	/// so far to the end node, and comparing this with the distance from the start node to the
 	/// end node. This progress value is guaranteed to never decrease, but it may stop increasing
 	/// for short periods of time. It may even stop increasing altogether if a path cannot be found.
-	std::function<void(float)> progressCallback;
+	core::Function<void(float)> progressCallback;
 };
 
 /**

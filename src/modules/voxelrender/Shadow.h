@@ -7,7 +7,7 @@
 #include "VoxelShaderConstants.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
-#include <functional>
+#include "core/Function.h"
 #include "core/collection/Array.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -59,7 +59,7 @@ public:
 	bool init(const ShadowParameters& parameters);
 	void shutdown();
 
-	typedef std::function<bool(int, const glm::mat4& viewProjection)> funcRender;
+	typedef core::Function<bool(int, const glm::mat4& viewProjection)> funcRender;
 
 	void update(const video::Camera& camera, bool active);
 

@@ -12,7 +12,7 @@ ActionButton::ActionButton() {
 	}
 }
 
-bool ActionButton::execute(double nowSeconds, double delayBetweenExecutions, const std::function<void()>& executionCallback) {
+bool ActionButton::execute(double nowSeconds, double delayBetweenExecutions, const core::Function<void()>& executionCallback) {
 	if (nowSeconds - lastPressed < delayBetweenExecutions) {
 		return false;
 	}
