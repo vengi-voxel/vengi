@@ -585,7 +585,6 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 		}
 		volume->clear();
 	} else {
-		region.grow(1);
 		volume = new voxel::RawVolume(*existingVolume, region);
 	}
 }
