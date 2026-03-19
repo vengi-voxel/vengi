@@ -190,7 +190,7 @@ include_directories(src/modules)
 add_subdirectory(contrib/libs)
 add_subdirectory(tools)
 
-if (UNITTESTS)
+if (UNITTESTS OR USE_IMGUITESTENGINE)
 	enable_testing()
 	set(CTEST_TEST_TIMEOUT 1800)
 endif()
