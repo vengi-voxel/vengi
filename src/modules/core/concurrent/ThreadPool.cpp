@@ -51,7 +51,8 @@ void ThreadPool::init() {
 	_stop = false;
 	_workers.reserve(_threads);
 	for (size_t i = 0; i < _threads; ++i) {
-		_workers.emplace_back([this, i] {
+		const core::String threadName = core::String::format("%s-%i", _name, (int)i);
+		_workers.emplace_back(core::Thread(core::Function<void()>([this, i] {
 			_inThreadPool = true;
 			const core::String n = core::String::format("%s-%i", this->_name, (int)i);
 			if (!setThreadName(n.c_str())) {
@@ -59,7 +60,7 @@ void ThreadPool::init() {
 			}
 			core_trace_thread(n.c_str());
 			for (;;) {
-				std::function<void()> task;
+				core::Function<void()> task;
 				bool shouldExit = false;
 				bool haveActive = false;
 
@@ -100,7 +101,7 @@ void ThreadPool::init() {
 					this->_activeWorkers.decrement();
 				}
 			}
-		});
+		}), threadName.c_str()));
 	}
 }
 
@@ -119,7 +120,7 @@ void ThreadPool::shutdown(bool wait) {
 		_tasks.clear();
 	}
 	_queueCondition.notify_all();
-	for (std::thread &worker : _workers) {
+	for (core::Thread &worker : _workers) {
 		if (worker.joinable()) {
 			worker.join();
 		}
@@ -127,7 +128,7 @@ void ThreadPool::shutdown(bool wait) {
 	_workers.clear();
 }
 
-void ThreadPool::schedule(std::function<void()> &&f) {
+void ThreadPool::schedule(core::Function<void()> &&f) {
 	if (_stop) {
 		return;
 	}
@@ -138,7 +139,7 @@ void ThreadPool::schedule(std::function<void()> &&f) {
 		if (_stop) {
 			return;
 		}
-		_tasks.emplace(std::move(f));
+		_tasks.emplace(core::move(f));
 	}
 	_queueCondition.notify_one();
 }

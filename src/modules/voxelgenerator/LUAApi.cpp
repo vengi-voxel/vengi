@@ -108,6 +108,27 @@ public:
 	}
 };
 
+class LuaStipplePattern {
+private:
+	const char *_pattern;
+	int _bits;
+
+public:
+	explicit LuaStipplePattern(const char *pattern) : _pattern(pattern), _bits((int)strlen(pattern)) {
+	}
+
+	inline int bits() const {
+		return _bits;
+	}
+
+	inline bool operator[](int index) const {
+		if (_bits <= 0) {
+			return true;
+		}
+		return _pattern[index % _bits] != '0';
+	}
+};
+
 static const char *luaVoxel_globalscenegraph() {
 	return "__global_scenegraph";
 }
@@ -994,6 +1015,19 @@ static int luaVoxel_shape_line(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_shape_stippledline(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
+	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 4);
+	const char *pattern = luaL_optstring(s, 5, "1");
+	const bool skipFirst = (int)clua_optboolean(s, 6, false);
+	const LuaStipplePattern stipplePattern(pattern);
+	int stippleState = 0;
+	shape::drawStippledLine(*volume, start, end, voxel, stipplePattern, stippleState, skipFirst);
+	return 0;
+}
+
 static int luaVoxel_shape_bezier(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
@@ -1004,6 +1038,18 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& vol, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& v) {
 		shape::createLine(vol, pos, last, v, thickness);
 	});
+	return 0;
+}
+
+static int luaVoxel_shape_beziersegment(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
+	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const glm::ivec3& control = clua_tovec<glm::ivec3>(s, 4);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
+	const char *pattern = luaL_optstring(s, 6, "1");
+	const LuaStipplePattern stipplePattern(pattern);
+	shape::drawBezierSegment(*volume, math::BezierSegment{start, end, control}, voxel, stipplePattern);
 	return 0;
 }
 
@@ -3816,6 +3862,23 @@ static int luaVoxel_shape_line_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_shape_stippledline_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "stippledLine",
+		"summary": "Draw a stippled line between two points in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "start", "type": "ivec3", "description": "The start position."},
+			{"name": "end", "type": "ivec3", "description": "The end position."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."},
+			{"name": "pattern", "type": "string", "description": "A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1')."},
+			{"name": "skipFirst", "type": "boolean", "description": "Skip the first visited voxel (optional, default false)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_shape_bezier_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "bezier",
@@ -3827,6 +3890,23 @@ static int luaVoxel_shape_bezier_jsonhelp(lua_State* s) {
 			{"name": "control", "type": "ivec3", "description": "The control point."},
 			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."},
 			{"name": "thickness", "type": "integer", "description": "The line thickness (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_beziersegment_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "bezierSegment",
+		"summary": "Draw a stippled quadratic bezier segment in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "start", "type": "ivec3", "description": "The start position."},
+			{"name": "end", "type": "ivec3", "description": "The end position."},
+			{"name": "control", "type": "ivec3", "description": "The control point."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."},
+			{"name": "pattern", "type": "string", "description": "A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1')."}
 		],
 		"returns": []})";
 	lua_pushstring(s, json);
@@ -6020,7 +6100,9 @@ static void prepareState(lua_State* s) {
 		{"cube", luaVoxel_shape_cube, luaVoxel_shape_cube_jsonhelp},
 		{"cone", luaVoxel_shape_cone, luaVoxel_shape_cone_jsonhelp},
 		{"line", luaVoxel_shape_line, luaVoxel_shape_line_jsonhelp},
+		{"stippledLine", luaVoxel_shape_stippledline, luaVoxel_shape_stippledline_jsonhelp},
 		{"bezier", luaVoxel_shape_bezier, luaVoxel_shape_bezier_jsonhelp},
+		{"bezierSegment", luaVoxel_shape_beziersegment, luaVoxel_shape_beziersegment_jsonhelp},
 		{"circle", luaVoxel_shape_circle, luaVoxel_shape_circle_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};

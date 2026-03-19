@@ -27,8 +27,7 @@
 
 #pragma once
 
-#include <thread>
-#include <functional>
+#include "core/Function.h"
 #include "core/ResultType.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Queue.h"
@@ -36,8 +35,8 @@
 #include "core/concurrent/Future.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
+#include "core/concurrent/Thread.h"
 #include "core/Trace.h"
-#include "core/SharedPtr.h"
 
 namespace core {
 
@@ -51,7 +50,7 @@ public:
 	 */
 	template<class F>
 	auto enqueue(F&& f) -> core::Future<core::invoke_result_t<F>>;
-	void schedule(std::function<void()> &&f);
+	void schedule(core::Function<void()> &&f);
 
 	void dump() const;
 	size_t size() const;
@@ -69,9 +68,9 @@ private:
 	const size_t _threads;
 	const char *_name;
 	// need to keep track of threads so we can join them
-	core::DynamicArray<std::thread> _workers;
+	core::DynamicArray<core::Thread> _workers;
 	// the task queue
-	core::Queue<std::function<void()> > _tasks core_thread_guarded_by(_queueMutex);
+	core::Queue<core::Function<void()> > _tasks core_thread_guarded_by(_queueMutex);
 
 	// synchronization
 	core_trace_mutex(core::Lock, _queueMutex, "ThreadPoolQueue");
@@ -103,23 +102,35 @@ auto ThreadPool::enqueue(F&& f)
 		}
 
 		if (!_inThreadPool || (int)_activeWorkers < (int)_threads) {
-			core::SharedPtr<std::packaged_task<return_type()>> task =
-				core::make_shared<std::packaged_task<return_type()>>(
-					std::bind(core::forward<F>(f)));
-
-			core::Future<return_type> res = task->get_future();
-			_tasks.emplace([task]() {(*task.get())();});
+			auto *state = core::detail::createFutureState<return_type>();
+			state->addRef(); // one ref for the Future, one for the lambda
+			if constexpr (core::is_same<return_type, void>::value) {
+				_tasks.emplace([state, func = core::Function<void()>(core::forward<F>(f))]() {
+					func();
+					state->set();
+					state->release();
+				});
+			} else {
+				_tasks.emplace([state, func = core::Function<return_type()>(core::forward<F>(f))]() {
+					state->set(func());
+					state->release();
+				});
+			}
 			_queueCondition.notify_one();
-			return res;
+			return core::Future<return_type>(state);
 		}
 	}
 
 	// If we are in a thread pool thread, execute the task inline if no free worker is available
 	// this prevents the nested parallelism deadlock problem
-	auto task = std::packaged_task<return_type()>(std::bind(core::forward<F>(f)));
-	core::Future<return_type> res = task.get_future();
-	task();
-	return res;
+	auto *state = core::detail::createFutureState<return_type>();
+	if constexpr (core::is_same<return_type, void>::value) {
+		f();
+		state->set();
+	} else {
+		state->set(f());
+	}
+	return core::Future<return_type>(state);
 }
 
 inline size_t ThreadPool::size() const {

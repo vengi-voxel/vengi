@@ -6,18 +6,16 @@
 
 #include "app/i18n/DictionaryManager.h"
 #include "app/Pipe.h"
-#include "core/Common.h"
-#include "core/ResultType.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"
 #include "core/concurrent/Thread.h"
+#include "core/Function.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 #include "io/BufferedReadWriteStream.h"
-#include <functional>
 
 #define ORGANISATION "vengi"
 
@@ -329,7 +327,7 @@ public:
 	io::FilesystemPtr filesystem() const;
 
 	const core::ThreadPoolPtr &threadPool() const;
-	void schedule(std::function<void()> &&f);
+	void schedule(core::Function<void()> &&f);
 
 	void threadsDump() const;
 

@@ -5282,7 +5282,7 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &c
 	return false;
 }
 
-void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
+void SceneManager::nodeForeachGroup(const core::Function<void(int)>& f) {
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "group");
 	_sceneGraph.foreachGroup(f);
 }

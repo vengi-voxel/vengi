@@ -4,16 +4,18 @@
 
 #pragma once
 
-#include <type_traits>
+#include "core/Common.h"
 
 namespace core {
 
-#if __cplusplus >= 201703L
+namespace detail {
 template<typename F>
-using invoke_result_t = typename std::invoke_result<F>::type;
-#else
+struct invoke_result {
+	using type = decltype(core::declval<F>()());
+};
+} // namespace detail
+
 template<typename F>
-using invoke_result_t = typename std::result_of<F()>::type;
-#endif
+using invoke_result_t = typename detail::invoke_result<F>::type;
 
 } // namespace core

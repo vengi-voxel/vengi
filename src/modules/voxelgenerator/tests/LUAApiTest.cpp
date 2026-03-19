@@ -5,6 +5,7 @@
 #include "voxelgenerator/LUAApi.h"
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Bezier.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
@@ -241,6 +242,29 @@ TEST_F(LUAApiTest, testImagePixelAccess) {
 	)";
 	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testShapeBezierHelpers) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			g_shape.stippledLine(volume, g_ivec3.new(3, 6, 7), g_ivec3.new(7, 6, 7), color, '10')
+			g_shape.bezierSegment(volume, g_ivec3.new(1, 7, 1), g_ivec3.new(7, 7, 1), g_ivec3.new(4, 5, 1), color, '1')
+		end
+	)";
+
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
+	ASSERT_NE(nullptr, volume);
+	EXPECT_EQ(42u, volume->voxel(3, 6, 7).getColor());
+	EXPECT_EQ(42u, volume->voxel(5, 6, 7).getColor());
+	EXPECT_EQ(42u, volume->voxel(7, 6, 7).getColor());
+	EXPECT_FALSE(voxel::isBlocked(volume->voxel(4, 6, 7).getMaterial()));
+
+	const math::Bezier<int> bezier(glm::ivec3(1, 7, 1), glm::ivec3(7, 7, 1), glm::ivec3(4, 5, 1));
+	const glm::ivec3 bezierMid = bezier.getPoint(0.5f);
+	EXPECT_EQ(42u, volume->voxel(bezierMid).getColor());
 }
 
 TEST_F(LUAApiTest, testKeyFrames) {

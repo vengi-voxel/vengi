@@ -18,24 +18,28 @@ namespace voxedit {
 struct LineState {
 	glm::ivec3 cursorPosition{0}; ///< Current cursor position in voxel space
 	glm::ivec3 referencePos{0};	  ///< Reference/start position for the line
+	glm::ivec3 controlPoint{0};	  ///< Quadratic bezier control point in voxel space
 	voxel::Voxel cursorVoxel;	  ///< The voxel type that will be placed
+	bool bezier = false;
 
 	/**
 	 * @brief Check if the brush context has changed from the cached state
 	 * @return true if any tracked parameter differs from the context
 	 */
-	bool operator!=(const BrushContext &ctx) {
+	bool hasChanges(const BrushContext &ctx, bool bezierMode, const glm::ivec3 &control) const {
 		return cursorPosition != ctx.cursorPosition || referencePos != ctx.referencePos ||
-			   !cursorVoxel.isSame(ctx.cursorVoxel);
+			   !cursorVoxel.isSame(ctx.cursorVoxel) || bezier != bezierMode || controlPoint != control;
 	}
 
 	/**
 	 * @brief Update the cached state from the brush context
 	 */
-	void operator=(const BrushContext &ctx) {
+	void update(const BrushContext &ctx, bool bezierMode, const glm::ivec3 &control) {
 		cursorPosition = ctx.cursorPosition;
 		referencePos = ctx.referencePos;
+		controlPoint = control;
 		cursorVoxel = ctx.cursorVoxel;
+		bezier = bezierMode;
 	}
 };
 
