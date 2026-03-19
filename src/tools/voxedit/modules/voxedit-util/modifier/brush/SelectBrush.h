@@ -7,11 +7,17 @@
 #include "AABBBrush.h"
 #include "color/ColorUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
+
+namespace voxel {
+class RawVolume;
+} // namespace voxel
 
 namespace voxedit {
 
@@ -38,6 +44,20 @@ enum class SelectMode : uint8_t {
 	Circle,
 	/** Flood-fill select connected surface voxels that fit a global slope plane within a height deviation threshold */
 	Slope,
+	/** Free-form polygon selection: click vertices to build a polygon, close it to select enclosed surface voxels */
+	Lasso,
+	/** Select the closed rim of a hole in an axis-aligned (coplanar) surface.
+	 *  Click any solid voxel on the rim using the face that is parallel to the surface plane. */
+	HoleRim2D,
+	/** Select the closed rim of a hole in a non-planar (3D curved) surface.
+	 *  Click a solid voxel on the rim using the face that looks into the opening.
+	 *  BFS finds the shortest surface loop that encircles the air-seed voxel. */
+	HoleRim3D,
+	/** Select all solid voxels in a bounded connected protrusion (column, pillar, pipe wall) on a face plane.
+	 *  Click any solid voxel using any face. The clicked face's plane is tried first; if that slice
+	 *  is unbounded (e.g. side face of a floor-touching column reaches the volume floor), the other
+	 *  two axis planes are tried automatically. Large flat surfaces are always rejected as unbounded. */
+	ColumnRim2D,
 
 	Max
 };
@@ -46,6 +66,23 @@ enum class SelectMode : uint8_t {
  * @ingroup Brushes
  */
 class SelectBrush : public AABBBrush {
+public:
+	/** Max U/V distance from the first vertex that auto-closes the polygon on click */
+	static constexpr int LassoCloseThresholdVoxels = 1;
+	/** Initial capacity reserved for the lasso polygon vertex list */
+	static constexpr int LassoPathInitialReserve = 32;
+	/** Sentinel value for _lastLassoCursorPos to force a refresh on first update() */
+	static constexpr int LassoInvalidCursorCoord = -100000;
+
+	/** Initial capacity for HoleRim3D BFS arrays */
+	static constexpr int HoleRim3DReserve = 256;
+	/** Maximum BFS hop distance from seed before stopping expansion */
+	static constexpr int HoleRim3DMaxSearchRadius = 64;
+	/** Minimum cycle hop-length to consider (filters trivial 2-cycles) */
+	static constexpr int HoleRim3DMinCycleLen = 3;
+	/** Initial capacity for the non-tree edge list */
+	static constexpr int HoleRim3DInitialEdgeReserve = 64;
+
 private:
 	using Super = AABBBrush;
 	SelectMode _selectMode = SelectMode::All;
@@ -54,6 +91,10 @@ private:
 	int _slopeDeviation = 10;
 	int _slopeSampleDistance = 3;
 	bool _previewMode = false;
+	/** Locked normal axis for ColumnRim2D cross-section plane.
+	 *  None = Auto: clicked face's plane tried first, then falls back to the other two.
+	 *  X/Y/Z: only that plane is tried; no fallback. */
+	math::Axis _columnRimNormalAxis = math::Axis::None;
 
 	/** Cached ellipse parameters from the last Circle selection */
 	glm::ivec3 _ellipseCenter{0};
@@ -75,6 +116,22 @@ private:
 	/** Positions flagged by the current slope selection -used to undo on slider changes */
 	core::DynamicArray<glm::ivec3> _slopeHistory;
 
+	/** Lasso polygon vertices accumulated across multiple clicks */
+	core::DynamicArray<glm::ivec3> _lassoPath;
+	/** Original voxels at edge mark positions - used to revert edge flags on cancel */
+	voxel::DynamicVoxelArray _lassoEdgeHistory;
+	/** True while the user is still building the lasso polygon (not yet closed) */
+	bool _lassoAccumulating = false;
+	/** U and V axis indices for projection onto the clicked face plane */
+	int _lassoUAxis = 0;
+	int _lassoVAxis = 1;
+	/** Face normal axis index */
+	int _lassoFaceAxisIdx = 2;
+	/** Face from the first lasso click, locked for the entire polygon */
+	voxel::FaceNames _lassoFace = voxel::FaceNames::Max;
+	/** Last cursor position seen by update(), used to detect movement between clicks */
+	glm::ivec3 _lastLassoCursorPos{LassoInvalidCursorCoord};
+
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
@@ -89,16 +146,14 @@ public:
 	bool managesOwnSelection() const override {
 		return true;
 	}
+	bool active() const override;
+	void update(const BrushContext &ctx, double nowSeconds) override;
 	bool needsAdditionalAction(const BrushContext &ctx) const override;
 	bool beginBrush(const BrushContext &ctx) override;
+	void reset() override;
+	void onSceneChange() override;
 
-	void setSelectMode(SelectMode mode) {
-		if (_selectMode != mode) {
-			_ellipseValid = false;
-			_slopeValid = false;
-		}
-		_selectMode = mode;
-	}
+	void setSelectMode(SelectMode mode);
 
 	SelectMode selectMode() const {
 		return _selectMode;
@@ -146,6 +201,59 @@ public:
 	void setPreviewMode(bool v) {
 		_previewMode = v;
 	}
+
+	/** @param axis None = Auto (face-driven with fallback); X/Y/Z = locked plane normal */
+	void setColumnRimNormalAxis(math::Axis axis) {
+		_columnRimNormalAxis = axis;
+	}
+
+	math::Axis columnRimNormalAxis() const {
+		return _columnRimNormalAxis;
+	}
+
+	bool lassoAccumulating() const {
+		return _lassoAccumulating;
+	}
+
+	const core::DynamicArray<glm::ivec3> &lassoPath() const {
+		return _lassoPath;
+	}
+
+	bool hasPendingChanges() const override;
+	voxel::Region revertChanges(voxel::RawVolume *volume) override;
+	void abort(BrushContext &ctx) override;
+
+	int lassoUAxis() const {
+		return _lassoUAxis;
+	}
+
+	int lassoVAxis() const {
+		return _lassoVAxis;
+	}
+
+	/** Discard the in-progress lasso polygon (caller must clean up edge history voxels in the volume) */
+	void invalidateLasso() {
+		_lassoAccumulating = false;
+		_lassoPath.clear();
+		_lassoEdgeHistory.clear();
+	}
+
+	/** Remove the last placed lasso vertex. Does not redraw edges - caller must call redrawEdgesOnVolume(). */
+	void popLastVertex() {
+		if (!_lassoPath.empty()) {
+			_lassoPath.resize(_lassoPath.size() - 1);
+		}
+	}
+
+	/**
+	 * @brief Redraw all committed lasso edges directly on a raw volume.
+	 *        Updates _lassoEdgeHistory with the new set of edge positions.
+	 *        Caller is responsible for calling revertChanges() first to clear old marks.
+	 * @param volume Target volume to write edge marks onto
+	 * @param region Bounding region of the volume (used to clamp column scans)
+	 * @param outDirty Accumulates the positions modified by this call
+	 */
+	void redrawEdgesOnVolume(voxel::RawVolume *volume, const voxel::Region &region, voxel::Region &outDirty);
 
 	/** Get the perpendicular axis indices for a given face */
 	static void ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis);

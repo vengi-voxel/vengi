@@ -670,7 +670,8 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 	bool simplePreview = isSimplePreview(brush, region);
 	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
 		const bool isCircleSelect = _brushType == BrushType::Select &&
-			_selectBrush.selectMode() == SelectMode::Circle;
+			(_selectBrush.selectMode() == SelectMode::Circle ||
+			 _selectBrush.selectMode() == SelectMode::Lasso);
 		if (isCircleSelect) {
 			_selectBrush.setPreviewMode(true);
 		}
