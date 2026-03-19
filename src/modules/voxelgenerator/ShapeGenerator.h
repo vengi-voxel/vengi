@@ -10,6 +10,7 @@
 #include "core/Common.h"
 #include "math/Bezier.h"
 #include "math/Axis.h"
+#include "voxel/Region.h"
 #include "voxelutil/Raycast.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -20,6 +21,23 @@ namespace voxelgenerator {
 namespace shape {
 
 constexpr int MAX_HEIGHT = 255;
+
+template<class Pattern>
+inline bool useStipplePattern(const Pattern& stipplePattern, int stippleState) {
+	const int bits = stipplePattern.bits();
+	if (bits <= 0) {
+		return true;
+	}
+	return stipplePattern[stippleState % bits];
+}
+
+inline voxel::Region bezierRegion(const math::BezierSegment& segment) {
+	glm::ivec3 mins = glm::min(segment.start, segment.end);
+	glm::ivec3 maxs = glm::max(segment.start, segment.end);
+	mins = glm::min(mins, segment.control);
+	maxs = glm::max(maxs, segment.control);
+	return voxel::Region(mins, maxs);
+}
 
 /**
  * @brief Creates a filled circle
@@ -374,6 +392,24 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	}
 }
 
+template<class Volume, class VoxelType, class Pattern>
+void drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel,
+						 const Pattern& stipplePattern, int& stippleState, bool skipFirst = false) {
+	bool firstPoint = true;
+	voxelutil::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
+		if (skipFirst && firstPoint) {
+			firstPoint = false;
+			return true;
+		}
+		firstPoint = false;
+		if (useStipplePattern(stipplePattern, stippleState)) {
+			sampler.setVoxel(voxel);
+		}
+		++stippleState;
+		return true;
+	});
+}
+
 /**
  * @brief Places voxels along the bezier curve points - might produce holes if there are not enough steps
  * @param[in] start The start point for the bezier curve
@@ -406,6 +442,28 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 	const math::Bezier<int> b(start, end, control);
 	b.visitSegments(steps, [&] (const glm::ivec3& lastPos, const glm::ivec3& pos) {
 		func(volume, lastPos, pos, voxel);
+	});
+}
+
+template<class Volume, class VoxelType, class Pattern>
+void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const VoxelType& voxel,
+						   const Pattern& stipplePattern) {
+	voxel::Region clipped = bezierRegion(segment);
+	if (!clipped.cropTo(volume.region())) {
+		return;
+	}
+	const glm::ivec3& dimensions = clipped.getDimensionsInVoxels();
+	const int steps = glm::max(1, dimensions.x + dimensions.y + dimensions.z);
+	int stippleState = 0;
+	const math::Bezier<int> bezier(segment.start, segment.end, segment.control);
+	bool firstSegment = true;
+	bezier.visitSegments(steps, [&] (const glm::ivec3& from, const glm::ivec3& to) {
+		voxel::Region lineRegion(glm::min(from, to), glm::max(from, to));
+		if (!lineRegion.cropTo(volume.region())) {
+			return;
+		}
+		drawStippledLine(volume, from, to, voxel, stipplePattern, stippleState, !firstSegment);
+		firstSegment = false;
 	});
 }
 

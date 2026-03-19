@@ -11,6 +11,12 @@
 
 namespace math {
 
+struct BezierSegment {
+	glm::ivec3 start{0};
+	glm::ivec3 end{0};
+	glm::ivec3 control{0};
+};
+
 template<typename TYPE = float, glm::qualifier P = glm::defaultp>
 class Bezier {
 public:
