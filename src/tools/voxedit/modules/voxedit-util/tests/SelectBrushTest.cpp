@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "voxelutil/VolumeSelect.h"
 
 namespace voxedit {
 
@@ -721,6 +722,710 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 	for (int x = 2; x <= 4; ++x) {
 		EXPECT_FALSE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 			<< "Disconnected voxel at (" << x << ",0,0) should not be selected";
+	}
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
+	// Flat XZ floor at y=0 with a 3x3 hole in the middle (x=3..5, z=3..5 is air)
+	// Rim voxels border the hole in the XZ plane at y=0
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			const bool isHole = (x >= 3 && x <= 5 && z >= 3 && z <= 5);
+			if (!isHole) {
+				volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click the top face (+Y) of a rim voxel at (2,0,4) - left edge of hole
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(2, 0, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// Rim voxels: all solid voxels adjacent to the hole in the XZ plane at y=0
+	// (x=2,z=3..5), (x=6,z=3..5), (z=2,x=3..5), (z=6,x=3..5) + corners
+	EXPECT_NE(volume.voxel(2, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Left rim voxel should be selected";
+	EXPECT_NE(volume.voxel(6, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Right rim voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 0, 2).getFlags() & voxel::FlagOutline, 0)
+		<< "Front rim voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 0, 6).getFlags() & voxel::FlagOutline, 0)
+		<< "Back rim voxel should be selected";
+
+	// Interior floor voxels far from hole should NOT be selected
+	EXPECT_EQ(volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Floor voxel far from hole should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
+	// Hollow square tube running along Z (z=0..8).
+	// Cross-section at each Z: solid ring at x=3,x=5 (y=3..5) and y=3,y=5 (x=3..5),
+	// hollow interior at (4,4,z). The XY plane at any fixed Z is fully bounded.
+	// User clicks the inner face (+X) of the left wall at x=3 — a radial face
+	// perpendicular to the hole plane. The algorithm must find the XY cross-section
+	// via the face-direction seed (all-axes trial) and select the ring.
+	voxel::RawVolume volume({0, 9});
+	for (int z = 0; z <= 8; ++z) {
+		// Left and right walls
+		for (int y = 3; y <= 5; ++y) {
+			volume.setVoxel(3, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			volume.setVoxel(5, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+		// Top and bottom walls
+		for (int x = 3; x <= 5; ++x) {
+			volume.setVoxel(x, 3, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			volume.setVoxel(x, 5, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click left wall at (3,4,4) using +X face (pointing into the hollow)
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(3, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// The face-direction seed lands at (4,4,4) = hollow interior.
+	// Only the XY plane at Z=4 is bounded (other planes are open at tube ends).
+	// The rim in XY at Z=4 is the 8-voxel ring around the 1-voxel interior.
+	EXPECT_NE(volume.voxel(5, 4, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Opposite wall (x=5) should be selected as part of the cross-section rim";
+	EXPECT_NE(volume.voxel(4, 3, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Bottom wall (y=3) should be selected as part of the cross-section rim";
+	EXPECT_NE(volume.voxel(4, 5, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Top wall (y=5) should be selected as part of the cross-section rim";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
+	// Flat XZ floor at y=0 with a notch cut into the edge (x=3..5, z=0..2 is air)
+	// The notch connects to the volume boundary - not a closed hole, should not select
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			const bool isNotch = (x >= 3 && x <= 5 && z <= 2);
+			if (!isNotch) {
+				volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	// Click a voxel bordering the open notch
+	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// Open notch connects to volume boundary - no rim should be selected
+	EXPECT_EQ(volume.voxel(2, 0, 2).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel adjacent to open notch should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testLassoContains_insideSquare) {
+	// 4-vertex square polygon on the XZ plane (uAxis=X, vAxis=Z)
+	core::DynamicArray<glm::ivec3> path;
+	path.push_back(glm::ivec3(0, 0, 0));
+	path.push_back(glm::ivec3(4, 0, 0));
+	path.push_back(glm::ivec3(4, 0, 4));
+	path.push_back(glm::ivec3(0, 0, 4));
+	const int uAxis = 0; // X
+	const int vAxis = 2; // Z
+
+	EXPECT_TRUE(voxelutil::lassoContains(path, 2, 2, uAxis, vAxis));
+	EXPECT_FALSE(voxelutil::lassoContains(path, 6, 6, uAxis, vAxis));
+	EXPECT_FALSE(voxelutil::lassoContains(path, -1, 2, uAxis, vAxis));
+	EXPECT_FALSE(voxelutil::lassoContains(path, 2, -1, uAxis, vAxis));
+}
+
+TEST_F(SelectBrushTest, testLassoContains_insideTriangle) {
+	core::DynamicArray<glm::ivec3> path;
+	path.push_back(glm::ivec3(0, 0, 0));
+	path.push_back(glm::ivec3(6, 0, 0));
+	path.push_back(glm::ivec3(3, 0, 6));
+	const int uAxis = 0; // X
+	const int vAxis = 2; // Z
+
+	EXPECT_TRUE(voxelutil::lassoContains(path, 3, 2, uAxis, vAxis));
+	EXPECT_FALSE(voxelutil::lassoContains(path, 0, 6, uAxis, vAxis));
+	EXPECT_FALSE(voxelutil::lassoContains(path, 6, 6, uAxis, vAxis));
+}
+
+TEST_F(SelectBrushTest, testLassoSelectSquareSurface) {
+	// Flat XZ surface at y=0, spanning x=[0..8], z=[0..8]
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Lasso);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// Click vertices of a square: (2,0,2), (6,0,2), (6,0,6), (2,0,6)
+	// then close by clicking (2,0,2) again.
+	// Note: a triangle with vertices (2,0,2),(6,0,2),(6,0,6) would have (3,0,3) and
+	// (4,0,4) on the hypotenuse (z=x diagonal) - a boundary case for lassoContains.
+	// Using 4 vertices gives a square where both interior test points are strictly inside.
+	const glm::ivec3 vertices[] = {
+		glm::ivec3(2, 0, 2), glm::ivec3(6, 0, 2), glm::ivec3(6, 0, 6), glm::ivec3(2, 0, 6)
+	};
+	for (const glm::ivec3 &vertex : vertices) {
+		ctx.cursorPosition = vertex;
+		EXPECT_TRUE(brush.beginBrush(ctx));
+		scenegraph::SceneGraph sceneGraph;
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		brush.preExecute(ctx, wrapper.volume());
+		brush.execute(sceneGraph, wrapper, ctx);
+		brush.endBrush(ctx);
+	}
+
+	// Close by clicking near first vertex
+	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	EXPECT_FALSE(brush.lassoAccumulating()) << "Polygon should be closed";
+
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+	brush.preExecute(ctx, wrapper.volume());
+	brush.execute(sceneGraph, wrapper, ctx);
+	brush.endBrush(ctx);
+
+	// Interior voxels should be selected
+	EXPECT_NE(volume.voxel(4, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Interior voxel (4,0,4) should be selected";
+	EXPECT_NE(volume.voxel(3, 0, 3).getFlags() & voxel::FlagOutline, 0)
+		<< "Interior voxel (3,0,3) should be selected";
+
+	// Voxels outside the polygon should not be selected
+	EXPECT_EQ(volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel (0,0,0) outside polygon should not be selected";
+	EXPECT_EQ(volume.voxel(8, 0, 8).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel (8,0,8) outside polygon should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testLassoCancel_edgeMarksReverted) {
+	// Draw two vertices (producing an edge), cancel, verify no FlagOutline remains
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Lasso);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// Click 1: first vertex (no edge yet)
+	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	{
+		scenegraph::SceneGraph sceneGraph;
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		brush.preExecute(ctx, wrapper.volume());
+		brush.execute(sceneGraph, wrapper, ctx);
+	}
+	brush.endBrush(ctx);
+
+	// Click 2: second vertex (edge 1->2 drawn on real volume)
+	ctx.cursorPosition = glm::ivec3(6, 0, 2);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	{
+		scenegraph::SceneGraph sceneGraph;
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		brush.preExecute(ctx, wrapper.volume());
+		brush.execute(sceneGraph, wrapper, ctx);
+	}
+	brush.endBrush(ctx);
+
+	EXPECT_TRUE(brush.hasPendingChanges()) << "Should have pending edge marks after two clicks";
+
+	// Cancel: revert edge marks (simulates ESC / cancellasso command)
+	brush.revertChanges(&volume);
+	brush.invalidateLasso();
+	EXPECT_FALSE(brush.lassoAccumulating());
+
+	// No voxels should remain selected after cancel
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			EXPECT_EQ(volume.voxel(x, 0, z).getFlags() & voxel::FlagOutline, 0)
+				<< "Voxel (" << x << ",0," << z << ") should not be selected after cancel";
+		}
+	}
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testLassoUndoVertex_revertsLastEdge) {
+	// Flat XZ surface at y=0, spanning x=[0..8], z=[0..8]
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Lasso);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	auto clickVertex = [&](const glm::ivec3 &pos) {
+		ctx.cursorPosition = pos;
+		EXPECT_TRUE(brush.beginBrush(ctx));
+		scenegraph::SceneGraph sceneGraph;
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		brush.preExecute(ctx, wrapper.volume());
+		brush.execute(sceneGraph, wrapper, ctx);
+		brush.endBrush(ctx);
+	};
+
+	// Click 3 vertices: (2,0,2) -> (6,0,2) -> (6,0,6)
+	clickVertex(glm::ivec3(2, 0, 2));
+	clickVertex(glm::ivec3(6, 0, 2));
+	clickVertex(glm::ivec3(6, 0, 6));
+
+	EXPECT_EQ((int)brush.lassoPath().size(), 3);
+	EXPECT_TRUE(brush.hasPendingChanges());
+
+	// Edge (6,0,2)-(6,0,6) should be marked: x=6 along z=[2..6]
+	EXPECT_NE(volume.voxel(6, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel on second edge should be selected";
+
+	// Undo the last vertex - path shrinks to 2, edge to (6,0,6) should vanish
+	voxel::Region dummy = voxel::Region::InvalidRegion;
+	brush.revertChanges(&volume);
+	brush.popLastVertex();
+	EXPECT_EQ((int)brush.lassoPath().size(), 2);
+	brush.redrawEdgesOnVolume(&volume, volume.region(), dummy);
+
+	// Only the first edge (2,0,2)-(6,0,2) should be marked now
+	EXPECT_NE(volume.voxel(4, 0, 2).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel on first edge should still be selected";
+	// The second edge voxels (x=6 at z=4,5,6) should no longer be marked
+	EXPECT_EQ(volume.voxel(6, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Voxel on removed second edge should not be selected after vertex undo";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
+	// 3x3 solid pillar at x=3..5, z=3..5 standing on its own (surrounded by air in the XZ plane at y=4)
+	// Clicking the top face (+Y) of any pillar voxel should select all 9 cross-section voxels
+	voxel::RawVolume volume({0, 9});
+	for (int z = 3; z <= 5; ++z) {
+		for (int x = 3; x <= 5; ++x) {
+			volume.setVoxel(x, 4, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::ColumnRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click the top face (+Y) of the center pillar voxel
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// All 9 pillar voxels in the XZ plane at y=4 should be selected
+	int selectedCount = 0;
+	for (int z = 3; z <= 5; ++z) {
+		for (int x = 3; x <= 5; ++x) {
+			if (volume.voxel(x, 4, z).getFlags() & voxel::FlagOutline) {
+				++selectedCount;
+			}
+		}
+	}
+	EXPECT_EQ(selectedCount, 9) << "All 9 pillar cross-section voxels should be selected";
+
+	// Air voxels should not be selected
+	EXPECT_EQ(volume.voxel(0, 4, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Air voxel outside pillar should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
+	// Large solid floor fills the XZ plane at y=0 all the way to the volume boundary.
+	// Clicking any floor voxel should select nothing because the solid region is unbounded
+	// (BFS tries to step outside the volume region and sets bounded=false).
+	// Volume {0,9} so region is (0,0,0)-(9,9,9). Floor at x=0..9, z=0..9 fills the boundary.
+	voxel::RawVolume volume({0, 9});
+	for (int z = 0; z <= 9; ++z) {
+		for (int x = 0; x <= 9; ++x) {
+			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::ColumnRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click the top face (+Y) of a center floor voxel
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(4, 0, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// No floor voxel should be selected (region is unbounded)
+	EXPECT_EQ(volume.voxel(4, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Floor voxel should not be selected (unbounded solid region)";
+	EXPECT_EQ(volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Corner floor voxel should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
+	// 3x3 column at x=3..5, z=3..5, y=0..9 (touches volume boundary at y=0 and y=9).
+	// Clicking the +X side face: the YZ wall at x=5 is unbounded (reaches y=0 and y=9),
+	// so the algorithm falls back to the XZ cross-section at y=4 which is bounded.
+	voxel::RawVolume volume({0, 10});
+	for (int y = 0; y <= 9; ++y) {
+		for (int z = 3; z <= 5; ++z) {
+			for (int x = 3; x <= 5; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::ColumnRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click the +X side face of the column at mid-height
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(5, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// XZ cross-section at y=4 should be selected (fallback from unbounded YZ wall)
+	int selectedCount = 0;
+	for (int z = 3; z <= 5; ++z) {
+		for (int x = 3; x <= 5; ++x) {
+			if (volume.voxel(x, 4, z).getFlags() & voxel::FlagOutline) {
+				++selectedCount;
+			}
+		}
+	}
+	EXPECT_EQ(selectedCount, 9) << "All 9 XZ cross-section voxels should be selected via fallback";
+
+	// Voxels at other Y levels should not be selected
+	EXPECT_EQ(volume.voxel(4, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Column voxel at floor level should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
+	// A single isolated solid voxel - a bounded region of size 1
+	voxel::RawVolume volume({0, 9});
+	volume.setVoxel(4, 4, 4, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::ColumnRim2D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	EXPECT_NE(volume.voxel(4, 4, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Single isolated voxel should be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
+	// Flat XZ floor at y=0 with a 1x1 hole at x=4,z=4.
+	// HoleRim3D should find the same 4 cardinal rim voxels as HoleRim2D.
+	voxel::RawVolume volume({-1, 10});
+	for (int z = 0; z <= 8; ++z) {
+		for (int x = 0; x <= 8; ++x) {
+			const bool isHole = (x == 4 && z == 4);
+			if (!isHole) {
+				volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim3D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click +Y face of a cardinal rim voxel adjacent to the hole
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(3, 0, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// The 4 cardinal rim voxels around the 1x1 hole should be selected
+	EXPECT_NE(volume.voxel(3, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Left rim voxel should be selected";
+	EXPECT_NE(volume.voxel(5, 0, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Right rim voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 0, 3).getFlags() & voxel::FlagOutline, 0)
+		<< "Front rim voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 0, 5).getFlags() & voxel::FlagOutline, 0)
+		<< "Back rim voxel should be selected";
+
+	// Voxels far from the hole should not be selected
+	EXPECT_EQ(volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Floor voxel far from hole should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
+	// Hollow square tube along Z (z=0..8), 3x3 outer cross-section with 1x1 hollow at (4,4,z).
+	// Click the inner face (+X) of the left wall at x=3. Air seed is at (4,4,4).
+	// The minimal rim should be the 8-voxel ring at Z=4.
+	voxel::RawVolume volume({0, 9});
+	for (int z = 0; z <= 8; ++z) {
+		for (int y = 3; y <= 5; ++y) {
+			volume.setVoxel(3, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			volume.setVoxel(5, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+		for (int x = 3; x <= 5; ++x) {
+			volume.setVoxel(x, 3, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			volume.setVoxel(x, 5, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim3D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click inner +X face of left wall at (3,4,4)
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(3, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// The minimal rim encircling the 1x1 hollow at Z=4 should be selected:
+	// 8 voxels of the XY ring at Z=4
+	EXPECT_NE(volume.voxel(3, 4, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Left wall voxel should be selected";
+	EXPECT_NE(volume.voxel(5, 4, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Right wall voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 3, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Bottom wall voxel should be selected";
+	EXPECT_NE(volume.voxel(4, 5, 4).getFlags() & voxel::FlagOutline, 0)
+		<< "Top wall voxel should be selected";
+
+	// Voxels at different Z slices should not be selected
+	EXPECT_EQ(volume.voxel(3, 4, 0).getFlags() & voxel::FlagOutline, 0)
+		<< "Tube end voxel at Z=0 should not be selected";
+	EXPECT_EQ(volume.voxel(3, 4, 8).getFlags() & voxel::FlagOutline, 0)
+		<< "Tube end voxel at Z=8 should not be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
+	// Clicking a voxel with no adjacent air in the face direction should select nothing.
+	// Build a solid 3x3x3 block - the center voxel has no air face neighbor.
+	voxel::RawVolume volume({0, 9});
+	for (int z = 3; z <= 5; ++z) {
+		for (int y = 3; y <= 5; ++y) {
+			for (int x = 3; x <= 5; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim3D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click +X face of center voxel (4,4,4): air seed at (5,4,4) is inside the solid block
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// Air seed (5,4,4) is solid - algorithm should return early, nothing selected
+	for (int z = 3; z <= 5; ++z) {
+		for (int y = 3; y <= 5; ++y) {
+			for (int x = 3; x <= 5; ++x) {
+				EXPECT_EQ(volume.voxel(x, y, z).getFlags() & voxel::FlagOutline, 0)
+					<< "No voxel should be selected for solid block click";
+			}
+		}
+	}
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
+	// 1-voxel-thin hollow square tube along Z (wall thickness = 1).
+	// Every wall voxel is a surface voxel (air on both sides).
+	// BFS must not pick short wall-surface cycles (2x2 patches) as the rim.
+	// The correct rim is the 8-voxel ring at Z=5 around the interior 1x1 air column.
+	//
+	// Layout (XY cross-section, all Z slices):
+	//   . . . . .
+	//   . W W W .
+	//   . W . W .
+	//   . W W W .
+	//   . . . . .
+	// W = solid wall voxel (X in {1,2,3}, Y in {1,2,3}, excluding interior (2,2))
+	// Interior air column: (2,2,Z) for all Z
+
+	voxel::RawVolume volume({0, 9});
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int z = 2; z <= 7; ++z) {
+		for (int y = 1; y <= 3; ++y) {
+			for (int x = 1; x <= 3; ++x) {
+				if (x == 2 && y == 2) {
+					continue; // interior air
+				}
+				volume.setVoxel(x, y, z, solid);
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::HoleRim3D);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.gridResolution = 1;
+	// Click +Z face of a rim voxel at Z=5, air seed at (2,2,5) inside air column
+	ctx.cursorFace = voxel::FaceNames::PositiveZ;
+	ctx.cursorPosition = glm::ivec3(2, 1, 5);
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	executeSelect(brush, node, ctx);
+
+	// The 8 rim voxels at Z=5 should be selected; all others not
+	for (int z = 2; z <= 7; ++z) {
+		for (int y = 1; y <= 3; ++y) {
+			for (int x = 1; x <= 3; ++x) {
+				if (x == 2 && y == 2) {
+					continue; // air
+				}
+				const bool onRim = (z == 5);
+				const int flags = volume.voxel(x, y, z).getFlags() & voxel::FlagOutline;
+				if (onRim) {
+					EXPECT_NE(flags, 0) << "Rim voxel at (" << x << "," << y << "," << z << ") should be selected";
+				} else {
+					EXPECT_EQ(flags, 0) << "Non-rim voxel at (" << x << "," << y << "," << z << ") should not be selected";
+				}
+			}
+		}
 	}
 
 	brush.shutdown();

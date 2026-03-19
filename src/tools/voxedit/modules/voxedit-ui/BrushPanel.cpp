@@ -353,7 +353,10 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
 								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
 								   C_("SelectMode", "Flat Surface"), C_("SelectMode", "3D Box"),
-								   C_("SelectMode", "Circle"), C_("SelectMode", "Slope")};
+								   C_("SelectMode", "Circle"), C_("SelectMode", "Slope"),
+								   C_("SelectMode", "Lasso"),
+								   C_("SelectMode", "Hole Rim 2D"), C_("SelectMode", "Hole Rim 3D"),
+								   C_("SelectMode", "Column Rim 2D")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
@@ -456,6 +459,61 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		if (changed && brush.slopeValid()) {
 			_sceneMgr->selectionSetSlope(nodeId);
 		}
+	}
+
+	if (brush.selectMode() == SelectMode::Lasso) {
+		ImGui::SeparatorText(_("Lasso selection"));
+		if (brush.lassoAccumulating()) {
+			const int vertexCount = (int)brush.lassoPath().size();
+			ImGui::Text(_("%d vertices - click near first vertex to close"), vertexCount);
+			ImGui::CommandIconButton(ICON_LC_CHECK, _("Apply Lasso"), "finalizelasso", listener);
+			ImGui::TooltipTextUnformatted(_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
+			ImGui::SameLine();
+			ImGui::CommandIconButton(ICON_LC_X, _("Cancel Lasso"), "cancellasso", listener);
+			ImGui::TooltipTextUnformatted(_("Discard the in-progress lasso polygon (bind Escape to cancellasso)"));
+			if (vertexCount > 1) {
+				ImGui::SameLine();
+				ImGui::CommandIconButton(ICON_LC_UNDO_2, _("Undo Vertex"), "undolassovertex", listener);
+				ImGui::TooltipTextUnformatted(_("Remove the last placed lasso vertex"));
+			}
+		} else {
+			ImGui::TextUnformatted(_("Click on the surface to start drawing a polygon"));
+		}
+	}
+
+	if (brush.selectMode() == SelectMode::HoleRim2D) {
+		ImGui::SeparatorText(_("Hole rim selection"));
+		ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks into the opening or lies flat on the surface containing the hole."));
+	}
+
+	if (brush.selectMode() == SelectMode::HoleRim3D) {
+		ImGui::SeparatorText(_("Hole rim selection (3D)"));
+		ImGui::TextUnformatted(_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
+	}
+
+	if (brush.selectMode() == SelectMode::ColumnRim2D) {
+		ImGui::SeparatorText(_("Column rim selection"));
+		ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face determines the cross-section plane with fallback. Lock the normal axis to always select a specific circumference direction."));
+
+		// Normal axis selector: Auto tries clicked-face plane first with fallback;
+		// locking X/Y/Z disables the fallback for predictable results on symmetric shapes.
+		// math::Axis values are None=0, X=1, Y=2, Z=4 (bit flags), so use an explicit table.
+		static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X,
+												math::Axis::Y,    math::Axis::Z};
+		const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"),
+								   C_("ColumnRimAxis", "Y"),    C_("ColumnRimAxis", "Z")};
+		const math::Axis currentAxis = brush.columnRimNormalAxis();
+		int axisIdx = 0;
+		for (int i = 1; i < (int)lengthof(axisValues); ++i) {
+			if (axisValues[i] == currentAxis) {
+				axisIdx = i;
+				break;
+			}
+		}
+		if (ImGui::Combo(_("Normal axis"), &axisIdx, axisNames, lengthof(axisNames))) {
+			brush.setColumnRimNormalAxis(axisValues[axisIdx]);
+		}
+		ImGui::TooltipTextUnformatted(_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
 	}
 
 	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {

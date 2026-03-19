@@ -402,6 +402,9 @@ public:
 	void selectionSetBounds(int nodeId, const voxel::Region &region);
 	void selectionSetEllipse(int nodeId);
 	void selectionSetSlope(int nodeId);
+	void selectionFinalizeLasso(int nodeId);
+	void selectionCancelLasso(int nodeId);
+	void selectionLassoUndoVertex(int nodeId);
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
 	voxel::Region selectionCalculateRegion(int nodeId) const;
 
