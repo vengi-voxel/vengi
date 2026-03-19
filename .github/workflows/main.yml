@@ -212,6 +212,7 @@ jobs:
             cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_IMGUITESTENGINE=On -DUSE_BENCHMARKS=Off -DUNITTESTS=Off
             cmake --build . --target engine_codegen
             cmake --build . --target tests-voxedit
+            ctest -N
             xvfb-run -a ctest -V -R '^tests-voxedit$'
 
     linux:
