@@ -193,6 +193,7 @@ void Modifier::reset() {
 	_brushContext.gridResolution = 1;
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
+	_brushContext.brushGizmoActive = false;
 
 	_brushContext.modifierType = ModifierType::Place;
 	for (Brush *b : _brushes) {

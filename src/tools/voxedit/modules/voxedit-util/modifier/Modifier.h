@@ -155,6 +155,7 @@ public:
 
 	inline void setBrushGizmoActive(bool active) {
 		_brushGizmoActive = active;
+		_brushContext.brushGizmoActive = active;
 	}
 	inline bool isBrushGizmoActive() const {
 		return _brushGizmoActive;

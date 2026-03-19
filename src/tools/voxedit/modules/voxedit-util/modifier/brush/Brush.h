@@ -69,6 +69,9 @@ struct BrushContext {
 	/** The position of the cursor before any clamping or brush execution was applied */
 	glm::ivec3 prevCursorPosition{0};
 
+	/** True while the brush gizmo is actively being manipulated in the viewport */
+	bool brushGizmoActive = false;
+
 	/** The modifier operation to perform (Place, Erase, Override, Paint, Select) */
 	ModifierType modifierType = ModifierType::Place;
 };
