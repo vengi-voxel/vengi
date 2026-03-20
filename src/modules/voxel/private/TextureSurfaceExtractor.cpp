@@ -3,9 +3,7 @@
  */
 
 #include "TextureSurfaceExtractor.h"
-#include "core/GLMConst.h"
 #include "core/Log.h"
-#include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
 #include "math/Rect.h"
 #include "palette/Palette.h"
@@ -181,22 +179,13 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 	NormalArray &normals = mesh.getNormalVector();
 
 	const float invTex = 1.0f / (float)TexturSurfaceMesherState::TEX_SIZE;
-	const bool flip = isPositiveFace(face);
-
-	glm::vec3 n;
-	if (face == FaceNames::Left) {
-		n = glm::right();
-	} else if (face == FaceNames::Right) {
-		n = glm::left();
-	} else if (face == FaceNames::Down) {
-		n = glm::down();
-	} else if (face == FaceNames::Up) {
-		n = glm::up();
-	} else if (face == FaceNames::Front) {
-		n = glm::backward();
-	} else if (face == FaceNames::Back) {
-		n = glm::forward();
-	}
+	const glm::vec3 n = faceNormal(face);
+	// The (u,v) axes for Y faces form a left-handed pair (X,Z), so the
+	// non-flipped cross product points -Y. For X and Z faces the pair is
+	// right-handed and the cross points in the positive axis direction.
+	// Flip the winding whenever the natural cross disagrees with the face normal.
+	const bool flip = isNegativeFace(face) != isY(face);
+	const bool isPositive = isPositiveFace(face);
 
 	core::Buffer<int> heights;
 	heights.resize(vDim);
@@ -206,22 +195,19 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 	for (int s = 0; s < sDim; ++s) {
 		mask.fill(color::RGBA(0));
 
-		int voxelS = s;
-
 		// Fill mask
 		for (int u = 0; u < uDim; ++u) {
+			glm::ivec3 pos;
+			pos[axes.x] = u;
+			pos[axes.y] = 0;
+			pos[axes.z] = s;
 			for (int v = 0; v < vDim; ++v) {
-				glm::ivec3 pos;
-				pos[axes.x] = u;
-				pos[axes.y] = v;
-				pos[axes.z] = voxelS;
-
 				glm::ivec3 absPos(rx + pos.x, ry + pos.y, rz + pos.z);
 
 				const Voxel &vox = volume->voxel(absPos);
 				if (isBlocked(vox.getMaterial())) {
 					glm::ivec3 neighborPos = absPos;
-					if (isPositiveFace(face)) {
+					if (isPositive) {
 						neighborPos[axes.z]++;
 					} else {
 						neighborPos[axes.z]--;
@@ -232,11 +218,12 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 						mask[u * vDim + v] = palette.color(vox.getColor());
 					}
 				}
+				++pos[axes.y];
 			}
 		}
 
 		// Greedy mesh the mask
-		const int sOffset = flip ? s + 1 : s;
+		const int sOffset = isPositive ? s + 1 : s;
 		while (true) {
 			IRect largest;
 			findLargestRect(mask, uDim, vDim, heights, rectStack, largest);
@@ -313,7 +300,10 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 			normals.emplace_back(n);
 
 			for (int cx = largest.getMinX(); cx < largest.getMaxX(); ++cx) {
-				core_memset(&mask[cx * vDim + largest.getMinZ()], 0, largest.height() * sizeof(color::RGBA));
+				const int base = cx * vDim + largest.getMinZ();
+				for (int cy = 0; cy < largest.height(); ++cy) {
+					mask[base + cy] = color::RGBA(0);
+				}
 			}
 		}
 	}
