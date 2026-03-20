@@ -14,12 +14,17 @@
 
 #include "benchmark_runner.h"
 
-#include "benchmark/benchmark.h"
+#include "benchmark/benchmark_api.h"
+#include "benchmark/managers.h"
+#include "benchmark/reporter.h"
+#include "benchmark/state.h"
+#include "benchmark/types.h"
 #include "benchmark_api_internal.h"
 #include "internal_macros.h"
 
 #ifndef BENCHMARK_OS_WINDOWS
-#if !defined(BENCHMARK_OS_FUCHSIA) && !defined(BENCHMARK_OS_QURT)
+#if !defined(BENCHMARK_OS_FUCHSIA) && !defined(BENCHMARK_OS_QURT) && \
+    !defined(BENCHMARK_OS_WASI)
 #include <sys/resource.h>
 #endif
 #include <sys/time.h>
