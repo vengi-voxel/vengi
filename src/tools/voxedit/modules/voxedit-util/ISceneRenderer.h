@@ -76,6 +76,14 @@ public:
 	virtual RendererStats rendererStats() const {
 		return {};
 	}
+	/**
+	 * @brief Mark scene-shape caches (AABB, bone meshes) as needing a rebuild
+	 * @note Call whenever node visibility, active node, or scene structure changes
+	 */
+	virtual void markDirty() {
+	}
+	virtual void unhideNode(int nodeId) {
+	}
 };
 
 using SceneRendererPtr = core::SharedPtr<ISceneRenderer>;

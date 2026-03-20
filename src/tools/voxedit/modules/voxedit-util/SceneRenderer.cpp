@@ -127,6 +127,7 @@ void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, ui
 	_sceneGraphRenderer.scheduleRegionExtraction(_meshState, nodeId, region);
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	_highlightRegion = TimedRegion(region, timeProvider->tickNow(), renderRegionMillis);
+	markDirty();
 }
 
 /**
@@ -199,6 +200,10 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	if (!sceneMode || !_showAABB->boolVal()) {
 		return;
 	}
+	const int activeNodeId = sceneGraph.activeNode();
+	if (!_aabbDirty && frameIdx == _lastAABBFrame && activeNodeId == _lastAABBActiveNode) {
+		return;
+	}
 	core_trace_scoped(UpdateAABBMesh);
 	_shapeBuilder.clear();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
@@ -248,6 +253,9 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	}
 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+	_aabbDirty = false;
+	_lastAABBFrame = frameIdx;
+	_lastAABBActiveNode = activeNodeId;
 }
 
 void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
@@ -256,6 +264,9 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 		return;
 	}
 	if (!_showBones->boolVal()) {
+		return;
+	}
+	if (!_boneDirty && frameIdx == _lastBoneFrame) {
 		return;
 	}
 	core_trace_scoped(UpdateBoneMesh);
@@ -297,6 +308,8 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	}
 
 	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
+	_boneDirty = false;
+	_lastBoneFrame = frameIdx;
 }
 
 const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGraphNode &node) {
@@ -314,6 +327,17 @@ bool SceneRenderer::isVisible(int nodeId, bool hideEmpty) const {
 
 void SceneRenderer::removeNode(int nodeId) {
 	_sceneGraphRenderer.nodeRemove(_meshState, nodeId);
+	markDirty();
+}
+
+void SceneRenderer::markDirty() {
+	_aabbDirty = true;
+	_boneDirty = true;
+}
+
+void SceneRenderer::unhideNode(int nodeId) {
+	const int idx = voxelrender::SceneGraphRenderer::getVolumeIdx(nodeId);
+	_meshState->hide(idx, false);
 }
 
 void SceneRenderer::update() {
@@ -362,8 +386,15 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 		return;
 	}
 
-	renderContext.hideInactive = _hideInactive->boolVal();
-	renderContext.grayInactive = _grayInactive->boolVal();
+	const bool hideInactiveNow = _hideInactive->boolVal();
+	const bool grayInactiveNow = _grayInactive->boolVal();
+	if (hideInactiveNow != _lastHideInactive || grayInactiveNow != _lastGrayInactive) {
+		_lastHideInactive = hideInactiveNow;
+		_lastGrayInactive = grayInactiveNow;
+		markDirty();
+	}
+	renderContext.hideInactive = hideInactiveNow;
+	renderContext.grayInactive = grayInactiveNow;
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	updateSliceRegionMesh();

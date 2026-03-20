@@ -9,6 +9,7 @@
 #include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
@@ -58,6 +59,14 @@ private:
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 
+	bool _aabbDirty = true;
+	bool _boneDirty = true;
+	scenegraph::FrameIndex _lastAABBFrame = -1;
+	scenegraph::FrameIndex _lastBoneFrame = -1;
+	int _lastAABBActiveNode = -1;
+	bool _lastHideInactive = false;
+	bool _lastGrayInactive = false;
+
 	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
@@ -89,6 +98,8 @@ public:
 	bool isSliceModeActive() const override;
 	void updateSelectionGizmo(const voxel::Region &region) override;
 	RendererStats rendererStats() const override;
+	void markDirty() override;
+	void unhideNode(int nodeId) override;
 };
 
 } // namespace voxedit
