@@ -1059,6 +1059,9 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 			}
 			if (s.hasVolumeData()) {
 				_mementoHandler.extractVolumeRegion(node->volume(), s);
+				// Conservatively assume selection exists after volume restore.
+				// selectionCalculateRegion() will correct this on next query.
+				node->setHasSelection(true);
 			}
 		}
 		node->setName(s.name);
@@ -1342,6 +1345,7 @@ void SceneManager::autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const
 			volume->setVoxel(x, y, z, selected);
 		},
 		voxelutil::VisitSolid());
+	node->setHasSelection(true);
 }
 
 bool SceneManager::loadGlobalClipboard(voxel::ClipboardData &clipData) {
@@ -1624,6 +1628,7 @@ void SceneManager::selectionInvert(int nodeId) {
 		return;
 	}
 	volume->toggleFlags(volume->region(), voxel::FlagOutline);
+	node->setHasSelection(true);
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
 	_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
@@ -1710,6 +1715,9 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
 	}
 	_selectionCacheNodeId = nodeId;
 	_selectionRegionCache = selectionRegion;
+	if (!selectionRegion.isValid()) {
+		node->setHasSelection(false);
+	}
 	return selectionRegion;
 }
 
@@ -1820,6 +1828,7 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	}
 
 	_selectionCacheNodeId = -1;
+	node->setHasSelection(!history.empty());
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
 
@@ -1864,6 +1873,7 @@ void SceneManager::selectionSetSlope(int nodeId) {
 								 brush.slopeDeviation(), brush.slopeSampleDistance(), selectFunc);
 
 	_selectionCacheNodeId = -1;
+	node->setHasSelection(!history.empty());
 	if (dirtyRegion.isValid()) {
 		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 	}
@@ -1906,6 +1916,7 @@ void SceneManager::selectionFinalizeLasso(int nodeId) {
 	voxelutil::visitSurfaceVolume(*volume, selectFunc);
 
 	_selectionCacheNodeId = InvalidNodeId;
+	node->setHasSelection(dirtyRegion.isValid());
 	if (dirtyRegion.isValid()) {
 		modified(nodeId, dirtyRegion, SceneModifiedFlags::All);
 	}
