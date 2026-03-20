@@ -9,6 +9,7 @@
 #include "core/SharedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
 #include "core/collection/Queue.h"
@@ -81,28 +82,35 @@ private:
 
 	MeshesMap _meshes[MeshType_Max];
 	Volumes _volumeData;
+	core::Buffer<int> _activeIndices;
 	core::VarPtr _meshSize;
 
 	struct ExtractRegion {
-		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible, uint32_t _generation)
-			: region(_region), idx(_idx), visible(_visible), generation(_generation) {
+		ExtractRegion(const voxel::Region &_region, int _idx, uint32_t _generation)
+			: region(_region), idx(_idx), generation(_generation) {
 		}
 		ExtractRegion() {
 		}
 		voxel::Region region{};
 		int idx = 0;
-		bool visible = false;
 		uint32_t generation = 0;
 
 		inline bool operator<(const ExtractRegion &rhs) const {
-			return idx < rhs.idx && visible < rhs.visible;
+			return idx < rhs.idx;
 		}
 	};
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
+	// Queue of volume indices that need GPU buffer re-upload. Each index appears
+	// at most once thanks to _pendingMeshDirty deduplication: N extracted chunks
+	// for the same volume cause only ONE re-upload instead of N re-uploads of
+	// increasing size (which was O(N^2) total work for large models).
+	// Hidden volumes are NOT uploaded; their entries are deferred and replayed
+	// when the volume becomes visible again.
 	core::Queue<int> _pendingMeshes;
+	core::Array<bool, MAX_VOLUMES> _pendingMeshDirty;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 0);
@@ -138,6 +146,11 @@ public:
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 	int pendingMeshes() const;
+	/**
+	 * @brief Re-queues a pending GPU upload that was skipped (e.g. because the volume
+	 * was hidden). Deduplication ensures the index is queued at most once.
+	 */
+	void deferPendingMesh(int idx);
 
 	/**
 	 * @sa shutdown()
@@ -172,6 +185,10 @@ public:
 	 * @return @c true if the mesh should get deleted in the renderer
 	 */
 	bool scheduleRegionExtraction(int idx, const voxel::Region &region);
+
+	const core::Buffer<int> &activeIndices() const {
+		return _activeIndices;
+	}
 
 	bool sameNormalPalette(int idx, const palette::NormalPalette *palette) const;
 
