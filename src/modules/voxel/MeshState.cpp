@@ -17,6 +17,7 @@
 namespace voxel {
 
 MeshState::MeshState() {
+	_pendingMeshDirty.fill(false);
 }
 
 bool MeshState::init() {
@@ -111,7 +112,20 @@ void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType
 int MeshState::pop() {
 	int result = -1;
 	_pendingMeshes.try_pop(result);
+	if (result >= 0 && result < MAX_VOLUMES) {
+		_pendingMeshDirty[result] = false;
+	}
 	return result;
+}
+
+void MeshState::deferPendingMesh(int idx) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	if (!_pendingMeshDirty[idx]) {
+		_pendingMeshDirty[idx] = true;
+		_pendingMeshes.push(idx);
+	}
 }
 
 bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
@@ -222,6 +236,9 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			if (_volumeData[idx]._generation != extractRegion.generation) {
 				continue;
 			}
+			if (_volumeData[idx]._hidden) {
+				continue;
+			}
 			const voxel::Region finalRegion = extractRegion.region;
 			const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 			if (!copyRegion.isValid()) {
@@ -245,7 +262,12 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		}
 		addOrReplaceMeshes(result, MeshType_Opaque);
 		addOrReplaceMeshes(result, MeshType_Transparency);
-		_pendingMeshes.push(result.idx);
+		// Only enqueue once per volume index: if already dirty, the existing queue
+		// entry will trigger a full re-upload that includes this new chunk too.
+		if (!_pendingMeshDirty[result.idx]) {
+			_pendingMeshDirty[result.idx] = true;
+			_pendingMeshes.push(result.idx);
+		}
 	}
 
 	return true;
@@ -258,7 +280,10 @@ bool MeshState::update() {
 		_meshMode->markClean();
 		clearPendingExtractions();
 
-		for (int i = 0; i < MAX_VOLUMES; ++i) {
+		for (int i : _activeIndices) {
+			if (hidden(i)) {
+				continue;
+			}
 			if (voxel::RawVolume *v = volume(i)) {
 				scheduleRegionExtraction(i, v->region());
 			}
@@ -305,7 +330,7 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 				}
 
 				Log::debug("extract region: %s", finalRegion.toString().c_str());
-				_extractRegions.emplace(finalRegion, bufferIndex, hidden(bufferIndex), _volumeData[bufferIndex]._generation);
+				_extractRegions.emplace(finalRegion, bufferIndex, _volumeData[bufferIndex]._generation);
 			}
 		}
 	}
@@ -321,6 +346,7 @@ void MeshState::extractAllPending() {
 void MeshState::clearPendingExtractions() {
 	core_trace_scoped(MeshStateClearPendingExtractions);
 	_pendingMeshes.clear();
+	_pendingMeshDirty.fill(false);
 	_extractRegions.clear();
 }
 
@@ -364,6 +390,17 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
+	if (v != nullptr && old == nullptr) {
+		_activeIndices.push_back(idx);
+	} else if (v == nullptr && old != nullptr) {
+		for (int i = 0; i < (int)_activeIndices.size(); ++i) {
+			if (_activeIndices[i] == idx) {
+				_activeIndices[i] = _activeIndices.back();
+				_activeIndices.pop();
+				break;
+			}
+		}
+	}
 	_volumeData[idx]._rawVolume = v;
 	_volumeData[idx]._generation++;
 	if (meshDelete) {
@@ -382,6 +419,8 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 
 core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
 	clearMeshes();
+	_activeIndices.clear();
+	_pendingMeshDirty.fill(false);
 	core::Buffer<voxel::RawVolume *> old;
 	old.reserve(MAX_VOLUMES);
 	for (int idx = 0; idx < (int)_volumeData.size(); ++idx) {
@@ -394,8 +433,8 @@ core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
 }
 
 void MeshState::resetReferences() {
-	for (auto &s : _volumeData) {
-		s._reference = -1;
+	for (int idx : _activeIndices) {
+		_volumeData[idx]._reference = -1;
 	}
 }
 
@@ -425,7 +464,14 @@ void MeshState::hide(int idx, bool hide) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return;
 	}
+	const bool wasHidden = _volumeData[idx]._hidden;
 	_volumeData[idx]._hidden = hide;
+	if (wasHidden && !hide) {
+		const voxel::RawVolume *v = volume(idx);
+		if (v != nullptr) {
+			scheduleRegionExtraction(idx, v->region());
+		}
+	}
 }
 
 video::Face MeshState::cullFace(int idx) const {

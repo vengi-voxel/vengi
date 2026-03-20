@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraphRenderer.h"
+#include "app/Async.h"
 #include "color/Color.h"
 #include "core/Log.h"
 #include "core/Trace.h"
@@ -262,8 +263,11 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 
 void SceneGraphRenderer::resetVolumes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(ResetVolumes);
-	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
-		const int nodeId = getNodeId(i);
+	// Copy active indices to avoid modifying the list while iterating
+	// (resetVolume calls setVolume(nullptr) which removes from active list)
+	const core::Buffer<int> activeSnapshot = meshState->activeIndices();
+	for (int idx : activeSnapshot) {
+		const int nodeId = getNodeId(idx);
 		if (sceneGraph.hasNode(nodeId)) {
 			continue;
 		}
@@ -297,24 +301,43 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 		_sliceVolumeNodeId = -1;
 	}
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
-	sceneGraph.nodes().for_parallel([&](int nodeId, const scenegraph::SceneGraphNode &node) {
+
+	// Phase 1: update visibility flags sequentially (cheap, avoids thread pool overhead)
+	struct VisibleNode {
+		int nodeId;
+		int idx;
+	};
+	core::Buffer<VisibleNode> visibleNodes;
+	visibleNodes.reserve(sceneGraph.size());
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->value;
 		if (!node.isModelNode()) {
-			return;
+			continue;
 		}
+		const int nodeId = entry->key;
 		const int idx = getVolumeIdx(nodeId);
 		updateNodeState(meshState, renderContext, activeNode, node, idx);
 
 		if (meshState->hidden(idx)) {
-			return;
+			continue;
 		}
-
-		// also check the volume here on the first run, as they are added after this step for the first time
 		if (meshState->volume(idx) == nullptr) {
-			return;
+			continue;
 		}
+		visibleNodes.push_back({nodeId, idx});
+	}
 
-		applyTransform(meshState, renderContext, sceneGraph, node, idx);
-	});
+	// Phase 2: compute transforms in parallel (expensive, only for visible nodes)
+	if (!visibleNodes.empty()) {
+		app::for_parallel(0, (int)visibleNodes.size(), [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				const VisibleNode &vn = visibleNodes[i];
+				const scenegraph::SceneGraphNode &node = sceneGraph.node(vn.nodeId);
+				applyTransform(meshState, renderContext, sceneGraph, node, vn.idx);
+			}
+		});
+	}
+
 	for (auto entry : sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = entry->value;
 		if (!node.isModelNode()) {
