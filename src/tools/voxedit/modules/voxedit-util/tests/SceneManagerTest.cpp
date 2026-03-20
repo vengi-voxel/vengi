@@ -1509,6 +1509,83 @@ TEST_F(SceneManagerTest, testSplatMergeNoOverlap) {
 	EXPECT_NE(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
 }
 
+TEST_F(SceneManagerTest, testMergeActiveToBackground) {
+	const voxel::Region region{0, 9};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "mergeactive_test", region));
+
+	// Target node: place a voxel at (0,0,0) and (5,5,5)
+	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	ASSERT_NE(nullptr, targetVol);
+	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	targetVol->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(targetNodeId, targetVol->region());
+
+	// Create source node as sibling with a voxel at (0,0,0) but air at (5,5,5)
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
+	sourceNode.setVolume(new voxel::RawVolume(region), true);
+	sourceNode.setName("source");
+	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
+	ASSERT_NE(InvalidNodeId, sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	ASSERT_NE(nullptr, sourceVol);
+	sourceVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	// (5,5,5) is intentionally air in source
+	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+
+	// Make source active and run mergeActiveToBackground
+	_sceneMgr->nodeActivate(sourceNodeId);
+	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
+
+	// Source node should be removed
+	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
+
+	// Target: (0,0,0) overwritten by source solid, (5,5,5) overwritten by source air
+	EXPECT_FALSE(voxel::isAir(targetVol->voxel(0, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(targetVol->voxel(5, 5, 5).getMaterial()));
+	EXPECT_EQ(1, voxelutil::countVoxels(*targetVol));
+}
+
+TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
+	const voxel::Region region{0, 9};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "mergevisible_test", region));
+
+	const int node1Id = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *vol1 = _sceneMgr->volume(node1Id);
+	ASSERT_NE(nullptr, vol1);
+	vol1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(node1Id, vol1->region());
+
+	// Create second visible sibling
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode node2(scenegraph::SceneGraphNodeType::Model);
+	node2.setVolume(new voxel::RawVolume(region), true);
+	node2.setName("node2");
+	const int node2Id = _sceneMgr->moveNodeToSceneGraph(node2, rootNodeId);
+	ASSERT_NE(InvalidNodeId, node2Id);
+	voxel::RawVolume *vol2 = _sceneMgr->volume(node2Id);
+	ASSERT_NE(nullptr, vol2);
+	vol2->setVoxel(9, 9, 9, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(node2Id, vol2->region());
+
+	const int mergedNodeId = _sceneMgr->mergeVisibleToTemp();
+	ASSERT_NE(InvalidNodeId, mergedNodeId);
+
+	// Original nodes should be hidden
+	EXPECT_FALSE(_sceneMgr->sceneGraphNode(node1Id)->visible());
+	EXPECT_FALSE(_sceneMgr->sceneGraphNode(node2Id)->visible());
+
+	// Merged node should be active and visible
+	EXPECT_EQ(mergedNodeId, _sceneMgr->sceneGraph().activeNode());
+	EXPECT_TRUE(_sceneMgr->sceneGraphNode(mergedNodeId)->visible());
+
+	// Merged node should contain both voxels
+	const voxel::RawVolume *mergedVol = _sceneMgr->volume(mergedNodeId);
+	ASSERT_NE(nullptr, mergedVol);
+	EXPECT_EQ(2, voxelutil::countVoxels(*mergedVol));
+}
+
 TEST_F(SceneManagerTest, testGlobalCopyVisibleAndPasteNode) {
 	const voxel::Region region{0, 4};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "globalcopyvisible_test", region));

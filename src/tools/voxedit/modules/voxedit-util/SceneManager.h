@@ -395,6 +395,8 @@ public:
 	bool globalPaste(const glm::ivec3 &pos);
 	bool globalPasteNode(const glm::ivec3 &pos);
 	bool splatMerge(int sourceNodeId);
+	bool mergeActiveToBackground();
+	int mergeVisibleToTemp();
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);

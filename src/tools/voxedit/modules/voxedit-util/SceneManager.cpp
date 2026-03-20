@@ -33,6 +33,7 @@
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteCompleter.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -1616,6 +1617,204 @@ bool SceneManager::splatMerge(int sourceNodeId) {
 		_sceneRenderer->removeNode(sourceNodeId);
 	}
 	return true;
+}
+
+bool SceneManager::mergeActiveToBackground() {
+	const int sourceNodeId = activeNode();
+	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(sourceNodeId);
+	if (sourceNode == nullptr) {
+		Log::warn("mergeactivetobackground: no valid active node");
+		return false;
+	}
+	const voxel::RawVolume *sourceVolume = _sceneGraph.resolveVolume(*sourceNode);
+	if (sourceVolume == nullptr) {
+		Log::warn("mergeactivetobackground: active node has no volume");
+		return false;
+	}
+
+	const scenegraph::FrameTransform &srcTransform =
+		_sceneGraph.transformForFrame(*sourceNode, _currentFrameIdx);
+	core::ScopedPtr<voxel::RawVolume> bakedSource;
+	const voxel::RawVolume *worldSource = sourceVolume;
+	if (!srcTransform.isIdentity()) {
+		bakedSource = voxelutil::applyTransformToVolume(
+			*sourceVolume, srcTransform.worldMatrix(), sourceNode->pivot());
+		worldSource = &(*bakedSource);
+	}
+	const voxel::Region &sourceWorldRegion = worldSource->region();
+	const palette::Palette &sourcePalette = sourceNode->palette();
+
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "mergeactivetobackground");
+
+	struct StampedNode {
+		int nodeId;
+		voxel::Region region;
+	};
+	core::DynamicArray<StampedNode> stampedNodes;
+	stampedNodes.reserve(_sceneGraph.size());
+	int stampedCount = 0;
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &targetNode = *iter;
+		if (targetNode.id() == sourceNodeId) {
+			continue;
+		}
+		if (!targetNode.isModelNode()) {
+			continue;
+		}
+		voxel::RawVolume *targetVolume = targetNode.volume();
+		if (targetVolume == nullptr) {
+			continue;
+		}
+
+		const voxel::Region targetWorldRegion =
+			_sceneGraph.sceneRegion(targetNode, _currentFrameIdx);
+		if (!targetWorldRegion.isValid()) {
+			continue;
+		}
+		if (!voxel::intersects(sourceWorldRegion, targetWorldRegion)) {
+			continue;
+		}
+
+		voxel::Region worldOverlap = sourceWorldRegion;
+		worldOverlap.cropTo(targetWorldRegion);
+
+		const glm::ivec3 worldToLocal =
+			targetVolume->region().getLowerCorner() - targetWorldRegion.getLowerCorner();
+		const voxel::Region targetLocalOverlap(
+			worldOverlap.getLowerCorner() + worldToLocal,
+			worldOverlap.getUpperCorner() + worldToLocal);
+
+		// Stamp all voxels including air (overwrite destination completely in overlap)
+		const palette::Palette &destPalette = targetNode.palette();
+		palette::PaletteLookup palLookup(destPalette);
+		int count = 0;
+		const glm::ivec3 &srcLower = worldOverlap.getLowerCorner();
+		const glm::ivec3 &dstLower = targetLocalOverlap.getLowerCorner();
+		const int32_t overlapW = worldOverlap.getWidthInVoxels();
+		const int32_t overlapH = worldOverlap.getHeightInVoxels();
+		const int32_t overlapD = worldOverlap.getDepthInVoxels();
+		for (int32_t z = 0; z < overlapD; ++z) {
+			for (int32_t y = 0; y < overlapH; ++y) {
+				for (int32_t x = 0; x < overlapW; ++x) {
+					const voxel::Voxel srcVoxel = worldSource->voxel(
+						srcLower.x + x, srcLower.y + y, srcLower.z + z);
+					voxel::Voxel destVoxel;
+					if (voxel::isAir(srcVoxel.getMaterial())) {
+						destVoxel = voxel::Voxel();
+					} else {
+						int idx = palLookup.findClosestIndex(sourcePalette.color(srcVoxel.getColor()));
+						if (idx == palette::PaletteColorNotFound) {
+							idx = 0;
+						}
+						destVoxel = voxel::createVoxel(destPalette, idx);
+					}
+					targetVolume->setVoxel(
+						dstLower.x + x, dstLower.y + y, dstLower.z + z, destVoxel);
+					++count;
+				}
+			}
+		}
+		if (count > 0) {
+			stampedNodes.push_back(StampedNode{targetNode.id(), targetLocalOverlap});
+			stampedCount += count;
+		}
+	}
+
+	if (stampedCount == 0) {
+		Log::warn("mergeactivetobackground: no overlapping nodes found for active node %i", sourceNodeId);
+		return false;
+	}
+
+	// Show all hidden model nodes and unhide them in the mesh state so that
+	// scheduleRegionExtraction does not skip extraction for hidden volumes
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		if (node.id() != sourceNodeId && !node.visible()) {
+			nodeSetVisible(node.id(), true);
+			_sceneRenderer->unhideNode(node.id());
+		}
+	}
+
+	// Mark modified after nodes are visible so renderer processes the mesh updates
+	for (const StampedNode &entry : stampedNodes) {
+		modified(entry.nodeId, entry.region, SceneModifiedFlags::All);
+	}
+
+	_mementoHandler.markNodeRemove(_sceneGraph, *sourceNode);
+	if (_sceneGraph.removeNode(sourceNodeId, false)) {
+		_sceneRenderer->removeNode(sourceNodeId);
+	}
+	return true;
+}
+
+int SceneManager::mergeVisibleToTemp() {
+	core::Buffer<int> visibleNodeIds;
+	visibleNodeIds.reserve(_sceneGraph.size());
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.visible() && node.isModelNode()) {
+			visibleNodeIds.push_back(node.id());
+		}
+	}
+
+	if (visibleNodeIds.size() <= 1) {
+		Log::warn("mergevisibletotemp: need at least 2 visible model nodes");
+		return InvalidNodeId;
+	}
+
+	// Bake all visible nodes into world space and merge
+	scenegraph::SceneGraph tempSceneGraph;
+	for (int nodeId : visibleNodeIds) {
+		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			continue;
+		}
+		const scenegraph::FrameTransform &transform =
+			_sceneGraph.transformForFrame(*node, _currentFrameIdx);
+		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
+		voxel::RawVolume *bakedVolume =
+			voxelutil::applyTransformToVolume(*srcVolume, transform.worldMatrix(), node->pivot());
+		if (bakedVolume == nullptr) {
+			continue;
+		}
+		scenegraph::SceneGraphNode copiedNode(scenegraph::SceneGraphNodeType::Model);
+		scenegraph::copyNode(*node, copiedNode, false, false);
+		copiedNode.setVolume(bakedVolume, true);
+		tempSceneGraph.emplace(core::move(copiedNode));
+	}
+	const scenegraph::SceneGraph::MergeResult &merged = tempSceneGraph.merge();
+	if (!merged.hasVolume()) {
+		Log::warn("mergevisibletotemp: merge produced no volume");
+		return InvalidNodeId;
+	}
+
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "mergevisibletotemp");
+
+	// Hide all source nodes
+	for (int nodeId : visibleNodeIds) {
+		nodeSetVisible(nodeId, false);
+	}
+
+	// Create the merged temporary node
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	newNode.setVolume(merged.volume(), true);
+	newNode.setPalette(merged.palette);
+	newNode.setNormalPalette(merged.normalPalette);
+	newNode.setName(_("merged_temp"));
+	newNode.setVisible(true);
+
+	const int newNodeId = moveNodeToSceneGraph(newNode);
+	if (newNodeId == InvalidNodeId) {
+		// Restore visibility on failure
+		for (int nodeId : visibleNodeIds) {
+			nodeSetVisible(nodeId, true);
+		}
+		Log::warn("mergevisibletotemp: failed to create merged node");
+		return InvalidNodeId;
+	}
+
+	nodeActivate(newNodeId);
+	return newNodeId;
 }
 
 void SceneManager::selectionInvert(int nodeId) {
@@ -3241,6 +3440,16 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs&) {
 			splatMerge(activeNode());
 		}).setHelp(_("Merge active node voxels into all overlapping nodes and remove the source node"));
+
+	command::Command::registerCommand("mergeactivetobackground")
+		.setHandler([&] (const command::CommandArgs&) {
+			mergeActiveToBackground();
+		}).setHelp(_("Stamp active node onto all other nodes, overwriting their content in overlapping regions"));
+
+	command::Command::registerCommand("mergevisibletotemp")
+		.setHandler([&] (const command::CommandArgs&) {
+			mergeVisibleToTemp();
+		}).setHelp(_("Merge all visible nodes into a temporary editable node, hiding the originals"));
 
 	command::Command::registerCommand("undo")
 		.setHandler([&] (const command::CommandArgs& args) {
