@@ -459,7 +459,7 @@ namespace ImGui
 		};
         EmphasisState state = NONE;
         TextBlock text;
-        char sym;
+        char sym = 0;
 	};
 
     struct Table {
