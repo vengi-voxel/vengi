@@ -20,7 +20,7 @@
 //   - Software using Dear ImGui  https://github.com/ocornut/imgui/wiki/Software-using-dear-imgui
 // - Issues & support ........... https://github.com/ocornut/imgui/issues
 // - Test Engine & Automation ... https://github.com/ocornut/imgui_test_engine (test suite, test engine to automate your apps)
-// - Web version of the Demo .... https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html (w/ source code browser)
+// - Web version of the Demo .... https://pthom.github.io/imgui_manual (w/ source code browser)
 
 // For FIRST-TIME users having issues compiling/linking/running:
 // please post in https://github.com/ocornut/imgui/discussions if you cannot find a solution in resources above.
@@ -30,7 +30,7 @@
 // Library Version
 // (Integer encoded as XYYZZ for use in #if preprocessor conditionals, e.g. '#if IMGUI_VERSION_NUM >= 12345')
 #define IMGUI_VERSION       "1.92.7 WIP"
-#define IMGUI_VERSION_NUM   19263
+#define IMGUI_VERSION_NUM   19265
 #define IMGUI_HAS_TABLE             // Added BeginTable() - from IMGUI_VERSION_NUM >= 18000
 #define IMGUI_HAS_TEXTURES          // Added ImGuiBackendFlags_RendererHasTextures - from IMGUI_VERSION_NUM >= 19198
 #define IMGUI_HAS_VIEWPORT          // In 'docking' WIP branch.
@@ -345,9 +345,11 @@ IM_MSVC_RUNTIME_CHECKS_RESTORE
 typedef ImU64 ImTextureID;      // Default: store up to 64-bits (any pointer or integer). A majority of backends are ok with that.
 #endif
 
-// Define this if you need 0 to be a valid ImTextureID for your backend.
+// Define this if you need to change the invalid value for your backend.
+// - in v1.92.7 (2025/03/12): we changed default value from 0 to -1 as it is a better default, which supports storing offsets/indices.
+// - If this is causing problem with your custom ImTextureID definition, you can add '#define ImTextureID_Invalid' to your imconfig + please report this to GitHub.
 #ifndef ImTextureID_Invalid
-#define ImTextureID_Invalid     ((ImTextureID)0)
+#define ImTextureID_Invalid     ((ImTextureID)-1)
 #endif
 
 // ImTextureRef = higher-level identifier for a texture. Store a ImTextureID _or_ a ImTextureData*.
@@ -1684,10 +1686,10 @@ enum ImGuiKey : int
     //                              // XBOX        | SWITCH  | PLAYSTA. | -> ACTION
     ImGuiKey_GamepadStart,          // Menu        | +       | Options  |
     ImGuiKey_GamepadBack,           // View        | -       | Share    |
-    ImGuiKey_GamepadFaceLeft,       // X           | Y       | Square   | Tap: Toggle Menu. Hold: Windowing mode (Focus/Move/Resize windows)
+    ImGuiKey_GamepadFaceLeft,       // X           | Y       | Square   | Toggle Menu. Hold for Windowing mode (Focus/Move/Resize windows)
     ImGuiKey_GamepadFaceRight,      // B           | A       | Circle   | Cancel / Close / Exit
-    ImGuiKey_GamepadFaceUp,         // Y           | X       | Triangle | Text Input / On-screen Keyboard
-    ImGuiKey_GamepadFaceDown,       // A           | B       | Cross    | Activate / Open / Toggle / Tweak
+    ImGuiKey_GamepadFaceUp,         // Y           | X       | Triangle | Open Context Menu
+    ImGuiKey_GamepadFaceDown,       // A           | B       | Cross    | Activate / Open / Toggle. Hold for 0.60f to Activate in Text Input mode (e.g. wired to an on-screen keyboard).
     ImGuiKey_GamepadDpadLeft,       // D-pad Left  | "       | "        | Move / Tweak / Resize Window (in Windowing mode)
     ImGuiKey_GamepadDpadRight,      // D-pad Right | "       | "        | Move / Tweak / Resize Window (in Windowing mode)
     ImGuiKey_GamepadDpadUp,         // D-pad Up    | "       | "        | Move / Tweak / Resize Window (in Windowing mode)
@@ -1937,6 +1939,7 @@ enum ImGuiStyleVar_
     ImGuiStyleVar_TreeLinesRounding,        // float     TreeLinesRounding
     ImGuiStyleVar_ButtonTextAlign,          // ImVec2    ButtonTextAlign
     ImGuiStyleVar_SelectableTextAlign,      // ImVec2    SelectableTextAlign
+    ImGuiStyleVar_SeparatorSize,            // float     SeparatorSize
     ImGuiStyleVar_SeparatorTextBorderSize,  // float     SeparatorTextBorderSize
     ImGuiStyleVar_SeparatorTextAlign,       // ImVec2    SeparatorTextAlign
     ImGuiStyleVar_SeparatorTextPadding,     // ImVec2    SeparatorTextPadding
@@ -2417,6 +2420,7 @@ struct ImGuiStyle
     ImGuiDir    ColorButtonPosition;        // Side of the color button in the ColorEdit4 widget (left/right). Defaults to ImGuiDir_Right.
     ImVec2      ButtonTextAlign;            // Alignment of button text when button is larger than text. Defaults to (0.5f, 0.5f) (centered).
     ImVec2      SelectableTextAlign;        // Alignment of selectable text. Defaults to (0.0f, 0.0f) (top-left aligned). It's generally important to keep this left-aligned if you want to lay multiple items on a same line.
+    float       SeparatorSize;              // Thickness of border in Separator()
     float       SeparatorTextBorderSize;    // Thickness of border in SeparatorText()
     ImVec2      SeparatorTextAlign;         // Alignment of text within the separator. Defaults to (0.0f, 0.5f) (left aligned, center).
     ImVec2      SeparatorTextPadding;       // Horizontal offset of text from each edge of the separator + spacing on other axis. Generally small values. .y is recommended to be == FramePadding.y.
@@ -2533,7 +2537,7 @@ struct ImGuiIO
     bool        ConfigMacOSXBehaviors;          // = defined(__APPLE__) // Swap Cmd<>Ctrl keys + OS X style text editing cursor movement using Alt instead of Ctrl, Shortcuts using Cmd/Super instead of Ctrl, Line/Text Start and End using Cmd+Arrows instead of Home/End, Double click selects by word instead of selecting whole text, Multi-selection in lists uses Cmd/Super instead of Ctrl.
     bool        ConfigInputTrickleEventQueue;   // = true           // Enable input queue trickling: some types of events submitted during the same frame (e.g. button down + up) will be spread over multiple frames, improving interactions with low framerates.
     bool        ConfigInputTextCursorBlink;     // = true           // Enable blinking cursor (optional as some users consider it to be distracting).
-    bool        ConfigInputTextEnterKeepActive; // = false          // [BETA] Pressing Enter will keep item active and select contents (single-line only).
+    bool        ConfigInputTextEnterKeepActive; // = false          // [BETA] Pressing Enter will reactivate item and select all text (single-line only).
     bool        ConfigDragClickToInputText;     // = false          // [BETA] Enable turning DragXXX widgets into text input with a simple mouse click-release (without moving). Not desirable on devices without a keyboard.
     bool        ConfigWindowsResizeFromEdges;   // = true           // Enable resizing of windows from their edges and from the lower-left corner. This requires ImGuiBackendFlags_HasMouseCursors for better mouse cursor feedback. (This used to be a per-window ImGuiWindowFlags_ResizeFromAnySide flag)
     bool        ConfigWindowsMoveFromTitleBarOnly;  // = false      // Enable allowing to move windows only when clicking on their title bar. Does not apply to windows without a title bar.
@@ -3774,7 +3778,7 @@ enum ImFontAtlasFlags_
 //  - Call Build() + GetTexDataAsAlpha8() or GetTexDataAsRGBA32() to build and retrieve pixels data.
 //  - Call SetTexID(my_tex_id); and pass the pointer/identifier to your texture in a format natural to your graphics API.
 // Common pitfalls:
-// - If you pass a 'glyph_ranges' array to AddFont*** functions, you need to make sure that your array persist up until the
+// - If you pass a 'glyph_ranges' array to AddFont*** functions, you need to make sure that your array persists up until the
 //   atlas is build (when calling GetTexData*** or Build()). We only copy the pointer, not the data.
 // - Important: By default, AddFontFromMemoryTTF() takes ownership of the data. Even though we are not writing to it, we will free the pointer on destruction.
 //   You can set font_cfg->FontDataOwnedByAtlas=false to keep ownership of your data and it won't be freed,
@@ -4036,8 +4040,10 @@ inline ImTextureID ImTextureRef::GetTexID() const
 // Using an indirection to avoid patching ImDrawCmd after a SetTexID() call (but this could be an alternative solution too)
 inline ImTextureID ImDrawCmd::GetTexID() const
 {
-    // If you are getting this assert: A renderer backend with support for ImGuiBackendFlags_RendererHasTextures (1.92)
-    // must iterate and handle ImTextureData requests stored in ImDrawData::Textures[].
+    // If you are getting this assert with ImTextureID_Invalid == 0 and your ImTextureID is used to store an index:
+    // - You can add '#define ImTextureID_Invalid ((ImTextureID)-1)' in your imconfig file.
+    // If you are getting this assert with a renderer backend with support for ImGuiBackendFlags_RendererHasTextures (1.92+):
+    // - You must correctly iterate and handle ImTextureData requests stored in ImDrawData::Textures[]. See docs/BACKENDS.md.
     ImTextureID tex_id = TexRef._TexData ? TexRef._TexData->TexID : TexRef._TexID; // == TexRef.GetTexID() above.
     if (TexRef._TexData != NULL)
         IM_ASSERT(tex_id != ImTextureID_Invalid && "ImDrawCmd is referring to ImTextureData that wasn't uploaded to graphics system. Backend must call ImTextureData::SetTexID() after handling ImTextureStatus_WantCreate request!");

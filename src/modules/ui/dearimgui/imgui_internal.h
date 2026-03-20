@@ -545,7 +545,7 @@ inline float  ImLinearSweep(float current, float target, float speed)   { if (cu
 inline float  ImLinearRemapClamp(float s0, float s1, float d0, float d1, float x) { return ImSaturate((x - s0) / (s1 - s0)) * (d1 - d0) + d0; }
 inline ImVec2 ImMul(const ImVec2& lhs, const ImVec2& rhs)               { return ImVec2(lhs.x * rhs.x, lhs.y * rhs.y); }
 inline bool   ImIsFloatAboveGuaranteedIntegerPrecision(float f)         { return f <= -16777216 || f >= 16777216; }
-inline float  ImExponentialMovingAverage(float avg, float sample, int n){ avg -= avg / n; avg += sample / n; return avg; }
+inline float  ImExponentialMovingAverage(float avg, float sample, int n){ avg -= avg / (float)n; avg += sample / (float)n; return avg; }
 IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 // Helpers: Geometry
@@ -1527,8 +1527,8 @@ typedef ImBitArray<ImGuiKey_NamedKey_COUNT, -ImGuiKey_NamedKey_BEGIN>    ImBitAr
 #define ImGuiKey_NavGamepadTweakFast    ImGuiKey_GamepadR1
 #define ImGuiKey_NavGamepadActivate     (g.IO.ConfigNavSwapGamepadButtons ? ImGuiKey_GamepadFaceRight : ImGuiKey_GamepadFaceDown)
 #define ImGuiKey_NavGamepadCancel       (g.IO.ConfigNavSwapGamepadButtons ? ImGuiKey_GamepadFaceDown : ImGuiKey_GamepadFaceRight)
-#define ImGuiKey_NavGamepadMenu         ImGuiKey_GamepadFaceLeft
-#define ImGuiKey_NavGamepadInput        ImGuiKey_GamepadFaceUp
+#define ImGuiKey_NavGamepadMenu         ImGuiKey_GamepadFaceLeft    // Toggle menu layer. Hold to enable Windowing.
+#define ImGuiKey_NavGamepadContextMenu  ImGuiKey_GamepadFaceUp      // Open context menu (same as Shift+F10)
 
 enum ImGuiInputEventType
 {
@@ -2531,6 +2531,7 @@ struct ImGuiContext
     ImGuiWindow*            NavWindow;                          // Focused window for navigation. Could be called 'FocusedWindow'
     ImGuiID                 NavFocusScopeId;                    // Focused focus scope (e.g. selection code often wants to "clear other items" when landing on an item of the same scope)
     ImGuiNavLayer           NavLayer;                           // Focused layer (main scrolling layer, or menu/title bar layer)
+    ImGuiItemFlags          NavIdItemFlags;
     ImGuiID                 NavActivateId;                      // ~~ (g.ActiveId == 0) && (IsKeyPressed(ImGuiKey_Space) || IsKeyDown(ImGuiKey_Enter) || IsKeyPressed(ImGuiKey_NavGamepadActivate)) ? NavId : 0, also set when calling ActivateItemByID()
     ImGuiID                 NavActivateDownId;                  // ~~ IsKeyDown(ImGuiKey_Space) || IsKeyDown(ImGuiKey_Enter) || IsKeyDown(ImGuiKey_NavGamepadActivate) ? NavId : 0
     ImGuiID                 NavActivatePressedId;               // ~~ IsKeyPressed(ImGuiKey_Space) || IsKeyPressed(ImGuiKey_Enter) || IsKeyPressed(ImGuiKey_NavGamepadActivate) ? NavId : 0 (no repeat)
@@ -2538,6 +2539,8 @@ struct ImGuiContext
     ImVector<ImGuiFocusScopeData> NavFocusRoute;                // Reversed copy focus scope stack for NavId (should contains NavFocusScopeId). This essentially follow the window->ParentWindowForFocusRoute chain.
     ImGuiID                 NavHighlightActivatedId;
     float                   NavHighlightActivatedTimer;
+    ImGuiID                 NavOpenContextMenuItemId;
+    ImGuiID                 NavOpenContextMenuWindowId;
     ImGuiID                 NavNextActivateId;                  // Set by ActivateItemByID(), queued until next frame.
     ImGuiActivateFlags      NavNextActivateFlags;
     ImGuiInputSource        NavInputSource;                     // Keyboard or Gamepad mode? THIS CAN ONLY BE ImGuiInputSource_Keyboard or ImGuiInputSource_Gamepad
@@ -2667,6 +2670,7 @@ struct ImGuiContext
     ImGuiInputTextDeactivatedState InputTextDeactivatedState;
     ImFontBaked             InputTextPasswordFontBackupBaked;
     ImFontFlags             InputTextPasswordFontBackupFlags;
+    ImGuiID                 InputTextReactivateId;              // ID of InputText to reactivate on next frame (for io.ConfigInputTextEnterKeepActive behavior)
     ImGuiID                 TempInputId;                        // Temporary text input when using Ctrl+Click on a slider, etc.
     ImGuiDataTypeStorage    DataTypeZeroValue;                  // 0 for all data types
     int                     BeginMenuDepth;
@@ -3567,6 +3571,8 @@ namespace ImGui
     IMGUI_API ImVec2        FindBestWindowPosForPopup(ImGuiWindow* window);
     IMGUI_API ImVec2        FindBestWindowPosForPopupEx(const ImVec2& ref_pos, const ImVec2& size, ImGuiDir* last_dir, const ImRect& r_outer, const ImRect& r_avoid, ImGuiPopupPositionPolicy policy);
     IMGUI_API ImGuiMouseButton GetMouseButtonFromPopupFlags(ImGuiPopupFlags flags);
+    IMGUI_API bool          IsPopupOpenRequestForItem(ImGuiPopupFlags flags, ImGuiID id);
+    IMGUI_API bool          IsPopupOpenRequestForWindow(ImGuiPopupFlags flags);
 
     // Tooltips
     IMGUI_API bool          BeginTooltipEx(ImGuiTooltipFlags tooltip_flags, ImGuiWindowFlags extra_window_flags);
@@ -3938,6 +3944,7 @@ namespace ImGui
     IMGUI_API ImGuiID       GetWindowScrollbarID(ImGuiWindow* window, ImGuiAxis axis);
     IMGUI_API ImGuiID       GetWindowResizeCornerID(ImGuiWindow* window, int n); // 0..3: corners
     IMGUI_API ImGuiID       GetWindowResizeBorderID(ImGuiWindow* window, ImGuiDir dir);
+    IMGUI_API void          ExtendHitBoxWhenNearViewportEdge(ImGuiWindow* window, ImRect* bb, float threshold, ImGuiAxis axis);
 
     // Widgets low-level behaviors
     IMGUI_API bool          ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool* out_held, ImGuiButtonFlags flags = 0);
@@ -3956,8 +3963,8 @@ namespace ImGui
     // Template functions are instantiated in imgui_widgets.cpp for a finite number of types.
     // To use them externally (for custom widget) you may need an "extern template" statement in your code in order to link to existing instances and silence Clang warnings (see #2036).
     // e.g. " extern template IMGUI_API float RoundScalarWithFormatT<float, float>(const char* format, ImGuiDataType data_type, float v); "
-    template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API float ScaleRatioFromValueT(ImGuiDataType data_type, T v, T v_min, T v_max, bool is_logarithmic, float logarithmic_zero_epsilon, float zero_deadzone_size);
-    template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API T     ScaleValueFromRatioT(ImGuiDataType data_type, float t, T v_min, T v_max, bool is_logarithmic, float logarithmic_zero_epsilon, float zero_deadzone_size);
+    template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API float ScaleRatioFromValueT(ImGuiDataType data_type, T v, T v_min, T v_max, float logarithmic_zero_epsilon, float zero_deadzone_size);
+    template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API T     ScaleValueFromRatioT(ImGuiDataType data_type, float t, T v_min, T v_max, float logarithmic_zero_epsilon, float zero_deadzone_size);
     template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API bool  DragBehaviorT(ImGuiDataType data_type, T* v, float v_speed, T v_min, T v_max, const char* format, ImGuiSliderFlags flags);
     template<typename T, typename SIGNED_T, typename FLOAT_T>   IMGUI_API bool  SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_type, T* v, T v_min, T v_max, const char* format, ImGuiSliderFlags flags, ImRect* out_grab_bb);
     template<typename T>                                        IMGUI_API T     RoundScalarWithFormatT(const char* format, ImGuiDataType data_type, T v);
@@ -4011,7 +4018,7 @@ namespace ImGui
     IMGUI_API bool          BeginErrorTooltip();
     IMGUI_API void          EndErrorTooltip();
 
-    // Demo Doc Marker for e.g. imgui_manual
+    // Demo Doc Marker for e.g. imgui_explorer
     IMGUI_API void          DemoMarker(const char* file, int line, const char* section);
 
     // Debug Tools
@@ -4034,7 +4041,7 @@ namespace ImGui
     IMGUI_API void          DebugNodeDrawList(ImGuiWindow* window, ImGuiViewportP* viewport, const ImDrawList* draw_list, const char* label);
     IMGUI_API void          DebugNodeDrawCmdShowMeshAndBoundingBox(ImDrawList* out_draw_list, const ImDrawList* draw_list, const ImDrawCmd* draw_cmd, bool show_mesh, bool show_aabb);
     IMGUI_API void          DebugNodeFont(ImFont* font);
-    IMGUI_API void          DebugNodeFontGlyphesForSrcMask(ImFont* font, ImFontBaked* baked, int src_mask);
+    IMGUI_API void          DebugNodeFontGlyphsForSrcMask(ImFont* font, ImFontBaked* baked, int src_mask);
     IMGUI_API void          DebugNodeFontGlyph(ImFont* font, const ImFontGlyph* glyph);
     IMGUI_API void          DebugNodeTexture(ImTextureData* tex, int int_id, const ImFontAtlasRect* highlight_rect = NULL); // ID used to facilitate persisting the "current" texture.
     IMGUI_API void          DebugNodeStorage(ImGuiStorage* storage, const char* label);
