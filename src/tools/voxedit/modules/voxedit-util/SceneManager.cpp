@@ -2586,6 +2586,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditGrayInactive);
 	const core::VarDef voxEditHideInactive(cfg::VoxEditHideInactive, false, N_("Only active"), N_("Hide the inactive nodes"));
 	core::Var::registerVar(voxEditHideInactive);
+	const core::VarDef voxEditSceneMode(cfg::VoxEditSceneMode, false, N_("Scene mode"), N_("Start in scene mode"));
+	core::Var::registerVar(voxEditSceneMode);
 	const core::VarDef voxEditViewdistance(cfg::VoxEditViewdistance, 5000, 10, 5000, N_("View distance"), N_("Far plane for the camera"));
 	core::Var::registerVar(voxEditViewdistance);
 	const core::VarDef voxEditShowaxis(cfg::VoxEditShowaxis, true, N_("Show gizmo"), N_("Show the axis"));

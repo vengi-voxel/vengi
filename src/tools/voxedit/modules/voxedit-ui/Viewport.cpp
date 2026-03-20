@@ -83,6 +83,7 @@ bool Viewport::init() {
 	_pivotMode = core::getVar(cfg::VoxEditGizmoPivot);
 	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
+	_sceneMode = core::getVar(cfg::VoxEditSceneMode);
 	_autoKeyFrame = core::getVar(cfg::VoxEditAutoKeyFrame);
 	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
 	_renderNormals = core::getVar(cfg::RenderNormals);
@@ -96,6 +97,9 @@ bool Viewport::init() {
 	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
+	if (viewModeAllViewports(_viewMode->intVal())) {
+		_renderContext.renderMode = _sceneMode->boolVal() ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit;
+	}
 	resetCamera();
 
 	return true;
@@ -460,6 +464,7 @@ void Viewport::menuBarRenderModeToggle() {
 		} else {
 			_renderContext.renderMode = voxelrender::RenderMode::Edit;
 		}
+		_sceneMode->setVal(sceneMode);
 	}
 	if (!sceneMode) {
 		ImGui::SameLine();
@@ -600,6 +605,7 @@ void Viewport::resetCamera() {
 	_sceneMgr->cameraMovement().updateBodyPosition(_camera);
 	_sceneMgr->cameraMovement().body().velocity = glm::vec3(0.0f);
 }
+
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &contentSize) {
 	if (contentSize.x <= 0 || contentSize.y <= 0) {
