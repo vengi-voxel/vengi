@@ -237,6 +237,7 @@ set(TEST_FILES
 	"tests/cube.obj"
 	"tests/cube.ply"
 	"tests/cube.stl"
+	"tests/cube.vengi"
 	"tests/cubictest.vox"
 	"tests/chunkveloren.dat"
 	"tests/cw.cub"
@@ -383,6 +384,7 @@ set(TEST_FILES
 	"tests/vox_glasses.vox"
 	"tests/voxlap5.kv6"
 	"tests/vox-to-kv6-broken.vox"
+	"voxedit/chr_knight.vengi"
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
