@@ -583,7 +583,7 @@ void MainWindow::popupMinecraftMapping() {
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn(_("Color"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
-			for (int i = 0; i < minecraftPaletteMap.size(); ++i) {
+			for (size_t i = 0; i < minecraftPaletteMap.size(); ++i) {
 				const core::String &name = minecraftPaletteMap[i].name;
 				const color::RGBA &color = mcPal.color(minecraftPaletteMap[i].palIdx);
 				ImGui::TableNextColumn();

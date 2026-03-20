@@ -62,7 +62,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 		// we might open the context menu for a color that is not in the selection
 		const bool isCurrentInSelection = _selectedIndices.has(paletteColorIdx);
 		if (usableColor) {
-			for (int i = 0; i < palette::MaterialProperty::MaterialMax; ++i) {
+			for (int i = 0; i < (int)palette::MaterialProperty::MaterialMax; ++i) {
 				if (i == palette::MaterialProperty::MaterialNone) {
 					continue;
 				}
