@@ -25,6 +25,7 @@ protected:
 	command::ActionButton _moveUp;
 	command::ActionButton _moveDown;
 	command::ActionButton _jump;
+	command::ActionButton _sprint;
 
 	glm::vec3 calculateDelta(double speed) const;
 
@@ -43,6 +44,7 @@ public:
 	bool up() const;
 	bool down() const;
 	bool jump() const;
+	bool sprint() const;
 
 	bool moving() const;
 
@@ -84,6 +86,10 @@ inline bool Movement::up() const {
 
 inline bool Movement::down() const {
 	return _moveDown.pressed();
+}
+
+inline bool Movement::sprint() const {
+	return _sprint.pressed();
 }
 
 } // namespace util

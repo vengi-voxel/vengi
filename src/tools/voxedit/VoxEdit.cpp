@@ -419,6 +419,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("q",                      "+move_up",                   "editing");
 		_keybindingHandler.registerBinding("e",                      "+move_down",                 "editing");
 		_keybindingHandler.registerBinding("space",                  "+jump",                      "game");
+		_keybindingHandler.registerBinding("left_shift",             "+sprint",                    "editing");
 	}
 
 	if (keymap == KeyBindings::Blender) {

@@ -58,7 +58,9 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 
 	_body.extents.y = _bodyHeight->floatVal();
-	const float speed = _movementSpeed->floatVal();
+	static constexpr float sprintMultiplier = 3.0f;
+	const float baseSpeed = _movementSpeed->floatVal();
+	const float speed = _movement.sprint() ? baseSpeed * sprintMultiplier : baseSpeed;
 	if (_clipping->isDirty()) {
 		_clipping->markClean();
 		updateBodyPosition(*camera);

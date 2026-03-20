@@ -29,7 +29,7 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const char *text = _("Activating the game mode will enable clipping and switch the eye mode camera that is "
 							 "controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:+move_backward>, "
-							 "<cmd:+move_right> and <cmd:+jump> for jumping");
+							 "<cmd:+move_right>, <cmd:+jump> for jumping and <cmd:+sprint> for sprinting");
 		static char buf[4096];
 		if (util::replacePlaceholders(_app->keybindingHandler(), text, buf, sizeof(buf))) {
 			ImGui::TextWrappedUnformatted(buf);
