@@ -201,12 +201,23 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 
 	int cnt = 0;
 
+	// Collect hidden-volume entries that need to be re-queued after the loop.
+	// Re-queuing inside the loop would spin: pop() clears _pendingMeshDirty,
+	// deferPendingMesh() immediately re-pushes, and the next iteration pops it
+	// again - burning the full 10ms budget every frame for hidden volumes.
+	core::Buffer<int> deferred;
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	const uint64_t startTime = timeProvider->systemMillis();
 	for (;;) {
 		const int idx = meshState->pop();
 		if (idx == -1) {
 			break;
+		}
+		if (meshState->hidden(idx)) {
+			// Skip the expensive GPU upload; re-queue after the loop so it is
+			// processed when the volume becomes visible again.
+			deferred.push_back(idx);
+			continue;
 		}
 		if (!updateBufferForVolume(meshState, idx)) {
 			Log::error("Failed to update the mesh at index %i", idx);
@@ -217,6 +228,9 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 			Log::debug("Update took too long: %u ms", (int32_t)(deltaT));
 			break;
 		}
+	}
+	for (int idx : deferred) {
+		meshState->deferPendingMesh(idx);
 	}
 	if (cnt > 0) {
 		Log::debug("Perform %i mesh updates in this frame", cnt);
@@ -558,7 +572,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 	}
 
 	core_trace_scoped(RenderNormals);
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+	for (int idx : meshState->activeIndices()) {
 		if (!isVisible(meshState, idx)) {
 			continue;
 		}
@@ -607,7 +621,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	const video::PolygonMode mode = camera.polygonMode();
 	const video::Face oldCullFace = video::currentCullFace();
 	video::ScopedPolygonMode polygonMode(mode);
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+	for (int idx : meshState->activeIndices()) {
 		if (!isVisible(meshState, idx)) {
 			continue;
 		}
@@ -654,8 +668,8 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	core::Buffer<int> sorted;
 	{
 		core_trace_scoped(Sort);
-		sorted.reserve(voxel::MAX_VOLUMES);
-		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		sorted.reserve(meshState->activeIndices().size());
+		for (int idx : meshState->activeIndices()) {
 			if (!isVisible(meshState, idx)) {
 				continue;
 			}
@@ -723,11 +737,12 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 	}
 	core::Buffer<int> indices;
 	indices.resize(voxel::MAX_VOLUMES);
+	const core::Buffer<int> &active = meshState->activeIndices();
 	for (const auto &i : transparencyMeshes) {
-		indices.fill(-1);
+		for (int idx : active) { indices[idx] = -1; }
 		const glm::vec3 worldPosition = camera.worldPosition();
 		const voxel::MeshState::Meshes &meshes = i->second;
-		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		for (int idx : active) {
 			if (!isVisible(meshState, idx, true)) {
 				continue;
 			}
@@ -743,12 +758,12 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 			}
 		}
 		core_trace_scoped(UpdateBuffers);
-		for (size_t idx = 0; idx < indices.size(); ++idx) {
+		for (int idx : active) {
 			if (indices[idx] == -1) {
 				continue;
 			}
 			if (!updateBufferForVolume(meshState, indices[idx], voxel::MeshType_Transparency, UpdateBufferFlags::Indices)) {
-				Log::error("Failed to update the transparency mesh at index %i", (int)idx);
+				Log::error("Failed to update the transparency mesh at index %i", idx);
 			}
 		}
 	}
@@ -759,8 +774,10 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	core_trace_scoped(RawVolumeRendererRender);
 
 	bool visible = false;
-	app::for_parallel(0, voxel::MAX_VOLUMES, [&](int start, int end) {
-		for (int idx = start; idx < end; ++idx) {
+	const core::Buffer<int> &activeForRender = meshState->activeIndices();
+	app::for_parallel(0, (int)activeForRender.size(), [&](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const int idx = activeForRender[i];
 			updateCulling(meshState, idx, camera);
 			if (!isVisible(meshState, idx)) {
 				continue;
@@ -774,7 +791,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 
 	if (_cullBuffers->boolVal()) {
 		core_trace_scoped(CullBuffers);
-		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		for (int idx : activeForRender) {
 			if (!isVisible(meshState, idx)) {
 				continue;
 			}
@@ -803,13 +820,13 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			auto renderFunc = [this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
 				math::Frustum frustum;
 				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
 				alignas(16) shader::ShadowmapData::BlockData var;
 				var.lightviewprojection = lightViewProjection;
 
-				for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+				for (int idx : activeForRender) {
 					if (meshState->hidden(idx)) {
 						continue;
 					}
