@@ -9,6 +9,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align" // stb_image.h
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough" // stb_image.h
+#pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 
 #if defined(__clang__)
