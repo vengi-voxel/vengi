@@ -195,11 +195,6 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 				break;
 			}
 			const voxelformat::MeshTri &meshTri = tris[i];
-			const glm::vec2 &uv = meshTri.centerUV();
-			const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
-			if (rgba.a <= AlphaThreshold) {
-				continue;
-			}
 			const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
 			const glm::vec3 &normal = glm::normalize(meshTri.normal());
 			const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
@@ -223,6 +218,15 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 					}
 					for (int z = mins.z; z < maxs.z; z++) {
 						if (!region.containsPointInZ(z + sideDelta.z)) {
+							continue;
+						}
+						const glm::vec3 surfacePoint(x + 0.5f, y + 0.5f, z + 0.5f);
+						glm::vec2 uv;
+						if (!meshTri.calcUVs(surfacePoint, uv)) {
+							continue;
+						}
+						const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
+						if (rgba.a <= AlphaThreshold) {
 							continue;
 						}
 						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
