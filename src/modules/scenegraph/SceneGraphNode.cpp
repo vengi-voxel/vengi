@@ -50,6 +50,8 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._type = SceneGraphNodeType::Max;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
+	_selectionRegion = move._selectionRegion;
+	_hasSelection = move._hasSelection;
 }
 
 SceneGraphNode::~SceneGraphNode() {
@@ -83,6 +85,8 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_type = move._type;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
+	_selectionRegion = move._selectionRegion;
+	_hasSelection = move._hasSelection;
 	return *this;
 }
 
@@ -465,10 +469,7 @@ const voxel::Region &SceneGraphNode::region() const {
 }
 
 bool SceneGraphNode::hasSelection() const {
-	if (_volume == nullptr) {
-		return false;
-	}
-	return _volume->hasFlags(_volume->region(), voxel::FlagOutline);
+	return _hasSelection;
 }
 
 void SceneGraphNode::clearSelection() {
@@ -477,6 +478,7 @@ void SceneGraphNode::clearSelection() {
 	}
 	_volume->removeFlags(_volume->region(), voxel::FlagOutline);
 	_selectionRegion = voxel::Region::InvalidRegion;
+	_hasSelection = false;
 }
 
 const voxel::Region &SceneGraphNode::selectionRegion() const {
@@ -492,6 +494,7 @@ void SceneGraphNode::select(const voxel::Region &region) {
 		return;
 	}
 	_volume->setFlags(region, voxel::FlagOutline);
+	_hasSelection = true;
 }
 
 void SceneGraphNode::unselect(const voxel::Region &region) {
