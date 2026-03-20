@@ -15,13 +15,13 @@ int for_parallel_size(int start, int end);
 template<typename F>
 inline void for_not_parallel(int start, int end, const F &f) {
 	for_not_parallel_impl(
-		start, end, [](void *ctx, int s, int e) { (*(const F *)ctx)(s, e); }, (void *)&f);
+		start, end, [](void *ctx, int s, int e) { (*(const F *)ctx)(s, e); }, const_cast<void *>(static_cast<const void *>(&f)));
 }
 
 template<typename F>
 inline void for_parallel(int start, int end, const F &f, bool wait = true) {
 	for_parallel_impl(
-		start, end, [](void *ctx, int s, int e) { (*(const F *)ctx)(s, e); }, (void *)&f, wait);
+		start, end, [](void *ctx, int s, int e) { (*(const F *)ctx)(s, e); }, const_cast<void *>(static_cast<const void *>(&f)), wait);
 }
 
 } // namespace app
