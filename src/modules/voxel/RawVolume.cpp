@@ -33,7 +33,7 @@ RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy->_borderVoxel;
-	core_memcpy((void*)_data, (void*)copy->_data, size);
+	core_memcpy((void*)_data, (const void*)copy->_data, size);
 }
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
@@ -41,7 +41,7 @@ RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy._borderVoxel;
-	core_memcpy((void*)_data, (void*)copy._data, size);
+	core_memcpy((void*)_data, (const void*)copy._data, size);
 }
 
 static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
@@ -81,7 +81,7 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	} else if (src.region() == _region) {
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
-		core_memcpy((void *)_data, (void *)src._data, size);
+		core_memcpy((void *)_data, (const void *)src._data, size);
 		if (onlyAir) {
 			*onlyAir = false;
 		}
@@ -125,7 +125,7 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
 				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
 
-				core_memcpy((void*)tgtLine, (void*)srcLine, lineSize);
+				core_memcpy((void*)tgtLine, (const void*)srcLine, lineSize);
 
 				// Optional air check
 				if (onlyAir) {
@@ -429,7 +429,7 @@ bool RawVolume::isEmpty(const Region &region) const {
 
 bool RawVolume::copyInto(const RawVolume &src) {
 	if (_region == src.region()) {
-		core_memcpy((void *)_data, (void *)src._data, RawVolume::size(_region));
+		core_memcpy((void *)_data, (const void *)src._data, RawVolume::size(_region));
 		return true;
 	}
 	voxel::Region srcRegion = src.region();
@@ -486,7 +486,7 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
 				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
 
-				core_memcpy((void*)tgtLine, (void*)srcLine, lineSize);
+				core_memcpy((void*)tgtLine, (const void*)srcLine, lineSize);
 			}
 		}
 	});
@@ -549,7 +549,7 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 Voxel *RawVolume::copyVoxels() const {
 	const size_t size = RawVolume::size(_region);
 	Voxel *rawCopy = (Voxel *)core_malloc(size);
-	core_memcpy((void *)rawCopy, (void *)_data, size);
+	core_memcpy((void *)rawCopy, (const void *)_data, size);
 	return rawCopy;
 }
 
