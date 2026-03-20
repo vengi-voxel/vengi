@@ -32,6 +32,7 @@ EM_JS_INLINE(void, upload, (char const *accept_types, upload_handler callback, v
   /// Accept-types are in the format ".png,.jpeg,.jpg" as per https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept
   /// Upload handler callback signature is:
   ///   void my_handler(std::string const &filename, std::string const &mime_type, std::string_view buffer, void *callback_data = nullptr);
+  ///   Note: the string_view buffer is only valid for the duration of the callback - do not store it for later use.
   globalThis["open_file"] = function(e) {
     const file_reader = new FileReader();
     file_reader.onload = (event) => {
@@ -90,10 +91,14 @@ EM_JS_INLINE(void, download, (char const *filename, char const *mime_type, void 
   /// Offer a buffer in memory as a file to download, specifying download filename and mime type
   var a = document.createElement('a');
   a.download = UTF8ToString(filename);
-  var bufferCopy = new ArrayBuffer(buffer_size);
-  var uint8Array = new Uint8Array(bufferCopy);
-  uint8Array.set(new Uint8Array(Module["HEAPU8"].buffer, buffer, buffer_size));
-  a.href = URL.createObjectURL(new Blob([uint8Array], {type: UTF8ToString(mime_type)}));
+  /// When HEAPU8 is backed by a SharedArrayBuffer (e.g. -pthread builds), the Blob constructor rejects it;
+  /// slice() copies to a new non-shared ArrayBuffer first.  The typeof guard avoids a ReferenceError in
+  /// environments where SharedArrayBuffer is not defined.
+  var buffer_data = (typeof SharedArrayBuffer !== 'undefined' && Module["HEAPU8"].buffer instanceof SharedArrayBuffer)
+    ? Module["HEAPU8"].slice(buffer, buffer + buffer_size)
+    : new Uint8Array(Module["HEAPU8"].buffer, buffer, buffer_size);
+  a.href = URL.createObjectURL(new Blob([buffer_data], {type: UTF8ToString(mime_type)}));
+  a.click();
   URL.revokeObjectURL(a.href);
 });
 #pragma GCC diagnostic pop
@@ -117,11 +122,11 @@ EMSCRIPTEN_KEEPALIVE inline int upload_file_return(char const *filename, char co
   /// <The behavior is undefined if [s, s + count) is not a valid range
   /// (even though the constructor may not access any of the elements of this range)>
   /// https://en.cppreference.com/w/cpp/string/basic_string_view/basic_string_view
-  if (! buffer || buffer_size == 0) {
+  if(!buffer || buffer_size == 0) {
     callback(filename, mime_type, std::string_view(), callback_data);
     return 1;
   }
-  /// Ok
+  /// Ok - note: the string_view is only valid for the duration of this call; do not store it for later use
   callback(filename, mime_type, {buffer, buffer_size}, callback_data);
   return 1;
 }
