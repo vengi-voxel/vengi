@@ -108,7 +108,7 @@ if (USE_IMGUITESTENGINE)
 	)
 	engine_add_executable(TARGET tests-voxedit SRCS ${TEST_SRCS} FILES ${FILES} NOINSTALL DESCRIPTION "Voxel Editor Tests")
 	engine_target_link_libraries(TARGET tests-voxedit DEPENDENCIES voxedit-ui voxedit-util)
-	add_test(NAME tests-voxedit COMMAND $<TARGET_FILE:tests-voxedit> WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+	add_test(NAME tests-voxedit COMMAND $<TARGET_FILE:tests-voxedit> WORKING_DIRECTORY "$<TARGET_FILE_DIR:tests-voxedit>")
 endif()
 
 set(SERVER_SRCS
