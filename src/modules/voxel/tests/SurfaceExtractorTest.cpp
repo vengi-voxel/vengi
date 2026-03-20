@@ -423,7 +423,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 	EXPECT_GT(opaqueMesh.getNoOfVertices(), 0u) << "Opaque mesh should have vertices";
 
 	// Transparent mesh should have the Transparent voxel
-	EXPECT_GT(transMesh.getNoOfVertices(), 0) << "Transparent mesh should have vertices";
+	EXPECT_GT(transMesh.getNoOfVertices(), 0u) << "Transparent mesh should have vertices";
 
 	// Verify colors are in correct meshes
 	const VertexArray &opaqueVertices = opaqueMesh.getVertexVector();
