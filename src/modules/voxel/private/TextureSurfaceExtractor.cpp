@@ -5,6 +5,7 @@
 #include "TextureSurfaceExtractor.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
 #include "math/Rect.h"
 #include "palette/Palette.h"
@@ -36,34 +37,6 @@ struct TexturSurfaceMesherState {
 	TexturSurfaceMesherState() {
 		colors.resize(TEX_SIZE * TEX_SIZE);
 		stbrp_init_target(&context, TEX_SIZE, TEX_SIZE, nodes, TEX_SIZE);
-	}
-
-	IRect findMatch(const core::Buffer<color::RGBA> &grid, int gridH, const IRect &original) {
-		const int w = original.width();
-		const int h = original.height();
-		// Brute-force search in the existing area
-		for (int y = 0; y <= rect.getMaxZ() - h; ++y) {
-			for (int x = 0; x <= rect.getMaxX() - w; ++x) {
-				bool match = true;
-				for (int gy = 0; gy < h; ++gy) {
-					for (int gx = 0; gx < w; ++gx) {
-						const int colorIdx = (y + gy) * TEX_SIZE + (x + gx);
-						const int gridIdx = (original.getMinX() + gx) * gridH + original.getMinZ() + gy;
-						if (colors[colorIdx] != grid[gridIdx]) {
-							match = false;
-							break;
-						}
-					}
-					if (!match) {
-						break;
-					}
-				}
-				if (match) {
-					return IRect(x, y, x + w, y + h);
-				}
-			}
-		}
-		return IRect(0, 0, 0, 0);
 	}
 
 	IRect add(const core::Buffer<color::RGBA> &grid, int gridH, const IRect &original) {
@@ -105,37 +78,42 @@ struct TexturSurfaceMesherState {
 	}
 };
 
-static void findLargestRect(const core::Buffer<color::RGBA> &mask, int w, int h, IRect &largest) {
+// O(w*h) largest-rectangle algorithm using histogram + stack approach.
+// Scans column-by-column for cache-friendly access with mask[x * h + y] layout.
+static void findLargestRect(const core::Buffer<color::RGBA> &mask, int w, int h,
+							core::Buffer<int> &heights, core::Buffer<int> &stack, IRect &largest) {
 	largest = IRect(0, 0, 0, 0);
+	int bestArea = 0;
+
+	for (int i = 0; i < h; ++i) {
+		heights[i] = 0;
+	}
+
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
-			if (mask[x * h + y].a == 0) {
-				continue;
+			if (mask[x * h + y].a != 0) {
+				heights[y]++;
+			} else {
+				heights[y] = 0;
 			}
+		}
 
-			int width = 1;
-			while (x + width < w && mask[(x + width) * h + y].a != 0) {
-				width++;
-			}
-
-			int height = 1;
-			bool stop = false;
-			while (y + height < h) {
-				for (int checkX = 0; checkX < width; ++checkX) {
-					if (mask[(x + checkX) * h + (y + height)].a == 0) {
-						stop = true;
-						break;
-					}
+		int top = -1;
+		for (int y = 0; y <= h; ++y) {
+			int curH = (y < h) ? heights[y] : 0;
+			while (top >= 0 && heights[stack[top]] > curH) {
+				int idx = stack[top--];
+				int rectW = heights[idx];
+				int rectH = (top >= 0) ? (y - stack[top] - 1) : y;
+				int area = rectW * rectH;
+				if (area > bestArea) {
+					bestArea = area;
+					int startX = x - rectW + 1;
+					int startY = (top >= 0) ? (stack[top] + 1) : 0;
+					largest = IRect(startX, startY, startX + rectW, startY + rectH);
 				}
-				if (stop) {
-					break;
-				}
-				height++;
 			}
-
-			if (width * height > largest.width() * largest.height()) {
-				largest = IRect(x, y, x + width, y + height);
-			}
+			stack[++top] = y;
 		}
 	}
 }
@@ -195,6 +173,36 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 	core::Buffer<color::RGBA> mask;
 	mask.resize(uDim * vDim);
 
+	// Pre-compute face-invariant values
+	voxel::Mesh &mesh = ctx.mesh.mesh[0];
+	VertexArray &vertices = mesh.getVertexVector();
+	UVArray &uvs = mesh.getUVVector();
+	IndexArray &indices = mesh.getIndexVector();
+	NormalArray &normals = mesh.getNormalVector();
+
+	const float invTex = 1.0f / (float)TexturSurfaceMesherState::TEX_SIZE;
+	const bool flip = isPositiveFace(face);
+
+	glm::vec3 n;
+	if (face == FaceNames::Left) {
+		n = glm::right();
+	} else if (face == FaceNames::Right) {
+		n = glm::left();
+	} else if (face == FaceNames::Down) {
+		n = glm::down();
+	} else if (face == FaceNames::Up) {
+		n = glm::up();
+	} else if (face == FaceNames::Front) {
+		n = glm::backward();
+	} else if (face == FaceNames::Back) {
+		n = glm::forward();
+	}
+
+	core::Buffer<int> heights;
+	heights.resize(vDim);
+	core::Buffer<int> rectStack;
+	rectStack.resize(vDim + 1);
+
 	for (int s = 0; s < sDim; ++s) {
 		mask.fill(color::RGBA(0));
 
@@ -228,19 +236,16 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 		}
 
 		// Greedy mesh the mask
+		const int sOffset = flip ? s + 1 : s;
 		while (true) {
 			IRect largest;
-			findLargestRect(mask, uDim, vDim, largest);
+			findLargestRect(mask, uDim, vDim, heights, rectStack, largest);
 
 			if (largest.width() == 0) {
 				break;
 			}
 
-			IRect uvRect = state.findMatch(mask, vDim, largest);
-			if (uvRect.width() == 0) {
-				uvRect = state.add(mask, vDim, largest);
-			}
-
+			IRect uvRect = state.add(mask, vDim, largest);
 			if (uvRect.width() <= 0) {
 				break;
 			}
@@ -250,24 +255,8 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 			const int u2 = largest.getMaxX();
 			const int v2 = largest.getMaxZ();
 
-			voxel::Mesh &mesh = ctx.mesh.mesh[0];
 			const int idx = (int)mesh.getNoOfVertices();
-			glm::vec3 n;
-			if (face == FaceNames::Left) {
-				n = glm::right();
-			} else if (face == FaceNames::Right) {
-				n = glm::left();
-			} else if (face == FaceNames::Down) {
-				n = glm::down();
-			} else if (face == FaceNames::Up) {
-				n = glm::up();
-			} else if (face == FaceNames::Front) {
-				n = glm::backward();
-			} else if (face == FaceNames::Back) {
-				n = glm::forward();
-			}
 
-			const float invTex = 1.0f / (float)TexturSurfaceMesherState::TEX_SIZE;
 			const float tu1 = uvRect.getMinX() * invTex;
 			const float tv1 = uvRect.getMinZ() * invTex;
 			const float tu2 = uvRect.getMaxX() * invTex;
@@ -279,23 +268,14 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 				glm::ivec3 pos;
 				pos[axes.x] = u;
 				pos[axes.y] = v;
-
-				int sOffset = isPositiveFace(face) ? s + 1 : s;
 				pos[axes.z] = sOffset;
 				return glm::vec3(pos);
 			};
-
-			const bool flip = isPositiveFace(face);
 
 			const glm::vec3 p0 = makeVert(u1, v1);
 			const glm::vec3 p1 = makeVert(u2, v1);
 			const glm::vec3 p2 = makeVert(u2, v2);
 			const glm::vec3 p3 = makeVert(u1, v2);
-
-			VertexArray &vertices = mesh.getVertexVector();
-			UVArray &uvs = mesh.getUVVector();
-			IndexArray &indices = mesh.getIndexVector();
-			NormalArray &normals = mesh.getNormalVector();
 
 			if (flip) {
 				vertices.emplace_back(makeV(p0));
@@ -327,14 +307,13 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 			indices.emplace_back(idx + 2);
 			indices.emplace_back(idx + 3);
 
-			for (int k = 0; k < 4; ++k) {
-				normals.emplace_back(n);
-			}
+			normals.emplace_back(n);
+			normals.emplace_back(n);
+			normals.emplace_back(n);
+			normals.emplace_back(n);
 
-			for (int cx = 0; cx < largest.width(); ++cx) {
-				for (int cy = 0; cy < largest.height(); ++cy) {
-					mask[(largest.getMinX() + cx) * vDim + (largest.getMinZ() + cy)] = 0;
-				}
+			for (int cx = largest.getMinX(); cx < largest.getMaxX(); ++cx) {
+				core_memset(&mask[cx * vDim + largest.getMinZ()], 0, largest.height() * sizeof(color::RGBA));
 			}
 		}
 	}
