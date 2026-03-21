@@ -5153,6 +5153,7 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 				childNode.setVisible(visible);
 			});
 		}
+		_sceneRenderer->markDirty();
 		return true;
 	}
 	return false;
