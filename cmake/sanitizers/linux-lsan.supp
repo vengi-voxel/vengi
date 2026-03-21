@@ -4,3 +4,4 @@ leak:libnvidia-glcore
 leak:libGLX_nvidia
 leak:libnvidia-eglcore
 leak:libGLdispatch
+leak:libdbus-1
