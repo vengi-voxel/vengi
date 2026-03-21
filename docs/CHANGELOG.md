@@ -39,9 +39,32 @@ General:
    - Fixed GLTF invalid mesh index for point nodes
    - Fixed undefined behaviour in `RawVolume::clear()` when building with msys2
    - Added Teardown `bin` format support
+   - Added Teardown `TDCZ` chunk support
+   - Added point cloud export support for mesh formats
+   - Fixed axis aligned mesh voxelization
+   - Added stipple line and bezier curve lua bindings
+   - Greatly improved greedy texture mesher performance (14x+ faster)
+   - Improved markdown rendering with multiline code block support
 
 VoxEdit:
 
+   - Added sculpt brush with smooth additive/erode and preserve top height modes
+   - Added Smooth Gaussian and Bridge Gap sculpt modes
+   - Added SquashToPlane sculpt mode to project voxels onto a clicked plane
+   - Added Reskin sculpt mode for applying skin patterns onto surfaces
+   - Added bezier curve support to the line brush
+   - Added Lasso, HoleRim2D, ColumnRim2D, HoleRim3D selection modes
+   - Added `mergeActiveToBackground` and `mergeVisibleToTemp` commands
+   - Added `brushapply`/`brushabort` commands and selection color operations
+   - Added global paste as node, splat merge, global copy visible, and deferred transform
+   - Added uniform scale checkbox for transform brush
+   - Added `nodetogglevisibleatcamera` command
+   - Added sprint action button for game mode movement
+   - Persist scene mode setting across sessions
+   - Added new brushes and lua script execution as MCP tools
+   - Fixed shading preview for selection brush (#783)
+   - Improved performance with dirty tracking for AABB and bone mesh rebuilds
+   - Improved performance by deferring hidden volume uploads
    - Added IKConstraint editing and inverse kinematic solver
    - Fixed scroll to active node in scene graph panel
    - Auto enable a newly created animation
