@@ -112,7 +112,7 @@ jobs:
         - uses: actions/checkout@v5
 
         - name: Setup
-          run: brew install sdl2 jpeg-turbo python curl glslang ninja ccache pkg-config
+          run: brew install sdl3 jpeg-turbo python curl glslang ninja ccache pkg-config
 
         - name: ccache
           uses: actions/cache@v4
