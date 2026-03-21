@@ -13,6 +13,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/Log.h"
 #include <SDL_keyboard.h>
+#include <SDL_version.h>
 
 namespace util {
 
@@ -72,6 +73,22 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 	if (keyCode == SDLK_UNKNOWN) {
 		core::string::replaceAllChars(key, '_', ' ');
 		keyCode = SDL_GetKeyFromName(key.c_str());
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		// https://github.com/libsdl-org/SDL/issues/12833
+		if (keyCode != SDLK_UNKNOWN && key.size() == 1) {
+			// Verify the name round-trips correctly - SDL3 may map characters like '+'
+			// to the physical key that produces them (e.g., '=' key)
+			const char *verify = SDL_GetKeyName(keyCode);
+			if (verify != nullptr && key[0] != verify[0]) {
+				SDL_Keycode directCode = (SDL_Keycode)(unsigned char)key[0];
+				const char *directName = SDL_GetKeyName(directCode);
+				if (directName != nullptr && key[0] == directName[0]) {
+					keyCode = directCode;
+				}
+			}
+		}
+#endif
 		if (keyCode == SDLK_UNKNOWN) {
 #if defined __APPLE__ || defined __EMSCRIPTEN__
 			// see Cocoa_InitKeyboard
