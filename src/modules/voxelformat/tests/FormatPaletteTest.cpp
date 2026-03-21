@@ -4,8 +4,6 @@
 
 #include "color/ColorUtil.h"
 #include "AbstractFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"

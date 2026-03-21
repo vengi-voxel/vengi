@@ -3,7 +3,6 @@
  */
 
 #include "AbstractFormatTest.h"
-#include "glm/fwd.hpp"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"

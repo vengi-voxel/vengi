@@ -6,7 +6,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
