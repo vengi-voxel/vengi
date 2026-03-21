@@ -31,7 +31,12 @@ jobs:
           run: |
             dnf install -y epel-release
             dnf config-manager --set-enabled crb
-            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build zip
+            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build zip ccache
+
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
 
         - name: ccache
           uses: actions/cache@v4
@@ -78,6 +83,11 @@ jobs:
             sudo apt-get update
             sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build zip
 
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
+
         - name: ccache
           uses: actions/cache@v4
           with:
@@ -113,6 +123,11 @@ jobs:
 
         - name: Setup
           run: brew install sdl3 jpeg-turbo python curl glslang ninja ccache pkg-config
+
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
 
         - name: ccache
           uses: actions/cache@v4
@@ -194,6 +209,11 @@ jobs:
             sudo apt-get update
             sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev xvfb
 
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
+
         - name: ccache
           uses: actions/cache@v4
           with:
@@ -226,6 +246,11 @@ jobs:
           run: |
             sudo apt-get update
             sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip
+
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
 
         - name: ccache
           uses: actions/cache@v4
@@ -293,6 +318,11 @@ jobs:
           with:
             version: 3.1.73
 
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
+
         - name: ccache
           uses: actions/cache@v4
           with:
@@ -353,6 +383,22 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
+
+        - name: Install sccache
+          run: |
+            choco install sccache -y
+
+        - name: Configure sccache
+          run: |
+            echo "SCCACHE_DIR=${{ runner.temp }}\.sccache" >> $env:GITHUB_ENV
+            New-Item -ItemType Directory -Force -Path "${{ runner.temp }}\.sccache"
+
+        - name: sccache
+          uses: actions/cache@v4
+          with:
+            path: ${{ runner.temp }}\.sccache
+            key: windows-${{ secrets.CACHE_VERSION }}-sccache-${{ matrix.buildType }}-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: windows-${{ secrets.CACHE_VERSION }}-sccache-${{ matrix.buildType }}-
 
         - name: Build
           run: |
@@ -458,6 +504,12 @@ jobs:
               mingw-w64-x86_64-libpng
               mingw-w64-x86_64-zlib
               mingw-w64-x86_64-curl
+
+        - name: Configure ccache
+          shell: msys2 {0}
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
 
         - name: ccache
           uses: actions/cache@v4
