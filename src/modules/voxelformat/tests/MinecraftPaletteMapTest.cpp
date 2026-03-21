@@ -46,9 +46,10 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testMaterialComplete) {
 }
 
 TEST_F(MinecraftPaletteMapTest, testAvoydMaterialTemplateColors) {
-	const io::FilePtr &file = io::filesystem()->open("Materials_Minecraft_1_21_5.avmt");
+	// https://www.enkisoftware.com/products
+	const io::FilePtr &file = io::filesystem()->open("Minecraft_Material.avmt");
 	if (!file || !file->exists()) {
-		GTEST_SKIP() << "No Materials_Minecraft_1_21_5.avmt found";
+		GTEST_SKIP() << "No minecraft material avmt found";
 		return;
 	}
 	palette::Palette pal;
