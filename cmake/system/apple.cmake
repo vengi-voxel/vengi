@@ -49,6 +49,20 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_C_FLAGS_RELEASE}
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_C_FLAGS_DEBUG}")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ObjC -dead_strip -lpthread")
+
+if (USE_CCACHE)
+	find_program(CCACHE "ccache")
+	if (CCACHE)
+		message(STATUS "Using ccache")
+		set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
+		set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+		set(CMAKE_OBJC_COMPILER_LAUNCHER ${CCACHE})
+		set(CMAKE_OBJCXX_COMPILER_LAUNCHER ${CCACHE})
+		set(ENV{CCACHE_CPP2} "yes")
+		add_compile_options(-Qunused-arguments)
+	endif()
+endif()
+
 if (USE_SANITIZER)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=undefined")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined")
