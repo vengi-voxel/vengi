@@ -3,11 +3,11 @@
  */
 
 #include "VolumeRotator.h"
-#include "app/Async.h"
+#include "app/ForParallel.h"
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/RawVolume.h"
-#include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"

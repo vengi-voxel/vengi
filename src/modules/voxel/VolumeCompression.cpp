@@ -3,6 +3,7 @@
  */
 
 #include "VolumeCompression.h"
+#include "voxel/RawVolume.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 

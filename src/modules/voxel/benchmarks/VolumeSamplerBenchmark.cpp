@@ -4,7 +4,7 @@
 
 #include "app/benchmark/AbstractBenchmark.h"
 #include "voxel/RawVolume.h"
-#include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "voxel/VoxelSampling.h"
 
 class VolumeSamplerBenchmark : public app::AbstractBenchmark {

@@ -4,10 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
-#include "core/Trace.h"
-#include "voxel/Voxel.h"
-#include "Raycast.h"
 #include "voxel/Face.h"
 
 namespace voxelutil {

@@ -4,13 +4,13 @@
 
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"
-#include "io/FileStream.h"
 #include "io/MemoryReadStream.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
+#include <glm/geometric.hpp>
 
 namespace voxel {
 
@@ -84,8 +84,8 @@ TEST_F(TextureSurfaceExtractorTest, testWindingOrder) {
 
 	// A single voxel should have 6 faces, each with 4 vertices and 2 triangles (6 indices)
 	EXPECT_EQ(vertices.size(), 24u); // 6 faces * 4 vertices
-	EXPECT_EQ(indices.size(), 36u);  // 6 faces * 2 triangles * 3 indices
-	EXPECT_EQ(normals.size(), 24u);  // 6 faces * 4 vertices
+	EXPECT_EQ(indices.size(), 36u);	 // 6 faces * 2 triangles * 3 indices
+	EXPECT_EQ(normals.size(), 24u);	 // 6 faces * 4 vertices
 
 	// Check each triangle has CCW winding when viewed from outside
 	for (size_t i = 0; i < indices.size(); i += 3) {
@@ -106,7 +106,8 @@ TEST_F(TextureSurfaceExtractorTest, testWindingOrder) {
 							 << "v1=" << v1.x << "," << v1.y << "," << v1.z << " "
 							 << "v2=" << v2.x << "," << v2.y << "," << v2.z << " "
 							 << "normal=" << normal.x << "," << normal.y << "," << normal.z << " "
-							 << "calculated=" << calculatedNormal.x << "," << calculatedNormal.y << "," << calculatedNormal.z;
+							 << "calculated=" << calculatedNormal.x << "," << calculatedNormal.y << ","
+							 << calculatedNormal.z;
 	}
 }
 

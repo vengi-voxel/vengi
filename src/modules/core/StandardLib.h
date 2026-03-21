@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string.h>
+#include <stdint.h>
 
 #ifndef SDLCALL
 #if defined(_WIN32) && !defined(__GNUC__)
@@ -18,6 +19,7 @@ extern "C" void *SDLCALL SDL_malloc(size_t size);
 extern "C" void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern "C" void SDLCALL SDL_free(void *mem);
 extern "C" void *SDLCALL SDL_memset(void *dst, int c, size_t len);
+extern "C" void *SDLCALL SDL_memset4(void *dst, uint32_t val, size_t dwords);
 extern "C" void *SDLCALL SDL_memcpy(void *dst, const void *src, size_t len);
 extern "C" int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 extern "C" char *SDLCALL SDL_strdup(const char *str);

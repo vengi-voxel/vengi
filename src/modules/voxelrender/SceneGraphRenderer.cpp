@@ -3,8 +3,7 @@
  */
 
 #include "SceneGraphRenderer.h"
-#include "app/Async.h"
-#include "color/Color.h"
+#include "app/ForParallel.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "render/CameraRenderer.h"

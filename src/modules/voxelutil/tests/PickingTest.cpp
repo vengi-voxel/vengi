@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/Raycast.h"
 
 namespace voxelutil {
 

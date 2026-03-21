@@ -3,6 +3,7 @@
  */
 
 #include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"

@@ -8,7 +8,7 @@
 #include "Voxel.h"
 #include "core/collection/Buffer.h"
 #include "VolumeSampler.h"
-#include <glm/vec3.hpp>
+#include <glm/ext/vector_int3.hpp>
 
 namespace voxel {
 

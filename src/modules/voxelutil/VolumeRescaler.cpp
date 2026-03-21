@@ -3,8 +3,8 @@
  */
 
 #include "VolumeRescaler.h"
-#include "app/Async.h"
-#include "voxel/VolumeSampler.h"
+#include "app/ForParallel.h"
+#include "voxel/VolumeSamplerUtil.h"
 
 namespace voxelutil {
 

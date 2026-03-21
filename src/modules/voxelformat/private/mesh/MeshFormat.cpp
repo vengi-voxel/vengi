@@ -4,8 +4,7 @@
 
 #include "MeshFormat.h"
 #include "app/App.h"
-#include "app/Async.h"
-#include "color/Color.h"
+#include "app/ForParallel.h"
 #include "core/ConfigVar.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -34,7 +33,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
-#include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
