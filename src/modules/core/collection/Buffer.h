@@ -61,7 +61,7 @@ public:
 			return;
 		}
 		checkBufferSize(amount);
-		core_memset(_buffer, 0, _capacity * sizeof(TYPE));
+		core_memset((void *)_buffer, 0, _capacity * sizeof(TYPE));
 		_size = amount;
 	}
 
@@ -70,7 +70,7 @@ public:
 			return;
 		}
 		checkBufferSize(amount);
-		core_memset(_buffer, value, _capacity * sizeof(TYPE));
+		core_memset((void *)_buffer, value, _capacity * sizeof(TYPE));
 		_size = amount;
 	}
 
