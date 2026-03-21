@@ -103,7 +103,8 @@ bool Metric::createTags(char *buffer, size_t len, const TagMap &tags, const char
 }
 
 bool Metric::assemble(const char *key, int value, const char *type, const TagMap &tags) const {
-	if (!_messageSender) {
+	IMetricSenderPtr messageSender = _messageSender;
+	if (!messageSender) {
 		return false;
 	}
 	constexpr int metricSize = 256;
@@ -132,7 +133,7 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 		json.append("}");
 		json.append("}");
 		written = json.size();
-		if (!_messageSender->send(json.c_str())) {
+		if (!messageSender->send(json.c_str())) {
 			_messageSender = IMetricSenderPtr();
 			Log::warn("Failed to send metric - disable metrics for this session");
 			return false;
@@ -166,7 +167,7 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 	if (written >= metricSize) {
 		return false;
 	}
-	return _messageSender->send(buffer);
+	return messageSender->send(buffer);
 }
 
 } // namespace metric
