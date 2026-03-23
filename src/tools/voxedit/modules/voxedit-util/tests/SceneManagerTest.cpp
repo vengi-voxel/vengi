@@ -1773,4 +1773,35 @@ TEST_F(SceneManagerTest, testSelectOnlyColor) {
 	EXPECT_FALSE((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
 }
 
+TEST_F(SceneManagerTest, testNodeToggleLocked) {
+	const int activeNodeId = _sceneMgr->sceneGraph().activeNode();
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(activeNodeId);
+	EXPECT_FALSE(node.locked());
+
+	_sceneMgr->nodeSetLocked(activeNodeId, true);
+	EXPECT_TRUE(node.locked());
+
+	_sceneMgr->nodeSetLocked(activeNodeId, false);
+	EXPECT_FALSE(node.locked());
+}
+
+TEST_F(SceneManagerTest, testNodeLockAllAndUnlockAll) {
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelChild("second node", 1, 1, 1));
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelChild("third node", 1, 1, 1));
+
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		(*iter).setLocked(true);
+	}
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		EXPECT_TRUE((*iter).locked());
+	}
+
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		(*iter).setLocked(false);
+	}
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		EXPECT_FALSE((*iter).locked());
+	}
+}
+
 } // namespace voxedit
