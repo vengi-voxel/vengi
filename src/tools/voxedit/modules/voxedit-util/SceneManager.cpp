@@ -632,6 +632,17 @@ bool SceneManager::import(const core::String& file) {
 		Log::error("Failed to load %s", file.c_str());
 		return false;
 	}
+	if (core::getVar(cfg::VoxEditImportSingleNode)->boolVal()) {
+		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+		if (merged.hasVolume()) {
+			newSceneGraph.clear();
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+			newNode.setVolume(merged.volume());
+			newNode.setPalette(merged.palette);
+			newNode.setNormalPalette(merged.normalPalette);
+			newSceneGraph.emplace(core::move(newNode));
+		}
+	}
 
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
@@ -2929,6 +2940,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditHideInactive);
 	const core::VarDef voxEditSceneMode(cfg::VoxEditSceneMode, false, N_("Scene mode"), N_("Start in scene mode"));
 	core::Var::registerVar(voxEditSceneMode);
+	const core::VarDef voxEditImportSingleNode(cfg::VoxEditImportSingleNode, false, N_("Import as single node"), N_("Merge all nodes into a single node when importing a file"));
+	core::Var::registerVar(voxEditImportSingleNode);
 	const core::VarDef voxEditViewdistance(cfg::VoxEditViewdistance, 5000, 10, 5000, N_("View distance"), N_("Far plane for the camera"));
 	core::Var::registerVar(voxEditViewdistance);
 	const core::VarDef voxEditShowaxis(cfg::VoxEditShowaxis, true, N_("Show gizmo"), N_("Show the axis"));
