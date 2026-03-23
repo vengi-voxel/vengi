@@ -30,6 +30,8 @@ static constexpr int MAX_VOLUMES = 2048;
 
 enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 
+enum class MeshAllocStrategy { FullPrealloc, SmallGrow, Max };
+
 /**
  * @brief Handles the mesh extraction of the volumes
  *
