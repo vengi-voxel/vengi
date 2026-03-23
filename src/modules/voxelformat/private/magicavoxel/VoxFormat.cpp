@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <climits>
 #include <glm/gtc/quaternion.hpp>
@@ -142,6 +143,14 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 		}
 	};
 	app::for_parallel(0, ogtModel->size_z, fn);
+
+	if (core::getVar(cfg::VoxelCropOnLoad)->boolVal()) {
+		voxel::RawVolume *cropped = voxelutil::cropVolume(v);
+		if (cropped != nullptr) {
+			delete v;
+			v = cropped;
+		}
+	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	loadKeyFrames(sceneGraph, node, ogtInstance, scene);

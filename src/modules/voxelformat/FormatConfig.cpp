@@ -119,6 +119,10 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatVXLLoadHVA(cfg::VoxformatVXLLoadHVA, true, N_("Load HVA"),
 										   N_("Load the hva for animations"), core::CV_NOPERSIST);
 	core::registerVar(voxformatVXLLoadHVA);
+	const core::VarDef voxelCropOnLoad(
+		cfg::VoxelCropOnLoad, false, N_("Crop on load"),
+		N_("Crop volumes to tight bounds on load to save memory"), core::CV_NOPERSIST);
+	core::registerVar(voxelCropOnLoad);
 	const core::VarDef voxformatVOXCreateGroups(
 		cfg::VoxformatVOXCreateGroups, true, N_("Create groups"),
 		NC_("Create groups when saving MagicaVoxel vox files", "Create groups for vox file"), core::CV_NOPERSIST);

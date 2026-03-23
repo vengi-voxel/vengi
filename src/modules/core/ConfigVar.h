@@ -64,6 +64,8 @@ constexpr const char *VoxelMeshSize = "voxel_meshsize";
 constexpr const char *VoxelMeshMode = "voxel_meshmode";
 // Mesh allocation strategy: 0 = full pre-alloc (262K verts), 1 = small (1K verts, grow as needed)
 constexpr const char *VoxelMeshAlloc = "voxel_meshalloc";
+// Crop volumes to tight bounds on load: 0 = off, 1 = on (saves memory but limits editing)
+constexpr const char *VoxelCropOnLoad = "voxel_croponload";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
