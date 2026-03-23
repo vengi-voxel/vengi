@@ -25,6 +25,8 @@ void CameraMovement::construct() {
 	_friction = core::Var::registerVar(gameModeFriction);
 	const core::VarDef gameModeBodySize(cfg::GameModeBodySize, 0.2f, N_("Body size"), N_("Body size in game mode"));
 	_bodySize = core::Var::registerVar(gameModeBodySize);
+	const core::VarDef gameModeSprintMultiplier(cfg::GameModeSprintMultiplier, 3.0f, N_("Sprint multiplier"), N_("Speed multiplier when sprinting"));
+	_sprintMultiplier = core::Var::registerVar(gameModeSprintMultiplier);
 	const core::VarDef gameModeClipping(cfg::GameModeClipping, false, N_("Camera clipping"), N_("Enable camera clipping"), core::CV_NOPERSIST);
 	_clipping = core::Var::registerVar(gameModeClipping);
 	const core::VarDef gameModeApplyGravity(cfg::GameModeApplyGravity, false, N_("Gravity"), N_("Enable gravity"), core::CV_NOPERSIST);
@@ -58,9 +60,8 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 
 	_body.extents.y = _bodyHeight->floatVal();
-	static constexpr float sprintMultiplier = 3.0f;
 	const float baseSpeed = _movementSpeed->floatVal();
-	const float speed = _movement.sprint() ? baseSpeed * sprintMultiplier : baseSpeed;
+	const float speed = _movement.sprint() ? baseSpeed * _sprintMultiplier->floatVal() : baseSpeed;
 	if (_clipping->isDirty()) {
 		_clipping->markClean();
 		updateBodyPosition(*camera);

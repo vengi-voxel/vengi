@@ -156,5 +156,6 @@ constexpr const char *GameModeMovementSpeed = "g_movementspeed";
 constexpr const char *GameModeGravity = "g_gravity";
 constexpr const char *GameModeFriction = "g_friction";
 constexpr const char *GameModeBodySize = "g_bodysize";
+constexpr const char *GameModeSprintMultiplier = "g_sprintmultiplier";
 
 } // namespace cfg

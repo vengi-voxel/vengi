@@ -33,6 +33,7 @@ namespace voxelrender {
 class CameraMovement : public core::IComponent {
 protected:
 	core::VarPtr _movementSpeed;
+	core::VarPtr _sprintMultiplier;
 	core::VarPtr _jumpVelocity;
 	core::VarPtr _bodyHeight;
 	core::VarPtr _gravity;
