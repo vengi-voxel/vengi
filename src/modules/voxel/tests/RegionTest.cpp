@@ -244,7 +244,7 @@ TEST_F(RegionTest, testIndexBackAndForth) {
 	const int size = region.voxels();
 	for (int i = 0; i < size; ++i) {
 		const glm::ivec3 pos = region.fromIndex(i);
-		const int idx = region.index(pos);
+		const int64_t idx = region.index(pos);
 		EXPECT_EQ(i, idx);
 	}
 }

@@ -237,9 +237,9 @@ static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &
 	SceneGraphNode newNode(type);
 	copy(sourceNode, newNode);
 	if (type == SceneGraphNodeType::Model) {
-		const voxel::RawVolume *vol = source.resolveVolume(sourceNode);
-		if (vol) {
-			newNode.setVolume(new voxel::RawVolume(*vol), true);
+		const voxel::RawVolume *srcVol = source.resolveVolume(sourceNode);
+		if (srcVol) {
+			newNode.setVolume(new voxel::RawVolume(*srcVol), true);
 		}
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);

@@ -282,9 +282,9 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = 0; y < height; ++y) {
 				voxel::RawVolume::Sampler sampler3 = sampler2;
-				const int stride = (y * depth + z) * width;
+				const int64_t stride = ((int64_t)y * depth + z) * width;
 				for (int x = 0; x < width; ++x) {
-					const int idx = stride + x;
+					const int64_t idx = stride + x;
 					const uint8_t palIdx = (*blocks.byteArray())[idx];
 					if (palIdx != 0u) {
 						uint8_t currentPalIdx;

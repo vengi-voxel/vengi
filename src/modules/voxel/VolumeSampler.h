@@ -348,8 +348,8 @@ public:
 		// Then we update the voxel pointer
 		if (currentPositionValid()) {
 			const glm::aligned_ivec4 localPos = _posInVolume - region.getLowerCorner4();
-			const int32_t uVoxelIndex =
-				localPos.x + localPos.y * _volume->width() + localPos.z * _volume->width() * _volume->height();
+			const int64_t uVoxelIndex =
+				(int64_t)localPos.x + (int64_t)localPos.y * _volume->width() + (int64_t)localPos.z * region.stride();
 
 			_currentVoxel = _volume->voxels() + uVoxelIndex;
 			return true;
@@ -410,7 +410,7 @@ public:
 		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel += (intptr_t)(_volume->width() * offset);
+			_currentVoxel += (int64_t)_volume->width() * offset;
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -431,7 +431,7 @@ public:
 		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel += (intptr_t)(_volume->width() * _volume->height() * offset);
+			_currentVoxel += region().stride() * offset;
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -489,7 +489,7 @@ public:
 		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel -= (intptr_t)(_volume->width() * offset);
+			_currentVoxel -= (int64_t)_volume->width() * offset;
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -510,7 +510,7 @@ public:
 		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel -= (intptr_t)(_volume->width() * _volume->height() * offset);
+			_currentVoxel -= region().stride() * offset;
 		} else {
 			_currentVoxel = nullptr;
 		}

@@ -208,11 +208,11 @@ bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		}
 	}
 	// probability values (param1)
-	for (int32_t n = 0; n < region.voxels(); ++n) {
+	for (int64_t n = 0; n < region.voxels(); ++n) {
 		wrapBool(zipStream.writeUInt8(0x7f))
 	}
 	// param2
-	for (int32_t n = 0; n < region.voxels(); ++n) {
+	for (int64_t n = 0; n < region.voxels(); ++n) {
 		wrapBool(zipStream.writeUInt8(0x00))
 	}
 	zipStream.flush();

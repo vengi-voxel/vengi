@@ -35,8 +35,8 @@ namespace voxelutil {
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t yStride = width;
+	const int64_t zStride = (int64_t)width * height;
 	const voxel::Voxel *data = volume->voxels();
 	const size_t lineSize = sizeof(voxel::Voxel) * width;
 
@@ -49,9 +49,9 @@ namespace voxelutil {
 
 	// Scan through all Z-Y planes to find bounds
 	for (int z = 0; z < depth; ++z) {
-		const int zBase = z * zStride;
+		const int64_t zBase = z * zStride;
 		for (int y = 0; y < height; ++y) {
-			const int baseIndex = zBase + y * yStride;
+			const int64_t baseIndex = zBase + y * yStride;
 			const voxel::Voxel *lineStart = &data[baseIndex];
 
 			// Check if this line has any non-air voxels

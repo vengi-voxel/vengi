@@ -224,8 +224,8 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		// Use the RawVolume copy-with-region constructor which will handle regions
 		// that extend outside the source by filling with air or cropping as needed.
 		voxel::RawVolume v(*volume, region);
-		const int actualVoxels = v.region().voxels();
-		io::BufferedReadWriteStream outStream((int64_t)actualVoxels * sizeof(voxel::Voxel));
+		const int64_t actualVoxels = v.region().voxels();
+		io::BufferedReadWriteStream outStream(actualVoxels * (int64_t)sizeof(voxel::Voxel));
 		io::ZipWriteStream stream(outStream);
 		if (stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel)) == -1) {
 			Log::error("Failed to compress memento volume data");
@@ -244,8 +244,8 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		}
 		return data;
 	}
-	const int allVoxels = volume->region().voxels();
-	io::BufferedReadWriteStream outStream((int64_t)allVoxels * sizeof(voxel::Voxel));
+	const int64_t allVoxels = volume->region().voxels();
+	io::BufferedReadWriteStream outStream(allVoxels * (int64_t)sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
 	if (stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel)) == -1) {
 		Log::error("Failed to compress memento volume data");

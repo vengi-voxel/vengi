@@ -132,9 +132,9 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = 0; y < size.y; ++y) {
 				voxel::RawVolume::Sampler sampler3 = sampler2;
-				const int stride = (y * size.z + z) * size.x;
+				const int64_t stride = ((int64_t)y * size.z + z) * size.x;
 				for (int x = 0; x < size.x; ++x) {
-					const int idx = stride + x;
+					const int64_t idx = stride + x;
 					const voxel::Voxel &voxel = sampler3.voxel();
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;

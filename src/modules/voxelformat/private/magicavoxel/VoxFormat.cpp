@@ -16,6 +16,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <climits>
 #include <glm/gtc/quaternion.hpp>
 #include "MagicaVoxel.h"
 #include "palette/Palette.h"
@@ -98,11 +99,26 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	}
 	return false;
 #else
-	const glm::ivec3 &ogtMins = calcTransform(ogtMat, glm::vec3(0));
-	const glm::ivec3 &ogtMaxs = calcTransform(ogtMat, ogtVolumeSize(ogtModel));
-	const glm::ivec3 mins(-(ogtMins.x + 1), ogtMins.z, ogtMins.y);
-	const glm::ivec3 maxs(-(ogtMaxs.x + 1), ogtMaxs.z, ogtMaxs.y);
-	voxel::Region region(glm::min(mins, maxs), glm::max(mins, maxs));
+	const glm::vec3 volSize = ogtVolumeSize(ogtModel);
+	const glm::vec3 corners[8] = {
+		glm::vec3(0),
+		glm::vec3(volSize.x, 0, 0),
+		glm::vec3(0, volSize.y, 0),
+		glm::vec3(volSize.x, volSize.y, 0),
+		glm::vec3(0, 0, volSize.z),
+		glm::vec3(volSize.x, 0, volSize.z),
+		glm::vec3(0, volSize.y, volSize.z),
+		volSize
+	};
+	glm::ivec3 mins(INT_MAX);
+	glm::ivec3 maxs(INT_MIN);
+	for (int c = 0; c < 8; ++c) {
+		const glm::ivec3 ogtCorner = calcTransform(ogtMat, corners[c]);
+		const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
+		mins = glm::min(mins, pos);
+		maxs = glm::max(maxs, pos);
+	}
+	voxel::Region region(mins, maxs);
 	const glm::ivec3 shift = region.getLowerCorner();
 	region.shift(-shift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);

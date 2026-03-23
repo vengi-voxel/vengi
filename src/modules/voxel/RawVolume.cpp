@@ -6,6 +6,7 @@
 #include "app/ForParallel.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
 #include <glm/common.hpp>
@@ -32,6 +33,10 @@ RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
+	if (_data == nullptr) {
+		Log::error("Failed to allocate %zu bytes for volume copy", size);
+		return;
+	}
 	_borderVoxel = copy->_borderVoxel;
 	core_memcpy((void*)_data, (const void*)copy->_data, size);
 }
@@ -40,6 +45,10 @@ RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
+	if (_data == nullptr) {
+		Log::error("Failed to allocate %zu bytes for volume copy", size);
+		return;
+	}
 	_borderVoxel = copy._borderVoxel;
 	core_memcpy((void*)_data, (const void*)copy._data, size);
 }
@@ -77,10 +86,18 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		}
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
+		if (_data == nullptr) {
+			Log::error("Failed to allocate %zu bytes for volume copy", size);
+			return;
+		}
 		core_memset((void *)_data, 0, size);
 	} else if (src.region() == _region) {
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
+		if (_data == nullptr) {
+			Log::error("Failed to allocate %zu bytes for volume copy", size);
+			return;
+		}
 		core_memcpy((void *)_data, (const void *)src._data, size);
 		if (onlyAir) {
 			*onlyAir = false;
@@ -94,33 +111,37 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		}
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
+		if (_data == nullptr) {
+			Log::error("Failed to allocate %zu bytes for volume copy", size);
+			return;
+		}
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
 		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
 		const glm::ivec3 &srcMins = src._region.getLowerCorner();
 
-		const int tgtWidth = _region.getWidthInVoxels();
-		const int tgtHeight = _region.getHeightInVoxels();
-		const int tgtYStride = tgtWidth;
-		const int tgtZStride = tgtWidth * tgtHeight;
+		const int64_t tgtWidth = _region.getWidthInVoxels();
+		const int64_t tgtHeight = _region.getHeightInVoxels();
+		const int64_t tgtYStride = tgtWidth;
+		const int64_t tgtZStride = tgtWidth * tgtHeight;
 
-		const int srcWidth = src._region.getWidthInVoxels();
-		const int srcHeight = src._region.getHeightInVoxels();
-		const int srcYStride = srcWidth;
-		const int srcZStride = srcWidth * srcHeight;
+		const int64_t srcWidth = src._region.getWidthInVoxels();
+		const int64_t srcHeight = src._region.getHeightInVoxels();
+		const int64_t srcYStride = srcWidth;
+		const int64_t srcZStride = srcWidth * srcHeight;
 
 		const int lineLength = tgtMaxs.x - tgtMins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 
 		for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
-			const int32_t tgtZPos = z - tgtMins.z;
-			const int32_t srcZPos = z - srcMins.z;
+			const int64_t tgtZPos = z - tgtMins.z;
+			const int64_t srcZPos = z - srcMins.z;
 
 			for (int y = tgtMins.y; y <= tgtMaxs.y; ++y) {
-				const int32_t tgtYPos = y - tgtMins.y;
-				const int32_t srcYPos = y - srcMins.y;
+				const int64_t tgtYPos = y - tgtMins.y;
+				const int64_t srcYPos = y - srcMins.y;
 
-				const int tgtBaseIndex = tgtZPos * tgtZStride + tgtYPos * tgtYStride + (tgtMins.x - _region.getLowerX());
-				const int srcBaseIndex = srcZPos * srcZStride + srcYPos * srcYStride + (tgtMins.x - srcMins.x);
+				const int64_t tgtBaseIndex = tgtZPos * tgtZStride + tgtYPos * tgtYStride + (tgtMins.x - _region.getLowerX());
+				const int64_t srcBaseIndex = srcZPos * srcZStride + srcYPos * srcYStride + (tgtMins.x - srcMins.x);
 
 				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
 				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
@@ -157,20 +178,20 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t width = _region.getWidthInVoxels();
+	const int64_t height = _region.getHeightInVoxels();
+	const int64_t yStride = width;
+	const int64_t zStride = width * height;
 
-	const int xStart = mins.x - _region.getLowerX();
+	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int zPos = z - _region.getLowerZ();
-		const int zBase = zPos * zStride + xStart;
+		const int64_t zPos = z - _region.getLowerZ();
+		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int yPos = y - _region.getLowerY();
-			const int baseIndex = zBase + (yPos * yStride);
+			const int64_t yPos = y - _region.getLowerY();
+			const int64_t baseIndex = zBase + (yPos * yStride);
 
 			int offset = 0;
 			int remaining = lineLength;
@@ -227,20 +248,20 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t width = _region.getWidthInVoxels();
+	const int64_t height = _region.getHeightInVoxels();
+	const int64_t yStride = width;
+	const int64_t zStride = width * height;
 
-	const int xStart = mins.x - _region.getLowerX();
+	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int zPos = z - _region.getLowerZ();
-		const int zBase = zPos * zStride + xStart;
+		const int64_t zPos = z - _region.getLowerZ();
+		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int yPos = y - _region.getLowerY();
-			const int baseIndex = zBase + (yPos * yStride);
+			const int64_t yPos = y - _region.getLowerY();
+			const int64_t baseIndex = zBase + (yPos * yStride);
 
 			int offset = 0;
 			int remaining = lineLength;
@@ -287,20 +308,20 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t width = _region.getWidthInVoxels();
+	const int64_t height = _region.getHeightInVoxels();
+	const int64_t yStride = width;
+	const int64_t zStride = width * height;
 
-	const int xStart = mins.x - _region.getLowerX();
+	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int zPos = z - _region.getLowerZ();
-		const int zBase = zPos * zStride + xStart;
+		const int64_t zPos = z - _region.getLowerZ();
+		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int yPos = y - _region.getLowerY();
-			const int baseIndex = zBase + (yPos * yStride);
+			const int64_t yPos = y - _region.getLowerY();
+			const int64_t baseIndex = zBase + (yPos * yStride);
 
 			int offset = 0;
 			int remaining = lineLength;
@@ -347,20 +368,20 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t width = _region.getWidthInVoxels();
+	const int64_t height = _region.getHeightInVoxels();
+	const int64_t yStride = width;
+	const int64_t zStride = width * height;
 
-	const int xStart = mins.x - _region.getLowerX();
+	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int zPos = z - _region.getLowerZ();
-		const int zBase = zPos * zStride + xStart;
+		const int64_t zPos = z - _region.getLowerZ();
+		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int yPos = y - _region.getLowerY();
-			const int baseIndex = zBase + (yPos * yStride);
+			const int64_t yPos = y - _region.getLowerY();
+			const int64_t baseIndex = zBase + (yPos * yStride);
 
 			int offset = 0;
 			int remaining = lineLength;
@@ -402,20 +423,20 @@ bool RawVolume::isEmpty(const Region &region) const {
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
-	const int yStride = width;
-	const int zStride = width * height;
+	const int64_t width = _region.getWidthInVoxels();
+	const int64_t height = _region.getHeightInVoxels();
+	const int64_t yStride = width;
+	const int64_t zStride = width * height;
 
 	const int lineLength = maxs.x - mins.x + 1;
 	const int voxelLineSize = sizeof(voxel::Voxel) * lineLength;
-	const int xStart = (mins.x - _region.getLowerX());
+	const int64_t xStart = (mins.x - _region.getLowerX());
 	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int zPos = z - _region.getLowerZ();
-		const int zBase = zPos * zStride + xStart;
+		const int64_t zPos = z - _region.getLowerZ();
+		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int yPos = y - _region.getLowerY();
-			const int baseIndex = zBase + (yPos * yStride);
+			const int64_t yPos = y - _region.getLowerY();
+			const int64_t baseIndex = zBase + (yPos * yStride);
 			const voxel::Voxel* dataLine = &_data[baseIndex];
 
 			if (core::memchr_not(dataLine, 0, voxelLineSize) != nullptr) {
@@ -453,35 +474,35 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		const glm::ivec3 &mins = srcRegion.getLowerCorner();
 		const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 		const voxel::Region &fullSrcRegion = src.region();
-		const int width = _region.getWidthInVoxels();
-		const int height = _region.getHeightInVoxels();
+		const int64_t width = _region.getWidthInVoxels();
+		const int64_t height = _region.getHeightInVoxels();
 
-		const int tgtYStride = width;
-		const int tgtZStride = width * height;
+		const int64_t tgtYStride = width;
+		const int64_t tgtZStride = width * height;
 
-		const int srcWidth = fullSrcRegion.getWidthInVoxels();
-		const int srcHeight = fullSrcRegion.getHeightInVoxels();
-		const int srcXOffset = mins.x - fullSrcRegion.getLowerX();
-		const int srcYOffset = mins.y - fullSrcRegion.getLowerY();
-		const int srcZOffset = mins.z - fullSrcRegion.getLowerZ();
-		const int srcYStride = srcWidth;
-		const int srcZStride = srcWidth * srcHeight;
-		const int tgtXOffset = mins.x - _region.getLowerX();
+		const int64_t srcWidth = fullSrcRegion.getWidthInVoxels();
+		const int64_t srcHeight = fullSrcRegion.getHeightInVoxels();
+		const int64_t srcXOffset = mins.x - fullSrcRegion.getLowerX();
+		const int64_t srcYOffset = mins.y - fullSrcRegion.getLowerY();
+		const int64_t srcZOffset = mins.z - fullSrcRegion.getLowerZ();
+		const int64_t srcYStride = srcWidth;
+		const int64_t srcZStride = srcWidth * srcHeight;
+		const int64_t tgtXOffset = mins.x - _region.getLowerX();
 
 		const int lineLength = maxs.x - mins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 		for (int z = start; z < end; ++z) {
-			const int tgtZPos = z - _region.getLowerZ();
-			const int srcZPos = srcZOffset + z - mins.z;
-			const int srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
-			const int tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
+			const int64_t tgtZPos = z - _region.getLowerZ();
+			const int64_t srcZPos = srcZOffset + z - mins.z;
+			const int64_t srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
+			const int64_t tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
 
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const int tgtYPos = y - _region.getLowerY();
-				const int srcYPos = srcYOffset + y - mins.y;
+				const int64_t tgtYPos = y - _region.getLowerY();
+				const int64_t srcYPos = srcYOffset + y - mins.y;
 
-				const int tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
-				const int srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
+				const int64_t tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
+				const int64_t srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
 
 				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
 				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
@@ -527,21 +548,21 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 	t.y = (t.y % h + h) % h;
 	t.z = (t.z % d + d) % d;
 
-	const int hwstride = h * w;
+	const int64_t hwstride = (int64_t)h * w;
 	for (int z = 0; z < d; ++z) {
-		const int zhwstride = z * hwstride;
+		const int64_t zhwstride = (int64_t)z * hwstride;
 		for (int y = 0; y < h; ++y) {
-			const int begin = zhwstride + y * w;
-			core::rotate(_data + begin, _data + begin + t.x, _data + zhwstride + (y + 1) * w);
+			const int64_t begin = zhwstride + (int64_t)y * w;
+			core::rotate(_data + begin, _data + begin + t.x, _data + zhwstride + (int64_t)(y + 1) * w);
 		}
 	}
 
-	const int yoffset = t.y * w;
+	const int64_t yoffset = (int64_t)t.y * w;
 	for (int z = 0; z < d; ++z) {
-		core::rotate(_data + z * hwstride, _data + z * hwstride + yoffset, _data + (z + 1) * hwstride);
+		core::rotate(_data + (int64_t)z * hwstride, _data + (int64_t)z * hwstride + yoffset, _data + (int64_t)(z + 1) * hwstride);
 	}
 
-	core::rotate(_data, _data + t.z * hwstride, _data + d * hwstride);
+	core::rotate(_data, _data + (int64_t)t.z * hwstride, _data + (int64_t)d * hwstride);
 
 	return true;
 }
@@ -567,7 +588,7 @@ const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 		const int32_t iLocalYPos = y - _region.getLowerY();
 		const int32_t iLocalZPos = z - _region.getLowerZ();
 
-		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * _region.stride()];
+		return _data[(int64_t)iLocalXPos + (int64_t)iLocalYPos * width() + (int64_t)iLocalZPos * _region.stride()];
 	}
 	return _borderVoxel;
 }
@@ -590,7 +611,7 @@ bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
 	return setVoxel(glm::ivec3(x, y, z), voxel);
 }
 
-bool RawVolume::setVoxel(int idx, const Voxel &voxel) {
+bool RawVolume::setVoxel(int64_t idx, const Voxel &voxel) {
 	if (idx < 0 || idx >= _region.stride() * depth()) {
 		return false; // Index out of bounds
 	}
@@ -616,7 +637,7 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	}
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
-	const int index = localPos.x + localPos.y * width() + localPos.z * _region.stride();
+	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
 	if (_data[index] == voxel) {
 		return false;
 	}
@@ -627,7 +648,7 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
-	const int index = localPos.x + localPos.y * width() + localPos.z * _region.stride();
+	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
 	_data[index] = voxel;
 }
 
@@ -644,8 +665,11 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	// Create the data
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
-	core_assert_msg_always(_data != nullptr, "Failed to allocate the memory for a volume with the dimensions %i:%i:%i",
-						   width(), height(), depth());
+	if (_data == nullptr) {
+		Log::error("Failed to allocate %zu bytes for a volume with the dimensions %i:%i:%i",
+				   size, width(), height(), depth());
+		return;
+	}
 
 	// Clear to zeros
 	clear();

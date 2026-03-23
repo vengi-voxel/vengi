@@ -194,6 +194,10 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
 		Log::debug("Merge volumes before saving as the target format only supports one volume");
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
+		if (!merged.hasVolume()) {
+			Log::error("Failed to merge volumes for saving");
+			return false;
+		}
 		scenegraph::SceneGraph mergedSceneGraph;
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
 		mergedNode.setVolume(merged.volume(), true);

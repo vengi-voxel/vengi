@@ -172,16 +172,16 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	// Direct volume access with precomputed strides
 	const Voxel *volData = volume->voxels();
 	const Region &volRegion = volume->region();
-	const int volW = volume->width();
-	const int volStride = volRegion.stride();
+	const int64_t volW = volume->width();
+	const int64_t volStride = volRegion.stride();
 
-	const int dimStrides[3] = {1, volW, volStride};
-	const int uVolStride = dimStrides[axes.x];
-	const int vVolStride = dimStrides[axes.y];
-	const int sVolStride = dimStrides[axes.z];
+	const int64_t dimStrides[3] = {1, volW, volStride};
+	const int64_t uVolStride = dimStrides[axes.x];
+	const int64_t vVolStride = dimStrides[axes.y];
+	const int64_t sVolStride = dimStrides[axes.z];
 
-	const int volBase =
-		(rx - volRegion.getLowerX()) + (ry - volRegion.getLowerY()) * volW + (rz - volRegion.getLowerZ()) * volStride;
+	const int64_t volBase =
+		(rx - volRegion.getLowerX()) + (int64_t)(ry - volRegion.getLowerY()) * volW + (int64_t)(rz - volRegion.getLowerZ()) * volStride;
 
 	const int rOrigin[3] = {rx, ry, rz};
 	const int sAbsBase = rOrigin[axes.z];
@@ -211,11 +211,11 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 		const bool posNeighborInVolume = (neighborSPos >= sVolLower && neighborSPos <= sVolUpper);
 		const bool negNeighborInVolume = (neighborSNeg >= sVolLower && neighborSNeg <= sVolUpper);
 
-		const int sliceBase = volBase + s * sVolStride;
+		const int64_t sliceBase = volBase + s * sVolStride;
 
 		int maskCountPos = 0, maskCountNeg = 0;
 		for (int u = 0; u < uIterMax; ++u) {
-			int volIdx = sliceBase + u * uVolStride;
+			int64_t volIdx = sliceBase + u * uVolStride;
 			const int maskColBase = u * vDim;
 			for (int v = 0; v < vIterMax; ++v) {
 				const Voxel &vox = volData[volIdx];

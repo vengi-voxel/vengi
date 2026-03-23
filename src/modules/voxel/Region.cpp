@@ -97,7 +97,7 @@ void Region::update() {
 	_width = _maxs - _mins;
 	_center = _mins + _width / 2;
 	_voxels = _width + 1;
-	_stride = _voxels.x * _voxels.y;
+	_stride = (int64_t)_voxels.x * (int64_t)_voxels.y;
 }
 
 core::String Region::toString(bool center) const {
@@ -135,11 +135,11 @@ void logRegion(const char *ctx, const voxel::Region& region) {
 	Log::debug("%s: region[mins(%i,%i,%i), maxs(%i,%i,%i)]", ctx, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 }
 
-int Region::voxels() const {
+int64_t Region::voxels() const {
 	if (!isValid()) {
 		return 0;
 	}
-	return getWidthInVoxels() * getHeightInVoxels() * getDepthInVoxels();
+	return (int64_t)getWidthInVoxels() * (int64_t)getHeightInVoxels() * (int64_t)getDepthInVoxels();
 }
 
 /**
