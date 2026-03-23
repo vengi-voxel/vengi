@@ -282,7 +282,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
-				if (width * height * depth > (int)volumeBuffer.size()) {
+				if ((int64_t)width * height * depth > (int64_t)volumeBuffer.size()) {
 					Log::error("invalid blocks chunk");
 					return false;
 				}
@@ -559,7 +559,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
-				if (width * height * depth > (int)volumeBuffer.size()) {
+				if ((int64_t)width * height * depth > (int64_t)volumeBuffer.size()) {
 					Log::error("invalid blocks chunk");
 					return false;
 				}

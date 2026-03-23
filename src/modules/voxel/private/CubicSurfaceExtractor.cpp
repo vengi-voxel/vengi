@@ -65,7 +65,7 @@ private:
 public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
-		_elements = (VertexData*)core_malloc(width * height * depth * sizeof(VertexData));
+		_elements = (VertexData*)core_malloc((size_t)width * height * depth * sizeof(VertexData));
 		clear();
 	}
 
@@ -74,12 +74,12 @@ public:
 	}
 
 	void clear() {
-		core_memset((void*)_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
+		core_memset((void*)_elements, 0x0, (size_t)_width * _height * _depth * sizeof(VertexData));
 	}
 
 	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) {
 		core_assert_msg(x < _width && y < _height && z < _depth, "Array access is out-of-range.");
-		return _elements[z * _width * _height + y * _width + x];
+		return _elements[(size_t)z * _width * _height + (size_t)y * _width + x];
 	}
 
 	void swap(Array& other) {

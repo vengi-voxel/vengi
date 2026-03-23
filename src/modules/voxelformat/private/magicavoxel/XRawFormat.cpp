@@ -145,7 +145,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 		return 0;
 	}
 
-	if (stream->skip(width * height * depth * bitsPerIndex / 8u) == -1) {
+	if (stream->skip((int64_t)width * height * depth * bitsPerIndex / 8u) == -1) {
 		Log::error("Could not load xraw file: Not enough data in stream");
 		return 0;
 	}

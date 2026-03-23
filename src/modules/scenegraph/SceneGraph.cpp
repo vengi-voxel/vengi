@@ -633,7 +633,7 @@ void SceneGraph::updateTransforms(bool updateChildren) {
 }
 
 voxel::Region SceneGraph::maxRegion() const {
-	int maxVoxels = 0;
+	int64_t maxVoxels = 0;
 	voxel::Region r;
 	for (const auto &n : nodes()) {
 		const SceneGraphNode &node = n->second;
@@ -1271,7 +1271,16 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		}
 		bakeIntoSparse(frameIdx, merged, node, mergedPalette);
 	});
-	voxel::RawVolume *mergedVolume = new voxel::RawVolume(merged.calculateRegion());
+	const voxel::Region mergedRegion = merged.calculateRegion();
+	if (!mergedRegion.isValid()) {
+		return MergeResult{};
+	}
+	voxel::RawVolume *mergedVolume = new voxel::RawVolume(mergedRegion);
+	if (mergedVolume->voxels() == nullptr) {
+		Log::error("Failed to allocate merged volume (%zu bytes)", voxel::RawVolume::size(mergedRegion));
+		delete mergedVolume;
+		return MergeResult{};
+	}
 	merged.copyTo(*mergedVolume);
 	return MergeResult{mergedVolume, mergedPalette, normalPalette};
 }

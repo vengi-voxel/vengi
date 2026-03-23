@@ -14,19 +14,19 @@ private:
 	T *_data;
 	const voxel::Region _region;
 
-	inline int index(int x, int y, int z) const {
-		const int32_t iLocalXPos = x - _region.getLowerX();
-		const int32_t iLocalYPos = y - _region.getLowerY();
-		const int32_t iLocalZPos = z - _region.getLowerZ();
+	inline int64_t index(int x, int y, int z) const {
+		const int64_t iLocalXPos = x - _region.getLowerX();
+		const int64_t iLocalYPos = y - _region.getLowerY();
+		const int64_t iLocalZPos = z - _region.getLowerZ();
 		return iLocalXPos + (iLocalYPos * _region.getWidthInVoxels()) +
-			   (iLocalZPos * _region.getWidthInVoxels() * _region.getHeightInVoxels());
+			   (iLocalZPos * _region.stride());
 	}
 
 public:
 	using value_type = T;
 
 	VolumeData(const voxel::Region &region, T defaultVal) : _region(region) {
-		const int size = _region.voxels();
+		const int64_t size = _region.voxels();
 		_data = (T *)core_malloc(size * sizeof(T));
 		core_memset(_data, defaultVal, size * sizeof(T));
 	}
@@ -40,7 +40,7 @@ public:
 	}
 
 	void setValue(int x, int y, int z, const T &value) {
-		const int idx = index(x, y, z);
+		const int64_t idx = index(x, y, z);
 		if (idx < 0 || idx >= _region.voxels()) {
 			return;
 		}
@@ -55,7 +55,7 @@ public:
 		if (!_region.containsPoint(x, y, z)) {
 			return 0u;
 		}
-		const int idx = index(x, y, z);
+		const int64_t idx = index(x, y, z);
 		if (idx < 0 || idx >= _region.voxels()) {
 			return 0u;
 		}

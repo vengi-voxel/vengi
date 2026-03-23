@@ -6,6 +6,7 @@
 #include "BinVoxFormat.h"
 #include "color/Color.h"
 #include "core/Log.h"
+#include <inttypes.h>
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -208,15 +209,15 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	uint8_t count = 0u;
 	uint8_t value = 0u;
 	uint32_t voxels = 0u;
-	const int maxIndex = width * height * depth;
+	const int64_t maxIndex = (int64_t)width * height * depth;
 	glm::ivec3 pos = mins;
 	const uint8_t emptyColorReplacement = node->palette().findReplacement(0);
 	Log::debug("found replacement for %s at index %u: %s at index %u",
 			   color::print(node->palette().color(0)).c_str(), 0,
 			   color::print(node->palette().color(emptyColorReplacement)).c_str(), emptyColorReplacement);
-	for (int idx = 0; idx < maxIndex; ++idx) {
+	for (int64_t idx = 0; idx < maxIndex; ++idx) {
 		if (!sampler.setPosition(pos)) {
-			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)", idx, pos.x, pos.y, pos.z,
+			Log::error("Failed to set position for index %" PRId64 " (%i:%i:%i) (w:%i,h:%i,d:%i)", idx, pos.x, pos.y, pos.z,
 					   width, height, depth);
 			return false;
 		}
@@ -267,9 +268,9 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	wrapBool(writeValue(stream, value, binvoxVersion))
 	wrapBool(stream->writeUInt8(count))
 	voxels += count;
-	const uint32_t expectedVoxels = width * height * depth;
+	const uint64_t expectedVoxels = (uint64_t)width * height * depth;
 	if (voxels != expectedVoxels) {
-		Log::error("Not enough data was written: %u vs %u (w: %u, h: %u, d: %u)", voxels, expectedVoxels, width, height,
+		Log::error("Not enough data was written: %u vs %" PRIu64 " (w: %u, h: %u, d: %u)", voxels, expectedVoxels, width, height,
 				   depth);
 		return false;
 	}

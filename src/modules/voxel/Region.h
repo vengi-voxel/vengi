@@ -130,24 +130,24 @@ public:
 		return subtract(a, result);
 	}
 
-	glm::ivec3 fromIndex(uint32_t idx) const {
-		return glm::ivec3(_mins.x + (idx % getWidthInVoxels()),
-						  _mins.y + ((idx / getWidthInVoxels()) % getHeightInVoxels()),
-						  _mins.z + (idx / (_stride)));
+	glm::ivec3 fromIndex(int64_t idx) const {
+		return glm::ivec3(_mins.x + (int)(idx % getWidthInVoxels()),
+						  _mins.y + (int)((idx / getWidthInVoxels()) % getHeightInVoxels()),
+						  _mins.z + (int)(idx / _stride));
 	}
 
 	/**
 	 * @brief Calculates the linear index for the given coordinates within this region.
 	 */
-	inline int index(const glm::ivec3 &pos) const {
+	inline int64_t index(const glm::ivec3 &pos) const {
 		return index(pos.x, pos.y, pos.z);
 	}
 
 	/**
 	 * @brief Calculates the linear index for the given coordinates within this region.
 	 */
-	inline int index(int x, int y, int z) const {
-		return (x - _mins.x) + (y - _mins.y) * getWidthInVoxels() + (z - _mins.z) * _stride;
+	inline int64_t index(int x, int y, int z) const {
+		return (int64_t)(x - _mins.x) + (int64_t)(y - _mins.y) * getWidthInVoxels() + (int64_t)(z - _mins.z) * _stride;
 	}
 
 	/**
@@ -210,8 +210,8 @@ public:
 	/**
 	 * @return The amount of possible voxels in this region.
 	 */
-	int voxels() const;
-	int stride() const;
+	int64_t voxels() const;
+	int64_t stride() const;
 
 	/** Moves the Region by the amount specified. */
 	void shift(int32_t amountX, int32_t amountY, int32_t amountZ);
@@ -245,7 +245,7 @@ private:
 	glm::aligned_ivec4 _width;
 	glm::aligned_ivec4 _voxels;
 	glm::aligned_ivec4 _center;
-	int _stride;
+	int64_t _stride;
 };
 
 inline const glm::aligned_ivec4& Region::getLowerCorner4() const {
@@ -342,7 +342,7 @@ inline int32_t Region::getDepthInCells() const {
 	return _width.z;
 }
 
-inline int Region::stride() const {
+inline int64_t Region::stride() const {
 	return _stride;
 }
 

@@ -49,12 +49,12 @@ public:
 	}
 
 	inline glm::ivec3 viewPosFromIndex(size_t idx) const {
-		const int width = _region.getWidthInVoxels();
-		const int height = _region.getHeightInVoxels();
-		const int dim = width * height;
-		const int z = idx / dim;
-		const int y = (idx % dim) / width;
-		const int x = idx % width;
+		const int64_t width = _region.getWidthInVoxels();
+		const int64_t height = _region.getHeightInVoxels();
+		const int64_t dim = width * height;
+		const int z = (int)(idx / dim);
+		const int y = (int)((idx % dim) / width);
+		const int x = (int)(idx % width);
 		return {x, y, z};
 	}
 
@@ -63,7 +63,7 @@ public:
 	 * @see viewPosFromIndex()
 	 */
 	inline const Voxel &operator[](size_t idx) const {
-		if ((int)idx >= _region.voxels()) {
+		if ((int64_t)idx >= _region.voxels()) {
 			return _volume->borderValue();
 		}
 		return _volume->voxel(viewPosFromIndex(idx) + _region.getLowerCorner());

@@ -21,8 +21,8 @@ private:
 	const int _height;
 	const int _depth;
 
-	constexpr int index(int x, int y, int z) const {
-		return x + _width * (y + _height * z);
+	constexpr int64_t index(int x, int y, int z) const {
+		return (int64_t)x + (int64_t)_width * (y + (int64_t)_height * z);
 	}
 
 public:
@@ -46,32 +46,32 @@ public:
 	}
 
 	constexpr const T &get(int x, int y, int z) const {
-		const int idx = index(x, y, z);
+		const int64_t idx = index(x, y, z);
 		return _data[idx];
 	}
 
 	constexpr T &get(int x, int y, int z) {
-		const int idx = index(x, y, z);
+		const int64_t idx = index(x, y, z);
 		return _data[idx];
 	}
 
 	constexpr void set(int x, int y, int z, const T &t) {
-		const int idx = index(x, y, z);
+		const int64_t idx = index(x, y, z);
 		_data[idx] = t;
 	}
 
 	constexpr const T &get(const glm::ivec3& v) const {
-		const int idx = index(v.x, v.y, v.z);
+		const int64_t idx = index(v.x, v.y, v.z);
 		return _data[idx];
 	}
 
 	constexpr T &get(const glm::ivec3& v) {
-		const int idx = index(v.x, v.y, v.z);
+		const int64_t idx = index(v.x, v.y, v.z);
 		return _data[idx];
 	}
 
 	constexpr void set(const glm::ivec3& v, const T &t) {
-		const int idx = index(v.x, v.y, v.z);
+		const int64_t idx = index(v.x, v.y, v.z);
 		_data[idx] = t;
 	}
 

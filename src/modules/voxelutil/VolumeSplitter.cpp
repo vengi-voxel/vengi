@@ -113,6 +113,12 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 					const voxel::Region innerRegion(innerMins, innerMaxs);
 					bool onlyAir = true;
 					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, createEmpty ? nullptr : &onlyAir);
+					if (copy->voxels() == nullptr) {
+						Log::error("Failed to allocate split volume for region %s", innerRegion.toString().c_str());
+						delete copy;
+						++idx;
+						continue;
+					}
 					if (onlyAir && !createEmpty) {
 						Log::debug("- skip empty %s", innerRegion.toString().c_str());
 						delete copy;

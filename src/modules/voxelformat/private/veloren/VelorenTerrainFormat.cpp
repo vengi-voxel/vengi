@@ -180,11 +180,11 @@ bool VelorenTerrainFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, 
 		return false;
 	}
 	const palette::Palette &palette = node->palette();
-	const uint32_t count = region.voxels();
+	const int64_t count = region.voxels();
 	wrapBool(stream->writeUInt64(versionMagic(3)))
 	wrapBool(stream->writeUInt64(count))
 
-	for (uint32_t i = 0; i < count; ++i) {
+	for (int64_t i = 0; i < count; ++i) {
 		const glm::ivec3 pos = region.fromIndex(i);
 		const voxel::Voxel voxel = volume->voxel(pos);
 		const color::RGBA color = palette.color(voxel.getColor());

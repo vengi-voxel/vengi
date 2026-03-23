@@ -149,7 +149,7 @@ public:
 	 */
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
-	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int idx, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel);
 
 	void clear();
 	void fill(const voxel::Voxel &voxel);

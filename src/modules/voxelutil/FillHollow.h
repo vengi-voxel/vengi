@@ -27,7 +27,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
-	const int size = width * height * depth;
+	const int64_t size = (int64_t)width * height * depth;
 	const glm::ivec3 mins = volume.region().getLowerCorner();
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);

@@ -585,7 +585,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_shapeBuilder.setColor(color::Red());
 			if (const voxel::RawVolume *v = meshState->volume(idx)) {
 				if (v->region().voxels() < 128 * 128 * 128) {
-					const int n = v->region().stride();
+					const int64_t n = v->region().stride();
 					_shapeBuilder.reserve(2 * n, 2 * n);
 					voxelutil::visitSurfaceVolume(
 						*v, [this, &normalPalette](int x, int y, int z, const voxel::Voxel &voxel) {
