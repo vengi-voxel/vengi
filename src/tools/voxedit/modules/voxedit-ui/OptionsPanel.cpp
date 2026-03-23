@@ -20,6 +20,7 @@
 #include "ui/IconsLucide.h"
 #include "ui/PopupAbout.h"
 #include "voxedit-util/Config.h"
+#include "voxel/MeshState.h"
 #include "voxel/SurfaceExtractor.h"
 
 namespace voxedit {
@@ -169,6 +170,11 @@ void OptionsPanel::renderEditor() {
 		static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
 			_("Cubes"), _("Marching cubes"), _("Binary")};
 		ImGui::ComboVar(cfg::VoxelMeshMode, meshModes);
+	}
+	if (matchesVarFilter(cfg::VoxelMeshAlloc)) {
+		static const core::Array<core::String, (int)voxel::MeshAllocStrategy::Max> meshAllocModes = {
+			_("Full pre-alloc"), _("Small (grow as needed)")};
+		ImGui::ComboVar(cfg::VoxelMeshAlloc, meshAllocModes);
 	}
 }
 

@@ -230,7 +230,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	ExtractionResult results[lengthof(regions)] {};
 	Log::debug("running %i extractions in parallel", (int)maxExtraction);
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
-	const bool meshAllocSmall = _meshAlloc->intVal() == 1;
+	const bool meshAllocSmall = (MeshAllocStrategy)_meshAlloc->intVal() == MeshAllocStrategy::SmallGrow;
 	auto fn = [&regions, &results, this, type, meshAllocSmall] (size_t start, size_t end) {
 		for (size_t i = start; i < end; ++i) {
 			const ExtractRegion &extractRegion = regions[i];

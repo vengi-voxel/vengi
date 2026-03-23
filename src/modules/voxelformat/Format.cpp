@@ -26,9 +26,21 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxelformat {
+
+void Format::cropOnLoad(voxel::RawVolume *&v) {
+	if (!core::getVar(cfg::VoxelCropOnLoad)->boolVal()) {
+		return;
+	}
+	voxel::RawVolume *cropped = voxelutil::cropVolume(v);
+	if (cropped != nullptr) {
+		delete v;
+		v = cropped;
+	}
+}
 
 bool Format::checkValidRegion(const voxel::Region &region) const {
 	const size_t bytes = voxel::RawVolume::size(region);

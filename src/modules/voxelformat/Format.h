@@ -131,6 +131,11 @@ protected:
 	static image::ImagePtr createThumbnail(const scenegraph::SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator,
 										   const ThumbnailContext &ctx);
 	/**
+	 * @brief Optionally crop the volume to tight bounds if the VoxelCropOnLoad cvar is enabled.
+	 * @param[in,out] v The volume pointer. If cropping succeeds, the old volume is deleted and v is updated.
+	 */
+	static void cropOnLoad(voxel::RawVolume *&v);
+	/**
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
 	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load
 	 * additional files.

@@ -389,6 +389,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 		ImGui::CheckboxVar(cfg::VoxformatVXLLoadHVA);
 	}
 
+	ImGui::CheckboxVar(cfg::VoxelCropOnLoad);
 	loadOptionsGeneric(desc, entry, paletteCache);
 	return true;
 }
