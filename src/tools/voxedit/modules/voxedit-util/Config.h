@@ -62,5 +62,6 @@ constexpr const char *VoxEditNetServerInterface = "ve_netserverinterface";
 constexpr const char *VoxEditNetServerMaxConnections = "ve_netservermaxconnections";
 constexpr const char *VoxEditAutoSelect = "ve_autoselect";
 constexpr const char *VoxEditSceneMode = "ve_scenemode";
+constexpr const char *VoxEditImportSingleNode = "ve_importsinglenode";
 
 }
