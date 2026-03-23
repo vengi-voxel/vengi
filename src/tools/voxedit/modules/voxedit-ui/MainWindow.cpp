@@ -255,7 +255,49 @@ void MainWindow::stopViewportRecordings() {
 	}
 }
 
+void MainWindow::saveCameraState() {
+	if (_viewports.empty()) {
+		return;
+	}
+	const video::Camera &cam = _viewports[0]->camera();
+	const glm::vec3 &target = cam.target();
+	const glm::quat &q = cam.quaternion();
+	core::getVar(cfg::VoxEditLastCameraTarget)->setVal(core::String::format("%f %f %f", target.x, target.y, target.z));
+	core::getVar(cfg::VoxEditLastCameraAngles)->setVal(core::String::format("%f %f %f %f", q.w, q.x, q.y, q.z));
+	core::getVar(cfg::VoxEditLastCameraDistance)->setVal(core::String::format("%f", cam.targetDistance()));
+}
+
+bool MainWindow::restoreCameraState() {
+	if (_viewports.empty()) {
+		return false;
+	}
+	const core::String &targetStr = core::getVar(cfg::VoxEditLastCameraTarget)->strVal();
+	const core::String &anglesStr = core::getVar(cfg::VoxEditLastCameraAngles)->strVal();
+	const core::String &distStr = core::getVar(cfg::VoxEditLastCameraDistance)->strVal();
+	if (targetStr.empty() || anglesStr.empty() || distStr.empty()) {
+		return false;
+	}
+	glm::vec3 target;
+	glm::quat q;
+	float distance;
+	if (SDL_sscanf(targetStr.c_str(), "%f %f %f", &target.x, &target.y, &target.z) != 3) {
+		return false;
+	}
+	if (SDL_sscanf(anglesStr.c_str(), "%f %f %f %f", &q.w, &q.x, &q.y, &q.z) != 4) {
+		return false;
+	}
+	if (SDL_sscanf(distStr.c_str(), "%f", &distance) != 1) {
+		return false;
+	}
+	video::Camera &cam = _viewports[0]->camera();
+	cam.setOrientation(q);
+	cam.setTarget(target);
+	cam.setTargetDistance(distance);
+	return true;
+}
+
 void MainWindow::shutdown() {
+	saveCameraState();
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		_viewports[i]->shutdown();
 	}
@@ -315,6 +357,13 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *for
 
 void MainWindow::onNewScene() {
 	resetCamera();
+	if (core::getVar(cfg::VoxEditContinueSession)->boolVal()) {
+		if (restoreCameraState()) {
+			core::getVar(cfg::VoxEditLastCameraTarget)->setVal("");
+			core::getVar(cfg::VoxEditLastCameraAngles)->setVal("");
+			core::getVar(cfg::VoxEditLastCameraDistance)->setVal("");
+		}
+	}
 	_animationTimeline.resetFrames();
 	checkPossibleVolumeSplit();
 }

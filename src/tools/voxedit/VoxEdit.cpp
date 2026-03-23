@@ -8,6 +8,7 @@
 #include "command/CommandCompleter.h"
 #include "core/BindingContext.h"
 #include "color/Color.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
@@ -548,6 +549,15 @@ app::AppState VoxEdit::onInit() {
 			if (filePtr->exists()) {
 				const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 				_mainWindow->load(filePath, nullptr);
+			}
+		} else if (core::getVar(cfg::VoxEditContinueSession)->boolVal()) {
+			const core::String &lastFile = core::getVar(cfg::UIFileDialogLastFile)->strVal();
+			if (!lastFile.empty()) {
+				const io::FilePtr &filePtr = filesystem()->open(lastFile);
+				if (filePtr->exists()) {
+					const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
+					_mainWindow->load(filePath, nullptr);
+				}
 			}
 		}
 	}
