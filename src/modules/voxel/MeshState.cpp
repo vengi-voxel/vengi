@@ -15,6 +15,11 @@
 
 namespace voxel {
 
+static constexpr int FullAllocVertices = 262144;
+static constexpr int FullAllocIndices = 524288;
+static constexpr int SmallAllocVertices = 1024;
+static constexpr int SmallAllocIndices = 2048;
+
 MeshState::MeshState() {
 	_pendingMeshDirty.fill(false);
 }
@@ -256,8 +261,8 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 
 			const palette::Palette &pal = palette(resolveIdx(idx));
 			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
-			const int meshVertices = meshAllocSmall ? 1024 : 262144;
-			const int meshIndices = meshAllocSmall ? 2048 : 524288;
+			const int meshVertices = meshAllocSmall ? SmallAllocVertices : FullAllocVertices;
+			const int meshIndices = meshAllocSmall ? SmallAllocIndices : FullAllocIndices;
 			voxel::ChunkMesh mesh(meshVertices, meshIndices, true);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
 			voxel::extractSurface(ctx);
