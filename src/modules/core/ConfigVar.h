@@ -62,6 +62,8 @@ constexpr const char *RenderMaxAnisotropy = "r_maxanisotropy";
 // The size of the mesh chunk
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
 constexpr const char *VoxelMeshMode = "voxel_meshmode";
+// Mesh allocation strategy: 0 = full pre-alloc (262K verts), 1 = small (1K verts, grow as needed)
+constexpr const char *VoxelMeshAlloc = "voxel_meshalloc";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
