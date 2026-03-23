@@ -36,6 +36,10 @@ void MeshState::construct() {
 										 (int)voxel::SurfaceExtractionType::Binary, N_("Mesh mode"),
 										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"), core::CV_SHADER);
 	core::Var::registerVar(voxRenderMeshMode);
+	const core::VarDef voxMeshAlloc(cfg::VoxelMeshAlloc, 0, 0, 1,
+									N_("Mesh allocation strategy"),
+									N_("0 = full pre-alloc (best for small models), 1 = small alloc (best for large models)"));
+	_meshAlloc = core::Var::registerVar(voxMeshAlloc);
 }
 
 glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {
@@ -221,7 +225,8 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	ExtractionResult results[lengthof(regions)] {};
 	Log::debug("running %i extractions in parallel", (int)maxExtraction);
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
-	auto fn = [&regions, &results, this, type] (size_t start, size_t end) {
+	const bool meshAllocSmall = _meshAlloc->intVal() == 1;
+	auto fn = [&regions, &results, this, type, meshAllocSmall] (size_t start, size_t end) {
 		for (size_t i = start; i < end; ++i) {
 			const ExtractRegion &extractRegion = regions[i];
 			const int idx = extractRegion.idx;
@@ -246,7 +251,9 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 
 			const palette::Palette &pal = palette(resolveIdx(idx));
 			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
-			voxel::ChunkMesh mesh(262144, 524288, true);
+			const int meshVertices = meshAllocSmall ? 1024 : 262144;
+			const int meshIndices = meshAllocSmall ? 2048 : 524288;
+			voxel::ChunkMesh mesh(meshVertices, meshIndices, true);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
 			voxel::extractSurface(ctx);
 			results[i] = {mins, idx, core::move(mesh)};

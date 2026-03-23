@@ -112,6 +112,7 @@ private:
 	core::Queue<int> _pendingMeshes;
 	core::Array<bool, MAX_VOLUMES> _pendingMeshDirty;
 	core::VarPtr _meshMode;
+	core::VarPtr _meshAlloc;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 0);
 	bool deleteMeshes(int idx);
