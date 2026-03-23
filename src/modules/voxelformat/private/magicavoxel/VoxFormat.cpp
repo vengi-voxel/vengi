@@ -266,7 +266,20 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
 						  const palette::Palette &palette) {
+	// When MAGICAVOXEL_USE_REFERENCES is disabled, loadInstance() reads voxel data
+	// directly from ogt_vox_model and creates its own volumes. The volumes created
+	// by loadModels() are only needed as a fallback when num_instances == 0.
+	// Skipping loadModels() for scenes with instances avoids duplicating all volumes.
+#if MAGICAVOXEL_USE_REFERENCES
 	core::DynamicArray<MVModelToNode> models = loadModels(scene, palette);
+#else
+	core::DynamicArray<MVModelToNode> models;
+	if (scene->num_instances == 0) {
+		models = loadModels(scene, palette);
+	} else {
+		models.resize(scene->num_models);
+	}
+#endif
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
