@@ -248,6 +248,11 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			if (!copyRegion.isValid()) {
 				continue;
 			}
+			if (v->isEmpty(finalRegion)) {
+				const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+				results[i] = {mins, idx, voxel::ChunkMesh(0, 0, false)};
+				continue;
+			}
 
 			const palette::Palette &pal = palette(resolveIdx(idx));
 			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
