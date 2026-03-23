@@ -3060,6 +3060,67 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Switch active node to hovered from scene graph mode"));
 
+	command::Command::registerCommand("mouse_node_lock")
+		.setHandler([&] (const command::CommandArgs&) {
+			if (_camera == nullptr) {
+				return;
+			}
+			const math::Ray &ray = _camera->mouseRay(_mouseCursor);
+			const float rayLength = _camera->farPlane();
+
+			struct OBBHit {
+				int nodeId;
+				float distance;
+			};
+			core::DynamicArray<OBBHit> hits;
+			hits.reserve(_sceneGraph.size());
+
+			for (auto entry : _sceneGraph.nodes()) {
+				const scenegraph::SceneGraphNode &node = entry->second;
+				if (!node.isAnyModelNode() || !node.visible()) {
+					continue;
+				}
+				float distance = 0.0f;
+				const voxel::Region &region = _sceneGraph.resolveRegion(node);
+				const glm::vec3 pivot = node.pivot();
+				const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
+				const math::OBBF &obb = scenegraph::toOBB(true, region, pivot, transform);
+				if (obb.intersect(ray.origin, ray.direction, distance)) {
+					hits.push_back({node.id(), distance});
+				}
+			}
+
+			hits.sort([] (const OBBHit &a, const OBBHit &b) {
+				return a.distance > b.distance;
+			});
+
+			for (const OBBHit &hit : hits) {
+				const scenegraph::SceneGraphNode &node = _sceneGraph.node(hit.nodeId);
+				const voxel::RawVolume *v = _sceneRenderer->volumeForNode(node);
+				if (v == nullptr) {
+					continue;
+				}
+				const glm::mat4 model = _sceneGraph.worldMatrix(node, _currentFrameIdx, true);
+				const glm::mat4 invModel = glm::inverse(model);
+				const glm::vec3 localOrigin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
+				const glm::vec3 localDir = glm::normalize(glm::vec3(invModel * glm::vec4(ray.direction, 0.0f)));
+				static constexpr voxel::Voxel air;
+				bool didHit = false;
+				voxelutil::raycastWithEndpoints(v, localOrigin - voxelutil::RaycastOffset, localOrigin + localDir * rayLength - voxelutil::RaycastOffset, [&] (voxel::RawVolume::Sampler &sampler) {
+					if (!sampler.voxel().isSameType(air)) {
+						didHit = true;
+						return false;
+					}
+					return true;
+				});
+				if (didHit) {
+					scenegraph::SceneGraphNode &hitNode = _sceneGraph.node(hit.nodeId);
+					hitNode.setLocked(!hitNode.locked());
+					return;
+				}
+			}
+		}).setHelp(_("Toggle lock on the hovered node"));
+
 	command::Command::registerCommand("select")
 		.addArg({"type", command::ArgType::String, false, "", "Selection type: all|none|invert"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to apply the selection to"})

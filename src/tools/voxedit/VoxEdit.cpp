@@ -359,6 +359,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+x",               "cut",                          "editing");
 	_keybindingHandler.registerBinding("ctrl+shift+v",         "pastecursor",                  "editing");
 	_keybindingHandler.registerBinding("double_left_mouse",    "mouse_node_select",            "scene");
+	_keybindingHandler.registerBinding("shift+double_left_mouse", "mouse_node_lock",           "editing");
 	_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
 	_keybindingHandler.registerBinding("ctrl+d",               "select none",                  "model");
 	_keybindingHandler.registerBinding("ctrl+i",               "select invert",                "model");

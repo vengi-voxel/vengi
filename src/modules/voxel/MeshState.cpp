@@ -532,4 +532,18 @@ void MeshState::setHasSelection(int idx, bool hasSelection) {
 	_volumeData[idx]._hasSelection = hasSelection;
 }
 
+bool MeshState::locked(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
+	return _volumeData[idx]._locked;
+}
+
+void MeshState::setLocked(int idx, bool locked) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	_volumeData[idx]._locked = locked;
+}
+
 } // namespace voxel
