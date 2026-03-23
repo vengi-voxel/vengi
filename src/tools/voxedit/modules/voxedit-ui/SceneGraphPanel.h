@@ -70,6 +70,10 @@ public:
 	}
 
 	bool _popupNewModelNode = false;
+	bool _popupResizeNode = false;
+	int _resizeNodeId = InvalidNodeId;
+	glm::ivec3 _resizeMins {0};
+	glm::ivec3 _resizeMaxs {0};
 	bool init();
 	void update(video::Camera &camera, const char *id, ModelNodeSettings *modelNodeSettings,
 				command::CommandExecutionListener &listener);

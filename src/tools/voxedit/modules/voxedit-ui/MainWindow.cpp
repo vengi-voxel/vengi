@@ -836,6 +836,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
 		_sceneGraphPanel._popupNewModelNode = false;
 	}
+	if (_sceneGraphPanel._popupResizeNode) {
+		ImGui::OpenPopup(POPUP_TITLE_RESIZE_NODE);
+		_sceneGraphPanel._popupResizeNode = false;
+	}
 
 	// popups that can get triggers externally
 	if (_popupTipOfTheDay->boolVal()) {
@@ -873,8 +877,50 @@ void MainWindow::registerPopups() {
 	popupMinecraftMapping();
 	popupNodeRename();
 	popupModelUnreference();
+	popupNodeResize();
 
 	_animationPanel.registerPopups();
+}
+
+void MainWindow::popupNodeResize() {
+	const core::String title = makeTitle(_("Resize node"), POPUP_TITLE_RESIZE_NODE);
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
+							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
+		glm::ivec3 &mins = _sceneGraphPanel._resizeMins;
+		glm::ivec3 &maxs = _sceneGraphPanel._resizeMaxs;
+
+		ImGui::TextUnformatted(_("Lower bound"));
+		ImGui::Separator();
+		ImGui::InputAxisInt(math::Axis::X, "##minx", &mins.x);
+		ImGui::InputAxisInt(math::Axis::Y, "##miny", &mins.y);
+		ImGui::InputAxisInt(math::Axis::Z, "##minz", &mins.z);
+		ImGui::NewLine();
+
+		ImGui::TextUnformatted(_("Upper bound"));
+		ImGui::Separator();
+		ImGui::InputAxisInt(math::Axis::X, "##maxx", &maxs.x);
+		ImGui::InputAxisInt(math::Axis::Y, "##maxy", &maxs.y);
+		ImGui::InputAxisInt(math::Axis::Z, "##maxz", &maxs.z);
+
+		maxs = glm::max(maxs, mins);
+
+		const glm::ivec3 size = maxs - mins + 1;
+		ImGui::NewLine();
+		ImGui::Text(_("Size: %ix%ix%i"), size.x, size.y, size.z);
+		ImGui::NewLine();
+
+		if (ImGui::OkButton()) {
+			const int nodeId = _sceneGraphPanel._resizeNodeId;
+			voxel::Region newRegion(mins, maxs);
+			_sceneMgr->nodeResize(nodeId, newRegion);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::CancelButton()) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 }
 
 void MainWindow::popupNodeRename() {

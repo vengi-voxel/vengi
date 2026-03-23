@@ -139,6 +139,7 @@ private:
 	void popupWelcome();
 	void popupMinecraftMapping();
 	void popupNodeRename();
+	void popupNodeResize();
 	void popupTipOfTheDay();
 	void popupFailedSave();
 	void popupUnsavedChanges();
