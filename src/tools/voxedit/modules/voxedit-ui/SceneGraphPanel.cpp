@@ -62,6 +62,13 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked"), "modelmergelocked", validModels > 1, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center origin"), "center_origin", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center reference"), "center_referenceposition", true, &listener);
+			if (ImGui::IconMenuItem(ICON_LC_EXPAND, _("Resize"))) {
+				const voxel::Region &region = node.region();
+				_resizeNodeId = nodeId;
+				_resizeMins = region.getLowerCorner();
+				_resizeMaxs = region.getUpperCorner();
+				_popupResizeNode = true;
+			}
 			commandNodeMenu(ICON_LC_SAVE, _("Save"), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model"), "modelunref", true, &listener);

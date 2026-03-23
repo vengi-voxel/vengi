@@ -46,3 +46,4 @@
 #define POPUP_TITLE_MODEL_UNREFERENCE "###unreferencedmodelpopup"
 #define POPUP_TITLE_LOAD_PALETTE "###selectpalettepopup"
 #define POPUP_TITLE_UV_EDITOR "###uveditorpopup"
+#define POPUP_TITLE_RESIZE_NODE "###resizenodepopup"
