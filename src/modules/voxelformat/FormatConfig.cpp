@@ -97,6 +97,13 @@ bool FormatConfig::init() {
 											 N_("Voxelize mode"), N_("0 = high quality, 1 = faster and less memory"),
 											 core::CV_NOPERSIST);
 	core::registerVar(voxformatVoxelizeMode);
+	const core::VarDef voxformatVoxelizeChunked(cfg::VoxformatVoxelizeChunked, false, N_("Chunked voxelization"),
+												N_("Enable chunked voxelization for large meshes"), core::CV_NOPERSIST);
+	core::registerVar(voxformatVoxelizeChunked);
+	const core::VarDef voxformatVoxelizeChunkSize(cfg::VoxformatVoxelizeChunkSize, 128, 16, 512,
+												  N_("Chunk size"), N_("Chunk size for chunked voxelization"),
+												  core::CV_NOPERSIST);
+	core::registerVar(voxformatVoxelizeChunkSize);
 	const core::VarDef voxformatVoxelSize(cfg::VoxformatVoxelSize, 0, 0, 1024,
 										  N_("Voxel size"),
 										  N_("The number of voxels on the largest axis (0 = disabled, use scale cvars instead). This only works for single mesh exports."),
