@@ -98,18 +98,19 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 
 	core::Buffer<voxel::RawVolume *> rawVolumes;
 
-	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), maxSize);
+	const glm::ivec3 clampedSize = glm::max(maxSize, glm::ivec3(1));
+	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), clampedSize);
 	Log::debug("split region: %s", region.toString().c_str());
 	const glm::ivec3 steps = (region.getDimensionsInVoxels() + (step - 1)) / step;
 	rawVolumes.resize(steps.x * steps.y * steps.z);
-	auto fn = [step, maxs, volume, maxSize, mins, createEmpty, steps, &rawVolumes](int start, int end) {
+	auto fn = [step, maxs, volume, clampedSize, mins, createEmpty, steps, &rawVolumes](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			int idx = i * steps.x * steps.z;
-			const int y = i * step.y;
+			const int y = mins.y + i * step.y;
 			for (int z = mins.z; z <= maxs.z; z += step.z) {
 				for (int x = mins.x; x <= maxs.x; x += step.x) {
 					const glm::ivec3 innerMins(x, y, z);
-					const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
+					const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + clampedSize - 1);
 					const voxel::Region innerRegion(innerMins, innerMaxs);
 					bool onlyAir = true;
 					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, createEmpty ? nullptr : &onlyAir);
