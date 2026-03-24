@@ -17,7 +17,6 @@
  */
 
 namespace core {
-class String;
 class UUID;
 }
 

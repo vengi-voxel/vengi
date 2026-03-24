@@ -7,7 +7,7 @@
 #include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
-#include "IOResource.h"
+#include "io/IOResource.h"
 #include "io/Stream.h"
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
