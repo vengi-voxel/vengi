@@ -26,7 +26,7 @@
 
 namespace voxel {
 
-static constexpr int MAX_VOLUMES = 2048;
+static constexpr int MAX_VOLUMES = 4096;
 
 enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 

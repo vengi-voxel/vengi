@@ -493,7 +493,9 @@ static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
 		// TODO: don't merge everything blindly. Check if it's enough to merge single nodes here.
 		// TODO: PERF: merging will take a lot of time for large scenes
-		Log::debug("Merging scenegraph nodes as the number of volumes exceeds the limit of %i", voxel::MAX_VOLUMES);
+		Log::warn("Scene has %i nodes which exceeds the limit of %i - merging all nodes into one volume. "
+				  "This may use a lot of memory. Consider increasing MAX_VOLUMES.",
+				  (int)newSceneGraph.size(), voxel::MAX_VOLUMES);
 		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 		if (!merged.hasVolume()) {
 			Log::error("Failed to merge the scenegraph nodes");
