@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/ChunkMesh.h"
+#include "voxel/Mesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
@@ -70,13 +71,13 @@ TEST_F(VENGIFormatTest, testMeshCubeGreedyTexture) {
 															   v->region(), node->palette(), mesh, glm::ivec3(0));
 	voxel::extractSurface(ctx);
 	uint32_t expectedFaces = 6u;
-	const auto &vertices = mesh.mesh[0].getVertexVector();
-	const auto &indices = mesh.mesh[0].getIndexVector();
+	const voxel::VertexArray &vertices = mesh.mesh[0].getVertexVector();
+	const voxel::IndexArray &indices = mesh.mesh[0].getIndexVector();
 	ASSERT_EQ(expectedFaces * 4u, vertices.size());
 	ASSERT_EQ(expectedFaces * 6u, indices.size());
 
 	// clang-format off
-	const int expectedIndices[] = {
+	const voxel::IndexArray::value_type expectedIndices[] = {
 		0, 1, 2, 0, 2, 3,
 		4, 5, 6, 4, 6, 7,
 		8, 9, 10, 8, 10, 11,

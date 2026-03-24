@@ -143,7 +143,7 @@ bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 			SDL_RaiseWindow(window);
 		}
 	}
-		// fallthrough
+	[[fallthrough]];
 #endif
 	default: {
 		core_trace_scoped(WindowedAppEventHandler);
