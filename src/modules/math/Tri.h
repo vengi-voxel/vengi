@@ -13,7 +13,7 @@ class Tri {
 private:
 	struct Vert {
 		glm::vec3 pos{0};
-		color::RGBA color{0, 0, 0};
+		color::RGBA color{128, 128, 128};
 	} _vertices[3];
 	static_assert(sizeof(Vert) == 16, "Vert must have the expected size");
 
