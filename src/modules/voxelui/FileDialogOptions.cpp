@@ -266,8 +266,10 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
 		core::VarPtr voxelSize = core::getVar(cfg::VoxformatVoxelSize);
-		ImGui::InputVarFloat(voxelSize);
-		ImGui::BeginDisabled(voxelSize->intVal() > 0);
+		ImGui::InputVarInt(voxelSize);
+		ImGui::TooltipTextUnformatted(_("Target voxel count on the longest axis (0 = use scale instead)"));
+		const bool useVoxelSize = voxelSize->intVal() > 0;
+		ImGui::BeginDisabled(useVoxelSize);
 		{
 			ImGui::InputVarFloat(cfg::VoxformatScale);
 			ImGui::InputVarFloat(cfg::VoxformatScaleX);
@@ -328,6 +330,14 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	}
 
 	ImGui::CheckboxVar(cfg::VoxformatRGBWeightedAverage);
+
+	if (meshFormat) {
+		ImGui::CheckboxVar(cfg::VoxformatVoxelizeChunked);
+		const bool chunked = core::getVar(cfg::VoxformatVoxelizeChunked)->boolVal();
+		ImGui::BeginDisabled(!chunked);
+		ImGui::InputVarInt(cfg::VoxformatVoxelizeChunkSize);
+		ImGui::EndDisabled();
+	}
 }
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
@@ -390,6 +400,31 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	ImGui::CheckboxVar(cfg::VoxelCropOnLoad);
+	{
+		const char *splitSizes[] = {_("Disabled"), "32", "64", "128", "256"};
+		const int splitValues[] = {0, 32, 64, 128, 256};
+		const core::VarPtr &splitVar = core::getVar(cfg::VoxelSplitOnLoad);
+		int currentVal = splitVar->intVal();
+		int currentIdx = 0;
+		for (int i = 1; i < lengthof(splitValues); ++i) {
+			if (currentVal == splitValues[i]) {
+				currentIdx = i;
+				break;
+			}
+		}
+		if (ImGui::BeginCombo(_("Max volume size"), splitSizes[currentIdx])) {
+			for (int i = 0; i < lengthof(splitSizes); ++i) {
+				const bool selected = i == currentIdx;
+				if (ImGui::Selectable(splitSizes[i], selected)) {
+					splitVar->setVal(splitValues[i]);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
 	loadOptionsGeneric(desc, entry, paletteCache);
 	return true;
 }

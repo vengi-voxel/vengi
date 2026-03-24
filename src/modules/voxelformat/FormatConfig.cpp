@@ -97,6 +97,16 @@ bool FormatConfig::init() {
 											 N_("Voxelize mode"), N_("0 = high quality, 1 = faster and less memory"),
 											 core::CV_NOPERSIST);
 	core::registerVar(voxformatVoxelizeMode);
+	const core::VarDef voxformatVoxelizeChunked(cfg::VoxformatVoxelizeChunked, false,
+												N_("Chunked voxelization"),
+												N_("Import meshes as chunked volumes. Allows very large models that would not fit in memory as a single volume."),
+												core::CV_NOPERSIST);
+	core::registerVar(voxformatVoxelizeChunked);
+	const core::VarDef voxformatVoxelizeChunkSize(cfg::VoxformatVoxelizeChunkSize, 64, 16, 512,
+												  N_("Chunk size"),
+												  N_("The size of each chunk volume for chunked voxelization (default 64). Larger values create fewer nodes but use more memory per chunk."),
+												  core::CV_NOPERSIST);
+	core::registerVar(voxformatVoxelizeChunkSize);
 	const core::VarDef voxformatVoxelSize(cfg::VoxformatVoxelSize, 0, 0, 1024,
 										  N_("Voxel size"),
 										  N_("The number of voxels on the largest axis (0 = disabled, use scale cvars instead). This only works for single mesh exports."),
@@ -123,6 +133,11 @@ bool FormatConfig::init() {
 		cfg::VoxelCropOnLoad, false, N_("Crop on load"),
 		N_("Crop volumes to tight bounds on load to save memory"), core::CV_NOPERSIST);
 	core::registerVar(voxelCropOnLoad);
+	const core::VarDef voxelSplitOnLoad(
+		cfg::VoxelSplitOnLoad, 0, 0, 512,
+		N_("Split on load"),
+		N_("Split volumes on load to this max dimension per axis (0 = disabled)"), core::CV_NOPERSIST);
+	core::registerVar(voxelSplitOnLoad);
 	const core::VarDef voxformatVOXCreateGroups(
 		cfg::VoxformatVOXCreateGroups, true, N_("Create groups"),
 		NC_("Create groups when saving MagicaVoxel vox files", "Create groups for vox file"), core::CV_NOPERSIST);
