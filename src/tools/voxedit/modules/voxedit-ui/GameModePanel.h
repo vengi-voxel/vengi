@@ -21,6 +21,7 @@ private:
 	using Super = ui::Panel;
 	SceneManagerPtr _sceneMgr;
 	core::VarPtr _movementSpeed;
+	core::VarPtr _sprintMultiplier;
 	core::VarPtr _jumpVelocity;
 	core::VarPtr _bodyHeight;
 	core::VarPtr _gravity;

@@ -16,6 +16,7 @@ void GameModePanel::init() {
 	_clipping = core::getVar(cfg::GameModeClipping);
 	_applyGravity = core::getVar(cfg::GameModeApplyGravity);
 	_movementSpeed = core::getVar(cfg::GameModeMovementSpeed);
+	_sprintMultiplier = core::getVar(cfg::GameModeSprintMultiplier);
 	_jumpVelocity = core::getVar(cfg::GameModeJumpVelocity);
 	_bodyHeight = core::getVar(cfg::GameModeBodyHeight);
 	_gravity = core::getVar(cfg::GameModeGravity);
@@ -49,6 +50,7 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 
 		ImGui::BeginDisabled(_gameModeEnabled == false);
 		ImGui::InputVarFloat(_movementSpeed, 0.1f, 100.0f);
+		ImGui::InputVarFloat(_sprintMultiplier, 0.1f, 0.5f);
 		ImGui::InputVarFloat(_jumpVelocity, 0.1f, 100.0f);
 		ImGui::InputVarFloat(_bodyHeight, 0.1f, 10.0f);
 		ImGui::InputVarFloat(_gravity, 0.01f, 100.0f);
