@@ -455,6 +455,7 @@ void RawVolumeRenderer::setSunAngle(const glm::vec3 &angle) {
 
 int RawVolumeRenderer::culledVolumeCount() const {
 	int culledCount = 0;
+	// TODO: PERF: here we could use the activeIndices from MeshState
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const RenderState &state = _state[i];
 		if (state.hasData() && state._culled) {
