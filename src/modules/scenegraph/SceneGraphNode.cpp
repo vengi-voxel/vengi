@@ -193,6 +193,17 @@ palette::Palette &SceneGraphNode::palette() const {
 	return *_palette.value();
 }
 
+bool SceneGraphNode::hasVoxels() const {
+	if (_type != SceneGraphNodeType::Model) {
+		return false;
+	}
+	const voxel::RawVolume *v = volume();
+	if (v == nullptr || v->isEmpty(v->region())) {
+		return false;
+	}
+	return true;
+}
+
 bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 	voxel::RawVolume *v = volume();
 	if (v == nullptr) {

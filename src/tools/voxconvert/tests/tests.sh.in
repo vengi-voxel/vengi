@@ -73,6 +73,6 @@ cp $SPLITFILE @CMAKE_BINARY_DIR@
 $BINARY -f --input "$SPLITFILE" --script splitobjects --output "$SPLITTARGETFILE"
 echo "check if $SPLITTARGETFILE exists"
 test -f "$SPLITTARGETFILE"
-echo "check that $SPLITTARGETFILE has 4 models"
-$BINARY --input "$SPLITTARGETFILE" --json | jq | grep "\"type\": \"Model\"" | wc -l | grep 4
+echo "check that $SPLITTARGETFILE has 3 models (1 node did not have voxels, so it got removed)"
+$BINARY --input "$SPLITTARGETFILE" --json | jq | grep "\"type\": \"Model\"" | wc -l | grep 3
 echo

@@ -50,8 +50,13 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "voxelutil/VolumeVisitor.h"
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <glm/trigonometric.hpp>
 
 VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
@@ -565,6 +570,23 @@ app::AppState VoxConvert::onInit() {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
 
+	// STEP 12: remove empty model nodes (volumes with no solid voxels)
+	{
+		core::Buffer<int> emptyNodes;
+		for (const auto &e : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = e->value;
+			if (!node.isModelNode()) {
+				continue;
+			}
+			if (!node.hasVoxels()) {
+				emptyNodes.push_back(node.id());
+			}
+		}
+		for (int nodeId : emptyNodes) {
+			sceneGraph.removeNode(nodeId, false);
+		}
+	}
+
 	if (_outputJson) {
 		core::String jsonFlagsVal = getArgVal("--json", "default");
 		uint32_t jsonFlags = 0;
@@ -1004,11 +1026,84 @@ void VoxConvert::rotate(const core::String &axisStr, scenegraph::SceneGraph &sce
 		return;
 	}
 	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		scenegraph::SceneGraphNode &node = *iter;
-		glm::vec3 rotVec{0.0f};
-		rotVec[math::getIndexForAxis(axis)] = degree;
-		node.setVolume(voxelutil::rotateVolumeDegrees(node.volume(), rotVec, glm::vec3(0.5f)), true);
+
+	// Use world-space scene region (accounts for node transforms)
+	const voxel::Region sceneReg = sceneGraph.sceneRegion();
+	const glm::vec3 scenePivot = sceneReg.calcCenterf();
+
+	// For exact 90-degree multiples, use lossless rotateAxis (same as VoxEdit's rotateall)
+	const int intDegree = (int)glm::round(degree);
+	const bool exact90 = (intDegree % 90 == 0) && glm::abs(degree - (float)intDegree) < 0.01f;
+	const int rotations = exact90 ? (intDegree / 90) % 4 : 0;
+
+	if (exact90 && rotations > 0) {
+		for (int r = 0; r < rotations; ++r) {
+			for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+				scenegraph::SceneGraphNode &node = *iter;
+				const voxel::RawVolume *v = node.volume();
+				if (v == nullptr) {
+					continue;
+				}
+				voxel::RawVolume *newVolume = voxelutil::rotateAxis(v, axis);
+				if (newVolume == nullptr) {
+					continue;
+				}
+				const glm::vec3 oldRegionCenter = v->region().calcCenterf();
+				const glm::vec3 newRegionCenter = newVolume->region().calcCenterf();
+
+				node.setVolume(newVolume, true);
+
+				// Rotate the volume's world-space center around the scene pivot,
+				// then back-compute the new translation so the center lands correctly.
+				scenegraph::SceneGraphTransform &transform = node.transform(0);
+				const glm::vec3 worldCenter = transform.worldTranslation() + oldRegionCenter;
+				const glm::vec3 rel = worldCenter - scenePivot;
+				glm::vec3 newWorldCenter = worldCenter;
+				if (axis == math::Axis::X) {
+					newWorldCenter.y = scenePivot.y + rel.z;
+					newWorldCenter.z = scenePivot.z - rel.y;
+				} else if (axis == math::Axis::Y) {
+					newWorldCenter.x = scenePivot.x - rel.z;
+					newWorldCenter.z = scenePivot.z + rel.x;
+				} else {
+					newWorldCenter.x = scenePivot.x + rel.y;
+					newWorldCenter.y = scenePivot.y - rel.x;
+				}
+				transform.setWorldTranslation(newWorldCenter - newRegionCenter);
+			}
+			sceneGraph.updateTransforms();
+		}
+	} else {
+		// General case: use floating-point rotation with backward mapping
+		const float pitch = glm::radians(axis == math::Axis::X ? degree : 0.0f);
+		const float yaw = glm::radians(axis == math::Axis::Y ? degree : 0.0f);
+		const float roll = glm::radians(axis == math::Axis::Z ? degree : 0.0f);
+		const glm::mat4 mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
+			const voxel::RawVolume *v = node.volume();
+			if (v == nullptr) {
+				continue;
+			}
+			const glm::vec3 oldRegionCenter = v->region().calcCenterf();
+
+			// Rotate volume around its own center
+			const glm::vec3 normalizedPivot(0.5f);
+			glm::vec3 rotVec{0.0f};
+			rotVec[math::getIndexForAxis(axis)] = degree;
+			node.setVolume(voxelutil::rotateVolumeDegrees(v, rotVec, normalizedPivot), true);
+
+			const glm::vec3 newRegionCenter = node.volume()->region().calcCenterf();
+
+			// Rotate world center around scene pivot
+			scenegraph::SceneGraphTransform &transform = node.transform(0);
+			const glm::vec3 worldCenter = transform.worldTranslation() + oldRegionCenter;
+			const glm::vec3 offset = worldCenter - scenePivot;
+			const glm::vec3 newWorldCenter = scenePivot + glm::vec3(mat * glm::vec4(offset, 0.0f));
+			transform.setWorldTranslation(newWorldCenter - newRegionCenter);
+		}
+		sceneGraph.updateTransforms();
 	}
 }
 

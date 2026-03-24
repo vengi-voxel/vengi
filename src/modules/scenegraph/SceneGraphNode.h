@@ -132,6 +132,8 @@ public:
 	palette::NormalPalette &normalPalette() const;
 	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
+	bool hasVoxels() const;
+
 	/**
 	 * @param[in] reindexPalette the palette is being compacted and voxel references are being adjusted accordingly
 	 */
