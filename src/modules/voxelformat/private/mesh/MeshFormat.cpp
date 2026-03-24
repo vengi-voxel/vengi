@@ -140,7 +140,6 @@ void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, color:
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
-	core::ScopedLock lock(_mutex);
 	const int idx = region.index(pos);
 	auto iter = posMap.find(idx);
 	if (iter == posMap.end()) {
@@ -151,12 +150,38 @@ void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, color:
 	}
 }
 
+static void mergePosMap(PosMap &target, const PosMap &source) {
+	for (const auto &entry : source) {
+		auto iter = target.find(entry->key);
+		if (iter == target.end()) {
+			PosSampling copy = entry->second;
+			target.emplace(entry->key, core::move(copy));
+		} else {
+			const PosSampling &src = entry->second;
+			PosSampling &dst = iter->value;
+			for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+				const PosSamplingEntry &e = src.entry(i);
+				if (e.area == 0) {
+					break;
+				}
+				dst.add(e.area, e.color, e.normal, e.materialIdx);
+			}
+		}
+	}
+}
+
 void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 							   const MeshMaterialArray &meshMaterialArray,
 							   const palette::NormalPalette &normalPalette) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
 	palette::NormalPaletteLookup normalLookup(normalPalette);
-	auto fn = [&tris, &region, &normalLookup, &posMap, &meshMaterialArray, this](int start, int end) {
+	const int parallel = app::for_parallel_size(0, tris.size());
+	core::DynamicArray<PosMap> localMaps;
+	localMaps.resize(parallel);
+	core::AtomicInt mapIdx(0);
+	auto fn = [&tris, &region, &normalLookup, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
+		const int idx = mapIdx.increment();
+		PosMap &localMap = localMaps[idx];
 		for (int i = start; i < end; ++i) {
 			if (stopExecution()) {
 				return;
@@ -177,10 +202,13 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			}
 
 			const glm::ivec3 p(c);
-			addToPosMap(posMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
+			addToPosMap(localMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
 		}
 	};
 	app::for_parallel(0, tris.size(), fn);
+	for (const PosMap &localMap : localMaps) {
+		mergePosMap(posMap, localMap);
+	}
 }
 
 void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
@@ -188,7 +216,13 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 										  const palette::NormalPalette &normalPalette) const {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
 	palette::NormalPaletteLookup normalLookup(normalPalette);
-	auto fn = [&tris, &normalLookup, region, &posMap, &meshMaterialArray, this](int start, int end) {
+	const int parallel = app::for_parallel_size(0, tris.size());
+	core::DynamicArray<PosMap> localMaps;
+	localMaps.resize(parallel);
+	core::AtomicInt mapIdx(0);
+	auto fn = [&tris, &normalLookup, region, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
+		const int idx = mapIdx.increment();
+		PosMap &localMap = localMaps[idx];
 		for (int i = start; i < end; ++i) {
 			if (stopExecution()) {
 				break;
@@ -229,13 +263,16 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 							continue;
 						}
 						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
-						addToPosMap(posMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
+						addToPosMap(localMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
 					}
 				}
 			}
 		}
 	};
 	app::for_parallel(0, tris.size(), fn);
+	for (const PosMap &localMap : localMaps) {
+		mergePosMap(posMap, localMap);
+	}
 }
 
 bool MeshFormat::isVoxelMesh(const MeshTriCollection &tris) {
@@ -284,6 +321,121 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 	}
 }
 
+static constexpr int MaxSingleVolumeDim = 256;
+
+int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneGraph &sceneGraph,
+									MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray,
+									const glm::vec3 &trisMins, const voxel::Region &region,
+									const palette::NormalPalette &normalPalette, int parent, bool resetOrigin) const {
+	const int chunkSize = glm::clamp(core::getVar(cfg::VoxformatVoxelizeChunkSize)->intVal(), 16, 512);
+	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+	Log::debug("Chunked voxelization (%i^3 chunks) for region %s (%i:%i:%i), %i triangles",
+			   chunkSize, region.toString().c_str(), vdim.x, vdim.y, vdim.z, (int)tris.size());
+
+	const bool fillHollow = core::getVar(cfg::VoxformatFillHollow)->boolVal();
+	if (fillHollow) {
+		Log::warn("Fill hollow is not supported with chunked voxelization and will be skipped");
+	}
+
+	palette::Palette palette;
+	const bool shouldCreatePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+	if (shouldCreatePalette) {
+		palette::RGBAMaterialMap colorMaterials;
+		for (const voxelformat::MeshTri &meshTri : tris) {
+			voxelizeTriangle(
+				trisMins, meshTri,
+				[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+					const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+					colorMaterials.put(rgba, tri.materialIdx > 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr);
+				});
+		}
+		createPalette(colorMaterials, palette);
+	} else {
+		palette = voxel::getPalette();
+	}
+
+	using ChunkMap = core::Map<glm::ivec3, voxel::RawVolume *, 1031, glm::hash<glm::ivec3>>;
+	ChunkMap chunkVolumes;
+	const glm::ivec3 &regionMins = region.getLowerCorner();
+	const glm::ivec3 &regionMaxs = region.getUpperCorner();
+
+	palette::PaletteLookup palLookup(palette);
+	palette::NormalPaletteLookup normalLookup(normalPalette);
+	for (const voxelformat::MeshTri &meshTri : tris) {
+		if (stopExecution()) {
+			break;
+		}
+		auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+			const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+			if (color.a <= AlphaThreshold) {
+				return;
+			}
+			const glm::ivec3 pos(x, y, z);
+			const glm::ivec3 chunkCoord = (pos - regionMins) / chunkSize;
+
+			auto chunkIter = chunkVolumes.find(chunkCoord);
+			voxel::RawVolume *volume;
+			if (chunkIter == chunkVolumes.end()) {
+				const glm::ivec3 chunkMins = regionMins + chunkCoord * chunkSize;
+				const glm::ivec3 chunkMaxs = glm::min(chunkMins + glm::ivec3(chunkSize - 1), regionMaxs);
+				volume = new voxel::RawVolume(voxel::Region(chunkMins, chunkMaxs));
+				chunkVolumes.put(chunkCoord, volume);
+			} else {
+				volume = chunkIter->value;
+			}
+
+			const glm::vec3 &normal = tri.normal();
+			int normalIdx = normalLookup.getClosestMatch(normal);
+			if (normalIdx == palette::PaletteNormalNotFound) {
+				normalIdx = NO_NORMAL;
+			}
+			const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIdx);
+			volume->setVoxel(pos, voxel);
+		};
+		voxelizeTriangle(trisMins, meshTri, fn);
+	}
+	tris.release();
+
+	if (palette.colorCount() == 1) {
+		color::RGBA c = palette.color(0);
+		if (c.a == 0) {
+			c.a = 255;
+			palette.setColor(0, c);
+		}
+	}
+
+	// Step 3: Add chunk volumes as scene graph nodes under a group
+	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+	groupNode.setName(name);
+	const int groupId = sceneGraph.emplace(core::move(groupNode), parent);
+
+	int chunkIdx = 0;
+	for (auto iter = chunkVolumes.begin(); iter != chunkVolumes.end(); ++iter) {
+		voxel::RawVolume *volume = iter->value;
+		if (volume == nullptr) {
+			continue;
+		}
+
+		scenegraph::SceneGraphNode chunkNode(scenegraph::SceneGraphNodeType::Model);
+		chunkNode.setName(core::String::format("%s_%i", name.c_str(), chunkIdx++));
+		if (resetOrigin) {
+			const voxel::Region &chunkRegion = volume->region();
+			scenegraph::SceneGraphTransform transform;
+			transform.setLocalTranslation(chunkRegion.getLowerCornerf());
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			chunkNode.setTransform(keyFrameIdx, transform);
+			volume->translate(-chunkRegion.getLowerCorner());
+		}
+		chunkNode.setVolume(volume);
+		chunkNode.setPalette(palette);
+		chunkNode.setNormalPalette(normalPalette);
+		sceneGraph.emplace(core::move(chunkNode), groupId);
+	}
+
+	Log::debug("Chunked voxelization: %i chunks created", chunkIdx);
+	return groupId;
+}
+
 int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 							 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent, bool resetOrigin) const {
 	if (tris.empty()) {
@@ -322,6 +474,17 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			Log::warn("Another option when using very large meshes is to use the fast voxelization mode (%s)",
 					  cfg::VoxformatVoxelizeMode);
 		}
+	}
+
+	const bool chunkedVoxelization = core::getVar(cfg::VoxformatVoxelizeChunked)->boolVal();
+	if (chunkedVoxelization && glm::any(glm::greaterThan(vdim, glm::ivec3(MaxSingleVolumeDim)))) {
+		palette::NormalPalette normalPalette;
+		const core::VarPtr &normalPaletteVar = core::getVar(cfg::NormalPalette);
+		if (!normalPalette.load(normalPaletteVar->strVal().c_str())) {
+			normalPalette.redAlert2();
+		}
+		return voxelizeNodeChunked(name, sceneGraph, core::move(tris), meshMaterialArray,
+								   trisMins, region, normalPalette, parent, resetOrigin);
 	}
 
 	if (!checkValidRegion(region)) {
@@ -530,11 +693,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		if (rgba.a <= AlphaThreshold) {
 			return;
 		}
-		uint8_t colorIndex;
-		{
-			core::ScopedLock lock(_mutex);
-			colorIndex = palLookup.findClosestIndex(rgba);
-		}
+		const uint8_t colorIndex = palLookup.findClosestIndex(rgba);
 		const voxel::Voxel voxel = voxel::createVoxel(palette, colorIndex, posSampling.getNormal());
 		core_assert_msg_always(volume->setVoxel(idx, voxel), "Failed to set voxel at index %i (%s)", idx, volume->region().toString().c_str());
 	};
