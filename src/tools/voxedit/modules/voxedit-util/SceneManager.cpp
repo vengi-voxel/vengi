@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 
 #include "app/Async.h"
+#include "core/ConfigVar.h"
 #include "app/I18N.h"
 #include "color/ColorUtil.h"
 #include "color/Quantize.h"
@@ -491,6 +492,11 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
+		const int splitSize = core::getVar(cfg::VoxelSplitOnLoad)->intVal();
+		if (splitSize > 0) {
+			Log::debug("Skipping merge of %i volumes (split on load = %i)", (int)newSceneGraph.size(), splitSize);
+			return;
+		}
 		// TODO: don't merge everything blindly. Check if it's enough to merge single nodes here.
 		// TODO: PERF: merging will take a lot of time for large scenes
 		Log::warn("Scene has %i nodes which exceeds the limit of %i - merging all nodes into one volume. "
@@ -2392,13 +2398,15 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 }
 
 bool SceneManager::splitVolumes() {
+	const int splitSize = _maxSuggestedVolumeSize->intVal();
+	const glm::ivec3 maxSize(splitSize);
 	scenegraph::SceneGraph newSceneGraph;
-	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false)) {
+	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false, false, maxSize)) {
 		return loadSceneGraph(core::move(newSceneGraph));
 	}
 
 	scenegraph::SceneGraph newSceneGraph2;
-	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph2, false, true)) {
+	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph2, false, true, false, maxSize)) {
 		return loadSceneGraph(core::move(newSceneGraph2));
 	}
 	return false;
@@ -5239,7 +5247,7 @@ bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 
 bool SceneManager::exceedsMaxSuggestedVolumeSize() const {
 	const int maxDim = _maxSuggestedVolumeSize->intVal();
-	const int maxVoxels = maxDim * maxDim * maxDim;
+	const int64_t maxVoxels = (int64_t)maxDim * (int64_t)maxDim * (int64_t)maxDim;
 	const voxel::Region &region = _sceneGraph.maxRegion();
 	return region.voxels() > maxVoxels;
 }
