@@ -27,6 +27,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
+#include <SDL_stdinc.h>
 #include "voxel/Voxel.h"
 #include "voxel/external/stb_rect_pack.h"
 #include "voxelutil/VolumeRotator.h"
@@ -1277,7 +1278,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	}
 	voxel::RawVolume *mergedVolume = new voxel::RawVolume(mergedRegion);
 	if (mergedVolume->voxels() == nullptr) {
-		Log::error("Failed to allocate merged volume (%zu bytes)", voxel::RawVolume::size(mergedRegion));
+		Log::error("Failed to allocate merged volume (%" SDL_PRIu64 " bytes)", (uint64_t)voxel::RawVolume::size(mergedRegion));
 		delete mergedVolume;
 		return MergeResult{};
 	}
