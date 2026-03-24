@@ -60,7 +60,7 @@ TEST_F(ConcurrentSparseVolumeTest, testCopyToRawVolume) {
 
 TEST_F(ConcurrentSparseVolumeTest, testSetVoxels) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	core::Vector<voxel::Voxel, 6> voxels;
+	core::Vector<voxel::Voxel, 7> voxels;
 	voxels.assign(voxel, voxels.capacity());
 	voxel::ConcurrentSparseVolume v{voxel::Region{0, 0, 0, 3, 6, 3}};
 	voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
