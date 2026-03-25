@@ -13,6 +13,7 @@ set(SRCS
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
 	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
 	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
+	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
 	modifier/brush/SculptBrush.cpp modifier/brush/SculptBrush.h
 	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
@@ -117,6 +118,7 @@ set(TEST_SRCS
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp
+	tests/RulerBrushTest.cpp
 	tests/ProtocolMessageFactoryTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
