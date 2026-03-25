@@ -525,80 +525,155 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		return;
 	}
 
-	// Normal iteration-based smooth erode
-	using ColumnSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+	// Height-map smooth erode: each iteration, columns taller than their neighbor
+	// average get trimmed toward that average. Never grows, never removes the bottom layer.
+	const int axis1 = (axisIdx == 0) ? 1 : 0;
+	const int axis2 = (axisIdx == 2) ? 1 : 2;
+	const int base1 = lo[axis1];
+	const int base2 = lo[axis2];
+	const int extent1 = hi[axis1] - base1 + 1;
+	const int extent2 = hi[axis2] - base2 + 1;
+	const int numColumns = extent1 * extent2;
+	const int axisLo = lo[axisIdx];
+	const int axisHi = hi[axisIdx];
+
+	static constexpr int EMPTY = INT_MIN;
+	static constexpr int SEAL_DEPTH = 2;
+
+	core::DynamicArray<int> colTopArr(numColumns);
+	core::DynamicArray<int> colBotArr(numColumns);
+
 	for (int iter = 0; iter < iterations; ++iter) {
-		int minVal = INT_MAX;
-		int maxVal = INT_MIN;
-		for (int z = lo.z; z <= hi.z; ++z) {
-			for (int y = lo.y; y <= hi.y; ++y) {
-				for (int x = lo.x; x <= hi.x; ++x) {
-					if (!solid.hasValue(x, y, z)) {
+		// Step 1: Build column top/bottom height map
+		for (int idx = 0; idx < numColumns; ++idx) {
+			colTopArr[idx] = EMPTY;
+			colBotArr[idx] = EMPTY;
+		}
+
+		for (int a1 = 0; a1 < extent1; ++a1) {
+			for (int a2 = 0; a2 < extent2; ++a2) {
+				const int flatIdx = a1 * extent2 + a2;
+				const int coord1 = base1 + a1;
+				const int coord2 = base2 + a2;
+				for (int av = axisLo; av <= axisHi; ++av) {
+					glm::ivec3 pos;
+					pos[axis1] = coord1;
+					pos[axis2] = coord2;
+					pos[axisIdx] = av;
+					if (!isSolid(solid, anchors, pos)) {
 						continue;
 					}
-					const int v = glm::ivec3(x, y, z)[axisIdx];
-					minVal = glm::min(minVal, v);
-					maxVal = glm::max(maxVal, v);
-				}
-			}
-		}
-		if (minVal > maxVal) {
-			return;
-		}
-
-		const int topVal = positiveUp ? maxVal : minVal;
-		const int bottomVal = positiveUp ? minVal : maxVal;
-
-		core::DynamicArray<glm::ivec3> toRemove;
-		ColumnSet removedColumns;
-
-		for (int layer = topVal; layer != bottomVal - step; layer -= step) {
-			for (int z = lo.z; z <= hi.z; ++z) {
-				for (int y = lo.y; y <= hi.y; ++y) {
-					for (int x = lo.x; x <= hi.x; ++x) {
-						if (!solid.hasValue(x, y, z)) {
-							continue;
-						}
-						const glm::ivec3 pos(x, y, z);
-						if (pos[axisIdx] != layer) {
-							continue;
-						}
-
-						glm::ivec3 above = pos;
-						above[axisIdx] += step;
-						if (isSolid(solid, anchors, above)) {
-							continue;
-						}
-
-						glm::ivec3 colKey = pos;
-						colKey[axisIdx] = 0;
-						if (removedColumns.has(colKey)) {
-							continue;
-						}
-
-						int planarCount = 0;
-						for (int i = 0; i < 4; ++i) {
-							const glm::ivec3 neighbor = pos + planarOffsets[i];
-							if (isSolid(solid, anchors, neighbor)) {
-								planarCount++;
-							}
-						}
-						if (planarCount < 4) {
-							toRemove.push_back(pos);
-							removedColumns.insert(colKey);
-						}
+					if (colTopArr[flatIdx] == EMPTY) {
+						colTopArr[flatIdx] = av;
+						colBotArr[flatIdx] = av;
+					} else if (positiveUp) {
+						colTopArr[flatIdx] = glm::max(colTopArr[flatIdx], av);
+						colBotArr[flatIdx] = glm::min(colBotArr[flatIdx], av);
+					} else {
+						colTopArr[flatIdx] = glm::min(colTopArr[flatIdx], av);
+						colBotArr[flatIdx] = glm::max(colBotArr[flatIdx], av);
 					}
 				}
 			}
 		}
 
-		if (toRemove.empty()) {
-			break;
+		// Global minimum bottom: used as self term so floating columns still erode
+		int globalMinBot;
+		if (positiveUp) {
+			globalMinBot = axisHi;
+			for (int idx = 0; idx < numColumns; ++idx) {
+				if (colBotArr[idx] != EMPTY) {
+					globalMinBot = glm::min(globalMinBot, colBotArr[idx]);
+				}
+			}
+		} else {
+			globalMinBot = axisLo;
+			for (int idx = 0; idx < numColumns; ++idx) {
+				if (colBotArr[idx] != EMPTY) {
+					globalMinBot = glm::max(globalMinBot, colBotArr[idx]);
+				}
+			}
 		}
 
-		for (const glm::ivec3 &pos : toRemove) {
-			solid.setVoxel(pos, false);
-			voxelMap.setVoxel(pos, voxel::Voxel());
+		// Step 2: For each column, check if its top is above the 3x3 neighbor average.
+		// If so, trim exactly 1 voxel. Limiting to 1 per iteration prevents gaps
+		// between adjacent columns that erode at different rates.
+		bool anyChange = false;
+
+		for (int a1 = 0; a1 < extent1; ++a1) {
+			for (int a2 = 0; a2 < extent2; ++a2) {
+				const int flatIdx = a1 * extent2 + a2;
+				const int myTop = colTopArr[flatIdx];
+				if (myTop == EMPTY) {
+					continue;
+				}
+
+				// Average top height of populated neighbors in the 3x3 kernel
+				int heightSum = 0;
+				int count = 0;
+				for (int da1 = -1; da1 <= 1; ++da1) {
+					for (int da2 = -1; da2 <= 1; ++da2) {
+						const int na1 = a1 + da1;
+						const int na2 = a2 + da2;
+						if (na1 >= 0 && na1 < extent1 && na2 >= 0 && na2 < extent2) {
+							const int nt = colTopArr[na1 * extent2 + na2];
+							if (nt != EMPTY) {
+								heightSum += nt;
+								count++;
+							}
+						}
+					}
+				}
+				if (count < 1) {
+					continue;
+				}
+
+				const int avgTop = heightSum / count;
+				// Only trim if column is above average. Never grow.
+				if ((positiveUp && avgTop >= myTop) || (!positiveUp && avgTop <= myTop)) {
+					continue;
+				}
+				// Never trim below global floor
+				if ((positiveUp && myTop <= globalMinBot) || (!positiveUp && myTop >= globalMinBot)) {
+					continue;
+				}
+
+				// Trim exactly 1 voxel from the top
+				const int coord1 = base1 + a1;
+				const int coord2 = base2 + a2;
+				glm::ivec3 removePos;
+				removePos[axis1] = coord1;
+				removePos[axis2] = coord2;
+				removePos[axisIdx] = myTop;
+
+				voxel::Voxel removedVoxel;
+				if (voxelMap.hasVoxel(removePos)) {
+					removedVoxel = voxelMap.voxel(removePos);
+				}
+
+				if (solid.hasValue(removePos.x, removePos.y, removePos.z)) {
+					solid.setVoxel(removePos, false);
+					voxelMap.setVoxel(removePos, voxel::Voxel());
+					anyChange = true;
+				}
+
+					// Seal: ensure voxels below the removed one are solid
+				for (int s = 1; s <= SEAL_DEPTH; ++s) {
+					glm::ivec3 belowPos;
+					belowPos[axis1] = coord1;
+					belowPos[axis2] = coord2;
+					belowPos[axisIdx] = myTop - step * s;
+					if (!region.containsPoint(belowPos)) {
+						break;
+					}
+					solid.setVoxel(belowPos, true);
+					voxelMap.setVoxel(belowPos, removedVoxel);
+				}
+			}
+		}
+
+		if (!anyChange) {
+			break;
 		}
 	}
 }

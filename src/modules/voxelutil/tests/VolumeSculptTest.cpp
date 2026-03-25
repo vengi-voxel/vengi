@@ -290,9 +290,9 @@ TEST_F(VolumeSculptTest, testSmoothAdditiveOneVoxelPerIteration) {
 	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 2, 2).getMaterial()));
 }
 
-TEST_F(VolumeSculptTest, testSmoothErodeRemovesEdge) {
+TEST_F(VolumeSculptTest, testSmoothErodeRemovesTower) {
 	// 3x3x2 block with a single tower voxel on the corner at y=2.
-	// The tower voxel is the only top-of-column with <4 planar neighbors at that height.
+	// The tower column is taller than its neighbors and should be trimmed.
 	voxel::Region region(0, 5);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -309,34 +309,41 @@ TEST_F(VolumeSculptTest, testSmoothErodeRemovesEdge) {
 
 	const int before = countSolid(volume);
 	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 1);
-	// Top layer (y=1) edge/corner voxels removed, plus tower at (0,2,0)
+	// Tower column (0,0) has top=2, neighbors have top=1. Average=1. Trim to 1.
 	EXPECT_LT(countSolid(volume), before);
-	// The tower voxel should definitely be removed (0 planar neighbors at y=2)
 	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 2, 0).getMaterial()));
+	// Base slab is flat (all top=1) - should remain untouched
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 1, 1).getMaterial()));
 }
 
-TEST_F(VolumeSculptTest, testSmoothErodeKeepsSurrounded) {
-	// A 3x3x2 block - top center voxel at (1,1,1) has 4 planar neighbors and should NOT be removed
-	voxel::Region region(0, 5);
+TEST_F(VolumeSculptTest, testSmoothErodeUniformBlockUnchanged) {
+	// A 3x3x5 uniform block. All populated neighbors have the same height,
+	// so the average equals the top and no column erodes.
+	voxel::Region region(0, 7);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	for (int x = 0; x < 3; ++x) {
 		for (int z = 0; z < 3; ++z) {
-			volume.setVoxel(x, 0, z, solid);
-			volume.setVoxel(x, 1, z, solid);
+			for (int y = 0; y < 5; ++y) {
+				volume.setVoxel(x, y, z, solid);
+			}
 		}
 	}
 
 	const int before = countSolid(volume);
-	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 1);
-	// Center top (1,1,1) has 4 planar neighbors -> stays. Only edge/corner tops removed.
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 1, 1).getMaterial()));
-	EXPECT_LT(countSolid(volume), before);
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 2);
+	// Uniform block: all neighbor tops equal, average == top, no erosion
+	EXPECT_EQ(countSolid(volume), before) << "Uniform block should not erode";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 4, 0).getMaterial()))
+		<< "Corner top should survive";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 4, 1).getMaterial()))
+		<< "Center top should survive";
 }
 
-TEST_F(VolumeSculptTest, testSmoothErodeOnePerIteration) {
-	// A 1x3 tower. Top voxel is edge (0 planar neighbors). After 1 iteration, only top removed.
+TEST_F(VolumeSculptTest, testSmoothErodeIsolatedTowerUnchanged) {
+	// A single-column 1x3 tower with no planar neighbors. Only self in kernel,
+	// so average equals top and no erosion occurs.
 	voxel::Region region(0, 5);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -346,27 +353,119 @@ TEST_F(VolumeSculptTest, testSmoothErodeOnePerIteration) {
 	volume.setVoxel(2, 2, 2, solid);
 
 	const int before = countSolid(volume);
-	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 1);
-	// Only top voxel (2,2,2) removed
-	EXPECT_EQ(countSolid(volume), before - 1);
-	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 1, 2).getMaterial()));
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 10);
+	// Isolated tower: only self in kernel, average == top, no erosion
+	EXPECT_EQ(countSolid(volume), before) << "Isolated tower should not erode";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 2, 2).getMaterial()))
+		<< "Top should survive";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 0, 2).getMaterial()))
+		<< "Bottom should survive";
 }
 
-TEST_F(VolumeSculptTest, testSmoothErodeMultipleIterations) {
-	// A 1x3 tower. 2 iterations should remove top 2 voxels.
+TEST_F(VolumeSculptTest, testSmoothErodeTowerOnSlab) {
+	// A 3x3x1 slab with a 3-tall tower on top at (1,1). The tower should be trimmed
+	// toward the slab height, converging over iterations.
 	voxel::Region region(0, 5);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	volume.setVoxel(2, 0, 2, solid);
-	volume.setVoxel(2, 1, 2, solid);
-	volume.setVoxel(2, 2, 2, solid);
+	// 3x3 slab at y=0
+	for (int x = 0; x < 3; ++x) {
+		for (int z = 0; z < 3; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+	// Tower at (1,0,1) going up to y=3
+	volume.setVoxel(1, 1, 1, solid);
+	volume.setVoxel(1, 2, 1, solid);
+	volume.setVoxel(1, 3, 1, solid);
 
-	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 2);
-	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
-	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 1, 2).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 0, 2).getMaterial()));
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 3);
+	// Tower should be trimmed toward neighbor height (y=0). Bottom voxel at y=0 always survives.
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 1).getMaterial()))
+		<< "Base slab voxel must survive";
+	// Top of tower should have been trimmed
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 3, 1).getMaterial()))
+		<< "Top of tower should be eroded";
+	// Slab neighbors should be untouched (all same height)
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Slab corner should survive";
+}
+
+TEST_F(VolumeSculptTest, testSmoothErodeHollowBoxWallsErode) {
+	// A hollow box on a wider table. Outer wall columns (top=5) neighbor short
+	// table columns (top=0), so their average is pulled down and they erode.
+	// Interior roof columns have all same-height neighbors and stay.
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Build hollow box from (1,1,1) to (5,5,5) - shell only
+	for (int x = 1; x <= 5; ++x) {
+		for (int z = 1; z <= 5; ++z) {
+			for (int y = 1; y <= 5; ++y) {
+				if (x == 1 || x == 5 || z == 1 || z == 5 || y == 1 || y == 5) {
+					volume.setVoxel(x, y, z, solid);
+				}
+			}
+		}
+	}
+	// Table floor at y=0
+	for (int x = 0; x <= 6; ++x) {
+		for (int z = 0; z <= 6; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+
+	// Interior should be air before erode
+	EXPECT_TRUE(voxel::isAir(volume.voxel(3, 3, 3).getMaterial()));
+
+	const int before = countSolid(volume);
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 1);
+
+	// Outer wall columns erode (neighbor table columns pull average below 5)
+	EXPECT_LT(countSolid(volume), before) << "Outer walls should erode";
+	// Interior roof column (3,5,3) has all neighbors at top=5, stays
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 5, 3).getMaterial()))
+		<< "Interior roof should survive";
+	// Floor should be untouched
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 3).getMaterial()))
+		<< "Floor should survive";
+}
+
+TEST_F(VolumeSculptTest, testSmoothErodeNeverEmptiesColumn) {
+	// A 5x5 table with a 3x3 cup (3 voxels tall) on top. Many iterations should
+	// flatten the cup toward the table but never remove any column entirely.
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Table: 5x5 at y=0
+	for (int x = 0; x < 5; ++x) {
+		for (int z = 0; z < 5; ++z) {
+			volume.setVoxel(x, 0, z, solid);
+		}
+	}
+	// Cup: 3x3 from y=1 to y=3
+	for (int x = 1; x <= 3; ++x) {
+		for (int z = 1; z <= 3; ++z) {
+			for (int y = 1; y <= 3; ++y) {
+				volume.setVoxel(x, y, z, solid);
+			}
+		}
+	}
+
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 10);
+	// Every column must still have at least one voxel
+	for (int x = 0; x < 5; ++x) {
+		for (int z = 0; z < 5; ++z) {
+			EXPECT_TRUE(voxel::isBlocked(volume.voxel(x, 0, z).getMaterial()))
+				<< "Column (" << x << "," << z << ") bottom should survive";
+		}
+	}
+	// Cup top should be trimmed
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 3, 2).getMaterial()))
+		<< "Cup top center should be eroded toward table level";
 }
 
 TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeight3x3Pyramid) {
