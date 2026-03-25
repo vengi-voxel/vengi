@@ -172,6 +172,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_PAINTBRUSH, _("Color Selected"), "colorselected", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Color"), "selectonlycolor", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Edges"), "selectonlyedges", true, &listener);
 			ImGui::Separator();
 			ImGui::CheckboxVar(cfg::VoxEditAutoSelect);
 			ImGui::EndMenu();
