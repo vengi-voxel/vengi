@@ -1107,14 +1107,32 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		const glm::ivec3 center = ctx.cursorPosition;
 		const int rad = radius();
 		const int radSq = rad * rad;
+		const bool growOnly = _paintGrowRegion && wrapper.modifierType() != ModifierType::Erase;
 		voxelutil::VisitSolid condition;
 		auto paintFunc = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const int dx = x - center.x;
 			const int dy = y - center.y;
 			const int dz = z - center.z;
-			if (dx * dx + dy * dy + dz * dz <= radSq) {
-				func(x, y, z, voxel);
+			if (dx * dx + dy * dy + dz * dz > radSq) {
+				return;
 			}
+			if (growOnly) {
+				bool hasSelectedNeighbor = false;
+				for (const glm::ivec3 &off : ::voxel::arrayPathfinderFaces) {
+					const glm::ivec3 npos(x + off.x, y + off.y, z + off.z);
+					if (ctx.targetVolumeRegion.containsPoint(npos)) {
+						const ::voxel::Voxel &neighborVoxel = wrapper.voxel(npos);
+						if (!::voxel::isAir(neighborVoxel.getMaterial()) && (neighborVoxel.getFlags() & ::voxel::FlagOutline)) {
+							hasSelectedNeighbor = true;
+							break;
+						}
+					}
+				}
+				if (!hasSelectedNeighbor) {
+					return;
+				}
+			}
+			func(x, y, z, voxel);
 		};
 		voxelutil::visitVolume(wrapper, selectionRegion, paintFunc, condition);
 		_paintDirtyRegion.accumulate(selectionRegion);

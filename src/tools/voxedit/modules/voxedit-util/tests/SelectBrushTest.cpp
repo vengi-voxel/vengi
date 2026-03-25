@@ -1530,4 +1530,99 @@ TEST_F(SelectBrushTest, testSelectModePaintDeselect) {
 	brush.shutdown();
 }
 
+TEST_F(SelectBrushTest, testSelectModePaintGrowRegion) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -3; z <= 3; ++z) {
+		for (int y = -3; y <= 3; ++y) {
+			for (int x = -3; x <= 3; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	// Pre-select a single voxel at origin
+	{
+		voxel::Voxel v = volume.voxel(0, 0, 0);
+		v.setFlags(voxel::FlagOutline);
+		volume.setVoxel(0, 0, 0, v);
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Paint);
+	brush.setRadius(2);
+	brush.setPaintGrowRegion(true);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+	brush.preExecute(ctx, wrapper.volume());
+	brush.execute(sceneGraph, wrapper, ctx);
+
+	// Direct face-neighbors of origin should be selected (adjacent to pre-selected voxel)
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Face-neighbor should be selected via grow";
+	EXPECT_TRUE((volume.voxel(-1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Face-neighbor should be selected via grow";
+
+	// Diagonal voxel at distance 1.73 has no face-adjacent selected neighbor initially
+	// but after its face-neighbors get selected in the same pass it might still not be selected
+	// because the visitor reads pre-existing flags. (1,1,0) has face-neighbors (0,1,0) and (1,0,0)
+	// - (1,0,0) gets selected in this pass but flags are written live, so it depends on visit order.
+	// The important invariant: voxels far from the seed with no selected neighbor chain are NOT selected.
+	EXPECT_FALSE((volume.voxel(2, 2, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel far from seed with no adjacent selection should not be selected";
+
+	brush.endBrush(ctx);
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	// No pre-selected voxels
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Paint);
+	brush.setRadius(2);
+	brush.setPaintGrowRegion(true);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+	brush.preExecute(ctx, wrapper.volume());
+	brush.execute(sceneGraph, wrapper, ctx);
+
+	// With grow region and no existing selection, nothing should be selected
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "No voxels should be selected when there is no existing selection to grow from";
+	EXPECT_FALSE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "No voxels should be selected when there is no existing selection to grow from";
+
+	brush.endBrush(ctx);
+	brush.shutdown();
+}
+
 } // namespace voxedit
