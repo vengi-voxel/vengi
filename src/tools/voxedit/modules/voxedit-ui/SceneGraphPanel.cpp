@@ -70,6 +70,12 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 				_resizeMaxs = region.getUpperCorner();
 				_popupResizeNode = true;
 			}
+			if (ImGui::IconMenuItem(ICON_LC_SCALING, _("Rescale content"))) {
+				_rescaleNodeId = nodeId;
+				const voxel::Region &region = node.region();
+				_rescaleTargetSize = region.getDimensionsInVoxels();
+				_popupRescaleNode = true;
+			}
 			commandNodeMenu(ICON_LC_SAVE, _("Save"), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model"), "modelunref", true, &listener);
