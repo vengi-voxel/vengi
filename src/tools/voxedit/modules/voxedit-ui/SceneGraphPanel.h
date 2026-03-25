@@ -71,9 +71,15 @@ public:
 
 	bool _popupNewModelNode = false;
 	bool _popupResizeNode = false;
+	bool _popupRescaleNode = false;
 	int _resizeNodeId = InvalidNodeId;
+	int _rescaleNodeId = InvalidNodeId;
 	glm::ivec3 _resizeMins {0};
 	glm::ivec3 _resizeMaxs {0};
+	glm::ivec3 _rescaleTargetSize {0};
+	glm::vec3 _rescalePercent {100.0f};
+	bool _rescaleMaintainAspectRatio = true;
+	bool _rescaleUseVoxelSize = true;
 	bool init();
 	void update(video::Camera &camera, const char *id, ModelNodeSettings *modelNodeSettings,
 				command::CommandExecutionListener &listener);

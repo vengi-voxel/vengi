@@ -621,6 +621,7 @@ public:
 	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(int nodeId, const voxel::Region &region);
 	void nodeResize(int nodeId, const glm::ivec3 &size);
+	void nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize);
 	void nodeBakeTransform(int nodeId);
 	/**
 	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels

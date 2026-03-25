@@ -840,6 +840,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_RESIZE_NODE);
 		_sceneGraphPanel._popupResizeNode = false;
 	}
+	if (_sceneGraphPanel._popupRescaleNode) {
+		ImGui::OpenPopup(POPUP_TITLE_RESCALE_NODE);
+		_sceneGraphPanel._popupRescaleNode = false;
+	}
 
 	// popups that can get triggers externally
 	if (_popupTipOfTheDay->boolVal()) {
@@ -878,6 +882,7 @@ void MainWindow::registerPopups() {
 	popupNodeRename();
 	popupModelUnreference();
 	popupNodeResize();
+	popupNodeRescale();
 
 	_animationPanel.registerPopups();
 }
@@ -913,6 +918,98 @@ void MainWindow::popupNodeResize() {
 			const int nodeId = _sceneGraphPanel._resizeNodeId;
 			voxel::Region newRegion(mins, maxs);
 			_sceneMgr->nodeResize(nodeId, newRegion);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::CancelButton()) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
+void MainWindow::popupNodeRescale() {
+	const core::String title = makeTitle(_("Rescale content"), POPUP_TITLE_RESCALE_NODE);
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
+							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
+		const int nodeId = _sceneGraphPanel._rescaleNodeId;
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return;
+		}
+		const glm::ivec3 originalSize = node->region().getDimensionsInVoxels();
+		glm::ivec3 &targetSize = _sceneGraphPanel._rescaleTargetSize;
+		glm::vec3 &percent = _sceneGraphPanel._rescalePercent;
+		bool &maintainAspectRatio = _sceneGraphPanel._rescaleMaintainAspectRatio;
+		bool &useVoxelSize = _sceneGraphPanel._rescaleUseVoxelSize;
+
+		ImGui::Text(_("Original: %i x %i x %i"), originalSize.x, originalSize.y, originalSize.z);
+		ImGui::NewLine();
+
+		ImGui::Checkbox(_("Voxel size"), &useVoxelSize);
+		ImGui::SameLine();
+		ImGui::Checkbox(_("Maintain aspect ratio"), &maintainAspectRatio);
+
+		static constexpr int MinTargetSize = 1;
+		static constexpr int MaxTargetSize = 4096;
+		static constexpr float MinPercent = 1.0f;
+		static constexpr float MaxPercent = 1000.0f;
+
+		if (useVoxelSize) {
+			ImGui::TextUnformatted(_("Target size"));
+			ImGui::Separator();
+			const glm::ivec3 prevTargetSize = targetSize;
+			bool changed = false;
+			changed |= ImGui::InputAxisInt(math::Axis::X, "##rsx", &targetSize.x);
+			changed |= ImGui::InputAxisInt(math::Axis::Y, "##rsy", &targetSize.y);
+			changed |= ImGui::InputAxisInt(math::Axis::Z, "##rsz", &targetSize.z);
+			targetSize = glm::clamp(targetSize, glm::ivec3(MinTargetSize), glm::ivec3(MaxTargetSize));
+
+			if (changed && maintainAspectRatio && originalSize.x > 0 && originalSize.y > 0 && originalSize.z > 0) {
+				const glm::ivec3 delta = targetSize - prevTargetSize;
+				int changedAxis = -1;
+				for (int i = 0; i < 3; ++i) {
+					if (delta[i] != 0) {
+						changedAxis = i;
+						break;
+					}
+				}
+				if (changedAxis >= 0) {
+					const float ratio = (float)targetSize[changedAxis] / (float)originalSize[changedAxis];
+					for (int i = 0; i < 3; ++i) {
+						if (i != changedAxis) {
+							targetSize[i] = glm::max((int)glm::round((float)originalSize[i] * ratio), MinTargetSize);
+						}
+					}
+				}
+			}
+		} else {
+			ImGui::TextUnformatted(_("Scale (%)"));
+			ImGui::Separator();
+			bool changed = false;
+			if (maintainAspectRatio) {
+				float uniform = percent.x;
+				ImGui::SetNextItemWidth(-1);
+				if (ImGui::SliderFloat("##uniform_pct", &uniform, MinPercent, MaxPercent, "%.1f%%")) {
+					percent = glm::vec3(uniform);
+					changed = true;
+				}
+			} else {
+				changed |= ImGui::AxisSliders(percent, MinPercent, MaxPercent, "%.1f%%");
+			}
+			if (changed) {
+				const glm::vec3 scale = percent / 100.0f;
+				targetSize = glm::max(glm::ivec3(glm::round(glm::vec3(originalSize) * scale)), glm::ivec3(MinTargetSize));
+			}
+			ImGui::TextDisabled(_("Result: %i x %i x %i"), targetSize.x, targetSize.y, targetSize.z);
+		}
+
+		ImGui::NewLine();
+
+		if (ImGui::OkButton()) {
+			_sceneMgr->nodeRescaleContent(nodeId, targetSize);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();

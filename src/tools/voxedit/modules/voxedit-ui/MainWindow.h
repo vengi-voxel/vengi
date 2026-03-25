@@ -140,6 +140,7 @@ private:
 	void popupMinecraftMapping();
 	void popupNodeRename();
 	void popupNodeResize();
+	void popupNodeRescale();
 	void popupTipOfTheDay();
 	void popupFailedSave();
 	void popupUnsavedChanges();

@@ -1804,4 +1804,48 @@ TEST_F(SceneManagerTest, testNodeLockAllAndUnlockAll) {
 	}
 }
 
+TEST_F(SceneManagerTest, testRescaleContent) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 9)));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *vol = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, vol);
+
+	// Fill some voxels
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int x = 0; x < 10; ++x) {
+		for (int z = 0; z < 10; ++z) {
+			vol->setVoxel(x, 0, z, voxel);
+		}
+	}
+
+	const glm::ivec3 originalSize = vol->region().getDimensionsInVoxels();
+	EXPECT_EQ(originalSize, glm::ivec3(10, 10, 10));
+
+	// Rescale to double size
+	_sceneMgr->nodeRescaleContent(nodeId, glm::ivec3(20, 20, 20));
+
+	voxel::RawVolume *rescaled = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, rescaled);
+	const glm::ivec3 newSize = rescaled->region().getDimensionsInVoxels();
+	EXPECT_EQ(newSize, glm::ivec3(20, 20, 20));
+
+	// Check that voxels exist in the rescaled volume
+	EXPECT_TRUE(voxel::isBlocked(rescaled->voxel(0, 0, 0).getMaterial()));
+}
+
+TEST_F(SceneManagerTest, testRescaleContentInvalidSize) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 9)));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *vol = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, vol);
+	const glm::ivec3 originalSize = vol->region().getDimensionsInVoxels();
+
+	// Try rescale with invalid size - should be a no-op
+	_sceneMgr->nodeRescaleContent(nodeId, glm::ivec3(0, 10, 10));
+
+	voxel::RawVolume *after = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, after);
+	EXPECT_EQ(after->region().getDimensionsInVoxels(), originalSize);
+}
+
 } // namespace voxedit

@@ -878,6 +878,30 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	}
 }
 
+void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) {
+	voxel::RawVolume *vol = volume(nodeId);
+	if (vol == nullptr) {
+		Log::error("Failed to lookup volume for node %i", nodeId);
+		return;
+	}
+	const glm::ivec3 currentSize = vol->region().getDimensionsInVoxels();
+	if (targetSize.x <= 0 || targetSize.y <= 0 || targetSize.z <= 0) {
+		Log::warn("Invalid target size for rescale");
+		return;
+	}
+	const glm::vec3 scale = glm::vec3(targetSize) / glm::vec3(currentSize);
+	voxel::RawVolume *scaledVolume = voxelutil::scaleVolume(vol, scale);
+	if (scaledVolume == nullptr) {
+		Log::error("Failed to rescale volume for node %i", nodeId);
+		return;
+	}
+	if (!setNewVolume(nodeId, scaledVolume, false)) {
+		delete scaledVolume;
+		return;
+	}
+	modified(nodeId, scaledVolume->region());
+}
+
 void SceneManager::nodeGroupResize(const glm::ivec3& size) {
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeResize(groupNodeId, size);
@@ -3387,6 +3411,19 @@ void SceneManager::construct() {
 			const int nodeId = toNodeId(args, activeNode());
 			nodeResize(nodeId, glm::ivec3(x, y, z));
 		}).setHelp(_("Resize your current model node by the specified size"));
+
+	command::Command::registerCommand("rescalecontent")
+		.addArg({"x", command::ArgType::Int, false, "", "Target X size"})
+		.addArg({"y", command::ArgType::Int, true, "", "Target Y size (defaults to X)"})
+		.addArg({"z", command::ArgType::Int, true, "", "Target Z size (defaults to Y)"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to rescale"})
+		.setHandler([this] (const command::CommandArgs& args) {
+			const int x = args.intVal("x", 1);
+			const int y = args.intVal("y", x);
+			const int z = args.intVal("z", y);
+			const int nodeId = toNodeId(args, activeNode());
+			nodeRescaleContent(nodeId, glm::ivec3(x, y, z));
+		}).setHelp(_("Rescale the content of a model node to the specified target size"));
 
 	command::Command::registerCommand("shift")
 		.addArg({"x", command::ArgType::Int, false, "", "X shift value"})
