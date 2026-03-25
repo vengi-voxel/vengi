@@ -65,6 +65,7 @@ private:
 	void executeExtrudeBrush();
 	void updateTransformBrushPanel(command::CommandExecutionListener &listener);
 	void executeTransformBrush();
+	void updateRulerBrushPanel(command::CommandExecutionListener &listener);
 	void updateSculptBrushPanel(command::CommandExecutionListener &listener);
 	void executeSculptBrush();
 	void loadSkinFromFile(const core::String &filename);

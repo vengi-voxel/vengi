@@ -46,6 +46,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_extrudeBrush);
 	_brushes.push_back(&_transformBrush);
 	_brushes.push_back(&_sculptBrush);
+	_brushes.push_back(&_rulerBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
