@@ -185,6 +185,10 @@ public:
 		return _snapshot.size();
 	}
 
+	const voxel::Region &snapshotRegion() const {
+		return _snapshotRegion;
+	}
+
 	bool wantBrushGizmo(const BrushContext &ctx) const override;
 	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
 	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
