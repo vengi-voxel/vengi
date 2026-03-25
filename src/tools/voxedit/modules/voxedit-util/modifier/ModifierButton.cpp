@@ -4,6 +4,7 @@
 
 #include "ModifierButton.h"
 #include "../SceneManager.h"
+#include "brush/Brush.h"
 #include "core/BindingContext.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -89,7 +90,17 @@ void ModifierButton::execute(bool single) {
 		_oldType = ModifierType::None;
 	}
 	if (!single) {
+		Brush *brush = modifier.currentBrush();
 		modifier.endBrush();
+		if (brush) {
+			voxel::Region pendingRegion = brush->consumePendingUndoRegion();
+			if (pendingRegion.isValid()) {
+				auto undoFunc = [&](int nodeId) {
+					_sceneMgr->modified(nodeId, pendingRegion, SceneModifiedFlags::MarkUndo);
+				};
+				_sceneMgr->nodeForeachGroup(undoFunc);
+			}
+		}
 	}
 	if (nodes == 0) {
 		Log::warn("Could not execute the desired action on any visible node");

@@ -74,6 +74,9 @@ void SelectBrush::reset() {
 	_lassoPath.clear();
 	_lassoEdgeHistory.clear();
 	_lassoAccumulating = false;
+	_paintAccumulating = false;
+	_paintDirtyRegion = voxel::Region::InvalidRegion;
+	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 }
 
@@ -82,21 +85,33 @@ void SelectBrush::onSceneChange() {
 	_lassoPath.clear();
 	_lassoEdgeHistory.clear();
 	_lassoAccumulating = false;
+	_paintAccumulating = false;
+	_paintDirtyRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 }
 
 void SelectBrush::abort(BrushContext &ctx) {
-	// Cancel any in-progress lasso polygon (when no edge marks exist yet)
 	if (_selectMode == SelectMode::Lasso && _lassoAccumulating) {
 		_lassoPath.clear();
 		_lassoAccumulating = false;
+		_sceneModifiedFlags = SceneModifiedFlags::All;
+	}
+	if (_selectMode == SelectMode::Paint && _paintAccumulating) {
+		_paintAccumulating = false;
+		_paintDirtyRegion = voxel::Region::InvalidRegion;
 		_sceneModifiedFlags = SceneModifiedFlags::All;
 	}
 	Super::abort(ctx);
 }
 
 bool SelectBrush::hasPendingChanges() const {
-	return _lassoAccumulating && !_lassoEdgeHistory.empty();
+	if (_lassoAccumulating && !_lassoEdgeHistory.empty()) {
+		return true;
+	}
+	if (_paintAccumulating && _paintDirtyRegion.isValid()) {
+		return true;
+	}
+	return false;
 }
 
 voxel::Region SelectBrush::revertChanges(voxel::RawVolume *volume) {
@@ -107,6 +122,22 @@ voxel::Region SelectBrush::revertChanges(voxel::RawVolume *volume) {
 	}
 	_lassoEdgeHistory.clear();
 	return dirtyRegion;
+}
+
+void SelectBrush::endBrush(BrushContext &ctx) {
+	if (_selectMode == SelectMode::Paint && _paintAccumulating) {
+		_paintAccumulating = false;
+		_paintFinalUndoRegion = _paintDirtyRegion;
+		_paintDirtyRegion = voxel::Region::InvalidRegion;
+		_sceneModifiedFlags = SceneModifiedFlags::All;
+	}
+	Super::endBrush(ctx);
+}
+
+voxel::Region SelectBrush::consumePendingUndoRegion() {
+	voxel::Region region = _paintFinalUndoRegion;
+	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
+	return region;
 }
 
 void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
@@ -124,6 +155,12 @@ void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
 
 void SelectBrush::setSelectMode(SelectMode mode) {
 	if (_selectMode != mode) {
+		if (_selectMode == SelectMode::Paint) {
+			setAABBMode();
+			_paintAccumulating = false;
+			_paintDirtyRegion = voxel::Region::InvalidRegion;
+			_sceneModifiedFlags = SceneModifiedFlags::All;
+		}
 		_ellipseValid = false;
 		_slopeValid = false;
 		_lassoAccumulating = false;
@@ -131,6 +168,12 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 		// Edge history voxels on the real volume become orphaned here.
 		// The user can undo to recover them; clearing avoids stale state.
 		_lassoEdgeHistory.clear();
+		if (mode == SelectMode::Paint) {
+			setSingleMode();
+			if (_radius == 0) {
+				setRadius(1);
+			}
+		}
 	}
 	_selectMode = mode;
 }
@@ -184,6 +227,12 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 		_ellipseValid = false;
 		_ellipseHistory.clear();
 	}
+	if (_selectMode == SelectMode::Paint) {
+		_paintAccumulating = true;
+		_paintDirtyRegion = voxel::Region::InvalidRegion;
+		_paintFinalUndoRegion = voxel::Region::InvalidRegion;
+		_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
+	}
 	return Super::beginBrush(ctx);
 }
 
@@ -230,9 +279,9 @@ voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 		rubberBandRegion.cropTo(ctx.targetVolumeRegion);
 		return rubberBandRegion;
 	}
-	// Only All and Box3D use the standard AABB region; all other modes
-	// flood-fill or visit the full volume and don't need a user-drawn box.
-	if (_selectMode != SelectMode::All && _selectMode != SelectMode::Box3D) {
+	// All, Box3D, and Paint use the parent's region calculation.
+	// All other modes flood-fill or visit the full volume.
+	if (_selectMode != SelectMode::All && _selectMode != SelectMode::Box3D && _selectMode != SelectMode::Paint) {
 		return ctx.targetVolumeRegion;
 	}
 	return Super::calcRegion(ctx);
@@ -1052,6 +1101,23 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			}
 			break;
 		}
+		break;
+	}
+	case SelectMode::Paint: {
+		const glm::ivec3 center = ctx.cursorPosition;
+		const int rad = radius();
+		const int radSq = rad * rad;
+		voxelutil::VisitSolid condition;
+		auto paintFunc = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const int dx = x - center.x;
+			const int dy = y - center.y;
+			const int dz = z - center.z;
+			if (dx * dx + dy * dy + dz * dz <= radSq) {
+				func(x, y, z, voxel);
+			}
+		};
+		voxelutil::visitVolume(wrapper, selectionRegion, paintFunc, condition);
+		_paintDirtyRegion.accumulate(selectionRegion);
 		break;
 	}
 	case SelectMode::Max:

@@ -84,7 +84,8 @@ static constexpr const char *SelectModeIcons[] = {
 	ICON_LC_LASSO,               // Lasso
 	ICON_LC_CIRCLE_DASHED,       // HoleRim2D
 	ICON_LC_TORUS,               // HoleRim3D
-	ICON_LC_COLUMNS_3            // ColumnRim2D
+	ICON_LC_COLUMNS_3,           // ColumnRim2D
+	ICON_LC_PAINTBRUSH           // Paint
 };
 // clang-format on
 static_assert(lengthof(SelectModeIcons) == (int)SelectMode::Max, "SelectModeIcons size mismatch");
@@ -405,7 +406,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 								   C_("SelectMode", "Circle"), C_("SelectMode", "Slope"),
 								   C_("SelectMode", "Lasso"),
 								   C_("SelectMode", "Hole Rim 2D"), C_("SelectMode", "Hole Rim 3D"),
-								   C_("SelectMode", "Column Rim 2D")};
+								   C_("SelectMode", "Column Rim 2D"), C_("SelectMode", "Paint")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	const core::String currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode], SelectModeStr[(int)currentSelectMode]);
@@ -574,6 +575,32 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			brush.setColumnRimNormalAxis(axisValues[axisIdx]);
 		}
 		ImGui::TooltipTextUnformatted(_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
+	}
+
+	if (brush.selectMode() == SelectMode::Paint) {
+		ImGui::SeparatorText(_("Paint selection"));
+		static constexpr int MaxPaintRadius = 32;
+		int rad = brush.radius();
+		const float btnW = ImGui::GetFrameHeight();
+		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		ImGui::TextUnformatted(_("Radius"));
+		ImGui::TooltipTextUnformatted(_("Brush radius for paint selection. Hold mouse and drag to select voxels."));
+		ImGui::PushID("paintradius");
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			rad = glm::max(rad - 1, 0);
+			brush.setRadius(rad);
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##paintradius", &rad, 0, MaxPaintRadius)) {
+			brush.setRadius(rad);
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			rad = glm::min(rad + 1, MaxPaintRadius);
+			brush.setRadius(rad);
+		}
+		ImGui::PopID();
 	}
 
 	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {

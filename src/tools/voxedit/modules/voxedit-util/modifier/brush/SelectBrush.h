@@ -58,6 +58,9 @@ enum class SelectMode : uint8_t {
 	 *  is unbounded (e.g. side face of a floor-touching column reaches the volume floor), the other
 	 *  two axis planes are tried automatically. Large flat surfaces are always rejected as unbounded. */
 	ColumnRim2D,
+	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
+	 *  Uses single mode for continuous execution. Single undo entry on release. */
+	Paint,
 
 	Max
 };
@@ -131,6 +134,13 @@ private:
 	voxel::FaceNames _lassoFace = voxel::FaceNames::Max;
 	/** Last cursor position seen by update(), used to detect movement between clicks */
 	glm::ivec3 _lastLassoCursorPos{LassoInvalidCursorCoord};
+
+	/** True while paint-select drag is active (between beginBrush and endBrush) */
+	bool _paintAccumulating = false;
+	/** Accumulated dirty region across all paint-select ticks */
+	voxel::Region _paintDirtyRegion = voxel::Region::InvalidRegion;
+	/** Saved dirty region from endBrush, consumed by consumePendingUndoRegion */
+	voxel::Region _paintFinalUndoRegion = voxel::Region::InvalidRegion;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
@@ -219,8 +229,10 @@ public:
 		return _lassoPath;
 	}
 
+	void endBrush(BrushContext &ctx) override;
 	bool hasPendingChanges() const override;
 	voxel::Region revertChanges(voxel::RawVolume *volume) override;
+	voxel::Region consumePendingUndoRegion() override;
 	void abort(BrushContext &ctx) override;
 
 	int lassoUAxis() const {
