@@ -396,7 +396,7 @@ void SceneManager::nodeGroupSelectOnlyColor(uint8_t colorIndex) {
 	nodeGroupFilterSelection(colorIndex, false);
 }
 
-void SceneManager::nodeGroupSelectOnlyEdges() {
+void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
@@ -422,7 +422,6 @@ void SceneManager::nodeGroupSelectOnlyEdges() {
 			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
 				const glm::ivec3 neighbor(x + offset.x, y + offset.y, z + offset.z);
 				if (!volRegion.containsPoint(neighbor) || !voxel::isBlocked(v->voxel(neighbor).getMaterial())) {
-					// determine which axis this face neighbor is on
 					if (offset.x != 0) {
 						axesWithAir |= 1;
 					} else if (offset.y != 0) {
@@ -432,9 +431,8 @@ void SceneManager::nodeGroupSelectOnlyEdges() {
 					}
 				}
 			}
-			// count set bits - need air along 2+ different axes
 			const int axisCount = (axesWithAir & 1) + ((axesWithAir >> 1) & 1) + ((axesWithAir >> 2) & 1);
-			if (axisCount < 2) {
+			if (axisCount < minAxes) {
 				voxel::Voxel updated = voxel;
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
 				v->setVoxel(x, y, z, updated);
@@ -444,6 +442,14 @@ void SceneManager::nodeGroupSelectOnlyEdges() {
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
+}
+
+void SceneManager::nodeGroupSelectOnlyEdges() {
+	nodeGroupSelectByAirAxes(2);
+}
+
+void SceneManager::nodeGroupSelectOnlyCorners() {
+	nodeGroupSelectByAirAxes(3);
 }
 
 void SceneManager::nodeGroupHollow() {
@@ -3398,6 +3404,11 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupSelectOnlyEdges();
 		}).setHelp(_("Filter selection to only keep edge voxels where two or more faces meet"));
+
+	command::Command::registerCommand("selectonlycorners")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupSelectOnlyCorners();
+		}).setHelp(_("Filter selection to only keep corner voxels where three faces meet"));
 
 	command::Command::registerCommand("setreferenceposition")
 		.addArg({"x", command::ArgType::Int, false, "", "X coordinate"})

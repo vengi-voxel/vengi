@@ -78,6 +78,10 @@ public:
 		nodeGroupSelectOnlyEdges();
 	}
 
+	void testSelectOnlyCorners() {
+		nodeGroupSelectOnlyCorners();
+	}
+
 	void testFlip(math::Axis axis) {
 		nodeGroupFlip(axis);
 	}

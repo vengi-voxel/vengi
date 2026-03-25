@@ -1141,6 +1141,55 @@ TEST_F(SceneManagerTest, testSelectOnlyEdgesNoSelection) {
 	// Just verify it doesn't crash - no selection means nothing happens
 }
 
+TEST_F(SceneManagerTest, testSelectOnlyCorners) {
+	// Create a 6x6x6 solid cube, select all, then filter to corners only.
+	// Corner voxels have air neighbors along all 3 axes.
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "selectonlycorners_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(region);
+
+	sceneMgr()->testSelectOnlyCorners();
+
+	// Corner voxel (3 axes with air) should remain selected
+	const voxel::Voxel &corner = v->voxel(0, 0, 0);
+	EXPECT_NE(0, corner.getFlags() & voxel::FlagOutline) << "Corner voxel should remain selected";
+
+	// Edge voxel (2 axes with air) should be deselected
+	const voxel::Voxel &edge = v->voxel(0, 0, 2);
+	EXPECT_EQ(0, edge.getFlags() & voxel::FlagOutline) << "Edge voxel should be deselected";
+
+	// Face-center voxel (1 axis with air) should be deselected
+	const voxel::Voxel &faceCenter = v->voxel(0, 2, 2);
+	EXPECT_EQ(0, faceCenter.getFlags() & voxel::FlagOutline) << "Face-center voxel should be deselected";
+
+	// For a 6x6x6 cube, only the 8 corner voxels should remain
+	// (each corner has air on all 3 axes)
+}
+
+TEST_F(SceneManagerTest, testSelectOnlyCornersNoSelection) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	sceneMgr()->testSelectOnlyCorners();
+	// No-op when no selection exists
+}
+
 TEST_F(SceneManagerTest, testHollow) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "hollow_test", region));
