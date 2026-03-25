@@ -60,8 +60,33 @@ static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"
 												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
 static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
 
+static constexpr const char *TransformModeIcons[] = {ICON_LC_MOVE, ICON_LC_ITALIC, ICON_LC_SCALING, ICON_LC_ROTATE_3D};
+static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "TransformModeIcons size mismatch");
+
 static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap"), NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
+
+static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT, ICON_LC_LAND_PLOT, ICON_LC_WAVES, ICON_LC_WAVES, ICON_LC_BLEND, ICON_LC_LINK, ICON_LC_MINIMIZE_2, ICON_LC_PALETTE};
+static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
+
+// clang-format off
+static constexpr const char *SelectModeIcons[] = {
+	ICON_LC_SQUARE_DASHED,       // All
+	ICON_LC_SCAN,                // Surface
+	ICON_LC_PIPETTE,             // SameColor
+	ICON_LC_DROPLETS,            // FuzzyColor
+	ICON_LC_WAYPOINTS,           // Connected
+	ICON_LC_LAND_PLOT,           // FlatSurface
+	ICON_LC_BOX,                 // Box3D
+	ICON_LC_CIRCLE,              // Circle
+	ICON_LC_MOUNTAIN,            // Slope
+	ICON_LC_LASSO,               // Lasso
+	ICON_LC_CIRCLE_DASHED,       // HoleRim2D
+	ICON_LC_TORUS,               // HoleRim3D
+	ICON_LC_COLUMNS_3            // ColumnRim2D
+};
+// clang-format on
+static_assert(lengthof(SelectModeIcons) == (int)SelectMode::Max, "SelectModeIcons size mismatch");
 
 static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), NC_("Reskin Modes", "Blend"), NC_("Reskin Modes", "Negate")};
 static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
@@ -96,11 +121,13 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 
 	const ShapeType currentSelectedShapeType = modifier.shapeBrush().shapeType();
-	if (ImGui::BeginCombo(_("Shape"), ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
+	const core::String currentLabel = core::String::format("%s %s", ShapeTypeIcons[(int)currentSelectedShapeType], ShapeTypeStr[(int)currentSelectedShapeType]);
+	if (ImGui::BeginCombo(_("Shape"), currentLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const ShapeType type = (ShapeType)i;
 			const bool selected = type == currentSelectedShapeType;
-			if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
+			const core::String label = core::String::format("%s %s", ShapeTypeIcons[i], ShapeTypeStr[i]);
+			if (ImGui::Selectable(label.c_str(), selected)) {
 				const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
 				const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
 				command::executeCommands(cmd, &listener);
@@ -348,7 +375,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	Modifier &modifier = _sceneMgr->modifier();
 	SelectBrush &brush = modifier.selectBrush();
 
-	int selectModeInt = (int)brush.selectMode();
+	const SelectMode currentSelectMode = brush.selectMode();
 
 	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
 								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
@@ -359,8 +386,19 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 								   C_("SelectMode", "Column Rim 2D")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
-	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
-		brush.setSelectMode((SelectMode)selectModeInt);
+	const core::String currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode], SelectModeStr[(int)currentSelectMode]);
+	if (ImGui::BeginCombo(_("Select mode"), currentSelectLabel.c_str(), ImGuiComboFlags_None)) {
+		for (int i = 0; i < (int)SelectMode::Max; ++i) {
+			const bool selected = (int)currentSelectMode == i;
+			const core::String selectLabel = core::String::format("%s %s", SelectModeIcons[i], SelectModeStr[i]);
+			if (ImGui::Selectable(selectLabel.c_str(), selected)) {
+				brush.setSelectMode((SelectMode)i);
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
 	}
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -1153,11 +1191,13 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	}
 
 	const TransformMode currentTransformMode = brush.transformMode();
-	if (ImGui::BeginCombo(_("Transform mode"), _(TransformModeStr[(int)currentTransformMode]), ImGuiComboFlags_None)) {
+	const core::String currentTransformLabel = core::String::format("%s %s", TransformModeIcons[(int)currentTransformMode], _(TransformModeStr[(int)currentTransformMode]));
+	if (ImGui::BeginCombo(_("Transform mode"), currentTransformLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {
 			const TransformMode mode = (TransformMode)i;
 			const bool selected = mode == currentTransformMode;
-			if (ImGui::Selectable(_(TransformModeStr[i]), selected)) {
+			const core::String transformLabel = core::String::format("%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
+			if (ImGui::Selectable(transformLabel.c_str(), selected)) {
 				if (_transformDirty || brush.hasSnapshot()) {
 					executeTransformBrush();
 					_transformDirty = false;
@@ -1322,11 +1362,13 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	if (ImGui::BeginCombo(_("Sculpt mode"), _(SculptModeStr[(int)currentMode]), ImGuiComboFlags_None)) {
+	const core::String currentSculptLabel = core::String::format("%s %s", SculptModeIcons[(int)currentMode], _(SculptModeStr[(int)currentMode]));
+	if (ImGui::BeginCombo(_("Sculpt mode"), currentSculptLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)SculptMode::Max; ++i) {
 			const SculptMode mode = (SculptMode)i;
 			const bool selected = mode == currentMode;
-			if (ImGui::Selectable(_(SculptModeStr[i]), selected)) {
+			const core::String sculptLabel = core::String::format("%s %s", SculptModeIcons[i], _(SculptModeStr[i]));
+			if (ImGui::Selectable(sculptLabel.c_str(), selected)) {
 				brush.setSculptMode(mode);
 				executeSculptBrush();
 			}
