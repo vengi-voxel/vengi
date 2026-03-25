@@ -82,6 +82,10 @@ public:
 		nodeGroupSelectOnlyCorners();
 	}
 
+	void testSelectionGrow() {
+		nodeGroupSelectionGrow();
+	}
+
 	void testFlip(math::Axis axis) {
 		nodeGroupFlip(axis);
 	}

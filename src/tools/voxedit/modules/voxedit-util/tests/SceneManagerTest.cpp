@@ -1190,6 +1190,61 @@ TEST_F(SceneManagerTest, testSelectOnlyCornersNoSelection) {
 	// No-op when no selection exists
 }
 
+TEST_F(SceneManagerTest, testSelectionGrow) {
+	// Create a 6x6x6 solid cube, select only the center voxel, then grow.
+	// After grow, the center + all 26 solid neighbors should be selected.
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "selectiongrow_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	// Select only the center voxel (2,2,2)
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	const voxel::Region centerRegion(glm::ivec3(2), glm::ivec3(2));
+	node->select(centerRegion);
+
+	// Verify only center is selected
+	EXPECT_NE(0, v->voxel(2, 2, 2).getFlags() & voxel::FlagOutline);
+	EXPECT_EQ(0, v->voxel(1, 2, 2).getFlags() & voxel::FlagOutline);
+
+	sceneMgr()->testSelectionGrow();
+
+	// All 26 neighbors of (2,2,2) should now be selected
+	for (int dx = -1; dx <= 1; ++dx) {
+		for (int dy = -1; dy <= 1; ++dy) {
+			for (int dz = -1; dz <= 1; ++dz) {
+				const voxel::Voxel &vox = v->voxel(2 + dx, 2 + dy, 2 + dz);
+				EXPECT_NE(0, vox.getFlags() & voxel::FlagOutline)
+					<< "Voxel at (" << 2 + dx << "," << 2 + dy << "," << 2 + dz << ") should be selected";
+			}
+		}
+	}
+
+	// A voxel 2 steps away should NOT be selected (no chain growth)
+	EXPECT_EQ(0, v->voxel(0, 2, 2).getFlags() & voxel::FlagOutline)
+		<< "Voxel 2 steps away should not be selected";
+}
+
+TEST_F(SceneManagerTest, testSelectionGrowNoSelection) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	sceneMgr()->testSelectionGrow();
+	// No-op when no selection exists
+}
+
 TEST_F(SceneManagerTest, testHollow) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "hollow_test", region));
