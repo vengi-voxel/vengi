@@ -601,6 +601,11 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			brush.setRadius(rad);
 		}
 		ImGui::PopID();
+		bool growRegion = brush.paintGrowRegion();
+		if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
+			brush.setPaintGrowRegion(growRegion);
+		}
+		ImGui::TooltipTextUnformatted(_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
 	}
 
 	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {

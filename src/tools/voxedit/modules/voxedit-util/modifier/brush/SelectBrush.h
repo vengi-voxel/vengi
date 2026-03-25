@@ -137,6 +137,8 @@ private:
 
 	/** True while paint-select drag is active (between beginBrush and endBrush) */
 	bool _paintAccumulating = false;
+	/** When true, paint-select only adds voxels adjacent to already-selected voxels */
+	bool _paintGrowRegion = false;
 	/** Accumulated dirty region across all paint-select ticks */
 	voxel::Region _paintDirtyRegion = voxel::Region::InvalidRegion;
 	/** Saved dirty region from endBrush, consumed by consumePendingUndoRegion */
@@ -234,6 +236,14 @@ public:
 	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	voxel::Region consumePendingUndoRegion() override;
 	void abort(BrushContext &ctx) override;
+
+	bool paintGrowRegion() const {
+		return _paintGrowRegion;
+	}
+
+	void setPaintGrowRegion(bool v) {
+		_paintGrowRegion = v;
+	}
 
 	int lassoUAxis() const {
 		return _lassoUAxis;
