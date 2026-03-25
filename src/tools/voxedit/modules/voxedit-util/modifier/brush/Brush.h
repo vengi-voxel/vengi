@@ -302,6 +302,17 @@ public:
 	}
 
 	/**
+	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
+	 *
+	 * Called after endBrush() by the modifier button to push a single deferred undo entry
+	 * for brushes that accumulate changes across multiple executions (e.g., paint-select).
+	 * Returns InvalidRegion if no deferred undo is needed.
+	 */
+	virtual voxel::Region consumePendingUndoRegion() {
+		return voxel::Region::InvalidRegion;
+	}
+
+	/**
 	 * @brief Called when this brush is about to be replaced by another brush.
 	 * @return true if the brush has pending changes that should be committed
 	 * to the real volume before deactivation (via the normal execute path).

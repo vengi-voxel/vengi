@@ -1431,4 +1431,103 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 	brush.shutdown();
 }
 
+TEST_F(SelectBrushTest, testSelectModePaint) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -3; z <= 3; ++z) {
+		for (int y = -3; y <= 3; ++y) {
+			for (int x = -3; x <= 3; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Paint);
+	brush.setRadius(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	EXPECT_TRUE(brush.active());
+
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+	brush.preExecute(ctx, wrapper.volume());
+	brush.execute(sceneGraph, wrapper, ctx);
+
+	// Voxels within radius 2 sphere should be selected
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Center voxel should be selected";
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at distance 1 should be selected";
+	EXPECT_TRUE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at distance 2 should be selected";
+
+	// Voxels outside radius should not be selected
+	EXPECT_FALSE((volume.voxel(2, 2, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at distance ~2.83 should not be selected";
+	EXPECT_FALSE((volume.voxel(3, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at distance 3 should not be selected";
+
+	brush.endBrush(ctx);
+
+	// After endBrush, pending undo region should be valid
+	voxel::Region pendingRegion = brush.consumePendingUndoRegion();
+	EXPECT_TRUE(pendingRegion.isValid()) << "Paint mode should produce a pending undo region";
+
+	// Second consume should return invalid
+	pendingRegion = brush.consumePendingUndoRegion();
+	EXPECT_FALSE(pendingRegion.isValid());
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModePaintDeselect) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+				v.setFlags(voxel::FlagOutline);
+				volume.setVoxel(x, y, z, v);
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	SelectBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Paint);
+	brush.setRadius(1);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, ModifierType::Erase);
+	brush.preExecute(ctx, wrapper.volume());
+	brush.execute(sceneGraph, wrapper, ctx);
+
+	// Center voxel should be deselected
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Center voxel should be deselected";
+	// Voxel outside radius should still be selected
+	EXPECT_TRUE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at distance 2 should still be selected";
+
+	brush.endBrush(ctx);
+	brush.shutdown();
+}
+
 } // namespace voxedit
