@@ -1208,7 +1208,13 @@
         _vox_array<const _vox_scene_node_*> & stack, const _vox_array<_vox_scene_node_> & nodes, uint32_t node_index, const _vox_array<uint32_t> & child_id_array, const _vox_array<ogt_vox_model*> & model_ptrs,
         _vox_array<ogt_vox_instance> & instances, _vox_suballoc_array & misc_data, _vox_array<ogt_vox_group>& groups, uint32_t group_index, bool generate_keyframes)
     {
+        if (node_index >= nodes.count) {
+            return;
+        }
         const _vox_scene_node_* node = &nodes[node_index];
+        if (node->node_type == k_nodetype_invalid) {
+            return;
+        }
         switch (node->node_type)
         {
             case k_nodetype_transform:

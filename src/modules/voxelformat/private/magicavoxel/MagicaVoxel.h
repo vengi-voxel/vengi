@@ -12,6 +12,7 @@
 #include "core/GLM.h"
 #include <glm/mat4x4.hpp>
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/Region.h"
 #include "voxelformat/external/ogt_vox.h"
 
 #define MAGICAVOXEL_USE_REFERENCES 0
@@ -31,16 +32,30 @@ class SceneGraphNode;
 
 namespace voxelformat {
 
+/**
+ * @brief Reference to a volume region for streaming VOX write.
+ * Avoids allocating dense voxel arrays for all models simultaneously.
+ * Includes a per-model color remap table for palette merge without volume copies.
+ */
+struct MVModelRef {
+	const voxel::RawVolume *volume;
+	voxel::Region region;
+	core::Array<uint8_t, 256> colorRemap;
+};
+
 struct MVSceneContext {
 	core::Buffer<ogt_vox_group> groups;
-	core::Buffer<ogt_vox_model> models;
+	core::Buffer<MVModelRef> models;
 	core::Buffer<ogt_vox_layer> layers;
 	core::Buffer<ogt_vox_instance> instances;
 	int transformKeyFrameIdx = 0;
 	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
 	core::Buffer<ogt_vox_cam> cameras;
 	bool paletteErrorPrinted = false;
+	bool saveVisibleOnly = false;
 	core::Map<int, uint32_t> nodeToModel;
+	const palette::Palette *mergedPalette = nullptr;
+	int emptyPaletteIdx = -1;
 };
 
 // clang-format off

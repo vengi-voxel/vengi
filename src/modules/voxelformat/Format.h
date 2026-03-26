@@ -84,6 +84,15 @@ protected:
 	virtual glm::ivec3 maxSize() const;
 
 	/**
+	 * @brief Whether Format::save should preprocess the scene graph before calling saveGroups.
+	 * Preprocessing includes splitting oversized volumes, filtering hidden nodes, and resolving
+	 * references - each of which creates a full copy of the SceneGraph with all RawVolumes.
+	 * Formats that handle these concerns directly in saveGroups/saveNode can override this to
+	 * return false to avoid the expensive copies.
+	 */
+	virtual bool splitBeforeSave() const;
+
+	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
 	 * @param v The volume
@@ -244,6 +253,14 @@ protected:
 	 * @c [0,palette::PaletteMaxColors] must be used
 	 */
 	virtual int emptyPaletteIndex() const;
+	/**
+	 * @brief If true, PaletteFormat::save() will skip the deep scene graph copy for palette
+	 * merge/remap. The format's saveGroups() is responsible for handling palette differences
+	 * via per-model color remap tables instead.
+	 */
+	virtual bool skipPaletteCopy() const {
+		return false;
+	}
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override final;
 

@@ -131,6 +131,10 @@ bool FormatConfig::init() {
 		cfg::VoxformatVOXCreateLayers, true, N_("Create layers"),
 		NC_("Create layers when saving MagicaVoxel vox files", "Create layers for vox file"), core::CV_NOPERSIST);
 	core::registerVar(voxformatVOXCreateLayers);
+	const core::VarDef voxformatVOXStreamedSave(
+		cfg::VoxformatVOXStreamedSave, true, N_("Streamed save"),
+		NC_("Use streaming writer for MagicaVoxel vox files to reduce memory usage", "Streamed vox save"), core::CV_NOPERSIST);
+	core::registerVar(voxformatVOXStreamedSave);
 	const core::VarDef voxformatQBSaveLeftHanded(cfg::VoxformatQBSaveLeftHanded, true, N_("Left handed"),
 												 N_("Toggle between left and right handed"), core::CV_NOPERSIST);
 	core::registerVar(voxformatQBSaveLeftHanded);

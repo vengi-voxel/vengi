@@ -58,6 +58,11 @@ private:
 	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
 				  NodeMapping &nodeMapping);
 
+protected:
+	bool splitBeforeSave() const override {
+		return false;
+	}
+
 public:
 	bool supportsReferences() const override {
 		return true;

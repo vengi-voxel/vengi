@@ -30,7 +30,14 @@ class VoxFormat : public PaletteFormat {
 protected:
 	glm::ivec3 maxSize() const override;
 	int emptyPaletteIndex() const override;
+	bool splitBeforeSave() const override;
+	bool skipPaletteCopy() const override;
 private:
+	void saveModelDirect(const voxel::RawVolume *volume, const voxel::Region &region,
+						 const palette::Palette &nodePalette, MVSceneContext &ctx);
+	void saveChunkInstance(scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+						   const voxel::Region &chunkRegion, const glm::vec3 &worldOffset, MVSceneContext &ctx,
+						   uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					 uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);

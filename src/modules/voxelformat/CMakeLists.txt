@@ -62,6 +62,7 @@ set(SRCS
 	private/kenshape/KenShapeFormat.h        private/kenshape/KenShapeFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
+	private/magicavoxel/VoxStreamWriter.h    private/magicavoxel/VoxStreamWriter.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
 	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
 	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp

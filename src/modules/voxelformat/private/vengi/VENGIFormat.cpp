@@ -21,6 +21,7 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -246,6 +247,10 @@ bool VENGIFormat::saveNodePaletteIdentifier(const scenegraph::SceneGraph &sceneG
 
 bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream,
 						   const scenegraph::SceneGraphNode &node) {
+	// Skip hidden nodes and their subtrees when saving visible only
+	if (!node.isRootNode() && !node.visible() && core::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal()) {
+		return true;
+	}
 	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
@@ -359,6 +364,15 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				sampler2.movePositiveY();
 			}
 			sampler.movePositiveX();
+		}
+	}
+	if (v->isEmpty(region)) {
+		// Replace with a minimal empty volume to save memory
+		node.setVolume(new voxel::RawVolume(voxel::Region(mins, mins)), true);
+	} else if (core::getVar(cfg::VoxelCropOnLoad)->boolVal()) {
+		voxel::RawVolume *cropped = voxelutil::cropVolume(v);
+		if (cropped != nullptr) {
+			node.setVolume(cropped, true);
 		}
 	}
 	return true;

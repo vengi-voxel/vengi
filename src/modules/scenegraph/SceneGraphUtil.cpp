@@ -453,4 +453,4 @@ double interpolate(InterpolationType interpolationType, double current, double s
 	return start + (end - start) * t;
 }
 
-} // namespace voxel
+} // namespace scenegraph

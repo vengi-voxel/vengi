@@ -66,6 +66,7 @@ constexpr const char *VoxelMeshMode = "voxel_meshmode";
 constexpr const char *VoxelMeshAlloc = "voxel_meshalloc";
 // Crop volumes to tight bounds on load (saves memory but limits editing)
 constexpr const char *VoxelCropOnLoad = "voxel_croponload";
+constexpr const char *VoxelSplitOnLoad = "voxel_splitonload";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
@@ -125,6 +126,7 @@ constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds";
 constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
 constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
+constexpr const char *VoxformatVOXStreamedSave = "voxformat_voxstreamedsave";
 constexpr const char *VoxformatVXLLoadHVA = "voxformat_vxllodhva";
 constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
 constexpr const char *VoxformatQBSaveCompressed = "voxformat_qbsavecompressed";

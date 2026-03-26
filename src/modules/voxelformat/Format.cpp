@@ -178,6 +178,10 @@ bool Format::supportsReferences() const {
 	return false;
 }
 
+bool Format::splitBeforeSave() const {
+	return true;
+}
+
 bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
 				  const SaveContext &ctx) {
 	bool needsSplit = false;
@@ -217,6 +221,12 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		mergedNode.setNormalPalette(merged.normalPalette);
 		mergedSceneGraph.emplace(core::move(mergedNode));
 		return saveGroups(mergedSceneGraph, filename, archive, ctx);
+	}
+
+	if (!splitBeforeSave()) {
+		// Format handles splitting, visibility filtering, and reference resolution
+		// directly in saveGroups - skip the expensive SceneGraph copies
+		return saveGroups(sceneGraph, filename, archive, ctx);
 	}
 
 	if (needsSplit) {
@@ -362,6 +372,11 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 
 bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 const io::ArchivePtr &archive, const SaveContext &ctx) {
+	// If the format handles palette merge/remap internally (via per-model color remap tables),
+	// skip the deep scene graph copy and pass the original scene graph through.
+	if (skipPaletteCopy()) {
+		return Super::save(sceneGraph, filename, archive, ctx);
+	}
 	int emptyIndex = this->emptyPaletteIndex();
 	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
 		scenegraph::SceneGraph newSceneGraph;

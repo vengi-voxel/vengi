@@ -417,9 +417,9 @@ public:
 		while (size > _size) {
 			emplace_back(TYPE{});
 		}
-		while (size < _size) {
-			_buffer[_size - 1].~TYPE();
+		while (_size > 0 && size < _size) {
 			--_size;
+			_buffer[_size].~TYPE();
 		}
 	}
 

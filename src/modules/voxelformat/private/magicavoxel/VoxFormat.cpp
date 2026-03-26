@@ -6,6 +6,7 @@
 #include "app/Async.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "VoxStreamWriter.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -33,8 +34,16 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return glm::ivec3(256);
 }
 
+bool VoxFormat::splitBeforeSave() const {
+	return false;
+}
+
 int VoxFormat::emptyPaletteIndex() const {
 	return EMPTY_PALETTE;
+}
+
+bool VoxFormat::skipPaletteCopy() const {
+	return core::getVar(cfg::VoxformatVOXStreamedSave)->boolVal();
 }
 
 size_t VoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -319,6 +328,68 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 	return true;
 }
 
+void VoxFormat::saveModelDirect(const voxel::RawVolume *volume, const voxel::Region &region,
+								const palette::Palette &nodePalette, MVSceneContext &ctx) {
+	MVModelRef ref;
+	ref.volume = volume;
+	ref.region = region;
+	if (ctx.mergedPalette != nullptr) {
+		// Build remap from node's palette to merged palette (avoids deep scene graph copy)
+		const palette::Palette &merged = *ctx.mergedPalette;
+		for (int i = 0; i < 256; ++i) {
+			if (i >= nodePalette.colorCount()) {
+				ref.colorRemap[i] = 0;
+				continue;
+			}
+			const color::RGBA color = nodePalette.color(i);
+			if (color.a == 0) {
+				ref.colorRemap[i] = 0;
+				continue;
+			}
+			const int match = merged.getClosestMatch(color, ctx.emptyPaletteIdx);
+			ref.colorRemap[i] = (uint8_t)(match >= 0 ? match : 0);
+		}
+	} else {
+		// Identity remap - palette merge/remap was handled by PaletteFormat::save
+		for (int i = 0; i < 256; ++i) {
+			ref.colorRemap[i] = (uint8_t)i;
+		}
+	}
+	ctx.models.push_back(ref);
+}
+
+void VoxFormat::saveChunkInstance(scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+								  const voxel::Region &chunkRegion, const glm::vec3 &worldOffset, MVSceneContext &ctx,
+								  uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx) {
+	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
+	ogt_vox_instance ogt_instance;
+	core_memset(&ogt_instance, 0, sizeof(ogt_instance));
+	ogt_instance.group_index = parentGroupIdx;
+	ogt_instance.model_index = modelIdx;
+	ogt_instance.layer_index = layerIdx;
+	ogt_instance.name = node.name().c_str();
+	ogt_instance.hidden = !node.visible();
+	ogt_instance.transform_anim.num_keyframes = (uint32_t)keyFrames.size();
+	ogt_instance.transform_anim.keyframes =
+		ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
+	ctx.instances.push_back(ogt_instance);
+
+	const glm::vec3 chunkMins = glm::vec3(chunkRegion.getLowerCorner()) + worldOffset;
+	const glm::vec3 chunkWidth(chunkRegion.getDimensionsInVoxels());
+	for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+		ogt_vox_keyframe_transform ogt_keyframe;
+		core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
+		ogt_keyframe.frame_index = kf.frameIdx;
+		ogt_keyframe.transform = ogt_identity_transform;
+		const glm::vec3 kftransform = chunkMins + kf.transform().worldTranslation() + chunkWidth / 2.0f;
+		ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
+		ogt_keyframe.transform.m31 = kftransform.z;
+		ogt_keyframe.transform.m32 = kftransform.y;
+		checkRotation(ogt_keyframe.transform);
+		ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
+	}
+}
+
 void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx) {
 	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
@@ -360,6 +431,10 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
+	// Skip hidden nodes and their entire subtree when saving visible only
+	if (ctx.saveVisibleOnly && !node.visible() && !node.isRootNode()) {
+		return;
+	}
 	if (node.isRootNode() || node.isGroupNode()) {
 		if (node.isRootNode()) {
 			Log::debug("Add root node");
@@ -424,25 +499,53 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
 	} else if (node.isModelNode()) {
-		Log::debug("Add model node");
-		const voxel::Region region = node.region();
-		{
-			ogt_vox_model ogt_model;
-			core_memset(&ogt_model, 0, sizeof(ogt_model));
-			// flip y and z here
-			ogt_model.size_x = region.getWidthInVoxels();
-			ogt_model.size_y = region.getDepthInVoxels();
-			ogt_model.size_z = region.getHeightInVoxels();
-			const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
-			uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
-			ogt_model.voxel_data = dataptr;
-			auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
-			voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(),
-								   voxelutil::VisitorOrder::YZmX);
-
-			ctx.models.push_back(ogt_model);
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		if (volume == nullptr || volume->isEmpty(node.region())) {
+			Log::debug("Skip empty model node '%s'", node.name().c_str());
+			for (int childId : node.children()) {
+				saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+			}
+			return;
 		}
-		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, (uint32_t)(ctx.models.size() - 1));
+		const voxel::Region region = node.region();
+		const glm::ivec3 dims = region.getDimensionsInVoxels();
+		const glm::ivec3 maxDims = maxSize();
+		if (glm::all(glm::lessThanEqual(dims, maxDims))) {
+			// Fits in a single model - write voxel data directly from volume
+			Log::debug("Add model node");
+			saveModelDirect(volume, region, node.palette(), ctx);
+			const uint32_t modelIdx = (uint32_t)(ctx.models.size() - 1);
+			ctx.nodeToModel.put(node.id(), modelIdx);
+			saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, modelIdx);
+		} else {
+			// Volume exceeds max size - split into chunks directly without copying volumes
+			Log::debug("Split model node '%s' (%i:%i:%i) into chunks", node.name().c_str(), dims.x, dims.y, dims.z);
+			const voxel::Region worldRegion = sceneGraph.resolveRegion(node);
+			const glm::vec3 worldOffset = glm::vec3(worldRegion.getLowerCorner() - region.getLowerCorner());
+			const glm::ivec3 lo = region.getLowerCorner();
+			const glm::ivec3 hi = region.getUpperCorner();
+			bool firstChunk = true;
+			for (int cz = lo.z; cz <= hi.z; cz += maxDims.z) {
+				for (int cy = lo.y; cy <= hi.y; cy += maxDims.y) {
+					for (int cx = lo.x; cx <= hi.x; cx += maxDims.x) {
+						const glm::ivec3 chunkLower(cx, cy, cz);
+						const glm::ivec3 chunkUpper = glm::min(chunkLower + maxDims - 1, hi);
+						const voxel::Region chunkRegion(chunkLower, chunkUpper);
+						if (volume->isEmpty(chunkRegion)) {
+							continue;
+						}
+						saveModelDirect(volume, chunkRegion, node.palette(), ctx);
+						const uint32_t modelIdx = (uint32_t)(ctx.models.size() - 1);
+						if (firstChunk) {
+							ctx.nodeToModel.put(node.id(), modelIdx);
+							firstChunk = false;
+						}
+						saveChunkInstance(node, sceneGraph, chunkRegion, worldOffset, ctx,
+										  parentGroupIdx, layerIdx, modelIdx);
+					}
+				}
+			}
+		}
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
@@ -461,6 +564,36 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	}
 }
 
+/**
+ * @brief Convert MVModelRef entries to dense ogt_vox_model arrays for the OGT library.
+ * Allocates a dense uint8_t array per model. Caller must free voxel_data with core_free().
+ */
+static void convertModelsToOGT(const core::Buffer<MVModelRef> &refs, core::DynamicArray<ogt_vox_model> &ogtModels) {
+	ogtModels.reserve(refs.size());
+	for (const MVModelRef &ref : refs) {
+		const voxel::Region &region = ref.region;
+		ogt_vox_model ogt_model;
+		core_memset(&ogt_model, 0, sizeof(ogt_model));
+		ogt_model.size_x = region.getWidthInVoxels();
+		ogt_model.size_y = region.getDepthInVoxels();
+		ogt_model.size_z = region.getHeightInVoxels();
+		const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
+		uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
+		ogt_model.voxel_data = dataptr;
+		const glm::ivec3 lo = region.getLowerCorner();
+		const glm::ivec3 hi = region.getUpperCorner();
+		// Write in MV storage order: YZmX (MV Z = vengi Y, MV Y = vengi Z, MV X = -vengi X)
+		for (int y = lo.y; y <= hi.y; ++y) {
+			for (int z = lo.z; z <= hi.z; ++z) {
+				for (int x = hi.x; x >= lo.x; --x) {
+					*dataptr++ = ref.colorRemap[ref.volume->voxel(x, y, z).getColor()];
+				}
+			}
+		}
+		ogtModels.push_back(ogt_model);
+	}
+}
+
 bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &savectx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -468,16 +601,57 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
+
 	MVSceneContext ctx;
+	ctx.saveVisibleOnly = core::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal();
+
+	// For the streaming path, compute merged palette before saveNode so that
+	// saveModelDirect can build per-model color remap tables. This avoids
+	// the deep scene graph copy in PaletteFormat::save().
+	const bool streaming = core::getVar(cfg::VoxformatVOXStreamedSave)->boolVal();
+	palette::Palette mergedPalette;
+	if (streaming) {
+		const int emptyIdx = emptyPaletteIndex();
+		ctx.emptyPaletteIdx = emptyIdx;
+		if (sceneGraph.hasMoreThanOnePalette()) {
+			mergedPalette = sceneGraph.mergePalettes(true, emptyIdx);
+			ctx.mergedPalette = &mergedPalette;
+		} else if (emptyIdx >= 0 && emptyIdx < palette::PaletteMaxColors) {
+			const palette::Palette &firstPal = sceneGraph.firstPalette();
+			if (firstPal.color(emptyIdx).a > 0) {
+				mergedPalette = firstPal;
+				if (mergedPalette.colorCount() < palette::PaletteMaxColors) {
+					for (int i = mergedPalette.colorCount(); i >= emptyIdx; --i) {
+						mergedPalette.setColor(i, mergedPalette.color(i - 1));
+						mergedPalette.setMaterial(i, mergedPalette.material(i - 1));
+					}
+					if (emptyIdx <= mergedPalette.colorCount()) {
+						mergedPalette.changeSize(1);
+					}
+				}
+				mergedPalette.setColor(emptyIdx, color::RGBA(0, 0, 0, 0));
+				ctx.mergedPalette = &mergedPalette;
+			}
+		}
+	}
+
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
 
+	// Use streaming writer to avoid allocating dense model arrays
+	if (streaming) {
+		return saveGroupsStreamed(&(*stream), ctx, sceneGraph);
+	}
+
+	// OGT path: convert lightweight MVModelRef entries to dense ogt_vox_model arrays
+	core::DynamicArray<ogt_vox_model> ogtModels;
+	convertModelsToOGT(ctx.models, ogtModels);
+
 	core::Buffer<const ogt_vox_model *> modelPtr;
-	modelPtr.reserve(ctx.models.size());
-	for (const ogt_vox_model &mdl : ctx.models) {
+	modelPtr.reserve(ogtModels.size());
+	for (const ogt_vox_model &mdl : ogtModels) {
 		modelPtr.push_back(&mdl);
 	}
-	const ogt_vox_model **modelsPtr = modelPtr.data();
 
 	ogt_vox_scene output_scene;
 	core_memset(&output_scene, 0, sizeof(output_scene));
@@ -494,7 +668,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		output_scene.layers = &ctx.layers[0];
 	}
 	output_scene.num_models = (uint32_t)modelPtr.size();
-	output_scene.models = modelsPtr;
+	output_scene.models = modelPtr.data();
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
 	output_scene.num_cameras = (uint32_t)ctx.cameras.size();
 	if (output_scene.num_cameras > 0) {
@@ -598,15 +772,22 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	uint8_t *buffer = ogt_vox_write_scene(&output_scene, &buffersize);
 	if (!buffer) {
 		Log::error("Failed to write the scene");
+		for (ogt_vox_model &m : ogtModels) {
+			core_free((void *)m.voxel_data);
+		}
 		return false;
 	}
 	if (stream->write(buffer, buffersize) == -1) {
 		Log::error("Failed to write to the stream");
+		ogt_vox_free(buffer);
+		for (ogt_vox_model &m : ogtModels) {
+			core_free((void *)m.voxel_data);
+		}
 		return false;
 	}
 	ogt_vox_free(buffer);
 
-	for (ogt_vox_model &m : ctx.models) {
+	for (ogt_vox_model &m : ogtModels) {
 		core_free((void *)m.voxel_data);
 	}
 
