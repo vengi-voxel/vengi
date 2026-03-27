@@ -45,29 +45,32 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	io::ZipReadStream zipStream(*stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
-	const priv::NamedBinaryTag &schematic = priv::NamedBinaryTag::parse(ctx);
-	if (!schematic.valid()) {
+	priv::NamedBinaryTag root(priv::NamedBinaryTag::parse(ctx));
+	const priv::NamedBinaryTag *schematic = &root;
+	if (root.get("Schematic").valid()) {
+		schematic = &root.get("Schematic");
+	}
+	if (!schematic->valid()) {
 		Log::error("Could not find 'Schematic' tag");
 		return false;
 	}
 
 	if (extension == "nbt") {
-		const int dataVersion = schematic.get("DataVersion").int32(-1);
-		if (nbt::loadGroupsPalette(schematic, sceneGraph, palette, dataVersion)) {
+		const int dataVersion = schematic->get("DataVersion").int32(-1);
+		if (nbt::loadGroupsPalette(*schematic, sceneGraph, palette, dataVersion)) {
 			return true;
 		}
 	} else if (extension == "litematic") {
-		return litematic::loadGroupsPalette(schematic, sceneGraph, palette);
+		return litematic::loadGroupsPalette(*schematic, sceneGraph, palette);
 	}
 
-	const int version = schematic.get("Version").int32(-1);
-	Log::debug("Load schematic version %i", version);
+	int version = schematic->get("Version").int32(-1);
 	if (version >= 3) {
-		if (sponge::loadGroupsPaletteSponge3(schematic, sceneGraph, palette, version)) {
+		if (sponge::loadGroupsPaletteSponge3(*schematic, sceneGraph, palette, version)) {
 			return true;
 		}
 	}
-	return sponge::loadGroupsPaletteSponge1And2(schematic, sceneGraph, palette);
+	return sponge::loadGroupsPaletteSponge1And2(*schematic, sceneGraph, palette);
 }
 
 image::ImagePtr SchematicFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,

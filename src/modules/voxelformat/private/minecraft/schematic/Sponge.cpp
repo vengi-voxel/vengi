@@ -192,16 +192,9 @@ static void parseMetadata(const priv::NamedBinaryTag &schematic, scenegraph::Sce
 	}
 }
 
-static bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-						   palette::Palette &palette, const priv::NamedBinaryTag &blockData) {
-	const core::Buffer<int8_t> *blocks = blockData.byteArray();
-	if (blocks == nullptr) {
-		Log::error("Invalid BlockData - expected byte array");
-		return false;
-	}
-	schematic::SchematicPalette mcpal;
-	const int paletteEntry = parsePalette(schematic, mcpal);
-
+static bool parseVarIntBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+								 palette::Palette &palette, const core::Buffer<int8_t> *blocks,
+								 const schematic::SchematicPalette &mcpal, int paletteEntry) {
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
@@ -257,6 +250,18 @@ static bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::Sc
 	}
 	parseMetadata(schematic, sceneGraph, sceneGraph.node(nodeId));
 	return true;
+}
+
+static bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+						   palette::Palette &palette, const priv::NamedBinaryTag &blockData) {
+	const core::Buffer<int8_t> *blocks = blockData.byteArray();
+	if (blocks == nullptr) {
+		Log::error("Invalid BlockData - expected byte array");
+		return false;
+	}
+	schematic::SchematicPalette mcpal;
+	const int paletteEntry = parsePalette(schematic, mcpal);
+	return parseVarIntBlockData(schematic, sceneGraph, palette, blocks, mcpal, paletteEntry);
 }
 
 static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
@@ -337,6 +342,33 @@ bool loadGroupsPaletteSponge3(const priv::NamedBinaryTag &schematic, scenegraph:
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
 		return parseBlocks(schematic, sceneGraph, palette, blocks, version);
+	}
+	// Sponge v3 stores Blocks as a compound with Data (byte array) and Palette (compound)
+	if (blocks.valid() && blocks.type() == priv::TagType::COMPOUND) {
+		const priv::NamedBinaryTag &data = blocks.get("Data");
+		if (!data.valid() || data.type() != priv::TagType::BYTE_ARRAY) {
+			Log::error("Could not find valid 'Data' tag in 'Blocks' compound");
+			return false;
+		}
+		const priv::NamedBinaryTag &blockPalette = blocks.get("Palette");
+		schematic::SchematicPalette mcpal;
+		int paletteEntry = 0;
+		if (blockPalette.valid() && blockPalette.type() == priv::TagType::COMPOUND) {
+			for (const auto &c : *blockPalette.compound()) {
+				const core::String &key = c->key;
+				const int palIdx = c->second.int32(-1);
+				if (palIdx < 0) {
+					Log::warn("Failed to get int value for %s", key.c_str());
+					continue;
+				}
+				if (palIdx >= (int)mcpal.size()) {
+					mcpal.resize(palIdx + 1);
+				}
+				mcpal[palIdx] = findPaletteIndex(key, 1);
+				++paletteEntry;
+			}
+		}
+		return parseVarIntBlockData(schematic, sceneGraph, palette, data.byteArray(), mcpal, paletteEntry);
 	}
 	Log::error("Could not find valid 'Blocks' tags");
 	return false;
