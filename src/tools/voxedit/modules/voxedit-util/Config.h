@@ -62,5 +62,10 @@ constexpr const char *VoxEditNetServerInterface = "ve_netserverinterface";
 constexpr const char *VoxEditNetServerMaxConnections = "ve_netservermaxconnections";
 constexpr const char *VoxEditAutoSelect = "ve_autoselect";
 constexpr const char *VoxEditSceneMode = "ve_scenemode";
+constexpr const char *VoxEditImportSingleNode = "ve_importsinglenode";
+constexpr const char *VoxEditContinueSession = "ve_continuesession";
+constexpr const char *VoxEditLastCameraTarget = "ve_lastcameratarget";
+constexpr const char *VoxEditLastCameraAngles = "ve_lastcameraangles";
+constexpr const char *VoxEditLastCameraDistance = "ve_lastcameradist";
 
 }
