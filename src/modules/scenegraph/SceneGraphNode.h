@@ -207,10 +207,11 @@ public:
 	 */
 	void setVolume(voxel::RawVolume *volume, bool transferOwnership);
 	/**
+	 * @brief Set the volume without taking ownership.
 	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
-	 * @note This will not take ownership of the volume instance
+	 * @note The caller must ensure the volume outlives this node. The node will not delete the volume.
 	 */
-	void setVolume(const voxel::RawVolume *volume);
+	void setUnownedVolume(const voxel::RawVolume *volume);
 
 	// meta data
 

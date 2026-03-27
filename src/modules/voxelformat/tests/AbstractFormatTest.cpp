@@ -573,7 +573,7 @@ void AbstractFormatTest::testSaveLoadVolumes(const core::String &filename, const
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName("first level #1");
-		node.setVolume(&original);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal);
 		nodeId = sceneGraph.emplace(core::move(node), nodeId);
 	}
@@ -581,14 +581,14 @@ void AbstractFormatTest::testSaveLoadVolumes(const core::String &filename, const
 		{
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setName("second level #1");
-			node.setVolume(&original);
+			node.setUnownedVolume(&original);
 			node.setPalette(pal);
 			sceneGraph.emplace(core::move(node), nodeId);
 		}
 		{
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setName("second level #2");
-			node.setVolume(&original);
+			node.setUnownedVolume(&original);
 			node.setPalette(pal);
 			sceneGraph.emplace(core::move(node), nodeId);
 		}

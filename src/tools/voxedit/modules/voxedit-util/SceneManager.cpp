@@ -245,7 +245,7 @@ bool SceneManager::nodeSave(int nodeId, const core::String& file) {
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(*node, newNode, false);
 	if (node->isReferenceNode()) {
-		newNode.setVolume(_sceneGraph.resolveVolume(*node));
+		newNode.setUnownedVolume(_sceneGraph.resolveVolume(*node));
 	}
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;

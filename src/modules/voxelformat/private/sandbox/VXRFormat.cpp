@@ -57,7 +57,7 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		copyNode(node, newNode, false);
 		if (node.isReferenceNode()) {
-			newNode.setVolume(sceneGraph.resolveVolume(node));
+			newNode.setUnownedVolume(sceneGraph.resolveVolume(node));
 		}
 		newSceneGraph.emplace(core::move(newNode));
 		VXMFormat f;

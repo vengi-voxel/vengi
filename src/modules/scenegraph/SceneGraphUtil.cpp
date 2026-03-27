@@ -100,7 +100,7 @@ void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume
 		core_assert_msg(src.volume() != nullptr, "Source node has no volume - and is of type %d", (int)src.type());
 		target.setVolume(new voxel::RawVolume(src.volume()), true);
 	} else if (src.isModelNode()) {
-		target.setVolume(src.volume());
+		target.setUnownedVolume(src.volume());
 	}
 	copy(src, target, copyKeyFrames);
 }
@@ -179,7 +179,7 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 		if (copyVolumes) {
 			newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
 		} else {
-			newNode.setVolume(sourceNode.volume());
+			newNode.setUnownedVolume(sourceNode.volume());
 		}
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
@@ -246,7 +246,7 @@ static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &
 			if (copyVolumes) {
 				newNode.setVolume(new voxel::RawVolume(*srcVol), true);
 			} else {
-				newNode.setVolume(srcVol);
+				newNode.setUnownedVolume(srcVol);
 			}
 		}
 	}

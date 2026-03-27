@@ -50,7 +50,7 @@ TEST_F(SchematicFormatTest, testSaveSmallVoxel) {
 	io::ArchivePtr archive = helper_archive();
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&original);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal);
 		sceneGraph.emplace(core::move(node));
 		ASSERT_TRUE(f.save(sceneGraph, filename, archive, testSaveCtx)) << "Could not save the scene graph";

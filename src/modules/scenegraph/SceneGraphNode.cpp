@@ -395,7 +395,7 @@ void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership)
 	_volume = volume;
 }
 
-void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {
+void SceneGraphNode::setUnownedVolume(const voxel::RawVolume *volume) {
 	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
 					(int)_type);
 	release();
