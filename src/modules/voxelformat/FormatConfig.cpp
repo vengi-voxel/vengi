@@ -221,6 +221,10 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatMeshSimplify(cfg::VoxformatMeshSimplify, false, N_("Simplify"),
 											 N_("Simplify the mesh when voxelizing a mesh format"), core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshSimplify);
+	const core::VarDef voxformatStreamProcessOBJ(cfg::VoxformatStreamProcessOBJ, false,
+												 N_("Stream process OBJ"),
+												 N_("Process nodes one at a time during OBJ export to reduce peak memory usage"));
+	core::registerVar(voxformatStreamProcessOBJ);
 	const core::VarDef voxformatGMLRegion(
 		cfg::VoxformatGMLRegion, "", N_("Region filter"),
 		N_("World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' "
