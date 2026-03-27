@@ -219,10 +219,24 @@ void LineBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state)
 		state.operations = BrushGizmo_None;
 		return;
 	}
-	state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(controlPoint(ctx)));
-	state.operations = BrushGizmo_BezierControl;
+	const glm::ivec3 cp = controlPoint(ctx);
+	state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(cp));
+	state.operations = BrushGizmo_BezierControl | BrushGizmo_Line;
 	state.snap = (float)ctx.gridResolution;
 	state.localMode = false;
+
+	glm::ivec3 start, end;
+	if (_selectedSegment >= 0 && _selectedSegment < (int)_segments.size()) {
+		start = _segments[_selectedSegment].start;
+		end = _segments[_selectedSegment].end;
+	} else {
+		start = ctx.referencePos;
+		end = ctx.cursorPosition;
+	}
+	state.positions[0] = glm::vec3(start) + 0.5f;
+	state.positions[1] = glm::vec3(cp) + 0.5f;
+	state.positions[2] = glm::vec3(end) + 0.5f;
+	state.numPositions = 3;
 }
 
 bool LineBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,

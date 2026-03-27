@@ -69,8 +69,9 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 
 	BrushGizmoState state;
 	brush.brushGizmoState(brushContext, state);
-	EXPECT_EQ(BrushGizmo_BezierControl, state.operations);
+	EXPECT_EQ(BrushGizmo_BezierControl | BrushGizmo_Line, state.operations);
 	EXPECT_EQ(glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(state.matrix[3]));
+	EXPECT_EQ(3, state.numPositions);
 
 	const glm::ivec3 controlPoint(5, 5, 0);
 	glm::mat4 matrix(1.0f);

@@ -26,6 +26,7 @@ enum BrushGizmoOperation : uint32_t {
 	BrushGizmo_TranslateY = (1u << 5),
 	BrushGizmo_TranslateZ = (1u << 6),
 	BrushGizmo_BezierControl = (1u << 7),
+	BrushGizmo_Line = (1u << 8),
 };
 
 /**
@@ -54,6 +55,11 @@ struct BrushGizmoState {
 
 	/** Whether to use LOCAL or WORLD mode for the gizmo */
 	bool localMode = true;
+
+	/** Line positions for BrushGizmo_Line – drawn as a polyline from positions[0..numPositions-1] */
+	glm::vec3 positions[4] = {};
+	/** Number of valid entries in positions[] */
+	int numPositions = 0;
 };
 
 } // namespace voxedit

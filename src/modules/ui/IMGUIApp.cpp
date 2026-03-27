@@ -543,6 +543,11 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		return color::LightBlue();
 	case style::ColorWarningText:
 		return color::LightRed();
+	case style::ColorBrushGizmoLine:
+		if (style == ImGui::StyleLight) {
+			return color::Orange();
+		}
+		return color::Yellow();
 	}
 	return color::White();
 }

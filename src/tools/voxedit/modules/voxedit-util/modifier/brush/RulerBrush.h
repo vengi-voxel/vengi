@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Brush.h"
+#include "BrushGizmo.h"
 
 namespace voxedit {
 
@@ -28,12 +29,12 @@ private:
 
 protected:
 	bool _active = false;
-	const voxel::RawVolume *_lastVolume = nullptr;
 	glm::ivec3 _startPos{0};
 	glm::ivec3 _endPos{0};
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
-				  const voxel::Region &region) override;
+				  const voxel::Region &region) override {
+	}
 
 public:
 	RulerBrush() : Super(BrushType::Ruler, ModifierType::Place, ModifierType::Place) {
@@ -41,12 +42,14 @@ public:
 	virtual ~RulerBrush() = default;
 
 	bool beginBrush(const BrushContext &ctx) override;
-	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;
 	void reset() override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
+
+	bool wantBrushGizmo(const BrushContext &ctx) const override;
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
 
 	const glm::ivec3 &startPos() const;
 	const glm::ivec3 &endPos() const;
