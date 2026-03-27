@@ -88,6 +88,7 @@ protected:
 public:
 	static constexpr int MaxMoveOffset = 128;
 	static constexpr int MaxShearOffset = 128;
+
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
 		_history.setStoreEmptyVoxels(true);
 	}
@@ -104,20 +105,11 @@ public:
 	void endBrush(BrushContext &ctx) override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
-	bool managesOwnSelection() const override {
-		return true;
-	}
+	bool managesOwnSelection() const override;
 
-	TransformMode transformMode() const {
-		return _transformMode;
-	}
+	TransformMode transformMode() const;
 
-	void setTransformMode(TransformMode mode) {
-		if (_transformMode != mode) {
-			commitCurrentTransform();
-			_transformMode = mode;
-		}
-	}
+	void setTransformMode(TransformMode mode);
 
 	/**
 	 * @brief Commit the current transform: clear history (keeping the volume as-is)
@@ -125,74 +117,91 @@ public:
 	 * Called when switching transform modes so the new mode starts from the
 	 * result of the previous one rather than jumping back to the original.
 	 */
-	void commitCurrentTransform() {
-		_history.clear();
-		_snapshot.clear();
-		_hasSnapshot = false;
-		_cachedRegionValid = false;
-		_cachedRegion = voxel::Region::InvalidRegion;
-		_moveOffset = glm::ivec3(0);
-		_shearOffset = glm::ivec3(0);
-		_scale = glm::vec3(1.0f);
-		_rotationDegrees = glm::vec3(0.0f);
-	}
+	void commitCurrentTransform();
 
-	voxel::VoxelSampling voxelSampling() const {
-		return _voxelSampling;
-	}
+	voxel::VoxelSampling voxelSampling() const;
+	void setVoxelSampling(voxel::VoxelSampling sampling);
 
-	void setVoxelSampling(voxel::VoxelSampling sampling) {
-		_voxelSampling = sampling;
-	}
+	const glm::ivec3 &moveOffset() const;
+	void setMoveOffset(const glm::ivec3 &offset);
 
-	const glm::ivec3 &moveOffset() const {
-		return _moveOffset;
-	}
+	const glm::ivec3 &shearOffset() const;
+	void setShearOffset(const glm::ivec3 &offset);
 
-	void setMoveOffset(const glm::ivec3 &offset) {
-		_moveOffset = glm::clamp(offset, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
-	}
+	const glm::vec3 &scale() const;
+	void setScale(const glm::vec3 &scale);
 
-	const glm::ivec3 &shearOffset() const {
-		return _shearOffset;
-	}
+	const glm::vec3 &rotationDegrees() const;
+	void setRotationDegrees(const glm::vec3 &degrees);
 
-	void setShearOffset(const glm::ivec3 &offset) {
-		_shearOffset = glm::clamp(offset, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
-	}
-
-	const glm::vec3 &scale() const {
-		return _scale;
-	}
-
-	void setScale(const glm::vec3 &scale) {
-		_scale = glm::max(scale, glm::vec3(0.01f));
-	}
-
-	const glm::vec3 &rotationDegrees() const {
-		return _rotationDegrees;
-	}
-
-	void setRotationDegrees(const glm::vec3 &degrees) {
-		_rotationDegrees = degrees;
-	}
-
-	bool hasSnapshot() const {
-		return _hasSnapshot;
-	}
-
-	size_t snapshotVoxelCount() const {
-		return _snapshot.size();
-	}
-
-	const voxel::Region &snapshotRegion() const {
-		return _snapshotRegion;
-	}
+	bool hasSnapshot() const;
+	size_t snapshotVoxelCount() const;
+	const voxel::Region &snapshotRegion() const;
 
 	bool wantBrushGizmo(const BrushContext &ctx) const override;
 	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
-						 const glm::mat4 &deltaMatrix, uint32_t operation) override;
+	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+						 uint32_t operation) override;
 };
+
+inline bool TransformBrush::managesOwnSelection() const {
+	return true;
+}
+
+inline TransformMode TransformBrush::transformMode() const {
+	return _transformMode;
+}
+
+inline voxel::VoxelSampling TransformBrush::voxelSampling() const {
+	return _voxelSampling;
+}
+
+inline void TransformBrush::setVoxelSampling(voxel::VoxelSampling sampling) {
+	_voxelSampling = sampling;
+}
+
+inline const glm::ivec3 &TransformBrush::moveOffset() const {
+	return _moveOffset;
+}
+
+inline void TransformBrush::setMoveOffset(const glm::ivec3 &offset) {
+	_moveOffset = glm::clamp(offset, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
+}
+
+inline const glm::ivec3 &TransformBrush::shearOffset() const {
+	return _shearOffset;
+}
+
+inline void TransformBrush::setShearOffset(const glm::ivec3 &offset) {
+	_shearOffset = glm::clamp(offset, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
+}
+
+inline const glm::vec3 &TransformBrush::scale() const {
+	return _scale;
+}
+
+inline void TransformBrush::setScale(const glm::vec3 &scale) {
+	_scale = glm::max(scale, glm::vec3(0.01f));
+}
+
+inline const glm::vec3 &TransformBrush::rotationDegrees() const {
+	return _rotationDegrees;
+}
+
+inline void TransformBrush::setRotationDegrees(const glm::vec3 &degrees) {
+	_rotationDegrees = degrees;
+}
+
+inline bool TransformBrush::hasSnapshot() const {
+	return _hasSnapshot;
+}
+
+inline size_t TransformBrush::snapshotVoxelCount() const {
+	return _snapshot.size();
+}
+
+inline const voxel::Region &TransformBrush::snapshotRegion() const {
+	return _snapshotRegion;
+}
 
 } // namespace voxedit
