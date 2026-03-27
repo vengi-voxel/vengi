@@ -3,36 +3,67 @@
  */
 
 #include "RulerBrush.h"
-#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "app/I18N.h"
+#include "command/Command.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
 
+void RulerBrush::construct() {
+	Super::construct();
+	const core::String &cmdName = name().toLower() + "brush";
+	command::Command::registerCommand("toggle" + cmdName + "referencepos")
+		.setHandler([this](const command::CommandArgs &args) { setUseReferencePos(!useReferencePos()); })
+		.setHelp(_("Toggle measuring from the reference position"));
+}
+
+void RulerBrush::shutdown() {
+	Super::shutdown();
+	const core::String &cmdName = name().toLower() + "brush";
+	command::Command::unregisterCommand("toggle" + cmdName + "referencepos");
+}
+
 bool RulerBrush::beginBrush(const BrushContext &ctx) {
-	_active = true;
-	_startPos = ctx.cursorPosition;
-	_endPos = ctx.cursorPosition;
+	if (_useReferencePos) {
+		_startPos = ctx.referencePos;
+		_endPos = ctx.cursorPosition;
+		_state = (_startPos != _endPos) ? State::Measured : State::Idle;
+		markDirty();
+		return true;
+	}
+	if (_state == State::Tracking) {
+		_endPos = ctx.cursorPosition;
+		_state = State::Measured;
+	} else {
+		_startPos = ctx.cursorPosition;
+		_endPos = ctx.cursorPosition;
+		_state = State::Tracking;
+	}
 	markDirty();
 	return true;
 }
 
-bool RulerBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
-	_endPos = ctx.cursorPosition;
-	return true;
-}
-
-void RulerBrush::endBrush(BrushContext &ctx) {
-	_endPos = ctx.cursorPosition;
+void RulerBrush::update(const BrushContext &ctx, double nowSeconds) {
+	Super::update(ctx, nowSeconds);
+	if (_useReferencePos) {
+		if (_state == State::Measured) {
+			_startPos = ctx.referencePos;
+		}
+		return;
+	}
+	if (_state == State::Tracking) {
+		_endPos = ctx.cursorPosition;
+	}
 }
 
 void RulerBrush::reset() {
-	_active = false;
+	_state = State::Idle;
 	_startPos = glm::ivec3(0);
 	_endPos = glm::ivec3(0);
 }
 
 bool RulerBrush::active() const {
-	return _active;
+	return _state != State::Idle;
 }
 
 voxel::Region RulerBrush::calcRegion(const BrushContext &ctx) const {
@@ -40,7 +71,7 @@ voxel::Region RulerBrush::calcRegion(const BrushContext &ctx) const {
 }
 
 bool RulerBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return _active && _startPos != _endPos;
+	return _state != State::Idle && _startPos != _endPos;
 }
 
 void RulerBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {

@@ -17,9 +17,10 @@ namespace voxedit {
  *
  * # Usage
  *
- * 1. Click to set the start point (reference position)
- * 2. Move cursor to the end point
- * 3. The brush draws a visual line and shows measurements in the BrushPanel
+ * Click to set the start point, click again to set the end point.
+ * The measurement persists until a new start point is set by clicking again.
+ * When using the reference position, the start is always the reference position
+ * and each click updates the end position.
  *
  * @ingroup Brushes
  */
@@ -28,7 +29,9 @@ private:
 	using Super = Brush;
 
 protected:
-	bool _active = false;
+	enum class State { Idle, Tracking, Measured };
+	State _state = State::Idle;
+	bool _useReferencePos = false;
 	glm::ivec3 _startPos{0};
 	glm::ivec3 _endPos{0};
 
@@ -41,9 +44,10 @@ public:
 	}
 	virtual ~RulerBrush() = default;
 
+	void construct() override;
+	void shutdown() override;
 	bool beginBrush(const BrushContext &ctx) override;
-	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
-	void endBrush(BrushContext &ctx) override;
+	void update(const BrushContext &ctx, double nowSeconds) override;
 	void reset() override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
@@ -57,6 +61,9 @@ public:
 	glm::ivec3 delta() const;
 	float euclideanDistance() const;
 	int manhattanDistance() const;
+
+	bool useReferencePos() const;
+	void setUseReferencePos(bool use);
 };
 
 inline const glm::ivec3 &RulerBrush::startPos() const {
@@ -68,11 +75,20 @@ inline const glm::ivec3 &RulerBrush::endPos() const {
 }
 
 inline bool RulerBrush::hasMeasurement() const {
-	return _active;
+	return _state != State::Idle;
 }
 
 inline glm::ivec3 RulerBrush::delta() const {
 	return glm::abs(_endPos - _startPos);
+}
+
+inline bool RulerBrush::useReferencePos() const {
+	return _useReferencePos;
+}
+
+inline void RulerBrush::setUseReferencePos(bool use) {
+	_useReferencePos = use;
+	_state = State::Idle;
 }
 
 } // namespace voxedit

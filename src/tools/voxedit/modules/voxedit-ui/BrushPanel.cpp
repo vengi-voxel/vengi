@@ -374,20 +374,25 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 }
 
 void BrushPanel::updateRulerBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrappedUnformatted(_("Click two points to measure the distance between them"));
 	Modifier &modifier = _sceneMgr->modifier();
 	RulerBrush &brush = modifier.rulerBrush();
+	bool useRefPos = brush.useReferencePos();
+	if (ImGui::Checkbox(_("Use reference position"), &useRefPos)) {
+		brush.setUseReferencePos(useRefPos);
+	}
+	ImGui::TooltipTextUnformatted(_("Measure the distance from the reference position to the cursor"));
+	if (!useRefPos) {
+		ImGui::TextWrappedUnformatted(_("Click two points to measure the distance between them"));
+	}
 	if (brush.hasMeasurement()) {
 		const glm::ivec3 &start = brush.startPos();
 		const glm::ivec3 &end = brush.endPos();
 		const glm::ivec3 d = brush.delta();
 		ImGui::SeparatorText(_("Measurement"));
-		ImGui::Text(_("Start: (%i, %i, %i)"), start.x, start.y, start.z);
-		ImGui::Text(_("End: (%i, %i, %i)"), end.x, end.y, end.z);
+		ImGui::InputVec3(_("Start"), start);
+		ImGui::InputVec3(_("End"), end);
 		ImGui::Separator();
-		ImGui::Text(_("Delta X: %i"), d.x);
-		ImGui::Text(_("Delta Y: %i"), d.y);
-		ImGui::Text(_("Delta Z: %i"), d.z);
+		ImGui::InputVec3(_("Delta"), d);
 		ImGui::Separator();
 		ImGui::Text(_("Length: %.2f"), brush.euclideanDistance());
 		ImGui::Text(_("Manhattan: %i"), brush.manhattanDistance());

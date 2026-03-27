@@ -926,7 +926,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	return true;
 }
 
-bool Viewport::runBrushGizmo(const video::Camera &camera) {
+bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
 	if (isSceneMode()) {
 		return false;
 	}
@@ -976,7 +976,8 @@ bool Viewport::runBrushGizmo(const video::Camera &camera) {
 	}
 	if (state.operations & BrushGizmo_Line) {
 		if (state.numPositions >= 2) {
-			const ImVec2 &windowPos = ImGui::GetWindowPos();
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			windowPos.y += headerSize;
 			const glm::vec2 scale = dpiScale();
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImU32 lineColor = ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoLine)));
@@ -1088,7 +1089,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	if (!isSceneMode() && _brushGizmo->boolVal()) {
 		ImGuizmo::PushID("brushgizmo");
 		ImGuizmo::Enable(true);
-		brushGizmoModified = runBrushGizmo(camera);
+		brushGizmoModified = runBrushGizmo(camera, headerSize);
 		ImGuizmo::PopID();
 	} else {
 		_sceneMgr->modifier().setBrushGizmoActive(false);
