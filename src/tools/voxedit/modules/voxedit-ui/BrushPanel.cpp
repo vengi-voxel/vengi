@@ -10,11 +10,14 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Bits.h"
-#include "core/Log.h"
 #include "core/Enum.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
 #include "dearimgui/imgui_internal.h"
+#include "io/FilesystemArchive.h"
+#include "math/Axis.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/ViewMode.h"
@@ -24,24 +27,21 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
-#include "voxedit-util/modifier/brush/ShapeBrush.h"
-#include "math/Axis.h"
-#include "io/FilesystemArchive.h"
-#include "scenegraph/SceneGraph.h"
-#include "voxel/ClipboardData.h"
-#include "voxel/Face.h"
-#include "voxelformat/VolumeFormat.h"
-#include "voxedit-util/modifier/brush/ExtrudeBrush.h"
-#include "voxedit-util/modifier/brush/TransformBrush.h"
 #include "voxedit-util/modifier/brush/RulerBrush.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
+#include "voxedit-util/modifier/brush/TransformBrush.h"
+#include "voxel/ClipboardData.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/VolumeFormat.h"
 
 #include <glm/common.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -51,10 +51,11 @@
 namespace voxedit {
 
 static constexpr const char *BrushTypeIcons[] = {
-	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
-	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
-	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP, ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
-	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND, ICON_LC_MOVE_3D, ICON_LC_BLEND, ICON_LC_RULER};
+	ICON_LC_PIPETTE,	ICON_LC_BOXES,		   ICON_LC_GROUP,
+	ICON_LC_STAMP,		ICON_LC_PEN_LINE,	   ICON_LC_FOOTPRINTS,
+	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP,	   ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
+	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND,
+	ICON_LC_MOVE_3D,	ICON_LC_BLEND,		   ICON_LC_RULER};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
@@ -64,10 +65,17 @@ static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformM
 static constexpr const char *TransformModeIcons[] = {ICON_LC_MOVE, ICON_LC_ITALIC, ICON_LC_SCALING, ICON_LC_ROTATE_3D};
 static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "TransformModeIcons size mismatch");
 
-static constexpr const char *SculptModeStr[] = {NC_("Sculpt Modes", "Erode"), NC_("Sculpt Modes", "Grow"), NC_("Sculpt Modes", "Flatten"), NC_("Sculpt Modes", "Smooth Additive"), NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"), NC_("Sculpt Modes", "Bridge Gap"), NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Reskin")};
+static constexpr const char *SculptModeStr[] = {
+	NC_("Sculpt Modes", "Erode"),		 NC_("Sculpt Modes", "Grow"),
+	NC_("Sculpt Modes", "Flatten"),		 NC_("Sculpt Modes", "Smooth Additive"),
+	NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"),
+	NC_("Sculpt Modes", "Bridge Gap"),	 NC_("Sculpt Modes", "Squash to Plane"),
+	NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
-static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT, ICON_LC_LAND_PLOT, ICON_LC_WAVES, ICON_LC_WAVES, ICON_LC_BLEND, ICON_LC_LINK, ICON_LC_MINIMIZE_2, ICON_LC_PALETTE};
+static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT,	  ICON_LC_LAND_PLOT,
+												  ICON_LC_WAVES,  ICON_LC_WAVES,	  ICON_LC_BLEND,
+												  ICON_LC_LINK,	  ICON_LC_MINIMIZE_2, ICON_LC_PALETTE};
 static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
 
 // clang-format off
@@ -90,22 +98,28 @@ static constexpr const char *SelectModeIcons[] = {
 // clang-format on
 static_assert(lengthof(SelectModeIcons) == (int)SelectMode::Max, "SelectModeIcons size mismatch");
 
-static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), NC_("Reskin Modes", "Blend"), NC_("Reskin Modes", "Negate")};
+static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), NC_("Reskin Modes", "Blend"),
+												NC_("Reskin Modes", "Negate")};
 static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
 
-static constexpr const char *ReskinFollowStr[] = {NC_("Reskin Follow", "None"), NC_("Reskin Follow", "Median"), NC_("Reskin Follow", "Voxel")};
+static constexpr const char *ReskinFollowStr[] = {NC_("Reskin Follow", "None"), NC_("Reskin Follow", "Median"),
+												  NC_("Reskin Follow", "Voxel")};
 static_assert(lengthof(ReskinFollowStr) == (int)voxelutil::ReskinFollow::Max, "ReskinFollowStr size mismatch");
 
-static constexpr const char *ReskinAnchorStr[] = {NC_("Reskin Anchor", "Min/Min"), NC_("Reskin Anchor", "Min/Max"), NC_("Reskin Anchor", "Max/Min"), NC_("Reskin Anchor", "Max/Max")};
+static constexpr const char *ReskinAnchorStr[] = {NC_("Reskin Anchor", "Min/Min"), NC_("Reskin Anchor", "Min/Max"),
+												  NC_("Reskin Anchor", "Max/Min"), NC_("Reskin Anchor", "Max/Max")};
 static_assert(lengthof(ReskinAnchorStr) == (int)voxelutil::ReskinAnchor::Max, "ReskinAnchorStr size mismatch");
 
-static constexpr const char *ReskinRotationStr[] = {NC_("Reskin Rotation", "0"), NC_("Reskin Rotation", "90"), NC_("Reskin Rotation", "180"), NC_("Reskin Rotation", "270")};
+static constexpr const char *ReskinRotationStr[] = {NC_("Reskin Rotation", "0"), NC_("Reskin Rotation", "90"),
+													NC_("Reskin Rotation", "180"), NC_("Reskin Rotation", "270")};
 static_assert(lengthof(ReskinRotationStr) == (int)voxelutil::ReskinRotation::Max, "ReskinRotationStr size mismatch");
 
-static constexpr const char *ReskinTileStr[] = {NC_("Reskin Tile", "Once"), NC_("Reskin Tile", "Repeat"), NC_("Reskin Tile", "Stretch")};
+static constexpr const char *ReskinTileStr[] = {NC_("Reskin Tile", "Once"), NC_("Reskin Tile", "Repeat"),
+												NC_("Reskin Tile", "Stretch")};
 static_assert(lengthof(ReskinTileStr) == (int)voxelutil::ReskinTile::Max, "ReskinTileStr size mismatch");
 
-static constexpr const char *ReskinSkinAxisStr[] = {NC_("Reskin Skin Axis", "X"), NC_("Reskin Skin Axis", "Y"), NC_("Reskin Skin Axis", "Z")};
+static constexpr const char *ReskinSkinAxisStr[] = {NC_("Reskin Skin Axis", "X"), NC_("Reskin Skin Axis", "Y"),
+													NC_("Reskin Skin Axis", "Z")};
 static_assert(lengthof(ReskinSkinAxisStr) == 3, "ReskinSkinAxisStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
@@ -123,7 +137,8 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 
 	const ShapeType currentSelectedShapeType = modifier.shapeBrush().shapeType();
-	const core::String currentLabel = core::String::format("%s %s", ShapeTypeIcons[(int)currentSelectedShapeType], ShapeTypeStr[(int)currentSelectedShapeType]);
+	const core::String currentLabel = core::String::format("%s %s", ShapeTypeIcons[(int)currentSelectedShapeType],
+														   ShapeTypeStr[(int)currentSelectedShapeType]);
 	if (ImGui::BeginCombo(_("Shape"), currentLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const ShapeType type = (ShapeType)i;
@@ -307,7 +322,8 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 		brush.setBezier(bezier);
 	}
 	ImGui::TooltipCommand("togglelinebrushbezier");
-	ImGui::TooltipTextUnformatted(_("First click locks the segment end, the gizmo edits its control point, and pending segments commit when you apply or leave the brush"));
+	ImGui::TooltipTextUnformatted(_("First click locks the segment end, the gizmo edits its control point, and pending "
+									"segments commit when you apply or leave the brush"));
 	if (bezier && brush.pendingSegmentCount() > 0) {
 		ImGui::SeparatorText(_("Pending segments"));
 		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg |
@@ -336,11 +352,10 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 				}
 
 				ImGui::TableNextColumn();
-				ImGui::Text("(%i, %i, %i) " ICON_LC_ARROW_RIGHT " (%i, %i, %i)",
-							segment->start.x, segment->start.y, segment->start.z,
-							segment->end.x, segment->end.y, segment->end.z);
-				ImGui::TextDisabled(_("ctrl: (%i, %i, %i)"),
-									segment->control.x, segment->control.y, segment->control.z);
+				ImGui::Text("(%i, %i, %i) " ICON_LC_ARROW_RIGHT " (%i, %i, %i)", segment->start.x, segment->start.y,
+							segment->start.z, segment->end.x, segment->end.y, segment->end.z);
+				ImGui::TextDisabled(_("ctrl: (%i, %i, %i)"), segment->control.x, segment->control.y,
+									segment->control.z);
 
 				ImGui::TableNextColumn();
 				if (ImGui::IconButton(ICON_LC_TRASH_2, "")) {
@@ -405,16 +420,16 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const SelectMode currentSelectMode = brush.selectMode();
 
-	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
-								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected"),
-								   C_("SelectMode", "Flat Surface"), C_("SelectMode", "3D Box"),
-								   C_("SelectMode", "Circle"), C_("SelectMode", "Slope"),
-								   C_("SelectMode", "Lasso"),
-								   C_("SelectMode", "Hole Rim 2D"), C_("SelectMode", "Hole Rim 3D"),
-								   C_("SelectMode", "Column Rim 2D"), C_("SelectMode", "Paint")};
+	const char *SelectModeStr[] = {
+		C_("SelectMode", "All"),		   C_("SelectMode", "Surface"),		C_("SelectMode", "Same Color"),
+		C_("SelectMode", "Fuzzy Color"),   C_("SelectMode", "Connected"),	C_("SelectMode", "Flat Surface"),
+		C_("SelectMode", "3D Box"),		   C_("SelectMode", "Circle"),		C_("SelectMode", "Slope"),
+		C_("SelectMode", "Lasso"),		   C_("SelectMode", "Hole Rim 2D"), C_("SelectMode", "Hole Rim 3D"),
+		C_("SelectMode", "Column Rim 2D"), C_("SelectMode", "Paint")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
-	const core::String currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode], SelectModeStr[(int)currentSelectMode]);
+	const core::String currentSelectLabel =
+		core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode], SelectModeStr[(int)currentSelectMode]);
 	if (ImGui::BeginCombo(_("Select mode"), currentSelectLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)SelectMode::Max; ++i) {
 			const bool selected = (int)currentSelectMode == i;
@@ -441,10 +456,12 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	if (brush.selectMode() == SelectMode::FuzzyColor) {
 		float threshold = brush.colorThreshold();
-		if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin, color::ApproximationDistanceLoose, "%.0f")) {
+		if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin,
+							   color::ApproximationDistanceLoose, "%.0f")) {
 			brush.setColorThreshold(threshold);
 		}
-		ImGui::TooltipTextUnformatted(_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
+		ImGui::TooltipTextUnformatted(
+			_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
 	}
 
 	if (brush.selectMode() == SelectMode::FlatSurface) {
@@ -452,7 +469,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		const float btnW = ImGui::GetFrameHeight();
 		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		ImGui::TextUnformatted(_("Accepted deviation"));
-		ImGui::TooltipTextUnformatted(_("How many voxels above or below the clicked face the fill may deviate from the start position"));
+		ImGui::TooltipTextUnformatted(
+			_("How many voxels above or below the clicked face the fill may deviate from the start position"));
 		ImGui::PushID("flatdeviation");
 		if (ImGui::Button("-", ImVec2(btnW, 0))) {
 			deviation = glm::max(deviation - 1, 0);
@@ -478,7 +496,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 		int deviation = brush.slopeDeviation();
 		ImGui::TextUnformatted(_("Max deviation"));
-		ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel to be included in the selection"));
+		ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
+										"to be included in the selection"));
 		ImGui::PushID("slopedeviation");
 		if (ImGui::Button("-", ImVec2(btnW, 0))) {
 			deviation = glm::max(deviation - 1, 0);
@@ -501,7 +520,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 		int sampleDist = brush.slopeSampleDistance();
 		ImGui::TextUnformatted(_("Sample distance"));
-		ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. Larger values give smoother slope detection on staircases"));
+		ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. "
+										"Larger values give smoother slope detection on staircases"));
 		ImGui::PushID("slopesample");
 		if (ImGui::Button("-", ImVec2(btnW, 0))) {
 			sampleDist = glm::max(sampleDist - 1, SelectBrush::MinSlopeSampleDistance);
@@ -510,7 +530,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		}
 		ImGui::SameLine(0, spacing);
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance, SelectBrush::MaxSlopeSampleDistance)) {
+		if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance,
+							 SelectBrush::MaxSlopeSampleDistance)) {
 			brush.setSlopeSampleDistance(sampleDist);
 			changed = true;
 		}
@@ -533,7 +554,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			const int vertexCount = (int)brush.lassoPath().size();
 			ImGui::Text(_("%d vertices - click near first vertex to close"), vertexCount);
 			ImGui::CommandIconButton(ICON_LC_CHECK, _("Apply Lasso"), "finalizelasso", listener);
-			ImGui::TooltipTextUnformatted(_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
+			ImGui::TooltipTextUnformatted(
+				_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
 			ImGui::SameLine();
 			ImGui::CommandIconButton(ICON_LC_X, _("Cancel Lasso"), "cancellasso", listener);
 			ImGui::TooltipTextUnformatted(_("Discard the in-progress lasso polygon (bind Escape to cancellasso)"));
@@ -549,25 +571,29 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	if (brush.selectMode() == SelectMode::HoleRim2D) {
 		ImGui::SeparatorText(_("Hole rim selection"));
-		ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks into the opening or lies flat on the surface containing the hole."));
+		ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks "
+								 "into the opening or lies flat on the surface containing the hole."));
 	}
 
 	if (brush.selectMode() == SelectMode::HoleRim3D) {
 		ImGui::SeparatorText(_("Hole rim selection (3D)"));
-		ImGui::TextUnformatted(_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
+		ImGui::TextUnformatted(
+			_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest "
+			  "loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
 	}
 
 	if (brush.selectMode() == SelectMode::ColumnRim2D) {
 		ImGui::SeparatorText(_("Column rim selection"));
-		ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face determines the cross-section plane with fallback. Lock the normal axis to always select a specific circumference direction."));
+		ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face "
+								 "determines the cross-section plane with fallback. Lock the normal axis to always "
+								 "select a specific circumference direction."));
 
 		// Normal axis selector: Auto tries clicked-face plane first with fallback;
 		// locking X/Y/Z disables the fallback for predictable results on symmetric shapes.
 		// math::Axis values are None=0, X=1, Y=2, Z=4 (bit flags), so use an explicit table.
-		static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X,
-												math::Axis::Y,    math::Axis::Z};
-		const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"),
-								   C_("ColumnRimAxis", "Y"),    C_("ColumnRimAxis", "Z")};
+		static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X, math::Axis::Y, math::Axis::Z};
+		const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"), C_("ColumnRimAxis", "Y"),
+								   C_("ColumnRimAxis", "Z")};
 		const math::Axis currentAxis = brush.columnRimNormalAxis();
 		int axisIdx = 0;
 		for (int i = 1; i < (int)lengthof(axisValues); ++i) {
@@ -579,7 +605,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		if (ImGui::Combo(_("Normal axis"), &axisIdx, axisNames, lengthof(axisNames))) {
 			brush.setColumnRimNormalAxis(axisValues[axisIdx]);
 		}
-		ImGui::TooltipTextUnformatted(_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
+		ImGui::TooltipTextUnformatted(
+			_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
 	}
 
 	if (brush.selectMode() == SelectMode::Paint) {
@@ -610,7 +637,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
 			brush.setPaintGrowRegion(growRegion);
 		}
-		ImGui::TooltipTextUnformatted(_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
+		ImGui::TooltipTextUnformatted(
+			_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
 	}
 
 	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {
@@ -663,7 +691,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		const int maxDepth = (vMaxs[faceAxisIdx] - vMins[faceAxisIdx]) / 2;
 		int depth = brush.ellipseDepth();
 		ImGui::Text(_("Depth %s"), axisNames[faceAxisIdx]);
-		ImGui::TooltipTextUnformatted(_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
+		ImGui::TooltipTextUnformatted(
+			_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
 		ellipseSlider("##depth", &depth, 1, maxDepth);
 
 		bool is3D = brush.ellipse3D();
@@ -671,7 +700,8 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 			brush.setEllipse3D(is3D);
 			changed = true;
 		}
-		ImGui::TooltipTextUnformatted(_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
+		ImGui::TooltipTextUnformatted(
+			_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
 
 		if (changed) {
 			brush.setEllipseCenter(center);
@@ -719,17 +749,26 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 				ImGui::TableSetupColumn(_("Max"));
 				ImGui::TableHeadersRow();
 
-				ImGui::TableNextColumn(); ImGui::AxisButtonX(ImVec2(ImGui::GetFrameHeight(), 0));
-				ImGui::TableNextColumn(); selSlider("##minx", &mins.x, vMins.x, vMaxs.x);
-				ImGui::TableNextColumn(); selSlider("##maxx", &maxs.x, vMins.x, vMaxs.x);
+				ImGui::TableNextColumn();
+				ImGui::AxisButtonX(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn();
+				selSlider("##minx", &mins.x, vMins.x, vMaxs.x);
+				ImGui::TableNextColumn();
+				selSlider("##maxx", &maxs.x, vMins.x, vMaxs.x);
 
-				ImGui::TableNextColumn(); ImGui::AxisButtonY(ImVec2(ImGui::GetFrameHeight(), 0));
-				ImGui::TableNextColumn(); selSlider("##miny", &mins.y, vMins.y, vMaxs.y);
-				ImGui::TableNextColumn(); selSlider("##maxy", &maxs.y, vMins.y, vMaxs.y);
+				ImGui::TableNextColumn();
+				ImGui::AxisButtonY(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn();
+				selSlider("##miny", &mins.y, vMins.y, vMaxs.y);
+				ImGui::TableNextColumn();
+				selSlider("##maxy", &maxs.y, vMins.y, vMaxs.y);
 
-				ImGui::TableNextColumn(); ImGui::AxisButtonZ(ImVec2(ImGui::GetFrameHeight(), 0));
-				ImGui::TableNextColumn(); selSlider("##minz", &mins.z, vMins.z, vMaxs.z);
-				ImGui::TableNextColumn(); selSlider("##maxz", &maxs.z, vMins.z, vMaxs.z);
+				ImGui::TableNextColumn();
+				ImGui::AxisButtonZ(ImVec2(ImGui::GetFrameHeight(), 0));
+				ImGui::TableNextColumn();
+				selSlider("##minz", &mins.z, vMins.z, vMaxs.z);
+				ImGui::TableNextColumn();
+				selSlider("##maxz", &maxs.z, vMins.z, vMaxs.z);
 
 				ImGui::EndTable();
 			}
@@ -1150,7 +1189,8 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 
 	const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
 	if (extrudeFace == voxel::FaceNames::Max) {
-		ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the extrusion direction"));
+		ImGui::TextColored(warningTextColor, "%s",
+						   _("Click a voxel face in the viewport to set the extrusion direction"));
 		return;
 	}
 
@@ -1250,12 +1290,14 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	}
 
 	const TransformMode currentTransformMode = brush.transformMode();
-	const core::String currentTransformLabel = core::String::format("%s %s", TransformModeIcons[(int)currentTransformMode], _(TransformModeStr[(int)currentTransformMode]));
+	const core::String currentTransformLabel = core::String::format(
+		"%s %s", TransformModeIcons[(int)currentTransformMode], _(TransformModeStr[(int)currentTransformMode]));
 	if (ImGui::BeginCombo(_("Transform mode"), currentTransformLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {
 			const TransformMode mode = (TransformMode)i;
 			const bool selected = mode == currentTransformMode;
-			const core::String transformLabel = core::String::format("%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
+			const core::String transformLabel =
+				core::String::format("%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
 			if (ImGui::Selectable(transformLabel.c_str(), selected)) {
 				if (_transformDirty || brush.hasSnapshot()) {
 					executeTransformBrush();
@@ -1282,7 +1324,8 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 
 	case TransformMode::Shear: {
 		_transformShearOffset = brush.shearOffset();
-		if (ImGui::AxisSliders(_transformShearOffset, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset)) {
+		if (ImGui::AxisSliders(_transformShearOffset, -TransformBrush::MaxShearOffset,
+							   TransformBrush::MaxShearOffset)) {
 			brush.setShearOffset(_transformShearOffset);
 			executeTransformBrush();
 		}
@@ -1304,9 +1347,8 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 		bool scaleChanged = false;
 		if (_transformUseVoxelSize) {
 			const voxel::Region &snapshotRegion = brush.snapshotRegion();
-			const glm::ivec3 originalSize = snapshotRegion.isValid()
-				? snapshotRegion.getDimensionsInVoxels()
-				: glm::ivec3(1);
+			const glm::ivec3 originalSize =
+				snapshotRegion.isValid() ? snapshotRegion.getDimensionsInVoxels() : glm::ivec3(1);
 			if (_transformTargetSize.x <= 0 || _transformTargetSize.y <= 0 || _transformTargetSize.z <= 0) {
 				_transformTargetSize = originalSize;
 			}
@@ -1327,7 +1369,8 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 						const float ratio = (float)_transformTargetSize[changedAxis] / (float)originalSize[changedAxis];
 						for (int i = 0; i < 3; ++i) {
 							if (i != changedAxis) {
-								_transformTargetSize[i] = glm::max((int)glm::round((float)originalSize[i] * ratio), MinTargetSize);
+								_transformTargetSize[i] =
+									glm::max((int)glm::round((float)originalSize[i] * ratio), MinTargetSize);
 							}
 						}
 					}
@@ -1467,7 +1510,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	const core::String currentSculptLabel = core::String::format("%s %s", SculptModeIcons[(int)currentMode], _(SculptModeStr[(int)currentMode]));
+	const core::String currentSculptLabel =
+		core::String::format("%s %s", SculptModeIcons[(int)currentMode], _(SculptModeStr[(int)currentMode]));
 	if (ImGui::BeginCombo(_("Sculpt mode"), currentSculptLabel.c_str(), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)SculptMode::Max; ++i) {
 			const SculptMode mode = (SculptMode)i;
@@ -1556,10 +1600,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		// Load skin from file / Reload buttons
 		if (ImGui::Button(_("Load skin"))) {
 			_app->openDialog(
-				[this](const core::String &filename, const io::FormatDescription *) {
-					loadSkinFromFile(filename);
-				},
-				{}, voxelformat::voxelLoad());
+				[this](const core::String &filename, const io::FormatDescription *) { loadSkinFromFile(filename); }, {},
+				voxelformat::voxelLoad());
 		}
 		const core::String &skinPath = brush.skinFilePath();
 		if (!skinPath.empty()) {
@@ -1590,10 +1632,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 				ImGui::EndCombo();
 			}
 		}
-		if (ImGui::IsItemHovered()) {
-			ImGui::SetTooltip("%s", _("Which axis of the skin points outward from the surface. "
-									  "Set to Y if your skin was built with the pattern facing up."));
-		}
+		ImGui::SetItemTooltipUnformatted(_("Which axis of the skin points outward from the surface. "
+										   "Set to Y if your skin was built with the pattern facing up."));
 
 		// Reskin mode combo
 		if (ImGui::BeginCombo(_("Reskin mode"), _(ReskinModeStr[(int)cfg.mode]), ImGuiComboFlags_None)) {
@@ -1730,7 +1770,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			executeSculptBrush();
 		}
 		ImGui::SameLine();
-		if (ImGui::SliderInt("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth, SculptBrush::MaxReskinDepth)) {
+		if (ImGui::SliderInt("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth,
+							 SculptBrush::MaxReskinDepth)) {
 			brush.setReskinZOffset(surfaceOffset);
 			executeSculptBrush();
 		}
@@ -1739,9 +1780,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setReskinZOffset(surfaceOffset + 1);
 			executeSculptBrush();
 		}
-		if (ImGui::IsItemHovered()) {
-			ImGui::SetTooltip("%s", _("Positive = skin floats above surface, negative = sinks below"));
-		}
+		ImGui::SetItemTooltipUnformatted(_("Positive = skin floats above surface, negative = sinks below"));
 
 		int skinDepth = cfg.skinDepth;
 		ImGui::TextUnformatted(_("Skin layers"));
@@ -1766,7 +1805,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setReskinInvertSkin(invertSkin);
 			executeSculptBrush();
 		}
-	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane) {
+	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap &&
+			   currentMode != SculptMode::SquashToPlane) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
@@ -1774,7 +1814,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 	}
 
-	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane && currentMode != SculptMode::Reskin) {
+	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane &&
+		currentMode != SculptMode::Reskin) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {

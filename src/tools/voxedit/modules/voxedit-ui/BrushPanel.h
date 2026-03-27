@@ -52,11 +52,13 @@ private:
 
 	void addShapes(command::CommandExecutionListener &listener);
 	void addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush);
-	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener, Brush &brush);
+	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener,
+							   Brush &brush);
 
 	void stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
-								   command::CommandExecutionListener &listener);
-	void stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette, command::CommandExecutionListener &listener);
+								command::CommandExecutionListener &listener);
+	void stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
+						   command::CommandExecutionListener &listener);
 	void updateStampBrushPanel(command::CommandExecutionListener &listener);
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
