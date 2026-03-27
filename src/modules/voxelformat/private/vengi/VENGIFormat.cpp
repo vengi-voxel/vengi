@@ -21,6 +21,7 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -303,7 +304,6 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	node.setVolume(v, true);
 	const palette::Palette &palette = node.palette();
 
 	if (version >= 4u) {
@@ -360,6 +360,20 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			}
 			sampler.movePositiveX();
 		}
+	}
+	if (v->isEmpty(region)) {
+		delete v;
+		node.setVolume(new voxel::RawVolume(voxel::Region(mins, mins)), true);
+	} else if (core::getVar(cfg::VoxelCropOnLoad)->boolVal()) {
+		voxel::RawVolume *cropped = voxelutil::cropVolume(v);
+		if (cropped != nullptr) {
+			delete v;
+			node.setVolume(cropped, true);
+		} else {
+			node.setVolume(v, true);
+		}
+	} else {
+		node.setVolume(v, true);
 	}
 	return true;
 }
