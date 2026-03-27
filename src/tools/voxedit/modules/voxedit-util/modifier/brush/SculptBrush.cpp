@@ -3,9 +3,9 @@
  */
 
 #include "SculptBrush.h"
+#include "core/GLM.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
-#include "core/GLM.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
@@ -58,8 +58,8 @@ void SculptBrush::reset() {
 	Super::reset();
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
-	_hasSnapshot = false;
 	_paramsDirty = true;
+	_hasSnapshot = false;
 	_snapshot.clear();
 	_history.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
@@ -138,12 +138,15 @@ void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::R
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 
-	voxelutil::visitVolume(*volume, volRegion, [&] (int x, int y, int z, const voxel::Voxel &voxel) {
-		const glm::ivec3 pos(x, y, z);
-		_snapshot.setVoxel(pos, voxel);
-		selLo = glm::min(selLo, pos);
-		selHi = glm::max(selHi, pos);
-	}, voxelutil::VisitSolidOutline());
+	voxelutil::visitVolume(
+		*volume, volRegion,
+		[&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const glm::ivec3 pos(x, y, z);
+			_snapshot.setVoxel(pos, voxel);
+			selLo = glm::min(selLo, pos);
+			selHi = glm::max(selHi, pos);
+		},
+		voxelutil::VisitSolidOutline());
 
 	if (_snapshot.empty()) {
 		_hasSnapshot = false;
@@ -314,7 +317,7 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 										_iterations, fillVoxel);
 	} else if (_sculptMode == SculptMode::SmoothErode && _flattenFace != voxel::FaceNames::Max) {
 		voxelutil::sculptSmoothErode(currentSolid, voxelMap, anchorSolid, _flattenFace, _iterations, _preserveTopHeight,
-								_trimPerStep);
+									 _trimPerStep);
 	} else if (_sculptMode == SculptMode::SmoothGaussian && _flattenFace != voxel::FaceNames::Max) {
 		voxel::Voxel fillVoxel = ctx.cursorVoxel;
 		fillVoxel.setFlags(voxel::FlagOutline);
@@ -406,6 +409,46 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 
 	applySculpt(wrapper, ctx);
 	markDirty();
+}
+
+void SculptBrush::setSculptMode(SculptMode mode) {
+	const bool needsFace = modeNeedsFace(mode);
+	const bool hadFace = modeNeedsFace(_sculptMode);
+	if (needsFace && !hadFace) {
+		_flattenFace = voxel::FaceNames::Max;
+	}
+	if (mode == SculptMode::SmoothGaussian && _sculptMode != SculptMode::SmoothGaussian) {
+		_iterations = 3;
+	}
+	_sculptMode = mode;
+	_paramsDirty = true;
+}
+
+void SculptBrush::setReskinSkinUpAxis(math::Axis axis) {
+	_reskinConfig.skinUpAxis = axis;
+	// Re-populate skin depth for the new axis
+	if (_skinVolume != nullptr) {
+		setSkinVolume(_skinVolume);
+	}
+	_paramsDirty = true;
+}
+
+void SculptBrush::setSkinVolume(const voxel::RawVolume *skinVolume) {
+	_skinVolume = skinVolume;
+	// Auto-populate skin depth from the skin volume's depth along the configured up axis
+	if (skinVolume != nullptr) {
+		const voxel::Region &sr = skinVolume->region();
+		const int upIdx = math::getIndexForAxis(_reskinConfig.skinUpAxis);
+		const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
+		_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+	}
+	_paramsDirty = true;
+}
+
+void SculptBrush::setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath) {
+	_ownedSkinVolume = skinVolume;
+	_skinFilePath = filePath;
+	setSkinVolume(skinVolume);
 }
 
 } // namespace voxedit

@@ -112,219 +112,229 @@ public:
 	void endBrush(BrushContext &ctx) override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
-	bool managesOwnSelection() const override {
-		return true;
-	}
+	bool managesOwnSelection() const override;
 
-	static bool modeNeedsFace(SculptMode mode) {
-		return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode || mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::Reskin;
-	}
+	static bool modeNeedsFace(SculptMode mode);
 
-	SculptMode sculptMode() const {
-		return _sculptMode;
-	}
+	SculptMode sculptMode() const;
+	void setSculptMode(SculptMode mode);
 
-	void setSculptMode(SculptMode mode) {
-		const bool needsFace = modeNeedsFace(mode);
-		const bool hadFace = modeNeedsFace(_sculptMode);
-		if (needsFace && !hadFace) {
-			_flattenFace = voxel::FaceNames::Max;
-		}
-		if (mode == SculptMode::SmoothGaussian && _sculptMode != SculptMode::SmoothGaussian) {
-			_iterations = 3;
-		}
-		_sculptMode = mode;
-		_paramsDirty = true;
-	}
+	float strength() const;
+	void setStrength(float strength);
 
-	float strength() const {
-		return _strength;
-	}
+	int iterations() const;
+	void setIterations(int iterations);
 
-	void setStrength(float strength) {
-		_strength = glm::clamp(strength, 0.0f, 1.0f);
-		_paramsDirty = true;
-	}
+	bool hasSnapshot() const;
 
-	int iterations() const {
-		return _iterations;
-	}
-
-	void setIterations(int iterations) {
-		_iterations = glm::clamp(iterations, 1, MaxFlattenIterations);
-		_paramsDirty = true;
-	}
-
-	bool hasSnapshot() const {
-		return _hasSnapshot;
-	}
-
-	voxel::FaceNames flattenFace() const {
-		return _flattenFace;
-	}
+	voxel::FaceNames flattenFace() const;
 
 	static constexpr int MaxHeightThreshold = 10;
+	int heightThreshold() const;
+	void setHeightThreshold(int threshold);
 
-	int heightThreshold() const {
-		return _heightThreshold;
-	}
-
-	void setHeightThreshold(int threshold) {
-		_heightThreshold = glm::clamp(threshold, 1, MaxHeightThreshold);
-		_paramsDirty = true;
-	}
-
-	bool preserveTopHeight() const {
-		return _preserveTopHeight;
-	}
-
-	void setPreserveTopHeight(bool preserve) {
-		_preserveTopHeight = preserve;
-		_paramsDirty = true;
-	}
+	bool preserveTopHeight() const;
+	void setPreserveTopHeight(bool preserve);
 
 	static constexpr int MaxTrimPerStep = 16;
-
-	int trimPerStep() const {
-		return _trimPerStep;
-	}
-
-	void setTrimPerStep(int value) {
-		_trimPerStep = glm::clamp(value, 1, MaxTrimPerStep);
-		_paramsDirty = true;
-	}
+	int trimPerStep() const;
+	void setTrimPerStep(int value);
 
 	static constexpr int MaxKernelSize = 7;
-
-	int kernelSize() const {
-		return _kernelSize;
-	}
-
-	void setKernelSize(int size) {
-		_kernelSize = glm::clamp(size, 1, MaxKernelSize);
-		_paramsDirty = true;
-	}
+	int kernelSize() const;
+	void setKernelSize(int size);
 
 	static constexpr float MaxSigma = 8.0f;
 	static constexpr float MinSigma = 0.1f;
-
-	float sigma() const {
-		return _sigma;
-	}
-
-	void setSigma(float sigma) {
-		_sigma = glm::clamp(sigma, MinSigma, MaxSigma);
-		_paramsDirty = true;
-	}
+	float sigma() const;
+	void setSigma(float sigma);
 
 	// Reskin accessors
 	static constexpr int MaxReskinDepth = 32;
-
-	const voxelutil::ReskinConfig &reskinConfig() const {
-		return _reskinConfig;
-	}
-
-	void setReskinMode(voxelutil::ReskinMode mode) {
-		_reskinConfig.mode = mode;
-		_paramsDirty = true;
-	}
-
-	void setReskinFollow(voxelutil::ReskinFollow follow) {
-		_reskinConfig.follow = follow;
-		_paramsDirty = true;
-	}
-
-	void setReskinAnchor(voxelutil::ReskinAnchor anchor) {
-		_reskinConfig.anchor = anchor;
-		_paramsDirty = true;
-	}
-
-	void setReskinRotation(voxelutil::ReskinRotation rotation) {
-		_reskinConfig.rotation = rotation;
-		_paramsDirty = true;
-	}
-
-	void setReskinTile(voxelutil::ReskinTile tile) {
-		_reskinConfig.tile = tile;
-		_paramsDirty = true;
-	}
-
-	void setReskinMirrorU(bool mirror) {
-		_reskinConfig.mirrorU = mirror;
-		_paramsDirty = true;
-	}
-
-	void setReskinMirrorV(bool mirror) {
-		_reskinConfig.mirrorV = mirror;
-		_paramsDirty = true;
-	}
-
-	void setReskinOffsetU(int offset) {
-		_reskinConfig.offsetU = offset;
-		_paramsDirty = true;
-	}
-
-	void setReskinOffsetV(int offset) {
-		_reskinConfig.offsetV = offset;
-		_paramsDirty = true;
-	}
-
-	void setReskinSkinDepth(int depth) {
-		_reskinConfig.skinDepth = glm::clamp(depth, 1, MaxReskinDepth);
-		_paramsDirty = true;
-	}
-
-	void setReskinZOffset(int offset) {
-		_reskinConfig.zOffset = glm::clamp(offset, -MaxReskinDepth, MaxReskinDepth);
-		_paramsDirty = true;
-	}
-
-	void setReskinInvertSkin(bool invert) {
-		_reskinConfig.invertSkin = invert;
-		_paramsDirty = true;
-	}
-
-	void setReskinSkinUpAxis(math::Axis axis) {
-		_reskinConfig.skinUpAxis = axis;
-		// Re-populate skin depth for the new axis
-		if (_skinVolume != nullptr) {
-			setSkinVolume(_skinVolume);
-		}
-		_paramsDirty = true;
-	}
+	const voxelutil::ReskinConfig &reskinConfig() const;
+	void setReskinMode(voxelutil::ReskinMode mode);
+	void setReskinFollow(voxelutil::ReskinFollow follow);
+	void setReskinAnchor(voxelutil::ReskinAnchor anchor);
+	void setReskinRotation(voxelutil::ReskinRotation rotation);
+	void setReskinTile(voxelutil::ReskinTile tile);
+	void setReskinMirrorU(bool mirror);
+	void setReskinMirrorV(bool mirror);
+	void setReskinOffsetU(int offset);
+	void setReskinOffsetV(int offset);
+	void setReskinSkinDepth(int depth);
+	void setReskinZOffset(int offset);
+	void setReskinInvertSkin(bool invert);
+	void setReskinSkinUpAxis(math::Axis axis);
 
 	/**
 	 * @brief Set the skin volume for reskin mode.
 	 * @param skinVolume The skin volume to apply (not owned, must outlive the brush operation).
 	 */
-	void setSkinVolume(const voxel::RawVolume *skinVolume) {
-		_skinVolume = skinVolume;
-		// Auto-populate skin depth from the skin volume's depth along the configured up axis
-		if (skinVolume != nullptr) {
-			const voxel::Region &sr = skinVolume->region();
-			const int upIdx = math::getIndexForAxis(_reskinConfig.skinUpAxis);
-			const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
-			_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
-		}
-		_paramsDirty = true;
-	}
+	void setSkinVolume(const voxel::RawVolume *skinVolume);
 
 	/**
 	 * @brief Set an owned skin volume loaded from a file. The brush takes ownership.
 	 */
-	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath) {
-		_ownedSkinVolume = skinVolume;
-		_skinFilePath = filePath;
-		setSkinVolume(skinVolume);
-	}
+	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath);
 
-	const voxel::RawVolume *skinVolume() const {
-		return _skinVolume;
-	}
-
-	const core::String &skinFilePath() const {
-		return _skinFilePath;
-	}
+	const voxel::RawVolume *skinVolume() const;
+	const core::String &skinFilePath() const;
 };
+
+inline bool SculptBrush::managesOwnSelection() const {
+	return true;
+}
+
+inline bool SculptBrush::modeNeedsFace(SculptMode mode) {
+	return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode ||
+		   mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::Reskin;
+}
+
+inline SculptMode SculptBrush::sculptMode() const {
+	return _sculptMode;
+}
+
+inline float SculptBrush::strength() const {
+	return _strength;
+}
+
+inline void SculptBrush::setStrength(float strength) {
+	_strength = glm::clamp(strength, 0.0f, 1.0f);
+	_paramsDirty = true;
+}
+
+inline int SculptBrush::iterations() const {
+	return _iterations;
+}
+
+inline void SculptBrush::setIterations(int iterations) {
+	_iterations = glm::clamp(iterations, 1, MaxFlattenIterations);
+	_paramsDirty = true;
+}
+
+inline bool SculptBrush::hasSnapshot() const {
+	return _hasSnapshot;
+}
+
+inline voxel::FaceNames SculptBrush::flattenFace() const {
+	return _flattenFace;
+}
+
+inline int SculptBrush::heightThreshold() const {
+	return _heightThreshold;
+}
+
+inline void SculptBrush::setHeightThreshold(int threshold) {
+	_heightThreshold = glm::clamp(threshold, 1, MaxHeightThreshold);
+	_paramsDirty = true;
+}
+
+inline bool SculptBrush::preserveTopHeight() const {
+	return _preserveTopHeight;
+}
+
+inline void SculptBrush::setPreserveTopHeight(bool preserve) {
+	_preserveTopHeight = preserve;
+	_paramsDirty = true;
+}
+
+inline int SculptBrush::trimPerStep() const {
+	return _trimPerStep;
+}
+
+inline void SculptBrush::setTrimPerStep(int value) {
+	_trimPerStep = glm::clamp(value, 1, MaxTrimPerStep);
+	_paramsDirty = true;
+}
+
+inline int SculptBrush::kernelSize() const {
+	return _kernelSize;
+}
+
+inline void SculptBrush::setKernelSize(int size) {
+	_kernelSize = glm::clamp(size, 1, MaxKernelSize);
+	_paramsDirty = true;
+}
+
+inline float SculptBrush::sigma() const {
+	return _sigma;
+}
+
+inline void SculptBrush::setSigma(float sigma) {
+	_sigma = glm::clamp(sigma, MinSigma, MaxSigma);
+	_paramsDirty = true;
+}
+
+inline const voxelutil::ReskinConfig &SculptBrush::reskinConfig() const {
+	return _reskinConfig;
+}
+
+inline void SculptBrush::setReskinMode(voxelutil::ReskinMode mode) {
+	_reskinConfig.mode = mode;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinFollow(voxelutil::ReskinFollow follow) {
+	_reskinConfig.follow = follow;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinAnchor(voxelutil::ReskinAnchor anchor) {
+	_reskinConfig.anchor = anchor;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinRotation(voxelutil::ReskinRotation rotation) {
+	_reskinConfig.rotation = rotation;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinTile(voxelutil::ReskinTile tile) {
+	_reskinConfig.tile = tile;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinMirrorU(bool mirror) {
+	_reskinConfig.mirrorU = mirror;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinMirrorV(bool mirror) {
+	_reskinConfig.mirrorV = mirror;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinOffsetU(int offset) {
+	_reskinConfig.offsetU = offset;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinOffsetV(int offset) {
+	_reskinConfig.offsetV = offset;
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinSkinDepth(int depth) {
+	_reskinConfig.skinDepth = glm::clamp(depth, 1, MaxReskinDepth);
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinZOffset(int offset) {
+	_reskinConfig.zOffset = glm::clamp(offset, -MaxReskinDepth, MaxReskinDepth);
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinInvertSkin(bool invert) {
+	_reskinConfig.invertSkin = invert;
+	_paramsDirty = true;
+}
+
+inline const voxel::RawVolume *SculptBrush::skinVolume() const {
+	return _skinVolume;
+}
+
+inline const core::String &SculptBrush::skinFilePath() const {
+	return _skinFilePath;
+}
 
 } // namespace voxedit
