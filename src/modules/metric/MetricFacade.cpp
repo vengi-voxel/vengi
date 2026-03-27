@@ -61,12 +61,12 @@ bool MetricState::init(const core::String &appname) {
 }
 
 void MetricState::shutdown() {
+	_metric.shutdown();
 	_threadPool.shutdown(true);
 	if (_sender) {
 		_sender->shutdown();
 		_sender = metric::IMetricSenderPtr();
 	}
-	_metric.shutdown();
 }
 
 bool count(const core::String &key, int delta, const TagMap &tags) {

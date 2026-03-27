@@ -134,7 +134,6 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 		json.append("}");
 		written = json.size();
 		if (!messageSender->send(json.c_str())) {
-			_messageSender = IMetricSenderPtr();
 			Log::warn("Failed to send metric - disable metrics for this session");
 			return false;
 		}
