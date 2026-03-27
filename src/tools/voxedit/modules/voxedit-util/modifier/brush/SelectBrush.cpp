@@ -5,13 +5,13 @@
 #include "SelectBrush.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
+#include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSelect.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "palette/Palette.h"
 #include <glm/geometric.hpp>
 
 namespace voxedit {
@@ -24,16 +24,14 @@ void SelectBrush::ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis) {
 	vAxis = (faceAxisIdx + 2) % 3;
 }
 
-bool SelectBrush::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center,
-								  int radiusU, int radiusV, int depth, bool is3D,
-								  int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal) {
+bool SelectBrush::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int depth,
+								  bool is3D, int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal) {
 	if (radiusU <= 0 || radiusV <= 0) {
 		return false;
 	}
 	// Signed depth: how far behind the surface the position is
 	// For positive faces, "behind" is the negative direction; for negative faces, positive
-	const int dd = positiveNormal ? (center[faceAxisIdx] - pos[faceAxisIdx])
-								  : (pos[faceAxisIdx] - center[faceAxisIdx]);
+	const int dd = positiveNormal ? (center[faceAxisIdx] - pos[faceAxisIdx]) : (pos[faceAxisIdx] - center[faceAxisIdx]);
 	if (dd < 0) {
 		return false;
 	}
@@ -41,9 +39,9 @@ bool SelectBrush::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &cente
 		const double du = (double)(pos[uAxis] - center[uAxis]);
 		const double dv = (double)(pos[vAxis] - center[vAxis]);
 		const double ddd = (double)dd;
-		return (du * du) / ((double)radiusU * radiusU) +
-			   (dv * dv) / ((double)radiusV * radiusV) +
-			   (ddd * ddd) / ((double)depth * depth) <= 1.0;
+		return (du * du) / ((double)radiusU * radiusU) + (dv * dv) / ((double)radiusV * radiusV) +
+				   (ddd * ddd) / ((double)depth * depth) <=
+			   1.0;
 	}
 	// 2D ellipse + flat depth check (also used as fallback when 3D with depth=0)
 	if (!insideEllipse(pos, center, radiusU, radiusV, uAxis, vAxis)) {
@@ -52,8 +50,8 @@ bool SelectBrush::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &cente
 	return dd <= depth;
 }
 
-bool SelectBrush::insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center,
-								int radiusU, int radiusV, int uAxis, int vAxis) {
+bool SelectBrush::insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int uAxis,
+								int vAxis) {
 	if (radiusU <= 0 || radiusV <= 0) {
 		return false;
 	}
@@ -76,8 +74,8 @@ void SelectBrush::reset() {
 	_lassoAccumulating = false;
 	_paintAccumulating = false;
 	_paintDirtyRegion = voxel::Region::InvalidRegion;
-	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
+	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
 }
 
 void SelectBrush::onSceneChange() {
@@ -382,8 +380,8 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		const bool positiveNormal = voxel::isPositiveFace(face);
 		auto inBounds = [&](int x, int y, int z) {
 			const glm::ivec3 pos(x, y, z);
-			return insideSelection(pos, center, radiusU, radiusV, depth, is3D,
-								   uAxis, vAxis, faceAxisIdx, positiveNormal);
+			return insideSelection(pos, center, radiusU, radiusV, depth, is3D, uAxis, vAxis, faceAxisIdx,
+								   positiveNormal);
 		};
 		if (_previewMode) {
 			// In preview mode, remove voxels outside the selection from the preview copy
@@ -440,7 +438,8 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			func(x, y, z, v);
 			_slopeHistory.push_back(glm::ivec3(x, y, z));
 		};
-		voxelutil::visitSlopeSurface(wrapper, startPos, ctx.cursorFace, _slopeDeviation, _slopeSampleDistance, slopeFunc);
+		voxelutil::visitSlopeSurface(wrapper, startPos, ctx.cursorFace, _slopeDeviation, _slopeSampleDistance,
+									 slopeFunc);
 		_slopeSeedPos = startPos;
 		_slopeFace = ctx.cursorFace;
 		_slopeValid = true;
@@ -485,8 +484,8 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 				// Draw only the rubber-band from last vertex to current cursor.
 				if (ctx.cursorFace != voxel::FaceNames::Max && vertexCount >= 1) {
 					voxelutil::drawLassoEdgeSurface([&](const glm::ivec3 &pos) { return wrapper.voxel(pos); },
-										 _lassoPath[vertexCount - 1], ctx.cursorPosition,
-										 uAxis, vAxis, wAxis, positiveNormal, selectionRegion, func);
+													_lassoPath[vertexCount - 1], ctx.cursorPosition, uAxis, vAxis,
+													wAxis, positiveNormal, selectionRegion, func);
 				}
 			} else {
 				// Draw committed edges on the real volume (NoUndo - no undo entry per click).
@@ -502,8 +501,8 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 				};
 				for (int edgeIdx = 1; edgeIdx < vertexCount; ++edgeIdx) {
 					voxelutil::drawLassoEdgeSurface([&](const glm::ivec3 &pos) { return wrapper.voxel(pos); },
-										 _lassoPath[edgeIdx - 1], _lassoPath[edgeIdx],
-										 uAxis, vAxis, wAxis, positiveNormal, selectionRegion, edgeFunc);
+													_lassoPath[edgeIdx - 1], _lassoPath[edgeIdx], uAxis, vAxis, wAxis,
+													positiveNormal, selectionRegion, edgeFunc);
 				}
 				_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
 			}
@@ -562,9 +561,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 
 		// 4 step offsets in the UV plane (no movement along W)
 		glm::ivec3 uvOffsets[4] = {};
-		uvOffsets[0][uAxis] =  1;
+		uvOffsets[0][uAxis] = 1;
 		uvOffsets[1][uAxis] = -1;
-		uvOffsets[2][vAxis] =  1;
+		uvOffsets[2][vAxis] = 1;
 		uvOffsets[3][vAxis] = -1;
 
 		// processedAir deduplicates: once an air region is successfully found it is
@@ -577,8 +576,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		// BFS air from airSeed locked to the 2D plane defined by searchWAxis at
 		// W = airSeed[searchWAxis], stepping in searchUAxis and searchVAxis.
 		// Selects adjacent solid voxels if the air region is bounded (enclosed).
-		auto tryBfsFromAirSeed = [&](const glm::ivec3 &airSeed, int searchWAxis,
-									 int searchUAxis, int searchVAxis) {
+		auto tryBfsFromAirSeed = [&](const glm::ivec3 &airSeed, int searchWAxis, int searchUAxis, int searchVAxis) {
 			if (!selectionRegion.containsPoint(airSeed)) {
 				return;
 			}
@@ -594,9 +592,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 
 			const int planeW = airSeed[searchWAxis];
 			glm::ivec3 searchOffsets[4] = {};
-			searchOffsets[0][searchUAxis] =  1;
+			searchOffsets[0][searchUAxis] = 1;
 			searchOffsets[1][searchUAxis] = -1;
-			searchOffsets[2][searchVAxis] =  1;
+			searchOffsets[2][searchVAxis] = 1;
 			searchOffsets[3][searchVAxis] = -1;
 
 			core::DynamicArray<glm::ivec3> airRegion;
@@ -736,9 +734,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			const int altVAxis = (altWAxis + 2) % NumAxes;
 
 			glm::ivec3 searchOffsets[4] = {};
-			searchOffsets[0][altUAxis] =  1;
+			searchOffsets[0][altUAxis] = 1;
 			searchOffsets[1][altUAxis] = -1;
-			searchOffsets[2][altVAxis] =  1;
+			searchOffsets[2][altVAxis] = 1;
 			searchOffsets[3][altVAxis] = -1;
 
 			const int planeW = _aabbFirstPos[altWAxis];
@@ -822,13 +820,12 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		{
 			glm::ivec3 preferred = _aabbFirstPos;
 			preferred[faceAxisIdx] += faceSign;
-			bool found = selectionRegion.containsPoint(preferred) &&
-						 voxel::isAir(wrapper.voxel(preferred).getMaterial());
+			bool found =
+				selectionRegion.containsPoint(preferred) && voxel::isAir(wrapper.voxel(preferred).getMaterial());
 			if (!found) {
 				for (const glm::ivec3 &off : voxel::arrayPathfinderFaces) {
 					const glm::ivec3 nb = _aabbFirstPos + off;
-					if (selectionRegion.containsPoint(nb) &&
-						voxel::isAir(wrapper.voxel(nb).getMaterial())) {
+					if (selectionRegion.containsPoint(nb) && voxel::isAir(wrapper.voxel(nb).getMaterial())) {
 						found = true;
 						break;
 					}
@@ -1122,7 +1119,8 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 					const glm::ivec3 npos(x + off.x, y + off.y, z + off.z);
 					if (ctx.targetVolumeRegion.containsPoint(npos)) {
 						const ::voxel::Voxel &neighborVoxel = wrapper.voxel(npos);
-						if (!::voxel::isAir(neighborVoxel.getMaterial()) && (neighborVoxel.getFlags() & ::voxel::FlagOutline)) {
+						if (!::voxel::isAir(neighborVoxel.getMaterial()) &&
+							(neighborVoxel.getFlags() & ::voxel::FlagOutline)) {
 							hasSelectedNeighbor = true;
 							break;
 						}
@@ -1163,13 +1161,33 @@ void SelectBrush::redrawEdgesOnVolume(voxel::RawVolume *volume, const voxel::Reg
 		volume->setVoxel(pos, flagged);
 		outDirty.accumulate(pos);
 	};
-	auto readVoxel = [&](const glm::ivec3 &pos) {
-		return volume->voxel(pos);
-	};
+	auto readVoxel = [&](const glm::ivec3 &pos) { return volume->voxel(pos); };
 	for (int edgeIdx = 1; edgeIdx < vertexCount; ++edgeIdx) {
-		voxelutil::drawLassoEdgeSurface(readVoxel, _lassoPath[edgeIdx - 1], _lassoPath[edgeIdx],
-							 uAxis, vAxis, wAxis, positiveNormal, region, edgeFunc);
+		voxelutil::drawLassoEdgeSurface(readVoxel, _lassoPath[edgeIdx - 1], _lassoPath[edgeIdx], uAxis, vAxis, wAxis,
+										positiveNormal, region, edgeFunc);
 	}
+}
+
+void SelectBrush::invalidateLasso() {
+	_lassoAccumulating = false;
+	_lassoPath.clear();
+	_lassoEdgeHistory.clear();
+}
+
+void SelectBrush::popLastVertex() {
+	if (!_lassoPath.empty()) {
+		_lassoPath.resize(_lassoPath.size() - 1);
+	}
+}
+
+void SelectBrush::invalidateEllipse() {
+	_ellipseValid = false;
+	_ellipseHistory.clear();
+}
+
+void SelectBrush::invalidateSlope() {
+	_slopeValid = false;
+	_slopeHistory.clear();
 }
 
 } // namespace voxedit

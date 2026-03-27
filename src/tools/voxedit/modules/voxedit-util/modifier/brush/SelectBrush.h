@@ -148,16 +148,13 @@ private:
 				  const voxel::Region &region) override;
 
 public:
-	SelectBrush()
-		: Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase) {
+	SelectBrush() : Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase) {
 		setBrushClamping(true);
 	}
 	virtual ~SelectBrush() = default;
 
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
-	bool managesOwnSelection() const override {
-		return true;
-	}
+	bool managesOwnSelection() const override;
 	bool active() const override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 	bool needsAdditionalAction(const BrushContext &ctx) const override;
@@ -166,70 +163,31 @@ public:
 	void onSceneChange() override;
 
 	void setSelectMode(SelectMode mode);
-
-	SelectMode selectMode() const {
-		return _selectMode;
-	}
-
-	void setColorThreshold(float threshold) {
-		_colorThreshold = threshold;
-	}
-
-	float colorThreshold() const {
-		return _colorThreshold;
-	}
+	SelectMode selectMode() const;
+	void setColorThreshold(float threshold);
+	float colorThreshold() const;
 
 	static constexpr int MaxFlatDeviation = 32;
-
-	void setFlatDeviation(int deviation) {
-		_flatDeviation = glm::clamp(deviation, 0, MaxFlatDeviation);
-	}
-
-	int flatDeviation() const {
-		return _flatDeviation;
-	}
+	void setFlatDeviation(int deviation);
+	int flatDeviation() const;
 
 	static constexpr int MaxSlopeDeviation = 90;
-
-	void setSlopeDeviation(int angle) {
-		_slopeDeviation = glm::clamp(angle, 0, MaxSlopeDeviation);
-	}
-
-	int slopeDeviation() const {
-		return _slopeDeviation;
-	}
+	void setSlopeDeviation(int angle);
+	int slopeDeviation() const;
 
 	static constexpr int MinSlopeSampleDistance = 2;
 	static constexpr int MaxSlopeSampleDistance = 16;
+	void setSlopeSampleDistance(int dist);
+	int slopeSampleDistance() const;
 
-	void setSlopeSampleDistance(int dist) {
-		_slopeSampleDistance = glm::clamp(dist, MinSlopeSampleDistance, MaxSlopeSampleDistance);
-	}
-
-	int slopeSampleDistance() const {
-		return _slopeSampleDistance;
-	}
-
-	void setPreviewMode(bool v) {
-		_previewMode = v;
-	}
+	void setPreviewMode(bool v);
 
 	/** @param axis None = Auto (face-driven with fallback); X/Y/Z = locked plane normal */
-	void setColumnRimNormalAxis(math::Axis axis) {
-		_columnRimNormalAxis = axis;
-	}
+	void setColumnRimNormalAxis(math::Axis axis);
+	math::Axis columnRimNormalAxis() const;
 
-	math::Axis columnRimNormalAxis() const {
-		return _columnRimNormalAxis;
-	}
-
-	bool lassoAccumulating() const {
-		return _lassoAccumulating;
-	}
-
-	const core::DynamicArray<glm::ivec3> &lassoPath() const {
-		return _lassoPath;
-	}
+	bool lassoAccumulating() const;
+	const core::DynamicArray<glm::ivec3> &lassoPath() const;
 
 	void endBrush(BrushContext &ctx) override;
 	bool hasPendingChanges() const override;
@@ -237,35 +195,15 @@ public:
 	voxel::Region consumePendingUndoRegion() override;
 	void abort(BrushContext &ctx) override;
 
-	bool paintGrowRegion() const {
-		return _paintGrowRegion;
-	}
-
-	void setPaintGrowRegion(bool v) {
-		_paintGrowRegion = v;
-	}
-
-	int lassoUAxis() const {
-		return _lassoUAxis;
-	}
-
-	int lassoVAxis() const {
-		return _lassoVAxis;
-	}
+	bool paintGrowRegion() const;
+	void setPaintGrowRegion(bool v);
+	int lassoUAxis() const;
+	int lassoVAxis() const;
 
 	/** Discard the in-progress lasso polygon (caller must clean up edge history voxels in the volume) */
-	void invalidateLasso() {
-		_lassoAccumulating = false;
-		_lassoPath.clear();
-		_lassoEdgeHistory.clear();
-	}
-
+	void invalidateLasso();
 	/** Remove the last placed lasso vertex. Does not redraw edges - caller must call redrawEdgesOnVolume(). */
-	void popLastVertex() {
-		if (!_lassoPath.empty()) {
-			_lassoPath.resize(_lassoPath.size() - 1);
-		}
-	}
+	void popLastVertex();
 
 	/**
 	 * @brief Redraw all committed lasso edges directly on a raw volume.
@@ -279,93 +217,177 @@ public:
 
 	/** Get the perpendicular axis indices for a given face */
 	static void ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis);
-
 	/** Check if a position is inside an ellipse defined on the face plane */
-	static bool insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center,
-							  int radiusU, int radiusV, int uAxis, int vAxis);
-
+	static bool insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int uAxis,
+							  int vAxis);
 	/** Full bounds check: 2D ellipse + depth, or 3D ellipsoid (behind surface only) */
-	static bool insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center,
-								int radiusU, int radiusV, int depth, bool is3D,
-								int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal);
+	static bool insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int depth,
+								bool is3D, int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal);
 
-	bool ellipseValid() const {
-		return _ellipseValid;
-	}
+	bool ellipseValid() const;
+	const glm::ivec3 &ellipseCenter() const;
+	void setEllipseCenter(const glm::ivec3 &center);
+	int ellipseRadiusU() const;
+	void setEllipseRadiusU(int r);
+	int ellipseRadiusV() const;
+	void setEllipseRadiusV(int r);
+	int ellipseDepth() const;
+	void setEllipseDepth(int d);
+	bool ellipse3D() const;
+	void setEllipse3D(bool v);
+	voxel::FaceNames ellipseFace() const;
+	void invalidateEllipse();
+	core::DynamicArray<glm::ivec3> &ellipseHistory();
 
-	const glm::ivec3 &ellipseCenter() const {
-		return _ellipseCenter;
-	}
-
-	void setEllipseCenter(const glm::ivec3 &center) {
-		_ellipseCenter = center;
-	}
-
-	int ellipseRadiusU() const {
-		return _ellipseRadiusU;
-	}
-
-	void setEllipseRadiusU(int r) {
-		_ellipseRadiusU = glm::max(r, 0);
-	}
-
-	int ellipseRadiusV() const {
-		return _ellipseRadiusV;
-	}
-
-	void setEllipseRadiusV(int r) {
-		_ellipseRadiusV = glm::max(r, 0);
-	}
-
-	int ellipseDepth() const {
-		return _ellipseDepth;
-	}
-
-	void setEllipseDepth(int d) {
-		_ellipseDepth = glm::max(d, 1);
-	}
-
-	bool ellipse3D() const {
-		return _ellipse3D;
-	}
-
-	void setEllipse3D(bool v) {
-		_ellipse3D = v;
-	}
-
-	voxel::FaceNames ellipseFace() const {
-		return _ellipseFace;
-	}
-
-	void invalidateEllipse() {
-		_ellipseValid = false;
-		_ellipseHistory.clear();
-	}
-
-	core::DynamicArray<glm::ivec3> &ellipseHistory() {
-		return _ellipseHistory;
-	}
-
-	bool slopeValid() const {
-		return _slopeValid;
-	}
-
-	const glm::ivec3 &slopeSeedPos() const {
-		return _slopeSeedPos;
-	}
-
-	voxel::FaceNames slopeFace() const {
-		return _slopeFace;
-	}
-
-	void invalidateSlope() {
-		_slopeValid = false;
-		_slopeHistory.clear();
-	}
-
-	core::DynamicArray<glm::ivec3> &slopeHistory() {
-		return _slopeHistory;
-	}
+	bool slopeValid() const;
+	const glm::ivec3 &slopeSeedPos() const;
+	voxel::FaceNames slopeFace() const;
+	void invalidateSlope();
+	core::DynamicArray<glm::ivec3> &slopeHistory();
 };
+
+inline bool SelectBrush::managesOwnSelection() const {
+	return true;
+}
+
+inline SelectMode SelectBrush::selectMode() const {
+	return _selectMode;
+}
+
+inline void SelectBrush::setColorThreshold(float threshold) {
+	_colorThreshold = threshold;
+}
+
+inline float SelectBrush::colorThreshold() const {
+	return _colorThreshold;
+}
+
+inline void SelectBrush::setFlatDeviation(int deviation) {
+	_flatDeviation = glm::clamp(deviation, 0, MaxFlatDeviation);
+}
+
+inline int SelectBrush::flatDeviation() const {
+	return _flatDeviation;
+}
+
+inline void SelectBrush::setSlopeDeviation(int angle) {
+	_slopeDeviation = glm::clamp(angle, 0, MaxSlopeDeviation);
+}
+
+inline int SelectBrush::slopeDeviation() const {
+	return _slopeDeviation;
+}
+
+inline void SelectBrush::setSlopeSampleDistance(int dist) {
+	_slopeSampleDistance = glm::clamp(dist, MinSlopeSampleDistance, MaxSlopeSampleDistance);
+}
+
+inline int SelectBrush::slopeSampleDistance() const {
+	return _slopeSampleDistance;
+}
+
+inline void SelectBrush::setPreviewMode(bool v) {
+	_previewMode = v;
+}
+
+inline void SelectBrush::setColumnRimNormalAxis(math::Axis axis) {
+	_columnRimNormalAxis = axis;
+}
+
+inline math::Axis SelectBrush::columnRimNormalAxis() const {
+	return _columnRimNormalAxis;
+}
+
+inline bool SelectBrush::lassoAccumulating() const {
+	return _lassoAccumulating;
+}
+
+inline const core::DynamicArray<glm::ivec3> &SelectBrush::lassoPath() const {
+	return _lassoPath;
+}
+
+inline bool SelectBrush::paintGrowRegion() const {
+	return _paintGrowRegion;
+}
+
+inline void SelectBrush::setPaintGrowRegion(bool v) {
+	_paintGrowRegion = v;
+}
+
+inline int SelectBrush::lassoUAxis() const {
+	return _lassoUAxis;
+}
+
+inline int SelectBrush::lassoVAxis() const {
+	return _lassoVAxis;
+}
+
+inline bool SelectBrush::ellipseValid() const {
+	return _ellipseValid;
+}
+
+inline const glm::ivec3 &SelectBrush::ellipseCenter() const {
+	return _ellipseCenter;
+}
+
+inline void SelectBrush::setEllipseCenter(const glm::ivec3 &center) {
+	_ellipseCenter = center;
+}
+
+inline int SelectBrush::ellipseRadiusU() const {
+	return _ellipseRadiusU;
+}
+
+inline void SelectBrush::setEllipseRadiusU(int r) {
+	_ellipseRadiusU = glm::max(r, 0);
+}
+
+inline int SelectBrush::ellipseRadiusV() const {
+	return _ellipseRadiusV;
+}
+
+inline void SelectBrush::setEllipseRadiusV(int r) {
+	_ellipseRadiusV = glm::max(r, 0);
+}
+
+inline int SelectBrush::ellipseDepth() const {
+	return _ellipseDepth;
+}
+
+inline void SelectBrush::setEllipseDepth(int d) {
+	_ellipseDepth = glm::max(d, 1);
+}
+
+inline bool SelectBrush::ellipse3D() const {
+	return _ellipse3D;
+}
+
+inline void SelectBrush::setEllipse3D(bool v) {
+	_ellipse3D = v;
+}
+
+inline voxel::FaceNames SelectBrush::ellipseFace() const {
+	return _ellipseFace;
+}
+
+inline core::DynamicArray<glm::ivec3> &SelectBrush::ellipseHistory() {
+	return _ellipseHistory;
+}
+
+inline bool SelectBrush::slopeValid() const {
+	return _slopeValid;
+}
+
+inline const glm::ivec3 &SelectBrush::slopeSeedPos() const {
+	return _slopeSeedPos;
+}
+
+inline voxel::FaceNames SelectBrush::slopeFace() const {
+	return _slopeFace;
+}
+
+inline core::DynamicArray<glm::ivec3> &SelectBrush::slopeHistory() {
+	return _slopeHistory;
+}
 
 } // namespace voxedit
