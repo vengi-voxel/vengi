@@ -71,7 +71,7 @@ TEST_F(SessionRecorderTest, testRecordAndPlaybackRoundtrip) {
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
-	tmpNode.setVolume(v, false);
+	tmpNode.setUnownedVolume(v);
 	int executed = 0;
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 		executed++;
@@ -178,7 +178,7 @@ TEST_F(SessionRecorderTest, testPlaybackPausesOnDirtyScene) {
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
-	tmpNode.setVolume(v, false);
+	tmpNode.setUnownedVolume(v);
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 		_sceneMgr->modified(nodeId, region);
 	};
@@ -227,7 +227,7 @@ TEST_F(SessionRecorderTest, testRecordingDuringNetworkMode) {
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
-	tmpNode.setVolume(v, false);
+	tmpNode.setUnownedVolume(v);
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 		_sceneMgr->modified(nodeId, region);
 	};

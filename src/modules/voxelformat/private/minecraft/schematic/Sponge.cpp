@@ -242,7 +242,7 @@ static bool parseVarIntBlockData(const priv::NamedBinaryTag &schematic, scenegra
 	volume->translate(glm::ivec3(x, y, z));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	if (nodeId == InvalidNodeId) {
@@ -315,7 +315,7 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 	volume->translate(glm::ivec3(x, y, z));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	if (nodeId == InvalidNodeId) {

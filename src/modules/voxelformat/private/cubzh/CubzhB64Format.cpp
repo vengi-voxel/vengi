@@ -188,7 +188,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName("Blocks");
-	node.setVolume(new voxel::RawVolume(sparseRegion), true);
+	node.setVolume(new voxel::RawVolume(sparseRegion));
 	v.copyTo(*node.volume());
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	if (nodeId == InvalidNodeId) {

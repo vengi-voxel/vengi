@@ -16,7 +16,7 @@ class ModifierVolumeWrapperTest : public app::AbstractTest {};
 TEST_F(ModifierVolumeWrapperTest, testPlace) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	ModifierVolumeWrapper wrapper(node, ModifierType::Place);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -29,7 +29,7 @@ TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 0, 0, voxel::FlagOutline));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	node.setHasSelection(true);
 	// Use Override mode since there's already a voxel at (1,1,1)
 	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
@@ -48,7 +48,7 @@ TEST_F(ModifierVolumeWrapperTest, testErase) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	ModifierVolumeWrapper wrapper(node, ModifierType::Erase);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -61,7 +61,7 @@ TEST_F(ModifierVolumeWrapperTest, testPaint) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	ModifierVolumeWrapper wrapper(node, ModifierType::Paint);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
@@ -76,7 +76,7 @@ TEST_F(ModifierVolumeWrapperTest, testOverride) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2)));

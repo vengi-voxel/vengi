@@ -41,7 +41,7 @@ protected:
 #if 0
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node1;
-		node1.setVolume(_volume, false);
+		node1.setUnownedVolume(_volume);
 		sceneGraph.emplace(core::move(node1));
 		const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
 		voxelformat::SaveContext saveCtx;

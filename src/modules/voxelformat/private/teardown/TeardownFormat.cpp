@@ -647,7 +647,7 @@ bool TeardownFormat::readVoxels(scenegraph::SceneGraphNode &node, io::ReadStream
 			return false;
 		}
 		voxel::RawVolume *v = new voxel::RawVolume(region);
-		node.setVolume(v, true);
+		node.setVolume(v);
 		uint32_t encoded;
 		wrap(s.readUInt32(encoded))
 		// Run-length encoding: pairs of (run_length, palette_index)

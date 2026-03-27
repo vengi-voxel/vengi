@@ -105,7 +105,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	bool modifierExecuted = false;
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	EXPECT_TRUE(modifier.execute(sceneGraph, node,
 								 [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 									 modifierExecuted = true;
@@ -126,7 +126,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -169,7 +169,7 @@ TEST_F(ModifierTest, testMaskBlocksNonAdjacentPlace) {
 	voxel::RawVolume volume({-10, 10});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -196,7 +196,7 @@ TEST_F(ModifierTest, testMaskAllowsAdjacentPlace) {
 	voxel::RawVolume volume({-10, 10});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -226,7 +226,7 @@ TEST_F(ModifierTest, testMaskEraseOnlySelectedVoxels) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // will be selected
 	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // not selected
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -254,7 +254,7 @@ TEST_F(ModifierTest, testMaskOverrideOnlyAffectsSelectedVoxels) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // will be selected
 	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)); // not selected
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -288,7 +288,7 @@ TEST_F(ModifierTest, testClamp) {
 
 	voxel::RawVolume volume(voxel::Region(0, 0, 0, 10, 20, 4));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TextBrush &brush = modifier.textBrush();
 	brush.setInput("ABC");
@@ -639,7 +639,7 @@ TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 
 	voxel::RawVolume volume({-10, 10});
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
@@ -663,7 +663,7 @@ TEST_F(ModifierTest, testAutoSelectDisabledNoSelection) {
 
 	voxel::RawVolume volume({-10, 10});
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
@@ -692,7 +692,7 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 	volume.setFlags(volume.region(), voxel::FlagOutline);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	node.setHasSelection(true);
 	ASSERT_TRUE(node.hasSelection()) << "Pre-condition: node should have selection";
 
@@ -722,7 +722,7 @@ TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
 	volume.setVoxel(0, 0, 0, selected);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	modifier.setBrushType(BrushType::Extrude);
 	modifier.setModifierType(ModifierType::Place);

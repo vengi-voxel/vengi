@@ -27,7 +27,7 @@ TEST_F(PathBrushTest, testExecute) {
 	int nodeId;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&volume, false);
+		node.setUnownedVolume(&volume);
 		nodeId = sceneGraph.emplace(core::move(node));
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);

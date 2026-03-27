@@ -49,7 +49,7 @@ bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::St
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	voxel::Region region(0, 0, 0, ase->w - 1, ase->h - 1, 1);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
 	palette::PaletteLookup palLookup(palette);

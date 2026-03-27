@@ -29,7 +29,7 @@ TEST_F(RulerBrushTest, testMeasurement) {
 	ctx.cursorPosition = glm::ivec3(3, 4, 0);
 	voxel::RawVolume volume(voxel::Region(-1, 5));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
@@ -56,9 +56,9 @@ TEST_F(RulerBrushTest, testPreviewDoesNotModifyRealVolume) {
 	voxel::RawVolume previewVolume(voxel::Region(0, 10));
 
 	scenegraph::SceneGraphNode realNode(scenegraph::SceneGraphNodeType::Model);
-	realNode.setVolume(&realVolume, false);
+	realNode.setUnownedVolume(&realVolume);
 	scenegraph::SceneGraphNode previewNode(scenegraph::SceneGraphNodeType::Model);
-	previewNode.setVolume(&previewVolume, false);
+	previewNode.setUnownedVolume(&previewVolume);
 
 	scenegraph::SceneGraph sceneGraph;
 
@@ -101,7 +101,7 @@ TEST_F(RulerBrushTest, testDeltaIsAbsolute) {
 	ctx.cursorPosition = glm::ivec3(2, 1, 3);
 	voxel::RawVolume volume(voxel::Region(0, 10));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 

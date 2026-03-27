@@ -78,7 +78,7 @@ bool ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 	voxel::RawVolume *mediaPlane = voxelutil::importAsPlane(img, palette);
 	if (mediaPlane) {
 		scenegraph::SceneGraphNode mediaNode(scenegraph::SceneGraphNodeType::Model);
-		mediaNode.setVolume(mediaPlane, true);
+		mediaNode.setVolume(mediaPlane);
 		mediaNode.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
 		mediaNode.setPalette(palette);
 		mediaNode.setProperty("mediaName", nodeSpec.mediaName);

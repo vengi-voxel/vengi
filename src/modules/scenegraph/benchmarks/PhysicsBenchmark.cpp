@@ -31,7 +31,7 @@ protected:
 
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.setName("ground");
-		modelNode.setVolume(_volume, false);
+		modelNode.setUnownedVolume(_volume);
 		_sceneGraph.emplace(core::move(modelNode));
 		_sceneGraph.getCollisionNodes(_nodes, 0, scenegraph::toAABB(_volume->region()));
 	}
@@ -72,7 +72,7 @@ protected:
 
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.setName("complex");
-		modelNode.setVolume(_volume, false);
+		modelNode.setUnownedVolume(_volume);
 		_sceneGraph.emplace(core::move(modelNode));
 		_sceneGraph.getCollisionNodes(_nodes, 0, scenegraph::toAABB(_volume->region()));
 	}

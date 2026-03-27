@@ -29,7 +29,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalTranslation) {
 	// Create parent node at position (10, 20, 30)
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
 	parentNode.setTransform(0, parentTransform);
@@ -39,7 +39,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalTranslation) {
 	// Create child node
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -66,7 +66,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithRotation) {
 	// Create parent node with 90-degree rotation around Y axis
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
 	parentTransform.setLocalOrientation(glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -77,7 +77,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithRotation) {
 	// Create child node
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -104,7 +104,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithScale) {
 	// Create parent node with scale (2, 2, 2)
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
 	parentTransform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
@@ -115,7 +115,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithScale) {
 	// Create child node
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -141,7 +141,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalScale) {
 	// Create parent node with scale (2, 2, 2)
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
 	parentNode.setTransform(0, parentTransform);
@@ -151,7 +151,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalScale) {
 	// Create child node
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -177,7 +177,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
 	// Create parent node with 45-degree rotation around Y axis
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	const glm::quat parentRot = glm::angleAxis(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 	parentTransform.setLocalOrientation(parentRot);
@@ -188,7 +188,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
 	// Create child node
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -219,7 +219,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	// Create grandparent at (10, 0, 0)
 	SceneGraphNode grandparentNode(SceneGraphNodeType::Model);
 	grandparentNode.setName("grandparent");
-	grandparentNode.setVolume(&v, false);
+	grandparentNode.setUnownedVolume(&v);
 	SceneGraphTransform grandparentTransform;
 	grandparentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
 	grandparentNode.setTransform(0, grandparentTransform);
@@ -229,7 +229,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	// Create parent at local (5, 0, 0), world (15, 0, 0)
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
 	parentNode.setTransform(0, parentTransform);
@@ -239,7 +239,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	// Create child at local (3, 0, 0), world (18, 0, 0)
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	SceneGraphTransform childTransform;
 	childTransform.setLocalTranslation(glm::vec3(3.0f, 0.0f, 0.0f));
 	childNode.setTransform(0, childTransform);
@@ -267,7 +267,7 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	// Create parent1 at (10, 0, 0) with scale (2, 2, 2)
 	SceneGraphNode parent1Node(SceneGraphNodeType::Model);
 	parent1Node.setName("parent1");
-	parent1Node.setVolume(&v, false);
+	parent1Node.setUnownedVolume(&v);
 	SceneGraphTransform parent1Transform;
 	parent1Transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
 	parent1Transform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
@@ -278,7 +278,7 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	// Create parent2 at (5, 5, 5)
 	SceneGraphNode parent2Node(SceneGraphNodeType::Model);
 	parent2Node.setName("parent2");
-	parent2Node.setVolume(&v, false);
+	parent2Node.setUnownedVolume(&v);
 	SceneGraphTransform parent2Transform;
 	parent2Transform.setLocalTranslation(glm::vec3(5.0f, 5.0f, 5.0f));
 	parent2Node.setTransform(0, parent2Transform);
@@ -288,7 +288,7 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	// Create child under parent1 at local (5, 0, 0), which gives world position (20, 0, 0)
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	SceneGraphTransform childTransform;
 	childTransform.setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
 	childNode.setTransform(0, childTransform);
@@ -342,7 +342,7 @@ TEST_F(SceneGraphTransformTest, testLocalToWorldUpdate) {
 	// Create parent
 	SceneGraphNode parentNode(SceneGraphNodeType::Model);
 	parentNode.setName("parent");
-	parentNode.setVolume(&v, false);
+	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
 	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
 	parentNode.setTransform(0, parentTransform);
@@ -352,7 +352,7 @@ TEST_F(SceneGraphTransformTest, testLocalToWorldUpdate) {
 	// Create child
 	SceneGraphNode childNode(SceneGraphNodeType::Model);
 	childNode.setName("child");
-	childNode.setVolume(&v, false);
+	childNode.setUnownedVolume(&v);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
 
@@ -375,7 +375,7 @@ TEST_F(SceneGraphTransformTest, testMatrixDecompositionConsistency) {
 
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setName("node");
-	node.setVolume(&v, false);
+	node.setUnownedVolume(&v);
 	SceneGraphTransform transform;
 
 	// Set up a complex transform
@@ -416,7 +416,7 @@ TEST_F(SceneGraphTransformTest, testDirtyFlagManagement) {
 
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setName("node");
-	node.setVolume(&v, false);
+	node.setUnownedVolume(&v);
 	SceneGraphTransform transform;
 	node.setTransform(0, transform);
 

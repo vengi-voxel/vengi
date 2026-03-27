@@ -121,7 +121,7 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	}
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
-	node1.setVolume(&model1, false);
+	node1.setUnownedVolume(&model1);
 	sceneGraph.emplace(core::move(node1));
 
 	io::ArchivePtr archive = helper_archive();

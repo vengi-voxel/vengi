@@ -62,7 +62,11 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	if (&move == this) {
 		return *this;
 	}
-	setVolume(move._volume, move._flags & VolumeOwned);
+	if (move._flags & VolumeOwned) {
+		setVolume(move._volume);
+	} else {
+		setUnownedVolume(move._volume);
+	}
 	move._volume = nullptr;
 	_name = core::move(move._name);
 	_id = move._id;
@@ -265,7 +269,7 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 void SceneGraphNode::fixErrors() {
 	if (_type == SceneGraphNodeType::Model) {
 		if (_volume == nullptr) {
-			setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+			setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		}
 	}
 	for (const auto &e : _keyFramesMap) {
@@ -383,15 +387,11 @@ void SceneGraphNode::releaseOwnership() {
 	_flags &= ~VolumeOwned;
 }
 
-void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
+void SceneGraphNode::setVolume(voxel::RawVolume *volume) {
 	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
 					(int)_type);
 	release();
-	if (transferOwnership) {
-		_flags |= VolumeOwned;
-	} else {
-		_flags &= ~VolumeOwned;
-	}
+	_flags |= VolumeOwned;
 	_volume = volume;
 }
 
@@ -441,7 +441,7 @@ int SceneGraphNode::reference() const {
 bool SceneGraphNode::setReference(int nodeId, bool forceChangeNodeType) {
 	if (_type != SceneGraphNodeType::ModelReference) {
 		if (forceChangeNodeType) {
-			setVolume(nullptr, false);
+			setUnownedVolume(nullptr);
 			_type = SceneGraphNodeType::ModelReference;
 		} else {
 			return false;
@@ -467,7 +467,7 @@ bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {
 	}
 	_type = SceneGraphNodeType::Model;
 	_referenceId = InvalidNodeId;
-	setVolume(new voxel::RawVolume(node.volume()), true);
+	setVolume(new voxel::RawVolume(node.volume()));
 	setPalette(node.palette());
 	return true;
 }

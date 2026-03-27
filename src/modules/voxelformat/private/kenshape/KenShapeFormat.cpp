@@ -114,7 +114,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 
 	// fill volume
 	glm::ivec3 pos(0, h, 0);

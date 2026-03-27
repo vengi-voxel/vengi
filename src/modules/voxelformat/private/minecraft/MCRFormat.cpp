@@ -128,7 +128,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 				continue;
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(volumes[i], true);
+			node.setVolume(volumes[i]);
 			node.setPalette(palette);
 			sceneGraph.emplace(core::move(node));
 			++added;

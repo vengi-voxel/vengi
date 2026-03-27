@@ -21,7 +21,7 @@ TEST_F(TextBrushTest, testExecute) {
 	brush.setFont("font.ttf");
 	voxel::RawVolume volume(voxel::Region(0, 0, 0, 20, 20, 4));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 

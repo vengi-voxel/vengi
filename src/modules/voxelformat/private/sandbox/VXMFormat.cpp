@@ -556,7 +556,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			idx += length;
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		node.setName(modelName);
 		node.setVisible(visible);
 		node.setPivot(normalizedPivot);

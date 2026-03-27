@@ -303,7 +303,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	const palette::Palette &palette = node.palette();
 
 	if (version >= 4u) {
@@ -537,7 +537,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		node.setName(name);
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			// dummy volume - will be replaced later
-			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		}
 		nodeId = sceneGraph.emplace(core::move(node), parent);
 		if (nodeId == InvalidNodeId) {

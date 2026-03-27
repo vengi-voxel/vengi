@@ -416,7 +416,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		const voxel::Region region(0, maxChunkSize - 1);
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v, true);
+		node.setVolume(v);
 		node.setPalette(palette);
 
 		const int mortonStartIdx = volumeStats.min[3];
@@ -484,7 +484,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
 	}
 	node.setVisible(!obj.h);
-	node.setVolume(merged.volume(), true);
+	node.setVolume(merged.volume());
 	node.setPalette(merged.palette);
 	node.setNormalPalette(merged.normalPalette);
 	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;

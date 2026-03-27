@@ -149,7 +149,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 	int effectorNodeId;
 	{
 		scenegraph::SceneGraphNode effectorNode(scenegraph::SceneGraphNodeType::Model);
-		effectorNode.setVolume(&original, false);
+		effectorNode.setUnownedVolume(&original);
 		effectorNode.setPalette(pal);
 		effectorNode.setName("effector-node");
 		effectorNodeId = sceneGraphSave.emplace(core::move(effectorNode));
@@ -157,7 +157,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 	}
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&original, false);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal);
 		node.setName("ik-node");
 

@@ -86,7 +86,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 
 	stream->seek(voxelPos);
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();

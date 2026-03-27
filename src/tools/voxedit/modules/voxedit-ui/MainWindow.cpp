@@ -790,7 +790,7 @@ void MainWindow::popupModelNodeSettings() {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
-			newNode.setVolume(v, true);
+			newNode.setVolume(v);
 			newNode.setName(_modelNodeSettings.name.c_str());
 			if (_modelNodeSettings.palette.hasValue()) {
 				newNode.setPalette(*_modelNodeSettings.palette.value());

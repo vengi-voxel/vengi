@@ -104,7 +104,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 	palette::PaletteLookup palLookup(palette);
 	voxel::Region region(0, 0, 0, width, height, depth);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 
 	core::DynamicArray<core::String> tokens;
 	int x = 0;

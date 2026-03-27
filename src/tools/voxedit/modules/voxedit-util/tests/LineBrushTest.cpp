@@ -22,7 +22,7 @@ TEST_F(LineBrushTest, testExecute) {
 	ASSERT_TRUE(brush.init());
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
@@ -51,9 +51,9 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 	voxel::RawVolume volume(voxel::Region(glm::ivec3(0), glm::ivec3(10, 6, 1)));
 	voxel::RawVolume previewVolume(volume.region());
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraphNode previewNode(scenegraph::SceneGraphNodeType::Model);
-	previewNode.setVolume(&previewVolume, false);
+	previewNode.setUnownedVolume(&previewVolume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	ModifierVolumeWrapper previewWrapper(previewNode, brush.modifierType());

@@ -32,7 +32,7 @@ TEST_F(PhysicsTest, testGravityAndGroundCollision) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	// Get collision nodes
@@ -96,7 +96,7 @@ TEST_F(PhysicsTest, testWallCollision) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -135,7 +135,7 @@ TEST_F(PhysicsTest, testNoCollisionInEmptySpace) {
 	voxel::RawVolume v(voxel::Region(0, 0, 0, 15, 15, 15));
 	// No voxels set - completely empty
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -178,7 +178,7 @@ TEST_F(PhysicsTest, testFriction) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -244,7 +244,7 @@ TEST_F(PhysicsTest, testStairWalking_SingleStep) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -320,7 +320,7 @@ TEST_F(PhysicsTest, testStairWalking_TwoVoxelStep) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -393,7 +393,7 @@ TEST_F(PhysicsTest, testStairWalking_TooHighStep) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -464,7 +464,7 @@ TEST_F(PhysicsTest, testStairWalking_VelocityPreservation) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -545,7 +545,7 @@ TEST_F(PhysicsTest, testStairWalking_MultipleSteps) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
@@ -613,7 +613,7 @@ TEST_F(PhysicsTest, testStairWalking_NoStepInAir) {
 		}
 	}
 
-	modelNode.setVolume(&v, false);
+	modelNode.setUnownedVolume(&v);
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;

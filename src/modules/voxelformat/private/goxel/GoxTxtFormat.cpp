@@ -121,7 +121,7 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 

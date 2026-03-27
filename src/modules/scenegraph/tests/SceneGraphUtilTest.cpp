@@ -23,7 +23,7 @@ TEST_F(SceneGraphUtilTest, testAddSceneGraphNodes) {
 	{
 		SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		source.emplace(core::move(node), groupNodeId);
 	}
 	SceneGraph target;
@@ -41,7 +41,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphWithReferences) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		modelNodeId = source.emplace(core::move(node));
 	}
 	ASSERT_NE(InvalidNodeId, modelNodeId);
@@ -87,7 +87,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 0, 0));
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		modelNodeId = source.emplace(core::move(node));
 	}
 	{
@@ -123,7 +123,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 TEST_F(SceneGraphUtilTest, testCopyNode) {
 	SceneGraphNode src(SceneGraphNodeType::Model);
 	src.setName("model");
-	src.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+	src.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 	src.setLocked(true);
 	src.setVisible(false);
 
@@ -143,7 +143,7 @@ TEST_F(SceneGraphUtilTest, testCopyNodeToSceneGraph) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		nodeId = source.emplace(core::move(node));
 	}
 
@@ -160,7 +160,7 @@ TEST_F(SceneGraphUtilTest, testMoveNodeToSceneGraph) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		nodeId = source.emplace(core::move(node));
 	}
 
@@ -178,7 +178,7 @@ TEST_F(SceneGraphUtilTest, testCreateNodeReference) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		modelNodeId = sceneGraph.emplace(core::move(node));
 	}
 
@@ -216,13 +216,13 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("visible");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		source.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("hidden");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		node.setVisible(false);
 		source.emplace(core::move(node));
 	}
@@ -260,7 +260,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesPreservesNodeTypes) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		modelId = source.emplace(core::move(node), groupId);
 	}
 	{
@@ -310,7 +310,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphNoVolumeCopy) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		source.emplace(core::move(node));
 	}
 
@@ -331,7 +331,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphResolveReferencesNoVolumeCopy) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("model");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		modelNodeId = source.emplace(core::move(node));
 	}
 	{

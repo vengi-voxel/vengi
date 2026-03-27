@@ -262,7 +262,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		sampler.movePositiveY();
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;

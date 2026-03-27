@@ -84,7 +84,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
 		node.setReference(models[ogtInstance.model_index].nodeId);
 	} else {
-		node.setVolume(models[ogtInstance.model_index].volume, true);
+		node.setVolume(models[ogtInstance.model_index].volume);
 		models[ogtInstance.model_index].volume = nullptr;
 	}
 	// TODO: VOXELFORMAT: set correct pivot
@@ -160,9 +160,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	node.setProperty("layerId", core::string::toString(ogtInstance.layer_index));
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
-	node.setVolume(v, true);
+	node.setVolume(v);
 	// TODO: VOXELFORMAT: use already loaded models and create a model reference if needed
-	// TODO: VOXELFORMAT: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume), true);
+	// TODO: VOXELFORMAT: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume));
 	// TODO: VOXELFORMAT: set correct pivot
 	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
 	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
@@ -259,7 +259,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	if (sceneGraph.empty() && palette.colorCount() > 0) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName(core::string::extractFilename(filename));
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 31)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 31)));
 		node.setPalette(palette);
 		return sceneGraph.emplace(core::move(node), 0) != InvalidNodeId;
 	}
@@ -308,7 +308,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 	if (scene->num_instances == 0 && scene->num_models > 0) {
 		for (MVModelToNode &m : models) {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(m.volume, true);
+			node.setVolume(m.volume);
 			node.setPalette(palette);
 			sceneGraph.emplace(core::move(node), sceneGraph.root().id());
 			m.volume = nullptr;

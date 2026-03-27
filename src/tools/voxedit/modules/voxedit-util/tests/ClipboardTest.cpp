@@ -38,7 +38,7 @@ protected:
 		// place a voxel and select it
 		volume->setVoxel(1, 1, 1, voxel);
 
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		node.setPalette(palette);
 		// select the region to enable cut
 		node.select(region);

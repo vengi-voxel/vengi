@@ -154,7 +154,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 
 	palette::PaletteLookup palLookup(palette);
 	// TODO: PERF: use volume sampler

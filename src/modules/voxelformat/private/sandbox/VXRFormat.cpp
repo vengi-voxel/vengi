@@ -197,7 +197,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 	const core::String nodeName = node.name();
 	const glm::vec3 pivot = childModelNode.pivot();
 	scenegraph::copyNode(childModelNode, node, false, version >= 3);
-	node.setVolume(childModelNode.volume(), true);
+	node.setVolume(childModelNode.volume());
 	node.setPivot(pivot);
 	// restore old name
 	node.setName(nodeName);
@@ -209,7 +209,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 		SceneGraphNode &src = *childSceneGraph[i];
 		copyNode(src, child, false);
 		src.releaseOwnership();
-		child.setVolume(src.volume(), true);
+		child.setVolume(src.volume());
 		// TODO: VOXELFORMAT: the node instance is not yet added to the scene graph - and thus doesn't have a parent yet
 		sceneGraph.emplace(core::move(child), node.parent());
 	}
@@ -233,7 +233,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
 	Log::debug("load node %s", nodeId);
 	node.setName(nodeId);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 	uint32_t animCnt;
 	wrap(stream.readUInt32(animCnt))
 	char animationId[1024];

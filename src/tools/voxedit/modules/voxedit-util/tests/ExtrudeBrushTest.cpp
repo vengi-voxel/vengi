@@ -55,7 +55,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveInward) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -88,7 +88,7 @@ TEST_F(ExtrudeBrushTest, testExtrudePlaceOutward) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -121,7 +121,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveDepth2Inward) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -153,7 +153,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeOnlySelected) {
 	volume.setVoxel(-1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -187,7 +187,7 @@ TEST_F(ExtrudeBrushTest, testExtrudePushThenPull) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -228,7 +228,7 @@ TEST_F(ExtrudeBrushTest, testCarveFillWalls) {
 	volume.setVoxel(0, 0, -1, solid);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -267,7 +267,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeNoRimOnFlatSurface) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -297,7 +297,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeWithOffsetU) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -331,7 +331,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeKeepsOriginalsAndNoFlag) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -371,7 +371,7 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveNoFlagChange) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -453,7 +453,7 @@ TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsTrueWithPendingChanges) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -517,7 +517,7 @@ TEST_F(ExtrudeBrushTest, testFillWallsDisabled) {
 	volume.setVoxel(0, 0, -2, solid);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -548,7 +548,7 @@ TEST_F(ExtrudeBrushTest, testPositiveExtrudeKeepsOriginals) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -589,7 +589,7 @@ TEST_F(ExtrudeBrushTest, testInteriorPruningOnCommit) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());

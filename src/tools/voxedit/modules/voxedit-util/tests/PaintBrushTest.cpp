@@ -30,7 +30,7 @@ protected:
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		return sceneGraph.emplace(core::move(node));
 	}
 

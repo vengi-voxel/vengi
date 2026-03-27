@@ -188,7 +188,7 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 	const color::RGBA nipponRed = palette.color(37);
 	volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 37));
 	volume->setVoxel(1, 0, 0, voxel::createVoxel(palette, 37));
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 

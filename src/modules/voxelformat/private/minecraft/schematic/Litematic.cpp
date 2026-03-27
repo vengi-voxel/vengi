@@ -122,7 +122,7 @@ bool loadGroupsPalette(const priv::NamedBinaryTag &schematic, scenegraph::SceneG
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setPalette(palette);
 			node.setName(name);
-			node.setVolume(new voxel::RawVolume(region), true);
+			node.setVolume(new voxel::RawVolume(region));
 			if (!readLitematicBlockStates(size, n, blockStates, node, mcpal)) {
 				Log::error("Failed to read 'BlockStates'");
 				return false;

@@ -40,7 +40,7 @@ protected:
 		voxel::RawVolume volume(region);
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&volume, false);
+		node.setUnownedVolume(&volume);
 		ModifierVolumeWrapper wrapper(node, ModifierType::Place);
 		brush.preExecute(brushContext, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, brushContext);

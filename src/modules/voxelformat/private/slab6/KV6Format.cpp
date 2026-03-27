@@ -411,7 +411,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		core::String name;
 		const core::String &basename = core::string::extractFilename(filename);
 		if (v != nullptr) {
-			node.setVolume(v, true);
+			node.setVolume(v);
 			node.setPalette(palette);
 			name = core::String::format("%s_hinge_%d", basename.c_str(), hinge.id);
 		} else {
@@ -627,7 +627,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	palette::NormalPalette normalPalette;
 	normalPalette.slab6();
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setPivot(normalizedPivot);

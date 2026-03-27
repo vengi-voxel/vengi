@@ -138,7 +138,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	node.setName(core::string::extractFilename(filename));
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;

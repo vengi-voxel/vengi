@@ -126,7 +126,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 				return false;
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(volume, true);
+			node.setVolume(volume);
 			node.setName(core::string::extractFilename(filename));
 			node.setPalette(palette);
 			if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {

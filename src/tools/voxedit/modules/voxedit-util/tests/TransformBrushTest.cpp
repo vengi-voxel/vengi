@@ -35,7 +35,7 @@ TEST_F(TransformBrushTest, testMovePositiveX) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -64,7 +64,7 @@ TEST_F(TransformBrushTest, testMoveReversible) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -103,7 +103,7 @@ TEST_F(TransformBrushTest, testScaleUp) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -136,7 +136,7 @@ TEST_F(TransformBrushTest, testRotate90) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -180,7 +180,7 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -220,7 +220,7 @@ TEST_F(TransformBrushTest, testOnDeactivatedWithSnapshot) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -260,7 +260,7 @@ TEST_F(TransformBrushTest, testOnActivatedResetsState) {
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -295,7 +295,7 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -344,7 +344,7 @@ TEST_F(TransformBrushTest, testMoveDoesNotAffectNonSelectedVoxels) {
 	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -387,7 +387,7 @@ TEST_F(TransformBrushTest, testShearPreservesAllVoxels) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());

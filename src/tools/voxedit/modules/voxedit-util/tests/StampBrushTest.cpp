@@ -27,7 +27,7 @@ TEST_F(StampBrushTest, testExecute) {
 	ASSERT_TRUE(brush.init());
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	palette::Palette palette;

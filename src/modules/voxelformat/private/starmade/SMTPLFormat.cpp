@@ -77,7 +77,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	for (uint32_t i = 0; i < numBlocks; ++i) {
 		uint32_t x, y, z;
 		wrap(stream->readUInt32BE(x))

@@ -70,7 +70,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 	scenegraph::SceneGraph sceneGraphsave;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&volume, false);
+		node.setUnownedVolume(&volume);
 		sceneGraphsave.emplace(core::move(node));
 	}
 	ASSERT_TRUE(format->save(sceneGraphsave, filename, archive, testSaveCtx));
@@ -142,7 +142,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	scenegraph::SceneGraph sceneGraphsave1;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&original, false);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal1);
 		sceneGraphsave1.emplace(core::move(node));
 		EXPECT_TRUE(srcFormat.save(sceneGraphsave1, srcFilename, archive, testSaveCtx))
@@ -392,7 +392,7 @@ void AbstractFormatTest::testSaveSingleVoxel(const core::String &filename, Forma
 		palette::Palette pal;
 		pal.tryAdd(color::RGBA(127, 127, 255, 255));
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&original, false);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal);
 		sceneGraphsave.emplace(core::move(node));
 	}
@@ -418,7 +418,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	int modelNodeId;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&original, false);
+		node.setUnownedVolume(&original);
 		node.setPalette(pal);
 		modelNodeId = sceneGraphsave.emplace(core::move(node));
 	}
@@ -458,16 +458,16 @@ void AbstractFormatTest::testSaveMultipleModels(const core::String &filename, Fo
 	EXPECT_TRUE(model4.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
-	node1.setVolume(&model1, false);
+	node1.setUnownedVolume(&model1);
 	node1.setPalette(pal);
 	scenegraph::SceneGraphNode node2(scenegraph::SceneGraphNodeType::Model);
-	node2.setVolume(&model2, false);
+	node2.setUnownedVolume(&model2);
 	node2.setPalette(pal);
 	scenegraph::SceneGraphNode node3(scenegraph::SceneGraphNodeType::Model);
-	node3.setVolume(&model3, false);
+	node3.setUnownedVolume(&model3);
 	node3.setPalette(pal);
 	scenegraph::SceneGraphNode node4(scenegraph::SceneGraphNodeType::Model);
-	node4.setVolume(&model4, false);
+	node4.setUnownedVolume(&model4);
 	node4.setPalette(pal);
 	scenegraph::SceneGraphNode node5(scenegraph::SceneGraphNodeType::Group);
 	sceneGraph.emplace(core::move(node1));
@@ -492,7 +492,7 @@ void AbstractFormatTest::testSave(const core::String &filename, Format *format, 
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
 	node1.setPalette(palette);
-	node1.setVolume(&model1, false);
+	node1.setUnownedVolume(&model1);
 	sceneGraph.emplace(core::move(node1));
 	io::ArchivePtr archive = helper_archive();
 	ASSERT_TRUE(format->save(sceneGraph, filename, archive, testSaveCtx));
@@ -622,7 +622,7 @@ void AbstractFormatTest::testSaveLoadPointCloud(const core::String &filename, Fo
 		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(1, 0, 0)));
 		volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 37));
 		volume->setVoxel(1, 0, 0, voxel::createVoxel(palette, 149));
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		node.setPalette(palette);
 		sceneGraph.emplace(core::move(node));
 	}

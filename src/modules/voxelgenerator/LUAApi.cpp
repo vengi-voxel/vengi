@@ -101,7 +101,7 @@ public:
 		if (_node->volume() == volume()) {
 			return;
 		}
-		_node->setVolume(volume(), true);
+		_node->setVolume(volume());
 		if (_sceneGraph) {
 			_sceneGraph->markDirty();
 		}
@@ -1093,7 +1093,7 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 	}
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName(image->name());
 	int newNodeId = sceneGraph->emplace(core::move(node));
 	if (newNodeId == InvalidNodeId) {
@@ -1992,7 +1992,7 @@ static int luaVoxel_genland(lua_State *s) {
 	}
 	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName("Generated Land");
 	node.setProperty("Generator", "Genland by Tom Dobrowolski");
 	int newNodeId = sceneGraph->emplace(core::move(node));
@@ -2445,7 +2445,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	}
 	scenegraph::SceneGraphNode node(type);
 	if (type == scenegraph::SceneGraphNodeType::Model) {
-		node.setVolume(v, true);
+		node.setVolume(v);
 	}
 	node.setName(name);
 	node.setVisible(visible);

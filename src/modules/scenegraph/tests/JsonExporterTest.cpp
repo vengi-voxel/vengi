@@ -17,7 +17,7 @@ TEST_F(JsonExporterTest, testExportToBufferedStream) {
 	SceneGraph sceneGraph;
 	voxel::RawVolume v(voxel::Region(0, 1));
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(&v, false);
+	node.setUnownedVolume(&v);
 	node.setName("model1");
 	sceneGraph.emplace(core::move(node), 0);
 
@@ -44,12 +44,12 @@ protected:
 		_childVolume = new voxel::RawVolume(voxel::Region(0, 1));
 
 		SceneGraphNode parent(SceneGraphNodeType::Model);
-		parent.setVolume(_parentVolume, true);
+		parent.setVolume(_parentVolume);
 		parent.setName("parent");
 		int parentId = _sceneGraph.emplace(core::move(parent), 0);
 
 		SceneGraphNode child(SceneGraphNodeType::Model);
-		child.setVolume(_childVolume, true);
+		child.setVolume(_childVolume);
 		child.setName("child");
 		_sceneGraph.emplace(core::move(child), parentId);
 	}

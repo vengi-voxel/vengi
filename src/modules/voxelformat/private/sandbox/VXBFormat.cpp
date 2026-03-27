@@ -321,7 +321,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	for (uint32_t i = 0; i < 6; ++i) {
 		const int uniqueFace = indices[i];

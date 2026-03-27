@@ -44,7 +44,7 @@ protected:
 		app::AbstractTest::SetUp();
 		_brush.reset();
 		ASSERT_TRUE(_brush.init());
-		_node.setVolume(&_volume, false);
+		_node.setUnownedVolume(&_volume);
 	}
 
 	void TearDown() override {

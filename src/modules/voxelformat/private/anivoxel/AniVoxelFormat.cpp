@@ -205,7 +205,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 			node.setProperty("id", core::string::toString(id));
 			voxel::RawVolume *vol = new voxel::RawVolume(sparseRegion);
 			v.copyTo(*vol);
-			node.setVolume(vol, true);
+			node.setVolume(vol);
 			sceneGraph.emplace(core::move(node));
 		}
 	} else {
@@ -240,7 +240,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		voxel::RawVolume *vol = new voxel::RawVolume(v.calculateRegion());
 		v.copyTo(*vol);
-		node.setVolume(vol, true);
+		node.setVolume(vol);
 		node.setPalette(palette);
 		sceneGraph.emplace(core::move(node));
 	}

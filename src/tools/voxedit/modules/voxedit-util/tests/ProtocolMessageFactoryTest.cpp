@@ -129,7 +129,7 @@ protected:
 		// Create and add a model node
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.setName("TestModel");
-		modelNode.setVolume(volume, true); // Transfer ownership to the node
+		modelNode.setVolume(volume); // Transfer ownership to the node
 		modelNode.setPalette(palette);
 		modelNode.setProperty("material", "stone");
 		modelNode.setProperty("visible", "true");

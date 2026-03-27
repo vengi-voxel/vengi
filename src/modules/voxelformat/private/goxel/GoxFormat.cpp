@@ -364,9 +364,9 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		transform.setWorldTranslation(mins);
 
-		node.setVolume(cropped, true);
+		node.setVolume(cropped);
 	} else {
-		node.setVolume(mirrored, true);
+		node.setVolume(mirrored);
 		mirrored = nullptr;
 	}
 	node.setVisible(visible);

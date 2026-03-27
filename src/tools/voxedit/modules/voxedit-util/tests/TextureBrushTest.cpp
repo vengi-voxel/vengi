@@ -47,7 +47,7 @@ TEST_F(TextureBrushTest, testExecuteFilled) {
 
 	voxel::RawVolume volume(voxel::Region(mins, maxs));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 	voxel::RawVolumeWrapper rvWrapper(&volume);
 	voxelutil::fill(rvWrapper, brushContext.cursorVoxel);
 	scenegraph::SceneGraph sceneGraph;

@@ -45,7 +45,7 @@ void NodeAddedHandler::execute(const network::ClientId &, NodeAddedMessage *mess
 	if (referenceUUID.isValid()) {
 		scenegraph::SceneGraphNode *referenceNode = _sceneMgr->sceneGraph().findNodeByUUID(referenceUUID);
 		if (referenceNode != nullptr && referenceNode->isModelNode()) {
-			newNode.setVolume(referenceNode->volume(), false);
+			newNode.setUnownedVolume(referenceNode->volume());
 			newNode.setPalette(referenceNode->palette());
 		}
 	}
@@ -53,7 +53,7 @@ void NodeAddedHandler::execute(const network::ClientId &, NodeAddedMessage *mess
 	if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 		const uint8_t *data = message->compressedData();
 		const uint32_t dataSize = message->compressedSize();
-		newNode.setVolume(voxel::toVolume(data, dataSize, message->region()), true);
+		newNode.setVolume(voxel::toVolume(data, dataSize, message->region()));
 	}
 	newNode.setPalette(message->palette());
 	for (const auto & e : message->properties()) {

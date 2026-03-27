@@ -44,7 +44,7 @@ TEST_F(SculptBrushTest, testErodeRemovesProtrusion) {
 	volume.setVoxel(0, 1, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -88,7 +88,7 @@ TEST_F(SculptBrushTest, testErodePreservesFlatSurface) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -126,7 +126,7 @@ TEST_F(SculptBrushTest, testErodeReversible) {
 	volume.setVoxel(0, 1, 0, selectedVoxel());
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -171,7 +171,7 @@ TEST_F(SculptBrushTest, testErodePreservesUnselected) {
 	volume.setVoxel(3, 0, 0, unselected);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -211,7 +211,7 @@ TEST_F(SculptBrushTest, testGrowFillsGap) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -247,7 +247,7 @@ TEST_F(SculptBrushTest, testFlattenRemovesLayers) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -290,7 +290,7 @@ TEST_F(SculptBrushTest, testFlattenReversible) {
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SculptBrush brush;
 	ASSERT_TRUE(brush.init());

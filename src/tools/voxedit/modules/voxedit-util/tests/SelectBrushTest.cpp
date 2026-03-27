@@ -46,7 +46,7 @@ TEST_F(SelectBrushTest, testSelectModeAll) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -89,7 +89,7 @@ TEST_F(SelectBrushTest, testSelectModeSameColor) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -130,7 +130,7 @@ TEST_F(SelectBrushTest, testSelectModeConnected) {
 	volume.setVoxel(3, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -172,7 +172,7 @@ TEST_F(SelectBrushTest, testSelectModeVisible) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -219,7 +219,7 @@ TEST_F(SelectBrushTest, testSelectRemove) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -256,7 +256,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -290,7 +290,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_stopsAtCoveredVoxel) {
 	volume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -330,7 +330,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 		volume.setVoxel(x, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -385,7 +385,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_invalidFace) {
 	voxel::RawVolume volume({-5, 5});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -413,7 +413,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -469,7 +469,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -505,7 +505,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_invalidFace) {
 	voxel::RawVolume volume({-5, 5});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -538,7 +538,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_onlySurface) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -575,7 +575,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -617,7 +617,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -661,7 +661,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -697,7 +697,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 		volume.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -740,7 +740,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -795,7 +795,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -837,7 +837,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -898,7 +898,7 @@ TEST_F(SelectBrushTest, testLassoSelectSquareSurface) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -962,7 +962,7 @@ TEST_F(SelectBrushTest, testLassoCancel_edgeMarksReverted) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1022,7 +1022,7 @@ TEST_F(SelectBrushTest, testLassoUndoVertex_revertsLastEdge) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1082,7 +1082,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1128,7 +1128,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1166,7 +1166,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1206,7 +1206,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 	volume.setVoxel(4, 4, 4, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1240,7 +1240,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1289,7 +1289,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1337,7 +1337,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1394,7 +1394,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1441,7 +1441,7 @@ TEST_F(SelectBrushTest, testSelectModePaint) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1500,7 +1500,7 @@ TEST_F(SelectBrushTest, testSelectModePaintDeselect) {
 		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1546,7 +1546,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegion) {
 		volume.setVoxel(0, 0, 0, v);
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
@@ -1595,7 +1595,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
 	}
 	// No pre-selected voxels
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
+	node.setUnownedVolume(&volume);
 
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());

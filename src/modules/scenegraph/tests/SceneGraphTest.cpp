@@ -92,7 +92,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("model1");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -115,7 +115,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSkipFirst) {
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("model1");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -131,7 +131,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSkipLast) {
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("model1");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -147,14 +147,14 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("model1");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("model2");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -176,7 +176,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		palette::Palette pal;
 		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		node.setPalette(pal);
@@ -186,7 +186,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		palette::Palette pal;
 		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		node.setPalette(pal);
@@ -202,7 +202,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	nipponPal.nippon();
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		node.setPalette(nipponPal);
@@ -212,7 +212,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	mvPal.magicaVoxel();
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(1, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(1, 1)));
 		node.volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		node.setPalette(mvPal);
@@ -239,14 +239,14 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		SceneGraphTransform transform;
@@ -274,7 +274,7 @@ TEST_F(SceneGraphTest, testChildren) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("model");
 		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
@@ -286,13 +286,13 @@ TEST_F(SceneGraphTest, testChildren) {
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("model2");
 		EXPECT_EQ(3, sceneGraph.emplace(core::move(node), 2));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("model");
 		EXPECT_EQ(4, sceneGraph.emplace(core::move(node), 1));
 	}
@@ -317,13 +317,13 @@ TEST_F(SceneGraphTest, testRemove) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("node");
 		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("children");
 		sceneGraph.emplace(core::move(node), 1);
 	}
@@ -341,7 +341,7 @@ TEST_F(SceneGraphTest, testMerge) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 1));
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		sceneGraph.emplace(core::move(node));
 	}
 	{
@@ -350,7 +350,7 @@ TEST_F(SceneGraphTest, testMerge) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 2));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		sceneGraph.emplace(core::move(node));
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::AllModels));
@@ -366,7 +366,7 @@ TEST_F(SceneGraphTest, testSceneOBB) {
 	voxel::RawVolume v(voxel::Region(2, 3));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.localTranslate(-v.region().calcCenterf());
 		node.setPivot(glm::vec3(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
@@ -389,7 +389,7 @@ TEST_F(SceneGraphTest, DISABLED_testSceneOBBScale) {
 	voxel::RawVolume v(voxel::Region(2, 3));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.localTranslate(glm::vec3(-3.0f));
 		node.transform(0).setLocalScale({2.0f, 2.0f, 2.0f});
 		node.setPivot(glm::vec3(0.0f));
@@ -413,7 +413,7 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_1) {
 	voxel::RawVolume v(voxel::Region(-3, 3));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.5f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
@@ -435,7 +435,7 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_2) {
 	voxel::RawVolume v(voxel::Region(0, 3));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
@@ -460,7 +460,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(-10));
 		node.setTransform(0, transform);
@@ -472,7 +472,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		node.setName("node2");
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(10));
 		node.setTransform(0, transform);
@@ -500,7 +500,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		EXPECT_EQ(expectedWidthNode1, v->region().getWidthInVoxels());
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(-10));
 		node.setTransform(0, transform);
@@ -514,7 +514,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		EXPECT_EQ(expectedWidthNode2, v->region().getWidthInVoxels());
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		v->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(10));
 		node.setTransform(0, transform);
@@ -550,7 +550,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationPivotAndRotation) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		const glm::vec3 euler(45.0f, 0.0f, 0.0f);
 		SceneGraphTransform transform;
 		transform.setWorldOrientation(glm::quat(euler));
@@ -564,7 +564,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationPivotAndRotation) {
 		node.setName("node2");
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		node.setVolume(v, true);
+		node.setVolume(v);
 		const glm::vec3 euler(0.0f, 45.0f, 0.0f);
 		SceneGraphTransform transform;
 		transform.setWorldOrientation(glm::quat(euler));
@@ -610,14 +610,14 @@ TEST_F(SceneGraphTest, testMoveParentAsNewChild) {
 	int originalChildNodeId = 2;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("originalparent");
 		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("originalchild");
 		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), originalParentNodeId));
 	}
@@ -630,14 +630,14 @@ TEST_F(SceneGraphTest, testMove) {
 	int originalChildNodeId = 2;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("model1");
 		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 		node.setName("model2");
 		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), 0));
 	}
@@ -667,7 +667,7 @@ TEST_F(SceneGraphTest, testAddKeyFrameValidateTranslate) {
 	voxel::RawVolume v(voxel::Region(0, 0));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		sceneGraph.emplace(core::move(node));
 	}
 	ASSERT_FALSE(sceneGraph.animations().empty());
@@ -690,13 +690,13 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	int secondNodeId;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Parent");
 		firstNodeId = sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Child");
 		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
 	}
@@ -751,7 +751,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
 	int secondNodeId;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Parent");
 		SceneGraphTransform transform;
 		transform.setWorldOrientation(glm::quat(glm::vec3(glm::radians(180.0f), 0.0f, 0.0f)));
@@ -760,7 +760,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Child");
 		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
 	}
@@ -792,7 +792,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
 	int secondNodeId;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Parent");
 		SceneGraphTransform transform0;
 		transform0.setWorldOrientation(glm::quat(glm::vec3(glm::radians(-180.0f), 0.0f, 0.0f)));
@@ -803,7 +803,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.setName("Child");
 		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
 	}
@@ -833,7 +833,7 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	voxel::RawVolume v(voxel::Region(-3, 3));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v, false);
+		node.setUnownedVolume(&v);
 		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.0f));
 		sceneGraph.emplace(core::move(node));
@@ -842,7 +842,7 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	voxel::RawVolume v2(voxel::Region(-13, 13));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(&v2, false);
+		node.setUnownedVolume(&v2);
 		node.translate(glm::vec3(1.0f, 1.0f, 2.0f));
 		node.setPivot(glm::vec3(0.0f));
 		sceneGraph.emplace(core::move(node));
@@ -896,7 +896,7 @@ TEST_F(SceneGraphTest, testChildRotationFlipping) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("child");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		SceneGraphTransform transform;
 		// Rotate child 90 degrees around X
 		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
@@ -974,7 +974,7 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 
 TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 3)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 3)));
 	const core::DynamicArray<ColorHistogramEntry> &histogram = node.colorHistogram();
 	for (int i = 0; i < (int)histogram.size(); i++) {
 		EXPECT_EQ(0, histogram[i].count);
@@ -983,7 +983,7 @@ TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 
 TEST_F(SceneGraphTest, testColorHistogramSingleColor) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)));
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 5);
 	ASSERT_TRUE(node.volume()->setVoxel(0, 0, 0, voxel));
 	ASSERT_TRUE(node.volume()->setVoxel(1, 0, 0, voxel));
@@ -997,7 +997,7 @@ TEST_F(SceneGraphTest, testColorHistogramSingleColor) {
 
 TEST_F(SceneGraphTest, testColorHistogramMultipleColors) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)));
 
 	const voxel::Voxel v1 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	node.volume()->setVoxel(0, 0, 0, v1);

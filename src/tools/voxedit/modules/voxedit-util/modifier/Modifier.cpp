@@ -695,12 +695,12 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
 			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
-			mirrorDummyNode.setVolume(_previewMirrorVolume, false);
+			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
 			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
 		}
 		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-		dummyNode.setVolume(_previewVolume, false);
+		dummyNode.setUnownedVolume(_previewVolume);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 		if (isCircleSelect) {
 			_selectBrush.setPreviewMode(false);

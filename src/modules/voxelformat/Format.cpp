@@ -212,7 +212,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		}
 		scenegraph::SceneGraph mergedSceneGraph;
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
-		mergedNode.setVolume(merged.volume(), true);
+		mergedNode.setVolume(merged.volume());
 		mergedNode.setPalette(merged.palette);
 		mergedNode.setNormalPalette(merged.normalPalette);
 		mergedSceneGraph.emplace(core::move(mergedNode));

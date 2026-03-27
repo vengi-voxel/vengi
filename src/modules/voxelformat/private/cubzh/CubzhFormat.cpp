@@ -280,7 +280,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 				}
 
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
-				node.setVolume(volume, true);
+				node.setVolume(volume);
 				int i = 0;
 				if ((int64_t)width * height * depth > (int64_t)volumeBuffer.size()) {
 					Log::error("invalid blocks chunk");
@@ -330,7 +330,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 			}
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			node.setVolume(volume, true);
+			node.setVolume(volume);
 			voxel::RawVolume::Sampler sampler(volume);
 			sampler.setPosition(width - 1, 0, 0);
 			for (uint16_t x = 0; x < width; x++) {
@@ -557,7 +557,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 				}
 
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
-				node.setVolume(volume, true);
+				node.setVolume(volume);
 				int i = 0;
 				if ((int64_t)width * height * depth > (int64_t)volumeBuffer.size()) {
 					Log::error("invalid blocks chunk");
@@ -608,7 +608,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			}
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			node.setVolume(volume, true);
+			node.setVolume(volume);
 			voxel::RawVolume::Sampler sampler(volume);
 			sampler.setPosition(width - 1, 0, 0);
 			for (uint16_t x = 0; x < width; x++) {
@@ -680,7 +680,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 
 	if (node.volume() == nullptr) {
 		if (sizeChunkFound) {
-			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
 		} else {
 			Log::error("No volume found");
 			return false;

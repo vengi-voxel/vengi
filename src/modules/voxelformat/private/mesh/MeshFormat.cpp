@@ -348,7 +348,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		PosMap posMap(maxVoxels);
 		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
 		tris.release();
-		node.setVolume(new voxel::RawVolume(region), true);
+		node.setVolume(new voxel::RawVolume(region));
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
 		palette::Palette palette;
@@ -378,7 +378,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
-		node.setVolume(new voxel::RawVolume(region), true);
+		node.setVolume(new voxel::RawVolume(region));
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::NormalPaletteLookup normalLookup(normalPalette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
@@ -459,7 +459,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		PosMap posMap(maxVoxels);
 		transformTris(region, subdivided, posMap, meshMaterialArray, normalPalette);
 		subdivided.release();
-		node.setVolume(new voxel::RawVolume(region), true);
+		node.setVolume(new voxel::RawVolume(region));
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	}
 
@@ -762,7 +762,7 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 	vertices.release();
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node));

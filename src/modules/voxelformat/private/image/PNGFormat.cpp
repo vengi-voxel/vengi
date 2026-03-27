@@ -95,7 +95,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	voxel::Region region(0, 0, minsZ, imageWidth - 1, imageHeight - 1, maxsZ);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 
@@ -177,7 +177,7 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel, minHeight, false);
 	}
 	node.setPalette(palette);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
@@ -203,7 +203,7 @@ bool PNGFormat::importAsVolume(scenegraph::SceneGraph &sceneGraph, const palette
 		return false;
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
@@ -218,7 +218,7 @@ bool PNGFormat::importAsPlane(scenegraph::SceneGraph &sceneGraph, const palette:
 		return false;
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;

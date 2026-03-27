@@ -360,7 +360,7 @@ bool OSMFormat::treeToVoxels(scenegraph::SceneGraph &sceneGraph, const OSMElemen
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(elem.name);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setPalette(palette);
 	node.setProperty("osm:id", core::string::toString(elem.id));
 	return sceneGraph.emplace(core::move(node), parentGroupId) != InvalidNodeId;
@@ -1275,7 +1275,7 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 		scenegraph::SceneGraphNode groundNode(scenegraph::SceneGraphNodeType::Model);
 		groundNode.setName("Ground");
-		groundNode.setVolume(groundVolume, true);
+		groundNode.setVolume(groundVolume);
 		groundNode.setPalette(groundPalette);
 		sceneGraph.emplace(core::move(groundNode), sceneGraph.root().id());
 	}

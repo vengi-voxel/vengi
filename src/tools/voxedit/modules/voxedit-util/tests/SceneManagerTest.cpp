@@ -71,7 +71,7 @@ protected:
 		}
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v, false);
+		node.setUnownedVolume(v);
 		int executed = 0;
 		auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 			executed++;
@@ -659,7 +659,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 		scenegraph::SceneGraph sceneGraph;
 		{
 			scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
-			model.setVolume(&v, false);
+			model.setUnownedVolume(&v);
 			modelNodeId = sceneGraph.emplace(core::move(model));
 			ASSERT_NE(modelNodeId, InvalidNodeId);
 		}
@@ -879,7 +879,7 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 
 TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 	const int nodeId = _sceneMgr->sceneGraph().emplace(core::move(node));
 	scenegraph::SceneGraphNode &n = _sceneMgr->sceneGraph().node(nodeId);
 
@@ -901,7 +901,7 @@ TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 
 TEST_F(SceneManagerTest, testNodeTransformMirror) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
 	const int nodeId = _sceneMgr->sceneGraph().emplace(core::move(node));
 	scenegraph::SceneGraphNode &n = _sceneMgr->sceneGraph().node(nodeId);
 
@@ -1621,7 +1621,7 @@ TEST_F(SceneManagerTest, testSplatMerge) {
 	// Create source as sibling (parent = root) so transforms are independent
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
 	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
-	sourceNode.setVolume(new voxel::RawVolume(region), true);
+	sourceNode.setVolume(new voxel::RawVolume(region));
 	sourceNode.setName("source");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
@@ -1657,7 +1657,7 @@ TEST_F(SceneManagerTest, testSplatMergeNoOverlap) {
 	const voxel::Region farRegion{100, 104};
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
 	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
-	sourceNode.setVolume(new voxel::RawVolume(farRegion), true);
+	sourceNode.setVolume(new voxel::RawVolume(farRegion));
 	sourceNode.setName("source_far");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
@@ -1688,7 +1688,7 @@ TEST_F(SceneManagerTest, testMergeActiveToBackground) {
 	// Create source node as sibling with a voxel at (0,0,0) but air at (5,5,5)
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
 	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
-	sourceNode.setVolume(new voxel::RawVolume(region), true);
+	sourceNode.setVolume(new voxel::RawVolume(region));
 	sourceNode.setName("source");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
@@ -1724,7 +1724,7 @@ TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	// Create second visible sibling
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
 	scenegraph::SceneGraphNode node2(scenegraph::SceneGraphNodeType::Model);
-	node2.setVolume(new voxel::RawVolume(region), true);
+	node2.setVolume(new voxel::RawVolume(region));
 	node2.setName("node2");
 	const int node2Id = _sceneMgr->moveNodeToSceneGraph(node2, rootNodeId);
 	ASSERT_NE(InvalidNodeId, node2Id);

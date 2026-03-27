@@ -340,7 +340,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v.release(), true);
+		node.setVolume(v.release());
 		node.setName(name);
 		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
@@ -393,7 +393,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 		++z;
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v.release(), true);
+	node.setVolume(v.release());
 	node.setName(name);
 	node.setPalette(palLookup.palette());
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;

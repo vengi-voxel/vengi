@@ -154,7 +154,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 	const voxel::Region region(0, 0, 0, (int)mapSize - 1, (int)mapHeight - 1, (int)mapSize - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 
 	palette::PaletteLookup palLookup(palette);
 	auto fn = [volume, &map, &mapSize, &mapHeight, &palLookup, &palette, this](int start, int end) {

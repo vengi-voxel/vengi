@@ -50,14 +50,14 @@ protected:
 				volume->setVoxel(voxels[i], voxel);
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(volume, true);
+			node.setVolume(volume);
 			node.setName("belt");
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
 		ASSERT_NE(nodeId, InvalidNodeId);
 		{
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(new voxel::RawVolume(_region), true);
+			node.setVolume(new voxel::RawVolume(_region));
 			node.setName("head");
 			sceneGraph.emplace(core::move(node), nodeId);
 		}

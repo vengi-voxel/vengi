@@ -171,7 +171,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	scenegraph::SceneGraph sceneGraphsave;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&bigVolume, false);
+		node.setUnownedVolume(&bigVolume);
 		sceneGraphsave.emplace(core::move(node));
 	}
 

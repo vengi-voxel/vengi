@@ -39,7 +39,7 @@ bool loadGroupsPalette(const priv::NamedBinaryTag &schematic, scenegraph::SceneG
 		if (author.valid() && author.type() == priv::TagType::STRING) {
 			node.setProperty(scenegraph::PropAuthor, author.string());
 		}
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		node.setPalette(palette);
 		int nodeId = sceneGraph.emplace(core::move(node));
 		return nodeId != InvalidNodeId;

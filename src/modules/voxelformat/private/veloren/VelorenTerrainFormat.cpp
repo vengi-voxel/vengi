@@ -147,7 +147,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	v.copyTo(*volume);
 	volume->region().shift(glm::ivec3(x * 32, 0, z * -32));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume, true);
+	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;

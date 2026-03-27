@@ -82,7 +82,7 @@ protected:
 				}
 			}
 		}
-		node.setVolume(v, true);
+		node.setVolume(v);
 		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
 	}
 
@@ -99,7 +99,7 @@ protected:
 				v->setVoxel(x, 0, z, voxel);
 			}
 		}
-		node.setVolume(v, true);
+		node.setVolume(v);
 		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
 	}
 };

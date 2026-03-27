@@ -94,7 +94,7 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 				continue;
 			}
 			scenegraph::SceneGraphNode *node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-			node->setVolume(merged.volume(), true);
+			node->setVolume(merged.volume());
 			node->setPalette(merged.palette);
 			node->setNormalPalette(merged.normalPalette);
 			nodes[i] = node;

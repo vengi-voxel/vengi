@@ -242,7 +242,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		io::ZipReadStream readStream(base64Stream, -1, io::CompressionType::Gzip);
 		const voxel::Region &region = voxel::Region::fromSize(regionSize);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		node.setVolume(volume, true);
+		node.setVolume(volume);
 		voxel::RawVolume::Sampler sampler(volume);
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = 0; z < regionSize.z; ++z) {

@@ -479,7 +479,7 @@ app::AppState VoxConvert::onInit() {
 	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		const voxel::Region region(0, 63);
-		node.setVolume(new voxel::RawVolume(region), true);
+		node.setVolume(new voxel::RawVolume(region));
 		node.setName("Script generated");
 		sceneGraph.emplace(core::move(node));
 	}
@@ -520,7 +520,7 @@ app::AppState VoxConvert::onInit() {
 		}
 		sceneGraph.clear();
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(merged.volume(), true);
+		node.setVolume(merged.volume());
 		node.setPalette(merged.palette);
 		node.setNormalPalette(merged.normalPalette);
 		node.setName(infilesstr);
@@ -838,7 +838,7 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 			continue;
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v, true);
+		node.setVolume(v);
 		node.setPalette(merged.palette);
 		node.setNormalPalette(merged.normalPalette);
 
@@ -851,7 +851,7 @@ void VoxConvert::crop(scenegraph::SceneGraph &sceneGraph) {
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		if (voxel::RawVolume *v = voxelutil::cropVolume(node.volume())) {
-			node.setVolume(v, true);
+			node.setVolume(v);
 		}
 	}
 }
@@ -915,7 +915,7 @@ void VoxConvert::scale(scenegraph::SceneGraph &sceneGraph) {
 		if (destRegion.isValid()) {
 			voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 			voxelutil::scaleDown(*node.volume(), node.palette(), *destVolume);
-			node.setVolume(destVolume, true);
+			node.setVolume(destVolume);
 		}
 	}
 }
@@ -929,7 +929,7 @@ void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGra
 			Log::warn("Failed to resize volume");
 			continue;
 		}
-		node.setVolume(v, true);
+		node.setVolume(v);
 	}
 }
 
@@ -1008,7 +1008,7 @@ void VoxConvert::mirror(const core::String &axisStr, scenegraph::SceneGraph &sce
 	Log::info("Mirror on axis %c", axisStr[0]);
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		node.setVolume(voxelutil::mirrorAxis(node.volume(), axis), true);
+		node.setVolume(voxelutil::mirrorAxis(node.volume(), axis));
 	}
 }
 
@@ -1051,7 +1051,7 @@ void VoxConvert::rotate(const core::String &axisStr, scenegraph::SceneGraph &sce
 				const glm::vec3 oldRegionCenter = v->region().calcCenterf();
 				const glm::vec3 newRegionCenter = newVolume->region().calcCenterf();
 
-				node.setVolume(newVolume, true);
+				node.setVolume(newVolume);
 
 				// Rotate the volume's world-space center around the scene pivot,
 				// then back-compute the new translation so the center lands correctly.
@@ -1092,7 +1092,7 @@ void VoxConvert::rotate(const core::String &axisStr, scenegraph::SceneGraph &sce
 			const glm::vec3 normalizedPivot(0.5f);
 			glm::vec3 rotVec{0.0f};
 			rotVec[math::getIndexForAxis(axis)] = degree;
-			node.setVolume(voxelutil::rotateVolumeDegrees(v, rotVec, normalizedPivot), true);
+			node.setVolume(voxelutil::rotateVolumeDegrees(v, rotVec, normalizedPivot));
 
 			const glm::vec3 newRegionCenter = node.volume()->region().calcCenterf();
 
