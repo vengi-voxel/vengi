@@ -1567,9 +1567,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			if (ImGui::Button(_("Reload"))) {
 				loadSkinFromFile(skinPath);
 			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("%s", skinPath.c_str());
-			}
+			ImGui::SetItemTooltipUnformatted(skinPath.c_str());
 		}
 
 		const voxelutil::ReskinConfig &cfg = brush.reskinConfig();
