@@ -172,11 +172,15 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 /**
  * @return the main node id that was added
  */
-static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent, core::DynamicMap<int, int> &nodeMap) {
+static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent, core::DynamicMap<int, int> &nodeMap, bool copyVolumes) {
 	SceneGraphNode newNode(sourceNode.type());
 	copy(sourceNode, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
-		newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
+		if (copyVolumes) {
+			newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
+		} else {
+			newNode.setVolume(sourceNode.volume());
+		}
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
 	if (newNodeId == InvalidNodeId) {
@@ -188,13 +192,13 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId, nodeMap);
+		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId, nodeMap, copyVolumes);
 	}
 
 	return newNodeId;
 }
 
-core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
+core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent, bool copyVolumes) {
 	const SceneGraphNode &sourceRoot = source.root();
 	core::Buffer<int> nodesAdded;
 	core::DynamicMap<int, int> nodeMap;
@@ -205,7 +209,7 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent, nodeMap));
+		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent, nodeMap, copyVolumes));
 	}
 
 	for (auto entry : nodeMap) {
@@ -229,7 +233,7 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 }
 
 static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &source,
-										  const SceneGraphNode &sourceNode, int parent) {
+										  const SceneGraphNode &sourceNode, int parent, bool copyVolumes) {
 	SceneGraphNodeType type = sourceNode.type();
 	if (type == SceneGraphNodeType::ModelReference) {
 		type = SceneGraphNodeType::Model;
@@ -239,7 +243,11 @@ static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &
 	if (type == SceneGraphNodeType::Model) {
 		const voxel::RawVolume *srcVol = source.resolveVolume(sourceNode);
 		if (srcVol) {
-			newNode.setVolume(new voxel::RawVolume(*srcVol), true);
+			if (copyVolumes) {
+				newNode.setVolume(new voxel::RawVolume(*srcVol), true);
+			} else {
+				newNode.setVolume(srcVol);
+			}
 		}
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
@@ -251,13 +259,13 @@ static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		const SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		copySceneGraphNodeResolveRef_r(target, source, sourceChildNode, newNodeId);
+		copySceneGraphNodeResolveRef_r(target, source, sourceChildNode, newNodeId, copyVolumes);
 	}
 
 	return newNodeId;
 }
 
-void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent) {
+void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent, bool copyVolumes) {
 	const SceneGraphNode &sourceRoot = source.root();
 
 	for (const core::String &animation : source.animations()) {
@@ -266,7 +274,7 @@ void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &sourc
 
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
-		copySceneGraphNodeResolveRef_r(target, source, source.node(sourceNodeId), parent);
+		copySceneGraphNodeResolveRef_r(target, source, source.node(sourceNodeId), parent, copyVolumes);
 	}
 }
 

@@ -25,15 +25,21 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 
 int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const core::Function<void(int)> &onNodeAdded = {});
 
-core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
+/**
+ * @param copyVolumes if @c true, volumes are deep-copied and owned by the target. If @c false, volumes are
+ * referenced without copying - the caller must ensure the source outlives the target.
+ */
+core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0, bool copyVolumes = true);
 
 /**
  * @brief Copy the scene graph but resolve model references into actual model nodes
  *
  * Model reference nodes are converted to model nodes with a copy of the referenced volume.
  * This is useful for saving to formats that don't support model references.
+ * @param copyVolumes if @c true, volumes are deep-copied and owned by the target. If @c false, volumes are
+ * referenced without copying - the caller must ensure the source outlives the target.
  */
-void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent = 0);
+void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent = 0, bool copyVolumes = true);
 
 /**
  * @param[in] parent The parent node id - if @c -1 it will use the node parent id

@@ -305,4 +305,54 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesPreservesNodeTypes) {
 	EXPECT_EQ(1, refCount);
 }
 
+TEST_F(SceneGraphUtilTest, testCopySceneGraphNoVolumeCopy) {
+	SceneGraph source;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		source.emplace(core::move(node));
+	}
+
+	SceneGraph target;
+	copySceneGraph(target, source, 0, false);
+
+	ASSERT_EQ(2u, target.nodeSize());
+	for (auto iter = target.beginModel(); iter != target.end(); ++iter) {
+		const SceneGraphNode &srcNode = *source.beginModel();
+		// volume pointer should be the same - not a deep copy
+		EXPECT_EQ(srcNode.volume(), (*iter).volume());
+	}
+}
+
+TEST_F(SceneGraphUtilTest, testCopySceneGraphResolveReferencesNoVolumeCopy) {
+	SceneGraph source;
+	int modelNodeId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		modelNodeId = source.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::ModelReference);
+		node.setName("reference");
+		node.setReference(modelNodeId);
+		source.emplace(core::move(node));
+	}
+
+	SceneGraph target;
+	copySceneGraphResolveReferences(target, source, 0, false);
+
+	// Both model and reference should now be model nodes
+	int modelCount = 0;
+	for (auto iter = target.beginModel(); iter != target.end(); ++iter) {
+		const SceneGraphNode &node = *iter;
+		// volume should be shared with source, not copied
+		EXPECT_EQ(source.node(modelNodeId).volume(), node.volume());
+		modelCount++;
+	}
+	EXPECT_EQ(2, modelCount);
+}
+
 } // namespace scenegraph

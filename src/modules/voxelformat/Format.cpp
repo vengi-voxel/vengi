@@ -228,7 +228,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 
 	if (saveVisibleOnly) {
 		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
+		scenegraph::copySceneGraph(newSceneGraph, sceneGraph, 0, false);
 		core::Buffer<int> nodes;
 		for (auto iter = newSceneGraph.nodes().begin(); iter != newSceneGraph.nodes().end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = iter->second;
@@ -245,7 +245,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	if (!supportsReferences() && sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference) > 0) {
 		Log::debug("Resolve model references before saving as the target format doesn't support them");
 		scenegraph::SceneGraph resolvedSceneGraph;
-		scenegraph::copySceneGraphResolveReferences(resolvedSceneGraph, sceneGraph);
+		scenegraph::copySceneGraphResolveReferences(resolvedSceneGraph, sceneGraph, 0, false);
 		return saveGroups(resolvedSceneGraph, filename, archive, ctx);
 	}
 
