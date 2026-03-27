@@ -41,7 +41,7 @@ protected:
 		_halfSize = halfSize;
 		const voxel::Region region(-halfSize, halfSize);
 		node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-		node->setVolume(new voxel::RawVolume(region));
+		node->createVolume(region);
 		fillSurface(*node->volume(), halfSize);
 	}
 

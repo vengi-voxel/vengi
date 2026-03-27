@@ -1233,7 +1233,7 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	core_assert(s.nodeType != scenegraph::SceneGraphNodeType::Max);
 	scenegraph::SceneGraphNode newNode(s.nodeType, s.nodeUUID);
 	if (newNode.isModelNode()) {
-		newNode.setVolume(new voxel::RawVolume(s.volumeRegion()));
+		newNode.createVolume(s.volumeRegion());
 		if (s.hasVolumeData()) {
 			memento::MementoData::toVolume(newNode.volume(), s.data, s.data.dataRegion());
 		}
@@ -4228,7 +4228,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 		return InvalidNodeId;
 	}
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model, uuid);
-	newNode.setVolume(new voxel::RawVolume(region));
+	newNode.createVolume(region);
 	newNode.setName(name);
 	const int parentId = activeNode();
 	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
@@ -5468,7 +5468,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	if (_sceneGraph.empty()) {
 		const voxel::Region &region = voxel::Region::fromSize(32);
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-		newNode.setVolume(new voxel::RawVolume(region));
+		newNode.createVolume(region);
 		if (name.empty()) {
 			newNode.setName("unnamed");
 		} else {

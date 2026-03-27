@@ -680,7 +680,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 
 	if (node.volume() == nullptr) {
 		if (sizeChunkFound) {
-			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+			node.createVolume(voxel::Region(0, 0));
 		} else {
 			Log::error("No volume found");
 			return false;

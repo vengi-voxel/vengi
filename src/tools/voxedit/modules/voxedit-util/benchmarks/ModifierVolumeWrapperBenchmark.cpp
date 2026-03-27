@@ -21,7 +21,7 @@ public:
 		const voxel::Region region(0, 0, 0, 10, 10, 10);
 
 		node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-		node->setVolume(new voxel::RawVolume(region));
+		node->createVolume(region);
 	}
 
 	void TearDown(::benchmark::State &state) override {

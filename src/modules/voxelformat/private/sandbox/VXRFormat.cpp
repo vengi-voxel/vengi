@@ -233,7 +233,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
 	Log::debug("load node %s", nodeId);
 	node.setName(nodeId);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+	node.createVolume(voxel::Region(0, 0));
 	uint32_t animCnt;
 	wrap(stream.readUInt32(animCnt))
 	char animationId[1024];

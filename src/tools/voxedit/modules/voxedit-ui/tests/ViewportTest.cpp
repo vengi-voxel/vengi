@@ -256,7 +256,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		// add a second model node
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setName("second node");
-		newNode.setVolume(new voxel::RawVolume(voxel::Region(0, 31)));
+		newNode.createVolume(voxel::Region(0, 31));
 		const int secondNode = _sceneMgr->moveNodeToSceneGraph(newNode, sceneGraph.root().id());
 		IM_CHECK(secondNode != InvalidNodeId);
 		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);

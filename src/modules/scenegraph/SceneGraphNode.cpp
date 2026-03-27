@@ -269,7 +269,7 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 void SceneGraphNode::fixErrors() {
 	if (_type == SceneGraphNodeType::Model) {
 		if (_volume == nullptr) {
-			setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+			createVolume(voxel::Region(0, 0));
 		}
 	}
 	for (const auto &e : _keyFramesMap) {
@@ -400,6 +400,10 @@ void SceneGraphNode::setUnownedVolume(const voxel::RawVolume *volume) {
 					(int)_type);
 	release();
 	_volume = const_cast<voxel::RawVolume *>(volume);
+}
+
+void SceneGraphNode::createVolume(const voxel::Region &region) {
+	setVolume(new voxel::RawVolume(region));
 }
 
 bool SceneGraphNode::isReferenceNode() const {

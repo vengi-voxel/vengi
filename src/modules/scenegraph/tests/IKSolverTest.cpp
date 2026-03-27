@@ -51,7 +51,7 @@ TEST_F(IKSolverTest, testSolveNoConstraint) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setName("test");
 	voxel::Region region(0, 0, 0, 1, 1, 1);
-	node.setVolume(new voxel::RawVolume(region));
+	node.createVolume(region);
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	EXPECT_GE(nodeId, 0);
 	SceneGraphNode &addedNode = sceneGraph.node(nodeId);
@@ -63,7 +63,7 @@ TEST_F(IKSolverTest, testSolveInvalidEffector) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setName("test");
 	voxel::Region region(0, 0, 0, 1, 1, 1);
-	node.setVolume(new voxel::RawVolume(region));
+	node.createVolume(region);
 	IKConstraint constraint;
 	constraint.effectorNodeId = 999; // Non-existent
 	node.setIkConstraint(constraint);
@@ -95,7 +95,7 @@ TEST_F(IKSolverTest, testSolveSimpleChain) {
 	SceneGraphNode endEffector(SceneGraphNodeType::Model);
 	endEffector.setName("end_effector");
 	voxel::Region region(0, 0, 0, 1, 1, 1);
-	endEffector.setVolume(new voxel::RawVolume(region));
+	endEffector.createVolume(region);
 	const int endEffectorId = sceneGraph.emplace(core::move(endEffector), jointId);
 	EXPECT_GE(endEffectorId, 0);
 

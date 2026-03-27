@@ -537,7 +537,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		node.setName(name);
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			// dummy volume - will be replaced later
-			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+			node.createVolume(voxel::Region(0, 0));
 		}
 		nodeId = sceneGraph.emplace(core::move(node), parent);
 		if (nodeId == InvalidNodeId) {

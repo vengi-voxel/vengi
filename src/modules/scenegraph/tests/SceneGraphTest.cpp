@@ -176,7 +176,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		palette::Palette pal;
 		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		node.setPalette(pal);
@@ -186,7 +186,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		palette::Palette pal;
 		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		node.setPalette(pal);
@@ -202,7 +202,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	nipponPal.nippon();
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+		node.createVolume(voxel::Region(0, 0));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		node.setPalette(nipponPal);
@@ -212,7 +212,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	mvPal.magicaVoxel();
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(1, 1)));
+		node.createVolume(voxel::Region(1, 1));
 		node.volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		node.setPalette(mvPal);
@@ -239,14 +239,14 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+		node.createVolume(voxel::Region(0, 0));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+		node.createVolume(voxel::Region(0, 0));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		SceneGraphTransform transform;
@@ -274,7 +274,7 @@ TEST_F(SceneGraphTest, testChildren) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("model");
 		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
@@ -286,13 +286,13 @@ TEST_F(SceneGraphTest, testChildren) {
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("model2");
 		EXPECT_EQ(3, sceneGraph.emplace(core::move(node), 2));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("model");
 		EXPECT_EQ(4, sceneGraph.emplace(core::move(node), 1));
 	}
@@ -317,13 +317,13 @@ TEST_F(SceneGraphTest, testRemove) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("node");
 		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("children");
 		sceneGraph.emplace(core::move(node), 1);
 	}
@@ -610,14 +610,14 @@ TEST_F(SceneGraphTest, testMoveParentAsNewChild) {
 	int originalChildNodeId = 2;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("originalparent");
 		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("originalchild");
 		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), originalParentNodeId));
 	}
@@ -630,14 +630,14 @@ TEST_F(SceneGraphTest, testMove) {
 	int originalChildNodeId = 2;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("model1");
 		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
 			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+		node.createVolume(voxel::Region(0, 1));
 		node.setName("model2");
 		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), 0));
 	}
@@ -896,7 +896,7 @@ TEST_F(SceneGraphTest, testChildRotationFlipping) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("child");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)));
+		node.createVolume(voxel::Region(0, 0));
 		SceneGraphTransform transform;
 		// Rotate child 90 degrees around X
 		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
@@ -974,7 +974,7 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 
 TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 3)));
+	node.createVolume(voxel::Region(0, 3));
 	const core::DynamicArray<ColorHistogramEntry> &histogram = node.colorHistogram();
 	for (int i = 0; i < (int)histogram.size(); i++) {
 		EXPECT_EQ(0, histogram[i].count);
@@ -983,7 +983,7 @@ TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 
 TEST_F(SceneGraphTest, testColorHistogramSingleColor) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)));
+	node.createVolume(voxel::Region(0, 2));
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 5);
 	ASSERT_TRUE(node.volume()->setVoxel(0, 0, 0, voxel));
 	ASSERT_TRUE(node.volume()->setVoxel(1, 0, 0, voxel));
@@ -997,7 +997,7 @@ TEST_F(SceneGraphTest, testColorHistogramSingleColor) {
 
 TEST_F(SceneGraphTest, testColorHistogramMultipleColors) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(new voxel::RawVolume(voxel::Region(0, 2)));
+	node.createVolume(voxel::Region(0, 2));
 
 	const voxel::Voxel v1 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	node.volume()->setVoxel(0, 0, 0, v1);

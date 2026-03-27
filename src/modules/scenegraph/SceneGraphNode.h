@@ -206,6 +206,11 @@ public:
 	 */
 	void setVolume(voxel::RawVolume *volume);
 	/**
+	 * @brief Creates a new empty volume for this node with the given region.
+	 * @param region The region for the new volume.
+	 */
+	void createVolume(const voxel::Region &region);
+	/**
 	 * @brief Set the volume without taking ownership.
 	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
 	 * @note The caller must ensure the volume outlives this node. The node will not delete the volume.

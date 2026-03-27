@@ -479,7 +479,7 @@ app::AppState VoxConvert::onInit() {
 	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		const voxel::Region region(0, 63);
-		node.setVolume(new voxel::RawVolume(region));
+		node.createVolume(region);
 		node.setName("Script generated");
 		sceneGraph.emplace(core::move(node));
 	}

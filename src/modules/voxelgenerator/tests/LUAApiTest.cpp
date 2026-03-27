@@ -57,7 +57,7 @@ protected:
 		ASSERT_NE(nodeId, InvalidNodeId);
 		{
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(new voxel::RawVolume(_region));
+			node.createVolume(_region);
 			node.setName("head");
 			sceneGraph.emplace(core::move(node), nodeId);
 		}

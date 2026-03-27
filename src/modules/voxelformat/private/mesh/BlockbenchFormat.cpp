@@ -484,7 +484,7 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 	}
 	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, bbElement.uuid);
 	region.shift(-region.getLowerCorner());
-	model.setVolume(new voxel::RawVolume(region));
+	model.createVolume(region);
 	model.setName(bbElement.name);
 	model.setLocked(bbNode.locked);
 	model.setVisible(bbNode.visible);

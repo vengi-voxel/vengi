@@ -59,7 +59,7 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setPalette(palette);
 	node.setName("Axiom Schematic");
-	node.setVolume(new voxel::RawVolume(region));
+	node.createVolume(region);
 
 	voxel::RawVolume *volume = node.volume();
 	voxel::RawVolume::Sampler sampler(volume);

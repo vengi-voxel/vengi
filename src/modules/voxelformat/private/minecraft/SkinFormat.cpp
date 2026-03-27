@@ -355,7 +355,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		}
 		if (mergeFaces) {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(new voxel::RawVolume(region));
+			node.createVolume(region);
 			node.setName(skinBox.name);
 			node.setPalette(palette);
 			for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
@@ -367,7 +367,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
 				const voxel::FaceNames faceName = order[faceIndex];
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-				node.setVolume(new voxel::RawVolume(region));
+				node.createVolume(region);
 				node.setName(core::String::format("%s_%s", skinBox.name, voxel::faceNameString(faceName)));
 				node.setPalette(palette);
 

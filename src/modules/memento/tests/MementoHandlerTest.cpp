@@ -61,7 +61,7 @@ protected:
 		Super::SetUp();
 		ASSERT_TRUE(_mementoHandler.init());
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, core::UUID(1));
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1)));
+		node.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		node.setName("Node name");
 		_sceneGraph.emplace(core::move(node));
 	}
@@ -1048,7 +1048,7 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 	const int expectedVoxels = 4;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, core::UUID(13));
-		node.setVolume(new voxel::RawVolume(voxel::Region(-3, -2, -10, expectedVoxels - 1, 2, 1)));
+		node.createVolume(voxel::Region(-3, -2, -10, expectedVoxels - 1, 2, 1));
 		for (int i = 0; i < expectedVoxels; ++i) {
 			node.volume()->setVoxel(i, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		}

@@ -46,7 +46,7 @@ bool NodeAddModelTool::execute(const json::Json &id, const json::Json &args, Too
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(name);
 	voxel::Region region(0, 0, 0, w - 1, h - 1, d - 1);
-	node.setVolume(new voxel::RawVolume(region));
+	node.createVolume(region);
 
 	int parentId = 0;
 	if (const scenegraph::SceneGraphNode *parentNode = ctx.sceneMgr->sceneGraphNodeByUUID(parentUUID)) {
