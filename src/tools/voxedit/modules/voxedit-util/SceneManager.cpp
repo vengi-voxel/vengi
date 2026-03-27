@@ -620,11 +620,6 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
-		const int splitSize = core::getVar(cfg::VoxelSplitOnLoad)->intVal();
-		if (splitSize > 0) {
-			Log::debug("Skipping merge of %i volumes (split on load = %i)", (int)newSceneGraph.size(), splitSize);
-			return;
-		}
 		// TODO: don't merge everything blindly. Check if it's enough to merge single nodes here.
 		// TODO: PERF: merging will take a lot of time for large scenes
 		Log::warn("Scene has %i nodes which exceeds the limit of %i - merging all nodes into one volume. "
