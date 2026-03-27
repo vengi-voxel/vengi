@@ -21,6 +21,7 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -246,6 +247,13 @@ bool VENGIFormat::saveNodePaletteIdentifier(const scenegraph::SceneGraph &sceneG
 
 bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream,
 						   const scenegraph::SceneGraphNode &node) {
+	const bool saveVisibleOnly = core::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal();
+	if (saveVisibleOnly && !node.visible() && node.type() != scenegraph::SceneGraphNodeType::Root) {
+		for (int childId : node.children()) {
+			wrapBool(saveNode(sceneGraph, stream, sceneGraph.node(childId)))
+		}
+		return true;
+	}
 	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
@@ -303,7 +311,6 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	node.setVolume(v, true);
 	const palette::Palette &palette = node.palette();
 
 	if (version >= 4u) {
@@ -360,6 +367,20 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			}
 			sampler.movePositiveX();
 		}
+	}
+	if (v->isEmpty(region)) {
+		delete v;
+		node.setVolume(new voxel::RawVolume(voxel::Region(mins, mins)), true);
+	} else if (core::getVar(cfg::VoxelCropOnLoad)->boolVal()) {
+		voxel::RawVolume *cropped = voxelutil::cropVolume(v);
+		if (cropped != nullptr) {
+			delete v;
+			node.setVolume(cropped, true);
+		} else {
+			node.setVolume(v, true);
+		}
+	} else {
+		node.setVolume(v, true);
 	}
 	return true;
 }
@@ -613,6 +634,11 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	}
 	Log::error("ENDN magic is missing");
 	return false;
+}
+
+bool VENGIFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	return saveGroups(sceneGraph, filename, archive, ctx);
 }
 
 bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
