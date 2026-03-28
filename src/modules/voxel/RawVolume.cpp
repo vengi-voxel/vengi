@@ -32,26 +32,26 @@ RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
 
 RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
+	const size_t asize = RawVolume::allocSize(_region);
+	_data = (Voxel *)core_malloc(asize);
 	if (_data == nullptr) {
-		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)asize);
 		return;
 	}
 	_borderVoxel = copy->_borderVoxel;
-	core_memcpy((void*)_data, (const void*)copy->_data, size);
+	core_memcpy((void*)_data, (const void*)copy->_data, asize);
 }
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
+	const size_t asize = RawVolume::allocSize(_region);
+	_data = (Voxel *)core_malloc(asize);
 	if (_data == nullptr) {
-		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)asize);
 		return;
 	}
 	_borderVoxel = copy._borderVoxel;
-	core_memcpy((void*)_data, (const void*)copy._data, size);
+	core_memcpy((void*)_data, (const void*)copy._data, asize);
 }
 
 static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
@@ -85,21 +85,21 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
+		const size_t asize = RawVolume::allocSize(_region);
+		_data = (Voxel *)core_malloc(asize);
 		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)asize);
 			return;
 		}
-		core_memset((void *)_data, 0, size);
+		core_memset((void *)_data, 0, asize);
 	} else if (src.region() == _region) {
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
+		const size_t asize = RawVolume::allocSize(_region);
+		_data = (Voxel *)core_malloc(asize);
 		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)asize);
 			return;
 		}
-		core_memcpy((void *)_data, (const void *)src._data, size);
+		core_memcpy((void *)_data, (const void *)src._data, asize);
 		if (onlyAir) {
 			*onlyAir = false;
 		}
@@ -110,10 +110,10 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
+		const size_t asize = RawVolume::allocSize(_region);
+		_data = (Voxel *)core_malloc(asize);
 		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)asize);
 			return;
 		}
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
@@ -161,6 +161,13 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
+#ifdef VENGI_COMPACT_VOXEL
+// Compact 1-byte voxel: FlagOutline is bit 7 (0x80). Process 8 voxels at a time.
+static inline uint8_t compactFlagsMask(uint8_t flags) {
+	return (flags & FlagOutline) ? Voxel::FLAG_OUTLINE_MASK : 0;
+}
+#endif
+
 bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	if (!intersects(_region, region)) {
 		return false;
@@ -171,11 +178,13 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 		r.cropTo(_region);
 	}
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	// Create a 32-bit mask for one voxel with the flags bits set
+#ifdef VENGI_COMPACT_VOXEL
+	const uint8_t flagsMask8 = compactFlagsMask(flags);
+	const uint64_t flagsMask64 = flagsMask8 * UINT64_C(0x0101010101010101);
+#else
 	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
-	// Create a 64-bit mask for two voxels at once
 	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+#endif
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
@@ -194,10 +203,24 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
+#ifdef VENGI_COMPACT_VOXEL
+			uint8_t *lineStart = (uint8_t *)&_data[baseIndex];
+			int i = 0;
+			for (; i + 8 <= lineLength; i += 8) {
+				uint64_t val;
+				core_memcpy(&val, &lineStart[i], sizeof(val));
+				if (val & flagsMask64) {
+					return true;
+				}
+			}
+			for (; i < lineLength; ++i) {
+				if (lineStart[i] & flagsMask8) {
+					return true;
+				}
+			}
+#else
 			int offset = 0;
 			int remaining = lineLength;
-
-			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
 				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex];
 				if (*data32 & flagsMask32) {
@@ -206,8 +229,6 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 				offset = 1;
 				remaining--;
 			}
-
-			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
 			const uint64_t *data64 = (const uint64_t *)&_data[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
@@ -215,14 +236,13 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 					return true;
 				}
 			}
-
-			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
 				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				if (*data32 & flagsMask32) {
 					return true;
 				}
 			}
+#endif
 		}
 	}
 	return false;
@@ -238,14 +258,15 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	// Create a 32-bit mask for one voxel with the flags bits set
+#ifdef VENGI_COMPACT_VOXEL
+	const uint8_t clearMask8 = (flags & FlagOutline) ? (uint8_t)~Voxel::FLAG_OUTLINE_MASK : 0xFF;
+	const uint64_t clearMask64 = clearMask8 * UINT64_C(0x0101010101010101);
+#else
 	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
-	// Create a 64-bit mask for two voxels at once
 	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
-	// Invert the mask for clearing flags
 	const uint64_t clearMask64 = ~flagsMask64;
 	const uint32_t clearMask32 = ~flagsMask32;
+#endif
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
@@ -264,29 +285,37 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
+#ifdef VENGI_COMPACT_VOXEL
+			uint8_t *lineStart = (uint8_t *)&_data[baseIndex];
+			int i = 0;
+			for (; i + 8 <= lineLength; i += 8) {
+				uint64_t val;
+				core_memcpy(&val, &lineStart[i], sizeof(val));
+				val &= clearMask64;
+				core_memcpy(&lineStart[i], &val, sizeof(val));
+			}
+			for (; i < lineLength; ++i) {
+				lineStart[i] &= clearMask8;
+			}
+#else
 			int offset = 0;
 			int remaining = lineLength;
-
-			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
 				*data32 &= clearMask32;
 				offset = 1;
 				remaining--;
 			}
-
-			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
 			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] &= clearMask64;
 			}
-
-			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 &= clearMask32;
 			}
+#endif
 		}
 	}
 }
@@ -301,11 +330,13 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	// Create a 32-bit mask for one voxel with the flags bits set
+#ifdef VENGI_COMPACT_VOXEL
+	const uint8_t flagsMask8 = compactFlagsMask(flags);
+	const uint64_t flagsMask64 = flagsMask8 * UINT64_C(0x0101010101010101);
+#else
 	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
-	// Create a 64-bit mask for two voxels at once
 	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+#endif
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
@@ -324,29 +355,37 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
+#ifdef VENGI_COMPACT_VOXEL
+			uint8_t *lineStart = (uint8_t *)&_data[baseIndex];
+			int i = 0;
+			for (; i + 8 <= lineLength; i += 8) {
+				uint64_t val;
+				core_memcpy(&val, &lineStart[i], sizeof(val));
+				val ^= flagsMask64;
+				core_memcpy(&lineStart[i], &val, sizeof(val));
+			}
+			for (; i < lineLength; ++i) {
+				lineStart[i] ^= flagsMask8;
+			}
+#else
 			int offset = 0;
 			int remaining = lineLength;
-
-			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
 				*data32 ^= flagsMask32;
 				offset = 1;
 				remaining--;
 			}
-
-			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
 			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] ^= flagsMask64;
 			}
-
-			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 ^= flagsMask32;
 			}
+#endif
 		}
 	}
 }
@@ -361,11 +400,13 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	// Create a 32-bit mask for one voxel with the flags bits set
+#ifdef VENGI_COMPACT_VOXEL
+	const uint8_t flagsMask8 = compactFlagsMask(flags);
+	const uint64_t flagsMask64 = flagsMask8 * UINT64_C(0x0101010101010101);
+#else
 	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
-	// Create a 64-bit mask for two voxels at once
 	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+#endif
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
@@ -384,29 +425,37 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
+#ifdef VENGI_COMPACT_VOXEL
+			uint8_t *lineStart = (uint8_t *)&_data[baseIndex];
+			int i = 0;
+			for (; i + 8 <= lineLength; i += 8) {
+				uint64_t val;
+				core_memcpy(&val, &lineStart[i], sizeof(val));
+				val |= flagsMask64;
+				core_memcpy(&lineStart[i], &val, sizeof(val));
+			}
+			for (; i < lineLength; ++i) {
+				lineStart[i] |= flagsMask8;
+			}
+#else
 			int offset = 0;
 			int remaining = lineLength;
-
-			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
 				*data32 |= flagsMask32;
 				offset = 1;
 				remaining--;
 			}
-
-			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
 			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] |= flagsMask64;
 			}
-
-			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
 				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 |= flagsMask32;
 			}
+#endif
 		}
 	}
 }
@@ -569,9 +618,9 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 }
 
 Voxel *RawVolume::copyVoxels() const {
-	const size_t size = RawVolume::size(_region);
-	Voxel *rawCopy = (Voxel *)core_malloc(size);
-	core_memcpy((void *)rawCopy, (const void *)_data, size);
+	const size_t asize = RawVolume::allocSize(_region);
+	Voxel *rawCopy = (Voxel *)core_malloc(asize);
+	core_memcpy((void *)rawCopy, (const void *)_data, asize);
 	return rawCopy;
 }
 
@@ -663,8 +712,8 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
-	// Create the data
-	const size_t size = RawVolume::size(_region);
+	// Create the data - allocSize pads to 8-byte boundary for bulk uint64_t operations
+	const size_t size = RawVolume::allocSize(_region);
 	_data = (Voxel *)core_malloc(size);
 	if (_data == nullptr) {
 		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for a volume with the dimensions %i:%i:%i",
@@ -685,11 +734,19 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 	if (!_region.isValid()) {
 		return;
 	}
-	const size_t size = _region.stride() * depth();
+	const size_t asize = RawVolume::allocSize(_region);
+#ifdef VENGI_COMPACT_VOXEL
+	static_assert(sizeof(Voxel) == sizeof(uint8_t), "Compact voxel is expected to be 1 byte");
+	uint8_t val;
+	core_memcpy(&val, &voxel, sizeof(val));
+	core_memset((void *)_data, val, asize);
+#else
+	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
+	const size_t count = asize / sizeof(uint32_t);
 	uint32_t val;
 	core_memcpy(&val, &voxel, sizeof(val));
-	core_memset4((void *)_data, val, size);
-	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
+	core_memset4((void *)_data, val, count);
+#endif
 }
 
 } // namespace voxel

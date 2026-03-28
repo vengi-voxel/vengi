@@ -45,6 +45,111 @@ static constexpr const char* VoxelTypeStr[] = {
 };
 static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
+#ifdef VENGI_COMPACT_VOXEL
+
+/**
+ * Compact 1-byte voxel representation for reduced memory usage (4x savings).
+ * Bit 7: FlagOutline (selection)
+ * Bit 6: solid flag (1 = non-air, 0 = air)
+ * Bits 0-5: color index (0-63)
+ *
+ * Normals, bone indices, and VoxelType::Transparent are not supported.
+ * Enable via cmake -DUSE_COMPACT_VOXEL=ON
+ */
+class Voxel {
+public:
+	static constexpr uint8_t FLAG_OUTLINE_MASK = 0x80;
+	static constexpr uint8_t SOLID_MASK = 0x40;
+	static constexpr uint8_t COLOR_MASK = 0x3F;
+
+	CORE_FORCE_INLINE constexpr Voxel() : _data(0) {
+	}
+
+	CORE_FORCE_INLINE constexpr Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u, uint8_t boneIdx = 0u)
+		: _data(material == VoxelType::Air ? 0 : (SOLID_MASK | (colorIndex & COLOR_MASK))) {
+		if (flags & FlagOutline) {
+			_data |= FLAG_OUTLINE_MASK;
+		}
+		(void)normalIndex;
+		(void)boneIdx;
+	}
+
+	CORE_FORCE_INLINE constexpr bool operator==(const Voxel& other) const {
+		return _data == other._data;
+	}
+
+	CORE_FORCE_INLINE bool isSame(const Voxel& other) const {
+		return (_data & (SOLID_MASK | COLOR_MASK)) == (other._data & (SOLID_MASK | COLOR_MASK));
+	}
+
+	CORE_FORCE_INLINE Voxel(const Voxel& other) = default;
+
+	CORE_FORCE_INLINE constexpr Voxel &operator=(const Voxel &other) = default;
+
+	CORE_FORCE_INLINE bool isSameType(const Voxel& other) const {
+		return getMaterial() == other.getMaterial();
+	}
+
+	CORE_FORCE_INLINE uint8_t getColor() const {
+		return _data & COLOR_MASK;
+	}
+
+	CORE_FORCE_INLINE void setNormal(uint8_t normalIndex) {
+		(void)normalIndex;
+	}
+
+	CORE_FORCE_INLINE uint8_t getNormal() const {
+		return NO_NORMAL;
+	}
+
+	CORE_FORCE_INLINE void setColor(uint8_t colorIndex) {
+		_data = (_data & (FLAG_OUTLINE_MASK | SOLID_MASK)) | (colorIndex & COLOR_MASK);
+	}
+
+	CORE_FORCE_INLINE VoxelType getMaterial() const {
+		return (_data & SOLID_MASK) ? VoxelType::Generic : VoxelType::Air;
+	}
+
+	CORE_FORCE_INLINE void setMaterial(VoxelType material) {
+		if (material == VoxelType::Air) {
+			_data = 0;
+		} else {
+			_data |= SOLID_MASK;
+		}
+	}
+
+	CORE_FORCE_INLINE uint8_t getFlags() const {
+		return (_data & FLAG_OUTLINE_MASK) ? FlagOutline : 0;
+	}
+
+	CORE_FORCE_INLINE uint8_t getBoneIdx() const {
+		return 0;
+	}
+
+	CORE_FORCE_INLINE void setBoneIdx(uint8_t boneIdx) {
+		(void)boneIdx;
+	}
+
+	void setFlags(uint8_t flags);
+
+	void setOutline() {
+		setFlags(FlagOutline);
+	}
+
+	void setNormalReset() {
+	}
+
+	constexpr bool resetNormal() const {
+		return false;
+	}
+
+private:
+	uint8_t _data;
+};
+static_assert(sizeof(Voxel) == 1, "Compact voxel size is expected to be 1 byte");
+
+#else // !VENGI_COMPACT_VOXEL
+
 class Voxel {
 public:
 	CORE_FORCE_INLINE constexpr Voxel()
@@ -157,6 +262,8 @@ private:
 	uint8_t _boneIdx;
 };
 static_assert(sizeof(Voxel) == 4, "Voxel size is expected to be 4 bytes");
+
+#endif // VENGI_COMPACT_VOXEL
 
 CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u, uint8_t boneIdx = 0u) {
 	return Voxel(type, colorIndex, normalIndex, flags, boneIdx);

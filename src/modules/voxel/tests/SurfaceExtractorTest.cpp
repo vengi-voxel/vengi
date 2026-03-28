@@ -226,7 +226,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherPlane) {
 	const Region region(0, 0, 0, 4, 0, 4);
 	RawVolume volume(region);
 
-	const uint8_t testColor = 100;
+	const uint8_t testColor = 37;
 	// Create a 3x3 plane at y=0
 	for (int x = 1; x <= 3; ++x) {
 		for (int z = 1; z <= 3; ++z) {
@@ -311,7 +311,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherVertexPositions) {
 	const Region region(0, 0, 0, 2, 2, 2);
 	RawVolume volume(region);
 
-	const uint8_t testColor = 123;
+	const uint8_t testColor = 50;
 	// Single voxel at (1,1,1)
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
@@ -400,6 +400,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShape) {
 	}
 }
 
+#ifndef VENGI_COMPACT_VOXEL
 TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 	// Test that transparent voxels go into the correct mesh
 	const Region region(0, 0, 0, 2, 2, 2);
@@ -436,6 +437,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 		EXPECT_EQ(transVertices[i].colorIndex, transColor) << "Transparent vertex " << i << " color mismatch";
 	}
 }
+#endif
 
 TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherEmptyRegion) {
 	// Test empty region doesn't crash and produces no geometry
@@ -578,7 +580,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsZAxis) {
 	const Region region(0, 0, 0, 1, 1, 3);
 	RawVolume volume(region);
 
-	const uint8_t testColor = 70;
+	const uint8_t testColor = 33;
 	volume.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, testColor));
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
@@ -611,7 +613,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	const Region region(0, 0, 0, 3, 1, 3);
 	RawVolume volume(region);
 
-	const uint8_t testColor = 80;
+	const uint8_t testColor = 25;
 
 	// Create an L shape in XZ plane
 	// Horizontal part: voxels at (0,0,0), (1,0,0), (2,0,0)
@@ -669,7 +671,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherCubeCornerVoxels) {
 	const Region region(0, 0, 0, 3, 3, 3);
 	RawVolume volume(region);
 
-	const uint8_t testColor = 90;
+	const uint8_t testColor = 15;
 
 	// Place voxels at all 8 corners
 	volume.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, testColor));
