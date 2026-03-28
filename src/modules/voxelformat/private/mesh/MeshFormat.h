@@ -81,7 +81,7 @@ protected:
 	 * @brief Color flatten factor - see @c PosSampling::getColor()
 	 */
 	bool _weightedAverage = true;
-	core_trace_mutex(core::Lock, _mutex, "PosSampling");
+
 
 	struct ChunkMeshExt {
 		ChunkMeshExt() = default;
@@ -194,6 +194,11 @@ protected:
 	 * @param[out] node The node to create the volume in
 	 */
 	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, const MeshMaterialArray &meshMaterialArray, bool fillHollow) const;
+
+	int voxelizeNodeChunked(const core::String &name, scenegraph::SceneGraph &sceneGraph,
+							MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray,
+							const glm::vec3 &trisMins, const voxel::Region &region,
+							const palette::NormalPalette &normalPalette, int parent, bool resetOrigin) const;
 
 public:
 	MeshFormat();

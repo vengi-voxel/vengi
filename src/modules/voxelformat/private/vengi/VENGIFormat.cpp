@@ -302,6 +302,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	wrap(stream.readInt32(maxs.z))
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
+
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	node.setVolume(v);
 	const palette::Palette &palette = node.palette();
@@ -314,53 +315,36 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				uint8_t normal;
 			};
 		};
-		voxel::RawVolume::Sampler sampler(*v);
-		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 					const bool air = stream.readBool();
 					if (air) {
-						sampler3.movePositiveZ();
 						continue;
 					}
-
 					Data data;
 					data.normal = NO_NORMAL;
 					stream.readUInt16(data.data);
-					sampler3.setVoxel(voxel::createVoxel(palette, data.color, data.normal));
-					sampler3.movePositiveZ();
+					node.volume()->setVoxel(x, y, z, voxel::createVoxel(palette, data.color, data.normal));
 				}
-				sampler2.movePositiveY();
 			}
-			sampler.movePositiveX();
 		}
 	} else {
-		voxel::RawVolume::Sampler sampler(*v);
-		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 					const bool air = stream.readBool();
 					if (air) {
-						sampler3.movePositiveZ();
 						continue;
 					}
-
 					uint8_t color;
 					stream.readUInt8(color);
-					sampler3.setVoxel(voxel::createVoxel(palette, color));
-					sampler3.movePositiveZ();
+					node.volume()->setVoxel(x, y, z, voxel::createVoxel(palette, color));
 				}
-				sampler2.movePositiveY();
 			}
-			sampler.movePositiveX();
 		}
 	}
+
 	return true;
 }
 

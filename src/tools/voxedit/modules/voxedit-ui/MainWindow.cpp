@@ -331,6 +331,31 @@ void MainWindow::checkPossibleVolumeSplit() {
 	if (viewModeNoSplit(_viewMode->intVal())) {
 		return;
 	}
+	const int splitSize = core::getVar(cfg::VoxelSplitOnLoad)->intVal();
+	if (splitSize > 0) {
+		// User selected a max volume size at load time - don't show the split popup.
+		// Check if any node is larger than the requested split size.
+		bool hasOversized = false;
+		for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = *iter;
+			const voxel::RawVolume *v = node.volume();
+			if (v == nullptr) {
+				continue;
+			}
+			const glm::ivec3 dims = v->region().getDimensionsInVoxels();
+			if (glm::any(glm::greaterThan(dims, glm::ivec3(splitSize)))) {
+				hasOversized = true;
+				break;
+			}
+		}
+		if (hasOversized) {
+			core::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(splitSize);
+			_sceneMgr->splitVolumes();
+		} else {
+			Log::info("Merge-up is not yet implemented - regenerate with: -set voxformat_voxelize_chunksize %i", splitSize);
+		}
+		return;
+	}
 	_popupVolumeSplit = _sceneMgr->exceedsMaxSuggestedVolumeSize();
 }
 
@@ -751,6 +776,31 @@ void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"), true);
+		{
+			const char *splitSizes[] = {"32", "64", "128", "256"};
+			const int splitValues[] = {32, 64, 128, 256};
+			const core::VarPtr &splitVar = core::getVar(cfg::VoxEditMaxSuggestedVolumeSize);
+			int currentVal = splitVar->intVal();
+			int currentIdx = 2;
+			for (int i = 0; i < lengthof(splitValues); ++i) {
+				if (currentVal == splitValues[i]) {
+					currentIdx = i;
+					break;
+				}
+			}
+			if (ImGui::BeginCombo(_("Split size"), splitSizes[currentIdx])) {
+				for (int i = 0; i < lengthof(splitSizes); ++i) {
+					const bool selected = i == currentIdx;
+					if (ImGui::Selectable(splitSizes[i], selected)) {
+						splitVar->setVal(splitValues[i]);
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
 		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
 			_sceneMgr->splitVolumes();

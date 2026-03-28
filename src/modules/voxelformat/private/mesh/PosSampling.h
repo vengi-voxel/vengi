@@ -47,6 +47,7 @@ public:
 	}
 
 	bool add(uint32_t area, color::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx);
+	const PosSamplingEntry &entry(int i) const { return entries[i]; }
 	/**
 	 * @brief Computes the color based on the position sampling entries.
 	 *
