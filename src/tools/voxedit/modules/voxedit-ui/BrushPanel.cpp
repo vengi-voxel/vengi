@@ -324,6 +324,12 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 	ImGui::TooltipCommand("togglelinebrushbezier");
 	ImGui::TooltipTextUnformatted(_("First click locks the segment end, the gizmo edits its control point, and pending "
 									"segments commit when you apply or leave the brush"));
+
+	int thickness = brush.thickness();
+	if (ImGui::InputInt(_("Thickness"), &thickness)) {
+		brush.setThickness(thickness);
+	}
+
 	if (bezier && brush.pendingSegmentCount() > 0) {
 		ImGui::SeparatorText(_("Pending segments"));
 		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg |

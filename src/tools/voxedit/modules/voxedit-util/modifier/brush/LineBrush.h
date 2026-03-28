@@ -68,6 +68,8 @@ protected:
 	bool _hasCustomControlPoint = false;
 	/** Quadratic bezier control point */
 	glm::ivec3 _controlPoint{0};
+	/** Line thickness in voxels (1 = single voxel) */
+	int _thickness = 1;
 	/** 9-bit pattern controlling which voxels are placed */
 	LineStipplePattern _stipplePattern;
 
@@ -129,6 +131,7 @@ public:
 	 */
 	bool continuous() const;
 	bool bezier() const;
+	int thickness() const;
 
 	/**
 	 * @brief Enable or disable continuous line mode
@@ -136,6 +139,7 @@ public:
 	 */
 	void setContinuous(bool continuous);
 	void setBezier(bool bezier);
+	void setThickness(int thickness);
 	void setControlPoint(const glm::ivec3 &controlPoint);
 	int pendingSegmentCount() const;
 	int selectedSegment() const;
@@ -166,6 +170,14 @@ inline bool LineBrush::bezier() const {
 
 inline void LineBrush::setContinuous(bool continuous) {
 	_continuous = continuous;
+}
+
+inline int LineBrush::thickness() const {
+	return _thickness;
+}
+
+inline void LineBrush::setThickness(int thickness) {
+	_thickness = glm::clamp(thickness, 1, 64);
 }
 
 inline void LineBrush::setBezier(bool bezier) {

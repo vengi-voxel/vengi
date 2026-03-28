@@ -74,6 +74,7 @@ void LineBrush::reset() {
 	_lastVolume = nullptr;
 	_hasCustomControlPoint = false;
 	_controlPoint = glm::zero<glm::ivec3>();
+	_thickness = 1;
 }
 
 bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
@@ -83,7 +84,7 @@ bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 
 	if (_commitPending) {
 		for (const BezierSegment &segment : _segments) {
-			voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern);
+			voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern, _thickness);
 		}
 		return true;
 	}
@@ -95,12 +96,12 @@ bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	}
 
 	for (const BezierSegment &segment : _segments) {
-		voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern);
+		voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern, _thickness);
 	}
 	if (allowNextBezierPreview(ctx, _selectedSegment, (int)_segments.size()) &&
 		ctx.referencePos != ctx.cursorPosition) {
 		const BezierSegment previewSegment{ctx.referencePos, ctx.cursorPosition, previewControlPoint(ctx)};
-		voxelgenerator::shape::drawBezierSegment(wrapper, previewSegment, ctx.cursorVoxel, _stipplePattern);
+		voxelgenerator::shape::drawBezierSegment(wrapper, previewSegment, ctx.cursorVoxel, _stipplePattern, _thickness);
 	}
 	return true;
 }
@@ -112,12 +113,12 @@ void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrappe
 	voxel::Voxel voxel = ctx.cursorVoxel;
 	int stippleState = 0;
 	if (!_bezier) {
-		voxelgenerator::shape::drawStippledLine(wrapper, start, end, voxel, _stipplePattern, stippleState, false);
+		voxelgenerator::shape::drawStippledLine(wrapper, start, end, voxel, _stipplePattern, stippleState, false, _thickness);
 		return;
 	}
 
 	voxelgenerator::shape::drawBezierSegment(wrapper, BezierSegment{start, end, controlPoint(ctx)}, voxel,
-											 _stipplePattern);
+											 _stipplePattern, _thickness);
 }
 
 void LineBrush::endBrush(BrushContext &ctx) {
@@ -149,7 +150,7 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 	if (_bezier) {
 		voxel::Region region = voxel::Region::InvalidRegion;
 		for (const BezierSegment &segment : _segments) {
-			const voxel::Region segmentBounds = voxelgenerator::shape::bezierRegion(segment);
+			const voxel::Region segmentBounds = voxelgenerator::shape::bezierRegion(segment, _thickness);
 			if (!region.isValid()) {
 				region = segmentBounds;
 			} else {
@@ -159,7 +160,7 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 		if (allowNextBezierPreview(ctx, _selectedSegment, (int)_segments.size()) &&
 			ctx.referencePos != ctx.cursorPosition) {
 			const voxel::Region previewBounds =
-				voxelgenerator::shape::bezierRegion({ctx.referencePos, ctx.cursorPosition, previewControlPoint(ctx)});
+				voxelgenerator::shape::bezierRegion({ctx.referencePos, ctx.cursorPosition, previewControlPoint(ctx)}, _thickness);
 			if (!region.isValid()) {
 				region = previewBounds;
 			} else {
@@ -170,6 +171,10 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 	}
 	glm::ivec3 mins = glm::min(ctx.referencePos, ctx.cursorPosition);
 	glm::ivec3 maxs = glm::max(ctx.referencePos, ctx.cursorPosition);
+	if (_thickness > 1) {
+		mins -= _thickness;
+		maxs += _thickness;
+	}
 	return voxel::Region(mins, maxs);
 }
 
