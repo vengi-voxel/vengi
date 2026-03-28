@@ -332,18 +332,16 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 
 	if (bezier && brush.pendingSegmentCount() > 0) {
 		ImGui::SeparatorText(_("Pending segments"));
-		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg |
+		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
 										   ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_SizingStretchProp;
-		if (ImGui::BeginTable("##beziersegments", 3, tableFlags)) {
+		if (ImGui::BeginTable("##beziersegments", 2, tableFlags)) {
 			const uint32_t fixedCol = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize;
-			ImGui::TableSetupColumn("##segidx", fixedCol);
-			ImGui::TableSetupColumn(_("Coordinates"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(_("Segment"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##segdel", fixedCol);
 
 			int removeIdx = -1;
 			for (int i = 0; i < brush.pendingSegmentCount(); ++i) {
-				const math::BezierSegment *segment = brush.segment(i);
-				if (segment == nullptr) {
+				if (brush.segment(i) == nullptr) {
 					continue;
 				}
 				ImGui::PushID(i);
@@ -351,17 +349,11 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				const core::String idx = core::String::format("%i", i + 1);
-				if (ImGui::Selectable(idx.c_str(), selected,
+				const core::String label = core::String::format(_("Segment %i"), i + 1);
+				if (ImGui::Selectable(label.c_str(), selected,
 									  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
 					brush.selectSegment(i);
 				}
-
-				ImGui::TableNextColumn();
-				ImGui::Text("(%i, %i, %i) " ICON_LC_ARROW_RIGHT " (%i, %i, %i)", segment->start.x, segment->start.y,
-							segment->start.z, segment->end.x, segment->end.y, segment->end.z);
-				ImGui::TextDisabled(_("ctrl: (%i, %i, %i)"), segment->control.x, segment->control.y,
-									segment->control.z);
 
 				ImGui::TableNextColumn();
 				if (ImGui::IconButton(ICON_LC_TRASH_2, "")) {
