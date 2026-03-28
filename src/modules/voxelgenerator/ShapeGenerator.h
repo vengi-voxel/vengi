@@ -43,11 +43,15 @@ inline bool isCollinear(const math::BezierSegment& segment) {
 	return glm::abs(cross.x) < 0.0001f && glm::abs(cross.y) < 0.0001f && glm::abs(cross.z) < 0.0001f;
 }
 
-inline voxel::Region bezierRegion(const math::BezierSegment& segment) {
+inline voxel::Region bezierRegion(const math::BezierSegment& segment, int thickness = 1) {
 	glm::ivec3 mins = glm::min(segment.start, segment.end);
 	glm::ivec3 maxs = glm::max(segment.start, segment.end);
 	mins = glm::min(mins, segment.control);
 	maxs = glm::max(maxs, segment.control);
+	if (thickness > 1) {
+		mins -= thickness;
+		maxs += thickness;
+	}
 	return voxel::Region(mins, maxs);
 }
 
@@ -406,7 +410,7 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 
 template<class Volume, class VoxelType, class Pattern>
 bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel,
-						 const Pattern& stipplePattern, int& stippleState, bool skipFirst = false) {
+						 const Pattern& stipplePattern, int& stippleState, bool skipFirst = false, int thickness = 1) {
 	bool firstPoint = true;
 	bool consumedPoint = false;
 	bool sawVisitedPoint = false;
@@ -421,7 +425,11 @@ bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 		lastVisited = sampler.position();
 		consumedPoint = true;
 		if (useStipplePattern(stipplePattern, stippleState)) {
-			sampler.setVoxel(voxel);
+			if (thickness > 1) {
+				createEllipse(volume, sampler.position(), math::Axis::Y, thickness, thickness, thickness, voxel);
+			} else {
+				sampler.setVoxel(voxel);
+			}
 		}
 		++stippleState;
 		return true;
@@ -429,7 +437,11 @@ bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 	if (!(skipFirst && start == end) && volume.region().containsPoint(end) && (!sawVisitedPoint || lastVisited != end)) {
 		consumedPoint = true;
 		if (useStipplePattern(stipplePattern, stippleState)) {
-			volume.setVoxel(end.x, end.y, end.z, voxel);
+			if (thickness > 1) {
+				createEllipse(volume, end, math::Axis::Y, thickness, thickness, thickness, voxel);
+			} else {
+				volume.setVoxel(end.x, end.y, end.z, voxel);
+			}
 		}
 		++stippleState;
 	}
@@ -473,14 +485,14 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 
 template<class Volume, class VoxelType, class Pattern>
 void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const VoxelType& voxel,
-						   const Pattern& stipplePattern) {
-	voxel::Region clipped = bezierRegion(segment);
+						   const Pattern& stipplePattern, int thickness = 1) {
+	voxel::Region clipped = bezierRegion(segment, thickness);
 	if (!clipped.cropTo(volume.region())) {
 		return;
 	}
 	if (isCollinear(segment)) {
 		int stippleState = 0;
-		(void)drawStippledLine(volume, segment.start, segment.end, voxel, stipplePattern, stippleState, false);
+		(void)drawStippledLine(volume, segment.start, segment.end, voxel, stipplePattern, stippleState, false, thickness);
 		return;
 	}
 	using EvalVec = typename math::Bezier<int>::EvalVec;
@@ -515,7 +527,7 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 		const glm::ivec3 endPos = roundPoint(subEnd);
 		if (depth >= MaxSubdivisionDepth || chebyshevDistance(startPos, endPos) <= 1) {
 			const bool skipFirst = hasLastPoint && lastPoint == startPos;
-			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst)) {
+			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst, thickness)) {
 				hasLastPoint = true;
 				lastPoint = endPos;
 			}
@@ -527,7 +539,7 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 		const EvalVec mid = (leftControl + rightControl) * 0.5f;
 		if (roundPoint(mid) == startPos && roundPoint(mid) == endPos) {
 			const bool skipFirst = hasLastPoint && lastPoint == startPos;
-			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst)) {
+			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst, thickness)) {
 				hasLastPoint = true;
 				lastPoint = endPos;
 			}
