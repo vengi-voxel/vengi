@@ -1233,29 +1233,16 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
 }
 
-void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
+void Palette::toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const {
+	core_memset(materialColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
+	core_memset(emitColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = color::fromRGBA(_colors[i]);
-		vec4f[i] = color;
-	}
-	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f[i] = glm::zero<glm::highp_vec4>();
-	}
-}
-
-void Palette::emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4 *vec4f) const {
-	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &c = materialColors[i];
+		const glm::vec4 &c = color::fromRGBA(_colors[i]);
+		materialColors[i] = c;
 		const Material &mat = _materials[i];
 		if (mat.has(MaterialEmit)) {
-			const float emit = mat.emit;
-			vec4f[i] = emit * c;
-		} else {
-			vec4f[i] = glm::zero<glm::highp_vec4>();
+			emitColors[i] = mat.emit * c;
 		}
-	}
-	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f[i] = glm::zero<glm::highp_vec4>();
 	}
 }
 

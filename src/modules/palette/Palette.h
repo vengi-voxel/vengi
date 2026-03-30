@@ -64,20 +64,15 @@ public:
 	glm::vec4 color4(uint8_t paletteColorIdx) const;
 	void setColor(uint8_t paletteColorIdx, const color::RGBA &rgba);
 	void setMaterial(uint8_t i, const Material &material);
-	/**
-	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The target buffer must at least have space for 256 entries - even if the palette has less entries
-	 */
-	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	image::ImagePtr asImage() const;
 
 	color::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
-	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The target buffer must at least have space for 256 entries - even if the palette has less entries
+	 * @brief Combined conversion of palette colors and emit colors in a single pass for better cache locality
+	 * @note Both target buffers must at least have space for 256 entries
 	 */
-	void emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4 *vec4f) const;
+	void toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const;
 	bool hasAlpha(uint8_t paletteColorIdx) const;
 	bool hasEmit(uint8_t paletteColorIdx) const;
 	void setMaterialType(uint8_t paletteColorIdx, MaterialType type);

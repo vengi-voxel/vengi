@@ -525,8 +525,7 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 
 	if (palette.hash() != _paletteHash) {
 		_paletteHash = palette.hash();
-		palette.toVec4f(_voxelShaderVertData.materialcolor);
-		palette.emitToVec4f(_voxelShaderVertData.materialcolor, _voxelShaderVertData.glowcolor);
+		palette.toVec4f(_voxelShaderVertData.materialcolor, _voxelShaderVertData.glowcolor);
 		static_assert(lengthof(_voxelShaderVertData.materialcolor) == palette::PaletteMaxColors);
 		static_assert(lengthof(_voxelShaderVertData.glowcolor) == palette::PaletteMaxColors);
 	}
