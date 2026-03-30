@@ -40,6 +40,9 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
 		ImGui::Text(_("Pending meshes: %i"), stats.pendingMeshes);
 		ImGui::Text(_("Culled volumes: %i"), stats.culledVolumes);
+		ImGui::Text(_("Mapped nodes: %i"), stats.mappedNodes);
+		ImGui::Text(_("Volume index high-water: %i"), stats.nextVolumeIdx);
+		ImGui::Text(_("Free volume indices: %i"), stats.freeVolumeIndices);
 		ImGui::CheckboxVar(cfg::RenderCullNodes);
 		ImGui::CheckboxVar(cfg::RenderCullBuffers);
 		ImGui::Text(_("Draw calls: %i"), video::drawCalls());

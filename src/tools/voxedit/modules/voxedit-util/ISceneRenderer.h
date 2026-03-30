@@ -33,6 +33,9 @@ public:
 		int pendingExtractions = 0;
 		int pendingMeshes = 0;
 		int culledVolumes = 0;
+		int freeVolumeIndices = 0;
+		int nextVolumeIdx = 0;
+		int mappedNodes = 0;
 	};
 
 	virtual void update() {

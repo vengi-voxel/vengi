@@ -99,6 +99,9 @@ SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
 	stats.pendingExtractions = _meshState->pendingExtractions();
 	stats.pendingMeshes = _meshState->pendingMeshes();
 	stats.culledVolumes = _sceneGraphRenderer.culledVolumeCount();
+	stats.freeVolumeIndices = _sceneGraphRenderer.freeVolumeIndexCount();
+	stats.nextVolumeIdx = _sceneGraphRenderer.nextVolumeIdx();
+	stats.mappedNodes = _sceneGraphRenderer.mappedNodeCount();
 	return stats;
 }
 
@@ -313,7 +316,7 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 }
 
 const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGraphNode &node) {
-	int idx = voxelrender::SceneGraphRenderer::getVolumeIdx(node);
+	int idx = _sceneGraphRenderer.getVolumeIdx(node);
 	const voxel::RawVolume *v = _meshState->volume(idx);
 	if (v == nullptr) {
 		v = node.volume();
@@ -336,7 +339,10 @@ void SceneRenderer::markDirty() {
 }
 
 void SceneRenderer::unhideNode(int nodeId) {
-	const int idx = voxelrender::SceneGraphRenderer::getVolumeIdx(nodeId);
+	const int idx = _sceneGraphRenderer.getVolumeIdx(nodeId);
+	if (idx < 0) {
+		return;
+	}
 	_meshState->hide(idx, false);
 }
 
