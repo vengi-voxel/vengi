@@ -6,6 +6,7 @@
 #include "app/ForParallel.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "math/Math.h"
 #include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -155,36 +156,29 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 												   const scenegraph::SceneGraphNode &node, int idx) const {
 	core_trace_scoped(PrepareMeshStateTransform);
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
-	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-	const glm::vec3 &scale = transform.worldScale();
-	const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) + (int)std::signbit(scale.z);
-	if (negative == 1 || negative == 3) {
-		meshState->setCullFace(idx, video::Face::Front);
+
+	// Fast path for single-keyframe nodes (common case): use the pre-computed world
+	// matrix directly from SceneGraphTransform, avoiding the transformForFrame() mutex
+	// lock + hash map lookup.
+	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames();
+	const glm::mat4 *wmPtr;
+	scenegraph::FrameTransform frameTransform;
+	if (keyFrames.size() == 1) {
+		wmPtr = &keyFrames[0].transform().worldMatrix();
 	} else {
-		meshState->setCullFace(idx, video::Face::Back);
+		frameTransform = sceneGraph.transformForFrame(node, frame);
+		wmPtr = &frameTransform.worldMatrix();
 	}
+	const glm::mat4 &wm = *wmPtr;
+	meshState->setCullFace(idx, math::det3x3(wm) < 0.0f ? video::Face::Front : video::Face::Back);
+
 	const glm::vec3 &pivot = node.pivot();
-	const glm::mat4 &worldMatrix = transform.calculateWorldMatrix(pivot, region.getDimensionsInVoxels());
-	const glm::vec3 &mins = region.getLowerCornerf();
-	const glm::vec3 &maxs = region.getUpperCornerf();
-	const glm::vec3 corners[] = {mins,
-								 glm::vec3(maxs.x, mins.y, mins.z),
-								 glm::vec3(mins.x, maxs.y, mins.z),
-								 glm::vec3(maxs.x, maxs.y, mins.z),
-								 glm::vec3(mins.x, mins.y, maxs.z),
-								 glm::vec3(maxs.x, mins.y, maxs.z),
-								 glm::vec3(mins.x, maxs.y, maxs.z),
-								 maxs};
-
-	glm::vec3 transformedMins(std::numeric_limits<float>::max());
-	glm::vec3 transformedMaxs(std::numeric_limits<float>::lowest());
-
-	for (int i = 0; i < lengthof(corners); ++i) {
-		const glm::vec3 transformed(worldMatrix * glm::vec4(corners[i], 1.0f));
-		transformedMins = glm::min(transformedMins, transformed);
-		transformedMaxs = glm::max(transformedMaxs, transformed);
-	}
-	meshState->setModelMatrix(idx, worldMatrix, transformedMins, transformedMaxs);
+	const glm::vec3 dimensions(region.getDimensionsInVoxels());
+	const glm::mat4 worldMatrix = glm::translate(wm, -pivot * dimensions);
+	glm::vec3 mins;
+	glm::vec3 maxs;
+	region.transformArvo(worldMatrix, mins, maxs);
+	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
 }
 
 bool SceneGraphRenderer::sliceViewActiveForNode(int nodeId) const {
