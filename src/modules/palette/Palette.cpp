@@ -1255,31 +1255,7 @@ void Palette::emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4
 		}
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
-	}
-}
-
-void Palette::emitToVec4f(const core::Buffer<glm::vec4> &materialColors, core::Buffer<glm::vec4> &vec4f) const {
-	vec4f.reserve(PaletteMaxColors);
-	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &c = materialColors[i];
-		const Material &mat = _materials[i];
-		vec4f.emplace_back(c * mat.emit);
-	}
-	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f.emplace_back(0.0f);
-	}
-}
-
-void Palette::emitToVec4f(core::Buffer<glm::vec4> &vec4f) const {
-	vec4f.reserve(PaletteMaxColors);
-	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 c(color::fromRGBA(_colors[i]));
-		const Material &mat = _materials[i];
-		vec4f.emplace_back(c * mat.emit);
-	}
-	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f.emplace_back(0.0f);
+		vec4f[i] = glm::zero<glm::highp_vec4>();
 	}
 }
 

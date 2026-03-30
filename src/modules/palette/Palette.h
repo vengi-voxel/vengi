@@ -75,10 +75,8 @@ public:
 	color::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The collection will have 256 entries - even if the palette has less entries
+	 * @note The target buffer must at least have space for 256 entries - even if the palette has less entries
 	 */
-	void emitToVec4f(core::Buffer<glm::vec4> &vec4f) const;
-	void emitToVec4f(const core::Buffer<glm::vec4> &materialColors, core::Buffer<glm::vec4> &vec4f) const;
 	void emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4 *vec4f) const;
 	bool hasAlpha(uint8_t paletteColorIdx) const;
 	bool hasEmit(uint8_t paletteColorIdx) const;
