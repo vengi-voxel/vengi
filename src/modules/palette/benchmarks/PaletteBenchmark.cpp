@@ -41,7 +41,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, paletteLookup)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4f)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPalette)(benchmark::State &state) {
 	palette::Palette palette;
 	palette.nippon();
 	for (auto _ : state) {
@@ -53,7 +53,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4f)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(PaletteBenchmark, normalPaletteToVec4f)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fNormalPalette)(benchmark::State &state) {
 	palette::NormalPalette normalPalette;
 	normalPalette.redAlert2();
 	glm::highp_vec4 vec4f[palette::NormalPaletteMaxNormals];
@@ -66,6 +66,6 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, normalPaletteToVec4f)(benchmark::State &sta
 BENCHMARK_REGISTER_F(PaletteBenchmark, findReplacement);
 BENCHMARK_REGISTER_F(PaletteBenchmark, paletteLookup);
 BENCHMARK_REGISTER_F(PaletteBenchmark, getClosestMatch);
-BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4f);
-BENCHMARK_REGISTER_F(PaletteBenchmark, normalPaletteToVec4f);
+BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fPalette);
+BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fNormalPalette);
 BENCHMARK_MAIN();
