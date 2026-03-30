@@ -450,7 +450,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 	}
 
 	core::DynamicArray<const scenegraph::SceneGraphNode *> cnodes;
-	cnodes.reserve(2048);
+	cnodes.reserve(nodes().size());
 	for (const auto &e : nodes()) {
 		const scenegraph::SceneGraphNode &node = e->second;
 		if (!node.visible() || !node.isAnyModelNode()) {
