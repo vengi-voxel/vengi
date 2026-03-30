@@ -261,7 +261,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 	voxel::IndexType offset = (voxel::IndexType)0;
 	const int bufferIndex = meshState->resolveIdx(idx);
 	RenderState &state = _state[bufferIndex];
-	const voxel::MeshState::MeshesMap & meshesMap = meshState->meshes(type);
+	const voxel::MeshState::MeshesMap &meshesMap = meshState->meshes(type);
 	core::VarPtr meshSize = core::getVar(cfg::VoxelMeshSize);
 	int culled = 0;
 	for (const auto &i : meshesMap) {

@@ -271,7 +271,11 @@ void SceneGraphRenderer::resetVolumes(const voxel::MeshStatePtr &meshState, cons
 		if (sceneGraph.hasNode(nodeId)) {
 			continue;
 		}
+		Log::error("Node with id %i is active in the mesh state but doesn't exist in the scene graph - resetting volume", nodeId);
 		// ignore the return value because the volume is owned by the node
+		// TODO: is this really the node id here? should be idx imo, no?
+		// TODO: instead of looping over everything maybe a SceneGraphListener::onNodeRemove should be used? that would also make the getNodeId reverse lookup unnecessary - but where to register it? the scenegraph instance can change
+		//       also ISceneRenderer already has removeNode() - why is this needed?
 		(void)_volumeRenderer.resetVolume(meshState, nodeId);
 	}
 }
