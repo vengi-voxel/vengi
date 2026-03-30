@@ -1231,16 +1231,6 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
 }
 
-void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
-	vec4f.reserve(PaletteMaxColors);
-	for (int i = 0; i < _colorCount; ++i) {
-		vec4f.push_back(color::fromRGBA(_colors[i]));
-	}
-	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f.emplace_back(0.0f);
-	}
-}
-
 void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 &color = color::fromRGBA(_colors[i]);

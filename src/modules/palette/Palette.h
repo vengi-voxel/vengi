@@ -66,9 +66,8 @@ public:
 	void setMaterial(uint8_t i, const Material &material);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The collection will have 256 entries - even if the palette has less entries
+	 * @note The target buffer must at least have space for 256 entries - even if the palette has less entries
 	 */
-	void toVec4f(core::Buffer<glm::vec4> &rgba) const;
 	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	image::ImagePtr asImage() const;

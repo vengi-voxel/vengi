@@ -40,17 +40,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, paletteLookup)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fBuffer)(benchmark::State &state) {
-	palette::Palette palette;
-	palette.nippon();
-	core::Buffer<glm::vec4> vec4f;
-	for (auto _ : state) {
-		palette.toVec4f(vec4f);
-		benchmark::DoNotOptimize(vec4f.data());
-	}
-}
-
-BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPointer)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4f)(benchmark::State &state) {
 	palette::Palette palette;
 	palette.nippon();
 	glm::highp_vec4 vec4f[256];
@@ -63,6 +53,5 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPointer)(benchmark::State &state) {
 BENCHMARK_REGISTER_F(PaletteBenchmark, findReplacement);
 BENCHMARK_REGISTER_F(PaletteBenchmark, paletteLookup);
 BENCHMARK_REGISTER_F(PaletteBenchmark, getClosestMatch);
-BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fBuffer);
-BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fPointer);
+BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4f);
 BENCHMARK_MAIN();
