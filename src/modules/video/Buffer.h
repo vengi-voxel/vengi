@@ -45,6 +45,8 @@ public:
 	 * @note This ctor can be used to put this as members to other classes.
 	 */
 	Buffer();
+	Buffer(Buffer &&other) noexcept;
+	Buffer &operator=(Buffer &&other) noexcept;
 	~Buffer();
 
 	void clearAttributes();

@@ -21,6 +21,56 @@ Buffer::Buffer(const void* data, size_t size, BufferType target) :
 Buffer::Buffer() {
 }
 
+Buffer::Buffer(Buffer &&other) noexcept
+	: _handleIdx(other._handleIdx), _attributes(core::move(other._attributes)), _vao(other._vao),
+	  _dirtyAttributes(other._dirtyAttributes) {
+	for (int i = 0; i < MAX_HANDLES; ++i) {
+		_size[i] = other._size[i];
+		other._size[i] = 0u;
+#if VIDEO_BUFFER_HASH_COMPARE
+		_hash[i] = other._hash[i];
+		other._hash[i] = 0u;
+#endif
+		_handles[i] = other._handles[i];
+		other._handles[i] = InvalidId;
+		_targets[i] = other._targets[i];
+		other._targets[i] = BufferType::Max;
+		_modes[i] = other._modes[i];
+		other._modes[i] = BufferMode::Static;
+	}
+	other._handleIdx = 0u;
+	other._vao = InvalidId;
+	other._dirtyAttributes = true;
+}
+
+Buffer &Buffer::operator=(Buffer &&other) noexcept {
+	if (this != &other) {
+		shutdown();
+		_handleIdx = other._handleIdx;
+		_attributes = core::move(other._attributes);
+		_vao = other._vao;
+		_dirtyAttributes = other._dirtyAttributes;
+		for (int i = 0; i < MAX_HANDLES; ++i) {
+			_size[i] = other._size[i];
+			other._size[i] = 0u;
+#if VIDEO_BUFFER_HASH_COMPARE
+			_hash[i] = other._hash[i];
+			other._hash[i] = 0u;
+#endif
+			_handles[i] = other._handles[i];
+			other._handles[i] = InvalidId;
+			_targets[i] = other._targets[i];
+			other._targets[i] = BufferType::Max;
+			_modes[i] = other._modes[i];
+			other._modes[i] = BufferMode::Static;
+		}
+		other._handleIdx = 0u;
+		other._vao = InvalidId;
+		other._dirtyAttributes = true;
+	}
+	return *this;
+}
+
 size_t Buffer::align(size_t x, BufferType type) {
 	size_t a = 32;
 	switch (type) {
@@ -177,7 +227,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 			// Orphaning strategy: allocate new buffer storage to avoid GPU stalls
 			// Always call bufferData with nullptr to orphan the old storage, regardless of size
 			video::bufferData(id, type, _modes[idx], nullptr, size);
-			
+
 			// Try to map and write directly to avoid extra copy
 			void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
 											  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
