@@ -28,12 +28,14 @@
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "math/Math.h"
+#include "palette/Material.h"
 #include "palette/private/GimpPalette.h"
 #include "private/PaletteFormat.h"
 
 #include <float.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace palette {
 
@@ -1234,10 +1236,10 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 &color = color::fromRGBA(_colors[i]);
-		vec4f[i] = {color.x, color.y, color.z, color.a};
+		vec4f[i] = color;
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
+		vec4f[i] = glm::zero<glm::highp_vec4>();
 	}
 }
 
@@ -1245,8 +1247,12 @@ void Palette::emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 &c = materialColors[i];
 		const Material &mat = _materials[i];
-		const float emit = mat.emit;
-		vec4f[i] = emit * c;
+		if (mat.has(MaterialEmit)) {
+			const float emit = mat.emit;
+			vec4f[i] = emit * c;
+		} else {
+			vec4f[i] = glm::zero<glm::highp_vec4>();
+		}
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
