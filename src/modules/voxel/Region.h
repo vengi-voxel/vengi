@@ -234,6 +234,7 @@ public:
 	void shrink(const glm::ivec3& v3dAmount);
 	Region rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const;
 	Region transform(const glm::mat4 &mat) const;
+	void transformArvo(const glm::mat4 &worldMatrix, glm::vec3 &transformedMins, glm::vec3 &transformedMaxs) const;
 
 	core::String toString(bool center = false) const;
 

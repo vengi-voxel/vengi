@@ -342,6 +342,27 @@ Region Region::rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const {
 	return {newMins.x, newMins.y, newMins.z, newMaxs.x - 1, newMaxs.y - 1, newMaxs.z - 1};
 }
 
+void Region::transformArvo(const glm::mat4 &worldMatrix, glm::vec3 &transformedMins, glm::vec3 &transformedMaxs) const {
+	// see "Transforming Axis-Aligned Bounding Boxes" by James Arvo
+	const glm::vec3 &mins = getLowerCornerf();
+	const glm::vec3 &maxs = getUpperCornerf();
+
+	const glm::vec3 col0(worldMatrix[0]);
+	const glm::vec3 col1(worldMatrix[1]);
+	const glm::vec3 col2(worldMatrix[2]);
+	const glm::vec3 tra(worldMatrix[3]);
+
+	const glm::vec3 xa = col0 * mins.x;
+	const glm::vec3 xb = col0 * maxs.x;
+	const glm::vec3 ya = col1 * mins.y;
+	const glm::vec3 yb = col1 * maxs.y;
+	const glm::vec3 za = col2 * mins.z;
+	const glm::vec3 zb = col2 * maxs.z;
+
+	transformedMins = glm::min(xa, xb) + glm::min(ya, yb) + glm::min(za, zb) + tra;
+	transformedMaxs = glm::max(xa, xb) + glm::max(ya, yb) + glm::max(za, zb) + tra;
+}
+
 Region Region::transform(const glm::mat4 &mat) const {
 	const glm::vec3 &rmins = getLowerCornerf();
 	const glm::vec3 &rmaxs = getUpperCornerf();
