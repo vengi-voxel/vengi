@@ -182,6 +182,14 @@ public:
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 
 	/**
+	 * @brief Premultiplies the alpha channel into the RGB channels for RGBA data.
+	 * @param pixels Pointer to the raw RGBA pixel data.
+	 * @param w Width of the image.
+	 * @param h Height of the image.
+	 */
+	static void premultiplyAlpha(uint8_t *pixels, int w, int h);
+
+	/**
 	 * @brief Writes the image as PNG to a stream.
 	 * @param stream The stream to write to.
 	 * @return true if successful, false otherwise.

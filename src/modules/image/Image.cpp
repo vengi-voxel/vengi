@@ -362,6 +362,16 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	}
 }
 
+void Image::premultiplyAlpha(uint8_t *pixels, int w, int h) {
+	const int n = w * h * 4;
+	for (int i = 0; i < n; i += 4) {
+		const uint16_t a = pixels[i + 3];
+		pixels[i + 0] = (uint8_t)((pixels[i + 0] * a + 127) / 255);
+		pixels[i + 1] = (uint8_t)((pixels[i + 1] * a + 127) / 255);
+		pixels[i + 2] = (uint8_t)((pixels[i + 2] * a + 127) / 255);
+	}
+}
+
 // OpenGL Spec 14.8.2 Coordinate Wrapping and Texel Selection
 glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
 	const int w = width();
