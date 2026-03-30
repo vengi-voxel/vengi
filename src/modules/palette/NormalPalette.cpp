@@ -237,9 +237,12 @@ glm::vec3 NormalPalette::normal3f(uint8_t index) const {
 
 void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
 	core_memset(vec4f, 0, sizeof(glm::highp_vec4) * NormalPaletteMaxNormals);
+	constexpr float scale = 2.0f / 255.0f;
 	for (int i = 0; i < _size; ++i) {
-		const glm::vec3 &norm = toVec3(_normals[i]);
-		vec4f[i] = {norm.x, norm.y, norm.z, 0.0f};
+		const color::RGBA &rgba = _normals[i];
+		vec4f[i].x = (float)rgba.r * scale - 1.0f;
+		vec4f[i].y = (float)rgba.g * scale - 1.0f;
+		vec4f[i].z = (float)rgba.b * scale - 1.0f;
 	}
 }
 

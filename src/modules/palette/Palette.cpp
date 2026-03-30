@@ -29,6 +29,7 @@
 #include "io/FormatDescription.h"
 #include "math/Math.h"
 #include "palette/Material.h"
+#include "palette/PaletteView.h"
 #include "palette/private/GimpPalette.h"
 #include "private/PaletteFormat.h"
 
@@ -1236,12 +1237,18 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 void Palette::toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const {
 	core_memset(materialColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
 	core_memset(emitColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
+	constexpr float scale = 1.0f / 255.0f;
+	constexpr uint32_t emitBit = 1u << MaterialEmit;
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &c = color::fromRGBA(_colors[i]);
-		materialColors[i] = c;
-		const Material &mat = _materials[i];
-		if (mat.has(MaterialEmit)) {
-			emitColors[i] = mat.emit * c;
+		const color::RGBA &rgba = _colors[i];
+		const float r = (float)rgba.r * scale;
+		const float g = (float)rgba.g * scale;
+		const float b = (float)rgba.b * scale;
+		const float a = (float)rgba.a * scale;
+		materialColors[i] = glm::highp_vec4(r, g, b, a);
+		if (_materials[i].mask & emitBit) {
+			const float emit = _materials[i].emit;
+			emitColors[i] = glm::highp_vec4(r * emit, g * emit, b * emit, a * emit);
 		}
 	}
 }

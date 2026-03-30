@@ -33,10 +33,6 @@ bool Material::operator==(const Material &rhs) const {
 	return true;
 }
 
-bool Material::has(MaterialProperty n) const {
-	return (mask & (1 << n)) != 0;
-}
-
 float Material::value(MaterialProperty n) const {
 	if (n == MaterialProperty::MaterialNone || n >= MaterialProperty::MaterialMax) {
 		return 0.0f;

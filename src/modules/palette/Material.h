@@ -65,7 +65,9 @@ struct Material {
 
 	bool operator==(const Material &rhs) const;
 	bool operator!=(const Material &rhs) const;
-	bool has(MaterialProperty n) const;
+	constexpr inline bool has(MaterialProperty n) const {
+		return (mask & (1 << n)) != 0;
+	}
 	float value(MaterialProperty n) const;
 	void setValue(MaterialProperty n, float value);
 };
