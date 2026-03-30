@@ -618,28 +618,6 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 	return false;
 }
 
-static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
-	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
-		// TODO: don't merge everything blindly. Check if it's enough to merge single nodes here.
-		// TODO: PERF: merging will take a lot of time for large scenes
-		Log::warn("Scene has %i nodes which exceeds the limit of %i - merging all nodes into one volume. "
-				  "This may use a lot of memory. Consider increasing MAX_VOLUMES.",
-				  (int)newSceneGraph.size(), voxel::MAX_VOLUMES);
-		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
-		if (!merged.hasVolume()) {
-			Log::error("Failed to merge the scenegraph nodes");
-			return;
-		}
-		newSceneGraph.clear();
-		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-		newNode.setVolume(merged.volume());
-		newNode.setPalette(merged.palette);
-		newNode.setNormalPalette(merged.normalPalette);
-		newSceneGraph.emplace(core::move(newNode));
-		Log::debug("Merging successful");
-	}
-}
-
 bool SceneManager::import(const core::String& file) {
 	if (file.empty()) {
 		Log::error("Can't import model: No file given");
@@ -654,7 +632,6 @@ bool SceneManager::import(const core::String& file) {
 		Log::error("Failed to load %s", file.c_str());
 		return false;
 	}
-	mergeIfNeeded(newSceneGraph);
 
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
@@ -695,7 +672,6 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
-			mergeIfNeeded(newSceneGraph);
 			state |= scenegraph::addSceneGraphNodes(_sceneGraph, newSceneGraph, importGroupNodeId, [this] (int nodeId) {
 				onNewNodeAdded(nodeId, false);
 			}) > 0;
@@ -717,7 +693,6 @@ bool SceneManager::load(const io::FileDescription& file) {
 		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
 		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
-		mergeIfNeeded(newSceneGraph);
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(file.name, &file.desc);
@@ -731,7 +706,6 @@ bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, si
 	archive->add(file.name, data, size);
 	voxelformat::LoadContext loadCtx;
 	voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
-	mergeIfNeeded(newSceneGraph);
 	if (loadSceneGraph(core::move(newSceneGraph))) {
 		_needAutoSave = false;
 		_dirty = false;

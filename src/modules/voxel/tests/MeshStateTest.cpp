@@ -67,4 +67,40 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	(void)meshState.shutdown();
 }
 
+TEST_F(MeshStateTest, testSetStateBeforeVolume) {
+	// Verify that property setters work for indices beyond current size.
+	// This simulates the prepareModelNodes flow where updateNodeState
+	// calls hide()/gray()/etc. before setVolume is called.
+	MeshState meshState;
+	meshState.construct();
+	meshState.init();
+
+	const int idx = 5;
+	// These must grow the internal arrays and store the state
+	meshState.hide(idx, false);
+	EXPECT_FALSE(meshState.hidden(idx));
+
+	meshState.gray(idx, true);
+	EXPECT_TRUE(meshState.grayed(idx));
+
+	meshState.setLocked(idx, true);
+	EXPECT_TRUE(meshState.locked(idx));
+
+	meshState.setHasSelection(idx, true);
+	EXPECT_TRUE(meshState.hasSelection(idx));
+
+	// After state setup, setVolume should work normally
+	voxel::RawVolume v(voxel::Region(-1, 1));
+	palette::Palette pal;
+	pal.nippon();
+	bool deleted = false;
+	(void)meshState.setVolume(idx, &v, &pal, nullptr, true, deleted);
+	EXPECT_NE(nullptr, meshState.volume(idx));
+
+	meshState.scheduleRegionExtraction(idx, v.region());
+	EXPECT_LT(0, meshState.pendingExtractions());
+
+	(void)meshState.shutdown();
+}
+
 } // namespace voxelrender

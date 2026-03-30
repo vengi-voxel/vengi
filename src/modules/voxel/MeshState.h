@@ -10,6 +10,7 @@
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
 #include "core/collection/Queue.h"
@@ -26,8 +27,6 @@
 
 namespace voxel {
 
-static constexpr int MAX_VOLUMES = 4096;
-
 enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 
 enum class MeshAllocStrategy { FullPrealloc, SmallGrow, Max };
@@ -40,7 +39,7 @@ enum class MeshAllocStrategy { FullPrealloc, SmallGrow, Max };
  */
 class MeshState {
 public:
-	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
+	typedef core::DynamicArray<voxel::Mesh *> Meshes;
 	typedef core::DynamicMap<glm::ivec3, Meshes, 531, glm::hash<glm::ivec3>> MeshesMap;
 
 private:
@@ -66,7 +65,7 @@ private:
 		 */
 		glm::vec3 centerPos(bool applyModel = true) const;
 	};
-	typedef core::Array<VolumeData, MAX_VOLUMES> Volumes;
+	typedef core::DynamicArray<VolumeData> Volumes;
 
 	struct ExtractionResult {
 		ExtractionResult() {
@@ -113,9 +112,10 @@ private:
 	// Hidden volumes are NOT uploaded; their entries are deferred and replayed
 	// when the volume becomes visible again.
 	core::Queue<int> _pendingMeshes;
-	core::Array<bool, MAX_VOLUMES> _pendingMeshDirty;
+	core::DynamicArray<bool> _pendingMeshDirty;
 	core::VarPtr _meshMode;
 	core::VarPtr _meshAlloc;
+	void ensureSize(int idx);
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 0);
 	bool deleteMeshes(int idx);
@@ -123,6 +123,7 @@ private:
 
 public:
 	MeshState();
+	int maxSize() const;
 	void clearMeshes();
 	const MeshesMap &meshes(MeshType type) const;
 	/**
@@ -251,14 +252,14 @@ inline int MeshState::pendingMeshes() const {
 }
 
 inline voxel::RawVolume *MeshState::volume(int idx) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return nullptr;
 	}
 	return _volumeData[idx]._rawVolume;
 }
 
 inline const voxel::RawVolume *MeshState::volume(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return nullptr;
 	}
 	return _volumeData[idx]._rawVolume;

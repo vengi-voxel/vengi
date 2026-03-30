@@ -21,7 +21,19 @@ static constexpr int SmallAllocVertices = 1024;
 static constexpr int SmallAllocIndices = 2048;
 
 MeshState::MeshState() {
-	_pendingMeshDirty.fill(false);
+}
+
+void MeshState::ensureSize(int idx) {
+	if (idx < (int)_volumeData.size()) {
+		return;
+	}
+	const int newSize = idx + 1;
+	_volumeData.resize(newSize);
+	_pendingMeshDirty.resize(newSize);
+}
+
+int MeshState::maxSize() const {
+	return (int)_volumeData.size();
 }
 
 bool MeshState::init() {
@@ -70,10 +82,11 @@ const glm::mat4 &MeshState::model(int idx) const {
 }
 
 bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
 	}
+	ensureSize(idx);
 	if (reference(idx) == -1 && volume(idx) == nullptr) {
 		Log::error("No volume found at: %i", idx);
 		return false;
@@ -100,6 +113,9 @@ void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType
 	auto iter = _meshes[type].find(result.mins);
 	auto &mesh = result.mesh.mesh[type];
 	if (iter != _meshes[type].end()) {
+		if (result.idx >= (int)iter->value.size()) {
+			iter->value.resize(result.idx + 1);
+		}
 		delete iter->value[result.idx];
 		if (mesh.isEmpty()) {
 			iter->value[result.idx] = nullptr;
@@ -112,7 +128,7 @@ void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType
 		return;
 	}
 	Meshes meshes;
-	meshes.fill(nullptr);
+	meshes.resize(_volumeData.size());
 	meshes[result.idx] = new voxel::Mesh(core::move(mesh));
 	_meshes[type].emplace(result.mins, core::move(meshes));
 }
@@ -120,14 +136,14 @@ void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType
 int MeshState::pop() {
 	int result = -1;
 	_pendingMeshes.try_pop(result);
-	if (result >= 0 && result < MAX_VOLUMES) {
+	if (result >= 0 && result < (int)_pendingMeshDirty.size()) {
 		_pendingMeshDirty[result] = false;
 	}
 	return result;
 }
 
 void MeshState::deferPendingMesh(int idx) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_pendingMeshDirty.size()) {
 		return;
 	}
 	if (!_pendingMeshDirty[idx]) {
@@ -143,9 +159,11 @@ bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
 		auto iter = meshes.find(pos);
 		if (iter != meshes.end()) {
 			MeshState::Meshes &array = iter->value;
-			voxel::Mesh *mesh = array[idx];
-			delete mesh;
-			array[idx] = nullptr;
+			if (idx < (int)array.size()) {
+				voxel::Mesh *mesh = array[idx];
+				delete mesh;
+				array[idx] = nullptr;
+			}
 			d = true;
 		}
 	}
@@ -158,9 +176,11 @@ bool MeshState::deleteMeshes(int idx) {
 		auto &meshes = _meshes[i];
 		for (const auto &iter : meshes) {
 			MeshState::Meshes &array = iter->value;
-			voxel::Mesh *mesh = array[idx];
-			delete mesh;
-			array[idx] = nullptr;
+			if (idx < (int)array.size()) {
+				voxel::Mesh *mesh = array[idx];
+				delete mesh;
+				array[idx] = nullptr;
+			}
 			d = true;
 		}
 	}
@@ -174,6 +194,9 @@ const MeshState::MeshesMap &MeshState::meshes(MeshType type) const {
 void MeshState::count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const {
 	for (const auto &i : _meshes[meshType]) {
 		const MeshState::Meshes &meshes = i->value;
+		if (idx >= (int)meshes.size()) {
+			continue;
+		}
 		const voxel::Mesh *mesh = meshes[idx];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
@@ -188,14 +211,14 @@ void MeshState::count(MeshType meshType, int idx, size_t &vertCount, size_t &nor
 }
 
 const palette::Palette &MeshState::palette(int idx) const {
-	if (idx < 0 || idx > MAX_VOLUMES || !_volumeData[idx]._palette.hasValue()) {
+	if (idx < 0 || idx >= (int)_volumeData.size() || !_volumeData[idx]._palette.hasValue()) {
 		return voxel::getPalette();
 	}
 	return *_volumeData[idx]._palette.value();
 }
 
 const palette::NormalPalette &MeshState::normalsPalette(int idx) const {
-	if (idx < 0 || idx > MAX_VOLUMES || !_volumeData[idx]._normalPalette.hasValue()) {
+	if (idx < 0 || idx >= (int)_volumeData.size() || !_volumeData[idx]._normalPalette.hasValue()) {
 		static palette::NormalPalette normalPalette;
 		return normalPalette;
 	}
@@ -379,7 +402,7 @@ int MeshState::resolveIdx(int idx) const {
 }
 
 bool MeshState::sameNormalPalette(int idx, const palette::NormalPalette *palette) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return false;
 	}
 	const palette::NormalPalette *normalPalette = _volumeData[idx]._normalPalette.value();
@@ -396,9 +419,10 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 									   bool &meshDeleted) {
 	core_trace_scoped(MeshStateSetVolume);
 	meshDeleted = false;
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return nullptr;
 	}
+	ensureSize(idx);
 	_volumeData[idx]._palette.setValue(palette);
 	_volumeData[idx]._normalPalette.setValue(normalPalette);
 	voxel::RawVolume *old = volume(idx);
@@ -438,7 +462,7 @@ core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
 	_activeIndices.clear();
 	_pendingMeshDirty.fill(false);
 	core::Buffer<voxel::RawVolume *> old;
-	old.reserve(MAX_VOLUMES);
+	old.reserve(_volumeData.size());
 	for (int idx = 0; idx < (int)_volumeData.size(); ++idx) {
 		VolumeData &state = _volumeData[idx];
 		// hand over the ownership to the caller
@@ -455,31 +479,33 @@ void MeshState::resetReferences() {
 }
 
 int MeshState::reference(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return -1;
 	}
 	return _volumeData[idx]._reference;
 }
 
 void MeshState::setReference(int idx, int referencedIdx) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	VolumeData &state = _volumeData[idx];
 	state._reference = referencedIdx;
 }
 
 bool MeshState::hidden(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return true;
 	}
 	return _volumeData[idx]._hidden;
 }
 
 void MeshState::hide(int idx, bool hide) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	const bool wasHidden = _volumeData[idx]._hidden;
 	_volumeData[idx]._hidden = hide;
 	if (wasHidden && !hide) {
@@ -491,58 +517,62 @@ void MeshState::hide(int idx, bool hide) {
 }
 
 video::Face MeshState::cullFace(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return video::Face::Back;
 	}
 	return _volumeData[idx]._cullFace;
 }
 
 void MeshState::setCullFace(int idx, video::Face face) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	_volumeData[idx]._cullFace = face;
 }
 
 bool MeshState::grayed(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return true;
 	}
 	return _volumeData[idx]._gray;
 }
 
 void MeshState::gray(int idx, bool gray) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	_volumeData[idx]._gray = gray;
 }
 
 bool MeshState::hasSelection(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return false;
 	}
 	return _volumeData[idx]._hasSelection;
 }
 
 void MeshState::setHasSelection(int idx, bool hasSelection) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	_volumeData[idx]._hasSelection = hasSelection;
 }
 
 bool MeshState::locked(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return false;
 	}
 	return _volumeData[idx]._locked;
 }
 
 void MeshState::setLocked(int idx, bool locked) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0) {
 		return;
 	}
+	ensureSize(idx);
 	_volumeData[idx]._locked = locked;
 }
 

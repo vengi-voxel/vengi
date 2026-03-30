@@ -13,6 +13,7 @@
 #include "core/NonCopyable.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelrender/Shadow.h"
@@ -44,7 +45,8 @@ namespace voxelrender {
  */
 class RawVolumeRenderer : public core::NonCopyable {
 protected:
-	core::Array<RenderState, voxel::MAX_VOLUMES> _state{};
+	core::DynamicArray<RenderState> _state;
+	bool _hasNormals = false;
 
 	uint64_t _paletteHash = 0;
 	uint32_t _normalsPaletteHash = 0;
@@ -83,8 +85,10 @@ protected:
 	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
 	void updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera);
+	void ensureRenderState(int idx);
 
 	bool initStateBuffers(bool normals);
+	void initStateBuffer(int idx);
 	void shutdownStateBuffers();
 	bool resetStateBuffers(bool normals);
 	bool updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount);
