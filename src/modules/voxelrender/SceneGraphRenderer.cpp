@@ -261,25 +261,6 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 	}
 }
 
-void SceneGraphRenderer::resetVolumes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph) {
-	core_trace_scoped(ResetVolumes);
-	// Copy active indices to avoid modifying the list while iterating
-	// (resetVolume calls setVolume(nullptr) which removes from active list)
-	const core::Buffer<int> activeSnapshot = meshState->activeIndices();
-	for (int idx : activeSnapshot) {
-		const int nodeId = getNodeId(idx);
-		if (sceneGraph.hasNode(nodeId)) {
-			continue;
-		}
-		Log::error("Node with id %i is active in the mesh state but doesn't exist in the scene graph - resetting volume", nodeId);
-		// ignore the return value because the volume is owned by the node
-		// TODO: is this really the node id here? should be idx imo, no?
-		// TODO: instead of looping over everything maybe a SceneGraphListener::onNodeRemove should be used? that would also make the getNodeId reverse lookup unnecessary - but where to register it? the scenegraph instance can change
-		//       also ISceneRenderer already has removeNode() - why is this needed?
-		(void)_volumeRenderer.resetVolume(meshState, nodeId);
-	}
-}
-
 void SceneGraphRenderer::applyTransform(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
 										const scenegraph::SceneGraph &sceneGraph,
 										const scenegraph::SceneGraphNode &node, int idx) {
@@ -376,8 +357,6 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
-	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
-	resetVolumes(meshState, sceneGraph);
 	prepareCameraNodes(renderContext);
 	prepareModelNodes(meshState, renderContext);
 	prepareReferenceNodes(meshState, renderContext);

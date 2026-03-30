@@ -39,8 +39,6 @@ protected:
 	void prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) const;
 	void prepareCameraNodes(const RenderContext &renderContext);
 
-	/** @brief remove those volumes that are no longer part of the scene graph */
-	void resetVolumes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph);
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
@@ -89,12 +87,6 @@ public:
 		// TODO: using the node id here is not good as they are increasing when you modify the scene graph - and there
 		// is a max limit that could get reached here even though you only have one node active
 		return nodeId;
-	}
-
-	static inline int getNodeId(int volumeIdx) {
-		// TODO: using the node id here is not good as they are increasing when you modify the scene graph - and there
-		// is a max limit that could get reached here even though you only have one node active
-		return volumeIdx;
 	}
 
 	static inline int getVolumeIdx(const scenegraph::SceneGraphNode &node) {
