@@ -235,24 +235,11 @@ glm::vec3 NormalPalette::normal3f(uint8_t index) const {
 	return toVec3(_normals[index]);
 }
 
-void NormalPalette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
-	vec4f.reserve(NormalPaletteMaxNormals);
-	for (int i = 0; i < _size; ++i) {
-		const glm::vec3 &n = toVec3(_normals[i]);
-		vec4f.emplace_back(n.x, n.y, n.z, 0.0f);
-	}
-	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
-		vec4f.emplace_back(0.0f);
-	}
-}
-
 void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
+	core_memset(vec4f, 0, sizeof(glm::highp_vec4) * NormalPaletteMaxNormals);
 	for (int i = 0; i < _size; ++i) {
 		const glm::vec3 &norm = toVec3(_normals[i]);
 		vec4f[i] = {norm.x, norm.y, norm.z, 0.0f};
-	}
-	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
-		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
 	}
 }
 

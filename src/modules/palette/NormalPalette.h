@@ -43,7 +43,9 @@ public:
 	void setNormal(uint8_t index, const color::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
-	void toVec4f(core::Buffer<glm::vec4> &normals) const;
+	/**
+	 * @note The target buffer must at least have space for 256 entries
+	 */
 	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	const core::String &name() const;
