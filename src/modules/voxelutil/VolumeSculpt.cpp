@@ -151,8 +151,10 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 	const voxel::Region &region = solid.region();
 	const glm::ivec3 &lo = region.getLowerCorner();
 	const glm::ivec3 &hi = region.getUpperCorner();
+	// Step direction: move top voxels inward (positive face -> step -1, negative face -> step +1)
+	const int step = fromPositive ? -1 : 1;
 
-	core::DynamicArray<glm::ivec3> toRemove;
+	core::DynamicArray<glm::ivec3> extremePositions;
 	for (int iter = 0; iter < iterations; ++iter) {
 		int extremeVal = fromPositive ? INT_MIN : INT_MAX;
 		for (int z = lo.z; z <= hi.z; ++z) {
@@ -171,7 +173,7 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 			}
 		}
 
-		toRemove.clear();
+		extremePositions.clear();
 		for (int z = lo.z; z <= hi.z; ++z) {
 			for (int y = lo.y; y <= hi.y; ++y) {
 				for (int x = lo.x; x <= hi.x; ++x) {
@@ -180,19 +182,29 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 					}
 					const glm::ivec3 pos(x, y, z);
 					if (pos[axisIdx] == extremeVal) {
-						toRemove.push_back(pos);
+						extremePositions.push_back(pos);
 					}
 				}
 			}
 		}
 
-		if (toRemove.empty()) {
+		if (extremePositions.empty()) {
 			break;
 		}
 
-		for (const glm::ivec3 &pos : toRemove) {
+		for (const glm::ivec3 &pos : extremePositions) {
+			// Move the top voxel one step inward to preserve the cap surface and its color
+			glm::ivec3 dest = pos;
+			dest[axisIdx] += step;
+			const voxel::Voxel topVoxel = voxelMap.hasVoxel(pos) ? voxelMap.voxel(pos) : voxel::Voxel();
+			// Remove the original extreme position
 			solid.setVoxel(pos, false);
 			voxelMap.setVoxel(pos, voxel::Voxel());
+			// Place the top voxel at the destination if it is within the region
+			if (region.containsPoint(dest)) {
+				solid.setVoxel(dest, true);
+				voxelMap.setVoxel(dest, topVoxel);
+			}
 		}
 	}
 }
@@ -486,7 +498,14 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 
 		// Step 3: For each island column, trim = min(dist * trimPerStep, iterations).
 		// Skip the bottom island. Center columns (dist=0) keep full height.
+		// Track each trimmed column's original top voxel and new top position.
+		struct TrimEntry {
+			glm::ivec3 colKey;
+			int topCoord;
+			int trim;
+		};
 		core::DynamicArray<glm::ivec3> toRemove;
+		core::DynamicArray<TrimEntry> trimmedColumns;
 		toRemove.reserve(columnTop.size());
 		for (auto it = islandId.begin(); it != islandId.end(); ++it) {
 			const glm::ivec3 &colKey = it->key;
@@ -509,6 +528,10 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 			const int maxTrim = glm::max(0, (topCoord - bottomHeight) * step - 1);
 			const int trim = glm::min(glm::min(dist * trimPerStep, iterations), maxTrim);
 
+			if (trim > 0) {
+				trimmedColumns.push_back({colKey, topCoord, trim});
+			}
+
 			for (int t = 0; t < trim; ++t) {
 				glm::ivec3 pos = colKey;
 				pos[axisIdx] = topCoord - t * step;
@@ -518,9 +541,30 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 			}
 		}
 
+		// Save original top voxel colors before erasing
+		core::DynamicArray<voxel::Voxel> topVoxels;
+		topVoxels.reserve(trimmedColumns.size());
+		for (const TrimEntry &entry : trimmedColumns) {
+			glm::ivec3 topPos = entry.colKey;
+			topPos[axisIdx] = entry.topCoord;
+			topVoxels.push_back(voxelMap.hasVoxel(topPos) ? voxelMap.voxel(topPos) : voxel::Voxel());
+		}
+
 		for (const glm::ivec3 &pos : toRemove) {
 			solid.setVoxel(pos, false);
 			voxelMap.setVoxel(pos, voxel::Voxel());
+		}
+
+		// Place original top voxel at each column's new top position
+		for (size_t i = 0; i < trimmedColumns.size(); ++i) {
+			const TrimEntry &entry = trimmedColumns[i];
+			glm::ivec3 newTopPos = entry.colKey;
+			newTopPos[axisIdx] = entry.topCoord - entry.trim * step;
+			if (!region.containsPoint(newTopPos)) {
+				continue;
+			}
+			solid.setVoxel(newTopPos, true);
+			voxelMap.setVoxel(newTopPos, topVoxels[i]);
 		}
 		return;
 	}
@@ -1411,21 +1455,23 @@ static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &re
 		}
 	}
 
-	// Add new voxels
+	// Add or update voxels
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
 				if (!solid.hasValue(x, y, z)) {
 					continue;
 				}
-				const voxel::Voxel &current = volume.voxel(x, y, z);
-				if (voxel::isBlocked(current.getMaterial())) {
+				if (!voxelMap.hasVoxel(x, y, z)) {
 					continue;
 				}
-				if (voxelMap.hasVoxel(x, y, z)) {
-					volume.setVoxel(x, y, z, voxelMap.voxel(x, y, z));
-					changed++;
+				const voxel::Voxel &current = volume.voxel(x, y, z);
+				const voxel::Voxel &mapped = voxelMap.voxel(x, y, z);
+				if (voxel::isBlocked(current.getMaterial()) && current == mapped) {
+					continue;
 				}
+				volume.setVoxel(x, y, z, mapped);
+				changed++;
 			}
 		}
 	}

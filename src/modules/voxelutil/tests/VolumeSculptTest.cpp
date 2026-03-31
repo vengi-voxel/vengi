@@ -133,7 +133,7 @@ TEST_F(VolumeSculptTest, testFlattenMultipleIterations) {
 	fillRegion(volume, voxel::Region(1, 3), solid);
 
 	sculptFlatten(volume, region, voxel::FaceNames::PositiveY, 2);
-	// Both y=3 and y=2 layers should be removed
+	// Both y=3 and y=2 layers should be removed (pushed down twice)
 	for (int z = 1; z <= 3; ++z) {
 		for (int x = 1; x <= 3; ++x) {
 			EXPECT_TRUE(voxel::isAir(volume.voxel(x, 3, z).getMaterial()));
@@ -142,6 +142,53 @@ TEST_F(VolumeSculptTest, testFlattenMultipleIterations) {
 	}
 	// y=1 should remain
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 1, 2).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testFlattenHollowPreservesCap) {
+	// Hollow box: only shell voxels, empty interior
+	voxel::Region region(0, 6);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel shell = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	// Fill entire cube then hollow it out
+	fillRegion(volume, voxel::Region(1, 5), shell);
+	for (int z = 2; z <= 4; ++z) {
+		for (int y = 2; y <= 4; ++y) {
+			for (int x = 2; x <= 4; ++x) {
+				volume.setVoxel(x, y, z, voxel::Voxel());
+			}
+		}
+	}
+
+	sculptFlatten(volume, region, voxel::FaceNames::PositiveY, 1);
+	// Top layer (y=5) removed, but pushed down to y=4 to preserve cap
+	for (int z = 1; z <= 5; ++z) {
+		for (int x = 1; x <= 5; ++x) {
+			EXPECT_TRUE(voxel::isAir(volume.voxel(x, 5, z).getMaterial()));
+		}
+	}
+	// y=4 should now be solid across the full face (cap preserved)
+	for (int z = 1; z <= 5; ++z) {
+		for (int x = 1; x <= 5; ++x) {
+			EXPECT_TRUE(voxel::isBlocked(volume.voxel(x, 4, z).getMaterial()))
+				<< "Expected cap at (" << x << ", 4, " << z << ")";
+		}
+	}
+}
+
+TEST_F(VolumeSculptTest, testFlattenPreservesTopColor) {
+	// Top layer has color 5, layer below has color 1. After flatten, layer below gets color 5.
+	voxel::Region region(0, 4);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel bottom = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel top = voxel::createVoxel(voxel::VoxelType::Generic, 5);
+	fillRegion(volume, voxel::Region(1, 1, 1, 3, 2, 3), bottom);
+	fillRegion(volume, voxel::Region(1, 3, 1, 3, 3, 3), top);
+
+	sculptFlatten(volume, region, voxel::FaceNames::PositiveY, 1);
+	// y=3 removed
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 3, 2).getMaterial()));
+	// y=2 should now have the top color (5) since the top voxels were pushed down
+	EXPECT_EQ(volume.voxel(2, 2, 2).getColor(), 5);
 }
 
 TEST_F(VolumeSculptTest, testAnchorsPreventErosion) {
@@ -545,6 +592,89 @@ TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeightBottomIslandProtected) 
 		}
 	}
 	EXPECT_EQ(baseCount, baseCountAfter);
+}
+
+TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeightColor) {
+	// Top layer has color 7, lower layers have color 1. After erosion with preserveTopHeight,
+	// each column's new top should have color 7.
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel body = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel top = voxel::createVoxel(voxel::VoxelType::Generic, 7);
+
+	// Wide base at y=0
+	for (int x = 0; x <= 6; ++x) {
+		for (int z = 0; z <= 6; ++z) {
+			volume.setVoxel(x, 0, z, body);
+		}
+	}
+	// 5x5 tower (y=1..3 body, y=4 top color)
+	for (int x = 1; x <= 5; ++x) {
+		for (int z = 1; z <= 5; ++z) {
+			for (int y = 1; y <= 3; ++y) {
+				volume.setVoxel(x, y, z, body);
+			}
+			volume.setVoxel(x, 4, z, top);
+		}
+	}
+
+	// iterations=2, trimPerStep=1: dist=1 trims 1, dist=2 trims 2
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 2, true, 1);
+
+	// Center (3,3) at dist=0: keeps y=4, should still be top color
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 4, 3).getMaterial()));
+	EXPECT_EQ(volume.voxel(3, 4, 3).getColor(), 7);
+
+	// Dist=1 column (2,3): y=4 eroded, new top at y=3 should have top color 7
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 4, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 3, 3).getMaterial()));
+	EXPECT_EQ(volume.voxel(2, 3, 3).getColor(), 7)
+		<< "New top after trim=1 should have original top color";
+
+	// Dist=2 column (1,3): y=4,y=3 eroded, new top at y=2 should have top color 7
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 4, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 2, 3).getMaterial()));
+	EXPECT_EQ(volume.voxel(1, 2, 3).getColor(), 7)
+		<< "New top after trim=2 should have original top color";
+}
+
+TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeightHollow) {
+	// Hollow box: eroding top of edge columns must place a solid cap voxel
+	// at the new top position even when the column interior is air.
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel shell = voxel::createVoxel(voxel::VoxelType::Generic, 5);
+
+	// Base at y=0 (7x7)
+	for (int x = 0; x <= 6; ++x) {
+		for (int z = 0; z <= 6; ++z) {
+			volume.setVoxel(x, 0, z, shell);
+		}
+	}
+	// 5x5 hollow tower y=1..4 (walls + top cap, interior air)
+	for (int x = 1; x <= 5; ++x) {
+		for (int z = 1; z <= 5; ++z) {
+			for (int y = 1; y <= 4; ++y) {
+				const bool isWall = (x == 1 || x == 5 || z == 1 || z == 5 || y == 4);
+				if (isWall) {
+					volume.setVoxel(x, y, z, shell);
+				}
+			}
+		}
+	}
+
+	// iterations=1, trimPerStep=1: dist=1 columns trim 1
+	sculptSmoothErode(volume, region, voxel::FaceNames::PositiveY, 1, true, 1);
+
+	// Center (3,3) at dist=0: keeps y=4
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 4, 3).getMaterial()));
+
+	// Dist=1 column (2,2): y=4 eroded, new cap placed at y=3 (was air inside hollow)
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 4, 2).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(2, 3, 2).getMaterial()))
+		<< "Cap voxel should be placed at new top even in hollow interior";
+	EXPECT_EQ(volume.voxel(2, 3, 2).getColor(), 5);
 }
 
 TEST_F(VolumeSculptTest, testSmoothErodePreserveTopHeightTrimPerStep) {
