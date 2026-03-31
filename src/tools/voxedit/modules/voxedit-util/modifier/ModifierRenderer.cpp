@@ -121,6 +121,11 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
+void ModifierRenderer::clearBrushVolumes() {
+	updateBrushVolume(0, nullptr, nullptr);
+	updateBrushVolume(1, nullptr, nullptr);
+}
+
 void ModifierRenderer::clear() {
 	_volumeRenderer.clear(_meshState);
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {

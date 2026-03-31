@@ -47,6 +47,7 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	void clearBrushVolumes() override;
 	void update(const ModifierRendererContext &ctx) override;
 	void render(const video::Camera &camera, const glm::mat4 &modelMatrix) override;
 	void waitForPendingExtractions() override;
