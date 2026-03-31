@@ -64,7 +64,10 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		if (ImGui::Button(_("Ace Of Spades"))) {
 			_bodyHeight->setVal(2.8f);
 		}
-
+		ImGui::SameLine();
+		if (ImGui::Button(_("Teardown"))) {
+			_bodyHeight->setVal(18.8f);
+		}
 		ImGui::EndDisabled();
 	}
 	ImGui::End();
