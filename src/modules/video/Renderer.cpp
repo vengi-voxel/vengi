@@ -17,21 +17,20 @@ static struct RenderFeature {
 	const char *var;
 	const char *description;
 } featuresArray[] = {
-	// TODO: add descriptions here
-	{"r_texturecompressiondxt", N_("")},
-	{"r_texturecompressionpvrtc", N_("")},
-	{"r_texturecompressionetc2", N_("")},
-	{"r_texturecompressionatc", N_("")},
-	{"r_texturefloat", N_("")},
-	{"r_texturehalffloat", N_("")},
-	{"r_instancedarrays", N_("")},
-	{"r_debugoutput", N_("")},
-	{"r_directstateaccess", N_("")},
-	{"r_bufferstorage", N_("")},
-	{"r_multidrawindirect", N_("")},
-	{"r_computeshaders", N_("")},
-	{"r_transformfeedback", N_("")},
-	{"r_shaderstoragebufferobject", N_("")}
+	{"r_texturecompressiondxt", N_("Support for DXT/S3TC compressed texture formats")},
+	{"r_texturecompressionpvrtc", N_("Support for PVRTC compressed texture formats")},
+	{"r_texturecompressionetc2", N_("Support for ETC2 compressed texture formats")},
+	{"r_texturecompressionatc", N_("Support for ATC compressed texture formats")},
+	{"r_texturefloat", N_("Support for 32-bit floating point textures")},
+	{"r_texturehalffloat", N_("Support for 16-bit half-precision floating point textures")},
+	{"r_instancedarrays", N_("Support for instanced rendering")},
+	{"r_debugoutput", N_("Support for renderer debug output messages")},
+	{"r_directstateaccess", N_("Support for modifying renderer objects without binding them")},
+	{"r_bufferstorage", N_("Support for immutable buffer storage")},
+	{"r_multidrawindirect", N_("Support for batching multiple draw calls into a single indirect call")},
+	{"r_computeshaders", N_("Support for compute shaders")},
+	{"r_transformfeedback", N_("Support for capturing shader output into buffers")},
+	{"r_shaderstoragebufferobject", N_("Support for large read-write storage buffers accessible from shaders")}
 };
 static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];
