@@ -113,8 +113,8 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	static constexpr int MaxIterations = 10;
-	static constexpr int MaxFlattenIterations = 64;
+	static constexpr int MaxIterations = 250;
+	static constexpr int MaxFlattenIterations = 250;
 	SculptBrush() : Super(BrushType::Sculpt, ModifierType::Override, ModifierType::Override) {
 		_history.setStoreEmptyVoxels(true);
 	}
