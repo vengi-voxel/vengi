@@ -51,6 +51,8 @@ voxel::Region SculptBrush::revertChanges(voxel::RawVolume *volume) {
 bool SculptBrush::onDeactivated() {
 	// Restore undo registration so the final execute in setBrushType() records the undo entry
 	_sceneModifiedFlags = SceneModifiedFlags::All;
+	// Force re-apply so generate() runs and creates a dirty region for the undo entry
+	_paramsDirty = true;
 	return hasPendingChanges();
 }
 
