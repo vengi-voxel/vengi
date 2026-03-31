@@ -1176,7 +1176,7 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 
 	// Fallback used before a node is loaded; overridden by actual node dimensions below.
-	static constexpr int DefaultMaxExtrudeDepth = 128;
+	static constexpr int DefaultMaxExtrudeDepth = 250;
 	int maxDepth = DefaultMaxExtrudeDepth;
 	if (node && node->volume()) {
 		const voxel::Region &r = node->volume()->region();

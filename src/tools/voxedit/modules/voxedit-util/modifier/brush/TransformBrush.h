@@ -86,8 +86,8 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	static constexpr int MaxMoveOffset = 128;
-	static constexpr int MaxShearOffset = 128;
+	static constexpr int MaxMoveOffset = 250;
+	static constexpr int MaxShearOffset = 250;
 
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
 		_history.setStoreEmptyVoxels(true);
