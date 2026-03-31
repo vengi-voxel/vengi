@@ -173,6 +173,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Color"), "selectonlycolor", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Edges"), "selectonlyedges", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Wall Edges"), "selectonlywalledges", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Corners"), "selectonlycorners", true, &listener);
 			ImGui::Separator();
 			ImGui::CommandIconMenuItem(ICON_LC_EXPAND, _("Grow Selection"), "selectiongrow", true, &listener);

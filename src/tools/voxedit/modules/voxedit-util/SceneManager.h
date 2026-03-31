@@ -199,6 +199,7 @@ protected:
 	void nodeGroupSelectOnlyColor(uint8_t colorIndex);
 	void nodeGroupSelectOnlyEdges();
 	void nodeGroupSelectOnlyCorners();
+	void nodeGroupSelectOnlyWallEdges();
 	void nodeGroupSelectionGrow();
 	void nodeGroupRotate(math::Axis axis);
 	void nodeGroupFlip(math::Axis axis);
