@@ -25,7 +25,7 @@ using UV = math::Rect<int>;
 struct Part {
 	UV rects[6]; // top, bottom, right, front, left, back
 
-	constexpr const UV &operator[](size_t idx) const {
+	const UV &operator[](size_t idx) const {
 		return rects[idx];
 	}
 };
@@ -49,7 +49,7 @@ struct SkinBox {
 // | LEG_R_E | BODY_E      | ARM_R_E   |
 // | LEG_L_E | LEG_L | ARM_L | ARM_L_E |
 
-static constexpr Part shiftPart(const Part &part, int offsetX, int offsetY) {
+static const Part shiftPart(const Part &part, int offsetX, int offsetY) {
 	Part shiftedPart;
 	for (int i = 0; i < lengthof(Part::rects); ++i) {
 		shiftedPart.rects[i] = part[i].offset(offsetX, offsetY);
@@ -65,7 +65,7 @@ static constexpr Part shiftPart(const Part &part, int offsetX, int offsetY) {
 // |    |  4  |  4  |    |
 // | 4  |  4  |  4  | 4  |
 
-static constexpr Part slimPart(const Part &part) {
+static const Part slimPart(const Part &part) {
 	Part p = part;
 	p.rects[0] = UV(part[0].getMinX() - 0, part[0].getMinZ(), part[0].getMaxX() - 1, part[0].getMaxZ());
 	p.rects[1] = UV(part[1].getMinX() - 1, part[1].getMinZ(), part[1].getMaxX() - 2, part[1].getMaxZ());
@@ -76,7 +76,7 @@ static constexpr Part slimPart(const Part &part) {
 	return p;
 }
 
-static constexpr Part head = {{
+static const Part head = {{
 	{8, 0, 16, 8},	 // top
 	{16, 0, 24, 8},	 // bottom
 	{0, 8, 8, 16},	 // right
@@ -85,8 +85,8 @@ static constexpr Part head = {{
 	{24, 8, 32, 16}	 // back
 }};
 
-static constexpr Part hat(shiftPart(head, 32, 0));
-static constexpr Part leg_right = {{
+static const Part hat(shiftPart(head, 32, 0));
+static const Part leg_right = {{
 	{4, 16, 8, 20},	 // top
 	{8, 16, 12, 20}, // bottom
 	{0, 20, 4, 32},	 // right
@@ -95,7 +95,7 @@ static constexpr Part leg_right = {{
 	{12, 20, 16, 32} // back
 }};
 
-static constexpr Part body = {{
+static const Part body = {{
 	{20, 16, 28, 20}, // top
 	{28, 16, 36, 20}, // bottom
 	{16, 20, 20, 32}, // right
@@ -104,23 +104,23 @@ static constexpr Part body = {{
 	{32, 20, 40, 32}  // back
 }};
 
-static constexpr Part arm_right(shiftPart(leg_right, 40, 0));
-static constexpr Part arm_left(shiftPart(leg_right, 32, 32));
-static constexpr Part leg_left(shiftPart(leg_right, 16, 32));
+static const Part arm_right(shiftPart(leg_right, 40, 0));
+static const Part arm_left(shiftPart(leg_right, 32, 32));
+static const Part leg_left(shiftPart(leg_right, 16, 32));
 
-static constexpr Part body_ex(shiftPart(body, 0, 16));
-static constexpr Part arm_right_ex(shiftPart(arm_right, 0, 16));
-static constexpr Part leg_right_ex(shiftPart(leg_right, 0, 16));
-static constexpr Part arm_left_ex(shiftPart(arm_left, 16, 0));
-static constexpr Part leg_left_ex(shiftPart(leg_left, -16, 0));
+static const Part body_ex(shiftPart(body, 0, 16));
+static const Part arm_right_ex(shiftPart(arm_right, 0, 16));
+static const Part leg_right_ex(shiftPart(leg_right, 0, 16));
+static const Part arm_left_ex(shiftPart(arm_left, 16, 0));
+static const Part leg_left_ex(shiftPart(leg_left, -16, 0));
 
-static constexpr Part arm_slim_right(slimPart(arm_right));
-static constexpr Part arm_slim_left(slimPart(arm_left));
-static constexpr Part arm_slim_right_ex(slimPart(arm_right_ex));
-static constexpr Part arm_slim_left_ex(slimPart(arm_left_ex));
+static const Part arm_slim_right(slimPart(arm_right));
+static const Part arm_slim_left(slimPart(arm_left));
+static const Part arm_slim_right_ex(slimPart(arm_right_ex));
+static const Part arm_slim_left_ex(slimPart(arm_left_ex));
 
 // Define the skin boxes and use names that animate.lua can work with
-static constexpr SkinBox skinBoxes[] = {
+static const SkinBox skinBoxes[] = {
 	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head, false},
 	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat, true},
 	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body, false},
@@ -135,7 +135,7 @@ static constexpr SkinBox skinBoxes[] = {
 	{"leg_l_ex", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left_ex, true}
 };
 
-static constexpr SkinBox skinBoxesSlim[] = {
+static const SkinBox skinBoxesSlim[] = {
 	skinBoxes[0],
 	skinBoxes[1],
 	skinBoxes[2],

@@ -214,7 +214,7 @@ static int columnHeight(const voxel::BitVolume &solid, const voxel::BitVolume &a
 
 // Get the 4 planar neighbor offsets perpendicular to a given axis
 static void getPlanarOffsets(int axisIdx, glm::ivec3 offsets[4]) {
-	static constexpr glm::ivec3 planarOffsetsForAxis[3][4] = {
+	static const glm::ivec3 planarOffsetsForAxis[3][4] = {
 		// axis X: neighbors in Y and Z
 		{glm::ivec3(0, 1, 0), glm::ivec3(0, -1, 0), glm::ivec3(0, 0, 1), glm::ivec3(0, 0, -1)},
 		// axis Y: neighbors in X and Z

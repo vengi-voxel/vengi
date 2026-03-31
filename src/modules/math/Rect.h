@@ -16,23 +16,23 @@ private:
 	glm::tvec2<TYPE> _mins;
 	glm::tvec2<TYPE> _maxs;
 public:
-	constexpr Rect() :
+	Rect() :
 			_mins(glm::tvec2<TYPE>((TYPE)0)),
 			_maxs(glm::tvec2<TYPE>((TYPE)0)) {
 	}
 
-	constexpr Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
+	Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
 			_mins(minX, minZ), _maxs(maxX, maxZ) {
 	}
 
-	constexpr Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
+	Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
 			_mins(mins), _maxs(maxs) {
 	}
 
-	static constexpr Rect<TYPE> getMaxRect() {
+	static Rect<TYPE> getMaxRect() {
 		constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest() / (TYPE)2;
 		constexpr TYPE max = (std::numeric_limits<TYPE>::max)() / (TYPE)2;
-		constexpr Rect<TYPE> maxRect(lowest, lowest, max, max);
+		const Rect<TYPE> maxRect(lowest, lowest, max, max);
 		return maxRect;
 	}
 

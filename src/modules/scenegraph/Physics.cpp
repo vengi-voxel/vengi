@@ -75,7 +75,7 @@ bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &b
 bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextBodyPos,
 							 const KinematicBody &body) const {
 	core_trace_scoped(CheckCollision);
-	constexpr float epsilon = glm::epsilon<float>();
+	const float epsilon = glm::epsilon<float>();
 	const glm::vec3 &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
 		if (!node.volume) {
