@@ -586,7 +586,13 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 		}
 		volume->clear();
 	} else {
+		// Keep the old volume alive during allocation so the heap allocator
+		// cannot reuse the same address. MeshState::setVolume() compares raw
+		// pointers (old == new) and skips the update when they match, which
+		// would leave stale mesh data in GPU buffers.
+		voxel::RawVolume *old = volume.release();
 		volume = new voxel::RawVolume(*existingVolume, region);
+		delete old;
 	}
 }
 
@@ -639,6 +645,11 @@ bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) 
 }
 
 void Modifier::resetPreview() {
+	// Clear renderer volume pointers before freeing the volumes.
+	// The allocator may reuse the same heap address for the next preview volume,
+	// which would cause MeshState::setVolume() to see old == new and skip the
+	// update, leaving stale mesh data in GPU buffers.
+	_modifierRenderer->clearBrushVolumes();
 	_previewVolume = nullptr;
 	_previewMirrorVolume = nullptr;
 	_brushPreview = BrushPreview();
@@ -758,11 +769,10 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 
 	if (ctx.brushActive) {
 		if (brush->dirty()) {
-			if (_nextPreviewUpdateSeconds > 0.0) {
-				_nextPreviewUpdateSeconds -= 0.02;
-			} else {
-				_nextPreviewUpdateSeconds = _nowSeconds + 0.1;
-			}
+			// Clear stale preview so the old position does not keep
+			// rendering, then regenerate immediately at the new position.
+			resetPreview();
+			_nextPreviewUpdateSeconds = _nowSeconds;
 			brush->markClean();
 		}
 		if (_nextPreviewUpdateSeconds > 0.0) {

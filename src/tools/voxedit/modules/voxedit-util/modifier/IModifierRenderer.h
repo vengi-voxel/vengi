@@ -83,6 +83,17 @@ public:
 	}
 
 	/**
+	 * @brief Clear the renderer's brush volume pointers to nullptr.
+	 *
+	 * Must be called before freeing preview volumes to prevent dangling pointer
+	 * comparisons in MeshState::setVolume(). Without this, the allocator may reuse
+	 * the same address for a new volume, causing setVolume() to skip the update
+	 * (old == new pointer) and leaving stale mesh data in GPU buffers.
+	 */
+	virtual void clearBrushVolumes() {
+	}
+
+	/**
 	 * @brief Wait for any pending mesh extractions to complete.
 	 *
 	 * This must be called before freeing preview volumes to avoid race conditions
