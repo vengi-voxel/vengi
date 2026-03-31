@@ -643,6 +643,9 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	const video::PolygonMode mode = camera.polygonMode();
 	const video::Face oldCullFace = video::currentCullFace();
 	video::ScopedPolygonMode polygonMode(mode);
+
+	core::Buffer<int> sorted;
+	sorted.reserve(meshState->activeIndices().size());
 	for (int idx : meshState->activeIndices()) {
 		if (!isVisible(meshState, idx)) {
 			continue;
@@ -650,11 +653,21 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 		if (indices == 0u) {
-			if (meshState->volume(bufferIndex)) {
-				Log::trace("No indices but volume for idx %d: %d", idx, bufferIndex);
-			}
 			continue;
 		}
+		sorted.push_back(idx);
+	}
+
+	// sort by palette hash to minimize redundant toVec4f conversions in updatePalette
+	app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
+		const int bufA = meshState->resolveIdx(a);
+		const int bufB = meshState->resolveIdx(b);
+		return meshState->palette(bufA).hash() < meshState->palette(bufB).hash();
+	});
+
+	for (int idx : sorted) {
+		const int bufferIndex = meshState->resolveIdx(idx);
+		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 
 		updatePalette(meshState, bufferIndex);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
