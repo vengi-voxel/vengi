@@ -652,4 +652,145 @@ TEST_F(PhysicsTest, testStairWalking_NoStepInAir) {
 	EXPECT_GT(body.position.x, 10.0f) << "Body should have moved forward off the edge";
 }
 
+TEST_F(PhysicsTest, testCollisionWithParentGroupTransform) {
+	// Create a scene with a group that has a translation, and a model child
+	SceneGraph sceneGraph;
+	int groupId;
+	{
+		SceneGraphNode groupNode(SceneGraphNodeType::Group);
+		groupNode.setName("group");
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		groupNode.setTransform(0, transform);
+		groupId = sceneGraph.emplace(core::move(groupNode));
+	}
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("ground");
+
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 15, 15, 15));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+		// Build a ground plane at y=0,1
+		for (int x = 0; x <= 15; ++x) {
+			for (int z = 0; z <= 15; ++z) {
+				v->setVoxel(x, 0, z, solidVoxel);
+				v->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+
+		modelNode.setVolume(v);
+		sceneGraph.emplace(core::move(modelNode), groupId);
+	}
+	sceneGraph.updateTransforms();
+
+	// The model should be at world position (50, 0, 50) due to the group transform
+	// Query with a large AABB around the world position
+	CollisionNodes nodes;
+	const math::AABB<float> aabb(glm::vec3(40.0f, -10.0f, 40.0f), glm::vec3(70.0f, 30.0f, 70.0f));
+	sceneGraph.getCollisionNodes(nodes, 0, aabb);
+
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+		}
+	}
+	ASSERT_EQ(1, validNodes) << "Model node should be found via group transform";
+
+	// Create a body above the ground at the world-space position of the model
+	KinematicBody body;
+	body.position = glm::vec3(58.0f, 10.0f, 58.0f);
+	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+
+	Physics physics;
+	const float gravity = 9.81f;
+	const double deltaTime = 0.016;
+
+	// Simulate falling
+	for (int i = 0; i < 120; ++i) {
+		physics.update(deltaTime, nodes, body, gravity);
+		if (body.isGrounded()) {
+			break;
+		}
+	}
+
+	// Body should have landed on the ground
+	EXPECT_TRUE(body.isGrounded()) << "Body should collide with ground plane under group transform";
+	EXPECT_TRUE(body.collidedY) << "Body should have Y collision";
+	EXPECT_GT(body.position.y, 1.5f) << "Body should be above the ground plane";
+	EXPECT_LT(body.position.y, 4.0f) << "Body should be near the ground";
+}
+
+TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
+	// Test collision at the edge of a thin ground plane where containsPoint would fail
+	// for both body AABB corners but the body still overlaps the region
+	SceneGraph sceneGraph;
+	int groupId;
+	{
+		SceneGraphNode groupNode(SceneGraphNodeType::Group);
+		groupNode.setName("group");
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		groupNode.setTransform(0, transform);
+		groupId = sceneGraph.emplace(core::move(groupNode));
+	}
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("thin_ground");
+
+		// Thin ground plane: 16 wide, 2 high, 16 deep
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 15, 1, 15));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 15; ++x) {
+			for (int z = 0; z <= 15; ++z) {
+				v->setVoxel(x, 0, z, solidVoxel);
+				v->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+
+		modelNode.setVolume(v);
+		sceneGraph.emplace(core::move(modelNode), groupId);
+	}
+	sceneGraph.updateTransforms();
+
+	CollisionNodes nodes;
+	const math::AABB<float> aabb(glm::vec3(0.0f, -20.0f, 0.0f), glm::vec3(30.0f, 20.0f, 30.0f));
+	sceneGraph.getCollisionNodes(nodes, 0, aabb);
+
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+		}
+	}
+	ASSERT_EQ(1, validNodes);
+
+	// Body near x=0 edge in model space (x=10.2 in world → model x=0.2) and falling from above.
+	// When the body reaches the ground surface, in model space:
+	//   mins.x = floor(0.2 - 0.4 - eps) = -1 (outside region.minX = 0)
+	//   maxs.y = floor(~2.0 + 0.8) = 2 (outside region.maxY = 1)
+	// This means containsPoint(mins) fails (x < 0) and containsPoint(maxs) fails (y > 1),
+	// but the body AABB still overlaps the region — so the old check would miss the collision.
+	KinematicBody body;
+	body.position = glm::vec3(10.2f, 10.0f, 18.0f);
+	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+
+	Physics physics;
+	const float gravity = 9.81f;
+	const double deltaTime = 0.016;
+
+	for (int i = 0; i < 120; ++i) {
+		physics.update(deltaTime, nodes, body, gravity);
+		if (body.isGrounded()) {
+			break;
+		}
+	}
+
+	EXPECT_TRUE(body.isGrounded()) << "Body should collide with ground even at the edge of a thin floor with transforms";
+	EXPECT_TRUE(body.collidedY) << "Body should have Y collision at edge";
+}
+
 } // namespace scenegraph

@@ -8,13 +8,16 @@
 #include "color/ColorUtil.h"
 #include "core/ScopedPtr.h"
 #include "core/tests/TestColorHelper.h"
+#include "math/AABB.h"
 #include "math/OBB.h"
 #include "math/tests/TestMathHelper.h"
 #include "palette/FormatConfig.h"
 #include "palette/Palette.h"
 #include "palette/tests/TestHelper.h"
+#include "scenegraph/CollisionNode.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/SceneUtil.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -1013,6 +1016,300 @@ TEST_F(SceneGraphTest, testColorHistogramMultipleColors) {
 	EXPECT_EQ(2, histogram[v2.getColor()].count);
 	EXPECT_FLOAT_EQ(60.0f, histogram[v1.getColor()].percentage);
 	EXPECT_FLOAT_EQ(40.0f, histogram[v2.getColor()].percentage);
+}
+
+TEST_F(SceneGraphTest, testWorldMatrixWithTranslation) {
+	SceneGraph sceneGraph;
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setName("model");
+	node.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	SceneGraphTransform transform;
+	transform.setWorldTranslation(glm::vec3(10.0f, 5.0f, 20.0f));
+	node.setTransform(0, transform);
+	const int nodeId = sceneGraph.emplace(core::move(node));
+	ASSERT_NE(InvalidNodeId, nodeId);
+	sceneGraph.updateTransforms();
+
+	const glm::mat4 &mat = sceneGraph.worldMatrix(sceneGraph.node(nodeId), 0);
+	EXPECT_NE(mat, glm::mat4(1.0f)) << "With translation, worldMatrix should differ from identity";
+	const glm::vec3 origin = glm::vec3(mat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	EXPECT_FLOAT_EQ(10.0f, origin.x);
+	EXPECT_FLOAT_EQ(5.0f, origin.y);
+	EXPECT_FLOAT_EQ(20.0f, origin.z);
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesNoTransform) {
+	SceneGraph sceneGraph;
+	SceneGraphNode modelNode(SceneGraphNodeType::Model);
+	modelNode.setName("ground");
+	voxel::RawVolume v(voxel::Region(0, 0, 0, 7, 7, 7));
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	modelNode.setUnownedVolume(&v);
+	sceneGraph.emplace(core::move(modelNode));
+	sceneGraph.updateTransforms();
+
+	CollisionNodes nodes;
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+		}
+	}
+	EXPECT_EQ(1, validNodes) << "Node without transform should be found in its own region";
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesWithTranslation) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("translated");
+		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
+		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		modelNode.setTransform(0, transform);
+		sceneGraph.emplace(core::move(modelNode));
+	}
+	sceneGraph.updateTransforms();
+
+	// Query at the translated world position - should find the node
+	const math::AABB<float> queryAABB(glm::vec3(48.0f, -2.0f, 48.0f), glm::vec3(55.0f, 5.0f, 55.0f));
+	CollisionNodes nodesAtTranslated;
+	sceneGraph.getCollisionNodes(nodesAtTranslated, 0, queryAABB);
+	int validNodesAtTranslated = 0;
+	for (const CollisionNode &cn : nodesAtTranslated) {
+		if (cn.volume) {
+			++validNodesAtTranslated;
+		}
+	}
+	EXPECT_EQ(1, validNodesAtTranslated) << "Node should be found at its translated world position";
+
+	// Verify the worldToModel matrix correctly maps world positions to model space
+	for (const CollisionNode &cn : nodesAtTranslated) {
+		if (cn.volume) {
+			const glm::vec3 worldPos(51.0f, 1.0f, 51.0f);
+			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			EXPECT_NEAR(1.0f, modelPos.x, 0.5f) << "World position should map to model space correctly";
+			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
+			EXPECT_NEAR(1.0f, modelPos.z, 0.5f);
+		}
+	}
+
+	// Query at the origin (where the model-space region is) - should NOT find the node
+	const math::AABB<float> originAABB(glm::vec3(-1.0f), glm::vec3(5.0f));
+	CollisionNodes nodesAtOrigin;
+	sceneGraph.getCollisionNodes(nodesAtOrigin, 0, originAABB);
+	int validNodesAtOrigin = 0;
+	for (const CollisionNode &cn : nodesAtOrigin) {
+		if (cn.volume) {
+			++validNodesAtOrigin;
+		}
+	}
+	EXPECT_EQ(0, validNodesAtOrigin) << "Node should NOT be found at origin when it's translated to (50,0,50)";
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesWithParentGroupTransform) {
+	SceneGraph sceneGraph;
+	int groupId;
+	{
+		SceneGraphNode groupNode(SceneGraphNodeType::Group);
+		groupNode.setName("group");
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		groupNode.setTransform(0, transform);
+		groupId = sceneGraph.emplace(core::move(groupNode));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("ground");
+		modelNode.createVolume(voxel::Region(0, 0, 0, 15, 1, 15));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 15; ++x) {
+			for (int z = 0; z <= 15; ++z) {
+				modelNode.volume()->setVoxel(x, 0, z, solidVoxel);
+				modelNode.volume()->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+		const int modelId = sceneGraph.emplace(core::move(modelNode), groupId);
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	sceneGraph.updateTransforms();
+
+	// Query at the group's translated world position - should find the model
+	const math::AABB<float> queryAABB(glm::vec3(48.0f, -2.0f, 48.0f), glm::vec3(67.0f, 5.0f, 67.0f));
+	CollisionNodes nodesAtTranslated;
+	sceneGraph.getCollisionNodes(nodesAtTranslated, 0, queryAABB);
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodesAtTranslated) {
+		if (cn.volume) {
+			++validNodes;
+			// Body at world (58, 1, 58) should map to model space (8, 1, 8)
+			const glm::vec3 worldPos(58.0f, 1.0f, 58.0f);
+			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			EXPECT_NEAR(8.0f, modelPos.x, 0.5f) << "World pos should map to model space correctly with parent group transform";
+			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
+			EXPECT_NEAR(8.0f, modelPos.z, 0.5f);
+		}
+	}
+	EXPECT_EQ(1, validNodes) << "Model node should be found at the group's translated world position";
+
+	// Query at the origin (raw model-space region) - should NOT find the node
+	const math::AABB<float> originAABB(glm::vec3(-1.0f), glm::vec3(20.0f, 5.0f, 20.0f));
+	CollisionNodes nodesAtOrigin;
+	sceneGraph.getCollisionNodes(nodesAtOrigin, 0, originAABB);
+	int validAtOrigin = 0;
+	for (const CollisionNode &cn : nodesAtOrigin) {
+		if (cn.volume) {
+			++validAtOrigin;
+		}
+	}
+	EXPECT_EQ(0, validAtOrigin) << "Model node should NOT be found at origin when parent group is translated";
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesGroupAndChildBothTransformed) {
+	SceneGraph sceneGraph;
+	int groupId;
+	{
+		SceneGraphNode groupNode(SceneGraphNodeType::Group);
+		groupNode.setName("group");
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(20.0f, 0.0f, 20.0f));
+		groupNode.setTransform(0, transform);
+		groupId = sceneGraph.emplace(core::move(groupNode));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("platform");
+		modelNode.createVolume(voxel::Region(0, 0, 0, 7, 1, 7));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 7; ++x) {
+			for (int z = 0; z <= 7; ++z) {
+				modelNode.volume()->setVoxel(x, 0, z, solidVoxel);
+				modelNode.volume()->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+		SceneGraphTransform transform;
+		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		modelNode.setTransform(0, transform);
+		const int modelId = sceneGraph.emplace(core::move(modelNode), groupId);
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	sceneGraph.updateTransforms();
+
+	// Model should be at world position group(20) + local(10) = (30, 0, 30)
+	const math::AABB<float> queryAABB(glm::vec3(28.0f, -2.0f, 28.0f), glm::vec3(40.0f, 5.0f, 40.0f));
+	CollisionNodes nodes;
+	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+			// Body at world (34, 1, 34) should map to model space (4, 1, 4)
+			const glm::vec3 worldPos(34.0f, 1.0f, 34.0f);
+			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			EXPECT_NEAR(4.0f, modelPos.x, 0.5f);
+			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
+			EXPECT_NEAR(4.0f, modelPos.z, 0.5f);
+		}
+	}
+	EXPECT_EQ(1, validNodes) << "Model node should be found at combined group+child world position";
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesWithRotation) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("rotated_platform");
+		// A long thin platform along X: 20 wide, 2 tall, 4 deep
+		modelNode.createVolume(voxel::Region(0, 0, 0, 19, 1, 3));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 19; ++x) {
+			for (int z = 0; z <= 3; ++z) {
+				modelNode.volume()->setVoxel(x, 0, z, solidVoxel);
+				modelNode.volume()->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+		SceneGraphTransform transform;
+		// Rotate 90 degrees around Y - this swaps X and Z extents
+		const glm::quat rot = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+		transform.setLocalOrientation(rot);
+		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		modelNode.setTransform(0, transform);
+		const int modelId = sceneGraph.emplace(core::move(modelNode));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	sceneGraph.updateTransforms();
+
+	// After 90° Y rotation, the platform's X extent (0..19) becomes Z extent
+	// and Z extent (0..3) becomes X extent. The rotated AABB should be roughly:
+	// X: ~(10-3, 10+0) = ~(7, 10), Z: ~(10-19, 10+0) = ~(-9, 10)
+	// Query in the rotated area that the old Region::transform would miss
+	const math::AABB<float> queryAABB(glm::vec3(5.0f, -2.0f, -5.0f), glm::vec3(15.0f, 5.0f, 15.0f));
+	CollisionNodes nodes;
+	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+		}
+	}
+	EXPECT_EQ(1, validNodes) << "Rotated node should be found with correct AABB (transformArvo)";
+}
+
+TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
+	SceneGraph sceneGraph;
+	int groupId;
+	{
+		SceneGraphNode groupNode(SceneGraphNodeType::Group);
+		groupNode.setName("rotated_group");
+		SceneGraphTransform transform;
+		// Rotate 90 degrees around Y at the group level
+		const glm::quat rot = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+		transform.setLocalOrientation(rot);
+		transform.setWorldTranslation(glm::vec3(0.0f));
+		groupNode.setTransform(0, transform);
+		groupId = sceneGraph.emplace(core::move(groupNode));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	{
+		SceneGraphNode modelNode(SceneGraphNodeType::Model);
+		modelNode.setName("child_platform");
+		// Child at local position (10, 0, 0) with a 10x2x4 volume
+		modelNode.createVolume(voxel::Region(0, 0, 0, 9, 1, 3));
+		const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 9; ++x) {
+			for (int z = 0; z <= 3; ++z) {
+				modelNode.volume()->setVoxel(x, 0, z, solidVoxel);
+				modelNode.volume()->setVoxel(x, 1, z, solidVoxel);
+			}
+		}
+		SceneGraphTransform transform;
+		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+		modelNode.setTransform(0, transform);
+		const int modelId = sceneGraph.emplace(core::move(modelNode), groupId);
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	sceneGraph.updateTransforms();
+
+	// The child is at local (10,0,0). Group rotates 90° around Y.
+	// So world position is roughly (0, 0, -10) after rotation.
+	// The volume extends (0..9, 0..1, 0..3) in model space, which after
+	// the group rotation maps Z extent into X and X extent into -Z.
+	// Query at the rotated world position
+	const math::AABB<float> queryAABB(glm::vec3(-5.0f, -2.0f, -25.0f), glm::vec3(10.0f, 5.0f, 0.0f));
+	CollisionNodes nodes;
+	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
+	int validNodes = 0;
+	for (const CollisionNode &cn : nodes) {
+		if (cn.volume) {
+			++validNodes;
+		}
+	}
+	EXPECT_EQ(1, validNodes) << "Node under rotated group should be found at its rotated world position";
 }
 
 } // namespace scenegraph
