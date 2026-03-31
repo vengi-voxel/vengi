@@ -3917,30 +3917,6 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Toggle the visible state of a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("nodetogglevisibleatcamera")
-		.setHandler([&](const command::CommandArgs &args) {
-			if (_camera == nullptr) {
-				Log::warn("nodetogglevisibleatcamera: no camera");
-				return;
-			}
-			const glm::vec3 &camPos = _camera->worldPosition();
-			for (auto entry : _sceneGraph.nodes()) {
-				scenegraph::SceneGraphNode &node = entry->value;
-				if (!node.isModelNode()) {
-					continue;
-				}
-				const voxel::Region &region = _sceneGraph.resolveRegion(node);
-				if (!region.isValid()) {
-					continue;
-				}
-				const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
-				const math::OBBF &obb = scenegraph::toOBB(true, region, node.pivot(), transform);
-				if (obb.contains(camPos)) {
-					nodeSetVisible(node.id(), !node.visible());
-				}
-			}
-		}).setHelp(_("Toggle visibility of all model nodes the camera is currently inside"));
-
 	command::Command::registerCommand("showall")
 		.setHandler([&] (const command::CommandArgs& args) {
 			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {

@@ -58,7 +58,6 @@ VoxEdit:
    - Added `brushapply`/`brushabort` commands and selection color operations
    - Added global paste as node, splat merge, global copy visible, and deferred transform
    - Added uniform scale checkbox for transform brush
-   - Added `nodetogglevisibleatcamera` command
    - Added sprint action button for game mode movement
    - Persist scene mode setting across sessions
    - Added new brushes and lua script execution as MCP tools
