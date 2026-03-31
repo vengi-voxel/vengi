@@ -4104,6 +4104,18 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Set or toggle the camera rotation mode (target or eye)")).setArgumentCompleter(command::valueCompleter({"target", "eye"}));
 
+	command::Command::registerCommand("camera_target_reference")
+		.setHandler([&] (const command::CommandArgs& args) {
+			video::Camera *camera = activeCamera();
+			if (camera == nullptr) {
+				Log::error("No active camera found");
+				return;
+			}
+			const glm::vec3 refPos = glm::vec3(referencePosition());
+			camera->setTarget(refPos);
+			camera->setRotationType(video::CameraRotationType::Target);
+		}).setHelp(_("Set the camera orbit target to the reference point position"));
+
 	command::Command::registerCommand("camera_projection")
 		.addArg({"mode", command::ArgType::String, true, "", "Projection mode: perspective|orthogonal (toggles if not specified)"})
 		.setHandler([&] (const command::CommandArgs& args) {
