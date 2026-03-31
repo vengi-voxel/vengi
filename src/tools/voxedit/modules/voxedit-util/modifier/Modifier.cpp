@@ -633,13 +633,19 @@ bool Modifier::previewNeedsExistingVolume() const {
 }
 
 bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
-	if (brush->type() != BrushType::Shape) {
-		return false;
+	if (brush->type() == BrushType::Shape) {
+		const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
+		if (shapeBrush->shapeType() == ShapeType::AABB) {
+			return true;
+		}
 	}
-	const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
-	if (shapeBrush->shapeType() == ShapeType::AABB) {
-		// we can use a simple cube for the preview here
-		return true;
+	if (brush->type() == BrushType::Select) {
+		const SelectBrush *selectBrush = (const SelectBrush *)brush;
+		const SelectMode mode = selectBrush->selectMode();
+		if (mode == SelectMode::All || mode == SelectMode::Surface || mode == SelectMode::Box3D ||
+			mode == SelectMode::SameColor || mode == SelectMode::FuzzyColor) {
+			return true;
+		}
 	}
 	return false;
 }
