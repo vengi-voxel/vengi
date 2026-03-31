@@ -139,6 +139,8 @@ private:
 	bool _paintAccumulating = false;
 	/** When true, paint-select only adds voxels adjacent to already-selected voxels */
 	bool _paintGrowRegion = false;
+	/** True if any selection existed when the current paint drag started */
+	bool _paintHadSelection = false;
 	/** Accumulated dirty region across all paint-select ticks */
 	voxel::Region _paintDirtyRegion = voxel::Region::InvalidRegion;
 	/** Saved dirty region from endBrush, consumed by consumePendingUndoRegion */

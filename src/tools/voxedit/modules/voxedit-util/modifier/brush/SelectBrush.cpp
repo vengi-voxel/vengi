@@ -4,6 +4,7 @@
 
 #include "SelectBrush.h"
 #include "core/collection/DynamicMap.h"
+#include "scenegraph/SceneGraph.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -227,6 +228,7 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	}
 	if (_selectMode == SelectMode::Paint) {
 		_paintAccumulating = true;
+		_paintHadSelection = false;
 		_paintDirtyRegion = voxel::Region::InvalidRegion;
 		_paintFinalUndoRegion = voxel::Region::InvalidRegion;
 		_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
@@ -1104,7 +1106,14 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		const glm::ivec3 center = ctx.cursorPosition;
 		const int rad = radius();
 		const int radSq = rad * rad;
-		const bool growOnly = _paintGrowRegion && wrapper.modifierType() != ModifierType::Erase;
+		if (!_paintDirtyRegion.isValid() && !_paintHadSelection) {
+			const int activeNodeId = sceneGraph.activeNode();
+			if (sceneGraph.hasNode(activeNodeId)) {
+				_paintHadSelection = sceneGraph.node(activeNodeId).hasSelection();
+			}
+		}
+		const bool growOnly = _paintGrowRegion && wrapper.modifierType() != ModifierType::Erase
+			&& (_paintHadSelection || _paintDirtyRegion.isValid());
 		voxelutil::VisitSolid condition;
 		auto paintFunc = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const int dx = x - center.x;
