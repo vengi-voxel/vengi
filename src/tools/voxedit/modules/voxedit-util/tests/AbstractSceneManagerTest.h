@@ -82,6 +82,10 @@ public:
 		nodeGroupSelectOnlyCorners();
 	}
 
+	void testSelectOnlyWallEdges() {
+		nodeGroupSelectOnlyWallEdges();
+	}
+
 	void testSelectionGrow() {
 		nodeGroupSelectionGrow();
 	}

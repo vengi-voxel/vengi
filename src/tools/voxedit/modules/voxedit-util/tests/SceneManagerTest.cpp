@@ -1190,6 +1190,131 @@ TEST_F(SceneManagerTest, testSelectOnlyCornersNoSelection) {
 	// No-op when no selection exists
 }
 
+TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXZ) {
+	// Paper-thin wall in XZ plane (1 voxel thick in Y).
+	// After filtering, only the perimeter voxels should remain selected.
+	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 0, 5}};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xz_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	for (int x = 0; x <= 5; ++x) {
+		for (int z = 0; z <= 5; ++z) {
+			v->setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(region);
+
+	sceneMgr()->testSelectOnlyWallEdges();
+
+	// Interior voxel should be deselected
+	const voxel::Voxel &interior = v->voxel(2, 0, 2);
+	EXPECT_EQ(0, interior.getFlags() & voxel::FlagOutline) << "Interior wall voxel should be deselected";
+
+	// Edge voxels should remain selected
+	const voxel::Voxel &edgeX0 = v->voxel(0, 0, 2);
+	EXPECT_NE(0, edgeX0.getFlags() & voxel::FlagOutline) << "X=0 edge should remain selected";
+
+	const voxel::Voxel &edgeX5 = v->voxel(5, 0, 2);
+	EXPECT_NE(0, edgeX5.getFlags() & voxel::FlagOutline) << "X=5 edge should remain selected";
+
+	const voxel::Voxel &edgeZ0 = v->voxel(2, 0, 0);
+	EXPECT_NE(0, edgeZ0.getFlags() & voxel::FlagOutline) << "Z=0 edge should remain selected";
+
+	const voxel::Voxel &edgeZ5 = v->voxel(2, 0, 5);
+	EXPECT_NE(0, edgeZ5.getFlags() & voxel::FlagOutline) << "Z=5 edge should remain selected";
+
+	// Corner should remain selected
+	const voxel::Voxel &corner = v->voxel(0, 0, 0);
+	EXPECT_NE(0, corner.getFlags() & voxel::FlagOutline) << "Corner should remain selected";
+}
+
+TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXY) {
+	// Paper-thin wall in XY plane (1 voxel thick in Z).
+	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 5, 0}};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xy_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			v->setVoxel(x, y, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(region);
+
+	sceneMgr()->testSelectOnlyWallEdges();
+
+	// Interior voxel should be deselected
+	const voxel::Voxel &interior = v->voxel(2, 2, 0);
+	EXPECT_EQ(0, interior.getFlags() & voxel::FlagOutline) << "Interior wall voxel should be deselected";
+
+	// Edge voxels should remain selected
+	const voxel::Voxel &edgeX0 = v->voxel(0, 2, 0);
+	EXPECT_NE(0, edgeX0.getFlags() & voxel::FlagOutline) << "X=0 edge should remain selected";
+
+	const voxel::Voxel &edgeY0 = v->voxel(2, 0, 0);
+	EXPECT_NE(0, edgeY0.getFlags() & voxel::FlagOutline) << "Y=0 edge should remain selected";
+
+	const voxel::Voxel &edgeX5 = v->voxel(5, 2, 0);
+	EXPECT_NE(0, edgeX5.getFlags() & voxel::FlagOutline) << "X=5 edge should remain selected";
+
+	const voxel::Voxel &edgeY5 = v->voxel(2, 5, 0);
+	EXPECT_NE(0, edgeY5.getFlags() & voxel::FlagOutline) << "Y=5 edge should remain selected";
+
+	const voxel::Voxel &corner = v->voxel(0, 0, 0);
+	EXPECT_NE(0, corner.getFlags() & voxel::FlagOutline) << "Corner should remain selected";
+}
+
+TEST_F(SceneManagerTest, testSelectOnlyWallEdgesYZ) {
+	// Paper-thin wall in YZ plane (1 voxel thick in X).
+	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{0, 5, 5}};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_yz_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	for (int y = 0; y <= 5; ++y) {
+		for (int z = 0; z <= 5; ++z) {
+			v->setVoxel(0, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	node->select(region);
+
+	sceneMgr()->testSelectOnlyWallEdges();
+
+	// Interior voxel should be deselected
+	const voxel::Voxel &interior = v->voxel(0, 2, 2);
+	EXPECT_EQ(0, interior.getFlags() & voxel::FlagOutline) << "Interior wall voxel should be deselected";
+
+	// Edge voxels should remain selected
+	const voxel::Voxel &edgeY0 = v->voxel(0, 0, 2);
+	EXPECT_NE(0, edgeY0.getFlags() & voxel::FlagOutline) << "Y=0 edge should remain selected";
+
+	const voxel::Voxel &edgeZ0 = v->voxel(0, 2, 0);
+	EXPECT_NE(0, edgeZ0.getFlags() & voxel::FlagOutline) << "Z=0 edge should remain selected";
+
+	const voxel::Voxel &edgeY5 = v->voxel(0, 5, 2);
+	EXPECT_NE(0, edgeY5.getFlags() & voxel::FlagOutline) << "Y=5 edge should remain selected";
+
+	const voxel::Voxel &edgeZ5 = v->voxel(0, 2, 5);
+	EXPECT_NE(0, edgeZ5.getFlags() & voxel::FlagOutline) << "Z=5 edge should remain selected";
+
+	const voxel::Voxel &corner = v->voxel(0, 0, 0);
+	EXPECT_NE(0, corner.getFlags() & voxel::FlagOutline) << "Corner should remain selected";
+}
+
 TEST_F(SceneManagerTest, testSelectionGrow) {
 	// Create a 6x6x6 solid cube, select only the center voxel, then grow.
 	// After grow, the center + all 26 solid neighbors should be selected.

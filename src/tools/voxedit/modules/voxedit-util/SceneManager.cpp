@@ -452,6 +452,72 @@ void SceneManager::nodeGroupSelectOnlyCorners() {
 	nodeGroupSelectByAirAxes(3);
 }
 
+void SceneManager::nodeGroupSelectOnlyWallEdges() {
+	// Ring neighbors in each perpendicular plane (8 neighbors per axis)
+	static constexpr glm::ivec3 ringY[] = {
+		{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1},
+		{1, 0, 1}, {1, 0, -1}, {-1, 0, 1}, {-1, 0, -1}
+	};
+	static constexpr glm::ivec3 ringX[] = {
+		{0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
+		{0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1}
+	};
+	static constexpr glm::ivec3 ringZ[] = {
+		{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0},
+		{1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0}
+	};
+
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
+		if (node == nullptr) {
+			return;
+		}
+		if (!node->hasSelection()) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		if (!selRegion.isValid()) {
+			return;
+		}
+		const voxel::Region &volRegion = v->region();
+		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if ((voxel.getFlags() & voxel::FlagOutline) == 0) {
+				return;
+			}
+			const glm::ivec3 pos(x, y, z);
+			bool isWallEdge = false;
+			static constexpr int ringSize = lengthof(ringX);
+			const glm::ivec3 *rings[] = {ringX, ringY, ringZ};
+			static constexpr int maxSolidNeighbors = 1;
+			for (int axis = 0; axis < lengthof(rings); ++axis) {
+				int solidCount = 0;
+				for (int i = 0; i < ringSize; ++i) {
+					const glm::ivec3 neighbor = pos + rings[axis][i];
+					if (volRegion.containsPoint(neighbor) && voxel::isBlocked(v->voxel(neighbor).getMaterial())) {
+						++solidCount;
+					}
+				}
+				if (solidCount <= maxSolidNeighbors) {
+					isWallEdge = true;
+					break;
+				}
+			}
+			if (!isWallEdge) {
+				voxel::Voxel updated = voxel;
+				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
+				v->setVoxel(x, y, z, updated);
+			}
+		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		_selectionCacheNodeId = -1;
+		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
+		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
+	});
+}
+
 void SceneManager::nodeGroupSelectionGrow() {
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
@@ -3449,6 +3515,11 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupSelectOnlyCorners();
 		}).setHelp(_("Filter selection to only keep corner voxels where three faces meet"));
+
+	command::Command::registerCommand("selectonlywalledges")
+		.setHandler([&] (const command::CommandArgs& args) {
+			nodeGroupSelectOnlyWallEdges();
+		}).setHelp(_("Filter selection to only keep wall edge voxels with at most one solid neighbor in a perpendicular ring"));
 
 	command::Command::registerCommand("selectiongrow")
 		.setHandler([&] (const command::CommandArgs& args) {
