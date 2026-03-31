@@ -469,12 +469,12 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 			const scenegraph::SceneGraphNode &node = *cnodes[i];
 			const voxel::RawVolume *volume = resolveVolume(node);
 			const glm::mat4 &worldMat = worldMatrix(node, frameIdx, true);
-			const glm::mat4 &worldToModel = glm::inverse(worldMat);
-			const voxel::Region &region = volume->region().transform(worldToModel);
+			const voxel::Region &region = volume->region().transform(worldMat);
 			if (!voxel::intersects(region, regionAABB)) {
 				continue;
 			}
 
+			const glm::mat4 &worldToModel = glm::inverse(worldMat);
 			out[i] = CollisionNode(volume, worldToModel);
 		}
 	});
