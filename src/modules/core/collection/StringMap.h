@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "core/StringCacheHash.h"
 #include "core/collection/Map.h"
-#include "core/String.h"
 
 namespace core {
 
@@ -13,9 +13,10 @@ namespace core {
  * @brief String key based hash map
  * @sa core::Map
  * @sa core::String
+ * @sa core::StringCacheHash
  * @ingroup Collections
  */
 template<class VALUETYPE, size_t BUCKETSIZE = 11>
-using StringMap = core::Map<core::String, VALUETYPE, BUCKETSIZE, core::StringHash>;
+using StringMap = core::Map<core::StringCacheHash, VALUETYPE, BUCKETSIZE, core::StringCacheHash>;
 
-}
+} // namespace core

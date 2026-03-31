@@ -68,6 +68,7 @@ set(SRCS
 	Singleton.h
 	StandardLib.h
 	String.cpp String.h
+	StringCacheHash.cpp StringCacheHash.h
 	StringUtil.cpp StringUtil.h
 	TimeProvider.h TimeProvider.cpp
 	TimedValue.h

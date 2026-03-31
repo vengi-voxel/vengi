@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "core/String.h"
+#include "core/StringCacheHash.h"
 #include "core/collection/Set.h"
 
 namespace core {
 
 /**
- * @brief String key based hash map
- * @sa core::Map
- * @sa core::String
+ * @brief String key based hash set
+ * @sa core::Set
+ * @sa core::StringCacheHash
  * @ingroup Collections
  */
-using StringSet = core::Set<core::String, 11, core::StringHash>;
+using StringSet = core::Set<core::StringCacheHash, 11, core::StringCacheHash>;
 
 }

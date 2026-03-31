@@ -149,7 +149,7 @@ class Var {
 public:
 protected:
 	friend class SharedPtr<Var>;
-	typedef StringMap<VarPtr, 64> VarMap;
+	typedef StringMap<VarPtr, 89> VarMap;
 	static VarMap _vars;
 	static Lock _lock;
 
