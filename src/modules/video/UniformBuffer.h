@@ -7,7 +7,8 @@
 #include "Renderer.h"
 #include "core/NonCopyable.h"
 
-#define VIDEO_UNIFORM_BUFFER_HASH_COMPARE 1
+// massive bottleneck in scenes with a few thousand nodes and unique sets of uniform data (RawVolumeRenderer::renderOpaque())
+#define VIDEO_UNIFORM_BUFFER_HASH_COMPARE 0
 
 namespace video {
 
