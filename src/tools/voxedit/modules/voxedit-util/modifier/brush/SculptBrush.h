@@ -13,6 +13,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
 
+#include <climits>
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -30,6 +31,7 @@ enum class SculptMode : uint8_t {
 	SmoothGaussian,
 	BridgeGap,
 	SquashToPlane,
+	ExtendPlane,
 	Reskin,
 
 	Max
@@ -62,6 +64,21 @@ private:
 	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
 
+	// ExtendPlane parameters
+	int _removeAboveDepth = 0;
+	bool _extendOnly = true;
+	int _brushRadius = 3;
+	float _planeGradU = 0.0f;
+	float _planeGradV = 0.0f;
+	int _planeSeedU = 0;
+	int _planeSeedV = 0;
+	int _planeSeedH = 0;
+	int _planeUAxis = 0;
+	int _planeVAxis = 2;
+	int _planeHeightAxis = 1;
+	bool _planeFitted = false;
+	glm::ivec3 _lastPaintPos{INT_MIN};
+
 	// Reskin parameters
 	voxelutil::ReskinConfig _reskinConfig;
 	const voxel::RawVolume *_skinVolume = nullptr;
@@ -88,6 +105,8 @@ private:
 	void applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
 	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
+	void fitPlaneFromSnapshot();
+	void paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -113,6 +132,7 @@ public:
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	bool managesOwnSelection() const override;
+	bool wantsContinuousExecution() const override;
 
 	static bool modeNeedsFace(SculptMode mode);
 
@@ -148,6 +168,17 @@ public:
 	static constexpr float MinSigma = 0.1f;
 	float sigma() const;
 	void setSigma(float sigma);
+
+	// ExtendPlane accessors
+	static constexpr int MaxBrushRadius = 32;
+	static constexpr int MaxRemoveAboveDepth = 32;
+	int removeAboveDepth() const;
+	void setRemoveAboveDepth(int depth);
+	bool extendOnly() const;
+	void setExtendOnly(bool extend);
+	int brushRadius() const;
+	void setBrushRadius(int radius);
+	bool planeFitted() const;
 
 	// Reskin accessors
 	static constexpr int MaxReskinDepth = 32;
@@ -185,9 +216,14 @@ inline bool SculptBrush::managesOwnSelection() const {
 	return true;
 }
 
+inline bool SculptBrush::wantsContinuousExecution() const {
+	return _sculptMode == SculptMode::ExtendPlane && _planeFitted;
+}
+
 inline bool SculptBrush::modeNeedsFace(SculptMode mode) {
 	return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode ||
-		   mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::Reskin;
+		   mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::ExtendPlane ||
+		   mode == SculptMode::Reskin;
 }
 
 inline SculptMode SculptBrush::sculptMode() const {
@@ -327,6 +363,35 @@ inline void SculptBrush::setReskinZOffset(int offset) {
 inline void SculptBrush::setReskinInvertSkin(bool invert) {
 	_reskinConfig.invertSkin = invert;
 	_paramsDirty = true;
+}
+
+inline int SculptBrush::removeAboveDepth() const {
+	return _removeAboveDepth;
+}
+
+inline void SculptBrush::setRemoveAboveDepth(int depth) {
+	_removeAboveDepth = glm::clamp(depth, 0, MaxRemoveAboveDepth);
+	_paramsDirty = true;
+}
+
+inline bool SculptBrush::extendOnly() const {
+	return _extendOnly;
+}
+
+inline void SculptBrush::setExtendOnly(bool extend) {
+	_extendOnly = extend;
+}
+
+inline int SculptBrush::brushRadius() const {
+	return _brushRadius;
+}
+
+inline void SculptBrush::setBrushRadius(int radius) {
+	_brushRadius = glm::clamp(radius, 1, MaxBrushRadius);
+}
+
+inline bool SculptBrush::planeFitted() const {
+	return _planeFitted;
 }
 
 inline const voxel::RawVolume *SculptBrush::skinVolume() const {

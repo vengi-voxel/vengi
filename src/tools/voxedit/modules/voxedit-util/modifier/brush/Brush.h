@@ -370,6 +370,14 @@ public:
 	}
 
 	/**
+	 * @return true if this brush should execute on every frame while the mouse button is held,
+	 * rather than only on mouse-up. Used for paint-drag style brushes.
+	 */
+	virtual bool wantsContinuousExecution() const {
+		return false;
+	}
+
+	/**
 	 * @brief Calculate the region this brush will modify
 	 *
 	 * Each brush defines its own logic for determining the affected region.

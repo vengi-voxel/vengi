@@ -321,4 +321,235 @@ TEST_F(SculptBrushTest, testFlattenReversible) {
 	brush.shutdown();
 }
 
+TEST_F(SculptBrushTest, testExtendPlaneFlatSurface) {
+	// A flat 5x5 selected surface at y=0. Painting adjacent area should place voxels at y=0.
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+
+	for (int x = -2; x <= 2; ++x) {
+		for (int z = -2; z <= 2; ++z) {
+			volume.setVoxel(x, 0, z, selectedVoxel());
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SculptBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSculptMode(SculptMode::ExtendPlane);
+	brush.setBrushRadius(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// First click: captures face and fits plane
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+	ASSERT_TRUE(brush.planeFitted());
+
+	// Second click: paint at x=5, z=0 to extend the flat surface
+	ctx.cursorPosition = glm::ivec3(5, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// Voxels should be placed at y=0 in the painted area
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(5, 0, 0).getMaterial()))
+		<< "Extended voxel at (5,0,0) should be placed at plane height y=0";
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 0, 0).getMaterial()))
+		<< "Extended voxel at (4,0,0) should be placed at plane height y=0";
+
+	brush.shutdown();
+}
+
+TEST_F(SculptBrushTest, testExtendPlaneSlopedSurface) {
+	// A sloped surface: y increases with x. Painting beyond should follow the slope.
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+
+	// Create slope: y = x (for x from -2 to 2, z from -1 to 1)
+	for (int x = -2; x <= 2; ++x) {
+		for (int z = -1; z <= 1; ++z) {
+			volume.setVoxel(x, x, z, selectedVoxel());
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SculptBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSculptMode(SculptMode::ExtendPlane);
+	brush.setBrushRadius(0);
+	brush.setExtendOnly(false);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// First click: captures face and fits plane
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+	ASSERT_TRUE(brush.planeFitted());
+
+	// Paint at x=4, z=0 - should place voxel at y=4 (following slope y=x)
+	ctx.cursorPosition = glm::ivec3(4, 4, 0);
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 4, 0).getMaterial()))
+		<< "Sloped extension at (4,4,0) should follow y=x slope";
+
+	brush.shutdown();
+}
+
+TEST_F(SculptBrushTest, testExtendPlaneRemoveAbove) {
+	// Flat surface at y=0 with voxels stacked at y=1..5. Extend + remove depth=2
+	// should place the plane AND remove layers above. y=5 is well beyond the
+	// thick ray reach (depth + neighbor expansion) and should survive.
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+
+	for (int x = -2; x <= 2; ++x) {
+		for (int z = -2; z <= 2; ++z) {
+			volume.setVoxel(x, 0, z, selectedVoxel());
+		}
+	}
+	// Stack above at x=0
+	volume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+	volume.setVoxel(0, 2, 0, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+	volume.setVoxel(0, 3, 0, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+	volume.setVoxel(0, 5, 0, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SculptBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSculptMode(SculptMode::ExtendPlane);
+	brush.setBrushRadius(1);
+	brush.setRemoveAboveDepth(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// First click: captures face and fits plane
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+	ASSERT_TRUE(brush.planeFitted());
+
+	// Paint at (3,0,0) - extends plane AND removes above
+	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	// Plane extended at x=3
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()))
+		<< "Plane should be extended to (3,0,0)";
+	// Original plane remains
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
+		<< "Original plane voxel at (0,0,0) should remain";
+	// y=1 and y=2 removed (within depth=2 above hiH=0)
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 1, 0).getMaterial()))
+		<< "Voxel at y=1 should be removed (within depth=2)";
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 2, 0).getMaterial()))
+		<< "Voxel at y=2 should be removed (within depth=2)";
+	// y=5 well beyond remove depth + thick ray neighbor expansion
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 5, 0).getMaterial()))
+		<< "Voxel at y=5 should NOT be removed (beyond depth=2 + neighbor reach)";
+
+	brush.shutdown();
+}
+
+TEST_F(SculptBrushTest, testExtendPlaneNoPlaneFitted) {
+	// Without clicking a face, painting should be a no-op
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+
+	for (int x = -1; x <= 1; ++x) {
+		for (int z = -1; z <= 1; ++z) {
+			volume.setVoxel(x, 0, z, selectedVoxel());
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SculptBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSculptMode(SculptMode::ExtendPlane);
+	brush.setBrushRadius(2);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	// No cursorFace set (defaults to Max)
+
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	EXPECT_FALSE(brush.planeFitted())
+		<< "Plane should not be fitted without a face click";
+
+	// Area outside original selection should remain empty
+	EXPECT_TRUE(voxel::isAir(volume.voxel(5, 0, 0).getMaterial()))
+		<< "No voxels should be placed without a fitted plane";
+
+	brush.shutdown();
+}
+
+TEST_F(SculptBrushTest, testExtendPlaneExtendOnly) {
+	// With extend-only, painting far from existing voxels should be a no-op
+	voxel::RawVolume volume(voxel::Region(-10, 10));
+
+	for (int x = -2; x <= 2; ++x) {
+		for (int z = -2; z <= 2; ++z) {
+			volume.setVoxel(x, 0, z, selectedVoxel());
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SculptBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setSculptMode(SculptMode::ExtendPlane);
+	brush.setBrushRadius(0);
+	ASSERT_TRUE(brush.extendOnly());
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+
+	// First click: captures face and fits plane
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+	ASSERT_TRUE(brush.planeFitted());
+
+	// Paint adjacent to existing surface - should place
+	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()))
+		<< "Adjacent column should be placed in extend-only mode";
+
+	// Paint far from existing surface - should NOT place
+	ctx.cursorPosition = glm::ivec3(8, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	executeSculpt(brush, node, ctx);
+	brush.endBrush(ctx);
+
+	EXPECT_TRUE(voxel::isAir(volume.voxel(8, 0, 0).getMaterial()))
+		<< "Disconnected column should NOT be placed in extend-only mode";
+
+	brush.shutdown();
+}
+
 } // namespace voxedit

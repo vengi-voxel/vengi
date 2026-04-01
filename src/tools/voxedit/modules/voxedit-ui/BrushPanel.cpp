@@ -70,12 +70,13 @@ static constexpr const char *SculptModeStr[] = {
 	NC_("Sculpt Modes", "Flatten"),		 NC_("Sculpt Modes", "Smooth Additive"),
 	NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"),
 	NC_("Sculpt Modes", "Bridge Gap"),	 NC_("Sculpt Modes", "Squash to Plane"),
-	NC_("Sculpt Modes", "Reskin")};
+	NC_("Sculpt Modes", "Extend Plane"), NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT,	  ICON_LC_LAND_PLOT,
 												  ICON_LC_WAVES,  ICON_LC_WAVES,	  ICON_LC_BLEND,
-												  ICON_LC_LINK,	  ICON_LC_MINIMIZE_2, ICON_LC_PALETTE};
+												  ICON_LC_LINK,	  ICON_LC_MINIMIZE_2, ICON_LC_EXPAND,
+												  ICON_LC_PALETTE};
 static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
 
 // clang-format off
@@ -1803,6 +1804,38 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setReskinInvertSkin(invertSkin);
 			executeSculptBrush();
 		}
+	} else if (currentMode == SculptMode::ExtendPlane) {
+		int radius = brush.brushRadius();
+		ImGui::TextUnformatted(_("Brush radius"));
+		if (ImGui::Button("-##extend_radius")) {
+			brush.setBrushRadius(radius - 1);
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##extend_radius_slider", &radius, 1, SculptBrush::MaxBrushRadius)) {
+			brush.setBrushRadius(radius);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##extend_radius")) {
+			brush.setBrushRadius(radius + 1);
+		}
+		bool extendOnly = brush.extendOnly();
+		if (ImGui::Checkbox(_("Extend only"), &extendOnly)) {
+			brush.setExtendOnly(extendOnly);
+		}
+		int removeDepth = brush.removeAboveDepth();
+		ImGui::TextUnformatted(_("Remove above"));
+		if (ImGui::Button("-##remove_depth")) {
+			brush.setRemoveAboveDepth(removeDepth - 1);
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##remove_depth_slider", &removeDepth, 0, SculptBrush::MaxRemoveAboveDepth)) {
+			brush.setRemoveAboveDepth(removeDepth);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##remove_depth")) {
+			brush.setRemoveAboveDepth(removeDepth + 1);
+		}
+		ImGui::TooltipTextUnformatted(_("Perpendicular depth of voxels to remove above the plane (0 = no removal)"));
 	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap &&
 			   currentMode != SculptMode::SquashToPlane) {
 		float strength = brush.strength();
@@ -1813,7 +1846,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 	}
 
 	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane &&
-		currentMode != SculptMode::Reskin) {
+		currentMode != SculptMode::Reskin && currentMode != SculptMode::ExtendPlane) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {

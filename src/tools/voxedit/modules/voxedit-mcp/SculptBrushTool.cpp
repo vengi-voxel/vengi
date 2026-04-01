@@ -36,6 +36,9 @@ static SculptMode parseSculptMode(const core::String &mode) {
 	if (mode == "squashtoplane") {
 		return SculptMode::SquashToPlane;
 	}
+	if (mode == "extendplane") {
+		return SculptMode::ExtendPlane;
+	}
 	if (mode == "reskin") {
 		return SculptMode::Reskin;
 	}
