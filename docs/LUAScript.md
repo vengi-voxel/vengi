@@ -149,6 +149,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | [g_scenegraph](lua/scenegraph.md) | Access to scene graph for creating and managing nodes |
 | [g_sculpt](lua/sculpt.md) | Sculpting functions |
 | [g_shape](lua/shape.md) | Shape generation functions |
+| [g_sparsevolume](lua/sparsevolume.md) | Sparse volume functions |
 | [g_sys](lua/sys.md) | System utilities |
 | [g_var](lua/var.md) | Console variable access |
 | [g_vec2, g_vec3, g_vec4, g_ivec2, g_ivec3, g_ivec4](lua/vector.md) | Vector creation |

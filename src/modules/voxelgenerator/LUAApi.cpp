@@ -33,6 +33,7 @@
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
@@ -168,6 +169,14 @@ static const char *luaVoxel_metakeyframe() {
 
 static const char *luaVoxel_metavolumewrapper() {
 	return "__meta_volumewrapper";
+}
+
+static const char *luaVoxel_metasparsevolume() {
+	return "__meta_sparsevolume";
+}
+
+static const char *luaVoxel_metasparsevolumeglobal() {
+	return "__meta_sparsevolume_global";
 }
 
 static const char *luaVoxel_metapaletteglobal() {
@@ -1009,6 +1018,236 @@ static int luaVoxel_volumewrapper_gc(lua_State *s) {
 	}
 	delete volume;
 	return 0;
+}
+
+static voxel::SparseVolume *luaVoxel_tosparsevolume(lua_State *s, int n) {
+	return *(voxel::SparseVolume **)clua_getudata<voxel::SparseVolume *>(s, n, luaVoxel_metasparsevolume());
+}
+
+static int luaVoxel_pushsparsevolume(lua_State *s, voxel::SparseVolume *vol) {
+	return clua_pushudata(s, vol, luaVoxel_metasparsevolume());
+}
+
+static int luaVoxel_sparsevolume_new(lua_State *s) {
+	voxel::SparseVolume *vol;
+	if (lua_gettop(s) >= 6) {
+		const int minsx = (int)luaL_checkinteger(s, 1);
+		const int minsy = (int)luaL_checkinteger(s, 2);
+		const int minsz = (int)luaL_checkinteger(s, 3);
+		const int maxsx = (int)luaL_checkinteger(s, 4);
+		const int maxsy = (int)luaL_checkinteger(s, 5);
+		const int maxsz = (int)luaL_checkinteger(s, 6);
+		vol = new voxel::SparseVolume(voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz));
+	} else {
+		vol = new voxel::SparseVolume();
+	}
+	return luaVoxel_pushsparsevolume(s, vol);
+}
+
+static int luaVoxel_sparsevolume_new_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new sparse volume. Optionally specify a limiting region.",
+		"parameters": [
+			{"name": "minsx", "type": "integer", "description": "The min x coordinate (optional)."},
+			{"name": "minsy", "type": "integer", "description": "The min y coordinate (optional)."},
+			{"name": "minsz", "type": "integer", "description": "The min z coordinate (optional)."},
+			{"name": "maxsx", "type": "integer", "description": "The max x coordinate (optional)."},
+			{"name": "maxsy", "type": "integer", "description": "The max y coordinate (optional)."},
+			{"name": "maxsz", "type": "integer", "description": "The max z coordinate (optional)."}
+		],
+		"returns": [
+			{"type": "sparsevolume", "description": "A new sparse volume instance."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_gc(lua_State *s) {
+	voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	delete vol;
+	return 0;
+}
+
+static int luaVoxel_sparsevolume_voxel(lua_State *s) {
+	const voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::Voxel &v = vol->voxel(x, y, z);
+	if (voxel::isAir(v.getMaterial())) {
+		lua_pushinteger(s, -1);
+	} else {
+		lua_pushinteger(s, v.getColor());
+	}
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_voxel_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "voxel",
+		"summary": "Get the voxel color index at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The color index of the voxel, or -1 if air."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_setvoxel(lua_State *s) {
+	voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const int color = (int)luaL_optinteger(s, 5, 1);
+	voxel::Voxel v;
+	if (color == -1) {
+		v = voxel::createVoxel(voxel::VoxelType::Air, 0);
+	} else {
+		v = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	}
+	const bool result = vol->setVoxel(x, y, z, v);
+	lua_pushboolean(s, result ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_setvoxel_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "setVoxel",
+		"summary": "Set the voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1). Use -1 to set air."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel was set."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_empty(lua_State *s) {
+	const voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	lua_pushboolean(s, vol->empty() ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_empty_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "empty",
+		"summary": "Check if the sparse volume has no voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if the volume is empty."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_size(lua_State *s) {
+	const voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	lua_pushinteger(s, (lua_Integer)vol->size());
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_size_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "size",
+		"summary": "Get the number of stored voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels stored."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_clear(lua_State *s) {
+	voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	vol->clear();
+	return 0;
+}
+
+static int luaVoxel_sparsevolume_clear_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "clear",
+		"summary": "Remove all voxels from the sparse volume.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_region(lua_State *s) {
+	const voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	const voxel::Region &region = vol->region();
+	if (region.isValid()) {
+		return luaVoxel_pushregion(s, region);
+	}
+	return luaVoxel_pushregion(s, vol->calculateRegion());
+}
+
+static int luaVoxel_sparsevolume_region_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "region",
+		"summary": "Get the region of the sparse volume. If no limiting region was set, calculates bounds from stored voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "region", "description": "The region of the volume."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_copytovolume(lua_State *s) {
+	voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	LuaRawVolumeWrapper *wrapper = luaVoxel_tovolumewrapper(s, 2);
+	vol->copyTo(*wrapper);
+	return 0;
+}
+
+static int luaVoxel_sparsevolume_copytovolume_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "copyToVolume",
+		"summary": "Copy all voxels from the sparse volume into a volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The target volume to copy into."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_copyfromvolume(lua_State *s) {
+	voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	LuaRawVolumeWrapper *wrapper = luaVoxel_tovolumewrapper(s, 2);
+	vol->copyFrom(*wrapper);
+	return 0;
+}
+
+static int luaVoxel_sparsevolume_copyfromvolume_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "copyFromVolume",
+		"summary": "Copy all solid voxels from a volume into the sparse volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The source volume to copy from."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_sparsevolume_tostring(lua_State *s) {
+	const voxel::SparseVolume *vol = luaVoxel_tosparsevolume(s, 1);
+	lua_pushfstring(s, "sparsevolume[size: %d]", (int)vol->size());
+	return 1;
 }
 
 static int luaVoxel_shape_cylinder(lua_State* s) {
@@ -5974,6 +6213,27 @@ void luaVoxel_prepareState(lua_State* s) {
 	};
 	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolumewrapper());
 
+	static const clua_Reg sparseVolumeFuncs[] = {
+		{"voxel", luaVoxel_sparsevolume_voxel, luaVoxel_sparsevolume_voxel_jsonhelp},
+		{"setVoxel", luaVoxel_sparsevolume_setvoxel, luaVoxel_sparsevolume_setvoxel_jsonhelp},
+		{"empty", luaVoxel_sparsevolume_empty, luaVoxel_sparsevolume_empty_jsonhelp},
+		{"size", luaVoxel_sparsevolume_size, luaVoxel_sparsevolume_size_jsonhelp},
+		{"clear", luaVoxel_sparsevolume_clear, luaVoxel_sparsevolume_clear_jsonhelp},
+		{"region", luaVoxel_sparsevolume_region, luaVoxel_sparsevolume_region_jsonhelp},
+		{"copyToVolume", luaVoxel_sparsevolume_copytovolume, luaVoxel_sparsevolume_copytovolume_jsonhelp},
+		{"copyFromVolume", luaVoxel_sparsevolume_copyfromvolume, luaVoxel_sparsevolume_copyfromvolume_jsonhelp},
+		{"__tostring", luaVoxel_sparsevolume_tostring, nullptr},
+		{"__gc", luaVoxel_sparsevolume_gc, nullptr},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncs(s, sparseVolumeFuncs, luaVoxel_metasparsevolume());
+
+	static const clua_Reg sparseVolumeGlobalFuncs[] = {
+		{"new", luaVoxel_sparsevolume_new, luaVoxel_sparsevolume_new_jsonhelp},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, sparseVolumeGlobalFuncs, luaVoxel_metasparsevolumeglobal(), "g_sparsevolume");
+
 	static const clua_Reg regionFuncs[] = {
 		{"width", luaVoxel_region_width, luaVoxel_region_width_jsonhelp},
 		{"height", luaVoxel_region_height, luaVoxel_region_height_jsonhelp},
@@ -6916,6 +7176,8 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 					metaName = luaVoxel_metasculpt();
 				} else if (SDL_strcmp(name, "g_font") == 0) {
 					metaName = luaVoxel_metavoxelfontglobal();
+				} else if (SDL_strcmp(name, "g_sparsevolume") == 0) {
+					metaName = luaVoxel_metasparsevolumeglobal();
 				} else if (SDL_strcmp(name, "g_http") == 0) {
 					metaName = clua_metahttp();
 				} else if (SDL_strcmp(name, "g_io") == 0) {
@@ -6979,6 +7241,7 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 	};
 	const MetaInfo metas[] = {
 		{luaVoxel_metavolumewrapper(), "volume"},
+		{luaVoxel_metasparsevolume(), "sparsevolume"},
 		{luaVoxel_metaregion(), "region"},
 		{luaVoxel_metaregion_gc(), "region_gc"},
 		{luaVoxel_metascenegraphnode(), "scenegraphnode"},

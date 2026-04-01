@@ -883,6 +883,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "keyframe";
 	} else if (name == "volume") {
 		return "volume";
+	} else if (name == "g_sparsevolume" || name == "sparsevolume") {
+		return "sparsevolume";
 	} else if (name == "stream") {
 		return "stream";
 	} else if (name == "image") {
@@ -930,6 +932,8 @@ static core::String getDocTitle(const core::String &pageName) {
 		return "Quaternion";
 	} else if (pageName == "volume") {
 		return "Volume";
+	} else if (pageName == "sparsevolume") {
+		return "SparseVolume";
 	} else if (pageName == "keyframe") {
 		return "Keyframe";
 	} else if (pageName == "stream") {
@@ -983,6 +987,8 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_vec3, g_ivec3, ...";
 	} else if (pageName == "quat") {
 		return "g_quat";
+	} else if (pageName == "sparsevolume") {
+		return "g_sparsevolume";
 	}
 	return "";
 }

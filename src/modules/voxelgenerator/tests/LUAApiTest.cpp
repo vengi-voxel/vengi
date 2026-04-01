@@ -1269,4 +1269,110 @@ TEST_F(LUAApiTest, testLSystemTemplateGenerate) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testSparseVolume) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local sv = g_sparsevolume.new()
+			if not sv:empty() then
+				error('Expected empty sparse volume')
+			end
+
+			sv:setVoxel(1, 2, 3, color)
+			if sv:empty() then
+				error('Expected non-empty sparse volume')
+			end
+			if sv:size() ~= 1 then
+				error('Expected size 1, got ' .. sv:size())
+			end
+
+			local c = sv:voxel(1, 2, 3)
+			if c ~= color then
+				error('Expected color ' .. color .. ', got ' .. c)
+			end
+
+			local empty = sv:voxel(0, 0, 0)
+			if empty ~= -1 then
+				error('Expected -1 for air voxel, got ' .. empty)
+			end
+
+			local r = sv:region()
+			if r:width() ~= 1 or r:height() ~= 1 or r:depth() ~= 1 then
+				error('Unexpected region size')
+			end
+
+			sv:clear()
+			if not sv:empty() then
+				error('Expected empty after clear')
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testSparseVolumeCopyToVolume) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local sv = g_sparsevolume.new()
+			sv:setVoxel(0, 0, 0, color)
+			sv:setVoxel(1, 0, 0, color)
+			local volume = node:volume()
+			sv:copyToVolume(volume)
+			local c1 = volume:voxel(0, 0, 0)
+			local c2 = volume:voxel(1, 0, 0)
+			if c1 ~= color then
+				error('Expected color after copy at 0,0,0')
+			end
+			if c2 ~= color then
+				error('Expected color after copy at 1,0,0')
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script, {}, true);
+}
+
+TEST_F(LUAApiTest, testSparseVolumeCopyFromVolume) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local sv = g_sparsevolume.new()
+			sv:copyFromVolume(volume)
+			-- the test volume has 6 voxels pre-set
+			if sv:size() < 1 then
+				error('Expected copied voxels, got size ' .. sv:size())
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testSparseVolumeWithVolumeModule) {
+	const core::String script = R"(
+		local vol = require("modules.volume")
+
+		function main(node, region, color)
+			local sv = g_sparsevolume.new()
+			sv:setVoxel(0, 0, 0, color)
+			sv:setVoxel(1, 0, 0, color)
+			sv:setVoxel(2, 0, 0, color)
+			local r = sv:region()
+			local count = 0
+			local visitor = function(volume, x, y, z)
+				count = count + 1
+			end
+			local condition = function(volume, x, y, z)
+				return volume:voxel(x, y, z) ~= -1
+			end
+			vol.conditionYXZ(sv, r, visitor, condition)
+			if count ~= 3 then
+				error('Expected 3 voxels visited, got ' .. count)
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 } // namespace voxelgenerator
