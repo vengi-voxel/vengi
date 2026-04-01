@@ -449,6 +449,187 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 	return true;
 }
 
+bool QuakeBSPFormat::loadGoldSrcTextures(const core::String &filename, io::SeekableReadStream &stream,
+										 const BspHeader &header, core::DynamicArray<Texture> &textures,
+										 MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray) {
+	core::Buffer<Quake1Texinfo> miptex;
+
+	struct TextureLump {
+		int32_t nummiptex;
+		core::Buffer<int32_t> dataofs;
+	};
+
+	TextureLump m;
+	const uint32_t baseOffset = header.lumps[_priv::quake1TexturesLump].offset;
+	{
+		if (stream.seek(baseOffset) == -1) {
+			Log::error("Invalid texture lump offset - can't seek");
+			return false;
+		}
+
+		stream.readInt32(m.nummiptex);
+		m.dataofs.resize(m.nummiptex);
+		for (int i = 0; i < m.nummiptex; ++i) {
+			stream.readInt32(m.dataofs[i]);
+		}
+
+		miptex.resize(m.nummiptex);
+		for (int i = 0; i < m.nummiptex; ++i) {
+			if (m.dataofs[i] == -1) {
+				continue;
+			}
+			if (stream.seek(baseOffset + m.dataofs[i]) == -1) {
+				Log::error("Invalid texinfo offset - can't seek (%i)", m.dataofs[i]);
+				return false;
+			}
+
+			Quake1Texinfo &mt = miptex[i];
+			stream.readString(sizeof(mt.name), mt.name, false);
+			stream.readUInt32(mt.width);
+			stream.readUInt32(mt.height);
+			stream.readUInt32(mt.offset1);
+			stream.readUInt32(mt.offset2);
+			stream.readUInt32(mt.offset4);
+			stream.readUInt32(mt.offset8);
+		}
+	}
+
+	const int32_t texInfoCount = validateLump(header.lumps[_priv::quake1TexinfoLump], sizeof(BspTextureBase));
+	if (texInfoCount <= 0) {
+		Log::error("Invalid bsp file with no textures in lump");
+		return false;
+	}
+
+	if (stream.seek(header.lumps[_priv::quake1TexinfoLump].offset) == -1) {
+		Log::error("Invalid texture lump offset - can't seek");
+		return false;
+	}
+
+	textures.resize(texInfoCount);
+	for (int32_t i = 0; i < texInfoCount; i++) {
+		Texture &texture = textures[i];
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecS[j]))
+		}
+		wrap(stream.readFloat(texture.distS))
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecT[j]))
+		}
+		wrap(stream.readFloat(texture.distT))
+		wrap(stream.readUInt32(texture.surfaceFlags)) // miptex index
+		wrap(stream.readUInt32(texture.value)) // flags
+		SDL_strlcpy(texture.name, miptex[texture.surfaceFlags].name, sizeof(texture.name));
+	}
+
+	for (int32_t i = 0; i < texInfoCount; i++) {
+		Texture &texture = textures[i];
+
+		auto meshMaterialIter = meshMaterials.find(texture.name);
+		if (meshMaterialIter != meshMaterials.end()) {
+			texture.materialIdx = meshMaterialIter->second;
+			continue;
+		}
+
+		Quake1Texinfo &texinfo = miptex[texture.surfaceFlags];
+
+		// offsets are zero when texture is stored in external WAD file
+		if (texinfo.offset1 == 0) {
+			Log::debug("Texture %s has no embedded data (external WAD)", texture.name);
+			continue;
+		}
+
+		image::ImagePtr tex = image::createEmptyImage(texture.name);
+		const int width = (int)texinfo.width;
+		const int height = (int)texinfo.height;
+
+		// read the per-texture palette located after the last mipmap level
+		const int64_t miptexStart = baseOffset + m.dataofs[texture.surfaceFlags];
+		const int64_t paletteOffset = miptexStart + texinfo.offset8 + (width / 8) * (height / 8);
+		if (stream.seek(paletteOffset) == -1) {
+			Log::error("Failed to seek to palette data for texture %i", i);
+			continue;
+		}
+		uint16_t paletteCount;
+		wrap(stream.readUInt16(paletteCount))
+		palette::Palette pal;
+		for (int p = 0; p < (int)paletteCount && p < 256; ++p) {
+			uint8_t r, g, b;
+			wrap(stream.readUInt8(r))
+			wrap(stream.readUInt8(g))
+			wrap(stream.readUInt8(b))
+			pal.setColor(p, color::RGBA(r, g, b));
+		}
+		pal.setSize(paletteCount < 256 ? paletteCount : 256);
+
+		// read the pixel data (mip level 0)
+		if (stream.seek(miptexStart + (int)texinfo.offset1) == -1) {
+			Log::error("Failed to seek to pixel data %i", i);
+			continue;
+		}
+		const int pixelSize = width * height;
+		uint8_t *pixels = (uint8_t *)core_malloc(pixelSize);
+		if (stream.read(pixels, pixelSize) == -1) {
+			Log::error("Failed to read %i bytes to pixel data %i", pixelSize, i);
+			core_free(pixels);
+			continue;
+		}
+
+		core::Buffer<color::RGBA> buffer;
+		buffer.resize(pixelSize);
+		for (int j = 0; j < pixelSize; ++j) {
+			buffer[j] = pal.color(pixels[j]);
+		}
+		core_free(pixels);
+		if (tex->loadRGBA((const uint8_t *)buffer.data(), width, height)) {
+			Log::debug("Use image %s", texture.name);
+			meshMaterialArray.push_back(createMaterial(tex));
+			texture.materialIdx = meshMaterialArray.size() - 1;
+			meshMaterials.put(texture.name, texture.materialIdx);
+		} else {
+			Log::warn("Failed to load %s", texture.name);
+		}
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadGoldSrcBsp(const core::String &filename, io::SeekableReadStream &stream,
+									scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
+	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
+	core::DynamicArray<Texture> textures;
+	if (!loadGoldSrcTextures(filename, stream, header, textures, meshMaterials, meshMaterialArray)) {
+		Log::error("Failed to load textures");
+		return false;
+	}
+
+	core::Buffer<Face> faces;
+	if (!loadQuake1Faces(stream, header, faces, textures)) {
+		Log::error("Failed to load faces");
+		return false;
+	}
+
+	core::Buffer<BspEdge> edges;
+	core::Buffer<int32_t> surfEdges;
+	if (!loadQuake1Edges(stream, header, edges, surfEdges)) {
+		Log::error("Failed to load edges");
+		return false;
+	}
+
+	core::Buffer<BspVertex> vertices;
+	if (!loadQuake1Vertices(stream, header, vertices)) {
+		Log::error("Failed to load vertices");
+		return false;
+	}
+
+	const core::String &name = core::string::extractFilename(filename);
+	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray)) {
+		Log::error("Failed to voxelize %s", filename.c_str());
+		return false;
+	}
+	sceneGraph.updateTransforms();
+	return true;
+}
+
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
 								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	MeshMaterialMap meshMaterials;
@@ -731,12 +912,15 @@ bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::Arch
 		return false;
 	}
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
+	static const uint32_t goldsrcVersion = FourCC('\x1e', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 
 	BspHeader header;
 	wrap(stream->readUInt32(header.magic))
 	if (header.magic == q1Version) {
 		header.version = 29;
+	} else if (header.magic == goldsrcVersion) {
+		header.version = 30;
 	} else {
 		wrap(stream->readUInt32(header.version))
 	}
@@ -747,6 +931,9 @@ bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::Arch
 
 	if (header.version == 79 && header.magic == bspMagic) {
 		return loadUFOAlienInvasionBsp(filename, *stream, sceneGraph, header);
+	}
+	if (header.magic == goldsrcVersion) {
+		return loadGoldSrcBsp(filename, *stream, sceneGraph, header);
 	}
 	if (header.magic == q1Version) {
 		return loadQuake1Bsp(filename, *stream, sceneGraph, header);
