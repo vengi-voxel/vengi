@@ -16,6 +16,7 @@
 #include "io/MemoryReadStream.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteFormatDescription.h"
+#include "voxedit-util/modifier/brush/LUABrush.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
@@ -849,6 +850,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "shape";
 	} else if (name == "g_sculpt") {
 		return "sculpt";
+	} else if (name == "g_brushcontext") {
+		return "brushcontext";
 	} else if (name == "g_import") {
 		return "import";
 	} else if (name == "g_lsystem") {
@@ -933,6 +936,8 @@ static core::String getDocTitle(const core::String &pageName) {
 		return "Stream";
 	} else if (pageName == "image") {
 		return "Image";
+	} else if (pageName == "brushcontext") {
+		return "BrushContext";
 	}
 	return pageName;
 }
@@ -952,6 +957,8 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_shape";
 	} else if (pageName == "sculpt") {
 		return "g_sculpt";
+	} else if (pageName == "brushcontext") {
+		return "g_brushcontext";
 	} else if (pageName == "font") {
 		return "g_font";
 	} else if (pageName == "import") {
@@ -996,6 +1003,13 @@ void FormatPrinter::printLuaApiMarkdown() {
 	}
 	scriptApi.shutdown();
 
+	// Get JSON from LuaBrush
+	io::BufferedReadWriteStream brushStream;
+	voxedit::LuaBrush brush(_filesystem);
+	if (!brush.apiJsonToStream(brushStream)) {
+		Log::warn("Failed to generate LuaBrush API JSON");
+	}
+
 	stream.seek(0);
 	core::String jsonStr;
 	stream.readString((int)stream.size(), jsonStr);
@@ -1004,6 +1018,21 @@ void FormatPrinter::printLuaApiMarkdown() {
 	if (!apiJson.isValid()) {
 		Log::error("Failed to parse Lua API JSON");
 		return;
+	}
+
+	// Merge brush API JSON into the main API JSON
+	if (brushStream.size() > 0) {
+		brushStream.seek(0);
+		core::String brushJsonStr;
+		brushStream.readString((int)brushStream.size(), brushJsonStr);
+		json::Json brushJson = json::Json::parse(brushJsonStr.c_str());
+		if (brushJson.isValid()) {
+			for (auto it = brushJson.begin(); it != brushJson.end(); ++it) {
+				apiJson.set(it.key().c_str(), *it);
+			}
+		} else {
+			Log::warn("Failed to parse LuaBrush API JSON");
+		}
 	}
 
 	// Group by documentation page

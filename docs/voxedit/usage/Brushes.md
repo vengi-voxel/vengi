@@ -77,18 +77,6 @@ The line brush draws straight lines of voxels from the reference position to whe
 
 Lines are drawn using raycasting, ensuring a clean voxel path between the two points.
 
-## Path brush
-
-The path brush creates paths that follow existing voxel surfaces from the reference position to the cursor position. Unlike the line brush which draws straight lines through empty space, the path brush walks along solid voxels.
-
-**Connectivity modes:**
-
-- **Six Connected**: Paths can only move along cardinal directions (up, down, left, right, forward, back)
-- **Eighteen Connected**: Paths can move diagonally along edges
-- **Twenty-Six Connected**: Paths can move in all directions including diagonal corners
-
-This brush requires existing voxels to walk on and won't work in empty volumes. It's useful for creating roads, pipes, or other features that need to follow terrain.
-
 ## Text brush
 
 The text brush voxelizes TrueType fonts into your volume, allowing you to add text labels or create text-based voxel art.

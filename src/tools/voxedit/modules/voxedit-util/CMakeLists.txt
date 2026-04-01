@@ -3,9 +3,9 @@ set(SRCS
 	modifier/brush/BrushGizmo.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
+	modifier/brush/LUABrush.cpp modifier/brush/LUABrush.h
 	modifier/brush/NormalBrush.cpp modifier/brush/NormalBrush.h
 	modifier/brush/PaintBrush.cpp modifier/brush/PaintBrush.h
-	modifier/brush/PathBrush.cpp modifier/brush/PathBrush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
 	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
@@ -103,7 +103,11 @@ set(SRCS
 
 set(LIB voxedit-util)
 set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
+set(LUA_SRCS
+	brushes/path.lua
+	brushes/modules/brush.lua
+)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
@@ -116,7 +120,6 @@ set(TEST_SRCS
 	tests/ModifierVolumeWrapperTest.cpp
 	tests/NormalBrushTest.cpp
 	tests/PaintBrushTest.cpp
-	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp
 	tests/RulerBrushTest.cpp
 	tests/ProtocolMessageFactoryTest.cpp
@@ -129,6 +132,7 @@ set(TEST_SRCS
 	tests/TextureBrushTest.cpp
 	tests/ClientTest.cpp
 	tests/SessionRecorderTest.cpp
+	tests/LUABrushTest.cpp
 )
 set(TEST_FILES
 	shared/font.ttf
@@ -143,12 +147,14 @@ gtest_suite_sources(tests
 )
 gtest_suite_deps(tests ${LIB} test-app)
 gtest_suite_files(tests ${TEST_FILES})
+gtest_suite_lua_sources(tests ${LUA_SRCS})
 
 # CMake Error: Xcode generator: Duplicate object ids not allowed
 if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 	gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 	gtest_suite_files(tests-${LIB} ${TEST_FILES})
+	gtest_suite_lua_sources(tests-${LIB} ${LUA_SRCS})
 	gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 	gtest_suite_end(tests-${LIB})
 endif()

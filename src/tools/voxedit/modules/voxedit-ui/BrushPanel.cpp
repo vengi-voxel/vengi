@@ -29,6 +29,7 @@
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
+#include "voxedit-util/modifier/brush/LUABrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/RulerBrush.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
@@ -52,10 +53,11 @@ namespace voxedit {
 
 static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,		   ICON_LC_GROUP,
-	ICON_LC_STAMP,		ICON_LC_PEN_LINE,	   ICON_LC_FOOTPRINTS,
+	ICON_LC_STAMP,		ICON_LC_PEN_LINE,
 	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP,	   ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
 	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT, ICON_LC_EXPAND,
-	ICON_LC_MOVE_3D,	ICON_LC_BLEND,		   ICON_LC_RULER};
+	ICON_LC_MOVE_3D,	ICON_LC_BLEND,		   ICON_LC_RULER,
+	ICON_LC_SCROLL};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
@@ -385,6 +387,94 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 		ImGui::SameLine();
 	}
 	ImGui::TooltipTextUnformatted(_("Length of the stipple pattern <= 1 to disable"));
+}
+
+void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+
+	ImGui::CommandButton(_("Rescan"), "brushscriptrescan", listener);
+	ImGui::TooltipTextUnformatted(_("Re-scan the brushes directory for new or changed scripts"));
+
+	LuaBrush *activeBrush = modifier.activeLuaBrush();
+	if (activeBrush == nullptr) {
+		return;
+	}
+
+	if (!activeBrush->scriptDescription().empty()) {
+		ImGui::TextWrappedUnformatted(activeBrush->scriptDescription().c_str());
+	}
+
+	const core::DynamicArray<voxelgenerator::LUAParameterDescription> &params = activeBrush->parameterDescriptions();
+	core::DynamicArray<core::String> &values = activeBrush->parameters();
+	const int n = (int)params.size();
+	if (n > 0 && ImGui::CollapsingHeader(_("Script parameters"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (int i = 0; i < n; ++i) {
+			const voxelgenerator::LUAParameterDescription &p = params[i];
+			core::String &str = values[i];
+			switch (p.type) {
+			case voxelgenerator::LUAParameterType::Integer: {
+				int val = core::string::toInt(str);
+				if (p.shouldClamp()) {
+					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
+					int minVal = (int)(p.minValue + glm::epsilon<double>());
+					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
+						str = core::string::toString(val);
+					}
+				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Float: {
+				float val = core::string::toFloat(str);
+				if (p.shouldClamp()) {
+					const float maxVal = (float)p.maxValue;
+					const float minVal = (float)p.minValue;
+					const char *format = glm::abs(maxVal - minVal) <= 10.0f ? "%.6f" : "%.3f";
+					if (ImGui::DragFloat(p.name.c_str(), &val, 0.005f, minVal, maxVal, format)) {
+						str = core::string::toString(val);
+					}
+				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::String: {
+				ImGui::InputText(p.name.c_str(), &str);
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Boolean: {
+				bool checked = core::string::toBool(str);
+				if (ImGui::Checkbox(p.name.c_str(), &checked)) {
+					str = checked ? "1" : "0";
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::Enum: {
+				core::DynamicArray<core::String> tokens;
+				core::string::splitString(p.enumValues, tokens, ",");
+				const auto iter = core::find(tokens.begin(), tokens.end(), str);
+				int selected = iter == tokens.end() ? 0 : (int)(iter - tokens.begin());
+				if (ImGui::ComboItems(p.name.c_str(), &selected, tokens)) {
+					str = tokens[selected];
+				}
+				break;
+			}
+			case voxelgenerator::LUAParameterType::ColorIndex: {
+				int val = core::string::toInt(str);
+				if (ImGui::InputInt(p.name.c_str(), &val)) {
+					str = core::string::toString(val);
+				}
+				break;
+			}
+			default:
+				break;
+			}
+			if (!p.description.empty()) {
+				ImGui::TooltipTextUnformatted(p.description.c_str());
+			}
+		}
+	}
 }
 
 void BrushPanel::updateRulerBrushPanel(command::CommandExecutionListener &listener) {
@@ -855,27 +945,6 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 		brush.setUV1(uv1);
 	}
 	ImGui::TooltipTextUnformatted(_("Texture coordinates"));
-}
-
-void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
-	Modifier &modifier = _sceneMgr->modifier();
-	PathBrush &brush = modifier.pathBrush();
-	voxel::Connectivity c = brush.connectivity();
-	int selected = (int)c;
-	const char *items[] = {_("6-connected"), _("18-connected"), _("26-connected")};
-	if (ImGui::BeginCombo(_("Connectivity"), items[selected])) {
-		for (int i = 0; i < lengthof(items); ++i) {
-			bool isSelected = selected == i;
-			if (ImGui::Selectable(items[i], isSelected)) {
-				brush.setConnectivity((voxel::Connectivity)i);
-			}
-			if (isSelected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-	ImGui::TextWrappedUnformatted(_("Draws a path over existing voxels"));
 }
 
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
@@ -1886,8 +1955,6 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updatePlaneBrushPanel(listener);
 		} else if (brushType == BrushType::Line) {
 			updateLineBrushPanel(listener);
-		} else if (brushType == BrushType::Path) {
-			updatePathBrushPanel(listener);
 		} else if (brushType == BrushType::Paint) {
 			updatePaintBrushPanel(listener);
 		} else if (brushType == BrushType::Text) {
@@ -1906,6 +1973,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateSculptBrushPanel(listener);
 		} else if (brushType == BrushType::Ruler) {
 			updateRulerBrushPanel(listener);
+		} else if (brushType == BrushType::Script) {
+			updateScriptBrushPanel(listener);
 		}
 	}
 
@@ -1927,6 +1996,9 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 		if (i == (int)BrushType::Normal && !normalPaletteMode) {
 			continue;
 		}
+		if (i == (int)BrushType::Script) {
+			continue;
+		}
 		core::String cmd = core::String::format("brush%s", BrushTypeStr[i]).toLower();
 		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
 		core::String tooltip = command::help(cmd);
@@ -1940,6 +2012,25 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 		}
 		toolbarBrush.button(BrushTypeIcons[i], tooltip.c_str(), func, !currentBrush);
 	}
+
+	// Render per-script brush buttons
+	const core::DynamicArray<LuaBrush *> &luaBrushes = modifier.luaBrushes();
+	const int activeLuaIdx = modifier.activeLuaBrushIndex();
+	for (int i = 0; i < (int)luaBrushes.size(); ++i) {
+		const LuaBrush *lb = luaBrushes[i];
+		const bool isActive = brushType == BrushType::Script && activeLuaIdx == i;
+		ui::ScopedStyle styleButton;
+		if (isActive) {
+			styleButton.setButtonColor(style::color(style::ColorActiveBrush));
+		}
+		const int idx = i;
+		auto func = [&modifier, idx]() {
+			modifier.setBrushType(BrushType::Script);
+			modifier.setActiveLuaBrushIndex(idx);
+		};
+		toolbarBrush.button(lb->iconString(), lb->scriptName().c_str(), func, !isActive);
+	}
+
 	toolbarBrush.end();
 
 	ImGui::Separator();

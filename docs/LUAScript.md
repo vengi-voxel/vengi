@@ -194,6 +194,118 @@ g_import.scene("model.vox", stream)
 
 * `y` going upwards - see [basics](Basics.md) for further details.
 
+## Brush scripts
+
+VoxEdit supports Lua-based brush scripts that let you create custom interactive brushes. Unlike generator scripts (which use `main()` and are executed once via the `xs` command), brush scripts define a `generate()` function that is called each time the brush is applied. They also provide an interactive preview in the viewport.
+
+Brush scripts are placed in the `brushes/` directory and are automatically discovered when VoxEdit starts. Each script appears as its own selectable entry in the brush toolbar with a script-defined icon. Use the **Rescan** button in the brush panel to reload scripts after adding or modifying them.
+
+### Brush script structure
+
+A brush script can define the following functions:
+
+- `generate(node, region, color, ...)` **(required)** - Called when the brush is applied. Same API as generator scripts but uses `generate` instead of `main`.
+- `arguments()` - Returns parameter definitions (same format as generator scripts).
+- `description()` - Returns a brief description string.
+- `calcregion(cx, cy, cz, ...)` - Returns 6 integers (minX, minY, minZ, maxX, maxY, maxZ) defining the brush region for preview. If not defined, a single voxel at the cursor is used.
+- `settings()` - Returns a table with script settings. Currently supports `{ preview = "simple" }` to use outline-only preview instead of full voxel preview (useful for expensive scripts).
+- `icon()` - Returns an icon name string for the brush toolbar button (e.g. `"circle"`, `"star"`, `"wand"`). If not defined, a default icon is used. Available icon names include: blend, box, boxes, brush, circle, cloud, diamond, eraser, expand, flame, footprints, grid2x2, grid3x3, group, hammer, hexagon, image, layers, mountain, move, paintbrush, palette, penline, pencil, pipette, ruler, scan, scroll, snowflake, sparkles, spray, square, stamp, star, sun, swords, target, trees, triangle, wand, waves, zap.
+- `gizmo()` - Returns a table describing a 3D gizmo to display in the viewport, or `nil` for no gizmo.
+- `applygizmo(translation, rotation, scale, operation)` - Called when the user interacts with the gizmo. Returns `true` if the brush state was changed by the gizmo.
+
+The `generate()` function receives the same global objects as generator scripts (`g_noise`, `g_shape`, `g_palette`, etc.). Additionally, brush scripts have access to `g_brushcontext` which. For further details see [g_brushcontext](lua/brushcontext.md)
+
+### Brush script examples
+
+#### Sphere brush
+
+```lua
+local brush = require "brushes.modules.brush"
+
+function arguments()
+	return {
+		{ name = 'radius', desc = 'Radius of the sphere in voxels', type = 'int', default = '3', min = '1', max = '15' }
+	}
+end
+
+function description()
+	return "Places a sphere of voxels at the cursor position"
+end
+
+function icon()
+	return "circle"
+end
+
+function calcregion(cx, cy, cz, radius)
+	return brush.sphereRegion(cx, cy, cz, radius)
+end
+
+function generate(node, region, color, radius)
+	local volume = node:volume()
+	local center = region:center()
+	brush.fillSphere(volume, center.x, center.y, center.z, radius, color)
+end
+```
+
+### Gizmo support
+
+Brush scripts can display interactive 3D gizmos in the viewport for advanced manipulation. Define `gizmo()` and `applygizmo()` functions:
+
+```lua
+local offset = { x = 0, y = 0, z = 0 }
+
+function gizmo()
+	return {
+		position = { offset.x, offset.y, offset.z },
+		operations = { "translate" },  -- "translate", "rotate", "scale",
+		                               -- "translatex", "translatey", "translatez",
+		                               -- "bounds", "line"
+		snap = 1.0,
+		localMode = false
+	}
+end
+
+function applygizmo(translation, rotation, scale, operation)
+	offset.x = offset.x + translation.x
+	offset.y = offset.y + translation.y
+	offset.z = offset.z + translation.z
+	return false -- return true if the gizmo operation requires a preview volume regeneration
+end
+```
+
+### Brush utilities module
+
+A shared Lua module `brushes/modules/brush.lua` provides common helper functions:
+
+```lua
+local brush = require "brushes.modules.brush"
+
+function generate(node, region, color)
+	local volume = node:volume()
+	local center = region:center()
+	brush.fillSphere(volume, center.x, center.y, center.z, 3, color)
+end
+```
+
+Available functions:
+- `brush.sphereRegion(cx, cy, cz, radius)` - returns 6 values for sphere bounds
+- `brush.fillSphere(volume, cx, cy, cz, radius, color)` - fills a sphere
+- `brush.fillSphericalShell(volume, cx, cy, cz, outerRadius, innerRadius, color)` - fills a hollow sphere
+- `brush.fillBox(volume, region, color)` - fills a box region
+- `brush.fillCylinder(volume, cx, cy, cz, radius, height, axis, color)` - fills a cylinder (axis: "x", "y", "z")
+- `brush.distanceSquared(x1, y1, z1, x2, y2, z2)` - squared distance between two points
+
+### Differences from generator scripts
+
+| | Generator Scripts | Brush Scripts |
+|---|---|---|
+| Entry function | `main(node, region, color, ...)` | `generate(node, region, color, ...)` |
+| Location | `scripts/` directory | `brushes/` directory |
+| Invocation | `xs` command or `--script` | Selected as a brush in the toolbar |
+| Preview | None | Live preview at cursor position |
+| Region | Selected model region | Defined by `calcregion()` or cursor |
+| Preview region | N/A | Optional `calcregion()` callback |
+
 ## Available scripts
 
 ### animate.lua

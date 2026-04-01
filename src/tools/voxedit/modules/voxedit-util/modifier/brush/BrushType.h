@@ -13,14 +13,14 @@ namespace voxedit {
  *
  * Each brush type provides a different way to place, modify, or select voxels in the scene.
  */
-enum class BrushType { None, Shape, Plane, Stamp, Line, Path, Paint, Text, Select, Texture, Normal, Extrude, Transform, Sculpt, Ruler, Max };
+enum class BrushType { None, Shape, Plane, Stamp, Line, Paint, Text, Select, Texture, Normal, Extrude, Transform, Sculpt, Ruler, Script, Max };
 
 /**
  * @brief String representation of brush types for UI display and command registration
  */
-static constexpr const char *BrushTypeStr[] = {"None",  "Shape", "Plane",   "Stamp",    "Line",   "Path",
+static constexpr const char *BrushTypeStr[] = {"None",  "Shape", "Plane",   "Stamp",    "Line",
 											   "Paint", "Text",  "Select",  "Texture",  "Normal", "Extrude",
-											   "Transform", "Sculpt", "Ruler"};
+											   "Transform", "Sculpt", "Ruler", "Script"};
 static_assert(lengthof(BrushTypeStr) == (int)BrushType::Max, "BrushTypeStr size mismatch");
 
 } // namespace voxedit

@@ -3,11 +3,13 @@
  */
 
 #include "Modifier.h"
+#include "app/App.h"
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "io/Filesystem.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -37,7 +39,6 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_shapeBrush);
 	_brushes.push_back(&_stampBrush);
 	_brushes.push_back(&_lineBrush);
-	_brushes.push_back(&_pathBrush);
 	_brushes.push_back(&_paintBrush);
 	_brushes.push_back(&_textBrush);
 	_brushes.push_back(&_selectBrush);
@@ -47,7 +48,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_transformBrush);
 	_brushes.push_back(&_sculptBrush);
 	_brushes.push_back(&_rulerBrush);
-	core_assert(_brushes.size() == (int)BrushType::Max - 1);
+	// Note: LuaBrush instances are added dynamically during init() via discoverBrushScripts()
 }
 
 void Modifier::construct() {
@@ -88,6 +89,16 @@ void Modifier::construct() {
 		.setHandler([&](const command::CommandArgs &args) {
 			setBrushType(BrushType::None);
 		}).setHelp(_("Change the brush type to 'none'"));
+
+	command::Command::registerCommand("brushscript")
+		.setHandler([&](const command::CommandArgs &args) {
+			setBrushType(BrushType::Script);
+		}).setHelp(_("Change the brush type to 'script'"));
+
+	command::Command::registerCommand("brushscriptrescan")
+		.setHandler([&](const command::CommandArgs &args) {
+			reloadBrushScripts();
+		}).setHelp(_("Re-scan the brushes directory for new or changed Lua brush scripts"));
 
 	command::Command::registerCommand("lock")
 		.addArg({"axis", command::ArgType::String, false, "", "Axis to lock: x|y|z"})
@@ -145,6 +156,7 @@ bool Modifier::init() {
 			Log::error("Failed to initialize the %s brush", b->name().c_str());
 		}
 	}
+	discoverBrushScripts();
 	if (!_modifierRenderer->init()) {
 		Log::error("Failed to initialize modifier renderer");
 		return false;
@@ -158,6 +170,7 @@ void Modifier::shutdown() {
 	for (Brush *b : _brushes) {
 		b->shutdown();
 	}
+	clearBrushScripts();
 	_modifierRenderer->shutdown();
 }
 
@@ -404,7 +417,70 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	return true;
 }
 
+void Modifier::discoverBrushScripts() {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	core::DynamicArray<io::FilesystemEntry> entities;
+	filesystem->list("brushes", entities, "*.lua");
+	for (const auto &e : entities) {
+		LuaBrush *brush = new LuaBrush(filesystem);
+		if (!brush->init()) {
+			Log::error("Failed to initialize lua brush");
+			delete brush;
+			continue;
+		}
+		if (!brush->loadScript(e.name)) {
+			Log::warn("Failed to load brush script: %s", e.name.c_str());
+			brush->shutdown();
+			delete brush;
+			continue;
+		}
+		_luaBrushes.push_back(brush);
+		Log::info("Discovered brush script: %s", e.name.c_str());
+	}
+	if (!_luaBrushes.empty()) {
+		_activeLuaBrushIndex = 0;
+	}
+}
+
+void Modifier::clearBrushScripts() {
+	for (LuaBrush *b : _luaBrushes) {
+		b->shutdown();
+		delete b;
+	}
+	_luaBrushes.clear();
+	_activeLuaBrushIndex = -1;
+}
+
+void Modifier::reloadBrushScripts() {
+	clearBrushScripts();
+	discoverBrushScripts();
+	Log::debug("Reloaded brush scripts (%i found)", (int)_luaBrushes.size());
+}
+
+LuaBrush *Modifier::activeLuaBrush() {
+	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
+		return _luaBrushes[_activeLuaBrushIndex];
+	}
+	return nullptr;
+}
+
+const LuaBrush *Modifier::activeLuaBrush() const {
+	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
+		return _luaBrushes[_activeLuaBrushIndex];
+	}
+	return nullptr;
+}
+
+void Modifier::setActiveLuaBrushIndex(int index) {
+	if (index >= 0 && index < (int)_luaBrushes.size()) {
+		_activeLuaBrushIndex = index;
+	}
+}
+
 Brush *Modifier::currentBrush() {
+	if (_brushType == BrushType::Script) {
+		return activeLuaBrush();
+	}
 	for (Brush *b : _brushes) {
 		if (b->type() == _brushType) {
 			return b;
@@ -414,6 +490,9 @@ Brush *Modifier::currentBrush() {
 }
 
 const Brush *Modifier::currentBrush() const {
+	if (_brushType == BrushType::Script) {
+		return activeLuaBrush();
+	}
 	for (Brush *b : _brushes) {
 		if (b->type() == _brushType) {
 			return b;
@@ -640,6 +719,12 @@ bool Modifier::previewNeedsExistingVolume() const {
 }
 
 bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
+	if (brush->type() == BrushType::Script) {
+		const LuaBrush *luaBrush = (const LuaBrush *)brush;
+		if (luaBrush->useSimplePreview()) {
+			return true;
+		}
+	}
 	if (brush->type() == BrushType::Shape) {
 		const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
 		if (shapeBrush->shapeType() == ShapeType::AABB) {

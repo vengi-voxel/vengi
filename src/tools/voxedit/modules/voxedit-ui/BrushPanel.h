@@ -62,7 +62,6 @@ private:
 	void updateStampBrushPanel(command::CommandExecutionListener &listener);
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
-	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
 	void updateNormalBrushPanel(command::CommandExecutionListener &listener);
@@ -81,6 +80,7 @@ private:
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextBrushPanel(command::CommandExecutionListener &listener);
+	void updateScriptBrushPanel(command::CommandExecutionListener &listener);
 
 public:
 	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)

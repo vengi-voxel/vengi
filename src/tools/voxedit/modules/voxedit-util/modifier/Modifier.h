@@ -11,8 +11,8 @@
 #include "brush/Brush.h"
 #include "brush/BrushType.h"
 #include "brush/LineBrush.h"
+#include "brush/LUABrush.h"
 #include "brush/PaintBrush.h"
-#include "brush/PathBrush.h"
 #include "brush/PlaneBrush.h"
 #include "brush/ExtrudeBrush.h"
 #include "brush/SelectBrush.h"
@@ -98,7 +98,6 @@ protected:
 	ShapeBrush _shapeBrush;
 	StampBrush _stampBrush;
 	LineBrush _lineBrush;
-	PathBrush _pathBrush;
 	PaintBrush _paintBrush;
 	TextBrush _textBrush;
 	SelectBrush _selectBrush;
@@ -108,6 +107,12 @@ protected:
 	TransformBrush _transformBrush;
 	SculptBrush _sculptBrush;
 	RulerBrush _rulerBrush;
+
+	core::DynamicArray<LuaBrush *> _luaBrushes;
+	int _activeLuaBrushIndex = -1;
+
+	void discoverBrushScripts();
+	void clearBrushScripts();
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -242,7 +247,6 @@ public:
 	LineBrush &lineBrush();
 	StampBrush &stampBrush();
 	PlaneBrush &planeBrush();
-	PathBrush &pathBrush();
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
 	SelectBrush &selectBrush();
@@ -299,6 +303,13 @@ public:
 
 	void onSceneChange();
 	void reset();
+
+	const core::DynamicArray<LuaBrush *> &luaBrushes() const;
+	int activeLuaBrushIndex() const;
+	void setActiveLuaBrushIndex(int index);
+	LuaBrush *activeLuaBrush();
+	const LuaBrush *activeLuaBrush() const;
+	void reloadBrushScripts();
 };
 
 inline uint8_t Modifier::normalColorIndex() const {
@@ -343,10 +354,6 @@ inline StampBrush &Modifier::stampBrush() {
 
 inline PlaneBrush &Modifier::planeBrush() {
 	return _planeBrush;
-}
-
-inline PathBrush &Modifier::pathBrush() {
-	return _pathBrush;
 }
 
 inline PaintBrush &Modifier::paintBrush() {
@@ -450,6 +457,14 @@ inline bool Modifier::autoSelect() const {
 
 inline void Modifier::setAutoSelect(bool enable) {
 	_autoSelect->setVal(enable);
+}
+
+inline const core::DynamicArray<LuaBrush *> &Modifier::luaBrushes() const {
+	return _luaBrushes;
+}
+
+inline int Modifier::activeLuaBrushIndex() const {
+	return _activeLuaBrushIndex;
 }
 
 } // namespace voxedit
