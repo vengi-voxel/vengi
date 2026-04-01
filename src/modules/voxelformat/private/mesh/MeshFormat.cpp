@@ -336,6 +336,45 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	if (fillHollow) {
 		Log::warn("Fill hollow is not supported with chunked voxelization and will be skipped");
 	}
+	Log::warn("Per-triangle mesh normals are skipped in chunked voxelization mode - "
+			  "surface normals will be computed from voxel geometry instead");
+
+	const glm::ivec3 &regionMins = region.getLowerCorner();
+	const glm::ivec3 &regionMaxs = region.getUpperCorner();
+
+	// Build spatial index: map each chunk coordinate to the triangle indices that overlap it
+	static constexpr int ChunkIndexBuckets = 1031;
+	const glm::vec3 voxelHalf(0.5f);
+	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
+	using ChunkTriIndex = core::Map<glm::ivec3, core::DynamicArray<int>, ChunkIndexBuckets, glm::hash<glm::ivec3>>;
+	ChunkTriIndex chunkTriIndex;
+
+	for (int triIdx = 0; triIdx < (int)tris.size(); ++triIdx) {
+		const voxelformat::MeshTri &tri = tris[triIdx];
+		const glm::vec3 triAabbMins = tri.mins();
+		const glm::vec3 triAabbMaxs = tri.maxs();
+		const glm::ivec3 voxMins(glm::floor(triAabbMins - shiftedTrisMins));
+		const glm::ivec3 voxMaxs(glm::ivec3(glm::ceil(triAabbMaxs - shiftedTrisMins)) + 1);
+		const glm::ivec3 chunkMin = (glm::ivec3(trisMins) + voxMins - regionMins) / chunkSize;
+		const glm::ivec3 chunkMax = (glm::ivec3(trisMins) + voxMaxs - regionMins) / chunkSize;
+		for (int cx = chunkMin.x; cx <= chunkMax.x; ++cx) {
+			for (int cy = chunkMin.y; cy <= chunkMax.y; ++cy) {
+				for (int cz = chunkMin.z; cz <= chunkMax.z; ++cz) {
+					const glm::ivec3 chunkCoord(cx, cy, cz);
+					auto iter = chunkTriIndex.find(chunkCoord);
+					if (iter == chunkTriIndex.end()) {
+						core::DynamicArray<int> triIndices;
+						triIndices.push_back(triIdx);
+						chunkTriIndex.put(chunkCoord, core::move(triIndices));
+					} else {
+						iter->value.push_back(triIdx);
+					}
+				}
+			}
+		}
+	}
+
+	Log::debug("Spatial index built: %i occupied chunks from %i triangles", (int)chunkTriIndex.size(), (int)tris.size());
 
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
@@ -354,83 +393,131 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 		palette = voxel::getPalette();
 	}
 
-	using ChunkMap = core::Map<glm::ivec3, voxel::RawVolume *, 1031, glm::hash<glm::ivec3>>;
-	ChunkMap chunkVolumes;
-	const glm::ivec3 &regionMins = region.getLowerCorner();
-	const glm::ivec3 &regionMaxs = region.getUpperCorner();
-
-	palette::PaletteLookup palLookup(palette);
-	palette::NormalPaletteLookup normalLookup(normalPalette);
-	for (const voxelformat::MeshTri &meshTri : tris) {
-		if (stopExecution()) {
-			break;
-		}
-		auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-			const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
-			if (color.a <= AlphaThreshold) {
-				return;
-			}
-			const glm::ivec3 pos(x, y, z);
-			const glm::ivec3 chunkCoord = (pos - regionMins) / chunkSize;
-
-			auto chunkIter = chunkVolumes.find(chunkCoord);
-			voxel::RawVolume *volume;
-			if (chunkIter == chunkVolumes.end()) {
-				const glm::ivec3 chunkMins = regionMins + chunkCoord * chunkSize;
-				const glm::ivec3 chunkMaxs = glm::min(chunkMins + glm::ivec3(chunkSize - 1), regionMaxs);
-				volume = new voxel::RawVolume(voxel::Region(chunkMins, chunkMaxs));
-				chunkVolumes.put(chunkCoord, volume);
-			} else {
-				volume = chunkIter->value;
-			}
-
-			const glm::vec3 &normal = tri.normal();
-			int normalIdx = normalLookup.getClosestMatch(normal);
-			if (normalIdx == palette::PaletteNormalNotFound) {
-				normalIdx = NO_NORMAL;
-			}
-			const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIdx);
-			volume->setVoxel(pos, voxel);
-		};
-		voxelizeTriangle(trisMins, meshTri, fn);
-	}
-	tris.release();
-
 	if (palette.colorCount() == 1) {
-		color::RGBA c = palette.color(0);
-		if (c.a == 0) {
-			c.a = 255;
-			palette.setColor(0, c);
+		color::RGBA singleColor = palette.color(0);
+		if (singleColor.a == 0) {
+			singleColor.a = 255;
+			palette.setColor(0, singleColor);
 		}
 	}
 
-	// Step 3: Add chunk volumes as scene graph nodes under a group
+	// Collect chunk coordinates into an array for parallel iteration
+	core::DynamicArray<glm::ivec3> chunkCoords;
+	chunkCoords.reserve((int)chunkTriIndex.size());
+	for (auto iter = chunkTriIndex.begin(); iter != chunkTriIndex.end(); ++iter) {
+		chunkCoords.push_back(iter->key);
+	}
+
+	struct VoxelEntry {
+		glm::ivec3 pos;
+		voxel::Voxel voxel;
+	};
+
+	const int totalChunks = (int)chunkCoords.size();
+	palette::PaletteLookup palLookup(palette);
+
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(name);
 	const int groupId = sceneGraph.emplace(core::move(groupNode), parent);
 
+	// Process chunks in batches to bound peak memory. Each batch voxelizes in
+	// parallel, inserts volumes into the scene graph, then frees the entries
+	// before the next batch starts.
+	static constexpr int DefaultBatchSize = 64;
+	const int batchSize = DefaultBatchSize;
+	Log::debug("Processing %i chunks in batches of %i", totalChunks, batchSize);
 	int chunkIdx = 0;
-	for (auto iter = chunkVolumes.begin(); iter != chunkVolumes.end(); ++iter) {
-		voxel::RawVolume *volume = iter->value;
-		if (volume == nullptr) {
-			continue;
-		}
 
-		scenegraph::SceneGraphNode chunkNode(scenegraph::SceneGraphNodeType::Model);
-		chunkNode.setName(core::String::format("%s_%i", name.c_str(), chunkIdx++));
-		if (resetOrigin) {
-			const voxel::Region &chunkRegion = volume->region();
-			scenegraph::SceneGraphTransform transform;
-			transform.setLocalTranslation(chunkRegion.getLowerCornerf());
-			scenegraph::KeyFrameIndex keyFrameIdx = 0;
-			chunkNode.setTransform(keyFrameIdx, transform);
-			volume->translate(-chunkRegion.getLowerCorner());
+	for (int batchStart = 0; batchStart < totalChunks; batchStart += batchSize) {
+		if (stopExecution()) {
+			break;
 		}
-		chunkNode.setVolume(volume);
-		chunkNode.setPalette(palette);
-		chunkNode.setNormalPalette(normalPalette);
-		sceneGraph.emplace(core::move(chunkNode), groupId);
+		const int batchEnd = glm::min(batchStart + batchSize, totalChunks);
+		const int batchCount = batchEnd - batchStart;
+
+		core::DynamicArray<core::DynamicArray<VoxelEntry>> batchEntries;
+		batchEntries.resize(batchCount);
+
+		app::for_parallel(0, batchCount, [&](int start, int end) {
+			for (int batchIdx = start; batchIdx < end; ++batchIdx) {
+				if (stopExecution()) {
+					break;
+				}
+				const int globalIdx = batchStart + batchIdx;
+				const glm::ivec3 &chunkCoord = chunkCoords[globalIdx];
+
+				auto triIter = chunkTriIndex.find(chunkCoord);
+				if (triIter == chunkTriIndex.end()) {
+					continue;
+				}
+
+				const glm::ivec3 chunkMins = regionMins + chunkCoord * chunkSize;
+				const glm::ivec3 chunkMaxs = glm::min(chunkMins + glm::ivec3(chunkSize - 1), regionMaxs);
+				const voxel::Region chunkRegion(chunkMins, chunkMaxs);
+
+				core::DynamicArray<VoxelEntry> &entries = batchEntries[batchIdx];
+
+				for (int triIdx : triIter->value) {
+					const voxelformat::MeshTri &meshTri = tris[triIdx];
+					auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+						if (!chunkRegion.containsPoint(x, y, z)) {
+							return;
+						}
+						const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+						if (color.a <= AlphaThreshold) {
+							return;
+						}
+						// Skip per-triangle mesh normals for chunked mode: they cause
+						// inconsistent shading across chunk boundaries.
+						const voxel::Voxel vxl = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
+						entries.push_back({glm::ivec3(x, y, z), vxl});
+					};
+					voxelizeTriangle(trisMins, meshTri, fn);
+				}
+			}
+		});
+
+		// Insert completed batch into scene graph and free entries immediately
+		for (int batchIdx = 0; batchIdx < batchCount; ++batchIdx) {
+			core::DynamicArray<VoxelEntry> &entries = batchEntries[batchIdx];
+			if (entries.empty()) {
+				continue;
+			}
+
+			// Compute tight bounding box from actual voxel positions to avoid
+			// allocating full chunk-size volumes (128^3 = 8MB) for sparse chunks
+			glm::ivec3 tightMins = entries[0].pos;
+			glm::ivec3 tightMaxs = entries[0].pos;
+			for (const VoxelEntry &entry : entries) {
+				tightMins = glm::min(tightMins, entry.pos);
+				tightMaxs = glm::max(tightMaxs, entry.pos);
+			}
+			const voxel::Region tightRegion(tightMins, tightMaxs);
+			voxel::RawVolume *volume = new voxel::RawVolume(tightRegion);
+			for (const VoxelEntry &entry : entries) {
+				volume->setVoxel(entry.pos, entry.voxel);
+			}
+			entries.release();
+
+			scenegraph::SceneGraphNode chunkNode(scenegraph::SceneGraphNodeType::Model);
+			chunkNode.setName(core::String::format("%s_%i", name.c_str(), chunkIdx++));
+			if (resetOrigin) {
+				scenegraph::SceneGraphTransform transform;
+				transform.setLocalTranslation(tightRegion.getLowerCornerf());
+				scenegraph::KeyFrameIndex keyFrameIdx = 0;
+				chunkNode.setTransform(keyFrameIdx, transform);
+				volume->translate(-tightRegion.getLowerCorner());
+			}
+			chunkNode.setVolume(volume);
+			chunkNode.setPalette(palette);
+			chunkNode.setNormalPalette(normalPalette);
+			sceneGraph.emplace(core::move(chunkNode), groupId);
+		}
+		// batchEntries destroyed here, freeing all remaining memory from this batch
 	}
+
+	tris.release();
+	chunkTriIndex.clear();
 
 	Log::debug("Chunked voxelization: %i chunks created", chunkIdx);
 	return groupId;
