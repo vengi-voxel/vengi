@@ -1615,11 +1615,11 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
 	brush.preExecute(ctx, wrapper.volume());
 	brush.execute(sceneGraph, wrapper, ctx);
 
-	// With grow region and no existing selection, nothing should be selected
-	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
-		<< "No voxels should be selected when there is no existing selection to grow from";
-	EXPECT_FALSE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
-		<< "No voxels should be selected when there is no existing selection to grow from";
+	// With grow region enabled but no existing selection, the first stroke selects freely
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "First paint stroke should select freely when no prior selection exists";
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "First paint stroke should select freely when no prior selection exists";
 
 	brush.endBrush(ctx);
 	brush.shutdown();
