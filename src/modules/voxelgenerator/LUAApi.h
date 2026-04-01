@@ -9,7 +9,6 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicSet.h"
 #include "io/Filesystem.h"
 #include "noise/Noise.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -19,6 +18,10 @@ struct lua_State;
 
 namespace scenegraph {
 class SceneGraph;
+}
+
+namespace palette {
+class Palette;
 }
 
 namespace voxel {
@@ -149,6 +152,44 @@ inline const core::String &LUAApi::error() const {
 inline const LuaDirtyRegions &LUAApi::dirtyRegions() const {
 	return _dirtyRegions;
 }
+
+/**
+ * @brief Register all voxelgenerator Lua bindings on the given lua_State
+ *
+ * This registers volume, region, palette, scene graph, noise, shape helpers,
+ * and all other Lua API functions. It does NOT set up global data pointers
+ * (noise, dirty regions, scenegraph) - those must be set separately via
+ * @c luaVoxel_setGlobalNoise(), @c luaVoxel_setGlobalDirtyRegions(), etc.
+ */
+void luaVoxel_prepareState(lua_State *s);
+
+/**
+ * @brief Set a global light userdata pointer on the Lua state
+ */
+void luaVoxel_setGlobalData(lua_State *L, const char *name, void *userData);
+
+/**
+ * @brief Push script arguments onto the Lua stack according to their parameter descriptions
+ */
+bool luaVoxel_pushargs(lua_State *s, const core::DynamicArray<core::String> &args,
+					   const core::DynamicArray<LUAParameterDescription> &argsInfo,
+					   const palette::Palette &palette);
+
+const char *luaVoxel_globalnoise();
+const char *luaVoxel_globaldirtyregions();
+const char *luaVoxel_globalscenegraph();
+
+/**
+ * @brief Push a scene graph node as userdata onto the Lua stack
+ * @return number of values pushed (1 on success, 0 on failure)
+ */
+int luaVoxel_pushscenegraphnode(lua_State *s, scenegraph::SceneGraphNode &node);
+
+/**
+ * @brief Push a region as userdata onto the Lua stack (with __gc)
+ * @return number of values pushed (1 on success, 0 on failure)
+ */
+int luaVoxel_pushregion(lua_State *s, const voxel::Region &region);
 
 inline auto scriptCompleter(const io::FilesystemPtr &filesystem) {
 	return [=](const core::String &str, core::DynamicArray<core::String> &matches) -> int {

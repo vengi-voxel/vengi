@@ -40,6 +40,7 @@
 #include "voxelgenerator/Genland.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/ShapeGenerator.h"
+#include "voxelutil/AStarPathfinder.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
@@ -129,7 +130,7 @@ public:
 	}
 };
 
-static const char *luaVoxel_globalscenegraph() {
+const char *luaVoxel_globalscenegraph() {
 	return "__global_scenegraph";
 }
 
@@ -137,11 +138,11 @@ static const char *luaVoxel_globalnodeid() {
 	return "__global_nodeid";
 }
 
-static const char *luaVoxel_globalnoise() {
+const char *luaVoxel_globalnoise() {
 	return "__global_noise";
 }
 
-static const char *luaVoxel_globaldirtyregions() {
+const char *luaVoxel_globaldirtyregions() {
 	return "__global_dirtyregions";
 }
 
@@ -229,9 +230,9 @@ static inline const char *luaVoxel_metaregion() {
 	return "__meta_region";
 }
 
-static void luaVoxel_newGlobalData(lua_State *L, const core::String& prefix, void *userData) {
+void luaVoxel_setGlobalData(lua_State *L, const char *name, void *userData) {
 	lua_pushlightuserdata(L, userData);
-	lua_setglobal(L, prefix.c_str());
+	lua_setglobal(L, name);
 }
 
 template<class T>
@@ -276,7 +277,7 @@ static voxel::Region* luaVoxel_toregion(lua_State* s, int n) {
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
-static int luaVoxel_pushregion(lua_State* s, const voxel::Region& region) {
+int luaVoxel_pushregion(lua_State* s, const voxel::Region& region) {
 	return clua_pushudata(s, new voxel::Region(region), luaVoxel_metaregion_gc());
 }
 
@@ -284,7 +285,7 @@ static LuaSceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
 	return *(LuaSceneGraphNode**)clua_getudata<LuaSceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
 }
 
-static int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode& node) {
+int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode& node) {
 	LuaSceneGraphNode *wrapper = new LuaSceneGraphNode(&node);
 	return clua_pushudata(s, wrapper, luaVoxel_metascenegraphnode());
 }
@@ -755,6 +756,62 @@ static int luaVoxel_volumewrapper_istouching(lua_State *s) {
 		connectivity = voxel::Connectivity::TwentySixConnected;
 	}
 	lua_pushboolean(s, voxelutil::isTouching(*volume->volume(), glm::ivec3(x, y, z), connectivity) ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_pathfinder(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int startX = (int)luaL_checkinteger(s, 2);
+	const int startY = (int)luaL_checkinteger(s, 3);
+	const int startZ = (int)luaL_checkinteger(s, 4);
+	const int endX = (int)luaL_checkinteger(s, 5);
+	const int endY = (int)luaL_checkinteger(s, 6);
+	const int endZ = (int)luaL_checkinteger(s, 7);
+	const char *connectivityStr = luaL_optstring(s, 8, "18");
+	voxel::Connectivity connectivity = voxel::Connectivity::EighteenConnected;
+	if (SDL_strcmp(connectivityStr, "6") == 0) {
+		connectivity = voxel::Connectivity::SixConnected;
+	} else if (SDL_strcmp(connectivityStr, "26") == 0) {
+		connectivity = voxel::Connectivity::TwentySixConnected;
+	}
+	const float hBias = (float)luaL_optnumber(s, 9, 4.0);
+	const int maxNodes = (int)luaL_optinteger(s, 10, 10000);
+
+	const glm::ivec3 start(startX, startY, startZ);
+	const glm::ivec3 end(endX, endY, endZ);
+
+	core::List<glm::ivec3> listResult(4096);
+	const voxel::RawVolume *vol = volume->volume();
+	auto func = [connectivity](const voxel::RawVolume *v, const glm::ivec3 &pos) {
+		if (!v->region().containsPoint(pos)) {
+			return false;
+		}
+		if (voxel::isBlocked(v->voxel(pos).getMaterial())) {
+			return false;
+		}
+		return voxelutil::isTouching(*v, pos, connectivity);
+	};
+	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(vol, start, end, &listResult,
+															  func, hBias, (uint32_t)maxNodes, connectivity);
+	voxelutil::AStarPathfinder pathfinder(params);
+	if (!pathfinder.execute()) {
+		lua_pushnil(s);
+		return 1;
+	}
+
+	int idx = 1;
+	lua_createtable(s, (int)listResult.size(), 0);
+	for (const glm::ivec3 &p : listResult) {
+		lua_pushinteger(s, idx++);
+		lua_createtable(s, 0, 3);
+		lua_pushinteger(s, p.x);
+		lua_setfield(s, -2, "x");
+		lua_pushinteger(s, p.y);
+		lua_setfield(s, -2, "y");
+		lua_pushinteger(s, p.z);
+		lua_setfield(s, -2, "z");
+		lua_settable(s, -3);
+	}
 	return 1;
 }
 
@@ -3355,6 +3412,28 @@ static int luaVoxel_volumewrapper_istouching_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_pathfinder_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "pathfinder",
+		"summary": "Find a path over existing voxels between two points using A* pathfinding. The path walks over the surface of solid voxels.",
+		"parameters": [
+			{"name": "startX", "type": "integer", "description": "The x coordinate of the start position."},
+			{"name": "startY", "type": "integer", "description": "The y coordinate of the start position."},
+			{"name": "startZ", "type": "integer", "description": "The z coordinate of the start position."},
+			{"name": "endX", "type": "integer", "description": "The x coordinate of the end position."},
+			{"name": "endY", "type": "integer", "description": "The y coordinate of the end position."},
+			{"name": "endZ", "type": "integer", "description": "The z coordinate of the end position."},
+			{"name": "connectivity", "type": "string", "description": "Connectivity type: '6' (faces), '18' (faces+edges), '26' (faces+edges+corners) (optional, default '18')."},
+			{"name": "hBias", "type": "number", "description": "Heuristic bias for pathfinding. Higher values find paths faster but may be less optimal (optional, default 4.0)."},
+			{"name": "maxNodes", "type": "integer", "description": "Maximum number of nodes to explore before giving up (optional, default 10000)."}
+		],
+		"returns": [
+			{"type": "table", "description": "An array of tables with x, y, z fields representing the path positions, or nil if no path was found."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_erasePlane_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "erasePlane",
@@ -5851,7 +5930,7 @@ static int luaVoxel_shadow_jsonhelp(lua_State* s) {
 	return 1;
 }
 
-static void prepareState(lua_State* s) {
+void luaVoxel_prepareState(lua_State* s) {
 	static const clua_Reg volumeFuncs[] = {
 		{"voxel", luaVoxel_volumewrapper_voxel, luaVoxel_volumewrapper_voxel_jsonhelp},
 		{"region", luaVoxel_volumewrapper_region, luaVoxel_volumewrapper_region_jsonhelp},
@@ -5876,6 +5955,7 @@ static void prepareState(lua_State* s) {
 		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
 		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},
 		{"isTouching", luaVoxel_volumewrapper_istouching, luaVoxel_volumewrapper_istouching_jsonhelp},
+		{"pathfinder", luaVoxel_volumewrapper_pathfinder, luaVoxel_volumewrapper_pathfinder_jsonhelp},
 		{"erasePlane", luaVoxel_volumewrapper_erasePlane, luaVoxel_volumewrapper_erasePlane_jsonhelp},
 		{"extrudePlane", luaVoxel_volumewrapper_extrudePlane, luaVoxel_volumewrapper_extrudePlane_jsonhelp},
 		{"overridePlane", luaVoxel_volumewrapper_overridePlane, luaVoxel_volumewrapper_overridePlane_jsonhelp},
@@ -6261,9 +6341,9 @@ bool LUAApi::init() {
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise");
 	}
-	luaVoxel_newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
-	luaVoxel_newGlobalData(_lua, luaVoxel_globaldirtyregions(), &_dirtyRegions);
-	prepareState(_lua);
+	luaVoxel_setGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
+	luaVoxel_setGlobalData(_lua, luaVoxel_globaldirtyregions(), &_dirtyRegions);
+	luaVoxel_prepareState(_lua);
 	return true;
 }
 
@@ -6533,7 +6613,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 	return true;
 }
 
-static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo, const palette::Palette &palette) {
+bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo, const palette::Palette &palette) {
 	if (!lua_checkstack(s, (int)argsInfo.size())) {
 		Log::error("Failed to grow lua stack for %i arguments", (int)argsInfo.size());
 		return false;
@@ -6672,7 +6752,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	lua_State *s = _lua.state();
-	luaVoxel_newGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
+	luaVoxel_setGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
 
 	lua_pushinteger(s, nodeId);
 	lua_setglobal(s, luaVoxel_globalnodeid());

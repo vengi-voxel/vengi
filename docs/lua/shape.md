@@ -7,6 +7,7 @@ Global: `g_shape`
 | Function | Description |
 | -------- | ----------- |
 | `bezier(volume, start, end, control, color, thickness)` | Draw a quadratic bezier curve in the volume. |
+| `bezierSegment(volume, start, end, control, color, pattern)` | Draw a stippled quadratic bezier segment in the volume. |
 | `circle(volume, centerBottom, axis, radius, height, thickness, color)` | Create a hollow cylinder (tube) shape in the volume. |
 | `cone(volume, centerBottom, axis, negative, width, height, depth, color)` | Create a cone shape in the volume. |
 | `cube(volume, position, width, height, depth, color)` | Create a cube shape in the volume. |
@@ -14,6 +15,7 @@ Global: `g_shape`
 | `dome(volume, centerBottom, axis, negative, width, height, depth, color)` | Create a dome (half ellipsoid) shape in the volume. |
 | `ellipse(volume, centerBottom, axis, width, height, depth, color)` | Create an ellipse (filled oval) shape in the volume. |
 | `line(volume, start, end, color, thickness)` | Draw a line between two points in the volume. |
+| `stippledLine(volume, start, end, color, pattern, skipFirst)` | Draw a stippled line between two points in the volume. |
 | `torus(volume, center, minorRadius, majorRadius, color)` | Create a torus shape in the volume. |
 
 ## Detailed Documentation
@@ -32,6 +34,21 @@ Draw a quadratic bezier curve in the volume.
 | `control` | `ivec3` | The control point. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `thickness` | `integer` | The line thickness (optional, default 1). |
+
+### bezierSegment
+
+Draw a stippled quadratic bezier segment in the volume.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `volume` | `volume` | The volume to draw in. |
+| `start` | `ivec3` | The start position. |
+| `end` | `ivec3` | The end position. |
+| `control` | `ivec3` | The control point. |
+| `color` | `integer` | The color index (optional, default 1). |
+| `pattern` | `string` | A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1'). |
 
 ### circle
 
@@ -142,6 +159,21 @@ Draw a line between two points in the volume.
 | `end` | `ivec3` | The end position. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `thickness` | `integer` | The line thickness (optional, default 1). |
+
+### stippledLine
+
+Draw a stippled line between two points in the volume.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `volume` | `volume` | The volume to draw in. |
+| `start` | `ivec3` | The start position. |
+| `end` | `ivec3` | The end position. |
+| `color` | `integer` | The color index (optional, default 1). |
+| `pattern` | `string` | A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1'). |
+| `skipFirst` | `boolean` | Skip the first visited voxel (optional, default false). |
 
 ### torus
 

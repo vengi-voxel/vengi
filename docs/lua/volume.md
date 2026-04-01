@@ -16,6 +16,7 @@
 | `importHeightmap(image, underground, surface)` | Import a heightmap image into the volume. |
 | `importImageAsVolume(texture, depthmap, palette, thickness, bothSides)` | Import an image as a 3D volume using depth information. |
 | `isEmpty(minsx, minsy, minsz, maxsx, maxsy, maxsz)` | Check if a region is empty (contains only air). |
+| `isSelected(x, y, z)` | Check whether the voxel at the specified coordinates is selected (has the outline flag). |
 | `isTouching(x, y, z, connectivity)` | Check if a position is touching (adjacent to) a solid voxel. |
 | `merge(source)` | Merge another volume into this one. |
 | `mirrorAxis(axis)` | Mirror the volume along the specified axis. |
@@ -23,6 +24,7 @@
 | `normal(x, y, z)` | Get the normal palette index of the voxel at the specified coordinates. |
 | `overridePlane(x, y, z, face, color, thickness)` | Override existing voxels on a plane with a new color. |
 | `paintPlane(x, y, z, face, searchColor, replaceColor)` | Paint connected voxels on a plane with a new color. |
+| `pathfinder(startX, startY, startZ, endX, endY, endZ, connectivity, hBias, maxNodes)` | Find a path over existing voxels between two points using A* pathfinding. The path walks over the surface of solid voxels. |
 | `region()` | Get the region of the volume. |
 | `remapToPalette(oldPalette, newPalette, skipColorIndex)` | Remap all voxel colors from an old palette to a new palette. |
 | `renderIsometricImage(face)` | Render an isometric view of the volume to an image. |
@@ -34,6 +36,7 @@
 | `scaleDown()` | Scale the volume down by a factor of 2, averaging the colors. |
 | `scaleUp()` | Scale the volume up by a factor of 2. |
 | `setNormal(x, y, z, normal)` | Set the normal index on an existing voxel at the specified coordinates. |
+| `setSelected(x, y, z, selected)` | Set or clear the selection (outline flag) on a solid voxel at the specified coordinates. Air voxels cannot be selected. |
 | `setVoxel(x, y, z, color, normal)` | Set a voxel at the specified coordinates. |
 | `text(font, text, x, y, z, size, thickness, spacing)` | Render text into the volume using a TrueType font. |
 | `translate(x, y, z)` | Translate the region of the volume without moving the voxels. |
@@ -196,6 +199,24 @@ Check if a region is empty (contains only air).
 | ---- | ----------- |
 | `boolean` | True if the region is empty. |
 
+### isSelected
+
+Check whether the voxel at the specified coordinates is selected (has the outline flag).
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the voxel is selected, false otherwise. |
+
 ### isTouching
 
 Check if a position is touching (adjacent to) a solid voxel.
@@ -312,6 +333,30 @@ Paint connected voxels on a plane with a new color.
 | Type | Description |
 | ---- | ----------- |
 | `integer` | The number of voxels painted. |
+
+### pathfinder
+
+Find a path over existing voxels between two points using A* pathfinding. The path walks over the surface of solid voxels.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `startX` | `integer` | The x coordinate of the start position. |
+| `startY` | `integer` | The y coordinate of the start position. |
+| `startZ` | `integer` | The z coordinate of the start position. |
+| `endX` | `integer` | The x coordinate of the end position. |
+| `endY` | `integer` | The y coordinate of the end position. |
+| `endZ` | `integer` | The z coordinate of the end position. |
+| `connectivity` | `string` | Connectivity type: '6' (faces), '18' (faces+edges), '26' (faces+edges+corners) (optional, default '18'). |
+| `hBias` | `number` | Heuristic bias for pathfinding. Higher values find paths faster but may be less optimal (optional, default 4.0). |
+| `maxNodes` | `integer` | Maximum number of nodes to explore before giving up (optional, default 10000). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `table` | An array of tables with x, y, z fields representing the path positions, or nil if no path was found. |
 
 ### region
 
@@ -446,6 +491,25 @@ Set the normal index on an existing voxel at the specified coordinates.
 | Type | Description |
 | ---- | ----------- |
 | `boolean` | True if the voxel was updated, false if the voxel is air or outside the region. |
+
+### setSelected
+
+Set or clear the selection (outline flag) on a solid voxel at the specified coordinates. Air voxels cannot be selected.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `selected` | `boolean` | True to select, false to deselect (optional, default true). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the voxel was inside the region and not air, false otherwise. |
 
 ### setVoxel
 

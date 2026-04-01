@@ -6,9 +6,11 @@
 | ------ | ----------- |
 | `addKeyFrame(frame, interpolation)` | Add a new keyframe at the specified frame. |
 | `children()` | Get the child node IDs. |
+| `clearSelection()` | Clear all selection flags from the node's volume. |
 | `clone()` | Create a copy of the node. |
 | `hasKeyFrameForFrame(frame)` | Check if a keyframe exists at the specified frame. |
 | `hasNormalPalette()` | Check if the node has a normal palette. |
+| `hasSelection()` | Check whether the node has any selected voxels. |
 | `hide()` | Hide the node. |
 | `id()` | Get the ID of the node. |
 | `isCamera()` | Check if the node is a camera node. |
@@ -70,6 +72,10 @@ Get the child node IDs.
 | ---- | ----------- |
 | `table` | A table of child node IDs. |
 
+### clearSelection
+
+Clear all selection flags from the node's volume.
+
 ### clone
 
 Create a copy of the node.
@@ -105,6 +111,16 @@ Check if the node has a normal palette.
 | Type | Description |
 | ---- | ----------- |
 | `boolean` | True if the node has a normal palette. |
+
+### hasSelection
+
+Check whether the node has any selected voxels.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the node has at least one selected voxel. |
 
 ### hide
 

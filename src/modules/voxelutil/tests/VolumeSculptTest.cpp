@@ -954,7 +954,7 @@ TEST_F(VolumeSculptTest, testSquashToPlanePreservesNearestColor) {
 	volume.setVoxel(2, 1, 2, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 	volume.setVoxel(2, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, 20));
 
-	// Squash to Y=3 plane — the voxel AT Y=3 (color 20) is nearest (dist=0)
+	// Squash to Y=3 plane - the voxel AT Y=3 (color 20) is nearest (dist=0)
 	sculptSquashToPlane(volume, region, voxel::FaceNames::PositiveY, 3);
 	EXPECT_EQ(volume.voxel(2, 3, 2).getColor(), 20);
 	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 1, 2).getMaterial()));
@@ -980,7 +980,7 @@ TEST_F(VolumeSculptTest, testSquashToPlaneEmptyColumnNoChange) {
 }
 
 TEST_F(VolumeSculptTest, testSquashToPlaneNegativeX) {
-	// Test with NegativeX face — squash along X axis to X=2 plane.
+	// Test with NegativeX face - squash along X axis to X=2 plane.
 	voxel::Region region(0, 4);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -1178,7 +1178,7 @@ TEST_F(VolumeSculptTest, testReskinFollowSurface) {
 	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 21);
 	// High column surface at y=1: base goes to y=1
 	EXPECT_EQ(volume.voxel(1, 1, 0).getColor(), 21);
-	// High column y=0 is below the surface — not touched by skin, keeps original color
+	// High column y=0 is below the surface - not touched by skin, keeps original color
 	EXPECT_EQ(volume.voxel(1, 0, 0).getColor(), 1);
 }
 

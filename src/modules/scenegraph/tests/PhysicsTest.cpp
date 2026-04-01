@@ -772,7 +772,7 @@ TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
 	//   mins.x = floor(0.2 - 0.4 - eps) = -1 (outside region.minX = 0)
 	//   maxs.y = floor(~2.0 + 0.8) = 2 (outside region.maxY = 1)
 	// This means containsPoint(mins) fails (x < 0) and containsPoint(maxs) fails (y > 1),
-	// but the body AABB still overlaps the region — so the old check would miss the collision.
+	// but the body AABB still overlaps the region - so the old check would miss the collision.
 	KinematicBody body;
 	body.position = glm::vec3(10.2f, 10.0f, 18.0f);
 	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
