@@ -143,6 +143,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBpalformat_rgb6bit\fP: Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files
 .PP
+\fBvoxel_croponload\fP: Crop volumes to tight bounds on load to save memory
+.PP
 \fBvoxformat_ambientocclusion\fP: Extra vertices for ambient occlusion
 .PP
 \fBvoxformat_binvoxversion\fP: Save in version 1, 2 or the unofficial version 3
@@ -238,6 +240,10 @@ Allow to specify input file filter if --input is a directory.
 \fBvoxformat_voxcreategroups\fP: Create groups for vox file
 .PP
 \fBvoxformat_voxcreatelayers\fP: Create layers for vox file
+.PP
+\fBvoxformat_voxelize_chunked\fP: Enable chunked voxelization for large meshes
+.PP
+\fBvoxformat_voxelize_chunksize\fP: Chunk size for chunked voxelization
 .PP
 \fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 .PP

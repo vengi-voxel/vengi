@@ -705,6 +705,48 @@ msgstr "Einen Befehl an eine Taste binden"
 msgid "Unbind a key"
 msgstr "Eine Taste entbinden"
 
+msgid "Support for DXT/S3TC compressed texture formats"
+msgstr ""
+
+msgid "Support for PVRTC compressed texture formats"
+msgstr ""
+
+msgid "Support for ETC2 compressed texture formats"
+msgstr ""
+
+msgid "Support for ATC compressed texture formats"
+msgstr ""
+
+msgid "Support for 32-bit floating point textures"
+msgstr ""
+
+msgid "Support for 16-bit half-precision floating point textures"
+msgstr ""
+
+msgid "Support for instanced rendering"
+msgstr ""
+
+msgid "Support for renderer debug output messages"
+msgstr ""
+
+msgid "Support for modifying renderer objects without binding them"
+msgstr ""
+
+msgid "Support for immutable buffer storage"
+msgstr ""
+
+msgid "Support for batching multiple draw calls into a single indirect call"
+msgstr ""
+
+msgid "Support for compute shaders"
+msgstr ""
+
+msgid "Support for capturing shader output into buffers"
+msgstr ""
+
+msgid "Support for large read-write storage buffers accessible from shaders"
+msgstr ""
+
 msgid "Renderer feature cvar"
 msgstr ""
 
@@ -886,6 +928,14 @@ msgstr "Mesh-Modus"
 msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
 msgstr "0 = Würfel, 1 = Marching Cubes, 2 = binärer Mesher"
 
+msgid "Mesh allocation strategy"
+msgstr ""
+
+msgid ""
+"0 = full pre-alloc (best for small models), 1 = small alloc (best for large "
+"models)"
+msgstr ""
+
 msgid "Local directory"
 msgstr "Lokales Verzeichnis"
 
@@ -1044,6 +1094,18 @@ msgstr "0 = hohe Qualität, 1 = schneller und weniger Speicher"
 msgid "Voxelize mode"
 msgstr "Voxelisierungsmodus"
 
+msgid "Chunked voxelization"
+msgstr ""
+
+msgid "Enable chunked voxelization for large meshes"
+msgstr ""
+
+msgid "Chunk size"
+msgstr ""
+
+msgid "Chunk size for chunked voxelization"
+msgstr ""
+
 msgid "Voxel size"
 msgstr ""
 
@@ -1082,6 +1144,12 @@ msgstr "HVA laden"
 
 msgid "Load the hva for animations"
 msgstr "HVA für Animationen laden"
+
+msgid "Crop on load"
+msgstr ""
+
+msgid "Crop volumes to tight bounds on load to save memory"
+msgstr ""
 
 msgid "Create groups"
 msgstr "Gruppen erstellen"
@@ -1349,6 +1417,12 @@ msgstr "Körpergröße"
 
 msgid "Body size in game mode"
 msgstr "Körpergröße im Spielmodus"
+
+msgid "Speed multiplier when sprinting"
+msgstr ""
+
+msgid "Sprint multiplier"
+msgstr ""
 
 msgid "Camera clipping"
 msgstr "Kameraclipping"
@@ -1679,20 +1753,16 @@ msgid "Scale"
 msgstr "Skalieren"
 
 msgctxt "Sculpt Modes"
-msgid "Bridge Gap"
+msgid "Erode"
 msgstr ""
 
 msgctxt "Sculpt Modes"
-msgid "Erode"
+msgid "Grow"
 msgstr ""
 
 msgctxt "Sculpt Modes"
 msgid "Flatten"
 msgstr "Abflachen"
-
-msgctxt "Sculpt Modes"
-msgid "Grow"
-msgstr ""
 
 msgctxt "Sculpt Modes"
 msgid "Smooth Additive"
@@ -1705,6 +1775,102 @@ msgstr ""
 msgctxt "Sculpt Modes"
 msgid "Smooth Gaussian"
 msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Bridge Gap"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Squash to Plane"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Extend Plane"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Reskin"
+msgstr ""
+
+msgctxt "Reskin Modes"
+msgid "Blend"
+msgstr ""
+
+msgctxt "Reskin Modes"
+msgid "Replace"
+msgstr ""
+
+msgctxt "Reskin Modes"
+msgid "Negate"
+msgstr ""
+
+msgctxt "Reskin Follow"
+msgid "Median"
+msgstr ""
+
+msgctxt "Reskin Follow"
+msgid "None"
+msgstr ""
+
+msgctxt "Reskin Follow"
+msgid "Voxel"
+msgstr "Voxel"
+
+msgctxt "Reskin Anchor"
+msgid "Min/Max"
+msgstr ""
+
+msgctxt "Reskin Anchor"
+msgid "Min/Min"
+msgstr ""
+
+msgctxt "Reskin Anchor"
+msgid "Max/Max"
+msgstr ""
+
+msgctxt "Reskin Anchor"
+msgid "Max/Min"
+msgstr ""
+
+msgctxt "Reskin Rotation"
+msgid "0"
+msgstr ""
+
+msgctxt "Reskin Rotation"
+msgid "90"
+msgstr ""
+
+msgctxt "Reskin Rotation"
+msgid "180"
+msgstr ""
+
+msgctxt "Reskin Rotation"
+msgid "270"
+msgstr ""
+
+msgctxt "Reskin Tile"
+msgid "Once"
+msgstr ""
+
+msgctxt "Reskin Tile"
+msgid "Repeat"
+msgstr ""
+
+msgctxt "Reskin Tile"
+msgid "Stretch"
+msgstr ""
+
+msgctxt "Reskin Skin Axis"
+msgid "X"
+msgstr "X"
+
+msgctxt "Reskin Skin Axis"
+msgid "Y"
+msgstr "Y"
+
+msgctxt "Reskin Skin Axis"
+msgid "Z"
+msgstr "Z"
 
 msgctxt "Scale Sampling"
 msgid "Linear"
@@ -1770,11 +1936,67 @@ msgid "Draws a line from the reference position to the current cursor position"
 msgstr ""
 "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
 
+msgid "Bezier"
+msgstr ""
+
+msgid ""
+"First click locks the segment end, the gizmo edits its control point, and "
+"pending segments commit when you apply or leave the brush"
+msgstr ""
+
+msgid "Pending segments"
+msgstr ""
+
+msgid "Segment"
+msgstr ""
+
+#, c-format
+msgid "Segment %i"
+msgstr ""
+
+msgid "Select a pending segment to edit its control point with the gizmo"
+msgstr ""
+
 msgid "Stipple Pattern:"
 msgstr "Strichelmuster:"
 
 msgid "Length of the stipple pattern <= 1 to disable"
 msgstr "Länge des Strichelmusters <= 1 zum Deaktivieren"
+
+msgid "Rescan"
+msgstr ""
+
+msgid "Re-scan the brushes directory for new or changed scripts"
+msgstr ""
+
+msgid "Use reference position"
+msgstr "Referenzposition verwenden"
+
+msgid "Measure the distance from the reference position to the cursor"
+msgstr ""
+
+msgid "Click two points to measure the distance between them"
+msgstr ""
+
+msgid "Measurement"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "End"
+msgstr ""
+
+msgid "Delta"
+msgstr ""
+
+#, c-format
+msgid "Length: %.2f"
+msgstr "Länge: %.2f"
+
+#, c-format
+msgid "Manhattan: %i"
+msgstr ""
 
 msgctxt "SelectMode"
 msgid "All"
@@ -1793,15 +2015,15 @@ msgid "Connected"
 msgstr "Zusammenhängend"
 
 msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr ""
+
+msgctxt "SelectMode"
 msgid "Fuzzy Color"
 msgstr ""
 
 msgctxt "SelectMode"
 msgid "3D Box"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Flat Surface"
 msgstr ""
 
 msgctxt "SelectMode"
@@ -1812,8 +2034,40 @@ msgctxt "SelectMode"
 msgid "Slope"
 msgstr ""
 
+msgctxt "SelectMode"
+msgid "Hole Rim 2D"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Hole Rim 3D"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Lasso"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Column Rim 2D"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Paint"
+msgstr ""
+
 msgid "Select mode"
 msgstr "Auswahlmodus"
+
+msgid "Selection actions"
+msgstr ""
+
+msgid "Select Only Color"
+msgstr ""
+
+msgid "Color Selected"
+msgstr ""
+
+msgid "Deselect Color"
+msgstr ""
 
 msgid "Threshold"
 msgstr ""
@@ -1845,6 +2099,102 @@ msgstr ""
 msgid ""
 "How far apart (in voxels) to sample when computing the initial slope plane. "
 "Larger values give smoother slope detection on staircases"
+msgstr ""
+
+msgid "Lasso selection"
+msgstr ""
+
+#, c-format
+msgid "%d vertices - click near first vertex to close"
+msgstr ""
+
+msgid "Apply Lasso"
+msgstr ""
+
+msgid ""
+"Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"
+msgstr ""
+
+msgid "Cancel Lasso"
+msgstr ""
+
+msgid "Discard the in-progress lasso polygon (bind Escape to cancellasso)"
+msgstr ""
+
+msgid "Undo Vertex"
+msgstr ""
+
+msgid "Remove the last placed lasso vertex"
+msgstr ""
+
+msgid "Click on the surface to start drawing a polygon"
+msgstr ""
+
+msgid "Hole rim selection"
+msgstr ""
+
+msgid ""
+"Click any solid voxel on the rim of a hole. For best results use the face "
+"that looks into the opening or lies flat on the surface containing the hole."
+msgstr ""
+
+msgid "Hole rim selection (3D)"
+msgstr ""
+
+msgid ""
+"Click a solid voxel on the rim of a hole using the face that looks into the "
+"opening. Finds the shortest loop of surface voxels encircling the hole. "
+"Works on curved and non-planar surfaces."
+msgstr ""
+
+msgid "Column rim selection"
+msgstr ""
+
+msgid ""
+"Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked "
+"face determines the cross-section plane with fallback. Lock the normal axis "
+"to always select a specific circumference direction."
+msgstr ""
+
+msgctxt "ColumnRimAxis"
+msgid "Auto"
+msgstr ""
+
+msgctxt "ColumnRimAxis"
+msgid "X"
+msgstr "X"
+
+msgctxt "ColumnRimAxis"
+msgid "Y"
+msgstr "Y"
+
+msgctxt "ColumnRimAxis"
+msgid "Z"
+msgstr "Z"
+
+msgid "Normal axis"
+msgstr "Normalenachse"
+
+msgid ""
+"Lock the axis perpendicular to the cross-section plane. Auto uses the "
+"clicked face with fallback."
+msgstr ""
+
+msgid "Paint selection"
+msgstr ""
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "Brush radius for paint selection. Hold mouse and drag to select voxels."
+msgstr ""
+
+msgid "Grow region"
+msgstr ""
+
+msgid ""
+"Only select voxels adjacent to already-selected voxels. Useful for expanding "
+"an existing selection."
 msgstr ""
 
 msgid "Circle selection"
@@ -1905,21 +2255,6 @@ msgstr "UV0"
 msgid "UV1"
 msgstr "UV1"
 
-msgid "18-connected"
-msgstr "18-verbunden"
-
-msgid "26-connected"
-msgstr "26-verbunden"
-
-msgid "6-connected"
-msgstr "6-verbunden"
-
-msgid "Connectivity"
-msgstr "Konnektivität"
-
-msgid "Draws a path over existing voxels"
-msgstr "Zeichnet einen Pfad über vorhandene Voxel"
-
 msgid "Convert palette"
 msgstr "Palette konvertieren"
 
@@ -1931,9 +2266,6 @@ msgstr "Einzeln"
 
 msgid "Single Move"
 msgstr "Einzeln Bewegung"
-
-msgid "Radius"
-msgstr "Radius"
 
 msgid "Use a radius around the current voxel - 0 for spanning a region"
 msgstr ""
@@ -1992,7 +2324,14 @@ msgstr ""
 msgid "Transform mode"
 msgstr ""
 
+msgid "Maintain aspect ratio"
+msgstr "Seitenverhältnis beibehalten"
+
 msgid "Uniform"
+msgstr ""
+
+#, c-format
+msgid "Original: %i x %i x %i"
 msgstr ""
 
 msgid "Sampling"
@@ -2020,6 +2359,75 @@ msgid "Kernel size"
 msgstr ""
 
 msgid "Sigma"
+msgstr ""
+
+msgid "Copy voxels to clipboard or load a skin file"
+msgstr ""
+
+msgid "Load skin"
+msgstr ""
+
+msgid "Reload"
+msgstr "Neu laden"
+
+msgid "Skin up axis"
+msgstr ""
+
+msgid ""
+"Which axis of the skin points outward from the surface. Set to Y if your "
+"skin was built with the pattern facing up."
+msgstr ""
+
+msgid "Reskin mode"
+msgstr ""
+
+msgid "Follow surface"
+msgstr ""
+
+msgid "Anchor"
+msgstr ""
+
+msgid "Rotation"
+msgstr "Drehung"
+
+msgid "Tile"
+msgstr ""
+
+msgid "Mirror U"
+msgstr "U spiegeln"
+
+msgid "Mirror V"
+msgstr "V spiegeln"
+
+msgid "Offset U"
+msgstr "U Versatz"
+
+msgid "Offset V"
+msgstr "V Versatz"
+
+msgid "Surface offset"
+msgstr ""
+
+msgid "Positive = skin floats above surface, negative = sinks below"
+msgstr ""
+
+msgid "Skin layers"
+msgstr ""
+
+msgid "Invert skin"
+msgstr ""
+
+msgid "Brush radius"
+msgstr ""
+
+msgid "Extend only"
+msgstr ""
+
+msgid "Remove above"
+msgstr ""
+
+msgid ""
+"Perpendicular depth of voxels to remove above the plane (0 = no removal)"
 msgstr ""
 
 msgid "Strength"
@@ -2091,12 +2499,13 @@ msgstr "Spielmodus"
 msgid ""
 "Activating the game mode will enable clipping and switch the eye mode camera "
 "that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
-"+move_backward>, <cmd:+move_right> and <cmd:+jump> for jumping"
+"+move_backward>, <cmd:+move_right>, <cmd:+jump> for jumping and <cmd:"
+"+sprint> for sprinting"
 msgstr ""
 "Das Aktivieren des Spielmodus aktiviert das Clipping und schaltet die Eye-"
 "Modus-Kamera um, die durch <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
-"+move_backward>, <cmd:+move_right> und <cmd:+jump> zum Springen gesteuert "
-"wird"
+"+move_backward>, <cmd:+move_right> und <cmd:+jump> zum Springen und <cmd:"
+"+sprint> für das Sprinten gesteuert wird"
 
 msgid "Enable"
 msgstr "Aktivieren"
@@ -2106,6 +2515,9 @@ msgstr "Minecraft"
 
 msgid "Ace Of Spades"
 msgstr "Ace Of Spades"
+
+msgid "Teardown"
+msgstr ""
 
 msgid "Forward"
 msgstr "Vorwärts"
@@ -2292,6 +2704,32 @@ msgstr ""
 msgid "Model settings"
 msgstr "Modell-Einstellungen"
 
+msgid "Resize node"
+msgstr ""
+
+msgid "Lower bound"
+msgstr ""
+
+msgid "Upper bound"
+msgstr ""
+
+#, c-format
+msgid "Size: %ix%ix%i"
+msgstr ""
+
+msgid "Rescale content"
+msgstr ""
+
+msgid "Target size"
+msgstr "Zielgröße"
+
+msgid "Scale (%)"
+msgstr "Skalieren (%)"
+
+#, c-format
+msgid "Result: %i x %i x %i"
+msgstr ""
+
 msgid "Rename node"
 msgstr "Knoten Umbenennen"
 
@@ -2416,13 +2854,16 @@ msgstr "Invertieren"
 msgid "All"
 msgstr "Alles"
 
-msgid "Color Selected"
+msgid "Select Only Edges"
 msgstr ""
 
-msgid "Deselect Color"
+msgid "Select Only Wall Edges"
 msgstr ""
 
-msgid "Select Only Color"
+msgid "Select Only Corners"
+msgstr ""
+
+msgid "Grow Selection"
 msgstr ""
 
 msgid "UI"
@@ -2608,9 +3049,6 @@ msgstr "Aktualisiere alle gesperrten Knoten mit diesem Wert"
 msgid "Translation"
 msgstr "Verschiebung"
 
-msgid "Rotation"
-msgstr "Drehung"
-
 msgid "Scale"
 msgstr "Skalierung"
 
@@ -2621,9 +3059,6 @@ msgid "IK Constraints"
 msgstr ""
 
 msgid "Enable IK"
-msgstr ""
-
-msgid "Anchor"
 msgstr ""
 
 msgid "Mark this node as a fixed point in the IK chain"
@@ -2762,6 +3197,12 @@ msgstr "Um 90 Grad drehen"
 
 msgid "Reset layout"
 msgstr "Layout zurücksetzen"
+
+msgid "Full pre-alloc"
+msgstr ""
+
+msgid "Small (grow as needed)"
+msgstr ""
 
 msgid "General"
 msgstr ""
@@ -3048,6 +3489,18 @@ msgid "Culled volumes: %i"
 msgstr "Ausgeblendete Volumen: %i"
 
 #, c-format
+msgid "Mapped nodes: %i"
+msgstr ""
+
+#, c-format
+msgid "Volume index high-water: %i"
+msgstr ""
+
+#, c-format
+msgid "Free volume indices: %i"
+msgstr ""
+
+#, c-format
 msgid "Draw calls: %i"
 msgstr "Draw Calls: %i"
 
@@ -3128,6 +3581,9 @@ msgstr "Ursprung zentrieren"
 
 msgid "Center reference"
 msgstr "Referenz zentrieren"
+
+msgid "Resize"
+msgstr ""
 
 msgid "Convert to model"
 msgstr "In Modell umwandeln"
@@ -3276,9 +3732,6 @@ msgstr "Skripting-Handbuch"
 
 msgid "Script Editor"
 msgstr "Skripteditor"
-
-msgid "Reload"
-msgstr "Neu laden"
 
 #, c-format
 msgid "Overwrite scripts/%s"
@@ -3631,6 +4084,9 @@ msgstr "Szenenmodus"
 msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
 
+msgid "merged_temp"
+msgstr ""
+
 msgid "Color wheel"
 msgstr "Farbrad"
 
@@ -3740,6 +4196,12 @@ msgstr "Alle inaktiven Knoten ausblenden"
 
 msgid "Only active"
 msgstr "Nur aktiv"
+
+msgid "Scene mode"
+msgstr "Szenenmodus"
+
+msgid "Start in scene mode"
+msgstr ""
 
 msgid "Far plane for the camera"
 msgstr "Farplane für die Kamera"
@@ -3920,6 +4382,9 @@ msgstr "Normaleninfos aus der Palette entfernen"
 msgid "Switch active node to hovered from scene graph mode"
 msgstr "Wechselt den aktiven Knoten vom Szenengraph-Modus zum Hovern"
 
+msgid "Toggle lock on the hovered node"
+msgstr ""
+
 msgid "Select all, nothing or invert"
 msgstr "Alles auswählen, nichts oder invertieren"
 
@@ -3993,7 +4458,31 @@ msgstr ""
 msgid "Deselect all voxels matching the active palette color"
 msgstr ""
 
+msgid ""
+"Close the lasso polygon and apply the selection to enclosed surface voxels"
+msgstr ""
+
+msgid "Discard the in-progress lasso polygon without applying any selection"
+msgstr ""
+
+msgid "Remove the last placed lasso vertex and redraw edges"
+msgstr ""
+
 msgid "Deselect all voxels not matching the active palette color"
+msgstr ""
+
+msgid "Filter selection to only keep edge voxels where two or more faces meet"
+msgstr ""
+
+msgid "Filter selection to only keep corner voxels where three faces meet"
+msgstr ""
+
+msgid ""
+"Filter selection to only keep wall edge voxels with at most one solid "
+"neighbor in a perpendicular ring"
+msgstr ""
+
+msgid "Expand the selection by one voxel in all directions"
 msgstr ""
 
 msgid "Set the reference position to the specified position"
@@ -4018,6 +4507,11 @@ msgid "Resize your current model node by the specified size"
 msgstr ""
 "Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
 "Größe"
+
+msgid "Rescale the content of a model node to the specified target size"
+msgstr ""
+"Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
+"Zielgröße"
 
 msgid "Shift the volume by the given values"
 msgstr "Verschiebt das Volumen um die angegebenen Werte"
@@ -4074,6 +4568,15 @@ msgstr ""
 msgid ""
 "Merge active node voxels into all overlapping nodes and remove the source "
 "node"
+msgstr ""
+
+msgid ""
+"Stamp active node onto all other nodes, overwriting their content in "
+"overlapping regions"
+msgstr ""
+
+msgid ""
+"Merge all visible nodes into a temporary editable node, hiding the originals"
 msgstr ""
 
 msgid "Undo your last step"
@@ -4220,6 +4723,9 @@ msgstr "Interpoliere zur Knotenposition und -ausrichtung"
 msgid "Set or toggle the camera rotation mode (target or eye)"
 msgstr "Lege den Kamerarotationsmodus fest oder umschalten (Ziel oder Auge)"
 
+msgid "Set the camera orbit target to the reference point position"
+msgstr ""
+
 msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
 msgstr "Legt den Kameraprojektionsmodus fest (Perspektive oder Orthogonal)"
 
@@ -4274,6 +4780,12 @@ msgstr "Ändert den Pinseltyp auf '%s'"
 
 msgid "Change the brush type to 'none'"
 msgstr "Ändert den Pinseltyp auf 'keiner'"
+
+msgid "Change the brush type to 'script'"
+msgstr "Ändert den Pinseltyp auf 'script'"
+
+msgid "Re-scan the brushes directory for new or changed Lua brush scripts"
+msgstr ""
 
 msgid "Toggle locked mode for the given axis at the current cursor position"
 msgstr ""
@@ -4339,8 +4851,11 @@ msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
 msgid "Disable mirror axis"
 msgstr "Deaktiviert die Spiegelachse"
 
-msgid "Change the modifier shape type"
-msgstr "Ändert den Modifier-Formtyp"
+msgid "Toggle continuous line drawing"
+msgstr ""
+
+msgid "Toggle quadratic bezier mode for the line brush"
+msgstr ""
 
 msgid "Auto"
 msgstr ""
@@ -4360,12 +4875,11 @@ msgstr "Zufällig"
 msgid "Variation"
 msgstr "Variation"
 
-msgid ""
-"Failed to execute pathfinder - is the reference position correctly placed on "
-"another voxel?"
+msgid "Toggle measuring from the reference position"
 msgstr ""
-"Fehler bei der Ausführung des Pfadfinders - ist die Referenzposition korrekt "
-"auf einem anderen Voxel platziert?"
+
+msgid "Change the modifier shape type"
+msgstr "Ändert den Modifier-Formtyp"
 
 msgid "Toggle center at cursor"
 msgstr "Schaltet das Zentrum am Cursor um"
@@ -4443,3 +4957,25 @@ msgstr "Maximale Verbindungen"
 msgid "The maximum number of clients that can connect to the server"
 msgstr ""
 "Die maximale Anzahl von Clients, die sich mit dem Server verbinden können"
+
+#~ msgid "18-connected"
+#~ msgstr "18-verbunden"
+
+#~ msgid "26-connected"
+#~ msgstr "26-verbunden"
+
+#~ msgid "6-connected"
+#~ msgstr "6-verbunden"
+
+#~ msgid "Connectivity"
+#~ msgstr "Konnektivität"
+
+#~ msgid "Draws a path over existing voxels"
+#~ msgstr "Zeichnet einen Pfad über vorhandene Voxel"
+
+#~ msgid ""
+#~ "Failed to execute pathfinder - is the reference position correctly placed "
+#~ "on another voxel?"
+#~ msgstr ""
+#~ "Fehler bei der Ausführung des Pfadfinders - ist die Referenzposition "
+#~ "korrekt auf einem anderen Voxel platziert?"
