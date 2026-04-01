@@ -50,7 +50,7 @@ bool Format::checkValidRegion(const voxel::Region &region) const {
 		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", vdim.x, vdim.y, vdim.z, neededMem.c_str());
 		return false;
 	}
-	if (bytes == 0u || bytes > std::numeric_limits<int>::max()) {
+	if (bytes == 0u) {
 		const glm::ivec3 &vdim = region.getDimensionsInVoxels();
 		Log::error("Invalid volume size %i:%i:%i", vdim.x, vdim.y, vdim.z);
 		return false;
