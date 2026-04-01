@@ -27,6 +27,8 @@ void main(void) {
 #else
 		v_flags |= FLAGOUTLINE;
 #endif
+	} else if ((a_flags & FLAGOUTLINE) != 0u) {
+		v_flags |= FLAGOUTLINE;
 	}
 
 	if (u_gray != 0 || (u_has_selection != 0 && (a_flags & FLAGOUTLINE) == 0u)) {

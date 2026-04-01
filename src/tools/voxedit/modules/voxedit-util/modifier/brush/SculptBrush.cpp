@@ -6,6 +6,8 @@
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicMap.h"
+#include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
@@ -29,6 +31,8 @@ void SculptBrush::onSceneChange() {
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
+	_planeFitted = false;
+	_lastPaintPos = glm::ivec3(INT_MIN);
 }
 
 void SculptBrush::onActivated() {
@@ -77,6 +81,13 @@ void SculptBrush::reset() {
 	_sigma = 4.0f;
 	_sculptMode = SculptMode::Erode;
 	_flattenFace = voxel::FaceNames::Max;
+	_removeAboveDepth = 0;
+	_extendOnly = true;
+	_brushRadius = 3;
+	_planeFitted = false;
+	_planeGradU = 0.0f;
+	_planeGradV = 0.0f;
+	_lastPaintPos = glm::ivec3(INT_MIN);
 }
 
 bool SculptBrush::beginBrush(const BrushContext &ctx) {
@@ -98,6 +109,7 @@ bool SculptBrush::beginBrush(const BrushContext &ctx) {
 
 void SculptBrush::endBrush(BrushContext &) {
 	_active = false;
+	_lastPaintPos = glm::ivec3(INT_MIN);
 }
 
 bool SculptBrush::active() const {
@@ -113,12 +125,47 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 			adjustSnapshotForRegionShift(delta);
 		}
 	}
+	if (_hasSnapshot && _sculptMode == SculptMode::ExtendPlane && _planeFitted) {
+		if (_active && ctx.cursorPosition != _lastPaintPos) {
+			_paramsDirty = true;
+		}
+	}
 	if (_hasSnapshot) {
 		_cachedRegion = _snapshotRegion;
 		if (_sculptMode == SculptMode::Reskin) {
 			// Expand along face normal for z offset + skin layers growing outward
 			const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
 			_cachedRegion.grow(expand);
+		} else if (_sculptMode == SculptMode::ExtendPlane && _planeFitted) {
+			// Show brush preview around cursor position
+			const int r = _brushRadius;
+			glm::ivec3 lo = ctx.cursorPosition;
+			glm::ivec3 hi = ctx.cursorPosition;
+			lo[_planeUAxis] -= r;
+			lo[_planeVAxis] -= r;
+			hi[_planeUAxis] += r;
+			hi[_planeVAxis] += r;
+			// Predict height range across the brush corners
+			const float h00 = static_cast<float>(_planeSeedH) +
+							  _planeGradU * static_cast<float>(lo[_planeUAxis] - _planeSeedU) +
+							  _planeGradV * static_cast<float>(lo[_planeVAxis] - _planeSeedV);
+			const float h11 = static_cast<float>(_planeSeedH) +
+							  _planeGradU * static_cast<float>(hi[_planeUAxis] - _planeSeedU) +
+							  _planeGradV * static_cast<float>(hi[_planeVAxis] - _planeSeedV);
+			const float h01 = static_cast<float>(_planeSeedH) +
+							  _planeGradU * static_cast<float>(lo[_planeUAxis] - _planeSeedU) +
+							  _planeGradV * static_cast<float>(hi[_planeVAxis] - _planeSeedV);
+			const float h10 = static_cast<float>(_planeSeedH) +
+							  _planeGradU * static_cast<float>(hi[_planeUAxis] - _planeSeedU) +
+							  _planeGradV * static_cast<float>(lo[_planeVAxis] - _planeSeedV);
+			const float minH = glm::min(glm::min(h00, h11), glm::min(h01, h10));
+			const float maxH = glm::max(glm::max(h00, h11), glm::max(h01, h10));
+			lo[_planeHeightAxis] = static_cast<int>(glm::floor(minH)) - 1;
+			hi[_planeHeightAxis] = static_cast<int>(glm::ceil(maxH)) + 1;
+			_cachedRegion = voxel::Region(lo, hi);
+		} else if (_sculptMode == SculptMode::ExtendPlane) {
+			// Plane not yet fitted - show snapshot region
+			_cachedRegion.grow(_iterations);
 		} else {
 			// Expand by iterations since smoothing can grow surface by 1 voxel per iteration
 			_cachedRegion.grow(_iterations);
@@ -392,6 +439,19 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	}
 	_paramsDirty = false;
 
+	// ExtendPlane uses additive painting - no history restore between strokes
+	if (_sculptMode == SculptMode::ExtendPlane) {
+		if (!_planeFitted && _flattenFace != voxel::FaceNames::Max) {
+			fitPlaneFromSnapshot();
+		}
+		if (_planeFitted && _active) {
+			paintExtendPlane(wrapper, ctx);
+			_lastPaintPos = ctx.cursorPosition;
+			markDirty();
+		}
+		return;
+	}
+
 	voxel::RawVolume *vol = wrapper.volume();
 
 	// Restore previously modified state before re-applying
@@ -413,6 +473,262 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	markDirty();
 }
 
+void SculptBrush::fitPlaneFromSnapshot() {
+	core_trace_scoped(SculptBrushFitPlane);
+
+	_planeHeightAxis = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
+	_planeUAxis = (_planeHeightAxis + 1) % 3;
+	_planeVAxis = (_planeHeightAxis + 2) % 3;
+	const bool fromPositive = voxel::isPositiveFace(_flattenFace);
+
+	// Build height map from snapshot: surface height per (u,v) column
+	// Key is ivec3 with height axis zeroed out (no hash<ivec2> available)
+	using HeightMap = core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>>;
+	HeightMap heightMap;
+
+	struct HeightCollector {
+		HeightMap *map;
+		int uAxis;
+		int vAxis;
+		int heightAxis;
+		bool fromPositive;
+		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
+			const glm::ivec3 pos(x, y, z);
+			glm::ivec3 key(pos);
+			key[heightAxis] = 0;
+			auto it = map->find(key);
+			if (it == map->end()) {
+				map->put(key, pos[heightAxis]);
+			} else {
+				if (fromPositive) {
+					it->value = glm::max(it->value, pos[heightAxis]);
+				} else {
+					it->value = glm::min(it->value, pos[heightAxis]);
+				}
+			}
+			return true;
+		}
+	};
+	HeightCollector collector{&heightMap, _planeUAxis, _planeVAxis, _planeHeightAxis, fromPositive};
+	_snapshot.copyTo(collector);
+
+	if (heightMap.empty()) {
+		_planeFitted = false;
+		return;
+	}
+
+	// Pick seed from first entry
+	auto seedIt = heightMap.begin();
+	_planeSeedU = seedIt->key[_planeUAxis];
+	_planeSeedV = seedIt->key[_planeVAxis];
+	_planeSeedH = seedIt->value;
+
+	// 2D linear regression: h = seedH + gradU*(u-seedU) + gradV*(v-seedV)
+	double sumDU = 0.0, sumDV = 0.0, sumDH = 0.0;
+	double sumDU2 = 0.0, sumDV2 = 0.0, sumDUDV = 0.0;
+	double sumDUDH = 0.0, sumDVDH = 0.0;
+	int planeN = 0;
+
+	for (auto it = heightMap.begin(); it != heightMap.end(); ++it) {
+		const double du = static_cast<double>(it->key[_planeUAxis] - _planeSeedU);
+		const double dv = static_cast<double>(it->key[_planeVAxis] - _planeSeedV);
+		const double dh = static_cast<double>(it->value - _planeSeedH);
+		sumDU += du;
+		sumDV += dv;
+		sumDH += dh;
+		sumDU2 += du * du;
+		sumDV2 += dv * dv;
+		sumDUDV += du * dv;
+		sumDUDH += du * dh;
+		sumDVDH += dv * dh;
+		++planeN;
+	}
+
+	_planeGradU = 0.0f;
+	_planeGradV = 0.0f;
+
+	static constexpr int MinPlaneSamples = 3;
+	static constexpr double MinDeterminant = 0.001;
+
+	if (planeN >= MinPlaneSamples) {
+		const double n = static_cast<double>(planeN);
+		const double meanDU = sumDU / n;
+		const double meanDV = sumDV / n;
+		const double meanDH = sumDH / n;
+		const double suu = sumDU2 - n * meanDU * meanDU;
+		const double svv = sumDV2 - n * meanDV * meanDV;
+		const double suv = sumDUDV - n * meanDU * meanDV;
+		const double suh = sumDUDH - n * meanDU * meanDH;
+		const double svh = sumDVDH - n * meanDV * meanDH;
+		const double det = suu * svv - suv * suv;
+		if (glm::abs(det) > MinDeterminant) {
+			_planeGradU = static_cast<float>((svv * suh - suv * svh) / det);
+			_planeGradV = static_cast<float>((suu * svh - suv * suh) / det);
+		}
+	}
+
+	_planeFitted = true;
+}
+
+void SculptBrush::paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	core_trace_scoped(SculptBrushPaintExtendPlane);
+
+	voxel::RawVolume *vol = wrapper.volume();
+	const voxel::Region &volRegion = vol->region();
+	const bool fromPositive = voxel::isPositiveFace(_flattenFace);
+	const int step = fromPositive ? 1 : -1;
+
+	const int cursorU = ctx.cursorPosition[_planeUAxis];
+	const int cursorV = ctx.cursorPosition[_planeVAxis];
+
+	voxel::Voxel fillVoxel = ctx.cursorVoxel;
+	if (voxel::isAir(fillVoxel.getMaterial())) {
+		fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	}
+	fillVoxel.setFlags(voxel::FlagOutline);
+
+	// UV neighbor offsets for gap-filling span extension (du, dv)
+	static constexpr int uvNeighborDU[] = {-1, 1, 0, 0};
+	static constexpr int uvNeighborDV[] = {0, 0, -1, 1};
+	static constexpr int numUVNeighbors = 4;
+
+	// Precompute removal ray direction (perpendicular to fitted plane)
+	static constexpr float RayStep = 0.5f;
+	const voxel::Voxel air;
+	glm::vec3 removeNormal(0.0f);
+	const float removeLineLen = static_cast<float>(_removeAboveDepth);
+	if (_removeAboveDepth > 0) {
+		removeNormal[_planeUAxis] = -_planeGradU;
+		removeNormal[_planeVAxis] = -_planeGradV;
+		removeNormal[_planeHeightAxis] = 1.0f;
+		removeNormal *= static_cast<float>(step);
+		removeNormal = glm::normalize(removeNormal);
+	}
+
+	for (int u = cursorU - _brushRadius; u <= cursorU + _brushRadius; ++u) {
+		for (int v = cursorV - _brushRadius; v <= cursorV + _brushRadius; ++v) {
+			const float predictedHf = static_cast<float>(_planeSeedH) +
+									  _planeGradU * static_cast<float>(u - _planeSeedU) +
+									  _planeGradV * static_cast<float>(v - _planeSeedV);
+
+			// Fill vertical span from floor to ceil to cover sub-voxel plane position
+			int loH = static_cast<int>(glm::floor(predictedHf));
+			int hiH = static_cast<int>(glm::ceil(predictedHf));
+
+			// Extend span toward UV neighbors to bridge gaps on steep slopes
+			for (int ni = 0; ni < numUVNeighbors; ++ni) {
+				const float neighborH = static_cast<float>(_planeSeedH) +
+										_planeGradU * static_cast<float>(u + uvNeighborDU[ni] - _planeSeedU) +
+										_planeGradV * static_cast<float>(v + uvNeighborDV[ni] - _planeSeedV);
+				const int midH = static_cast<int>(glm::round((predictedHf + neighborH) * 0.5f));
+				loH = glm::min(loH, midH);
+				hiH = glm::max(hiH, midH);
+			}
+
+			// In extend-only mode, only place voxels adjacent to existing solid
+			bool canPlace = true;
+			if (_extendOnly) {
+				canPlace = false;
+				for (int h = loH; h <= hiH && !canPlace; ++h) {
+					glm::ivec3 pos;
+					pos[_planeUAxis] = u;
+					pos[_planeVAxis] = v;
+					pos[_planeHeightAxis] = h;
+					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+						const glm::ivec3 neighbor = pos + offset;
+						if (!volRegion.containsPoint(neighbor)) {
+							continue;
+						}
+						if (voxel::isBlocked(vol->voxel(neighbor).getMaterial())) {
+							canPlace = true;
+							break;
+						}
+					}
+				}
+			}
+
+			// Remove voxels along a thick 3D ray perpendicular to the plane.
+			// Only remove voxels that do NOT have FlagOutline (preserves selected
+			// and newly placed voxels).
+			if (_removeAboveDepth > 0) {
+				glm::vec3 origin;
+				origin[_planeUAxis] = static_cast<float>(u);
+				origin[_planeVAxis] = static_cast<float>(v);
+				origin[_planeHeightAxis] = static_cast<float>(hiH) + 0.5f * static_cast<float>(step);
+
+				glm::ivec3 prevPos(INT_MIN);
+				for (float t = 0.0f; t <= removeLineLen; t += RayStep) {
+					const glm::vec3 fp = origin + removeNormal * t;
+					const glm::ivec3 pos(static_cast<int>(glm::round(fp.x)),
+										 static_cast<int>(glm::round(fp.y)),
+										 static_cast<int>(glm::round(fp.z)));
+					if (pos == prevPos) {
+						continue;
+					}
+					prevPos = pos;
+					// Clear center + 18 face/edge neighbors, but skip outlined voxels
+					if (volRegion.containsPoint(pos)) {
+						const voxel::Voxel &vx = vol->voxel(pos);
+						if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
+							writeVoxel(wrapper, pos, air);
+						}
+					}
+					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+						const glm::ivec3 nPos = pos + offset;
+						if (volRegion.containsPoint(nPos)) {
+							const voxel::Voxel &vx = vol->voxel(nPos);
+							if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
+								writeVoxel(wrapper, nPos, air);
+							}
+						}
+					}
+					for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
+						const glm::ivec3 nPos = pos + offset;
+						if (volRegion.containsPoint(nPos)) {
+							const voxel::Voxel &vx = vol->voxel(nPos);
+							if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
+								writeVoxel(wrapper, nPos, air);
+							}
+						}
+					}
+				}
+			}
+
+			// Place voxels at predicted plane height
+			if (canPlace) {
+				for (int h = loH; h <= hiH; ++h) {
+					glm::ivec3 pos;
+					pos[_planeUAxis] = u;
+					pos[_planeVAxis] = v;
+					pos[_planeHeightAxis] = h;
+
+					if (!volRegion.containsPoint(pos)) {
+						continue;
+					}
+
+					const voxel::Voxel &existing = vol->voxel(pos);
+					if (voxel::isAir(existing.getMaterial())) {
+						voxel::Voxel newVoxel = fillVoxel;
+						for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+							const glm::ivec3 neighbor = pos + offset;
+							if (!volRegion.containsPoint(neighbor)) {
+								continue;
+							}
+							const voxel::Voxel &nv = vol->voxel(neighbor);
+							if (voxel::isBlocked(nv.getMaterial())) {
+								newVoxel = voxel::createVoxel(nv.getMaterial(), nv.getColor(), nv.getNormal(),
+															  voxel::FlagOutline, nv.getBoneIdx());
+								break;
+							}
+						}
+						writeVoxel(wrapper, pos, newVoxel);
+					}
+				}
+			}
+		}
+	}
+}
+
 void SculptBrush::setSculptMode(SculptMode mode) {
 	const bool needsFace = modeNeedsFace(mode);
 	const bool hadFace = modeNeedsFace(_sculptMode);
@@ -421,6 +737,10 @@ void SculptBrush::setSculptMode(SculptMode mode) {
 	}
 	if (mode == SculptMode::SmoothGaussian && _sculptMode != SculptMode::SmoothGaussian) {
 		_iterations = 3;
+	}
+	if (mode == SculptMode::ExtendPlane && _sculptMode != SculptMode::ExtendPlane) {
+		_planeFitted = false;
+		_lastPaintPos = glm::ivec3(INT_MIN);
 	}
 	_sculptMode = mode;
 	_paramsDirty = true;

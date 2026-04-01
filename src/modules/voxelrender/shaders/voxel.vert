@@ -32,6 +32,8 @@ void main(void) {
 #else
 		v_flags |= FLAGOUTLINE;
 #endif
+	} else if ((a_flags & FLAGOUTLINE) != 0u) {
+		v_flags |= FLAGOUTLINE;
 	}
 
 	if (normalIndex > 0) { // NO_NORMAL
