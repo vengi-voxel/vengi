@@ -79,7 +79,7 @@ bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
 }
 
 void ExtrudeBrush::endBrush(BrushContext &) {
-	// Prune interior voxels after final commit — voxels fully enclosed by 6 solid
+	// Prune interior voxels after final commit - voxels fully enclosed by 6 solid
 	// neighbors are invisible and waste sparse storage.
 	if (_lastVolume && _depth > 0) {
 		const voxel::Region &volRegion = _lastVolume->region();
@@ -257,7 +257,7 @@ void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Regi
 
 	// Compute wall candidates: for each selected voxel, check 4 perpendicular neighbors.
 	// A wall candidate is a (selectedPos, perpOffset) pair where the perpendicular neighbor
-	// is solid and not selected — indicating an edge that needs sealing during extrusion.
+	// is solid and not selected - indicating an edge that needs sealing during extrusion.
 	const math::Axis axis = voxel::faceToAxis(_face);
 	const int axisIdx = math::getIndexForAxis(axis);
 	static constexpr int NumAxes = 3;

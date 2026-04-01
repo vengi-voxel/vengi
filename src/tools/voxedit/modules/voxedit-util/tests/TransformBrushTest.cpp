@@ -249,7 +249,7 @@ TEST_F(TransformBrushTest, testOnDeactivatedWithoutSnapshot) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 
-	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot — nothing to commit";
+	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot - nothing to commit";
 
 	brush.shutdown();
 }
@@ -309,7 +309,7 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	executeTransform(brush, node, ctx);
 	brush.endBrush(ctx);
 
-	// Count voxels at new position — all 27 should be there
+	// Count voxels at new position - all 27 should be there
 	int count = 0;
 	for (int x = 4; x <= 6; ++x) {
 		for (int y = -1; y <= 1; ++y) {
@@ -340,7 +340,7 @@ TEST_F(TransformBrushTest, testMoveDoesNotAffectNonSelectedVoxels) {
 	voxel::RawVolume volume(voxel::Region(-10, 10));
 	// Place a selected voxel at (0,0,0)
 	volume.setVoxel(0, 0, 0, selectedVoxel());
-	// Place a non-selected voxel at (1,0,0) — no FlagOutline
+	// Place a non-selected voxel at (1,0,0) - no FlagOutline
 	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

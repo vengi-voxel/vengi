@@ -465,7 +465,7 @@ TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsTrueWithPendingChanges) {
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 
 	// Before any execution, cache is not built yet
-	EXPECT_FALSE(brush.onDeactivated()) << "No cached selection yet — nothing to commit";
+	EXPECT_FALSE(brush.onDeactivated()) << "No cached selection yet - nothing to commit";
 
 	// Execute to build cache
 	ASSERT_TRUE(brush.beginBrush(ctx));
@@ -562,7 +562,7 @@ TEST_F(ExtrudeBrushTest, testPositiveExtrudeKeepsOriginals) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// Original position should be solid — extrude adds outward without removing
+	// Original position should be solid - extrude adds outward without removing
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()))
 		<< "Original selected voxel should be kept after positive extrude";
 	// Extruded voxels at x=1 and x=2

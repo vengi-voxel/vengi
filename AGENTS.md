@@ -14,6 +14,7 @@
 
 - when touching code, ensure that a test is written for it - if not, write one to test the change - and execute that test
 - all vengi tools understand the `--help` parameter to print the usage for command line parameters
+- don't add unicode characters in comments or code - only ascii
 
 # Logging
 

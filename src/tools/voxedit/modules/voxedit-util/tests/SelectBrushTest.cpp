@@ -778,7 +778,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 	// Hollow square tube running along Z (z=0..8).
 	// Cross-section at each Z: solid ring at x=3,x=5 (y=3..5) and y=3,y=5 (x=3..5),
 	// hollow interior at (4,4,z). The XY plane at any fixed Z is fully bounded.
-	// User clicks the inner face (+X) of the left wall at x=3 — a radial face
+	// User clicks the inner face (+X) of the left wall at x=3 - a radial face
 	// perpendicular to the hole plane. The algorithm must find the XY cross-section
 	// via the face-direction seed (all-axes trial) and select the ring.
 	voxel::RawVolume volume({0, 9});
