@@ -19,6 +19,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/tests/AbstractFormatTest.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -160,6 +161,77 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	EXPECT_COLOR_NEAR(nipponBlue, nodePal.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponGreen, nodePal.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
+}
+
+TEST_F(MeshFormatTest, testVoxelizeChunked) {
+	class TestMesh : public MeshFormat {
+	public:
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+		void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
+			voxelizeMesh("test", sceneGraph, core::move(mesh));
+			sceneGraph.updateTransforms();
+		}
+	};
+
+	// Enable chunked mode with small chunk size to force multiple chunks
+	util::ScopedVarChange chunkedVar(cfg::VoxformatVoxelizeChunked, "true");
+	util::ScopedVarChange chunkSizeVar(cfg::VoxformatVoxelizeChunkSize, "64");
+	util::ScopedVarChange createPaletteVar(cfg::VoxelCreatePalette, "true");
+
+	TestMesh testMesh;
+	Mesh mesh;
+	scenegraph::SceneGraph sceneGraph;
+
+	palette::Palette pal;
+	pal.nippon();
+	const color::RGBA nipponRed = pal.color(37);
+
+	// Create two large triangles forming a flat quad > 256 voxels wide to trigger chunked path.
+	// The quad spans from (0,0,0) to (300,0,300) on the XZ plane.
+	const float extent = 300.0f;
+	{
+		voxelformat::MeshTri meshTri;
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(extent, 0, 0), glm::vec3(extent, 0, extent));
+		meshTri.setColor(nipponRed, nipponRed, nipponRed);
+		mesh.addTriangle(meshTri);
+	}
+	{
+		voxelformat::MeshTri meshTri;
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(extent, 0, extent), glm::vec3(0, 0, extent));
+		meshTri.setColor(nipponRed, nipponRed, nipponRed);
+		mesh.addTriangle(meshTri);
+	}
+
+	testMesh.voxelize(sceneGraph, core::move(mesh));
+
+	// Should have created a group node containing multiple chunk children
+	const scenegraph::SceneGraphNode *groupNode = sceneGraph.findNodeByName("test");
+	ASSERT_NE(nullptr, groupNode);
+	ASSERT_EQ(scenegraph::SceneGraphNodeType::Group, groupNode->type());
+
+	// Count model children - with 300 voxels and 64-chunk size we expect multiple chunks
+	int modelCount = 0;
+	int totalVoxels = 0;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		++modelCount;
+		const voxel::RawVolume *volume = node.volume();
+		ASSERT_NE(nullptr, volume);
+		// Verify voxels have the expected color
+		const palette::Palette &nodePal = node.palette();
+		voxelutil::visitVolume(
+			*volume,
+			[&totalVoxels, &nodePal, &nipponRed](int, int, int, const voxel::Voxel &voxel) {
+				++totalVoxels;
+				EXPECT_COLOR_NEAR(nipponRed, nodePal.color(voxel.getColor()), 0.1f);
+			},
+			voxelutil::VisitAll());
+	}
+	EXPECT_GT(modelCount, 1) << "Chunked voxelization should produce multiple chunk nodes";
+	EXPECT_GT(totalVoxels, 0) << "Chunks should contain voxels";
 }
 
 TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
