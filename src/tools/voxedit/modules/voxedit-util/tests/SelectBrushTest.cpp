@@ -1058,7 +1058,7 @@ TEST_F(SelectBrushTest, testLassoUndoVertex_revertsLastEdge) {
 	// Undo the last vertex - path shrinks to 2, edge to (6,0,6) should vanish
 	voxel::Region dummy = voxel::Region::InvalidRegion;
 	brush.revertChanges(&volume);
-	brush.popLastVertex();
+	brush.popLastLassoPathEntry();
 	EXPECT_EQ((int)brush.lassoPath().size(), 2);
 	brush.redrawEdgesOnVolume(&volume, volume.region(), dummy);
 

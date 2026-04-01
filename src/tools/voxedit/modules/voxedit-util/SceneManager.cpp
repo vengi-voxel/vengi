@@ -2347,7 +2347,7 @@ void SceneManager::selectionLassoUndoVertex(int nodeId) {
 	}
 
 	// Drop the last vertex and redraw the remaining edges
-	brush.popLastVertex();
+	brush.popLastLassoPathEntry();
 	if (brush.lassoPath().size() >= 2) {
 		brush.redrawEdgesOnVolume(volume, volume->region(), dirtyRegion);
 	}

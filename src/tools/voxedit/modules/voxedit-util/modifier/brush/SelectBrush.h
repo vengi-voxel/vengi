@@ -205,7 +205,7 @@ public:
 	/** Discard the in-progress lasso polygon (caller must clean up edge history voxels in the volume) */
 	void invalidateLasso();
 	/** Remove the last placed lasso vertex. Does not redraw edges - caller must call redrawEdgesOnVolume(). */
-	void popLastVertex();
+	void popLastLassoPathEntry();
 
 	/**
 	 * @brief Redraw all committed lasso edges directly on a raw volume.

@@ -1186,9 +1186,9 @@ void SelectBrush::invalidateLasso() {
 	_lassoEdgeHistory.clear();
 }
 
-void SelectBrush::popLastVertex() {
+void SelectBrush::popLastLassoPathEntry() {
 	if (!_lassoPath.empty()) {
-		_lassoPath.resize(_lassoPath.size() - 1);
+		_lassoPath.pop();
 	}
 }
 
