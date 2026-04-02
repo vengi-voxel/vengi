@@ -1,5 +1,7 @@
 --
--- American Beech tree generator
+-- @author Martin Gerhardy
+-- @version 1.0.0
+-- @description American Beech tree generator
 -- Creates an American Beech with its characteristic smooth silver-gray bark,
 -- short stout trunk, wide spreading horizontal branches, and a dense, layered
 -- canopy of oval leaves that retain through winter (marcescent).

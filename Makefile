@@ -251,6 +251,20 @@ tracy:
 	$(Q)cmake --build src/modules/core/tracy/profiler/build --config Release --parallel
 	$(Q)src/modules/core/tracy/profiler/build/tracy-profiler
 
+run-api:
+	$(Q)mkdir -p $(BUILDDIR)/api/scripts/script
+	$(Q)mkdir -p $(BUILDDIR)/api/scripts/brush
+	$(Q)mkdir -p $(BUILDDIR)/api/crashlogs
+	$(Q)cp -u $(CURDIR)/src/modules/voxelgenerator/lua/scripts/*.lua $(BUILDDIR)/api/scripts/script/ 2>/dev/null || true
+	$(Q)cp -u $(CURDIR)/src/modules/voxelgenerator/lua/scripts/*.json $(BUILDDIR)/api/scripts/script/ 2>/dev/null || true
+	$(Q)cp -u $(CURDIR)/src/tools/voxedit/modules/voxedit-util/lua/brushes/*.lua $(BUILDDIR)/api/scripts/brush/ 2>/dev/null || true
+	$(Q)cp -u $(CURDIR)/src/tools/voxedit/modules/voxedit-util/lua/brushes/*.json $(BUILDDIR)/api/scripts/brush/ 2>/dev/null || true
+	$(Q)cp $(CURDIR)/tools/api/config.ini $(BUILDDIR)/api/config.ini
+	$(Q)cd $(BUILDDIR)/api && python3 $(CURDIR)/tools/api/vengi.py
+
+tests-api:
+	$(Q)cd $(CURDIR)/tools/api && python3 -m pytest tests/ -v
+
 update-libs:
 	$(Q)python3 tools/update-dependencies.py
 
