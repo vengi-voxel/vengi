@@ -679,6 +679,37 @@ static int luaVoxel_volumewrapper_normal(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_isselected(lua_State* s) {
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::Voxel& voxel = volume->voxel(x, y, z);
+	lua_pushboolean(s, (voxel.getFlags() & voxel::FlagOutline) != 0 ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_setselected(lua_State* s) {
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const bool selected = clua_optboolean(s, 5, true);
+	voxel::Voxel voxel = volume->voxel(x, y, z);
+	if (voxel::isAir(voxel.getMaterial())) {
+		lua_pushboolean(s, 0);
+		return 1;
+	}
+	if (selected) {
+		voxel.setFlags(voxel.getFlags() | voxel::FlagOutline);
+	} else {
+		voxel.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
+	}
+	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
+	lua_pushboolean(s, insideRegion ? 1 : 0);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_fill(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
@@ -2975,6 +3006,18 @@ static int luaVoxel_scenegraphnode_region(lua_State* s) {
 	return luaVoxel_pushregion(s, region);
 }
 
+static int luaVoxel_scenegraphnode_hasselection(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->hasSelection() ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_clearselection(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	node->node->clearSelection();
+	return 0;
+}
+
 static int luaVoxel_scenegraphnode_hide(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	node->node->setVisible(false);
@@ -3213,6 +3256,39 @@ static int luaVoxel_volumewrapper_normal_jsonhelp(lua_State* s) {
 		],
 		"returns": [
 			{"type": "integer", "description": "The normal palette index of the voxel (0 means no normal)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_isselected_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isSelected",
+		"summary": "Check whether the voxel at the specified coordinates is selected (has the outline flag).",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel is selected, false otherwise."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_setselected_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setSelected",
+		"summary": "Set or clear the selection (outline flag) on a solid voxel at the specified coordinates. Air voxels cannot be selected.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "selected", "type": "boolean", "description": "True to select, false to deselect (optional, default true)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel was inside the region and not air, false otherwise."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -5320,6 +5396,28 @@ static int luaVoxel_scenegraphnode_removekeyframe_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_hasselection_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasSelection",
+		"summary": "Check whether the node has any selected voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if the node has at least one selected voxel."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_clearselection_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "clearSelection",
+		"summary": "Clear all selection flags from the node's volume.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_hide_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "hide",
@@ -5772,6 +5870,8 @@ static void prepareState(lua_State* s) {
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel, luaVoxel_volumewrapper_setvoxel_jsonhelp},
 		{"setNormal", luaVoxel_volumewrapper_setnormal, luaVoxel_volumewrapper_setnormal_jsonhelp},
 		{"normal", luaVoxel_volumewrapper_normal, luaVoxel_volumewrapper_normal_jsonhelp},
+		{"isSelected", luaVoxel_volumewrapper_isselected, luaVoxel_volumewrapper_isselected_jsonhelp},
+		{"setSelected", luaVoxel_volumewrapper_setselected, luaVoxel_volumewrapper_setselected_jsonhelp},
 		{"fill", luaVoxel_volumewrapper_fill, luaVoxel_volumewrapper_fill_jsonhelp},
 		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
 		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},
@@ -5880,6 +5980,8 @@ static void prepareState(lua_State* s) {
 		{"numKeyFrames", luaVoxel_scenegraphnode_numkeyframes, luaVoxel_scenegraphnode_numkeyframes_jsonhelp},
 		{"children", luaVoxel_scenegraphnode_children, luaVoxel_scenegraphnode_children_jsonhelp},
 		{"region", luaVoxel_scenegraphnode_region, luaVoxel_scenegraphnode_region_jsonhelp},
+		{"hasSelection", luaVoxel_scenegraphnode_hasselection, luaVoxel_scenegraphnode_hasselection_jsonhelp},
+		{"clearSelection", luaVoxel_scenegraphnode_clearselection, luaVoxel_scenegraphnode_clearselection_jsonhelp},
 		{"hide", luaVoxel_scenegraphnode_hide, luaVoxel_scenegraphnode_hide_jsonhelp},
 		{"show", luaVoxel_scenegraphnode_show, luaVoxel_scenegraphnode_show_jsonhelp},
 		{"lock", luaVoxel_scenegraphnode_lock, luaVoxel_scenegraphnode_lock_jsonhelp},
