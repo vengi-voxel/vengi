@@ -83,6 +83,38 @@ protected:
 		return executed == 1;
 	}
 
+	/**
+	 * @brief Like testSetVoxel, but uses the real SceneGraphNode from the scene graph
+	 * so that selection state (hasSelection/FlagOutline) is properly consulted by
+	 * the ModifierVolumeWrapper during editing.
+	 */
+	bool testSetVoxelOnRealNode(const glm::ivec3 &pos, int paletteColorIndex = 1) {
+		Modifier &modifier = _sceneMgr->modifier();
+		modifier.setBrushType(BrushType::Shape);
+		modifier.shapeBrush().setSingleMode();
+		modifier.setModifierType(ModifierType::Override);
+		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
+		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
+		if (!modifier.beginBrush()) {
+			return false;
+		}
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
+			return false;
+		}
+		int executed = 0;
+		auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
+			executed++;
+			_sceneMgr->modified(nodeId, region);
+		};
+		if (!modifier.execute(sceneGraph, *node, callback)) {
+			return false;
+		}
+		return executed == 1;
+	}
+
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.endBrush();
@@ -2135,6 +2167,78 @@ TEST_F(SceneManagerTest, testRescaleContentInvalidSize) {
 	voxel::RawVolume *after = _sceneMgr->volume(nodeId);
 	ASSERT_NE(nullptr, after);
 	EXPECT_EQ(after->region().getDimensionsInVoxels(), originalSize);
+}
+
+// Regression: after undo, the selection state cache (hasSelection) was set to true
+// by mementoModification even when no voxels had FlagOutline. This caused the
+// ModifierVolumeWrapper to skip all voxels, preventing further editing.
+TEST_F(SceneManagerTest, testUndoDoesNotBlockEditing) {
+	// Place a voxel using the real node (so selection state is consulted)
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 1));
+	EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
+
+	// Undo the modification
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()));
+
+	// The node should not claim to have a selection after undo of a non-selection operation
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+
+	// After undo, editing must still work - this is where the bug manifests:
+	// hasSelection is true but no voxels have FlagOutline, so all edits are skipped
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 2))
+		<< "Editing should still work after undo - selection state must not block modifications";
+	EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
+	EXPECT_EQ(2, testVolume()->voxel(0, 0, 0).getColor());
+}
+
+// Regression: multiple brush operations followed by undo should not leave stale
+// selection state that blocks further editing
+TEST_F(SceneManagerTest, testMultipleBrushOpsAndUndoDoesNotBlockEditing) {
+	// Place several voxels in sequence using the real node
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 1));
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 2));
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 3));
+
+	EXPECT_EQ(3, testVolume()->voxel(0, 0, 0).getColor());
+
+	// Undo twice
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(2, testVolume()->voxel(0, 0, 0).getColor());
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
+
+	// Must still be able to edit after multiple undos
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 4))
+		<< "Editing should still work after multiple undos";
+	EXPECT_EQ(4, testVolume()->voxel(0, 0, 0).getColor());
+}
+
+// Regression: undo after selecting+editing should not block further non-selection editing
+TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
+	// Place a voxel first
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 1));
+
+	// Select a region
+	testSelect(testMins(), testMaxs());
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	ASSERT_NE(nullptr, node);
+	EXPECT_TRUE(node->hasSelection());
+
+	// Edit within the selection
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 2));
+
+	// Undo the edit (should restore volume but selection state should remain consistent)
+	EXPECT_TRUE(_sceneMgr->undo());
+
+	// The volume data is restored; if selection is flagged, voxels should have flags too
+	// Either hasSelection should be false (no FlagOutline voxels) or the FlagOutline
+	// voxels should be present so editing within selection still works
+	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 3))
+		<< "Editing should work after undoing an edit that was done within a selection";
 }
 
 } // namespace voxedit

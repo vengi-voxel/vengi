@@ -1252,9 +1252,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 			}
 			if (s.hasVolumeData()) {
 				_mementoHandler.extractVolumeRegion(node->volume(), s);
-				// Conservatively assume selection exists after volume restore.
-				// selectionCalculateRegion() will correct this on next query.
-				node->setHasSelection(true);
+				node->setHasSelection(node->volume()->hasFlags(node->region(), voxel::FlagOutline));
 			}
 		}
 		node->setName(s.name);
