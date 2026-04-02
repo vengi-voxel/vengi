@@ -487,6 +487,10 @@ bool SceneGraphNode::hasSelection() const {
 	return _hasSelection;
 }
 
+void SceneGraphNode::setHasSelection(bool v) {
+	_hasSelection = v;
+}
+
 void SceneGraphNode::clearSelection() {
 	if (_volume == nullptr) {
 		return;

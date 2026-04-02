@@ -82,7 +82,7 @@ protected:
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
 	core::Optional<IKConstraint> _ikConstraint;
 	voxel::Region _selectionRegion = voxel::Region::InvalidRegion;
-	mutable bool _hasSelection = false;
+	bool _hasSelection = false;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -228,7 +228,7 @@ public:
 	void setLocked(bool locked);
 
 	bool hasSelection() const;
-	void setHasSelection(bool v) const { _hasSelection = v; }
+	void setHasSelection(bool v);
 	void clearSelection();
 	void select(const voxel::Region &region);
 	void unselect(const voxel::Region &region);

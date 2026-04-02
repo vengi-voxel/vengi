@@ -101,8 +101,8 @@ protected:
 	bool _needAutoSave = false;
 
 	// TODO: SELECTION: this should be removed or added to the scenegraph node as selection state
-	mutable voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
-	mutable int _selectionCacheNodeId = InvalidNodeId;
+	voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
+	int _selectionCacheNodeId = InvalidNodeId;
 	BrushType _lastBrushType = BrushType::Max;
 	SelectMode _lastSelectMode = SelectMode::Max;
 	bool _traceViaMouse = true;
@@ -414,7 +414,7 @@ public:
 	void selectionCancelLasso(int nodeId);
 	void selectionLassoUndoVertex(int nodeId);
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
-	voxel::Region selectionCalculateRegion(int nodeId) const;
+	voxel::Region selectionCalculateRegion(int nodeId);
 
 	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
 	void lsystemAbort();
