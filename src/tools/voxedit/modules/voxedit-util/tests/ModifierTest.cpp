@@ -318,7 +318,7 @@ TEST_F(ModifierTest, testClamp) {
 		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(10, 9, 1));
 	}
 
-	brush.shutdown();
+	modifier.shutdown();
 }
 
 TEST_F(ModifierTest, testPreviewShapeAABB) {
