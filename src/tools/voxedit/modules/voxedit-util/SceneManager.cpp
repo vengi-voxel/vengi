@@ -485,9 +485,6 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 		}
 		const voxel::Region &volRegion = v->region();
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			if ((voxel.getFlags() & voxel::FlagOutline) == 0) {
-				return;
-			}
 			const glm::ivec3 pos(x, y, z);
 			bool isWallEdge = false;
 			static constexpr int ringSize = lengthof(ringX);
@@ -511,7 +508,7 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
 				v->setVoxel(x, y, z, updated);
 			}
-		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		}, voxelutil::VisitSolidOutline());
 		_selectionCacheNodeId = -1;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
