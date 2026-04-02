@@ -223,6 +223,10 @@ public:
 				 const ModifiedRegionCallback &callback = {});
 	void endBrush();
 	/**
+	 * @brief Commit pending brush changes to all active group nodes.
+	 */
+	void commit();
+	/**
 	 * @brief Apply pending brush changes without switching brushes.
 	 * Commits any accumulated state (e.g. sculpt iterations, extrude depth).
 	 */

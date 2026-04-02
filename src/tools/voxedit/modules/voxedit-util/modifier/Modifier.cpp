@@ -578,7 +578,7 @@ void Modifier::abort() {
 	brush->abort(_brushContext);
 }
 
-void Modifier::brushApply() {
+void Modifier::commit() {
 	Brush *brush = currentBrush();
 	if (!brush) {
 		return;
@@ -601,6 +601,14 @@ void Modifier::brushApply() {
 		endBrush();
 	}
 	brush->reset();
+}
+
+void Modifier::brushApply() {
+	Brush *brush = currentBrush();
+	if (!brush) {
+		return;
+	}
+	commit();
 	brush->onActivated();
 }
 
@@ -615,24 +623,7 @@ BrushType Modifier::setBrushType(BrushType type) {
 
 	// Auto-commit pending changes from the current brush before switching.
 	// Must happen before changing _brushType so currentBrush() returns the old brush.
-	Brush *oldBrush = currentBrush();
-	if (oldBrush && oldBrush->onDeactivated()) {
-		if (beginBrushFromPanel()) {
-			_sceneMgr->nodeForeachGroup([&](int nodeId) {
-				if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
-					if (!node->visible()) {
-						return;
-					}
-					auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
-						_sceneMgr->modified(nodeId, region, flags);
-					};
-					execute(_sceneMgr->sceneGraph(), *node, callback);
-				}
-			});
-			endBrush();
-		}
-		oldBrush->reset();
-	}
+	commit();
 
 	_brushType = type;
 	Brush *newBrush = currentBrush();
