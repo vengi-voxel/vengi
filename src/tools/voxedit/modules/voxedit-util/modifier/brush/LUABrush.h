@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Brush.h"
+#include "AABBBrush.h"
 #include "commonlua/LUA.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -27,11 +27,11 @@ namespace voxedit {
  * Multiple LuaBrush instances can coexist, each with its own Lua state and parameters.
  *
  * @ingroup Brushes
- * @sa Brush
+ * @sa AABBBrush
  */
-class LuaBrush : public Brush {
+class LuaBrush : public AABBBrush {
 private:
-	using Super = Brush;
+	using Super = AABBBrush;
 
 	mutable lua::LUA _lua;
 	noise::Noise _noise;
@@ -47,13 +47,15 @@ private:
 	bool _hasGizmo = false;
 	bool _hasApplyGizmo = false;
 	bool _useSimplePreview = false;
-	glm::ivec3 _lastCursorPosition{0};
+	bool _wantAABB = false;
 
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _parameterDescription;
 	core::DynamicArray<core::String> _parameters;
 
 	bool initLuaState();
 	static uint32_t mapGizmoOperation(const char *name);
+
+	bool wantAABB() const override;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,

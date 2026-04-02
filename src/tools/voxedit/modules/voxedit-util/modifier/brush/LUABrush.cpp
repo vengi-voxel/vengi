@@ -369,7 +369,7 @@ static int luaBrush_modifiertype_jsonhelp(lua_State *s) {
 }
 
 LuaBrush::LuaBrush(const io::FilesystemPtr &filesystem)
-	: Brush(BrushType::Script, ModifierType::Place,
+	: AABBBrush(BrushType::Script, ModifierType::Place,
 			(ModifierType::Place | ModifierType::Erase | ModifierType::Override)),
 	  _filesystem(filesystem) {
 }
@@ -420,6 +420,7 @@ void LuaBrush::shutdown() {
 	_hasGizmo = false;
 	_hasApplyGizmo = false;
 	_useSimplePreview = false;
+	_wantAABB = false;
 	_scriptSource.clear();
 	_parameterDescription.clear();
 	_parameters.clear();
@@ -522,8 +523,9 @@ bool LuaBrush::loadScript(const core::String &filename) {
 		lua_pop(_lua, 1);
 	}
 
-	// Check for settings() callback to configure preview mode
+	// Check for settings() callback to configure preview mode and brush mode
 	_useSimplePreview = false;
+	_wantAABB = false;
 	lua_getglobal(_lua, "settings");
 	if (lua_isfunction(_lua, -1)) {
 		if (lua_pcall(_lua, 0, 1, 0) == LUA_OK) {
@@ -534,6 +536,13 @@ bool LuaBrush::loadScript(const core::String &filename) {
 					_useSimplePreview = SDL_strcmp(previewMode, "simple") == 0;
 				}
 				lua_pop(_lua, 1); // pop preview field
+
+				lua_getfield(_lua, -1, "mode");
+				if (lua_isstring(_lua, -1)) {
+					const char *mode = lua_tostring(_lua, -1);
+					_wantAABB = SDL_strcmp(mode, "aabb") == 0;
+				}
+				lua_pop(_lua, 1); // pop mode field
 			}
 			lua_pop(_lua, 1); // pop settings table
 		} else {
@@ -637,19 +646,32 @@ core::String LuaBrush::scriptName() const {
 
 void LuaBrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
-	if (_lastCursorPosition != ctx.cursorPosition) {
-		_lastCursorPosition = ctx.cursorPosition;
-		markDirty();
-	}
+}
+
+bool LuaBrush::wantAABB() const {
+	return _wantAABB && Super::wantAABB();
 }
 
 bool LuaBrush::active() const {
-	return _scriptLoaded;
+	if (!_scriptLoaded) {
+		return false;
+	}
+	if (_wantAABB) {
+		return Super::active();
+	}
+	return true;
 }
 
 voxel::Region LuaBrush::calcRegion(const BrushContext &ctx) const {
+	if (_wantAABB && _aabbMode) {
+		return Super::calcRegion(ctx);
+	}
+
 	const glm::ivec3 &pos = ctx.cursorPosition;
 	if (!_hasCalcRegion || !_scriptLoaded) {
+		if (_wantAABB) {
+			return Super::calcRegion(ctx);
+		}
 		return voxel::Region(pos, pos);
 	}
 
@@ -724,6 +746,9 @@ void LuaBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	voxelgenerator::luaVoxel_setGlobalData(s, voxelgenerator::luaVoxel_globalscenegraph(), &sceneGraph);
 
 	BrushContext ctxCopy = ctx;
+	if (_wantAABB && _aabbFace != voxel::FaceNames::Max) {
+		ctxCopy.cursorFace = _aabbFace;
+	}
 	voxelgenerator::luaVoxel_setGlobalData(s, luaBrush_metaname(), &ctxCopy);
 
 	// Re-run the script source to ensure global functions are defined
@@ -1048,6 +1073,7 @@ bool LuaBrush::apiJsonToStream(io::WriteStream &stream) {
 		return false;
 	}
 
+	// TODO: extract this into a LUAFunctions.h helper to reduce code duplication here and in the luaapi.cpp code
 	// Get methods from the g_brushcontext global table
 	lua_getglobal(s, "g_brushcontext");
 	if (!lua_istable(s, -1)) {

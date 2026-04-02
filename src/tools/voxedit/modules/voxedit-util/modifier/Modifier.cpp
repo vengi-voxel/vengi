@@ -520,6 +520,9 @@ AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Normal) {
 		return &_normalBrush;
 	}
+	if (_brushType == BrushType::Script) {
+		return static_cast<AABBBrush *>(activeLuaBrush());
+	}
 	return nullptr;
 }
 
@@ -541,6 +544,9 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 	}
 	if (_brushType == BrushType::Normal) {
 		return &_normalBrush;
+	}
+	if (_brushType == BrushType::Script) {
+		return static_cast<const AABBBrush *>(activeLuaBrush());
 	}
 	return nullptr;
 }
