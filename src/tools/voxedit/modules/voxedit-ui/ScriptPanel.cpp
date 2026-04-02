@@ -13,6 +13,8 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelui/LUAApiWidget.h"
+#include "voxelui/ScriptBrowserPanel.h"
+#include "WindowTitles.h"
 
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -66,6 +68,12 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 						_luaApiWidget.clear();
 					}
 				}
+				if (ImGui::IconMenuItem(ICON_LC_DOWNLOAD, _("Download scripts..."))) {
+					if (_scriptBrowserPanel) {
+						_scriptBrowserPanel->open();
+					}
+				}
+				ImGui::TooltipTextUnformatted(_("Browse and download scripts from the online repository"));
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_LIGHTBULB, _("Help"))) {
@@ -81,6 +89,10 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 																	voxelui::LUAAPI_WIDGET_FLAG_RUN);
 	}
 	ImGui::End();
+
+	if (_scriptBrowserPanel && _scriptBrowserPanel->needsReload()) {
+		_luaApiWidget.clear();
+	}
 }
 
 bool ScriptPanel::updateEditor(const char *id) {

@@ -119,7 +119,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _imageAssetPanel(app, _sceneMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
-	  _optionsPanel(app),
+	  _optionsPanel(app), _scriptBrowserPanel(app),
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr), _cameraPanel(app, _sceneMgr),
@@ -223,6 +223,7 @@ bool MainWindow::init() {
 	_animationPanel.init();
 	_menuBar.init();
 	_menuBar.setOptionsPanel(&_optionsPanel);
+	_scriptPanel.setScriptBrowserPanel(&_scriptBrowserPanel);
 	_networkPanel.init();
 	_gameModePanel.init();
 	_normalPalettePanel.init();
@@ -421,6 +422,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 	}
 #endif
 	_optionsPanel.update(TITLE_OPTIONS);
+	_scriptBrowserPanel.update(TITLE_SCRIPT_BROWSER);
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);

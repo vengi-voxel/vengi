@@ -26,6 +26,7 @@
 #include "voxedit-ui/NodePropertiesPanel.h"
 #include "voxedit-ui/NormalPalettePanel.h"
 #include "voxedit-ui/OptionsPanel.h"
+#include "voxelui/ScriptBrowserPanel.h"
 #include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneDebugPanel.h"
@@ -98,6 +99,7 @@ private:
 	NormalPalettePanel _normalPalettePanel;
 	MenuBar _menuBar;
 	OptionsPanel _optionsPanel;
+	voxelui::ScriptBrowserPanel _scriptBrowserPanel;
 	NetworkPanel _networkPanel;
 	GameModePanel _gameModePanel;
 	StatusBar _statusBar;

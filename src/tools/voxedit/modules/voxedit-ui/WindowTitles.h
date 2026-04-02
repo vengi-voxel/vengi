@@ -27,6 +27,7 @@
 #define TITLE_LSYSTEMPANEL "###lsystempanel"
 #define TITLE_ANIMATION_SETTINGS "###animationpanel"
 #define TITLE_SCRIPT_EDITOR "###scripteditor"
+#define TITLE_SCRIPT_BROWSER "###scriptbrowser"
 #define TITLE_SCENE_SETTINGS "###scenesettings"
 #define TITLE_HELP "###help"
 #define TITLE_OPTIONS "###optionspanel"
