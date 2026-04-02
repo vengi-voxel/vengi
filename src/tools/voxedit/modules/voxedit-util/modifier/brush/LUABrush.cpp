@@ -1073,7 +1073,6 @@ bool LuaBrush::apiJsonToStream(io::WriteStream &stream) {
 		return false;
 	}
 
-	// TODO: extract this into a LUAFunctions.h helper to reduce code duplication here and in the luaapi.cpp code
 	// Get methods from the g_brushcontext global table
 	lua_getglobal(s, "g_brushcontext");
 	if (!lua_istable(s, -1)) {
@@ -1083,40 +1082,9 @@ bool LuaBrush::apiJsonToStream(io::WriteStream &stream) {
 	}
 
 	bool firstMethod = true;
-	lua_pushnil(s);
-	while (lua_next(s, -2) != 0) {
-		if (lua_type(s, -2) == LUA_TSTRING && lua_isfunction(s, -1)) {
-			const char *methodName = lua_tostring(s, -2);
-			if (methodName && methodName[0] != '_') {
-				if (!firstMethod) {
-					if (!stream.writeString(",", false)) {
-						lua_pop(s, 3);
-						return false;
-					}
-				}
-				firstMethod = false;
-
-				lua_CFunction jsonHelpFunc = clua_getjsonhelp(s, luaBrush_metaname(), methodName);
-				if (jsonHelpFunc) {
-					lua_pushcfunction(s, jsonHelpFunc);
-					if (lua_pcall(s, 0, 1, 0) == LUA_OK && lua_isstring(s, -1)) {
-						const char *helpJson = lua_tostring(s, -1);
-						if (!stream.writeString(helpJson, false)) {
-							lua_pop(s, 4);
-							return false;
-						}
-					}
-					lua_pop(s, 1);
-				} else {
-					core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
-					if (!stream.writeString(methodJson.c_str(), false)) {
-						lua_pop(s, 3);
-						return false;
-					}
-				}
-			}
-		}
+	if (!clua_writejsonmethods(s, luaBrush_metaname(), stream, firstMethod)) {
 		lua_pop(s, 1);
+		return false;
 	}
 	lua_pop(s, 1); // pop g_brushcontext table
 

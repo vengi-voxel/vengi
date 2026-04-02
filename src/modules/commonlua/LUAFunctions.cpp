@@ -14,6 +14,7 @@
 #include "http/Http.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/Stream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -200,6 +201,45 @@ lua_CFunction clua_getjsonhelp(lua_State* s, const char *name, const char *metho
 	}
 	lua_pop(s, 2);
 	return func;
+}
+
+bool clua_writejsonmethods(lua_State *s, const char *metaName, io::WriteStream &stream, bool &firstMethod) {
+	lua_pushnil(s);
+	while (lua_next(s, -2) != 0) {
+		if (lua_type(s, -2) == LUA_TSTRING && lua_isfunction(s, -1)) {
+			const char *methodName = lua_tostring(s, -2);
+			if (methodName && methodName[0] != '_') {
+				if (!firstMethod) {
+					if (!stream.writeString(",", false)) {
+						lua_pop(s, 2);
+						return false;
+					}
+				}
+				firstMethod = false;
+
+				lua_CFunction jsonHelpFunc = clua_getjsonhelp(s, metaName, methodName);
+				if (jsonHelpFunc) {
+					lua_pushcfunction(s, jsonHelpFunc);
+					if (lua_pcall(s, 0, 1, 0) == LUA_OK && lua_isstring(s, -1)) {
+						const char *helpJson = lua_tostring(s, -1);
+						if (!stream.writeString(helpJson, false)) {
+							lua_pop(s, 3);
+							return false;
+						}
+					}
+					lua_pop(s, 1);
+				} else {
+					core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
+					if (!stream.writeString(methodJson.c_str(), false)) {
+						lua_pop(s, 2);
+						return false;
+					}
+				}
+			}
+		}
+		lua_pop(s, 1);
+	}
+	return true;
 }
 
 static core::String clua_stackdump(lua_State *L) {

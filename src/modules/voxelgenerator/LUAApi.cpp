@@ -7090,48 +7090,6 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 		return false;
 	}
 
-	// Helper lambda to write method JSON including help data
-	auto writeMethodJson = [&](const char *methodName, const char *metaName, bool &firstMethod) -> bool {
-		if (methodName[0] == '_') {
-			return true; // Skip metamethods
-		}
-		if (!firstMethod) {
-			if (!stream.writeString(",", false)) {
-				return false;
-			}
-		}
-		firstMethod = false;
-
-		// Try to get the jsonhelp function for this method
-		lua_CFunction jsonHelpFunc = clua_getjsonhelp(s, metaName, methodName);
-		if (jsonHelpFunc) {
-			// Call the jsonhelp function to get the JSON string
-			lua_pushcfunction(s, jsonHelpFunc);
-			if (lua_pcall(s, 0, 1, 0) == LUA_OK && lua_isstring(s, -1)) {
-				const char *helpJson = lua_tostring(s, -1);
-				if (!stream.writeString(helpJson, false)) {
-					lua_pop(s, 1);
-					return false;
-				}
-			} else {
-				// Fallback to just the method name if jsonhelp call fails
-				core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
-				if (!stream.writeString(methodJson.c_str(), false)) {
-					lua_pop(s, 1);
-					return false;
-				}
-			}
-			lua_pop(s, 1); // pop result
-		} else {
-			// No jsonhelp available, just output name
-			core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
-			if (!stream.writeString(methodJson.c_str(), false)) {
-				return false;
-			}
-		}
-		return true;
-	};
-
 	// Iterate global table to find our registered globals (g_*)
 	lua_pushglobaltable(s);
 	lua_pushnil(s);
@@ -7209,18 +7167,9 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 				bool firstMethod = true;
 				// Iterate through the table's methods
 				if (lua_istable(s, -1)) {
-					lua_pushnil(s);
-					while (lua_next(s, -2) != 0) {
-						if (lua_type(s, -2) == LUA_TSTRING) {
-							const char *methodName = lua_tostring(s, -2);
-							if (methodName && lua_isfunction(s, -1)) {
-								if (!writeMethodJson(methodName, metaName.c_str(), firstMethod)) {
-									lua_pop(s, 4); // pop key, value, inner key, global table
-									return false;
-								}
-							}
-						}
-						lua_pop(s, 1);
+					if (!clua_writejsonmethods(s, metaName.c_str(), stream, firstMethod)) {
+						lua_pop(s, 2); // pop value, global table
+						return false;
 					}
 				}
 
@@ -7274,18 +7223,9 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 			}
 
 			bool firstMethod = true;
-			lua_pushnil(s);
-			while (lua_next(s, -2) != 0) {
-				if (lua_type(s, -2) == LUA_TSTRING) {
-					const char *methodName = lua_tostring(s, -2);
-					if (methodName && lua_isfunction(s, -1)) {
-						if (!writeMethodJson(methodName, meta.name, firstMethod)) {
-							lua_pop(s, 3); // pop key, value, metatable
-							return false;
-						}
-					}
-				}
-				lua_pop(s, 1);
+			if (!clua_writejsonmethods(s, meta.name, stream, firstMethod)) {
+				lua_pop(s, 1); // pop metatable
+				return false;
 			}
 
 			if (!stream.writeString("]}", false)) {

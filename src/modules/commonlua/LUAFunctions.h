@@ -21,6 +21,7 @@
 
 namespace io {
 class SeekableReadWriteStream;
+class WriteStream;
 }
 
 void clua_assert(lua_State* s, bool pass, const char *msg);
@@ -145,6 +146,22 @@ bool clua_registerfuncsglobal(lua_State* s, const clua_Reg* funcs, const char *m
  * @return The jsonhelp function or nullptr if not found
  */
 lua_CFunction clua_getjsonhelp(lua_State* s, const char *name, const char *method);
+
+/**
+ * @brief Write JSON method entries for all functions in a Lua table at the top of the stack.
+ *
+ * Iterates the table at the top of the Lua stack, and for each string-keyed function entry
+ * (skipping names starting with '_'), writes a JSON object to the stream. If a jsonhelp
+ * function is registered for the method, its output is used; otherwise a simple {"name":"..."}
+ * is written.
+ *
+ * @param s The Lua state. The table to iterate must be at the top of the stack.
+ * @param metaName The metatable name used to look up jsonhelp functions.
+ * @param stream The output stream to write to.
+ * @param[in,out] firstMethod Tracks whether a comma separator is needed. Set to true initially.
+ * @return true on success, false on write error.
+ */
+bool clua_writejsonmethods(lua_State *s, const char *metaName, io::WriteStream &stream, bool &firstMethod);
 
 template<class T>
 struct LuaNumberFuncs {};
