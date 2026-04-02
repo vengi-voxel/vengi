@@ -101,7 +101,7 @@ protected:
 	bool _needAutoSave = false;
 
 	mutable voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
-	mutable int _selectionCacheNodeId = -1;
+	mutable int _selectionCacheNodeId = InvalidNodeId;
 	BrushType _lastBrushType = BrushType::Max;
 	SelectMode _lastSelectMode = SelectMode::Max;
 	bool _traceViaMouse = true;

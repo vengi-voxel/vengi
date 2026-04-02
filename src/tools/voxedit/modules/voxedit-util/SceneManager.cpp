@@ -382,7 +382,7 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
-		_selectionCacheNodeId = -1;
+		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
@@ -2137,7 +2137,7 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 		node->setSelectionRegion(clamped);
 	}
 	// Pre-clear the cache so modified() doesn't trigger an expensive re-scan
-	_selectionCacheNodeId = -1;
+	_selectionCacheNodeId = InvalidNodeId;
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 	// Populate cache directly since we know the exact new selection
 	_selectionCacheNodeId = nodeId;
