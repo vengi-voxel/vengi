@@ -2,7 +2,7 @@
 
 Install dependencies
 
-`sudo apt-get install python3-flask gunicorn nginx`
+`sudo apt-get install python3-flask python3-influxdb gunicorn nginx`
 
 # run
 
