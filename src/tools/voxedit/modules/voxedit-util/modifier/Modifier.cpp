@@ -435,7 +435,7 @@ void Modifier::discoverBrushScripts() {
 			continue;
 		}
 		_luaBrushes.push_back(brush);
-		Log::info("Discovered brush script: %s", e.name.c_str());
+		Log::debug("Discovered brush script: %s", e.name.c_str());
 	}
 	if (!_luaBrushes.empty()) {
 		_activeLuaBrushIndex = 0;
