@@ -74,6 +74,7 @@ void SelectBrush::reset() {
 	_lassoEdgeHistory.clear();
 	_lassoAccumulating = false;
 	_paintAccumulating = false;
+	_paintHadSelection = false;
 	_paintDirtyRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
@@ -85,6 +86,7 @@ void SelectBrush::onSceneChange() {
 	_lassoEdgeHistory.clear();
 	_lassoAccumulating = false;
 	_paintAccumulating = false;
+	_paintHadSelection = false;
 	_paintDirtyRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 }
@@ -97,6 +99,7 @@ void SelectBrush::abort(BrushContext &ctx) {
 	}
 	if (_selectMode == SelectMode::Paint && _paintAccumulating) {
 		_paintAccumulating = false;
+		_paintHadSelection = false;
 		_paintDirtyRegion = voxel::Region::InvalidRegion;
 		_sceneModifiedFlags = SceneModifiedFlags::All;
 	}

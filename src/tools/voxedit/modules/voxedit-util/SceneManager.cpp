@@ -5785,6 +5785,8 @@ bool SceneManager::nodeActivate(int nodeId) {
 		return true;
 	}
 	Log::debug("Activate node %i", nodeId);
+	// cancel any in-progress brush operation before switching nodes
+	_modifierFacade.abort();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	// a node switch will disable the locked axis as the positions might have changed anyway
 	modifier().setLockedAxis(math::Axis::X | math::Axis::Y | math::Axis::Z, true);
