@@ -100,6 +100,7 @@ protected:
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
 
+	// TODO: SELECTION: this should be removed or added to the scenegraph node as selection state
 	mutable voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
 	mutable int _selectionCacheNodeId = InvalidNodeId;
 	BrushType _lastBrushType = BrushType::Max;
