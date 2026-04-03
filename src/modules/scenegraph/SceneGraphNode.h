@@ -232,7 +232,10 @@ public:
 	void clearSelection();
 	void select(const voxel::Region &region);
 	void unselect(const voxel::Region &region);
+
+	// TODO: SELECTION: This is SelectBrush Box3D specific and should not be part of the node interface but the brush
 	const voxel::Region &selectionRegion() const;
+	// TODO: SELECTION: This is SelectBrush Box3D specific and should not be part of the node interface but the brush
 	void setSelectionRegion(const voxel::Region &region);
 
 	const SceneGraphNodeChildren &children() const;
