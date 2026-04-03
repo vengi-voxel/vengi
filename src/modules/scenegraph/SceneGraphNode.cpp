@@ -50,7 +50,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._type = SceneGraphNodeType::Max;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
-	_selectionRegion = move._selectionRegion;
+	_box3DSelectionRegion = move._box3DSelectionRegion;
 	_hasSelection = move._hasSelection;
 }
 
@@ -89,7 +89,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_type = move._type;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
-	_selectionRegion = move._selectionRegion;
+	_box3DSelectionRegion = move._box3DSelectionRegion;
 	_hasSelection = move._hasSelection;
 	return *this;
 }
@@ -496,22 +496,23 @@ void SceneGraphNode::clearSelection() {
 		return;
 	}
 	_volume->removeFlags(_volume->region(), voxel::FlagOutline);
-	_selectionRegion = voxel::Region::InvalidRegion;
+	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 	_hasSelection = false;
 }
 
-const voxel::Region &SceneGraphNode::selectionRegion() const {
-	return _selectionRegion;
+const voxel::Region &SceneGraphNode::box3DSelectionRegion() const {
+	return _box3DSelectionRegion;
 }
 
-void SceneGraphNode::setSelectionRegion(const voxel::Region &region) {
-	_selectionRegion = region;
+void SceneGraphNode::setBox3DSelectionRegion(const voxel::Region &region) {
+	_box3DSelectionRegion = region;
 }
 
 void SceneGraphNode::select(const voxel::Region &region) {
 	if (_volume == nullptr) {
 		return;
 	}
+	// TODO: SELECTION: the region should be checked here before _hasSelection is set to true - is it part of the volume? is it invalid?
 	_volume->setFlags(region, voxel::FlagOutline);
 	_hasSelection = true;
 }
@@ -520,6 +521,7 @@ void SceneGraphNode::unselect(const voxel::Region &region) {
 	if (_volume == nullptr) {
 		return;
 	}
+	// TODO: SELECTION: the region should be checked here before _hasSelection is set to false - is it part of the volume? is it invalid? if the region is the full volume region, _hasSelection should be set to false - and setFlag call can be skipped if _hasSelection is already false
 	_volume->removeFlags(region, voxel::FlagOutline);
 }
 

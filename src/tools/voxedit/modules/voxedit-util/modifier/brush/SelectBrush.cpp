@@ -298,7 +298,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	}
 
 	// Clear box region by default; Box3D case sets it below
-	wrapper.node().setSelectionRegion(voxel::Region::InvalidRegion);
+	wrapper.node().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
 
 	auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (wrapper.modifierType() == ModifierType::Erase) {
@@ -457,9 +457,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		// Store the exact box region so ModifierVolumeWrapper::skip() allows
 		// editing any position inside the box (including air voxels)
 		if (wrapper.modifierType() == ModifierType::Erase) {
-			wrapper.node().setSelectionRegion(voxel::Region::InvalidRegion);
+			wrapper.node().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
 		} else {
-			wrapper.node().setSelectionRegion(selectionRegion);
+			wrapper.node().setBox3DSelectionRegion(selectionRegion);
 		}
 		break;
 	}

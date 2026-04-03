@@ -2118,7 +2118,7 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	node->clearSelection();
 	node->select(clamped);
 	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		node->setSelectionRegion(clamped);
+		node->setBox3DSelectionRegion(clamped);
 	}
 	// Pre-clear the cache so modified() doesn't trigger an expensive re-scan
 	_selectionCacheNodeId = InvalidNodeId;

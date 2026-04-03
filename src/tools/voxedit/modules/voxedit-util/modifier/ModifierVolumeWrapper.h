@@ -31,7 +31,8 @@ private:
 	bool _paint;
 	bool _normalPaint;
 	bool _hasSelection;
-	voxel::Region _selectionRegion;
+	// TODO: SELECTION: this is selection brush specific and should not be part of the wrapper but the brush
+	voxel::Region _box3DSelectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
@@ -39,7 +40,7 @@ private:
 			return false;
 		}
 		// Box3D region: allow editing anywhere inside the region (including air positions)
-		if (_selectionRegion.isValid() && _selectionRegion.containsPoint(pos)) {
+		if (_box3DSelectionRegion.isValid() && _box3DSelectionRegion.containsPoint(pos)) {
 			return false;
 		}
 		const voxel::Voxel &voxel = _volume->voxel(pos.x, pos.y, pos.z);
@@ -128,7 +129,7 @@ public:
 		_paint = _modifierType == ModifierType::Paint;
 		_normalPaint = _modifierType == ModifierType::NormalPaint;
 		_hasSelection = _node.hasSelection();
-		_selectionRegion = _node.selectionRegion();
+		_box3DSelectionRegion = _node.box3DSelectionRegion();
 	}
 	scenegraph::SceneGraphNode &node() const {
 		return _node;
