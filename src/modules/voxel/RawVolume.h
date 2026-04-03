@@ -184,6 +184,7 @@ public:
 	void setFlags(const Region &region, uint8_t flags);
 	bool hasFlags(const Region &region, uint8_t flags) const;
 	void toggleFlags(const Region &region, uint8_t flags);
+	Region regionForFlag(uint8_t flag) const;
 
 private:
 	void initialise(const Region &region);

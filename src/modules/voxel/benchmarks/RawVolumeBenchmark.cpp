@@ -60,3 +60,17 @@ BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelsY);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxels);
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, RegionForFlag)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{-20, 20});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setOutline();
+	in.setVoxel(-10, -10, -10, voxel);
+	in.setVoxel(10, 10, 10, voxel);
+	for (auto _ : state) {
+		voxel::Region r = in.regionForFlag(voxel::FlagOutline);
+		benchmark::DoNotOptimize(r);
+	}
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, RegionForFlag);

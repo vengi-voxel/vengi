@@ -436,4 +436,40 @@ TEST_F(RawVolumeTest, testFullSamplerLoop) {
 	}
 }
 
+TEST_F(RawVolumeTest, testRegionForFlagEmpty) {
+	RawVolume v(Region(0, 9));
+	const Region result = v.regionForFlag(FlagOutline);
+	EXPECT_FALSE(result.isValid());
+}
+
+TEST_F(RawVolumeTest, testRegionForFlagNoMatch) {
+	RawVolume v(Region(0, 9));
+	v.setVoxel(5, 5, 5, createVoxel(VoxelType::Generic, 1));
+	const Region result = v.regionForFlag(FlagOutline);
+	EXPECT_FALSE(result.isValid());
+}
+
+TEST_F(RawVolumeTest, testRegionForFlagSingleVoxel) {
+	RawVolume v(Region(0, 9));
+	Voxel voxel = createVoxel(VoxelType::Generic, 1);
+	voxel.setOutline();
+	v.setVoxel(5, 5, 5, voxel);
+	const Region result = v.regionForFlag(FlagOutline);
+	ASSERT_TRUE(result.isValid());
+	EXPECT_EQ(result.getLowerCorner(), glm::ivec3(5));
+	EXPECT_EQ(result.getUpperCorner(), glm::ivec3(5));
+}
+
+TEST_F(RawVolumeTest, testRegionForFlagMultipleVoxels) {
+	RawVolume v(Region(0, 9));
+	Voxel voxel = createVoxel(VoxelType::Generic, 1);
+	voxel.setOutline();
+	v.setVoxel(2, 3, 4, voxel);
+	v.setVoxel(7, 8, 6, voxel);
+	const Region result = v.regionForFlag(FlagOutline);
+	ASSERT_TRUE(result.isValid());
+	EXPECT_EQ(result.getLowerCorner(), glm::ivec3(2, 3, 4));
+	EXPECT_EQ(result.getUpperCorner(), glm::ivec3(7, 8, 6));
+}
+
 }

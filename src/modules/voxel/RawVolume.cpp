@@ -228,6 +228,94 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	return false;
 }
 
+Region RawVolume::regionForFlag(uint8_t flag) const {
+	const int w = _region.getWidthInVoxels();
+	const int h = _region.getHeightInVoxels();
+	const int d = _region.getDepthInVoxels();
+	const int64_t yStride = w;
+	const int64_t zStride = (int64_t)w * h;
+
+	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
+	const uint32_t flagsMask32 = (uint32_t)(flag & 0x3) << 2;
+	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+
+	int minZ = d;
+	int maxZ = -1;
+	int minY = h;
+	int maxY = -1;
+	int minX = w;
+	int maxX = -1;
+
+	for (int z = 0; z < d; ++z) {
+		const int64_t zBase = z * zStride;
+		for (int y = 0; y < h; ++y) {
+			const int64_t baseIndex = zBase + y * yStride;
+
+			bool lineHasFlag = false;
+			int offset = 0;
+			int remaining = w;
+
+			if ((baseIndex & 1) && remaining > 0) {
+				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex];
+				if (*data32 & flagsMask32) {
+					lineHasFlag = true;
+				}
+				offset = 1;
+				remaining--;
+			}
+
+			if (!lineHasFlag) {
+				const int pairs = remaining / 2;
+				const uint64_t *data64 = (const uint64_t *)&_data[baseIndex + offset];
+				for (int i = 0; i < pairs; ++i) {
+					if (data64[i] & flagsMask64) {
+						lineHasFlag = true;
+						break;
+					}
+				}
+			}
+
+			if (!lineHasFlag && (remaining & 1)) {
+				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + offset + (remaining / 2) * 2];
+				if (*data32 & flagsMask32) {
+					lineHasFlag = true;
+				}
+			}
+
+			if (!lineHasFlag) {
+				continue;
+			}
+
+			minZ = core_min(minZ, z);
+			maxZ = core_max(maxZ, z);
+			minY = core_min(minY, y);
+			maxY = core_max(maxY, y);
+
+			for (int x = 0; x < minX; ++x) {
+				if (_data[baseIndex + x].getFlags() & flag) {
+					minX = x;
+					break;
+				}
+			}
+
+			for (int x = w - 1; x > maxX; --x) {
+				if (_data[baseIndex + x].getFlags() & flag) {
+					maxX = x;
+					break;
+				}
+			}
+		}
+	}
+
+	if (maxZ < 0) {
+		return Region::InvalidRegion;
+	}
+
+	const glm::ivec3 &lower = _region.getLowerCorner();
+	return Region(lower.x + minX, lower.y + minY, lower.z + minZ,
+				  lower.x + maxX, lower.y + maxY, lower.z + maxZ);
+}
+
 void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 	if (!intersects(_region, region)) {
 		return;

@@ -2067,7 +2067,7 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
 	}
 
 	// Calculate the bounding region of selected voxels
-	const voxel::Region selectionRegion = voxelutil::regionForFlag(*volume, voxel::FlagOutline);
+	const voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
 	_selectionCacheNodeId = nodeId;
 	_selectionRegionCache = selectionRegion;
 	if (!selectionRegion.isValid()) {
