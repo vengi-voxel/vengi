@@ -81,6 +81,8 @@ protected:
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
 	core::Optional<IKConstraint> _ikConstraint;
+
+	// TODO: SELECTION: these flags are dangerous, what if the node gets a new volume set, some lua code is modifying it and so on.
 	voxel::Region _box3DSelectionRegion = voxel::Region::InvalidRegion;
 	bool _hasSelection = false;
 
