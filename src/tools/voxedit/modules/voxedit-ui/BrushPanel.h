@@ -62,6 +62,7 @@ private:
 	void updateStampBrushPanel(command::CommandExecutionListener &listener);
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
+	void handleSelectBox3D(const scenegraph::SceneGraphNode *node);
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
 	void updateNormalBrushPanel(command::CommandExecutionListener &listener);
