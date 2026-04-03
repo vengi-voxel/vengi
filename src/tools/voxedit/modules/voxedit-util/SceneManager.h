@@ -103,8 +103,7 @@ protected:
 	// TODO: SELECTION: this should be removed or added to the scenegraph node as selection state
 	voxel::Region _selectionRegionCache = voxel::Region::InvalidRegion;
 	int _selectionCacheNodeId = InvalidNodeId;
-	BrushType _lastBrushType = BrushType::Max;
-	SelectMode _lastSelectMode = SelectMode::Max;
+
 	bool _traceViaMouse = true;
 
 	voxelgenerator::lsystem::LSystemConfig _lsystemConfig;

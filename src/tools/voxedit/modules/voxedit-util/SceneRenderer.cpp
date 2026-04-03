@@ -118,7 +118,6 @@ void SceneRenderer::shutdown() {
 	_aabbMeshIndex = -1;
 	_boneMeshIndex = -1;
 	_highlightMeshIndex = -1;
-	_selectionGizmoMeshIndex = -1;
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
@@ -377,14 +376,6 @@ void SceneRenderer::updateSliceRegionMesh() {
 	_shapeRenderer.createOrUpdate(_sliceRegionMeshIndex, _shapeBuilder);
 }
 
-void SceneRenderer::updateSelectionGizmo(const voxel::Region &region) {
-	_selectionGizmoRegion = region;
-	if (!region.isValid() && _selectionGizmoMeshIndex != -1) {
-		_shapeRenderer.deleteMesh(_selectionGizmoMeshIndex);
-		_selectionGizmoMeshIndex = -1;
-	}
-}
-
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	if (renderContext.sceneGraph == nullptr) {
@@ -450,46 +441,6 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 
 		if (isSliceModeActive()) {
 			_shapeRenderer.render(_sliceRegionMeshIndex, camera, model);
-		}
-
-		if (_selectionGizmoRegion.isValid()) {
-			// Pick the AABB corner closest to the camera so the gizmo is always visible
-			const glm::ivec3 lo = _selectionGizmoRegion.getLowerCorner();
-			const glm::ivec3 hi = _selectionGizmoRegion.getUpperCorner() + 1;
-			const glm::vec3 corners[8] = {
-				{(float)lo.x, (float)lo.y, (float)lo.z}, {(float)hi.x, (float)lo.y, (float)lo.z},
-				{(float)lo.x, (float)hi.y, (float)lo.z}, {(float)hi.x, (float)hi.y, (float)lo.z},
-				{(float)lo.x, (float)lo.y, (float)hi.z}, {(float)hi.x, (float)lo.y, (float)hi.z},
-				{(float)lo.x, (float)hi.y, (float)hi.z}, {(float)hi.x, (float)hi.y, (float)hi.z},
-			};
-			const glm::vec3 camPos = camera.worldPosition();
-			float minDist = 1e30f;
-			int closestIdx = 0;
-			for (int i = 0; i < 8; ++i) {
-				const glm::vec3 worldCorner = glm::vec3(model * glm::vec4(corners[i], 1.0f));
-				const float dist = glm::distance(camPos, worldCorner);
-				if (dist < minDist) {
-					minDist = dist;
-					closestIdx = i;
-				}
-			}
-			const glm::vec3 &bestCorner = corners[closestIdx];
-			const glm::vec3 center = (glm::vec3(lo) + glm::vec3(hi)) * 0.5f;
-			// Arrow signs: point away from selection center at this corner.
-			// X and Y use glm::right()={1,0,0} and glm::up()={0,1,0}, sign matches.
-			// Z uses glm::forward()={0,0,-1}, so negate the Z sign to point outward.
-			const glm::vec3 signVec(
-				bestCorner.x >= center.x ? 1.0f : -1.0f,
-				bestCorner.y >= center.y ? 1.0f : -1.0f,
-				bestCorner.z >= center.z ? -1.0f : 1.0f
-			);
-			const glm::ivec3 dims = _selectionGizmoRegion.getDimensionsInVoxels();
-			const float scale = (float)glm::max(5, glm::max(dims.x, glm::max(dims.y, dims.z)) / 4);
-			_shapeBuilder.clear();
-			_shapeBuilder.axis(signVec * scale);
-			_shapeRenderer.createOrUpdate(_selectionGizmoMeshIndex, _shapeBuilder);
-			video::ScopedState noDepthTest(video::State::DepthTest, false);
-			_shapeRenderer.render(_selectionGizmoMeshIndex, camera, glm::translate(model, bestCorner));
 		}
 
 		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();

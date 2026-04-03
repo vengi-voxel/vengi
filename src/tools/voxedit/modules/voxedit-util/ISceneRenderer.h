@@ -74,8 +74,6 @@ public:
 	virtual bool isSliceModeActive() const {
 		return sliceRegion().isValid();
 	}
-	virtual void updateSelectionGizmo(const voxel::Region &region) {
-	}
 	virtual RendererStats rendererStats() const {
 		return {};
 	}

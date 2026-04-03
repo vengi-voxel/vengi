@@ -384,7 +384,6 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
 		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
-		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
 }
 
@@ -440,7 +439,6 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
 		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
-		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
 }
 
@@ -511,7 +509,6 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 		}, voxelutil::VisitSolidOutline());
 		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
-		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
 }
 
@@ -582,7 +579,6 @@ void SceneManager::nodeGroupSelectionGrow() {
 
 		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, dirtyRegion);
-		_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(groupNodeId));
 	});
 }
 
@@ -845,15 +841,6 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	}
 	if (_selectionCacheNodeId == nodeId) {
 		_selectionCacheNodeId = InvalidNodeId;
-	}
-	if (_modifierFacade.brushType() == BrushType::Select && nodeId == _sceneGraph.activeNode()) {
-		const SelectMode selectMode = _modifierFacade.selectBrush().selectMode();
-		if (selectMode == SelectMode::Box3D) {
-			const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-			_sceneRenderer->updateSelectionGizmo(node ? node->selectionRegion() : voxel::Region::InvalidRegion);
-		} else if (selectMode == SelectMode::FlatSurface) {
-			_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
-		}
 	}
 	markDirty();
 	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
@@ -2020,7 +2007,6 @@ void SceneManager::selectionInvert(int nodeId) {
 	node->setHasSelection(true);
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
-	_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
 }
 
 void SceneManager::selectionUnselect(int nodeId) {
@@ -2033,7 +2019,6 @@ void SceneManager::selectionUnselect(int nodeId) {
 	node->clearSelection();
 	_selectionCacheNodeId = InvalidNodeId;
 	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
-	_sceneRenderer->updateSelectionGizmo(voxel::Region::InvalidRegion);
 }
 
 void SceneManager::selectionSelectAll(int nodeId) {
@@ -2048,7 +2033,6 @@ void SceneManager::selectionSelectAll(int nodeId) {
 	node->select(volume->region());
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
-	_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(nodeId));
 }
 
 bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
@@ -2142,9 +2126,6 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	// Populate cache directly since we know the exact new selection
 	_selectionCacheNodeId = nodeId;
 	_selectionRegionCache = clamped;
-	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		_sceneRenderer->updateSelectionGizmo(clamped);
-	}
 }
 
 void SceneManager::selectionSetEllipse(int nodeId) {
@@ -4562,23 +4543,6 @@ bool SceneManager::update(double nowSeconds) {
 	// TODO: Set to InvalidFrameIndex if transforms should not get applied
 	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
 	_modifierFacade.update(nowSeconds, camera);
-
-	// Show selection gizmo only in Select/Box3D mode; hide it otherwise
-	const BrushType currentBrushType = _modifierFacade.brushType();
-	const SelectMode currentSelectMode = _modifierFacade.selectBrush().selectMode();
-	if (currentBrushType != _lastBrushType || currentSelectMode != _lastSelectMode) {
-		_lastBrushType = currentBrushType;
-		_lastSelectMode = currentSelectMode;
-		const int activeNodeId = _sceneGraph.activeNode();
-		if (currentBrushType == BrushType::Select && currentSelectMode == SelectMode::Box3D) {
-			const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNodeId);
-			_sceneRenderer->updateSelectionGizmo(node ? node->selectionRegion() : voxel::Region::InvalidRegion);
-		} else if (currentBrushType == BrushType::Select && currentSelectMode == SelectMode::FlatSurface) {
-			_sceneRenderer->updateSelectionGizmo(selectionCalculateRegion(activeNodeId));
-		} else {
-			_sceneRenderer->updateSelectionGizmo(voxel::Region::InvalidRegion);
-		}
-	}
 
 	updateDirtyRendererStates();
 
