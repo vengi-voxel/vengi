@@ -122,7 +122,12 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 }
 
 int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const core::Function<void(int)> &onNodeAdded) {
-	SceneGraphNode newNode(node.type(), node.uuid());
+	core::UUID uuid = node.uuid();
+	if (sceneGraph.findNodeByUUID(uuid) != nullptr) {
+		Log::debug("UUID collision detected - generating new UUID for node '%s'", node.name().c_str());
+		uuid = core::UUID::generate();
+	}
+	SceneGraphNode newNode(node.type(), uuid);
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
 		core_assert(node.owns());
