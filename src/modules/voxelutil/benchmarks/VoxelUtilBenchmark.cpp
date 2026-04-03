@@ -16,6 +16,7 @@
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VolumeSelect.h"
 #include "voxelutil/VoxelUtil.h"
 
 class VoxelUtilBenchmark : public app::AbstractBenchmark {
@@ -223,6 +224,19 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Shadow)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, RegionForFlag)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{-20, 20});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setOutline();
+	in.setVoxel(-10, -10, -10, voxel);
+	in.setVoxel(10, 10, 10, voxel);
+	for (auto _ : state) {
+		voxel::Region r = voxelutil::regionForFlag(in, voxel::FlagOutline);
+		benchmark::DoNotOptimize(r);
+	}
+}
+
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, RegionForFlag);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleUp);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleVolumeDouble);

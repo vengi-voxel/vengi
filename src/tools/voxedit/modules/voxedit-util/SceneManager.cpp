@@ -2067,27 +2067,7 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
 	}
 
 	// Calculate the bounding region of selected voxels
-	voxel::Region selectionRegion = voxel::Region::InvalidRegion;
-	const voxel::Region &region = volume->region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-
-	// TODO: PERF: once we found a match from mins, we should go from maxs to mins to prevent touching all the voxels in
-	// the middle - check the volumecropper code in VolumeCropper.h
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel &voxel = volume->voxel(x, y, z);
-				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-					if (selectionRegion.isValid()) {
-						selectionRegion.accumulate(x, y, z);
-					} else {
-						selectionRegion = voxel::Region(x, y, z, x, y, z);
-					}
-				}
-			}
-		}
-	}
+	const voxel::Region selectionRegion = voxelutil::regionForFlag(*volume, voxel::FlagOutline);
 	_selectionCacheNodeId = nodeId;
 	_selectionRegionCache = selectionRegion;
 	if (!selectionRegion.isValid()) {

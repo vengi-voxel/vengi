@@ -10,6 +10,10 @@
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 
+namespace voxel {
+class RawVolume;
+}
+
 namespace voxelutil {
 
 /**
@@ -82,5 +86,13 @@ void drawLassoEdgeSurface(Sampler &&sampler, const glm::ivec3 &a, const glm::ive
 		}
 	}
 }
+
+/**
+ * @brief Calculate the bounding region of all voxels that have the given flag set
+ * @param volume The volume to scan
+ * @param flag The voxel flag bitmask to search for (e.g. @c voxel::FlagOutline)
+ * @return The bounding region of matching voxels, or @c voxel::Region::InvalidRegion if none found
+ */
+voxel::Region regionForFlag(const voxel::RawVolume &volume, uint8_t flag);
 
 } // namespace voxelutil
