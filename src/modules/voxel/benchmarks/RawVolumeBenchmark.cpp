@@ -55,12 +55,6 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxels)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelsY);
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxels);
-
 BENCHMARK_DEFINE_F(RawVolumeBenchmark, RegionForFlag)(benchmark::State &state) {
 	voxel::RawVolume in(voxel::Region{-20, 20});
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -73,4 +67,42 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, RegionForFlag)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, HasFlagsNoFlags)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{-100, 100});
+	in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(in.hasFlags(in.region(), voxel::FlagOutline));
+	}
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, HasFlagsWithFlags)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{-100, 100});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setOutline();
+	in.setVoxel(-10, -10, -10, voxel);
+	in.setVoxel(10, 10, 10, voxel);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(in.hasFlags(in.region(), voxel::FlagOutline));
+	}
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, HasFlagsSubRegion)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{-100, 100});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setOutline();
+	in.setVoxel(5, 5, 5, voxel);
+	const voxel::Region subRegion(0, 0, 0, 10, 10, 10);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(in.hasFlags(subRegion, voxel::FlagOutline));
+	}
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelsY);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxels);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, RegionForFlag);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsSubRegion);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsNoFlags);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsWithFlags);
