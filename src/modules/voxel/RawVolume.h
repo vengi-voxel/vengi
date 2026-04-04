@@ -55,6 +55,13 @@ public:
 	static size_t size(const Region &region);
 
 	/**
+	 * @brief Allocation size padded to 8-byte boundary for bulk SIMD operations
+	 */
+	static size_t allocSize(const Region &region) {
+		return (size(region) + 7) & ~(size_t)7;
+	}
+
+	/**
 	 * @brief Checks if the volume is empty in the given region
 	 */
 	bool isEmpty(const Region &region) const;

@@ -54,7 +54,11 @@ struct VertexData {
 	Voxel voxel;
 	uint8_t ambientOcclusion;
 };
+#ifdef VENGI_COMPACT_VOXEL
+static_assert(sizeof(VertexData) == 8, "Unexpected size of VertexData");
+#else
 static_assert(sizeof(VertexData) == 12, "Unexpected size of VertexData");
+#endif
 
 class Array : public core::NonCopyable {
 private:

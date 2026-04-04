@@ -34,9 +34,11 @@ void VoxelModificationHandler::execute(const network::ClientId &, VoxelModificat
 	const uint8_t *data = message->compressedData();
 	const uint32_t dataSize = message->compressedSize();
 	const size_t uncompressedBufferSize = message->region().voxels() * sizeof(voxel::Voxel);
+	const size_t allocBufferSize = voxel::RawVolume::allocSize(message->region());
 	io::MemoryReadStream dataStream(data, dataSize);
 	io::ZipReadStream stream(dataStream, (int)dataStream.size());
-	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
+	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(allocBufferSize);
+	core_memset(uncompressedBuf, 0, allocBufferSize);
 	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
 		core_free(uncompressedBuf);
 		return;
