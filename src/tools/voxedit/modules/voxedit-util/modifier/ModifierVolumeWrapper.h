@@ -31,7 +31,6 @@ private:
 	bool _paint;
 	bool _normalPaint;
 	bool _hasSelection;
-	// TODO: SELECTION: this is selection brush specific and should not be part of the wrapper but the brush
 	voxel::Region _box3DSelectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
@@ -122,14 +121,15 @@ public:
 		}
 	};
 
-	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType)
+	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType,
+						  const voxel::Region &box3DSelectionRegion = voxel::Region::InvalidRegion)
 		: Super(node.volume()), _modifierType(modifierType), _node(node) {
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;
 		_normalPaint = _modifierType == ModifierType::NormalPaint;
 		_hasSelection = _node.hasSelection();
-		_box3DSelectionRegion = _node.box3DSelectionRegion();
+		_box3DSelectionRegion = box3DSelectionRegion;
 	}
 	scenegraph::SceneGraphNode &node() const {
 		return _node;

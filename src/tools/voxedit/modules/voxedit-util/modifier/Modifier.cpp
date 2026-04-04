@@ -387,7 +387,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	if (!brush) {
 		return false;
 	}
-	ModifierVolumeWrapper wrapper(node, modifierType);
+	ModifierVolumeWrapper wrapper(node, modifierType, _selectBrush.box3DSelectionRegion());
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 	if (brush->brushClamping()) {

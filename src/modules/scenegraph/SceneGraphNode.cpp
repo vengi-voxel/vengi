@@ -50,7 +50,6 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._type = SceneGraphNodeType::Max;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
-	_box3DSelectionRegion = move._box3DSelectionRegion;
 	_hasSelection = move._hasSelection;
 }
 
@@ -89,7 +88,6 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_type = move._type;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
-	_box3DSelectionRegion = move._box3DSelectionRegion;
 	_hasSelection = move._hasSelection;
 	return *this;
 }
@@ -496,24 +494,21 @@ void SceneGraphNode::clearSelection() {
 		return;
 	}
 	_volume->removeFlags(_volume->region(), voxel::FlagOutline);
-	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 	_hasSelection = false;
-}
-
-const voxel::Region &SceneGraphNode::box3DSelectionRegion() const {
-	return _box3DSelectionRegion;
-}
-
-void SceneGraphNode::setBox3DSelectionRegion(const voxel::Region &region) {
-	_box3DSelectionRegion = region;
 }
 
 void SceneGraphNode::select(const voxel::Region &region) {
 	if (_volume == nullptr) {
 		return;
 	}
-	// TODO: SELECTION: the region should be checked here before _hasSelection is set to true - is it part of the volume? is it invalid?
-	_volume->setFlags(region, voxel::FlagOutline);
+	if (!region.isValid()) {
+		return;
+	}
+	voxel::Region clamped = region;
+	if (!clamped.cropTo(_volume->region())) {
+		return;
+	}
+	_volume->setFlags(clamped, voxel::FlagOutline);
 	_hasSelection = true;
 }
 
@@ -521,8 +516,20 @@ void SceneGraphNode::unselect(const voxel::Region &region) {
 	if (_volume == nullptr) {
 		return;
 	}
-	// TODO: SELECTION: the region should be checked here before _hasSelection is set to false - is it part of the volume? is it invalid? if the region is the full volume region, _hasSelection should be set to false - and setFlag call can be skipped if _hasSelection is already false
-	_volume->removeFlags(region, voxel::FlagOutline);
+	if (!_hasSelection) {
+		return;
+	}
+	if (!region.isValid()) {
+		return;
+	}
+	voxel::Region clamped = region;
+	if (!clamped.cropTo(_volume->region())) {
+		return;
+	}
+	_volume->removeFlags(clamped, voxel::FlagOutline);
+	if (clamped.containsRegion(_volume->region())) {
+		_hasSelection = false;
+	}
 }
 
 bool SceneGraphNode::isLeaf() const {

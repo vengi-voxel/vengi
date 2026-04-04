@@ -146,6 +146,9 @@ private:
 	/** Saved dirty region from endBrush, consumed by consumePendingUndoRegion */
 	voxel::Region _paintFinalUndoRegion = voxel::Region::InvalidRegion;
 
+	/** Box3D selection region cached for ModifierVolumeWrapper to allow editing air voxels inside the box */
+	voxel::Region _box3DSelectionRegion = voxel::Region::InvalidRegion;
+
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
@@ -166,6 +169,10 @@ public:
 
 	void setSelectMode(SelectMode mode);
 	SelectMode selectMode() const;
+
+	const voxel::Region &box3DSelectionRegion() const;
+	void setBox3DSelectionRegion(const voxel::Region &region);
+
 	void setColorThreshold(float threshold);
 	float colorThreshold() const;
 
@@ -254,6 +261,14 @@ inline bool SelectBrush::managesOwnSelection() const {
 
 inline SelectMode SelectBrush::selectMode() const {
 	return _selectMode;
+}
+
+inline const voxel::Region &SelectBrush::box3DSelectionRegion() const {
+	return _box3DSelectionRegion;
+}
+
+inline void SelectBrush::setBox3DSelectionRegion(const voxel::Region &region) {
+	_box3DSelectionRegion = region;
 }
 
 inline void SelectBrush::setColorThreshold(float threshold) {

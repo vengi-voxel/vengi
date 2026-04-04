@@ -381,8 +381,7 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
 				v->setVoxel(x, y, z, updated);
 			}
-		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
-		_selectionCacheNodeId = InvalidNodeId;
+		}, voxelutil::VisitSolid());
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
@@ -437,7 +436,6 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
-		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
@@ -507,7 +505,6 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolidOutline());
-		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
@@ -577,7 +574,6 @@ void SceneManager::nodeGroupSelectionGrow() {
 			dirtyRegion.accumulate(pos);
 		}
 
-		_selectionCacheNodeId = InvalidNodeId;
 		modified(groupNodeId, dirtyRegion);
 	});
 }
@@ -838,9 +834,6 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	if (updateRegion && modifiedRegion.isValid()) {
 		Log::debug("Modify region for nodeid %i", nodeId);
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
-	}
-	if (_selectionCacheNodeId == nodeId) {
-		_selectionCacheNodeId = InvalidNodeId;
 	}
 	markDirty();
 	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
@@ -2017,7 +2010,7 @@ void SceneManager::selectionUnselect(int nodeId) {
 	// Only re-extract where voxels actually had FlagOutline set
 	const voxel::Region dirtyRegion = selectionCalculateRegion(nodeId);
 	node->clearSelection();
-	_selectionCacheNodeId = InvalidNodeId;
+	_modifierFacade.selectBrush().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
 	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
 }
 
@@ -2049,9 +2042,6 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 }
 
 voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
-	if (_selectionCacheNodeId == nodeId) {
-		return _selectionRegionCache;
-	}
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || !node->isModelNode()) {
 		return voxel::Region::InvalidRegion;
@@ -2061,15 +2051,11 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
 		return voxel::Region::InvalidRegion;
 	}
 	if (!node->hasSelection()) {
-		_selectionCacheNodeId = nodeId;
-		_selectionRegionCache = voxel::Region::InvalidRegion;
 		return voxel::Region::InvalidRegion;
 	}
 
 	// Calculate the bounding region of selected voxels
 	const voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
-	_selectionCacheNodeId = nodeId;
-	_selectionRegionCache = selectionRegion;
 	if (!selectionRegion.isValid()) {
 		node->setHasSelection(false);
 	}
@@ -2098,14 +2084,9 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	node->clearSelection();
 	node->select(clamped);
 	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		node->setBox3DSelectionRegion(clamped);
+		_modifierFacade.selectBrush().setBox3DSelectionRegion(clamped);
 	}
-	// Pre-clear the cache so modified() doesn't trigger an expensive re-scan
-	_selectionCacheNodeId = InvalidNodeId;
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
-	// Populate cache directly since we know the exact new selection
-	_selectionCacheNodeId = nodeId;
-	_selectionRegionCache = clamped;
 }
 
 void SceneManager::selectionSetEllipse(int nodeId) {
@@ -2179,7 +2160,6 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 		voxelutil::visitSurfaceVolume(*volume, selectFunc);
 	}
 
-	_selectionCacheNodeId = InvalidNodeId;
 	node->setHasSelection(!history.empty());
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
@@ -2224,7 +2204,6 @@ void SceneManager::selectionSetSlope(int nodeId) {
 	voxelutil::visitSlopeSurface(*volume, brush.slopeSeedPos(), brush.slopeFace(),
 								 brush.slopeDeviation(), brush.slopeSampleDistance(), selectFunc);
 
-	_selectionCacheNodeId = InvalidNodeId;
 	node->setHasSelection(!history.empty());
 	if (dirtyRegion.isValid()) {
 		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
@@ -2267,7 +2246,6 @@ void SceneManager::selectionFinalizeLasso(int nodeId) {
 	};
 	voxelutil::visitSurfaceVolume(*volume, selectFunc);
 
-	_selectionCacheNodeId = InvalidNodeId;
 	node->setHasSelection(dirtyRegion.isValid());
 	if (dirtyRegion.isValid()) {
 		modified(nodeId, dirtyRegion, SceneModifiedFlags::All);
@@ -2281,7 +2259,6 @@ void SceneManager::selectionCancelLasso(int nodeId) {
 		if (node != nullptr) {
 			voxel::RawVolume *volume = node->volume();
 			const voxel::Region dirtyRegion = brush.revertChanges(volume);
-			_selectionCacheNodeId = InvalidNodeId;
 			if (dirtyRegion.isValid()) {
 				modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 			}
@@ -2313,7 +2290,6 @@ void SceneManager::selectionLassoUndoVertex(int nodeId) {
 		brush.redrawEdgesOnVolume(volume, volume->region(), dirtyRegion);
 	}
 
-	_selectionCacheNodeId = InvalidNodeId;
 	if (dirtyRegion.isValid()) {
 		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 	}

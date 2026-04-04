@@ -78,6 +78,7 @@ void SelectBrush::reset() {
 	_paintDirtyRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_paintFinalUndoRegion = voxel::Region::InvalidRegion;
+	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 }
 
 void SelectBrush::onSceneChange() {
@@ -89,6 +90,7 @@ void SelectBrush::onSceneChange() {
 	_paintHadSelection = false;
 	_paintDirtyRegion = voxel::Region::InvalidRegion;
 	_sceneModifiedFlags = SceneModifiedFlags::All;
+	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 }
 
 void SelectBrush::abort(BrushContext &ctx) {
@@ -298,7 +300,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	}
 
 	// Clear box region by default; Box3D case sets it below
-	wrapper.node().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
+	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 
 	auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (wrapper.modifierType() == ModifierType::Erase) {
@@ -457,9 +459,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		// Store the exact box region so ModifierVolumeWrapper::skip() allows
 		// editing any position inside the box (including air voxels)
 		if (wrapper.modifierType() == ModifierType::Erase) {
-			wrapper.node().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
+			_box3DSelectionRegion = voxel::Region::InvalidRegion;
 		} else {
-			wrapper.node().setBox3DSelectionRegion(selectionRegion);
+			_box3DSelectionRegion = selectionRegion;
 		}
 		break;
 	}
