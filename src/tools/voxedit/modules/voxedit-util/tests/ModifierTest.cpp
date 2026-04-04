@@ -693,7 +693,6 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
-	node.setHasSelection(true);
 	ASSERT_TRUE(node.hasSelection()) << "Pre-condition: node should have selection";
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);

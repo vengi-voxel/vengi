@@ -30,7 +30,6 @@ TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 0, 0, voxel::FlagOutline));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
-	node.setHasSelection(true);
 	// Use Override mode since there's already a voxel at (1,1,1)
 	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());

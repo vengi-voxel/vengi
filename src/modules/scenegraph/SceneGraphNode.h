@@ -82,9 +82,6 @@ protected:
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
 	core::Optional<IKConstraint> _ikConstraint;
 
-	// TODO: SELECTION: this should be removed - flags could also get set from lua - which wouldn't set this flag - or other ways by setting a voxel with that flag that don't take the selectXXX() function way.
-	bool _hasSelection = false;
-
 	/**
 	 * @brief Called in emplace() if a parent id is given
 	 */
@@ -228,9 +225,7 @@ public:
 	bool locked() const;
 	void setLocked(bool locked);
 
-	// TODO: SELECTION: these two functions should get removed
 	bool hasSelection() const;
-	void setHasSelection(bool v);
 
 	void clearSelection();
 	void select(const voxel::Region &region);

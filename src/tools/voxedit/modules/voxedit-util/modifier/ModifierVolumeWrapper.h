@@ -144,9 +144,6 @@ public:
 	 */
 	void setFlags(const voxel::Region &region, uint8_t flags) {
 		_volume->setFlags(region, flags);
-		if (flags & voxel::FlagOutline) {
-			_node.setHasSelection(true);
-		}
 		if (_dirtyRegion.isValid()) {
 			_dirtyRegion.accumulate(region);
 		} else {
@@ -201,9 +198,6 @@ public:
 		}
 		v.setFlags(v.getFlags() | flags);
 		sampler.setVoxel(v);
-		if (flags & voxel::FlagOutline) {
-			_node.setHasSelection(true);
-		}
 		if (_dirtyRegion.isValid()) {
 			_dirtyRegion.accumulate(x, y, z);
 		} else {
@@ -248,7 +242,6 @@ public:
 			setFlagAt(x, y, z, voxel::FlagOutline);
 		};
 		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
-		_node.setHasSelection(true);
 	}
 
 	/**
@@ -266,7 +259,6 @@ public:
 			setFlagAt(x, y, z, voxel::FlagOutline);
 		};
 		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
-		_node.setHasSelection(true);
 	}
 
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
