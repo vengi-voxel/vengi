@@ -6,6 +6,7 @@
 #include "app/ForParallel.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
@@ -161,6 +162,25 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
+// Scan a contiguous block of voxels for any matching flags.
+static CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool scanFlagsLinear(const Voxel *data, int64_t count, uint32_t mask) {
+	// Uses uint32_t (matching sizeof(Voxel)==4) for natural alignment.
+	static_assert(sizeof(Voxel) == 4u, "Voxel size must be 4 bytes for scanFlagsLinear");
+	const uint32_t *p = (const uint32_t *)data;
+	int64_t i = 0;
+	for (; i + 7 < count; i += 8) {
+		const uint32_t acc = p[i] | p[i + 1] | p[i + 2] | p[i + 3] | p[i + 4] | p[i + 5] | p[i + 6] | p[i + 7];
+		if (acc & mask) {
+			return true;
+		}
+	}
+	uint32_t acc = 0;
+	for (; i < count; i++) {
+		acc |= p[i];
+	}
+	return (acc & mask) != 0;
+}
+
 bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	if (!intersects(_region, region)) {
 		return false;
@@ -171,57 +191,53 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 		r.cropTo(_region);
 	}
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	// Create a 32-bit mask for one voxel with the flags bits set
-	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
-	// Create a 64-bit mask for two voxels at once
-	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+	// This assumes that the flags are stored at a particular position in the Voxel struct
+	const uint32_t flagsMask = (uint32_t)(flags & 0x3) << 2;
 
+	const int width = _region.getWidthInVoxels();
+	const int height = _region.getHeightInVoxels();
+	const int scanWidth = r.getWidthInVoxels();
+	const int scanHeight = r.getHeightInVoxels();
+	const int scanDepth = r.getDepthInVoxels();
+
+	// When scanning full width and height, all z-slices are contiguous - single linear scan
+	if (scanWidth == width && scanHeight == height) {
+		const int zStart = r.getLowerZ() - _region.getLowerZ();
+		const Voxel *start = _data + (int64_t)zStart * width * height;
+		const int64_t total = (int64_t)scanDepth * width * height;
+		return scanFlagsLinear(start, total, flagsMask);
+	}
+
+	// When scanning full width, rows within each z-slice are contiguous
+	if (scanWidth == width) {
+		const int yStart = r.getLowerY() - _region.getLowerY();
+		const int64_t zStride = (int64_t)width * height;
+		const int64_t rowsPerSlice = (int64_t)scanHeight * width;
+		for (int z = 0; z < scanDepth; ++z) {
+			const int zPos = r.getLowerZ() - _region.getLowerZ() + z;
+			const Voxel *start = _data + zPos * zStride + (int64_t)yStart * width;
+			if (scanFlagsLinear(start, rowsPerSlice, flagsMask)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Non-full-width: per-row scanning
+	const int64_t yStride = width;
+	const int64_t zStride = (int64_t)width * height;
+	const int xStart = r.getLowerX() - _region.getLowerX();
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
-	const int64_t width = _region.getWidthInVoxels();
-	const int64_t height = _region.getHeightInVoxels();
-	const int64_t yStride = width;
-	const int64_t zStride = width * height;
-
-	const int64_t xStart = mins.x - _region.getLowerX();
-	const int lineLength = maxs.x - mins.x + 1;
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int64_t yPos = y - _region.getLowerY();
-			const int64_t baseIndex = zBase + (yPos * yStride);
-
-			int offset = 0;
-			int remaining = lineLength;
-
-			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
-			if ((baseIndex & 1) && remaining > 0) {
-				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex];
-				if (*data32 & flagsMask32) {
-					return true;
-				}
-				offset = 1;
-				remaining--;
-			}
-
-			// Process two voxels at a time using 64-bit operations
-			const int pairs = remaining / 2;
-			const uint64_t *data64 = (const uint64_t *)&_data[baseIndex + offset];
-			for (int i = 0; i < pairs; ++i) {
-				if (data64[i] & flagsMask64) {
-					return true;
-				}
-			}
-
-			// Handle remaining voxel if line length is odd
-			if (remaining & 1) {
-				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + offset + pairs * 2];
-				if (*data32 & flagsMask32) {
-					return true;
-				}
+			const int64_t baseIndex = zBase + yPos * yStride;
+			if (scanFlagsLinear(_data + baseIndex, scanWidth, flagsMask)) {
+				return true;
 			}
 		}
 	}
@@ -234,81 +250,105 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 	const int d = _region.getDepthInVoxels();
 	const int64_t yStride = w;
 	const int64_t zStride = (int64_t)w * h;
+	const uint32_t flagsMask = (uint32_t)(flag & 0x3) << 2;
 
-	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
-	const uint32_t flagsMask32 = (uint32_t)(flag & 0x3) << 2;
-	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
-
-	int minZ = d;
-	int maxZ = -1;
-	int minY = h;
-	int maxY = -1;
-	int minX = w;
-	int maxX = -1;
-
+	// Phase 1: Find Z bounds by scanning slices from both ends
+	int minZ = -1;
 	for (int z = 0; z < d; ++z) {
+		if (scanFlagsLinear(_data + z * zStride, zStride, flagsMask)) {
+			minZ = z;
+			break;
+		}
+	}
+	if (minZ < 0) {
+		return Region::InvalidRegion;
+	}
+
+	int maxZ = minZ;
+	for (int z = d - 1; z > minZ; --z) {
+		if (scanFlagsLinear(_data + z * zStride, zStride, flagsMask)) {
+			maxZ = z;
+			break;
+		}
+	}
+
+	// Phase 2: Find Y and X bounds within [minZ, maxZ]
+	int minY = h, maxY = -1;
+	int minX = w, maxX = -1;
+
+	for (int z = minZ; z <= maxZ; ++z) {
 		const int64_t zBase = z * zStride;
-		for (int y = 0; y < h; ++y) {
-			const int64_t baseIndex = zBase + y * yStride;
 
-			bool lineHasFlag = false;
-			int offset = 0;
-			int remaining = w;
+		// Skip empty z-slices (minZ/maxZ are known to have flags)
+		if (z != minZ && z != maxZ && !scanFlagsLinear(_data + zBase, zStride, flagsMask)) {
+			continue;
+		}
 
-			if ((baseIndex & 1) && remaining > 0) {
-				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex];
-				if (*data32 & flagsMask32) {
-					lineHasFlag = true;
-				}
-				offset = 1;
-				remaining--;
-			}
-
-			if (!lineHasFlag) {
-				const int pairs = remaining / 2;
-				const uint64_t *data64 = (const uint64_t *)&_data[baseIndex + offset];
-				for (int i = 0; i < pairs; ++i) {
-					if (data64[i] & flagsMask64) {
-						lineHasFlag = true;
-						break;
-					}
-				}
-			}
-
-			if (!lineHasFlag && (remaining & 1)) {
-				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + offset + (remaining / 2) * 2];
-				if (*data32 & flagsMask32) {
-					lineHasFlag = true;
-				}
-			}
-
-			if (!lineHasFlag) {
+		// Scan rows below current minY for potential new minimum
+		for (int y = 0; y < minY; ++y) {
+			const int64_t base = zBase + y * yStride;
+			if (!scanFlagsLinear(_data + base, w, flagsMask)) {
 				continue;
 			}
-
-			minZ = core_min(minZ, z);
-			maxZ = core_max(maxZ, z);
-			minY = core_min(minY, y);
-			maxY = core_max(maxY, y);
-
+			minY = y;
 			for (int x = 0; x < minX; ++x) {
-				if (_data[baseIndex + x].getFlags() & flag) {
+				if (_data[base + x].getFlags() & flag) {
 					minX = x;
 					break;
 				}
 			}
-
 			for (int x = w - 1; x > maxX; --x) {
-				if (_data[baseIndex + x].getFlags() & flag) {
+				if (_data[base + x].getFlags() & flag) {
 					maxX = x;
 					break;
 				}
 			}
+			break;
 		}
-	}
 
-	if (maxZ < 0) {
-		return Region::InvalidRegion;
+		// Scan rows above current maxY for potential new maximum
+		for (int y = h - 1; y > maxY; --y) {
+			const int64_t base = zBase + y * yStride;
+			if (!scanFlagsLinear(_data + base, w, flagsMask)) {
+				continue;
+			}
+			maxY = y;
+			for (int x = 0; x < minX; ++x) {
+				if (_data[base + x].getFlags() & flag) {
+					minX = x;
+					break;
+				}
+			}
+			for (int x = w - 1; x > maxX; --x) {
+				if (_data[base + x].getFlags() & flag) {
+					maxX = x;
+					break;
+				}
+			}
+			break;
+		}
+
+		// Rows in [minY, maxY]: only update X bounds
+		if (minX > 0 || maxX < w - 1) {
+			for (int y = minY; y <= maxY; ++y) {
+				const int64_t base = zBase + y * yStride;
+				if (!scanFlagsLinear(_data + base, w, flagsMask)) {
+					continue;
+				}
+				for (int x = 0; x < minX; ++x) {
+					if (_data[base + x].getFlags() & flag) {
+						minX = x;
+						break;
+					}
+				}
+				for (int x = w - 1; x > maxX; --x) {
+					if (_data[base + x].getFlags() & flag) {
+						maxX = x;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	const glm::ivec3 &lower = _region.getLowerCorner();
