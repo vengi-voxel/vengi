@@ -835,6 +835,10 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 		Log::debug("Modify region for nodeid %i", nodeId);
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
+	const bool invalidateNodeCache = (flags & SceneModifiedFlags::InvalidateNodeCache) == SceneModifiedFlags::InvalidateNodeCache;
+	if (invalidateNodeCache) {
+		_selectionRegionCache.invalidate(nodeId);
+	}
 	markDirty();
 	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
 	if (resetTrace) {
@@ -2039,6 +2043,9 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 }
 
 voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
+	if (_selectionRegionCache.valid(nodeId)) {
+		return *_selectionRegionCache.value();
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || !node->isModelNode()) {
 		return voxel::Region::InvalidRegion;
@@ -2047,8 +2054,9 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
 	if (volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
-	// Calculate the bounding region of selected voxels
-	return volume->regionForFlag(voxel::FlagOutline);
+	const voxel::Region &region = volume->regionForFlag(voxel::FlagOutline);
+	_selectionRegionCache.set(nodeId, region);
+	return region;
 }
 
 void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {

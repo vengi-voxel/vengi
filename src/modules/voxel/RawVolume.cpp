@@ -250,6 +250,7 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 	const int d = _region.getDepthInVoxels();
 	const int64_t yStride = w;
 	const int64_t zStride = (int64_t)w * h;
+	// See voxel::Voxel::_flags
 	const uint32_t flagsMask = (uint32_t)(flag & 0x3) << 2;
 
 	// Phase 1: Find Z bounds by scanning slices from both ends

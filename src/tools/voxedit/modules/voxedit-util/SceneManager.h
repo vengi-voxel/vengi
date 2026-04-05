@@ -18,6 +18,7 @@
 #include "modifier/IModifierRenderer.h"
 #include "modifier/Modifier.h"
 #include "modifier/SceneModifiedFlags.h"
+#include "SceneGraphNodeCachedValue.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/Server.h"
@@ -141,6 +142,8 @@ protected:
 	command::ActionButton _zoomOut;
 
 	voxelutil::PickResult _result;
+
+	SceneGraphNodeCachedValue<voxel::Region> _selectionRegionCache;
 
 	void autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region);
 	bool loadGlobalClipboard(voxel::ClipboardData &clipData);
