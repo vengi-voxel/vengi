@@ -47,6 +47,7 @@ private:
 	bool _hasGizmo = false;
 	bool _hasApplyGizmo = false;
 	bool _useSimplePreview = false;
+	bool _previewNeedsExistingVolume = false;
 	bool _wantAABB = false;
 
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _parameterDescription;
@@ -94,6 +95,8 @@ public:
 
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
+	bool needsAdditionalAction(const BrushContext &ctx) const override;
+	bool previewNeedsExistingVolume() const;
 	bool active() const override;
 	void reset() override;
 	bool init() override;
@@ -139,6 +142,10 @@ inline const core::DynamicArray<core::String> &LuaBrush::parameters() const {
 
 inline bool LuaBrush::useSimplePreview() const {
 	return _useSimplePreview;
+}
+
+inline bool LuaBrush::previewNeedsExistingVolume() const {
+	return _previewNeedsExistingVolume;
 }
 
 } // namespace voxedit

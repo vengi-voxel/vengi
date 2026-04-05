@@ -700,6 +700,12 @@ bool Modifier::previewNeedsExistingVolume() const {
 	if (_brushType == BrushType::Select) {
 		return true;
 	}
+	if (_brushType == BrushType::Script) {
+		const LuaBrush *luaBrush = (const LuaBrush *)currentBrush();
+		if (luaBrush->previewNeedsExistingVolume()) {
+			return true;
+		}
+	}
 	if (_brushType == BrushType::Plane) {
 		return isMode(ModifierType::Place);
 	}

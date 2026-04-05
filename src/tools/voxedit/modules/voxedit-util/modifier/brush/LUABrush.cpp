@@ -420,6 +420,7 @@ void LuaBrush::shutdown() {
 	_hasGizmo = false;
 	_hasApplyGizmo = false;
 	_useSimplePreview = false;
+	_previewNeedsExistingVolume = false;
 	_wantAABB = false;
 	_scriptSource.clear();
 	_parameterDescription.clear();
@@ -525,6 +526,7 @@ bool LuaBrush::loadScript(const core::String &filename) {
 
 	// Check for settings() callback to configure preview mode and brush mode
 	_useSimplePreview = false;
+	_previewNeedsExistingVolume = false;
 	_wantAABB = false;
 	lua_getglobal(_lua, "settings");
 	if (lua_isfunction(_lua, -1)) {
@@ -543,6 +545,12 @@ bool LuaBrush::loadScript(const core::String &filename) {
 					_wantAABB = SDL_strcmp(mode, "aabb") == 0;
 				}
 				lua_pop(_lua, 1); // pop mode field
+
+				lua_getfield(_lua, -1, "existingvolume");
+				if (lua_isboolean(_lua, -1)) {
+					_previewNeedsExistingVolume = lua_toboolean(_lua, -1) != 0;
+				}
+				lua_pop(_lua, 1); // pop existingvolume field
 			}
 			lua_pop(_lua, 1); // pop settings table
 		} else {
@@ -646,6 +654,16 @@ core::String LuaBrush::scriptName() const {
 
 void LuaBrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
+	if (!_wantAABB && _hasCalcRegion) {
+		markDirty();
+	}
+}
+
+bool LuaBrush::needsAdditionalAction(const BrushContext &ctx) const {
+	if (!_wantAABB) {
+		return false;
+	}
+	return Super::needsAdditionalAction(ctx);
 }
 
 bool LuaBrush::wantAABB() const {
