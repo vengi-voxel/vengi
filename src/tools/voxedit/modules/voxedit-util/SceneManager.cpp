@@ -2046,8 +2046,8 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
 	if (_selectionRegionCache.valid(nodeId)) {
 		return *_selectionRegionCache.value();
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-	if (node == nullptr || !node->isModelNode()) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
 	const voxel::RawVolume *volume = node->volume();
