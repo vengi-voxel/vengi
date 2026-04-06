@@ -1484,11 +1484,11 @@ bool SceneManager::nodeCopy(int nodeId) {
 	if (node == nullptr) {
 		return false;
 	}
-	if (!node->hasSelection()) {
-		Log::debug("Nothing selected yet - failed to copy");
+	const voxel::ClipboardData &copyClipboardData = nodeClipboardCopy(*node);
+	if (!copyClipboardData) {
 		return false;
 	}
-	_copy = nodeClipboardCopy(*node);
+	_copy = copyClipboardData;
 	return _copy;
 }
 
@@ -1590,23 +1590,15 @@ bool SceneManager::nodePaste(int nodeId, const glm::ivec3& pos) {
 }
 
 bool SceneManager::nodeCut(int nodeId) {
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (!node.isModelNode()) {
-		Log::debug("Cut failed: not a model node");
-		return false;
-	}
-	voxel::RawVolume *volume = node.volume();
-	if (volume == nullptr) {
-		Log::debug("Cut failed: no voxel data");
-		return false;
-	}
-	if (!node.hasSelection()) {
-		Log::debug("Nothing selected - failed to cut");
-		return false;
-	}
-	voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
+	voxel::Region selectionRegion = selectionCalculateRegion(nodeId);
 	if (!selectionRegion.isValid()) {
 		Log::debug("Cut failed: no selected voxels found");
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	voxel::RawVolume *volume = node->volume();
+	if (volume == nullptr) {
+		Log::debug("Cut failed: no voxel data");
 		return false;
 	}
 
@@ -1614,6 +1606,7 @@ bool SceneManager::nodeCut(int nodeId) {
 	const glm::ivec3 &selMins = selectionRegion.getLowerCorner();
 	const glm::ivec3 &selMaxs = selectionRegion.getUpperCorner();
 
+	// TODO: PERF: use a sampler
 	for (int32_t z = selMins.z; z <= selMaxs.z; ++z) {
 		for (int32_t y = selMins.y; y <= selMaxs.y; ++y) {
 			for (int32_t x = selMins.x; x <= selMaxs.x; ++x) {
@@ -1634,7 +1627,7 @@ bool SceneManager::nodeCut(int nodeId) {
 	} else {
 		modifiedRegion = v->region();
 	}
-	_copy = {v, node.palette(), true};
+	_copy = {v, node->palette(), true};
 	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
