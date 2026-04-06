@@ -49,6 +49,7 @@
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxedit-util/network/ServerNetwork.h"
+#include "voxel/ClipboardData.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
@@ -81,7 +82,6 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VoxelUtil.h"
 
-#include "Clipboard.h"
 #include "Config.h"
 #include "CommandCompleter.h"
 
@@ -1417,19 +1417,41 @@ bool SceneManager::doRedo() {
 	return true;
 }
 
+voxel::ClipboardData SceneManager::nodeClipboardCopy(scenegraph::SceneGraphNode &node) {
+	voxel::Region selectionRegion = selectionCalculateRegion(node);
+	if (!selectionRegion.isValid()) {
+		Log::debug("No selection to copy for node %i", node.id());
+		return voxel::ClipboardData();
+	}
+
+	// Create a new volume with the selected voxels
+	voxel::RawVolume *v = new voxel::RawVolume(selectionRegion);
+	const glm::ivec3 &selMins = selectionRegion.getLowerCorner();
+	const glm::ivec3 &selMaxs = selectionRegion.getUpperCorner();
+
+	// TODO: PERF: use a sampler
+	for (int32_t z = selMins.z; z <= selMaxs.z; ++z) {
+		for (int32_t y = selMins.y; y <= selMaxs.y; ++y) {
+			for (int32_t x = selMins.x; x <= selMaxs.x; ++x) {
+				const voxel::Voxel &voxel = node.volume()->voxel(x, y, z);
+				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+					// Copy voxel without the outline flag
+					voxel::Voxel copiedVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(),
+																  voxel.getNormal(), 0, voxel.getBoneIdx());
+					v->setVoxel(x, y, z, copiedVoxel);
+				}
+			}
+		}
+	}
+	return voxel::ClipboardData(v, node.palette(), true);
+}
+
 bool SceneManager::saveSelection(const io::FileDescription& file) {
 	const int nodeId = activeNode();
-	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		Log::warn("Node with id %i wasn't found", nodeId);
 		return true;
-	}
-	if (node->type() != scenegraph::SceneGraphNodeType::Model) {
-		Log::warn("Given node is no model node");
-		return false;
-	}
-	if (!node->hasSelection()) {
-		return false;
 	}
 
 	voxelformat::SaveContext saveCtx;
@@ -1437,7 +1459,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 
-	voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
+	voxel::ClipboardData clipboardData = nodeClipboardCopy(*node);
 	if (!clipboardData) {
 		Log::warn("Failed to copy selection for node %i", nodeId);
 		return false;
@@ -1447,6 +1469,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(*node, newNode, false);
 	newNode.setVolume(new voxel::RawVolume(*clipboardData.volume));
+	newNode.setPalette(*clipboardData.palette);
 	newSceneGraph.emplace(core::move(newNode));
 	if (!voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
 		Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
@@ -1456,7 +1479,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 	return true;
 }
 
-bool SceneManager::copy(int nodeId) {
+bool SceneManager::nodeCopy(int nodeId) {
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return false;
@@ -1465,7 +1488,7 @@ bool SceneManager::copy(int nodeId) {
 		Log::debug("Nothing selected yet - failed to copy");
 		return false;
 	}
-	_copy = voxedit::tool::copy(*node);
+	_copy = nodeClipboardCopy(*node);
 	return _copy;
 }
 
@@ -1527,11 +1550,15 @@ bool SceneManager::loadGlobalClipboard(voxel::ClipboardData &clipData) {
 }
 
 bool SceneManager::paste(const glm::ivec3& pos) {
+	const int nodeId = activeNode();
+	return nodePaste(nodeId, pos);
+}
+
+bool SceneManager::nodePaste(int nodeId, const glm::ivec3& pos) {
 	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
 	}
-	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		Log::warn("paste: no active model node");
@@ -1542,8 +1569,12 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 			  _copy.volume->region().toString().c_str(), pos.x, pos.y, pos.z,
 			  destRegion.toString().c_str());
 	voxel::Region modifiedRegion;
-	voxel::ClipboardData voxelData(node->volume(), node->palette(), false);
-	voxedit::tool::paste(voxelData, _copy, pos, modifiedRegion);
+	voxel::Region region = _copy.volume->region();
+	region.shift(-region.getLowerCorner());
+	region.shift(pos);
+	modifiedRegion = region;
+	voxelutil::mergeVolumes(node->volume(), node->palette(), _copy.volume, *_copy.palette, region, _copy.volume->region());
+	Log::debug("Pasted %s", modifiedRegion.toString().c_str());
 	if (!modifiedRegion.isValid()) {
 		Log::warn("paste: modifiedRegion is invalid after paste");
 		return false;
@@ -1560,15 +1591,50 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 
 bool SceneManager::nodeCut(int nodeId) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.volume() == nullptr) {
+	if (!node.isModelNode()) {
+		Log::debug("Cut failed: not a model node");
+		return false;
+	}
+	voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		Log::debug("Cut failed: no voxel data");
 		return false;
 	}
 	if (!node.hasSelection()) {
 		Log::debug("Nothing selected - failed to cut");
 		return false;
 	}
+	voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
+	if (!selectionRegion.isValid()) {
+		Log::debug("Cut failed: no selected voxels found");
+		return false;
+	}
+
+	voxel::RawVolume *v = new voxel::RawVolume(selectionRegion);
+	const glm::ivec3 &selMins = selectionRegion.getLowerCorner();
+	const glm::ivec3 &selMaxs = selectionRegion.getUpperCorner();
+
+	for (int32_t z = selMins.z; z <= selMaxs.z; ++z) {
+		for (int32_t y = selMins.y; y <= selMaxs.y; ++y) {
+			for (int32_t x = selMins.x; x <= selMaxs.x; ++x) {
+				voxel::Voxel voxel = volume->voxel(x, y, z);
+				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+					voxel::Voxel copiedVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(),
+																  voxel.getNormal(), 0, voxel.getBoneIdx());
+					v->setVoxel(x, y, z, copiedVoxel);
+					volume->setVoxel(x, y, z, voxel::Voxel());
+				}
+			}
+		}
+	}
+
 	voxel::Region modifiedRegion;
-	_copy = voxedit::tool::cut(node, modifiedRegion);
+	if (modifiedRegion.isValid()) {
+		modifiedRegion.accumulate(v->region());
+	} else {
+		modifiedRegion = v->region();
+	}
+	_copy = {v, node.palette(), true};
 	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
@@ -1588,7 +1654,12 @@ bool SceneManager::globalCopy() {
 	// copy() only updates _copy when a selection exists; if there is no
 	// selection it leaves _copy unchanged, so a previously copied region
 	// is still used as a fallback.
-	copy(activeNode());
+	const int nodeId = activeNode();
+	return nodeGlobalCopy(nodeId);
+}
+
+bool SceneManager::nodeGlobalCopy(int nodeId) {
+	nodeCopy(nodeId);
 	if (!_copy) {
 		Log::warn("globalcopy: nothing to copy - make a selection first");
 		return false;
@@ -1632,12 +1703,14 @@ bool SceneManager::globalCopyVisible() {
 }
 
 bool SceneManager::globalPaste(const glm::ivec3 &pos) {
+	const int nodeId = activeNode();
+	return nodeGlobalPaste(nodeId, pos);
+}
+
+bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
 	if (!loadGlobalClipboard(_copy)) {
 		return false;
 	}
-
-	// If the clipboard fits entirely within the active node's volume at pos, merge into it
-	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node != nullptr) {
 		const glm::ivec3 dims = _copy.volume->region().getDimensionsInVoxels();
@@ -3613,7 +3686,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("copy")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to copy from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			copy(toNodeId(args, activeNode()));
+			nodeCopy(toNodeId(args, activeNode()));
 		}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste")

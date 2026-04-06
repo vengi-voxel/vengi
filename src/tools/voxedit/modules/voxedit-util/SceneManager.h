@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Clipboard.h"
 #include "ISceneRenderer.h"
 #include "LUAApiListener.h"
 #include "command/ActionButton.h"
@@ -25,6 +24,7 @@
 #include "voxedit-util/network/SessionRecorder.h"
 #include "voxedit-util/network/SessionPlayer.h"
 #include "sound/SoundManager.h"
+#include "voxel/ClipboardData.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
@@ -296,6 +296,7 @@ protected:
 	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
 	bool hasSelection(const scenegraph::SceneGraphNode &node) const;
 	voxel::Region selectionCalculateRegion(const scenegraph::SceneGraphNode &node);
+	voxel::ClipboardData nodeClipboardCopy(scenegraph::SceneGraphNode &node);
 
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
@@ -394,12 +395,17 @@ public:
 	 */
 	bool splitVolumes();
 
-	bool copy(int nodeId);
+	bool nodeCopy(int nodeId);
+	bool nodePaste(int nodeId, const glm::ivec3& pos);
+	bool nodeGlobalCopy(int nodeId);
+	bool nodeGlobalPaste(int nodeId, const glm::ivec3 &pos);
+
 	bool paste(const glm::ivec3 &pos);
+	bool globalPaste(const glm::ivec3 &pos);
 	bool globalCopy();
 	bool globalCopyVisible();
-	bool globalPaste(const glm::ivec3 &pos);
 	bool globalPasteNode(const glm::ivec3 &pos);
+
 	bool splatMerge(int sourceNodeId);
 	bool mergeActiveToBackground();
 	int mergeVisibleToTemp();

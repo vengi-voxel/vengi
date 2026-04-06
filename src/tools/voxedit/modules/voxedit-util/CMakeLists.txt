@@ -97,8 +97,6 @@ set(SRCS
 	SceneRenderer.h SceneRenderer.cpp
 
 	ModelNodeSettings.h
-
-	Clipboard.h Clipboard.cpp
 )
 
 set(LIB voxedit-util)
@@ -111,7 +109,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES $
 
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
-	tests/ClipboardTest.cpp
 	tests/ExtrudeBrushTest.cpp
 	tests/TransformBrushTest.cpp
 	tests/SculptBrushTest.cpp

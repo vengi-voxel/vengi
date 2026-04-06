@@ -12,7 +12,6 @@
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/Clipboard.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -54,21 +53,17 @@ void StampBrush::construct() {
 	command::Command::registerCommand("stampbrushuseselection")
 		.setHandler([this](const command::CommandArgs &) {
 			const int nodeId = _sceneMgr->sceneGraph().activeNode();
-			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
-			if (!node) {
-				return;
-			}
-			if (!node->hasSelection()) {
-				Log::warn("There's no selection to use as stamp");
-				return;
-			}
 			// Copy only selected voxels to the stamp volume using Clipboard::copy
-			voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
-			if (!clipboardData) {
-				Log::warn("Failed to copy selection to stamp");
+			if (!_sceneMgr->nodeCopy(nodeId)) {
+				Log::warn("Failed to copy selection to stamp. Make sure the selection contains voxels and is not empty.");
 				return;
 			}
-			setVolume(*clipboardData.volume, node->palette());
+			const voxel::ClipboardData &clipboardData = _sceneMgr->clipboardData();
+			if (!clipboardData) {
+				Log::warn("Clipboard is empty after copying selection to stamp.");
+				return;
+			}
+			setVolume(*clipboardData.volume, *clipboardData.palette);
 			// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
 			// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
 			command::executeCommands("select none");

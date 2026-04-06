@@ -328,7 +328,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 	ASSERT_NE(nullptr, node);
 	EXPECT_TRUE(_sceneMgr->hasSelection(node->id()));
-	EXPECT_TRUE(_sceneMgr->copy(node->id()));
+	EXPECT_TRUE(_sceneMgr->nodeCopy(node->id()));
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
 	EXPECT_TRUE(_sceneMgr->paste(testMins()));
@@ -1957,7 +1957,7 @@ TEST_F(SceneManagerTest, testAutoSelectOnPaste) {
 	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	// Copy and then paste
-	ASSERT_TRUE(_sceneMgr->copy(nodeId));
+	ASSERT_TRUE(_sceneMgr->nodeCopy(nodeId));
 	ASSERT_TRUE(_sceneMgr->paste(glm::ivec3(2, 0, 0)));
 
 	// The pasted voxels should have FlagOutline set
