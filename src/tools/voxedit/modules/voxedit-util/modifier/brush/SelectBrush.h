@@ -21,8 +21,6 @@ class RawVolume;
 
 namespace voxedit {
 
-class SceneManager;
-
 /**
  * @brief Selection mode for the SelectBrush
  */

@@ -105,7 +105,10 @@ set(LUA_SRCS
 	brushes/path.lua
 	brushes/modules/brush.lua
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES ${DEPENDENCIES})
+set(FILES
+	voxedit/chat-ping.wav
+)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} FILES ${FILES} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h

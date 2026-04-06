@@ -116,51 +116,54 @@ TEST_F(ModifierTest, testModifierAction) {
 }
 
 TEST_F(ModifierTest, testModifierSelection) {
-	voxel::RawVolume volume({-10, 10});
-	// Fill volume with voxels in the selection area
-	for (int z = -1; z <= 1; ++z) {
-		for (int y = -1; y <= 1; ++y) {
-			for (int x = -1; x <= 1; ++x) {
-				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-			}
-		}
-	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
-
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
-	EXPECT_TRUE(mgr.hasSelection(node.id())) << "Node should have selection after select()";
-	// Surface voxel at (1,0,0) should be selected
-	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
-		<< "Surface voxel at (1,0,0) should be selected";
-	// Interior voxel at (0,0,0) should also be selected
-	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Interior voxel should be selected";
-	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0)
+	const int nodeId = mgr.addModelChild("test", 10, 10, 10);
+	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
+	ASSERT_NE(node, nullptr);
+	voxel::RawVolume *volume = node->volume();
+	// Fill volume with voxels in the selection area
+	for (int z = 1; z <= 2; ++z) {
+		for (int y = 1; y <= 2; ++y) {
+			for (int x = 1; x <= 2; ++x) {
+				volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+
+	select(*node, modifier, glm::ivec3(1), glm::ivec3(2));
+
+	EXPECT_TRUE(mgr.hasSelection(nodeId)) << "Node should have selection after select()";
+	// Voxel at (2,1,1) should be selected
+	EXPECT_TRUE((volume->voxel(2, 1, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "Voxel at (2,1,1) should be selected";
+	// Voxel at (1,1,1) should also be selected
+	EXPECT_TRUE((volume->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0) << "Voxel at (1,1,1) should be selected";
+	EXPECT_FALSE((volume->voxel(3, 3, 3).getFlags() & voxel::FlagOutline) != 0)
 		<< "Voxel outside selection should not be selected";
 
-	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Override, BrushType::Shape);
-	scenegraph::SceneGraph sceneGraph;
+	prepare(modifier, glm::ivec3(0), glm::ivec3(4), ModifierType::Override, BrushType::Shape);
 	int modifierExecuted = 0;
-	EXPECT_TRUE(modifier.execute(sceneGraph, node,
+	EXPECT_TRUE(modifier.execute(mgr.sceneGraph(), *node,
 								 [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 									 ++modifierExecuted;
-									 EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
+									 EXPECT_EQ(voxel::Region(glm::ivec3(1), glm::ivec3(2)), region);
 								 }));
 	EXPECT_EQ(1, modifierExecuted);
-	// Surface voxels at corners should still have selection flag
-	EXPECT_TRUE((volume.voxel(-1, -1, -1).getFlags() & voxel::FlagOutline) != 0);
-	EXPECT_TRUE((volume.voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0);
-	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0);
-	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
-	EXPECT_TRUE(voxel::isAir(volume.voxel(-2, -2, -2).getMaterial()));
-	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
+	// Selected voxels at corners should still have selection flag
+	EXPECT_TRUE((volume->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((volume->voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((volume->voxel(3, 3, 3).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE(voxel::isAir(volume->voxel(1, 1, 1).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume->voxel(3, 3, 3).getMaterial()));
 	modifier.shutdown();
+	mgr.shutdown();
 }
 
 TEST_F(ModifierTest, testMaskBlocksNonAdjacentPlace) {
@@ -610,6 +613,7 @@ TEST_F(ModifierTest, testRenderSkippedWhenLocked) {
 	auto renderer = core::make_shared<TrackingModifierRenderer>();
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, renderer);
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
@@ -632,23 +636,23 @@ TEST_F(ModifierTest, testRenderSkippedWhenLocked) {
 TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 	SceneManager mgr(_testApp->timeProvider(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 	modifier.setAutoSelect(true);
 
-	voxel::RawVolume volume({-10, 10});
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
+	const int nodeId = mgr.addModelChild("select", 10, 10, 10);
+	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
+	ASSERT_NE(node, nullptr);
 
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
-	scenegraph::SceneGraph sceneGraph;
+	prepare(modifier, glm::ivec3(1), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
 	bool callbackFired = false;
-	modifier.execute(sceneGraph, node,
+	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_TRUE(mgr.hasSelection(node.id())) << "Placed voxels should be auto-selected";
-	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+	EXPECT_TRUE(mgr.hasSelection(nodeId)) << "Placed voxels should be auto-selected";
+	EXPECT_TRUE((node->volume()->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should have FlagOutline set";
 	modifier.shutdown();
 }
@@ -656,59 +660,63 @@ TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 TEST_F(ModifierTest, testAutoSelectDisabledNoSelection) {
 	SceneManager mgr(_testApp->timeProvider(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 	modifier.setAutoSelect(false);
 
-	voxel::RawVolume volume({-10, 10});
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
+	const int nodeId = mgr.addModelChild("select", 10, 10, 10);
+	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
+	ASSERT_NE(node, nullptr);
 
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
-	scenegraph::SceneGraph sceneGraph;
+	prepare(modifier, glm::ivec3(1), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
 	bool callbackFired = false;
-	modifier.execute(sceneGraph, node,
+	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_FALSE(mgr.hasSelection(node.id())) << "Placed voxels should not be selected when auto-select is off";
-	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+	EXPECT_FALSE(mgr.hasSelection(nodeId)) << "Placed voxels should not be selected when auto-select is off";
+	EXPECT_FALSE((node->volume()->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should not have FlagOutline when auto-select is off";
 	modifier.shutdown();
+	mgr.shutdown();
 }
 
 TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 	SceneManager mgr(_testApp->timeProvider(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 	modifier.setAutoSelect(true);
 
-	voxel::RawVolume volume({-10, 10});
+	const int nodeId = mgr.addModelChild("test", 10, 10, 10);
+	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
+	ASSERT_NE(node, nullptr);
+	voxel::RawVolume &volume = *node->volume();
 	// Pre-fill a voxel with selection flag at a position outside the new shape
 	volume.setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	// Select the whole volume so visual masking allows placement everywhere
 	volume.setFlags(volume.region(), voxel::FlagOutline);
 
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
-	ASSERT_TRUE(mgr.hasSelection(node.id())) << "Pre-condition: node should have selection";
+	ASSERT_TRUE(mgr.hasSelection(nodeId)) << "Pre-condition: node should have selection";
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
-	scenegraph::SceneGraph sceneGraph;
-	modifier.execute(sceneGraph, node);
+	modifier.execute(mgr.sceneGraph(), *node);
 
 	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Newly placed voxel should be selected";
 	EXPECT_FALSE((volume.voxel(5, 5, 5).getFlags() & voxel::FlagOutline) != 0)
 		<< "Previously selected voxel should have its selection cleared";
 	modifier.shutdown();
+	mgr.shutdown();
 }
 
 TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
 	SceneManager mgr(_testApp->timeProvider(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
@@ -752,6 +760,7 @@ TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
 	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Original voxel at (0,0,0) should be auto-selected";
 	modifier.shutdown();
+	mgr.shutdown();
 }
 
 } // namespace voxedit

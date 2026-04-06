@@ -10,7 +10,6 @@ set(SRCS
 set(FILES
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg
-	voxedit/chat-ping.wav
 	shared/font.ttf
 )
 
