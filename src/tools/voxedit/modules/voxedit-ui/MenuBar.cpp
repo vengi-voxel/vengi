@@ -162,7 +162,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_SCAN, _("Mask"))) {
+		if (ImGui::BeginIconMenu(ICON_LC_SCAN, _("Select"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("None"), "select none", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Select"), "brushselect", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Invert"), "select invert", true, &listener);
