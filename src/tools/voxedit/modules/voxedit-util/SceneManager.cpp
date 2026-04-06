@@ -2080,8 +2080,9 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	}
 	node->clearSelection();
 	node->select(clamped);
-	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		_modifierFacade.selectBrush().setBox3DSelectionRegion(clamped);
+	SelectBrush &selectBrush = _modifierFacade.selectBrush();
+	if (selectBrush.selectMode() == SelectMode::Box3D) {
+		selectBrush.setBox3DSelectionRegion(clamped);
 	}
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
