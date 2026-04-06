@@ -1998,6 +1998,9 @@ void SceneManager::selectionInvert(int nodeId) {
 	if (volume == nullptr) {
 		return;
 	}
+	// TODO: SELECTION: Box3D selection region is not updated here - and should we? there is no single region anymore
+	// for inverting a box3d region. Maybe we should switch from box3d to another selection mode once invert was triggered in box3d mode?
+	// TODO: SELECTION: move the real invert logic for the volume into the SceneGraphNode like the other select methods are doing this, too.
 	volume->toggleFlags(volume->region(), voxel::FlagOutline);
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
