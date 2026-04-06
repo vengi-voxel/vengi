@@ -3302,12 +3302,6 @@ static int luaVoxel_scenegraphnode_region(lua_State* s) {
 	return luaVoxel_pushregion(s, region);
 }
 
-static int luaVoxel_scenegraphnode_hasselection(lua_State* s) {
-	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushboolean(s, node->node->hasSelection() ? 1 : 0);
-	return 1;
-}
-
 static int luaVoxel_scenegraphnode_clearselection(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	node->node->clearSelection();
@@ -5714,18 +5708,6 @@ static int luaVoxel_scenegraphnode_removekeyframe_jsonhelp(lua_State* s) {
 	return 1;
 }
 
-static int luaVoxel_scenegraphnode_hasselection_jsonhelp(lua_State* s) {
-	const char *json = R"({
-		"name": "hasSelection",
-		"summary": "Check whether the node has any selected voxels.",
-		"parameters": [],
-		"returns": [
-			{"type": "boolean", "description": "True if the node has at least one selected voxel."}
-		]})";
-	lua_pushstring(s, json);
-	return 1;
-}
-
 static int luaVoxel_scenegraphnode_clearselection_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "clearSelection",
@@ -6320,7 +6302,6 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"numKeyFrames", luaVoxel_scenegraphnode_numkeyframes, luaVoxel_scenegraphnode_numkeyframes_jsonhelp},
 		{"children", luaVoxel_scenegraphnode_children, luaVoxel_scenegraphnode_children_jsonhelp},
 		{"region", luaVoxel_scenegraphnode_region, luaVoxel_scenegraphnode_region_jsonhelp},
-		{"hasSelection", luaVoxel_scenegraphnode_hasselection, luaVoxel_scenegraphnode_hasselection_jsonhelp},
 		{"clearSelection", luaVoxel_scenegraphnode_clearselection, luaVoxel_scenegraphnode_clearselection_jsonhelp},
 		{"hide", luaVoxel_scenegraphnode_hide, luaVoxel_scenegraphnode_hide_jsonhelp},
 		{"show", luaVoxel_scenegraphnode_show, luaVoxel_scenegraphnode_show_jsonhelp},
