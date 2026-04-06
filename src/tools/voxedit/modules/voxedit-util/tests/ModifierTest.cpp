@@ -135,7 +135,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 	ASSERT_TRUE(modifier.init());
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
-	EXPECT_TRUE(node.hasSelection()) << "Node should have selection after select()";
+	EXPECT_TRUE(mgr.hasSelection(node.id())) << "Node should have selection after select()";
 	// Surface voxel at (1,0,0) should be selected
 	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Surface voxel at (1,0,0) should be selected";
@@ -647,7 +647,7 @@ TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 	modifier.execute(sceneGraph, node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_TRUE(node.hasSelection()) << "Placed voxels should be auto-selected";
+	EXPECT_TRUE(mgr.hasSelection(node.id())) << "Placed voxels should be auto-selected";
 	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should have FlagOutline set";
 	modifier.shutdown();
@@ -671,7 +671,7 @@ TEST_F(ModifierTest, testAutoSelectDisabledNoSelection) {
 	modifier.execute(sceneGraph, node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_FALSE(node.hasSelection()) << "Placed voxels should not be selected when auto-select is off";
+	EXPECT_FALSE(mgr.hasSelection(node.id())) << "Placed voxels should not be selected when auto-select is off";
 	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should not have FlagOutline when auto-select is off";
 	modifier.shutdown();
@@ -693,7 +693,7 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
-	ASSERT_TRUE(node.hasSelection()) << "Pre-condition: node should have selection";
+	ASSERT_TRUE(mgr.hasSelection(node.id())) << "Pre-condition: node should have selection";
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;

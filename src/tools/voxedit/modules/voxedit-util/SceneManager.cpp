@@ -313,14 +313,11 @@ void SceneManager::nodeGroupDeleteSelected() {
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
-			return;
-		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
 		if (!selRegion.isValid()) {
 			return;
 		}
@@ -340,14 +337,11 @@ void SceneManager::nodeGroupColorSelected(uint8_t colorIndex) {
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
-			return;
-		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
 		if (!selRegion.isValid()) {
 			return;
 		}
@@ -363,15 +357,12 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		if (!selRegion.isValid()) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
-			return;
-		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
-		if (!selRegion.isValid()) {
 			return;
 		}
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
@@ -400,15 +391,12 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		if (!selRegion.isValid()) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
-			return;
-		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
-		if (!selRegion.isValid()) {
 			return;
 		}
 		const voxel::Region &volRegion = v->region();
@@ -468,15 +456,12 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		if (!selRegion.isValid()) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
-			return;
-		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
-		if (!selRegion.isValid()) {
 			return;
 		}
 		const voxel::Region &volRegion = v->region();
@@ -515,14 +500,11 @@ void SceneManager::nodeGroupSelectionGrow() {
 		if (node == nullptr) {
 			return;
 		}
-		if (!node->hasSelection()) {
-			return;
-		}
 		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(groupNodeId);
+		const voxel::Region selRegion = selectionCalculateRegion(*node);
 		if (!selRegion.isValid()) {
 			return;
 		}
@@ -2012,7 +1994,7 @@ void SceneManager::selectionUnselect(int nodeId) {
 		return;
 	}
 	// Only re-extract where voxels actually had FlagOutline set
-	const voxel::Region dirtyRegion = selectionCalculateRegion(nodeId);
+	const voxel::Region dirtyRegion = selectionCalculateRegion(*node);
 	node->clearSelection();
 	_modifierFacade.selectBrush().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
 	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
@@ -2035,6 +2017,18 @@ void SceneManager::selectionSelectAll(int nodeId) {
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
 }
 
+bool SceneManager::hasSelection(const scenegraph::SceneGraphNode &node) const {
+	return node.hasSelection();
+}
+
+bool SceneManager::hasSelection(int nodeId) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return false;
+	}
+	return hasSelection(*node);
+}
+
 bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || !node->isModelNode()) {
@@ -2048,21 +2042,28 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 	return (voxel.getFlags() & voxel::FlagOutline) != 0;
 }
 
-voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
-	if (_selectionRegionCache.valid(nodeId)) {
-		return *_selectionRegionCache.value();
-	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-	if (node == nullptr) {
+voxel::Region SceneManager::selectionCalculateRegion(const scenegraph::SceneGraphNode &node) {
+	if (!hasSelection(node)) {
 		return voxel::Region::InvalidRegion;
 	}
-	const voxel::RawVolume *volume = node->volume();
+	if (_selectionRegionCache.valid(node.id())) {
+		return *_selectionRegionCache.value();
+	}
+	const voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
 	const voxel::Region &region = volume->regionForFlag(voxel::FlagOutline);
-	_selectionRegionCache.set(nodeId, region);
+	_selectionRegionCache.set(node.id(), region);
 	return region;
+}
+
+voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return voxel::Region::InvalidRegion;
+	}
+	return selectionCalculateRegion(*node);
 }
 
 void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
@@ -2080,7 +2081,7 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	// whose FlagOutline bit changes. Everything outside is unchanged, so no mesh
 	// re-extraction is needed there.
 	voxel::Region dirtyRegion = clamped;
-	const voxel::Region oldRegion = selectionCalculateRegion(nodeId);
+	const voxel::Region oldRegion = selectionCalculateRegion(*node);
 	if (oldRegion.isValid()) {
 		dirtyRegion.accumulate(oldRegion);
 	}
@@ -2534,6 +2535,14 @@ bool SceneManager::splitVolumes() {
 	return false;
 }
 
+const scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNode(int nodeId) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		return nullptr;
+	}
+	return node;
+}
+
 scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNode(int nodeId) {
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
@@ -2771,8 +2780,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	if (v == nullptr) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-	if (node && node->hasSelection()) {
+	if (hasSelection(nodeId)) {
 		// Move only the selected voxels (those with FlagOutline set)
 		const voxel::Region &region = v->region();
 		const glm::ivec3 &mins = region.getLowerCorner();
@@ -3000,7 +3008,7 @@ void SceneManager::construct() {
 			if (node == nullptr) {
 				return;
 			}
-			const voxel::Region &region = selectionCalculateRegion(activeNodeId);
+			const voxel::Region &region = selectionCalculateRegion(*node);
 			nodeResize(activeNodeId, region);
 		}).setHelp(_("Resize the volume to the current selection"));
 
@@ -3611,9 +3619,8 @@ void SceneManager::construct() {
 	command::Command::registerCommand("paste")
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = activeNode();
-			scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-			if (node && node->hasSelection()) {
-				const voxel::Region &region = selectionCalculateRegion(nodeId);
+			const voxel::Region &region = selectionCalculateRegion(nodeId);
+			if (region.isValid()) {
 				paste(region.getLowerCorner());
 			} else {
 				paste(referencePosition());

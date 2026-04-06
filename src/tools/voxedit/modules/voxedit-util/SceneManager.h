@@ -294,6 +294,8 @@ protected:
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
+	bool hasSelection(const scenegraph::SceneGraphNode &node) const;
+	voxel::Region selectionCalculateRegion(const scenegraph::SceneGraphNode &node);
 
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
@@ -411,6 +413,7 @@ public:
 	void selectionFinalizeLasso(int nodeId);
 	void selectionCancelLasso(int nodeId);
 	void selectionLassoUndoVertex(int nodeId);
+	bool hasSelection(int nodeId) const;
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
 	voxel::Region selectionCalculateRegion(int nodeId);
 
@@ -524,6 +527,7 @@ public:
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
+	const scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::UUID &uuid);
 
 	const voxel::ClipboardData &clipboardData() const;

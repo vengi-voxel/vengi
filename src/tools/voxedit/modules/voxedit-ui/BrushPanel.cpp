@@ -202,7 +202,7 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, Br
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
 										command::CommandExecutionListener &listener) {
 	ui::ScopedStyle selectionStyle;
-	ImGui::BeginDisabled(!node.hasSelection());
+	ImGui::BeginDisabled(!_sceneMgr->hasSelection(node.id()));
 	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
 	ImGui::EndDisabled();
 }
@@ -503,15 +503,13 @@ void BrushPanel::updateRulerBrushPanel(command::CommandExecutionListener &listen
 	}
 }
 
-void BrushPanel::handleSelectBox3D(const scenegraph::SceneGraphNode *node) {
-	if (!node) {
-		return;
-	}
-	if (!node->hasSelection()) {
-		return;
-	}
-	voxel::Region sel = _sceneMgr->selectionCalculateRegion(node->id());
+void BrushPanel::handleSelectBox3D(int nodeId) {
+	voxel::Region sel = _sceneMgr->selectionCalculateRegion(nodeId);
 	if (!sel.isValid()) {
+		return;
+	}
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+	if (node == nullptr) {
 		return;
 	}
 	ImGui::SeparatorText(_("Selection bounds"));
@@ -583,6 +581,275 @@ void BrushPanel::handleSelectBox3D(const scenegraph::SceneGraphNode *node) {
 	ImGui::Text(_("Size: %d x %d x %d"), size.x, size.y, size.z);
 }
 
+void BrushPanel::handleSelectCircle(int nodeId) {
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	ImGui::SeparatorText(_("Circle selection"));
+	const voxel::Region &vol = node->region();
+	const glm::ivec3 &vMins = vol.getLowerCorner();
+	const glm::ivec3 &vMaxs = vol.getUpperCorner();
+	glm::ivec3 center = brush.ellipseCenter();
+	int radiusU = brush.ellipseRadiusU();
+	int radiusV = brush.ellipseRadiusV();
+	bool changed = false;
+
+	int uAxis;
+	int vAxis;
+	SelectBrush::ellipseAxes(brush.ellipseFace(), uAxis, vAxis);
+	const char *axisNames[] = {"X", "Y", "Z"};
+
+	auto ellipseSlider = [&changed](const char *id, int *val, int lo, int hi) {
+		ImGui::PushID(id);
+		const float btnW = ImGui::GetFrameHeight();
+		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			*val = glm::max(*val - 1, lo);
+			changed = true;
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		changed |= ImGui::SliderInt("", val, lo, hi);
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			*val = glm::min(*val + 1, hi);
+			changed = true;
+		}
+		ImGui::PopID();
+	};
+
+	ImGui::TextUnformatted(_("Center"));
+	ellipseSlider("##cx", &center[uAxis], vMins[uAxis], vMaxs[uAxis]);
+	ellipseSlider("##cy", &center[vAxis], vMins[vAxis], vMaxs[vAxis]);
+
+	// Max radius is half the volume dimension on each axis
+	const int maxRadiusU = (vMaxs[uAxis] - vMins[uAxis]) / 2;
+	const int maxRadiusV = (vMaxs[vAxis] - vMins[vAxis]) / 2;
+	ImGui::Text(_("Radius %s"), axisNames[uAxis]);
+	ellipseSlider("##ru", &radiusU, 0, maxRadiusU);
+	ImGui::Text(_("Radius %s"), axisNames[vAxis]);
+	ellipseSlider("##rv", &radiusV, 0, maxRadiusV);
+
+	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(brush.ellipseFace()));
+	const int maxDepth = (vMaxs[faceAxisIdx] - vMins[faceAxisIdx]) / 2;
+	int depth = brush.ellipseDepth();
+	ImGui::Text(_("Depth %s"), axisNames[faceAxisIdx]);
+	ImGui::TooltipTextUnformatted(
+		_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
+	ellipseSlider("##depth", &depth, 1, maxDepth);
+
+	bool is3D = brush.ellipse3D();
+	if (ImGui::Checkbox(_("3D ellipsoid"), &is3D)) {
+		brush.setEllipse3D(is3D);
+		changed = true;
+	}
+	ImGui::TooltipTextUnformatted(
+		_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
+
+	if (changed) {
+		brush.setEllipseCenter(center);
+		brush.setEllipseRadiusU(radiusU);
+		brush.setEllipseRadiusV(radiusV);
+		brush.setEllipseDepth(depth);
+		_sceneMgr->selectionSetEllipse(nodeId);
+	}
+}
+
+void BrushPanel::handleSelectPaint(int nodeId) {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	ImGui::SeparatorText(_("Paint selection"));
+	static constexpr int MaxPaintRadius = 32;
+	int rad = brush.radius();
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	ImGui::TextUnformatted(_("Radius"));
+	ImGui::TooltipTextUnformatted(_("Brush radius for paint selection. Hold mouse and drag to select voxels."));
+	ImGui::PushID("paintradius");
+	if (ImGui::Button("-", ImVec2(btnW, 0))) {
+		rad = glm::max(rad - 1, 0);
+		brush.setRadius(rad);
+	}
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+	if (ImGui::SliderInt("##paintradius", &rad, 0, MaxPaintRadius)) {
+		brush.setRadius(rad);
+	}
+	ImGui::SameLine(0, spacing);
+	if (ImGui::Button("+", ImVec2(btnW, 0))) {
+		rad = glm::min(rad + 1, MaxPaintRadius);
+		brush.setRadius(rad);
+	}
+	ImGui::PopID();
+	bool growRegion = brush.paintGrowRegion();
+	if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
+		brush.setPaintGrowRegion(growRegion);
+	}
+	ImGui::TooltipTextUnformatted(
+		_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
+}
+
+void BrushPanel::handleSelectFuzzyColor() {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	float threshold = brush.colorThreshold();
+	if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin,
+						   color::ApproximationDistanceLoose, "%.0f")) {
+		brush.setColorThreshold(threshold);
+	}
+	ImGui::TooltipTextUnformatted(
+		_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
+}
+
+void BrushPanel::handleSelectFlatSurface() {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	int deviation = brush.flatDeviation();
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	ImGui::TextUnformatted(_("Accepted deviation"));
+	ImGui::TooltipTextUnformatted(
+		_("How many voxels above or below the clicked face the fill may deviate from the start position"));
+	ImGui::PushID("flatdeviation");
+	if (ImGui::Button("-", ImVec2(btnW, 0))) {
+		deviation = glm::max(deviation - 1, 0);
+		brush.setFlatDeviation(deviation);
+	}
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+	if (ImGui::SliderInt("##flatdeviation", &deviation, 0, SelectBrush::MaxFlatDeviation)) {
+		brush.setFlatDeviation(deviation);
+	}
+	ImGui::SameLine(0, spacing);
+	if (ImGui::Button("+", ImVec2(btnW, 0))) {
+		deviation = glm::min(deviation + 1, SelectBrush::MaxFlatDeviation);
+		brush.setFlatDeviation(deviation);
+	}
+	ImGui::PopID();
+}
+
+void BrushPanel::handleSelectSlope(int nodeId) {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	bool changed = false;
+
+	int deviation = brush.slopeDeviation();
+	ImGui::TextUnformatted(_("Max deviation"));
+	ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
+									"to be included in the selection"));
+	ImGui::PushID("slopedeviation");
+	if (ImGui::Button("-", ImVec2(btnW, 0))) {
+		deviation = glm::max(deviation - 1, 0);
+		brush.setSlopeDeviation(deviation);
+		changed = true;
+	}
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+	if (ImGui::SliderInt("##slopedeviation", &deviation, 0, SelectBrush::MaxSlopeDeviation)) {
+		brush.setSlopeDeviation(deviation);
+		changed = true;
+	}
+	ImGui::SameLine(0, spacing);
+	if (ImGui::Button("+", ImVec2(btnW, 0))) {
+		deviation = glm::min(deviation + 1, SelectBrush::MaxSlopeDeviation);
+		brush.setSlopeDeviation(deviation);
+		changed = true;
+	}
+	ImGui::PopID();
+
+	int sampleDist = brush.slopeSampleDistance();
+	ImGui::TextUnformatted(_("Sample distance"));
+	ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. "
+									"Larger values give smoother slope detection on staircases"));
+	ImGui::PushID("slopesample");
+	if (ImGui::Button("-", ImVec2(btnW, 0))) {
+		sampleDist = glm::max(sampleDist - 1, SelectBrush::MinSlopeSampleDistance);
+		brush.setSlopeSampleDistance(sampleDist);
+		changed = true;
+	}
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+	if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance,
+						 SelectBrush::MaxSlopeSampleDistance)) {
+		brush.setSlopeSampleDistance(sampleDist);
+		changed = true;
+	}
+	ImGui::SameLine(0, spacing);
+	if (ImGui::Button("+", ImVec2(btnW, 0))) {
+		sampleDist = glm::min(sampleDist + 1, SelectBrush::MaxSlopeSampleDistance);
+		brush.setSlopeSampleDistance(sampleDist);
+		changed = true;
+	}
+	ImGui::PopID();
+
+	if (changed && brush.slopeValid()) {
+		_sceneMgr->selectionSetSlope(nodeId);
+	}
+}
+
+void BrushPanel::handleSelectLasso(command::CommandExecutionListener &listener) {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	ImGui::SeparatorText(_("Lasso selection"));
+	if (brush.lassoAccumulating()) {
+		const int vertexCount = (int)brush.lassoPath().size();
+		ImGui::Text(_("%d vertices - click near first vertex to close"), vertexCount);
+		ImGui::CommandIconButton(ICON_LC_CHECK, _("Apply Lasso"), "finalizelasso", listener);
+		ImGui::TooltipTextUnformatted(
+			_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
+		ImGui::SameLine();
+		ImGui::CommandIconButton(ICON_LC_X, _("Cancel Lasso"), "cancellasso", listener);
+		ImGui::TooltipTextUnformatted(_("Discard the in-progress lasso polygon (bind Escape to cancellasso)"));
+		if (vertexCount > 1) {
+			ImGui::SameLine();
+			ImGui::CommandIconButton(ICON_LC_UNDO_2, _("Undo Vertex"), "undolassovertex", listener);
+			ImGui::TooltipTextUnformatted(_("Remove the last placed lasso vertex"));
+		}
+	} else {
+		ImGui::TextUnformatted(_("Click on the surface to start drawing a polygon"));
+	}
+}
+
+void BrushPanel::handleSelectHoleRim2D() {
+	ImGui::SeparatorText(_("Hole rim selection"));
+	ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks "
+							 "into the opening or lies flat on the surface containing the hole."));
+}
+
+void BrushPanel::handleSelectHoleRim3D() {
+	ImGui::SeparatorText(_("Hole rim selection (3D)"));
+	ImGui::TextUnformatted(
+		_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest "
+		  "loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
+}
+
+void BrushPanel::handleSelectColumnRim2D() {
+	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	ImGui::SeparatorText(_("Column rim selection"));
+	ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face "
+							 "determines the cross-section plane with fallback. Lock the normal axis to always "
+							 "select a specific circumference direction."));
+
+	// Normal axis selector: Auto tries clicked-face plane first with fallback;
+	// locking X/Y/Z disables the fallback for predictable results on symmetric shapes.
+	// math::Axis values are None=0, X=1, Y=2, Z=4 (bit flags), so use an explicit table.
+	static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X, math::Axis::Y, math::Axis::Z};
+	const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"), C_("ColumnRimAxis", "Y"),
+							   C_("ColumnRimAxis", "Z")};
+	const math::Axis currentAxis = brush.columnRimNormalAxis();
+	int axisIdx = 0;
+	for (int i = 1; i < (int)lengthof(axisValues); ++i) {
+		if (axisValues[i] == currentAxis) {
+			axisIdx = i;
+			break;
+		}
+	}
+	if (ImGui::Combo(_("Normal axis"), &axisIdx, axisNames, lengthof(axisNames))) {
+		brush.setColumnRimNormalAxis(axisValues[axisIdx]);
+	}
+	ImGui::TooltipTextUnformatted(
+		_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
+}
+
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	SelectBrush &brush = modifier.selectBrush();
@@ -614,275 +881,51 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	}
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
-	const bool hasSelection = node != nullptr && node->hasSelection();
 	ImGui::SeparatorText(_("Selection actions"));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select Only Color"), "selectonlycolor", listener);
 	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Color Selected"), "colorselected", listener);
-	ImGui::BeginDisabled(!hasSelection);
+	ImGui::BeginDisabled(!_sceneMgr->hasSelection(nodeId));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", listener);
 	ImGui::EndDisabled();
 
 	if (brush.selectMode() == SelectMode::FuzzyColor) {
-		float threshold = brush.colorThreshold();
-		if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin,
-							   color::ApproximationDistanceLoose, "%.0f")) {
-			brush.setColorThreshold(threshold);
-		}
-		ImGui::TooltipTextUnformatted(
-			_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
+		handleSelectFuzzyColor();
 	}
 
 	if (brush.selectMode() == SelectMode::FlatSurface) {
-		int deviation = brush.flatDeviation();
-		const float btnW = ImGui::GetFrameHeight();
-		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-		ImGui::TextUnformatted(_("Accepted deviation"));
-		ImGui::TooltipTextUnformatted(
-			_("How many voxels above or below the clicked face the fill may deviate from the start position"));
-		ImGui::PushID("flatdeviation");
-		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			deviation = glm::max(deviation - 1, 0);
-			brush.setFlatDeviation(deviation);
-		}
-		ImGui::SameLine(0, spacing);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("##flatdeviation", &deviation, 0, SelectBrush::MaxFlatDeviation)) {
-			brush.setFlatDeviation(deviation);
-		}
-		ImGui::SameLine(0, spacing);
-		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			deviation = glm::min(deviation + 1, SelectBrush::MaxFlatDeviation);
-			brush.setFlatDeviation(deviation);
-		}
-		ImGui::PopID();
+		handleSelectFlatSurface();
 	}
 
 	if (brush.selectMode() == SelectMode::Slope) {
-		const float btnW = ImGui::GetFrameHeight();
-		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-		bool changed = false;
-
-		int deviation = brush.slopeDeviation();
-		ImGui::TextUnformatted(_("Max deviation"));
-		ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
-										"to be included in the selection"));
-		ImGui::PushID("slopedeviation");
-		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			deviation = glm::max(deviation - 1, 0);
-			brush.setSlopeDeviation(deviation);
-			changed = true;
-		}
-		ImGui::SameLine(0, spacing);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("##slopedeviation", &deviation, 0, SelectBrush::MaxSlopeDeviation)) {
-			brush.setSlopeDeviation(deviation);
-			changed = true;
-		}
-		ImGui::SameLine(0, spacing);
-		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			deviation = glm::min(deviation + 1, SelectBrush::MaxSlopeDeviation);
-			brush.setSlopeDeviation(deviation);
-			changed = true;
-		}
-		ImGui::PopID();
-
-		int sampleDist = brush.slopeSampleDistance();
-		ImGui::TextUnformatted(_("Sample distance"));
-		ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. "
-										"Larger values give smoother slope detection on staircases"));
-		ImGui::PushID("slopesample");
-		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			sampleDist = glm::max(sampleDist - 1, SelectBrush::MinSlopeSampleDistance);
-			brush.setSlopeSampleDistance(sampleDist);
-			changed = true;
-		}
-		ImGui::SameLine(0, spacing);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance,
-							 SelectBrush::MaxSlopeSampleDistance)) {
-			brush.setSlopeSampleDistance(sampleDist);
-			changed = true;
-		}
-		ImGui::SameLine(0, spacing);
-		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			sampleDist = glm::min(sampleDist + 1, SelectBrush::MaxSlopeSampleDistance);
-			brush.setSlopeSampleDistance(sampleDist);
-			changed = true;
-		}
-		ImGui::PopID();
-
-		if (changed && brush.slopeValid()) {
-			_sceneMgr->selectionSetSlope(nodeId);
-		}
+		handleSelectSlope(nodeId);
 	}
 
 	if (brush.selectMode() == SelectMode::Lasso) {
-		ImGui::SeparatorText(_("Lasso selection"));
-		if (brush.lassoAccumulating()) {
-			const int vertexCount = (int)brush.lassoPath().size();
-			ImGui::Text(_("%d vertices - click near first vertex to close"), vertexCount);
-			ImGui::CommandIconButton(ICON_LC_CHECK, _("Apply Lasso"), "finalizelasso", listener);
-			ImGui::TooltipTextUnformatted(
-				_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
-			ImGui::SameLine();
-			ImGui::CommandIconButton(ICON_LC_X, _("Cancel Lasso"), "cancellasso", listener);
-			ImGui::TooltipTextUnformatted(_("Discard the in-progress lasso polygon (bind Escape to cancellasso)"));
-			if (vertexCount > 1) {
-				ImGui::SameLine();
-				ImGui::CommandIconButton(ICON_LC_UNDO_2, _("Undo Vertex"), "undolassovertex", listener);
-				ImGui::TooltipTextUnformatted(_("Remove the last placed lasso vertex"));
-			}
-		} else {
-			ImGui::TextUnformatted(_("Click on the surface to start drawing a polygon"));
-		}
+		handleSelectLasso(listener);
 	}
 
 	if (brush.selectMode() == SelectMode::HoleRim2D) {
-		ImGui::SeparatorText(_("Hole rim selection"));
-		ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks "
-								 "into the opening or lies flat on the surface containing the hole."));
+		handleSelectHoleRim2D();
 	}
 
 	if (brush.selectMode() == SelectMode::HoleRim3D) {
-		ImGui::SeparatorText(_("Hole rim selection (3D)"));
-		ImGui::TextUnformatted(
-			_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest "
-			  "loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
+		handleSelectHoleRim3D();
 	}
 
 	if (brush.selectMode() == SelectMode::ColumnRim2D) {
-		ImGui::SeparatorText(_("Column rim selection"));
-		ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face "
-								 "determines the cross-section plane with fallback. Lock the normal axis to always "
-								 "select a specific circumference direction."));
-
-		// Normal axis selector: Auto tries clicked-face plane first with fallback;
-		// locking X/Y/Z disables the fallback for predictable results on symmetric shapes.
-		// math::Axis values are None=0, X=1, Y=2, Z=4 (bit flags), so use an explicit table.
-		static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X, math::Axis::Y, math::Axis::Z};
-		const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"), C_("ColumnRimAxis", "Y"),
-								   C_("ColumnRimAxis", "Z")};
-		const math::Axis currentAxis = brush.columnRimNormalAxis();
-		int axisIdx = 0;
-		for (int i = 1; i < (int)lengthof(axisValues); ++i) {
-			if (axisValues[i] == currentAxis) {
-				axisIdx = i;
-				break;
-			}
-		}
-		if (ImGui::Combo(_("Normal axis"), &axisIdx, axisNames, lengthof(axisNames))) {
-			brush.setColumnRimNormalAxis(axisValues[axisIdx]);
-		}
-		ImGui::TooltipTextUnformatted(
-			_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
+		handleSelectColumnRim2D();
 	}
 
 	if (brush.selectMode() == SelectMode::Paint) {
-		ImGui::SeparatorText(_("Paint selection"));
-		static constexpr int MaxPaintRadius = 32;
-		int rad = brush.radius();
-		const float btnW = ImGui::GetFrameHeight();
-		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-		ImGui::TextUnformatted(_("Radius"));
-		ImGui::TooltipTextUnformatted(_("Brush radius for paint selection. Hold mouse and drag to select voxels."));
-		ImGui::PushID("paintradius");
-		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			rad = glm::max(rad - 1, 0);
-			brush.setRadius(rad);
-		}
-		ImGui::SameLine(0, spacing);
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-		if (ImGui::SliderInt("##paintradius", &rad, 0, MaxPaintRadius)) {
-			brush.setRadius(rad);
-		}
-		ImGui::SameLine(0, spacing);
-		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			rad = glm::min(rad + 1, MaxPaintRadius);
-			brush.setRadius(rad);
-		}
-		ImGui::PopID();
-		bool growRegion = brush.paintGrowRegion();
-		if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
-			brush.setPaintGrowRegion(growRegion);
-		}
-		ImGui::TooltipTextUnformatted(
-			_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
+		handleSelectPaint(nodeId);
 	}
 
-	if (node && node->hasSelection() && brush.selectMode() == SelectMode::Circle && brush.ellipseValid()) {
-		ImGui::SeparatorText(_("Circle selection"));
-		const voxel::Region &vol = node->region();
-		const glm::ivec3 &vMins = vol.getLowerCorner();
-		const glm::ivec3 &vMaxs = vol.getUpperCorner();
-		glm::ivec3 center = brush.ellipseCenter();
-		int radiusU = brush.ellipseRadiusU();
-		int radiusV = brush.ellipseRadiusV();
-		bool changed = false;
-
-		int uAxis;
-		int vAxis;
-		SelectBrush::ellipseAxes(brush.ellipseFace(), uAxis, vAxis);
-		const char *axisNames[] = {"X", "Y", "Z"};
-
-		auto ellipseSlider = [&changed](const char *id, int *val, int lo, int hi) {
-			ImGui::PushID(id);
-			const float btnW = ImGui::GetFrameHeight();
-			const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-			if (ImGui::Button("-", ImVec2(btnW, 0))) {
-				*val = glm::max(*val - 1, lo);
-				changed = true;
-			}
-			ImGui::SameLine(0, spacing);
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-			changed |= ImGui::SliderInt("", val, lo, hi);
-			ImGui::SameLine(0, spacing);
-			if (ImGui::Button("+", ImVec2(btnW, 0))) {
-				*val = glm::min(*val + 1, hi);
-				changed = true;
-			}
-			ImGui::PopID();
-		};
-
-		ImGui::TextUnformatted(_("Center"));
-		ellipseSlider("##cx", &center[uAxis], vMins[uAxis], vMaxs[uAxis]);
-		ellipseSlider("##cy", &center[vAxis], vMins[vAxis], vMaxs[vAxis]);
-
-		// Max radius is half the volume dimension on each axis
-		const int maxRadiusU = (vMaxs[uAxis] - vMins[uAxis]) / 2;
-		const int maxRadiusV = (vMaxs[vAxis] - vMins[vAxis]) / 2;
-		ImGui::Text(_("Radius %s"), axisNames[uAxis]);
-		ellipseSlider("##ru", &radiusU, 0, maxRadiusU);
-		ImGui::Text(_("Radius %s"), axisNames[vAxis]);
-		ellipseSlider("##rv", &radiusV, 0, maxRadiusV);
-
-		const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(brush.ellipseFace()));
-		const int maxDepth = (vMaxs[faceAxisIdx] - vMins[faceAxisIdx]) / 2;
-		int depth = brush.ellipseDepth();
-		ImGui::Text(_("Depth %s"), axisNames[faceAxisIdx]);
-		ImGui::TooltipTextUnformatted(
-			_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
-		ellipseSlider("##depth", &depth, 1, maxDepth);
-
-		bool is3D = brush.ellipse3D();
-		if (ImGui::Checkbox(_("3D ellipsoid"), &is3D)) {
-			brush.setEllipse3D(is3D);
-			changed = true;
-		}
-		ImGui::TooltipTextUnformatted(
-			_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
-
-		if (changed) {
-			brush.setEllipseCenter(center);
-			brush.setEllipseRadiusU(radiusU);
-			brush.setEllipseRadiusV(radiusV);
-			brush.setEllipseDepth(depth);
-			_sceneMgr->selectionSetEllipse(nodeId);
-		}
+	if (brush.selectMode() == SelectMode::Circle && brush.ellipseValid() && _sceneMgr->hasSelection(nodeId)) {
+		handleSelectCircle(nodeId);
 	}
 
 	if (brush.selectMode() == SelectMode::Box3D) {
-		handleSelectBox3D(node);
+		handleSelectBox3D(nodeId);
 	}
 }
 
@@ -924,9 +967,8 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 			{}, io::format::images());
 	}
 
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
-	const bool hasSelection = node && node->hasSelection();
-	ImGui::BeginDisabled(!hasSelection);
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ImGui::BeginDisabled(!_sceneMgr->hasSelection(nodeId));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Use selection"), "texturebrushfromface", listener);
 	ImGui::EndDisabled();
 
@@ -1259,8 +1301,8 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	// Fallback used before a node is loaded; overridden by actual node dimensions below.
 	static constexpr int DefaultMaxExtrudeDepth = 250;
 	int maxDepth = DefaultMaxExtrudeDepth;
-	if (node && node->volume()) {
-		const voxel::Region &r = node->volume()->region();
+	if (node) {
+		const voxel::Region &r = node->region();
 		maxDepth = glm::max(r.getWidthInVoxels(), glm::max(r.getHeightInVoxels(), r.getDepthInVoxels()));
 	}
 
@@ -1276,7 +1318,7 @@ void BrushPanel::updateExtrudeBrushPanel(command::CommandExecutionListener &list
 	ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
 
 	int depth = brush.depth();
-	if (depth == 0 && (!node || !node->hasSelection())) {
+	if (depth == 0 && !_sceneMgr->hasSelection(nodeId)) {
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
 	// All depth/offset changes are preview-only. The preview system creates a fresh
@@ -1362,8 +1404,7 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	TransformBrush &brush = modifier.transformBrush();
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
-	if (!node || !node->hasSelection()) {
+	if (!_sceneMgr->hasSelection(nodeId)) {
 		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
 		return;
 	}
@@ -1572,8 +1613,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 	Modifier &modifier = _sceneMgr->modifier();
 	SculptBrush &brush = modifier.sculptBrush();
 
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
-	if (node == nullptr || (!node->hasSelection() && !brush.hasSnapshot())) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	if (!brush.hasSnapshot() && !_sceneMgr->hasSelection(nodeId)) {
 		ImGui::TextWrappedUnformatted(_("Select voxels first, then switch to sculpt"));
 		return;
 	}

@@ -327,7 +327,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	testSelect(testMins(), testMaxs());
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 	ASSERT_NE(nullptr, node);
-	EXPECT_TRUE(node->hasSelection());
+	EXPECT_TRUE(_sceneMgr->hasSelection(node->id()));
 	EXPECT_TRUE(_sceneMgr->copy(node->id()));
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
@@ -1090,7 +1090,7 @@ TEST_F(SceneManagerTest, testDeleteSelected) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(selRegion);
-	ASSERT_TRUE(node->hasSelection());
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	sceneMgr()->testDeleteSelected();
 
@@ -1135,7 +1135,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(region);
-	ASSERT_TRUE(node->hasSelection());
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	sceneMgr()->testSelectOnlyEdges();
 
@@ -1143,7 +1143,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 	// Face-center voxels (interior of a face, e.g. (0,2,2)) have air on only 1 axis -> deselected.
 	// Edge voxels (e.g. (0,0,2)) have air on 2 axes -> remain selected.
 	// Corner voxels (e.g. (0,0,0)) have air on 3 axes -> remain selected.
-	ASSERT_TRUE(node->hasSelection());
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	// A corner voxel should still be selected
 	const voxel::Voxel &corner = v->voxel(0, 0, 0);
@@ -1954,7 +1954,7 @@ TEST_F(SceneManagerTest, testAutoSelectOnPaste) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(voxel::Region{glm::ivec3(0), glm::ivec3(1, 0, 0)});
-	ASSERT_TRUE(node->hasSelection());
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	// Copy and then paste
 	ASSERT_TRUE(_sceneMgr->copy(nodeId));
@@ -2226,7 +2226,7 @@ TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	EXPECT_TRUE(node->hasSelection());
+	EXPECT_TRUE(_sceneMgr->hasSelection(node->id()));
 
 	// Edit within the selection
 	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 2));
