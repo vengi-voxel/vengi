@@ -323,10 +323,8 @@ void SceneManager::nodeGroupDeleteSelected() {
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-				wrapper.setVoxel(x, y, z, voxel::Voxel());
-			}
-		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+			wrapper.setVoxel(x, y, z, voxel::Voxel());
+		}, voxelutil::VisitSolidOutline());
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
@@ -367,12 +365,12 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 		}
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const bool matches = voxel.getColor() == colorIndex;
-			if ((voxel.getFlags() & voxel::FlagOutline) != 0 && (matches == deselectMatching)) {
+			if (matches == deselectMatching) {
 				voxel::Voxel updated = voxel;
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
 				v->setVoxel(x, y, z, updated);
 			}
-		}, voxelutil::VisitSolid());
+		}, voxelutil::VisitSolidOutline());
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
@@ -401,9 +399,6 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 		}
 		const voxel::Region &volRegion = v->region();
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			if ((voxel.getFlags() & voxel::FlagOutline) == 0) {
-				return;
-			}
 			int axesWithAir = 0;
 			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
 				const glm::ivec3 neighbor(x + offset.x, y + offset.y, z + offset.z);
@@ -423,7 +418,7 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
 				v->setVoxel(x, y, z, updated);
 			}
-		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		}, voxelutil::VisitSolidOutline());
 		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
@@ -541,7 +536,7 @@ void SceneManager::nodeGroupSelectionGrow() {
 				hasSelectedNeighbor(voxel::arrayPathfinderCorners, 8)) {
 				toSelect.push_back(glm::ivec3(x, y, z));
 			}
-		}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+		}, voxelutil::VisitSolid());
 
 		if (toSelect.empty()) {
 			return;
