@@ -2025,6 +2025,9 @@ void SceneManager::selectionSelectAll(int nodeId) {
 		return;
 	}
 	node->select(volume->region());
+	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
+		_modifierFacade.selectBrush().setBox3DSelectionRegion(volume->region());
+	}
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
 }
