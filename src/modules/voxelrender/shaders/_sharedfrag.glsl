@@ -7,6 +7,7 @@ layout(std140) uniform u_frag {
 	vec4 u_distances;
 	mat4 u_cascades[4];
 	vec4 u_selectiontint;
+	uint u_timemillis;
 };
 
 layout(location = 0) $out vec4 o_color;
@@ -173,9 +174,8 @@ vec4 brighten(vec4 color) {
 }
 
 // pos is in object space
-vec4 outline(vec3 pos, vec4 color, vec3 normal) {
-	// Apply selection tint over the full face
-	color.rgb = mix(color.rgb, u_selectiontint.rgb, u_selectiontint.a);
+// pulse: 0.0 = no outline edges, 1.0 = full outline edges
+vec4 outline(vec3 pos, vec4 color, vec3 normal, float pulse) {
 #if 0
 	vec3 f = fract(pos);
 	float edge;
@@ -190,7 +190,7 @@ vec4 outline(vec3 pos, vec4 color, vec3 normal) {
 		edge = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
 	}
 	float seam = smoothstep(0.02, 0.05, edge);
-	return color * seam;
+	return mix(color, color * seam, pulse);
 #else
 	const float epsilona = 0.025;
 	const float epsilonb = 0.0001;
@@ -202,11 +202,13 @@ vec4 outline(vec3 pos, vec4 color, vec3 normal) {
 	bool overY = (frac.y <= epsilonb || 1.0 - frac.y <= epsilonb);
 	bool overZ = (frac.z <= epsilonb || 1.0 - frac.z <= epsilonb);
 	if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
+		vec4 edgeColor;
 		if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) {
-			color = brighten(color);
+			edgeColor = brighten(color);
 		} else {
-			color = darken(color);
+			edgeColor = darken(color);
 		}
+		color = mix(color, edgeColor, pulse);
 	}
 	return color;
 #endif

@@ -42,9 +42,9 @@
 
 namespace voxelrender {
 
-RawVolumeRenderer::RawVolumeRenderer()
+RawVolumeRenderer::RawVolumeRenderer(const core::TimeProviderPtr &timeProvider)
 	: _voxelShader(shader::VoxelShader::getInstance()), _voxelNormShader(shader::VoxelnormShader::getInstance()),
-	  _shadowMapShader(shader::ShadowmapShader::getInstance()) {
+	  _shadowMapShader(shader::ShadowmapShader::getInstance()), _timeProvider(timeProvider) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -673,7 +673,6 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
-		_voxelShaderVertData.hasSelection = meshState->hasSelection(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -741,7 +740,6 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		updatePalette(meshState, idx);
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
-		_voxelShaderVertData.hasSelection = meshState->hasSelection(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -917,6 +915,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_selectionTint->vec4Val(t);
 		_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
 	}
+	_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();

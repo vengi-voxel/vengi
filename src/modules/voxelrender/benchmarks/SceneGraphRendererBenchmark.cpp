@@ -3,6 +3,8 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/SharedPtr.h"
+#include "core/TimeProvider.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MeshState.h"
@@ -14,6 +16,8 @@
  */
 class BenchmarkableSceneGraphRenderer : public voxelrender::SceneGraphRenderer {
 public:
+	BenchmarkableSceneGraphRenderer(const core::TimeProviderPtr &timeProvider) : SceneGraphRenderer(timeProvider) {
+	}
 	using SceneGraphRenderer::prepareMeshStateTransform;
 };
 
@@ -27,6 +31,9 @@ protected:
 	core::Buffer<int> _nodeIds;
 
 public:
+	SceneGraphRendererBenchmark() : _renderer(core::make_shared<core::TimeProvider>()) {
+	}
+
 	bool onInitApp() override {
 		if (!app::AbstractBenchmark::onInitApp()) {
 			return false;

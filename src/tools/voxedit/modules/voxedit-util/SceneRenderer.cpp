@@ -27,7 +27,8 @@
 
 namespace voxedit {
 
-SceneRenderer::SceneRenderer() : _meshState(core::make_shared<voxel::MeshState>()) {
+SceneRenderer::SceneRenderer(const core::TimeProviderPtr &timeProvider)
+	: _meshState(core::make_shared<voxel::MeshState>()), _sceneGraphRenderer(timeProvider) {
 }
 
 void SceneRenderer::construct() {

@@ -15,6 +15,9 @@ private:
 protected:
 	SceneRenderer _sceneRenderer;
 
+	SceneRendererTest() : _sceneRenderer(core::make_shared<core::TimeProvider>()) {
+	}
+
 	void SetUp() override {
 		Super::SetUp();
 		if (IsSkipped()) {

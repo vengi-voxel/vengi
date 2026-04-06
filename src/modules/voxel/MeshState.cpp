@@ -546,21 +546,6 @@ void MeshState::gray(int idx, bool gray) {
 	_volumeData[idx]._gray = gray;
 }
 
-bool MeshState::hasSelection(int idx) const {
-	if (idx < 0 || idx >= (int)_volumeData.size()) {
-		return false;
-	}
-	return _volumeData[idx]._hasSelection;
-}
-
-void MeshState::setHasSelection(int idx, bool hasSelection) {
-	if (idx < 0) {
-		return;
-	}
-	ensureSize(idx);
-	_volumeData[idx]._hasSelection = hasSelection;
-}
-
 bool MeshState::locked(int idx) const {
 	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return false;

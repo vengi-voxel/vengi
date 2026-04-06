@@ -10,7 +10,6 @@
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"
-#include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
@@ -89,7 +88,8 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 }
 
 image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
-	voxelrender::SceneGraphRenderer sceneGraphRenderer;
+	core::TimeProviderPtr timeProvider = app::App::getInstance()->timeProvider();
+	voxelrender::SceneGraphRenderer sceneGraphRenderer(timeProvider);
 	sceneGraphRenderer.construct();
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
@@ -114,7 +114,8 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 }
 
 bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
-	voxelrender::SceneGraphRenderer sceneGraphRenderer;
+	core::TimeProviderPtr timeProvider = app::App::getInstance()->timeProvider();
+	voxelrender::SceneGraphRenderer sceneGraphRenderer(timeProvider);
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
 	renderContext.renderMode = RenderMode::Scene;

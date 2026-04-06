@@ -86,9 +86,6 @@ TEST_F(MeshStateTest, testSetStateBeforeVolume) {
 	meshState.setLocked(idx, true);
 	EXPECT_TRUE(meshState.locked(idx));
 
-	meshState.setHasSelection(idx, true);
-	EXPECT_TRUE(meshState.hasSelection(idx));
-
 	// After state setup, setVolume should work normally
 	voxel::RawVolume v(voxel::Region(-1, 1));
 	palette::Palette pal;

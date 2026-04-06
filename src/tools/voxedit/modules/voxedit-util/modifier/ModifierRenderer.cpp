@@ -20,10 +20,12 @@
 
 namespace voxedit {
 
-ModifierRenderer::ModifierRenderer() : _meshState(core::make_shared<voxel::MeshState>()) {
+ModifierRenderer::ModifierRenderer(const core::TimeProviderPtr &timeProvider)
+	: _meshState(core::make_shared<voxel::MeshState>()), _volumeRenderer(timeProvider) {
 }
 
-ModifierRenderer::ModifierRenderer(const voxel::MeshStatePtr &meshState) : _meshState(meshState) {
+ModifierRenderer::ModifierRenderer(const core::TimeProviderPtr &timeProvider, const voxel::MeshStatePtr &meshState)
+	: _meshState(meshState), _volumeRenderer(timeProvider) {
 }
 
 bool ModifierRenderer::init() {

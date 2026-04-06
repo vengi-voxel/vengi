@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/TimedValue.h"
 #include "math/Axis.h"
 #include "render/GridRenderer.h"
@@ -71,7 +72,7 @@ private:
 						   const glm::ivec3 &cursorPosition);
 	void updateSliceRegionMesh();
 public:
-	SceneRenderer();
+	SceneRenderer(const core::TimeProviderPtr &timeProvider);
 	virtual ~SceneRenderer() = default;
 
 	// IComponent

@@ -20,7 +20,8 @@
 
 namespace voxelrender {
 
-SceneGraphRenderer::SceneGraphRenderer() {
+SceneGraphRenderer::SceneGraphRenderer(const core::TimeProviderPtr &timeProvider)
+	: _volumeRenderer(timeProvider) {
 }
 
 int SceneGraphRenderer::allocateVolumeIdx(int nodeId) {
@@ -245,7 +246,6 @@ void SceneGraphRenderer::updateNodeState(const voxel::MeshStatePtr &meshState, c
 	} else {
 		meshState->gray(idx, false);
 	}
-	meshState->setHasSelection(idx, node.hasSelection());
 	meshState->setLocked(idx, node.locked());
 }
 

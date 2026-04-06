@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
@@ -42,8 +43,8 @@ private:
 	void renderBrushVolume(const video::Camera &camera, const glm::mat4 &model);
 
 public:
-	ModifierRenderer();
-	ModifierRenderer(const voxel::MeshStatePtr &meshState);
+	ModifierRenderer(const core::TimeProviderPtr &timeProvider);
+	ModifierRenderer(const core::TimeProviderPtr &timeProvider, const voxel::MeshStatePtr &meshState);
 	bool init() override;
 	void shutdown() override;
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "render/ShapeRenderer.h"
 #include "voxel/MeshState.h"
 #include "ShadowmapData.h"
@@ -71,6 +72,8 @@ protected:
 	core::VarPtr _cullNodes;
 	core::VarPtr _selectionTint;
 
+	core::TimeProviderPtr _timeProvider;
+
 	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
 	enum UpdateBufferFlags : uint8_t {
 		Vertices = 1 << 0,
@@ -103,7 +106,7 @@ protected:
 	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
 	void sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 public:
-	RawVolumeRenderer();
+	RawVolumeRenderer(const core::TimeProviderPtr &timeProvider);
 
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
 				bool shadow, bool bloom);

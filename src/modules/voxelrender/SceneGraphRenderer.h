@@ -58,7 +58,7 @@ protected:
 	void freeVolumeIdx(int nodeId);
 
 public:
-	SceneGraphRenderer();
+	SceneGraphRenderer(const core::TimeProviderPtr &timeProvider);
 	void construct();
 	bool init(bool normals);
 	void update(const voxel::MeshStatePtr &meshState);

@@ -24,17 +24,16 @@ void main(void) {
 	v_normal = normal.xyz;
 	v_flags = 0u;
 
-	if (u_has_selection == 0) {
-#if r_renderoutline == 0
-		if ((a_flags & FLAGOUTLINE) != 0u) {
-			v_flags |= FLAGOUTLINE;
-		}
+#if r_renderoutline == 1
+	v_flags |= FLAGOUTLINE;
+	if ((a_flags & FLAGOUTLINE) != 0u) {
+		v_flags |= FLAGOUTLINEPULSE;
+	}
 #else
-		v_flags |= FLAGOUTLINE;
-#endif
-	} else if ((a_flags & FLAGOUTLINE) != 0u) {
+	if ((a_flags & FLAGOUTLINE) != 0u) {
 		v_flags |= FLAGOUTLINE;
 	}
+#endif
 
 	if (normalIndex > 0) { // NO_NORMAL
 		v_flags |= FLAGHASNORMALPALETTECOLOR;
@@ -47,7 +46,7 @@ void main(void) {
 #endif
 	}
 
-	if (u_gray != 0 || (u_has_selection != 0 && (a_flags & FLAGOUTLINE) == 0u)) {
+	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;
 		v_color = vec4(gray, gray, gray, materialColor.a);
 	} else if (u_locked != 0) {
