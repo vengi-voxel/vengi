@@ -4,7 +4,6 @@
 
 #include "Clipboard.h"
 #include "core/Log.h"
-#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -30,26 +29,7 @@ voxel::ClipboardData copy(const scenegraph::SceneGraphNode &node) {
 	}
 
 	// Calculate the bounding region of selected voxels
-	voxel::Region selectionRegion = voxel::Region::InvalidRegion;
-	const voxel::Region &region = volume->region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel &voxel = volume->voxel(x, y, z);
-				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-					if (selectionRegion.isValid()) {
-						selectionRegion.accumulate(x, y, z);
-					} else {
-						selectionRegion = voxel::Region(x, y, z, x, y, z);
-					}
-				}
-			}
-		}
-	}
-
+	voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
 	if (!selectionRegion.isValid()) {
 		Log::debug("Copy failed: no selected voxels found");
 		return {};
@@ -92,26 +72,7 @@ voxel::ClipboardData cut(scenegraph::SceneGraphNode &node, voxel::Region &modifi
 	}
 
 	// Calculate the bounding region of selected voxels
-	voxel::Region selectionRegion = voxel::Region::InvalidRegion;
-	const voxel::Region &region = volume->region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel &voxel = volume->voxel(x, y, z);
-				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-					if (selectionRegion.isValid()) {
-						selectionRegion.accumulate(x, y, z);
-					} else {
-						selectionRegion = voxel::Region(x, y, z, x, y, z);
-					}
-				}
-			}
-		}
-	}
-
+	voxel::Region selectionRegion = volume->regionForFlag(voxel::FlagOutline);
 	if (!selectionRegion.isValid()) {
 		Log::debug("Cut failed: no selected voxels found");
 		return {};
