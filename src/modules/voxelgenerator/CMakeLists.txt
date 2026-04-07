@@ -10,6 +10,8 @@ set(LUA_SRCS
 	scripts/modules/url.lua
 	scripts/modules/util.lua
 	scripts/align.lua
+	scripts/anim_export.lua
+	scripts/anim_import.lua
 	scripts/animate.lua
 	scripts/aos_caves.lua
 	scripts/aos_forest-river.lua
