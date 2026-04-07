@@ -4,9 +4,10 @@
 
 #pragma once
 
+#include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
-#include "command/CommandHandler.h"
+#include "voxelui/ScriptBrowserPanel.h"
 
 namespace voxedit {
 
@@ -18,14 +19,14 @@ class MenuBar : public ui::Panel {
 private:
 	using Super = ui ::Panel;
 	SceneManagerPtr _sceneMgr;
-	OptionsPanel *_optionsPanel = nullptr;
+	OptionsPanel *_optionsPanel;
+	voxelui::ScriptBrowserPanel *_scriptBrowserPanel;
 
 public:
-	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "menubar"), _sceneMgr(sceneMgr) {
-	}
-
-	void setOptionsPanel(OptionsPanel *panel) {
-		_optionsPanel = panel;
+	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, OptionsPanel *optionsPanel,
+			voxelui::ScriptBrowserPanel *scriptBrowserPanel)
+		: Super(app, "menubar"), _sceneMgr(sceneMgr), _optionsPanel(optionsPanel),
+		  _scriptBrowserPanel(scriptBrowserPanel) {
 	}
 
 	static void viewportOptions();
@@ -40,4 +41,4 @@ public:
 #endif
 };
 
-}
+} // namespace voxedit

@@ -37,10 +37,8 @@ private:
 	voxelgenerator::LUAScript _luaScript;
 
 public:
-	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {
-	}
-	void setScriptBrowserPanel(voxelui::ScriptBrowserPanel *panel) {
-		_scriptBrowserPanel = panel;
+	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, voxelui::ScriptBrowserPanel *scriptBrowserPanel)
+		: Super(app, "script"), _sceneMgr(sceneMgr), _scriptBrowserPanel(scriptBrowserPanel) {
 	}
 	void update(const char *id, command::CommandExecutionListener &listener);
 

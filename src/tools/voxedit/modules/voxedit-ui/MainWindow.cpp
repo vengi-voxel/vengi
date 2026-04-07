@@ -118,10 +118,10 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _modelAssetPanel(app, _sceneMgr, collectionMgr, texturePool),
 	  _imageAssetPanel(app, _sceneMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
-	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
-	  _optionsPanel(app), _scriptBrowserPanel(app),
+	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr),
+	  _optionsPanel(app), _scriptBrowserPanel(app), _menuBar(app, _sceneMgr, &_optionsPanel, &_scriptBrowserPanel),
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
-	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
+	  _scriptPanel(app, _sceneMgr, &_scriptBrowserPanel), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr), _cameraPanel(app, _sceneMgr),
 	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr), _helpPanel(this, app) {
 
@@ -222,8 +222,6 @@ bool MainWindow::init() {
 	_animationTimeline.init();
 	_animationPanel.init();
 	_menuBar.init();
-	_menuBar.setOptionsPanel(&_optionsPanel);
-	_scriptPanel.setScriptBrowserPanel(&_scriptBrowserPanel);
 	_networkPanel.init();
 	_gameModePanel.init();
 	_normalPalettePanel.init();
