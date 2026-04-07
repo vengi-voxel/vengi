@@ -55,6 +55,8 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeSculpt.h"
+#include "voxelutil/VolumeSelect.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
 #define GENERATOR_LUA_SANTITY 1
@@ -727,6 +729,57 @@ static int luaVoxel_volumewrapper_setselected(lua_State* s) {
 	}
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_visitslopesurface(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
+	const int maxDeviation = (int)luaL_checkinteger(s, 6);
+	const int sampleDistance = (int)luaL_checkinteger(s, 7);
+	luaL_checktype(s, 8, LUA_TFUNCTION);
+	const glm::ivec3 position(x, y, z);
+	const voxel::RawVolumeWrapper &wrapper = static_cast<const voxel::RawVolumeWrapper &>(*volume);
+	int cnt = voxelutil::visitSlopeSurface(wrapper, position, face, maxDeviation, sampleDistance,
+		[s](int vx, int vy, int vz, const voxel::Voxel &) {
+			lua_pushvalue(s, 8);
+			lua_pushinteger(s, vx);
+			lua_pushinteger(s, vy);
+			lua_pushinteger(s, vz);
+			lua_pcall(s, 3, 0, 0);
+		});
+	lua_pushinteger(s, cnt);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_lassocontains(lua_State *s) {
+	luaVoxel_tovolumewrapper(s, 1);
+	luaL_checktype(s, 2, LUA_TTABLE);
+	const int pu = (int)luaL_checkinteger(s, 3);
+	const int pv = (int)luaL_checkinteger(s, 4);
+	const int uAxis = (int)luaL_checkinteger(s, 5);
+	const int vAxis = (int)luaL_checkinteger(s, 6);
+	core::DynamicArray<glm::ivec3> path;
+	const int len = (int)lua_rawlen(s, 2);
+	path.reserve(len);
+	for (int i = 1; i <= len; ++i) {
+		lua_rawgeti(s, 2, i);
+		lua_getfield(s, -1, "x");
+		const int px = (int)lua_tointeger(s, -1);
+		lua_pop(s, 1);
+		lua_getfield(s, -1, "y");
+		const int py = (int)lua_tointeger(s, -1);
+		lua_pop(s, 1);
+		lua_getfield(s, -1, "z");
+		const int pz = (int)lua_tointeger(s, -1);
+		lua_pop(s, 1);
+		lua_pop(s, 1);
+		path.push_back(glm::ivec3(px, py, pz));
+	}
+	lua_pushboolean(s, voxelutil::lassoContains(path, pu, pv, uAxis, vAxis) ? 1 : 0);
 	return 1;
 }
 
@@ -3654,6 +3707,44 @@ static int luaVoxel_volumewrapper_setselected_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_visitslopesurface_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "visitSlopeSurface",
+		"summary": "Visit all surface voxels that lie on a slope plane starting from the given position. The visitor callback is called with (x, y, z) for each accepted voxel.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate of the seed voxel."},
+			{"name": "y", "type": "integer", "description": "The y coordinate of the seed voxel."},
+			{"name": "z", "type": "integer", "description": "The z coordinate of the seed voxel."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'up', 'positivey')."},
+			{"name": "maxDeviation", "type": "integer", "description": "Maximum height deviation from the slope plane."},
+			{"name": "sampleDistance", "type": "integer", "description": "Grid spacing for slope plane computation."},
+			{"name": "callback", "type": "function", "description": "Called with (x, y, z) for each slope surface voxel."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels visited."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_lassocontains_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "lassoContains",
+		"summary": "Test whether a 2D point lies inside a polygon defined by a path of 3D positions, projected onto the given axis plane.",
+		"parameters": [
+			{"name": "path", "type": "table", "description": "Array of {x, y, z} tables forming the polygon."},
+			{"name": "pu", "type": "integer", "description": "The U coordinate of the test point."},
+			{"name": "pv", "type": "integer", "description": "The V coordinate of the test point."},
+			{"name": "uAxis", "type": "integer", "description": "Axis index for U (0=X, 1=Y, 2=Z)."},
+			{"name": "vAxis", "type": "integer", "description": "Axis index for V (0=X, 1=Y, 2=Z)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the point is inside the polygon."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // Region jsonhelp functions
 
 static int luaVoxel_volumewrapper_fill_jsonhelp(lua_State* s) {
@@ -6305,6 +6396,8 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"flags", luaVoxel_volumewrapper_flags, luaVoxel_volumewrapper_flags_jsonhelp},
 		{"isSelected", luaVoxel_volumewrapper_isselected, luaVoxel_volumewrapper_isselected_jsonhelp},
 		{"setSelected", luaVoxel_volumewrapper_setselected, luaVoxel_volumewrapper_setselected_jsonhelp},
+		{"visitSlopeSurface", luaVoxel_volumewrapper_visitslopesurface, luaVoxel_volumewrapper_visitslopesurface_jsonhelp},
+		{"lassoContains", luaVoxel_volumewrapper_lassocontains, luaVoxel_volumewrapper_lassocontains_jsonhelp},
 		{"fill", luaVoxel_volumewrapper_fill, luaVoxel_volumewrapper_fill_jsonhelp},
 		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
 		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},

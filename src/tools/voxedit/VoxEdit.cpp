@@ -514,7 +514,10 @@ app::AppState VoxEdit::onInit() {
 		Log::error("Failed to register lua generator script path");
 		return app::AppState::InitFailure;
 	}
-
+	if (!filesystem()->registerPath("brushes/")) {
+		Log::error("Failed to register brush script path");
+		return app::AppState::InitFailure;
+	}
 	video::clearColor(::color::Black());
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

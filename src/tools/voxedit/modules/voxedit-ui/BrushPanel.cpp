@@ -37,6 +37,7 @@
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
+#include "voxelui/LUAScriptParameters.h"
 #include "voxel/ClipboardData.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -404,77 +405,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::TextWrappedUnformatted(activeBrush->scriptDescription().c_str());
 	}
 
-	const core::DynamicArray<voxelgenerator::LUAParameterDescription> &params = activeBrush->parameterDescriptions();
-	core::DynamicArray<core::String> &values = activeBrush->parameters();
-	const int n = (int)params.size();
-	if (n > 0 && ImGui::CollapsingHeader(_("Script parameters"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		for (int i = 0; i < n; ++i) {
-			const voxelgenerator::LUAParameterDescription &p = params[i];
-			core::String &str = values[i];
-			switch (p.type) {
-			case voxelgenerator::LUAParameterType::Integer: {
-				int val = core::string::toInt(str);
-				if (p.shouldClamp()) {
-					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
-					int minVal = (int)(p.minValue + glm::epsilon<double>());
-					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
-						str = core::string::toString(val);
-					}
-				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Float: {
-				float val = core::string::toFloat(str);
-				if (p.shouldClamp()) {
-					const float maxVal = (float)p.maxValue;
-					const float minVal = (float)p.minValue;
-					const char *format = glm::abs(maxVal - minVal) <= 10.0f ? "%.6f" : "%.3f";
-					if (ImGui::DragFloat(p.name.c_str(), &val, 0.005f, minVal, maxVal, format)) {
-						str = core::string::toString(val);
-					}
-				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::String: {
-				ImGui::InputText(p.name.c_str(), &str);
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Boolean: {
-				bool checked = core::string::toBool(str);
-				if (ImGui::Checkbox(p.name.c_str(), &checked)) {
-					str = checked ? "1" : "0";
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Enum: {
-				core::DynamicArray<core::String> tokens;
-				core::string::splitString(p.enumValues, tokens, ",");
-				const auto iter = core::find(tokens.begin(), tokens.end(), str);
-				int selected = iter == tokens.end() ? 0 : (int)(iter - tokens.begin());
-				if (ImGui::ComboItems(p.name.c_str(), &selected, tokens)) {
-					str = tokens[selected];
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::ColorIndex: {
-				int val = core::string::toInt(str);
-				if (ImGui::InputInt(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			default:
-				break;
-			}
-			if (!p.description.empty()) {
-				ImGui::TooltipTextUnformatted(p.description.c_str());
-			}
-		}
-	}
+	voxelui::renderScriptParameters(activeBrush->parameterDescriptions(), activeBrush->parameters());
 }
 
 void BrushPanel::updateRulerBrushPanel(command::CommandExecutionListener &listener) {

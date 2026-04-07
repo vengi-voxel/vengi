@@ -134,6 +134,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | Global | Description |
 | ------ | ----------- |
 | [g_algorithm](lua/algorithm.md) | General purpose algorithms |
+| [g_brushcontext](lua/brushcontext.md) | Brush script context (cursor, face, etc.) |
 | [g_cmd](lua/cmd.md) | Command execution |
 | [g_font](lua/font.md) | Voxel font binding |
 | [g_http](lua/http.md) | HTTP request functions |
