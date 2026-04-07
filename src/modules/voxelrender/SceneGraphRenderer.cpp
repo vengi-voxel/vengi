@@ -158,19 +158,8 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	core_trace_scoped(PrepareMeshStateTransform);
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 
-	// Fast path for single-keyframe nodes (common case): use the pre-computed world
-	// matrix directly from SceneGraphTransform, avoiding the transformForFrame() mutex
-	// lock + hash map lookup.
-	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames();
-	const glm::mat4 *wmPtr;
-	scenegraph::FrameTransform frameTransform;
-	if (keyFrames.size() == 1) {
-		wmPtr = &keyFrames[0].transform().worldMatrix();
-	} else {
-		frameTransform = sceneGraph.transformForFrame(node, frame);
-		wmPtr = &frameTransform.worldMatrix();
-	}
-	const glm::mat4 &wm = *wmPtr;
+	const scenegraph::FrameTransform frameTransform = sceneGraph.transformForFrame(node, frame);
+	const glm::mat4 &wm = frameTransform.worldMatrix();
 	meshState->setCullFace(idx, math::det3x3(wm) < 0.0f ? video::Face::Front : video::Face::Back);
 
 	const glm::vec3 &pivot = node.pivot();
