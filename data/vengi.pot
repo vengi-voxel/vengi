@@ -1480,6 +1480,34 @@ msgstr ""
 msgid "Execute the selected script for the currently loaded voxel volumes"
 msgstr ""
 
+msgid "Script Browser"
+msgstr ""
+
+msgid "Fetching scripts..."
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Filter scripts by name, description or author"
+msgstr ""
+
+msgid "No scripts available"
+msgstr ""
+
+msgid "Author"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Installed"
+msgstr ""
+
+#, c-format
+msgid "Download %s"
+msgstr ""
+
 msgid "2D depth factor"
 msgstr ""
 
@@ -1930,75 +1958,58 @@ msgstr ""
 msgid "Manhattan: %i"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "All"
+msgid "Selection bounds"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Same Color"
+msgid "Min"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Surface"
+msgid "Max"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Connected"
+#, c-format
+msgid "Size: %d x %d x %d"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Flat Surface"
+msgid "Circle selection"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Fuzzy Color"
+#, c-format
+msgid "Radius %s"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "3D Box"
+#, c-format
+msgid "Depth %s"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Circle"
+msgid ""
+"How far from the center the selection extends along the face-normal axis (0 "
+"= single layer)"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Slope"
+msgid "3D ellipsoid"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Hole Rim 2D"
+msgid ""
+"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
+"a 2D ellipse with depth"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Hole Rim 3D"
+msgid "Paint selection"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Lasso"
+msgid "Radius"
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Column Rim 2D"
+msgid "Brush radius for paint selection. Hold mouse and drag to select voxels."
 msgstr ""
 
-msgctxt "SelectMode"
-msgid "Paint"
+msgid "Grow region"
 msgstr ""
 
-msgid "Select mode"
-msgstr ""
-
-msgid "Selection actions"
-msgstr ""
-
-msgid "Select Only Color"
-msgstr ""
-
-msgid "Color Selected"
-msgstr ""
-
-msgid "Deselect Color"
+msgid ""
+"Only select voxels adjacent to already-selected voxels. Useful for expanding "
+"an existing selection."
 msgstr ""
 
 msgid "Threshold"
@@ -2112,58 +2123,75 @@ msgid ""
 "clicked face with fallback."
 msgstr ""
 
-msgid "Paint selection"
+msgctxt "SelectMode"
+msgid "All"
 msgstr ""
 
-msgid "Radius"
+msgctxt "SelectMode"
+msgid "Same Color"
 msgstr ""
 
-msgid "Brush radius for paint selection. Hold mouse and drag to select voxels."
+msgctxt "SelectMode"
+msgid "Surface"
 msgstr ""
 
-msgid "Grow region"
+msgctxt "SelectMode"
+msgid "Connected"
 msgstr ""
 
-msgid ""
-"Only select voxels adjacent to already-selected voxels. Useful for expanding "
-"an existing selection."
+msgctxt "SelectMode"
+msgid "Flat Surface"
 msgstr ""
 
-msgid "Circle selection"
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
 msgstr ""
 
-#, c-format
-msgid "Radius %s"
+msgctxt "SelectMode"
+msgid "3D Box"
 msgstr ""
 
-#, c-format
-msgid "Depth %s"
+msgctxt "SelectMode"
+msgid "Circle"
 msgstr ""
 
-msgid ""
-"How far from the center the selection extends along the face-normal axis (0 "
-"= single layer)"
+msgctxt "SelectMode"
+msgid "Slope"
 msgstr ""
 
-msgid "3D ellipsoid"
+msgctxt "SelectMode"
+msgid "Hole Rim 2D"
 msgstr ""
 
-msgid ""
-"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
-"a 2D ellipse with depth"
+msgctxt "SelectMode"
+msgid "Hole Rim 3D"
 msgstr ""
 
-msgid "Selection bounds"
+msgctxt "SelectMode"
+msgid "Lasso"
 msgstr ""
 
-msgid "Min"
+msgctxt "SelectMode"
+msgid "Column Rim 2D"
 msgstr ""
 
-msgid "Max"
+msgctxt "SelectMode"
+msgid "Paint"
 msgstr ""
 
-#, c-format
-msgid "Size: %d x %d x %d"
+msgid "Select mode"
+msgstr ""
+
+msgid "Selection actions"
+msgstr ""
+
+msgid "Select Only Color"
+msgstr ""
+
+msgid "Color Selected"
+msgstr ""
+
+msgid "Deselect Color"
 msgstr ""
 
 msgid "Enable normal rendering to see your changes"
@@ -2751,9 +2779,6 @@ msgstr ""
 msgid "Global paste as node"
 msgstr ""
 
-msgid "Mask"
-msgstr ""
-
 msgid "Select"
 msgstr ""
 
@@ -2886,9 +2911,6 @@ msgid "Color Histogram"
 msgstr ""
 
 msgid "Analyze"
-msgstr ""
-
-msgid "Refresh"
 msgstr ""
 
 #, c-format
@@ -3608,6 +3630,12 @@ msgid "Reload script"
 msgstr ""
 
 msgid "Reload all scripts"
+msgstr ""
+
+msgid "Download scripts..."
+msgstr ""
+
+msgid "Browse and download scripts from the online repository"
 msgstr ""
 
 msgid "Scripting manual"
