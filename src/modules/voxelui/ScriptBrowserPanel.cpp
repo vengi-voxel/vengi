@@ -60,6 +60,8 @@ bool ScriptBrowserPanel::isInstalled(const voxelui::ScriptInfo &info) const {
 		dir = "scripts";
 	} else if (info.type == "brush") {
 		dir = "brushes";
+	} else if (info.type == "selectionmode") {
+		dir = "selectionmodes";
 	} else {
 		return false;
 	}

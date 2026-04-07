@@ -11,6 +11,7 @@ set(SRCS
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
+	modifier/brush/LUASelectionMode.cpp modifier/brush/LUASelectionMode.h
 	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
 	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
 	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
@@ -104,6 +105,7 @@ set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound
 set(LUA_SRCS
 	brushes/path.lua
 	brushes/modules/brush.lua
+	selectionmodes/modules/selection.lua
 )
 set(FILES
 	voxedit/chat-ping.wav
@@ -142,19 +144,27 @@ set(TEST_FILES
 	tests/test-palette-in.png
 	tests/rgb_small.vox
 )
+set(TEST_LUA_SRCS
+	selectionmodes/slope.lua
+	selectionmodes/columnrim2d.lua
+	selectionmodes/holerim2d.lua
+	selectionmodes/holerim3d.lua
+	${LUA_SRCS}
+)
+
 gtest_suite_sources(tests
 	${TEST_SRCS}
 )
 gtest_suite_deps(tests ${LIB} test-app)
 gtest_suite_files(tests ${TEST_FILES})
-gtest_suite_lua_sources(tests ${LUA_SRCS})
+gtest_suite_lua_sources(tests ${TEST_LUA_SRCS})
 
 # CMake Error: Xcode generator: Duplicate object ids not allowed
 if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 	gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 	gtest_suite_files(tests-${LIB} ${TEST_FILES})
-	gtest_suite_lua_sources(tests-${LIB} ${LUA_SRCS})
+	gtest_suite_lua_sources(tests-${LIB} ${TEST_LUA_SRCS})
 	gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 	gtest_suite_end(tests-${LIB})
 endif()

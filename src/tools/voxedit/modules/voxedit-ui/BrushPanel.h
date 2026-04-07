@@ -67,11 +67,7 @@ private:
 	void handleSelectPaint(int nodeId);
 	void handleSelectFuzzyColor();
 	void handleSelectFlatSurface();
-	void handleSelectSlope(int nodeId);
 	void handleSelectLasso(command::CommandExecutionListener &listener);
-	void handleSelectHoleRim2D();
-	void handleSelectHoleRim3D();
-	void handleSelectColumnRim2D();
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
 	void updateNormalBrushPanel(command::CommandExecutionListener &listener);

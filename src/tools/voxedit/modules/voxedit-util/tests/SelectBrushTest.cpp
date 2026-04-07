@@ -3,7 +3,9 @@
  */
 
 #include "../modifier/brush/SelectBrush.h"
+#include "../modifier/brush/LUASelectionMode.h"
 #include "app/tests/AbstractTest.h"
+#include "io/Filesystem.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -16,6 +18,11 @@ namespace voxedit {
 
 class SelectBrushTest : public app::AbstractTest {
 protected:
+	bool onInitApp() override {
+		app::AbstractTest::onInitApp();
+		return _testApp->filesystem()->registerPath("selectionmodes/");
+	}
+
 	void prepare(SelectBrush &brush, BrushContext &ctx, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		ctx.cursorPosition = mins;
 		ctx.cursorFace = voxel::FaceNames::PositiveX;
@@ -577,11 +584,15 @@ TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("slope"));
+	luaMode.parameters().push_back("10");
+	luaMode.parameters().push_back("2");
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Slope);
-	brush.setSlopeDeviation(10);
-	brush.setSlopeSampleDistance(2);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -598,6 +609,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
 		}
 	}
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
@@ -619,11 +631,15 @@ TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("slope"));
+	luaMode.parameters().push_back("45");
+	luaMode.parameters().push_back("2");
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Slope);
-	brush.setSlopeDeviation(45);
-	brush.setSlopeSampleDistance(2);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -645,6 +661,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
 		<< "Wall voxel at (3,4,0) should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
@@ -663,11 +680,15 @@ TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("slope"));
+	luaMode.parameters().push_back("10");
+	luaMode.parameters().push_back("2");
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Slope);
-	brush.setSlopeDeviation(10); // Small threshold -staircase gradient should be consistent
-	brush.setSlopeSampleDistance(2);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -683,6 +704,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
 	}
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
@@ -699,11 +721,15 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("slope"));
+	luaMode.parameters().push_back("90");
+	luaMode.parameters().push_back("2");
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Slope);
-	brush.setSlopeDeviation(90);
-	brush.setSlopeSampleDistance(2);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -725,6 +751,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 	}
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
@@ -742,9 +769,13 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -772,6 +803,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 		<< "Floor voxel far from hole should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
@@ -797,9 +829,13 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -822,6 +858,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 		<< "Top wall (y=5) should be selected as part of the cross-section rim";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
@@ -839,9 +876,13 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -858,6 +899,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 		<< "Voxel adjacent to open notch should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testLassoContains_insideSquare) {
@@ -1084,9 +1126,13 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::ColumnRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1114,6 +1160,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 		<< "Air voxel outside pillar should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
@@ -1130,9 +1177,13 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::ColumnRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1151,6 +1202,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 		<< "Corner floor voxel should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
@@ -1168,9 +1220,13 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::ColumnRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1198,6 +1254,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 		<< "Column voxel at floor level should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
@@ -1208,9 +1265,13 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::ColumnRim2D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1225,6 +1286,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 		<< "Single isolated voxel should be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
@@ -1242,9 +1304,13 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim3D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1271,6 +1337,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 		<< "Floor voxel far from hole should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
@@ -1291,9 +1358,13 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim3D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1323,6 +1394,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 		<< "Tube end voxel at Z=8 should not be selected";
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
@@ -1339,9 +1411,13 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim3D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1364,6 +1440,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 	}
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
@@ -1396,9 +1473,13 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
+
 	SelectBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::HoleRim3D);
+	brush.setLuaSelectionMode(0, &luaMode);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1429,6 +1510,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 	}
 
 	brush.shutdown();
+	luaMode.shutdown();
 }
 
 TEST_F(SelectBrushTest, testSelectModePaint) {

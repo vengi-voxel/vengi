@@ -104,7 +104,7 @@ def main():
         "-t",
         "--type",
         default="generator",
-        choices=["generator", "brush"],
+        choices=["generator", "brush", "selectionmode"],
         help="Script type (default: generator)",
     )
     args = parser.parse_args()

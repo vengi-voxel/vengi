@@ -12,6 +12,7 @@
 #include "brush/BrushType.h"
 #include "brush/LineBrush.h"
 #include "brush/LUABrush.h"
+#include "brush/LUASelectionMode.h"
 #include "brush/PaintBrush.h"
 #include "brush/PlaneBrush.h"
 #include "brush/ExtrudeBrush.h"
@@ -111,8 +112,12 @@ protected:
 	core::DynamicArray<LuaBrush *> _luaBrushes;
 	int _activeLuaBrushIndex = -1;
 
+	core::DynamicArray<LUASelectionMode *> _luaSelectionModes;
+
 	void discoverBrushScripts();
 	void clearBrushScripts();
+	void discoverSelectionModeScripts();
+	void clearSelectionModeScripts();
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -314,6 +319,9 @@ public:
 	LuaBrush *activeLuaBrush();
 	const LuaBrush *activeLuaBrush() const;
 	void reloadBrushScripts();
+
+	const core::DynamicArray<LUASelectionMode *> &luaSelectionModes() const;
+	void reloadSelectionModeScripts();
 };
 
 inline uint8_t Modifier::normalColorIndex() const {
@@ -469,6 +477,10 @@ inline const core::DynamicArray<LuaBrush *> &Modifier::luaBrushes() const {
 
 inline int Modifier::activeLuaBrushIndex() const {
 	return _activeLuaBrushIndex;
+}
+
+inline const core::DynamicArray<LUASelectionMode *> &Modifier::luaSelectionModes() const {
+	return _luaSelectionModes;
 }
 
 } // namespace voxedit

@@ -157,6 +157,7 @@ bool Modifier::init() {
 		}
 	}
 	discoverBrushScripts();
+	discoverSelectionModeScripts();
 	if (!_modifierRenderer->init()) {
 		Log::error("Failed to initialize modifier renderer");
 		return false;
@@ -171,6 +172,7 @@ void Modifier::shutdown() {
 		b->shutdown();
 	}
 	clearBrushScripts();
+	clearSelectionModeScripts();
 	_modifierRenderer->shutdown();
 }
 
@@ -455,6 +457,42 @@ void Modifier::reloadBrushScripts() {
 	clearBrushScripts();
 	discoverBrushScripts();
 	Log::debug("Reloaded brush scripts (%i found)", (int)_luaBrushes.size());
+}
+
+void Modifier::discoverSelectionModeScripts() {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	core::DynamicArray<io::FilesystemEntry> entities;
+	filesystem->list("selectionmodes", entities, "*.lua");
+	for (const auto &e : entities) {
+		LUASelectionMode *mode = new LUASelectionMode(filesystem);
+		if (!mode->init()) {
+			Log::error("Failed to initialize lua selection mode");
+			delete mode;
+			continue;
+		}
+		if (!mode->loadScript(e.name)) {
+			Log::warn("Failed to load selection mode script: %s", e.name.c_str());
+			mode->shutdown();
+			delete mode;
+			continue;
+		}
+		_luaSelectionModes.push_back(mode);
+		Log::debug("Discovered selection mode script: %s", e.name.c_str());
+	}
+}
+
+void Modifier::clearSelectionModeScripts() {
+	for (LUASelectionMode *m : _luaSelectionModes) {
+		m->shutdown();
+		delete m;
+	}
+	_luaSelectionModes.clear();
+}
+
+void Modifier::reloadSelectionModeScripts() {
+	clearSelectionModeScripts();
+	discoverSelectionModeScripts();
+	Log::debug("Reloaded selection mode scripts (%i found)", (int)_luaSelectionModes.size());
 }
 
 LuaBrush *Modifier::activeLuaBrush() {
