@@ -146,6 +146,8 @@ void ScriptBrowserPanel::update(const char *id) {
 									return asc ? a.filename < b.filename : a.filename > b.filename;
 								});
 								break;
+							default:
+								break;
 							}
 							sortSpecs->SpecsDirty = false;
 						}

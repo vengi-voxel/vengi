@@ -141,6 +141,7 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	return changed;
 }
 
+// TODO: replace with SetItemTooltip
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API bool TooltipTextUnformatted(const char *text);
 
