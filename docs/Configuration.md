@@ -152,6 +152,9 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |
 | `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   | true/false   |
 | `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         | 0/1          |
+| `voxformat_voxelize_chunked`  | Enable chunked voxelization for large meshes                                             | true/false   |
+| `voxformat_voxelize_chunksize`| Chunk size for chunked voxelization (clamped to 16-512)                                  | 128          |
+| `voxformat_voxelsize`         | The number of voxels on the largest axis (0 = disabled, use scale cvars instead). Single mesh exports only. | 0            |
 | `voxformat_vxllodhva`         | Load the HVA file for VXL animations                                                     | true/false   |
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
 | `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
