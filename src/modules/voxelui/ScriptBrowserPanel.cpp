@@ -181,14 +181,26 @@ void ScriptBrowserPanel::update(const char *id) {
 							ImGui::PopStyleColor();
 						}
 						ImGui::TableNextColumn();
-						if (ImGui::IconButton(ICON_LC_DOWNLOAD, info.filename.c_str())) {
-							voxelui::ScriptApi api;
-							if (api.download(_app->filesystem(), SCRIPT_API_URL, info)) {
-								Log::info("Downloaded script %s", info.name.c_str());
-								_needsReload = true;
+						if (installed) {
+							const core::String uninstallId = core::String::format("uninstall_%s", info.filename.c_str());
+							if (ImGui::IconButton(ICON_LC_TRASH, uninstallId.c_str())) {
+								voxelui::ScriptApi api;
+								if (api.uninstall(_app->filesystem(), info)) {
+									Log::info("Uninstalled script %s", info.name.c_str());
+									_needsReload = true;
+								}
 							}
+							ImGui::TooltipText(_("Uninstall %s"), info.name.c_str());
+						} else {
+							if (ImGui::IconButton(ICON_LC_DOWNLOAD, info.filename.c_str())) {
+								voxelui::ScriptApi api;
+								if (api.download(_app->filesystem(), SCRIPT_API_URL, info)) {
+									Log::info("Downloaded script %s", info.name.c_str());
+									_needsReload = true;
+								}
+							}
+							ImGui::TooltipText(_("Download %s"), info.name.c_str());
 						}
-						ImGui::TooltipText(_("Download %s"), info.name.c_str());
 					}
 					ImGui::EndTable();
 				}

@@ -100,4 +100,27 @@ bool ScriptApi::download(const io::FilesystemPtr &filesystem, const core::String
 	return true;
 }
 
+bool ScriptApi::uninstall(const io::FilesystemPtr &filesystem, const ScriptInfo &info) const {
+	core::String dir;
+	if (info.type == "generator") {
+		dir = "scripts";
+	} else if (info.type == "brush") {
+		dir = "brushes";
+	} else if (info.type == "selectionmode") {
+		dir = "selectionmodes";
+	} else {
+		Log::error("Unknown script type: %s", info.type.c_str());
+		return false;
+	}
+
+	const core::String path = filesystem->homeWritePath(core::string::path(dir, info.filename));
+	if (!io::Filesystem::sysRemoveFile(path)) {
+		Log::error("Failed to remove script %s", path.c_str());
+		return false;
+	}
+
+	Log::info("Uninstalled script %s", info.filename.c_str());
+	return true;
+}
+
 } // namespace voxelui

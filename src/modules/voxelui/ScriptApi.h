@@ -34,6 +34,12 @@ public:
 	 * @return @c true if the download and install succeeded
 	 */
 	bool download(const io::FilesystemPtr &filesystem, const core::String &baseUrl, const ScriptInfo &info) const;
+
+	/**
+	 * @brief Uninstall a previously installed script by removing its file from the home directory.
+	 * @return @c true if the file was removed successfully
+	 */
+	bool uninstall(const io::FilesystemPtr &filesystem, const ScriptInfo &info) const;
 };
 
 } // namespace voxelui
