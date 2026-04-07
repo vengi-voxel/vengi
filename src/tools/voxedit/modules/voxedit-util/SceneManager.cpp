@@ -814,6 +814,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	}
 	const bool invalidateNodeCache = (flags & SceneModifiedFlags::InvalidateNodeCache) == SceneModifiedFlags::InvalidateNodeCache;
 	if (invalidateNodeCache) {
+		// TODO: SELECTION: TODO: PERF this invalidates the cache too often - if nothing regarding selection was changed, we should keep the cache.
 		_selectionRegionCache.invalidate(nodeId);
 	}
 	markDirty();
