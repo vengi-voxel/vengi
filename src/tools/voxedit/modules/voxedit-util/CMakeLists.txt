@@ -4,6 +4,7 @@ set(SRCS
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
 	modifier/brush/LUABrush.cpp modifier/brush/LUABrush.h
+	modifier/brush/LUAIconMapping.cpp modifier/brush/LUAIconMapping.h
 	modifier/brush/NormalBrush.cpp modifier/brush/NormalBrush.h
 	modifier/brush/PaintBrush.cpp modifier/brush/PaintBrush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h

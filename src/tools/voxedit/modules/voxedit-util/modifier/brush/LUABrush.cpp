@@ -10,6 +10,7 @@
 #include "io/Filesystem.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/brush/LUAIconMapping.h"
 #include "voxelgenerator/LUAApi.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -368,13 +369,13 @@ static int luaBrush_modifiertype_jsonhelp(lua_State *s) {
 	return 1;
 }
 
-LuaBrush::LuaBrush(const io::FilesystemPtr &filesystem)
+LUABrush::LUABrush(const io::FilesystemPtr &filesystem)
 	: AABBBrush(BrushType::Script, ModifierType::Place,
 			(ModifierType::Place | ModifierType::Erase | ModifierType::Override)),
 	  _filesystem(filesystem) {
 }
 
-bool LuaBrush::initLuaState() {
+bool LUABrush::initLuaState() {
 	_lua.resetState();
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise for brush script");
@@ -405,14 +406,14 @@ bool LuaBrush::initLuaState() {
 	return true;
 }
 
-bool LuaBrush::init() {
+bool LUABrush::init() {
 	if (!Super::init()) {
 		return false;
 	}
 	return true;
 }
 
-void LuaBrush::shutdown() {
+void LUABrush::shutdown() {
 	_lua.resetState();
 	_noise.shutdown();
 	_scriptLoaded = false;
@@ -428,11 +429,11 @@ void LuaBrush::shutdown() {
 	Super::shutdown();
 }
 
-void LuaBrush::reset() {
+void LUABrush::reset() {
 	Super::reset();
 }
 
-bool LuaBrush::loadScript(const core::String &filename) {
+bool LUABrush::loadScript(const core::String &filename) {
 	_scriptLoaded = false;
 	_scriptFilename = filename;
 	_description.clear();
@@ -586,91 +587,33 @@ bool LuaBrush::loadScript(const core::String &filename) {
 	return true;
 }
 
-struct IconMapping {
-	const char *name;
-	const char *icon;
-};
-
-static const IconMapping iconMappings[] = {
-	{"blend", ICON_LC_BLEND},
-	{"box", ICON_LC_BOX},
-	{"boxes", ICON_LC_BOXES},
-	{"brush", ICON_LC_BRUSH},
-	{"circle", ICON_LC_CIRCLE},
-	{"cloud", ICON_LC_CLOUD},
-	{"diamond", ICON_LC_DIAMOND},
-	{"eraser", ICON_LC_ERASER},
-	{"expand", ICON_LC_EXPAND},
-	{"flame", ICON_LC_FLAME},
-	{"footprints", ICON_LC_FOOTPRINTS},
-	{"grid2x2", ICON_LC_GRID_2X2},
-	{"grid3x3", ICON_LC_GRID_3X3},
-	{"group", ICON_LC_GROUP},
-	{"hammer", ICON_LC_HAMMER},
-	{"hexagon", ICON_LC_HEXAGON},
-	{"image", ICON_LC_IMAGE},
-	{"layers", ICON_LC_LAYERS},
-	{"mountain", ICON_LC_MOUNTAIN},
-	{"move", ICON_LC_MOVE},
-	{"paintbrush", ICON_LC_PAINTBRUSH},
-	{"palette", ICON_LC_PALETTE},
-	{"penline", ICON_LC_PEN_LINE},
-	{"pencil", ICON_LC_PENCIL},
-	{"pipette", ICON_LC_PIPETTE},
-	{"ruler", ICON_LC_RULER},
-	{"scan", ICON_LC_SCAN},
-	{"scroll", ICON_LC_SCROLL},
-	{"snowflake", ICON_LC_SNOWFLAKE},
-	{"sparkles", ICON_LC_SPARKLES},
-	{"spray", ICON_LC_SPRAY_CAN},
-	{"square", ICON_LC_SQUARE},
-	{"stamp", ICON_LC_STAMP},
-	{"star", ICON_LC_STAR},
-	{"sun", ICON_LC_SUN},
-	{"swords", ICON_LC_SWORDS},
-	{"target", ICON_LC_TARGET},
-	{"trees", ICON_LC_TREES},
-	{"triangle", ICON_LC_TRIANGLE},
-	{"wand", ICON_LC_WAND},
-	{"waves", ICON_LC_WAVES},
-	{"zap", ICON_LC_ZAP},
-};
-
-const char *LuaBrush::iconString() const {
-	if (_iconName.empty()) {
-		return ICON_LC_SCROLL;
-	}
-	for (int i = 0; i < (int)lengthof(iconMappings); ++i) {
-		if (SDL_strcasecmp(_iconName.c_str(), iconMappings[i].name) == 0) {
-			return iconMappings[i].icon;
-		}
-	}
-	return ICON_LC_SCROLL;
+const char *LUABrush::iconString() const {
+	return luaIconString(_iconName, ICON_LC_SCROLL);
 }
 
-core::String LuaBrush::scriptName() const {
+core::String LUABrush::scriptName() const {
 	return core::string::extractFilename(_scriptFilename);
 }
 
-void LuaBrush::update(const BrushContext &ctx, double nowSeconds) {
+void LUABrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
 	if (!_wantAABB && _hasCalcRegion) {
 		markDirty();
 	}
 }
 
-bool LuaBrush::needsAdditionalAction(const BrushContext &ctx) const {
+bool LUABrush::needsAdditionalAction(const BrushContext &ctx) const {
 	if (!_wantAABB) {
 		return false;
 	}
 	return Super::needsAdditionalAction(ctx);
 }
 
-bool LuaBrush::wantAABB() const {
+bool LUABrush::wantAABB() const {
 	return _wantAABB && Super::wantAABB();
 }
 
-bool LuaBrush::active() const {
+bool LUABrush::active() const {
 	if (!_scriptLoaded) {
 		return false;
 	}
@@ -680,7 +623,7 @@ bool LuaBrush::active() const {
 	return true;
 }
 
-voxel::Region LuaBrush::calcRegion(const BrushContext &ctx) const {
+voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
 	if (_wantAABB && _aabbMode) {
 		return Super::calcRegion(ctx);
 	}
@@ -750,7 +693,7 @@ voxel::Region LuaBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region(glm::ivec3(minX, minY, minZ), glm::ivec3(maxX, maxY, maxZ));
 }
 
-void LuaBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						const voxel::Region &region) {
 	if (!_scriptLoaded) {
 		return;
@@ -839,7 +782,7 @@ void LuaBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	lua_gc(s, LUA_GCCOLLECT, 0);
 }
 
-uint32_t LuaBrush::mapGizmoOperation(const char *name) {
+uint32_t LUABrush::mapGizmoOperation(const char *name) {
 	if (SDL_strcmp(name, "translate") == 0) {
 		return BrushGizmo_Translate;
 	}
@@ -868,7 +811,7 @@ uint32_t LuaBrush::mapGizmoOperation(const char *name) {
 	return BrushGizmo_None;
 }
 
-bool LuaBrush::wantBrushGizmo(const BrushContext &ctx) const {
+bool LUABrush::wantBrushGizmo(const BrushContext &ctx) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		return false;
 	}
@@ -893,7 +836,7 @@ bool LuaBrush::wantBrushGizmo(const BrushContext &ctx) const {
 	return hasGizmo;
 }
 
-void LuaBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+void LUABrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		state.operations = BrushGizmo_None;
 		return;
@@ -991,7 +934,7 @@ void LuaBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) 
 	lua_settop(s, top);
 }
 
-bool LuaBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool LUABrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 							   uint32_t operation) {
 	if (!_hasApplyGizmo || !_scriptLoaded) {
 		return false;
@@ -1080,9 +1023,9 @@ bool LuaBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const
 	return changed;
 }
 
-bool LuaBrush::apiJsonToStream(io::WriteStream &stream) {
+bool LUABrush::apiJsonToStream(io::WriteStream &stream) {
 	if (!initLuaState()) {
-		Log::error("Failed to initialize LuaBrush lua state for API documentation");
+		Log::error("Failed to initialize LUABrush lua state for API documentation");
 		return false;
 	}
 	lua_State *s = _lua.state();

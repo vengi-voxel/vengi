@@ -44,7 +44,7 @@ class ModifierVolumeWrapper;
  * the node's volume.
  *
  * @ingroup Brushes
- * @sa LuaBrush
+ * @sa LUABrush
  */
 class LUASelectionMode {
 private:

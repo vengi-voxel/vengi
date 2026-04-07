@@ -393,7 +393,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 	ImGui::CommandButton(_("Rescan"), "brushscriptrescan", listener);
 	ImGui::TooltipTextUnformatted(_("Re-scan the brushes directory for new or changed scripts"));
 
-	LuaBrush *activeBrush = modifier.activeLuaBrush();
+	LUABrush *activeBrush = modifier.activeLuaBrush();
 	if (activeBrush == nullptr) {
 		return;
 	}
@@ -1913,10 +1913,10 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 
 	// Render per-script brush buttons
-	const core::DynamicArray<LuaBrush *> &luaBrushes = modifier.luaBrushes();
+	const core::DynamicArray<LUABrush *> &luaBrushes = modifier.luaBrushes();
 	const int activeLuaIdx = modifier.activeLuaBrushIndex();
 	for (int i = 0; i < (int)luaBrushes.size(); ++i) {
-		const LuaBrush *lb = luaBrushes[i];
+		const LUABrush *lb = luaBrushes[i];
 		const bool isActive = brushType == BrushType::Script && activeLuaIdx == i;
 		ui::ScopedStyle styleButton;
 		if (isActive) {

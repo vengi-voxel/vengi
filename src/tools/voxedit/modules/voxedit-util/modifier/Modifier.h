@@ -109,7 +109,7 @@ protected:
 	SculptBrush _sculptBrush;
 	RulerBrush _rulerBrush;
 
-	core::DynamicArray<LuaBrush *> _luaBrushes;
+	core::DynamicArray<LUABrush *> _luaBrushes;
 	int _activeLuaBrushIndex = -1;
 
 	core::DynamicArray<LUASelectionMode *> _luaSelectionModes;
@@ -313,11 +313,11 @@ public:
 	void onSceneChange();
 	void reset();
 
-	const core::DynamicArray<LuaBrush *> &luaBrushes() const;
+	const core::DynamicArray<LUABrush *> &luaBrushes() const;
 	int activeLuaBrushIndex() const;
 	void setActiveLuaBrushIndex(int index);
-	LuaBrush *activeLuaBrush();
-	const LuaBrush *activeLuaBrush() const;
+	LUABrush *activeLuaBrush();
+	const LUABrush *activeLuaBrush() const;
 	void reloadBrushScripts();
 
 	const core::DynamicArray<LUASelectionMode *> &luaSelectionModes() const;
@@ -471,7 +471,7 @@ inline void Modifier::setAutoSelect(bool enable) {
 	_autoSelect->setVal(enable);
 }
 
-inline const core::DynamicArray<LuaBrush *> &Modifier::luaBrushes() const {
+inline const core::DynamicArray<LUABrush *> &Modifier::luaBrushes() const {
 	return _luaBrushes;
 }
 

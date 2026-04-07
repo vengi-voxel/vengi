@@ -48,7 +48,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_transformBrush);
 	_brushes.push_back(&_sculptBrush);
 	_brushes.push_back(&_rulerBrush);
-	// Note: LuaBrush instances are added dynamically during init() via discoverBrushScripts()
+	// Note: LUABrush instances are added dynamically during init() via discoverBrushScripts()
 }
 
 void Modifier::construct() {
@@ -424,7 +424,7 @@ void Modifier::discoverBrushScripts() {
 	core::DynamicArray<io::FilesystemEntry> entities;
 	filesystem->list("brushes", entities, "*.lua");
 	for (const auto &e : entities) {
-		LuaBrush *brush = new LuaBrush(filesystem);
+		LUABrush *brush = new LUABrush(filesystem);
 		if (!brush->init()) {
 			Log::error("Failed to initialize lua brush");
 			delete brush;
@@ -445,7 +445,7 @@ void Modifier::discoverBrushScripts() {
 }
 
 void Modifier::clearBrushScripts() {
-	for (LuaBrush *b : _luaBrushes) {
+	for (LUABrush *b : _luaBrushes) {
 		b->shutdown();
 		delete b;
 	}
@@ -495,14 +495,14 @@ void Modifier::reloadSelectionModeScripts() {
 	Log::debug("Reloaded selection mode scripts (%i found)", (int)_luaSelectionModes.size());
 }
 
-LuaBrush *Modifier::activeLuaBrush() {
+LUABrush *Modifier::activeLuaBrush() {
 	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
 		return _luaBrushes[_activeLuaBrushIndex];
 	}
 	return nullptr;
 }
 
-const LuaBrush *Modifier::activeLuaBrush() const {
+const LUABrush *Modifier::activeLuaBrush() const {
 	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
 		return _luaBrushes[_activeLuaBrushIndex];
 	}
@@ -739,7 +739,7 @@ bool Modifier::previewNeedsExistingVolume() const {
 		return true;
 	}
 	if (_brushType == BrushType::Script) {
-		const LuaBrush *luaBrush = (const LuaBrush *)currentBrush();
+		const LUABrush *luaBrush = (const LUABrush *)currentBrush();
 		if (luaBrush->previewNeedsExistingVolume()) {
 			return true;
 		}
@@ -761,7 +761,7 @@ bool Modifier::previewNeedsExistingVolume() const {
 
 bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
 	if (brush->type() == BrushType::Script) {
-		const LuaBrush *luaBrush = (const LuaBrush *)brush;
+		const LUABrush *luaBrush = (const LUABrush *)brush;
 		if (luaBrush->useSimplePreview()) {
 			return true;
 		}

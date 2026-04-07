@@ -1016,11 +1016,11 @@ void FormatPrinter::printLuaApiMarkdown() {
 	}
 	scriptApi.shutdown();
 
-	// Get JSON from LuaBrush
+	// Get JSON from LUABrush
 	io::BufferedReadWriteStream brushStream;
-	voxedit::LuaBrush brush(_filesystem);
+	voxedit::LUABrush brush(_filesystem);
 	if (!brush.apiJsonToStream(brushStream)) {
-		Log::warn("Failed to generate LuaBrush API JSON");
+		Log::warn("Failed to generate LUABrush API JSON");
 	}
 
 	// Get JSON from LUASelectionMode
@@ -1051,7 +1051,7 @@ void FormatPrinter::printLuaApiMarkdown() {
 				apiJson.set(it.key().c_str(), *it);
 			}
 		} else {
-			Log::warn("Failed to parse LuaBrush API JSON");
+			Log::warn("Failed to parse LUABrush API JSON");
 		}
 	}
 
