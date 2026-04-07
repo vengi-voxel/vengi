@@ -55,14 +55,8 @@ bool ScriptBrowserPanel::filtered(const voxelui::ScriptInfo &info) const {
 }
 
 bool ScriptBrowserPanel::isInstalled(const voxelui::ScriptInfo &info) const {
-	core::String dir;
-	if (info.type == "generator") {
-		dir = "scripts";
-	} else if (info.type == "brush") {
-		dir = "brushes";
-	} else if (info.type == "selectionmode") {
-		dir = "selectionmodes";
-	} else {
+	const core::String dir = ScriptApi::scriptTypeToDir(info.type);
+	if (dir.empty()) {
 		return false;
 	}
 	const core::String path = _app->filesystem()->homeWritePath(core::string::path(dir, info.filename));
