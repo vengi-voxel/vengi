@@ -486,6 +486,13 @@ bool SceneGraphNode::hasSelection() const {
 	return _volume->hasFlags(_volume->region(), voxel::FlagOutline);
 }
 
+void SceneGraphNode::invertSelection() {
+	if (_volume == nullptr) {
+		return;
+	}
+	_volume->toggleFlags(_volume->region(), voxel::FlagOutline);
+}
+
 void SceneGraphNode::clearSelection() {
 	if (_volume == nullptr) {
 		return;

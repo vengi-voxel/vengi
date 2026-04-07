@@ -227,6 +227,7 @@ public:
 
 	bool hasSelection() const;
 
+	void invertSelection();
 	void clearSelection();
 	void select(const voxel::Region &region);
 	void unselect(const voxel::Region &region);

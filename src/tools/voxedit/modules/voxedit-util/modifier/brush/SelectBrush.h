@@ -58,7 +58,7 @@ enum class SelectMode : uint8_t {
 	ColumnRim2D,
 	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
 	 *  Uses single mode for continuous execution. Single undo entry on release. */
-	Paint, // TODO: SELECTION: implement this with ModifierType::Paint and the AABBBrush features
+	Paint,
 
 	Max
 };
