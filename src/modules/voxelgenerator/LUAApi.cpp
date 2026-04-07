@@ -411,6 +411,16 @@ static int luaVoxel_volumewrapper_voxel_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_flags(lua_State* s) {
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::Voxel& voxel = volume->voxel(x, y, z);
+	lua_pushinteger(s, voxel.getFlags());
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_region(lua_State* s) {
 	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	return luaVoxel_pushregion(s, volume->region());
@@ -765,6 +775,50 @@ static int luaVoxel_volumewrapper_istouching(lua_State *s) {
 		connectivity = voxel::Connectivity::TwentySixConnected;
 	}
 	lua_pushboolean(s, voxelutil::isTouching(*volume->volume(), glm::ivec3(x, y, z), connectivity) ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_visitsurface(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	luaL_checktype(s, 2, LUA_TFUNCTION);
+	const voxel::RawVolumeWrapper &wrapper = (const voxel::RawVolumeWrapper &)*volume;
+	int cnt = voxelutil::visitSurfaceVolume(wrapper,
+		[s](int vx, int vy, int vz, const voxel::Voxel &) {
+			lua_pushvalue(s, 2);
+			lua_pushinteger(s, vx);
+			lua_pushinteger(s, vy);
+			lua_pushinteger(s, vz);
+			lua_pcall(s, 3, 0, 0);
+		});
+	lua_pushinteger(s, cnt);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_issurface(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::RawVolumeWrapper &wrapper = (const voxel::RawVolumeWrapper &)*volume;
+	lua_pushboolean(s, voxel::visibleFaces(wrapper, x, y, z) != voxel::FaceBits::None ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_isair(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	lua_pushboolean(s, voxel::isAir(volume->voxel(x, y, z).getMaterial()) ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_containspoint(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	lua_pushboolean(s, volume->region().containsPoint(x, y, z) ? 1 : 0);
 	return 1;
 }
 
@@ -3551,6 +3605,22 @@ static int luaVoxel_volumewrapper_normal_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_flags_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "flags",
+		"summary": "Get the flags of the voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The flags of the voxel at the specified coordinates." }
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_isselected_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "isSelected",
@@ -3640,6 +3710,68 @@ static int luaVoxel_volumewrapper_istouching_jsonhelp(lua_State* s) {
 		],
 		"returns": [
 			{"type": "boolean", "description": "True if the position is adjacent to a solid voxel."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_visitsurface_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "visitSurface",
+		"summary": "Visit all surface voxels in the volume. Surface voxels are solid voxels that have at least one air neighbor.",
+		"parameters": [
+			{"name": "callback", "type": "function", "description": "Called with (x, y, z) for each surface voxel."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of surface voxels visited."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_issurface_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "isSurface",
+		"summary": "Check if a voxel is a surface voxel (solid with at least one exposed air face).",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel is on the surface."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_isair_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "isAir",
+		"summary": "Check if the voxel at the given position is air (empty).",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel is air."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_containspoint_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "containsPoint",
+		"summary": "Check if a point is inside the volume's region bounds (inclusive).",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the point is inside the volume region."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -6170,12 +6302,17 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel, luaVoxel_volumewrapper_setvoxel_jsonhelp},
 		{"setNormal", luaVoxel_volumewrapper_setnormal, luaVoxel_volumewrapper_setnormal_jsonhelp},
 		{"normal", luaVoxel_volumewrapper_normal, luaVoxel_volumewrapper_normal_jsonhelp},
+		{"flags", luaVoxel_volumewrapper_flags, luaVoxel_volumewrapper_flags_jsonhelp},
 		{"isSelected", luaVoxel_volumewrapper_isselected, luaVoxel_volumewrapper_isselected_jsonhelp},
 		{"setSelected", luaVoxel_volumewrapper_setselected, luaVoxel_volumewrapper_setselected_jsonhelp},
 		{"fill", luaVoxel_volumewrapper_fill, luaVoxel_volumewrapper_fill_jsonhelp},
 		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
 		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},
 		{"isTouching", luaVoxel_volumewrapper_istouching, luaVoxel_volumewrapper_istouching_jsonhelp},
+		{"visitSurface", luaVoxel_volumewrapper_visitsurface, luaVoxel_volumewrapper_visitsurface_jsonhelp},
+		{"isSurface", luaVoxel_volumewrapper_issurface, luaVoxel_volumewrapper_issurface_jsonhelp},
+		{"isAir", luaVoxel_volumewrapper_isair, luaVoxel_volumewrapper_isair_jsonhelp},
+		{"containsPoint", luaVoxel_volumewrapper_containspoint, luaVoxel_volumewrapper_containspoint_jsonhelp},
 		{"pathfinder", luaVoxel_volumewrapper_pathfinder, luaVoxel_volumewrapper_pathfinder_jsonhelp},
 		{"erasePlane", luaVoxel_volumewrapper_erasePlane, luaVoxel_volumewrapper_erasePlane_jsonhelp},
 		{"extrudePlane", luaVoxel_volumewrapper_extrudePlane, luaVoxel_volumewrapper_extrudePlane_jsonhelp},
