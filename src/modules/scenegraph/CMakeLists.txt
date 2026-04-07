@@ -15,6 +15,7 @@ set(SRCS
 	SceneGraphNodeCamera.h SceneGraphNodeCamera.cpp
 	SceneGraphNodeProperties.h
 	SceneGraphNodeType.h
+	SceneGraphNodeValueCache.h
 	SceneGraphTransform.h SceneGraphTransform.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
 	SceneUtil.h SceneUtil.cpp
@@ -29,6 +30,7 @@ set(TEST_SRCS
 	tests/PhysicsTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SceneGraphTransformTest.cpp
+	tests/SceneGraphNodeValueCacheTest.cpp
 	tests/SceneGraphUtilTest.cpp
 	tests/TestHelper.h
 )

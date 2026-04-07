@@ -2078,16 +2078,8 @@ void SceneManager::selectionSelectAll(int nodeId) {
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
 }
 
-bool SceneManager::hasSelection(const scenegraph::SceneGraphNode &node) const {
-	return node.hasSelection();
-}
-
 bool SceneManager::hasSelection(int nodeId) const {
-	const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-	if (node == nullptr) {
-		return false;
-	}
-	return hasSelection(*node);
+	return selectionCalculateRegion(nodeId).isValid();
 }
 
 bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
@@ -2103,12 +2095,9 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 	return (voxel.getFlags() & voxel::FlagOutline) != 0;
 }
 
-voxel::Region SceneManager::selectionCalculateRegion(const scenegraph::SceneGraphNode &node) {
-	if (!hasSelection(node)) {
-		return voxel::Region::InvalidRegion;
-	}
+voxel::Region SceneManager::selectionCalculateRegion(const scenegraph::SceneGraphNode &node) const {
 	if (_selectionRegionCache.valid(node.id())) {
-		return *_selectionRegionCache.value();
+		return *_selectionRegionCache.value(node.id());
 	}
 	const voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
@@ -2119,8 +2108,8 @@ voxel::Region SceneManager::selectionCalculateRegion(const scenegraph::SceneGrap
 	return region;
 }
 
-voxel::Region SceneManager::selectionCalculateRegion(int nodeId) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
@@ -2484,6 +2473,7 @@ void SceneManager::resetSceneState() {
 			break;
 		}
 	}
+	_selectionRegionCache.invalidate();
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	// ensure that the first model node is active and re-select the first model node.
 	// therefore we first "select" the root node, then switch back to the first model node.
@@ -4630,6 +4620,7 @@ void SceneManager::shutdown() {
 		Log::error("Lua api listener still registered");
 		_sceneGraph.unregisterListener(&_luaApiListener);
 	}
+	_selectionRegionCache.invalidate();
 	_sceneGraph.clear();
 
 	_camMovement.shutdown();

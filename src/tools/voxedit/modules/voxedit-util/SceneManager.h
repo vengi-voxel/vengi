@@ -17,7 +17,7 @@
 #include "modifier/IModifierRenderer.h"
 #include "modifier/Modifier.h"
 #include "modifier/SceneModifiedFlags.h"
-#include "SceneGraphNodeCachedValue.h"
+#include "scenegraph/SceneGraphNodeValueCache.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/Server.h"
@@ -143,7 +143,7 @@ protected:
 
 	voxelutil::PickResult _result;
 
-	SceneGraphNodeCachedValue<voxel::Region> _selectionRegionCache;
+	mutable SceneGraphNodeValueCache<voxel::Region> _selectionRegionCache;
 
 	void autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region);
 	bool loadGlobalClipboard(voxel::ClipboardData &clipData);
@@ -294,8 +294,7 @@ protected:
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
-	bool hasSelection(const scenegraph::SceneGraphNode &node) const;
-	voxel::Region selectionCalculateRegion(const scenegraph::SceneGraphNode &node);
+	voxel::Region selectionCalculateRegion(const scenegraph::SceneGraphNode &node) const;
 	voxel::ClipboardData nodeClipboardCopy(scenegraph::SceneGraphNode &node);
 
 public:
@@ -421,7 +420,7 @@ public:
 	void selectionLassoUndoVertex(int nodeId);
 	bool hasSelection(int nodeId) const;
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
-	voxel::Region selectionCalculateRegion(int nodeId);
+	voxel::Region selectionCalculateRegion(int nodeId) const;
 
 	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
 	void lsystemAbort();

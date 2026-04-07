@@ -132,7 +132,6 @@ set(TEST_SRCS
 	tests/TextureBrushTest.cpp
 	tests/ClientTest.cpp
 	tests/SessionRecorderTest.cpp
-	tests/SceneGraphNodeCachedValueTest.cpp
 	tests/LUABrushTest.cpp
 )
 set(TEST_FILES
