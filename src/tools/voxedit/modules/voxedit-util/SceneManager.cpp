@@ -5429,6 +5429,7 @@ void SceneManager::markDirty() {
 	// max suggested voxel count
 	_needAutoSave = !exceedsMaxSuggestedVolumeSize();
 	_dirty = true;
+	_sceneRenderer->markDirty();
 }
 
 bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) {
