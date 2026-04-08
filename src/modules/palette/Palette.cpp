@@ -72,7 +72,7 @@ Palette &Palette::operator=(const Palette &other) {
 
 Palette::Palette(Palette &&other) noexcept
 	: DirtyState(other), _needsSave(other._needsSave), _hashDirty(other._hashDirty), _name(core::move(other._name)),
-	  _filename(core::move(_filename)), _view(this), _colorCount(other._colorCount) {
+	  _filename(core::move(other._filename)), _view(this), _colorCount(other._colorCount) {
 	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
