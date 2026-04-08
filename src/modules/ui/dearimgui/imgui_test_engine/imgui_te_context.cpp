@@ -1534,7 +1534,9 @@ void    ImGuiTestContext::ScrollToItem(ImGuiTestRef ref, ImGuiAxis axis, ImGuiTe
             if (tab_bar->Flags & (ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_FittingPolicyMixed))
             {
                 ScrollToTabItem(tab_bar, item.ID);
-                return;
+
+                // Refresh and fallthrough below in case a scroll within the window is also necessary.
+                item = ItemInfo(ref);
             }
     }
 
