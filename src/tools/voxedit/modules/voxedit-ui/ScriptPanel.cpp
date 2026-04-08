@@ -74,6 +74,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 					}
 				}
 				ImGui::TooltipTextUnformatted(_("Browse and download scripts from the online repository"));
+				ImGui::CommandIconMenuItem(ICON_LC_FILE_PLUS, _("Install script..."), "script_install", true, &listener);
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_LIGHTBULB, _("Help"))) {
