@@ -208,6 +208,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					_scriptBrowserPanel->open();
 				}
 			}
+			ImGui::CommandIconMenuItem(ICON_LC_FILE_PLUS, _("Install script..."), "script_install", true, &listener);
 			ImGui::Separator();
 			if (ImGui::MenuItem(_("Minecraft mapping"))) {
 				core::getVar(cfg::VoxEditPopupMinecraftMapping)->setVal(true);

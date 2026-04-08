@@ -330,9 +330,19 @@ app::AppState VoxEdit::onConstruct() {
 		}).setHelp(_("Set the scene camera mode")).setArgumentCompleter(command::valueCompleter({"free", "top", "bottom", "left", "right", "front", "back"}));
 
 	command::Command::registerCommand("script_install")
-		.addArg({"source", command::ArgType::String, false, "", "Local file path, file:// URI, or http(s):// URL of a .lua script"})
+		.addArg({"source", command::ArgType::String, true, "", "Local file path, file:// URI, or http(s):// URL of a .lua script"})
 		.setHandler([this](const command::CommandArgs &args) {
 			const core::String &source = args.str("source");
+			if (source.empty()) {
+				openDialog([this](const core::String &file, const io::FormatDescription *desc) {
+					voxelui::ScriptApi api;
+					if (api.install(filesystem(), file)) {
+						_sceneMgr->modifier().reloadBrushScripts();
+						_sceneMgr->modifier().reloadSelectionModeScripts();
+					}
+				}, {}, io::format::lua());
+				return;
+			}
 			voxelui::ScriptApi api;
 			if (api.install(filesystem(), source)) {
 				_sceneMgr->modifier().reloadBrushScripts();

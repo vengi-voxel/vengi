@@ -420,7 +420,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 	}
 #endif
 	_optionsPanel.update(TITLE_OPTIONS);
-	_scriptBrowserPanel.update(TITLE_SCRIPT_BROWSER);
+	_scriptBrowserPanel.update(TITLE_SCRIPT_BROWSER, &listener);
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);

@@ -4,6 +4,7 @@
 
 #include "ScriptBrowserPanel.h"
 #include "app/I18N.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
@@ -63,7 +64,7 @@ bool ScriptBrowserPanel::isInstalled(const voxelui::ScriptInfo &info) const {
 	return io::Filesystem::sysExists(path);
 }
 
-void ScriptBrowserPanel::update(const char *id) {
+void ScriptBrowserPanel::update(const char *id, command::CommandExecutionListener *listener) {
 	if (!_open) {
 		return;
 	}
@@ -178,9 +179,8 @@ void ScriptBrowserPanel::update(const char *id) {
 						if (installed) {
 							const core::String uninstallId = core::String::format("uninstall_%s", info.filename.c_str());
 							if (ImGui::IconButton(ICON_LC_TRASH, uninstallId.c_str())) {
-								voxelui::ScriptApi api;
-								if (api.uninstall(_app->filesystem(), info)) {
-									Log::info("Uninstalled script %s", info.name.c_str());
+								const core::String cmd = core::String::format("script_uninstall %s", info.filename.c_str());
+								if (command::executeCommands(cmd, listener) > 0) {
 									_needsReload = true;
 								}
 							}
