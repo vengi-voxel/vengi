@@ -628,6 +628,7 @@ void Modifier::commit() {
 		return;
 	}
 	if (!brush->onDeactivated()) {
+		brush->reset();
 		return;
 	}
 	if (beginBrushFromPanel()) {
@@ -668,6 +669,7 @@ BrushType Modifier::setBrushType(BrushType type) {
 	// Auto-commit pending changes from the current brush before switching.
 	// Must happen before changing _brushType so currentBrush() returns the old brush.
 	commit();
+	resetPreview();
 
 	_brushType = type;
 	Brush *newBrush = currentBrush();
