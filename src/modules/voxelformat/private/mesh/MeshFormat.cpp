@@ -177,7 +177,10 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 	palette::NormalPaletteLookup normalLookup(normalPalette);
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
-	localMaps.resize(parallel);
+	localMaps.reserve(parallel);
+	for (int i = 0; i < parallel; ++i) {
+		localMaps.emplace_back((int)posMap.capacity());
+	}
 	core::AtomicInt mapIdx(0);
 	auto fn = [&tris, &region, &normalLookup, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
 		const int idx = mapIdx.increment();
@@ -218,7 +221,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 	palette::NormalPaletteLookup normalLookup(normalPalette);
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
-	localMaps.resize(parallel);
+	localMaps.reserve(parallel);
+	for (int i = 0; i < parallel; ++i) {
+		localMaps.emplace_back((int)posMap.capacity());
+	}
 	core::AtomicInt mapIdx(0);
 	auto fn = [&tris, &normalLookup, region, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
 		const int idx = mapIdx.increment();
@@ -1187,7 +1193,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	ChunkMeshes nonEmptyMeshes;
 	nonEmptyMeshes.reserve(meshes.size());
 
-	core::Map<int, int> meshIdxNodeMap;
+	core::Map<int, int> meshIdxNodeMap(meshes.size());
 	// filter out empty meshes
 	for (auto iter = meshes.begin(); iter != meshes.end(); ++iter) {
 		if (!iter->mesh || iter->mesh->isEmpty()) {
