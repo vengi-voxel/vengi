@@ -1900,9 +1900,20 @@ bool SceneManager::mergeActiveToBackground() {
 			worldOverlap.getLowerCorner() + worldToLocal,
 			worldOverlap.getUpperCorner() + worldToLocal);
 
-		// Stamp all voxels including air (overwrite destination completely in overlap)
-		const palette::Palette &destPalette = targetNode.palette();
+		// Add missing source colors to the target palette before mapping
+		palette::Palette &destPalette = targetNode.palette();
+		bool paletteChanged = false;
+		for (int i = 0; i < sourcePalette.colorCount(); ++i) {
+			if (destPalette.tryAdd(sourcePalette.color(i), false)) {
+				paletteChanged = true;
+			}
+		}
+		if (paletteChanged) {
+			destPalette.markDirty();
+		}
 		palette::PaletteLookup palLookup(destPalette);
+
+		// Stamp all voxels including air (overwrite destination completely in overlap)
 		int count = 0;
 		const glm::ivec3 &srcLower = worldOverlap.getLowerCorner();
 		const glm::ivec3 &dstLower = targetLocalOverlap.getLowerCorner();
