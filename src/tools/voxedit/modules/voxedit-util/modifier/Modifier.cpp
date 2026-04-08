@@ -904,16 +904,6 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 		ctx.activeRegion = node->region();
 	}
 
-	// Detect when the active node's region changed (e.g. model gizmo shift)
-	// and mark the current brush dirty so its preview is regenerated at the
-	// new position instead of lingering at the old one.
-	if (ctx.activeRegion.isValid() && ctx.activeRegion != _lastActiveRegion) {
-		if (brush) {
-			brush->markDirty();
-		}
-		_lastActiveRegion = ctx.activeRegion;
-	}
-
 	// Handle brush preview with deferred updates
 	if (!isMode(ModifierType::ColorPicker)) {
 		ctx.brushActive = brush && brush->active();
