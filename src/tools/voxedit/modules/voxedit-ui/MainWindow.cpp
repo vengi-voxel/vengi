@@ -620,6 +620,11 @@ void MainWindow::popupWelcome() {
 		ImGui::Separator();
 		MenuBar::viewModeOption();
 		ImGui::Separator();
+		if (ImGui::IconButton(ICON_LC_DOWNLOAD, _("Download scripts..."))) {
+			_scriptBrowserPanel.open();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
