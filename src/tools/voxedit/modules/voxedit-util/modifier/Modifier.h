@@ -85,6 +85,11 @@ protected:
 	// prevents the action button from committing intermediate transforms
 	bool _brushGizmoActive = false;
 
+	// Tracks the active volume region to detect node movement.
+	// When the region changes (e.g. model gizmo shift), brushes are
+	// marked dirty so their preview is regenerated at the new position.
+	voxel::Region _lastActiveRegion = voxel::Region::InvalidRegion;
+
 	/**
 	 * timer value which indicates the next execution time in case you keep the
 	 * modifier triggered
