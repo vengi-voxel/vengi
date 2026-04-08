@@ -387,6 +387,7 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
 	}
 	ImGui::DockBuilderDockWindow(TITLE_OPTIONS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_BROWSER, dockId);
 }
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
