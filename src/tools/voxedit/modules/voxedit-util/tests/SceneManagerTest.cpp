@@ -1868,6 +1868,41 @@ TEST_F(SceneManagerTest, testMergeActiveToBackground) {
 	EXPECT_EQ(1, voxelutil::countVoxels(*targetVol));
 }
 
+TEST_F(SceneManagerTest, testMergeActiveToBackgroundPaletteTransfer) {
+	const voxel::Region region{0, 9};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "palette_merge_test", region));
+
+	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
+	scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphModelNode(targetNodeId);
+	ASSERT_NE(nullptr, targetNode);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	ASSERT_NE(nullptr, targetVol);
+	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	_sceneMgr->modified(targetNodeId, targetVol->region());
+
+	// Create source node with a unique color not in target palette
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
+	sourceNode.createVolume(region);
+	sourceNode.setName("source_palette");
+	const color::RGBA uniqueColor(255, 0, 0, 255);
+	sourceNode.palette().tryAdd(uniqueColor, false);
+	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
+	ASSERT_NE(InvalidNodeId, sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	ASSERT_NE(nullptr, sourceVol);
+	sourceVol->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+
+	// Merge
+	_sceneMgr->nodeActivate(sourceNodeId);
+	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
+
+	// Target palette should now contain the unique color from source
+	palette::Palette &resultPal = targetNode->palette();
+	EXPECT_TRUE(resultPal.hasColor(uniqueColor));
+}
+
 TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	const voxel::Region region{0, 9};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "mergevisible_test", region));

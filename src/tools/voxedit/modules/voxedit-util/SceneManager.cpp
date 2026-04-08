@@ -3163,93 +3163,16 @@ void SceneManager::construct() {
 	command::Command::registerCommand("palette_addcolor")
 		.addArg({"color", command::ArgType::String, false, "", "Color value (e.g. #FF0000, #FF0000AA, argb:AARRGGBB, \"255 0 0\", \"255,0,0,128\", \"rgba(255,0,0,128)\")"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			core::String colorStr = args.str("color");
+			const core::String colorStr = args.str("color");
 			if (colorStr.empty()) {
 				Log::warn("palette_addcolor: no color value given");
 				return;
 			}
-			uint8_t r = 0, g = 0, b = 0, a = 255;
-			bool parsed = false;
-
-			// Strip rgba(...) or rgb(...) wrapper
-			bool isRgbaFunc = false;
-			if (colorStr.size() > 5 && (colorStr[0] == 'r' || colorStr[0] == 'R') &&
-				(colorStr[1] == 'g' || colorStr[1] == 'G') &&
-				(colorStr[2] == 'b' || colorStr[2] == 'B') &&
-				(colorStr[3] == 'a' || colorStr[3] == 'A') && colorStr[4] == '(') {
-				colorStr = colorStr.substr(5);
-				isRgbaFunc = true;
-			} else if (colorStr.size() > 4 && (colorStr[0] == 'r' || colorStr[0] == 'R') &&
-				(colorStr[1] == 'g' || colorStr[1] == 'G') &&
-				(colorStr[2] == 'b' || colorStr[2] == 'B') && colorStr[3] == '(') {
-				colorStr = colorStr.substr(4);
-				isRgbaFunc = true;
-			}
-			if (isRgbaFunc && !colorStr.empty() && colorStr.last() == ')') {
-				colorStr = colorStr.substr(0, colorStr.size() - 1);
-			}
-
-			// Check for argb: prefix (ARGB hex order used by some Windows tools)
-			bool argbOrder = false;
-			if (colorStr.size() > 5 && (colorStr[0] == 'a' || colorStr[0] == 'A') &&
-				(colorStr[1] == 'r' || colorStr[1] == 'R') &&
-				(colorStr[2] == 'g' || colorStr[2] == 'G') &&
-				(colorStr[3] == 'b' || colorStr[3] == 'B') && colorStr[4] == ':') {
-				colorStr = colorStr.substr(5);
-				argbOrder = true;
-			}
-
-			// Try comma-separated decimal: "255,0,0" or "255, 0, 0"
-			if (!parsed && colorStr.contains(",", 1)) {
-				core::DynamicArray<core::String> parts;
-				core::string::splitString(colorStr, parts, ",");
-				if (parts.size() >= 3) {
-					r = (uint8_t)core::string::toInt(parts[0].trim());
-					g = (uint8_t)core::string::toInt(parts[1].trim());
-					b = (uint8_t)core::string::toInt(parts[2].trim());
-					if (parts.size() >= 4) {
-						a = (uint8_t)core::string::toInt(parts[3].trim());
-					}
-					parsed = true;
-				}
-			}
-
-			// Try hex: #RRGGBB, 0xRRGGBB, RRGGBB, #RRGGBBAA
-			if (!parsed && core::string::parseHex(colorStr.c_str(), r, g, b, a) >= 3) {
-				if (argbOrder) {
-					// parseHex read AARRGGBB as r=AA, g=RR, b=GG, a=BB - reorder
-					const uint8_t realA = r;
-					const uint8_t realR = g;
-					const uint8_t realG = b;
-					const uint8_t realB = a;
-					r = realR;
-					g = realG;
-					b = realB;
-					a = realA;
-				}
-				parsed = true;
-			}
-
-			// Try space-separated decimal: "255 0 0"
-			if (!parsed) {
-				core::DynamicArray<core::String> parts;
-				core::string::splitString(colorStr, parts, " ");
-				if (parts.size() >= 3) {
-					r = (uint8_t)core::string::toInt(parts[0]);
-					g = (uint8_t)core::string::toInt(parts[1]);
-					b = (uint8_t)core::string::toInt(parts[2]);
-					if (parts.size() >= 4) {
-						a = (uint8_t)core::string::toInt(parts[3]);
-					}
-					parsed = true;
-				}
-			}
-
-			if (!parsed) {
+			color::RGBA rgba;
+			if (!color::parseColor(colorStr, rgba)) {
 				Log::warn("palette_addcolor: could not parse color '%s'", colorStr.c_str());
 				return;
 			}
-
 			const int nodeId = activeNode();
 			scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 			if (node == nullptr) {
@@ -3257,7 +3180,6 @@ void SceneManager::construct() {
 				return;
 			}
 			palette::Palette &pal = node->palette();
-			const color::RGBA rgba(r, g, b, a);
 			uint8_t index = 0;
 			if (!pal.tryAdd(rgba, false, &index)) {
 				if (pal.hasColor(rgba)) {
@@ -3270,7 +3192,7 @@ void SceneManager::construct() {
 			pal.markSave();
 			pal.markDirty();
 			_mementoHandler.markPaletteChange(_sceneGraph, *node);
-			Log::info("Added color (%u, %u, %u, %u) at palette index %u", r, g, b, a, index);
+			Log::info("Added color (%u, %u, %u, %u) at palette index %u", rgba.r, rgba.g, rgba.b, rgba.a, index);
 		}).setHelp(_("Add a color to the active node's palette. Supports: #RRGGBB, #RRGGBBAA, argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)\""));
 
 	command::Command::registerCommand("palette_removeunused")
