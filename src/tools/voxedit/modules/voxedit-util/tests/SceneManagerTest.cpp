@@ -1909,6 +1909,43 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundPaletteTransfer) {
 	EXPECT_TRUE(resultPal.hasColor(uniqueColor));
 }
 
+TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
+	// Target node is cropped smaller than the grid cell. Source overlaps the gap.
+	// After merge, target should be expanded to cover the overlap.
+	const voxel::Region targetRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "expand_test", targetRegion));
+
+	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	ASSERT_NE(nullptr, targetVol);
+	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(targetNodeId, targetVol->region());
+
+	// Create source that extends beyond the target region
+	const voxel::Region sourceRegion(0, 0, 0, 9, 9, 9);
+	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
+	scenegraph::SceneGraphNode sourceNode(scenegraph::SceneGraphNodeType::Model);
+	sourceNode.createVolume(sourceRegion);
+	sourceNode.setName("source_expand");
+	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
+	ASSERT_NE(InvalidNodeId, sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	ASSERT_NE(nullptr, sourceVol);
+	sourceVol->setVoxel(8, 8, 8, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+
+	_sceneMgr->nodeActivate(sourceNodeId);
+	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
+
+	// The target node should have been expanded to include (8,8,8)
+	const scenegraph::SceneGraphNode *resultNode = _sceneMgr->sceneGraphModelNode(targetNodeId);
+	ASSERT_NE(nullptr, resultNode);
+	const voxel::RawVolume *resultVol = resultNode->volume();
+	ASSERT_NE(nullptr, resultVol);
+	EXPECT_TRUE(resultVol->region().containsPoint(glm::ivec3(8, 8, 8)));
+	EXPECT_FALSE(voxel::isAir(resultVol->voxel(8, 8, 8).getMaterial()));
+}
+
 TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	const voxel::Region region{0, 9};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "mergevisible_test", region));

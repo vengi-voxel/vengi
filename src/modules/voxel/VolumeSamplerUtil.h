@@ -7,6 +7,7 @@
 #include "app/ForParallel.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
+#include <float.h>
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
@@ -47,11 +48,14 @@ inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const
 
 /**
  * @brief Nearest-neighbor sampling: find the closest non-air voxel in a 3x3x3 neighborhood.
+ *
+ * First checks the rounded position. If solid, returns it directly.
+ * If air, searches all 26 neighbors and returns the nearest non-air voxel
+ * regardless of distance. This prevents gaps at surface boundaries where
+ * rounding lands on the air side.
  */
 template<class Sampler>
 static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
-	static constexpr float MaxSampleDistanceSq = 0.87f * 0.87f; // half-diagonal of a unit cube, squared
-
 	const glm::ivec3 rounded = glm::ivec3(glm::round(pos));
 	if (sampler.setPosition(rounded) && !voxel::isAir(sampler.voxel().getMaterial())) {
 		return sampler.voxel();
@@ -59,7 +63,7 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 
 	// TODO: use the sampler peek functions and make the sampler const
 	voxel::Voxel best;
-	float bestDistSq = MaxSampleDistanceSq + 1.0f;
+	float bestDistSq = FLT_MAX;
 	for (int dz = -1; dz <= 1; ++dz) {
 		for (int dy = -1; dy <= 1; ++dy) {
 			for (int dx = -1; dx <= 1; ++dx) {
@@ -80,11 +84,7 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 			}
 		}
 	}
-
-	if (bestDistSq <= MaxSampleDistanceSq) {
-		return best;
-	}
-	return voxel::Voxel();
+	return best;
 }
 
 // Generic trilinear sampling

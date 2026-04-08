@@ -203,4 +203,56 @@ TEST_F(VolumeRescalerTest, testScaleVolumePreservesVoxelCount) {
 	EXPECT_GE(scaledCount, originalCount);
 }
 
+TEST_F(VolumeRescalerTest, testScaleVolumeNoGaps3x) {
+	// A solid 4x4x4 cube scaled up 3x should have no gaps inside.
+	// This verifies sampleNearest doesn't create checkerboard holes.
+	voxel::RawVolume volume({0, 3});
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 3; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(3.0f)));
+	ASSERT_TRUE(scaled);
+	// Every interior dest voxel should be solid - no gaps
+	const voxel::Region &region = scaled->region();
+	int gapCount = 0;
+	for (int z = region.getLowerZ() + 1; z < region.getUpperZ(); ++z) {
+		for (int y = region.getLowerY() + 1; y < region.getUpperY(); ++y) {
+			for (int x = region.getLowerX() + 1; x < region.getUpperX(); ++x) {
+				if (voxel::isAir(scaled->voxel(x, y, z).getMaterial())) {
+					++gapCount;
+				}
+			}
+		}
+	}
+	EXPECT_EQ(0, gapCount) << "Found " << gapCount << " gaps in interior of 3x scaled solid cube";
+}
+
+TEST_F(VolumeRescalerTest, testScaleVolumeThinWallPreserved) {
+	// A 1-voxel-thick wall scaled up 3x should produce a 3-voxel-thick wall with no gaps
+	voxel::RawVolume volume({0, 7});
+	for (int z = 0; z <= 7; ++z) {
+		for (int y = 0; y <= 7; ++y) {
+			volume.setVoxel(4, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(3.0f)));
+	ASSERT_TRUE(scaled);
+	// The wall at x=4 in source should map to 3 consecutive x values in dest
+	// Check the center row for solid voxels
+	const glm::ivec3 center = scaled->region().getCenter();
+	const int centerY = center.y;
+	const int centerZ = center.z;
+	int wallThickness = 0;
+	for (int x = scaled->region().getLowerX(); x <= scaled->region().getUpperX(); ++x) {
+		if (!voxel::isAir(scaled->voxel(x, centerY, centerZ).getMaterial())) {
+			++wallThickness;
+		}
+	}
+	EXPECT_GE(wallThickness, 3) << "Thin wall should be at least 3 voxels thick after 3x scale";
+}
+
 } // namespace voxelutil
