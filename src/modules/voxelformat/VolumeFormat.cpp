@@ -114,6 +114,7 @@ const io::FormatDescription *voxelFormats() {
 												 MapFormat::format(),
 												 QuakeBSPFormat::formatUFOAI(),
 												 QuakeBSPFormat::formatQuake1(),
+												 QuakeBSPFormat::formatGoldSrc(),
 												 MDLFormat::format(),
 												 MD2Format::format(),
 												 MD3Format::format(),
@@ -258,7 +259,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<SkinFormat>();
 		} else if (io::isA(STLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<STLFormat>();
-		} else if (io::isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) || isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic)) {
+		} else if (io::isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) || isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic) || isA(QuakeBSPFormat::formatGoldSrc(), desc, ext, magic)) {
 			return core::make_shared<QuakeBSPFormat>();
 		} else if (io::isA(MapFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MapFormat>();

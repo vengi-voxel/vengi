@@ -147,6 +147,12 @@ private:
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
 									core::Buffer<Model> &models);
 
+	bool loadGoldSrcBsp(const core::String &filename, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const BspHeader &header);
+	bool loadGoldSrcTextures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
+							 core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials,
+							 MeshMaterialArray &meshMaterialArray);
+
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
@@ -164,6 +170,11 @@ public:
 
 	static const io::FormatDescription &formatQuake1() {
 		static io::FormatDescription f{"Quake 1", "", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
+
+	static const io::FormatDescription &formatGoldSrc() {
+		static io::FormatDescription f{"GoldSrc", "", {"bsp"}, {"\x1e"}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 };
