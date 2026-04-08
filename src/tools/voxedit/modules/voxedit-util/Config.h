@@ -63,4 +63,4 @@ constexpr const char *VoxEditNetServerMaxConnections = "ve_netservermaxconnectio
 constexpr const char *VoxEditAutoSelect = "ve_autoselect";
 constexpr const char *VoxEditSceneMode = "ve_scenemode";
 
-}
+} // namespace cfg

@@ -930,8 +930,8 @@ bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
 	if (isSceneMode()) {
 		return false;
 	}
-
 	Modifier &modifier = _sceneMgr->modifier();
+
 	Brush *brush = modifier.currentBrush();
 	if (brush == nullptr) {
 		modifier.setBrushGizmoActive(false);
@@ -1084,22 +1084,23 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
 
+	const bool brushGizmo = !isSceneMode() && _brushGizmo->boolVal();
+	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal() || brushGizmo);
+	const bool editModeModified = runGizmo(camera);
+
+	renderCameraManipulator(camera, headerSize);
+	ImGuizmo::PopID();
+
 	// Run per-brush gizmo (edit mode only) - uses a separate ImGuizmo ID
 	bool brushGizmoModified = false;
-	if (!isSceneMode() && _brushGizmo->boolVal()) {
+	if (!editModeModified && brushGizmo) {
 		ImGuizmo::PushID("brushgizmo");
-		ImGuizmo::Enable(true);
 		brushGizmoModified = runBrushGizmo(camera, headerSize);
 		ImGuizmo::PopID();
 	} else {
 		_sceneMgr->modifier().setBrushGizmoActive(false);
 	}
 
-	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal());
-	const bool editModeModified = runGizmo(camera);
-
-	renderCameraManipulator(camera, headerSize);
-	ImGuizmo::PopID();
 	return editModeModified || brushGizmoModified;
 }
 
