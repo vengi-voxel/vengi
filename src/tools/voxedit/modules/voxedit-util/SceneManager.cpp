@@ -3104,6 +3104,41 @@ void SceneManager::construct() {
 			_mementoHandler.markPaletteChange(_sceneGraph, node);
 		}).setHelp(_("Make the palette colors darker"));
 
+	command::Command::registerCommand("palette_addcolor")
+		.addArg({"color", command::ArgType::String, false, "", "Color value (e.g. #FF0000, #FF0000AA, argb:AARRGGBB, \"255 0 0\", \"255,0,0,128\", \"rgba(255,0,0,128)\")"})
+		.setHandler([&] (const command::CommandArgs& args) {
+			const core::String colorStr = args.str("color");
+			if (colorStr.empty()) {
+				Log::warn("palette_addcolor: no color value given");
+				return;
+			}
+			color::RGBA rgba;
+			if (!color::parseColor(colorStr, rgba)) {
+				Log::warn("palette_addcolor: could not parse color '%s'", colorStr.c_str());
+				return;
+			}
+			const int nodeId = activeNode();
+			scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+			if (node == nullptr) {
+				Log::warn("palette_addcolor: no active model node");
+				return;
+			}
+			palette::Palette &pal = node->palette();
+			uint8_t index = 0;
+			if (!pal.tryAdd(rgba, false, &index)) {
+				if (pal.hasColor(rgba)) {
+					Log::info("palette_addcolor: color already exists at index %u", index);
+				} else {
+					Log::warn("palette_addcolor: palette is full");
+				}
+				return;
+			}
+			pal.markSave();
+			pal.markDirty();
+			_mementoHandler.markPaletteChange(_sceneGraph, *node);
+			Log::info("Added color (%u, %u, %u, %u) at palette index %u", rgba.r, rgba.g, rgba.b, rgba.a, index);
+		}).setHelp(_("Add a color to the active node's palette. Supports: #RRGGBB, #RRGGBBAA, argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)\""));
+
 	command::Command::registerCommand("palette_removeunused")
 		.addArg({"updatevoxels", command::ArgType::Bool, true, "false", "Update voxel colors"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to remove unused colors from"})

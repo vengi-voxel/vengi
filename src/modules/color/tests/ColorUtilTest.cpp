@@ -300,4 +300,95 @@ TEST_F(ColorUtilTest, testDarkerBrighterVec4) {
 	EXPECT_GT(brightRed.r, darkRed.r);
 }
 
+TEST_F(ColorUtilTest, testParseColorHex) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("#ff0000", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(255, c.a);
+
+	ASSERT_TRUE(color::parseColor("0xff0000", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+
+	ASSERT_TRUE(color::parseColor("FF0000", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+}
+
+TEST_F(ColorUtilTest, testParseColorHexWithAlpha) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("#ff000080", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(128, c.a);
+}
+
+TEST_F(ColorUtilTest, testParseColorCommaSeparated) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("255,0,0", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(255, c.a);
+
+	ASSERT_TRUE(color::parseColor("255, 128, 64, 200", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(128, c.g);
+	EXPECT_EQ(64, c.b);
+	EXPECT_EQ(200, c.a);
+}
+
+TEST_F(ColorUtilTest, testParseColorSpaceSeparated) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("255 0 0", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(255, c.a);
+
+	ASSERT_TRUE(color::parseColor("255 128 64 200", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(128, c.g);
+	EXPECT_EQ(64, c.b);
+	EXPECT_EQ(200, c.a);
+}
+
+TEST_F(ColorUtilTest, testParseColorRgbFunc) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("rgb(255,0,0)", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+}
+
+TEST_F(ColorUtilTest, testParseColorRgbaFunc) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("rgba(255,0,0,128)", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(128, c.a);
+}
+
+TEST_F(ColorUtilTest, testParseColorArgbPrefix) {
+	color::RGBA c;
+	ASSERT_TRUE(color::parseColor("argb:80FF0000", c));
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(128, c.a);
+}
+
+TEST_F(ColorUtilTest, testParseColorInvalid) {
+	color::RGBA c;
+	EXPECT_FALSE(color::parseColor("", c));
+	EXPECT_FALSE(color::parseColor("notacolor", c));
+	EXPECT_FALSE(color::parseColor("12", c));
+}
+
 } // namespace color

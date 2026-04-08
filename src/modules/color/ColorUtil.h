@@ -85,6 +85,13 @@ color::RGBA fromHex(const char *hex);
  * @brief Converts a color to a hex string.
  */
 core::String toHex(const RGBA rgba, bool hashPrefix = true);
+/**
+ * @brief Parses a color string in various common formats.
+ * Supports: #RRGGBB, #RRGGBBAA, 0xRRGGBB, RRGGBB, argb:AARRGGBB,
+ * "R,G,B[,A]", "R G B [A]", rgb(R,G,B), rgba(R,G,B,A)
+ * @return true if the color was successfully parsed
+ */
+bool parseColor(const core::String &str, RGBA &outColor);
 
 /**
  * @brief Converts vec4 to RGBA.

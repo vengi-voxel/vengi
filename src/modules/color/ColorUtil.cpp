@@ -6,6 +6,8 @@
 #include "Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
+#include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/ext/scalar_integer.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
@@ -97,6 +99,89 @@ RGBA fromHex(const char *hex) {
 		a = 0xff;
 	}
 	return RGBA(r, g, b, a);
+}
+
+bool parseColor(const core::String &input, RGBA &outColor) {
+	core::String str = input;
+	uint8_t r = 0, g = 0, b = 0, a = 255;
+
+	// Strip rgba(...) or rgb(...) wrapper
+	bool funcStripped = false;
+	if (str.size() > 5 && (str[0] == 'r' || str[0] == 'R') &&
+		(str[1] == 'g' || str[1] == 'G') &&
+		(str[2] == 'b' || str[2] == 'B') &&
+		(str[3] == 'a' || str[3] == 'A') && str[4] == '(') {
+		str = str.substr(5);
+		funcStripped = true;
+	} else if (str.size() > 4 && (str[0] == 'r' || str[0] == 'R') &&
+		(str[1] == 'g' || str[1] == 'G') &&
+		(str[2] == 'b' || str[2] == 'B') && str[3] == '(') {
+		str = str.substr(4);
+		funcStripped = true;
+	}
+	if (funcStripped && !str.empty() && str.last() == ')') {
+		str = str.substr(0, str.size() - 1);
+	}
+
+	// Check for argb: prefix (ARGB hex order used by some Windows tools)
+	bool argbOrder = false;
+	if (str.size() > 5 && (str[0] == 'a' || str[0] == 'A') &&
+		(str[1] == 'r' || str[1] == 'R') &&
+		(str[2] == 'g' || str[2] == 'G') &&
+		(str[3] == 'b' || str[3] == 'B') && str[4] == ':') {
+		str = str.substr(5);
+		argbOrder = true;
+	}
+
+	// Try comma-separated decimal: "255,0,0" or "255, 0, 0"
+	if (str.contains(",", 1)) {
+		core::DynamicArray<core::String> parts;
+		core::string::splitString(str, parts, ",");
+		if (parts.size() >= 3) {
+			r = (uint8_t)core::string::toInt(parts[0].trim());
+			g = (uint8_t)core::string::toInt(parts[1].trim());
+			b = (uint8_t)core::string::toInt(parts[2].trim());
+			if (parts.size() >= 4) {
+				a = (uint8_t)core::string::toInt(parts[3].trim());
+			}
+			outColor = RGBA(r, g, b, a);
+			return true;
+		}
+	}
+
+	// Try hex: #RRGGBB, 0xRRGGBB, RRGGBB, #RRGGBBAA
+	if (core::string::parseHex(str.c_str(), r, g, b, a) >= 3) {
+		if (argbOrder) {
+			const uint8_t tmpA = r;
+			const uint8_t tmpR = g;
+			const uint8_t tmpG = b;
+			const uint8_t tmpB = a;
+			r = tmpR;
+			g = tmpG;
+			b = tmpB;
+			a = tmpA;
+		}
+		outColor = RGBA(r, g, b, a);
+		return true;
+	}
+
+	// Try space-separated decimal: "255 0 0"
+	{
+		core::DynamicArray<core::String> parts;
+		core::string::splitString(str, parts, " ");
+		if (parts.size() >= 3) {
+			r = (uint8_t)core::string::toInt(parts[0]);
+			g = (uint8_t)core::string::toInt(parts[1]);
+			b = (uint8_t)core::string::toInt(parts[2]);
+			if (parts.size() >= 4) {
+				a = (uint8_t)core::string::toInt(parts[3]);
+			}
+			outColor = RGBA(r, g, b, a);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 core::String print(RGBA rgba, bool colorAsHex) {

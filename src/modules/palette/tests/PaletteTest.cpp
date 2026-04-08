@@ -440,4 +440,18 @@ TEST_F(PaletteTest, testHash) {
 	EXPECT_NE(h1, h2);
 }
 
+TEST_F(PaletteTest, testMoveConstructor) {
+	Palette src;
+	src.nippon();
+	src.setName("TestPalette");
+	const int colorCount = src.colorCount();
+	const color::RGBA firstColor = src.color(0);
+	ASSERT_GT(colorCount, 0);
+
+	Palette dst(core::move(src));
+	EXPECT_EQ(colorCount, dst.colorCount());
+	EXPECT_EQ(firstColor, dst.color(0));
+	EXPECT_STREQ("TestPalette", dst.name().c_str());
+}
+
 } // namespace palette
