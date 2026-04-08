@@ -2027,31 +2027,14 @@ bool SceneManager::mergeActiveToBackground() {
 			}
 		} else {
 			// No existing node for this grid cell: create a new one
-			// Check if the source has any non-air voxels in this cell
-			bool hasContent = false;
+			// Single pass: stamp non-air source voxels into a new volume
+			voxel::RawVolume *newVolume = new voxel::RawVolume(cell.cellRegion);
+			palette::PaletteLookup palLookup(sourcePalette);
+
 			const glm::ivec3 &srcLower = cellSourceOverlap.getLowerCorner();
 			const int32_t overlapW = cellSourceOverlap.getWidthInVoxels();
 			const int32_t overlapH = cellSourceOverlap.getHeightInVoxels();
 			const int32_t overlapD = cellSourceOverlap.getDepthInVoxels();
-			for (int32_t z = 0; z < overlapD && !hasContent; ++z) {
-				for (int32_t y = 0; y < overlapH && !hasContent; ++y) {
-					for (int32_t x = 0; x < overlapW && !hasContent; ++x) {
-						const voxel::Voxel v = worldSource->voxel(
-							srcLower.x + x, srcLower.y + y, srcLower.z + z);
-						if (!voxel::isAir(v.getMaterial())) {
-							hasContent = true;
-						}
-					}
-				}
-			}
-			if (!hasContent) {
-				continue;
-			}
-
-			// Create new volume with the grid cell region
-			voxel::RawVolume *newVolume = new voxel::RawVolume(cell.cellRegion);
-			palette::PaletteLookup palLookup(sourcePalette);
-
 			int count = 0;
 			for (int32_t z = 0; z < overlapD; ++z) {
 				for (int32_t y = 0; y < overlapH; ++y) {
@@ -2072,12 +2055,17 @@ bool SceneManager::mergeActiveToBackground() {
 				}
 			}
 
+			if (count == 0) {
+				delete newVolume;
+				continue;
+			}
+
 			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			newNode.setVolume(newVolume);
 			newNode.setPalette(sourcePalette);
 			newNode.setName("merged");
 			const int newNodeId = moveNodeToSceneGraph(newNode, backgroundParentId);
-			if (newNodeId != InvalidNodeId && count > 0) {
+			if (newNodeId != InvalidNodeId) {
 				stampedNodes.push_back(StampedNode{newNodeId, cellSourceOverlap});
 				stampedCount += count;
 			}
