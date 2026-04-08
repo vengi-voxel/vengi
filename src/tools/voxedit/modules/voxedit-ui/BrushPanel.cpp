@@ -767,7 +767,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		handleSelectBox3D(nodeId);
 	}
 
-	if (luaModeActive) {
+	if (brush.isLuaSelectionModeActive()) {
 		LUASelectionMode *luaMode = brush.activeLuaSelectionMode();
 		if (!luaMode->scriptDescription().empty()) {
 			ImGui::TextWrappedUnformatted(luaMode->scriptDescription().c_str());

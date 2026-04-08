@@ -442,6 +442,8 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 		return;
 	}
 
+	// Force GC to collect the LuaRawVolumeWrapper now so that _dirtyRegions
+	// gets populated via the volume wrapper's GC callback.
 	lua_gc(s, LUA_GCCOLLECT, 0);
 }
 

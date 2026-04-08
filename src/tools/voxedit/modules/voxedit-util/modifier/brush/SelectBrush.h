@@ -5,9 +5,8 @@
 #pragma once
 
 #include "AABBBrush.h"
-#include "color/ColorUtil.h"
+#include "color/Distance.h"
 #include "core/collection/DynamicArray.h"
-#include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
@@ -20,6 +19,8 @@ class RawVolume;
 } // namespace voxel
 
 namespace voxedit {
+
+class SceneManager;
 
 /**
  * @brief Selection mode for the SelectBrush
@@ -65,6 +66,7 @@ public:
 
 private:
 	using Super = AABBBrush;
+	SceneManager *_sceneManager = nullptr;
 	SelectMode _selectMode = SelectMode::All;
 	/** Index into the Modifier's lua selection mode array, or -1 for native mode */
 	int _luaSelectionModeIndex = -1;
@@ -120,7 +122,7 @@ private:
 				  const voxel::Region &region) override;
 
 public:
-	SelectBrush() : Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase) {
+	SelectBrush(SceneManager *sceneManager) : Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase), _sceneManager(sceneManager) {
 		setBrushClamping(true);
 	}
 	virtual ~SelectBrush() = default;

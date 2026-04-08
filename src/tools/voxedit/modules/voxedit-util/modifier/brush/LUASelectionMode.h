@@ -78,6 +78,8 @@ public:
 	 */
 	bool loadScript(const core::String &filename);
 
+	const voxelgenerator::LuaDirtyRegions &dirtyRegions() const;
+
 	/**
 	 * @brief Execute the selection mode script
 	 *
@@ -115,8 +117,11 @@ inline const core::String &LUASelectionMode::scriptDescription() const {
 	return _description;
 }
 
-inline const core::DynamicArray<voxelgenerator::LUAParameterDescription> &
-LUASelectionMode::parameterDescriptions() const {
+inline const voxelgenerator::LuaDirtyRegions &LUASelectionMode::dirtyRegions() const {
+	return _dirtyRegions;
+}
+
+inline const core::DynamicArray<voxelgenerator::LUAParameterDescription> &LUASelectionMode::parameterDescriptions() const {
 	return _parameterDescription;
 }
 

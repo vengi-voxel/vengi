@@ -4,6 +4,7 @@
 
 #include "SelectBrush.h"
 #include "LUASelectionMode.h"
+#include "voxedit-util/SceneManager.h"
 #include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraph.h"
 #include "math/Axis.h"
@@ -305,6 +306,19 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	// Delegate to lua selection mode if active
 	if (isLuaSelectionModeActive()) {
 		_activeLuaSelectionMode->execute(sceneGraph, wrapper, ctx, region, _aabbFirstPos, _aabbFace);
+		if (_sceneManager) {
+			const voxelgenerator::LuaDirtyRegions &dirtyRegions = _activeLuaSelectionMode->dirtyRegions();
+			Log::debug("SelectBrush::generate: %i dirty regions after lua execution", (int)dirtyRegions.size());
+			for (const auto &entry : dirtyRegions) {
+				const int dirtyNodeId = entry->key;
+				const voxel::Region &dirtyRegion = entry->value;
+				if (dirtyRegion.isValid()) {
+					Log::debug("SelectBrush::generate: forwarding dirty region for node %i: %s",
+							   dirtyNodeId, dirtyRegion.toString().c_str());
+					_sceneManager->modified(dirtyNodeId, dirtyRegion);
+				}
+			}
+		}
 		return;
 	}
 

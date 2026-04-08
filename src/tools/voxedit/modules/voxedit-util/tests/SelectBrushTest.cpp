@@ -55,7 +55,7 @@ TEST_F(SelectBrushTest, testSelectModeAll) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::All);
 
@@ -98,7 +98,7 @@ TEST_F(SelectBrushTest, testSelectModeSameColor) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::SameColor);
 
@@ -139,7 +139,7 @@ TEST_F(SelectBrushTest, testSelectModeConnected) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Connected);
 
@@ -181,7 +181,7 @@ TEST_F(SelectBrushTest, testSelectModeVisible) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Surface);
 
@@ -228,7 +228,7 @@ TEST_F(SelectBrushTest, testSelectRemove) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::All);
 
@@ -265,7 +265,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::FlatSurface);
 
@@ -299,7 +299,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_stopsAtCoveredVoxel) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::FlatSurface);
 
@@ -339,7 +339,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::FlatSurface);
 
@@ -394,7 +394,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_invalidFace) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::FlatSurface);
 
@@ -422,7 +422,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Circle);
 
@@ -478,7 +478,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Circle);
 	EXPECT_FALSE(brush.ellipseValid());
@@ -514,7 +514,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_invalidFace) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Circle);
 
@@ -547,7 +547,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_onlySurface) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Circle);
 
@@ -590,7 +590,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
 	luaMode.parameters().push_back("10");
 	luaMode.parameters().push_back("2");
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -637,7 +637,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
 	luaMode.parameters().push_back("45");
 	luaMode.parameters().push_back("2");
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -686,7 +686,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
 	luaMode.parameters().push_back("10");
 	luaMode.parameters().push_back("2");
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -727,7 +727,7 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 	luaMode.parameters().push_back("90");
 	luaMode.parameters().push_back("2");
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -773,7 +773,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -833,7 +833,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -880,7 +880,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -942,7 +942,7 @@ TEST_F(SelectBrushTest, testLassoSelectSquareSurface) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Lasso);
 
@@ -1006,7 +1006,7 @@ TEST_F(SelectBrushTest, testLassoCancel_edgeMarksReverted) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Lasso);
 
@@ -1066,7 +1066,7 @@ TEST_F(SelectBrushTest, testLassoUndoVertex_revertsLastEdge) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Lasso);
 
@@ -1130,7 +1130,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1181,7 +1181,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1224,7 +1224,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1269,7 +1269,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("columnrim2d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1308,7 +1308,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1362,7 +1362,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1415,7 +1415,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1477,7 +1477,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 	ASSERT_TRUE(luaMode.init());
 	ASSERT_TRUE(luaMode.loadScript("holerim3d"));
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setLuaSelectionMode(0, &luaMode);
 
@@ -1525,7 +1525,7 @@ TEST_F(SelectBrushTest, testSelectModePaint) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(2);
@@ -1584,7 +1584,7 @@ TEST_F(SelectBrushTest, testSelectModePaintDeselect) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(1);
@@ -1630,7 +1630,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegion) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(2);
@@ -1679,7 +1679,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
 
-	SelectBrush brush;
+	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(2);

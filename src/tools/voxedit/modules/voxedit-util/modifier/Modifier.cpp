@@ -33,7 +33,7 @@
 namespace voxedit {
 
 Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
-	: _stampBrush(sceneMgr), _textureBrush(sceneMgr), _actionExecuteButton(sceneMgr),
+	: _stampBrush(sceneMgr), _selectBrush(sceneMgr), _textureBrush(sceneMgr), _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
@@ -490,6 +490,9 @@ void Modifier::clearSelectionModeScripts() {
 }
 
 void Modifier::reloadSelectionModeScripts() {
+	// Invalidate the active lua selection mode before deleting the old scripts
+	// to avoid dangling pointers in SelectBrush
+	_selectBrush.setLuaSelectionMode(-1, nullptr);
 	clearSelectionModeScripts();
 	discoverSelectionModeScripts();
 	Log::debug("Reloaded selection mode scripts (%i found)", (int)_luaSelectionModes.size());
