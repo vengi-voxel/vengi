@@ -46,7 +46,8 @@ enum class SelectMode : uint8_t {
 	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
 	 *  Uses single mode for continuous execution. Single undo entry on release. */
 	Paint,
-
+	/** Selection mode driven by a user-supplied Lua script */
+	Script,
 	Max
 };
 
@@ -145,8 +146,6 @@ public:
 	int luaSelectionModeIndex() const;
 	/** Get the active lua selection mode (nullptr if native mode) */
 	LUASelectionMode *activeLuaSelectionMode() const;
-	/** True if a lua selection mode is active */
-	bool isLuaSelectionModeActive() const;
 
 	const voxel::Region &box3DSelectionRegion() const;
 	void setBox3DSelectionRegion(const voxel::Region &region);
@@ -229,10 +228,6 @@ inline int SelectBrush::luaSelectionModeIndex() const {
 
 inline LUASelectionMode *SelectBrush::activeLuaSelectionMode() const {
 	return _activeLuaSelectionMode;
-}
-
-inline bool SelectBrush::isLuaSelectionModeActive() const {
-	return _luaSelectionModeIndex >= 0 && _activeLuaSelectionMode != nullptr;
 }
 
 inline const voxel::Region &SelectBrush::box3DSelectionRegion() const {
