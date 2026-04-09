@@ -2730,6 +2730,52 @@ static int luaVoxel_sculpt_smoothgaussian_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static voxelutil::SmoothWallInterp luaVoxel_parseSmoothWallInterp(const char *str) {
+	if (SDL_strcmp(str, "linear") == 0) {
+		return voxelutil::SmoothWallInterp::Linear;
+	}
+	if (SDL_strcmp(str, "edgeaware") == 0) {
+		return voxelutil::SmoothWallInterp::EdgeAware;
+	}
+	return voxelutil::SmoothWallInterp::InverseDistance;
+}
+
+static int luaVoxel_sculpt_smoothwall(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const int color = (int)luaL_optinteger(s, 4, 1);
+	const int removeAboveDepth = (int)luaL_optinteger(s, 5, 0);
+	const char *interpStr = luaL_optstring(s, 6, "inversedistance");
+	const voxelutil::SmoothWallInterp interp = luaVoxel_parseSmoothWallInterp(interpStr);
+	const bool fillHoles = lua_toboolean(s, 7) != 0 || lua_isnoneornil(s, 7);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed = voxelutil::sculptSmoothWall(*volume->volume(), volume->volume()->region(), face,
+													iterations, fillVoxel, removeAboveDepth, interp, fillHoles);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothwall_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "smoothwall",
+		"summary": "Smooth a wall surface by interpolating interior column heights from edge columns. For each interior (U,V) position, computes a target height from the nearest boundary columns in 4 directions. Edge columns are preserved for seamless blending.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to smooth."},
+			{"name": "face", "type": "string", "description": "Face direction defining the surface normal: 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "iterations", "type": "integer", "description": "Number of smoothing passes (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."},
+			{"name": "removeAboveDepth", "type": "integer", "description": "How many voxels above the smooth surface to clear (optional, default 0 = don't clear)."},
+			{"name": "interpolation", "type": "string", "description": "Interpolation mode: 'linear', 'inversedistance' (default, smooth curves), or 'edgeaware' (follows sharp corners by favoring edges with similar height)."},
+			{"name": "fillHoles", "type": "boolean", "description": "Fill enclosed empty areas with interpolated heights (optional, default true). When false, empty columns are skipped and only solid columns are smoothed."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // VoxelFont bindings
 
 static int luaVoxel_voxelfont_new(lua_State *s) {
@@ -6787,6 +6833,7 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"bridgegap", luaVoxel_sculpt_bridgegap, luaVoxel_sculpt_bridgegap_jsonhelp},
 		{"squashtoplane", luaVoxel_sculpt_squashtoplane, luaVoxel_sculpt_squashtoplane_jsonhelp},
 		{"reskin", luaVoxel_sculpt_reskin, luaVoxel_sculpt_reskin_jsonhelp},
+		{"smoothwall", luaVoxel_sculpt_smoothwall, luaVoxel_sculpt_smoothwall_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");

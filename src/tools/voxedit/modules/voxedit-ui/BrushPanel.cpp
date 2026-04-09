@@ -73,14 +73,15 @@ static constexpr const char *SculptModeStr[] = {
 	NC_("Sculpt Modes", "Erode"),		 NC_("Sculpt Modes", "Grow"),
 	NC_("Sculpt Modes", "Flatten"),		 NC_("Sculpt Modes", "Smooth Additive"),
 	NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"),
-	NC_("Sculpt Modes", "Bridge Gap"),	 NC_("Sculpt Modes", "Squash to Plane"),
-	NC_("Sculpt Modes", "Extend Plane"), NC_("Sculpt Modes", "Reskin")};
+	NC_("Sculpt Modes", "Smooth Wall"),	 NC_("Sculpt Modes", "Bridge Gap"),
+	NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Extend Plane"),
+	NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
-static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT,	  ICON_LC_LAND_PLOT,
-												  ICON_LC_WAVES,  ICON_LC_WAVES,	  ICON_LC_BLEND,
-												  ICON_LC_LINK,	  ICON_LC_MINIMIZE_2, ICON_LC_EXPAND,
-												  ICON_LC_PALETTE};
+static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER,    ICON_LC_SPROUT,	  ICON_LC_LAND_PLOT,
+												  ICON_LC_WAVES,     ICON_LC_WAVES,	  ICON_LC_BLEND,
+												  ICON_LC_BRICK_WALL, ICON_LC_LINK,	  ICON_LC_MINIMIZE_2,
+												  ICON_LC_EXPAND,    ICON_LC_PALETTE};
 static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
 
 // clang-format off
@@ -122,6 +123,11 @@ static_assert(lengthof(ReskinTileStr) == (int)voxelutil::ReskinTile::Max, "Reski
 static constexpr const char *ReskinSkinAxisStr[] = {NC_("Reskin Skin Axis", "X"), NC_("Reskin Skin Axis", "Y"),
 													NC_("Reskin Skin Axis", "Z")};
 static_assert(lengthof(ReskinSkinAxisStr) == 3, "ReskinSkinAxisStr size mismatch");
+
+static constexpr const char *SmoothWallInterpStr[] = {NC_("Smooth Wall Interp", "Linear"),
+													  NC_("Smooth Wall Interp", "Inverse Distance"),
+													  NC_("Smooth Wall Interp", "Edge Aware")};
+static_assert(lengthof(SmoothWallInterpStr) == (int)voxelutil::SmoothWallInterp::Max, "SmoothWallInterpStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
@@ -1558,6 +1564,35 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			brush.setSigma(sigma);
 			executeSculptBrush();
 		}
+	} else if (currentMode == SculptMode::SmoothWall) {
+		const voxelutil::SmoothWallInterp currentInterp = brush.smoothWallInterp();
+		if (ImGui::BeginCombo(_("Interpolation"), C_("Smooth Wall Interp", SmoothWallInterpStr[(int)currentInterp]),
+							  ImGuiComboFlags_None)) {
+			for (int ci = 0; ci < (int)voxelutil::SmoothWallInterp::Max; ++ci) {
+				const bool selected = ci == (int)currentInterp;
+				if (ImGui::Selectable(C_("Smooth Wall Interp", SmoothWallInterpStr[ci]), selected)) {
+					brush.setSmoothWallInterp((voxelutil::SmoothWallInterp)ci);
+					executeSculptBrush();
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		int clearDepth = brush.smoothWallClearDepth();
+		ImGui::TextUnformatted(_("Clear above depth"));
+		ImGui::SetItemTooltipUnformatted(_("How many voxels above the smooth surface to clear. 0 = don't clear."));
+		if (ImGui::SliderInt("##smoothwall_clear_depth", &clearDepth, 0, SculptBrush::MaxSmoothWallClearDepth)) {
+			brush.setSmoothWallClearDepth(clearDepth);
+			executeSculptBrush();
+		}
+		bool fillHoles = brush.smoothWallFillHoles();
+		if (ImGui::Checkbox(_("Fill holes"), &fillHoles)) {
+			brush.setSmoothWallFillHoles(fillHoles);
+			executeSculptBrush();
+		}
+		ImGui::SetItemTooltipUnformatted(_("Fill enclosed empty areas with interpolated heights. When unchecked, holes are skipped and only solid columns are smoothed."));
 	} else if (currentMode == SculptMode::Reskin) {
 		if (brush.skinVolume() == nullptr) {
 			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
@@ -1805,7 +1840,7 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 		}
 		ImGui::TooltipTextUnformatted(_("Perpendicular depth of voxels to remove above the plane (0 = no removal)"));
 	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap &&
-			   currentMode != SculptMode::SquashToPlane) {
+			   currentMode != SculptMode::SquashToPlane && currentMode != SculptMode::SmoothWall) {
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
@@ -1814,7 +1849,8 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 	}
 
 	if (currentMode != SculptMode::BridgeGap && currentMode != SculptMode::SquashToPlane &&
-		currentMode != SculptMode::Reskin && currentMode != SculptMode::ExtendPlane) {
+		currentMode != SculptMode::Reskin && currentMode != SculptMode::ExtendPlane &&
+		currentMode != SculptMode::SmoothWall) {
 		const int maxIter = needsFace ? SculptBrush::MaxFlattenIterations : SculptBrush::MaxIterations;
 		int iterations = brush.iterations();
 		if (needsFace) {
