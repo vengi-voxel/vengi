@@ -7,7 +7,7 @@
 #include "app/ForParallel.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
-#include <cfloat>
+#include <float.h>
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
@@ -61,6 +61,7 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 		return sampler.voxel();
 	}
 
+	// TODO: use the sampler peek functions and make the sampler const
 	voxel::Voxel best;
 	float bestDistSq = FLT_MAX;
 	for (int dz = -1; dz <= 1; ++dz) {
