@@ -516,6 +516,20 @@ app::AppState VoxEdit::onInit() {
 		return state;
 	}
 
+	// needed for handling the module includes
+	if (!filesystem()->registerPath("scripts/")) {
+		Log::error("Failed to register lua generator script path");
+		return app::AppState::InitFailure;
+	}
+	if (!filesystem()->registerPath("brushes/")) {
+		Log::error("Failed to register brush script path");
+		return app::AppState::InitFailure;
+	}
+	if (!filesystem()->registerPath("selectionmodes/")) {
+		Log::error("Failed to register selection mode script path");
+		return app::AppState::InitFailure;
+	}
+
 	if (_keybindingHandler.bindings().empty()) {
 		loadKeymap(_uiKeyMap->intVal());
 	}
@@ -542,19 +556,6 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	// needed for handling the module includes
-	if (!filesystem()->registerPath("scripts/")) {
-		Log::error("Failed to register lua generator script path");
-		return app::AppState::InitFailure;
-	}
-	if (!filesystem()->registerPath("brushes/")) {
-		Log::error("Failed to register brush script path");
-		return app::AppState::InitFailure;
-	}
-	if (!filesystem()->registerPath("selectionmodes/")) {
-		Log::error("Failed to register selection mode script path");
-		return app::AppState::InitFailure;
-	}
 	video::clearColor(::color::Black());
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
