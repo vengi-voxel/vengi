@@ -53,7 +53,7 @@ def derive_name(filename):
 def scan_scripts(config):
     base_dir = config.get('scripts', 'directory', fallback='scripts')
     catalog = {}
-    for script_type, subdir in [('generator', 'script'), ('brush', 'brush')]:
+    for script_type, subdir in [('generator', 'script'), ('brush', 'brush'), ('selectionmode', 'selectionmode')]:
         dir_path = os.path.join(base_dir, subdir)
         if not os.path.isdir(dir_path):
             logging.warning("Script directory not found: %s", dir_path)

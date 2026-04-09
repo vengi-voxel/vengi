@@ -97,9 +97,9 @@ private:
 	NodePropertiesPanel _nodePropertiesPanel;
 	PalettePanel _palettePanel;
 	NormalPalettePanel _normalPalettePanel;
-	MenuBar _menuBar;
 	OptionsPanel _optionsPanel;
 	voxelui::ScriptBrowserPanel _scriptBrowserPanel;
+	MenuBar _menuBar;
 	NetworkPanel _networkPanel;
 	GameModePanel _gameModePanel;
 	StatusBar _statusBar;

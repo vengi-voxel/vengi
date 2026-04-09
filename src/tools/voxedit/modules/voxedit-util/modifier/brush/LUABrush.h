@@ -18,18 +18,18 @@ namespace voxedit {
 /**
  * @brief A brush driven by a user-supplied Lua script
  *
- * Each LuaBrush loads a single Lua script that defines brush behavior via callbacks:
+ * Each LUABrush loads a single Lua script that defines brush behavior via callbacks:
  * - @c generate(node, region, color, ...) - place voxels (required)
  * - @c calcregion(cx, cy, cz, ...) - return 6 ints (minX,minY,minZ,maxX,maxY,maxZ) for preview region (optional)
  * - @c arguments() - declare parameters for the UI (optional)
  * - @c description() - return a human-readable description (optional)
  *
- * Multiple LuaBrush instances can coexist, each with its own Lua state and parameters.
+ * Multiple LUABrush instances can coexist, each with its own Lua state and parameters.
  *
  * @ingroup Brushes
  * @sa AABBBrush
  */
-class LuaBrush : public AABBBrush {
+class LUABrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 
@@ -63,7 +63,7 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	LuaBrush(const io::FilesystemPtr &filesystem);
+	LUABrush(const io::FilesystemPtr &filesystem);
 
 	/**
 	 * @brief Load a brush script from the given filename
@@ -124,27 +124,27 @@ public:
 	bool apiJsonToStream(io::WriteStream &stream);
 };
 
-inline const core::String &LuaBrush::scriptDescription() const {
+inline const core::String &LUABrush::scriptDescription() const {
 	return _description;
 }
 
-inline const core::DynamicArray<voxelgenerator::LUAParameterDescription> &LuaBrush::parameterDescriptions() const {
+inline const core::DynamicArray<voxelgenerator::LUAParameterDescription> &LUABrush::parameterDescriptions() const {
 	return _parameterDescription;
 }
 
-inline core::DynamicArray<core::String> &LuaBrush::parameters() {
+inline core::DynamicArray<core::String> &LUABrush::parameters() {
 	return _parameters;
 }
 
-inline const core::DynamicArray<core::String> &LuaBrush::parameters() const {
+inline const core::DynamicArray<core::String> &LUABrush::parameters() const {
 	return _parameters;
 }
 
-inline bool LuaBrush::useSimplePreview() const {
+inline bool LUABrush::useSimplePreview() const {
 	return _useSimplePreview;
 }
 
-inline bool LuaBrush::previewNeedsExistingVolume() const {
+inline bool LUABrush::previewNeedsExistingVolume() const {
 	return _previewNeedsExistingVolume;
 }
 

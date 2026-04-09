@@ -598,6 +598,132 @@ TEST_F(LUAApiTest, testScriptAnimate) {
 	runFile(sceneGraph, "animate.lua");
 }
 
+TEST_F(LUAApiTest, testScriptAnimExportImport) {
+	const core::String &exportScript = fileToString("anim_export.lua");
+	ASSERT_FALSE(exportScript.empty()) << "Could not load anim_export.lua";
+	const core::String &importScript = fileToString("anim_import.lua");
+	ASSERT_FALSE(importScript.empty()) << "Could not load anim_import.lua";
+
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
+	const glm::vec3 expectedTranslation0(1.0f, 2.0f, 3.0f);
+	const glm::quat expectedOrientation0 = glm::quat::wxyz(0.707f, 0.0f, 0.707f, 0.0f);
+	const glm::vec3 expectedTranslation1(4.0f, 5.0f, 6.0f);
+	const glm::quat expectedOrientation1 = glm::quat::wxyz(0.707f, 0.0f, 0.0f, 0.707f);
+
+	// Step 1: build a scene graph with animation keyframes from C++
+	scenegraph::SceneGraph exportGraph;
+	int beltNodeId;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(_region);
+		node.setName("belt");
+		beltNodeId = exportGraph.emplace(core::move(node));
+		ASSERT_NE(beltNodeId, InvalidNodeId);
+	}
+	int headNodeId;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(_region);
+		node.setName("head");
+		headNodeId = exportGraph.emplace(core::move(node), beltNodeId);
+		ASSERT_NE(headNodeId, InvalidNodeId);
+	}
+
+	// Add keyframes to belt node
+	{
+		scenegraph::SceneGraphNode &belt = exportGraph.node(beltNodeId);
+		scenegraph::SceneGraphKeyFrame &kf0 = belt.keyFrame(0);
+		kf0.transform().setLocalTranslation(expectedTranslation0);
+		kf0.transform().setLocalOrientation(expectedOrientation0);
+		scenegraph::KeyFrameIndex kf1Idx = belt.addKeyFrame(10);
+		ASSERT_NE(kf1Idx, InvalidKeyFrame);
+		scenegraph::SceneGraphKeyFrame &kf1 = belt.keyFrame(kf1Idx);
+		kf1.transform().setLocalTranslation(expectedTranslation1);
+		kf1.transform().setLocalOrientation(expectedOrientation1);
+	}
+
+	// Add a keyframe to head node
+	{
+		scenegraph::SceneGraphNode &head = exportGraph.node(headNodeId);
+		scenegraph::SceneGraphKeyFrame &kf0 = head.keyFrame(0);
+		kf0.transform().setLocalTranslation(glm::vec3(7.0f, 8.0f, 9.0f));
+	}
+
+	exportGraph.updateTransforms();
+
+	// Step 2: run the export script
+	{
+		LUAApi g(_testApp->filesystem());
+		ASSERT_TRUE(g.init());
+		EXPECT_TRUE(g.exec(exportScript, exportGraph, beltNodeId, _region, voxel, {"test_anim_roundtrip.json"}));
+		while (g.scriptStillRunning()) {
+			_testApp->onFrame();
+			if (_testApp->shouldQuit()) {
+				break;
+			}
+			const ScriptState state = g.update(0.0001);
+			EXPECT_NE(ScriptState::Error, state);
+			EXPECT_NE(ScriptState::Inactive, state);
+		}
+		g.shutdown();
+	}
+
+	// Step 3: build a new scene graph with same node names but no animation
+	scenegraph::SceneGraph importGraph;
+	int importBeltId;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(_region);
+		node.setName("belt");
+		importBeltId = importGraph.emplace(core::move(node));
+		ASSERT_NE(importBeltId, InvalidNodeId);
+	}
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(_region);
+		node.setName("head");
+		importGraph.emplace(core::move(node), importBeltId);
+	}
+
+	// Step 4: run the import script
+	{
+		LUAApi g(_testApp->filesystem());
+		ASSERT_TRUE(g.init());
+		EXPECT_TRUE(g.exec(importScript, importGraph, importBeltId, _region, voxel, {"test_anim_roundtrip.json"}));
+		while (g.scriptStillRunning()) {
+			_testApp->onFrame();
+			if (_testApp->shouldQuit()) {
+				break;
+			}
+			const ScriptState state = g.update(0.0001);
+			EXPECT_NE(ScriptState::Error, state);
+			EXPECT_NE(ScriptState::Inactive, state);
+		}
+		g.shutdown();
+	}
+
+	// Step 5: verify the imported keyframes
+	{
+		scenegraph::SceneGraphNode &belt = importGraph.node(importBeltId);
+		ASSERT_GE(belt.keyFrames()->size(), 2u) << "Expected at least 2 keyframes after import";
+		const scenegraph::SceneGraphKeyFrame &kf0 = belt.keyFrame(0);
+		const glm::vec3 &t0 = kf0.transform().localTranslation();
+		EXPECT_NEAR(t0.x, expectedTranslation0.x, 0.01f);
+		EXPECT_NEAR(t0.y, expectedTranslation0.y, 0.01f);
+		EXPECT_NEAR(t0.z, expectedTranslation0.z, 0.01f);
+		const glm::quat &o0 = kf0.transform().localOrientation();
+		EXPECT_NEAR(o0.x, expectedOrientation0.x, 0.01f);
+		EXPECT_NEAR(o0.y, expectedOrientation0.y, 0.01f);
+		EXPECT_NEAR(o0.z, expectedOrientation0.z, 0.01f);
+		EXPECT_NEAR(o0.w, expectedOrientation0.w, 0.01f);
+		const scenegraph::SceneGraphKeyFrame &kf1 = belt.keyFrame(1);
+		const glm::vec3 &t1 = kf1.transform().localTranslation();
+		EXPECT_NEAR(t1.x, expectedTranslation1.x, 0.01f);
+		EXPECT_NEAR(t1.y, expectedTranslation1.y, 0.01f);
+		EXPECT_NEAR(t1.z, expectedTranslation1.z, 0.01f);
+	}
+}
+
 TEST_F(LUAApiTest, testScriptThicken) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "thicken.lua");

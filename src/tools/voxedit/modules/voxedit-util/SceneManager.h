@@ -414,7 +414,6 @@ public:
 	void selectionSelectAll(int nodeId);
 	void selectionSetBounds(int nodeId, const voxel::Region &region);
 	void selectionSetEllipse(int nodeId);
-	void selectionSetSlope(int nodeId);
 	void selectionFinalizeLasso(int nodeId);
 	void selectionCancelLasso(int nodeId);
 	void selectionLassoUndoVertex(int nodeId);

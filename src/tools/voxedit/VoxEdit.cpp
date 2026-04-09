@@ -27,6 +27,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/FileDialogOptions.h"
+#include "voxelui/ScriptApi.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				 const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
@@ -328,6 +329,38 @@ app::AppState VoxEdit::onConstruct() {
 			Log::error("Unknown camera mode: %s", modeStr.c_str());
 		}).setHelp(_("Set the scene camera mode")).setArgumentCompleter(command::valueCompleter({"free", "top", "bottom", "left", "right", "front", "back"}));
 
+	command::Command::registerCommand("script_install")
+		.addArg({"source", command::ArgType::String, true, "", "Local file path, file:// URI, or http(s):// URL of a .lua script"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &source = args.str("source");
+			if (source.empty()) {
+				openDialog([this](const core::String &file, const io::FormatDescription *desc) {
+					voxelui::ScriptApi api;
+					if (api.install(filesystem(), file)) {
+						_sceneMgr->modifier().reloadBrushScripts();
+						_sceneMgr->modifier().reloadSelectionModeScripts();
+					}
+				}, {}, io::format::lua());
+				return;
+			}
+			voxelui::ScriptApi api;
+			if (api.install(filesystem(), source)) {
+				_sceneMgr->modifier().reloadBrushScripts();
+				_sceneMgr->modifier().reloadSelectionModeScripts();
+			}
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Install a lua script from a file path, file:// URI or http(s):// URL"));
+
+	command::Command::registerCommand("script_uninstall")
+		.addArg({"filename", command::ArgType::String, false, "", "Filename of the script to uninstall (e.g. myscript.lua)"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &filename = args.str("filename");
+			voxelui::ScriptApi api;
+			if (api.uninstallByFilename(filesystem(), filename)) {
+				_sceneMgr->modifier().reloadBrushScripts();
+				_sceneMgr->modifier().reloadSelectionModeScripts();
+			}
+		}).setHelp(_("Uninstall a previously installed lua script by filename"));
+
 	return state;
 }
 
@@ -514,7 +547,14 @@ app::AppState VoxEdit::onInit() {
 		Log::error("Failed to register lua generator script path");
 		return app::AppState::InitFailure;
 	}
-
+	if (!filesystem()->registerPath("brushes/")) {
+		Log::error("Failed to register brush script path");
+		return app::AppState::InitFailure;
+	}
+	if (!filesystem()->registerPath("selectionmodes/")) {
+		Log::error("Failed to register selection mode script path");
+		return app::AppState::InitFailure;
+	}
 	video::clearColor(::color::Black());
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

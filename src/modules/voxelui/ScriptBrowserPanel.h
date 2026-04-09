@@ -7,6 +7,10 @@
 #include "ui/Panel.h"
 #include "voxelui/ScriptApi.h"
 
+namespace command {
+struct CommandExecutionListener;
+}
+
 namespace voxelui {
 
 class ScriptBrowserPanel : public ui::Panel {
@@ -27,7 +31,7 @@ public:
 	ScriptBrowserPanel(ui::IMGUIApp *app) : Super(app, "scriptbrowser") {
 	}
 	void open();
-	void update(const char *id);
+	void update(const char *id, command::CommandExecutionListener *listener = nullptr);
 	bool needsReload();
 };
 

@@ -21,6 +21,12 @@ namespace voxedit {
 
 class ModifierTest : public app::AbstractTest {
 protected:
+	bool onInitApp() override {
+		app::AbstractTest::onInitApp();
+		_testApp->filesystem()->registerPath("brushes/");
+		return _testApp->filesystem()->registerPath("selectionmodes/");
+	}
+
 	class TrackingModifierRenderer : public IModifierRenderer {
 	public:
 		int updateCalls = 0;

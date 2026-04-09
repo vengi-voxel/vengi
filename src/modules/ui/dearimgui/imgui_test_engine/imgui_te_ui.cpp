@@ -209,8 +209,9 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
             ImGui::BulletText("%s", "Click '[X] KeepGui' (io.ConfigKeepGuiFunc)    to view and interact with failing state.");
             ImGui::BulletText("%s", "Click '[X] Break'   (io.ConfigBreakOnError)   to break in debugger.");
             ImGui::BulletText("%s", "Click '[X] Capture' (io.ConfigCaptureOnError) to capture image of failing state to disk.");
-            ImGui::BulletText("%s", "Right-click in Log to open file.");
-            ImGui::BulletText("%s", "Hover hex identifiers in Log to locate them on screen.");
+            ImGui::BulletText("%s", "Log: Right-click on a filename to see open options.");
+            ImGui::BulletText("%s", "Log: Hover hex identifiers to locate items on the screen.");
+            ImGui::BulletText("%s", "Log: Increase Verbose Level (top row of this window) to get a more detailed log.");
             ImGui::BulletText("%s", "Call IM_SUSPEND_TESTFUNC() from TestFunc to view and interact with state at any given point.");
             ImGui::EndPopup();
         }
@@ -387,6 +388,18 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter,
     int tests_succeeded = 0;
     int tests_failed = 0;
     ImVector<ImGuiTest*> tests_to_remove;
+
+    // Set table child window to use _NavFlattened. WIP/Undocumented. (#8280)
+#if IMGUI_VERSION_NUM >= 19183
+    {
+        ImGuiContext& g = *GImGui;
+        if (!(g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasChildFlags))
+            g.NextWindowData.ChildFlags = 0;
+        g.NextWindowData.ChildFlags |= ImGuiChildFlags_NavFlattened;
+        g.NextWindowData.HasFlags |= ImGuiNextWindowDataFlags_HasChildFlags;
+    }
+#endif
+
     if (ImGui::BeginTable("Tests", 3, ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
@@ -468,7 +481,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter,
             // Double-click to run test, CTRL+Double-click to run GUI function
             const bool is_running_gui_func = (test_context && (test_context->RunFlags & ImGuiTestRunFlags_GuiFuncOnly));
             const bool has_gui_func = (test->GuiFunc != nullptr);
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+            if ((ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) || (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) // FIXME: How to properly handle that with selectable
             {
                 if (ImGui::GetIO().KeyCtrl)
                     queue_gui_func_toggle = true;

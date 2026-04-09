@@ -318,6 +318,11 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readFloat(normalizedPivot.x));
 		wrap(stream->readFloat(normalizedPivot.y));
 		wrap(stream->readFloat(normalizedPivot.z));
+		if (version <= 10) {
+			// older VoxEdit versions stored pivots in the opposite X convention
+			// voxel data is stored with X mirrored (size.x - x - 1), so flip the pivot to match
+			normalizedPivot.x = 1.0f - normalizedPivot.x;
+		}
 	}
 	if (version >= 9) {
 		uint8_t surface;

@@ -4,6 +4,7 @@
 
 #include "ScriptBrowserPanel.h"
 #include "app/I18N.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
@@ -55,19 +56,15 @@ bool ScriptBrowserPanel::filtered(const voxelui::ScriptInfo &info) const {
 }
 
 bool ScriptBrowserPanel::isInstalled(const voxelui::ScriptInfo &info) const {
-	core::String dir;
-	if (info.type == "generator") {
-		dir = "scripts";
-	} else if (info.type == "brush") {
-		dir = "brushes";
-	} else {
+	const core::String dir = ScriptApi::scriptTypeToDir(info.type);
+	if (dir.empty()) {
 		return false;
 	}
 	const core::String path = _app->filesystem()->homeWritePath(core::string::path(dir, info.filename));
 	return io::Filesystem::sysExists(path);
 }
 
-void ScriptBrowserPanel::update(const char *id) {
+void ScriptBrowserPanel::update(const char *id, command::CommandExecutionListener *listener) {
 	if (!_open) {
 		return;
 	}
@@ -144,6 +141,8 @@ void ScriptBrowserPanel::update(const char *id) {
 									return asc ? a.filename < b.filename : a.filename > b.filename;
 								});
 								break;
+							default:
+								break;
 							}
 							sortSpecs->SpecsDirty = false;
 						}
@@ -177,14 +176,25 @@ void ScriptBrowserPanel::update(const char *id) {
 							ImGui::PopStyleColor();
 						}
 						ImGui::TableNextColumn();
-						if (ImGui::IconButton(ICON_LC_DOWNLOAD, info.filename.c_str())) {
-							voxelui::ScriptApi api;
-							if (api.download(_app->filesystem(), SCRIPT_API_URL, info)) {
-								Log::info("Downloaded script %s", info.name.c_str());
-								_needsReload = true;
+						if (installed) {
+							const core::String uninstallId = core::String::format("uninstall_%s", info.filename.c_str());
+							if (ImGui::IconButton(ICON_LC_TRASH, uninstallId.c_str())) {
+								const core::String cmd = core::String::format("script_uninstall %s", info.filename.c_str());
+								if (command::executeCommands(cmd, listener) > 0) {
+									_needsReload = true;
+								}
 							}
+							ImGui::TooltipText(_("Uninstall %s"), info.name.c_str());
+						} else {
+							if (ImGui::IconButton(ICON_LC_DOWNLOAD, info.filename.c_str())) {
+								voxelui::ScriptApi api;
+								if (api.download(_app->filesystem(), SCRIPT_API_URL, info)) {
+									Log::info("Downloaded script %s", info.name.c_str());
+									_needsReload = true;
+								}
+							}
+							ImGui::TooltipText(_("Download %s"), info.name.c_str());
 						}
-						ImGui::TooltipText(_("Download %s"), info.name.c_str());
 					}
 					ImGui::EndTable();
 				}

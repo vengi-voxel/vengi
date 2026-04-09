@@ -30,6 +30,7 @@
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxedit-util/modifier/brush/LUABrush.h"
+#include "voxedit-util/modifier/brush/LUASelectionMode.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/RulerBrush.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
@@ -37,6 +38,7 @@
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
+#include "voxelui/LUAScriptParameters.h"
 #include "voxel/ClipboardData.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -91,11 +93,7 @@ static constexpr const char *SelectModeIcons[] = {
 	ICON_LC_LAND_PLOT,           // FlatSurface
 	ICON_LC_BOX,                 // Box3D
 	ICON_LC_CIRCLE,              // Circle
-	ICON_LC_MOUNTAIN,            // Slope
 	ICON_LC_LASSO,               // Lasso
-	ICON_LC_CIRCLE_DASHED,       // HoleRim2D
-	ICON_LC_TORUS,               // HoleRim3D
-	ICON_LC_COLUMNS_3,           // ColumnRim2D
 	ICON_LC_PAINTBRUSH           // Paint
 };
 // clang-format on
@@ -395,7 +393,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 	ImGui::CommandButton(_("Rescan"), "brushscriptrescan", listener);
 	ImGui::TooltipTextUnformatted(_("Re-scan the brushes directory for new or changed scripts"));
 
-	LuaBrush *activeBrush = modifier.activeLuaBrush();
+	LUABrush *activeBrush = modifier.activeLuaBrush();
 	if (activeBrush == nullptr) {
 		return;
 	}
@@ -404,77 +402,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::TextWrappedUnformatted(activeBrush->scriptDescription().c_str());
 	}
 
-	const core::DynamicArray<voxelgenerator::LUAParameterDescription> &params = activeBrush->parameterDescriptions();
-	core::DynamicArray<core::String> &values = activeBrush->parameters();
-	const int n = (int)params.size();
-	if (n > 0 && ImGui::CollapsingHeader(_("Script parameters"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		for (int i = 0; i < n; ++i) {
-			const voxelgenerator::LUAParameterDescription &p = params[i];
-			core::String &str = values[i];
-			switch (p.type) {
-			case voxelgenerator::LUAParameterType::Integer: {
-				int val = core::string::toInt(str);
-				if (p.shouldClamp()) {
-					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
-					int minVal = (int)(p.minValue + glm::epsilon<double>());
-					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
-						str = core::string::toString(val);
-					}
-				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Float: {
-				float val = core::string::toFloat(str);
-				if (p.shouldClamp()) {
-					const float maxVal = (float)p.maxValue;
-					const float minVal = (float)p.minValue;
-					const char *format = glm::abs(maxVal - minVal) <= 10.0f ? "%.6f" : "%.3f";
-					if (ImGui::DragFloat(p.name.c_str(), &val, 0.005f, minVal, maxVal, format)) {
-						str = core::string::toString(val);
-					}
-				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::String: {
-				ImGui::InputText(p.name.c_str(), &str);
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Boolean: {
-				bool checked = core::string::toBool(str);
-				if (ImGui::Checkbox(p.name.c_str(), &checked)) {
-					str = checked ? "1" : "0";
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::Enum: {
-				core::DynamicArray<core::String> tokens;
-				core::string::splitString(p.enumValues, tokens, ",");
-				const auto iter = core::find(tokens.begin(), tokens.end(), str);
-				int selected = iter == tokens.end() ? 0 : (int)(iter - tokens.begin());
-				if (ImGui::ComboItems(p.name.c_str(), &selected, tokens)) {
-					str = tokens[selected];
-				}
-				break;
-			}
-			case voxelgenerator::LUAParameterType::ColorIndex: {
-				int val = core::string::toInt(str);
-				if (ImGui::InputInt(p.name.c_str(), &val)) {
-					str = core::string::toString(val);
-				}
-				break;
-			}
-			default:
-				break;
-			}
-			if (!p.description.empty()) {
-				ImGui::TooltipTextUnformatted(p.description.c_str());
-			}
-		}
-	}
+	voxelui::renderScriptParameters(activeBrush->parameterDescriptions(), activeBrush->parameters());
 }
 
 void BrushPanel::updateRulerBrushPanel(command::CommandExecutionListener &listener) {
@@ -727,66 +655,6 @@ void BrushPanel::handleSelectFlatSurface() {
 	ImGui::PopID();
 }
 
-void BrushPanel::handleSelectSlope(int nodeId) {
-	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
-	const float btnW = ImGui::GetFrameHeight();
-	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-	bool changed = false;
-
-	int deviation = brush.slopeDeviation();
-	ImGui::TextUnformatted(_("Max deviation"));
-	ImGui::TooltipTextUnformatted(_("Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
-									"to be included in the selection"));
-	ImGui::PushID("slopedeviation");
-	if (ImGui::Button("-", ImVec2(btnW, 0))) {
-		deviation = glm::max(deviation - 1, 0);
-		brush.setSlopeDeviation(deviation);
-		changed = true;
-	}
-	ImGui::SameLine(0, spacing);
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-	if (ImGui::SliderInt("##slopedeviation", &deviation, 0, SelectBrush::MaxSlopeDeviation)) {
-		brush.setSlopeDeviation(deviation);
-		changed = true;
-	}
-	ImGui::SameLine(0, spacing);
-	if (ImGui::Button("+", ImVec2(btnW, 0))) {
-		deviation = glm::min(deviation + 1, SelectBrush::MaxSlopeDeviation);
-		brush.setSlopeDeviation(deviation);
-		changed = true;
-	}
-	ImGui::PopID();
-
-	int sampleDist = brush.slopeSampleDistance();
-	ImGui::TextUnformatted(_("Sample distance"));
-	ImGui::TooltipTextUnformatted(_("How far apart (in voxels) to sample when computing the initial slope plane. "
-									"Larger values give smoother slope detection on staircases"));
-	ImGui::PushID("slopesample");
-	if (ImGui::Button("-", ImVec2(btnW, 0))) {
-		sampleDist = glm::max(sampleDist - 1, SelectBrush::MinSlopeSampleDistance);
-		brush.setSlopeSampleDistance(sampleDist);
-		changed = true;
-	}
-	ImGui::SameLine(0, spacing);
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-	if (ImGui::SliderInt("##slopesample", &sampleDist, SelectBrush::MinSlopeSampleDistance,
-						 SelectBrush::MaxSlopeSampleDistance)) {
-		brush.setSlopeSampleDistance(sampleDist);
-		changed = true;
-	}
-	ImGui::SameLine(0, spacing);
-	if (ImGui::Button("+", ImVec2(btnW, 0))) {
-		sampleDist = glm::min(sampleDist + 1, SelectBrush::MaxSlopeSampleDistance);
-		brush.setSlopeSampleDistance(sampleDist);
-		changed = true;
-	}
-	ImGui::PopID();
-
-	if (changed && brush.slopeValid()) {
-		_sceneMgr->selectionSetSlope(nodeId);
-	}
-}
-
 void BrushPanel::handleSelectLasso(command::CommandExecutionListener &listener) {
 	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
 	ImGui::SeparatorText(_("Lasso selection"));
@@ -809,72 +677,59 @@ void BrushPanel::handleSelectLasso(command::CommandExecutionListener &listener) 
 	}
 }
 
-void BrushPanel::handleSelectHoleRim2D() {
-	ImGui::SeparatorText(_("Hole rim selection"));
-	ImGui::TextUnformatted(_("Click any solid voxel on the rim of a hole. For best results use the face that looks "
-							 "into the opening or lies flat on the surface containing the hole."));
-}
-
-void BrushPanel::handleSelectHoleRim3D() {
-	ImGui::SeparatorText(_("Hole rim selection (3D)"));
-	ImGui::TextUnformatted(
-		_("Click a solid voxel on the rim of a hole using the face that looks into the opening. Finds the shortest "
-		  "loop of surface voxels encircling the hole. Works on curved and non-planar surfaces."));
-}
-
-void BrushPanel::handleSelectColumnRim2D() {
-	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
-	ImGui::SeparatorText(_("Column rim selection"));
-	ImGui::TextUnformatted(_("Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked face "
-							 "determines the cross-section plane with fallback. Lock the normal axis to always "
-							 "select a specific circumference direction."));
-
-	// Normal axis selector: Auto tries clicked-face plane first with fallback;
-	// locking X/Y/Z disables the fallback for predictable results on symmetric shapes.
-	// math::Axis values are None=0, X=1, Y=2, Z=4 (bit flags), so use an explicit table.
-	static const math::Axis axisValues[] = {math::Axis::None, math::Axis::X, math::Axis::Y, math::Axis::Z};
-	const char *axisNames[] = {C_("ColumnRimAxis", "Auto"), C_("ColumnRimAxis", "X"), C_("ColumnRimAxis", "Y"),
-							   C_("ColumnRimAxis", "Z")};
-	const math::Axis currentAxis = brush.columnRimNormalAxis();
-	int axisIdx = 0;
-	for (int i = 1; i < (int)lengthof(axisValues); ++i) {
-		if (axisValues[i] == currentAxis) {
-			axisIdx = i;
-			break;
-		}
-	}
-	if (ImGui::Combo(_("Normal axis"), &axisIdx, axisNames, lengthof(axisNames))) {
-		brush.setColumnRimNormalAxis(axisValues[axisIdx]);
-	}
-	ImGui::TooltipTextUnformatted(
-		_("Lock the axis perpendicular to the cross-section plane. Auto uses the clicked face with fallback."));
-}
-
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	SelectBrush &brush = modifier.selectBrush();
 
 	const SelectMode currentSelectMode = brush.selectMode();
+	const bool luaModeActive = brush.isLuaSelectionModeActive();
+	const core::DynamicArray<LUASelectionMode *> &luaModes = modifier.luaSelectionModes();
 
 	const char *SelectModeStr[] = {
 		C_("SelectMode", "All"),		   C_("SelectMode", "Surface"),		C_("SelectMode", "Same Color"),
 		C_("SelectMode", "Fuzzy Color"),   C_("SelectMode", "Connected"),	C_("SelectMode", "Flat Surface"),
-		C_("SelectMode", "3D Box"),		   C_("SelectMode", "Circle"),		C_("SelectMode", "Slope"),
-		C_("SelectMode", "Lasso"),		   C_("SelectMode", "Hole Rim 2D"), C_("SelectMode", "Hole Rim 3D"),
-		C_("SelectMode", "Column Rim 2D"), C_("SelectMode", "Paint")};
+		C_("SelectMode", "3D Box"),		   C_("SelectMode", "Circle"),
+		C_("SelectMode", "Lasso"),		   C_("SelectMode", "Paint")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
-	const core::String currentSelectLabel =
-		core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode], SelectModeStr[(int)currentSelectMode]);
+	core::String currentSelectLabel;
+	if (luaModeActive) {
+		const LUASelectionMode *luaMode = brush.activeLuaSelectionMode();
+		currentSelectLabel = core::String::format("%s %s", luaMode->iconString(), luaMode->scriptName().c_str());
+	} else {
+		currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode],
+												  SelectModeStr[(int)currentSelectMode]);
+	}
 	if (ImGui::BeginCombo(_("Select mode"), currentSelectLabel.c_str(), ImGuiComboFlags_None)) {
+		// Native modes
 		for (int i = 0; i < (int)SelectMode::Max; ++i) {
-			const bool selected = (int)currentSelectMode == i;
+			const bool selected = !luaModeActive && (int)currentSelectMode == i;
 			const core::String selectLabel = core::String::format("%s %s", SelectModeIcons[i], SelectModeStr[i]);
 			if (ImGui::Selectable(selectLabel.c_str(), selected)) {
 				brush.setSelectMode((SelectMode)i);
+				brush.setLuaSelectionMode(-1, nullptr);
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
+			}
+		}
+		// Lua selection modes
+		if (!luaModes.empty()) {
+			ImGui::Separator();
+			for (int i = 0; i < (int)luaModes.size(); ++i) {
+				const LUASelectionMode *mode = luaModes[i];
+				const bool selected = luaModeActive && brush.luaSelectionModeIndex() == i;
+				const core::String label =
+					core::String::format("%s %s", mode->iconString(), mode->scriptName().c_str());
+				if (ImGui::Selectable(label.c_str(), selected)) {
+					brush.setLuaSelectionMode(i, luaModes[i]);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+				if (!mode->scriptDescription().empty()) {
+					ImGui::TooltipTextUnformatted(mode->scriptDescription().c_str());
+				}
 			}
 		}
 		ImGui::EndCombo();
@@ -888,44 +743,36 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", listener);
 	ImGui::EndDisabled();
 
-	if (brush.selectMode() == SelectMode::FuzzyColor) {
+	if (brush.selectMode() == SelectMode::FuzzyColor && !luaModeActive) {
 		handleSelectFuzzyColor();
 	}
 
-	if (brush.selectMode() == SelectMode::FlatSurface) {
+	if (brush.selectMode() == SelectMode::FlatSurface && !luaModeActive) {
 		handleSelectFlatSurface();
 	}
 
-	if (brush.selectMode() == SelectMode::Slope) {
-		handleSelectSlope(nodeId);
-	}
-
-	if (brush.selectMode() == SelectMode::Lasso) {
+	if (brush.selectMode() == SelectMode::Lasso && !luaModeActive) {
 		handleSelectLasso(listener);
 	}
 
-	if (brush.selectMode() == SelectMode::HoleRim2D) {
-		handleSelectHoleRim2D();
-	}
-
-	if (brush.selectMode() == SelectMode::HoleRim3D) {
-		handleSelectHoleRim3D();
-	}
-
-	if (brush.selectMode() == SelectMode::ColumnRim2D) {
-		handleSelectColumnRim2D();
-	}
-
-	if (brush.selectMode() == SelectMode::Paint) {
+	if (brush.selectMode() == SelectMode::Paint && !luaModeActive) {
 		handleSelectPaint(nodeId);
 	}
 
-	if (brush.selectMode() == SelectMode::Circle && brush.ellipseValid() && _sceneMgr->hasSelection(nodeId)) {
+	if (brush.selectMode() == SelectMode::Circle && !luaModeActive && brush.ellipseValid() && _sceneMgr->hasSelection(nodeId)) {
 		handleSelectCircle(nodeId);
 	}
 
-	if (brush.selectMode() == SelectMode::Box3D) {
+	if (brush.selectMode() == SelectMode::Box3D && !luaModeActive) {
 		handleSelectBox3D(nodeId);
+	}
+
+	if (luaModeActive) {
+		LUASelectionMode *luaMode = brush.activeLuaSelectionMode();
+		if (!luaMode->scriptDescription().empty()) {
+			ImGui::TextWrappedUnformatted(luaMode->scriptDescription().c_str());
+		}
+		voxelui::renderScriptParameters(luaMode->parameterDescriptions(), luaMode->parameters());
 	}
 }
 
@@ -2066,10 +1913,10 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 
 	// Render per-script brush buttons
-	const core::DynamicArray<LuaBrush *> &luaBrushes = modifier.luaBrushes();
+	const core::DynamicArray<LUABrush *> &luaBrushes = modifier.luaBrushes();
 	const int activeLuaIdx = modifier.activeLuaBrushIndex();
 	for (int i = 0; i < (int)luaBrushes.size(); ++i) {
-		const LuaBrush *lb = luaBrushes[i];
+		const LUABrush *lb = luaBrushes[i];
 		const bool isActive = brushType == BrushType::Script && activeLuaIdx == i;
 		ui::ScopedStyle styleButton;
 		if (isActive) {

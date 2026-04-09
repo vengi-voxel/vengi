@@ -40,28 +40,16 @@ enum class SelectMode : uint8_t {
 	Box3D,
 	/** Select surface voxels within a circular radius from the clicked center point */
 	Circle,
-	/** Flood-fill select connected surface voxels that fit a global slope plane within a height deviation threshold */
-	Slope,
 	/** Free-form polygon selection: click vertices to build a polygon, close it to select enclosed surface voxels */
 	Lasso,
-	/** Select the closed rim of a hole in an axis-aligned (coplanar) surface.
-	 *  Click any solid voxel on the rim using the face that is parallel to the surface plane. */
-	HoleRim2D,
-	/** Select the closed rim of a hole in a non-planar (3D curved) surface.
-	 *  Click a solid voxel on the rim using the face that looks into the opening.
-	 *  BFS finds the shortest surface loop that encircles the air-seed voxel. */
-	HoleRim3D,
-	/** Select all solid voxels in a bounded connected protrusion (column, pillar, pipe wall) on a face plane.
-	 *  Click any solid voxel using any face. The clicked face's plane is tried first; if that slice
-	 *  is unbounded (e.g. side face of a floor-touching column reaches the volume floor), the other
-	 *  two axis planes are tried automatically. Large flat surfaces are always rejected as unbounded. */
-	ColumnRim2D,
 	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
 	 *  Uses single mode for continuous execution. Single undo entry on release. */
 	Paint,
 
 	Max
 };
+
+class LUASelectionMode;
 
 /**
  * @ingroup Brushes
@@ -75,27 +63,16 @@ public:
 	/** Sentinel value for _lastLassoCursorPos to force a refresh on first update() */
 	static constexpr int LassoInvalidCursorCoord = -100000;
 
-	/** Initial capacity for HoleRim3D BFS arrays */
-	static constexpr int HoleRim3DReserve = 256;
-	/** Maximum BFS hop distance from seed before stopping expansion */
-	static constexpr int HoleRim3DMaxSearchRadius = 64;
-	/** Minimum cycle hop-length to consider (filters trivial 2-cycles) */
-	static constexpr int HoleRim3DMinCycleLen = 3;
-	/** Initial capacity for the non-tree edge list */
-	static constexpr int HoleRim3DInitialEdgeReserve = 64;
-
 private:
 	using Super = AABBBrush;
 	SelectMode _selectMode = SelectMode::All;
+	/** Index into the Modifier's lua selection mode array, or -1 for native mode */
+	int _luaSelectionModeIndex = -1;
+	/** Pointer to the active lua selection mode (set by Modifier when index >= 0) */
+	LUASelectionMode *_activeLuaSelectionMode = nullptr;
 	float _colorThreshold = color::ApproximationDistanceModerate;
 	int _flatDeviation = 0;
-	int _slopeDeviation = 10;
-	int _slopeSampleDistance = 3;
 	bool _previewMode = false;
-	/** Locked normal axis for ColumnRim2D cross-section plane.
-	 *  None = Auto: clicked face's plane tried first, then falls back to the other two.
-	 *  X/Y/Z: only that plane is tried; no fallback. */
-	math::Axis _columnRimNormalAxis = math::Axis::None;
 
 	/** Cached ellipse parameters from the last Circle selection */
 	glm::ivec3 _ellipseCenter{0};
@@ -108,14 +85,6 @@ private:
 
 	/** Positions flagged by the current ellipse -used to undo only our flags on slider changes */
 	core::DynamicArray<glm::ivec3> _ellipseHistory;
-
-	/** Cached slope parameters from the last Slope selection */
-	glm::ivec3 _slopeSeedPos{0};
-	voxel::FaceNames _slopeFace = voxel::FaceNames::Max;
-	bool _slopeValid = false;
-
-	/** Positions flagged by the current slope selection -used to undo on slider changes */
-	core::DynamicArray<glm::ivec3> _slopeHistory;
 
 	/** Lasso polygon vertices accumulated across multiple clicks */
 	core::DynamicArray<glm::ivec3> _lassoPath;
@@ -168,6 +137,15 @@ public:
 	void setSelectMode(SelectMode mode);
 	SelectMode selectMode() const;
 
+	/** Set the active lua selection mode. Pass -1 to use native C++ modes. */
+	void setLuaSelectionMode(int index, LUASelectionMode *mode);
+	/** Get the active lua selection mode index (-1 = native mode) */
+	int luaSelectionModeIndex() const;
+	/** Get the active lua selection mode (nullptr if native mode) */
+	LUASelectionMode *activeLuaSelectionMode() const;
+	/** True if a lua selection mode is active */
+	bool isLuaSelectionModeActive() const;
+
 	const voxel::Region &box3DSelectionRegion() const;
 	void setBox3DSelectionRegion(const voxel::Region &region);
 
@@ -178,20 +156,7 @@ public:
 	void setFlatDeviation(int deviation);
 	int flatDeviation() const;
 
-	static constexpr int MaxSlopeDeviation = 90;
-	void setSlopeDeviation(int angle);
-	int slopeDeviation() const;
-
-	static constexpr int MinSlopeSampleDistance = 2;
-	static constexpr int MaxSlopeSampleDistance = 16;
-	void setSlopeSampleDistance(int dist);
-	int slopeSampleDistance() const;
-
 	void setPreviewMode(bool v);
-
-	/** @param axis None = Auto (face-driven with fallback); X/Y/Z = locked plane normal */
-	void setColumnRimNormalAxis(math::Axis axis);
-	math::Axis columnRimNormalAxis() const;
 
 	bool lassoAccumulating() const;
 	const core::DynamicArray<glm::ivec3> &lassoPath() const;
@@ -246,11 +211,6 @@ public:
 	void invalidateEllipse();
 	core::DynamicArray<glm::ivec3> &ellipseHistory();
 
-	bool slopeValid() const;
-	const glm::ivec3 &slopeSeedPos() const;
-	voxel::FaceNames slopeFace() const;
-	void invalidateSlope();
-	core::DynamicArray<glm::ivec3> &slopeHistory();
 };
 
 inline bool SelectBrush::managesOwnSelection() const {
@@ -259,6 +219,18 @@ inline bool SelectBrush::managesOwnSelection() const {
 
 inline SelectMode SelectBrush::selectMode() const {
 	return _selectMode;
+}
+
+inline int SelectBrush::luaSelectionModeIndex() const {
+	return _luaSelectionModeIndex;
+}
+
+inline LUASelectionMode *SelectBrush::activeLuaSelectionMode() const {
+	return _activeLuaSelectionMode;
+}
+
+inline bool SelectBrush::isLuaSelectionModeActive() const {
+	return _luaSelectionModeIndex >= 0 && _activeLuaSelectionMode != nullptr;
 }
 
 inline const voxel::Region &SelectBrush::box3DSelectionRegion() const {
@@ -285,32 +257,8 @@ inline int SelectBrush::flatDeviation() const {
 	return _flatDeviation;
 }
 
-inline void SelectBrush::setSlopeDeviation(int angle) {
-	_slopeDeviation = glm::clamp(angle, 0, MaxSlopeDeviation);
-}
-
-inline int SelectBrush::slopeDeviation() const {
-	return _slopeDeviation;
-}
-
-inline void SelectBrush::setSlopeSampleDistance(int dist) {
-	_slopeSampleDistance = glm::clamp(dist, MinSlopeSampleDistance, MaxSlopeSampleDistance);
-}
-
-inline int SelectBrush::slopeSampleDistance() const {
-	return _slopeSampleDistance;
-}
-
 inline void SelectBrush::setPreviewMode(bool v) {
 	_previewMode = v;
-}
-
-inline void SelectBrush::setColumnRimNormalAxis(math::Axis axis) {
-	_columnRimNormalAxis = axis;
-}
-
-inline math::Axis SelectBrush::columnRimNormalAxis() const {
-	return _columnRimNormalAxis;
 }
 
 inline bool SelectBrush::lassoAccumulating() const {
@@ -387,22 +335,6 @@ inline voxel::FaceNames SelectBrush::ellipseFace() const {
 
 inline core::DynamicArray<glm::ivec3> &SelectBrush::ellipseHistory() {
 	return _ellipseHistory;
-}
-
-inline bool SelectBrush::slopeValid() const {
-	return _slopeValid;
-}
-
-inline const glm::ivec3 &SelectBrush::slopeSeedPos() const {
-	return _slopeSeedPos;
-}
-
-inline voxel::FaceNames SelectBrush::slopeFace() const {
-	return _slopeFace;
-}
-
-inline core::DynamicArray<glm::ivec3> &SelectBrush::slopeHistory() {
-	return _slopeHistory;
 }
 
 } // namespace voxedit

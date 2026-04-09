@@ -215,8 +215,7 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, gizmoVar);
 
 			ImGui::Indent();
-			if (!gizmoVar->boolVal())
-				ImGui::BeginDisabled();
+			ImGui::BeginDisabled(!gizmoVar->boolVal());
 
 			if (sceneMode) {
 				int operations = _gizmoOperations->intVal();
@@ -242,13 +241,12 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			ImGui::IconCheckboxVar(ICON_LC_MAGNET, cfg::VoxEditGizmoSnap);
 			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, cfg::VoxEditGizmoAllowAxisFlip);
 			ImGui::CheckboxVar(_localSpace);
-			ImGui::IconCheckboxVar(ICON_LC_HAND, _showGizmoBrush);
-			ImGui::TooltipTextUnformatted(_("Show gizmo for brushes that support it"));
 
-			if (!gizmoVar->boolVal())
-				ImGui::EndDisabled();
+			ImGui::EndDisabled();
 
 			ImGui::Unindent();
+			ImGui::IconCheckboxVar(ICON_LC_HAND, _showGizmoBrush);
+			ImGui::TooltipTextUnformatted(_("Show gizmo for brushes that support it"));
 		}
 	}
 	ImGui::End();

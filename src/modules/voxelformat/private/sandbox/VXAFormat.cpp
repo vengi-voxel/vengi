@@ -11,6 +11,8 @@
 #include "core/MD5.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
@@ -88,74 +90,165 @@ static int getInterpolationType(scenegraph::InterpolationType type) {
 	return -1;
 }
 
+struct ChannelKeyFrame {
+	int32_t frame;
+	int32_t interpolation;
+	float val;
+};
+
+// Interpolate a channel's value at a given frame from its explicit keyframes.
+// Uses the nearest keyframe value if the frame is before/after all keyframes,
+// or linearly interpolates between the two surrounding keyframes.
+static float interpolateChannelValue(const core::DynamicArray<ChannelKeyFrame> &channel, int32_t frame) {
+	if (channel.empty()) {
+		return 0.0f;
+	}
+
+	const size_t n = channel.size();
+
+	// Exact match
+	for (size_t i = 0; i < n; ++i) {
+		if (channel[i].frame == frame) {
+			return channel[i].val;
+		}
+	}
+
+	// Before first keyframe
+	if (frame <= channel[0].frame) {
+		return channel[0].val;
+	}
+
+	// After last keyframe
+	if (frame >= channel[n - 1].frame) {
+		return channel[n - 1].val;
+	}
+
+	// Linear interpolation between surrounding keyframes
+	for (size_t i = 0; i < n - 1; ++i) {
+		if (channel[i].frame <= frame && frame <= channel[i + 1].frame) {
+			const int32_t range = channel[i + 1].frame - channel[i].frame;
+			if (range == 0) {
+				return channel[i].val;
+			}
+			const float t = (float)(frame - channel[i].frame) / (float)range;
+			return channel[i].val + t * (channel[i + 1].val - channel[i].val);
+		}
+	}
+
+	return channel[n - 1].val;
+}
+
 } // namespace vxa_priv
 
 bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream &stream,
 										  scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 										  const core::String &animId, int version) {
-	// channel 0-2 position (float)
-	// channel 3-5 rotation (euler angles in radians)
-	// channel 6 local scale (float)
+	// VXA3/4 stores 7 independent channels, each with its own set of keyframes:
+	// channel 0-2: position (x, y, z)
+	// channel 3-5: rotation (euler angles in radians)
+	// channel 6: local scale
+	// Different channels may have keyframes at different frames. We must read all
+	// channel data first, then merge them by interpolating missing channel values
+	// at each unique frame to avoid defaulting to zero.
+	core::DynamicArray<vxa_priv::ChannelKeyFrame> channelData[7];
+
 	for (int channel = 0; channel < 7; ++channel) {
 		int32_t keyFrameCount;
 		wrap(stream.readInt32(keyFrameCount))
-		Log::debug("Found %i keyframes", keyFrameCount);
+		Log::debug("Channel %i: %i keyframes", channel, keyFrameCount);
 
 		for (int kf = 0; kf < keyFrameCount; ++kf) {
-			scenegraph::FrameIndex frameIdx;
+			int32_t frameIdx;
 			wrap(stream.readInt32(frameIdx))
-			// max frames are 720 for vxa
+
 			if (channel == 6 && frameIdx > 0) {
-				int32_t interpolationIgnored;
-				wrap(stream.readInt32(interpolationIgnored))
-				float valIgnored;
-				wrap(stream.readFloat(valIgnored))
+				// scale keyframes beyond frame 0 are skipped (VoxEdit convention)
+				int32_t dummy;
+				wrap(stream.readInt32(dummy))
+				float dummyf;
+				wrap(stream.readFloat(dummyf))
 				continue;
 			}
 
-			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
-			if (keyFrameIdx == InvalidKeyFrame) {
-				keyFrameIdx = node.keyFrameForFrame(frameIdx);
-			}
-			scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-			keyFrame.frameIdx = frameIdx;
-			int32_t interpolation;
-			wrap(stream.readInt32(interpolation))
-			if (interpolation == -1) {
-				keyFrame.interpolation = scenegraph::InterpolationType::Linear;
-			} else if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
-				keyFrame.interpolation = scenegraph::InterpolationType::Linear;
-				Log::warn("Could not find a supported easing type for %i (%s)", interpolation, filename.c_str());
-			} else {
-				keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
-			}
+			vxa_priv::ChannelKeyFrame ckf;
+			ckf.frame = frameIdx;
+			wrap(stream.readInt32(ckf.interpolation))
 			if (channel == 3) {
 				/* bool slerp =*/stream.readBool(); // TODO: VOXELFORMAT: animation
 			}
+			wrap(stream.readFloat(ckf.val))
+			channelData[channel].push_back(ckf);
+		}
+	}
 
-			float val;
-			wrap(stream.readFloat(val))
-
-			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-			if (channel == 6) {
-				transform.setLocalScale(glm::vec3(val));
-			} else if (channel <= 2) {
-				glm::vec3 translation = transform.localTranslation();
-				translation[channel] = val;
-				transform.setLocalTranslation(translation);
-			} else if (channel > 2) {
-				glm::quat orientation = transform.localOrientation();
-				orientation[channel - 3] = val;
-				transform.setLocalOrientation(orientation);
+	// Collect all unique frame indices across all channels
+	core::Buffer<int32_t> allFrames;
+	for (int ch = 0; ch < 7; ++ch) {
+		for (const vxa_priv::ChannelKeyFrame &ckf : channelData[ch]) {
+			bool found = false;
+			for (const int32_t &f : allFrames) {
+				if (f == ckf.frame) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				allFrames.push_back(ckf.frame);
 			}
 		}
 	}
 
-	for (scenegraph::SceneGraphKeyFrame &keyFrame : node.keyFrames(animId)) {
-		const glm::quat &tempAngles = keyFrame.transform().localOrientation();
-		const glm::vec3 eulerAngles(tempAngles[0], tempAngles[1], tempAngles[2]);
-		const glm::quat localOrientation(eulerAngles);
-		keyFrame.transform().setLocalOrientation(localOrientation);
+	allFrames.sort(core::Less<int32_t>());
+
+	// For each unique frame, create a keyframe with values from all channels.
+	// If a channel doesn't have an explicit keyframe at this frame, interpolate
+	// from the channel's surrounding keyframes.
+	for (const int32_t frameIdx : allFrames) {
+		scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
+		if (keyFrameIdx == InvalidKeyFrame) {
+			keyFrameIdx = node.keyFrameForFrame(frameIdx);
+		}
+		scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+		keyFrame.frameIdx = frameIdx;
+
+		// Use the interpolation type from the first channel that has an explicit keyframe here
+		bool interpSet = false;
+		for (int ch = 0; ch < 7 && !interpSet; ++ch) {
+			for (const vxa_priv::ChannelKeyFrame &ckf : channelData[ch]) {
+				if (ckf.frame == frameIdx) {
+					if (ckf.interpolation == -1) {
+						keyFrame.interpolation = scenegraph::InterpolationType::Linear;
+					} else if (ckf.interpolation < 0 || ckf.interpolation >= lengthof(vxa_priv::interpolationTypes)) {
+						keyFrame.interpolation = scenegraph::InterpolationType::Linear;
+						Log::warn("Could not find a supported easing type for %i (%s)", ckf.interpolation, filename.c_str());
+					} else {
+						keyFrame.interpolation = vxa_priv::interpolationTypes[ckf.interpolation];
+					}
+					interpSet = true;
+					break;
+				}
+			}
+		}
+
+		glm::vec3 translation(0.0f);
+		glm::vec3 eulerAngles(0.0f);
+		float scale = 1.0f;
+
+		for (int ch = 0; ch < 7; ++ch) {
+			float val = vxa_priv::interpolateChannelValue(channelData[ch], frameIdx);
+			if (ch <= 2) {
+				translation[ch] = val;
+			} else if (ch <= 5) {
+				eulerAngles[ch - 3] = val;
+			} else {
+				scale = val;
+			}
+		}
+
+		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+		transform.setLocalTranslation(translation);
+		transform.setLocalOrientation(glm::quat(eulerAngles));
+		transform.setLocalScale(glm::vec3(scale));
 	}
 
 	int32_t children;
@@ -214,14 +307,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 
 		transform.setLocalScale(glm::vec3(localScale));
 		transform.setLocalOrientation(localOrientation);
-		if (version == 1) {
-			// version 1 needs to correct its translation by the pivot translation
-			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
-			const glm::vec3 pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
-			transform.setLocalTranslation(localTranslation - pivotTranslation);
-		} else {
-			transform.setLocalTranslation(localTranslation);
-		}
+		transform.setLocalTranslation(localTranslation);
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -237,6 +323,25 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	}
 
 	return true;
+}
+
+void VXAFormat::applyPivotFixV1(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node) {
+	for (int childId : node.children()) {
+		scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+		// the parent node must have a model volume for pivot correction
+		if (node.isAnyModelNode() && node.volume() != nullptr) {
+			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
+			const glm::vec3 pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
+			scenegraph::SceneGraphKeyFrames *kfs = child.keyFrames();
+			if (kfs != nullptr) {
+				for (scenegraph::SceneGraphKeyFrame &kf : *kfs) {
+					scenegraph::SceneGraphTransform &transform = kf.transform();
+					transform.setLocalTranslation(transform.localTranslation() - pivotTranslation);
+				}
+			}
+		}
+		applyPivotFixV1(sceneGraph, child);
+	}
 }
 
 bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -265,7 +370,7 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 
 	Log::debug("Found vxa version: %i", version);
 
-	if (version > 3) {
+	if (version > 4) { // version 4 is the same as version 3
 		Log::error("Could not load vxa file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -323,6 +428,11 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 				return false;
 			}
 		}
+	}
+	if (version == 1) {
+		// VXA version 1 positions are relative to the parent model's center rather than
+		// its pivot. Apply the pivot correction using the parent's model pivot.
+		applyPivotFixV1(sceneGraph, sceneGraph.node(0));
 	}
 	sceneGraph.updateTransforms();
 	return true;

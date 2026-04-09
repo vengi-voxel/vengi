@@ -134,6 +134,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | Global | Description |
 | ------ | ----------- |
 | [g_algorithm](lua/algorithm.md) | General purpose algorithms |
+| [g_brushcontext](lua/brushcontext.md) | Brush script context (cursor, face, etc.) |
 | [g_cmd](lua/cmd.md) | Command execution |
 | [g_font](lua/font.md) | Voxel font binding |
 | [g_http](lua/http.md) | HTTP request functions |
@@ -148,6 +149,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | [g_region](lua/region.md) | Create and work with regions |
 | [g_scenegraph](lua/scenegraph.md) | Access to scene graph for creating and managing nodes |
 | [g_sculpt](lua/sculpt.md) | Sculpting functions |
+| [g_selectioncontext](lua/selectioncontext.md) | Selection mode script context (cursor, face, etc.) |
 | [g_shape](lua/shape.md) | Shape generation functions |
 | [g_sparsevolume](lua/sparsevolume.md) | Sparse volume functions |
 | [g_sys](lua/sys.md) | System utilities |
@@ -306,6 +308,51 @@ Available functions:
 | Preview | None | Live preview at cursor position |
 | Region | Selected model region | Defined by `calcregion()` or cursor |
 | Preview region | N/A | Optional `calcregion()` callback |
+
+## Selection mode scripts
+
+VoxEdit supports Lua-based selection mode scripts that define custom selection behaviors. These scripts extend the built-in selection modes (All, Surface, Connected, etc.) with user-defined logic.
+
+Selection mode scripts are placed in the `selectionmodes/` directory and are automatically discovered when VoxEdit starts. Each script appears as a selectable entry in the selection mode combo box alongside the native modes. Use the **Rescan** button to reload scripts after adding or modifying them.
+
+### Selection mode script structure
+
+A selection mode script can define the following functions:
+
+- `select(node, region, ...)` **(required)** - Called when the selection is applied. Use `volume:setSelected(x, y, z, true)` to select voxels.
+- `arguments()` - Returns parameter definitions (same format as generator scripts).
+- `description()` - Returns a brief description string.
+- `icon()` - Returns an icon name string for the combo entry (e.g. `"mountain"`, `"scan"`).
+
+The `select()` function has access to the same global objects as generator scripts. Additionally, selection mode scripts have access to `g_selectioncontext` which provides cursor position, face direction, and other context about the selection action. For further details see [g_selectioncontext](lua/selectioncontext.md).
+
+### Selection mode script example
+
+```lua
+function arguments()
+    return {
+        { name = 'deviation', desc = 'Height deviation tolerance', type = 'int', default = '10', min = '0', max = '90' },
+        { name = 'sampleDistance', desc = 'Plane bootstrap radius', type = 'int', default = '3', min = '2', max = '16' }
+    }
+end
+
+function description()
+    return "Select voxels along a slope plane"
+end
+
+function icon()
+    return "mountain"
+end
+
+function select(node, region, deviation, sampleDistance)
+    local volume = node:volume()
+    local pos = g_selectioncontext.cursorPos()
+    local face = g_selectioncontext.cursorFace()
+    volume:visitSlopeSurface(pos.x, pos.y, pos.z, face, deviation, sampleDistance, function(x, y, z)
+        volume:setSelected(x, y, z, true)
+    end)
+end
+```
 
 ## Available scripts
 

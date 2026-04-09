@@ -230,4 +230,16 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testHomeWritePathTraversal) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	// valid relative path should produce a result under home
+	EXPECT_FALSE(fs.homeWritePath("testfile").empty());
+	EXPECT_TRUE(core::string::startsWith(fs.homeWritePath("testfile"), fs.homePath()));
+	// path traversal attempts must return empty
+	EXPECT_TRUE(fs.homeWritePath("../../etc/passwd").empty());
+	EXPECT_TRUE(fs.homeWritePath("subdir/../../..").empty());
+	fs.shutdown();
+}
+
 } // namespace io

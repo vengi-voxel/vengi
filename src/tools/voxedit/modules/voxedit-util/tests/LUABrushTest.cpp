@@ -22,7 +22,7 @@ protected:
 };
 
 TEST_F(LUABrushTest, testPathBrush) {
-	LuaBrush brush(_testApp->filesystem());
+	LUABrush brush(_testApp->filesystem());
 	ASSERT_TRUE(brush.init());
 	ASSERT_TRUE(brush.loadScript("path"));
 

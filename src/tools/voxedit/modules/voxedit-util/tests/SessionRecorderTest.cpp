@@ -17,6 +17,12 @@ private:
 	using Super = AbstractSceneManagerTest;
 
 protected:
+	bool onInitApp() override {
+		app::AbstractTest::onInitApp();
+		_testApp->filesystem()->registerPath("brushes/");
+		return _testApp->filesystem()->registerPath("selectionmodes/");
+	}
+
 	void SetUp() override {
 		Super::SetUp();
 	}

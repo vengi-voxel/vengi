@@ -48,7 +48,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRe
 	_brushes.push_back(&_transformBrush);
 	_brushes.push_back(&_sculptBrush);
 	_brushes.push_back(&_rulerBrush);
-	// Note: LuaBrush instances are added dynamically during init() via discoverBrushScripts()
+	// Note: LUABrush instances are added dynamically during init() via discoverBrushScripts()
 }
 
 void Modifier::construct() {
@@ -157,6 +157,7 @@ bool Modifier::init() {
 		}
 	}
 	discoverBrushScripts();
+	discoverSelectionModeScripts();
 	if (!_modifierRenderer->init()) {
 		Log::error("Failed to initialize modifier renderer");
 		return false;
@@ -171,6 +172,7 @@ void Modifier::shutdown() {
 		b->shutdown();
 	}
 	clearBrushScripts();
+	clearSelectionModeScripts();
 	_modifierRenderer->shutdown();
 }
 
@@ -422,7 +424,7 @@ void Modifier::discoverBrushScripts() {
 	core::DynamicArray<io::FilesystemEntry> entities;
 	filesystem->list("brushes", entities, "*.lua");
 	for (const auto &e : entities) {
-		LuaBrush *brush = new LuaBrush(filesystem);
+		LUABrush *brush = new LUABrush(filesystem);
 		if (!brush->init()) {
 			Log::error("Failed to initialize lua brush");
 			delete brush;
@@ -443,7 +445,7 @@ void Modifier::discoverBrushScripts() {
 }
 
 void Modifier::clearBrushScripts() {
-	for (LuaBrush *b : _luaBrushes) {
+	for (LUABrush *b : _luaBrushes) {
 		b->shutdown();
 		delete b;
 	}
@@ -457,14 +459,50 @@ void Modifier::reloadBrushScripts() {
 	Log::debug("Reloaded brush scripts (%i found)", (int)_luaBrushes.size());
 }
 
-LuaBrush *Modifier::activeLuaBrush() {
+void Modifier::discoverSelectionModeScripts() {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	core::DynamicArray<io::FilesystemEntry> entities;
+	filesystem->list("selectionmodes", entities, "*.lua");
+	for (const auto &e : entities) {
+		LUASelectionMode *mode = new LUASelectionMode(filesystem);
+		if (!mode->init()) {
+			Log::error("Failed to initialize lua selection mode");
+			delete mode;
+			continue;
+		}
+		if (!mode->loadScript(e.name)) {
+			Log::warn("Failed to load selection mode script: %s", e.name.c_str());
+			mode->shutdown();
+			delete mode;
+			continue;
+		}
+		_luaSelectionModes.push_back(mode);
+		Log::debug("Discovered selection mode script: %s", e.name.c_str());
+	}
+}
+
+void Modifier::clearSelectionModeScripts() {
+	for (LUASelectionMode *m : _luaSelectionModes) {
+		m->shutdown();
+		delete m;
+	}
+	_luaSelectionModes.clear();
+}
+
+void Modifier::reloadSelectionModeScripts() {
+	clearSelectionModeScripts();
+	discoverSelectionModeScripts();
+	Log::debug("Reloaded selection mode scripts (%i found)", (int)_luaSelectionModes.size());
+}
+
+LUABrush *Modifier::activeLuaBrush() {
 	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
 		return _luaBrushes[_activeLuaBrushIndex];
 	}
 	return nullptr;
 }
 
-const LuaBrush *Modifier::activeLuaBrush() const {
+const LUABrush *Modifier::activeLuaBrush() const {
 	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
 		return _luaBrushes[_activeLuaBrushIndex];
 	}
@@ -590,6 +628,7 @@ void Modifier::commit() {
 		return;
 	}
 	if (!brush->onDeactivated()) {
+		brush->reset();
 		return;
 	}
 	if (beginBrushFromPanel()) {
@@ -630,6 +669,7 @@ BrushType Modifier::setBrushType(BrushType type) {
 	// Auto-commit pending changes from the current brush before switching.
 	// Must happen before changing _brushType so currentBrush() returns the old brush.
 	commit();
+	resetPreview();
 
 	_brushType = type;
 	Brush *newBrush = currentBrush();
@@ -701,7 +741,7 @@ bool Modifier::previewNeedsExistingVolume() const {
 		return true;
 	}
 	if (_brushType == BrushType::Script) {
-		const LuaBrush *luaBrush = (const LuaBrush *)currentBrush();
+		const LUABrush *luaBrush = (const LUABrush *)currentBrush();
 		if (luaBrush->previewNeedsExistingVolume()) {
 			return true;
 		}
@@ -723,7 +763,7 @@ bool Modifier::previewNeedsExistingVolume() const {
 
 bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
 	if (brush->type() == BrushType::Script) {
-		const LuaBrush *luaBrush = (const LuaBrush *)brush;
+		const LUABrush *luaBrush = (const LUABrush *)brush;
 		if (luaBrush->useSimplePreview()) {
 			return true;
 		}
@@ -862,6 +902,16 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 	}
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
 		ctx.activeRegion = node->region();
+	}
+
+	// Detect when the active node's region changed (e.g. model gizmo shift)
+	// and mark the current brush dirty so its preview is regenerated at the
+	// new position instead of lingering at the old one.
+	if (ctx.activeRegion.isValid() && ctx.activeRegion != _lastActiveRegion) {
+		if (brush) {
+			brush->markDirty();
+		}
+		_lastActiveRegion = ctx.activeRegion;
 	}
 
 	// Handle brush preview with deferred updates

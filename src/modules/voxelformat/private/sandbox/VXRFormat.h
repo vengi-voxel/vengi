@@ -27,6 +27,8 @@ private:
 
 	bool handleVersion8AndLater(io::SeekableReadStream &stream, scenegraph::SceneGraphNode &node,
 								const LoadContext &ctx);
+	bool handleVersion8ExtraData(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+								 scenegraph::SceneGraphNode &node);
 	bool importChild(const core::String &vxmPath, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 					 scenegraph::SceneGraph &sceneGraph, int version, int parent, const LoadContext &ctx);
 

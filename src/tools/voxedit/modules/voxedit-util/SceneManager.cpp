@@ -2350,51 +2350,6 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
 
-void SceneManager::selectionSetSlope(int nodeId) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-	if (node == nullptr) {
-		return;
-	}
-	SelectBrush &brush = _modifierFacade.selectBrush();
-	if (!brush.slopeValid()) {
-		return;
-	}
-	voxel::RawVolume *volume = node->volume();
-
-	// Clear only the positions flagged by the previous slope selection
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
-	core::DynamicArray<glm::ivec3> &history = brush.slopeHistory();
-	for (const glm::ivec3 &pos : history) {
-		const voxel::Voxel &v = volume->voxel(pos);
-		if (!voxel::isAir(v.getMaterial())) {
-			voxel::Voxel modified = v;
-			modified.setFlags(modified.getFlags() & ~voxel::FlagOutline);
-			volume->setVoxel(pos, modified);
-			dirtyRegion.accumulate(pos);
-		}
-	}
-	history.clear();
-
-	// Re-execute the slope flood fill with current parameters
-	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &) {
-		const glm::ivec3 pos(x, y, z);
-		const voxel::Voxel &v = volume->voxel(pos);
-		if (!voxel::isAir(v.getMaterial())) {
-			voxel::Voxel modified = v;
-			modified.setFlags(modified.getFlags() | voxel::FlagOutline);
-			volume->setVoxel(pos, modified);
-			history.push_back(pos);
-			dirtyRegion.accumulate(pos);
-		}
-	};
-	voxelutil::visitSlopeSurface(*volume, brush.slopeSeedPos(), brush.slopeFace(),
-								 brush.slopeDeviation(), brush.slopeSampleDistance(), selectFunc);
-
-	if (dirtyRegion.isValid()) {
-		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
-	}
-}
-
 void SceneManager::selectionFinalizeLasso(int nodeId) {
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {

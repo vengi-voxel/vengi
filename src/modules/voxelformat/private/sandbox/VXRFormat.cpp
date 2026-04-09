@@ -447,6 +447,17 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, const
 	return true;
 }
 
+bool VXRFormat::handleVersion8ExtraData(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+										scenegraph::SceneGraphNode &node) {
+	node.setProperty("collidable", stream.readBool());
+	node.setProperty("decorative", stream.readBool());
+	for (int childId : node.children()) {
+		scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+		wrapBool(handleVersion8ExtraData(stream, sceneGraph, child))
+	}
+	return true;
+}
+
 bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream &stream, scenegraph::SceneGraphNode &node,
 									   const LoadContext &ctx) {
 	char baseTemplate[1024];
@@ -508,6 +519,22 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 	Log::debug("Found %i children", children);
 	for (int32_t i = 0; i < children; ++i) {
 		wrapBool(importChild(filename, archive, stream, sceneGraph, version, rootNodeId, ctx))
+	}
+
+	// VXR6 and VXR7 store the base template after the children tree
+	if (version >= 6 && version <= 7 && stream.remaining() > 0) {
+		char baseTemplate[1024];
+		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
+		rootNode.setProperty("basetemplate", baseTemplate);
+		Log::debug("VXR%i base template: '%s'", version, baseTemplate);
+	}
+
+	// VXR8 has an extra recursive pass for collideable/decorative data after children
+	if (version == 8 && stream.remaining() > 0) {
+		for (int nodeId : rootNode.children()) {
+			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+			wrapBool(handleVersion8ExtraData(stream, sceneGraph, node))
+		}
 	}
 
 	const core::String &basePath = core::string::extractDir(filename);

@@ -17,6 +17,7 @@
 #include "palette/FormatConfig.h"
 #include "palette/PaletteFormatDescription.h"
 #include "voxedit-util/modifier/brush/LUABrush.h"
+#include "voxedit-util/modifier/brush/LUASelectionMode.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
@@ -852,6 +853,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "sculpt";
 	} else if (name == "g_brushcontext") {
 		return "brushcontext";
+	} else if (name == "g_selectioncontext") {
+		return "selectioncontext";
 	} else if (name == "g_import") {
 		return "import";
 	} else if (name == "g_lsystem") {
@@ -942,6 +945,8 @@ static core::String getDocTitle(const core::String &pageName) {
 		return "Image";
 	} else if (pageName == "brushcontext") {
 		return "BrushContext";
+	} else if (pageName == "selectioncontext") {
+		return "SelectionContext";
 	}
 	return pageName;
 }
@@ -963,6 +968,8 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_sculpt";
 	} else if (pageName == "brushcontext") {
 		return "g_brushcontext";
+	} else if (pageName == "selectioncontext") {
+		return "g_selectioncontext";
 	} else if (pageName == "font") {
 		return "g_font";
 	} else if (pageName == "import") {
@@ -1009,11 +1016,18 @@ void FormatPrinter::printLuaApiMarkdown() {
 	}
 	scriptApi.shutdown();
 
-	// Get JSON from LuaBrush
+	// Get JSON from LUABrush
 	io::BufferedReadWriteStream brushStream;
-	voxedit::LuaBrush brush(_filesystem);
+	voxedit::LUABrush brush(_filesystem);
 	if (!brush.apiJsonToStream(brushStream)) {
-		Log::warn("Failed to generate LuaBrush API JSON");
+		Log::warn("Failed to generate LUABrush API JSON");
+	}
+
+	// Get JSON from LUASelectionMode
+	io::BufferedReadWriteStream selectionStream;
+	voxedit::LUASelectionMode selectionMode(_filesystem);
+	if (!selectionMode.apiJsonToStream(selectionStream)) {
+		Log::warn("Failed to generate LUASelectionMode API JSON");
 	}
 
 	stream.seek(0);
@@ -1037,7 +1051,22 @@ void FormatPrinter::printLuaApiMarkdown() {
 				apiJson.set(it.key().c_str(), *it);
 			}
 		} else {
-			Log::warn("Failed to parse LuaBrush API JSON");
+			Log::warn("Failed to parse LUABrush API JSON");
+		}
+	}
+
+	// Merge selection mode API JSON into the main API JSON
+	if (selectionStream.size() > 0) {
+		selectionStream.seek(0);
+		core::String selectionJsonStr;
+		selectionStream.readString((int)selectionStream.size(), selectionJsonStr);
+		json::Json selectionJson = json::Json::parse(selectionJsonStr.c_str());
+		if (selectionJson.isValid()) {
+			for (auto it = selectionJson.begin(); it != selectionJson.end(); ++it) {
+				apiJson.set(it.key().c_str(), *it);
+			}
+		} else {
+			Log::warn("Failed to parse LUASelectionMode API JSON");
 		}
 	}
 
