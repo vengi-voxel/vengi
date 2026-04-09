@@ -195,6 +195,7 @@ bool SelectBrush::needsAdditionalAction(const BrushContext &ctx) const {
 	if (_selectMode != SelectMode::All && _selectMode != SelectMode::Box3D) {
 		return false;
 	}
+	// TODO: this must be forwarded to the lua selection mode implementations instead of hardcoded here.
 	return Super::needsAdditionalAction(ctx);
 }
 
