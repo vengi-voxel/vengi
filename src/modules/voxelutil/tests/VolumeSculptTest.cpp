@@ -1355,4 +1355,269 @@ TEST_F(VolumeSculptTest, testReskinStretchMode) {
 	EXPECT_NE(v00.getColor(), v33.getColor());
 }
 
+// ---- SmoothWall tests ----
+
+TEST_F(VolumeSculptTest, testSmoothWallFlatWallUnchanged) {
+	// A flat wall should not be modified since edge heights match interior heights
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill a flat slab: X=[1,6], Z=[1,6], Y=3 (face=PositiveY, height is uniform)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+
+	const int beforeCount = countSolid(volume);
+	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+										 voxel::FaceNames::PositiveY, 1, solid);
+	EXPECT_EQ(changed, 0);
+	EXPECT_EQ(countSolid(volume), beforeCount);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallTrimsProtrusion) {
+	// A flat wall with a single column bump in the center should be trimmed
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Flat slab at Y=3, X=[1,8], Z=[1,8]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	// Add a bump at center (4,4,4) and (4,5,4) -- 2 voxels high above the slab
+	volume.setVoxel(4, 4, 4, solid);
+	volume.setVoxel(4, 5, 4, solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const int clearDepth = 256;
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid, clearDepth);
+	EXPECT_GT(changed, 0);
+	// The bump should be trimmed -- the center column should no longer protrude
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 5, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallFillsValley) {
+	// Edges are high, center is low -- center should be filled up toward edge height
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill full slab at Y=[3,5], X=[1,8], Z=[1,8] (height 3 everywhere)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8)), solid);
+	// Dig a valley at center columns: remove Y=5 and Y=4 at (4,*,4)
+	volume.setVoxel(4, 5, 4, voxel::Voxel());
+	volume.setVoxel(4, 4, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
+	EXPECT_GT(changed, 0);
+	// Center column should have been filled back up toward Y=5
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 5, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallPreservesEdges) {
+	// Edge columns should never be modified even when they differ
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill slab Y=[3,5], X=[1,5], Z=[1,5]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5)), solid);
+
+	// Record edge column heights before smoothing
+	const bool edgeTopBefore = voxel::isBlocked(volume.voxel(1, 5, 1).getMaterial());
+	const bool edgeBotBefore = voxel::isBlocked(volume.voxel(1, 3, 1).getMaterial());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5));
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 10, solid);
+
+	// Edge columns (1,*,1) should be unchanged
+	EXPECT_EQ(voxel::isBlocked(volume.voxel(1, 5, 1).getMaterial()), edgeTopBefore);
+	EXPECT_EQ(voxel::isBlocked(volume.voxel(1, 3, 1).getMaterial()), edgeBotBefore);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallClearsFloatingVoxels) {
+	// Floating voxels above the smooth surface should be removed
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Flat slab at Y=3, X=[1,8], Z=[1,8]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	// Add floating voxels at Y=6 in the center (disconnected from the slab)
+	volume.setVoxel(4, 6, 4, solid);
+	volume.setVoxel(5, 6, 5, solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 7, 8));
+	const int clearDepth = 256;
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, clearDepth);
+	EXPECT_GT(changed, 0);
+	// Floating voxels should be gone -- they are above the smooth target
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 6, 4).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(5, 6, 5).getMaterial()));
+	// Slab should still exist
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallInverseDistanceReducesEdgeJump) {
+	// With a height difference between edges, IDW should produce a smaller
+	// jump at the first interior column compared to linear interpolation.
+	// IDW gives nearby edges much stronger influence (1/dist weighting).
+	voxel::Region region(0, 11);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Linear test: slab X=[1,10], Z=[1,10], left edge Y=3, right edge Y=8
+	voxel::RawVolume volumeLinear(region);
+	for (int zz = 1; zz <= 10; ++zz) {
+		for (int xx = 1; xx <= 10; ++xx) {
+			// Base height at Y=1..3 everywhere
+			fillRegion(volumeLinear, voxel::Region(glm::ivec3(xx, 1, zz), glm::ivec3(xx, 3, zz)), solid);
+		}
+		// Right edge columns taller (Y up to 8)
+		fillRegion(volumeLinear, voxel::Region(glm::ivec3(10, 1, zz), glm::ivec3(10, 8, zz)), solid);
+	}
+	// Copy for IDW test
+	voxel::RawVolume volumeIDW(volumeLinear);
+
+	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 9, 10));
+	sculptSmoothWall(volumeLinear, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::Linear);
+	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance);
+
+	// Find the height of column (X=2, Z=5) -- first interior column near the low edge.
+	// IDW should ease in, producing a height closer to the low edge (3)
+	// than linear interpolation does.
+	int linearHeight = 0;
+	int idwHeight = 0;
+	for (int yy = 9; yy >= 1; --yy) {
+		if (linearHeight == 0 && voxel::isBlocked(volumeLinear.voxel(2, yy, 5).getMaterial())) {
+			linearHeight = yy;
+		}
+		if (idwHeight == 0 && voxel::isBlocked(volumeIDW.voxel(2, yy, 5).getMaterial())) {
+			idwHeight = yy;
+		}
+	}
+	EXPECT_GT(linearHeight, 0);
+	EXPECT_GT(idwHeight, 0);
+	// IDW near the low edge should produce equal or lower height than linear
+	EXPECT_LE(idwHeight, linearHeight);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFlatWallUnchanged) {
+	// On a flat wall, all edge heights match interior heights, so EdgeAware
+	// should produce zero changes (same as other modes).
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+
+	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+										 voxel::FaceNames::PositiveY, 1, solid, 0,
+										 voxelutil::SmoothWallInterp::EdgeAware);
+	EXPECT_EQ(changed, 0);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFollowsCorner) {
+	// L-shaped wall: left half at Y=3, right half at Y=6.
+	// At the corner column, EdgeAware should favor the coplanar edge that has
+	// the same height, while IDW would average more freely.
+	voxel::Region region(0, 11);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Left half: X=[1,5], Z=[1,10], height Y=1..3
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 1, 1), glm::ivec3(5, 3, 10)), solid);
+	// Right half: X=[6,10], Z=[1,10], height Y=1..6
+	fillRegion(volume, voxel::Region(glm::ivec3(6, 1, 1), glm::ivec3(10, 6, 10)), solid);
+
+	voxel::RawVolume volumeIDW(volume);
+
+	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 7, 10));
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::EdgeAware);
+	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance);
+
+	// Column at (3, *, 5) is interior, left half. Its coplanar left edge (1,*,5)
+	// is at height 3, which matches. EdgeAware should keep it closer to 3.
+	int edgeAwareHeight = 0;
+	int idwHeight = 0;
+	for (int yy = 7; yy >= 1; --yy) {
+		if (edgeAwareHeight == 0 && voxel::isBlocked(volume.voxel(3, yy, 5).getMaterial())) {
+			edgeAwareHeight = yy;
+		}
+		if (idwHeight == 0 && voxel::isBlocked(volumeIDW.voxel(3, yy, 5).getMaterial())) {
+			idwHeight = yy;
+		}
+	}
+	EXPECT_GT(edgeAwareHeight, 0);
+	EXPECT_GT(idwHeight, 0);
+	// EdgeAware should stay closer to the matching edge (height 3)
+	EXPECT_LE(edgeAwareHeight, idwHeight);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallTooSmallSelection) {
+	// Selection smaller than 3x3 in UV should return 0 changes
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// 2-wide slab (too narrow for interior columns)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2)), solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2));
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
+	EXPECT_EQ(changed, 0);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallFillHolesFilledInteriorHole) {
+	// A ring of solid columns surrounding an empty interior hole.
+	// With fillHoles=true the hole should be filled with interpolated heights.
+	// Layout (top view, face=PositiveY, Y=3):
+	//   X=[1,6], Z=[1,6] ring is solid at Y=3. Center (3,4) empty.
+	voxel::Region region(0, 8);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill the full slab first, then punch a 2x2 hole in the middle
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	volume.setVoxel(3, 3, 3, voxel::Voxel());
+	volume.setVoxel(3, 3, 4, voxel::Voxel());
+	volume.setVoxel(4, 3, 3, voxel::Voxel());
+	volume.setVoxel(4, 3, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	// fillHoles=true: hole should be filled
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+										 voxelutil::SmoothWallInterp::InverseDistance, true);
+	EXPECT_GT(changed, 0);
+	// All four hole positions should now be solid
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 3, 4).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallSkipHolesLeavesInteriorHole) {
+	// Same ring setup as above, but with fillHoles=false.
+	// The hole should remain empty -- only solid columns are smoothed.
+	voxel::Region region(0, 8);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	volume.setVoxel(3, 3, 3, voxel::Voxel());
+	volume.setVoxel(3, 3, 4, voxel::Voxel());
+	volume.setVoxel(4, 3, 3, voxel::Voxel());
+	volume.setVoxel(4, 3, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	// fillHoles=false: hole positions must stay empty
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance, false);
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(3, 3, 3).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(3, 3, 4).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 3, 3).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
+}
+
 } // namespace voxelutil

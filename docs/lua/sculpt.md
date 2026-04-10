@@ -14,6 +14,7 @@ Global: `g_sculpt`
 | `smoothadditive(volume, face, heightThreshold, iterations, color)` | Fill height gaps by scanning layers along a face normal. Air voxels on solid ground get filled when a neighbor column is significantly taller. Each iteration adds at most one voxel per column. |
 | `smootherode(volume, face, iterations, preserveTopHeight, trimPerStep)` | Remove edge voxels from the top of columns along a face normal. Scans top-to-bottom, removing top-of-column voxels that have fewer than 4 solid planar neighbors. Each iteration removes at most one voxel per column. |
 | `smoothgaussian(volume, face, kernelSize, sigma, iterations, color)` | Blur the height map using a 2D Gaussian kernel along a face normal. Columns taller than the weighted average are trimmed, shorter ones are filled. Uses circular sampling within the kernel radius. |
+| `smoothwall(volume, face, iterations, color, removeAboveDepth, interpolation)` | Smooth a wall surface by interpolating interior column heights from nearest edge columns in 4 directions. |
 | `squashtoplane(volume, face, planeCoord)` | Project all solid voxels onto a single plane. For each column along the face normal, if any voxel exists, one is placed at the plane coordinate. All others are removed. |
 
 ## Detailed Documentation
@@ -167,6 +168,27 @@ Blur the height map using a 2D Gaussian kernel along a face normal. Columns tall
 | `sigma` | `number` | Standard deviation of the Gaussian bell curve (optional, default 1.0). Lower = sharper, higher = broader smoothing. |
 | `iterations` | `integer` | Number of blur passes (optional, default 1). |
 | `color` | `integer` | Palette color index for new voxels (optional, default 1). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | Number of voxels changed. |
+
+### smoothwall
+
+Smooth a wall surface by interpolating interior column heights from nearest edge columns in 4 directions. Edge columns (selected voxels bordering non-selected) are preserved for seamless blending. A gap-fill pass extends columns downward to match the lowest neighbor, preventing holes at corners.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `volume` | `volume` | The volume to smooth. |
+| `face` | `string` | Face direction defining the surface normal: 'up', 'down', 'left', 'right', 'front', 'back'. |
+| `iterations` | `integer` | Number of smoothing passes (optional, default 1). |
+| `color` | `integer` | Palette color index for new voxels (optional, default 1). |
+| `removeAboveDepth` | `integer` | How many voxels above the smooth surface to clear (optional, default 0 = don't clear). |
+| `interpolation` | `string` | Interpolation mode: 'linear', 'inversedistance' (default), or 'edgeaware'. |
 
 **Returns:**
 

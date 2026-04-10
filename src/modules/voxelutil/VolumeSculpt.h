@@ -18,6 +18,14 @@ class Region;
 
 namespace voxelutil {
 
+enum class SmoothWallInterp : uint8_t {
+	Linear,           ///< Bilinear interpolation between opposite edges (constant slope)
+	InverseDistance,   ///< Inverse-distance weighting from 4 coplanar edge columns (smooth curves)
+	EdgeAware,         ///< IDW weighted by height similarity: flat coplanar edges dominate (sharp corners)
+
+	Max
+};
+
 enum class ReskinMode : uint8_t {
 	Replace, ///< Skin solid overwrites surface; skin air removes surface voxels
 	Blend,   ///< Skin solid overwrites surface; skin air preserves surface voxels
@@ -286,6 +294,45 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
  */
 int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
 						int planeCoord);
+
+/**
+ * @brief Smooth wall: interpolate surface heights from edge columns inward.
+ *
+ * The face defines "up" (the surface normal). For each (U,V) column in the selection,
+ * computes a target height by bilinear interpolation from the edge column heights:
+ * - Line 1: interpolate between the heights at (u, v_min) and (u, v_max)
+ * - Line 2: interpolate between the heights at (u_min, v) and (u_max, v)
+ * - Target = average of both lines
+ *
+ * Edge columns (on the boundary) are never modified, ensuring seamless blending with
+ * surrounding geometry. Interior columns are trimmed or filled toward the target.
+ * Each iteration blends partway toward the target to allow gradual convergence.
+ * No gaps are created because column bases are preserved -- only the top is adjusted.
+ *
+ * @param[in,out] solid BitVolume marking solid positions.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param[in] anchors Immovable solid positions included in height computation.
+ * @param face The face direction that defines the surface normal ("up").
+ * @param iterations Number of smoothing passes. Each pass blends toward the interpolated target.
+ * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
+ * @param removeAboveDepth How many voxels above the target surface to clear. 0 means
+ *        don't clear anything above the target. Default 0.
+ * @param interp Interpolation mode: Linear, InverseDistance, or EdgeAware.
+ */
+void sculptSmoothWall(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
+					  int removeAboveDepth = 0, SmoothWallInterp interp = SmoothWallInterp::InverseDistance,
+					  bool fillHoles = true);
+
+/**
+ * @brief Smooth wall on a volume region along a face normal.
+ *
+ * @return The number of voxels changed.
+ */
+int sculptSmoothWall(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+					 int iterations, const voxel::Voxel &fillVoxel, int removeAboveDepth = 0,
+					 SmoothWallInterp interp = SmoothWallInterp::InverseDistance,
+					 bool fillHoles = true);
 
 /**
  * @brief Reskin: apply a skin volume (texture pattern) onto the selected surface.

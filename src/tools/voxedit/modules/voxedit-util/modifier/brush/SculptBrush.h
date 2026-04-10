@@ -29,6 +29,7 @@ enum class SculptMode : uint8_t {
 	SmoothAdditive,
 	SmoothErode,
 	SmoothGaussian,
+	SmoothWall,
 	BridgeGap,
 	SquashToPlane,
 	ExtendPlane,
@@ -58,6 +59,9 @@ private:
 	int _trimPerStep = 1;
 	int _kernelSize = 4;
 	float _sigma = 4.0f;
+	int _smoothWallClearDepth = MaxSmoothWallClearDepth; ///< 0 = don't clear, max = clear entire depth
+	voxelutil::SmoothWallInterp _smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
+	bool _smoothWallFillHoles = true; ///< Fill enclosed empty areas with interpolated heights
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
 	int _squashPlaneCoord = 0;
 	bool _active = false;
@@ -169,6 +173,15 @@ public:
 	float sigma() const;
 	void setSigma(float sigma);
 
+	// SmoothWall accessors
+	static constexpr int MaxSmoothWallClearDepth = 256;
+	int smoothWallClearDepth() const;
+	void setSmoothWallClearDepth(int depth);
+	voxelutil::SmoothWallInterp smoothWallInterp() const;
+	void setSmoothWallInterp(voxelutil::SmoothWallInterp interp);
+	bool smoothWallFillHoles() const;
+	void setSmoothWallFillHoles(bool fillHoles);
+
 	// ExtendPlane accessors
 	static constexpr int MaxBrushRadius = 32;
 	static constexpr int MaxRemoveAboveDepth = 32;
@@ -223,7 +236,7 @@ inline bool SculptBrush::wantsContinuousExecution() const {
 inline bool SculptBrush::modeNeedsFace(SculptMode mode) {
 	return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode ||
 		   mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::ExtendPlane ||
-		   mode == SculptMode::Reskin;
+		   mode == SculptMode::Reskin || mode == SculptMode::SmoothWall;
 }
 
 inline SculptMode SculptBrush::sculptMode() const {
@@ -298,6 +311,33 @@ inline float SculptBrush::sigma() const {
 
 inline void SculptBrush::setSigma(float sigma) {
 	_sigma = glm::clamp(sigma, MinSigma, MaxSigma);
+	_paramsDirty = true;
+}
+
+inline int SculptBrush::smoothWallClearDepth() const {
+	return _smoothWallClearDepth;
+}
+
+inline void SculptBrush::setSmoothWallClearDepth(int depth) {
+	_smoothWallClearDepth = glm::clamp(depth, 0, MaxSmoothWallClearDepth);
+	_paramsDirty = true;
+}
+
+inline voxelutil::SmoothWallInterp SculptBrush::smoothWallInterp() const {
+	return _smoothWallInterp;
+}
+
+inline void SculptBrush::setSmoothWallInterp(voxelutil::SmoothWallInterp interp) {
+	_smoothWallInterp = interp;
+	_paramsDirty = true;
+}
+
+inline bool SculptBrush::smoothWallFillHoles() const {
+	return _smoothWallFillHoles;
+}
+
+inline void SculptBrush::setSmoothWallFillHoles(bool fillHoles) {
+	_smoothWallFillHoles = fillHoles;
 	_paramsDirty = true;
 }
 

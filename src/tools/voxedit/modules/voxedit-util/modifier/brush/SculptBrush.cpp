@@ -81,6 +81,9 @@ void SculptBrush::reset() {
 	_sigma = 4.0f;
 	_sculptMode = SculptMode::Erode;
 	_flattenFace = voxel::FaceNames::Max;
+	_smoothWallClearDepth = MaxSmoothWallClearDepth;
+	_smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
+	_smoothWallFillHoles = true;
 	_removeAboveDepth = 0;
 	_extendOnly = true;
 	_brushRadius = 3;
@@ -380,6 +383,12 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		voxelutil::sculptSquashToPlane(currentSolid, voxelMap, _flattenFace, _squashPlaneCoord);
 	} else if (_sculptMode == SculptMode::Reskin && _skinVolume != nullptr && _flattenFace != voxel::FaceNames::Max) {
 		voxelutil::sculptReskin(currentSolid, voxelMap, *_skinVolume, _flattenFace, _reskinConfig);
+	} else if (_sculptMode == SculptMode::SmoothWall && _flattenFace != voxel::FaceNames::Max) {
+		voxel::Voxel fillVoxel = ctx.cursorVoxel;
+		fillVoxel.setFlags(voxel::FlagOutline);
+		static constexpr int smoothWallIterations = 1;
+		voxelutil::sculptSmoothWall(currentSolid, voxelMap, anchorSolid, _flattenFace, smoothWallIterations,
+									fillVoxel, _smoothWallClearDepth, _smoothWallInterp, _smoothWallFillHoles);
 	}
 
 	// Write results using the collected snapshot entries - no hash lookups needed.
