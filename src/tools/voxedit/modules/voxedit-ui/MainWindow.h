@@ -198,6 +198,9 @@ public:
 	bool isAnyEditMode() const;
 
 	bool saveScreenshot(const core::String &file, const core::String &viewportId = "");
+
+	void saveCameraState();
+	bool restoreCameraState();
 };
 
 inline const video::TexturePoolPtr &MainWindow::texturePool() const {

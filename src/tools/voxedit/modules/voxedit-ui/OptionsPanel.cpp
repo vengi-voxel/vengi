@@ -53,7 +53,8 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::VoxEditColorWheel) || matchesVarFilter(cfg::VoxEditAnimationSpeed) ||
 			   matchesVarFilter(cfg::VoxEditAutoSaveSeconds) || matchesVarFilter(cfg::VoxEditViewports) ||
 			   matchesVarFilter(cfg::ClientCameraZoomSpeed) || matchesVarFilter(cfg::VoxEditViewdistance) ||
-			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode);
+			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode) ||
+			   matchesVarFilter(cfg::VoxEditContinueSession);
 	case OptionCategory::Metrics:
 		return matchesVarFilter(cfg::MetricFlavor);
 	case OptionCategory::Layout:
@@ -175,6 +176,9 @@ void OptionsPanel::renderEditor() {
 		static const core::Array<core::String, (int)voxel::MeshAllocStrategy::Max> meshAllocModes = {
 			_("Full pre-alloc"), _("Small (grow as needed)")};
 		ImGui::ComboVar(cfg::VoxelMeshAlloc, meshAllocModes);
+	}
+	if (matchesVarFilter(cfg::VoxEditContinueSession)) {
+		ImGui::CheckboxVar(cfg::VoxEditContinueSession);
 	}
 }
 
