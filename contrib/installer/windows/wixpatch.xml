@@ -255,6 +255,378 @@
 
 		<!-- Default Programs entry -->
 		<RegistryValue Root="HKLM" Key="SOFTWARE\RegisteredApplications" Name="vengi-voxedit" Value="SOFTWARE\vengi-voxedit\Capabilities" Type="string" />
+
+		<!-- ProgIds and file type verbs (must be in the same component as the exe to satisfy ICE69) -->
+		<ProgId Id="vengi-voxedit.vengi" Description="Vengi" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vengi" ContentType="application/x-vengi">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.aseprite" Description="aseprite" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="aseprite" ContentType="image/aseprite">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.ase" Description="aseprite" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ase" ContentType="image/aseprite">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.qb" Description="Qubicle Binary" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="qb" ContentType="application/x-qubicle-binary">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.ben.json" Description="BenVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ben.json" ContentType="application/x-benvoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.ben" Description="BenVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ben" ContentType="application/x-benvoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vox" Description="MagicaVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vox" ContentType="application/x-magicavoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.voxa" Description="anivoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="voxa" ContentType="application/x-anivoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.qbt" Description="Qubicle Binary Tree" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="qbt" ContentType="application/x-qubicle-binary-tree">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.qbcl" Description="Qubicle Project" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="qbcl" ContentType="application/x-qubicle-project">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxt" Description="Sandbox VoxEdit Tilemap" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxt" ContentType="application/x-sandbox-voxedit-tilemap">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxc" Description="Sandbox VoxEdit Collection" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxc" ContentType="application/x-sandbox-voxedit-collection">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxm" Description="Sandbox VoxEdit Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxm" ContentType="application/x-sandbox-voxedit-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxb" Description="Sandbox VoxEdit Block" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxb" ContentType="application/x-sandbox-voxedit-block">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.bbmodel" Description="Blockbench" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bbmodel" ContentType="application/x-blockbench">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxr" Description="Sandbox VoxEdit Hierarchy" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxr" ContentType="application/x-sandbox-voxedit-hierarchy">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.binvox" Description="BinVox" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="binvox" ContentType="application/x-binvox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.gox" Description="Goxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="gox" ContentType="application/x-goxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.txt" Description="Goxel txt" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="txt" ContentType="text/plain">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.cub" Description="CubeWorld" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="cub" ContentType="application/x-cubeworld">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mts" Description="Luanti (Minetest)" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mts" ContentType="application/x-luanti-minetest">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mca" Description="Minecraft region" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mca" ContentType="application/x-minecraft-region">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mcr" Description="Minecraft region" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mcr" ContentType="application/x-minecraft-region">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.dat" Description="Minecraft level dat" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="dat" ContentType="application/x-minecraft-level-dat">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mcworld" Description="Minecraft mcworld" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mcworld" ContentType="application/x-minecraft-mcworld">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.schematic" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="schematic" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.schem" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="schem" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.nbt" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="nbt" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.litematic" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="litematic" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.bp" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bp" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.map" Description="Quake Map" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="map" ContentType="application/x-quake-map">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.bsp" Description="UFO:Alien Invasion" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bsp" ContentType="application/x-ufo-alien-invasion">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mdl" Description="Quake 1 Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mdl" ContentType="application/x-quake-1-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.md2" Description="Quake 2 Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="md2" ContentType="application/x-quake-2-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.md3" Description="Quake 3 Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="md3" ContentType="application/x-quake-3-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.fbx" Description="FBX" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="fbx" ContentType="application/x-fbx">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.kenshape" Description="KenShape" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="kenshape" ContentType="application/x-kenshape">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.3ds" Description="Autodesk 3D Studio" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="3ds" ContentType="application/x-autodesk-3d-studio">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.csv" Description="Sproxel csv" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="csv" ContentType="text/csv">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.xraw" Description="Magicavoxel XRAW" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="xraw" ContentType="application/x-magicavoxel-xraw">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.sment" Description="StarMade Blueprint" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="sment" ContentType="application/x-starmade-blueprint">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.smd2" Description="StarMade Blueprint" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="smd2" ContentType="application/x-starmade-blueprint">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.smd3" Description="StarMade Blueprint" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="smd3" ContentType="application/x-starmade-blueprint">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.smtpl" Description="StarMade Template" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="smtpl" ContentType="application/x-starmade-template">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.scn" Description="AnimaToon" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="scn" ContentType="application/x-animatoon">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vbx" Description="VoxelBuilder" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vbx" ContentType="application/x-voxelbuilder">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.bin" Description="Teardown bin" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bin" ContentType="application/x-teardown-bin">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.obj" Description="Wavefront Object" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="obj" ContentType="text/plain">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.gltf" Description="GL Transmission Format" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="gltf" ContentType="application/x-gl-transmission-format">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.glb" Description="GL Transmission Format" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="glb" ContentType="application/x-gl-transmission-format">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vrm" Description="GL Transmission Format" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vrm" ContentType="application/x-gl-transmission-format">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.stl" Description="Standard Triangle Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="stl" ContentType="application/x-standard-triangle-language">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.ply" Description="Polygon File Format" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ply" ContentType="application/x-polygon-file-format">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.gml" Description="Geography Markup Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="gml" ContentType="application/x-geography-markup-language">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.xml" Description="Geography Markup Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="xml" ContentType="application/x-geography-markup-language">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.osm.json" Description="OpenStreetMap JSON" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="osm.json" ContentType="application/x-openstreetmap-json">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.kvx" Description="Build engine" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="kvx" ContentType="application/x-build-engine">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.pcubes" Description="Particubes" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="pcubes" ContentType="application/x-particubes">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.particubes" Description="Particubes" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="particubes" ContentType="application/x-particubes">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.3zh" Description="Cubzh" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="3zh" ContentType="application/x-cubzh">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.b64" Description="Cubzh World" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="b64" ContentType="application/x-cubzh-world">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.v3a" Description="Voxel3D" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="v3a" ContentType="application/x-voxel3d">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.v3b" Description="Voxel3D" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="v3b" ContentType="application/x-voxel3d">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.thing" Description="Rooms.xyz Thing" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="thing" ContentType="application/x-rooms-xyz-thing">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.kv6" Description="AceOfSpades" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="kv6" ContentType="application/x-aceofspades">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vxl" Description="Tiberian Sun" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vxl" ContentType="application/x-tiberian-sun">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.qef" Description="Qubicle Exchange" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="qef" ContentType="text/plain">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.csm" Description="Chronovox" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="csm" ContentType="application/x-chronovox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.nvm" Description="Nicks Voxel Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="nvm" ContentType="application/x-nicks-voxel-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vmax.zip" Description="VoxelMax" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vmax.zip" ContentType="application/x-voxelmax">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.vmaxb" Description="VoxelMax" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="vmaxb" ContentType="application/x-voxelmax">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.zip" Description="SpriteStack" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="zip" ContentType="application/x-spritestack">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.png" Description="Portable Network Graphics" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="png" ContentType="image/png">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+		<ProgId Id="vengi-voxedit.mcskin" Description="Minecraft skin" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mcskin" ContentType="application/x-minecraft-skin">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
 	</CPackWiXFragment>
 	<!-- Optional features -->
 	<CPackWiXFragment Id="#PRODUCTFEATURE">

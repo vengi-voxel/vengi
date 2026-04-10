@@ -36,3 +36,11 @@ if (WIN32)
 	target_sources(voxelthumb PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/voxelthumb.rc)
 	cpack_add_component(voxelthumb DISPLAY_NAME "voxelthumb" DESCRIPTION "voxel thumbnailer dll")
 endif()
+
+# Generate standalone WiX installer from template
+set(WIX_PRODUCT_NAME "Vengi Thumbnailer")
+set(WIX_UPGRADE_GUID "F7A83E12-4B6C-4D9A-B2E1-7C3F5A8D6E42")
+set(WIX_DESCRIPTION "Command line voxel thumbnailer")
+set(WIX_DLL_FILENAME "${CMAKE_PROJECT_NAME}-voxelthumb.dll")
+string(MAKE_C_IDENTIFIER "${WIX_DLL_FILENAME}" WIX_DLL_ID)
+configure_file(${ROOT_DIR}/contrib/installer/windows/thumbnailer.wxs.in ${CMAKE_BINARY_DIR}/thumbnailer.wxs @ONLY)

@@ -187,6 +187,7 @@ include_directories(src/modules/video/shaders)
 
 include_directories(src/modules)
 
+add_subdirectory(data)
 add_subdirectory(contrib/libs)
 add_subdirectory(tools)
 

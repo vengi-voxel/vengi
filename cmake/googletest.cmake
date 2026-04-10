@@ -40,6 +40,7 @@ function(gtest_suite_begin name)
 		else()
 			add_executable(${name})
 		endif()
+		target_compile_definitions(${name} PRIVATE SDL_MAIN_HANDLED)
 
 		# add googletest lib dependency
 		if (GTEST_FOUND)

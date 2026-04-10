@@ -21,6 +21,15 @@ set(UI_SRCS
 engine_add_executable(TARGET ${PROJECT_NAME}ui SRCS ${UI_SRCS} WINDOWED DESCRIPTION "UI voxel tool")
 engine_target_link_libraries(TARGET ${PROJECT_NAME}ui DEPENDENCIES voxelui)
 
+engine_generate_standalone_wix(
+	TARGET ${PROJECT_NAME}
+	TEMPLATE ${ROOT_DIR}/contrib/installer/windows/voxconvert.wxs.in
+	OUTPUT ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.wxs
+	PRODUCT_NAME "Vengi Voxconvert"
+	UPGRADE_GUID "3E8B7A21-5D4C-4F6E-A9B8-1C2D3E4F5A67"
+	UI_TARGET ${PROJECT_NAME}ui
+)
+
 enable_testing()
 configure_file(tests/tests.sh.in ${PROJECT_NAME}-tests.sh @ONLY)
 configure_file(tests/tests.bat.in ${PROJECT_NAME}-tests.bat @ONLY)
