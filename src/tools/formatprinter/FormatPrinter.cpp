@@ -127,6 +127,8 @@ app::AppState FormatPrinter::onRunning() {
 		printInstallerWix();
 	} else if (hasArg("--wixfileassoc")) {
 		printInstallerWixFileAssoc();
+	} else if (hasArg("--wixthumbnailer")) {
+		printInstallerWixThumbnailer();
 	} else if (hasArg("--lua-api")) {
 		printLuaApiMarkdown();
 	} else {
@@ -617,6 +619,22 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("\n");
 	Log::printf("		<!-- Default Programs entry -->\n");
 	Log::printf("		<RegistryValue Root=\"HKLM\" Key=\"SOFTWARE\\RegisteredApplications\" Name=\"vengi-voxedit\" Value=\"SOFTWARE\\vengi-voxedit\\Capabilities\" Type=\"string\" />\n");
+	Log::printf("\n");
+	Log::printf("		<!-- ProgIds and file type verbs (must be in the same component as the exe to satisfy ICE69) -->\n");
+	uniqueExtensions.clear();
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String &e : desc->exts) {
+			if (!uniqueExtensions.insert(e)) {
+				continue;
+			}
+			const core::String &m = uniqueMimetype(*desc);
+			Log::printf("		<ProgId Id=\"vengi-voxedit.%s\" Description=\"%s\" Icon=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\">\n", e.c_str(), desc->name.c_str());
+			Log::printf("			<Extension Id=\"%s\" ContentType=\"%s\">\n", e.c_str(), m.c_str());
+			Log::printf("				<Verb Id=\"open\" TargetFile=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\" Argument=\"&quot;%%1&quot;\" />\n");
+			Log::printf("			</Extension>\n");
+			Log::printf("		</ProgId>\n");
+		}
+	}
 	Log::printf("	</CPackWiXFragment>\n");
 	Log::printf("	<!-- Optional features -->\n");
 	Log::printf("	<CPackWiXFragment Id=\"#PRODUCTFEATURE\">\n");
@@ -636,7 +654,8 @@ void FormatPrinter::printInstallerWixFileAssoc() {
 	Log::printf("	<Fragment>\n");
 	Log::printf("		<DirectoryRef Id=\"INSTALL_ROOT\">\n");
 	Log::printf("			<Component Id=\"AddToPath\" Guid=\"*\">\n");
-	Log::printf("				<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"no\" Part=\"last\" Action=\"set\" System=\"yes\" KeyPath=\"yes\" />\n");
+	Log::printf("				<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"no\" Part=\"last\" Action=\"set\" System=\"yes\" />\n");
+	Log::printf("				<RegistryValue Root=\"HKLM\" Key=\"Software\\vengi\\PathEnv\" Name=\"installed\" Value=\"1\" Type=\"integer\" KeyPath=\"yes\" />\n");
 	Log::printf("			</Component>\n");
 	core::StringSet uniqueExtensions;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
@@ -644,16 +663,10 @@ void FormatPrinter::printInstallerWixFileAssoc() {
 			if (!uniqueExtensions.insert(e)) {
 				continue;
 			}
-			const core::String &m = uniqueMimetype(*desc);
 			Log::printf("			<Component Id=\"FileAssoc_%s\" Guid=\"*\">\n", e.c_str());
 			Log::printf("				<RegistryValue Root=\"HKLM\" Key=\"Software\\vengi-voxedit\\Capabilities\\FileAssociations\" Name=\".%s\" Value=\"vengi-voxedit.%s\" Type=\"string\" KeyPath=\"yes\" />\n", e.c_str(), e.c_str());
 			Log::printf("				<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi_voxedit.exe\\SupportedTypes\" Name=\".%s\" Value=\"\" Type=\"string\" />\n", e.c_str());
 			Log::printf("				<RegistryValue Root=\"HKCR\" Key=\".%s\\OpenWithProgids\" Name=\"vengi-voxedit.%s\" Value=\"\" Type=\"string\" />\n", e.c_str(), e.c_str());
-			Log::printf("				<ProgId Id=\"vengi-voxedit.%s\" Description=\"%s\" Icon=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\">\n", e.c_str(), desc->name.c_str());
-			Log::printf("					<Extension Id=\"%s\" ContentType=\"%s\">\n", e.c_str(), m.c_str());
-			Log::printf("						<Verb Id=\"open\" TargetFile=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\" Argument=\"&quot;%%1&quot;\" />\n");
-			Log::printf("					</Extension>\n");
-			Log::printf("				</ProgId>\n");
 			Log::printf("			</Component>\n");
 		}
 	}
@@ -673,6 +686,72 @@ void FormatPrinter::printInstallerWixFileAssoc() {
 	}
 	Log::printf("		</ComponentGroup>\n");
 	Log::printf("	</Fragment>\n");
+	Log::printf("</Wix>\n");
+}
+
+void FormatPrinter::printInstallerWixThumbnailer() {
+	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	Log::printf("<!--\n");
+	Log::printf("	Standalone WiX installer template for the Vengi thumbnail handler shell extension.\n");
+	Log::printf("	Processed by CMake configure_file() to fill in product name, DLL filename, etc.\n");
+	Log::printf("-->\n");
+	Log::printf("<Wix xmlns=\"http://schemas.microsoft.com/wix/2006/wi\">\n");
+	Log::printf("	<Product Id=\"*\" Name=\"@WIX_PRODUCT_NAME@\" Language=\"1033\" Version=\"$(var.Version)\"\n");
+	Log::printf("	         Manufacturer=\"vengi\" UpgradeCode=\"@WIX_UPGRADE_GUID@\">\n");
+	Log::printf("		<Package InstallerVersion=\"500\" Compressed=\"yes\" InstallScope=\"perMachine\"\n");
+	Log::printf("		         Description=\"@WIX_DESCRIPTION@\"\n");
+	Log::printf("		         Comments=\"Provides thumbnail previews for voxel file formats in Windows Explorer\" />\n");
+	Log::printf("		<MajorUpgrade DowngradeErrorMessage=\"A newer version of @WIX_PRODUCT_NAME@ is already installed.\" />\n");
+	Log::printf("		<MediaTemplate EmbedCab=\"yes\" />\n");
+	Log::printf("\n");
+	Log::printf("		<Directory Id=\"TARGETDIR\" Name=\"SourceDir\">\n");
+	Log::printf("			<Directory Id=\"ProgramFiles64Folder\">\n");
+	Log::printf("				<Directory Id=\"INSTALLDIR\" Name=\"@WIX_PRODUCT_NAME@\">\n");
+	Log::printf("					<Component Id=\"ThumbnailerDLL\" Guid=\"*\">\n");
+	Log::printf("						<File Id=\"@WIX_DLL_ID@\" Source=\"$(var.SourceDir)\\@WIX_DLL_FILENAME@\" KeyPath=\"yes\" />\n");
+	Log::printf("					</Component>\n");
+	Log::printf("					<Component Id=\"ThumbnailerCOM\" Guid=\"*\">\n");
+	Log::printf("						<RegistryKey Root=\"HKCR\" Key=\"CLSID\\" VOXTHUMB_CLSID "\" ForceDeleteOnUninstall=\"yes\">\n");
+	Log::printf("							<RegistryValue Type=\"string\" Value=\"Vengi thumbnailer\" KeyPath=\"yes\" />\n");
+	Log::printf("							<RegistryKey Key=\"InprocServer32\">\n");
+	Log::printf("								<RegistryValue Type=\"string\" Value=\"[#@WIX_DLL_ID@]\" />\n");
+	Log::printf("								<RegistryValue Type=\"string\" Name=\"ThreadingModel\" Value=\"Both\" />\n");
+	Log::printf("							</RegistryKey>\n");
+	Log::printf("						</RegistryKey>\n");
+	Log::printf("					</Component>\n");
+	core::StringSet uniqueExtensions;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String &e : desc->exts) {
+			if (!uniqueExtensions.insert(e)) {
+				continue;
+			}
+			Log::printf("					<Component Id=\"ThumbExt_%s\" Guid=\"*\">\n", e.c_str());
+			Log::printf("						<RegistryKey Root=\"HKCR\" Key=\".%s\">\n", e.c_str());
+			Log::printf("							<RegistryValue Key=\"" REG_PATH_THUMBEXT "\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" KeyPath=\"yes\" />\n");
+			Log::printf("						</RegistryKey>\n");
+			Log::printf("					</Component>\n");
+		}
+	}
+	Log::printf("				</Directory>\n");
+	Log::printf("			</Directory>\n");
+	Log::printf("		</Directory>\n");
+	Log::printf("\n");
+	Log::printf("		<Feature Id=\"Thumbnailer\" Title=\"@WIX_PRODUCT_NAME@\" Description=\"@WIX_DESCRIPTION@\" Level=\"1\">\n");
+	Log::printf("			<ComponentRef Id=\"ThumbnailerDLL\" />\n");
+	Log::printf("			<ComponentRef Id=\"ThumbnailerCOM\" />\n");
+	uniqueExtensions.clear();
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String &e : desc->exts) {
+			if (!uniqueExtensions.insert(e)) {
+				continue;
+			}
+			Log::printf("			<ComponentRef Id=\"ThumbExt_%s\" />\n", e.c_str());
+		}
+	}
+	Log::printf("		</Feature>\n");
+	Log::printf("\n");
+	Log::printf("		<UIRef Id=\"WixUI_FeatureTree\" />\n");
+	Log::printf("	</Product>\n");
 	Log::printf("</Wix>\n");
 }
 

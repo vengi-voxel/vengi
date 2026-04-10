@@ -23,6 +23,12 @@ public:
 
 }
 
+// SDL_main.h redefines main to SDL_main on some platforms (e.g. Windows).
+// Console apps must not use SDL_main, so we undef it here.
+#ifdef main
+#undef main
+#endif
+
 #define CONSOLE_APP(consoleAppName) \
 int main(int argc, char *argv[]) { \
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>(); \
