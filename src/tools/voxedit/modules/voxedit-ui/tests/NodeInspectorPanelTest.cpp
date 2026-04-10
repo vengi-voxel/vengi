@@ -16,6 +16,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	IM_REGISTER_TEST(engine, testCategory(), "transform")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
+		ctx->Yield();
 		ctx->ItemInputValue("##node_props/Translation/$$1/$$0", 1.0f);
 		ctx->ItemInputValue("##node_props/Translation/$$1/$$1", 2.0f);
 		ctx->ItemInputValue("##node_props/Translation/$$1/$$2", 3.0f);
