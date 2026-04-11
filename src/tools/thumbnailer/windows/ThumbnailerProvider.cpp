@@ -151,11 +151,15 @@ IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_AL
 	char argv3[32];
 	core::String::formatBuf(argv3, sizeof(argv3), "%u", (unsigned int)cx);
 	char argv4[32];
-	core::String::formatBuf(argv4, sizeof(argv4), "--input");
-	char argv5[1024];
-	core::String::formatBuf(argv5, sizeof(argv5), "%s", m_pPathFile.c_str());
-	char *argv[] = {argv1, argv2, argv3, argv4, argv5};
-	app.startMainLoop(5, argv);
+	core::String::formatBuf(argv4, sizeof(argv4), "--output");
+	char argv5[32];
+	core::String::formatBuf(argv5, sizeof(argv5), "NUL");
+	char argv6[32];
+	core::String::formatBuf(argv6, sizeof(argv6), "--input");
+	char argv7[1024];
+	core::String::formatBuf(argv7, sizeof(argv7), "%s", m_pPathFile.c_str());
+	char *argv[] = {argv1, argv2, argv3, argv4, argv5, argv6, argv7};
+	app.startMainLoop(7, argv);
 	*pdwAlpha = WTSAT_ARGB;
 	return (*phbmp) ? S_OK : S_FALSE;
 }
@@ -202,9 +206,9 @@ IFACEMETHODIMP ThumbnailerProviderFactory::CreateInstance(IUnknown *pUnkOuter, R
 
 IFACEMETHODIMP ThumbnailerProviderFactory::LockServer(BOOL fLock) {
 	if (fLock) {
-		InterlockedIncrement(&count);
+		DllAddRef();
 	} else {
-		InterlockedDecrement(&count);
+		DllRelease();
 	}
 	return S_OK;
 }

@@ -4,7 +4,6 @@
 
 #include <ShlObj.h>
 #include <Windows.h>
-#include <tchar.h>
 #include <new>
 
 #include "core/StringUtil.h"
@@ -13,14 +12,14 @@
 #include "ThumbnailerProvider.h"
 
 // https://learn.microsoft.com/en-us/windows/win32/shell/thumbnail-providers
-#define SHELLEX_THUMBNAIL_CLSID _T("ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}")
-#define THUMBNAIL_HANDLER_TITLE _T("Voxel thumbnailer handler")
-#define THUMBNAIL_HANDLER_CLSID _T("{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}")
+#define SHELLEX_THUMBNAIL_CLSID "ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}"
+#define THUMBNAIL_HANDLER_TITLE "Voxel thumbnailer handler"
+#define THUMBNAIL_HANDLER_CLSID "{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}"
 
 static const CLSID CLSID_ThumbnailHandler = {
 	0xCD1F0EA0, 0x283C, 0x4D90, {0xA4, 0x1D, 0xDE, 0xBD, 0x92, 0x07, 0xD9, 0x1F}};
 
-static TCHAR dllPath[MAX_PATH] = {0};
+static char dllPath[MAX_PATH] = {0};
 
 static LONG dllRefs = 0;
 
@@ -30,13 +29,25 @@ static LONG dllRefs = 0;
 	return hr
 #endif
 
-static HRESULT setRegKey(HKEY root, LPTSTR key, LPTSTR val, LPTSTR data) {
+static HRESULT setRegKey(HKEY root, const char *key, const char *val, const char *data) {
 	HKEY hKey;
 	HRESULT hr = HRESULT_FROM_WIN32(
-		RegCreateKeyEx(root, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, NULL));
+		RegCreateKeyExA(root, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, NULL));
 	if (SUCCEEDED(hr)) {
-		hr = HRESULT_FROM_WIN32(RegSetValueEx(hKey, val, 0, REG_SZ, reinterpret_cast<LPBYTE>(data),
-											  static_cast<DWORD>(_tcslen(data) * sizeof(TCHAR))));
+		hr = HRESULT_FROM_WIN32(RegSetValueExA(hKey, val, 0, REG_SZ, reinterpret_cast<const BYTE *>(data),
+											   static_cast<DWORD>((strlen(data) + 1) * sizeof(char))));
+		RegCloseKey(hKey);
+	}
+	return hr;
+}
+
+static HRESULT setRegKeyDword(HKEY root, const char *key, const char *val, DWORD data) {
+	HKEY hKey;
+	HRESULT hr = HRESULT_FROM_WIN32(
+		RegCreateKeyExA(root, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, NULL));
+	if (SUCCEEDED(hr)) {
+		hr = HRESULT_FROM_WIN32(RegSetValueExA(hKey, val, 0, REG_DWORD, reinterpret_cast<const BYTE *>(&data),
+											   sizeof(DWORD)));
 		RegCloseKey(hKey);
 	}
 	return hr;
@@ -44,10 +55,10 @@ static HRESULT setRegKey(HKEY root, LPTSTR key, LPTSTR val, LPTSTR data) {
 
 BOOL APIENTRY DllMain(HMODULE hInstDLL, DWORD reason, LPVOID /*reserved*/) {
 	if (reason == DLL_PROCESS_ATTACH) {
-		OutputDebugString(_T("DllMain"));
-		if (GetModuleFileName(hInstDLL, dllPath, sizeof(dllPath)) == 0) {
+		OutputDebugStringA("DllMain");
+		if (GetModuleFileNameA(hInstDLL, dllPath, MAX_PATH) == 0) {
 #ifdef _DEBUG
-			OutputDebugString(_T("Failed to obtain DLL path"));
+			OutputDebugStringA("Failed to obtain DLL path");
 #endif
 		}
 		DisableThreadLibraryCalls(hInstDLL);
@@ -69,21 +80,21 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
 
 void DllAddRef() {
 #ifdef _DEBUG
-	OutputDebugString(_T("DllAddRef"));
+	OutputDebugStringA("DllAddRef");
 #endif
 	InterlockedIncrement(&dllRefs);
 }
 
 void DllRelease() {
 #ifdef _DEBUG
-	OutputDebugString(_T("DllRelease"));
+	OutputDebugStringA("DllRelease");
 #endif
 	InterlockedDecrement(&dllRefs);
 }
 
 STDAPI DllCanUnloadNow() {
 #ifdef _DEBUG
-	OutputDebugString(_T("DllCanUnloadNow"));
+	OutputDebugStringA("DllCanUnloadNow");
 #endif
 	return (dllRefs == 0) ? S_OK : S_FALSE;
 }
@@ -91,15 +102,18 @@ STDAPI DllCanUnloadNow() {
 // regsvr32 vengi-voxelthumb.dll
 STDAPI DllRegisterServer() {
 	HRESULT hr = E_FAIL;
-	if (_tcslen(dllPath)) {
-		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE, _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID, NULL,
+	if (strlen(dllPath)) {
+		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE, "Software\\Classes\\CLSID\\" THUMBNAIL_HANDLER_CLSID, NULL,
 							   THUMBNAIL_HANDLER_TITLE));
 		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE,
-							   _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID _T("\\InProcServer32"), NULL,
+							   "Software\\Classes\\CLSID\\" THUMBNAIL_HANDLER_CLSID "\\InProcServer32", NULL,
 							   dllPath));
 		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE,
-							   _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID _T("\\InProcServer32"),
-							   _T("ThreadingModel"), _T("Apartment")));
+							   "Software\\Classes\\CLSID\\" THUMBNAIL_HANDLER_CLSID "\\InProcServer32",
+							   "ThreadingModel", "Apartment"));
+		BAIL_ON_FAIL(setRegKeyDword(HKEY_LOCAL_MACHINE,
+									"Software\\Classes\\CLSID\\" THUMBNAIL_HANDLER_CLSID,
+									"DisableProcessIsolation", 1));
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
 				core::String id = core::String::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
@@ -110,7 +124,7 @@ STDAPI DllRegisterServer() {
 	}
 #ifdef _DEBUG
 	if (SUCCEEDED(hr)) {
-		OutputDebugString(_T("Thumbnailer successfully registered"));
+		OutputDebugStringA("Thumbnailer successfully registered");
 	}
 #endif
 	return hr;
@@ -119,18 +133,18 @@ STDAPI DllRegisterServer() {
 // regsvr32 /u vengi-voxelthumb.dll
 STDAPI DllUnregisterServer() {
 	HRESULT hr =
-		HRESULT_FROM_WIN32(RegDeleteTree(HKEY_LOCAL_MACHINE, _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID));
+		HRESULT_FROM_WIN32(RegDeleteTreeA(HKEY_LOCAL_MACHINE, "Software\\Classes\\CLSID\\" THUMBNAIL_HANDLER_CLSID));
 	if (SUCCEEDED(hr)) {
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
 				core::String id = core::String::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
-				hr = RegDeleteTree(HKEY_LOCAL_MACHINE, id.c_str());
+				RegDeleteTreeA(HKEY_LOCAL_MACHINE, id.c_str());
 			}
 		}
 	}
 #ifdef _DEBUG
 	if (SUCCEEDED(hr)) {
-		OutputDebugString(_T("Thumbnailer successfully unregistered"));
+		OutputDebugStringA("Thumbnailer successfully unregistered");
 	}
 #endif
 	return hr;

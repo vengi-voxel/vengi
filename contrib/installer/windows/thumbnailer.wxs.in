@@ -17,13 +17,12 @@
 				<Directory Id="INSTALLDIR" Name="@WIX_PRODUCT_NAME@">
 					<Component Id="ThumbnailerDLL" Guid="*" Win64="yes">
 						<File Id="@WIX_DLL_ID@" Source="$(var.SourceDir)\@WIX_DLL_FILENAME@" KeyPath="yes" />
-					</Component>
-					<Component Id="ThumbnailerCOM" Guid="*" Win64="yes">
 						<RegistryKey Root="HKCR" Key="CLSID\{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" ForceDeleteOnUninstall="yes">
-							<RegistryValue Type="string" Value="Vengi thumbnailer" KeyPath="yes" />
-							<RegistryKey Key="InprocServer32">
+							<RegistryValue Type="string" Value="Vengi thumbnailer" />
+							<RegistryValue Type="integer" Name="DisableProcessIsolation" Value="1" />
+							<RegistryKey Key="InProcServer32">
 								<RegistryValue Type="string" Value="[#@WIX_DLL_ID@]" />
-								<RegistryValue Type="string" Name="ThreadingModel" Value="Both" />
+								<RegistryValue Type="string" Name="ThreadingModel" Value="Apartment" />
 							</RegistryKey>
 						</RegistryKey>
 					</Component>
@@ -403,7 +402,6 @@
 
 		<Feature Id="Thumbnailer" Title="@WIX_PRODUCT_NAME@" Description="@WIX_DESCRIPTION@" Level="1">
 			<ComponentRef Id="ThumbnailerDLL" />
-			<ComponentRef Id="ThumbnailerCOM" />
 			<ComponentRef Id="ThumbExt_vengi" />
 			<ComponentRef Id="ThumbExt_aseprite" />
 			<ComponentRef Id="ThumbExt_ase" />
