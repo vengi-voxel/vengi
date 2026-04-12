@@ -837,6 +837,14 @@ void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::
 	if (!brush) {
 		return;
 	}
+
+	// Safety net: brushes with pending changes are handled in render() by
+	// executing on the real volume. If we reach here anyway, bail out to
+	// avoid corrupting brush history state against a temporary dummy volume.
+	if (brush->hasPendingChanges()) {
+		return;
+	}
+
 	preExecuteBrush(activeVolume);
 	const voxel::Region &region = brush->calcRegion(_brushContext);
 	if (!region.isValid()) {
@@ -922,8 +930,24 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 			// Clear stale preview so the old position does not keep
 			// rendering, then regenerate immediately at the new position.
 			resetPreview();
-			_nextPreviewUpdateSeconds = _nowSeconds;
 			brush->markClean();
+			if (brush->hasPendingChanges()) {
+				// Brushes with pending changes (TransformBrush, ExtrudeBrush, SculptBrush)
+				// modify the real volume directly. Re-execute on the real node so the
+				// updated transform is applied to the scene - generating a separate preview
+				// overlay would corrupt brush history state and produce ghost meshes.
+				scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId);
+				if (node) {
+					voxel::RawVolume *activeVolume = node->volume();
+					preExecuteBrush(activeVolume);
+					executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
+						[this, activeNodeId](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
+							_sceneMgr->modified(activeNodeId, region, flags);
+						});
+				}
+			} else {
+				_nextPreviewUpdateSeconds = _nowSeconds;
+			}
 		}
 		if (_nextPreviewUpdateSeconds > 0.0) {
 			if (_nextPreviewUpdateSeconds <= _nowSeconds) {
