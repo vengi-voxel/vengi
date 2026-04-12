@@ -428,6 +428,21 @@ jobs:
             Compress-Archive -Path palconvert-install -DestinationPath win-palconvert${{ matrix.artifactsPostfix }}.zip
             Compress-Archive -Path thumbnailer-install -DestinationPath win-thumbnailer${{ matrix.artifactsPostfix }}.zip
 
+        - name: Build standalone MSIs
+          if: matrix.buildType == 'Release'
+          run: |
+            cd build
+            $wixBin = "$env:WIX\bin"
+            & "$wixBin\candle.exe" -nologo -dSourceDir=thumbnailer-install thumbnailer.wxs -o thumbnailer.wixobj
+            & "$wixBin\light.exe" -nologo -ext WixUIExtension thumbnailer.wixobj -o vengi-thumbnailer.msi
+            & "$wixBin\candle.exe" -nologo -dSourceDir=voxconvert-install\voxconvert voxconvert.wxs -o voxconvert.wixobj
+            & "$wixBin\light.exe" -nologo -ext WixUIExtension voxconvert.wixobj -o vengi-voxconvert.msi
+            & "$wixBin\candle.exe" -nologo -dSourceDir=palconvert-install\palconvert palconvert.wxs -o palconvert.wixobj
+            & "$wixBin\light.exe" -nologo -ext WixUIExtension palconvert.wixobj -o vengi-palconvert.msi
+            Compress-Archive -Path vengi-thumbnailer.msi -DestinationPath win-thumbnailer-msi${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path vengi-voxconvert.msi -DestinationPath win-voxconvert-msi${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path vengi-palconvert.msi -DestinationPath win-palconvert-msi${{ matrix.artifactsPostfix }}.zip
+
         - name: Upload the cpack logs
           uses: actions/upload-artifact@v4
           if: ${{ failure() }}
@@ -471,6 +486,27 @@ jobs:
           with:
             name: win-thumbnailer${{ matrix.artifactsPostfix }}
             path: build/thumbnailer-install/
+
+        - name: Upload the thumbnailer msi
+          uses: actions/upload-artifact@v4
+          if: matrix.buildType == 'Release'
+          with:
+            name: win-thumbnailer-msi${{ matrix.artifactsPostfix }}
+            path: build/vengi-thumbnailer.msi
+
+        - name: Upload the voxconvert msi
+          uses: actions/upload-artifact@v4
+          if: matrix.buildType == 'Release'
+          with:
+            name: win-voxconvert-msi${{ matrix.artifactsPostfix }}
+            path: build/vengi-voxconvert.msi
+
+        - name: Upload the palconvert msi
+          uses: actions/upload-artifact@v4
+          if: matrix.buildType == 'Release'
+          with:
+            name: win-palconvert-msi${{ matrix.artifactsPostfix }}
+            path: build/vengi-palconvert.msi
 
         - name: Upload the windows release artifacts
           if: startsWith(github.ref, 'refs/tags/')

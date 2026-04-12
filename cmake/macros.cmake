@@ -167,6 +167,7 @@ function(engine_add_executable)
 		if (WINDOWS AND MSVC)
 			set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
 		endif()
+		target_compile_definitions(${_EXE_TARGET} PRIVATE SDL_MAIN_HANDLED)
 	endif()
 
 	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
@@ -343,6 +344,7 @@ function(engine_add_executable)
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_EXECUTABLE True)
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_INSTALL ${INSTALL_DATA})
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_FILES "${_EXE_FILES}")
+	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_DESCRIPTION "${DESCRIPTION}")
 
 	if (MSVC)
 		set_target_properties(${_EXE_TARGET} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -514,28 +516,24 @@ function(engine_install_deps TARGET)
 		endif()
 	endforeach()
 
-	set(PO_FILES
-		de_DE.po
-	)
-
-	foreach (PO_FILE ${PO_FILES})
+	foreach (PO_FILE ${VENGI_PO_FILES})
 		configure_file(${DATA_DIR}/shared/${PO_FILE} ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/po/${PO_FILE} COPYONLY)
 	endforeach()
-	if (PO_FILES AND EMSCRIPTEN)
+	if (VENGI_PO_FILES AND EMSCRIPTEN)
 		target_link_options(${TARGET} PRIVATE "SHELL:--embed-file ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/po@/po")
 	endif()
 
+	foreach (PO_FILE ${VENGI_PO_FILES})
+		string(MAKE_C_IDENTIFIER "${INSTALL_DATA_DIR}/po/${PO_FILE}" _install_id)
+		get_property(_already_installed GLOBAL PROPERTY _ENGINE_INSTALLED_${_install_id})
+		if (NOT _already_installed)
+			set_property(GLOBAL PROPERTY _ENGINE_INSTALLED_${_install_id} TRUE)
+			engine_install(${_LIBS_TARGET} "shared/${PO_FILE}" "po" ${INSTALL_DATA})
+		endif()
+	endforeach()
 	if (INSTALL_FILES)
 		list(REMOVE_DUPLICATES INSTALL_FILES)
 		list(REVERSE INSTALL_FILES)
-		foreach (PO_FILE ${PO_FILES})
-			string(MAKE_C_IDENTIFIER "${INSTALL_DATA_DIR}/po/${PO_FILE}" _install_id)
-			get_property(_already_installed GLOBAL PROPERTY _ENGINE_INSTALLED_${_install_id})
-			if (NOT _already_installed)
-				set_property(GLOBAL PROPERTY _ENGINE_INSTALLED_${_install_id} TRUE)
-				engine_install(${_LIBS_TARGET} "shared/${PO_FILE}" "po" ${INSTALL_DATA})
-			endif()
-		endforeach()
 		foreach (datafile ${INSTALL_FILES})
 			string(REGEX REPLACE "^[^/]+" "" target_datafile "${datafile}")
 			string(LENGTH ${target_datafile} target_datafile_length)
@@ -584,6 +582,187 @@ function(engine_target_link_libraries)
 		engine_resolve_deps_recursive(${_LIBS_TARGET} RECURSIVE_DEPENDENCIES)
 		engine_install_deps(${_LIBS_TARGET} ${RECURSIVE_DEPENDENCIES})
 	endif()
+endfunction()
+
+#
+# Generate a standalone WiX installer source file (.wxs) for a target.
+# This collects all data files (lua scripts, data files, translations) from the
+# target and its transitive dependencies, then fills in a .wxs.in template.
+# The description is read from the target's global DESCRIPTION property
+# (set by engine_add_executable).
+#
+# Usage:
+#   engine_generate_standalone_wix(
+#     TARGET palconvert
+#     TEMPLATE ${ROOT_DIR}/contrib/installer/windows/application.wxs.in
+#     OUTPUT ${CMAKE_BINARY_DIR}/palconvert.wxs
+#     PRODUCT_NAME "Vengi Palconvert"
+#     UPGRADE_GUID "..."
+#     [UI_TARGET voxconvertui]
+#   )
+#
+
+# XML-escape a string for safe use in WiX attribute values (handles &, <, >, ").
+function(_wix_xml_escape _INPUT _OUTPUT_VAR)
+	string(REPLACE "&" "&amp;" _result "${_INPUT}")
+	string(REPLACE "<" "&lt;" _result "${_result}")
+	string(REPLACE ">" "&gt;" _result "${_result}")
+	string(REPLACE "\"" "&quot;" _result "${_result}")
+	set(${_OUTPUT_VAR} "${_result}" PARENT_SCOPE)
+endfunction()
+
+function(engine_generate_standalone_wix)
+	set(_ONE_VALUE_ARGS TARGET TEMPLATE OUTPUT PRODUCT_NAME UPGRADE_GUID UI_TARGET)
+	cmake_parse_arguments(_WIX "" "${_ONE_VALUE_ARGS}" "" ${ARGN})
+
+	# Collect all transitive dependencies
+	set(RECURSIVE_DEPENDENCIES)
+	engine_resolve_deps_recursive(${_WIX_TARGET} RECURSIVE_DEPENDENCIES)
+	list(APPEND RECURSIVE_DEPENDENCIES ${_WIX_TARGET})
+	if (_WIX_UI_TARGET)
+		set(_EXTRA_DEPS)
+		engine_resolve_deps_recursive(${_WIX_UI_TARGET} _EXTRA_DEPS)
+		list(APPEND RECURSIVE_DEPENDENCIES ${_EXTRA_DEPS} ${_WIX_UI_TARGET})
+	endif()
+	list(REMOVE_DUPLICATES RECURSIVE_DEPENDENCIES)
+
+	# Collect all data files from dependencies
+	set(_ALL_DATA_FILES)
+	set(_ALL_LUA_FILES)
+	foreach (_dep ${RECURSIVE_DEPENDENCIES})
+		get_property(_files GLOBAL PROPERTY ${_dep}_FILES)
+		list(APPEND _ALL_DATA_FILES ${_files})
+		get_property(_lua GLOBAL PROPERTY ${_dep}_LUA_SRCS)
+		foreach (_luasrc ${_lua})
+			list(APPEND _ALL_LUA_FILES "${_luasrc}")
+		endforeach()
+	endforeach()
+	if (_ALL_DATA_FILES)
+		list(REMOVE_DUPLICATES _ALL_DATA_FILES)
+	endif()
+	if (_ALL_LUA_FILES)
+		list(REMOVE_DUPLICATES _ALL_LUA_FILES)
+	endif()
+
+	# Generate WiX Component XML for data files.
+	# Components in subdirectories are wrapped in <Directory> elements so that
+	# files install into the correct path under INSTALLDIR. WiX merges
+	# <Directory> elements that share the same Id within the same source file.
+	set(_COMPONENTS "")
+	set(_COMPONENT_REFS "")
+	set(_COMPONENT_INDEX 0)
+
+	# Lua scripts - relative paths from the staging directory (e.g. brushes/path.lua)
+	foreach (_rel_path ${_ALL_LUA_FILES})
+		get_filename_component(_subdir "${_rel_path}" DIRECTORY)
+		string(MAKE_C_IDENTIFIER "Data_${_rel_path}" _comp_id)
+		string(MAKE_C_IDENTIFIER "File_${_rel_path}" _file_id)
+		string(REPLACE "/" "\\" _win_path "${_rel_path}")
+		set(_source_attr "$(var.SourceDir)\\${_win_path}")
+		# Wrap in <Directory> elements for each subdirectory level
+		set(__indent "\t\t\t\t\t")
+		set(__open "")
+		set(__close "")
+		if (NOT "${_subdir}" STREQUAL "")
+			string(REPLACE "/" ";" __dir_parts "${_subdir}")
+			set(__path "")
+			foreach (__part ${__dir_parts})
+				if (__path)
+					set(__path "${__path}_${__part}")
+				else()
+					set(__path "${__part}")
+				endif()
+				string(MAKE_C_IDENTIFIER "Dir_${__path}" __dir_id)
+				string(APPEND __open "${__indent}<Directory Id=\"${__dir_id}\" Name=\"${__part}\">\n")
+				set(__close "${__indent}</Directory>\n${__close}")
+				string(APPEND __indent "\t")
+			endforeach()
+		endif()
+		string(APPEND _COMPONENTS "${__open}")
+		string(APPEND _COMPONENTS "${__indent}<Component Id=\"${_comp_id}\" Guid=\"*\" Win64=\"yes\">\n")
+		string(APPEND _COMPONENTS "${__indent}\t<File Id=\"${_file_id}\" Source=\"${_source_attr}\" KeyPath=\"yes\" />\n")
+		string(APPEND _COMPONENTS "${__indent}</Component>\n")
+		string(APPEND _COMPONENTS "${__close}")
+		string(APPEND _COMPONENT_REFS "\t\t\t<ComponentRef Id=\"${_comp_id}\" />\n")
+		math(EXPR _COMPONENT_INDEX "${_COMPONENT_INDEX} + 1")
+	endforeach()
+
+	# Data files (sound, config, etc.) - first path segment is the target prefix and gets stripped
+	foreach (_datafile ${_ALL_DATA_FILES})
+		string(FIND "${_datafile}" "/" _slash_pos)
+		if (_slash_pos GREATER -1)
+			math(EXPR _after_slash "${_slash_pos} + 1")
+			string(SUBSTRING "${_datafile}" ${_after_slash} -1 _target_datafile)
+		else()
+			set(_target_datafile "${_datafile}")
+		endif()
+		get_filename_component(_subdir "${_target_datafile}" DIRECTORY)
+		string(MAKE_C_IDENTIFIER "Data_${_target_datafile}" _comp_id)
+		string(MAKE_C_IDENTIFIER "File_${_target_datafile}" _file_id)
+		string(REPLACE "/" "\\" _win_path "${_target_datafile}")
+		set(_source_attr "$(var.SourceDir)\\${_win_path}")
+		# Wrap in <Directory> elements for each subdirectory level
+		set(__indent "\t\t\t\t\t")
+		set(__open "")
+		set(__close "")
+		if (NOT "${_subdir}" STREQUAL "")
+			string(REPLACE "/" ";" __dir_parts "${_subdir}")
+			set(__path "")
+			foreach (__part ${__dir_parts})
+				if (__path)
+					set(__path "${__path}_${__part}")
+				else()
+					set(__path "${__part}")
+				endif()
+				string(MAKE_C_IDENTIFIER "Dir_${__path}" __dir_id)
+				string(APPEND __open "${__indent}<Directory Id=\"${__dir_id}\" Name=\"${__part}\">\n")
+				set(__close "${__indent}</Directory>\n${__close}")
+				string(APPEND __indent "\t")
+			endforeach()
+		endif()
+		string(APPEND _COMPONENTS "${__open}")
+		string(APPEND _COMPONENTS "${__indent}<Component Id=\"${_comp_id}\" Guid=\"*\" Win64=\"yes\">\n")
+		string(APPEND _COMPONENTS "${__indent}\t<File Id=\"${_file_id}\" Source=\"${_source_attr}\" KeyPath=\"yes\" />\n")
+		string(APPEND _COMPONENTS "${__indent}</Component>\n")
+		string(APPEND _COMPONENTS "${__close}")
+		string(APPEND _COMPONENT_REFS "\t\t\t<ComponentRef Id=\"${_comp_id}\" />\n")
+		math(EXPR _COMPONENT_INDEX "${_COMPONENT_INDEX} + 1")
+	endforeach()
+
+	# PO files - installed into INSTALLDIR\po
+	foreach (_po ${VENGI_PO_FILES})
+		string(MAKE_C_IDENTIFIER "Data_po_${_po}" _comp_id)
+		string(MAKE_C_IDENTIFIER "File_po_${_po}" _file_id)
+		string(MAKE_C_IDENTIFIER "Dir_po" __dir_id)
+		string(APPEND _COMPONENTS "\t\t\t\t\t<Directory Id=\"${__dir_id}\" Name=\"po\">\n")
+		string(APPEND _COMPONENTS "\t\t\t\t\t\t<Component Id=\"${_comp_id}\" Guid=\"*\" Win64=\"yes\">\n")
+		string(APPEND _COMPONENTS "\t\t\t\t\t\t\t<File Id=\"${_file_id}\" Source=\"$(var.SourceDir)\\po\\${_po}\" KeyPath=\"yes\" />\n")
+		string(APPEND _COMPONENTS "\t\t\t\t\t\t</Component>\n")
+		string(APPEND _COMPONENTS "\t\t\t\t\t</Directory>\n")
+		string(APPEND _COMPONENT_REFS "\t\t\t<ComponentRef Id=\"${_comp_id}\" />\n")
+		math(EXPR _COMPONENT_INDEX "${_COMPONENT_INDEX} + 1")
+	endforeach()
+
+	# Set up variables for the template
+	_wix_xml_escape("${_WIX_PRODUCT_NAME}" WIX_PRODUCT_NAME)
+	set(WIX_TARGET "${_WIX_TARGET}")
+	set(WIX_UPGRADE_GUID "${_WIX_UPGRADE_GUID}")
+	set(WIX_VERSION "${CMAKE_PROJECT_VERSION}")
+	get_property(_raw_desc GLOBAL PROPERTY ${_WIX_TARGET}_DESCRIPTION)
+	_wix_xml_escape("${_raw_desc}" WIX_DESCRIPTION)
+	set(WIX_EXE_FILENAME "${CMAKE_PROJECT_NAME}-${_WIX_TARGET}.exe")
+	string(MAKE_C_IDENTIFIER "${WIX_EXE_FILENAME}" WIX_EXE_ID)
+	set(WIX_DATA_COMPONENTS "${_COMPONENTS}")
+	set(WIX_DATA_COMPONENT_REFS "${_COMPONENT_REFS}")
+
+	# UI target (e.g. voxconvertui)
+	if (_WIX_UI_TARGET)
+		set(WIX_UI_EXE_FILENAME "${CMAKE_PROJECT_NAME}-${_WIX_UI_TARGET}.exe")
+		string(MAKE_C_IDENTIFIER "${WIX_UI_EXE_FILENAME}" WIX_UI_EXE_ID)
+	endif()
+
+	configure_file(${_WIX_TEMPLATE} ${_WIX_OUTPUT} @ONLY)
+	message(STATUS "Generated standalone WiX installer: ${_WIX_OUTPUT} (${_COMPONENT_INDEX} data components)")
 endfunction()
 
 # Emscripten expects exported symbol names to be listed with a leading

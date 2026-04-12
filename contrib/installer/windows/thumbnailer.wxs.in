@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Standalone WiX installer template for the Vengi thumbnail handler shell extension.
+	Processed by CMake configure_file() to fill in product name, DLL filename, etc.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="@WIX_PRODUCT_NAME@" Language="1033" Version="@WIX_VERSION@"
+	         Manufacturer="vengi" UpgradeCode="@WIX_UPGRADE_GUID@">
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"
+		         Platform="x64" Description="@WIX_DESCRIPTION@"
+		         Comments="Provides thumbnail previews for voxel file formats in Windows Explorer" />
+		<MajorUpgrade DowngradeErrorMessage="A newer version of @WIX_PRODUCT_NAME@ is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLDIR" Name="@WIX_PRODUCT_NAME@">
+					<Component Id="ThumbnailerDLL" Guid="*" Win64="yes">
+						<File Id="@WIX_DLL_ID@" Source="$(var.SourceDir)\@WIX_DLL_FILENAME@" KeyPath="yes" />
+						<RegistryKey Root="HKCR" Key="CLSID\{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" ForceDeleteOnUninstall="yes">
+							<RegistryValue Type="string" Value="Vengi thumbnailer" />
+							<RegistryValue Type="integer" Name="DisableProcessIsolation" Value="1" />
+							<RegistryKey Key="InProcServer32">
+								<RegistryValue Type="string" Value="[#@WIX_DLL_ID@]" />
+								<RegistryValue Type="string" Name="ThreadingModel" Value="Apartment" />
+							</RegistryKey>
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vengi" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vengi">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_aseprite" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".aseprite">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_ase" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".ase">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_qb" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".qb">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_ben.json" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".ben.json">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_ben" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".ben">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vox" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vox">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_voxa" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".voxa">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_qbt" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".qbt">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_qbcl" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".qbcl">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxt" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxt">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxc" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxc">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxm" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxm">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxb" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxb">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_bbmodel" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".bbmodel">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxr" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxr">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_binvox" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".binvox">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_gox" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".gox">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_txt" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".txt">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_cub" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".cub">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mts" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mts">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mca" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mca">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mcr" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mcr">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_dat" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".dat">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mcworld" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mcworld">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_schematic" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".schematic">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_schem" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".schem">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_nbt" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".nbt">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_litematic" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".litematic">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_bp" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".bp">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_map" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".map">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_bsp" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".bsp">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mdl" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mdl">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_md2" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".md2">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_md3" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".md3">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_fbx" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".fbx">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_kenshape" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".kenshape">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_3ds" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".3ds">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_csv" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".csv">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_xraw" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".xraw">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_sment" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".sment">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_smd2" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".smd2">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_smd3" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".smd3">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_smtpl" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".smtpl">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_scn" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".scn">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vbx" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vbx">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_bin" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".bin">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_obj" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".obj">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_gltf" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".gltf">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_glb" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".glb">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vrm" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vrm">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_stl" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".stl">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_ply" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".ply">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_gml" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".gml">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_xml" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".xml">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_osm.json" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".osm.json">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_kvx" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".kvx">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_pcubes" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".pcubes">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_particubes" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".particubes">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_3zh" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".3zh">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_b64" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".b64">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_v3a" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".v3a">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_v3b" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".v3b">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_thing" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".thing">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_kv6" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".kv6">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vxl" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vxl">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_qef" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".qef">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_csm" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".csm">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_nvm" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".nvm">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vmax.zip" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vmax.zip">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_vmaxb" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".vmaxb">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_zip" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".zip">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_png" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".png">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+					<Component Id="ThumbExt_mcskin" Guid="*" Win64="yes">
+						<RegistryKey Root="HKCR" Key=".mcskin">
+							<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" KeyPath="yes" />
+						</RegistryKey>
+					</Component>
+				</Directory>
+			</Directory>
+		</Directory>
+
+		<Feature Id="Thumbnailer" Title="@WIX_PRODUCT_NAME@" Description="@WIX_DESCRIPTION@" Level="1">
+			<ComponentRef Id="ThumbnailerDLL" />
+			<ComponentRef Id="ThumbExt_vengi" />
+			<ComponentRef Id="ThumbExt_aseprite" />
+			<ComponentRef Id="ThumbExt_ase" />
+			<ComponentRef Id="ThumbExt_qb" />
+			<ComponentRef Id="ThumbExt_ben.json" />
+			<ComponentRef Id="ThumbExt_ben" />
+			<ComponentRef Id="ThumbExt_vox" />
+			<ComponentRef Id="ThumbExt_voxa" />
+			<ComponentRef Id="ThumbExt_qbt" />
+			<ComponentRef Id="ThumbExt_qbcl" />
+			<ComponentRef Id="ThumbExt_vxt" />
+			<ComponentRef Id="ThumbExt_vxc" />
+			<ComponentRef Id="ThumbExt_vxm" />
+			<ComponentRef Id="ThumbExt_vxb" />
+			<ComponentRef Id="ThumbExt_bbmodel" />
+			<ComponentRef Id="ThumbExt_vxr" />
+			<ComponentRef Id="ThumbExt_binvox" />
+			<ComponentRef Id="ThumbExt_gox" />
+			<ComponentRef Id="ThumbExt_txt" />
+			<ComponentRef Id="ThumbExt_cub" />
+			<ComponentRef Id="ThumbExt_mts" />
+			<ComponentRef Id="ThumbExt_mca" />
+			<ComponentRef Id="ThumbExt_mcr" />
+			<ComponentRef Id="ThumbExt_dat" />
+			<ComponentRef Id="ThumbExt_mcworld" />
+			<ComponentRef Id="ThumbExt_schematic" />
+			<ComponentRef Id="ThumbExt_schem" />
+			<ComponentRef Id="ThumbExt_nbt" />
+			<ComponentRef Id="ThumbExt_litematic" />
+			<ComponentRef Id="ThumbExt_bp" />
+			<ComponentRef Id="ThumbExt_map" />
+			<ComponentRef Id="ThumbExt_bsp" />
+			<ComponentRef Id="ThumbExt_mdl" />
+			<ComponentRef Id="ThumbExt_md2" />
+			<ComponentRef Id="ThumbExt_md3" />
+			<ComponentRef Id="ThumbExt_fbx" />
+			<ComponentRef Id="ThumbExt_kenshape" />
+			<ComponentRef Id="ThumbExt_3ds" />
+			<ComponentRef Id="ThumbExt_csv" />
+			<ComponentRef Id="ThumbExt_xraw" />
+			<ComponentRef Id="ThumbExt_sment" />
+			<ComponentRef Id="ThumbExt_smd2" />
+			<ComponentRef Id="ThumbExt_smd3" />
+			<ComponentRef Id="ThumbExt_smtpl" />
+			<ComponentRef Id="ThumbExt_scn" />
+			<ComponentRef Id="ThumbExt_vbx" />
+			<ComponentRef Id="ThumbExt_bin" />
+			<ComponentRef Id="ThumbExt_obj" />
+			<ComponentRef Id="ThumbExt_gltf" />
+			<ComponentRef Id="ThumbExt_glb" />
+			<ComponentRef Id="ThumbExt_vrm" />
+			<ComponentRef Id="ThumbExt_stl" />
+			<ComponentRef Id="ThumbExt_ply" />
+			<ComponentRef Id="ThumbExt_gml" />
+			<ComponentRef Id="ThumbExt_xml" />
+			<ComponentRef Id="ThumbExt_osm.json" />
+			<ComponentRef Id="ThumbExt_kvx" />
+			<ComponentRef Id="ThumbExt_pcubes" />
+			<ComponentRef Id="ThumbExt_particubes" />
+			<ComponentRef Id="ThumbExt_3zh" />
+			<ComponentRef Id="ThumbExt_b64" />
+			<ComponentRef Id="ThumbExt_v3a" />
+			<ComponentRef Id="ThumbExt_v3b" />
+			<ComponentRef Id="ThumbExt_thing" />
+			<ComponentRef Id="ThumbExt_kv6" />
+			<ComponentRef Id="ThumbExt_vxl" />
+			<ComponentRef Id="ThumbExt_qef" />
+			<ComponentRef Id="ThumbExt_csm" />
+			<ComponentRef Id="ThumbExt_nvm" />
+			<ComponentRef Id="ThumbExt_vmax.zip" />
+			<ComponentRef Id="ThumbExt_vmaxb" />
+			<ComponentRef Id="ThumbExt_zip" />
+			<ComponentRef Id="ThumbExt_png" />
+			<ComponentRef Id="ThumbExt_mcskin" />
+		</Feature>
+
+		<UIRef Id="WixUI_FeatureTree" />
+	</Product>
+</Wix>

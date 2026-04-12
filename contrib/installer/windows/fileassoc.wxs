@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Fragment>
+		<DirectoryRef Id="INSTALL_ROOT">
+			<Component Id="AddToPath" Guid="*">
+				<Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]" Permanent="no" Part="last" Action="set" System="yes" />
+				<RegistryValue Root="HKLM" Key="Software\vengi\PathEnv" Name="installed" Value="1" Type="integer" KeyPath="yes" />
+			</Component>
+			<Component Id="FileAssoc_vengi" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vengi" Value="vengi-voxedit.vengi" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vengi" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vengi\OpenWithProgids" Name="vengi-voxedit.vengi" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_aseprite" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".aseprite" Value="vengi-voxedit.aseprite" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".aseprite" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".aseprite\OpenWithProgids" Name="vengi-voxedit.aseprite" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_ase" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ase" Value="vengi-voxedit.ase" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ase" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".ase\OpenWithProgids" Name="vengi-voxedit.ase" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_qb" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".qb" Value="vengi-voxedit.qb" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qb" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".qb\OpenWithProgids" Name="vengi-voxedit.qb" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_ben.json" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ben.json" Value="vengi-voxedit.ben.json" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ben.json" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".ben.json\OpenWithProgids" Name="vengi-voxedit.ben.json" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_ben" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ben" Value="vengi-voxedit.ben" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ben" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".ben\OpenWithProgids" Name="vengi-voxedit.ben" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vox" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vox" Value="vengi-voxedit.vox" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vox" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vox\OpenWithProgids" Name="vengi-voxedit.vox" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_voxa" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".voxa" Value="vengi-voxedit.voxa" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".voxa" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".voxa\OpenWithProgids" Name="vengi-voxedit.voxa" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_qbt" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".qbt" Value="vengi-voxedit.qbt" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qbt" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".qbt\OpenWithProgids" Name="vengi-voxedit.qbt" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_qbcl" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".qbcl" Value="vengi-voxedit.qbcl" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qbcl" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".qbcl\OpenWithProgids" Name="vengi-voxedit.qbcl" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxt" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxt" Value="vengi-voxedit.vxt" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxt" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxt\OpenWithProgids" Name="vengi-voxedit.vxt" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxc" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxc" Value="vengi-voxedit.vxc" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxc" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxc\OpenWithProgids" Name="vengi-voxedit.vxc" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxm" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxm" Value="vengi-voxedit.vxm" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxm" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxm\OpenWithProgids" Name="vengi-voxedit.vxm" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxb" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxb" Value="vengi-voxedit.vxb" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxb" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxb\OpenWithProgids" Name="vengi-voxedit.vxb" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_bbmodel" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bbmodel" Value="vengi-voxedit.bbmodel" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bbmodel" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".bbmodel\OpenWithProgids" Name="vengi-voxedit.bbmodel" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxr" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxr" Value="vengi-voxedit.vxr" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxr" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxr\OpenWithProgids" Name="vengi-voxedit.vxr" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_binvox" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".binvox" Value="vengi-voxedit.binvox" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".binvox" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".binvox\OpenWithProgids" Name="vengi-voxedit.binvox" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_gox" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".gox" Value="vengi-voxedit.gox" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gox" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".gox\OpenWithProgids" Name="vengi-voxedit.gox" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_txt" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".txt" Value="vengi-voxedit.txt" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".txt\OpenWithProgids" Name="vengi-voxedit.txt" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_cub" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".cub" Value="vengi-voxedit.cub" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".cub" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".cub\OpenWithProgids" Name="vengi-voxedit.cub" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mts" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mts" Value="vengi-voxedit.mts" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mts" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mts\OpenWithProgids" Name="vengi-voxedit.mts" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mca" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mca" Value="vengi-voxedit.mca" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mca" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mca\OpenWithProgids" Name="vengi-voxedit.mca" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mcr" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mcr" Value="vengi-voxedit.mcr" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcr" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mcr\OpenWithProgids" Name="vengi-voxedit.mcr" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_dat" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".dat" Value="vengi-voxedit.dat" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".dat" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".dat\OpenWithProgids" Name="vengi-voxedit.dat" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mcworld" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mcworld" Value="vengi-voxedit.mcworld" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcworld" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mcworld\OpenWithProgids" Name="vengi-voxedit.mcworld" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_schematic" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".schematic" Value="vengi-voxedit.schematic" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".schematic" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".schematic\OpenWithProgids" Name="vengi-voxedit.schematic" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_schem" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".schem" Value="vengi-voxedit.schem" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".schem" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".schem\OpenWithProgids" Name="vengi-voxedit.schem" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_nbt" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".nbt" Value="vengi-voxedit.nbt" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".nbt" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".nbt\OpenWithProgids" Name="vengi-voxedit.nbt" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_litematic" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".litematic" Value="vengi-voxedit.litematic" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".litematic" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".litematic\OpenWithProgids" Name="vengi-voxedit.litematic" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_bp" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bp" Value="vengi-voxedit.bp" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bp" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".bp\OpenWithProgids" Name="vengi-voxedit.bp" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_map" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".map" Value="vengi-voxedit.map" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".map" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".map\OpenWithProgids" Name="vengi-voxedit.map" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_bsp" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bsp" Value="vengi-voxedit.bsp" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bsp" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".bsp\OpenWithProgids" Name="vengi-voxedit.bsp" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mdl" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mdl" Value="vengi-voxedit.mdl" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mdl" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mdl\OpenWithProgids" Name="vengi-voxedit.mdl" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_md2" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".md2" Value="vengi-voxedit.md2" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".md2" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".md2\OpenWithProgids" Name="vengi-voxedit.md2" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_md3" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".md3" Value="vengi-voxedit.md3" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".md3" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".md3\OpenWithProgids" Name="vengi-voxedit.md3" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_fbx" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".fbx" Value="vengi-voxedit.fbx" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".fbx" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".fbx\OpenWithProgids" Name="vengi-voxedit.fbx" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_kenshape" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kenshape" Value="vengi-voxedit.kenshape" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kenshape" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kenshape\OpenWithProgids" Name="vengi-voxedit.kenshape" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_3ds" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".3ds" Value="vengi-voxedit.3ds" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".3ds" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".3ds\OpenWithProgids" Name="vengi-voxedit.3ds" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_csv" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".csv" Value="vengi-voxedit.csv" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".csv" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".csv\OpenWithProgids" Name="vengi-voxedit.csv" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_xraw" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".xraw" Value="vengi-voxedit.xraw" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".xraw" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".xraw\OpenWithProgids" Name="vengi-voxedit.xraw" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_sment" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".sment" Value="vengi-voxedit.sment" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".sment" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".sment\OpenWithProgids" Name="vengi-voxedit.sment" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_smd2" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".smd2" Value="vengi-voxedit.smd2" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smd2" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".smd2\OpenWithProgids" Name="vengi-voxedit.smd2" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_smd3" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".smd3" Value="vengi-voxedit.smd3" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smd3" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".smd3\OpenWithProgids" Name="vengi-voxedit.smd3" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_smtpl" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".smtpl" Value="vengi-voxedit.smtpl" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smtpl" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".smtpl\OpenWithProgids" Name="vengi-voxedit.smtpl" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_scn" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".scn" Value="vengi-voxedit.scn" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".scn" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".scn\OpenWithProgids" Name="vengi-voxedit.scn" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vbx" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vbx" Value="vengi-voxedit.vbx" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vbx" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vbx\OpenWithProgids" Name="vengi-voxedit.vbx" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_bin" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bin" Value="vengi-voxedit.bin" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bin" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".bin\OpenWithProgids" Name="vengi-voxedit.bin" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_obj" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".obj" Value="vengi-voxedit.obj" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".obj" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".obj\OpenWithProgids" Name="vengi-voxedit.obj" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_gltf" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".gltf" Value="vengi-voxedit.gltf" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gltf" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".gltf\OpenWithProgids" Name="vengi-voxedit.gltf" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_glb" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".glb" Value="vengi-voxedit.glb" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".glb" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".glb\OpenWithProgids" Name="vengi-voxedit.glb" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vrm" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vrm" Value="vengi-voxedit.vrm" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vrm" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vrm\OpenWithProgids" Name="vengi-voxedit.vrm" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_stl" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".stl" Value="vengi-voxedit.stl" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".stl" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".stl\OpenWithProgids" Name="vengi-voxedit.stl" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_ply" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ply" Value="vengi-voxedit.ply" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ply" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".ply\OpenWithProgids" Name="vengi-voxedit.ply" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_gml" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".gml" Value="vengi-voxedit.gml" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gml" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".gml\OpenWithProgids" Name="vengi-voxedit.gml" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_xml" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".xml" Value="vengi-voxedit.xml" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".xml" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".xml\OpenWithProgids" Name="vengi-voxedit.xml" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_osm.json" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".osm.json" Value="vengi-voxedit.osm.json" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".osm.json" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".osm.json\OpenWithProgids" Name="vengi-voxedit.osm.json" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_kvx" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kvx" Value="vengi-voxedit.kvx" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kvx" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kvx\OpenWithProgids" Name="vengi-voxedit.kvx" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_pcubes" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".pcubes" Value="vengi-voxedit.pcubes" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".pcubes" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".pcubes\OpenWithProgids" Name="vengi-voxedit.pcubes" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_particubes" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".particubes" Value="vengi-voxedit.particubes" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".particubes" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".particubes\OpenWithProgids" Name="vengi-voxedit.particubes" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_3zh" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".3zh" Value="vengi-voxedit.3zh" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".3zh" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".3zh\OpenWithProgids" Name="vengi-voxedit.3zh" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_b64" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".b64" Value="vengi-voxedit.b64" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".b64" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".b64\OpenWithProgids" Name="vengi-voxedit.b64" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_v3a" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".v3a" Value="vengi-voxedit.v3a" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".v3a" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".v3a\OpenWithProgids" Name="vengi-voxedit.v3a" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_v3b" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".v3b" Value="vengi-voxedit.v3b" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".v3b" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".v3b\OpenWithProgids" Name="vengi-voxedit.v3b" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_thing" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".thing" Value="vengi-voxedit.thing" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".thing" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".thing\OpenWithProgids" Name="vengi-voxedit.thing" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_kv6" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kv6" Value="vengi-voxedit.kv6" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kv6" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kv6\OpenWithProgids" Name="vengi-voxedit.kv6" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vxl" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxl" Value="vengi-voxedit.vxl" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxl" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vxl\OpenWithProgids" Name="vengi-voxedit.vxl" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_qef" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".qef" Value="vengi-voxedit.qef" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qef" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".qef\OpenWithProgids" Name="vengi-voxedit.qef" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_csm" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".csm" Value="vengi-voxedit.csm" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".csm" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".csm\OpenWithProgids" Name="vengi-voxedit.csm" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_nvm" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".nvm" Value="vengi-voxedit.nvm" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".nvm" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".nvm\OpenWithProgids" Name="vengi-voxedit.nvm" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vmax.zip" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vmax.zip" Value="vengi-voxedit.vmax.zip" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vmax.zip" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vmax.zip\OpenWithProgids" Name="vengi-voxedit.vmax.zip" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_vmaxb" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vmaxb" Value="vengi-voxedit.vmaxb" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vmaxb" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".vmaxb\OpenWithProgids" Name="vengi-voxedit.vmaxb" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_zip" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".zip" Value="vengi-voxedit.zip" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".zip" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".zip\OpenWithProgids" Name="vengi-voxedit.zip" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_png" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".png" Value="vengi-voxedit.png" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".png" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".png\OpenWithProgids" Name="vengi-voxedit.png" Value="" Type="string" />
+			</Component>
+			<Component Id="FileAssoc_mcskin" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mcskin" Value="vengi-voxedit.mcskin" Type="string" KeyPath="yes" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcskin" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".mcskin\OpenWithProgids" Name="vengi-voxedit.mcskin" Value="" Type="string" />
+			</Component>
+		</DirectoryRef>
+		<ComponentGroup Id="VengiAddToPath">
+			<ComponentRef Id="AddToPath" />
+		</ComponentGroup>
+		<ComponentGroup Id="VengiFileAssociations">
+			<ComponentRef Id="FileAssoc_vengi" />
+			<ComponentRef Id="FileAssoc_aseprite" />
+			<ComponentRef Id="FileAssoc_ase" />
+			<ComponentRef Id="FileAssoc_qb" />
+			<ComponentRef Id="FileAssoc_ben.json" />
+			<ComponentRef Id="FileAssoc_ben" />
+			<ComponentRef Id="FileAssoc_vox" />
+			<ComponentRef Id="FileAssoc_voxa" />
+			<ComponentRef Id="FileAssoc_qbt" />
+			<ComponentRef Id="FileAssoc_qbcl" />
+			<ComponentRef Id="FileAssoc_vxt" />
+			<ComponentRef Id="FileAssoc_vxc" />
+			<ComponentRef Id="FileAssoc_vxm" />
+			<ComponentRef Id="FileAssoc_vxb" />
+			<ComponentRef Id="FileAssoc_bbmodel" />
+			<ComponentRef Id="FileAssoc_vxr" />
+			<ComponentRef Id="FileAssoc_binvox" />
+			<ComponentRef Id="FileAssoc_gox" />
+			<ComponentRef Id="FileAssoc_txt" />
+			<ComponentRef Id="FileAssoc_cub" />
+			<ComponentRef Id="FileAssoc_mts" />
+			<ComponentRef Id="FileAssoc_mca" />
+			<ComponentRef Id="FileAssoc_mcr" />
+			<ComponentRef Id="FileAssoc_dat" />
+			<ComponentRef Id="FileAssoc_mcworld" />
+			<ComponentRef Id="FileAssoc_schematic" />
+			<ComponentRef Id="FileAssoc_schem" />
+			<ComponentRef Id="FileAssoc_nbt" />
+			<ComponentRef Id="FileAssoc_litematic" />
+			<ComponentRef Id="FileAssoc_bp" />
+			<ComponentRef Id="FileAssoc_map" />
+			<ComponentRef Id="FileAssoc_bsp" />
+			<ComponentRef Id="FileAssoc_mdl" />
+			<ComponentRef Id="FileAssoc_md2" />
+			<ComponentRef Id="FileAssoc_md3" />
+			<ComponentRef Id="FileAssoc_fbx" />
+			<ComponentRef Id="FileAssoc_kenshape" />
+			<ComponentRef Id="FileAssoc_3ds" />
+			<ComponentRef Id="FileAssoc_csv" />
+			<ComponentRef Id="FileAssoc_xraw" />
+			<ComponentRef Id="FileAssoc_sment" />
+			<ComponentRef Id="FileAssoc_smd2" />
+			<ComponentRef Id="FileAssoc_smd3" />
+			<ComponentRef Id="FileAssoc_smtpl" />
+			<ComponentRef Id="FileAssoc_scn" />
+			<ComponentRef Id="FileAssoc_vbx" />
+			<ComponentRef Id="FileAssoc_bin" />
+			<ComponentRef Id="FileAssoc_obj" />
+			<ComponentRef Id="FileAssoc_gltf" />
+			<ComponentRef Id="FileAssoc_glb" />
+			<ComponentRef Id="FileAssoc_vrm" />
+			<ComponentRef Id="FileAssoc_stl" />
+			<ComponentRef Id="FileAssoc_ply" />
+			<ComponentRef Id="FileAssoc_gml" />
+			<ComponentRef Id="FileAssoc_xml" />
+			<ComponentRef Id="FileAssoc_osm.json" />
+			<ComponentRef Id="FileAssoc_kvx" />
+			<ComponentRef Id="FileAssoc_pcubes" />
+			<ComponentRef Id="FileAssoc_particubes" />
+			<ComponentRef Id="FileAssoc_3zh" />
+			<ComponentRef Id="FileAssoc_b64" />
+			<ComponentRef Id="FileAssoc_v3a" />
+			<ComponentRef Id="FileAssoc_v3b" />
+			<ComponentRef Id="FileAssoc_thing" />
+			<ComponentRef Id="FileAssoc_kv6" />
+			<ComponentRef Id="FileAssoc_vxl" />
+			<ComponentRef Id="FileAssoc_qef" />
+			<ComponentRef Id="FileAssoc_csm" />
+			<ComponentRef Id="FileAssoc_nvm" />
+			<ComponentRef Id="FileAssoc_vmax.zip" />
+			<ComponentRef Id="FileAssoc_vmaxb" />
+			<ComponentRef Id="FileAssoc_zip" />
+			<ComponentRef Id="FileAssoc_png" />
+			<ComponentRef Id="FileAssoc_mcskin" />
+		</ComponentGroup>
+	</Fragment>
+</Wix>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Standalone WiX installer template for vengi-voxconvert (console + UI).
+	Filled in by CMake configure_file().
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="@WIX_PRODUCT_NAME@" Language="1033" Version="@WIX_VERSION@"
+	         Manufacturer="vengi" UpgradeCode="@WIX_UPGRADE_GUID@">
+		<Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"
+		         Platform="x64" Description="@WIX_DESCRIPTION@" />
+		<MajorUpgrade DowngradeErrorMessage="A newer version of @WIX_PRODUCT_NAME@ is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLDIR" Name="@WIX_PRODUCT_NAME@">
+					<Component Id="MainExecutable" Guid="*" Win64="yes">
+						<File Id="@WIX_EXE_ID@" Source="$(var.SourceDir)\@WIX_EXE_FILENAME@" KeyPath="yes" />
+					</Component>
+					<Component Id="UIExecutable" Guid="*" Win64="yes">
+						<File Id="@WIX_UI_EXE_ID@" Source="$(var.SourceDir)\@WIX_UI_EXE_FILENAME@" KeyPath="yes" />
+					</Component>
+@WIX_DATA_COMPONENTS@
+					<Component Id="CmpAddToPath" Guid="*" Win64="yes">
+						<Environment Id="EnvAddToPath" Name="PATH" Value="[INSTALLDIR]" Permanent="no" Part="last" Action="set" System="yes" />
+						<RegistryValue Root="HKLM" Key="Software\vengi\@WIX_TARGET@\PathEnv" Name="installed" Value="1" Type="integer" KeyPath="yes" />
+					</Component>
+				</Directory>
+			</Directory>
+		</Directory>
+
+		<Feature Id="MainApplication" Title="@WIX_PRODUCT_NAME@" Description="@WIX_DESCRIPTION@" Level="1">
+			<ComponentRef Id="MainExecutable" />
+			<ComponentRef Id="UIExecutable" />
+@WIX_DATA_COMPONENT_REFS@
+		</Feature>
+		<Feature Id="AddToPath" Title="Add to PATH" Description="Add the installation folder to the system PATH environment variable" Level="1">
+			<ComponentRef Id="CmpAddToPath" />
+		</Feature>
+
+		<UIRef Id="WixUI_FeatureTree" />
+	</Product>
+</Wix>

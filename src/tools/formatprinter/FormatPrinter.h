@@ -26,6 +26,8 @@ private:
 	void printManPage(const core::String &app);
 	void printApplicationPlist();
 	void printInstallerWix();
+	void printInstallerWixFileAssoc();
+	void printInstallerWixThumbnailer();
 	void printMagic();
 	void printLuaApiMarkdown();
 
