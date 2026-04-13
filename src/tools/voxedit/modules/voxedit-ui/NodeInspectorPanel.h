@@ -31,6 +31,7 @@ private:
 	core::VarPtr _regionSizes;
 	core::VarPtr _gridSize;
 	core::VarPtr _viewMode;
+	int _positionStep = 1;
 	core::Buffer<glm::ivec3> _validRegionSizes;
 	glm::ivec3 _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;

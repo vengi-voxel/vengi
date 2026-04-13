@@ -79,10 +79,18 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		ImGui::TableSetupColumn(_("Name"), colFlags);
 		ImGui::TableHeadersRow();
 
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::SetNextItemWidth(-1);
+		ImGui::InputInt("##positionstep", &_positionStep, 1, 10);
+		_positionStep = glm::clamp(_positionStep, 1, 64);
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(_("Step"));
+
 		glm::ivec3 position = region.getLowerCorner();
 		const int minStep = _gridSize->intVal();
 		const int maxStep = 10;
-		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
+		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, _positionStep, maxStep);
 		if (posChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			const glm::ivec3 &f = position - region.getLowerCorner();
 			_sceneMgr->nodeShift(node.id(), f);
