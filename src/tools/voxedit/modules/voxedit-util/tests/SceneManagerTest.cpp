@@ -1911,7 +1911,7 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundPaletteTransfer) {
 
 TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
 	// Target node is cropped smaller than the grid cell. Source overlaps the gap.
-	// After merge, target should be expanded to cover the overlap.
+	// The voxel outside the target becomes a remainder node.
 	const voxel::Region targetRegion(0, 0, 0, 4, 4, 4);
 	ASSERT_TRUE(_sceneMgr->newScene(true, "expand_test", targetRegion));
 
@@ -1937,13 +1937,22 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
 	_sceneMgr->nodeActivate(sourceNodeId);
 	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
 
-	// The target node should have been expanded to include (8,8,8)
-	const scenegraph::SceneGraphNode *resultNode = _sceneMgr->sceneGraphModelNode(targetNodeId);
-	ASSERT_NE(nullptr, resultNode);
-	const voxel::RawVolume *resultVol = resultNode->volume();
-	ASSERT_NE(nullptr, resultVol);
-	EXPECT_TRUE(resultVol->region().containsPoint(glm::ivec3(8, 8, 8)));
-	EXPECT_FALSE(voxel::isAir(resultVol->voxel(8, 8, 8).getMaterial()));
+	// The voxel at (8,8,8) is outside the target region, so it becomes a remainder node.
+	// Find the remainder node by scanning for a model node containing (8,8,8).
+	bool foundRemainder = false;
+	for (auto iter = _sceneMgr->sceneGraph().beginAllModels(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.id() == targetNodeId) {
+			continue;
+		}
+		const voxel::RawVolume *vol = node.volume();
+		if (vol != nullptr && vol->region().containsPoint(glm::ivec3(8, 8, 8))) {
+			EXPECT_FALSE(voxel::isAir(vol->voxel(8, 8, 8).getMaterial()));
+			foundRemainder = true;
+			break;
+		}
+	}
+	EXPECT_TRUE(foundRemainder) << "Expected a remainder node containing (8,8,8)";
 }
 
 TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
