@@ -467,7 +467,6 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		break;
 	}
 	case SelectMode::Box3D: {
-		wrapper.removeFlags(wrapper.region(), voxel::FlagOutline);
 		voxelutil::VisitSolid condition;
 		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		// Store the exact box region so ModifierVolumeWrapper::skip() allows
