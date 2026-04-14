@@ -11,6 +11,10 @@
 
 #include <stdint.h>
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 class RawVolume;
 class Region;
@@ -27,18 +31,10 @@ enum class ReskinMode : uint8_t {
 };
 
 enum class ReskinFollow : uint8_t {
-	None,   ///< Flat plane at max/min surface height
-	Median, ///< Flat plane at median surface height
-	Voxel,  ///< Per-column surface following
-
-	Max
-};
-
-enum class ReskinAnchor : uint8_t {
-	MinMin, ///< UV origin at min-U, min-V corner
-	MinMax, ///< UV origin at min-U, max-V corner
-	MaxMin, ///< UV origin at max-U, min-V corner
-	MaxMax, ///< UV origin at max-U, max-V corner
+	None,           ///< Flat plane at max/min surface height
+	Median,         ///< Flat plane at median surface height
+	Voxel,          ///< Per-column surface following
+	CornerAverage,  ///< Bilinear interpolation from 4 corner averages
 
 	Max
 };
@@ -66,19 +62,22 @@ enum class ReskinTile : uint8_t {
 struct ReskinConfig {
 	ReskinMode mode = ReskinMode::Blend;
 	ReskinFollow follow = ReskinFollow::Voxel;
-	ReskinAnchor anchor = ReskinAnchor::MinMin;
 	ReskinRotation rotation = ReskinRotation::R0;
 	ReskinTile tile = ReskinTile::Repeat;
-	bool mirrorU = false;
-	bool mirrorV = false;
 	int offsetU = 0;
 	int offsetV = 0;
 	int skinDepth = 1;
 	/// Vertical offset: positive = skin floats above surface, negative = sinks below
 	int zOffset = 0;
 	bool invertSkin = false;
-	/// Which axis of the skin volume is the outward direction (default Y = natural up in editor)
-	math::Axis skinUpAxis = math::Axis::Y;
+	/// Preview mode: only apply a 2x2 tile area for fast feedback
+	bool preview = true;
+	/// Max repeat count for U tiling (0 = unlimited)
+	int maxRepeatU = 0;
+	/// Max repeat count for V tiling (0 = unlimited)
+	int maxRepeatV = 0;
+	/// Which axis of the skin volume is the depth/outward direction (auto-detected from thinnest axis on load)
+	math::Axis skinDepthAxis = math::Axis::Y;
 };
 
 /**
@@ -306,7 +305,9 @@ int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, v
  * @param config Reskin configuration parameters.
  */
 void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::RawVolume &skin,
-				  voxel::FaceNames face, const ReskinConfig &config);
+				  voxel::FaceNames face, const ReskinConfig &config,
+				  const palette::Palette *skinPalette = nullptr,
+				  palette::Palette *targetPalette = nullptr);
 
 /**
  * @brief Reskin on a volume region.

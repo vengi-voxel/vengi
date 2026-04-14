@@ -6,10 +6,13 @@
 
 #include "Brush.h"
 #include "core/GLM.h"
+#include "core/Optional.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
+#include "palette/Palette.h"
+#include "voxel/BitVolume.h"
+#include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
-#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
 
@@ -84,9 +87,11 @@ private:
 	const voxel::RawVolume *_skinVolume = nullptr;
 	core::ScopedPtr<voxel::RawVolume> _ownedSkinVolume;
 	core::String _skinFilePath;
+	core::Optional<palette::Palette> _skinPalette;
 
-	// Original selected voxels captured at brush activation
-	voxel::SparseVolume _snapshot;
+	// Original selected voxels captured at brush activation, stored as a flat array.
+	// Using DynamicVoxelArray instead of SparseVolume avoids O(N) hash insertions.
+	voxel::DynamicVoxelArray _snapshotEntries;
 	// Selection bounding box at capture time
 	voxel::Region _snapshotRegion;
 	// Volume region lower corner at snapshot capture time (to detect region shifts)
@@ -94,7 +99,18 @@ private:
 
 	// Per-generate bookkeeping: tracks positions written during a single generate()
 	// call so the previous state can be restored before re-applying.
-	voxel::SparseVolume _history;
+	// Using BitVolume + flat array instead of SparseVolume avoids O(N) hash chain traversal
+	// per lookup/insert. For 5M+ entries this reduces history operations from ~30s to ~50ms.
+	voxel::DynamicVoxelArray _historyEntries;
+	voxel::BitVolume _historyBits;
+	voxel::Region _historyRegion;
+
+	// Cached BitVolume built from snapshot entries. Rebuilt when snapshot changes.
+	// Used by the Reskin fast path to avoid rebuilding O(N) data structures every frame.
+	bool _cachedBitVolumeValid = false;
+	voxel::BitVolume _cachedBitVolume;
+
+	void rebuildCachedBitVolume();
 
 	// Cached region for preview
 	voxel::Region _cachedRegion;
@@ -116,7 +132,6 @@ public:
 	static constexpr int MaxIterations = 250;
 	static constexpr int MaxFlattenIterations = 250;
 	SculptBrush() : Super(BrushType::Sculpt, ModifierType::Override, ModifierType::Override) {
-		_history.setStoreEmptyVoxels(true);
 	}
 	virtual ~SculptBrush() = default;
 
@@ -182,20 +197,22 @@ public:
 
 	// Reskin accessors
 	static constexpr int MaxReskinDepth = 32;
+	static constexpr int MaxReskinRepeat = 64;
 	const voxelutil::ReskinConfig &reskinConfig() const;
 	void setReskinMode(voxelutil::ReskinMode mode);
 	void setReskinFollow(voxelutil::ReskinFollow follow);
-	void setReskinAnchor(voxelutil::ReskinAnchor anchor);
 	void setReskinRotation(voxelutil::ReskinRotation rotation);
 	void setReskinTile(voxelutil::ReskinTile tile);
-	void setReskinMirrorU(bool mirror);
-	void setReskinMirrorV(bool mirror);
 	void setReskinOffsetU(int offset);
 	void setReskinOffsetV(int offset);
 	void setReskinSkinDepth(int depth);
 	void setReskinZOffset(int offset);
 	void setReskinInvertSkin(bool invert);
-	void setReskinSkinUpAxis(math::Axis axis);
+	void setReskinPreview(bool preview);
+	void setReskinMaxRepeatU(int count);
+	void setReskinMaxRepeatV(int count);
+	void setReskinSkinDepthAxis(math::Axis axis);
+	void cycleReskinSkinDepthAxis();
 
 	/**
 	 * @brief Set the skin volume for reskin mode.
@@ -206,10 +223,12 @@ public:
 	/**
 	 * @brief Set an owned skin volume loaded from a file. The brush takes ownership.
 	 */
-	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath);
+	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath,
+							const palette::Palette *skinPalette = nullptr);
 
 	const voxel::RawVolume *skinVolume() const;
 	const core::String &skinFilePath() const;
+	const palette::Palette *skinPalette() const;
 };
 
 inline bool SculptBrush::managesOwnSelection() const {
@@ -315,11 +334,6 @@ inline void SculptBrush::setReskinFollow(voxelutil::ReskinFollow follow) {
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinAnchor(voxelutil::ReskinAnchor anchor) {
-	_reskinConfig.anchor = anchor;
-	_paramsDirty = true;
-}
-
 inline void SculptBrush::setReskinRotation(voxelutil::ReskinRotation rotation) {
 	_reskinConfig.rotation = rotation;
 	_paramsDirty = true;
@@ -330,14 +344,48 @@ inline void SculptBrush::setReskinTile(voxelutil::ReskinTile tile) {
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinMirrorU(bool mirror) {
-	_reskinConfig.mirrorU = mirror;
+inline void SculptBrush::setReskinPreview(bool preview) {
+	_reskinConfig.preview = preview;
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinMirrorV(bool mirror) {
-	_reskinConfig.mirrorV = mirror;
+inline void SculptBrush::setReskinMaxRepeatU(int count) {
+	_reskinConfig.maxRepeatU = glm::clamp(count, 0, MaxReskinRepeat);
 	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinMaxRepeatV(int count) {
+	_reskinConfig.maxRepeatV = glm::clamp(count, 0, MaxReskinRepeat);
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinSkinDepthAxis(math::Axis axis) {
+	_reskinConfig.skinDepthAxis = axis;
+	// Re-populate skin depth for the new axis
+	if (_skinVolume != nullptr) {
+		const voxel::Region &sr = _skinVolume->region();
+		const int upIdx = math::getIndexForAxis(axis);
+		const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
+		_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+	}
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::cycleReskinSkinDepthAxis() {
+	switch (_reskinConfig.skinDepthAxis) {
+	case math::Axis::X:
+		setReskinSkinDepthAxis(math::Axis::Y);
+		break;
+	case math::Axis::Y:
+		setReskinSkinDepthAxis(math::Axis::Z);
+		break;
+	case math::Axis::Z:
+		setReskinSkinDepthAxis(math::Axis::X);
+		break;
+	default:
+		setReskinSkinDepthAxis(math::Axis::Y);
+		break;
+	}
 }
 
 inline void SculptBrush::setReskinOffsetU(int offset) {
@@ -400,6 +448,10 @@ inline const voxel::RawVolume *SculptBrush::skinVolume() const {
 
 inline const core::String &SculptBrush::skinFilePath() const {
 	return _skinFilePath;
+}
+
+inline const palette::Palette *SculptBrush::skinPalette() const {
+	return _skinPalette.value();
 }
 
 } // namespace voxedit

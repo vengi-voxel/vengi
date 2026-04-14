@@ -105,12 +105,9 @@ static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), 
 static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
 
 static constexpr const char *ReskinFollowStr[] = {NC_("Reskin Follow", "None"), NC_("Reskin Follow", "Median"),
-												  NC_("Reskin Follow", "Voxel")};
+												  NC_("Reskin Follow", "Voxel"),
+												  NC_("Reskin Follow", "Corner Average")};
 static_assert(lengthof(ReskinFollowStr) == (int)voxelutil::ReskinFollow::Max, "ReskinFollowStr size mismatch");
-
-static constexpr const char *ReskinAnchorStr[] = {NC_("Reskin Anchor", "Min/Min"), NC_("Reskin Anchor", "Min/Max"),
-												  NC_("Reskin Anchor", "Max/Min"), NC_("Reskin Anchor", "Max/Max")};
-static_assert(lengthof(ReskinAnchorStr) == (int)voxelutil::ReskinAnchor::Max, "ReskinAnchorStr size mismatch");
 
 static constexpr const char *ReskinRotationStr[] = {NC_("Reskin Rotation", "0"), NC_("Reskin Rotation", "90"),
 													NC_("Reskin Rotation", "180"), NC_("Reskin Rotation", "270")};
@@ -120,9 +117,6 @@ static constexpr const char *ReskinTileStr[] = {NC_("Reskin Tile", "Once"), NC_(
 												NC_("Reskin Tile", "Stretch")};
 static_assert(lengthof(ReskinTileStr) == (int)voxelutil::ReskinTile::Max, "ReskinTileStr size mismatch");
 
-static constexpr const char *ReskinSkinAxisStr[] = {NC_("Reskin Skin Axis", "X"), NC_("Reskin Skin Axis", "Y"),
-													NC_("Reskin Skin Axis", "Z")};
-static_assert(lengthof(ReskinSkinAxisStr) == 3, "ReskinSkinAxisStr size mismatch");
 
 static constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
@@ -1455,9 +1449,43 @@ void BrushPanel::loadSkinFromFile(const core::String &filename) {
 		return;
 	}
 
+	// Auto-crop: find tight bounding box of non-air voxels and shift to origin (0,0,0)
+	const voxel::Region &origRegion = volume->region();
+	glm::ivec3 cropMin(INT_MAX);
+	glm::ivec3 cropMax(INT_MIN);
+	const glm::ivec3 &origLo = origRegion.getLowerCorner();
+	const glm::ivec3 &origHi = origRegion.getUpperCorner();
+	for (int z = origLo.z; z <= origHi.z; ++z) {
+		for (int y = origLo.y; y <= origHi.y; ++y) {
+			for (int x = origLo.x; x <= origHi.x; ++x) {
+				if (voxel::isBlocked(volume->voxel(x, y, z).getMaterial())) {
+					cropMin = glm::min(cropMin, glm::ivec3(x, y, z));
+					cropMax = glm::max(cropMax, glm::ivec3(x, y, z));
+				}
+			}
+		}
+	}
+	if (cropMin.x <= cropMax.x) {
+		const voxel::Region cropRegion(cropMin, cropMax);
+		const voxel::Region targetRegion(glm::ivec3(0), cropMax - cropMin);
+		voxel::RawVolume *cropped = new voxel::RawVolume(targetRegion);
+		for (int z = cropMin.z; z <= cropMax.z; ++z) {
+			for (int y = cropMin.y; y <= cropMax.y; ++y) {
+				for (int x = cropMin.x; x <= cropMax.x; ++x) {
+					const voxel::Voxel &v = volume->voxel(x, y, z);
+					if (voxel::isBlocked(v.getMaterial())) {
+						cropped->setVoxel(x - cropMin.x, y - cropMin.y, z - cropMin.z, v);
+					}
+				}
+			}
+		}
+		delete volume;
+		volume = cropped;
+	}
+
 	Modifier &modifier = _sceneMgr->modifier();
 	SculptBrush &brush = modifier.sculptBrush();
-	brush.setOwnedSkinVolume(volume, filename);
+	brush.setOwnedSkinVolume(volume, filename, &merged.palette);
 	executeSculptBrush();
 }
 
@@ -1586,26 +1614,32 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 
 		const voxelutil::ReskinConfig &cfg = brush.reskinConfig();
 
-		// Skin up axis combo (which axis of the skin is outward)
+		// Preview checkbox with highlighted background color
 		{
-			static constexpr math::Axis skinAxisValues[] = {math::Axis::X, math::Axis::Y, math::Axis::Z};
-			const int currentAxisIdx = math::getIndexForAxis(cfg.skinUpAxis);
-			if (ImGui::BeginCombo(_("Skin up axis"), _(ReskinSkinAxisStr[currentAxisIdx]), ImGuiComboFlags_None)) {
-				for (int i = 0; i < 3; ++i) {
-					const bool selected = i == currentAxisIdx;
-					if (ImGui::Selectable(_(ReskinSkinAxisStr[i]), selected)) {
-						brush.setReskinSkinUpAxis(skinAxisValues[i]);
-						executeSculptBrush();
-					}
-					if (selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
+			const ImVec4 previewColor(0.8f, 0.5f, 0.1f, 0.6f);
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, previewColor);
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.9f, 0.6f, 0.2f, 0.8f));
+			bool preview = cfg.preview;
+			if (ImGui::Checkbox(_("Preview (2x2)"), &preview)) {
+				brush.setReskinPreview(preview);
+				executeSculptBrush();
 			}
+			ImGui::PopStyleColor(2);
 		}
-		ImGui::SetItemTooltipUnformatted(_("Which axis of the skin points outward from the surface. "
-										   "Set to Y if your skin was built with the pattern facing up."));
+		ImGui::SetItemTooltipUnformatted(_("When checked, only a 2x2 tile area is applied for fast preview"));
+
+		// Skin depth axis cycle button
+		{
+			static constexpr const char *axisLabels[] = {"X", "Y", "Z"};
+			const int axisIdx = math::getIndexForAxis(cfg.skinDepthAxis);
+			const core::String label = core::String::format("%s: %s", _("Skin face"), axisLabels[axisIdx]);
+			if (ImGui::Button(label.c_str())) {
+				brush.cycleReskinSkinDepthAxis();
+				executeSculptBrush();
+			}
+			ImGui::SetItemTooltipUnformatted(
+				_("Which axis of the skin is the depth direction. Auto-detected from thinnest axis on load. Click to cycle."));
+		}
 
 		// Reskin mode combo
 		if (ImGui::BeginCombo(_("Reskin mode"), _(ReskinModeStr[(int)cfg.mode]), ImGuiComboFlags_None)) {
@@ -1628,21 +1662,6 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 				const bool selected = i == (int)cfg.follow;
 				if (ImGui::Selectable(_(ReskinFollowStr[i]), selected)) {
 					brush.setReskinFollow((voxelutil::ReskinFollow)i);
-					executeSculptBrush();
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-
-		// Anchor combo
-		if (ImGui::BeginCombo(_("Anchor"), _(ReskinAnchorStr[(int)cfg.anchor]), ImGuiComboFlags_None)) {
-			for (int i = 0; i < (int)voxelutil::ReskinAnchor::Max; ++i) {
-				const bool selected = i == (int)cfg.anchor;
-				if (ImGui::Selectable(_(ReskinAnchorStr[i]), selected)) {
-					brush.setReskinAnchor((voxelutil::ReskinAnchor)i);
 					executeSculptBrush();
 				}
 				if (selected) {
@@ -1682,19 +1701,23 @@ void BrushPanel::updateSculptBrushPanel(command::CommandExecutionListener &liste
 			ImGui::EndCombo();
 		}
 
-		// Mirror checkboxes (only for Repeat tile mode)
+		// Max repeat count (only for Repeat tile mode)
 		if (cfg.tile == voxelutil::ReskinTile::Repeat) {
-			bool mirrorU = cfg.mirrorU;
-			if (ImGui::Checkbox(_("Mirror U"), &mirrorU)) {
-				brush.setReskinMirrorU(mirrorU);
+			int maxRepeatU = cfg.maxRepeatU;
+			ImGui::TextUnformatted(_("Max repeat U"));
+			if (ImGui::SliderInt("##reskin_mru_slider", &maxRepeatU, 0, SculptBrush::MaxReskinRepeat)) {
+				brush.setReskinMaxRepeatU(maxRepeatU);
 				executeSculptBrush();
 			}
-			ImGui::SameLine();
-			bool mirrorV = cfg.mirrorV;
-			if (ImGui::Checkbox(_("Mirror V"), &mirrorV)) {
-				brush.setReskinMirrorV(mirrorV);
+			ImGui::SetItemTooltipUnformatted(_("0 = unlimited"));
+
+			int maxRepeatV = cfg.maxRepeatV;
+			ImGui::TextUnformatted(_("Max repeat V"));
+			if (ImGui::SliderInt("##reskin_mrv_slider", &maxRepeatV, 0, SculptBrush::MaxReskinRepeat)) {
+				brush.setReskinMaxRepeatV(maxRepeatV);
 				executeSculptBrush();
 			}
+			ImGui::SetItemTooltipUnformatted(_("0 = unlimited"));
 		}
 
 		// Offset sliders (not for Stretch)

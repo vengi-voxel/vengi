@@ -2625,9 +2625,9 @@ static int luaVoxel_sculpt_reskin(lua_State *s) {
 	const char *followStr = luaL_optstring(s, 5, "voxel");
 	const int skinDepth = (int)luaL_optinteger(s, 6, 0);
 	const int surfaceOffset = (int)luaL_optinteger(s, 7, 0);
-	const char *skinUpStr = luaL_optstring(s, 8, "y");
 
 	voxelutil::ReskinConfig config;
+	config.preview = false;
 
 	if (core::string::iequals(modeStr, "replace")) {
 		config.mode = voxelutil::ReskinMode::Replace;
@@ -2641,16 +2641,24 @@ static int luaVoxel_sculpt_reskin(lua_State *s) {
 		config.follow = voxelutil::ReskinFollow::None;
 	} else if (core::string::iequals(followStr, "median")) {
 		config.follow = voxelutil::ReskinFollow::Median;
+	} else if (core::string::iequals(followStr, "corneraverage")) {
+		config.follow = voxelutil::ReskinFollow::CornerAverage;
 	} else {
 		config.follow = voxelutil::ReskinFollow::Voxel;
 	}
 
-	const math::Axis parsedAxis = math::toAxis(skinUpStr);
-	config.skinUpAxis = (parsedAxis != math::Axis::None) ? parsedAxis : math::Axis::Y;
-
 	const voxel::Region &skinRegion = skinVolume->volume()->region();
-	const int skinUpIdx = math::getIndexForAxis(config.skinUpAxis);
-	const int defaultDepth = skinRegion.getUpperCorner()[skinUpIdx] - skinRegion.getLowerCorner()[skinUpIdx] + 1;
+	// Auto-detect depth axis from thinnest dimension
+	const glm::ivec3 skinExtents = skinRegion.getUpperCorner() - skinRegion.getLowerCorner() + 1;
+	if (skinExtents.x <= skinExtents.y && skinExtents.x <= skinExtents.z) {
+		config.skinDepthAxis = math::Axis::X;
+	} else if (skinExtents.z <= skinExtents.x && skinExtents.z <= skinExtents.y) {
+		config.skinDepthAxis = math::Axis::Z;
+	} else {
+		config.skinDepthAxis = math::Axis::Y;
+	}
+	const int depthIdx = math::getIndexForAxis(config.skinDepthAxis);
+	const int defaultDepth = skinExtents[depthIdx];
 	config.skinDepth = skinDepth > 0 ? skinDepth : defaultDepth;
 	config.zOffset = surfaceOffset;
 
@@ -2685,10 +2693,9 @@ static int luaVoxel_sculpt_reskin_jsonhelp(lua_State *s) {
 			{"name": "skin", "type": "volume", "description": "The skin volume providing the pattern."},
 			{"name": "face", "type": "string", "description": "Face direction defining surface normal: 'up', 'down', 'left', 'right', 'front', 'back'."},
 			{"name": "mode", "type": "string", "description": "Reskin mode: 'replace' (skin overwrites, air removes), 'blend' (skin overwrites, air preserves), 'negate' (skin removes, air preserves) (optional, default 'blend')."},
-			{"name": "follow", "type": "string", "description": "Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column) (optional, default 'voxel')."},
-			{"name": "skinDepth", "type": "integer", "description": "Number of skin layers to apply (optional, default: full skin depth along up axis)."},
-			{"name": "surfaceOffset", "type": "integer", "description": "Offset from surface: positive = above, negative = below (optional, default 0)."},
-			{"name": "skinUpAxis", "type": "string", "description": "Which skin axis is outward: 'x', 'y', 'z' (optional, default 'y')."}
+			{"name": "follow", "type": "string", "description": "Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column), 'corneraverage' (bilinear from corners) (optional, default 'voxel')."},
+			{"name": "skinDepth", "type": "integer", "description": "Number of skin layers to apply (optional, default: full skin Y-axis depth)."},
+			{"name": "surfaceOffset", "type": "integer", "description": "Offset from surface: positive = above, negative = below (optional, default 0)."}
 		],
 		"returns": [
 			{"type": "integer", "description": "Number of voxels changed."}

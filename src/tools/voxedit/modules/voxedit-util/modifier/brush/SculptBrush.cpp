@@ -4,10 +4,13 @@
 
 #include "SculptBrush.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
+#include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Connectivity.h"
@@ -26,8 +29,9 @@ void SculptBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
 	_hasSnapshot = false;
-	_snapshot.clear();
-	_history.clear();
+	_snapshotEntries.clear();
+	_historyEntries.clear();
+	_historyRegion = voxel::Region::InvalidRegion;
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
@@ -37,8 +41,10 @@ void SculptBrush::onSceneChange() {
 
 void SculptBrush::onActivated() {
 	reset();
-	// Suppress undo registration during preview - only the final commit should create an undo entry
-	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
+	// Suppress undo registration during preview - only the final commit should create an undo entry.
+	// Also skip InvalidateNodeCache: selection bounding box does not change during sculpt preview,
+	// and regionForFlag() scans the full volume which is very expensive on large models.
+	_sceneModifiedFlags = SceneModifiedFlags::NoUndo & ~SceneModifiedFlags::InvalidateNodeCache;
 }
 
 bool SculptBrush::hasPendingChanges() const {
@@ -47,8 +53,11 @@ bool SculptBrush::hasPendingChanges() const {
 
 voxel::Region SculptBrush::revertChanges(voxel::RawVolume *volume) {
 	voxel::RawVolumeWrapper wrapper(volume);
-	_history.copyTo(wrapper);
-	_history.clear();
+	for (const voxel::VoxelPosition &entry : _historyEntries) {
+		wrapper.setVoxel(entry.pos.x, entry.pos.y, entry.pos.z, entry.voxel);
+	}
+	_historyEntries.clear();
+	_historyRegion = voxel::Region::InvalidRegion;
 	return wrapper.dirtyRegion();
 }
 
@@ -64,10 +73,12 @@ void SculptBrush::reset() {
 	Super::reset();
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
-	_paramsDirty = true;
+	_paramsDirty = false;
 	_hasSnapshot = false;
-	_snapshot.clear();
-	_history.clear();
+	_snapshotEntries.clear();
+	_historyEntries.clear();
+	_historyRegion = voxel::Region::InvalidRegion;
+	_cachedBitVolumeValid = false;
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
@@ -88,6 +99,7 @@ void SculptBrush::reset() {
 	_planeGradU = 0.0f;
 	_planeGradV = 0.0f;
 	_lastPaintPos = glm::ivec3(INT_MIN);
+	_reskinConfig.preview = true;
 }
 
 bool SculptBrush::beginBrush(const BrushContext &ctx) {
@@ -118,7 +130,10 @@ bool SculptBrush::active() const {
 
 void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
 	if (!_hasSnapshot && volume != nullptr) {
-		captureSnapshot(volume, ctx.targetVolumeRegion);
+		// Defer snapshot capture until there is actually work to do.
+		if (_paramsDirty) {
+			captureSnapshot(volume, ctx.targetVolumeRegion);
+		}
 	} else if (_hasSnapshot) {
 		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
 		if (delta != glm::ivec3(0)) {
@@ -178,26 +193,47 @@ voxel::Region SculptBrush::calcRegion(const BrushContext &ctx) const {
 	if (_cachedRegionValid) {
 		return _cachedRegion;
 	}
+	if (!_hasSnapshot) {
+		return voxel::Region::InvalidRegion;
+	}
 	return ctx.targetVolumeRegion;
 }
 
 void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
 	core_trace_scoped(SculptBrushCaptureSnapshot);
-	_snapshot.clear();
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
+	_snapshotEntries.clear();
+
+	// Use regionForFlag to get tight bounding box of selected voxels first.
+	// This avoids scanning the entire volume (e.g. 256^3 = 16M voxels) when the
+	// selection is a small fraction of the volume (e.g. 100x100x5 = 50K voxels).
+	const voxel::Region selectionBounds = volume->regionForFlag(voxel::FlagOutline);
+	if (!selectionBounds.isValid()) {
+		_hasSnapshot = false;
+		return;
+	}
+
+	// Scan only the tight selection bounding box
+	voxel::Region scanRegion = selectionBounds;
+	scanRegion.cropTo(volRegion);
+
+	// Pre-allocate to avoid repeated reallocations during push_back.
+	// The actual count will be <= voxels in the scan region.
+	_snapshotEntries.reserve(scanRegion.voxels());
+
+	glm::ivec3 selLo(scanRegion.getUpperCorner());
+	glm::ivec3 selHi(scanRegion.getLowerCorner());
 
 	voxelutil::visitVolume(
-		*volume, volRegion,
+		*volume, scanRegion,
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const glm::ivec3 pos(x, y, z);
-			_snapshot.setVoxel(pos, voxel);
+			_snapshotEntries.push_back({pos, voxel});
 			selLo = glm::min(selLo, pos);
 			selHi = glm::max(selHi, pos);
 		},
 		voxelutil::VisitSolidOutline());
 
-	if (_snapshot.empty()) {
+	if (_snapshotEntries.empty()) {
 		_hasSnapshot = false;
 		return;
 	}
@@ -205,59 +241,39 @@ void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::R
 	_snapshotRegion = voxel::Region(selLo, selHi);
 	_capturedVolumeLower = volRegion.getLowerCorner();
 	_hasSnapshot = true;
+	_cachedBitVolumeValid = false;
 }
 
 void SculptBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 	core_trace_scoped(SculptBrushAdjustSnapshotForRegionShift);
-	struct ShiftEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-	core::DynamicArray<ShiftEntry> entries;
-	entries.reserve(_snapshotRegion.voxels());
-	const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-	for (int z = lo.z; z <= hi.z; ++z) {
-		for (int y = lo.y; y <= hi.y; ++y) {
-			for (int x = lo.x; x <= hi.x; ++x) {
-				if (!_snapshot.hasVoxel(x, y, z)) {
-					continue;
-				}
-				entries.push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), _snapshot.voxel(x, y, z)});
-			}
-		}
-	}
-	_snapshot.clear();
-	for (const ShiftEntry &e : entries) {
-		_snapshot.setVoxel(e.pos, e.voxel);
+
+	// Shift all snapshot entries in-place
+	for (voxel::VoxelPosition &entry : _snapshotEntries) {
+		entry.pos += delta;
 	}
 
 	_snapshotRegion.shift(delta.x, delta.y, delta.z);
 	_capturedVolumeLower += delta;
 
-	struct EntryCollector {
-		core::DynamicArray<ShiftEntry> *entries;
-		glm::ivec3 delta;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
-			return true;
-		}
-	};
-	core::DynamicArray<ShiftEntry> historyEntries;
-	historyEntries.reserve(_history.size());
-	EntryCollector collector{&historyEntries, delta};
-	_history.copyTo(collector);
-	_history.clear();
-	for (const ShiftEntry &e : historyEntries) {
-		_history.setVoxel(e.pos, e.voxel);
+	// Shift history entries in-place (flat array, no hash rebuild needed)
+	for (voxel::VoxelPosition &entry : _historyEntries) {
+		entry.pos += delta;
 	}
+	if (_historyRegion.isValid()) {
+		_historyRegion.shift(delta.x, delta.y, delta.z);
+	}
+	_cachedBitVolumeValid = false;
 }
 
 void SculptBrush::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
-	if (_history.hasVoxel(pos)) {
+	// O(1) bit test instead of O(N/buckets) hash chain traversal
+	if (_historyRegion.containsPoint(pos) && _historyBits.hasValue(pos.x, pos.y, pos.z)) {
 		return;
 	}
-	_history.setVoxel(pos, vol->voxel(pos));
+	if (_historyRegion.containsPoint(pos)) {
+		_historyBits.setVoxel(pos.x, pos.y, pos.z, true);
+	}
+	_historyEntries.push_back({pos, vol->voxel(pos)});
 }
 
 void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
@@ -271,76 +287,135 @@ void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &p
 	}
 }
 
+void SculptBrush::rebuildCachedBitVolume() {
+	if (_cachedBitVolumeValid) {
+		return;
+	}
+	core_trace_scoped(SculptBrushRebuildBitVolume);
+	_cachedBitVolume = voxel::BitVolume(_snapshotRegion);
+	for (const voxel::VoxelPosition &entry : _snapshotEntries) {
+		_cachedBitVolume.setVoxel(entry.pos.x, entry.pos.y, entry.pos.z, true);
+	}
+	_cachedBitVolumeValid = true;
+}
+
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	core_trace_scoped(SculptBrushApplySculpt);
 
-	// For Reskin mode, expand the working region along the face normal to accommodate
-	// the z offset and skin layers growing outward from the surface.
-	voxel::Region workRegion = _snapshotRegion;
-	if (_sculptMode == SculptMode::Reskin && _flattenFace != voxel::FaceNames::Max) {
-		const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
-		const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
-		glm::ivec3 lo = workRegion.getLowerCorner();
-		glm::ivec3 hi = workRegion.getUpperCorner();
-		lo[axisIdx] -= expand;
-		hi[axisIdx] += expand;
-		// Clamp to volume bounds
-		const voxel::Region &volRegion = wrapper.volume()->region();
-		lo = glm::max(lo, volRegion.getLowerCorner());
-		hi = glm::min(hi, volRegion.getUpperCorner());
-		workRegion = voxel::Region(lo, hi);
+	// Ensure the cached BitVolume is up to date (built from flat _snapshotEntries).
+	rebuildCachedBitVolume();
+
+	// ---- Reskin fast path ----
+	// sculptReskin never reads from voxelMap, only writes. So we skip the expensive O(N)
+	// SparseVolume construction and full write-back. Instead: copy cached BitVolume (cheap
+	// bit memcpy), pass empty voxelMap, and write back only the entries sculptReskin modified.
+	// ---- Reskin: early return when no skin loaded ----
+	if (_sculptMode == SculptMode::Reskin && _skinVolume == nullptr) {
+		return;
 	}
 
+	if (_sculptMode == SculptMode::Reskin && _skinVolume != nullptr && _flattenFace != voxel::FaceNames::Max) {
+		voxel::BitVolume workSolid(_cachedBitVolume);
+		voxel::SparseVolume voxelMap;
+
+		const palette::Palette *skinPal = skinPalette();
+		palette::Palette &nodePal = wrapper.node().palette();
+		voxelutil::sculptReskin(workSolid, voxelMap, *_skinVolume, _flattenFace, _reskinConfig,
+							   skinPal, skinPal != nullptr ? &nodePal : nullptr);
+
+		// Write back directly to volume, bypassing per-voxel writeVoxel/saveToHistory overhead.
+		// SparseVolume iteration has no duplicates, so no dedup check needed.
+		// Pre-allocate history to avoid repeated reallocations for large entries.
+		voxel::RawVolume *vol = wrapper.volume();
+		const voxel::Region &volRegion = vol->region();
+		_historyEntries.reserve(voxelMap.size());
+		voxel::Region dirtyRegion;
+		struct ReskinWriter {
+			voxel::RawVolume *vol;
+			const voxel::Region *volRegion;
+			voxel::DynamicVoxelArray *historyEntries;
+			voxel::Region *dirtyRegion;
+			bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
+				if (!volRegion->containsPoint(x, y, z)) {
+					return true;
+				}
+				// Save original voxel to history (flat array, no hash)
+				historyEntries->push_back({glm::ivec3(x, y, z), vol->voxel(x, y, z)});
+				// Write new voxel directly to volume
+				voxel::Voxel v = voxel;
+				if (voxel::isBlocked(v.getMaterial())) {
+					v.setFlags(voxel::FlagOutline);
+				}
+				vol->setVoxel(x, y, z, v);
+				if (dirtyRegion->isValid()) {
+					dirtyRegion->accumulate(x, y, z);
+				} else {
+					*dirtyRegion = voxel::Region(x, y, z, x, y, z);
+				}
+				return true;
+			}
+		};
+		ReskinWriter writer{vol, &volRegion, &_historyEntries, &dirtyRegion};
+		voxelMap.copyTo(writer);
+		// Accumulate dirty bounding box via two corner points (no Region overload exists)
+		if (dirtyRegion.isValid()) {
+			wrapper.addToDirtyRegion(dirtyRegion.getLowerCorner());
+			wrapper.addToDirtyRegion(dirtyRegion.getUpperCorner());
+		}
+		return;
+	}
+
+	// ---- Generic path for all other sculpt modes ----
+	voxel::Region workRegion = _snapshotRegion;
+
+	// Erode only writes air to removed positions - it never reads voxel data from voxelMap.
+	// Skip the expensive O(N) SparseVolume construction for it.
+	const bool needsVoxelMap = _sculptMode != SculptMode::Erode;
+
+	// Build BitVolume from cached entries. Only build SparseVolume when the mode needs it.
 	voxel::BitVolume currentSolid(workRegion);
 	voxel::SparseVolume voxelMap;
-
-	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
-
-	// Collect snapshot entries: positions + voxels for reuse in write-back phase
-	voxel::DynamicVoxelArray snapshotEntries;
-	snapshotEntries.reserve(_snapshot.size());
-
-	struct SnapshotLoader {
-		voxel::BitVolume *solid;
-		voxel::SparseVolume *voxelMap;
-		voxel::DynamicVoxelArray *entries;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &v) {
-			const glm::ivec3 pos(x, y, z);
-			solid->setVoxel(x, y, z, true);
-			voxelMap->setVoxel(pos, v);
-			entries->push_back({pos, v});
-			return true;
+	for (const voxel::VoxelPosition &entry : _snapshotEntries) {
+		currentSolid.setVoxel(entry.pos.x, entry.pos.y, entry.pos.z, true);
+	}
+	if (needsVoxelMap) {
+		for (const voxel::VoxelPosition &entry : _snapshotEntries) {
+			voxelMap.setVoxel(entry.pos, entry.voxel);
 		}
-	};
-	SnapshotLoader loader{&currentSolid, &voxelMap, &snapshotEntries};
-	_snapshot.copyTo(loader);
+	}
 
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 
-	// Build anchor set: non-selected solid neighbors that act as immovable constraints.
+	// Build anchor set only for modes that use it
+	const bool needsAnchors = _sculptMode == SculptMode::Erode || _sculptMode == SculptMode::Grow ||
+							  _sculptMode == SculptMode::SmoothAdditive || _sculptMode == SculptMode::SmoothErode ||
+							  _sculptMode == SculptMode::SmoothGaussian || _sculptMode == SculptMode::BridgeGap;
 	voxel::Region anchorRegion = _snapshotRegion;
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volRegion);
 	voxel::BitVolume anchorSolid(anchorRegion);
-	for (int z = snapLo.z; z <= snapHi.z; ++z) {
-		for (int y = snapLo.y; y <= snapHi.y; ++y) {
-			for (int x = snapLo.x; x <= snapHi.x; ++x) {
-				if (!currentSolid.hasValue(x, y, z)) {
-					continue;
-				}
-				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-					const glm::ivec3 neighbor = glm::ivec3(x, y, z) + offset;
-					if (currentSolid.hasValue(neighbor.x, neighbor.y, neighbor.z)) {
+	if (needsAnchors) {
+		const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
+		const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
+		for (int z = snapLo.z; z <= snapHi.z; ++z) {
+			for (int y = snapLo.y; y <= snapHi.y; ++y) {
+				for (int x = snapLo.x; x <= snapHi.x; ++x) {
+					if (!currentSolid.hasValue(x, y, z)) {
 						continue;
 					}
-					if (!volRegion.containsPoint(neighbor)) {
-						continue;
-					}
-					const voxel::Voxel &v = vol->voxel(neighbor);
-					if (voxel::isBlocked(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
-						anchorSolid.setVoxel(neighbor, true);
+					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+						const glm::ivec3 neighbor = glm::ivec3(x, y, z) + offset;
+						if (currentSolid.hasValue(neighbor.x, neighbor.y, neighbor.z)) {
+							continue;
+						}
+						if (!volRegion.containsPoint(neighbor)) {
+							continue;
+						}
+						const voxel::Voxel &v = vol->voxel(neighbor);
+						if (voxel::isBlocked(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
+							anchorSolid.setVoxel(neighbor, true);
+						}
 					}
 				}
 			}
@@ -378,35 +453,35 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		voxelutil::sculptBridgeGap(currentSolid, voxelMap, anchorSolid, fillVoxel);
 	} else if (_sculptMode == SculptMode::SquashToPlane && _flattenFace != voxel::FaceNames::Max) {
 		voxelutil::sculptSquashToPlane(currentSolid, voxelMap, _flattenFace, _squashPlaneCoord);
-	} else if (_sculptMode == SculptMode::Reskin && _skinVolume != nullptr && _flattenFace != voxel::FaceNames::Max) {
-		voxelutil::sculptReskin(currentSolid, voxelMap, *_skinVolume, _flattenFace, _reskinConfig);
 	}
 
-	// Write results using the collected snapshot entries - no hash lookups needed.
-	// Snapshot entries have the original positions and colors. After sculpt,
-	// currentSolid tells us what survived (BitVolume, O(1) bit test).
+	// Write-back: only write entries that actually CHANGED.
+	// - Removed entries (was solid, now not): write air
+	// - Modified entries (in voxelMap with different value): write new value
+	// - Unchanged entries: SKIP (volume already has correct values after history restore)
+	// This reduces 5.6M writes to ~100K for erode, saving massive history hash overhead.
 	const voxel::Voxel air;
 
-	// Pass 1: remove sculpted-away voxels + write surviving snapshot voxels.
-	// Read from voxelMap (not snapshot) so color changes from reskin are applied.
-	// For non-reskin modes, voxelMap entries match the snapshot for surviving positions.
-	for (const voxel::VoxelPosition &entry : snapshotEntries) {
+	// Pass 1: handle snapshot entries (removed or modified by sculpt)
+	for (const voxel::VoxelPosition &entry : _snapshotEntries) {
 		if (!currentSolid.hasValue(entry.pos.x, entry.pos.y, entry.pos.z)) {
+			// Removed by sculpt - write air
 			writeVoxel(wrapper, entry.pos, air);
-		} else if (voxelMap.hasVoxel(entry.pos)) {
-			voxel::Voxel v = voxelMap.voxel(entry.pos);
-			v.setFlags(voxel::FlagOutline);
-			writeVoxel(wrapper, entry.pos, v);
-		} else {
-			voxel::Voxel v = entry.voxel;
-			v.setFlags(voxel::FlagOutline);
-			writeVoxel(wrapper, entry.pos, v);
+		} else if (needsVoxelMap && voxelMap.hasVoxel(entry.pos)) {
+			// Check if the voxel was actually modified by comparing with original
+			const voxel::Voxel &mapVoxel = voxelMap.voxel(entry.pos);
+			if (mapVoxel.getColor() != entry.voxel.getColor() ||
+				mapVoxel.getMaterial() != entry.voxel.getMaterial() ||
+				mapVoxel.getNormal() != entry.voxel.getNormal()) {
+				voxel::Voxel v = mapVoxel;
+				v.setFlags(voxel::FlagOutline);
+				writeVoxel(wrapper, entry.pos, v);
+			}
 		}
+		// Else: unchanged, skip - volume already has the correct original value
 	}
 
-	// Pass 2: write newly grown voxels (added by sculpt, not in original snapshot).
-	// Scan the working region (may be expanded for reskin) with O(1) bit tests.
-	// Only new positions need voxelMap hash lookup for color.
+	// Pass 2: write newly grown voxels (not in original snapshot)
 	const glm::ivec3 &workLo = workRegion.getLowerCorner();
 	const glm::ivec3 &workHi = workRegion.getUpperCorner();
 	for (int z = workLo.z; z <= workHi.z; ++z) {
@@ -437,6 +512,7 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	if (!_paramsDirty) {
 		return;
 	}
+
 	_paramsDirty = false;
 
 	// ExtendPlane uses additive painting - no history restore between strokes
@@ -454,23 +530,29 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 
 	voxel::RawVolume *vol = wrapper.volume();
 
-	// Restore previously modified state before re-applying
-	struct HistoryRestorer {
-		voxel::RawVolume *vol;
-		ModifierVolumeWrapper *wrapper;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			if (vol->setVoxel(x, y, z, voxel)) {
-				wrapper->addToDirtyRegion(glm::ivec3(x, y, z));
-			}
-			return true;
+	// Restore previously modified state from flat history array (O(N) sequential iteration,
+	// no hash chain traversal). This undoes the previous sculpt so we re-apply from scratch.
+	for (const voxel::VoxelPosition &entry : _historyEntries) {
+		if (vol->setVoxel(entry.pos, entry.voxel)) {
+			wrapper.addToDirtyRegion(entry.pos);
 		}
-	};
-	HistoryRestorer restorer{vol, &wrapper};
-	_history.copyTo(restorer);
-	_history.clear();
+	}
+	_historyEntries.clear();
+
+	// Skip sculpt when the mode needs a face direction but none is set yet
+	const bool needsFace = modeNeedsFace(_sculptMode);
+	if (needsFace && _flattenFace == voxel::FaceNames::Max) {
+		return;
+	}
+
+	// Initialize history tracking BitVolume for this generate() pass.
+	// Sized to snapshot region + margin for modes that grow outward.
+	_historyRegion = _snapshotRegion;
+	_historyRegion.grow(_iterations + 2);
+	_historyRegion.cropTo(vol->region());
+	_historyBits = voxel::BitVolume(_historyRegion);
 
 	applySculpt(wrapper, ctx);
-	markDirty();
 }
 
 void SculptBrush::fitPlaneFromSnapshot() {
@@ -486,31 +568,21 @@ void SculptBrush::fitPlaneFromSnapshot() {
 	using HeightMap = core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>>;
 	HeightMap heightMap;
 
-	struct HeightCollector {
-		HeightMap *map;
-		int uAxis;
-		int vAxis;
-		int heightAxis;
-		bool fromPositive;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
-			const glm::ivec3 pos(x, y, z);
-			glm::ivec3 key(pos);
-			key[heightAxis] = 0;
-			auto it = map->find(key);
-			if (it == map->end()) {
-				map->put(key, pos[heightAxis]);
+	for (const voxel::VoxelPosition &entry : _snapshotEntries) {
+		const glm::ivec3 &pos = entry.pos;
+		glm::ivec3 key(pos);
+		key[_planeHeightAxis] = 0;
+		auto it = heightMap.find(key);
+		if (it == heightMap.end()) {
+			heightMap.put(key, pos[_planeHeightAxis]);
+		} else {
+			if (fromPositive) {
+				it->value = glm::max(it->value, pos[_planeHeightAxis]);
 			} else {
-				if (fromPositive) {
-					it->value = glm::max(it->value, pos[heightAxis]);
-				} else {
-					it->value = glm::min(it->value, pos[heightAxis]);
-				}
+				it->value = glm::min(it->value, pos[_planeHeightAxis]);
 			}
-			return true;
 		}
-	};
-	HeightCollector collector{&heightMap, _planeUAxis, _planeVAxis, _planeHeightAxis, fromPositive};
-	_snapshot.copyTo(collector);
+	}
 
 	if (heightMap.empty()) {
 		_planeFitted = false;
@@ -746,30 +818,35 @@ void SculptBrush::setSculptMode(SculptMode mode) {
 	_paramsDirty = true;
 }
 
-void SculptBrush::setReskinSkinUpAxis(math::Axis axis) {
-	_reskinConfig.skinUpAxis = axis;
-	// Re-populate skin depth for the new axis
-	if (_skinVolume != nullptr) {
-		setSkinVolume(_skinVolume);
-	}
-	_paramsDirty = true;
-}
-
 void SculptBrush::setSkinVolume(const voxel::RawVolume *skinVolume) {
 	_skinVolume = skinVolume;
-	// Auto-populate skin depth from the skin volume's depth along the configured up axis
 	if (skinVolume != nullptr) {
 		const voxel::Region &sr = skinVolume->region();
-		const int upIdx = math::getIndexForAxis(_reskinConfig.skinUpAxis);
-		const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
+		const glm::ivec3 extents = sr.getUpperCorner() - sr.getLowerCorner() + 1;
+		// Auto-detect depth axis from thinnest dimension
+		if (extents.x <= extents.y && extents.x <= extents.z) {
+			_reskinConfig.skinDepthAxis = math::Axis::X;
+		} else if (extents.z <= extents.x && extents.z <= extents.y) {
+			_reskinConfig.skinDepthAxis = math::Axis::Z;
+		} else {
+			_reskinConfig.skinDepthAxis = math::Axis::Y;
+		}
+		const int upIdx = math::getIndexForAxis(_reskinConfig.skinDepthAxis);
+		const int depthExtent = extents[upIdx];
 		_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
 	}
 	_paramsDirty = true;
 }
 
-void SculptBrush::setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath) {
+void SculptBrush::setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath,
+									 const palette::Palette *skinPalette) {
 	_ownedSkinVolume = skinVolume;
 	_skinFilePath = filePath;
+	if (skinPalette != nullptr) {
+		_skinPalette = *skinPalette;
+	} else {
+		_skinPalette = {};
+	}
 	setSkinVolume(skinVolume);
 }
 

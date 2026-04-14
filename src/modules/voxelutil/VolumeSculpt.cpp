@@ -18,6 +18,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "core/Algorithm.h"
+#include "palette/Palette.h"
 #include <cfloat>
 #include <climits>
 
@@ -1091,7 +1092,8 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 }
 
 void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::RawVolume &skin,
-				  voxel::FaceNames face, const ReskinConfig &config) {
+				  voxel::FaceNames face, const ReskinConfig &config,
+				  const palette::Palette *skinPalette, palette::Palette *targetPalette) {
 	if (face == voxel::FaceNames::Max) {
 		return;
 	}
@@ -1103,16 +1105,57 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 		return;
 	}
 
-	// Determine which skin axis is the outward direction based on config
-	const int skinUpIdx = math::getIndexForAxis(config.skinUpAxis);
-	const int skinUIdx = (skinUpIdx + 1) % 3; // first tiling axis of skin
-	const int skinVIdx = (skinUpIdx + 2) % 3; // second tiling axis of skin
+	// Build color remap table: skin palette index -> target palette index.
+	// Only import colors that are actually used by skin voxels into the target palette.
+	static constexpr int PaletteSize = palette::PaletteMaxColors;
+	bool hasRemap = false;
+	uint8_t colorRemap[PaletteSize];
+	if (skinPalette != nullptr && targetPalette != nullptr) {
+		hasRemap = true;
+		for (int i = 0; i < PaletteSize; ++i) {
+			colorRemap[i] = 0;
+		}
+		// Scan skin volume to find which color indices are actually used
+		bool usedColors[PaletteSize];
+		for (int i = 0; i < PaletteSize; ++i) {
+			usedColors[i] = false;
+		}
+		const glm::ivec3 &sLo = skinRegion.getLowerCorner();
+		const glm::ivec3 &sHi = skinRegion.getUpperCorner();
+		for (int z = sLo.z; z <= sHi.z; ++z) {
+			for (int y = sLo.y; y <= sHi.y; ++y) {
+				for (int x = sLo.x; x <= sHi.x; ++x) {
+					const voxel::Voxel &v = skin.voxel(x, y, z);
+					if (voxel::isBlocked(v.getMaterial())) {
+						usedColors[v.getColor()] = true;
+					}
+				}
+			}
+		}
+		// Only add used colors to the target palette
+		for (int i = 0; i < PaletteSize; ++i) {
+			if (!usedColors[i]) {
+				continue;
+			}
+			const color::RGBA skinColor = skinPalette->color(i);
+			uint8_t targetIdx = 0;
+			if (!targetPalette->tryAdd(skinColor, true, &targetIdx, false)) {
+				// Color already exists or is very similar - tryAdd sets targetIdx
+			}
+			colorRemap[i] = targetIdx;
+		}
+	}
+
+	// Skin axes: skinDepthAxis is the outward/depth direction, the other two are tiling axes
+	const int skinUpIdx = math::getIndexForAxis(config.skinDepthAxis);
+	const int skinUIdx = (skinUpIdx + 1) % 3;
+	const int skinVIdx = (skinUpIdx + 2) % 3;
 
 	const glm::ivec3 &skinLo = skinRegion.getLowerCorner();
 	const glm::ivec3 &skinHi = skinRegion.getUpperCorner();
-	const int skinUExtent = skinHi[skinUIdx] - skinLo[skinUIdx] + 1; // tiling dim 1
-	const int skinVExtent = skinHi[skinVIdx] - skinLo[skinVIdx] + 1; // tiling dim 2
-	const int skinDExtent = skinHi[skinUpIdx] - skinLo[skinUpIdx] + 1; // depth dim
+	const int skinUExtent = skinHi[skinUIdx] - skinLo[skinUIdx] + 1;
+	const int skinVExtent = skinHi[skinVIdx] - skinLo[skinVIdx] + 1;
+	const int skinDExtent = skinHi[skinUpIdx] - skinLo[skinUpIdx] + 1;
 
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const int perp1 = (axisIdx + 1) % 3; // U axis
@@ -1140,6 +1183,15 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	} else {
 		tileW = skinVExtent;
 		tileH = skinUExtent;
+	}
+
+	// In preview mode, limit the applied area to 2x2 tiles
+	int effectiveSelW = selW;
+	int effectiveSelH = selH;
+	if (config.preview) {
+		static constexpr int PreviewTiles = 2;
+		effectiveSelW = glm::min(selW, tileW * PreviewTiles);
+		effectiveSelH = glm::min(selH, tileH * PreviewTiles);
 	}
 
 	// Build surface height map per (u,v) column
@@ -1201,12 +1253,34 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 		}
 	}
 
+	// Helper to compute average surface height in a small neighborhood around a selection position
+	static constexpr int CornerSampleRadius = 2;
+	auto cornerAvgAt = [&](int uCenter, int vCenter) -> float {
+		int sum = 0;
+		int count = 0;
+		for (int du = -CornerSampleRadius; du <= CornerSampleRadius; ++du) {
+			for (int dv = -CornerSampleRadius; dv <= CornerSampleRadius; ++dv) {
+				const int u = glm::clamp(uCenter + du, 0, selW - 1);
+				const int v = glm::clamp(vCenter + dv, 0, selH - 1);
+				const int idx = u * selH + v;
+				if (surfaceHeight[idx] != EMPTY) {
+					sum += surfaceHeight[idx];
+					++count;
+				}
+			}
+		}
+		if (count == 0) {
+			return 0.0f;
+		}
+		return (float)sum / (float)count;
+	};
+
 	// Process each (u,v) column
 	const int maxDepth = glm::min(config.skinDepth, skinDExtent);
 	const voxel::Voxel air;
 
-	for (int uIdx = 0; uIdx < selW; ++uIdx) {
-		for (int vIdx = 0; vIdx < selH; ++vIdx) {
+	for (int uIdx = 0; uIdx < effectiveSelW; ++uIdx) {
+		for (int vIdx = 0; vIdx < effectiveSelH; ++vIdx) {
 			const int colIdx = uIdx * selH + vIdx;
 			if (surfaceHeight[colIdx] == EMPTY) {
 				continue;
@@ -1217,45 +1291,16 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 			const int surface = surfaceHeight[colIdx];
 
 			// Start height for skin application, with z offset
-			// Positive zOffset = outward (above surface), negative = inward (below surface)
 			const int outwardStep = -inwardStep;
-			int startHeight;
-			if (config.follow == ReskinFollow::Voxel) {
-				startHeight = surface + config.zOffset * outwardStep;
-			} else {
-				startHeight = referenceHeight + config.zOffset * outwardStep;
-			}
 
-			// Map (u,v) to skin coordinates
-			int localU;
-			int localV;
-			switch (config.anchor) {
-			case ReskinAnchor::MinMin:
-				localU = uIdx;
-				localV = vIdx;
-				break;
-			case ReskinAnchor::MinMax:
-				localU = uIdx;
-				localV = selH - 1 - vIdx;
-				break;
-			case ReskinAnchor::MaxMin:
-				localU = selW - 1 - uIdx;
-				localV = vIdx;
-				break;
-			case ReskinAnchor::MaxMax:
-				localU = selW - 1 - uIdx;
-				localV = selH - 1 - vIdx;
-				break;
-			default:
-				localU = uIdx;
-				localV = vIdx;
-				break;
-			}
+			// Map (u,v) to skin coordinates (always MinMin anchor)
+			int localU = uIdx + config.offsetU;
+			int localV = vIdx + config.offsetV;
 
 			// Apply offset (not for Stretch mode)
-			if (config.tile != ReskinTile::Stretch) {
-				localU += config.offsetU;
-				localV += config.offsetV;
+			if (config.tile == ReskinTile::Stretch) {
+				localU = uIdx;
+				localV = vIdx;
 			}
 
 			// Apply tiling to get position in effective skin space [0, tileW) x [0, tileH)
@@ -1271,20 +1316,21 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				tV = localV;
 				break;
 			case ReskinTile::Repeat: {
+				// Check max repeat limits
+				if (tileW > 0 && config.maxRepeatU > 0) {
+					const int tileIdxU = localU >= 0 ? localU / tileW : -1;
+					if (tileIdxU >= config.maxRepeatU || tileIdxU < 0) {
+						skipColumn = true;
+					}
+				}
+				if (tileH > 0 && config.maxRepeatV > 0) {
+					const int tileIdxV = localV >= 0 ? localV / tileH : -1;
+					if (tileIdxV >= config.maxRepeatV || tileIdxV < 0) {
+						skipColumn = true;
+					}
+				}
 				tU = ((localU % tileW) + tileW) % tileW;
 				tV = ((localV % tileH) + tileH) % tileH;
-				if (config.mirrorU) {
-					const int tileIdxU = localU >= 0 ? localU / tileW : (localU - tileW + 1) / tileW;
-					if (glm::abs(tileIdxU) % 2 == 1) {
-						tU = tileW - 1 - tU;
-					}
-				}
-				if (config.mirrorV) {
-					const int tileIdxV = localV >= 0 ? localV / tileH : (localV - tileH + 1) / tileH;
-					if (glm::abs(tileIdxV) % 2 == 1) {
-						tV = tileH - 1 - tV;
-					}
-				}
 				break;
 			}
 			case ReskinTile::Stretch:
@@ -1305,8 +1351,34 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				continue;
 			}
 
+			// Compute start height based on follow mode
+			int startHeight;
+			if (config.follow == ReskinFollow::Voxel) {
+				startHeight = surface + config.zOffset * outwardStep;
+			} else if (config.follow == ReskinFollow::CornerAverage) {
+				// Per-tile bilinear interpolation: sample surface height at this tile's 4 corners
+				// Adjacent tiles share corners, so they connect seamlessly
+				const int tileOriginU = uIdx - tU;
+				const int tileOriginV = vIdx - tV;
+				const float h00 = cornerAvgAt(tileOriginU, tileOriginV);
+				const float h10 = cornerAvgAt(tileOriginU + tileW, tileOriginV);
+				const float h01 = cornerAvgAt(tileOriginU, tileOriginV + tileH);
+				const float h11 = cornerAvgAt(tileOriginU + tileW, tileOriginV + tileH);
+				const float fu = (tileW > 1) ? (float)tU / (float)(tileW - 1) : 0.5f;
+				const float fv = (tileH > 1) ? (float)tV / (float)(tileH - 1) : 0.5f;
+				const float interpH = h00 * (1.0f - fu) * (1.0f - fv) +
+									  h10 * fu * (1.0f - fv) +
+									  h01 * (1.0f - fu) * fv +
+									  h11 * fu * fv;
+				const int planeH = (int)glm::round(interpH);
+				// Clamp so texture never starts inside the wall
+				startHeight = (positiveUp ? glm::max(planeH, surface) : glm::min(planeH, surface))
+							  + config.zOffset * outwardStep;
+			} else {
+				startHeight = referenceHeight + config.zOffset * outwardStep;
+			}
+
 			// Apply rotation: tiled coords -> skin tiling plane offsets
-			// skinSU/skinSV are 0-based offsets along the skin's U and V axes
 			int skinSU;
 			int skinSV;
 			switch (config.rotation) {
@@ -1332,23 +1404,27 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				break;
 			}
 
-			// Step 3: Apply skin layers.
-			// Skin BASE sits at startHeight, layers grow OUTWARD from surface.
-			// d=0 = base of skin (skinLo along up axis), d=N = peak (skinHi along up axis).
+			// Apply skin layers. Base at startHeight, layers grow outward from surface.
 			for (int d = 0; d < maxDepth; ++d) {
 				glm::ivec3 worldPos;
 				worldPos[perp1] = uCoord;
 				worldPos[perp2] = vCoord;
 				worldPos[axisIdx] = startHeight + d * outwardStep;
 
-				// Build skin sample position using axis-independent indexing
 				glm::ivec3 skinPos;
 				skinPos[skinUIdx] = skinLo[skinUIdx] + skinSU;
 				skinPos[skinVIdx] = skinLo[skinVIdx] + skinSV;
 				skinPos[skinUpIdx] = skinLo[skinUpIdx] + d;
-				const voxel::Voxel skinVoxel = skin.voxel(skinPos.x, skinPos.y, skinPos.z);
-				const bool skinIsSolid = voxel::isBlocked(skinVoxel.getMaterial());
+				const voxel::Voxel rawSkinVoxel = skin.voxel(skinPos.x, skinPos.y, skinPos.z);
+				const bool skinIsSolid = voxel::isBlocked(rawSkinVoxel.getMaterial());
 				const bool effectiveSolid = config.invertSkin ? !skinIsSolid : skinIsSolid;
+
+				// Remap skin color to target palette if available
+				const voxel::Voxel skinVoxel = (hasRemap && skinIsSolid)
+					? voxel::createVoxel(rawSkinVoxel.getMaterial(), colorRemap[rawSkinVoxel.getColor()],
+										 rawSkinVoxel.getNormal(), rawSkinVoxel.getFlags(),
+										 rawSkinVoxel.getBoneIdx())
+					: rawSkinVoxel;
 
 				switch (config.mode) {
 				case ReskinMode::Replace:
