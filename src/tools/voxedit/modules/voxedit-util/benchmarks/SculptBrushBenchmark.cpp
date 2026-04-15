@@ -46,66 +46,19 @@ public:
 	}
 };
 
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, Erode)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(SculptBrushBenchmark, Sculpt)(benchmark::State &state) {
+	const voxedit::SculptMode mode = (voxedit::SculptMode)state.range(0);
 	for (auto _ : state) {
 		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::Erode);
+		if (mode == voxedit::SculptMode::BridgeGap) {
+			fillBridgeGapSurface(*node->volume());
+		} else if (mode == voxedit::SculptMode::SmoothGaussian) {
+			fillGaussianSurface(*node->volume(), _halfSize);
+		} else {
+			fillSurface(*node->volume(), _halfSize);
+		}
+		runSculpt(mode);
 	}
 }
 
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, Grow)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::Grow);
-	}
-}
-
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, Flatten)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::Flatten);
-	}
-}
-
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, SmoothAdditive)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::SmoothAdditive);
-	}
-}
-
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, SmoothErode)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::SmoothErode);
-	}
-}
-
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, SmoothGaussian)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillGaussianSurface(*node->volume(), _halfSize);
-		runSculpt(voxedit::SculptMode::SmoothGaussian);
-	}
-}
-
-BENCHMARK_DEFINE_F(SculptBrushBenchmark, BridgeGap)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillBridgeGapSurface(*node->volume());
-		runSculpt(voxedit::SculptMode::BridgeGap);
-	}
-}
-
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, Erode);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, Grow);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, Flatten);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, SmoothAdditive);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, SmoothErode);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, SmoothGaussian);
-BENCHMARK_REGISTER_F(SculptBrushBenchmark, BridgeGap);
+BENCHMARK_REGISTER_F(SculptBrushBenchmark, Sculpt)->DenseRange(0, (int)voxedit::SculptMode::Max - 1);
