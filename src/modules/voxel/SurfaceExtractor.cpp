@@ -61,9 +61,7 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	} else if (ctx.type == voxel::SurfaceExtractionType::GreedyTexture) {
 		voxel::extractTextureMesh(ctx);
 	} else if (ctx.type == SurfaceExtractionType::DualContouring) {
-		voxel::Region extractRegion = ctx.region;
-		extractRegion.shrink(-1);
-		voxel::extractDualContouringMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh);
+		voxel::extractDualContouringMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
 		if (voxel::exceedsBinaryMesherRegion(ctx.region)) {
 			const auto &regions = getBinaryMesherRegions(ctx.region);
