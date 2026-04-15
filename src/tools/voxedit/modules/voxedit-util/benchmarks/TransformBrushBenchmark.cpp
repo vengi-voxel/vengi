@@ -45,39 +45,13 @@ public:
 	}
 };
 
-BENCHMARK_DEFINE_F(TransformBrushBenchmark, Move)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(TransformBrushBenchmark, Transform)(benchmark::State &state) {
+	const voxedit::TransformMode mode = (voxedit::TransformMode)state.range(0);
 	for (auto _ : state) {
 		brush.onSceneChange();
 		fillSurface(*node->volume(), _halfSize);
-		runTransform(voxedit::TransformMode::Move);
+		runTransform(mode);
 	}
 }
 
-BENCHMARK_DEFINE_F(TransformBrushBenchmark, Shear)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runTransform(voxedit::TransformMode::Shear);
-	}
-}
-
-BENCHMARK_DEFINE_F(TransformBrushBenchmark, Scale)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runTransform(voxedit::TransformMode::Scale);
-	}
-}
-
-BENCHMARK_DEFINE_F(TransformBrushBenchmark, Rotate)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runTransform(voxedit::TransformMode::Rotate);
-	}
-}
-
-BENCHMARK_REGISTER_F(TransformBrushBenchmark, Move);
-BENCHMARK_REGISTER_F(TransformBrushBenchmark, Shear);
-BENCHMARK_REGISTER_F(TransformBrushBenchmark, Scale);
-BENCHMARK_REGISTER_F(TransformBrushBenchmark, Rotate);
+BENCHMARK_REGISTER_F(TransformBrushBenchmark, Transform)->DenseRange(0, (int)voxedit::TransformMode::Max - 1);
