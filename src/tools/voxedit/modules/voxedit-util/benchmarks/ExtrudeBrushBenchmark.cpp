@@ -26,30 +26,17 @@ public:
 	}
 };
 
-BENCHMARK_DEFINE_F(ExtrudeBrushBenchmark, PlaceDepth1)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ExtrudeBrushBenchmark, Extrude)(benchmark::State &state) {
+	const ModifierType modifierType = (ModifierType)state.range(0);
+	const int depth = (int)state.range(1);
 	for (auto _ : state) {
 		brush.onSceneChange();
 		fillSurface(*node->volume(), _halfSize);
-		runExtrude(ModifierType::Place, 1);
+		runExtrude(modifierType, depth);
 	}
 }
 
-BENCHMARK_DEFINE_F(ExtrudeBrushBenchmark, PlaceDepth5)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runExtrude(ModifierType::Place, 5);
-	}
-}
-
-BENCHMARK_DEFINE_F(ExtrudeBrushBenchmark, Erase)(benchmark::State &state) {
-	for (auto _ : state) {
-		brush.onSceneChange();
-		fillSurface(*node->volume(), _halfSize);
-		runExtrude(ModifierType::Erase, 1);
-	}
-}
-
-BENCHMARK_REGISTER_F(ExtrudeBrushBenchmark, PlaceDepth1);
-BENCHMARK_REGISTER_F(ExtrudeBrushBenchmark, PlaceDepth5);
-BENCHMARK_REGISTER_F(ExtrudeBrushBenchmark, Erase);
+BENCHMARK_REGISTER_F(ExtrudeBrushBenchmark, Extrude)
+	->Args({(int)ModifierType::Place, 1})
+	->Args({(int)ModifierType::Place, 5})
+	->Args({(int)ModifierType::Erase, 1});
