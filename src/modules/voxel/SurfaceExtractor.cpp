@@ -47,7 +47,7 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 													const palette::Palette &palette) {
 	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::DualContouring,
-									false, false, false);
+									false, false, false, false);
 }
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	core_assert_msg(ctx.volume != nullptr, "Provided volume cannot be null");

@@ -4,6 +4,7 @@
 
 #include "core/Assert.h"
 #include "core/Pair.h"
+#include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "voxel/Mesh.h"
 #include "voxel/QEF.h"
@@ -35,6 +36,8 @@ struct EdgeData {
 	/** fraction (0.0-1.0) along the edge in the positive direction that the intersection happens */
 	float fraction = 0.0f;
 	bool intersects = false;
+	/** true if the origin (A-side) of the edge is solid (above threshold) */
+	bool originSolid = false;
 };
 
 struct CellData {
@@ -63,12 +66,13 @@ static inline EdgeData calculateEdge(const float &vA, const float &vB, const glm
 
 	if (glm::min(vA, vB) <= threshold && glm::max(vA, vB) > threshold) {
 		edge.intersects = true;
+		edge.originSolid = vA > threshold;
 	} else {
 		edge.intersects = false;
 		return edge;
 	}
 
-	edge.normal = (gA * edge.fraction + gB * (1.0f - edge.fraction));
+	edge.normal = (gA * (1.0f - edge.fraction) + gB * edge.fraction);
 	const float v = glm::length2(edge.normal);
 	if (v != 0.0f) {
 		edge.normal *= glm::inversesqrt(v);
@@ -132,11 +136,9 @@ static inline PositionNormal computeVertex(EdgeData *edges[12]) {
 		++rows;
 	}
 
-	const glm::vec3 &vertexPosition = evaluateQEF(matrix, vector, rows) + massPoint;
-
-	core_assert_msg(vertexPosition.x > -0.01 && vertexPosition.y > -0.01 && vertexPosition.z > -0.01 &&
-						vertexPosition.x < 1.01 && vertexPosition.y < 1.01 && vertexPosition.z < 1.01,
-					"Vertex is outside unit cell %f:%f:%f", vertexPosition.x, vertexPosition.y, vertexPosition.z);
+	const glm::vec3 unclamped = evaluateQEF(matrix, vector, rows) + massPoint;
+	// Clamp QEF result to the unit cell to handle degenerate cases (e.g. coplanar normals)
+	const glm::vec3 vertexPosition = glm::clamp(unclamped, glm::vec3(0.0f), glm::vec3(1.0f));
 
 	const float v = glm::length2(cellVertexNormal);
 	if (v != 0.0f) {
@@ -177,11 +179,11 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 	const auto lowerCornerZ = region.getLowerCorner().z;
 
 	for (int32_t z = 0; z < gradientRegionZDimension; z++) {
-		volSampler.setPosition(lowerCornerX - 1, lowerCornerY - 1,
-							   lowerCornerZ + z - 1); // Reset x and y and increment z
+		volSampler.setPosition(lowerCornerX - 1, lowerCornerY,
+							   lowerCornerZ + z); // Reset x and y and increment z
 		for (int32_t y = 0; y < gradientRegionYDimension; y++) {
-			volSampler.setPosition(lowerCornerX - 1, lowerCornerY + y - 1,
-								   lowerCornerZ + z - 1); // Reset x and increment y (z remains the same)
+			volSampler.setPosition(lowerCornerX - 1, lowerCornerY + y,
+								   lowerCornerZ + z); // Reset x and increment y (z remains the same)
 			for (int32_t x = 0; x < gradientRegionXDimension; x++) {
 				volSampler.movePositiveX(); // Increment x
 
@@ -212,7 +214,7 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 				// For each cell, calculate the edge intersection points and normals
 				const auto &g000 = gradients[convert(cellX, cellY, cellZ, cellRegionXDimension, cellRegionYDimension)];
 
-				// For the last columns/rows, only calculate the interior edge
+				// For the last columns/rows, only calculate the edges that have valid neighbors
 				if (cellX < cellRegionXDimension - 1 && cellY < cellRegionYDimension - 1 &&
 					cellZ < cellRegionZDimension - 1) // This is the main bulk
 				{
@@ -226,32 +228,25 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 									  calculateEdge(g000.first, g010.first, g000.second, g010.second, threshold),
 									  calculateEdge(g000.first, g001.first, g000.second, g001.second, threshold)},
 									 0});
-				} else if (cellX == cellRegionXDimension - 1 || cellY == cellRegionYDimension - 1 ||
-						   cellZ == cellRegionZDimension - 1) // This is the three far edges and the far corner
-				{
-					cells.push_back({});					  // Default and empty
-				} else if (cellX == cellRegionXDimension - 1) // Far x side
-				{
-					const auto &g100 =
-						gradients[convert(cellX + 1, cellY, cellZ, cellRegionXDimension, cellRegionYDimension)];
-					cells.push_back({{calculateEdge(g000.first, g100.first, g000.second, g100.second, threshold),
-									  EdgeData(), EdgeData()},
-									 0});
-				} else if (cellY == cellRegionYDimension - 1) // Far y side
-				{
-					const auto &g010 =
-						gradients[convert(cellX + 1, cellY, cellZ, cellRegionXDimension, cellRegionYDimension)];
-					cells.push_back(
-						{{EdgeData(), calculateEdge(g000.first, g010.first, g000.second, g010.second, threshold),
-						  EdgeData()},
-						 0});
-				} else if (cellZ == cellRegionZDimension - 1) // Far z side
-				{
-					const auto &g001 =
-						gradients[convert(cellX + 1, cellY, cellZ, cellRegionXDimension, cellRegionYDimension)];
-					cells.push_back({{EdgeData(), EdgeData(),
-									  calculateEdge(g000.first, g001.first, g000.second, g001.second, threshold)},
-									 0});
+				} else {
+					// Boundary cells: compute only the edges that have valid gradient neighbors
+					EdgeData edgeX, edgeY, edgeZ;
+					if (cellX < cellRegionXDimension - 1) {
+						const auto &g100 =
+							gradients[convert(cellX + 1, cellY, cellZ, cellRegionXDimension, cellRegionYDimension)];
+						edgeX = calculateEdge(g000.first, g100.first, g000.second, g100.second, threshold);
+					}
+					if (cellY < cellRegionYDimension - 1) {
+						const auto &g010 =
+							gradients[convert(cellX, cellY + 1, cellZ, cellRegionXDimension, cellRegionYDimension)];
+						edgeY = calculateEdge(g000.first, g010.first, g000.second, g010.second, threshold);
+					}
+					if (cellZ < cellRegionZDimension - 1) {
+						const auto &g001 =
+							gradients[convert(cellX, cellY, cellZ + 1, cellRegionXDimension, cellRegionYDimension)];
+						edgeZ = calculateEdge(g000.first, g001.first, g000.second, g001.second, threshold);
+					}
+					cells.push_back({{edgeX, edgeY, edgeZ}, 0});
 				}
 			}
 		}
@@ -332,7 +327,10 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 
 						// TODO: transparency mesh
 						if (cellZVertex >= 1 && cellYVertex >= 1 && cellXVertex >= 1) {
-							// Once the second rows and colums are done, start connecting up edges
+							// Once the second rows and columns are done, start connecting up edges.
+							// For each edge with a sign change, emit a quad (2 triangles) connecting
+							// the 4 cells that share that edge. The winding is flipped based on
+							// which side of the edge is solid to ensure outward-facing normals.
 							if (cell.edges[0].intersects) {
 								const auto &v1 = cells[convert(cellXVertex, cellYVertex - 1, cellZVertex,
 															   cellRegionXDimension, cellRegionYDimension)];
@@ -340,8 +338,13 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 															   cellRegionXDimension, cellRegionYDimension)];
 								const auto &v3 = cells[convert(cellXVertex, cellYVertex - 1, cellZVertex - 1,
 															   cellRegionXDimension, cellRegionYDimension)];
-								result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
-								result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								if (cell.edges[0].originSolid) {
+									result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								} else {
+									result->mesh[0].addTriangle(cell.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+								}
 							}
 
 							if (cell.edges[1].intersects) {
@@ -351,8 +354,14 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 															   cellRegionXDimension, cellRegionYDimension)];
 								const auto &v3 = cells[convert(cellXVertex - 1, cellYVertex, cellZVertex - 1,
 															   cellRegionXDimension, cellRegionYDimension)];
-								result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
-								result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								// edge[1] default winding gives -Y; swap v1/v2 for +Y default
+								if (cell.edges[1].originSolid) {
+									result->mesh[0].addTriangle(cell.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+								} else {
+									result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								}
 							}
 
 							if (cell.edges[2].intersects) {
@@ -362,8 +371,13 @@ void extractDualContouringMesh(const voxel::RawVolume *volData, const palette::P
 															   cellRegionXDimension, cellRegionYDimension)];
 								const auto &v3 = cells[convert(cellXVertex - 1, cellYVertex - 1, cellZVertex,
 															   cellRegionXDimension, cellRegionYDimension)];
-								result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
-								result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								if (cell.edges[2].originSolid) {
+									result->mesh[0].addTriangle(cell.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+								} else {
+									result->mesh[0].addTriangle(cell.vertexIndex, v2.vertexIndex, v1.vertexIndex);
+									result->mesh[0].addTriangle(v3.vertexIndex, v1.vertexIndex, v2.vertexIndex);
+								}
 							}
 						}
 					}
