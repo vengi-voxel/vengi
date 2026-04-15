@@ -25,6 +25,7 @@
 #include "engine-git.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/ScriptManager.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
@@ -337,16 +338,18 @@ app::AppState VoxEdit::onConstruct() {
 				openDialog([this](const core::String &file, const io::FormatDescription *desc) {
 					voxelui::ScriptApi api;
 					if (api.install(filesystem(), file)) {
-						_sceneMgr->modifier().reloadBrushScripts();
-						_sceneMgr->modifier().reloadSelectionModeScripts();
+						voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+						scriptMgr.reloadBrushScripts();
+						scriptMgr.reloadSelectionModeScripts();
 					}
 				}, {}, io::format::lua());
 				return;
 			}
 			voxelui::ScriptApi api;
 			if (api.install(filesystem(), source)) {
-				_sceneMgr->modifier().reloadBrushScripts();
-				_sceneMgr->modifier().reloadSelectionModeScripts();
+				voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+				scriptMgr.reloadBrushScripts();
+				scriptMgr.reloadSelectionModeScripts();
 			}
 		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Install a lua script from a file path, file:// URI or http(s):// URL"));
 
@@ -356,8 +359,9 @@ app::AppState VoxEdit::onConstruct() {
 			const core::String &filename = args.str("filename");
 			voxelui::ScriptApi api;
 			if (api.uninstallByFilename(filesystem(), filename)) {
-				_sceneMgr->modifier().reloadBrushScripts();
-				_sceneMgr->modifier().reloadSelectionModeScripts();
+				voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+				scriptMgr.reloadBrushScripts();
+				scriptMgr.reloadSelectionModeScripts();
 			}
 		}).setHelp(_("Uninstall a previously installed lua script by filename"));
 

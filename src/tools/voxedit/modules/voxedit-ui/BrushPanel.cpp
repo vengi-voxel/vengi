@@ -394,7 +394,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 	ImGui::CommandButton(_("Rescan"), "brushscriptrescan", listener);
 	ImGui::TooltipTextUnformatted(_("Re-scan the brushes directory for new or changed scripts"));
 
-	LUABrush *activeBrush = modifier.activeLuaBrush();
+	LUABrush *activeBrush = modifier.scriptManager().activeLuaBrush();
 	if (activeBrush == nullptr) {
 		return;
 	}
@@ -684,7 +684,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	const SelectMode currentSelectMode = brush.selectMode();
 	const bool luaModeActive = currentSelectMode == SelectMode::Script;
-	const core::DynamicArray<LUASelectionMode *> &luaModes = modifier.luaSelectionModes();
+	const core::DynamicArray<LUASelectionMode *> &luaModes = modifier.scriptManager().luaSelectionModes();
 
 	const char *SelectModeStr[] = {
 		C_("SelectMode", "All"),		   C_("SelectMode", "Surface"),		C_("SelectMode", "Same Color"),
@@ -1918,8 +1918,9 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 
 	// Render per-script brush buttons
-	const core::DynamicArray<LUABrush *> &luaBrushes = modifier.luaBrushes();
-	const int activeLuaIdx = modifier.activeLuaBrushIndex();
+	ScriptManager &scriptMgr = modifier.scriptManager();
+	const core::DynamicArray<LUABrush *> &luaBrushes = scriptMgr.luaBrushes();
+	const int activeLuaIdx = scriptMgr.activeLuaBrushIndex();
 	for (int i = 0; i < (int)luaBrushes.size(); ++i) {
 		const LUABrush *lb = luaBrushes[i];
 		const bool isActive = brushType == BrushType::Script && activeLuaIdx == i;
@@ -1928,9 +1929,9 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 			styleButton.setButtonColor(style::color(style::ColorActiveBrush));
 		}
 		const int idx = i;
-		auto func = [&modifier, idx]() {
+		auto func = [&modifier, &scriptMgr, idx]() {
 			modifier.setBrushType(BrushType::Script);
-			modifier.setActiveLuaBrushIndex(idx);
+			scriptMgr.setActiveLuaBrushIndex(idx);
 		};
 		toolbarBrush.button(lb->iconString(), lb->scriptName().c_str(), func, !isActive);
 	}

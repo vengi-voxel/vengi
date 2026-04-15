@@ -7,7 +7,9 @@
 #include "IModifierRenderer.h"
 #include "ModifierButton.h"
 #include "ModifierType.h"
+#include "PreviewManager.h"
 #include "SceneModifiedFlags.h"
+#include "ScriptManager.h"
 #include "brush/Brush.h"
 #include "brush/BrushType.h"
 #include "brush/LineBrush.h"
@@ -24,9 +26,7 @@
 #include "brush/StampBrush.h"
 #include "brush/TextBrush.h"
 #include "brush/TextureBrush.h"
-#include "color/RGBA.h"
 #include "core/IComponent.h"
-#include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
@@ -48,19 +48,6 @@ class Camera;
 namespace voxedit {
 
 class SceneManager;
-
-/**
- * @brief Stores the result of brush preview generation
- *
- * This contains the computed preview state that can be used by renderers
- * or tests to verify preview behavior without requiring a renderer.
- */
-struct BrushPreview {
-	voxel::Region simplePreviewRegion = voxel::Region::InvalidRegion;
-	voxel::Region simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
-	color::RGBA simplePreviewColor{0};
-	bool useSimplePreview = false;
-};
 
 /**
  * @brief This class is responsible for manipulating the volume with the configured @c Brush and for
@@ -109,40 +96,17 @@ protected:
 	SculptBrush _sculptBrush;
 	RulerBrush _rulerBrush;
 
-	core::DynamicArray<LUABrush *> _luaBrushes;
-	int _activeLuaBrushIndex = -1;
-
-	core::DynamicArray<LUASelectionMode *> _luaSelectionModes;
-
-	void discoverBrushScripts();
-	void clearBrushScripts();
-	void discoverSelectionModeScripts();
-	void clearSelectionModeScripts();
+	ScriptManager _scriptManager;
+	PreviewManager _previewManager;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
 	ModifierRendererPtr _modifierRenderer;
 	SceneManager *_sceneMgr;
-	double _nextPreviewUpdateSeconds = 0;
-
-	core::ScopedPtr<voxel::RawVolume> _previewVolume;
-	core::ScopedPtr<voxel::RawVolume> _previewMirrorVolume;
-	core::VarPtr _maxSuggestedVolumeSizePreview;
 	core::VarPtr _autoSelect;
-	BrushPreview _brushPreview;
 
-	bool previewNeedsExistingVolume() const;
-	bool isSimplePreview(const Brush *brush, const voxel::Region &region) const;
-
-	/**
-	 * @brief Generate or update the brush preview volumes
-	 * @param activePalette The active palette for color lookups
-	 * @param activeVolume The active volume (may be nullptr)
-	 * @param sceneGraph The scene graph for brush execution
-	 */
-	void updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
-								  scenegraph::SceneGraph &sceneGraph);
+	void resetPreview();
 
 public:
 	Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
@@ -178,14 +142,10 @@ public:
 
 	void shutdown() override;
 
-	/**
-	 * @brief Reset all preview state and free preview volumes
-	 */
-	void resetPreview();
-
-	const BrushPreview &brushPreview() const;
-	voxel::RawVolume *previewVolume() const;
-	voxel::RawVolume *previewMirrorVolume() const;
+	PreviewManager &previewManager();
+	const PreviewManager &previewManager() const;
+	ScriptManager &scriptManager();
+	const ScriptManager &scriptManager() const;
 
 	void render(const video::Camera &camera, palette::Palette &activePalette,
 				const glm::mat4 &model = glm::mat4(1.0f));
@@ -209,7 +169,7 @@ public:
 	 * face direction. Use when triggering execution from a UI panel rather than a viewport click.
 	 */
 	bool beginBrushFromPanel();
-protected:
+
 	void preExecuteBrush(const voxel::RawVolume *volume);
 
 	/**
@@ -313,15 +273,6 @@ public:
 	void onSceneChange();
 	void reset();
 
-	const core::DynamicArray<LUABrush *> &luaBrushes() const;
-	int activeLuaBrushIndex() const;
-	void setActiveLuaBrushIndex(int index);
-	LUABrush *activeLuaBrush();
-	const LUABrush *activeLuaBrush() const;
-	void reloadBrushScripts();
-
-	const core::DynamicArray<LUASelectionMode *> &luaSelectionModes() const;
-	void reloadSelectionModeScripts();
 };
 
 inline uint8_t Modifier::normalColorIndex() const {
@@ -451,16 +402,20 @@ inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
 }
 
-inline const BrushPreview &Modifier::brushPreview() const {
-	return _brushPreview;
+inline PreviewManager &Modifier::previewManager() {
+	return _previewManager;
 }
 
-inline voxel::RawVolume *Modifier::previewVolume() const {
-	return _previewVolume;
+inline const PreviewManager &Modifier::previewManager() const {
+	return _previewManager;
 }
 
-inline voxel::RawVolume *Modifier::previewMirrorVolume() const {
-	return _previewMirrorVolume;
+inline ScriptManager &Modifier::scriptManager() {
+	return _scriptManager;
+}
+
+inline const ScriptManager &Modifier::scriptManager() const {
+	return _scriptManager;
 }
 
 inline bool Modifier::autoSelect() const {
@@ -469,18 +424,6 @@ inline bool Modifier::autoSelect() const {
 
 inline void Modifier::setAutoSelect(bool enable) {
 	_autoSelect->setVal(enable);
-}
-
-inline const core::DynamicArray<LUABrush *> &Modifier::luaBrushes() const {
-	return _luaBrushes;
-}
-
-inline int Modifier::activeLuaBrushIndex() const {
-	return _activeLuaBrushIndex;
-}
-
-inline const core::DynamicArray<LUASelectionMode *> &Modifier::luaSelectionModes() const {
-	return _luaSelectionModes;
 }
 
 } // namespace voxedit

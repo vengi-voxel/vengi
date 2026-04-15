@@ -16,7 +16,6 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -97,7 +96,7 @@ void Modifier::construct() {
 
 	command::Command::registerCommand("brushscriptrescan")
 		.setHandler([&](const command::CommandArgs &args) {
-			reloadBrushScripts();
+			_scriptManager.reloadBrushScripts();
 		}).setHelp(_("Re-scan the brushes directory for new or changed Lua brush scripts"));
 
 	command::Command::registerCommand("lock")
@@ -131,11 +130,11 @@ void Modifier::construct() {
 			setLockedAxis(axis, unlock);
 		}).setHelp(_("Toggle locked mode for the z axis at the current cursor position"));
 
-	const core::VarDef voxEditMaxSuggestedVolumeSizePreview(cfg::VoxEditMaxSuggestedVolumeSizePreview, 32, 16, (int)voxedit::MaxVolumeSize, N_("Max preview size"), N_("The maximum size of the preview volume"), -1);
-	_maxSuggestedVolumeSizePreview = core::Var::registerVar(voxEditMaxSuggestedVolumeSizePreview);
-
 	const core::VarDef voxEditAutoSelect(cfg::VoxEditAutoSelect, false, N_("Auto select added"), N_("Automatically select newly placed voxels"));
 	_autoSelect = core::Var::registerVar(voxEditAutoSelect);
+
+	_previewManager.construct();
+	_scriptManager.construct();
 
 	for (Brush *b : _brushes) {
 		b->construct();
@@ -156,8 +155,13 @@ bool Modifier::init() {
 			Log::error("Failed to initialize the %s brush", b->name().c_str());
 		}
 	}
-	discoverBrushScripts();
-	discoverSelectionModeScripts();
+	_scriptManager.setSelectBrush(&_selectBrush);
+	if (!_scriptManager.init()) {
+		Log::error("Failed to initialize script manager");
+	}
+	if (!_previewManager.init(_modifierRenderer)) {
+		Log::error("Failed to initialize preview manager");
+	}
 	if (!_modifierRenderer->init()) {
 		Log::error("Failed to initialize modifier renderer");
 		return false;
@@ -171,8 +175,8 @@ void Modifier::shutdown() {
 	for (Brush *b : _brushes) {
 		b->shutdown();
 	}
-	clearBrushScripts();
-	clearSelectionModeScripts();
+	_scriptManager.shutdown();
+	_previewManager.shutdown();
 	_modifierRenderer->shutdown();
 }
 
@@ -419,108 +423,9 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	return true;
 }
 
-void Modifier::discoverBrushScripts() {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	core::DynamicArray<io::FilesystemEntry> entities;
-	filesystem->list("brushes", entities, "*.lua");
-	for (const auto &e : entities) {
-		LUABrush *brush = new LUABrush(filesystem);
-		if (!brush->init()) {
-			Log::error("Failed to initialize lua brush");
-			delete brush;
-			continue;
-		}
-		if (!brush->loadScript(e.name)) {
-			Log::warn("Failed to load brush script: %s", e.name.c_str());
-			brush->shutdown();
-			delete brush;
-			continue;
-		}
-		_luaBrushes.push_back(brush);
-		Log::debug("Discovered brush script: %s", e.name.c_str());
-	}
-	if (!_luaBrushes.empty()) {
-		_activeLuaBrushIndex = 0;
-	}
-}
-
-void Modifier::clearBrushScripts() {
-	for (LUABrush *b : _luaBrushes) {
-		b->shutdown();
-		delete b;
-	}
-	_luaBrushes.clear();
-	_activeLuaBrushIndex = -1;
-}
-
-void Modifier::reloadBrushScripts() {
-	clearBrushScripts();
-	discoverBrushScripts();
-	Log::debug("Reloaded brush scripts (%i found)", (int)_luaBrushes.size());
-}
-
-void Modifier::discoverSelectionModeScripts() {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	core::DynamicArray<io::FilesystemEntry> entities;
-	filesystem->list("selectionmodes", entities, "*.lua");
-	for (const auto &e : entities) {
-		LUASelectionMode *mode = new LUASelectionMode(filesystem);
-		if (!mode->init()) {
-			Log::error("Failed to initialize lua selection mode");
-			delete mode;
-			continue;
-		}
-		if (!mode->loadScript(e.name)) {
-			Log::warn("Failed to load selection mode script: %s", e.name.c_str());
-			mode->shutdown();
-			delete mode;
-			continue;
-		}
-		_luaSelectionModes.push_back(mode);
-		Log::debug("Discovered selection mode script: %s", e.name.c_str());
-	}
-}
-
-void Modifier::clearSelectionModeScripts() {
-	for (LUASelectionMode *m : _luaSelectionModes) {
-		m->shutdown();
-		delete m;
-	}
-	_luaSelectionModes.clear();
-}
-
-void Modifier::reloadSelectionModeScripts() {
-	// Invalidate the active lua selection mode before deleting the old scripts
-	// to avoid dangling pointers in SelectBrush
-	_selectBrush.setLuaSelectionMode(-1, nullptr);
-	clearSelectionModeScripts();
-	discoverSelectionModeScripts();
-	Log::debug("Reloaded selection mode scripts (%i found)", (int)_luaSelectionModes.size());
-}
-
-LUABrush *Modifier::activeLuaBrush() {
-	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
-		return _luaBrushes[_activeLuaBrushIndex];
-	}
-	return nullptr;
-}
-
-const LUABrush *Modifier::activeLuaBrush() const {
-	if (_activeLuaBrushIndex >= 0 && _activeLuaBrushIndex < (int)_luaBrushes.size()) {
-		return _luaBrushes[_activeLuaBrushIndex];
-	}
-	return nullptr;
-}
-
-void Modifier::setActiveLuaBrushIndex(int index) {
-	if (index >= 0 && index < (int)_luaBrushes.size()) {
-		_activeLuaBrushIndex = index;
-	}
-}
-
 Brush *Modifier::currentBrush() {
 	if (_brushType == BrushType::Script) {
-		return activeLuaBrush();
+		return _scriptManager.activeLuaBrush();
 	}
 	for (Brush *b : _brushes) {
 		if (b->type() == _brushType) {
@@ -532,7 +437,7 @@ Brush *Modifier::currentBrush() {
 
 const Brush *Modifier::currentBrush() const {
 	if (_brushType == BrushType::Script) {
-		return activeLuaBrush();
+		return _scriptManager.activeLuaBrush();
 	}
 	for (Brush *b : _brushes) {
 		if (b->type() == _brushType) {
@@ -562,7 +467,7 @@ AABBBrush *Modifier::currentAABBBrush() {
 		return &_normalBrush;
 	}
 	if (_brushType == BrushType::Script) {
-		return static_cast<AABBBrush *>(activeLuaBrush());
+		return static_cast<AABBBrush *>(_scriptManager.activeLuaBrush());
 	}
 	return nullptr;
 }
@@ -587,7 +492,7 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 		return &_normalBrush;
 	}
 	if (_brushType == BrushType::Script) {
-		return static_cast<const AABBBrush *>(activeLuaBrush());
+		return static_cast<const AABBBrush *>(_scriptManager.activeLuaBrush());
 	}
 	return nullptr;
 }
@@ -696,194 +601,15 @@ ModifierType Modifier::setModifierType(ModifierType type) {
 	return _brushContext.modifierType;
 }
 
+void Modifier::resetPreview() {
+	_previewManager.resetPreview();
+}
+
 ModifierType Modifier::checkModifierType() {
 	if (_brushType == BrushType::None) {
 		return ModifierType::ColorPicker;
 	}
 	return currentBrush()->modifierType(ModifierType::Mask);
-}
-
-static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume,
-									   voxel::Region region) {
-	if (existingVolume == nullptr) {
-		if (volume == nullptr || volume->region() != region) {
-			volume = new voxel::RawVolume(region);
-			return;
-		}
-		volume->clear();
-	} else {
-		// Keep the old volume alive during allocation so the heap allocator
-		// cannot reuse the same address. MeshState::setVolume() compares raw
-		// pointers (old == new) and skips the update when they match, which
-		// would leave stale mesh data in GPU buffers.
-		voxel::RawVolume *old = volume.release();
-		volume = new voxel::RawVolume(*existingVolume, region);
-		delete old;
-	}
-}
-
-static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggestedExtent) {
-	if (!region.isValid()) {
-		return false;
-	}
-	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
-	if (dimensions.x <= 0 || dimensions.y <= 0 || dimensions.z <= 0) {
-		return false;
-	}
-	const int64_t maxExtent = (int64_t)maxSuggestedExtent;
-	const int64_t maxVoxels = maxExtent * maxExtent * maxExtent;
-	const int64_t voxels = (int64_t)dimensions.x * (int64_t)dimensions.y * (int64_t)dimensions.z;
-	return voxels > 0 && voxels <= maxVoxels;
-}
-
-bool Modifier::previewNeedsExistingVolume() const {
-	if (isMode(ModifierType::Paint)) {
-		return true;
-	}
-	if (_brushType == BrushType::Select) {
-		return true;
-	}
-	if (_brushType == BrushType::Script) {
-		const LUABrush *luaBrush = (const LUABrush *)currentBrush();
-		if (luaBrush->previewNeedsExistingVolume()) {
-			return true;
-		}
-	}
-	if (_brushType == BrushType::Plane) {
-		return isMode(ModifierType::Place);
-	}
-	if (_brushType == BrushType::Extrude) {
-		return true;
-	}
-	if (_brushType == BrushType::Transform) {
-		return true;
-	}
-	if (_brushType == BrushType::Sculpt) {
-		return true;
-	}
-	return false;
-}
-
-bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
-	if (brush->type() == BrushType::Script) {
-		const LUABrush *luaBrush = (const LUABrush *)brush;
-		if (luaBrush->useSimplePreview()) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Shape) {
-		const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
-		if (shapeBrush->shapeType() == ShapeType::AABB) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Select) {
-		const SelectBrush *selectBrush = (const SelectBrush *)brush;
-		const SelectMode mode = selectBrush->selectMode();
-		if (mode == SelectMode::All || mode == SelectMode::Surface || mode == SelectMode::Box3D ||
-			mode == SelectMode::SameColor || mode == SelectMode::FuzzyColor) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Sculpt) {
-		const SculptBrush *sculptBrush = (const SculptBrush *)brush;
-		if (sculptBrush->sculptMode() == SculptMode::ExtendPlane && sculptBrush->planeFitted()) {
-			return true;
-		}
-	}
-	return false;
-}
-
-void Modifier::resetPreview() {
-	// Clear renderer volume pointers before freeing the volumes.
-	// The allocator may reuse the same heap address for the next preview volume,
-	// which would cause MeshState::setVolume() to see old == new and skip the
-	// update, leaving stale mesh data in GPU buffers.
-	_modifierRenderer->clearBrushVolumes();
-	_previewVolume = nullptr;
-	_previewMirrorVolume = nullptr;
-	_brushPreview = BrushPreview();
-}
-
-void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
-										scenegraph::SceneGraph &sceneGraph) {
-	// even in erase mode we want the preview to create the models, not wipe them
-	ModifierType modifierType = _brushContext.modifierType;
-	if (modifierType == ModifierType::Erase) {
-		modifierType = ModifierType::Place;
-	}
-	voxel::Voxel voxel = _brushContext.cursorVoxel;
-	voxel.setOutline();
-
-	// Allow subclasses to wait for pending operations before freeing old preview volumes
-	_modifierRenderer->waitForPendingExtractions();
-
-	// Reset preview state
-	resetPreview();
-
-	Log::debug("regenerate preview volume");
-
-	if (activeVolume == nullptr) {
-		return;
-	}
-
-	// operate on existing voxels
-	voxel::RawVolume *existingVolume = nullptr;
-	if (previewNeedsExistingVolume()) {
-		existingVolume = activeVolume;
-	}
-
-	const Brush *brush = currentBrush();
-	if (!brush) {
-		return;
-	}
-
-	// Safety net: brushes with pending changes are handled in render() by
-	// executing on the real volume. If we reach here anyway, bail out to
-	// avoid corrupting brush history state against a temporary dummy volume.
-	if (brush->hasPendingChanges()) {
-		return;
-	}
-
-	preExecuteBrush(activeVolume);
-	const voxel::Region &region = brush->calcRegion(_brushContext);
-	if (!region.isValid()) {
-		return;
-	}
-	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
-	bool simplePreview = isSimplePreview(brush, region);
-	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
-		const bool isCircleSelect = _brushType == BrushType::Select &&
-			(_selectBrush.selectMode() == SelectMode::Circle ||
-			 _selectBrush.selectMode() == SelectMode::Lasso);
-		if (isCircleSelect) {
-			_selectBrush.setPreviewMode(true);
-		}
-		glm::ivec3 minsMirror = region.getLowerCorner();
-		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
-			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
-			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
-			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
-			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
-		}
-		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
-		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-		dummyNode.setUnownedVolume(_previewVolume);
-		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-		if (isCircleSelect) {
-			_selectBrush.setPreviewMode(false);
-		}
-	} else if (simplePreview) {
-		_brushPreview.useSimplePreview = true;
-		_brushPreview.simplePreviewRegion = region;
-		_brushPreview.simplePreviewColor = activePalette.color(_brushContext.cursorVoxel.getColor());
-		glm::ivec3 minsMirror = region.getLowerCorner();
-		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
-			_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
-		}
-	}
 }
 
 void Modifier::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
@@ -946,20 +672,15 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 						});
 				}
 			} else {
-				_nextPreviewUpdateSeconds = _nowSeconds;
+				_previewManager.scheduleUpdate(_nowSeconds);
 			}
 		}
-		if (_nextPreviewUpdateSeconds > 0.0) {
-			if (_nextPreviewUpdateSeconds <= _nowSeconds) {
-				_nextPreviewUpdateSeconds = 0.0;
-				voxel::RawVolume *activeVolume = _sceneMgr->volume(activeNodeId);
-				updateBrushVolumePreview(activePalette, activeVolume, sceneGraph);
-			}
-		}
+		voxel::RawVolume *activeVolume = _sceneMgr->volume(activeNodeId);
+		_previewManager.checkPendingUpdate(_nowSeconds, *this, activePalette, activeVolume, sceneGraph);
 		// Copy cached preview state to renderer context
-		ctx.previewVolume = previewVolume();
-		ctx.previewMirrorVolume = previewMirrorVolume();
-		const BrushPreview &preview = brushPreview();
+		ctx.previewVolume = _previewManager.previewVolume();
+		ctx.previewMirrorVolume = _previewManager.previewMirrorVolume();
+		const BrushPreview &preview = _previewManager.brushPreview();
 		if (preview.useSimplePreview) {
 			ctx.useSimplePreview = true;
 			ctx.simplePreviewRegion = preview.simplePreviewRegion;

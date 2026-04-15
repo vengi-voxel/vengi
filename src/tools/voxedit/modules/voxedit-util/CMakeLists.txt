@@ -25,6 +25,8 @@ set(SRCS
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierType.h
 	modifier/ModifierVolumeWrapper.h
+	modifier/PreviewManager.h modifier/PreviewManager.cpp
+	modifier/ScriptManager.h modifier/ScriptManager.cpp
 	modifier/ShapeType.h
 	modifier/SceneModifiedFlags.h
 
@@ -121,6 +123,7 @@ set(TEST_SRCS
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp
+	tests/PreviewManagerTest.cpp
 	tests/NormalBrushTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PlaneBrushTest.cpp
