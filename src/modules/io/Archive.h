@@ -57,9 +57,6 @@ public:
 	virtual void shutdown();
 
 	/**
-	 * @note the default implementation of readStream() uses load() internally
-	 * this might not be the most efficient way to read a file from an archive
-	 *
 	 * The contract is that the memory ownership of the returned stream is transferred to the caller
 	 *
 	 * @sa core::ScopedPtr
