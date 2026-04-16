@@ -17,12 +17,12 @@ private:
 	using Super = Archive;
 
 protected:
-	io::FilesystemPtr _filesytem;
+	io::FilesystemPtr _filesystem;
 	bool _sysmode;
 
 public:
 	using Archive::list;
-	FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode = true);
+	FilesystemArchive(const io::FilesystemPtr &filesystem, bool sysmode = true);
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream = nullptr) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);

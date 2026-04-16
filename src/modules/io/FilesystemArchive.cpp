@@ -11,8 +11,8 @@
 
 namespace io {
 
-FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode)
-	: _filesytem(filesytem), _sysmode(sysmode) {
+FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesystem, bool sysmode)
+	: _filesystem(filesystem), _sysmode(sysmode) {
 }
 
 FilesystemArchive::~FilesystemArchive() {
@@ -28,23 +28,23 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 		return false;
 	}
 	ArchiveFiles files;
-	const bool ret = _filesytem->list(path, files, filter, depth);
+	const bool ret = _filesystem->list(path, files, filter, depth);
 	_files.append(files);
 	return ret;
 }
 
 bool FilesystemArchive::exists(const core::String &path) const {
 	if (_sysmode) {
-		return _filesytem->sysExists(path);
+		return _filesystem->sysExists(path);
 	}
-	return _filesytem->exists(path);
+	return _filesystem->exists(path);
 }
 
 bool FilesystemArchive::exists(const core::Path &path) const {
 	if (_sysmode) {
-		return _filesytem->sysExists(path.toNativePath());
+		return _filesystem->sysExists(path.toNativePath());
 	}
-	return _filesytem->exists(path.toString());
+	return _filesystem->exists(path.toString());
 }
 
 void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
@@ -52,11 +52,11 @@ void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, co
 		Super::list(basePath, out, filter);
 		return;
 	}
-	_filesytem->list(basePath, out, filter);
+	_filesystem->list(basePath, out, filter);
 }
 
 SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) {
-	const io::FilePtr &file = _filesytem->open(filePath, _sysmode ? FileMode::SysRead : FileMode::Read);
+	const io::FilePtr &file = _filesystem->open(filePath, _sysmode ? FileMode::SysRead : FileMode::Read);
 	if (!file->validHandle()) {
 		Log::error("Could not open file %s for reading: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;
@@ -67,7 +67,7 @@ SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) 
 }
 
 SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
-	const io::FilePtr &file = _filesytem->open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write);
+	const io::FilePtr &file = _filesystem->open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write);
 	if (!file->validHandle()) {
 		Log::error("Could not open file %s for writing: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;
