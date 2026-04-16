@@ -8,6 +8,8 @@
 namespace io {
 
 /**
+ * @brief This is a simple archive implementation that wraps a single stream. It does not support multiple files, but
+ * can be used to treat a stream as an archive for use with other code that expects an archive interface.
  * @ingroup IO
  */
 class StreamArchive : public Archive {
