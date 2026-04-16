@@ -121,6 +121,7 @@ set(TEST_SRCS
 	tests/FileTest.cpp
 	tests/MemoryArchiveTest.cpp
 	tests/MemoryReadStreamTest.cpp
+	tests/StreamArchiveTest.cpp
 	tests/StdStreamBufTest.cpp
 	tests/TokenStreamTest.cpp
 	tests/ZipArchiveTest.cpp

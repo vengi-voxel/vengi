@@ -21,7 +21,7 @@ SceneStateMessage::SceneStateMessage(scenegraph::SceneGraph &sceneGraph) : Proto
 
 	voxelformat::VENGIFormat vengiFormat;
 	io::SeekableWriteStream *writeStream = (io::SeekableWriteStream *)this;
-	const io::StreamArchivePtr &archive = io::openStreamArchive(writeStream);
+	const io::ArchivePtr &archive = io::openStreamArchive(writeStream);
 	voxelformat::SaveContext ctx;
 	vengiFormat.saveGroups(sceneGraph, "net.vengi", archive, ctx);
 	writeSize();
@@ -35,7 +35,7 @@ SceneStateMessage::SceneStateMessage(network::MessageStream &in, uint32_t size) 
 	voxelformat::VENGIFormat vengiFormat;
 	io::BufferedReadWriteStream bufferedStream(in, size);
 	io::SeekableReadStream *readStream = (io::SeekableReadStream *)&bufferedStream;
-	const io::StreamArchivePtr &archive = io::openStreamArchive(readStream);
+	const io::ArchivePtr &archive = io::openStreamArchive(readStream);
 	voxelformat::LoadContext ctx;
 	vengiFormat.load("net.vengi", archive, _sceneGraph, ctx);
 }
