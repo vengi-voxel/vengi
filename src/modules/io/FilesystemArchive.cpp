@@ -5,6 +5,7 @@
 #include "FilesystemArchive.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
+#include "core/StringUtil.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -34,17 +35,15 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 }
 
 bool FilesystemArchive::exists(const core::String &path) const {
+	const core::String normalized = core::string::sanitizePath(path);
 	if (_sysmode) {
-		return _filesystem->sysExists(path);
+		return _filesystem->sysExists(normalized);
 	}
-	return _filesystem->exists(path);
+	return _filesystem->exists(normalized);
 }
 
 bool FilesystemArchive::exists(const core::Path &path) const {
-	if (_sysmode) {
-		return _filesystem->sysExists(path.toNativePath());
-	}
-	return _filesystem->exists(path.toString());
+	return exists(path.toString());
 }
 
 void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
@@ -56,7 +55,8 @@ void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, co
 }
 
 SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) {
-	const io::FilePtr &file = _filesystem->open(filePath, _sysmode ? FileMode::SysRead : FileMode::Read);
+	const core::String normalized = core::string::sanitizePath(filePath);
+	const io::FilePtr &file = _filesystem->open(normalized, _sysmode ? FileMode::SysRead : FileMode::Read);
 	if (!file->validHandle()) {
 		Log::error("Could not open file %s for reading: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;
@@ -67,7 +67,8 @@ SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) 
 }
 
 SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
-	const io::FilePtr &file = _filesystem->open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write);
+	const core::String normalized = core::string::sanitizePath(filePath);
+	const io::FilePtr &file = _filesystem->open(normalized, _sysmode ? FileMode::SysWrite : FileMode::Write);
 	if (!file->validHandle()) {
 		Log::error("Could not open file %s for writing: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;

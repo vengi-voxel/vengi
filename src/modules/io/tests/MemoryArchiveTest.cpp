@@ -32,4 +32,16 @@ TEST_F(MemoryArchiveTest, testMemoryArchiveAddViaWrite) {
 	EXPECT_EQ((size_t)stream->size(), sizeof(buf));
 }
 
+TEST_F(MemoryArchiveTest, testMemoryArchivePathNormalization) {
+	io::MemoryArchive a;
+	uint8_t buf[] = {0, 1, 2, 3};
+	ASSERT_TRUE(a.add("dir/file.vox", buf, sizeof(buf)));
+	EXPECT_TRUE(a.exists("dir/file.vox"));
+	EXPECT_TRUE(a.exists("./dir/file.vox"));
+	EXPECT_TRUE(a.exists("other/../dir/file.vox"));
+	core::ScopedPtr<io::SeekableReadStream> stream(a.readStream("./dir/file.vox"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ((size_t)stream->size(), sizeof(buf));
+}
+
 } // namespace io

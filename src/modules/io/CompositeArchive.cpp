@@ -3,6 +3,7 @@
  */
 
 #include "CompositeArchive.h"
+#include "core/StringUtil.h"
 
 namespace io {
 
@@ -24,8 +25,9 @@ void CompositeArchive::shutdown() {
 }
 
 bool CompositeArchive::exists(const core::String &file) const {
+	const core::String normalized = core::string::sanitizePath(file);
 	for (const ArchivePtr &archive : _archives) {
-		if (archive->exists(file)) {
+		if (archive->exists(normalized)) {
 			return true;
 		}
 	}
@@ -33,12 +35,7 @@ bool CompositeArchive::exists(const core::String &file) const {
 }
 
 bool CompositeArchive::exists(const core::Path &file) const {
-	for (const ArchivePtr &archive : _archives) {
-		if (archive->exists(file)) {
-			return true;
-		}
-	}
-	return false;
+	return exists(file.toString());
 }
 
 void CompositeArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
@@ -61,8 +58,9 @@ void CompositeArchive::list(const core::String &basePath, ArchiveFiles &out, con
 }
 
 SeekableReadStream *CompositeArchive::readStream(const core::String &filePath) {
+	const core::String normalized = core::string::sanitizePath(filePath);
 	for (const ArchivePtr &archive : _archives) {
-		SeekableReadStream *stream = archive->readStream(filePath);
+		SeekableReadStream *stream = archive->readStream(normalized);
 		if (stream) {
 			return stream;
 		}
@@ -71,8 +69,9 @@ SeekableReadStream *CompositeArchive::readStream(const core::String &filePath) {
 }
 
 SeekableWriteStream *CompositeArchive::writeStream(const core::String &filePath) {
+	const core::String normalized = core::string::sanitizePath(filePath);
 	for (const ArchivePtr &archive : _archives) {
-		SeekableWriteStream *stream = archive->writeStream(filePath);
+		SeekableWriteStream *stream = archive->writeStream(normalized);
 		if (stream) {
 			return stream;
 		}

@@ -63,7 +63,7 @@ public:
 	 */
 	virtual SeekableReadStream *readStream(const core::String &filePath) = 0;
 	SeekableReadStream *readStream(const core::Path &filePath) {
-		return readStream(filePath.toString());
+		return readStream(filePath.lexicallyNormal());
 	}
 	/**
 	 * The contract is that the memory ownership of the returned stream is transferred to the caller
@@ -72,7 +72,7 @@ public:
 	 */
 	virtual SeekableWriteStream *writeStream(const core::String &filePath);
 	SeekableWriteStream *writeStream(const core::Path &filePath) {
-		return writeStream(filePath.toString());
+		return writeStream(filePath.lexicallyNormal());
 	}
 
 	virtual bool write(const core::String &filePath, io::ReadStream &stream);

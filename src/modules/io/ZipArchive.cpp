@@ -161,7 +161,7 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 			continue;
 		}
 		FilesystemEntry entry;
-		entry.fullPath = zipStat.m_filename;
+		entry.fullPath = core::string::sanitizePath(zipStat.m_filename);
 		entry.name = core::string::extractFilenameWithExtension(entry.fullPath);
 		entry.type = FilesystemEntry::Type::file;
 		entry.size = zipStat.m_uncomp_size;
@@ -228,15 +228,16 @@ SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
 		Log::error("No zip archive loaded");
 		return nullptr;
 	}
+	const core::String normalized = core::string::sanitizePath(filePath);
 	mz_uint32 fileIndex;
-	if (!mz_zip_reader_locate_file_v2((mz_zip_archive *)_zip, filePath.c_str(), nullptr, 0, &fileIndex)) {
-		Log::error("File '%s' not found in zip archive", filePath.c_str());
+	if (!mz_zip_reader_locate_file_v2((mz_zip_archive *)_zip, normalized.c_str(), nullptr, 0, &fileIndex)) {
+		Log::error("File '%s' not found in zip archive", normalized.c_str());
 		return nullptr;
 	}
 
 	mz_zip_archive_file_stat stat;
 	if (!mz_zip_reader_file_stat((mz_zip_archive *)_zip, fileIndex, &stat)) {
-		Log::error("Failed to get file stat for file '%s' in zip archive", filePath.c_str());
+		Log::error("Failed to get file stat for file '%s' in zip archive", normalized.c_str());
 		return nullptr;
 	}
 
@@ -244,11 +245,11 @@ SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
 	if (!mz_zip_reader_extract_to_callback((mz_zip_archive *)_zip, fileIndex, ziparchive_write_callback, stream, 0)) {
 		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
 		const char *err = mz_zip_get_error_string(error);
-		Log::error("Failed to extract file '%s' from zip: %s", filePath.c_str(), err);
+		Log::error("Failed to extract file '%s' from zip: %s", normalized.c_str(), err);
 		delete stream;
 		return nullptr;
 	}
-	Log::debug("Read stream for file '%s' from zip", filePath.c_str());
+	Log::debug("Read stream for file '%s' from zip", normalized.c_str());
 	stream->seek(0);
 	return stream;
 }

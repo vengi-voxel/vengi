@@ -28,10 +28,11 @@ bool FilesystemEntry::setExtension(const core::String &ext) {
 
 FilesystemEntry createFilesystemEntry(const core::String &filename) {
 	FilesystemEntry entry;
-	entry.name = core::string::extractFilenameWithExtension(filename);
-	entry.fullPath = filename;
-	if (!fs_stat(filename.c_str(), entry)) {
-		Log::trace("Could not stat '%s'", filename.c_str());
+	const core::String normalized = core::string::sanitizePath(filename);
+	entry.name = core::string::extractFilenameWithExtension(normalized);
+	entry.fullPath = normalized;
+	if (!fs_stat(normalized.c_str(), entry)) {
+		Log::trace("Could not stat '%s'", normalized.c_str());
 	}
 	return entry;
 }

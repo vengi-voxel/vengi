@@ -20,17 +20,19 @@ void Archive::shutdown() {
 }
 
 bool Archive::exists(const core::Path &file) const {
-	return exists(file.lexicallyNormal());
+	return exists(file.toString());
 }
 
 bool Archive::exists(const core::String &file) const {
-	return core::find_if(_files.begin(), _files.end(), [&](const auto &e1) { return e1.fullPath == file; }) !=
+	const core::String normalized = core::string::sanitizePath(file);
+	return core::find_if(_files.begin(), _files.end(), [&](const auto &e1) { return e1.fullPath == normalized; }) !=
 		   _files.end();
 }
 
 void Archive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
+	const core::String normalizedBase = core::string::sanitizePath(basePath);
 	for (const auto &entry : _files) {
-		if (!basePath.empty() && !core::string::startsWith(entry.fullPath, basePath)) {
+		if (!normalizedBase.empty() && !core::string::startsWith(entry.fullPath, normalizedBase)) {
 			continue;
 		}
 		if (core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
