@@ -8,7 +8,10 @@
 #include "command/CommandCompleter.h"
 #include "core/BindingContext.h"
 #include "color/Color.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "ui/IMGUIEx.h"
+#include "voxedit-util/Config.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -206,7 +209,13 @@ app::AppState VoxEdit::onConstruct() {
 		.setHandler([this](const command::CommandArgs &args) {
 			const core::String &file = args.str("file");
 			if (file.empty()) {
-				openDialog([this](const core::String &f, const io::FormatDescription *desc) { _sceneMgr->import(f); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelLoad());
+				auto baseOptions = voxelui::FileDialogOptions::build(_paletteCache, false);
+				auto importOptions = [baseOptions](video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry) mutable {
+					bool hasOptions = baseOptions(mode, desc, entry);
+					ImGui::CheckboxVar(cfg::VoxEditImportSingleNode);
+					return true;
+				};
+				openDialog([this](const core::String &f, const io::FormatDescription *desc) { _sceneMgr->import(f); }, importOptions, voxelformat::voxelLoad());
 				return;
 			}
 			_sceneMgr->import(file);
@@ -581,6 +590,15 @@ app::AppState VoxEdit::onInit() {
 			if (filePtr->exists()) {
 				const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 				_mainWindow->load(filePath, nullptr);
+			}
+		} else if (core::getVar(cfg::VoxEditContinueSession)->boolVal()) {
+			const core::String &lastFile = core::getVar(cfg::UIFileDialogLastFile)->strVal();
+			if (!lastFile.empty()) {
+				const io::FilePtr &filePtr = filesystem()->open(lastFile);
+				if (filePtr->exists()) {
+					const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
+					_mainWindow->load(filePath, nullptr);
+				}
 			}
 		}
 	}
