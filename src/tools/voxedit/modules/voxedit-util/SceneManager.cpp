@@ -681,7 +681,8 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem, directory);
-	const core::DynamicArray<io::FilesystemEntry> &entities = archive->files();
+	io::ArchiveFiles entities;
+	archive->list("", entities, "");
 	if (entities.empty()) {
 		Log::info("Could not find any model in %s", directory.c_str());
 		return false;

@@ -15,6 +15,7 @@ namespace io {
 class ZipArchive : public Archive {
 private:
 	void *_zip = nullptr;
+	ArchiveFiles _files;
 	void reset();
 	bool flush();
 public:
@@ -23,6 +24,8 @@ public:
 
 	bool isWrite() const;
 	static bool validStream(io::SeekableReadStream &stream);
+	bool exists(const core::String &file) const override;
+	void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const override;
 	SeekableReadStream* readStream(const core::String &filePath) override;
 	SeekableWriteStream* writeStream(const core::String &filePath) override;
 

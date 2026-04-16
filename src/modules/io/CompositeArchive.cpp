@@ -21,7 +21,6 @@ bool CompositeArchive::init(const core::String &path, io::SeekableReadStream *st
 
 void CompositeArchive::shutdown() {
 	_archives.clear();
-	Archive::shutdown();
 }
 
 bool CompositeArchive::exists(const core::String &file) const {

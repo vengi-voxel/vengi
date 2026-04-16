@@ -449,7 +449,9 @@ app::AppState VoxConvert::onInit() {
 			}
 
 			const core::String filter = getArgVal("--wildcard", "");
-			for (const auto &entry : archive->files()) {
+			io::ArchiveFiles archiveEntries;
+			archive->list("", archiveEntries, "");
+			for (const auto &entry : archiveEntries) {
 				if (shouldQuit()) {
 					break;
 				}
@@ -466,7 +468,7 @@ app::AppState VoxConvert::onInit() {
 					}
 				}
 				const core::String &fullPath = filesystem()->homeWritePath(entry.fullPath);
-				if (!handleInputFile(fullPath, archive, sceneGraph, archive->files().size() > 1)) {
+				if (!handleInputFile(fullPath, archive, sceneGraph, archiveEntries.size() > 1)) {
 					Log::error("Failed to handle input file %s", fullPath.c_str());
 				}
 			}

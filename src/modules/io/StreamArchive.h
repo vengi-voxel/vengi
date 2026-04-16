@@ -27,6 +27,12 @@ public:
 	}
 	~StreamArchive() override = default;
 
+	bool exists(const core::String &) const override {
+		return false;
+	}
+	void list(const core::String &, ArchiveFiles &, const core::String &) const override {
+	}
+
 	SeekableReadStream *readStream(const core::String &filePath) override {
 		if (_readStream == nullptr) {
 			return nullptr;

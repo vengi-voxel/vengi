@@ -54,7 +54,9 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	core::SharedPtr<VXCArchive> vxcArchive = core::make_shared<VXCArchive>(stream);
-	for (const auto &e : vxcArchive->files()) {
+	io::ArchiveFiles allFiles;
+	vxcArchive->list("", allFiles, "");
+	for (const auto &e : allFiles) {
 		Log::debug("Found file %s", e.name.c_str());
 	}
 	io::ArchiveFiles files;

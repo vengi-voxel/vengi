@@ -17,21 +17,10 @@ FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesystem, bool s
 }
 
 FilesystemArchive::~FilesystemArchive() {
-	FilesystemArchive::shutdown();
 }
 
 bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *stream) {
-	return add(path);
-}
-
-bool FilesystemArchive::add(const core::String &path, const core::String &filter, int depth) {
-	if (path.empty()) {
-		return false;
-	}
-	ArchiveFiles files;
-	const bool ret = _filesystem->list(path, files, filter, depth);
-	_files.append(files);
-	return ret;
+	return true;
 }
 
 bool FilesystemArchive::exists(const core::String &path) const {
@@ -47,10 +36,6 @@ bool FilesystemArchive::exists(const core::Path &path) const {
 }
 
 void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
-	if (!_files.empty()) {
-		Super::list(basePath, out, filter);
-		return;
-	}
 	_filesystem->list(basePath, out, filter);
 }
 
@@ -79,11 +64,7 @@ SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath
 }
 
 ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path, bool sysmode) {
-	core::SharedPtr<FilesystemArchive> fa = core::make_shared<FilesystemArchive>(fs, sysmode);
-	if (!path.empty() && fs->sysIsReadableDir(path)) {
-		fa->init(path);
-	}
-	return fa;
+	return core::make_shared<FilesystemArchive>(fs, sysmode);
 }
 
 } // namespace io

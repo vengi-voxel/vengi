@@ -27,6 +27,8 @@ public:
 	virtual ~MemoryArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
 	void shutdown() override;
+	bool exists(const core::String &file) const override;
+	void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const override;
 	bool add(const core::String &name, const uint8_t *data, size_t size);
 	bool remove(const core::String &name);
 	SeekableReadStream *readStream(const core::String &filePath) override;

@@ -87,6 +87,29 @@ ZipArchive::~ZipArchive() {
 
 void ZipArchive::shutdown() {
 	reset();
+	_files.clear();
+}
+
+bool ZipArchive::exists(const core::String &file) const {
+	const core::String normalized = core::string::sanitizePath(file);
+	for (const auto &entry : _files) {
+		if (entry.fullPath == normalized) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void ZipArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
+	const core::String normalizedBase = core::string::sanitizePath(basePath);
+	for (const auto &entry : _files) {
+		if (!normalizedBase.empty() && !core::string::startsWith(entry.fullPath, normalizedBase)) {
+			continue;
+		}
+		if (core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
+			out.push_back(entry);
+		}
+	}
 }
 
 void ZipArchive::reset() {

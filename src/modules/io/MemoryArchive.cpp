@@ -24,7 +24,30 @@ void MemoryArchive::shutdown() {
 		delete entry->second;
 	}
 	_entries.clear();
-	Archive::shutdown();
+}
+
+bool MemoryArchive::exists(const core::String &file) const {
+	const core::String normalized = core::string::sanitizePath(file);
+	return _entries.find(normalized) != _entries.end();
+}
+
+void MemoryArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
+	const core::String normalizedBase = core::string::sanitizePath(basePath);
+	for (const auto &iter : _entries) {
+		const core::String &name = iter->first;
+		if (!normalizedBase.empty() && !core::string::startsWith(name, normalizedBase)) {
+			continue;
+		}
+		const core::String filename = core::string::extractFilenameWithExtension(name);
+		if (core::string::fileMatchesMultiple(filename.c_str(), filter.c_str())) {
+			FilesystemEntry fse;
+			fse.fullPath = name;
+			fse.name = filename;
+			fse.type = FilesystemEntry::Type::file;
+			fse.size = iter->second->size();
+			out.push_back(fse);
+		}
+	}
 }
 
 bool MemoryArchive::add(const core::String &name, const uint8_t *data, size_t size) {
@@ -35,10 +58,6 @@ bool MemoryArchive::add(const core::String &name, const uint8_t *data, size_t si
 	}
 	MemoryReadStream memstream(data, size);
 	_entries.put(normalized, new BufferedReadWriteStream(memstream, size));
-	FilesystemEntry fse = createFilesystemEntry(normalized);
-	fse.size = size;
-	fse.type = FilesystemEntry::Type::file;
-	_files.push_back(fse);
 	return true;
 }
 
@@ -50,7 +69,6 @@ bool MemoryArchive::remove(const core::String &name) {
 	}
 	delete iter->second;
 	_entries.erase(iter);
-	_files.erase_if([&](const auto &e) { return e.fullPath == normalized; });
 	return true;
 }
 
@@ -60,9 +78,6 @@ SeekableWriteStream *MemoryArchive::writeStream(const core::String &filePath) {
 	if (iter == _entries.end()) {
 		BufferedReadWriteStream *s = new BufferedReadWriteStream(512 * 1024);
 		_entries.put(normalized, s);
-		FilesystemEntry fse = createFilesystemEntry(normalized);
-		fse.type = FilesystemEntry::Type::file;
-		_files.push_back(fse);
 		return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)s);
 	}
 	return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)iter->second);

@@ -157,8 +157,10 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 		Log::error("Failed to open zip archive %s", archiveFile.targetFile().c_str());
 		return false;
 	}
-	Log::debug("Found %i files in zip archive %s", (int)zipArchive->files().size(), archiveFile.name.c_str());
-	for (const io::FilesystemEntry &f : zipArchive->files()) {
+	io::ArchiveFiles zipFiles;
+	zipArchive->list("", zipFiles, "");
+	Log::debug("Found %i files in zip archive %s", (int)zipFiles.size(), archiveFile.name.c_str());
+	for (const io::FilesystemEntry &f : zipFiles) {
 		VoxelFile subFile;
 		subFile.source = archiveFile.source;
 		subFile.name = f.name;

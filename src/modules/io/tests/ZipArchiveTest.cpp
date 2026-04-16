@@ -21,7 +21,8 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	FileStream fileStream(file);
 	ZipArchive archive;
 	ASSERT_TRUE(archive.init(file->fileName(), &fileStream));
-	const ArchiveFiles &files = archive.files();
+	ArchiveFiles files;
+	archive.list("", files, "");
 	ASSERT_EQ(3u, files.size());
 	core::ScopedPtr<io::SeekableReadStream> outstream(archive.readStream(files[0].name));
 	ASSERT_TRUE(outstream);
@@ -74,7 +75,8 @@ TEST_F(ZipArchiveTest, testZipArchiveWrite) {
 		ZipArchive readArchive;
 		ASSERT_TRUE(readArchive.init("test.zip", &archiveStream));
 
-		const ArchiveFiles &files = readArchive.files();
+		ArchiveFiles files;
+		readArchive.list("", files, "");
 		ASSERT_EQ(3u, files.size());
 
 		{
@@ -154,7 +156,8 @@ TEST_F(ZipArchiveTest, testZipArchiveWriteEmpty) {
 	ZipArchive readArchive;
 	ASSERT_TRUE(readArchive.init("test.zip", &archiveStream));
 
-	const ArchiveFiles &files = readArchive.files();
+	ArchiveFiles files;
+	readArchive.list("", files, "");
 	EXPECT_EQ(0u, files.size());
 }
 

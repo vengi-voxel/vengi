@@ -39,8 +39,10 @@ public:
 TEST_F(FilesystemArchiveTest, DISABLED_testFilesytemArchiveCurrentDir) {
 	io::FilesystemArchive fsa(fs);
 	fsa.init(".");
-	ASSERT_FALSE(fsa.files().empty());
-	FilesystemEntry entry = fsa.files().front();
+	io::ArchiveFiles entries;
+	fsa.list("", entries, "");
+	ASSERT_FALSE(entries.empty());
+	FilesystemEntry entry = entries.front();
 	core::ScopedPtr<io::SeekableReadStream> rs(fsa.readStream(entry.fullPath));
 	ASSERT_TRUE(rs) << "Should be able to read a file with a full path";
 	core::ScopedPtr<io::SeekableReadStream> rs2(fsa.readStream(entry.name));
