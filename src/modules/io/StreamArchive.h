@@ -8,8 +8,15 @@
 namespace io {
 
 /**
- * @brief This is a simple archive implementation that wraps a single stream. It does not support multiple files, but
- * can be used to treat a stream as an archive for use with other code that expects an archive interface.
+ * @brief Archive adapter that wraps a single seekable stream.
+ *
+ * This does not support multiple files - @c exists() always returns false and
+ * @c list() is a no-op. Every call to @c readStream() or @c writeStream()
+ * seeks back to the position the underlying stream had at construction time,
+ * so callers always read/write from that same starting offset. This is
+ * intentional: the archive does not own the stream and cannot know whether
+ * the caller has advanced it between calls.
+ *
  * @ingroup IO
  */
 class StreamArchive : public Archive {
@@ -33,6 +40,8 @@ public:
 	void list(const core::String &, ArchiveFiles &, const core::String &) const override {
 	}
 
+	// Always resets to the construction-time position so the same data can
+	// be re-read by successive callers (e.g. format probing followed by loading).
 	SeekableReadStream *readStream(const core::String &filePath) override {
 		if (_readStream == nullptr) {
 			return nullptr;
@@ -40,6 +49,7 @@ public:
 		_readStream->seek(_pos);
 		return new SeekableReadWriteStreamWrapper(_readStream);
 	}
+	// Same reset semantics as readStream - see class documentation.
 	SeekableWriteStream *writeStream(const core::String &filePath) override {
 		if (_writeStream == nullptr) {
 			return nullptr;
