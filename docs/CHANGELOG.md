@@ -67,14 +67,14 @@ VoxEdit:
    - Added uniform scale checkbox for transform brush
    - Added sprint action button for game mode movement
    - Persist scene mode setting across sessions
-   - Added new brushes and lua script execution as MCP tools
+   - Added lua script execution as MCP tools
    - Fixed shading preview for selection brush (#783)
    - Improved performance with dirty tracking for AABB and bone mesh rebuilds
    - Improved performance by deferring hidden volume uploads
    - Added IKConstraint editing and inverse kinematic solver
    - Fixed scroll to active node in scene graph panel
    - Auto enable a newly created animation
-   - Fixed pivot change not taking local child transform into acount
+   - Fixed pivot change not taking local child transform into account
    - Improved locked axis handling
    - Fixed locked plane position change
    - Fixed mirror plane rendering
@@ -85,10 +85,8 @@ VoxEdit:
    - Fixed a few missing network messages on undo/redo
    - Converted options menu to options dialog
    - Added extrude brush for face-based extrusion and carving
-   - Added extended selection system
    - Added `globalcopy`/`globalpaste` commands for cross-instance clipboard sharing
    - Fixed potential crashes when using brushes in some circumstances
-   - Added new brushes
    - Added camera commands (`camera_mouselook`, `camera_reset`, `camera_mode`, `camera_projection`)
    - Added network chat feature
    - Split image/model asset panel and file panel into dedicated panels
