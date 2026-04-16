@@ -23,13 +23,21 @@ static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf,
 		Log::error("ziparchive_read: Failed to seek");
 		return 0;
 	}
-	// TODO: read until we have read the expected size
-	const int64_t read = stream->read(targetBuf, targetBufSize);
-	if (read <= -1) {
-		Log::error("Failed to read %i bytes from stream", (int)targetBufSize);
-		return read;
+	size_t remaining = targetBufSize;
+	uint8_t *buf = (uint8_t *)targetBuf;
+	while (remaining > 0) {
+		const int64_t read = stream->read(buf, remaining);
+		if (read <= -1) {
+			Log::error("Failed to read %i bytes from stream", (int)remaining);
+			return 0;
+		}
+		if (read == 0) {
+			break;
+		}
+		buf += read;
+		remaining -= (size_t)read;
 	}
-	return read;
+	return targetBufSize - remaining;
 }
 
 static size_t ziparchive_write_callback(void *userdata, mz_uint64 offset, const void *targetBuf, size_t targetBufSize) {
