@@ -57,4 +57,18 @@ TEST_F(StreamArchiveTest, testFactory) {
 	ASSERT_TRUE(archive);
 }
 
+TEST_F(StreamArchiveTest, testReadStreamOnWriteOnlyArchive) {
+	io::BufferedReadWriteStream stream(64);
+	StreamArchive archive((io::SeekableWriteStream *)&stream);
+	core::ScopedPtr<io::SeekableReadStream> rs(archive.readStream("any"));
+	ASSERT_FALSE(rs);
+}
+
+TEST_F(StreamArchiveTest, testWriteStreamOnReadOnlyArchive) {
+	io::BufferedReadWriteStream stream(64);
+	StreamArchive archive((io::SeekableReadStream *)&stream);
+	core::ScopedPtr<io::SeekableWriteStream> ws(archive.writeStream("any"));
+	ASSERT_FALSE(ws);
+}
+
 } // namespace io
