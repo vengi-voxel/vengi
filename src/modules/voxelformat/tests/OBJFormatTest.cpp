@@ -5,7 +5,6 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
-#include "io/Stream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
