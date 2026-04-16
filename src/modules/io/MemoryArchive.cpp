@@ -3,7 +3,6 @@
  */
 
 #include "MemoryArchive.h"
-#include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FilesystemEntry.h"
 #include "io/MemoryReadStream.h"
@@ -12,10 +11,7 @@
 namespace io {
 
 MemoryArchive::~MemoryArchive() {
-	for (auto entry : _entries) {
-		delete entry->second;
-	}
-	_entries.clear();
+	MemoryArchive::shutdown();
 }
 
 bool MemoryArchive::init(const core::String &path, io::SeekableReadStream *stream) {
@@ -23,7 +19,11 @@ bool MemoryArchive::init(const core::String &path, io::SeekableReadStream *strea
 }
 
 void MemoryArchive::shutdown() {
+	for (auto entry : _entries) {
+		delete entry->second;
+	}
 	_entries.clear();
+	Archive::shutdown();
 }
 
 bool MemoryArchive::add(const core::String &name, const uint8_t *data, size_t size) {
@@ -45,6 +45,7 @@ bool MemoryArchive::remove(const core::String &name) {
 	if (iter == _entries.end()) {
 		return false;
 	}
+	delete iter->second;
 	_entries.erase(iter);
 	_files.erase_if([&](const auto &e) { return e.fullPath == name; });
 	return true;
