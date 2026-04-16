@@ -4,6 +4,7 @@ set(SRCS
 	Archive.cpp Archive.h
 	Base64.cpp Base64.h
 	Base64Stream.cpp Base64Stream.h
+	CompositeArchive.cpp CompositeArchive.h
 	Base64ReadStream.cpp Base64ReadStream.h
 	Base64WriteStream.cpp Base64WriteStream.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
@@ -113,6 +114,7 @@ set(TEST_SRCS
 	tests/BufferedReadWriteStreamTest.cpp
 	tests/BufferedWriteStreamTest.cpp
 	tests/FilesystemTest.cpp
+	tests/CompositeArchiveTest.cpp
 	tests/FilesystemArchiveTest.cpp
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp
