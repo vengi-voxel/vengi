@@ -43,7 +43,20 @@ bool CompositeArchive::exists(const core::Path &file) const {
 
 void CompositeArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
 	for (const ArchivePtr &archive : _archives) {
-		archive->list(basePath, out, filter);
+		ArchiveFiles archiveFiles;
+		archive->list(basePath, archiveFiles, filter);
+		for (const auto &entry : archiveFiles) {
+			bool duplicate = false;
+			for (const auto &existing : out) {
+				if (existing.fullPath == entry.fullPath) {
+					duplicate = true;
+					break;
+				}
+			}
+			if (!duplicate) {
+				out.push_back(entry);
+			}
+		}
 	}
 }
 
