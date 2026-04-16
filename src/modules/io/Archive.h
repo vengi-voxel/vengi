@@ -41,6 +41,10 @@ public:
 
 	virtual ~Archive() = default;
 	virtual bool exists(const core::Path &file) const;
+	/**
+	 * @brief Checks if a file exists in the archive. The default implementation checks the files member and does not do
+	 * any io. This means your own implementation has to fill that member in order to make the default implementation work
+	 */
 	virtual bool exists(const core::String &file) const;
 
 	/**

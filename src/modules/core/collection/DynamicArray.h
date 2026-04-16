@@ -447,6 +447,17 @@ public:
 		_buffer = nullptr;
 	}
 
+	template<typename FUNC>
+	bool erase_if(FUNC &&func) {
+		for (size_t i = 0u; i < _size; ++i) {
+			if (func(_buffer[i])) {
+				erase(i);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	bool erase(iterator iter, size_t n = 1) {
 		if (iter == end()) {
 			return false;

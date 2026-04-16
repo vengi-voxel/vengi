@@ -3,7 +3,9 @@
  */
 
 #include "MemoryArchive.h"
+#include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/FilesystemEntry.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 
@@ -31,6 +33,10 @@ bool MemoryArchive::add(const core::String &name, const uint8_t *data, size_t si
 	}
 	MemoryReadStream memstream(data, size);
 	_entries.put(name, new BufferedReadWriteStream(memstream, size));
+	FilesystemEntry fse = createFilesystemEntry(name);
+	fse.size = size;
+	fse.type = FilesystemEntry::Type::file;
+	_files.push_back(fse);
 	return true;
 }
 
@@ -40,6 +46,7 @@ bool MemoryArchive::remove(const core::String &name) {
 		return false;
 	}
 	_entries.erase(iter);
+	_files.erase_if([&](const auto &e) { return e.fullPath == name; });
 	return true;
 }
 
@@ -48,9 +55,9 @@ SeekableWriteStream *MemoryArchive::writeStream(const core::String &filePath) {
 	if (iter == _entries.end()) {
 		BufferedReadWriteStream *s = new BufferedReadWriteStream(512 * 1024);
 		_entries.put(filePath, s);
-		return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream*)s);
+		return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)s);
 	}
-	return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream*)iter->second);
+	return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)iter->second);
 }
 
 SeekableReadStream *MemoryArchive::readStream(const core::String &filePath) {
@@ -59,7 +66,7 @@ SeekableReadStream *MemoryArchive::readStream(const core::String &filePath) {
 		return nullptr;
 	}
 	iter->second->seek(0);
-	return new SeekableReadWriteStreamWrapper((io::SeekableReadStream*)iter->second);
+	return new SeekableReadWriteStreamWrapper((io::SeekableReadStream *)iter->second);
 }
 
 } // namespace io
