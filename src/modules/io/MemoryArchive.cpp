@@ -56,6 +56,9 @@ SeekableWriteStream *MemoryArchive::writeStream(const core::String &filePath) {
 	if (iter == _entries.end()) {
 		BufferedReadWriteStream *s = new BufferedReadWriteStream(512 * 1024);
 		_entries.put(filePath, s);
+		FilesystemEntry fse = createFilesystemEntry(filePath);
+		fse.type = FilesystemEntry::Type::file;
+		_files.push_back(fse);
 		return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)s);
 	}
 	return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream *)iter->second);
