@@ -5,11 +5,11 @@
 #pragma once
 
 #include "Brush.h"
+#include "SnapshotHelper.h"
 #include "core/GLM.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "voxel/Face.h"
-#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
 
@@ -61,7 +61,6 @@ private:
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
 	int _squashPlaneCoord = 0;
 	bool _active = false;
-	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
 
 	// ExtendPlane parameters
@@ -85,26 +84,13 @@ private:
 	core::ScopedPtr<voxel::RawVolume> _ownedSkinVolume;
 	core::String _skinFilePath;
 
-	// Original selected voxels captured at brush activation
-	voxel::SparseVolume _snapshot;
-	// Selection bounding box at capture time
-	voxel::Region _snapshotRegion;
-	// Volume region lower corner at snapshot capture time (to detect region shifts)
-	glm::ivec3 _capturedVolumeLower{0};
-
-	// Per-generate bookkeeping: tracks positions written during a single generate()
-	// call so the previous state can be restored before re-applying.
-	voxel::SparseVolume _history;
+	SnapshotHelper _snapshotHelper;
 
 	// Cached region for preview
 	voxel::Region _cachedRegion;
 	bool _cachedRegionValid = false;
 
-	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
-	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
 	void applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
-	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
-	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 	void fitPlaneFromSnapshot();
 	void paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
@@ -116,7 +102,6 @@ public:
 	static constexpr int MaxIterations = 250;
 	static constexpr int MaxFlattenIterations = 250;
 	SculptBrush() : Super(BrushType::Sculpt, ModifierType::Override, ModifierType::Override) {
-		_history.setStoreEmptyVoxels(true);
 	}
 	virtual ~SculptBrush() = default;
 
@@ -249,7 +234,7 @@ inline void SculptBrush::setIterations(int iterations) {
 }
 
 inline bool SculptBrush::hasSnapshot() const {
-	return _hasSnapshot;
+	return _snapshotHelper.hasSnapshot();
 }
 
 inline voxel::FaceNames SculptBrush::flattenFace() const {

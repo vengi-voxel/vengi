@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Brush.h"
+#include "SnapshotHelper.h"
 #include "core/GLM.h"
-#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 
 #include <glm/vec3.hpp>
@@ -43,22 +43,11 @@ private:
 	TransformMode _transformMode = TransformMode::Move;
 	voxel::VoxelSampling _voxelSampling = voxel::VoxelSampling::Nearest;
 	bool _active = false;
-	bool _hasSnapshot = false;
 	voxel::RawVolume *_lastVolume = nullptr;
 
-	// Original selected voxels captured at brush activation
-	voxel::SparseVolume _snapshot;
-	// Selection bounding box at capture time
-	voxel::Region _snapshotRegion;
+	SnapshotHelper _snapshotHelper;
 	// Center of selection (used as pivot for scale/rotate)
 	glm::vec3 _snapshotCenter{0.0f};
-	// Volume region lower corner at snapshot capture time (to detect region shifts)
-	glm::ivec3 _capturedVolumeLower{0};
-
-	// Per-generate bookkeeping: tracks positions written during a single generate()
-	// call so the previous state can be restored before re-applying the transform.
-	// Stores the original voxel at each modified position (with empty voxel storage enabled).
-	voxel::SparseVolume _history;
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
@@ -70,16 +59,12 @@ private:
 	glm::vec3 _scale{1.0f, 1.0f, 1.0f};
 	glm::vec3 _rotationDegrees{0.0f, 0.0f, 0.0f};
 
-	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
-	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
 	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 	void eraseSnapshotPositions(ModifierVolumeWrapper &wrapper);
 	void applyInverseMapping(ModifierVolumeWrapper &wrapper);
 	voxel::Region computeTransformedRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
 	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
-	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
-	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -90,7 +75,6 @@ public:
 	static constexpr int MaxShearOffset = 250;
 
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
-		_history.setStoreEmptyVoxels(true);
 	}
 	virtual ~TransformBrush() = default;
 
@@ -193,15 +177,15 @@ inline void TransformBrush::setRotationDegrees(const glm::vec3 &degrees) {
 }
 
 inline bool TransformBrush::hasSnapshot() const {
-	return _hasSnapshot;
+	return _snapshotHelper.hasSnapshot();
 }
 
 inline size_t TransformBrush::snapshotVoxelCount() const {
-	return _snapshot.size();
+	return _snapshotHelper.snapshotVoxelCount();
 }
 
 inline const voxel::Region &TransformBrush::snapshotRegion() const {
-	return _snapshotRegion;
+	return _snapshotHelper.snapshotRegion();
 }
 
 } // namespace voxedit

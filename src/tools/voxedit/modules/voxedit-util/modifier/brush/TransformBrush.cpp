@@ -8,9 +8,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
-#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -35,7 +33,7 @@ void TransformBrush::onSceneChange() {
 	Super::onSceneChange();
 	commitCurrentTransform();
 	_active = false;
-	_snapshotRegion = voxel::Region::InvalidRegion;
+	_snapshotHelper.clear();
 }
 
 void TransformBrush::onActivated() {
@@ -44,14 +42,11 @@ void TransformBrush::onActivated() {
 }
 
 bool TransformBrush::hasPendingChanges() const {
-	return _hasSnapshot;
+	return _snapshotHelper.hasSnapshot();
 }
 
 voxel::Region TransformBrush::revertChanges(voxel::RawVolume *volume) {
-	voxel::RawVolumeWrapper wrapper(volume);
-	_history.copyTo(wrapper);
-	_history.clear();
-	return wrapper.dirtyRegion();
+	return _snapshotHelper.revertChanges(volume);
 }
 
 bool TransformBrush::onDeactivated() {
@@ -60,9 +55,7 @@ bool TransformBrush::onDeactivated() {
 }
 
 void TransformBrush::commitCurrentTransform() {
-	_hasSnapshot = false;
-	_snapshot.clear();
-	_history.clear();
+	_snapshotHelper.clear();
 	_cachedRegionValid = false;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_moveOffset = glm::ivec3(0);
@@ -77,9 +70,7 @@ void TransformBrush::reset() {
 	_active = false;
 
 	commitCurrentTransform();
-	_snapshotRegion = voxel::Region::InvalidRegion;
 	_snapshotCenter = glm::vec3(0.0f);
-	_capturedVolumeLower = glm::ivec3(0);
 	_transformMode = TransformMode::Move;
 	_voxelSampling = voxel::VoxelSampling::Nearest;
 	_lastVolume = nullptr;
@@ -99,17 +90,22 @@ void TransformBrush::endBrush(BrushContext &) {
 }
 
 bool TransformBrush::active() const {
-	return _active || _hasSnapshot;
+	return _active || _snapshotHelper.hasSnapshot();
 }
 
 void TransformBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
-	if (!_hasSnapshot && volume != nullptr) {
-		captureSnapshot(volume, ctx.targetVolumeRegion);
-	} else if (_hasSnapshot) {
+	if (!_snapshotHelper.hasSnapshot() && volume != nullptr) {
+		_snapshotHelper.captureSnapshot(volume, ctx.targetVolumeRegion);
+		if (_snapshotHelper.hasSnapshot()) {
+			const voxel::Region &sr = _snapshotHelper.snapshotRegion();
+			_snapshotCenter = glm::vec3(sr.getLowerCorner() + sr.getUpperCorner()) * 0.5f;
+		}
+	} else if (_snapshotHelper.hasSnapshot()) {
 		// Detect volume region shift (e.g. node was moved) and adjust cached data
-		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
+		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _snapshotHelper.capturedVolumeLower();
 		if (delta != glm::ivec3(0)) {
-			adjustSnapshotForRegionShift(delta);
+			_snapshotHelper.adjustForRegionShift(delta);
+			_snapshotCenter += glm::vec3(delta);
 		}
 	}
 	_cachedRegion = computeTransformedRegion();
@@ -123,70 +119,13 @@ voxel::Region TransformBrush::calcRegion(const BrushContext &ctx) const {
 	return ctx.targetVolumeRegion;
 }
 
-void TransformBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
-	core_trace_scoped(CaptureSnapshot);
-	_snapshot.clear();
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
-
-	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		const glm::ivec3 pos(x, y, z);
-		_snapshot.setVoxel(pos, voxel);
-		selLo = glm::min(selLo, pos);
-		selHi = glm::max(selHi, pos);
-	};
-	voxelutil::visitVolume(*volume, volRegion, func, voxelutil::VisitSolidOutline());
-	if (_snapshot.empty()) {
-		_hasSnapshot = false;
-		return;
-	}
-
-	_snapshotRegion = voxel::Region(selLo, selHi);
-	_snapshotCenter = glm::vec3(selLo + selHi) * 0.5f;
-	_capturedVolumeLower = volRegion.getLowerCorner();
-	_hasSnapshot = true;
-}
-
-void TransformBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
-	core_trace_scoped(AdjustSnapshotForRegionShift);
-	// Collect and re-insert with shifted positions
-	voxel::DynamicVoxelArray entries;
-	_snapshot.copyTo(entries, _snapshotRegion);
-	_snapshot.clear();
-	for (const voxel::VoxelPosition &e : entries) {
-		_snapshot.setVoxel(delta + e.pos, e.voxel);
-	}
-
-	_snapshotRegion.shift(delta.x, delta.y, delta.z);
-	_snapshotCenter += glm::vec3(delta);
-	_capturedVolumeLower += delta;
-
-	// Shift history positions: collect, clear, reinsert shifted
-	struct EntryCollector {
-		voxel::DynamicVoxelArray *entries;
-		glm::ivec3 delta;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
-			return true;
-		}
-	};
-	voxel::DynamicVoxelArray historyEntries;
-	historyEntries.reserve(_history.size());
-	EntryCollector collector{&historyEntries, delta};
-	_history.copyTo(collector);
-	_history.clear();
-	for (const voxel::VoxelPosition &e : historyEntries) {
-		_history.setVoxel(e.pos, e.voxel);
-	}
-}
-
 voxel::Region TransformBrush::computeTransformedRegion() const {
 	core_trace_scoped(ComputeTransformedRegion);
-	if (!_hasSnapshot || _snapshot.empty()) {
+	if (!_snapshotHelper.hasSnapshot() || _snapshotHelper.snapshotVoxelCount() == 0) {
 		return voxel::Region::InvalidRegion;
 	}
-	const glm::ivec3 &srcLo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &srcHi = _snapshotRegion.getUpperCorner();
+	const glm::ivec3 &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
+	const glm::ivec3 &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
 	glm::ivec3 dstLo = srcLo;
 	glm::ivec3 dstHi = srcHi;
 
@@ -222,7 +161,7 @@ glm::ivec3 TransformBrush::transformPosition(const glm::ivec3 &pos) const {
 		// Y shear: each Z-layer shifts in Y (front goes +Y, back goes -Y)
 		// Z shear: each X-layer shifts in Z (right goes +Z, left goes -Z)
 		const glm::vec3 relative = result - center;
-		const glm::vec3 halfSize = glm::vec3(_snapshotRegion.getDimensionsInVoxels()) * 0.5f;
+		const glm::vec3 halfSize = glm::vec3(_snapshotHelper.snapshotRegion().getDimensionsInVoxels()) * 0.5f;
 
 		if (halfSize.y > 0.0f && _shearOffset.x != 0) {
 			result.x += (relative.y / halfSize.y) * (float)_shearOffset.x;
@@ -299,24 +238,6 @@ glm::vec3 TransformBrush::inverseTransformPosition(const glm::ivec3 &pos) const 
 	return result;
 }
 
-void TransformBrush::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
-	if (_history.hasVoxel(pos)) {
-		return;
-	}
-	_history.setVoxel(pos, vol->voxel(pos));
-}
-
-void TransformBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
-	voxel::RawVolume *volume = wrapper.volume();
-	if (!volume->region().containsPoint(pos)) {
-		return;
-	}
-	saveToHistory(volume, pos);
-	if (volume->setVoxel(pos, newVoxel)) {
-		wrapper.addToDirtyRegion(pos);
-	}
-}
-
 void TransformBrush::eraseSnapshotPositions(ModifierVolumeWrapper &wrapper) {
 	core_trace_scoped(EraseSnapshotPositions);
 
@@ -324,16 +245,16 @@ void TransformBrush::eraseSnapshotPositions(ModifierVolumeWrapper &wrapper) {
 	// full bounding box - avoids hash lookups for empty positions.
 	struct Eraser {
 		ModifierVolumeWrapper *wrapper;
-		TransformBrush *brush;
+		SnapshotHelper *helper;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
 			constexpr voxel::Voxel air;
 			const glm::ivec3 pos(x, y, z);
-			brush->writeVoxel(*wrapper, pos, air);
+			helper->writeVoxel(*wrapper, pos, air);
 			return true;
 		}
 	};
-	Eraser eraser{&wrapper, this};
-	_snapshot.copyTo(eraser);
+	Eraser eraser{&wrapper, &_snapshotHelper};
+	_snapshotHelper.snapshot().copyTo(eraser);
 }
 
 void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
@@ -342,11 +263,12 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 	const voxel::Region &volRegion = vol->region();
 
 	// Convert sparse snapshot to a temporary RawVolume as it is a cache-friendly flat array
-	voxel::RawVolume snapshotRaw(_snapshotRegion);
-	_snapshot.copyTo(snapshotRaw);
+	const voxel::Region &snapshotRegion = _snapshotHelper.snapshotRegion();
+	voxel::RawVolume snapshotRaw(snapshotRegion);
+	_snapshotHelper.snapshot().copyTo(snapshotRaw);
 
-	const glm::ivec3 &srcLo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &srcHi = _snapshotRegion.getUpperCorner();
+	const glm::ivec3 &srcLo = snapshotRegion.getLowerCorner();
+	const glm::ivec3 &srcHi = snapshotRegion.getUpperCorner();
 	glm::ivec3 dstLo(INT_MAX);
 	glm::ivec3 dstHi(INT_MIN);
 
@@ -396,7 +318,7 @@ void TransformBrush::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 	// Write results sequentially
 	for (const auto &results : sliceResults) {
 		for (const auto &tv : results) {
-			writeVoxel(wrapper, tv.pos, tv.voxel);
+			_snapshotHelper.writeVoxel(wrapper, tv.pos, tv.voxel);
 		}
 	}
 }
@@ -415,10 +337,10 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 	} else {
 		// Forward mapping: Move and Shear produce 1:1 mappings without gaps
 		voxelutil::visitVolume(
-			_snapshot, _snapshotRegion,
+			_snapshotHelper.snapshot(), _snapshotHelper.snapshotRegion(),
 			[&](int x, int y, int z, const voxel::Voxel &v) {
 				const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
-				writeVoxel(wrapper, newPos, v);
+				_snapshotHelper.writeVoxel(wrapper, newPos, v);
 			},
 			voxelutil::VisitSolid());
 	}
@@ -427,7 +349,7 @@ void TransformBrush::applyTransform(ModifierVolumeWrapper &wrapper, const BrushC
 void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							  const voxel::Region &) {
 	core_trace_scoped(Generate);
-	if (!_hasSnapshot) {
+	if (!_snapshotHelper.hasSnapshot()) {
 		return;
 	}
 
@@ -435,19 +357,7 @@ void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &w
 	_lastVolume = vol;
 
 	// Restore previously transformed state before re-applying
-	struct HistoryRestorer {
-		voxel::RawVolume *vol;
-		ModifierVolumeWrapper *wrapper;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			if (vol->setVoxel(x, y, z, voxel)) {
-				wrapper->addToDirtyRegion(glm::ivec3(x, y, z));
-			}
-			return true;
-		}
-	};
-	HistoryRestorer restorer{vol, &wrapper};
-	_history.copyTo(restorer);
-	_history.clear();
+	_snapshotHelper.restoreHistory(vol, wrapper);
 
 	// Apply the current transform from the original snapshot
 	applyTransform(wrapper, ctx);
@@ -455,14 +365,14 @@ void TransformBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &w
 }
 
 bool TransformBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return _hasSnapshot || ctx.targetVolumeRegion.isValid();
+	return _snapshotHelper.hasSnapshot() || ctx.targetVolumeRegion.isValid();
 }
 
 void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
 	state.snap = (float)ctx.gridResolution;
 	state.localMode = true;
 
-	const glm::vec3 center = _hasSnapshot ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+	const glm::vec3 center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
 
 	switch (_transformMode) {
 	case TransformMode::Move:
@@ -495,7 +405,7 @@ void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &s
 bool TransformBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 									 uint32_t operation) {
 	core_trace_scoped(ApplyBrushGizmo);
-	const glm::vec3 center = _hasSnapshot ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+	const glm::vec3 center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
 
 	switch (_transformMode) {
 	case TransformMode::Move: {

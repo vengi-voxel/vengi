@@ -267,6 +267,7 @@ public:
 	void setGridResolution(int gridSize);
 	int gridResolution() const;
 
+	// TODO: only used internally or for tests
 	bool autoSelect() const;
 	void setAutoSelect(bool enable);
 

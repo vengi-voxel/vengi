@@ -5,7 +5,6 @@
 #include "SculptBrush.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -13,22 +12,16 @@
 #include "voxel/Connectivity.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
-#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
-#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
 void SculptBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
-	_hasSnapshot = false;
-	_snapshot.clear();
-	_history.clear();
-	_snapshotRegion = voxel::Region::InvalidRegion;
+	_snapshotHelper.clear();
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
 	_planeFitted = false;
@@ -42,14 +35,11 @@ void SculptBrush::onActivated() {
 }
 
 bool SculptBrush::hasPendingChanges() const {
-	return _hasSnapshot;
+	return _snapshotHelper.hasSnapshot();
 }
 
 voxel::Region SculptBrush::revertChanges(voxel::RawVolume *volume) {
-	voxel::RawVolumeWrapper wrapper(volume);
-	_history.copyTo(wrapper);
-	_history.clear();
-	return wrapper.dirtyRegion();
+	return _snapshotHelper.revertChanges(volume);
 }
 
 bool SculptBrush::onDeactivated() {
@@ -65,13 +55,9 @@ void SculptBrush::reset() {
 	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
 	_paramsDirty = true;
-	_hasSnapshot = false;
-	_snapshot.clear();
-	_history.clear();
-	_snapshotRegion = voxel::Region::InvalidRegion;
+	_snapshotHelper.clear();
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
-	_capturedVolumeLower = glm::ivec3(0);
 	_strength = 0.5f;
 	_iterations = 1;
 	_heightThreshold = 1;
@@ -113,25 +99,26 @@ void SculptBrush::endBrush(BrushContext &) {
 }
 
 bool SculptBrush::active() const {
-	return _active || _hasSnapshot;
+	return _active || _snapshotHelper.hasSnapshot();
 }
 
 void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
-	if (!_hasSnapshot && volume != nullptr) {
-		captureSnapshot(volume, ctx.targetVolumeRegion);
-	} else if (_hasSnapshot) {
-		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
+	if (!_snapshotHelper.hasSnapshot() && volume != nullptr) {
+		_snapshotHelper.captureSnapshot(volume, ctx.targetVolumeRegion);
+	} else if (_snapshotHelper.hasSnapshot()) {
+		// TODO: this should be handled in the _snapshotHelper - just call setRegion(ctx.targetVolumeRegion) and hide everything else in the class
+		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _snapshotHelper.capturedVolumeLower();
 		if (delta != glm::ivec3(0)) {
-			adjustSnapshotForRegionShift(delta);
+			_snapshotHelper.adjustForRegionShift(delta);
 		}
 	}
-	if (_hasSnapshot && _sculptMode == SculptMode::ExtendPlane && _planeFitted) {
+	if (_snapshotHelper.hasSnapshot() && _sculptMode == SculptMode::ExtendPlane && _planeFitted) {
 		if (_active && ctx.cursorPosition != _lastPaintPos) {
 			_paramsDirty = true;
 		}
 	}
-	if (_hasSnapshot) {
-		_cachedRegion = _snapshotRegion;
+	if (_snapshotHelper.hasSnapshot()) {
+		_cachedRegion = _snapshotHelper.snapshotRegion();
 		if (_sculptMode == SculptMode::Reskin) {
 			// Expand along face normal for z offset + skin layers growing outward
 			const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
@@ -181,102 +168,12 @@ voxel::Region SculptBrush::calcRegion(const BrushContext &ctx) const {
 	return ctx.targetVolumeRegion;
 }
 
-void SculptBrush::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
-	core_trace_scoped(SculptBrushCaptureSnapshot);
-	_snapshot.clear();
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
-
-	voxelutil::visitVolume(
-		*volume, volRegion,
-		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const glm::ivec3 pos(x, y, z);
-			_snapshot.setVoxel(pos, voxel);
-			selLo = glm::min(selLo, pos);
-			selHi = glm::max(selHi, pos);
-		},
-		voxelutil::VisitSolidOutline());
-
-	if (_snapshot.empty()) {
-		_hasSnapshot = false;
-		return;
-	}
-
-	_snapshotRegion = voxel::Region(selLo, selHi);
-	_capturedVolumeLower = volRegion.getLowerCorner();
-	_hasSnapshot = true;
-}
-
-void SculptBrush::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
-	core_trace_scoped(SculptBrushAdjustSnapshotForRegionShift);
-	struct ShiftEntry {
-		glm::ivec3 pos;
-		voxel::Voxel voxel;
-	};
-	core::DynamicArray<ShiftEntry> entries;
-	entries.reserve(_snapshotRegion.voxels());
-	const glm::ivec3 &lo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &hi = _snapshotRegion.getUpperCorner();
-	for (int z = lo.z; z <= hi.z; ++z) {
-		for (int y = lo.y; y <= hi.y; ++y) {
-			for (int x = lo.x; x <= hi.x; ++x) {
-				if (!_snapshot.hasVoxel(x, y, z)) {
-					continue;
-				}
-				entries.push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), _snapshot.voxel(x, y, z)});
-			}
-		}
-	}
-	_snapshot.clear();
-	for (const ShiftEntry &e : entries) {
-		_snapshot.setVoxel(e.pos, e.voxel);
-	}
-
-	_snapshotRegion.shift(delta.x, delta.y, delta.z);
-	_capturedVolumeLower += delta;
-
-	struct EntryCollector {
-		core::DynamicArray<ShiftEntry> *entries;
-		glm::ivec3 delta;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
-			return true;
-		}
-	};
-	core::DynamicArray<ShiftEntry> historyEntries;
-	historyEntries.reserve(_history.size());
-	EntryCollector collector{&historyEntries, delta};
-	_history.copyTo(collector);
-	_history.clear();
-	for (const ShiftEntry &e : historyEntries) {
-		_history.setVoxel(e.pos, e.voxel);
-	}
-}
-
-void SculptBrush::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
-	if (_history.hasVoxel(pos)) {
-		return;
-	}
-	_history.setVoxel(pos, vol->voxel(pos));
-}
-
-void SculptBrush::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
-	voxel::RawVolume *volume = wrapper.volume();
-	if (!volume->region().containsPoint(pos)) {
-		return;
-	}
-	saveToHistory(volume, pos);
-	if (volume->setVoxel(pos, newVoxel)) {
-		wrapper.addToDirtyRegion(pos);
-	}
-}
-
 void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	core_trace_scoped(SculptBrushApplySculpt);
 
 	// For Reskin mode, expand the working region along the face normal to accommodate
 	// the z offset and skin layers growing outward from the surface.
-	voxel::Region workRegion = _snapshotRegion;
+	voxel::Region workRegion = _snapshotHelper.snapshotRegion();
 	if (_sculptMode == SculptMode::Reskin && _flattenFace != voxel::FaceNames::Max) {
 		const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
 		const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
@@ -294,12 +191,12 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	voxel::BitVolume currentSolid(workRegion);
 	voxel::SparseVolume voxelMap;
 
-	const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
-	const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
+	const glm::ivec3 &snapLo = _snapshotHelper.snapshotRegion().getLowerCorner();
+	const glm::ivec3 &snapHi = _snapshotHelper.snapshotRegion().getUpperCorner();
 
 	// Collect snapshot entries: positions + voxels for reuse in write-back phase
 	voxel::DynamicVoxelArray snapshotEntries;
-	snapshotEntries.reserve(_snapshot.size());
+	snapshotEntries.reserve(_snapshotHelper.snapshotVoxelCount());
 
 	struct SnapshotLoader {
 		voxel::BitVolume *solid;
@@ -314,13 +211,13 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 		}
 	};
 	SnapshotLoader loader{&currentSolid, &voxelMap, &snapshotEntries};
-	_snapshot.copyTo(loader);
+	_snapshotHelper.snapshot().copyTo(loader);
 
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 
 	// Build anchor set: non-selected solid neighbors that act as immovable constraints.
-	voxel::Region anchorRegion = _snapshotRegion;
+	voxel::Region anchorRegion = _snapshotHelper.snapshotRegion();
 	anchorRegion.grow(1);
 	anchorRegion.cropTo(volRegion);
 	voxel::BitVolume anchorSolid(anchorRegion);
@@ -392,15 +289,15 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 	// For non-reskin modes, voxelMap entries match the snapshot for surviving positions.
 	for (const voxel::VoxelPosition &entry : snapshotEntries) {
 		if (!currentSolid.hasValue(entry.pos.x, entry.pos.y, entry.pos.z)) {
-			writeVoxel(wrapper, entry.pos, air);
+			_snapshotHelper.writeVoxel(wrapper, entry.pos, air);
 		} else if (voxelMap.hasVoxel(entry.pos)) {
 			voxel::Voxel v = voxelMap.voxel(entry.pos);
 			v.setFlags(voxel::FlagOutline);
-			writeVoxel(wrapper, entry.pos, v);
+			_snapshotHelper.writeVoxel(wrapper, entry.pos, v);
 		} else {
 			voxel::Voxel v = entry.voxel;
 			v.setFlags(voxel::FlagOutline);
-			writeVoxel(wrapper, entry.pos, v);
+			_snapshotHelper.writeVoxel(wrapper, entry.pos, v);
 		}
 	}
 
@@ -422,7 +319,7 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 				if (voxelMap.hasVoxel(x, y, z)) {
 					voxel::Voxel v = voxelMap.voxel(x, y, z);
 					v.setFlags(voxel::FlagOutline);
-					writeVoxel(wrapper, pos, v);
+					_snapshotHelper.writeVoxel(wrapper, pos, v);
 				}
 			}
 		}
@@ -431,7 +328,7 @@ void SculptBrush::applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext
 
 void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &) {
-	if (!_hasSnapshot) {
+	if (!_snapshotHelper.hasSnapshot()) {
 		return;
 	}
 	if (!_paramsDirty) {
@@ -455,19 +352,7 @@ void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrap
 	voxel::RawVolume *vol = wrapper.volume();
 
 	// Restore previously modified state before re-applying
-	struct HistoryRestorer {
-		voxel::RawVolume *vol;
-		ModifierVolumeWrapper *wrapper;
-		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			if (vol->setVoxel(x, y, z, voxel)) {
-				wrapper->addToDirtyRegion(glm::ivec3(x, y, z));
-			}
-			return true;
-		}
-	};
-	HistoryRestorer restorer{vol, &wrapper};
-	_history.copyTo(restorer);
-	_history.clear();
+	_snapshotHelper.restoreHistory(vol, wrapper);
 
 	applySculpt(wrapper, ctx);
 	markDirty();
@@ -510,7 +395,7 @@ void SculptBrush::fitPlaneFromSnapshot() {
 		}
 	};
 	HeightCollector collector{&heightMap, _planeUAxis, _planeVAxis, _planeHeightAxis, fromPositive};
-	_snapshot.copyTo(collector);
+	_snapshotHelper.snapshot().copyTo(collector);
 
 	if (heightMap.empty()) {
 		_planeFitted = false;
@@ -670,7 +555,7 @@ void SculptBrush::paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushCo
 					if (volRegion.containsPoint(pos)) {
 						const voxel::Voxel &vx = vol->voxel(pos);
 						if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
-							writeVoxel(wrapper, pos, air);
+							_snapshotHelper.writeVoxel(wrapper, pos, air);
 						}
 					}
 					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
@@ -678,7 +563,7 @@ void SculptBrush::paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushCo
 						if (volRegion.containsPoint(nPos)) {
 							const voxel::Voxel &vx = vol->voxel(nPos);
 							if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
-								writeVoxel(wrapper, nPos, air);
+								_snapshotHelper.writeVoxel(wrapper, nPos, air);
 							}
 						}
 					}
@@ -687,7 +572,7 @@ void SculptBrush::paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushCo
 						if (volRegion.containsPoint(nPos)) {
 							const voxel::Voxel &vx = vol->voxel(nPos);
 							if (!voxel::isAir(vx.getMaterial()) && (vx.getFlags() & voxel::FlagOutline) == 0) {
-								writeVoxel(wrapper, nPos, air);
+								_snapshotHelper.writeVoxel(wrapper, nPos, air);
 							}
 						}
 					}
@@ -721,7 +606,7 @@ void SculptBrush::paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushCo
 								break;
 							}
 						}
-						writeVoxel(wrapper, pos, newVoxel);
+						_snapshotHelper.writeVoxel(wrapper, pos, newVoxel);
 					}
 				}
 			}
