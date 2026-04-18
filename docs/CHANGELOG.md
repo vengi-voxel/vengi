@@ -12,6 +12,8 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Refactored parts of the io module and fixed memory leaks
+
 ## 0.5.0 (2026-04-18)
 
 General:
