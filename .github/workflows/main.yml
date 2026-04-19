@@ -65,9 +65,9 @@ jobs:
 
         - name: Upload the rockylinux release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: linux-rpm.zip
+            files: linux-rpm.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -110,9 +110,9 @@ jobs:
 
         - name: Upload the ubuntu release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: linux-debian.zip
+            files: linux-debian.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
@@ -191,9 +191,9 @@ jobs:
 
         - name: Upload the mac release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: build/*.zip
+            files: build/*.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -296,9 +296,9 @@ jobs:
 
         - name: Upload the appimage release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: linux-appimage-voxedit.zip
+            files: linux-appimage-voxedit.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -361,9 +361,9 @@ jobs:
 
         - name: Upload the release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: build/emscripten/*.zip
+            files: build/emscripten/*.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -474,9 +474,9 @@ jobs:
 
         - name: Upload the windows release artifacts
           if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          uses: softprops/action-gh-release@v3
           with:
-            args: build/*.zip
+            files: build/*.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
