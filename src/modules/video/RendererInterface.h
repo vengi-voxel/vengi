@@ -199,6 +199,21 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels);
 
 /**
+ * @note The returned buffer should be freed with core_free by the caller.
+ *
+ * Reads pixel data from the currently bound framebuffer (including the default
+ * framebuffer) into a newly allocated RGBA buffer.
+ *
+ * @param x The x offset of the rectangle to read.
+ * @param y The y offset of the rectangle to read.
+ * @param w Width of the rectangle to read.
+ * @param h Height of the rectangle to read.
+ * @param[out] pixels Receives a pointer to the newly allocated pixel buffer on success.
+ * @return @c true on success, @c false on failure.
+ */
+bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels);
+
+/**
  * @brief Bind a vertex array object.
  *
  * Returns @c true if the bound VAO actually changed.

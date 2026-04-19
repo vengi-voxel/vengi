@@ -217,6 +217,10 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	return false;
 }
 
+bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
+	return false;
+}
+
 bool useProgram(Id handle) {
 	return false;
 }

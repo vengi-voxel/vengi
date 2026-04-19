@@ -1207,6 +1207,22 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	return true;
 }
 
+bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
+	video_trace_scoped(ReadFramebuffer);
+	const int pitch = w * 4;
+	*pixels = (uint8_t *)core_malloc(h * pitch);
+	core_assert(glPixelStorei != nullptr);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	core_assert(glReadPixels != nullptr);
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, *pixels);
+	if (checkError()) {
+		core_free(*pixels);
+		*pixels = nullptr;
+		return false;
+	}
+	return true;
+}
+
 bool bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
 		return false;

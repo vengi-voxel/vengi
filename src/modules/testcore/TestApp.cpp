@@ -8,6 +8,9 @@
 #include "color/Color.h"
 #include "command/Command.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/Renderer.h"
+#include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "core/Log.h"
@@ -23,6 +26,8 @@ TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "test");
 	_systemLanguage = app::Language::fromSpec("aa");
+	_persistUISettings = false;
+	_showConsole = false;
 }
 
 TestApp::~TestApp() {
@@ -57,6 +62,8 @@ app::AppState TestApp::onConstruct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			_cameraMotion ^= true;
 		}).setHelp(_("Toggle relative mouse rotation mode"));
+
+	registerArg("--screenshot").setDescription("Take a screenshot after the given number of frames and quit");
 
 	return state;
 }
@@ -99,6 +106,11 @@ app::AppState TestApp::onInit() {
 
 	command::Command::execute("bindlist");
 
+	if (hasArg("--screenshot")) {
+		_screenshotFrames = getArgVal("--screenshot", "5").toInt();
+		Log::info("Taking screenshot after %i frames", _screenshotFrames);
+	}
+
 	return state;
 }
 
@@ -134,13 +146,29 @@ app::AppState TestApp::onRunning() {
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	const app::AppState state = Super::onRunning();
 	_cameraMotion = setRelativeMouseMode(_cameraMotion);
+	if (_screenshotFrames >= 0 && _frameCounter >= _screenshotFrames) {
+		const core::String filename = core::String::format("%s-screenshot.png", _appname.c_str());
+		if (saveScreenshot(filename)) {
+			Log::info("Screenshot saved to %s", filename.c_str());
+		} else {
+			Log::error("Failed to save screenshot to %s", filename.c_str());
+		}
+		requestQuit();
+		return app::AppState::Cleanup;
+	}
+	++_frameCounter;
 	return state;
 }
 
 void TestApp::onRenderUI() {
+	if (_screenshotFrames >= 0 && _frameCounter + 1 >= _screenshotFrames) {
+		core::getVar(cfg::UIShowMetrics)->setVal("false");
+		return;
+	}
 	ImGui::BulletText("ESC: toggle camera free look");
 	ImGui::Checkbox("Render axis", &_renderAxis);
 	ImGui::Checkbox("Render plane", &_renderPlane);
+	ImGui::Checkbox("Show console", &_showConsole);
 	if (_allowRelativeMouseMode) {
 		ImGui::Checkbox("Camera motion", &_cameraMotion);
 	}
@@ -184,4 +212,33 @@ bool TestApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId
 	const float targetDistance = glm::clamp(camera().targetDistance() - y, 0.0f, 500.0f);
 	camera().setTargetDistance(targetDistance);
 	return retVal;
+}
+
+image::ImagePtr TestApp::screenShot() {
+	const int w = frameBufferWidth();
+	const int h = frameBufferHeight();
+	uint8_t *pixels = nullptr;
+	if (!video::readFramebuffer(0, 0, w, h, &pixels)) {
+		Log::error("Failed to read framebuffer");
+		return image::ImagePtr();
+	}
+	image::Image::flipVerticalRGBA(pixels, w, h);
+	image::ImagePtr img = image::createEmptyImage("screenshot");
+	img->loadRGBA(pixels, w, h);
+	core_free(pixels);
+	return img;
+}
+
+bool TestApp::saveScreenshot(const core::String &filename) {
+	const image::ImagePtr &img = screenShot();
+	if (!img || !img->isLoaded()) {
+		return false;
+	}
+	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	if (!file->validHandle()) {
+		Log::error("Failed to open file %s for writing", filename.c_str());
+		return false;
+	}
+	io::FileStream stream(file);
+	return img->writePNG(stream);
 }
