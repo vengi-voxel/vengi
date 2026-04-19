@@ -1284,6 +1284,12 @@ msgstr ""
 msgid "The number of real-world meters each voxel represents in OSM imports"
 msgstr ""
 
+msgid "LDraw library path"
+msgstr ""
+
+msgid "Path to the LDraw parts library directory for resolving part references"
+msgstr ""
+
 msgid "Draw line forwards"
 msgstr ""
 
@@ -1468,9 +1474,6 @@ msgstr ""
 msgid "Marching cubes"
 msgstr ""
 
-msgid "Script parameters"
-msgstr ""
-
 msgid "LUA scripts for manipulating the voxel volumes"
 msgstr ""
 
@@ -1478,6 +1481,9 @@ msgid "Run"
 msgstr ""
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+
+msgid "Script parameters"
 msgstr ""
 
 msgid "Script Browser"
@@ -1502,6 +1508,10 @@ msgid "Version"
 msgstr ""
 
 msgid "Installed"
+msgstr ""
+
+#, c-format
+msgid "Uninstall %s"
 msgstr ""
 
 #, c-format
@@ -1632,6 +1642,12 @@ msgid "Reset cameras in viewports"
 msgstr ""
 
 msgid "Set the scene camera mode"
+msgstr ""
+
+msgid "Install a lua script from a file path, file:// URI or http(s):// URL"
+msgstr ""
+
+msgid "Uninstall a previously installed lua script by filename"
 msgstr ""
 
 msgid "The last directory used in the UI"
@@ -2028,22 +2044,6 @@ msgid ""
 "the start position"
 msgstr ""
 
-msgid "Max deviation"
-msgstr ""
-
-msgid ""
-"Maximum height deviation (in voxels) from the fitted slope plane for a voxel "
-"to be included in the selection"
-msgstr ""
-
-msgid "Sample distance"
-msgstr ""
-
-msgid ""
-"How far apart (in voxels) to sample when computing the initial slope plane. "
-"Larger values give smoother slope detection on staircases"
-msgstr ""
-
 msgid "Lasso selection"
 msgstr ""
 
@@ -2071,56 +2071,6 @@ msgid "Remove the last placed lasso vertex"
 msgstr ""
 
 msgid "Click on the surface to start drawing a polygon"
-msgstr ""
-
-msgid "Hole rim selection"
-msgstr ""
-
-msgid ""
-"Click any solid voxel on the rim of a hole. For best results use the face "
-"that looks into the opening or lies flat on the surface containing the hole."
-msgstr ""
-
-msgid "Hole rim selection (3D)"
-msgstr ""
-
-msgid ""
-"Click a solid voxel on the rim of a hole using the face that looks into the "
-"opening. Finds the shortest loop of surface voxels encircling the hole. "
-"Works on curved and non-planar surfaces."
-msgstr ""
-
-msgid "Column rim selection"
-msgstr ""
-
-msgid ""
-"Click any solid voxel of a column, pillar, or pipe. In Auto mode the clicked "
-"face determines the cross-section plane with fallback. Lock the normal axis "
-"to always select a specific circumference direction."
-msgstr ""
-
-msgctxt "ColumnRimAxis"
-msgid "Auto"
-msgstr ""
-
-msgctxt "ColumnRimAxis"
-msgid "X"
-msgstr ""
-
-msgctxt "ColumnRimAxis"
-msgid "Y"
-msgstr ""
-
-msgctxt "ColumnRimAxis"
-msgid "Z"
-msgstr ""
-
-msgid "Normal axis"
-msgstr ""
-
-msgid ""
-"Lock the axis perpendicular to the cross-section plane. Auto uses the "
-"clicked face with fallback."
 msgstr ""
 
 msgctxt "SelectMode"
@@ -2156,27 +2106,15 @@ msgid "Circle"
 msgstr ""
 
 msgctxt "SelectMode"
-msgid "Slope"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Hole Rim 2D"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Hole Rim 3D"
-msgstr ""
-
-msgctxt "SelectMode"
 msgid "Lasso"
 msgstr ""
 
 msgctxt "SelectMode"
-msgid "Column Rim 2D"
+msgid "Paint"
 msgstr ""
 
 msgctxt "SelectMode"
-msgid "Paint"
+msgid "Script"
 msgstr ""
 
 msgid "Select mode"
@@ -2591,6 +2529,9 @@ msgid ""
 "Please consider enabling it."
 msgstr ""
 
+msgid "Download scripts..."
+msgstr ""
+
 msgid "Unreference Model"
 msgstr ""
 
@@ -2807,6 +2748,9 @@ msgid "Show FPS stats"
 msgstr ""
 
 msgid "Welcome screen"
+msgstr ""
+
+msgid "Install script..."
 msgstr ""
 
 msgid "License"
@@ -3632,9 +3576,6 @@ msgstr ""
 msgid "Reload all scripts"
 msgstr ""
 
-msgid "Download scripts..."
-msgstr ""
-
 msgid "Browse and download scripts from the online repository"
 msgstr ""
 
@@ -3803,6 +3744,11 @@ msgid ""
 "Open the bindings dialog in the options menu to change the default key "
 "bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check "
 "which commands are available."
+msgstr ""
+
+msgid ""
+"You can download and install community scripts for brushes, generators and "
+"selection modes from the Help menu."
 msgstr ""
 
 msgid "Rotate all scene models"
@@ -4202,6 +4148,12 @@ msgstr ""
 msgid "Make the palette colors darker"
 msgstr ""
 
+msgid ""
+"Add a color to the active node's palette. Supports: #RRGGBB, #RRGGBBAA, "
+"argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)"
+"\""
+msgstr ""
+
 msgid "Remove unused colors from palette"
 msgstr ""
 
@@ -4594,16 +4546,16 @@ msgstr ""
 msgid "Toggle locked mode for the z axis at the current cursor position"
 msgstr ""
 
-msgid "Max preview size"
-msgstr ""
-
-msgid "The maximum size of the preview volume"
-msgstr ""
-
 msgid "Auto select added"
 msgstr ""
 
 msgid "Automatically select newly placed voxels"
+msgstr ""
+
+msgid "Max preview size"
+msgstr ""
+
+msgid "The maximum size of the preview volume"
 msgstr ""
 
 msgid "Set center plane building"
