@@ -3736,7 +3736,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Use you can <cmd:camera_rotationen> to switch between different camera "
+"Use you can <cmd:camera_rotation> to switch between different camera "
 "rotation modes such as 'Orbit' and 'First person'."
 msgstr ""
 
