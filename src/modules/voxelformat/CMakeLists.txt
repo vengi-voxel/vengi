@@ -71,6 +71,7 @@ set(SRCS
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
+	private/mesh/lego/LDrawFormat.h          private/mesh/lego/LDrawFormat.cpp
 	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
 	private/mesh/gis/GMLFormat.h             private/mesh/gis/GMLFormat.cpp
 	private/mesh/gis/OSMFormat.h             private/mesh/gis/OSMFormat.cpp
@@ -180,6 +181,7 @@ set(TEST_SRCS
 	tests/SMFormatTest.cpp
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/LDrawFormatTest.cpp
 	tests/MeshTriTest.cpp
 	tests/TeardownFormatTest.cpp
 	tests/ThingFormatTest.cpp
@@ -221,6 +223,8 @@ set(TEST_FILES
 	"tests/blockbench_meshtypes.bbmodel"
 	"tests/bug393.obj"
 	"tests/cc.hva"
+	"tests/ldraw-simple.ldr"
+	"tests/ldraw-simple.mpd"
 	"tests/cc.vxl"
 	"tests/bug636/legs.vxl"
 	"tests/bug636/legs.hva"

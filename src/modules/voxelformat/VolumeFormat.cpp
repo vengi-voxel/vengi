@@ -47,6 +47,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/mesh/lego/LDrawFormat.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/mesh/gis/OSMFormat.h"
 #include "voxelformat/private/mesh/quake/MD2Format.h"
@@ -130,6 +131,7 @@ const io::FormatDescription *voxelFormats() {
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
+												 LDrawFormat::format(),
 												 PLYFormat::format(),
 												 GMLFormat::format(),
 												 OSMFormat::format(),
@@ -258,6 +260,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<SkinFormat>();
 		} else if (io::isA(STLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<STLFormat>();
+		} else if (io::isA(LDrawFormat::format(), desc, ext, magic)) {
+			return core::make_shared<LDrawFormat>();
 		} else if (io::isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) || isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic)) {
 			return core::make_shared<QuakeBSPFormat>();
 		} else if (io::isA(MapFormat::format(), desc, ext, magic)) {

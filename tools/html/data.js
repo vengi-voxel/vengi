@@ -902,6 +902,19 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "LDraw Model",
+      "extensions": [
+        "ldr",
+        "mpd"
+      ],
+      "magics": [],
+      "mimetype": "text/plain",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Polygon File Format",
       "extensions": [
         "ply"

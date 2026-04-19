@@ -66,6 +66,8 @@ Goxel txt (*.txt)
 .TP
 KenShape (*.kenshape)
 .TP
+LDraw Model (*.ldr, *.mpd)
+.TP
 Luanti (Minetest) (*.mts)
 .TP
 MagicaVoxel (*.vox)

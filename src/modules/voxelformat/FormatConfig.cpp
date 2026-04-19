@@ -249,6 +249,16 @@ bool FormatConfig::init() {
 		cfg::VoxformatOSMMetersPerVoxel, 1.0f, N_("Meters per voxel"),
 		N_("The number of real-world meters each voxel represents in OSM imports"), core::CV_NOPERSIST);
 	core::registerVar(voxformatOSMMetersPerVoxel);
+	const core::VarDef voxformatLDrawDir(cfg::VoxformatLDrawDir,
+#ifdef __linux__
+										 "/usr/share/ldraw/",
+#else
+										 "",
+#endif
+										 N_("LDraw library path"),
+										 N_("Path to the LDraw parts library directory for resolving part references"),
+										 core::CV_NOPERSIST);
+	core::registerVar(voxformatLDrawDir);
 
 	return true;
 }

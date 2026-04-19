@@ -486,6 +486,8 @@ void FormatPrinter::printMagic() {
 
 void FormatPrinter::printMarkdownTables() {
 	core::StringMap<core::String> voxelFormatHints;
+	voxelFormatHints.put("ldr", "Find the part library at https://library.ldraw.org/");
+	voxelFormatHints.put("mpd", "Find the part library at https://library.ldraw.org/");
 
 	Log::printf("# Formats\n");
 	Log::printf("\n");

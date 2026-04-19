@@ -797,6 +797,25 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>LDraw Model</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>text/plain</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>ldr</string>
+          <string>mpd</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Polygon File Format</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

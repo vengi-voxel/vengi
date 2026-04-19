@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Refactored parts of the io module and fixed memory leaks
+   - Added support for `ldr` and `mpd` lego files
 
 ## 0.5.0 (2026-04-18)
 

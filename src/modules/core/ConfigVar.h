@@ -149,6 +149,7 @@ constexpr const char *VoxformatGMLRegion = "voxformat_gmlregion";
 constexpr const char *VoxformatGMLFilenameFilter = "voxformat_gmlfilenamefilter";
 constexpr const char *VoxformatOSMURL = "voxformat_osmurl";
 constexpr const char *VoxformatOSMMetersPerVoxel = "voxformat_osmmeterspervoxel";
+constexpr const char *VoxformatLDrawDir = "voxformat_ldrawdir";
 
 constexpr const char *GameModeClipping = "g_clipping";
 constexpr const char *GameModeApplyGravity = "g_applygravity";

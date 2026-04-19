@@ -290,6 +290,11 @@
 		<comment>Standard Triangle Language</comment>
 		<glob pattern="*.stl"/>
 	</mime-type>
+	<mime-type type="text/plain">
+		<comment>LDraw Model</comment>
+		<glob pattern="*.ldr"/>
+		<glob pattern="*.mpd"/>
+	</mime-type>
 	<mime-type type="application/x-polygon-file-format">
 		<comment>Polygon File Format</comment>
 		<glob pattern="*.ply"/>

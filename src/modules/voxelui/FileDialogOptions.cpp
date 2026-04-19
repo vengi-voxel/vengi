@@ -31,6 +31,7 @@
 #include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
+#include "voxelformat/private/mesh/lego/LDrawFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/ImageUtils.h"
 
@@ -387,6 +388,10 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::VXLFormat::format()) {
 		ImGui::CheckboxVar(cfg::VoxformatVXLLoadHVA);
+	}
+
+	if (*desc == voxelformat::LDrawFormat::format()) {
+		ImGui::InputVarString(cfg::VoxformatLDrawDir);
 	}
 
 	ImGui::CheckboxVar(cfg::VoxelCropOnLoad);

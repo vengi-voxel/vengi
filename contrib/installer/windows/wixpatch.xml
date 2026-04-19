@@ -169,6 +169,12 @@
 		<RegistryKey Root="HKCR" Key=".stl">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".ldr">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".mpd">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".ply">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -720,6 +726,24 @@
 		<RegistryValue Root="HKCR" Key=".stl\OpenWithProgids" Name="vengi-voxedit.stl" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.stl" Description="Standard Triangle Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="stl" ContentType="application/x-standard-triangle-language">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ldr" Value="vengi-voxedit.ldr" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ldr" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".ldr\OpenWithProgids" Name="vengi-voxedit.ldr" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.ldr" Description="LDraw Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ldr" ContentType="text/plain">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mpd" Value="vengi-voxedit.mpd" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mpd" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mpd\OpenWithProgids" Name="vengi-voxedit.mpd" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mpd" Description="LDraw Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mpd" ContentType="text/plain">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

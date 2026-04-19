@@ -1,0 +1,10 @@
+0 Name: ldraw-simple.ldr
+0 Author: Test
+0 Simple LDraw test file with direct geometry
+0 A small box made of quads and triangles
+4 4 0 0 0 20 0 0 20 0 20 0 0 20
+4 4 0 -20 0 0 -20 20 20 -20 20 20 -20 0
+4 4 0 0 0 0 0 20 0 -20 20 0 -20 0
+4 4 20 0 0 20 -20 0 20 -20 20 20 0 20
+4 4 0 0 0 20 0 0 20 -20 0 0 -20 0
+4 4 0 0 20 0 -20 20 20 -20 20 20 0 20

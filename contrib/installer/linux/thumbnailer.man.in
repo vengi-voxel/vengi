@@ -124,6 +124,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_imagevolumemaxdepth\fP: The maximum depth of the volume when importing an image as volume
 .PP
+\fBvoxformat_ldrawdir\fP: Path to the LDraw parts library directory for resolving part references
+.PP
 \fBvoxformat_merge\fP: Merge all objects into one
 .PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
@@ -245,6 +247,8 @@ Goxel (*.gox)
 Goxel txt (*.txt)
 .TP
 KenShape (*.kenshape)
+.TP
+LDraw Model (*.ldr, *.mpd)
 .TP
 Luanti (Minetest) (*.mts)
 .TP
