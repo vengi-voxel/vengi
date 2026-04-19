@@ -720,15 +720,19 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	}
 
 	if (resetOrigin) {
-		scenegraph::SceneGraphTransform transform;
-		transform.setLocalTranslation(region.getLowerCornerf());
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-
 		node.volume()->translate(-region.getLowerCorner());
 	}
 
-	return sceneGraph.emplace(core::move(node), parent);
+	const int nodeId = sceneGraph.emplace(core::move(node), parent);
+
+	if (resetOrigin && nodeId != InvalidNodeId) {
+		scenegraph::SceneGraphNode &n = sceneGraph.node(nodeId);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		n.transform(keyFrameIdx).setLocalTranslation(region.getLowerCornerf());
+		n.transform(keyFrameIdx).update(sceneGraph, n, 0, true);
+	}
+
+	return nodeId;
 }
 
 bool MeshFormat::calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
