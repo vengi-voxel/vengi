@@ -4,47 +4,41 @@
 
 #pragma once
 
+#include "core/collection/DynamicStringMap.h"
 #include "io/Archive.h"
 
 namespace io {
 
 /**
- * @brief Decorator archive that caches file listings from a wrapped archive.
+ * @brief Caches file lookups from registered search directories for fast case-insensitive
+ * filename resolution.
  *
- * Provides O(1) exists() lookups and avoids repeated list() calls to the underlying
- * archive. The cache is populated lazily on first access and invalidated when
- * writeStream() or write() is called.
+ * Each call to registerSearchDir() scans the given directory (non-recursive) via the
+ * wrapped archive, adding matching files to an internal name-to-path map. findStream()
+ * then resolves filenames against this cache in O(1).
  *
  * @ingroup IO
  */
-class CachingArchive : public Archive {
+class CachingArchive {
 private:
 	ArchivePtr _archive;
-	mutable ArchiveFiles _cache;
-	mutable bool _dirty = true;
-
-	void fillCache() const;
+	core::DynamicStringMap<core::String> _nameToPath;
 
 public:
 	CachingArchive(const ArchivePtr &archive);
-	~CachingArchive() override;
-
-	bool init(const core::String &path, io::SeekableReadStream *stream) override;
-	void shutdown() override;
-
-	bool exists(const core::String &file) const override;
-	void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const override;
-
-	SeekableReadStream *readStream(const core::String &filePath) override;
-	SeekableWriteStream *writeStream(const core::String &filePath) override;
-	bool write(const core::String &filePath, io::ReadStream &stream) override;
 
 	/**
-	 * @brief Force the cache to be rebuilt on next access
+	 * @brief Register a directory to scan and add matching files to the cache.
+	 * @param path The directory path to scan (non-recursive)
+	 * @param filter File filter (e.g. "*.dat,*.ldr")
 	 */
-	void invalidate();
-};
+	void registerSearchDir(const core::String &path, const core::String &filter);
 
-ArchivePtr openCachingArchive(const ArchivePtr &archive);
+	/**
+	 * @brief Find a readable stream by filename with case-insensitive lookup.
+	 * @return Stream pointer (ownership transferred to caller) or nullptr
+	 */
+	SeekableReadStream *findStream(const core::String &filename);
+};
 
 } // namespace io
