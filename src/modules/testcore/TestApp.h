@@ -27,6 +27,7 @@ protected:
 	float _cameraSpeed = 50.0f;
 	int _screenshotFrames = -1;
 	int _frameCounter = 0;
+	core::String _screenshotType = "png";
 
 	virtual void doRender() = 0;
 
@@ -66,6 +67,7 @@ public:
 
 	image::ImagePtr screenShot();
 	bool saveScreenshot(const core::String &filename);
+	bool saveScreenshotText(const core::String &filename);
 	virtual bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
 	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) override;
 };

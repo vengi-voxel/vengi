@@ -64,6 +64,11 @@ app::AppState TestApp::onConstruct() {
 		}).setHelp(_("Toggle relative mouse rotation mode"));
 
 	registerArg("--screenshot").setDescription("Take a screenshot after the given number of frames and quit");
+	registerArg("--screenshottype")
+		.addValidValue("png")
+		.addValidValue("txt")
+		.setDescription("Screenshot output type: png (default) or txt")
+		.setDefaultValue("png");
 
 	return state;
 }
@@ -108,7 +113,8 @@ app::AppState TestApp::onInit() {
 
 	if (hasArg("--screenshot")) {
 		_screenshotFrames = getArgVal("--screenshot", "5").toInt();
-		Log::info("Taking screenshot after %i frames", _screenshotFrames);
+		_screenshotType = getArgVal("--screenshottype", "png");
+		Log::info("Taking screenshot after %i frames (type: %s)", _screenshotFrames, _screenshotType.c_str());
 	}
 
 	return state;
@@ -147,11 +153,23 @@ app::AppState TestApp::onRunning() {
 	const app::AppState state = Super::onRunning();
 	_cameraMotion = setRelativeMouseMode(_cameraMotion);
 	if (_screenshotFrames >= 0 && _frameCounter >= _screenshotFrames) {
-		const core::String filename = core::String::format("%s-screenshot.png", _appname.c_str());
-		if (saveScreenshot(filename)) {
-			Log::info("Screenshot saved to %s", filename.c_str());
+		bool saved;
+		if (_screenshotType == "txt") {
+			const core::String filename = core::String::format("%s-screenshot.txt", _appname.c_str());
+			saved = saveScreenshotText(filename);
+			if (saved) {
+				Log::info("Screenshot saved to %s", filename.c_str());
+			} else {
+				Log::error("Failed to save screenshot to %s", filename.c_str());
+			}
 		} else {
-			Log::error("Failed to save screenshot to %s", filename.c_str());
+			const core::String filename = core::String::format("%s-screenshot.png", _appname.c_str());
+			saved = saveScreenshot(filename);
+			if (saved) {
+				Log::info("Screenshot saved to %s", filename.c_str());
+			} else {
+				Log::error("Failed to save screenshot to %s", filename.c_str());
+			}
 		}
 		requestQuit();
 		return app::AppState::Cleanup;
@@ -241,4 +259,33 @@ bool TestApp::saveScreenshot(const core::String &filename) {
 	}
 	io::FileStream stream(file);
 	return img->writePNG(stream);
+}
+
+bool TestApp::saveScreenshotText(const core::String &filename) {
+	const image::ImagePtr &img = screenShot();
+	if (!img || !img->isLoaded()) {
+		return false;
+	}
+	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	if (!file->validHandle()) {
+		Log::error("Failed to open file %s for writing", filename.c_str());
+		return false;
+	}
+	io::FileStream stream(file);
+	const int w = img->width();
+	const int h = img->height();
+	const core::String header = core::String::format("%i %i\n", w, h);
+	if (stream.write(header.c_str(), header.size()) == -1) {
+		return false;
+	}
+	for (int y = 0; y < h; ++y) {
+		for (int x = 0; x < w; ++x) {
+			const color::RGBA rgba = img->colorAt(x, y);
+			const core::String pixel = core::String::format("%u %u %u %u\n", rgba.r, rgba.g, rgba.b, rgba.a);
+			if (stream.write(pixel.c_str(), pixel.size()) == -1) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
