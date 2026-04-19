@@ -485,6 +485,8 @@ void FormatPrinter::printMagic() {
 }
 
 void FormatPrinter::printMarkdownTables() {
+	core::StringMap<core::String> voxelFormatHints;
+
 	Log::printf("# Formats\n");
 	Log::printf("\n");
 	Log::printf("## Voxel formats\n");
@@ -500,6 +502,7 @@ void FormatPrinter::printMarkdownTables() {
 		formatDescriptions.push_back(*desc);
 	}
 	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+	core::DynamicArray<core::String> usedHints;
 	for (const io::FormatDescription &desc : formatDescriptions) {
 		if (voxelformat::isMeshFormat(desc)) {
 			continue;
@@ -509,11 +512,30 @@ void FormatPrinter::printMarkdownTables() {
 		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 		const bool save = voxelSaveSupported(desc);
 		const bool load = !(desc.flags & FORMAT_FLAG_NO_LOAD);
-		Log::printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s |\n", desc.name.c_str(),
+		core::String hint;
+		bool hasHint = false;
+		for (const core::String &ext : desc.exts) {
+			if (voxelFormatHints.get(ext, hint)) {
+				hasHint = true;
+				break;
+			}
+		}
+		core::String name = desc.name;
+		if (hasHint) {
+			name += "*";
+			usedHints.push_back(hint);
+		}
+		Log::printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s |\n", name.c_str(),
 					desc.mainExtension().c_str(), load ? "X" : " ", save ? "X" : " ", screenshot ? "X" : " ",
 					palette ? "X" : " ", animation ? "X" : " ");
 	}
 	Log::printf("\n");
+	for (const core::String &hint : usedHints) {
+		Log::printf("> *%s\n", hint.c_str());
+	}
+	if (!usedHints.empty()) {
+		Log::printf("\n");
+	}
 	Log::printf("## Mesh formats\n");
 	Log::printf("\n");
 	Log::printf("| Name                       | Extension | Loading | Saving    | Animations |\n");
