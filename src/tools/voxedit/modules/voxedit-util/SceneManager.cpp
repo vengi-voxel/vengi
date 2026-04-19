@@ -4361,7 +4361,10 @@ int SceneManager::addPointChild(const core::String& name, const glm::ivec3& posi
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	newNode.setTransform(keyFrameIdx, transform);
 	newNode.setName(name);
-	const int parentId = activeNode();
+	int parentId = activeNode();
+	if (parentId == InvalidNodeId) {
+		parentId = _sceneGraph.root().id();
+	}
 	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add point child node '%s' at position %i:%i:%i", name.c_str(), position.x, position.y, position.z);
@@ -4379,7 +4382,10 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model, uuid);
 	newNode.createVolume(region);
 	newNode.setName(name);
-	const int parentId = activeNode();
+	int parentId = activeNode();
+	if (parentId == InvalidNodeId) {
+		parentId = _sceneGraph.root().id();
+	}
 	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
 	return nodeId;
 }
