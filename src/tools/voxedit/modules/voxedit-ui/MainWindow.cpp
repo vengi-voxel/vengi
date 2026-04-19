@@ -1150,6 +1150,10 @@ void MainWindow::updateViewMode() {
 	} else if (ViewMode::TiberianSun == vMode) {
 		core::getVar(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[1]);
 	}
+
+	if (!viewModeNormalPalette(_viewMode->intVal()) && _sceneMgr->modifier().brushType() == BrushType::Normal) {
+		_sceneMgr->modifier().setBrushType(BrushType::Shape);
+	}
 }
 
 void MainWindow::update(double nowSeconds) {
