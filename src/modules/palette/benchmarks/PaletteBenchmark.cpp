@@ -6,6 +6,7 @@
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "palette/PaletteUtil.h"
 
 class PaletteBenchmark : public app::AbstractBenchmark {
 protected:
@@ -63,9 +64,28 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fNormalPalette)(benchmark::State &sta
 	}
 }
 
+BENCHMARK_DEFINE_F(PaletteBenchmark, toColorPalette)(benchmark::State &state) {
+	palette::Palette palette;
+	palette.nippon();
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(palette::toColorPalette(palette));
+	}
+}
+
+BENCHMARK_DEFINE_F(PaletteBenchmark, toPalette)(benchmark::State &state) {
+	palette::Palette palette;
+	palette.nippon();
+	palette::ColorPalette colorPalette = palette::toColorPalette(palette);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(palette::toPalette(colorPalette));
+	}
+}
+
 BENCHMARK_REGISTER_F(PaletteBenchmark, findReplacement);
 BENCHMARK_REGISTER_F(PaletteBenchmark, paletteLookup);
 BENCHMARK_REGISTER_F(PaletteBenchmark, getClosestMatch);
 BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fPalette);
 BENCHMARK_REGISTER_F(PaletteBenchmark, toVec4fNormalPalette);
+BENCHMARK_REGISTER_F(PaletteBenchmark, toColorPalette);
+BENCHMARK_REGISTER_F(PaletteBenchmark, toPalette);
 BENCHMARK_MAIN();

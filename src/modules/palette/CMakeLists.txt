@@ -31,6 +31,7 @@ set(SRCS
 	PaletteView.h PaletteView.cpp
 	Palette.h Palette.cpp
 	PaletteLookup.h PaletteLookup.cpp
+	PaletteUtil.h PaletteUtil.cpp
 	PaletteCompleter.h
 	RGBABuffer.h
 )

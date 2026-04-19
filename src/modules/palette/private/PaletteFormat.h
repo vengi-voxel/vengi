@@ -8,6 +8,7 @@
 #include "io/Stream.h"
 #include "palette/ColorPalette.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 
 namespace palette {
 
@@ -25,9 +26,6 @@ public:
 	virtual bool save(const palette::ColorPalette &palette, const core::String &filename,
 					  io::SeekableWriteStream &stream) = 0;
 };
-
-palette::ColorPalette toColorPalette(const palette::Palette &palette);
-palette::Palette toPalette(const palette::ColorPalette &colorPalette);
 
 bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette);
 bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette);

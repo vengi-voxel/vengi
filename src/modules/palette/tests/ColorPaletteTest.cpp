@@ -7,7 +7,7 @@
 #include "image/Image.h"
 #include "palette/FormatConfig.h"
 #include "palette/Palette.h"
-#include "palette/private/PaletteFormat.h"
+#include "palette/PaletteUtil.h"
 
 namespace palette {
 

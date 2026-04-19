@@ -15,6 +15,7 @@
 #include "palette/Material.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
+#include "palette/PaletteUtil.h"
 #include "palette/private/PaletteFormat.h"
 
 PalConvert::PalConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)

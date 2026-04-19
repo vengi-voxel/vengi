@@ -10,7 +10,6 @@
 #include "color/RGBA.h"
 #include "core/String.h"
 #include "core/collection/Array.h"
-#include "core/collection/Buffer.h"
 #include "palette/PaletteView.h"
 #include "image/ImageFwd.h"
 #include "palette/Material.h"
