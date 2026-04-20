@@ -26,8 +26,9 @@
 
 namespace video {
 
-// default to opengl4
-int Shader::glslVersion = GLSLVersion::V430;
+// GLSL version used by shader source preprocessing (#version and compatibility rewrites).
+// Keep this backend-neutral so VK-only builds don't depend on GL-only GLSLVersion enums.
+int Shader::glslVersion = 430;
 
 Shader::Shader() {
 	for (int i = 0; i < (int)ShaderType::Max; ++i) {
@@ -408,7 +409,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		core::String replaceTexture3D = "texture3D";
 		core::String replaceShadow2D = "shadow2D";
 #ifndef USE_OPENGLES
-		if (glslVersion < GLSLVersion::V130) {
+		if (glslVersion < 130) {
 			replaceIn = "attribute";
 			replaceOut = "varying";
 		} else
@@ -420,7 +421,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 			replaceShadow2D = "texture";
 		}
 
-		if (glslVersion < GLSLVersion::V420) {
+		if (glslVersion < 420) {
 			// ARB_shader_image_load_store
 			replaceWriteOnly = "";
 			replaceReadOnly = "";

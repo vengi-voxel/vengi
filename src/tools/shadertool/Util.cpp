@@ -171,7 +171,7 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::SAMPLERCUBEMAP:
 		if (amount > 1) {
 			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
-			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
+			if (video::Shader::glslVersion < 400) {
 				Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
 			}
 			// TODO: doesn't work yet, video::TextureUnit support is needed here
