@@ -3,15 +3,15 @@
  */
 
 #include "GoxTxtFormat.h"
-#include "color/Color.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "engine-config.h"
 #include "glm/vector_relational.hpp"
+#include "palette/ColorPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "palette/PaletteUtil.h"
 #include "palette/RGBABuffer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -67,14 +67,13 @@ size_t GoxTxtFormat::loadPalette(const core::String &filename, const io::Archive
 	}
 	Log::debug("Found %i colors", (int)colors.size());
 
-	core::Buffer<color::RGBA> colorsBuf;
-	colorsBuf.reserve(colors.size());
+	palette::ColorPalette colorPalette;
+	colorPalette.reserve(colors.size());
 	for (const auto &e : colors) {
-		colorsBuf.push_back(e->first);
+		colorPalette.add(e->first);
 	}
 	colors.clear();
-	palette.quantize(colorsBuf.data(), colorsBuf.size());
-	palette.markDirty();
+	palette = palette::toPalette(colorPalette);
 	return palette.size();
 }
 

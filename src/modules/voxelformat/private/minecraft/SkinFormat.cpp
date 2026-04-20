@@ -8,7 +8,10 @@
 #include "core/Var.h"
 #include "image/Image.h"
 #include "math/Rect.h"
+#include "palette/ColorPalette.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
+#include "palette/RGBABuffer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -295,15 +298,22 @@ size_t SkinFormat::loadPalette(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
+	palette::RGBABuffer uniqueColors;
 	for (int y = 0; y < image->height(); ++y) {
 		for (int x = 0; x < image->width(); ++x) {
 			const color::RGBA rgba = image->colorAt(x, y);
 			if (rgba.a == 0) {
 				continue; // skip transparent pixels
 			}
-			palette.tryAdd(rgba);
+			uniqueColors.insert(rgba);
 		}
 	}
+	palette::ColorPalette colorPalette;
+	colorPalette.reserve(uniqueColors.size());
+	for (const auto &e : uniqueColors) {
+		colorPalette.add(e->first);
+	}
+	palette = palette::toPalette(colorPalette);
 	return palette.size();
 }
 

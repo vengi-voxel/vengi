@@ -11,7 +11,9 @@
 #include "io/Base64ReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
+#include "palette/ColorPalette.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -438,21 +440,16 @@ size_t AnimaToonFormat::loadPalette(const core::String &filename, const io::Arch
 	}
 
 	json::Json customColors = json.get("customColors");
-	// TODO: VOXELFORMAT: quantize colors if they exceed the max allowed palette size
-	int idx = 0;
+	palette::ColorPalette colorPalette;
 	for (const auto &e : customColors) {
 		const uint8_t r = (uint8_t)(e.floatVal("r", 0.0f) * 255.0f);
 		const uint8_t g = (uint8_t)(e.floatVal("g", 0.0f) * 255.0f);
 		const uint8_t b = (uint8_t)(e.floatVal("b", 0.0f) * 255.0f);
 		const uint8_t a = (uint8_t)(e.floatVal("a", 1.0f) * 255.0f);
-		if (idx < palette::PaletteMaxColors) {
-			palette.setColor(idx++, color::RGBA(r, g, b, a));
-		} else {
-			break;
-		}
+		colorPalette.add(color::RGBA(r, g, b, a));
 	}
-	palette.setSize(idx);
-	return (size_t)idx;
+	palette = palette::toPalette(colorPalette);
+	return (size_t)palette.colorCount();
 }
 
 } // namespace voxelformat

@@ -7,7 +7,6 @@
 #include "Format.h"
 #include "VolumeFormat.h"
 #include "app/App.h"
-#include "color/Color.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -16,8 +15,9 @@
 #include "core/Var.h"
 #include "image/Image.h"
 #include "io/Archive.h"
-#include "math/Math.h"
+#include "palette/ColorPalette.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -388,18 +388,13 @@ color::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const
 }
 
 int Format::createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const {
-	const size_t colorCount = (int)colors.size();
-	const int targetColors = core::getVar(cfg::VoxformatTargetColors)->intVal();
-	core::Buffer<color::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
+	palette::ColorPalette colorPalette;
+	colorPalette.reserve(colors.size());
 	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
+		colorPalette.add(e->first);
 	}
-	if (targetColors > 0) {
-		palette.quantize(colorBuffer.data(), colorBuffer.size(), targetColors);
-	} else {
-		palette.quantize(colorBuffer.data(), colorBuffer.size());
-	}
+	const int targetColors = core::getVar(cfg::VoxformatTargetColors)->intVal();
+	palette = palette::toPaletteQuantized(colorPalette, targetColors);
 	return palette.colorCount();
 }
 
@@ -409,37 +404,13 @@ int Format::createPalette(const palette::RGBAMaterialMap &colors, palette::Palet
 		palette = voxel::getPalette();
 		return 0;
 	}
-	const size_t colorCount = (int)colors.size();
-	const int targetColors = core::getVar(cfg::VoxformatTargetColors)->intVal();
-	if (targetColors > 0) {
-		Log::debug("Quantizing to %i target colors", targetColors);
-		core::Buffer<color::RGBA> colorBuffer;
-		colorBuffer.reserve(colorCount);
-		for (const auto &e : colors) {
-			colorBuffer.push_back(e->first);
-		}
-		palette.quantize(colorBuffer.data(), colorBuffer.size(), targetColors);
-		return palette.colorCount();
-	}
-	if (colorCount < (size_t)palette::PaletteMaxColors) {
-		int n = 0;
-		for (const auto &e : colors) {
-			palette.setColor(n, e->first);
-			if (e->second) {
-				palette.setMaterial(n, *e->second);
-			}
-			++n;
-		}
-		palette.setSize(n);
-		return palette.colorCount();
-	}
-	Log::warn("Too many colors to assign the materials");
-	core::Buffer<color::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
+	palette::ColorPalette colorPalette;
+	colorPalette.reserve(colors.size());
 	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
+		colorPalette.add(e->first, core::String::Empty, e->second ? *e->second : palette::Material{});
 	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	const int targetColors = core::getVar(cfg::VoxformatTargetColors)->intVal();
+	palette = palette::toPaletteQuantized(colorPalette, targetColors);
 	return palette.colorCount();
 }
 
