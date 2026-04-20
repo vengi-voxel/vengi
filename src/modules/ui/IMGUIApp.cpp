@@ -17,6 +17,7 @@
 #include "core/collection/DynamicArray.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
+#include "engine-config.h"
 #include "io/File.h"
 #ifdef IMGUI_ENABLE_FREETYPE
 #include "dearimgui/misc/freetype/imgui_freetype.h"
@@ -30,7 +31,11 @@
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
+#ifndef USE_VK_RENDERER
 #include "dearimgui/backends/imgui_impl_opengl3.h"
+#else
+#include "dearimgui/backends/imgui_impl_vulkan.h"
+#endif
 #include "dearimgui/implot.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -409,11 +414,20 @@ app::AppState IMGUIApp::onInit() {
 	_languageVar->markClean();
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
+#ifdef USE_VK_RENDERER
+	_imguiBackendInitialized = ImGui_ImplSDL3_InitForVulkan(_window);
+#else
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
+	ImGui_ImplOpenGL3_Init(nullptr);
+#endif
+#else
+#ifdef USE_VK_RENDERER
+	_imguiBackendInitialized = ImGui_ImplSDL2_InitForVulkan(_window);
 #else
 	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
-#endif
 	ImGui_ImplOpenGL3_Init(nullptr);
+#endif
+#endif
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 
@@ -847,7 +861,11 @@ app::AppState IMGUIApp::onRunning() {
 		beforeUI();
 	}
 
+#ifndef USE_VK_RENDERER
 	ImGui_ImplOpenGL3_NewFrame();
+#else
+	ImGui_ImplVulkan_NewFrame();
+#endif
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	ImGui_ImplSDL3_NewFrame();
 #else
@@ -1050,7 +1068,11 @@ app::AppState IMGUIApp::onCleanup() {
 	_fileDialog.unregisterUITests(_imguiTestEngine);
 #endif
 	if (_imguiBackendInitialized) {
+#ifndef USE_VK_RENDERER
 		ImGui_ImplOpenGL3_Shutdown();
+#else
+		ImGui_ImplVulkan_Shutdown();
+#endif
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 		ImGui_ImplSDL3_Shutdown();
 #else

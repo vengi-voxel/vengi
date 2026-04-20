@@ -518,7 +518,17 @@ app::AppState WindowedApp::onInit() {
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
 	int frameBufferWidth, frameBufferHeight;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	SDL_GetWindowSizeInPixels(_window, &frameBufferWidth, &frameBufferHeight);
+#else
+#ifdef USE_GL_RENDERER
 	SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+#elif defined(USE_VK_RENDERER)
+	SDL_Vulkan_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+#else
+#error "renderer not supported"
+#endif
+#endif
 	_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 	_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 

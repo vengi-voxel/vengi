@@ -31,6 +31,7 @@ set(SRCS
 	dearimgui/imstb_truetype.h
 
 	dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h
+	dearimgui/backends/imgui_impl_vulkan.cpp dearimgui/backends/imgui_impl_vulkan.h
 
 	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h
 	dearimgui/imgui_neo_internal.cpp dearimgui/imgui_neo_internal.h
