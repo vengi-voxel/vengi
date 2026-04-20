@@ -26,5 +26,6 @@
     "opengametools": "dcabf82345979a2d937a5ea29a0b14683a3aa838",
     "tinyxml2": "3324d04d58de9d5db09327db6442f075e519f11b",
     "imgui_markdown": "7f88a689f783b5f628a2c446ccc2e7198e732dfe",
-    "gif-h": "70b645280d5e687f5217177c9cfa2889b0a2ad5f"
+    "gif-h": "70b645280d5e687f5217177c9cfa2889b0a2ad5f",
+    "cJSON": "fb16e5cf358798aabb049655975cde8427101056"
 }
