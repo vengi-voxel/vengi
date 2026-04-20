@@ -1,4 +1,4 @@
-// dear imgui, v1.92.7
+// dear imgui, v1.92.8 WIP
 // (demo code)
 
 // Help:
@@ -11067,10 +11067,11 @@ struct ExampleAssetsBrowser
     bool            AllowBoxSelect = true;                  // Will set ImGuiMultiSelectFlags_BoxSelect2d
     bool            AllowBoxSelectInsideSelection = false;  // Will set ImGuiMultiSelectFlags_SelectOnClickAlways
     bool            AllowDragUnselected = false;            // Will set ImGuiMultiSelectFlags_SelectOnClickRelease
-    float           IconSize = 32.0f;
+    float           IconSize = 0;
     int             IconSpacing = 10;
-    int             IconHitSpacing = 4;         // Increase hit-spacing if you want to make it possible to clear or box-select from gaps. Some spacing is required to able to amend with Shift+box-select. Value is small in Explorer.
+    int             IconHitSpacing = 4;                     // Increase hit-spacing if you want to make it possible to clear or box-select from gaps. Some spacing is required to able to amend with Shift+box-select. Value is small in Explorer.
     bool            StretchSpacing = true;
+    bool            UseScrollX = false;                     // Debug: submit twice the number of items per line (overflow horizontally to exercise ScrollX + box-select)
 
     // State
     ImVector<ExampleAsset> Items;               // Our items
@@ -11121,11 +11122,14 @@ struct ExampleAssetsBrowser
         // Layout: calculate number of icon per line and number of lines
         LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
         LayoutColumnCount = IM_MAX((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
-        LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
         // Layout: when stretching: allocate remaining space to more spacing. Round before division, so item_spacing may be non-integer.
         if (StretchSpacing && LayoutColumnCount > 1)
             LayoutItemSpacing = floorf(avail_width - LayoutItemSize.x * LayoutColumnCount) / LayoutColumnCount;
+
+        if (UseScrollX)
+            LayoutColumnCount *= 2;
+        LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
         LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
         LayoutSelectableSpacing = IM_MAX(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
@@ -11134,6 +11138,9 @@ struct ExampleAssetsBrowser
 
     void Draw(const char* title, bool* p_open)
     {
+        if (IconSize <= 0.0f)
+            IconSize = ImGui::CalcTextSize("99999").x;
+
         ImGui::SetNextWindowSize(ImVec2(IconSize * 25, IconSize * 15), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(title, p_open, ImGuiWindowFlags_MenuBar))
         {
@@ -11183,6 +11190,7 @@ struct ExampleAssetsBrowser
                 ImGui::SliderInt("Icon Spacing", &IconSpacing, 0, 32);
                 ImGui::SliderInt("Icon Hit Spacing", &IconHitSpacing, 0, 32);
                 ImGui::Checkbox("Stretch Spacing", &StretchSpacing);
+                ImGui::Checkbox("Use ScrollX", &UseScrollX);
                 ImGui::PopItemWidth();
                 ImGui::EndMenu();
             }
@@ -11212,7 +11220,7 @@ struct ExampleAssetsBrowser
 
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowContentSize(ImVec2(0.0f, LayoutOuterPadding + LayoutLineCount * (LayoutItemSize.y + LayoutItemSpacing)));
-        if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove))
+        if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar))
         {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -11356,6 +11364,8 @@ struct ExampleAssetsBrowser
                 }
             }
             clipper.End();
+            if (Items.Size == 0)
+                ImGui::Dummy(ImVec2(0, 0));
             ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
 
             // Context menu

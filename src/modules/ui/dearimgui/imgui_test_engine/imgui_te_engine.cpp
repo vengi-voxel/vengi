@@ -929,6 +929,10 @@ static void ImGuiTestEngine_PreEndFrame(ImGuiTestEngine* engine, ImGuiContext* u
     if (engine->IO.ConfigRunSpeed == ImGuiTestRunSpeed_Fast && engine->IO.IsRunningTests)
         if (engine->TestContext && (engine->TestContext->RunFlags & ImGuiTestRunFlags_GuiFuncOnly) == 0)
             engine->IO.IsRequestingMaxAppSpeed = true;
+
+    // Suspend - via IM_SUSPEND_TESTFUNC() macros - always revert to normal speed so we don't miss frames.
+    if (engine->TestContext && engine->TestContext->TestOutput->Status == ImGuiTestStatus_Suspended)
+        engine->IO.IsRequestingMaxAppSpeed = false;
 }
 
 static void ImGuiTestEngine_PreRender(ImGuiTestEngine* engine, ImGuiContext* ui_ctx)

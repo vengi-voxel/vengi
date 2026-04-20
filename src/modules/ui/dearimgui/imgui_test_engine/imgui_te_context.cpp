@@ -1835,14 +1835,14 @@ static void FocusOrMakeClickableAtPos(ImGuiTestContext* ctx, ImGuiWindow* window
     }
 }
 
-// Conceptucally this could be called ItemHover()
+// Conceptually this could be called ItemHover()
 // Supported values for ImGuiTestOpFlags:
 // - ImGuiTestOpFlags_NoFocusWindow
-// - ImGuiTestOpFlags_NoCheckHoveredId
+// - ImGuiTestOpFlags_NoCheckHoveredId (automatic if there's an active id)
+// - ImGuiTestOpFlags_NoScroll
 // - ImGuiTestOpFlags_IsSecondAttempt [used when recursively calling ourself)
 // - ImGuiTestOpFlags_MoveToEdgeXXX flags
 // FIXME-TESTS: This is too eagerly trying to scroll everything even if already visible.
-// FIXME: Maybe ImGuiTestOpFlags_NoCheckHoveredId could be automatic if we detect that another item is active as intended?
 void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 {
     if (IsError())
@@ -1868,6 +1868,11 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
         LogError("Window '%s' is not active!", window->Name);
         return;
     }
+
+    // When dragging it makes sense to avoid checking HoveredId
+    // We check for this ahead of time to result likelihood of false positives.
+    if (g.ActiveId != 0)
+        flags |= ImGuiTestOpFlags_NoCheckHoveredId;
 
     // FIXME-TESTS: If window was not brought to front (because of either ImGuiWindowFlags_NoBringToFrontOnFocus or ImGuiTestOpFlags_NoFocusWindow)
     // then we need to make space by moving other windows away.
@@ -1907,14 +1912,16 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
         // In theory all we need is one visible point, but it is generally nicer if we scroll toward visibility.
         // Bias toward reducing amount of horizontal scroll.
-        float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
-        float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
-
-        if (visibility_ratio_x < 0.70f)
-            ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
-        if (visibility_ratio_y < 0.90f)
-            ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
-        // FIXME: Scroll parent window
+        if ((flags & ImGuiTestOpFlags_NoScroll) == 0)
+        {
+            float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
+            float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
+            if (visibility_ratio_x < 0.70f)
+                ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
+            if (visibility_ratio_y < 0.90f)
+                ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
+            // FIXME: Scroll parent window
+        }
     }
 
     // Menu layer is not scrollable: attempt to resize window.
@@ -3216,7 +3223,8 @@ void    ImGuiTestContext::ItemInputValue(ImGuiTestRef ref, int value)
 void    ImGuiTestContext::ItemInputValue(ImGuiTestRef ref, float value)
 {
     char buf[32];
-    ImFormatString(buf, IM_COUNTOF(buf), "%f", value);
+    char* buf_end = buf + ImFormatString(buf, IM_COUNTOF(buf), "%f", value);
+    ImStrTrimTrailingZeroesFromFloat(buf, buf_end);
     ItemInput(ref);
     KeyCharsReplaceEnter(buf);
 }
@@ -3390,7 +3398,7 @@ void    ImGuiTestContext::ItemDragOverAndHold(ImGuiTestRef ref_src, ImGuiTestRef
     ImGuiTestRefDesc desc_dst(ref_dst, item_dst);
     LogDebug("ItemDragOverAndHold %s to %s", desc_src.c_str(), desc_dst.c_str());
 
-    MouseMove(ref_src, ImGuiTestOpFlags_NoCheckHoveredId);
+    MouseMove(ref_src);
     SleepStandard();
     MouseDown(0);
 
@@ -3398,7 +3406,7 @@ void    ImGuiTestContext::ItemDragOverAndHold(ImGuiTestRef ref_src, ImGuiTestRef
     // Don't lift the threshold in the same frame as calling MouseDown() as it can trigger two actions.
     Yield();
     MouseLiftDragThreshold();
-    MouseMove(ref_dst, ImGuiTestOpFlags_NoCheckHoveredId);
+    MouseMove(ref_dst);
 
     SleepNoSkip(1.0f, 1.0f / 10.0f);
     MouseUp(0);
@@ -3423,7 +3431,7 @@ void    ImGuiTestContext::ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref
         WindowBringToFront(item_dst.Window->ID);
 
     // Use item_src/item_dst instead of ref_src/ref_dst so references with e.g. //$FOCUSED are latched once in the ItemInfo() call.
-    MouseMove(item_src.ID, ImGuiTestOpFlags_NoCheckHoveredId);
+    MouseMove(item_src.ID);
     SleepStandard();
     MouseDown(button);
 
@@ -3431,7 +3439,7 @@ void    ImGuiTestContext::ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref
     // Don't lift the threshold in the same frame as calling MouseDown() as it can trigger two actions.
     Yield();
     MouseLiftDragThreshold();
-    MouseMove(item_dst.ID, ImGuiTestOpFlags_NoCheckHoveredId | ImGuiTestOpFlags_NoFocusWindow);
+    MouseMove(item_dst.ID, ImGuiTestOpFlags_NoFocusWindow);
 
     SleepStandard();
     MouseUp(button);
@@ -3447,7 +3455,7 @@ void    ImGuiTestContext::ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_del
     ImGuiTestRefDesc desc_src(ref_src, item_src);
     LogDebug("ItemDragWithDelta %s to (%f, %f)", desc_src.c_str(), pos_delta.x, pos_delta.y);
 
-    MouseMove(ref_src, ImGuiTestOpFlags_NoCheckHoveredId);
+    MouseMove(ref_src);
     SleepStandard();
     MouseDown(0);
 
@@ -3474,6 +3482,12 @@ bool    ImGuiTestContext::ItemIsOpened(ImGuiTestRef ref)
 {
     ImGuiTestItemInfo item = ItemInfo(ref);
     return (item.StatusFlags & ImGuiItemStatusFlags_Opened) != 0;
+}
+
+bool    ImGuiTestContext::ItemIsVisible(ImGuiTestRef ref)
+{
+    ImGuiTestItemInfo item = ItemInfo(ref, ImGuiTestOpFlags_NoError);
+    return (item.StatusFlags & ImGuiItemStatusFlags_Visible) != 0;
 }
 
 void    ImGuiTestContext::ItemVerifyCheckedIfAlive(ImGuiTestRef ref, bool checked)
@@ -4094,16 +4108,16 @@ void    ImGuiTestContext::WindowResize(ImGuiTestRef ref, ImVec2 size)
     ImGuiID border_y2 = ImGui::GetWindowResizeBorderID(window, ImGuiDir_Down);
     ImGuiID resize_br = ImGui::GetWindowResizeCornerID(window, 0);
     ImGuiID id;
-    if (ImAbs(size.x - window->Size.x) < 0.0001f && ItemExists(border_y2))
+    if ((size.x == 0.0f || ImAbs(size.x - window->Size.x) < 0.0001f) && ItemExists(border_y2))
         id = border_y2;
-    else if (ImAbs(size.y - window->Size.y) < 0.0001f && ItemExists(border_x2))
+    else if ((size.y == 0.0f || ImAbs(size.y - window->Size.y) < 0.0001f) && ItemExists(border_x2))
         id = border_x2;
     else
         id = resize_br;
 
     if (size.x <= 0.0f || size.y <= 0.0f)
     {
-        IM_ASSERT(size.x <= 0.0f && size.y <= 0.0f);
+        //IM_ASSERT(size.x <= 0.0f && size.y <= 0.0f);
         MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt);
         MouseDoubleClick(0);
         Yield();
@@ -4266,7 +4280,7 @@ void    ImGuiTestContext::DockInto(ImGuiTestRef src_id, ImGuiTestRef dst_id, ImG
         ref_src = ImGui::DockNodeGetWindowMenuButtonId(node_src); // Whole node grab
     else
         ref_src = (window_src->DockIsActive ? window_src->TabId : window_src->MoveId); // FIXME-TESTS FIXME-DOCKING: Identify tab
-    MouseMove(ref_src, ImGuiTestOpFlags_NoCheckHoveredId);
+    MouseMove(ref_src, ImGuiTestOpFlags_NoCheckHoveredId); // FIXME: Can remove? See 2026/04/13 change
     SleepStandard();
 
     // Start dragging source, so it gets undocked already, because we calculate target position

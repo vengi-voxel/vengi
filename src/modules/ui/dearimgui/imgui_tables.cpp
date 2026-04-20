@@ -1,4 +1,4 @@
-// dear imgui, v1.92.7
+// dear imgui, v1.92.8 WIP
 // (tables and columns code)
 
 /*
@@ -1315,12 +1315,30 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
         table->InnerWindow->DecoInnerSizeY1 = table_instance->LastFrozenHeight;
     table_instance->LastFrozenHeight = 0.0f;
 
-    // Initial state
     ImGuiWindow* inner_window = table->InnerWindow;
+    ImGuiBoxSelectState* bs = &g.BoxSelectState;
+    if (bs->Window == inner_window && bs->UnclipMode)
+        TableApplyExternalUnclipRect(table, bs->UnclipRect);
+
+    // Initial state
     if (table->Flags & ImGuiTableFlags_NoClip)
         table->DrawSplitter->SetCurrentChannel(inner_window->DrawList, TABLE_DRAW_CHANNEL_NOCLIP);
     else
         inner_window->DrawList->PushClipRect(inner_window->InnerClipRect.Min, inner_window->InnerClipRect.Max, false); // FIXME: use table->InnerClipRect?
+}
+
+// When starting a BeginMultiSelect() after table has been layout we update IsRequestOutput fields.
+void ImGui::TableApplyExternalUnclipRect(ImGuiTable* table, ImRect& rect)
+{
+    if (rect.IsInverted())
+        return;
+    for (int column_n = 0; column_n < table->ColumnsCount; column_n++)
+    {
+        ImGuiTableColumn* column = &table->Columns[column_n];
+        if (!column->IsRequestOutput)
+            if (rect.Overlaps(ImRect(column->MinX, table->WorkRect.Min.y, column->MaxX, FLT_MAX)))
+                column->IsRequestOutput = true;
+    }
 }
 
 // Process hit-testing on resizing borders. Actual size change will be applied in EndTable()
@@ -1436,12 +1454,12 @@ void    ImGui::EndTable()
     if (table->Flags & ImGuiTableFlags_ScrollX)
     {
         const float outer_padding_for_border = (table->Flags & ImGuiTableFlags_BordersOuterV) ? TABLE_BORDER_SIZE : 0.0f;
-        float max_pos_x = table->InnerWindow->DC.CursorMaxPos.x;
+        float max_pos_x = inner_window->DC.CursorMaxPos.x;
         if (table->RightMostEnabledColumn != -1)
             max_pos_x = ImMax(max_pos_x, table->Columns[table->RightMostEnabledColumn].WorkMaxX + table->CellPaddingX + table->OuterPaddingX - outer_padding_for_border);
         if (table->ResizedColumn != -1)
             max_pos_x = ImMax(max_pos_x, table->ResizeLockMinContentsX2);
-        table->InnerWindow->DC.CursorMaxPos.x = max_pos_x + table->TempData->AngledHeadersExtraWidth;
+        inner_window->DC.CursorMaxPos.x = max_pos_x + table->TempData->AngledHeadersExtraWidth;
     }
 
     // Pop clipping rect
@@ -1550,7 +1568,7 @@ void    ImGui::EndTable()
     }
     else
     {
-        table->InnerWindow->DC.TreeDepth--;
+        inner_window->DC.TreeDepth--;
         ItemSize(table->OuterRect.GetSize());
         ItemAdd(table->OuterRect, 0);
     }
@@ -1565,13 +1583,12 @@ void    ImGui::EndTable()
     }
     else if (temp_data->UserOuterSize.x <= 0.0f)
     {
-        // Some references for this: #7651 + tests "table_reported_size", "table_reported_size_outer" equivalent Y block
-        // - Checking for ImGuiTableFlags_ScrollX/ScrollY flag makes us a frame ahead when disabling those flags.
-        // - FIXME-TABLE: Would make sense to pre-compute expected scrollbar visibility/sizes to generally save a frame of feedback.
-        const float inner_content_max_x = table->OuterRect.Min.x + table->ColumnsAutoFitWidth; // Slightly misleading name but used for code symmetry with inner_content_max_y
-        const float decoration_size = table->TempData->AngledHeadersExtraWidth + ((table->Flags & ImGuiTableFlags_ScrollY) ? inner_window->ScrollbarSizes.x : 0.0f);
-        outer_window->DC.IdealMaxPos.x = ImMax(outer_window->DC.IdealMaxPos.x, inner_content_max_x + decoration_size - temp_data->UserOuterSize.x);
-        outer_window->DC.CursorMaxPos.x = ImMax(backup_outer_max_pos.x, ImMin(table->OuterRect.Max.x, inner_content_max_x + decoration_size));
+        // Some references for this: #7651 + tests "table_reported_size", "table_reported_size_outer" equivalent Y block, #9352
+        // - FIXME-TABLE: Would make sense to pre-compute expected scrollbar visibility/sizes to generally save a frame of feedback? See broken test in 'table_reported_size_outer'
+        const float outer_content_max_x = table->OuterRect.Min.x + table->ColumnsAutoFitWidth;
+        const float decoration_size = table->TempData->AngledHeadersExtraWidth + ((inner_window != outer_window) ? inner_window->ScrollbarSizes.x : 0.0f);
+        outer_window->DC.IdealMaxPos.x = ImMax(outer_window->DC.IdealMaxPos.x, outer_content_max_x + decoration_size - temp_data->UserOuterSize.x);
+        outer_window->DC.CursorMaxPos.x = ImMax(backup_outer_max_pos.x, ImMin(table->OuterRect.Max.x, outer_content_max_x + decoration_size));
     }
     else
     {
@@ -1579,9 +1596,12 @@ void    ImGui::EndTable()
     }
     if (temp_data->UserOuterSize.y <= 0.0f)
     {
-        const float decoration_size = (table->Flags & ImGuiTableFlags_ScrollX) ? inner_window->ScrollbarSizes.y : 0.0f;
-        outer_window->DC.IdealMaxPos.y = ImMax(outer_window->DC.IdealMaxPos.y, inner_content_max_y + decoration_size - temp_data->UserOuterSize.y);
-        outer_window->DC.CursorMaxPos.y = ImMax(backup_outer_max_pos.y, ImMin(table->OuterRect.Max.y, inner_content_max_y + decoration_size));
+        // (same comment as above)
+        const float outer_content_size_y = (inner_window == outer_window) ? (inner_content_max_y - table->InnerRect.Min.y) : (inner_content_max_y - inner_window->DC.CursorStartPos.y);
+        const float outer_content_max_y = table->OuterRect.Min.y + outer_content_size_y;
+        const float decoration_size = (inner_window != outer_window ? inner_window->ScrollbarSizes.y : 0.0f);
+        outer_window->DC.IdealMaxPos.y = ImMax(outer_window->DC.IdealMaxPos.y, outer_content_max_y + decoration_size - temp_data->UserOuterSize.y);
+        outer_window->DC.CursorMaxPos.y = ImMax(backup_outer_max_pos.y, ImMin(table->OuterRect.Max.y, outer_content_max_y + decoration_size));
     }
     else
     {
@@ -1641,7 +1661,7 @@ void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, flo
     ImGuiTable* table = g.CurrentTable;
     IM_ASSERT_USER_ERROR_RET(table != NULL, "Call should only be done while in BeginTable() scope!");
     IM_ASSERT_USER_ERROR_RET(table->DeclColumnsCount < table->ColumnsCount, "TableSetupColumn(): called too many times!");
-    IM_ASSERT_USER_ERROR_RET(table->IsLayoutLocked == false, "TableSetupColumn(): need to call before first row!");
+    IM_ASSERT_USER_ERROR_RET(table->IsLayoutLocked == false, "TableSetupColumn(): need to call before first row!"); // Table layout is locked when submitting a row or when calling BeginMultiSelect() with box-select.
     IM_ASSERT((flags & ImGuiTableColumnFlags_StatusMask_) == 0 && "Illegal to pass StatusMask values to TableSetupColumn()");
 
     ImGuiTableColumn* column = &table->Columns[table->DeclColumnsCount];
@@ -3174,7 +3194,7 @@ void ImGui::TableHeader(const char* label)
     if (label == NULL)
         label = "";
     const char* label_end = FindRenderedTextEnd(label);
-    ImVec2 label_size = CalcTextSize(label, label_end, true);
+    ImVec2 label_size = CalcTextSize(label, label_end, false);
     ImVec2 label_pos = window->DC.CursorPos;
 
     // If we already got a row height, there's use that.
@@ -3293,6 +3313,8 @@ void ImGui::TableHeader(const char* label)
     // We don't use BeginPopupContextItem() because we want the popup to stay up even after the column is hidden
     if (IsPopupOpenRequestForItem(ImGuiPopupFlags_None, id))
         TableOpenContextMenu(column_n);
+
+    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
 }
 
 // Unlike TableHeadersRow() it is not expected that you can reimplement or customize this with custom widgets.

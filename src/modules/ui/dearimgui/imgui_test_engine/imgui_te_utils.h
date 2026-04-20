@@ -50,6 +50,7 @@ void        ImStrReplace(Str* s, const char* find, const char* repl);
 const char* ImStrchrRangeWithEscaping(const char* str, const char* str_end, char find_c);
 void        ImStrXmlEscape(Str* s);
 int         ImStrBase64Encode(const unsigned char* src, char* dst, int length);
+void        ImStrTrimTrailingZeroesFromFloat(char* buf, char* buf_end);
 
 //-----------------------------------------------------------------------------
 // Parsing Helpers

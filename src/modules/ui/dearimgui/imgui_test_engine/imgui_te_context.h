@@ -122,7 +122,7 @@ enum ImGuiTestAction
 enum ImGuiTestOpFlags_
 {
     ImGuiTestOpFlags_None               = 0,
-    ImGuiTestOpFlags_NoCheckHoveredId   = 1 << 1,   // Don't check for HoveredId after aiming for a widget. A few situations may want this: while e.g. dragging or another items prevents hovering, or for items that don't use ItemHoverable()
+    ImGuiTestOpFlags_NoCheckHoveredId   = 1 << 1,   // Don't check for HoveredId after aiming for a widget. This is automatic when there's an active item, typically in drag and drop operation. Otherwise, a few situations may want this e.g. for items that don't use ItemHoverable(), or when intently aiming for an item behind a popup/modal inhibition layer.
     ImGuiTestOpFlags_NoError            = 1 << 2,   // Don't abort/error e.g. if the item cannot be found or the operation doesn't succeed.
     ImGuiTestOpFlags_NoFocusWindow      = 1 << 3,   // Don't focus window when aiming at an item
     ImGuiTestOpFlags_NoAutoUncollapse   = 1 << 4,   // Disable automatically uncollapsing windows (useful when specifically testing Collapsing behaviors)
@@ -133,6 +133,7 @@ enum ImGuiTestOpFlags_
     ImGuiTestOpFlags_MoveToEdgeR        = 1 << 9,
     ImGuiTestOpFlags_MoveToEdgeU        = 1 << 10,
     ImGuiTestOpFlags_MoveToEdgeD        = 1 << 11,
+    ImGuiTestOpFlags_NoScroll           = 1 << 12,  // Disable automatically scrolling to reach an item.
 };
 
 // Advanced filtering for ItemActionAll()
@@ -362,7 +363,7 @@ struct IMGUI_API ImGuiTestContext
     void        MouseDragWithDelta(ImVec2 delta, ImGuiMouseButton button = 0);
     void        MouseWheel(ImVec2 delta);
     void        MouseWheelX(float dx) { MouseWheel(ImVec2(dx, 0.0f)); }
-    void        MouseWheelY(float dy) { MouseWheel(ImVec2(0.0f, dy)); }
+    void        MouseWheelY(float dy) { MouseWheel(ImVec2(0.0f, dy)); } // +1: up, -1: down
     void        MouseMoveToVoid(ImGuiViewport* viewport = nullptr);
     void        MouseClickOnVoid(ImGuiMouseButton button = 0, ImGuiViewport* viewport = nullptr);
     ImGuiWindow*FindHoveredWindowAtPos(const ImVec2& pos);
@@ -454,6 +455,7 @@ struct IMGUI_API ImGuiTestContext
     bool        ItemExists(ImGuiTestRef ref);
     bool        ItemIsChecked(ImGuiTestRef ref);
     bool        ItemIsOpened(ImGuiTestRef ref);
+    bool        ItemIsVisible(ImGuiTestRef ref);
     void        ItemVerifyCheckedIfAlive(ImGuiTestRef ref, bool checked);
 
     // Item/Widgets: Drag and Mouse operations

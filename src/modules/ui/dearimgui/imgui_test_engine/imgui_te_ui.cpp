@@ -212,6 +212,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
             ImGui::BulletText("%s", "Log: Right-click on a filename to see open options.");
             ImGui::BulletText("%s", "Log: Hover hex identifiers to locate items on the screen.");
             ImGui::BulletText("%s", "Log: Increase Verbose Level (top row of this window) to get a more detailed log.");
+            ImGui::BulletText("%s", "Log: Use 'Tools->Debug Log->Configure Outputs..' to send IMGUI_DEBUG_LOG() output here.");
             ImGui::BulletText("%s", "Call IM_SUSPEND_TESTFUNC() from TestFunc to view and interact with state at any given point.");
             ImGui::EndPopup();
         }
@@ -690,13 +691,14 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::Text("TestEngine: HookItems: %d, HookPushId: %d, InfoTasks: %d", g.TestEngineHookItems,
+        ImGui::Text("TestEngine: HookItems: %d, HookPushId: %d, InfoTasks: %d, MaxAppSpeed: %d", g.TestEngineHookItems,
 #if IMGUI_VERSION_NUM < 19229
             g.DebugHookIdInfo != 0,
 #else
             g.DebugHookIdInfoId != 0,
 #endif
-            engine->InfoTasks.Size);
+            engine->InfoTasks.Size,
+            engine->IO.IsRequestingMaxAppSpeed);
         ImGui::Separator();
 
         if (ImGui::Button("Reboot UI context"))

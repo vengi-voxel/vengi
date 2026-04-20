@@ -605,6 +605,21 @@ int ImStrBase64Encode(const unsigned char* src, char* dst, int length)
     return encoded_len;
 }
 
+void ImStrTrimTrailingZeroesFromFloat(char* buf, char* buf_end)
+{
+    // Trim trailing decimal 0
+    const char* decimal_p = strchr(buf, '.');
+    if (decimal_p == NULL)
+        decimal_p = strchr(buf, ',');
+    if (decimal_p == NULL)
+        return;
+    char* p = buf_end;
+    while (p > decimal_p && p[-1] == '0' || p[-1] == '.' || p[-1] == ',')
+        p--;
+    if (p >= decimal_p)
+        *p = 0;
+}
+
 //-----------------------------------------------------------------------------
 // Parsing Helpers
 //-----------------------------------------------------------------------------

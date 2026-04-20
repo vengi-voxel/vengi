@@ -269,7 +269,7 @@ namespace ImGui
     {
         bool                    isValid = false;                    // if true, will draw the image
         bool                    useLinkCallback = false;            // if true, linkCallback will be called when image is clicked
-        ImTextureID             user_texture_id = 0;                // see ImGui::Image
+        ImTextureID             user_texture_id = {};               // see ImGui::Image
         ImVec2                  size = ImVec2( 100.0f, 100.0f );    // see ImGui::Image
         ImVec2                  uv0 = ImVec2( 0, 0 );               // see ImGui::Image
         ImVec2                  uv1 = ImVec2( 1, 1 );               // see ImGui::Image
