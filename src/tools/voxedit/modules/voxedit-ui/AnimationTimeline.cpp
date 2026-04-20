@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -54,6 +55,12 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 
 	ImGui::SameLine();
 	ImGui::Checkbox(_("Loop"), &_loop);
+
+	ImGui::SameLine();
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+	ImGui::SameLine();
+	ImGui::Text("%i/%i", currentFrame, maxFrame);
 
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::Size(5));
