@@ -1761,6 +1761,19 @@ void App::writeConfigJson(io::WriteStream &stream) {
 		stream.writeStringFormat(false, "\"%s\": {", var->name().c_str());
 		stream.writeStringFormat(false, "\"value\":\"%s\"", var->strVal().c_str());
 		stream.writeStringFormat(false, ",\"flags\": %u", var->getFlags());
+		stream.writeStringFormat(false, ",\"type\": \"%s\"", core::varTypeName(var->type()));
+		const core::DynamicArray<core::String> &validValues = var->validValues();
+		if (!validValues.empty()) {
+			stream.writeStringFormat(false, ",\"valid_values\": [");
+			for (size_t i = 0; i < validValues.size(); ++i) {
+				if (i > 0) {
+					stream.write(",", 1);
+				}
+				stream.writeStringFormat(false, "\"%s\"", validValues[i].c_str());
+			}
+			stream.writeString("]", false);
+		}
+
 		if (!var->description().empty()) {
 			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->description().c_str());
 		}

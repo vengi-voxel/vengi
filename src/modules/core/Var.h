@@ -51,6 +51,8 @@ enum class VarType : uint8_t {
 	Unknown
 };
 
+const char *varTypeName(VarType type);
+
 union RangeValue {
 	float f;
 	int i;

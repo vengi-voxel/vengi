@@ -30,3 +30,14 @@ else()
 	add_test(NAME shelltests-${PROJECT_NAME} COMMAND ${PROJECT_NAME}-tests.sh $<TARGET_FILE:${PROJECT_NAME}>)
 endif()
 set_tests_properties(shelltests-${PROJECT_NAME} PROPERTIES DEPENDS ${PROJECT_NAME})
+
+set(BLENDER_ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blender/io_vengi_voxconvert)
+set(BLENDER_ADDON_ZIP ${CMAKE_BINARY_DIR}/io_vengi_voxconvert.zip)
+add_custom_command(
+	OUTPUT ${BLENDER_ADDON_ZIP}
+	COMMAND ${CMAKE_COMMAND} -E tar cf ${BLENDER_ADDON_ZIP} --format=zip -- io_vengi_voxconvert
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/blender
+	DEPENDS ${BLENDER_ADDON_DIR}/__init__.py
+	COMMENT "Creating Blender addon zip"
+)
+add_custom_target(blender-addon ALL DEPENDS ${BLENDER_ADDON_ZIP})

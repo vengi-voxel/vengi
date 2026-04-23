@@ -15,6 +15,10 @@ General:
    - Refactored parts of the io module and fixed memory leaks
    - Added support for `ldr` and `mpd` lego files
 
+VoxConvert:
+
+   - Added a blender plugin
+
 ## 0.5.0 (2026-04-18)
 
 General:

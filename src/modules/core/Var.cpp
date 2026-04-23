@@ -15,6 +15,26 @@
 
 namespace core {
 
+const char *varTypeName(VarType type) {
+	switch (type) {
+	case VarType::Int:
+		return "int";
+	case VarType::Float:
+		return "float";
+	case VarType::String:
+		return "string";
+	case VarType::Boolean:
+		return "boolean";
+	case VarType::Path:
+		return "path";
+	case VarType::Enum:
+		return "enum";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
 VarDef::VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags):
 	type(VarType::Unknown), name(defName), value(defValue), flags(defFlags), title(""), description("") {
 	core_assert(!defName.empty());
