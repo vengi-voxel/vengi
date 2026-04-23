@@ -798,6 +798,10 @@ void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
 	if (!_acceptInput) {
 		return;
 	}
+	// don't scroll the file list when an input text field is active (e.g. filename entry)
+	if (ImGui::GetIO().WantTextInput) {
+		return;
+	}
 
 	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 	if (!_scrollToText.isValid(timeProvider->tickNow())) {
