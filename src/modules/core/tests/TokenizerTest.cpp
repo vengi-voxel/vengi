@@ -219,4 +219,14 @@ TEST_F(TokenizerTest, testTokenizerSplit2) {
 	EXPECT_EQ(17u, t.size()) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testTokenizerUTF8InQuotes) {
+	// simulate XDG user-dirs.dirs format with UTF-8 characters
+	core::TokenizerConfig cfg;
+	cfg.skipComments = true;
+	core::Tokenizer t(cfg, "XDG_PUBLICSHARE_DIR=\"$HOME/\xC3\x96""ffentlich\"", "=");
+	ASSERT_EQ(2u, t.size()) << toString(t.tokens());
+	EXPECT_EQ("XDG_PUBLICSHARE_DIR", t.tokens()[0]) << toString(t.tokens());
+	EXPECT_EQ("$HOME/\xC3\x96""ffentlich", t.tokens()[1]) << toString(t.tokens());
+}
+
 }

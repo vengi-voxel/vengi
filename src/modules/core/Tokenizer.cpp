@@ -43,8 +43,8 @@ quote:
 					return;
 				}
 				_len -= cl;
-				s += cl;
 				if (c == '"') {
+					s += cl;
 					if (!cfg_.removeQuotes) {
 						token += c;
 					}
@@ -53,10 +53,12 @@ quote:
 					break;
 				}
 				if (c == '\0' || _len <= 0) {
+					s += cl;
 					lastCharWasQuoteEnd = true;
 					break;
 				}
 				if (c == '\\') {
+					s += cl;
 					const char next = *s;
 					if (next == 'n') {
 						c = '\n';
@@ -67,13 +69,18 @@ quote:
 					}
 					++s;
 					--_len;
+					token += c;
+				} else {
+					for (size_t i = 0; i < cl; ++i) {
+						token += s[i];
+					}
+					s += cl;
 				}
-				token += c;
 			}
 		}
 		if (lastCharWasQuoteEnd) {
 			lastCharWasQuoteEnd = false;
-			if (c < ' ' || _len <= 0) {
+			if ((uint8_t)c < ' ' || _len <= 0) {
 				_tokens.push_back(token);
 				if (_len <= 0) {
 					break;
@@ -114,13 +121,17 @@ quote:
 			if (cl == 0u) {
 				return;
 			}
+			// append remaining bytes of multi-byte UTF-8 character
+			for (size_t i = 1; i < cl; ++i) {
+				token += s[i];
+			}
 			_len -= cl;
 			s += cl;
 			if (skipComments(&s, false)) {
 				break;
 			}
 			c = skip(&s, false);
-			if (c < ' ' || _len <= 0) {
+			if ((uint8_t)c < ' ' || _len <= 0) {
 				break;
 			}
 			if (c == '"') {
@@ -209,7 +220,7 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 	}
 	char c = **s;
 	if (skipWhitespace) {
-		while ((c = **s) <= ' ') {
+		while ((uint8_t)(c = **s) <= ' ') {
 			if (c == '\0' || _len <= 0) {
 				return '\0';
 			}
