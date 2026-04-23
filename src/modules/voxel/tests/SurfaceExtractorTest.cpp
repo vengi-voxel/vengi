@@ -818,4 +818,51 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_NonZeroOrigin) {
 	EXPECT_TRUE(foundFirst) << "First sub-region should start at the region's lower corner (10,20,30)";
 }
 
+TEST_F(SurfaceExtractorTest, testMeshExtractionDualContouring) {
+	glm::ivec3 mins(0, 0, 0);
+	glm::ivec3 maxs(4, 4, 4);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	// Fill a 3x3x3 cube in the center
+	for (int x = 1; x <= 3; ++x) {
+		for (int y = 1; y <= 3; ++y) {
+			for (int z = 1; z <= 3; ++z) {
+				v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	voxel::ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+
+	SurfaceExtractionContext ctx = voxel::buildDualContouringContext(&v, region, mesh, pal);
+	voxel::extractSurface(ctx);
+
+	// DC should produce vertices and indices for the cube surface
+	EXPECT_GT((int)mesh.mesh[0].getNoOfVertices(), 0) << "Dual contouring should produce vertices";
+	EXPECT_GT((int)mesh.mesh[0].getNoOfIndices(), 0) << "Dual contouring should produce indices";
+	// Indices must be multiples of 3 (triangles)
+	EXPECT_EQ(mesh.mesh[0].getNoOfIndices() % 3, 0u) << "Indices should form complete triangles";
+}
+
+TEST_F(SurfaceExtractorTest, testDualContouringSingleVoxel) {
+	glm::ivec3 mins(0, 0, 0);
+	glm::ivec3 maxs(2, 2, 2);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 42));
+
+	voxel::ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+
+	SurfaceExtractionContext ctx = voxel::buildDualContouringContext(&v, region, mesh, pal);
+	voxel::extractSurface(ctx);
+
+	EXPECT_GT((int)mesh.mesh[0].getNoOfVertices(), 0) << "Single voxel should produce vertices";
+	EXPECT_GT((int)mesh.mesh[0].getNoOfIndices(), 0) << "Single voxel should produce indices";
+	EXPECT_EQ(mesh.mesh[0].getNoOfIndices() % 3, 0u) << "Indices should form complete triangles";
+}
+
 } // namespace voxel
