@@ -17,19 +17,23 @@
 
 namespace scenegraph {
 
+/**
+ * @brief Convert a swing limit's polar center (yaw, pitch) to a 3D direction vector.
+ */
+static glm::vec3 coneDirection(const glm::vec2 &center) {
+	const float cx = glm::cos(center.x), sx = glm::sin(center.x);
+	const float cz = glm::cos(center.y), sz = glm::sin(center.y);
+	return glm::vec3(-sz * cx, cz * cx, sx);
+}
+
 glm::quat IKSolver::clampOrientation(const glm::quat &localOrientation, const IKConstraint &constraint) {
-	// Decompose into swing-twist around Y axis (the typical joint axis)
-	// twist = rotation around the Y axis, swing = rotation that brings Y to the desired direction
 	const glm::vec3 yAxis(0.0f, 1.0f, 0.0f);
 	const glm::vec3 rotatedAxis = localOrientation * yAxis;
 
-	// Extract twist component
-	const float dot = glm::dot(yAxis, rotatedAxis);
 	glm::quat swing;
 	glm::quat twist;
 
-	if (glm::abs(dot) > 0.9999f) {
-		// Aligned or anti-aligned - no swing needed
+	if (glm::abs(glm::dot(yAxis, rotatedAxis)) > 0.9999f) {
 		twist = localOrientation;
 		swing = glm::quat_identity<float, glm::defaultp>();
 	} else {
@@ -39,31 +43,52 @@ glm::quat IKSolver::clampOrientation(const glm::quat &localOrientation, const IK
 		swing = localOrientation * glm::conjugate(twist);
 	}
 
-	// Clamp the twist (roll) angle
+	// Clamp twist to [rollMin, rollMax] using [0, 2*PI] convention
 	float twistAngle = 2.0f * glm::atan(glm::length(glm::vec3(twist.x, twist.y, twist.z)), twist.w);
-	if (twistAngle > glm::pi<float>()) {
-		twistAngle -= 2.0f * glm::pi<float>();
+	if (twistAngle < 0.0f) {
+		twistAngle += glm::two_pi<float>();
 	}
-
-	twistAngle = glm::clamp(twistAngle, constraint.rollMin, constraint.rollMax);
+	if (twistAngle < constraint.rollMin || twistAngle > constraint.rollMax) {
+		const float distToMin = glm::min(glm::abs(twistAngle - constraint.rollMin),
+										 glm::two_pi<float>() - glm::abs(twistAngle - constraint.rollMin));
+		const float distToMax = glm::min(glm::abs(twistAngle - constraint.rollMax),
+										 glm::two_pi<float>() - glm::abs(twistAngle - constraint.rollMax));
+		twistAngle = (distToMin <= distToMax) ? constraint.rollMin : constraint.rollMax;
+	}
 	twist = glm::angleAxis(twistAngle, yAxis);
 
-	// Clamp swing using the swing limits if any are defined
+	// Clamp swing using per-cone directional containment
 	if (!constraint.swingLimits.empty()) {
-		const glm::vec3 swingAxis = swing * yAxis;
-		// Convert to spherical coordinates to check against the constraint cones
-		const float swingAngle = glm::acos(glm::clamp(glm::dot(swingAxis, yAxis), -1.0f, 1.0f));
-		if (swingAngle > 0.001f) {
-			// Find the maximum allowed swing angle from the constraint cones
-			float maxSwingAngle = glm::pi<float>();
-			for (const auto &limit : constraint.swingLimits) {
-				maxSwingAngle = glm::min(maxSwingAngle, limit.radius);
+		const glm::vec3 swingDir = glm::normalize(swing * yAxis);
+		bool insideAnyCone = false;
+		float bestDot = -2.0f;
+		int bestCone = 0;
+
+		for (int i = 0; i < (int)constraint.swingLimits.size(); ++i) {
+			const auto &limit = constraint.swingLimits[i];
+			const glm::vec3 coneDir = coneDirection(limit.center);
+			const float d = glm::dot(swingDir, coneDir);
+			if (d >= glm::cos(limit.radius)) {
+				insideAnyCone = true;
+				break;
 			}
-			if (swingAngle > maxSwingAngle) {
-				// Clamp the swing angle
-				const glm::vec3 swingRotAxis = glm::cross(yAxis, swingAxis);
+			if (d > bestDot) {
+				bestDot = d;
+				bestCone = i;
+			}
+		}
+
+		if (!insideAnyCone) {
+			const auto &limit = constraint.swingLimits[bestCone];
+			const glm::vec3 coneDir = coneDirection(limit.center);
+			const glm::vec3 rotAxis = glm::cross(coneDir, swingDir);
+			if (glm::length2(rotAxis) > 0.0001f) {
+				const glm::vec3 clampedDir = glm::normalize(
+					glm::angleAxis(limit.radius, glm::normalize(rotAxis)) * coneDir);
+				const glm::vec3 swingRotAxis = glm::cross(yAxis, clampedDir);
 				if (glm::length2(swingRotAxis) > 0.0001f) {
-					swing = glm::angleAxis(maxSwingAngle, glm::normalize(swingRotAxis));
+					const float swingAngle = glm::acos(glm::clamp(glm::dot(yAxis, clampedDir), -1.0f, 1.0f));
+					swing = glm::angleAxis(swingAngle, glm::normalize(swingRotAxis));
 				}
 			}
 		}

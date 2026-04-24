@@ -8,7 +8,7 @@
 namespace scenegraph {
 
 IKConstraint::IKConstraint()
-	: effectorNodeId(InvalidNodeId), rollMin(-glm::pi<float>()), rollMax(glm::pi<float>()), visible(true),
+	: effectorNodeId(InvalidNodeId), rollMin(0.0f), rollMax(glm::two_pi<float>()), visible(true),
 	  anchor(false) {
 }
 
