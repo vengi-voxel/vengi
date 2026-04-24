@@ -3101,7 +3101,7 @@ static int luaVoxel_scenegraphnode_removekeyframeforframe(lua_State* s) {
 		return clua_error(s, "Failed to remove keyframe %d", existingIndex);
 	}
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
-	sceneGraph->markMaxFramesDirty();
+	sceneGraph->markKeyFramesDirty(node->node->id());
 	return 0;
 }
 
@@ -3112,7 +3112,7 @@ static int luaVoxel_scenegraphnode_removekeyframe(lua_State* s) {
 		return clua_error(s, "Failed to remove keyframe %d", keyFrameIdx);
 	}
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
-	sceneGraph->markMaxFramesDirty();
+	sceneGraph->markKeyFramesDirty(node->node->id());
 	return 0;
 }
 
@@ -3129,7 +3129,7 @@ static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
 		return clua_error(s, "Failed to add keyframe for frame %d", frameIdx);
 	}
 	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
-	sceneGraph->markMaxFramesDirty();
+	sceneGraph->markKeyFramesDirty(node->node->id());
 	scenegraph::SceneGraphKeyFrame &kf = node->node->keyFrame(newKeyFrameIdx);
 	kf.interpolation = interpolation;
 	const scenegraph::SceneGraphKeyFrame &prevKf = node->node->keyFrame(newKeyFrameIdx - 1);
@@ -3190,6 +3190,7 @@ static void luaVoxel_keyframe_updatetransform(lua_State *s, LuaKeyFrame *keyFram
 	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().update(*sceneGraph, *keyFrame->node, kf.frameIdx, true);
+	sceneGraph->markKeyFramesDirty(keyFrame->node->id());
 }
 
 static int luaVoxel_keyframe_setlocalscale(lua_State *s) {

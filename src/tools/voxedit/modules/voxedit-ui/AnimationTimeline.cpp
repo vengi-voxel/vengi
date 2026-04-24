@@ -83,7 +83,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				kf.frameIdx = 0;
 			}
 			if (oldFrameIdx != kf.frameIdx) {
-				sceneGraph.markMaxFramesDirty();
+				sceneGraph.markKeyFramesDirty(node.id());
 			}
 
 			if (ImGui::IsNeoKeyframeHovered()) {

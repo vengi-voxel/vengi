@@ -132,8 +132,7 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 	for (const auto &entry : _nodes) {
 		entry->value.setAnimation(animation);
 	}
-	invalidateFrameTransformCache(InvalidNodeId);
-	markMaxFramesDirty();
+	markKeyFramesDirty(InvalidNodeId);
 	for (SceneGraphListener *listener : _listeners) {
 		listener->onAnimationChanged(animation);
 	}
@@ -169,6 +168,7 @@ bool SceneGraph::duplicateAnimation(const core::String &animation, const core::S
 		listener->onAnimationAdded(newName);
 	}
 	updateTransforms_r(node(0));
+	markKeyFramesDirty(InvalidNodeId);
 	return true;
 }
 
@@ -241,6 +241,11 @@ const core::String &SceneGraph::activeAnimation() const {
 
 void SceneGraph::markMaxFramesDirty() {
 	_cachedMaxFrame = -1;
+}
+
+void SceneGraph::markKeyFramesDirty(int nodeId) {
+	invalidateFrameTransformCache(nodeId);
+	markMaxFramesDirty();
 }
 
 FrameIndex SceneGraph::maxFrames() const {
@@ -1037,6 +1042,7 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	if (type == SceneGraphNodeType::Model) {
 		_regionDirty = true;
 	}
+	markKeyFramesDirty(InvalidNodeId);
 	return state;
 }
 

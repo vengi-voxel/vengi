@@ -5129,6 +5129,7 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &n
 		return false;
 	}
 	node.keyFrame(keyFrameIdx).interpolation = interpolation;
+	_sceneGraph.markKeyFramesDirty(node.id());
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	markDirty();
 	return true;
@@ -5312,8 +5313,7 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameInd
 
 bool SceneManager::nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx) {
 	if (node.removeKeyFrame(frameIdx)) {
-		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
-		markDirty();
+		nodeKeyFramesChanged(node);
 		return true;
 	}
 	return false;
@@ -5321,15 +5321,14 @@ bool SceneManager::nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegra
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (node.removeKeyFrameByIndex(keyFrameIdx)) {
-		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
-		markDirty();
+		nodeKeyFramesChanged(node);
 		return true;
 	}
 	return false;
 }
 
 void SceneManager::nodeKeyFramesChanged(scenegraph::SceneGraphNode &node) {
-	_sceneGraph.invalidateFrameTransformCache(node.id());
+	_sceneGraph.markKeyFramesDirty(node.id());
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	markDirty();
 }
@@ -5415,6 +5414,7 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	transform.setLocalMatrix(glm::mat4(1.0f));
 	_sceneGraph.updateTransforms();
+	_sceneGraph.markKeyFramesDirty(node.id());
 	markDirty();
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;

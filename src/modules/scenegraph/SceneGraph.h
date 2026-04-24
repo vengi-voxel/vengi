@@ -166,6 +166,12 @@ public:
 	void invalidateFrameTransformCache(int nodeId);
 
 	/**
+	 * @brief Invalidate the frame transform cache for the given node and mark the max frames as dirty.
+	 * Use this whenever keyframes are added, removed, or modified.
+	 */
+	void markKeyFramesDirty(int nodeId);
+
+	/**
 	 * Calculate the region for the whole scene having the transform for the given frame applied
 	 */
 	math::AABB<float> calculateGroupAABB(const SceneGraphNode &node, FrameIndex frameIdx) const;
