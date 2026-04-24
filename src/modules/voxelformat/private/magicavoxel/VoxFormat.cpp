@@ -347,7 +347,11 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 		ogt_keyframe.frame_index = kf.frameIdx;
 		ogt_keyframe.transform = ogt_identity_transform;
 		// y and z are flipped here
-		const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
+		// Account for pivot: the worldTranslation is relative to the pivot point within the volume,
+		// but VOX expects the transform to point to the center of the model.
+		// pivot * width gives the offset from lower corner to the origin, so we subtract it
+		// and add width/2 to get to the center.
+		const glm::vec3 kftransform = mins + kf.transform().worldTranslation() - node.pivot() * width + width / 2.0f;
 		ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
 		ogt_keyframe.transform.m31 = kftransform.z;
 		ogt_keyframe.transform.m32 = kftransform.y;

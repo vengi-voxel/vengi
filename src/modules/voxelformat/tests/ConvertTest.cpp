@@ -481,4 +481,15 @@ TEST_F(ConvertTest, testVengiToVox) {
 	testConvert("minecraft-skin.vengi", src, "minecraft-skin.vox", target, flags);
 }
 
+// https://github.com/vengi-voxel/vengi/issues/746
+// https://github.com/vengi-voxel/vengi/issues/670
+TEST_F(ConvertTest, testVXLToVox) {
+	VXLFormat src;
+	VoxFormat target;
+	// VXL uses pivot-based transforms while VOX uses lower-corner-based transforms,
+	// so per-node translation comparison won't match. We validate the merged result instead.
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color | voxel::ValidateFlags::SceneGraphModels;
+	testConvert("cc.vxl", src, "convert-cc.vox", target, flags);
+}
+
 } // namespace voxelformat
