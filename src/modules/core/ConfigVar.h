@@ -118,6 +118,7 @@ constexpr const char *VoxformatPointCloudSize = "voxformat_pointcloudsize";
 constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
 constexpr const char *VoxformatOptimize = "voxformat_optimize";
 constexpr const char *VoxformatMeshSimplify = "voxformat_mesh_simplify";
+constexpr const char *VoxformatStreamProcessOBJ = "voxformat_streamprocessobj";
 constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 constexpr const char *VoxformatVoxelizeMode = "voxformat_voxelizemode";
 constexpr const char *VoxformatVoxelizeChunked = "voxformat_voxelize_chunked";
