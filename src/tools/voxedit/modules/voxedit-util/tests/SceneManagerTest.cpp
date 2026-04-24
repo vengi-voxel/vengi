@@ -762,6 +762,36 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	}
 }
 
+// https://github.com/vengi-voxel/vengi/issues/611
+TEST_F(SceneManagerTest, testChangePivotOfRotatedNode) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+	ASSERT_NE(node, nullptr);
+	// region is 2x2x2, so size = (2,2,2)
+	EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
+
+	// Apply a 90-degree rotation around Y axis
+	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
+	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(nodeId, rotMat, keyFrameIndex, false));
+
+	// Record the world position of voxel (0,0,0) before pivot change
+	const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
+	const glm::vec3 pivotVoxelSpace = node->pivot() * glm::vec3(node->region().getDimensionsInVoxels());
+	const glm::vec3 worldPosBefore = transform.apply(glm::vec3(0.0f), pivotVoxelSpace);
+
+	// Change pivot to center (0.5, 0.5, 0.5)
+	ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(0.5f, 0.5f, 0.5f)));
+
+	// The world position of voxel (0,0,0) should remain the same after pivot change
+	const scenegraph::SceneGraphTransform &transformAfter = node->transform(keyFrameIndex);
+	const glm::vec3 pivotVoxelSpaceAfter = node->pivot() * glm::vec3(node->region().getDimensionsInVoxels());
+	const glm::vec3 worldPosAfter = transformAfter.apply(glm::vec3(0.0f), pivotVoxelSpaceAfter);
+
+	ASSERT_VEC_NEAR(worldPosBefore, worldPosAfter, 0.001f)
+		<< "Voxel world position should not change when pivot is modified on a rotated node";
+}
+
 TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
 	ASSERT_TRUE(_sceneMgr->addAnimation("foo"));
 	EXPECT_EQ(2u, _sceneMgr->mementoHandler().stateSize());

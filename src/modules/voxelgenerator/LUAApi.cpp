@@ -3366,7 +3366,14 @@ static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 		if (translate) {
 			const glm::vec3 deltaPivot = val - oldPivot;
 			const glm::vec3 size = node->node->region().getDimensionsInVoxels();
-			node->node->localTranslate(deltaPivot * size);
+			const glm::vec3 dp = deltaPivot * size;
+			for (auto *keyFrames : node->node->allKeyFrames()) {
+				for (scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames->value) {
+					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+					const glm::mat3 rs(transform.localMatrix());
+					transform.setLocalTranslation(transform.localTranslation() + rs * dp);
+				}
+			}
 		}
 		scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 		sceneGraph->updateTransforms();

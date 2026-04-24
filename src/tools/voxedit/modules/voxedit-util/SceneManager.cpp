@@ -5400,7 +5400,17 @@ void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec
 	if (node.setPivot(pivot)) {
 		const glm::vec3 deltaPivot = pivot - oldPivot;
 		const glm::vec3 size = node.region().getDimensionsInVoxels();
-		node.localTranslate(deltaPivot * size);
+		const glm::vec3 dp = deltaPivot * size;
+		// Compensate the pivot change in each keyframe's local translation to keep the
+		// node visually at the same position. The compensation must account for the
+		// keyframe's own rotation and scale (the upper-left 3x3 of the local matrix).
+		for (auto *keyFrames : node.allKeyFrames()) {
+			for (scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames->value) {
+				scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+				const glm::mat3 rs(transform.localMatrix());
+				transform.setLocalTranslation(transform.localTranslation() + rs * dp);
+			}
+		}
 	}
 }
 

@@ -819,18 +819,19 @@ static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, con
 	return glm::mat4(1.0f);
 }
 
-// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
-//       https://github.com/vengi-voxel/vengi/issues/611
-//       The issue can also be in SceneManager::nodeSetPivot() and how to compensate the local matrix
-//       translation to keep the node visually at the same position
+// https://github.com/vengi-voxel/vengi/issues/611
 void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix) {
 	const voxel::Region &region = _sceneMgr->sceneGraph().resolveRegion(node);
 	const glm::vec3 size = region.getDimensionsInVoxels();
-	// TODO: extracting just the translation part here is not correct if we have rotation in the deltaMatrix
-	const glm::vec3 deltaTranslation(deltaMatrix[3]);
-	const glm::vec3 pivot = deltaTranslation / size;
-	// here we also compensate the pivot change in the local matrix by translating the local matrix
-	// in the opposite direction - otherwise the node would jump around when we modify the pivot
+	const glm::vec3 worldDelta(deltaMatrix[3]);
+	// The delta from ImGuizmo is in world space. The pivot is in the node's local
+	// (unrotated) space, so we need to undo the node's rotation to get the correct
+	// axis-aligned delta for the pivot adjustment.
+	const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(_sceneMgr->currentFrame());
+	const glm::mat4 &worldMat = node.transform(keyFrameIdx).worldMatrix();
+	const glm::mat3 rotation(worldMat);
+	const glm::vec3 localDelta = glm::inverse(rotation) * worldDelta;
+	const glm::vec3 pivot = localDelta / size;
 	_sceneMgr->nodeUpdatePivot(node.id(), node.pivot() + pivot);
 }
 
