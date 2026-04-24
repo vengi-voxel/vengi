@@ -45,9 +45,10 @@ TEST_F(ConvertTest, testVoxToSLAB6VoxPalette) {
 TEST_F(ConvertTest, testVoxToVXM) {
 	VoxFormat src;
 	VXMFormat target;
-	// vxm can't store transforms - only the voxel data.
+	// vxm can't store transforms (translation/rotation/scale) - only the voxel data and pivot.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Transform);
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Translation |
+									  voxel::ValidateFlags::Animations | voxel::ValidateFlags::Scale);
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxm", target, flags);
 }
 

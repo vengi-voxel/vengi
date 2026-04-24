@@ -86,10 +86,10 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	wrapBool(stream->writeUInt32(FourCC('V', 'X', 'M', 'C')));
-	glm::vec3 pivot(0.5f);
+	glm::vec3 pivot(0.5f, 0.0f, 0.5f);
 
 	if (const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode()) {
-		pivot = node->worldPivot();
+		pivot = node->pivot();
 	}
 
 	const voxel::Region &region = sceneGraph.region();
