@@ -18,12 +18,87 @@
 namespace scenegraph {
 
 /**
- * @brief Convert a swing limit's polar center (yaw, pitch) to a 3D direction vector.
+ * @brief Convert a swing limit's polar center (yaw, pitch) to a 3D unit direction vector.
+ * Applies rotateX(yaw) then rotateZ(pitch) to the Y-up vector.
  */
 static glm::vec3 coneDirection(const glm::vec2 &center) {
 	const float cx = glm::cos(center.x), sx = glm::sin(center.x);
 	const float cz = glm::cos(center.y), sz = glm::sin(center.y);
 	return glm::vec3(-sz * cx, cz * cx, sx);
+}
+
+/**
+ * @brief Rotate unit vector @p v toward @p target by @p angle radians.
+ */
+static glm::vec3 rotateToward(const glm::vec3 &v, const glm::vec3 &target, float angle) {
+	const glm::vec3 axis = glm::cross(v, target);
+	if (glm::length2(axis) < 0.0001f) {
+		return v;
+	}
+	return glm::normalize(glm::angleAxis(angle, glm::normalize(axis)) * v);
+}
+
+/**
+ * @brief Build a swing quaternion that rotates Y-axis to the given direction.
+ */
+static glm::quat swingFromDirection(const glm::vec3 &dir) {
+	const glm::vec3 yAxis(0.0f, 1.0f, 0.0f);
+	const glm::vec3 axis = glm::cross(yAxis, dir);
+	if (glm::length2(axis) < 0.0001f) {
+		return glm::quat_identity<float, glm::defaultp>();
+	}
+	const float angle = glm::acos(glm::clamp(glm::dot(yAxis, dir), -1.0f, 1.0f));
+	return glm::angleAxis(angle, glm::normalize(axis));
+}
+
+/**
+ * @brief Check if @p input lies in the tangent path region between two consecutive cones
+ * on the unit sphere.
+ *
+ * Between consecutive cones A and B, there is a smooth allowed region defined by tangent
+ * circles. The tangent circle radius = (PI - radiusA - radiusB) / 2, which is half the
+ * angular gap between the two cone boundaries along the great arc connecting them.
+ *
+ * @param[out] result The clamped direction if the point is in the path region
+ * @return true if the point is in the path region (result is set)
+ */
+static bool checkConePairPath(const glm::vec3 &coneA, float radiusA, const glm::vec3 &coneB, float radiusB,
+							  const glm::vec3 &input, glm::vec3 &result) {
+	const float tRadius = (glm::pi<float>() - (radiusA + radiusB)) / 2.0f;
+	if (tRadius <= 0.0f) {
+		return false;
+	}
+
+	const glm::vec3 arcNormal = glm::cross(coneA, coneB);
+	if (glm::length2(arcNormal) < 0.0001f) {
+		return false;
+	}
+	const glm::vec3 normArc = glm::normalize(arcNormal);
+
+	// Compute two tangent circle centers (one on each side of the great arc)
+	const glm::vec3 tan1 = glm::normalize(glm::angleAxis(radiusA + tRadius, normArc) * coneA);
+	const glm::vec3 tan2 = glm::normalize(glm::angleAxis(-(radiusA + tRadius), normArc) * coneA);
+
+	// Determine which side of the great arc the input is on
+	const float side = glm::dot(input, glm::cross(coneA, coneB));
+	const glm::vec3 &tanCenter = (side < 0.0f) ? tan1 : tan2;
+
+	// Check if input is in the triangle region bounded by coneA, tanCenter, coneB
+	// using cross-product half-plane tests
+	const glm::vec3 edge1 = (side < 0.0f) ? glm::cross(coneA, tanCenter) : glm::cross(tanCenter, coneA);
+	const glm::vec3 edge2 = (side < 0.0f) ? glm::cross(tanCenter, coneB) : glm::cross(coneB, tanCenter);
+
+	if (glm::dot(input, edge1) <= 0.0f || glm::dot(input, edge2) <= 0.0f) {
+		return false;
+	}
+
+	// In the path region. Check if inside the tangent circle (= out of bounds, needs clamping)
+	if (glm::dot(input, tanCenter) > glm::cos(tRadius)) {
+		result = glm::normalize(rotateToward(tanCenter, input, tRadius));
+	} else {
+		result = input;
+	}
+	return true;
 }
 
 glm::quat IKSolver::clampOrientation(const glm::quat &localOrientation, const IKConstraint &constraint) {
@@ -57,40 +132,52 @@ glm::quat IKSolver::clampOrientation(const glm::quat &localOrientation, const IK
 	}
 	twist = glm::angleAxis(twistAngle, yAxis);
 
-	// Clamp swing using per-cone directional containment
-	if (!constraint.swingLimits.empty()) {
+	// Clamp swing: per-cone containment + inter-cone path interpolation
+	const int numCones = (int)constraint.swingLimits.size();
+	if (numCones > 0) {
 		const glm::vec3 swingDir = glm::normalize(swing * yAxis);
-		bool insideAnyCone = false;
-		float bestDot = -2.0f;
-		int bestCone = 0;
 
-		for (int i = 0; i < (int)constraint.swingLimits.size(); ++i) {
-			const auto &limit = constraint.swingLimits[i];
-			const glm::vec3 coneDir = coneDirection(limit.center);
-			const float d = glm::dot(swingDir, coneDir);
-			if (d >= glm::cos(limit.radius)) {
-				insideAnyCone = true;
+		// Step 1: Check if inside any individual cone
+		bool inBounds = false;
+		for (int i = 0; i < numCones; ++i) {
+			if (glm::dot(swingDir, coneDirection(constraint.swingLimits[i].center)) >=
+				glm::cos(constraint.swingLimits[i].radius)) {
+				inBounds = true;
 				break;
-			}
-			if (d > bestDot) {
-				bestDot = d;
-				bestCone = i;
 			}
 		}
 
-		if (!insideAnyCone) {
-			const auto &limit = constraint.swingLimits[bestCone];
-			const glm::vec3 coneDir = coneDirection(limit.center);
-			const glm::vec3 rotAxis = glm::cross(coneDir, swingDir);
-			if (glm::length2(rotAxis) > 0.0001f) {
-				const glm::vec3 clampedDir = glm::normalize(
-					glm::angleAxis(limit.radius, glm::normalize(rotAxis)) * coneDir);
-				const glm::vec3 swingRotAxis = glm::cross(yAxis, clampedDir);
-				if (glm::length2(swingRotAxis) > 0.0001f) {
-					const float swingAngle = glm::acos(glm::clamp(glm::dot(yAxis, clampedDir), -1.0f, 1.0f));
-					swing = glm::angleAxis(swingAngle, glm::normalize(swingRotAxis));
+		// Step 2: Check inter-cone path regions between consecutive cones
+		if (!inBounds && numCones > 1) {
+			for (int i = 0; i < numCones - 1; ++i) {
+				const auto &limA = constraint.swingLimits[i];
+				const auto &limB = constraint.swingLimits[i + 1];
+				glm::vec3 pathResult;
+				if (checkConePairPath(coneDirection(limA.center), limA.radius, coneDirection(limB.center), limB.radius,
+									  swingDir, pathResult)) {
+					inBounds = true;
+					// pathResult == swingDir means already in bounds, otherwise clamped
+					if (glm::distance(pathResult, swingDir) > 0.0001f) {
+						swing = swingFromDirection(pathResult);
+					}
+					break;
 				}
 			}
+		}
+
+		// Step 3: If still out of bounds, clamp to the closest cone boundary
+		if (!inBounds) {
+			float bestDot = -2.0f;
+			int bestCone = 0;
+			for (int i = 0; i < numCones; ++i) {
+				const float d = glm::dot(swingDir, coneDirection(constraint.swingLimits[i].center));
+				if (d > bestDot) {
+					bestDot = d;
+					bestCone = i;
+				}
+			}
+			const auto &limit = constraint.swingLimits[bestCone];
+			swing = swingFromDirection(rotateToward(coneDirection(limit.center), swingDir, limit.radius));
 		}
 	}
 
