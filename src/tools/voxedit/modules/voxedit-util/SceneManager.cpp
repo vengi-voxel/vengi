@@ -2116,6 +2116,15 @@ int SceneManager::mergeVisibleToTemp() {
 	}
 
 	// Bake all visible nodes into world space and merge
+	// The merged node will be placed under the root, so we need transforms
+	// relative to the root to avoid double-application of the root's transform
+	glm::mat4 rootWorldMatrix(1.0f);
+	{
+		const scenegraph::FrameTransform &rootTransform = _sceneGraph.transformForFrame(_sceneGraph.root(), _currentFrameIdx);
+		rootWorldMatrix = rootTransform.worldMatrix();
+	}
+	const glm::mat4 invRootWorldMatrix = glm::inverse(rootWorldMatrix);
+
 	scenegraph::SceneGraph tempSceneGraph;
 	for (int nodeId : visibleNodeIds) {
 		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
@@ -2124,9 +2133,10 @@ int SceneManager::mergeVisibleToTemp() {
 		}
 		const scenegraph::FrameTransform &transform =
 			_sceneGraph.transformForFrame(*node, _currentFrameIdx);
+		const glm::mat4 relativeMatrix = invRootWorldMatrix * transform.worldMatrix();
 		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
 		voxel::RawVolume *bakedVolume =
-			voxelutil::applyTransformToVolume(*srcVolume, transform.worldMatrix(), node->pivot());
+			voxelutil::applyTransformToVolume(*srcVolume, relativeMatrix, node->pivot());
 		if (bakedVolume == nullptr) {
 			continue;
 		}
@@ -2457,6 +2467,23 @@ static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFla
 }
 
 int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
+	int parent = 0;
+	const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front());
+	if (firstNode) {
+		parent = firstNode->parent();
+	}
+
+	// compute the target parent's world transform so we can bake transforms
+	// relative to it - otherwise the parent's transform would be applied twice
+	// (once baked into voxels, once via the parent chain during rendering)
+	glm::mat4 parentWorldMatrix(1.0f);
+	if (parent != InvalidNodeId && _sceneGraph.hasNode(parent)) {
+		const scenegraph::SceneGraphNode &parentNode = _sceneGraph.node(parent);
+		const scenegraph::FrameTransform &parentTransform = _sceneGraph.transformForFrame(parentNode, _currentFrameIdx);
+		parentWorldMatrix = parentTransform.worldMatrix();
+	}
+	const glm::mat4 invParentWorldMatrix = glm::inverse(parentWorldMatrix);
+
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
 		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
@@ -2464,9 +2491,10 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 			continue;
 		}
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
+		const glm::mat4 relativeMatrix = invParentWorldMatrix * transform.worldMatrix();
 		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
 		voxel::RawVolume *bakedVolume =
-		voxelutil::applyTransformToVolume(*srcVolume, transform.worldMatrix(), node->pivot());
+		voxelutil::applyTransformToVolume(*srcVolume, relativeMatrix, node->pivot());
 		if (bakedVolume == nullptr) {
 			continue;
 		}
@@ -2485,15 +2513,12 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	newNode.setVolume(merged.volume());
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
-	int parent = 0;
-	if (const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
+	if (firstNode) {
 		newNode.setName(firstNode->name());
 		newNode.setVisible(firstNode->visible());
 		newNode.setLocked(firstNode->locked());
-		newNode.setPivot(firstNode->pivot());
 		newNode.setColor(firstNode->color());
 		newNode.addProperties(firstNode->properties());
-		parent = firstNode->parent();
 	}
 
 	int newNodeId = moveNodeToSceneGraph(newNode, parent);

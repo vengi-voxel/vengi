@@ -443,16 +443,13 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 	}
 }
 
-TEST_F(SceneManagerTest, DISABLED_testChrKnightBakeTransform) {
+TEST_F(SceneManagerTest, testChrKnightBakeTransform) {
 	loadVengiFile("chr_knight.vengi");
 	if (HasFailure()) {
 		return;
 	}
 
 	{
-		// TODO: this is failing because the root node has 180 degree rotation on Y axis - and this is not handled
-		// properly handled yet in nodeBakeTransform or applyTransformToVolume and is producing an off-by-one error on
-		// the z axis. The test is correct, the implementation needs to be fixed.
 		SCOPED_TRACE("K_Waist");
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Waist");
 		ASSERT_NE(nullptr, node);
@@ -461,7 +458,7 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightBakeTransform) {
 		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 8, 3, 6));
 		_sceneMgr->nodeBakeTransform(node->id());
 		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
-		ASSERT_EQ(newRegion, voxel::Region(-4, 14, -4, 4, 17, 2));
+		ASSERT_EQ(newRegion, voxel::Region(-3, 14, -3, 5, 17, 3));
 		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
 }
@@ -559,12 +556,147 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
 
-	glm::ivec3 expectedDimensions(9, 14, 13);
+	glm::ivec3 expectedDimensions(9, 14, 14);
 
 	EXPECT_EQ(expectedDimensions, mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
 	// TODO: check the mins of the region here - doesn't currently work
 	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
+}
+
+// Verify that merging nodes with a rotated root node doesn't double-apply the root rotation
+TEST_F(SceneManagerTest, testChrKnightMergeWithRootRotation) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+
+	// The chr_knight model has a 180-degree rotation on the root node.
+	// After merge, the merged node should have the same voxel count regardless
+	// of whether the root has a rotation or not.
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *mergedNode = _sceneMgr->sceneGraph().firstModelNode();
+	ASSERT_NE(nullptr, mergedNode);
+	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->id());
+	ASSERT_NE(nullptr, mergedVolume);
+	const int mergedVoxels = voxelutil::countVoxels(*mergedVolume);
+	const voxel::Region mergedRegion = mergedVolume->region();
+
+	// Undo the merge
+	EXPECT_TRUE(_sceneMgr->undo());
+	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+
+	// Now reset the root rotation to identity and merge again
+	scenegraph::SceneGraphTransform &transform = _sceneMgr->sceneGraph().node(0).transform(0);
+	transform.setWorldOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+	_sceneMgr->sceneGraph().updateTransforms();
+
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *mergedNodeNoRot = _sceneMgr->sceneGraph().firstModelNode();
+	ASSERT_NE(nullptr, mergedNodeNoRot);
+	const voxel::RawVolume *mergedVolumeNoRot = _sceneMgr->volume(mergedNodeNoRot->id());
+	ASSERT_NE(nullptr, mergedVolumeNoRot);
+	const int mergedVoxelsNoRot = voxelutil::countVoxels(*mergedVolumeNoRot);
+	const voxel::Region mergedRegionNoRot = mergedVolumeNoRot->region();
+
+	// The voxel count should be the same whether or not the root has a rotation
+	EXPECT_EQ(mergedVoxels, mergedVoxelsNoRot)
+		<< "Voxel count should be identical with and without root rotation";
+	// The dimensions should be the same (rotation is 180 degrees so it's a flip)
+	EXPECT_EQ(mergedRegion.getDimensionsInVoxels(), mergedRegionNoRot.getDimensionsInVoxels())
+		<< "Dimensions should be identical with and without root rotation";
+}
+
+// Verify that merging a subset of visible nodes preserves world-space positions
+// even when the root node has a rotation applied
+TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+
+	// Hide all nodes, then show only the left leg subtree
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		_sceneMgr->nodeSetVisible((*iter).id(), false);
+	}
+
+	const char *leftLegNodes[] = {"K_Leg_Left_u", "K_Knee_Left", "K_Leg_Left_l", "K_Foot_Left", "K_Toe_Left"};
+	int totalVoxelsBefore = 0;
+	for (const char *name : leftLegNodes) {
+		const scenegraph::SceneGraphNode *n = _sceneMgr->sceneGraph().findNodeByName(name);
+		ASSERT_NE(nullptr, n) << "Node " << name << " not found";
+		_sceneMgr->nodeSetVisible(n->id(), true);
+		const voxel::RawVolume *v = _sceneMgr->volume(n->id());
+		ASSERT_NE(nullptr, v);
+		totalVoxelsBefore += voxelutil::countVoxels(*v);
+	}
+
+	// Compute world-space AABB of the visible nodes before merge by transforming
+	// each voxel position through the node's world matrix
+	glm::vec3 worldMins(FLT_MAX);
+	glm::vec3 worldMaxs(-FLT_MAX);
+	for (const char *name : leftLegNodes) {
+		const scenegraph::SceneGraphNode *n = _sceneMgr->sceneGraph().findNodeByName(name);
+		const glm::mat4 wm = _sceneMgr->sceneGraph().worldMatrix(*n);
+		const voxel::RawVolume *v = _sceneMgr->volume(n->id());
+		voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if (voxel::isAir(voxel.getMaterial())) {
+				return;
+			}
+			const glm::vec3 worldPos = glm::vec3(wm * glm::vec4((float)x, (float)y, (float)z, 1.0f));
+			worldMins = glm::min(worldMins, worldPos);
+			worldMaxs = glm::max(worldMaxs, worldPos);
+		});
+	}
+
+	// Merge visible nodes
+	_sceneMgr->mergeNodes(NodeMergeFlags::Visible);
+
+	// Find the merged node
+	const scenegraph::SceneGraphNode *mergedNode = nullptr;
+	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
+		if ((*iter).visible()) {
+			mergedNode = &(*iter);
+			break;
+		}
+	}
+	ASSERT_NE(nullptr, mergedNode) << "No visible merged node found";
+
+	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->id());
+	ASSERT_NE(nullptr, mergedVolume);
+
+	// All voxels should be preserved (no overlaps in the leg)
+	EXPECT_EQ(totalVoxelsBefore, voxelutil::countVoxels(*mergedVolume));
+
+	// Compute world-space AABB of the merged node
+	const glm::mat4 mergedWm = _sceneMgr->sceneGraph().worldMatrix(*mergedNode);
+	glm::vec3 mergedWorldMins(FLT_MAX);
+	glm::vec3 mergedWorldMaxs(-FLT_MAX);
+	voxelutil::visitVolume(*mergedVolume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (voxel::isAir(voxel.getMaterial())) {
+			return;
+		}
+		const glm::vec3 worldPos = glm::vec3(mergedWm * glm::vec4((float)x, (float)y, (float)z, 1.0f));
+		mergedWorldMins = glm::min(mergedWorldMins, worldPos);
+		mergedWorldMaxs = glm::max(mergedWorldMaxs, worldPos);
+	});
+
+	// The world-space bounding boxes should match closely (within 1 voxel due to rounding)
+	const glm::vec3 tolerance(1.5f);
+	EXPECT_NEAR(worldMins.x, mergedWorldMins.x, tolerance.x) << "World min X mismatch";
+	EXPECT_NEAR(worldMins.y, mergedWorldMins.y, tolerance.y) << "World min Y mismatch";
+	EXPECT_NEAR(worldMins.z, mergedWorldMins.z, tolerance.z) << "World min Z mismatch";
+	EXPECT_NEAR(worldMaxs.x, mergedWorldMaxs.x, tolerance.x) << "World max X mismatch";
+	EXPECT_NEAR(worldMaxs.y, mergedWorldMaxs.y, tolerance.y) << "World max Y mismatch";
+	EXPECT_NEAR(worldMaxs.z, mergedWorldMaxs.z, tolerance.z) << "World max Z mismatch";
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {

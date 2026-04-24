@@ -45,9 +45,6 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 	Log::debug("Apply transforms: angles: %f %f %f, scale: %f %f %f, translation: %f %f %f", angles.x, angles.y,
 			   angles.z, scale.x, scale.y, scale.z, translation.x, translation.y, translation.z);
 
-	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
-	const glm::vec3 pivot = normalizedPivot * dim;
-
 	const bool hasScale = !glm::all(glm::epsilonEqual(scale, glm::vec3(1.0f), 0.001f));
 	const bool hasRotation = !glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f));
 
@@ -83,7 +80,9 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 		result = scaledVolume.release();
 	}
 
-	// Apply translation
+	// Apply translation - the pivot is the rotation center which stays fixed during rotation
+	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
+	const glm::vec3 pivot = normalizedPivot * dim;
 	result->translate(glm::ivec3(glm::round(translation - pivot)));
 	return result;
 }
