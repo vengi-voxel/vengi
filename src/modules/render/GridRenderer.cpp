@@ -151,16 +151,24 @@ void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &
 	_shapeRenderer.hide(_aabbMeshIndex, !_renderAABB);
 	_shapeRenderer.hide(_plane, true);
 	if (_renderGrid && aabb.isValid()) {
-		const glm::vec3 &center = model * glm::vec4(aabb.getCenter(), 1.0f);
+		const glm::vec3 aabbCenter = aabb.getCenter();
 		const glm::vec3 &halfWidth = aabb.getWidth() / 2.0f;
 
 		const glm::mat3 rotationMatrix(model);
-		const math::Plane planeLeft(rotationMatrix * glm::left(), center + glm::left() * halfWidth);
-		const math::Plane planeRight(rotationMatrix * glm::right(), center + glm::right() * halfWidth);
-		const math::Plane planeBottom(rotationMatrix * glm::down(), center + glm::down() * halfWidth);
-		const math::Plane planeTop(rotationMatrix * glm::up(), center + glm::up() * halfWidth);
-		const math::Plane planeNear(rotationMatrix * glm::forward(), center + glm::forward() * halfWidth);
-		const math::Plane planeFar(rotationMatrix * glm::backward(), center + glm::backward() * halfWidth);
+		// Transform the plane points from local AABB space to world space
+		const glm::vec3 pLeft = glm::vec3(model * glm::vec4(aabbCenter + glm::left() * halfWidth, 1.0f));
+		const glm::vec3 pRight = glm::vec3(model * glm::vec4(aabbCenter + glm::right() * halfWidth, 1.0f));
+		const glm::vec3 pBottom = glm::vec3(model * glm::vec4(aabbCenter + glm::down() * halfWidth, 1.0f));
+		const glm::vec3 pTop = glm::vec3(model * glm::vec4(aabbCenter + glm::up() * halfWidth, 1.0f));
+		const glm::vec3 pNear = glm::vec3(model * glm::vec4(aabbCenter + glm::forward() * halfWidth, 1.0f));
+		const glm::vec3 pFar = glm::vec3(model * glm::vec4(aabbCenter + glm::backward() * halfWidth, 1.0f));
+
+		const math::Plane planeLeft(rotationMatrix * glm::left(), pLeft);
+		const math::Plane planeRight(rotationMatrix * glm::right(), pRight);
+		const math::Plane planeBottom(rotationMatrix * glm::down(), pBottom);
+		const math::Plane planeTop(rotationMatrix * glm::up(), pTop);
+		const math::Plane planeNear(rotationMatrix * glm::forward(), pNear);
+		const math::Plane planeFar(rotationMatrix * glm::backward(), pFar);
 
 		if (camera.mode() == video::CameraMode::Perspective) {
 			const glm::vec3 &eye = camera.eye();
