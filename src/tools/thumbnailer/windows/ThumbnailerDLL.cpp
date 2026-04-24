@@ -4,13 +4,13 @@
 
 #include <ShlObj.h>
 #include <Windows.h>
-#include <tchar.h>
 #include <new>
+#include <tchar.h>
 
+#include "ThumbnailerProvider.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
-#include "ThumbnailerProvider.h"
 
 // https://learn.microsoft.com/en-us/windows/win32/shell/thumbnail-providers
 #define SHELLEX_THUMBNAIL_CLSID _T("ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}")
@@ -20,7 +20,7 @@
 static const CLSID CLSID_ThumbnailHandler = {
 	0xCD1F0EA0, 0x283C, 0x4D90, {0xA4, 0x1D, 0xDE, 0xBD, 0x92, 0x07, 0xD9, 0x1F}};
 
-static TCHAR dllPath[MAX_PATH] = {0};
+TCHAR dllPath[MAX_PATH] = {0};
 
 static LONG dllRefs = 0;
 
@@ -45,7 +45,7 @@ static HRESULT setRegKey(HKEY root, LPTSTR key, LPTSTR val, LPTSTR data) {
 BOOL APIENTRY DllMain(HMODULE hInstDLL, DWORD reason, LPVOID /*reserved*/) {
 	if (reason == DLL_PROCESS_ATTACH) {
 		OutputDebugString(_T("DllMain"));
-		if (GetModuleFileName(hInstDLL, dllPath, sizeof(dllPath)) == 0) {
+		if (GetModuleFileName(hInstDLL, dllPath, MAX_PATH) == 0) {
 #ifdef _DEBUG
 			OutputDebugString(_T("Failed to obtain DLL path"));
 #endif

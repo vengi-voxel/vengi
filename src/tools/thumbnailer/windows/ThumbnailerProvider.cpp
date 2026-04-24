@@ -3,107 +3,160 @@
  */
 
 #include "ThumbnailerProvider.h"
-#include "../Thumbnailer.h"
-#include "app/App.h"
-#include "core/StringUtil.h"
-#include "core/TimeProvider.h"
-#include "io/Filesystem.h"
 
-#include <Windows.h>
 #include <Shlwapi.h>
-#include <tchar.h>
+#include <Windows.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <tchar.h>
+#include <wincodec.h>
 
 extern void DllAddRef();
 extern void DllRelease();
+extern TCHAR dllPath[MAX_PATH];
 
-// TODO: don't inherit from Thumbnailer directly - instead move the relevant code into a shared class and inherit from
-// app::App because we are handling the gl context here ourselves
-class DLLThumbnailer : public Thumbnailer {
-private:
-	using Super = Thumbnailer;
-	HBITMAP *_phbmp;
-protected:
-	HBITMAP rgbaToBitmap(const uint32_t *src, uint32_t const imgW, uint32_t const imgH, bool const flip) {
-		BITMAPINFO bmi = {sizeof(bmi.bmiHeader)};
-		bmi.bmiHeader.biWidth = imgW;
-		bmi.bmiHeader.biHeight = (flip) ? imgH : -static_cast<int32_t>(imgH);
-		bmi.bmiHeader.biPlanes = 1;
-		bmi.bmiHeader.biBitCount = 32;
-		bmi.bmiHeader.biCompression = BI_RGB;
-		void *pixels = NULL;
-		HBITMAP hbmp = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, &pixels, NULL, 0);
-		if (hbmp && pixels) {
-			uint32_t *dst = static_cast<uint32_t *>(pixels);
-			for (unsigned xy = imgW * imgH; xy > 0; xy--) {
-				uint32_t rgba = *src++;
-				*dst++ = ((rgba & 0x000000FF) << 16) | ((rgba & 0xFF00FF00)) | ((rgba & 0x00FF0000) >> 16);
-			}
-			GdiFlush();
-		}
-		return hbmp;
-	}
+static bool findThumbnailerExe(TCHAR *exePath, DWORD size) {
+	// get directory containing the DLL
+	TCHAR dir[MAX_PATH];
+	lstrcpyn(dir, dllPath, MAX_PATH);
+	PathRemoveFileSpec(dir);
 
-	bool saveImage(const image::ImagePtr &image) override {
-		*_phbmp = rgbaToBitmap((const uint32_t *)image->data(), image->width(), image->height(), false);
+	// try same directory as DLL
+	PathCombine(exePath, dir, _T("vengi-thumbnailer.exe"));
+	if (GetFileAttributes(exePath) != INVALID_FILE_ATTRIBUTES) {
 		return true;
 	}
 
-public:
-	DLLThumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, HBITMAP *phbmp)
-		: Super(filesystem, timeProvider), _phbmp(phbmp) {
+	// try thumbnailer/ subdirectory
+	PathCombine(exePath, dir, _T("thumbnailer\\vengi-thumbnailer.exe"));
+	if (GetFileAttributes(exePath) != INVALID_FILE_ATTRIBUTES) {
+		return true;
 	}
 
-#if 0
-	app::AppState onRunning() override {
-		app::AppState state = Super::onRunning();
-		if (state != app::AppState::Running) {
-			return state;
-		}
-		// TODO: move code from Thumbnailer::onRunning() here and adapt
-		return state;
+	return false;
+}
+
+static HRESULT runThumbnailer(const TCHAR *exePath, const WCHAR *inputFile, UINT cx, const TCHAR *outputFile) {
+	TCHAR cmdLine[4096];
+	_sntprintf(cmdLine, sizeof(cmdLine) / sizeof(TCHAR), _T("\"%s\" --input \"%ls\" --output \"%s\" --size %u"),
+			   exePath, inputFile, outputFile, cx);
+
+	STARTUPINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = SW_HIDE;
+
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&pi, sizeof(pi));
+
+	if (!CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+		return HRESULT_FROM_WIN32(GetLastError());
 	}
 
-	app::AppState onCleanup() override {
-		// TODO: clean up OpenGL context and handles
-		return Super::onCleanup();
+	// wait up to 30 seconds
+	DWORD waitResult = WaitForSingleObject(pi.hProcess, 30000);
+	DWORD exitCode = 1;
+	if (waitResult == WAIT_OBJECT_0) {
+		GetExitCodeProcess(pi.hProcess, &exitCode);
 	}
 
-	app::AppState onInit() override {
-		app::AppState state = Super::onInit();
-		if (state != app::AppState::Running) {
-			return state;
-		}
-		// TODO: the DLLThumbnailer app is creating a SDL window and GL context - which is not allowed from within a DLL.
-		// This needs to be rewritten to only use a rendering buffer from windows without creating a window. See
-		// https://github.com/vengi-voxel/vengi/issues/85
-		// Create offscreen OpenGL context
-		HDC hdc = CreateCompatibleDC(NULL);
-		PIXELFORMATDESCRIPTOR pfd = {
-			sizeof(PIXELFORMATDESCRIPTOR),
-			1,
-			PFD_DRAW_TO_BITMAP | PFD_SUPPORT_OPENGL,
-			PFD_TYPE_RGBA,
-			32, // Color bits
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			16, // Depth bits
-			0, 0,
-			PFD_MAIN_PLANE,
-			0, 0, 0, 0
-		};
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
-		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
-		SetPixelFormat(hdc, pixelFormat, &pfd);
-		HGLRC hglrc = wglCreateContext(hdc);
-		wglMakeCurrent(hdc, hglrc);
-		// load OpenGL functions and all the init stuff that the WindowedApp is doing, too (except of course the window itself ;) )
-		return state;
+	if (waitResult != WAIT_OBJECT_0 || exitCode != 0) {
+		return E_FAIL;
 	}
+	return S_OK;
+}
+
+static HRESULT loadPngAsHBitmap(const TCHAR *pngPath, HBITMAP *phbmp) {
+	HRESULT hr;
+	IWICImagingFactory *factory = NULL;
+	IWICBitmapDecoder *decoder = NULL;
+	IWICBitmapFrameDecode *frame = NULL;
+	IWICFormatConverter *converter = NULL;
+
+	hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory,
+						  (void **)&factory);
+	if (FAILED(hr)) {
+		goto cleanup;
+	}
+
+#ifdef UNICODE
+	hr = factory->CreateDecoderFromFilename(pngPath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+#else
+	WCHAR widePath[MAX_PATH];
+	MultiByteToWideChar(CP_ACP, 0, pngPath, -1, widePath, MAX_PATH);
+	hr = factory->CreateDecoderFromFilename(widePath, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 #endif
-};
+	if (FAILED(hr)) {
+		goto cleanup;
+	}
+
+	hr = decoder->GetFrame(0, &frame);
+	if (FAILED(hr)) {
+		goto cleanup;
+	}
+
+	hr = factory->CreateFormatConverter(&converter);
+	if (FAILED(hr)) {
+		goto cleanup;
+	}
+
+	hr = converter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, NULL, 0.0,
+							   WICBitmapPaletteTypeCustom);
+	if (FAILED(hr)) {
+		goto cleanup;
+	}
+
+	{
+		UINT width, height;
+		hr = converter->GetSize(&width, &height);
+		if (FAILED(hr)) {
+			goto cleanup;
+		}
+
+		BITMAPINFO bmi;
+		ZeroMemory(&bmi, sizeof(bmi));
+		bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmi.bmiHeader.biWidth = (LONG)width;
+		bmi.bmiHeader.biHeight = -((LONG)height);
+		bmi.bmiHeader.biPlanes = 1;
+		bmi.bmiHeader.biBitCount = 32;
+		bmi.bmiHeader.biCompression = BI_RGB;
+
+		void *pixels = NULL;
+		*phbmp = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, &pixels, NULL, 0);
+		if (!*phbmp) {
+			hr = E_OUTOFMEMORY;
+			goto cleanup;
+		}
+
+		const UINT stride = width * 4;
+		const UINT bufferSize = stride * height;
+		hr = converter->CopyPixels(NULL, stride, bufferSize, (BYTE *)pixels);
+		if (FAILED(hr)) {
+			DeleteObject(*phbmp);
+			*phbmp = NULL;
+			goto cleanup;
+		}
+	}
+
+cleanup:
+	if (converter)
+		converter->Release();
+	if (frame)
+		frame->Release();
+	if (decoder)
+		decoder->Release();
+	if (factory)
+		factory->Release();
+	return hr;
+}
 
 ThumbnailerProvider::ThumbnailerProvider() : count(1) {
+	_filePath[0] = L'\0';
 	DllAddRef();
 }
 
@@ -133,31 +186,42 @@ IFACEMETHODIMP_(ULONG) ThumbnailerProvider::Release() {
 }
 
 HRESULT ThumbnailerProvider::Initialize(LPCWSTR pfilePath, DWORD grfMode) {
-	char filename[10240];
-	size_t size;
-	wcstombs_s(&size, filename, 10240, pfilePath, 10240);
-	m_pPathFile = core::String(filename);
+	lstrcpynW(_filePath, pfilePath, MAX_PATH);
 	return S_OK;
 }
 
 IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) {
-	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
-	DLLThumbnailer app(filesystem, timeProvider, phbmp);
-	char argv1[32];
-	core::String::formatBuf(argv1, sizeof(argv1), "%s", app.fullAppname().c_str());
-	char argv2[32];
-	core::String::formatBuf(argv2, sizeof(argv2), "--size");
-	char argv3[32];
-	core::String::formatBuf(argv3, sizeof(argv3), "%u", (unsigned int)cx);
-	char argv4[32];
-	core::String::formatBuf(argv4, sizeof(argv4), "--input");
-	char argv5[1024];
-	core::String::formatBuf(argv5, sizeof(argv5), "%s", m_pPathFile.c_str());
-	char *argv[] = {argv1, argv2, argv3, argv4, argv5};
-	app.startMainLoop(5, argv);
+	*phbmp = NULL;
 	*pdwAlpha = WTSAT_ARGB;
-	return (*phbmp) ? S_OK : S_FALSE;
+
+	TCHAR exePath[MAX_PATH];
+	if (!findThumbnailerExe(exePath, MAX_PATH)) {
+		OutputDebugString(_T("vengi-thumbnailer.exe not found"));
+		return E_FAIL;
+	}
+
+	// create temp file for the output PNG
+	TCHAR tempDir[MAX_PATH];
+	GetTempPath(MAX_PATH, tempDir);
+	TCHAR tempFile[MAX_PATH];
+	GetTempFileName(tempDir, _T("vxt"), 0, tempFile);
+
+	// rename to .png so the thumbnailer writes PNG format
+	TCHAR pngFile[MAX_PATH];
+	lstrcpyn(pngFile, tempFile, MAX_PATH);
+	lstrcat(pngFile, _T(".png"));
+	MoveFile(tempFile, pngFile);
+
+	HRESULT hr = runThumbnailer(exePath, _filePath, cx, pngFile);
+	if (SUCCEEDED(hr)) {
+		hr = loadPngAsHBitmap(pngFile, phbmp);
+	}
+
+	DeleteFile(pngFile);
+	// also clean up the original temp file name in case MoveFile failed
+	DeleteFile(tempFile);
+
+	return hr;
 }
 
 ThumbnailerProviderFactory::ThumbnailerProviderFactory() : count(1) {

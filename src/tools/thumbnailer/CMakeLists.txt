@@ -19,13 +19,12 @@ if (WIN32)
 		windows/ThumbnailerDLL.cpp
 		windows/ThumbnailerDLL.def
 		windows/ThumbnailerProvider.cpp windows/ThumbnailerProvider.h
-		Thumbnailer.h Thumbnailer.cpp
-		Shared.h Shared.cpp
 	)
 	engine_add_sharedlibrary(TARGET voxelthumb SRCS ${WIN_SRCS})
 	target_compile_definitions(voxelthumb PRIVATE -DWINDOWS_THUMBNAILER_DLL)
 	set_target_properties(voxelthumb PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS OFF)
-	target_link_libraries(voxelthumb app voxelrender voxelformat shlwapi)
+	target_link_libraries(voxelthumb voxelformat shlwapi windowscodecs ole32)
+	add_dependencies(voxelthumb ${PROJECT_NAME})
 	set(HAS_ICON 0)
 	set(NAME "Vengi thumbnailer")
 	set(DESCRIPTION "Voxel thumbnailer for Windows Explorer")
