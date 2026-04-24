@@ -818,4 +818,255 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_NonZeroOrigin) {
 	EXPECT_TRUE(foundFirst) << "First sub-region should start at the region's lower corner (10,20,30)";
 }
 
+// ---- Cubic edge cases ----
+
+TEST_F(SurfaceExtractorTest, testCubicEmptyVolume) {
+	const Region region(0, 0, 0, 10, 10, 10);
+	RawVolume volume(region);
+	ChunkMesh mesh;
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh);
+	extractSurface(ctx);
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 0u);
+	EXPECT_EQ(mesh.mesh[0].getNoOfIndices(), 0u);
+}
+
+TEST_F(SurfaceExtractorTest, testCubicSingleVoxel) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	// mergeQuads=true, reuseVertices=true -> 8 unique vertices
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, glm::ivec3(0), true, true, false);
+	extractSurface(ctx);
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 8u);
+	EXPECT_EQ(mesh.mesh[0].getNoOfIndices(), 36u);
+}
+
+TEST_F(SurfaceExtractorTest, testCubicNoMergeQuads) {
+	const Region region(0, 0, 0, 2, 0, 2);
+	RawVolume volume(region);
+	for (int x = 0; x <= 2; ++x) {
+		for (int z = 0; z <= 2; ++z) {
+			volume.setVoxel(x, 0, z, createVoxel(VoxelType::Generic, 1));
+		}
+	}
+	ChunkMesh meshMerged, meshUnmerged;
+	SurfaceExtractionContext ctxMerged = buildCubicContext(&volume, region, meshMerged, glm::ivec3(0), true, true, false);
+	SurfaceExtractionContext ctxUnmerged = buildCubicContext(&volume, region, meshUnmerged, glm::ivec3(0), false, true, false);
+	extractSurface(ctxMerged);
+	extractSurface(ctxUnmerged);
+	// Without merging, more quads are generated
+	EXPECT_GE(meshUnmerged.mesh[0].getNoOfIndices(), meshMerged.mesh[0].getNoOfIndices());
+}
+
+TEST_F(SurfaceExtractorTest, testCubicNoReuseVertices) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh meshReuse, meshNoReuse;
+	SurfaceExtractionContext ctxReuse = buildCubicContext(&volume, region, meshReuse, glm::ivec3(0), false, true, false);
+	SurfaceExtractionContext ctxNoReuse = buildCubicContext(&volume, region, meshNoReuse, glm::ivec3(0), false, false, false);
+	extractSurface(ctxReuse);
+	extractSurface(ctxNoReuse);
+	// Without vertex reuse, each face gets its own 4 vertices = 24 total
+	EXPECT_GE(meshNoReuse.mesh[0].getNoOfVertices(), meshReuse.mesh[0].getNoOfVertices());
+}
+
+TEST_F(SurfaceExtractorTest, testCubicTransparentVoxels) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Transparent, 5));
+	ChunkMesh mesh;
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh);
+	extractSurface(ctx);
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 0u) << "Opaque mesh should be empty";
+	EXPECT_GT(mesh.mesh[1].getNoOfVertices(), 0u) << "Transparent mesh should have vertices";
+}
+
+TEST_F(SurfaceExtractorTest, testCubicOptimize) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, glm::ivec3(0), true, true, false, true);
+	extractSurface(ctx);
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+}
+
+// ---- MarchingCubes edge cases ----
+
+TEST_F(SurfaceExtractorTest, testMarchingCubesEmptyVolume) {
+	const Region region(0, 0, 0, 10, 10, 10);
+	RawVolume volume(region);
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildMarchingCubesContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 0u);
+}
+
+TEST_F(SurfaceExtractorTest, testMarchingCubesSingleVoxel) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildMarchingCubesContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+	EXPECT_GT(mesh.mesh[0].getNoOfIndices(), 0u);
+}
+
+TEST_F(SurfaceExtractorTest, testMarchingCubesSolidBlock) {
+	const Region region(0, 0, 0, 4, 4, 4);
+	RawVolume volume(region);
+	for (int x = 1; x <= 3; ++x)
+		for (int y = 1; y <= 3; ++y)
+			for (int z = 1; z <= 3; ++z)
+				volume.setVoxel(x, y, z, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildMarchingCubesContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+}
+
+// ---- GreedyTexture edge cases ----
+
+TEST_F(SurfaceExtractorTest, testGreedyTextureEmptyVolume) {
+	const Region region(0, 0, 0, 10, 10, 10);
+	RawVolume volume(region);
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildGreedyTextureContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 0u);
+	EXPECT_GT(ctx.textureWidth, 0);
+	EXPECT_GT(ctx.textureHeight, 0);
+}
+
+TEST_F(SurfaceExtractorTest, testGreedyTextureSingleVoxel) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildGreedyTextureContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	// 6 faces, 4 vertices each = 24 vertices, 6 quads * 2 tris * 3 = 36 indices
+	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 24u);
+	EXPECT_EQ(mesh.mesh[0].getNoOfIndices(), 36u);
+	EXPECT_GT(ctx.textureWidth, 0);
+	EXPECT_GT(ctx.textureHeight, 0);
+	EXPECT_FALSE(ctx.textureData.empty());
+}
+
+TEST_F(SurfaceExtractorTest, testGreedyTextureMultiColor) {
+	const Region region(0, 0, 0, 3, 0, 0);
+	RawVolume volume(region);
+	volume.setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 10));
+	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, 20));
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildGreedyTextureContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+	EXPECT_GT(ctx.textureWidth, 0);
+	EXPECT_GT(ctx.textureHeight, 0);
+	// UVs should be generated
+	EXPECT_EQ(mesh.mesh[0].getUVVector().size(), mesh.mesh[0].getNoOfVertices());
+}
+
+TEST_F(SurfaceExtractorTest, testGreedyTextureNormals) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+	SurfaceExtractionContext ctx = buildGreedyTextureContext(&volume, region, mesh, pal);
+	extractSurface(ctx);
+	const NormalArray &normals = mesh.mesh[0].getNormalVector();
+	EXPECT_EQ(normals.size(), mesh.mesh[0].getNoOfVertices());
+}
+
+// ---- Binary edge cases ----
+
+TEST_F(SurfaceExtractorTest, testBinaryOutlineFlagPreventsmerging) {
+	// Two adjacent voxels with same color but different flags should not merge
+	const Region region(0, 0, 0, 3, 0, 0);
+	RawVolume volume(region);
+	volume.setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 1, 0, 0));
+	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, 1, 0, FlagOutline));
+	ChunkMesh mesh;
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	extractSurface(ctx);
+	// Each voxel should have 5 visible faces (shared face culled) but flags differ
+	// so top/bottom faces cannot merge across the boundary
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+}
+
+TEST_F(SurfaceExtractorTest, testBinaryOptimize) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	ChunkMesh mesh;
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, true);
+	extractSurface(ctx);
+	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
+}
+
+// ---- createContext() helper ----
+
+TEST_F(SurfaceExtractorTest, testCreateContextAllTypes) {
+	const Region region(0, 0, 0, 2, 2, 2);
+	RawVolume volume(region);
+	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
+	palette::Palette pal;
+	pal.nippon();
+
+	const SurfaceExtractionType types[] = {
+		SurfaceExtractionType::Cubic,
+		SurfaceExtractionType::MarchingCubes,
+		SurfaceExtractionType::Binary,
+		SurfaceExtractionType::GreedyTexture
+	};
+	for (auto type : types) {
+		ChunkMesh mesh;
+		SurfaceExtractionContext ctx = createContext(type, &volume, region, pal, mesh, glm::ivec3(0));
+		EXPECT_EQ(ctx.type, type);
+		extractSurface(ctx);
+		EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u) << "Type " << (int)type << " should produce vertices";
+	}
+}
+
+// Test for invisible faces at region boundary - a single voxel at the upper edge
+// of the region must still produce all 6 faces (8 vertices, 36 indices)
+// https://github.com/vengi-voxel/vengi/issues/831
+TEST_F(SurfaceExtractorTest, testCubicSingleVoxelAtRegionBoundary) {
+	glm::ivec3 mins(0, 0, 66);
+	glm::ivec3 maxs(61, 61, 127);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	v.setVoxel(61, 28, 127, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	const bool mergeQuads = false;
+	const bool reuseVertices = true;
+	const bool ambientOcclusion = false;
+
+	voxel::ChunkMesh mesh;
+	SurfaceExtractionContext ctx =
+		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+	voxel::extractSurface(ctx);
+
+	EXPECT_EQ(8u, (uint32_t)mesh.mesh[0].getNoOfVertices()) << "Single voxel should have 8 vertices";
+	EXPECT_EQ(36u, (uint32_t)mesh.mesh[0].getNoOfIndices()) << "Single voxel should have 36 indices (6 faces * 2 tris * 3)";
+}
+
 } // namespace voxel

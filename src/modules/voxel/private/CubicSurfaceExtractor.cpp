@@ -411,13 +411,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 	result->setOffset(offset);
 
 	// Used to avoid creating duplicate vertices.
-	const int widthInCells = upper.x - offset.x;
-	const int heightInCells = upper.y - offset.y;
-	Array previousSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
-	Array currentSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
+	const int widthInVoxels = upper.x - offset.x + 1;
+	const int heightInVoxels = upper.y - offset.y + 1;
+	Array previousSliceVertices(widthInVoxels + 2, heightInVoxels + 2, MaxVerticesPerPosition);
+	Array currentSliceVertices(widthInVoxels + 2, heightInVoxels + 2, MaxVerticesPerPosition);
 
-	Array previousSliceVerticesT(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
-	Array currentSliceVerticesT(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
+	Array previousSliceVerticesT(widthInVoxels + 2, heightInVoxels + 2, MaxVerticesPerPosition);
+	Array currentSliceVerticesT(widthInVoxels + 2, heightInVoxels + 2, MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
@@ -448,9 +448,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 	core_trace_scoped(QuadGeneration);
 	volumeSampler.setPosition(offset);
 
-	const uint32_t w = upper.x - offset.x;
-	const uint32_t h = upper.y - offset.y;
-	const uint32_t d = upper.z - offset.z;
+	// +1 to include the upper boundary faces - the cubic extractor generates
+	// positive-direction faces (PositiveX, PositiveY, PositiveZ) by checking
+	// the neighbor at the previous position, so we need one extra iteration
+	// to generate faces at the upper boundary of the region
+	const uint32_t w = upper.x - offset.x + 1;
+	const uint32_t h = upper.y - offset.y + 1;
+	const uint32_t d = upper.z - offset.z + 1;
 
 	for (uint32_t regZ = 0; regZ <= d; ++regZ) {
 		voxel::RawVolume::Sampler volumeSampler2 = volumeSampler;
