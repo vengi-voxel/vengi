@@ -6,6 +6,7 @@
 
 #include <Shlwapi.h>
 #include <Windows.h>
+#include <new>
 #include <stdint.h>
 #include <stdio.h>
 #include <tchar.h>
