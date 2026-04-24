@@ -19,6 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
@@ -260,55 +261,57 @@ bool AniVoxelFormat::readArmature(io::SeekableReadStream &stream, scenegraph::Sc
 	wrap(stream.readInt32(bonesCnt));
 	wrap(stream.readInt32(animationsCnt));
 	Log::debug("VOXA file has %d bones and %d animations", bonesCnt, animationsCnt);
+	_bones.clear();
+	_animations.clear();
 	for (int32_t i = 0; i < bonesCnt; ++i) {
-		if (!readBone(stream, sceneGraph, ctx)) {
+		if (!readBone(stream, ctx)) {
 			return false;
 		}
 	}
 	for (int32_t i = 0; i < animationsCnt; ++i) {
-		if (!readAnimation(stream, sceneGraph, ctx, version)) {
+		if (!readAnimation(stream, ctx, version)) {
 			return false;
 		}
 	}
 	seek(header, stream);
+	if (!_bones.empty()) {
+		if (!createBoneHierarchy(sceneGraph)) {
+			return false;
+		}
+		if (!_animations.empty()) {
+			if (!applyAnimations(sceneGraph)) {
+				return false;
+			}
+		}
+	}
 	return true;
 }
 
-bool AniVoxelFormat::readBone(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-							  const LoadContext &ctx) {
+bool AniVoxelFormat::readBone(io::SeekableReadStream &stream, const LoadContext &ctx) {
 	ChunkHeader header = readChunk(stream);
-	int32_t boneId = -1;
-	wrap(stream.readInt32(boneId));
-	int32_t parentBoneId = -1;
-	wrap(stream.readInt32(parentBoneId));
-	Log::debug("Reading bone %i with parent %i", boneId, parentBoneId);
-	core::String boneName;
-	wrapBool(stream.readPascalStringUInt32LE(boneName));
-	float length = 0.0f;
-	wrap(stream.readFloat(length));
-	glm::vec3 offset;
-	wrapBool(io::readVec3(stream, offset));
-	glm::vec3 rotation;
-	wrapBool(io::readVec3(stream, rotation));
-	color::RGBA color;
-	wrapBool(io::readColor(stream, color));
-	color::RGBA color2;
-	wrapBool(io::readColor(stream, color2));
+	BoneData bone;
+	wrap(stream.readInt32(bone.id));
+	wrap(stream.readInt32(bone.parentId));
+	Log::debug("Reading bone %i with parent %i", bone.id, bone.parentId);
+	wrapBool(stream.readPascalStringUInt32LE(bone.name));
+	wrap(stream.readFloat(bone.length));
+	wrapBool(io::readVec3(stream, bone.offset));
+	wrapBool(io::readVec3(stream, bone.rotation));
+	wrapBool(io::readColor(stream, bone.color));
+	wrapBool(io::readColor(stream, bone.assignmentColor));
+	_bones.put(bone.id, bone);
 	seek(header, stream);
 	return true;
 }
 
-bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								   const LoadContext &ctx, int version) {
+bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, const LoadContext &ctx, int version) {
 	ChunkHeader header = readChunk(stream);
-	int32_t animationId = -1;
+	AnimationData anim;
+	int32_t animationId;
 	wrap(stream.readInt32(animationId));
-	core::String animationName;
-	wrapBool(stream.readPascalStringUInt32LE(animationName));
-	int32_t fps;
-	wrap(stream.readInt32(fps));
-	int32_t frameLength;
-	wrap(stream.readInt32(frameLength));
+	wrapBool(stream.readPascalStringUInt32LE(anim.name));
+	wrap(stream.readInt32(anim.fps));
+	wrap(stream.readInt32(anim.frameLength));
 	int boneCnt;
 	wrap(stream.readInt32(boneCnt));
 	int meshCnt = 0;
@@ -319,42 +322,62 @@ bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::S
 		ChunkHeader bonesChunk = readChunk(stream);
 		int boneId;
 		wrap(stream.readInt32(boneId));
+		BoneGraphSeries series;
 		const int propAmount = (version >= 103) ? 9 : 6;
 		for (int j = 0; j < propAmount; ++j) {
-			ChunkHeader header3 = readChunk(stream);
-			core::String propName; // tX, tY, tZ, rX, rY, rZ, sX, sY, sZ
+			ChunkHeader propHeader = readChunk(stream);
+			core::String propName;
 			wrapBool(stream.readPascalStringUInt32LE(propName));
+			int channelIdx = -1;
+			if (propName == "tX")
+				channelIdx = 0;
+			else if (propName == "tY")
+				channelIdx = 1;
+			else if (propName == "tZ")
+				channelIdx = 2;
+			else if (propName == "rX")
+				channelIdx = 3;
+			else if (propName == "rY")
+				channelIdx = 4;
+			else if (propName == "rZ")
+				channelIdx = 5;
+			else if (propName == "sX")
+				channelIdx = 6;
+			else if (propName == "sY")
+				channelIdx = 7;
+			else if (propName == "sZ")
+				channelIdx = 8;
 			int points;
 			wrap(stream.readInt32(points));
 			for (int k = 0; k < points; ++k) {
-				float x, y;
-				wrap(stream.readFloat(x));
-				wrap(stream.readFloat(y));
-				scenegraph::InterpolationType interpType = scenegraph::InterpolationType::Linear;
+				GraphPoint pt;
+				wrap(stream.readFloat(pt.frame));
+				wrap(stream.readFloat(pt.value));
+				pt.interpolation = scenegraph::InterpolationType::Linear;
 				if (version >= 103) {
 					uint8_t inter;
 					wrap(stream.readUInt8(inter));
 					switch (inter) {
-					case 0:
-						interpType = scenegraph::InterpolationType::Linear;
-						break;
 					case 1:
-						interpType = scenegraph::InterpolationType::QuadEaseIn;
+						pt.interpolation = scenegraph::InterpolationType::QuadEaseIn;
 						break;
 					case 2:
-						interpType = scenegraph::InterpolationType::QuadEaseOut;
+						pt.interpolation = scenegraph::InterpolationType::QuadEaseOut;
 						break;
 					case 3:
-						interpType = scenegraph::InterpolationType::QuadEaseInOut;
+						pt.interpolation = scenegraph::InterpolationType::QuadEaseInOut;
 						break;
 					default:
 						break;
 					}
 				}
-				Log::debug("Interpolation type: %s", scenegraph::InterpolationTypeStr[int(interpType)]);
+				if (channelIdx >= 0) {
+					series.channels[channelIdx].push_back(pt);
+				}
 			}
-			seek(header3, stream);
+			seek(propHeader, stream);
 		}
+		anim.boneGraphs.put(boneId, series);
 		seek(bonesChunk, stream);
 	}
 	for (int i = 0; i < meshCnt; ++i) {
@@ -381,7 +404,151 @@ bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::S
 		}
 		seek(meshesChunk, stream);
 	}
+	_animations.push_back(anim);
 	seek(header, stream);
+	return true;
+}
+
+float AniVoxelFormat::sampleGraphSeries(const core::DynamicArray<GraphPoint> &points, float frame, int32_t frameLength,
+										float defaultValue) {
+	if (points.empty()) {
+		return defaultValue;
+	}
+	if (points.size() == 1) {
+		return points[0].value;
+	}
+	const int last = (int)points.size() - 1;
+	if (frame <= points[0].frame) {
+		const float startX = points[last].frame - (float)frameLength;
+		const float range = points[0].frame - startX;
+		if (range < 0.00001f)
+			return points[0].value;
+		const float t = (frame - startX) / range;
+		return points[last].value + t * (points[0].value - points[last].value);
+	}
+	if (frame >= points[last].frame) {
+		const float endX = points[0].frame + (float)frameLength;
+		const float range = endX - points[last].frame;
+		if (range < 0.00001f)
+			return points[last].value;
+		const float t = (frame - points[last].frame) / range;
+		return points[last].value + t * (points[0].value - points[last].value);
+	}
+	for (int i = last - 1; i >= 0; --i) {
+		if (points[i].frame <= frame) {
+			const float range = points[i + 1].frame - points[i].frame;
+			if (range < 0.00001f)
+				return points[i].value;
+			const float t = (frame - points[i].frame) / range;
+			return points[i].value + t * (points[i + 1].value - points[i].value);
+		}
+	}
+	return defaultValue;
+}
+
+bool AniVoxelFormat::createBoneHierarchy(scenegraph::SceneGraph &sceneGraph) {
+	for (auto iter = _bones.begin(); iter != _bones.end(); ++iter) {
+		BoneData &bone = iter->value;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+		node.setName(bone.name);
+		node.setColor(bone.color);
+		node.setProperty("boneId", core::string::toString(bone.id));
+		node.setProperty("boneLength", core::string::toString(bone.length));
+
+		glm::vec3 boneOffset = bone.offset;
+		if (bone.parentId != -1) {
+			auto parentIter = _bones.find(bone.parentId);
+			if (parentIter != _bones.end()) {
+				boneOffset.y += parentIter->value.length;
+			}
+		}
+
+		const glm::vec3 rad = glm::radians(bone.rotation);
+		const glm::quat orientation = glm::quat(glm::vec3(rad.x, rad.y, rad.z));
+
+		scenegraph::SceneGraphTransform &transform = node.transform(0);
+		transform.setLocalTranslation(boneOffset);
+		transform.setLocalOrientation(orientation);
+
+		bone.sceneGraphNodeId = sceneGraph.emplace(core::move(node), 0);
+		if (bone.sceneGraphNodeId == InvalidNodeId) {
+			Log::error("Failed to add bone node: %s", bone.name.c_str());
+			return false;
+		}
+	}
+	for (auto iter = _bones.begin(); iter != _bones.end(); ++iter) {
+		const BoneData &bone = iter->value;
+		if (bone.parentId != -1) {
+			auto parentIter = _bones.find(bone.parentId);
+			if (parentIter != _bones.end() && parentIter->value.sceneGraphNodeId != InvalidNodeId) {
+				sceneGraph.changeParent(bone.sceneGraphNodeId, parentIter->value.sceneGraphNodeId);
+			}
+		}
+	}
+	return true;
+}
+
+bool AniVoxelFormat::applyAnimations(scenegraph::SceneGraph &sceneGraph) {
+	for (const AnimationData &anim : _animations) {
+		const core::String &animName = anim.name.empty() ? core::String("Default") : anim.name;
+		sceneGraph.addAnimation(animName);
+		sceneGraph.setAnimation(animName);
+
+		for (auto boneIter = _bones.begin(); boneIter != _bones.end(); ++boneIter) {
+			const BoneData &bone = boneIter->value;
+			if (bone.sceneGraphNodeId == InvalidNodeId)
+				continue;
+			scenegraph::SceneGraphNode &node = sceneGraph.node(bone.sceneGraphNodeId);
+			node.addAnimation(animName);
+			node.setAnimation(animName);
+
+			glm::vec3 boneOffset = bone.offset;
+			if (bone.parentId != -1) {
+				auto pIt = _bones.find(bone.parentId);
+				if (pIt != _bones.end())
+					boneOffset.y += pIt->value.length;
+			}
+			const glm::vec3 restRad = glm::radians(bone.rotation);
+			const glm::quat restOri = glm::quat(glm::vec3(restRad.x, restRad.y, restRad.z));
+
+			auto graphIter = anim.boneGraphs.find(bone.id);
+			if (graphIter == anim.boneGraphs.end()) {
+				scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(node.addKeyFrame(0));
+				kf.frameIdx = 0;
+				kf.interpolation = scenegraph::InterpolationType::Linear;
+				kf.transform().setLocalTranslation(boneOffset);
+				kf.transform().setLocalOrientation(restOri);
+				kf.transform().setLocalScale(glm::vec3(1.0f));
+				continue;
+			}
+
+			const BoneGraphSeries &series = graphIter->value;
+			for (int32_t f = 0; f < anim.frameLength; ++f) {
+				const float frame = (float)(f + 1);
+				const float tX = sampleGraphSeries(series.channels[0], frame, anim.frameLength, 0.0f);
+				const float tY = sampleGraphSeries(series.channels[1], frame, anim.frameLength, 0.0f);
+				const float tZ = sampleGraphSeries(series.channels[2], frame, anim.frameLength, 0.0f);
+				const float rX = sampleGraphSeries(series.channels[3], frame, anim.frameLength, 0.0f);
+				const float rY = sampleGraphSeries(series.channels[4], frame, anim.frameLength, 0.0f);
+				const float rZ = sampleGraphSeries(series.channels[5], frame, anim.frameLength, 0.0f);
+				const float sX = sampleGraphSeries(series.channels[6], frame, anim.frameLength, 1.0f);
+				const float sY = sampleGraphSeries(series.channels[7], frame, anim.frameLength, 1.0f);
+				const float sZ = sampleGraphSeries(series.channels[8], frame, anim.frameLength, 1.0f);
+
+				const glm::vec3 animTrans = boneOffset + glm::vec3(tX, tY, tZ);
+				const glm::vec3 animRad = glm::radians(glm::vec3(rX, rY, rZ));
+				const glm::quat animRot = glm::quat(glm::vec3(animRad.x, animRad.y, animRad.z));
+				const glm::quat combinedOri = animRot * restOri;
+
+				scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(node.addKeyFrame(f));
+				kf.frameIdx = f;
+				kf.interpolation = scenegraph::InterpolationType::Linear;
+				kf.transform().setLocalTranslation(animTrans);
+				kf.transform().setLocalOrientation(combinedOri);
+				kf.transform().setLocalScale(glm::vec3(sX, sY, sZ));
+			}
+		}
+	}
 	return true;
 }
 
@@ -450,7 +617,8 @@ bool AniVoxelFormat::readMaterial(io::SeekableReadStream &stream, palette::Palet
 					palette.setDensity(palIdx, value);
 				} else {
 					// TODO: MATERIAL: _alpha, _flux, _ldr, _media, _g, _d, _ri
-					Log::debug("VOXA: Material property is not supported yet: %s=%s", propName.c_str(), propValue.c_str());
+					Log::debug("VOXA: Material property is not supported yet: %s=%s", propName.c_str(),
+							   propValue.c_str());
 				}
 			}
 		}
@@ -538,7 +706,7 @@ size_t AniVoxelFormat::loadPalette(const core::String &filename, const io::Archi
 
 #define wrapBool(write)                                                                                                \
 	if ((write) != true) {                                                                                             \
-		Log::error("Could not save voxa file: Failed to write to stream " CORE_STRINGIFY(write) " (line %i)",           \
+		Log::error("Could not save voxa file: Failed to write to stream " CORE_STRINGIFY(write) " (line %i)",          \
 				   (int)__LINE__);                                                                                     \
 		return false;                                                                                                  \
 	}
