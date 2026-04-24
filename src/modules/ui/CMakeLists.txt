@@ -30,9 +30,6 @@ set(SRCS
 	dearimgui/imstb_textedit.h
 	dearimgui/imstb_truetype.h
 
-	dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h
-	dearimgui/backends/imgui_impl_vulkan.cpp dearimgui/backends/imgui_impl_vulkan.h
-
 	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h
 	dearimgui/imgui_neo_internal.cpp dearimgui/imgui_neo_internal.h
 
@@ -46,6 +43,13 @@ set(SRCS
 	dearimgui/imgui_keyboard.cpp dearimgui/imgui_keyboard.h
 )
 
+if (USE_GL_RENDERER)
+	list(APPEND SRCS dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h)
+endif()
+if (USE_VULKAN_RENDERER)
+	list(APPEND SRCS dearimgui/backends/imgui_impl_vulkan.cpp dearimgui/backends/imgui_impl_vulkan.h)
+endif()
+
 if (USE_SDL_VERSION EQUAL 2)
 	list(APPEND SRCS dearimgui/backends/imgui_impl_sdl2.cpp dearimgui/backends/imgui_impl_sdl2.h)
 endif()
@@ -56,7 +60,7 @@ endif()
 set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)
 set(LIBS)
 
-if (USE_OPENGLES)
+if (USE_GL_RENDERER AND USE_OPENGLES)
 	list(APPEND DEFINITIONS -DIMGUI_IMPL_OPENGL_ES2)
 endif()
 

@@ -17,13 +17,19 @@ VideoTraceScoped::~VideoTraceScoped() {
 
 void traceVideoFrameEnd() {
 #ifdef TRACY_ENABLE
-	TracyGpuCollect;
+#ifdef USE_GL_RENDERER
+	TracyGpuCollect
+#endif
 #endif
 }
 
 void traceVideoInit() {
 #ifdef TRACY_ENABLE
-	TracyGpuContext;
+#ifdef USE_GL_RENDERER
+	TracyGpuContext
+#endif
+	// USE_VK_RENDERER: Tracy Vulkan context init requires VkDevice/VkQueue/VkCommandBuffer.
+	// Deferred until per-frame command buffer infrastructure is wired through.
 #endif
 }
 

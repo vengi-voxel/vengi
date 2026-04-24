@@ -52,8 +52,15 @@ set(SRCS
 	EventHandler.cpp EventHandler.h
 	IEventObserver.h
 )
-set(RENDERER GL)
-#set(RENDERER VK)
+# Select renderer backend. Pass -DVIDEO_RENDERER=VK on the cmake command line to use Vulkan.
+if(NOT DEFINED CACHE{VIDEO_RENDERER})
+	set(VIDEO_RENDERER "GL" CACHE STRING "Select renderer backend (GL or VK)")
+endif()
+set_property(CACHE VIDEO_RENDERER PROPERTY STRINGS GL VK)
+if(NOT VIDEO_RENDERER STREQUAL "GL" AND NOT VIDEO_RENDERER STREQUAL "VK")
+	message(FATAL_ERROR "VIDEO_RENDERER must be one of: GL, VK (got '${VIDEO_RENDERER}')")
+endif()
+set(RENDERER ${VIDEO_RENDERER})
 list(APPEND SRCS ${${RENDERER}_SRCS})
 
 if (APPLE)
@@ -69,12 +76,15 @@ if (RENDERER STREQUAL "GL")
 		target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
 	endif()
 	set(USE_GL_RENDERER ON CACHE BOOL "Use opengl renderer" FORCE)
+	set(USE_VK_RENDERER OFF CACHE BOOL "Use vulkan renderer" FORCE)
 elseif (RENDERER STREQUAL "VK")
 	find_package(Vulkan REQUIRED)
+	target_link_libraries(${LIB} PRIVATE Vulkan::Vulkan)
 	if (APPLE)
 		target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
 	endif()
 	set(USE_VK_RENDERER ON CACHE BOOL "Use vulkan renderer" FORCE)
+	set(USE_GL_RENDERER OFF CACHE BOOL "Use opengl renderer" FORCE)
 endif()
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
