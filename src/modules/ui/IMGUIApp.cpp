@@ -934,7 +934,7 @@ app::AppState IMGUIApp::onRunning() {
 			_showFileDialog = false;
 		}
 
-		if (ImGui::GetIO().WantCaptureKeyboard || ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
 			core::setBindingContext(core::BindingContext::UI);
 		} else {
 			core::setBindingContext(core::BindingContext::All);
