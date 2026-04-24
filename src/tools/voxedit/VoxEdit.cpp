@@ -626,6 +626,9 @@ app::AppState VoxEdit::onRunning() {
 	}
 
 	_collectionMgr->update(_nowSeconds);
+	if (ImGui::GetIO().WantCaptureKeyboard) {
+		return state;
+	}
 	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
 	if (viewport) {
 		if (viewport->isGameMode()) {
