@@ -130,9 +130,6 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		}
 
 		ImGui::EndChild();
-		if (ImGui::IsWindowAppearing()) {
-			ImGui::SetKeyboardFocusHere();
-		}
 		if (ImGui::InputText(_("Command"), &_commandLine,
 		ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
 								 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
