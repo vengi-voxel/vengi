@@ -575,7 +575,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 								sampler3.movePositiveZ();
 								continue;
 							}
-							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+							const voxel::Voxel &voxel = voxel::createVoxel(nodePalette, index);
 							sampler3.setVoxel(voxel);
 							sampler3.movePositiveZ();
 						}
@@ -622,7 +622,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 							sampler3.movePositiveZ();
 							continue;
 						}
-						const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+						const voxel::Voxel &voxel = voxel::createVoxel(nodePalette, index);
 						sampler3.setVoxel(voxel);
 						sampler3.movePositiveZ();
 					}
@@ -686,6 +686,11 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			return false;
 		}
 	}
+	// negate X to match the X-axis mirroring applied to voxel data
+	pos.x = -pos.x;
+	// mirroring X also requires negating Y and Z rotations
+	eulerAngles.y = -eulerAngles.y;
+	eulerAngles.z = -eulerAngles.z;
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalTranslation(pos);
 	transform.setLocalOrientation(glm::quat(eulerAngles));
@@ -696,6 +701,8 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		core_assert(width != 0);
 		core_assert(height != 0);
 		core_assert(depth != 0);
+		// negate X to match the X-axis mirroring applied to voxel data
+		pivot.x = (float)width - pivot.x;
 		pivot.x /= (float)width;
 		pivot.y /= (float)height;
 		pivot.z /= (float)depth;
@@ -720,6 +727,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 bool CubzhFormat::loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 							   const LoadContext &ctx) const {
+	bool rootShapePaletteSet = false;
 	while (!stream.eos()) {
 		Log::debug("Remaining stream data: %d", (int)stream.remaining());
 		Chunk chunk;
@@ -746,6 +754,12 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 			Log::debug("load shape");
 			CubzhReadStream zhs(header, chunk, stream);
 			wrapBool(loadShape6(filename, header, chunk, zhs, sceneGraph, palette, ctx))
+			// after loading the first shape (root), update the file palette to the root
+			// shape's palette for sharing with subsequent child shapes (blip [MULTI] mode)
+			if (!rootShapePaletteSet) {
+				rootShapePaletteSet = true;
+				palette = sceneGraph.firstPalette();
+			}
 			break;
 		}
 		case priv::CHUNK_ID_CAMERA_V6: {
@@ -919,12 +933,14 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 		const glm::vec3 pos = transform.localTranslation();
 		const glm::vec3 eulerAngles = glm::eulerAngles(transform.localOrientation());
 		const glm::vec3 scale = transform.localScale();
-		wrapBool(sub.writeFloat(pos.x))
+		// negate X to convert back from vengi's coordinate system to cubzh's
+		wrapBool(sub.writeFloat(-pos.x))
 		wrapBool(sub.writeFloat(pos.y))
 		wrapBool(sub.writeFloat(pos.z))
+		// mirroring X also requires negating Y and Z rotations
 		wrapBool(sub.writeFloat(eulerAngles.x))
-		wrapBool(sub.writeFloat(eulerAngles.y))
-		wrapBool(sub.writeFloat(eulerAngles.z))
+		wrapBool(sub.writeFloat(-eulerAngles.y))
+		wrapBool(sub.writeFloat(-eulerAngles.z))
 		wrapBool(sub.writeFloat(scale.x))
 		wrapBool(sub.writeFloat(scale.y))
 		wrapBool(sub.writeFloat(scale.z))
@@ -932,7 +948,9 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
 		const glm::vec3 &pivot = node.worldPivot();
-		wrapBool(sub.writeFloat(pivot.x))
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		// mirror X to convert back from vengi's coordinate system to cubzh's
+		wrapBool(sub.writeFloat((float)region.getDimensionsInVoxels().x - pivot.x))
 		wrapBool(sub.writeFloat(pivot.y))
 		wrapBool(sub.writeFloat(pivot.z))
 	}

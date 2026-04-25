@@ -66,7 +66,8 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
 			const glm::vec3 &pivot = node->worldPivot();
-			wrapBool(sub.writeFloat(pivot.x))
+			// mirror X to convert back from vengi's coordinate system to cubzh's
+			wrapBool(sub.writeFloat((float)node->region().getDimensionsInVoxels().x - pivot.x))
 			wrapBool(sub.writeFloat(pivot.y))
 			wrapBool(sub.writeFloat(pivot.z))
 		}
