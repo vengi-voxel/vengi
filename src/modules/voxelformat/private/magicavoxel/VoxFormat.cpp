@@ -99,6 +99,89 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	}
 	return false;
 #else
+	const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
+	if (animAsNodes && ogtInstance.model_anim.num_keyframes > 0) {
+		const char *name = instanceName(scene, ogtInstance);
+		const color::RGBA color = instanceColor(scene, ogtInstance);
+		const bool hidden = instanceHidden(scene, ogtInstance);
+
+		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+		groupNode.setName(name);
+		groupNode.setVisible(!hidden);
+		groupNode.setColor(color);
+		const int groupId = sceneGraph.emplace(core::move(groupNode), parent);
+		if (groupId == InvalidNodeId) {
+			return false;
+		}
+
+		for (uint32_t k = 0; k < ogtInstance.model_anim.num_keyframes; ++k) {
+			const ogt_vox_keyframe_model &kfModel = ogtInstance.model_anim.keyframes[k];
+			if (kfModel.model_index >= scene->num_models) {
+				continue;
+			}
+			const ogt_vox_model *frameModel = scene->models[kfModel.model_index];
+			if (frameModel == nullptr) {
+				continue;
+			}
+			const glm::mat4 &frameMat = ogtTransformToMat(ogtInstance, kfModel.frame_index, scene, frameModel);
+			const glm::vec3 fVolSize = ogtVolumeSize(frameModel);
+			const glm::vec3 fCorners[8] = {
+				glm::vec3(0),
+				glm::vec3(fVolSize.x, 0, 0),
+				glm::vec3(0, fVolSize.y, 0),
+				glm::vec3(fVolSize.x, fVolSize.y, 0),
+				glm::vec3(0, 0, fVolSize.z),
+				glm::vec3(fVolSize.x, 0, fVolSize.z),
+				glm::vec3(0, fVolSize.y, fVolSize.z),
+				fVolSize};
+			glm::ivec3 fMins(INT_MAX);
+			glm::ivec3 fMaxs(INT_MIN);
+			for (int c = 0; c < 8; ++c) {
+				const glm::ivec3 ogtCorner = calcTransform(frameMat, fCorners[c]);
+				const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
+				fMins = glm::min(fMins, pos);
+				fMaxs = glm::max(fMaxs, pos);
+			}
+			voxel::Region fRegion(fMins, fMaxs);
+			const glm::ivec3 fShift = fRegion.getLowerCorner();
+			fRegion.shift(-fShift);
+			voxel::RawVolume *fv = new voxel::RawVolume(fRegion);
+
+			auto fn = [frameModel, fv, &palette, frameMat, fShift](int start, int end) {
+				const uint8_t *ogtVoxel = frameModel->voxel_data + start * frameModel->size_x * frameModel->size_y;
+				for (int z = start; z < end; ++z) {
+					for (uint32_t y = 0; y < frameModel->size_y; ++y) {
+						for (uint32_t x = 0; x < frameModel->size_x; ++x, ++ogtVoxel) {
+							if (ogtVoxel[0] == 0) {
+								continue;
+							}
+							const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
+							const glm::ivec3 &ogtPos = calcTransform(frameMat, glm::vec3(x, y, z));
+							const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
+							fv->setVoxel(pos - fShift, voxel);
+						}
+					}
+				}
+			};
+			app::for_parallel(0, frameModel->size_z, fn);
+			cropOnLoad(fv);
+
+			scenegraph::SceneGraphNode frameNode(scenegraph::SceneGraphNodeType::Model);
+			scenegraph::SceneGraphTransform fTransform;
+			fTransform.setWorldTranslation(fShift);
+			frameNode.setTransform(0, fTransform);
+			frameNode.setName(core::String::format("%s_frame_%u", name, kfModel.frame_index));
+			frameNode.setVisible(!hidden);
+			frameNode.setColor(color);
+			frameNode.setVolume(fv);
+			frameNode.setPalette(palette);
+			if (sceneGraph.emplace(core::move(frameNode), groupId) == InvalidNodeId) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	const glm::vec3 volSize = ogtVolumeSize(ogtModel);
 	const glm::vec3 corners[8] = {
 		glm::vec3(0),
@@ -370,6 +453,82 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		} else {
 			Log::debug("Add group node");
 		}
+
+		const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
+		if (animAsNodes && node.isGroupNode() && !node.children().empty()) {
+			// check if all children are model nodes - if so, save as model_anim
+			bool allModels = true;
+			for (int childId : node.children()) {
+				if (!sceneGraph.node(childId).isModelNode()) {
+					allModels = false;
+					break;
+				}
+			}
+			if (allModels) {
+				const int modelKeyFrameStart = ctx.modelKeyFrameIdx;
+				uint32_t firstModelIdx = 0;
+				for (int childId : node.children()) {
+					scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+					const voxel::Region region = child.region();
+					ogt_vox_model ogt_model;
+					core_memset(&ogt_model, 0, sizeof(ogt_model));
+					ogt_model.size_x = region.getWidthInVoxels();
+					ogt_model.size_y = region.getDepthInVoxels();
+					ogt_model.size_z = region.getHeightInVoxels();
+					const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
+					uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
+					ogt_model.voxel_data = dataptr;
+					auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
+					voxelutil::visitVolume(*sceneGraph.resolveVolume(child), func, voxelutil::VisitAll(),
+										   voxelutil::VisitorOrder::YZmX);
+					ctx.models.push_back(ogt_model);
+					const uint32_t modelIdx = (uint32_t)(ctx.models.size() - 1);
+					if (ctx.modelKeyFrameIdx == modelKeyFrameStart) {
+						firstModelIdx = modelIdx;
+					}
+
+					// extract frame index from name pattern "<name>_frame_<N>"
+					uint32_t frameIndex = (uint32_t)(ctx.modelKeyFrameIdx - modelKeyFrameStart);
+					const core::String &childName = child.name();
+					const size_t framePos = childName.rfind("_frame_");
+					if (framePos != core::String::npos) {
+						frameIndex = core::string::toInt(childName.substr(framePos + 7));
+					}
+
+					ogt_vox_keyframe_model kfModel;
+					kfModel.model_index = modelIdx;
+					kfModel.frame_index = frameIndex;
+					ctx.keyframeModels[ctx.modelKeyFrameIdx++] = kfModel;
+				}
+
+				const uint32_t numModelKeyframes = (uint32_t)(ctx.modelKeyFrameIdx - modelKeyFrameStart);
+
+				// create a single instance with model_anim
+				ogt_vox_instance ogt_instance;
+				core_memset(&ogt_instance, 0, sizeof(ogt_instance));
+				ogt_instance.group_index = parentGroupIdx;
+				ogt_instance.model_index = firstModelIdx;
+				ogt_instance.layer_index = layerIdx;
+				ogt_instance.name = node.name().c_str();
+				ogt_instance.hidden = !node.visible();
+				ogt_instance.model_anim.num_keyframes = numModelKeyframes;
+				ogt_instance.model_anim.keyframes = &ctx.keyframeModels[modelKeyFrameStart];
+
+				// add a single transform keyframe
+				ogt_instance.transform_anim.num_keyframes = 1;
+				ogt_instance.transform_anim.keyframes = &ctx.keyframeTransforms[ctx.transformKeyFrameIdx];
+				ogt_vox_keyframe_transform ogt_keyframe;
+				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
+				ogt_keyframe.frame_index = 0;
+				ogt_keyframe.transform = ogt_identity_transform;
+				checkRotation(ogt_keyframe.transform);
+				ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
+
+				ctx.instances.push_back(ogt_instance);
+				return;
+			}
+		}
+
 		const bool addLayers = core::getVar(cfg::VoxformatVOXCreateLayers)->boolVal();
 		if (node.isRootNode() || addLayers) {
 			// TODO: VOXELFORMAT: only add the layer if there are models in this group?

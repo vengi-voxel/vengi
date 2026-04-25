@@ -149,6 +149,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_targetcolors`      | Target number of colors after voxelization (0 = no limit)                                | 0            |
 | `voxformat_texturepath`       | Additional search path for textures when importing mesh formats                          |              |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
+| `voxformat_voxanimasnodes`    | Import/export MagicaVoxel animation frames as dedicated single volume nodes              | true/false   |
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |
 | `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   | true/false   |
 | `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         | 0/1          |

@@ -4,6 +4,8 @@
 
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
@@ -184,6 +186,44 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
 	testConvert("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxel::ValidateFlags::All);
+}
+
+TEST_F(VoxFormatTest, testAnimAsNodes) {
+	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("true");
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "magicavoxel.vox");
+	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("false");
+}
+
+TEST_F(VoxFormatTest, testAnimAsNodesSaveLoad) {
+	// Build a scene graph with a group containing model children (anim frame pattern)
+	scenegraph::SceneGraph saveGraph;
+	{
+		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+		groupNode.setName("anim");
+		const int groupId = saveGraph.emplace(core::move(groupNode));
+		ASSERT_NE(InvalidNodeId, groupId);
+
+		for (int i = 0; i < 3; ++i) {
+			scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+			modelNode.setName(core::String::format("anim_frame_%i", i));
+			const voxel::Region region(0, 0, 0, 1, 1, 1);
+			modelNode.createVolume(region);
+			modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			ASSERT_NE(InvalidNodeId, saveGraph.emplace(core::move(modelNode), groupId));
+		}
+	}
+
+	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("true");
+	const core::String filename = "animasnodes-test.vox";
+	ASSERT_TRUE(helper_saveSceneGraph(saveGraph, filename));
+
+	scenegraph::SceneGraph loadGraph;
+	testLoad(loadGraph, filename, 3);
+	// When loaded with anim-as-nodes, the single instance with 3 model_anim keyframes
+	// should produce a group with 3 model children
+	EXPECT_EQ(3u, loadGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("false");
 }
 
 } // namespace voxel

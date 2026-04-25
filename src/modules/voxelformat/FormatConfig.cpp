@@ -138,6 +138,12 @@ bool FormatConfig::init() {
 		cfg::VoxformatVOXCreateLayers, true, N_("Create layers"),
 		NC_("Create layers when saving MagicaVoxel vox files", "Create layers for vox file"), core::CV_NOPERSIST);
 	core::registerVar(voxformatVOXCreateLayers);
+	const core::VarDef voxformatVOXAnimAsNodes(
+		cfg::VoxformatVOXAnimAsNodes, false, N_("Animation as nodes"),
+		NC_("Import MagicaVoxel animation frames as dedicated single volume nodes instead of keyframe animations",
+			"Import animation frames as nodes"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatVOXAnimAsNodes);
 	const core::VarDef voxformatQBSaveLeftHanded(cfg::VoxformatQBSaveLeftHanded, true, N_("Left handed"),
 												 N_("Toggle between left and right handed"), core::CV_NOPERSIST);
 	core::registerVar(voxformatQBSaveLeftHanded);

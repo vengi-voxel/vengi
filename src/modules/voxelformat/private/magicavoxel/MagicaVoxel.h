@@ -38,6 +38,8 @@ struct MVSceneContext {
 	core::Buffer<ogt_vox_instance> instances;
 	int transformKeyFrameIdx = 0;
 	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
+	int modelKeyFrameIdx = 0;
+	core::Array<ogt_vox_keyframe_model, 4096> keyframeModels;
 	core::Buffer<ogt_vox_cam> cameras;
 	bool paletteErrorPrinted = false;
 	core::Map<int, uint32_t> nodeToModel;

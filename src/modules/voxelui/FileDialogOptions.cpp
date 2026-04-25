@@ -218,6 +218,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	if (*desc == voxelformat::VoxFormat::format()) {
 		ImGui::CheckboxVar(cfg::VoxformatVOXCreateGroups);
 		ImGui::CheckboxVar(cfg::VoxformatVOXCreateLayers);
+		ImGui::CheckboxVar(cfg::VoxformatVOXAnimAsNodes);
 	}
 
 	if (*desc == voxelformat::QBFormat::format()) {
@@ -388,6 +389,10 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::VXLFormat::format()) {
 		ImGui::CheckboxVar(cfg::VoxformatVXLLoadHVA);
+	}
+
+	if (*desc == voxelformat::VoxFormat::format()) {
+		ImGui::CheckboxVar(cfg::VoxformatVOXAnimAsNodes);
 	}
 
 	if (*desc == voxelformat::LDrawFormat::format()) {
