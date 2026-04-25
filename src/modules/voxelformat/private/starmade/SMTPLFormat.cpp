@@ -58,14 +58,15 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 
 	Log::debug("Number of blocks: %i", numBlocks);
 
-	if (maxs.x > 2048 || maxs.y > 2048 || maxs.z > 2048) {
-		Log::error("Volume exceeds the max allowed size: %i:%i:%i", maxs.x, maxs.y, maxs.z);
+	const glm::ivec3 size = maxs - mins;
+	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
+		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
 		return false;
 	}
 
-	const voxel::Region region(mins, maxs - 1);
+	const voxel::Region region(glm::ivec3(0), size - 1);
 	if (!region.isValid()) {
-		Log::error("Invalid region: %i:%i:%i - %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		Log::error("Invalid region: %i:%i:%i", size.x, size.y, size.z);
 		return false;
 	}
 
@@ -84,17 +85,12 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 		wrap(stream->readUInt32BE(y))
 		wrap(stream->readUInt32BE(z))
 		// TODO: VOXELFORMAT: the following bytes are handled differently since version > 3
-		uint8_t type;
-		wrap(stream->readUInt8(type))
-#if 0
-		uint8_t orientation;
-		wrap(stream->readUInt8(orientation))
-		uint8_t active;
-		wrap(stream->readUInt8(active))
-#else
-		uint16_t block;
-		wrap(stream->readUInt16BE(block))
-#endif
+		uint8_t buf[3];
+		wrap(stream->readUInt8(buf[0]))
+		wrap(stream->readUInt8(buf[1]))
+		wrap(stream->readUInt8(buf[2]))
+		const uint32_t blockData = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+		const uint16_t block = blockData & 0x7ff;
 		int color = 0;
 		blockPal.get(block, color);
 		volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));

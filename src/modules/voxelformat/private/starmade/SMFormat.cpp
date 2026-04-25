@@ -28,10 +28,16 @@ namespace voxelformat {
 namespace priv {
 constexpr int segments = 16;
 constexpr int maxSegments = segments * segments * segments;
-constexpr int segmentHeaderSize = 26;
-constexpr int blocks = 32;
-constexpr int maxSegmentDataCompressedSize = ((blocks * blocks * blocks) * 3 / 2) - segmentHeaderSize;
-constexpr int planeBlocks = blocks * blocks;
+
+// SMD2: 16x16x16 blocks per chunk, 5120 bytes per chunk slot
+constexpr int smd2Blocks = 16;
+constexpr int smd2ChunkDataSize = 5120;
+constexpr int smd2SegmentHeaderSize = 25; // 8 timestamp + 12 position + 4 dataLength + 1 type
+
+// SMD3: 32x32x32 blocks per segment
+constexpr int smd3Blocks = 32;
+constexpr int smd3SegmentHeaderSize = 26; // 1 segmentVersion + 8 timestamp + 12 position + 1 hasValidData + 4 compressedSize
+constexpr int smd3SegmentDataSize = ((smd3Blocks * smd3Blocks * smd3Blocks) * 3 / 2) - smd3SegmentHeaderSize;
 
 } // namespace priv
 
@@ -106,13 +112,15 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			if (isSmd2 || isSmd3) {
 				// position is encoded in the filename
 				// ENTITY_SHIP_Rexio_1686826017103.0.0.0.smd3
+				// split on '.' and take parts from the end: [l-4].[l-3].[l-2].ext
 				glm::ivec3 position(0);
-				size_t dot = 0;
-				for (int i = 0; i < 3; ++i) {
-					dot = e.name.find_first_of('.', dot);
-					if (dot != core::String::npos) {
-						position[i] = core::string::toInt(e.name.substr(dot + 1)) * priv::segments;
-					}
+				core::DynamicArray<core::String> parts;
+				core::string::splitString(e.name, parts, ".");
+				const int l = (int)parts.size();
+				if (l >= 4) {
+					position.x = core::string::toInt(parts[l - 4]) * priv::segments;
+					position.y = core::string::toInt(parts[l - 3]) * priv::segments;
+					position.z = core::string::toInt(parts[l - 2]) * priv::segments;
 				}
 				core::ScopedPtr<io::SeekableReadStream> modelStream(zipArchive->readStream(e.fullPath));
 				if (!modelStream) {
@@ -140,18 +148,14 @@ bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
 
-	core::Map<uint16_t, uint16_t> segmentsMap;
-
+	// SMD2 segment index: 16*16*16 entries of (int32 offset, int32 size)
 	for (int i = 0; i < priv::maxSegments; i++) {
-		uint16_t segmentId;
-		wrap(stream.readUInt16BE(segmentId))
-		uint16_t segmentSize;
-		wrap(stream.readUInt16BE(segmentSize))
-		if (segmentId > 0) {
-			Log::debug("segment %i with size: %i", (int)segmentId, (int)segmentSize);
-			segmentsMap.put(segmentId, segmentSize);
-		}
+		int32_t segmentOffset;
+		wrap(stream.readInt32BE(segmentOffset))
+		int32_t segmentSize;
+		wrap(stream.readInt32BE(segmentSize))
 	}
+	// SMD2 timestamp table: 16*16*16 entries of int64
 	for (int i = 0; i < priv::maxSegments; i++) {
 		uint64_t timestamp;
 		wrap(stream.readUInt64BE(timestamp))
@@ -194,11 +198,12 @@ bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 	return true;
 }
 
-static glm::ivec3 posByIndex(uint32_t blockIndex) {
-	const int z = (int)blockIndex / priv::planeBlocks;
-	const int divR = (int)blockIndex % priv::planeBlocks;
-	const int y = divR / priv::blocks;
-	const int x = divR % priv::blocks;
+static glm::ivec3 posByIndex(uint32_t blockIndex, int blocks) {
+	const int planeBlocks = blocks * blocks;
+	const int z = (int)blockIndex / planeBlocks;
+	const int divR = (int)blockIndex % planeBlocks;
+	const int y = divR / blocks;
+	const int x = divR % blocks;
 	return glm::ivec3(x, y, z);
 }
 
@@ -226,7 +231,11 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 						   const core::Map<int, int> &blockPal, int headerVersion, int fileVersion,
 						   const palette::Palette &palette) {
 	const int64_t startHeader = stream.pos();
-	Log::debug("read segment");
+	const bool isSmd2 = fileVersion == 2;
+	const int blocks = isSmd2 ? priv::smd2Blocks : priv::smd3Blocks;
+	const int segmentHeaderSize = isSmd2 ? priv::smd2SegmentHeaderSize : priv::smd3SegmentHeaderSize;
+	const int segmentTotalSize = isSmd2 ? priv::smd2ChunkDataSize : (priv::smd3SegmentDataSize + priv::smd3SegmentHeaderSize);
+	Log::debug("read segment (fileVersion=%i, blocks=%i)", fileVersion, blocks);
 
 	if (headerVersion != 0) {
 		uint8_t segmentVersion;
@@ -244,10 +253,10 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	bool hasValidData;
 	uint32_t compressedSize;
 	if (headerVersion == 0) {
-		int32_t dataLength;
-		wrap(stream.readInt32BE(dataLength))
 		uint8_t segmentType;
 		wrap(stream.readUInt8(segmentType))
+		int32_t dataLength;
+		wrap(stream.readInt32BE(dataLength))
 		hasValidData = dataLength > 0;
 		compressedSize = dataLength;
 	} else { // Valid as of 0.1867, smd file version 1
@@ -257,15 +266,15 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	Log::debug("hasValidData: %i", (int)hasValidData);
 
 	if (!hasValidData) {
-		stream.seek(startHeader + priv::maxSegmentDataCompressedSize);
+		stream.seek(startHeader + segmentTotalSize);
 		return true;
 	}
 
-	core_assert(stream.pos() - startHeader == priv::segmentHeaderSize);
+	core_assert(stream.pos() - startHeader == segmentHeaderSize);
 
 	io::ZipReadStream blockDataStream(stream, (int)compressedSize);
 
-	const voxel::Region region(segmentPosition, segmentPosition + (priv::blocks - 1));
+	const voxel::Region region(segmentPosition, segmentPosition + (blocks - 1));
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -283,7 +292,10 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		wrap(blockDataStream.readUInt8(buf[0]))
 		wrap(blockDataStream.readUInt8(buf[1]))
 		wrap(blockDataStream.readUInt8(buf[2]))
-		const uint32_t blockData = buf[0] | (buf[1] << 8) | (buf[2] << 16);
+		// SMD2 uses big-endian byte assembly, SMD3 uses little-endian
+		const uint32_t blockData = isSmd2
+			? ((buf[0] << 16) | (buf[1] << 8) | buf[2])
+			: (buf[0] | (buf[1] << 8) | (buf[2] << 16));
 		if (blockData == 0u) {
 			continue;
 		}
@@ -302,15 +314,13 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 			palIndex = palIter->value;
 		}
 
-		glm::ivec3 pos = segmentPosition + posByIndex(index);
+		glm::ivec3 pos = segmentPosition + posByIndex(index, blocks);
 
 		volume->setVoxel(pos, voxel::createVoxel(palette, palIndex));
 		empty = false;
 	}
 
-	core_assert(stream.pos() - startHeader == (int)compressedSize + priv::segmentHeaderSize);
-
-	stream.seek(startHeader + priv::maxSegmentDataCompressedSize + priv::segmentHeaderSize);
+	stream.seek(startHeader + segmentTotalSize);
 	if (empty) {
 		return true;
 	}
