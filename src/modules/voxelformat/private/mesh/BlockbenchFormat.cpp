@@ -12,6 +12,7 @@
 #include "core/UUID.h"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
+#include "io/Base64WriteStream.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -27,6 +28,8 @@
 
 #include "json/JSON.h"
 #include <glm/trigonometric.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <limits>
 
 namespace voxelformat {
@@ -51,6 +54,7 @@ struct Animator {
 	core::UUID uuid;
 	core::String name;
 	core::String type; // "bone", "cube"
+	bool rotationGlobal = false;
 	core::DynamicArray<KeyFrame> keyframes;
 };
 
@@ -84,6 +88,8 @@ static inline scenegraph::InterpolationType toInterpolationType(const json::Json
 		return scenegraph::InterpolationType::CubicBezier;
 	} else if (val == "catmullrom") {
 		return scenegraph::InterpolationType::CatmullRom;
+	} else if (val == "step") {
+		return scenegraph::InterpolationType::Instant;
 	}
 	Log::warn("Unsupported interpolation type: %s", val.c_str());
 	return defaultValue;
@@ -151,9 +157,23 @@ static BlockbenchFormat::BBElementType toType(const json::Json &json, const char
 		return BlockbenchFormat::BBElementType::Cube;
 	} else if (type == "mesh") {
 		return BlockbenchFormat::BBElementType::Mesh;
+	} else if (type == "locator") {
+		return BlockbenchFormat::BBElementType::Locator;
+	} else if (type == "null_object") {
+		return BlockbenchFormat::BBElementType::NullObject;
+	} else if (type == "camera") {
+		return BlockbenchFormat::BBElementType::Camera;
 	}
 	Log::debug("Unsupported element type: %s", type.c_str());
 	return BlockbenchFormat::BBElementType::Max;
+}
+
+// Blockbench uses ZYX euler angle order for rotations
+static glm::quat eulerZYX(const glm::vec3 &degrees) {
+	const glm::vec3 rad = glm::radians(degrees);
+	return glm::angleAxis(rad.z, glm::vec3(0, 0, 1))
+		 * glm::angleAxis(rad.y, glm::vec3(0, 1, 0))
+		 * glm::angleAxis(rad.x, glm::vec3(1, 0, 0));
 }
 
 static bool isSupportModelFormat(const core::String &modelFormat) {
@@ -269,6 +289,13 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 	bbElement.cube.from = scale * priv::toVec3(elementJson, "from");
 	bbElement.cube.to = scale * priv::toVec3(elementJson, "to");
 
+	// Apply inflate: expand geometry in all directions without changing UV mapping
+	if (bbElement.inflate != 0.0f) {
+		const glm::vec3 inf(bbElement.inflate);
+		bbElement.cube.from -= inf;
+		bbElement.cube.to += inf;
+	}
+
 	if (!elementJson.contains("faces")) {
 		Log::error("Element is missing faces in json file: %s", filename.c_str());
 		return false;
@@ -323,9 +350,33 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 
 		Log::debug("faceName: %s, materialIdx: %d", faceName.c_str(), materialIdx);
 		int uvs[4]{uv.get(0).intVal(), uv.get(1).intVal(), uv.get(2).intVal(), uv.get(3).intVal()};
+		const int uvRotation = priv::toNumber(faceData, "rotation", 0);
 		if (materialIdx >= 0 && meshMaterialArray[materialIdx]->texture) {
-			const glm::vec2 uv0 = meshMaterialArray[materialIdx]->texture->uv(uvs[0], uvs[1]);
-			const glm::vec2 uv1 = meshMaterialArray[materialIdx]->texture->uv(uvs[2] - 1, uvs[3] - 1);
+			// Use per-texture UV dimensions if available, otherwise fall back to image dimensions
+			const int uvW = materialIdx < (int)bbMeta.textureUVDimensions.size() && bbMeta.textureUVDimensions[materialIdx].x > 0
+				? bbMeta.textureUVDimensions[materialIdx].x
+				: meshMaterialArray[materialIdx]->texture->width();
+			const int uvH = materialIdx < (int)bbMeta.textureUVDimensions.size() && bbMeta.textureUVDimensions[materialIdx].y > 0
+				? bbMeta.textureUVDimensions[materialIdx].y
+				: meshMaterialArray[materialIdx]->texture->height();
+			glm::vec2 uv0 = image::Image::uv(uvs[0], uvs[1], uvW, uvH);
+			glm::vec2 uv1 = image::Image::uv(uvs[2] - 1, uvs[3] - 1, uvW, uvH);
+			// Apply UV rotation (0, 90, 180, 270 degrees) around the UV rect center
+			if (uvRotation == 90 || uvRotation == 270) {
+				const glm::vec2 center = (uv0 + uv1) * 0.5f;
+				const glm::vec2 half = (uv1 - uv0) * 0.5f;
+				if (uvRotation == 90) {
+					uv0 = center + glm::vec2(-half.y, half.x);
+					uv1 = center + glm::vec2(half.y, -half.x);
+				} else {
+					uv0 = center + glm::vec2(half.y, -half.x);
+					uv1 = center + glm::vec2(-half.y, half.x);
+				}
+			} else if (uvRotation == 180) {
+				const glm::vec2 tmp = uv0;
+				uv0 = uv1;
+				uv1 = tmp;
+			}
 			bbElement.cube.faces[(int)faceType].uvs[0] = uv0;
 			bbElement.cube.faces[(int)faceType].uvs[1] = uv1;
 		}
@@ -371,12 +422,11 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		bbElement.rotation = priv::toVec3(elementJson, "rotation");
 		bbElement.rescale = elementJson.boolVal("rescale", false);
 		bbElement.locked = elementJson.boolVal("locked", false);
+		bbElement.visible = elementJson.boolVal("visibility", true);
 		bbElement.box_uv = elementJson.boolVal("box_uv", false);
+		bbElement.inflate = elementJson.floatVal("inflate", 0.0f);
 		bbElement.color = priv::toNumber(elementJson, "color", 0);
 		bbElement.type = priv::toType(elementJson, "type");
-		if (bbElement.type == BlockbenchFormat::BBElementType::Max) {
-			bbElement.type = BlockbenchFormat::BBElementType::Cube;
-		}
 
 		if (bbElement.type == BlockbenchFormat::BBElementType::Cube) {
 			if (!parseCube(scale, filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
@@ -384,6 +434,16 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 			}
 		} else if (bbElement.type == BlockbenchFormat::BBElementType::Mesh) {
 			if (!parseMesh(filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
+				return false;
+			}
+		} else if (bbElement.type == BlockbenchFormat::BBElementType::Locator ||
+				   bbElement.type == BlockbenchFormat::BBElementType::NullObject ||
+				   bbElement.type == BlockbenchFormat::BBElementType::Camera) {
+			// Non-geometry elements - store but don't parse geometry
+		} else if (bbElement.type == BlockbenchFormat::BBElementType::Max) {
+			// Unknown type - treat as cube for backward compatibility
+			bbElement.type = BlockbenchFormat::BBElementType::Cube;
+			if (!parseCube(scale, filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
 				return false;
 			}
 		}
@@ -443,6 +503,29 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
+// Merge properties from the flat groups array into the outliner tree nodes by UUID.
+// In format 5.0+, the outliner tree may only have uuid/children, while the groups array
+// has the full properties (name, origin, rotation, etc.).
+static void mergeGroupProperties(BlockbenchFormat::BBNode &node,
+								 const core::Map<core::UUID, BlockbenchFormat::BBNode, 64, core::UUIDHash> &groupMap) {
+	auto iter = groupMap.find(node.uuid);
+	if (iter != groupMap.end()) {
+		const BlockbenchFormat::BBNode &g = iter->value;
+		if (node.name.empty()) {
+			node.name = g.name;
+		}
+		node.origin = g.origin;
+		node.rotation = g.rotation;
+		node.locked = g.locked;
+		node.visible = g.visible;
+		node.mirror_uv = g.mirror_uv;
+		node.color = g.color;
+	}
+	for (BlockbenchFormat::BBNode &child : node.children) {
+		mergeGroupProperties(child, groupMap);
+	}
+}
+
 bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	Mesh &mesh = bbElement.mesh;
@@ -455,8 +538,8 @@ bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, 
 	model.setLocked(bbNode.locked);
 	model.setVisible(bbNode.visible);
 	sceneGraph.updateTransforms();
-	model.setRotation(glm::quat(glm::radians(bbElement.rotation)), true);
-	model.setTranslation(bbElement.origin, true);
+	model.setRotation(priv::eulerZYX(bbElement.rotation), true);
+	model.setTranslation(bbElement.origin - bbNode.origin);
 	return true;
 }
 
@@ -488,18 +571,11 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 	model.setName(bbElement.name);
 	model.setLocked(bbNode.locked);
 	model.setVisible(bbNode.visible);
-	model.setRotation(glm::quat(glm::radians(bbElement.rotation)), true);
 
-	// Calculate pivot: In Blockbench, origin is the pivot point in world coordinates.
-	// We need to convert it to normalized coordinates relative to the cube's local space.
-	// The pivot is the offset from the cube's corner (from) divided by the cube size.
+	// Calculate pivot
 	const glm::vec3 pivot = (bbElement.origin - bbElement.cube.from) / size;
 	model.setPivot(pivot);
 
-	// Set translation: Position the cube at its 'from' corner, then offset by the pivot
-	// scaled to the voxel region dimensions.
-	const glm::vec3 regionsize = region.getDimensionsInVoxels();
-	model.setTranslation(bbElement.cube.from + pivot * regionsize, true);
 	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
 									  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
 									  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
@@ -515,7 +591,18 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 				      faceColor);
 	}
 	model.volume()->translate(-region.getLowerCorner());
-	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;
+	// Compute position relative to parent group
+	const glm::vec3 localFrom = bbElement.cube.from - bbNode.origin;
+	const glm::vec3 regionsize = region.getDimensionsInVoxels();
+	const int nodeId = sceneGraph.emplace(core::move(model), parent);
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	// Set transform after emplace
+	scenegraph::SceneGraphNode &emplaced = sceneGraph.node(nodeId);
+	emplaced.setTranslation(localFrom + pivot * regionsize);
+	emplaced.setRotation(priv::eulerZYX(bbElement.rotation));
+	return true;
 }
 
 bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph,
@@ -537,6 +624,8 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 			if (!generateMesh(bbNode, bbElement, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
+		} else if (bbElement.type == BBElementType::Locator || bbElement.type == BBElementType::NullObject || bbElement.type == BBElementType::Camera) {
+			Log::debug("Skipping non-geometry element: %s (type %i)", bbElement.name.c_str(), (int)bbElement.type);
 		} else {
 			Log::warn("Unsupported element type: %i", (int)bbElement.type);
 		}
@@ -546,14 +635,17 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 		group.setName(bbChild.name);
 		group.setVisible(bbChild.visible);
 		group.setLocked(bbChild.locked);
-		group.setRotation(glm::quat(glm::radians(bbChild.rotation)), true);
-		group.setScale(bbChild.size, true);
-		group.setTranslation(bbChild.origin, true);
+		const glm::vec3 localOrigin = bbChild.origin - bbNode.origin;
 		int groupParent = sceneGraph.emplace(core::move(group), parent);
 		if (groupParent == InvalidNodeId) {
 			Log::error("Failed to add node: %s", bbChild.name.c_str());
 			return false;
 		}
+		// Set transform after emplace
+		scenegraph::SceneGraphNode &groupNode = sceneGraph.node(groupParent);
+		groupNode.setTranslation(localOrigin);
+		groupNode.setRotation(priv::eulerZYX(bbChild.rotation));
+		groupNode.setScale(bbChild.size);
 		if (!addNode(bbChild, bbElementMap, sceneGraph, meshMaterialArray, groupParent)) {
 			return false;
 		}
@@ -584,13 +676,7 @@ void BlockbenchFormat::processCompatibility(const BBMeta &meta, BBElementMap &el
 		return;
 	}
 	if (maj < 3 || (maj == 3 && min < 2)) {
-		// Flip Z rotation for elements
-		for (auto iter = elementMap.begin(); iter != elementMap.end(); ++iter) {
-			auto *kv = *iter; // KeyValue*
-			kv->value.rotation.z = -kv->value.rotation.z;
-		}
-
-		// Flip Z rotation recursively for nodes.
+		// Pre-3.2: Z-axis rotation was inverted for outliner groups only (not elements)
 		fixNode(root);
 	}
 }
@@ -607,17 +693,14 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		Log::error("Animations is not an array in json file: %s", filename.c_str());
 		return false;
 	}
-	bool removeDefaultAnimation = true;
 	for (const auto &animationJson : animationsJson) {
 		const core::String animationName = json::toStr(animationJson, "name");
 		if (animationName.empty()) {
 			continue;
 		}
-		if (animationName == DEFAULT_ANIMATION) {
-			removeDefaultAnimation = false;
-		}
 		sceneGraph.addAnimation(animationName);
-		sceneGraph.setAnimation(animationName);
+		Log::debug("addAnimation(%s) result, setAnimation result: %s", animationName.c_str(),
+				   sceneGraph.setAnimation(animationName) ? "true" : "false");
 #if BLOCKBENCH_ANIMATION
 		priv::Animation animation;
 		animation.uuid = core::UUID(json::toStr(animationJson, "uuid"));
@@ -642,6 +725,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 			const json::Json animatorsJson = *animIt;
 			animator.name = json::toStr(animatorsJson, "name");
 			animator.type = json::toStr(animatorsJson, "type");
+			animator.rotationGlobal = animatorsJson.boolVal("rotation_global", false);
 			if (!animatorsJson.contains("keyframes")) {
 				Log::debug("No keyframes found in json file: %s", filename.c_str());
 				continue;
@@ -666,12 +750,54 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 						kf.dataPoints.push_back(priv::toVec3(dataPoint));
 					}
 				}
+				// Pre-5.0 compatibility: invert X for position/rotation, Y for rotation
+				if (bbMeta.version.majorVersion < 5) {
+					for (glm::vec3 &dp : kf.dataPoints) {
+						if (kf.channel == "position" || kf.channel == "rotation") {
+							dp.x = -dp.x;
+						}
+						if (kf.channel == "rotation") {
+							dp.y = -dp.y;
+						}
+					}
+					if (kf.interpolation == scenegraph::InterpolationType::CubicBezier) {
+						if (kf.channel == "position" || kf.channel == "rotation") {
+							kf.bezierLeftValue.x *= -1;
+							kf.bezierRightValue.x *= -1;
+						}
+						if (kf.channel == "rotation") {
+							kf.bezierLeftValue.y *= -1;
+							kf.bezierRightValue.y *= -1;
+						}
+					}
+				} else {
+					// v5+: negate X and Z for rotation and position
+					for (glm::vec3 &dp : kf.dataPoints) {
+						if (kf.channel == "position" || kf.channel == "rotation") {
+							dp.x = -dp.x;
+							dp.z = -dp.z;
+						}
+					}
+					if (kf.interpolation == scenegraph::InterpolationType::CubicBezier) {
+						if (kf.channel == "position" || kf.channel == "rotation") {
+							kf.bezierLeftValue.x *= -1;
+							kf.bezierLeftValue.z *= -1;
+							kf.bezierRightValue.x *= -1;
+							kf.bezierRightValue.z *= -1;
+						}
+					}
+				}
 				animator.keyframes.push_back(kf);
 			}
 			animation.animators.push_back(animator);
 		}
 		for (const priv::Animator &animator : animation.animators) {
 			Log::debug("Animator: %s with %d keyframes", animator.name.c_str(), (int)animator.keyframes.size());
+			// Skip non-node animators (e.g., "effects" for sound/particle timelines)
+			if (!animator.uuid.isValid()) {
+				Log::debug("Skipping non-node animator: %s", animator.name.c_str());
+				continue;
+			}
 			scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(animator.uuid);
 			if (!node) {
 				const core::String &uuidStr = animator.uuid.str();
@@ -681,6 +807,15 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 
 			const core::String &uuidStr = node->uuid().str();
 			Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), uuidStr.c_str());
+
+			// Read base transform from Default animation (rest pose) without switching
+			scenegraph::SceneGraphTransform baseTransform;
+			{
+				const scenegraph::SceneGraphKeyFrames &defaultKfs = node->keyFrames(DEFAULT_ANIMATION);
+				if (!defaultKfs.empty()) {
+					baseTransform = defaultKfs[0].transform();
+				}
+			}
 
 			// Sort keyframes by time to ensure correct ordering
 			core::DynamicArray<priv::KeyFrame> sortedKeyframes = animator.keyframes;
@@ -698,31 +833,50 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 						   keyframe.channel.c_str(), keyframe.time, (int)keyframe.interpolation,
 						   (int)keyframe.dataPoints.size());
 
-				// Blockbench uses seconds, vengi uses frames at 60fps
-				const scenegraph::FrameIndex frameIdx = keyframe.time * 60.0f;
+				// Blockbench uses seconds, convert to frames using the animation's snapping value
+				const float fps = animation.snapping > 0 ? (float)animation.snapping : 24.0f;
+				const scenegraph::FrameIndex frameIdx = keyframe.time * fps;
 
 				// Get or create keyframe at this frame
 				scenegraph::KeyFrameIndex kfIdx;
 				if (!node->hasKeyFrameForFrame(frameIdx, &kfIdx)) {
 					kfIdx = node->addKeyFrame(frameIdx);
+					if (kfIdx == (scenegraph::KeyFrameIndex)-1) {
+						Log::warn("Failed to add keyframe at frame %i for node %s", (int)frameIdx, node->name().c_str());
+						continue;
+					}
 				}
 
 				scenegraph::SceneGraphKeyFrame &kf = node->keyFrame(kfIdx);
 				kf.interpolation = keyframe.interpolation;
 
-				// Get existing transform to preserve other channel values
+				// Initialize transform with base (rest pose) values, then apply animation channel
 				scenegraph::SceneGraphTransform transform = kf.transform();
+				// If this is a fresh keyframe, seed it with the base transform so
+				// channels not animated by this keyframe keep their rest pose values
+				if (glm::all(glm::epsilonEqual(transform.localTranslation(), glm::vec3(0.0f), 0.001f))
+					&& glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(transform.localOrientation())), glm::vec3(0.0f), 0.001f))) {
+					transform.setLocalTranslation(baseTransform.localTranslation());
+					transform.setLocalOrientation(baseTransform.localOrientation());
+					transform.setLocalScale(baseTransform.localScale());
+				}
 				const glm::vec3 &value = keyframe.dataPoints[0];
 
+				// In Blockbench, animation values are additive to the node's base transform
+
 				if (keyframe.channel == "rotation") {
-					// Blockbench uses degrees, convert to quaternion
-					transform.setLocalOrientation(glm::quat(glm::radians(value)));
+					// Blockbench uses ZYX euler angle order (degrees), additive to base rotation
+					const glm::quat animRot = priv::eulerZYX(value);
+					const glm::quat baseRot = baseTransform.localOrientation();
+					transform.setLocalOrientation(baseRot * animRot);
 					Log::debug("  Rotation: %.2f, %.2f, %.2f degrees", value.x, value.y, value.z);
 				} else if (keyframe.channel == "position") {
-					transform.setLocalTranslation(value);
+					const glm::vec3 basePos = baseTransform.localTranslation();
+					transform.setLocalTranslation(basePos + value);
 					Log::debug("  Position: %.2f, %.2f, %.2f", value.x, value.y, value.z);
 				} else if (keyframe.channel == "scale") {
-					transform.setLocalScale(value);
+					const glm::vec3 baseScale = baseTransform.localScale();
+					transform.setLocalScale(baseScale * value);
 					Log::debug("  Scale: %.2f, %.2f, %.2f", value.x, value.y, value.z);
 				} else {
 					Log::warn("Unknown animation channel: %s", keyframe.channel.c_str());
@@ -744,9 +898,41 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		}
 #endif
 	}
-	if (removeDefaultAnimation && sceneGraph.animations().size() > 1) {
-		sceneGraph.removeAnimation(DEFAULT_ANIMATION);
+	// Propagate the Default (rest pose) base transform to all other animations.
+	// Nodes without explicit animation data get identity transforms when their animation
+	// is created by setAnimation(). We need to copy the rest pose so they stay in place.
+	for (const auto &entry : sceneGraph.nodes()) {
+		scenegraph::SceneGraphNode &n = entry->value;
+		if (n.type() == scenegraph::SceneGraphNodeType::Root) {
+			continue;
+		}
+		const scenegraph::SceneGraphKeyFrames &defaultKfs = n.keyFrames(DEFAULT_ANIMATION);
+		if (defaultKfs.empty()) {
+			continue;
+		}
+		const scenegraph::SceneGraphTransform &baseTransform = defaultKfs[0].transform();
+		for (const core::String &anim : sceneGraph.animations()) {
+			if (anim == DEFAULT_ANIMATION) {
+				continue;
+			}
+			if (!n.allKeyFrames().hasKey(anim)) {
+				continue;
+			}
+			scenegraph::SceneGraphKeyFrames &kfs = const_cast<scenegraph::SceneGraphKeyFrames &>(n.keyFrames(anim));
+			if (!kfs.empty()) {
+				scenegraph::SceneGraphTransform &t = kfs[0].transform();
+				// Only set base if the first keyframe is at frame 0 and has identity translation
+				if (kfs[0].frameIdx == 0 && glm::all(glm::epsilonEqual(t.localTranslation(), glm::vec3(0.0f), 0.001f))
+					&& glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(t.localOrientation())), glm::vec3(0.0f), 0.001f))) {
+					t.setLocalTranslation(baseTransform.localTranslation());
+					t.setLocalOrientation(baseTransform.localOrientation());
+					t.setLocalScale(baseTransform.localScale());
+				}
+			}
+		}
 	}
+
+	// Keep the Default animation - it contains the rest pose (group origins, element positions)
 	return true;
 }
 
@@ -825,13 +1011,17 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 							Log::warn("Unsupported encoding: %s for texture: %s", encoding.c_str(), name.c_str());
 						} else {
 							const core::String &data = source.substr(encodingEnd + 1);
-							Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
-							io::MemoryReadStream dataStream(data.c_str(), data.size());
-							io::Base64ReadStream base64Stream(dataStream);
-							io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
-							image = image::loadImage(name, bufferedStream);
-							if (!image->isLoaded()) {
-								Log::warn("Failed to load texture from base64: %s", name.c_str());
+							if (data.size() < 16) {
+								Log::warn("Base64 data too short for texture: %s (%d bytes)", name.c_str(), (int)data.size());
+							} else {
+								Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
+								io::MemoryReadStream dataStream(data.c_str(), data.size());
+								io::Base64ReadStream base64Stream(dataStream);
+								io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
+								image = image::loadImage(name, bufferedStream);
+								if (!image->isLoaded()) {
+									Log::warn("Failed to load texture from base64: %s", name.c_str());
+								}
 							}
 						}
 					}
@@ -874,6 +1064,10 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			meshMaterialArray.push_back(MeshMaterialPtr{});
 			Log::debug("Added null material at index %d for texture: %s", (int)meshMaterialArray.size() - 1, name.c_str());
 		}
+		// Store per-texture UV dimensions (may differ from pixel dimensions)
+		const int uvWidth = priv::toNumber(texture, "uv_width", image && image->isLoaded() ? image->width() : 0);
+		const int uvHeight = priv::toNumber(texture, "uv_height", image && image->isLoaded() ? image->height() : 0);
+		bbMeta.textureUVDimensions.push_back(glm::ivec2(uvWidth, uvHeight));
 	}
 	const json::Json &elementsJson = json.get("elements");
 	if (!elementsJson.isArray()) {
@@ -896,6 +1090,11 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
+	// Ensure the Default animation exists and is active before creating nodes
+	// (emplace calls setAnimation which creates keyframes under the active animation name)
+	sceneGraph.addAnimation(DEFAULT_ANIMATION);
+	sceneGraph.setAnimation(DEFAULT_ANIMATION);
+
 	BBNode bbRoot;
 	for (const auto &entry : outlinerJson) {
 		if (entry.isObject()) {
@@ -910,6 +1109,35 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			// Direct element reference at root level
 			core::String uuid = json::toStr(entry);
 			bbRoot.referenced.push_back(core::UUID(uuid));
+		}
+	}
+
+	// Apply group properties from the flat groups array (format 5.0+ stores full
+	// properties there, while the outliner tree may only have uuid/children)
+	if (json.contains("groups")) {
+		const json::Json &groupsJson = json.get("groups");
+		Log::debug("Found groups array with %d entries", (int)groupsJson.size());
+		if (groupsJson.isArray()) {
+			core::Map<core::UUID, BBNode, 64, core::UUIDHash> groupMap;
+			for (const auto &g : groupsJson) {
+				BBNode gn;
+				gn.uuid = core::UUID(json::toStr(g, "uuid"));
+				if (!gn.uuid.isValid()) {
+					continue;
+				}
+				gn.name = json::toStr(g, "name");
+				gn.origin = scale * priv::toVec3(g, "origin");
+				gn.rotation = priv::toVec3(g, "rotation");
+				gn.locked = g.boolVal("locked", false);
+				gn.visible = g.boolVal("visibility", true);
+				gn.mirror_uv = g.boolVal("mirror_uv", false);
+				gn.color = priv::toNumber(g, "color", 0);
+				const core::UUID uuidCopy = gn.uuid;
+				groupMap.emplace(uuidCopy, core::move(gn));
+			}
+			for (BBNode &child : bbRoot.children) {
+				mergeGroupProperties(child, groupMap);
+			}
 		}
 	}
 
@@ -931,6 +1159,368 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	rootNode.setProperty(scenegraph::PropTitle, bbMeta.name);
 	rootNode.setProperty("model_format", bbMeta.modelFormat);
 	rootNode.setProperty("model_identifier", bbMeta.model_identifier);
+
+	return true;
+}
+
+bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+								  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+
+	json::Json root = json::Json::object();
+
+	// Meta
+	json::Json meta = json::Json::object();
+	meta.set("format_version", "4.5");
+	meta.set("model_format", "free");
+	meta.set("box_uv", false);
+
+	const scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
+	const core::String &modelFormat = rootNode.property(core::String("model_format"));
+	if (!modelFormat.empty()) {
+		meta.set("model_format", modelFormat);
+	}
+	const core::String &version = rootNode.property(scenegraph::PropVersion);
+	if (!version.empty()) {
+		meta.set("format_version", version);
+	}
+	root.set("meta", meta);
+
+	// Name
+	const core::String &title = rootNode.property(scenegraph::PropTitle);
+	root.set("name", title.empty() ? core::string::extractFilename(filename) : title);
+
+	// Resolution - use 16x16 default
+	json::Json resolution = json::Json::object();
+	resolution.set("width", 16);
+	resolution.set("height", 16);
+	root.set("resolution", resolution);
+
+	// Collect all model nodes and build elements + textures
+	json::Json elements = json::Json::array();
+	json::Json textures = json::Json::array();
+
+	// Helper to create a vec3 JSON array
+	auto vec3Array = [](const glm::vec3 &v) {
+		json::Json arr = json::Json::array();
+		arr.push((double)v.x);
+		arr.push((double)v.y);
+		arr.push((double)v.z);
+		return arr;
+	};
+
+	// Write each model node as a cube element (transforms should already be up to date)
+
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const voxel::Region &region = node.region();
+		const glm::vec3 dims = region.getDimensionsInVoxels();
+
+		// Compute world position: the node's world translation is the cube's position
+		const scenegraph::SceneGraphTransform &t = node.transform(0);
+		const glm::vec3 worldPos = t.worldTranslation();
+		const glm::vec3 pivot = node.pivot();
+
+		// In bbmodel, from/to are world coordinates of the cube corners
+		const glm::vec3 from = worldPos - pivot * dims;
+		const glm::vec3 to = from + dims;
+
+		// Origin (pivot) in world coordinates
+		const glm::vec3 origin = worldPos;
+
+		json::Json element = json::Json::object();
+		element.set("name", node.name());
+		element.set("uuid", node.uuid().str());
+		element.set("type", "cube");
+		element.set("from", vec3Array(from));
+		element.set("to", vec3Array(to));
+		element.set("origin", vec3Array(origin));
+		element.set("visibility", node.visible());
+		element.set("locked", node.locked());
+
+		// Rotation from local transform
+		const glm::vec3 euler = glm::degrees(glm::eulerAngles(t.localOrientation()));
+		if (glm::any(glm::epsilonNotEqual(euler, glm::vec3(0.0f), 0.001f))) {
+			element.set("rotation", vec3Array(euler));
+		}
+
+		// Faces - use texture index 0 (palette texture) with simple UV mapping
+		// Each face gets a solid color from the dominant voxel color
+		json::Json faces = json::Json::object();
+		const char *faceNames[] = {"north", "east", "south", "west", "up", "down"};
+		for (int i = 0; i < 6; ++i) {
+			json::Json face = json::Json::object();
+			json::Json uv = json::Json::array();
+			// Map to a 1x1 pixel region in the palette texture based on the node's first voxel color
+			const voxel::RawVolume *vol = node.volume();
+			int colorIdx = 0;
+			if (vol) {
+				const voxel::Voxel &v = vol->voxel(region.getLowerCorner());
+				if (voxel::isBlocked(v.getMaterial())) {
+					colorIdx = v.getColor();
+				}
+			}
+			// UV coordinates map to the palette texture (16x16 grid, each color is 1 pixel)
+			const int px = colorIdx % 16;
+			const int py = colorIdx / 16;
+			uv.push(px);
+			uv.push(py);
+			uv.push(px + 1);
+			uv.push(py + 1);
+			face.set("uv", uv);
+			face.set("texture", 0);
+			faces.set(faceNames[i], face);
+		}
+		element.set("faces", faces);
+
+		elements.push(element);
+	}
+	root.set("elements", elements);
+
+	// Textures - export palette as a 16x16 PNG texture
+	{
+		// Find the first palette in the scene graph
+		const palette::Palette *pal = nullptr;
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			pal = &(*iter).palette();
+			break;
+		}
+		if (pal) {
+			// Create a 16x16 image from the palette
+			image::ImagePtr palImage = image::createEmptyImage("palette");
+			const int palW = 16;
+			const int palH = 16;
+			core::DynamicArray<uint8_t> pixels(palW * palH * 4);
+			for (int i = 0; i < palW * palH && i < pal->colorCount(); ++i) {
+				const color::RGBA c = pal->color(i);
+				pixels[i * 4 + 0] = c.r;
+				pixels[i * 4 + 1] = c.g;
+				pixels[i * 4 + 2] = c.b;
+				pixels[i * 4 + 3] = c.a;
+			}
+			palImage->loadRGBA(pixels.data(), palW, palH);
+
+			// Encode as base64 PNG
+			io::BufferedReadWriteStream pngStream;
+			if (palImage->writePNG(pngStream)) {
+				pngStream.seek(0);
+				io::BufferedReadWriteStream base64Stream;
+				io::Base64WriteStream b64Writer(base64Stream);
+				uint8_t buf[4096];
+				while (!pngStream.eos()) {
+					const int read = pngStream.read(buf, sizeof(buf));
+					if (read <= 0) break;
+					b64Writer.write(buf, read);
+				}
+				b64Writer.flush();
+				base64Stream.seek(0);
+				core::String base64Data;
+				base64Stream.readString(base64Stream.size(), base64Data);
+
+				json::Json tex = json::Json::object();
+				tex.set("name", "palette.png");
+				tex.set("source", core::String("data:image/png;base64,") + base64Data);
+				tex.set("width", palW);
+				tex.set("height", palH);
+				tex.set("uv_width", palW);
+				tex.set("uv_height", palH);
+				textures.push(tex);
+			}
+		}
+	}
+	root.set("textures", textures);
+
+	// Outliner - build hierarchy from scene graph
+	json::Json outliner = json::Json::array();
+
+	// Recursive function to serialize a node and its children into the outliner
+	struct OutlinerBuilder {
+		const scenegraph::SceneGraph &sg;
+		decltype(vec3Array) &toVec3;
+
+		json::Json buildGroup(const scenegraph::SceneGraphNode &node) {
+			json::Json group = json::Json::object();
+			group.set("name", node.name());
+			group.set("uuid", node.uuid().str());
+			// Group origin in world coordinates
+			group.set("origin", toVec3(node.transform(0).worldTranslation()));
+			group.set("visibility", node.visible());
+			group.set("locked", node.locked());
+
+			const glm::vec3 euler = glm::degrees(glm::eulerAngles(node.transform(0).localOrientation()));
+			if (glm::any(glm::epsilonNotEqual(euler, glm::vec3(0.0f), 0.001f))) {
+				group.set("rotation", toVec3(euler));
+			}
+
+			json::Json children = json::Json::array();
+			for (int childId : node.children()) {
+				const scenegraph::SceneGraphNode &child = sg.node(childId);
+				if (child.isAnyModelNode() && child.children().empty()) {
+					children.push(child.uuid().str());
+				} else if (child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Group) {
+					children.push(buildGroup(child));
+				}
+			}
+			group.set("children", children);
+			return group;
+		}
+	};
+
+	OutlinerBuilder builder{sceneGraph, vec3Array};
+	const scenegraph::SceneGraphNode &rootSGNode = sceneGraph.node(sceneGraph.root().id());
+	for (int childId : rootSGNode.children()) {
+		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+		if (child.isAnyModelNode() && child.children().empty()) {
+			outliner.push(child.uuid().str());
+		} else if (child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Group) {
+			outliner.push(builder.buildGroup(child));
+		}
+	}
+	root.set("outliner", outliner);
+
+	// Animations
+	json::Json animations = json::Json::array();
+	for (const core::String &animName : sceneGraph.animations()) {
+		if (animName == DEFAULT_ANIMATION) {
+			continue; // Default is the rest pose, not a real animation
+		}
+
+		json::Json anim = json::Json::object();
+		anim.set("uuid", core::UUID::generate().str());
+		anim.set("name", animName);
+		anim.set("loop", "loop");
+		anim.set("override", false);
+		anim.set("snapping", 24);
+
+		// Find max frame to compute length
+		float maxTime = 0.0f;
+		const float fps = 24.0f;
+
+		json::Json animators = json::Json::object();
+		for (const auto &entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (node.type() == scenegraph::SceneGraphNodeType::Root) {
+				continue;
+			}
+
+			const scenegraph::SceneGraphKeyFrames &kfs = node.keyFrames(animName);
+			const scenegraph::SceneGraphKeyFrames &defaultKfs = node.keyFrames(DEFAULT_ANIMATION);
+			if (kfs.size() <= 1) {
+				continue; // Only base keyframe, no animation data
+			}
+
+			// Get base transform for computing deltas
+			scenegraph::SceneGraphTransform baseTransform;
+			if (!defaultKfs.empty()) {
+				baseTransform = defaultKfs[0].transform();
+			}
+
+			json::Json animator = json::Json::object();
+			animator.set("name", node.name());
+			animator.set("type", "bone");
+
+			json::Json keyframes = json::Json::array();
+			for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
+				const float time = (float)kf.frameIdx / fps;
+				maxTime = glm::max(maxTime, time);
+
+				const scenegraph::SceneGraphTransform &t = kf.transform();
+
+				// Compute rotation delta (animation value = inverse(base) * current)
+				const glm::quat baseRot = baseTransform.localOrientation();
+				const glm::quat currentRot = t.localOrientation();
+				const glm::quat deltaRot = glm::conjugate(baseRot) * currentRot;
+				// Extract ZYX euler angles to match Blockbench convention
+				// For ZYX: first extract X, then Y, then Z
+				const float sinX = 2.0f * (deltaRot.w * deltaRot.x - deltaRot.y * deltaRot.z);
+				const float x = glm::abs(sinX) >= 1.0f ? glm::sign(sinX) * glm::half_pi<float>() : glm::asin(sinX);
+				const float sinYcosX = 2.0f * (deltaRot.w * deltaRot.y + deltaRot.x * deltaRot.z);
+				const float cosYcosX = 1.0f - 2.0f * (deltaRot.x * deltaRot.x + deltaRot.y * deltaRot.y);
+				const float y = glm::atan(sinYcosX, cosYcosX);
+				const float sinZcosX = 2.0f * (deltaRot.w * deltaRot.z + deltaRot.x * deltaRot.y);
+				const float cosZcosX = 1.0f - 2.0f * (deltaRot.x * deltaRot.x + deltaRot.z * deltaRot.z);
+				const float z = glm::atan(sinZcosX, cosZcosX);
+				const glm::vec3 deltaEuler = glm::degrees(glm::vec3(x, y, z));
+
+				// Compute position delta
+				const glm::vec3 deltaPos = t.localTranslation() - baseTransform.localTranslation();
+
+				// Compute scale delta
+				const glm::vec3 deltaScale = t.localScale() - baseTransform.localScale();
+
+				// Write rotation keyframe if non-zero
+				if (glm::any(glm::epsilonNotEqual(deltaEuler, glm::vec3(0.0f), 0.1f))) {
+					json::Json rotKf = json::Json::object();
+					rotKf.set("channel", "rotation");
+					rotKf.set("time", (double)time);
+					rotKf.set("interpolation", "linear");
+					json::Json dp = json::Json::object();
+					// Convert from vengi internal to bbmodel: negate X for rotation
+					dp.set("x", -(double)deltaEuler.x);
+					dp.set("y", (double)deltaEuler.y);
+					dp.set("z", (double)deltaEuler.z);
+					json::Json dps = json::Json::array();
+					dps.push(dp);
+					rotKf.set("data_points", dps);
+					keyframes.push(rotKf);
+				}
+
+				// Write position keyframe if non-zero
+				if (glm::any(glm::epsilonNotEqual(deltaPos, glm::vec3(0.0f), 0.01f))) {
+					json::Json posKf = json::Json::object();
+					posKf.set("channel", "position");
+					posKf.set("time", (double)time);
+					posKf.set("interpolation", "linear");
+					json::Json dp = json::Json::object();
+					dp.set("x", (double)deltaPos.x);
+					dp.set("y", (double)deltaPos.y);
+					dp.set("z", (double)deltaPos.z);
+					json::Json dps = json::Json::array();
+					dps.push(dp);
+					posKf.set("data_points", dps);
+					keyframes.push(posKf);
+				}
+
+				// Write scale keyframe if non-zero
+				if (glm::any(glm::epsilonNotEqual(deltaScale, glm::vec3(0.0f), 0.01f))) {
+					json::Json scaleKf = json::Json::object();
+					scaleKf.set("channel", "scale");
+					scaleKf.set("time", (double)time);
+					scaleKf.set("interpolation", "linear");
+					json::Json dp = json::Json::object();
+					dp.set("x", (double)(1.0f + deltaScale.x));
+					dp.set("y", (double)(1.0f + deltaScale.y));
+					dp.set("z", (double)(1.0f + deltaScale.z));
+					json::Json dps = json::Json::array();
+					dps.push(dp);
+					scaleKf.set("data_points", dps);
+					keyframes.push(scaleKf);
+				}
+			}
+
+			if (!keyframes.size()) {
+				continue;
+			}
+
+			animator.set("keyframes", keyframes);
+			animators.set(node.uuid().str().c_str(), animator);
+		}
+
+		anim.set("length", (double)maxTime);
+		anim.set("animators", animators);
+		animations.push(anim);
+	}
+	root.set("animations", animations);
+
+	const core::String jsonStr = root.dump(1);
+	if (stream->write(jsonStr.c_str(), jsonStr.size()) != (int)jsonStr.size()) {
+		Log::error("Failed to write bbmodel file: %s", filename.c_str());
+		return false;
+	}
 
 	return true;
 }

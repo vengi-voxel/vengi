@@ -131,8 +131,9 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			stream.writeStringFormat(false, "{");
 			stream.writeStringFormat(false, "\"name\":\"%s\",", sceneGraph.animations()[a].c_str());
 			stream.writeStringFormat(false, "\"keyframes\":[");
-			for (size_t i = 0; i < node.keyFrames().size(); ++i) {
-				const scenegraph::SceneGraphKeyFrame &kf = node.keyFrames()[i];
+			const scenegraph::SceneGraphKeyFrames &animKeyFrames = node.keyFrames(sceneGraph.animations()[a]);
+			for (size_t i = 0; i < animKeyFrames.size(); ++i) {
+				const scenegraph::SceneGraphKeyFrame &kf = animKeyFrames[i];
 				stream.writeStringFormat(false, "{");
 				stream.writeStringFormat(false, "\"id\":%i,", kf.frameIdx);
 				stream.writeStringFormat(false, "\"long_rotation\":%s,", kf.longRotation ? "true" : "false");
@@ -192,7 +193,7 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 				stream.writeStringFormat(false, "}");
 				stream.writeStringFormat(false, "}"); // transform
 				stream.writeStringFormat(false, "}"); // keyframe
-				if (i + 1 < node.keyFrames().size()) {
+				if (i + 1 < animKeyFrames.size()) {
 					stream.writeStringFormat(false, ",");
 				}
 			}

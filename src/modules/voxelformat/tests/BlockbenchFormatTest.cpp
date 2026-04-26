@@ -3,6 +3,9 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "palette/Palette.h"
+#include "voxelformat/private/mesh/BlockbenchFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -60,7 +63,8 @@ protected:
 		EXPECT_GT(fingers_right.children().size(), 0u);
 
 		// Test animations
-		ASSERT_EQ(sceneGraph.animations().size(), 5u);
+		ASSERT_EQ(sceneGraph.animations().size(), 6u);
+		EXPECT_TRUE(sceneGraph.hasAnimation(DEFAULT_ANIMATION));
 		EXPECT_TRUE(sceneGraph.hasAnimation("handsdown"));
 		EXPECT_TRUE(sceneGraph.hasAnimation("sit"));
 		EXPECT_TRUE(sceneGraph.hasAnimation("fist"));
@@ -99,21 +103,19 @@ TEST_F(BlockbenchFormatTest, testLoad_4_5) {
 	test_loy_s_goodies_female_template(sceneGraph, true);
 }
 
-// TODO: failing to load the new version
-TEST_F(BlockbenchFormatTest, DISABLED_testLoad_5_0_3) {
-	{
-		scenegraph::SceneGraph sceneGraphGLB;
-		testLoad(sceneGraphGLB, "loy_s_goodies_female_template_5_0_3.glb", 53);
-		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
-		test_loy_s_goodies_female_template(sceneGraphGLB, false);
-	}
+// TODO: GLB hierarchy differs from bbmodel - needs investigation
+TEST_F(BlockbenchFormatTest, DISABLED_testLoad_5_0_3_glb) {
+	scenegraph::SceneGraph sceneGraphGLB;
+	testLoad(sceneGraphGLB, "loy_s_goodies_female_template_5_0_3.glb", 53);
+	SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
+	test_loy_s_goodies_female_template(sceneGraphGLB, false);
+}
 
-	{
-		scenegraph::SceneGraph sceneGraph;
-		testLoad(sceneGraph, "loy_s_goodies_female_template_5_0_3.bbmodel", 53);
-		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
-		test_loy_s_goodies_female_template(sceneGraph, true);
-	}
+TEST_F(BlockbenchFormatTest, testLoad_5_0_3) {
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "loy_s_goodies_female_template_5_0_3.bbmodel", 53);
+	SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.bbmodel");
+	test_loy_s_goodies_female_template(sceneGraph, true);
 }
 
 // this model is based on a model from https://github.com/SL0ANE/Loy-s-Goodies/tree/main/models - but only one cube was
@@ -141,6 +143,20 @@ TEST_F(BlockbenchFormatTest, testLoad_4_10) {
 TEST_F(BlockbenchFormatTest, testLoadMeshTypes) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "blockbench_meshtypes.bbmodel", 10);
+}
+
+TEST_F(BlockbenchFormatTest, testSaveLoadVoxel) {
+	BlockbenchFormat f;
+	testSaveLoadVoxel("testSaveLoadVoxel.bbmodel", &f, 0, 1,
+					  voxel::ValidateFlags::Region);
+}
+
+TEST_F(BlockbenchFormatTest, testSave) {
+	BlockbenchFormat f;
+	palette::Palette pal;
+	pal.magicaVoxel();
+	testSave("testSave.bbmodel", &f, pal,
+			 voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color));
 }
 
 } // namespace voxelformat

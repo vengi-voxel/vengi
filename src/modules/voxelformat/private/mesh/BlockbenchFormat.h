@@ -199,7 +199,7 @@ public:
 		core::DynamicArray<core::UUID> referenced;
 	};
 
-	enum class BBElementType { Cube, Mesh, Max };
+	enum class BBElementType { Cube, Mesh, Locator, NullObject, Camera, Max };
 
 	struct BBElement {
 		core::UUID uuid;
@@ -210,7 +210,9 @@ public:
 		glm::vec3 origin{0.0f}; // pivot - not normalized
 		bool rescale = false;
 		bool locked = false;
+		bool visible = true;
 		bool box_uv = false;
+		float inflate = 0.0f;
 		int color = 0;
 		BBCube cube;
 		Mesh mesh;
@@ -228,13 +230,15 @@ public:
 		core::String name;
 		core::String model_identifier;
 		glm::ivec2 resolution;
+		// Per-texture UV dimensions (may differ from pixel dimensions)
+		core::DynamicArray<glm::ivec2> textureUVDimensions;
 	};
 
 	// map via uuid
 	using BBElementMap = core::Map<core::UUID, BBElement, 11, core::UUIDHash>;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Blockbench", "", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
+		static io::FormatDescription f{"Blockbench", "", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_ANIMATION};
 		return f;
 	}
 
@@ -251,11 +255,13 @@ private:
 protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
-	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override {
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &,
+					const ChunkMeshes &, const core::String &, const io::ArchivePtr &,
+					const glm::vec3 &, bool, bool, bool) override {
 		return false;
 	}
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat

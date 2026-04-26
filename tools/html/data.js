@@ -450,9 +450,9 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-blockbench",
       "mesh": true,
-      "animation": false,
+      "animation": true,
       "load": true,
-      "save": false
+      "save": true
     },
     {
       "name": "Sandbox VoxEdit Hierarchy",

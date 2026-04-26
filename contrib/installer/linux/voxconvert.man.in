@@ -239,6 +239,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the scene graph transform to mesh exports
 .PP
+\fBvoxformat_voxanimasnodes\fP: Import animation frames as nodes
+.PP
 \fBvoxformat_voxcreategroups\fP: Create groups for vox file
 .PP
 \fBvoxformat_voxcreatelayers\fP: Create layers for vox file
@@ -492,6 +494,8 @@ AceOfSpades (*.vxl)
 BenVoxel (*.ben.json, *.ben)
 .TP
 BinVox (*.binvox)
+.TP
+Blockbench (*.bbmodel)
 .TP
 Build engine (*.kvx)
 .TP

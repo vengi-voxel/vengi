@@ -184,6 +184,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the scene graph transform to mesh exports
 .PP
+\fBvoxformat_voxanimasnodes\fP: Import animation frames as nodes
+.PP
 \fBvoxformat_voxcreategroups\fP: Create groups for vox file
 .PP
 \fBvoxformat_voxcreatelayers\fP: Create layers for vox file

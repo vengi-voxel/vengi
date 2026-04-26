@@ -1115,6 +1115,15 @@ msgctxt "Create layers when saving MagicaVoxel vox files"
 msgid "Create layers for vox file"
 msgstr ""
 
+msgid "Animation as nodes"
+msgstr ""
+
+msgctxt ""
+"Import MagicaVoxel animation frames as dedicated single volume nodes instead "
+"of keyframe animations"
+msgid "Import animation frames as nodes"
+msgstr ""
+
 msgid "Left handed"
 msgstr ""
 
