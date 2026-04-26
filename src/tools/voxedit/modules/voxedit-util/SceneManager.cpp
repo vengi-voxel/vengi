@@ -3452,7 +3452,7 @@ void SceneManager::construct() {
 				});
 				if (didHit) {
 					scenegraph::SceneGraphNode &hitNode = _sceneGraph.node(hit.nodeId);
-					hitNode.setLocked(!hitNode.locked());
+					nodeSetLocked(hit.nodeId, !hitNode.locked());
 					return;
 				}
 			}
@@ -4085,28 +4085,22 @@ void SceneManager::construct() {
 	command::Command::registerCommand("nodelock")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to lock"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = toNodeId(args, activeNode());
-			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-				node->setLocked(true);
-			}
+			nodeSetLocked(toNodeId(args, activeNode()), true);
 		}).setHelp(_("Lock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodetogglelock")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-				node->setLocked(!node->locked());
+			if (const scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+				nodeSetLocked(nodeId, !node->locked());
 			}
 		}).setHelp(_("Toggle the lock state of a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeunlock")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to unlock"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = toNodeId(args, activeNode());
-			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-				node->setLocked(false);
-			}
+			nodeSetLocked(toNodeId(args, activeNode()), false);
 		}).setHelp(_("Unlock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeactivate")
@@ -4189,6 +4183,7 @@ void SceneManager::construct() {
 				scenegraph::SceneGraphNode &node = *iter;
 				node.setLocked(true);
 			}
+			_sceneRenderer->markDirty();
 		}).setHelp(_("Lock all nodes"));
 
 	command::Command::registerCommand("modelunlockall")
@@ -4197,6 +4192,7 @@ void SceneManager::construct() {
 				scenegraph::SceneGraphNode &node = *iter;
 				node.setLocked(false);
 			}
+			_sceneRenderer->markDirty();
 		}).setHelp(_("Unlock all nodes"));
 
 	command::Command::registerCommand("noderename")
@@ -5582,6 +5578,7 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setLocked(locked);
+		_sceneRenderer->markDirty();
 		return true;
 	}
 	return false;
