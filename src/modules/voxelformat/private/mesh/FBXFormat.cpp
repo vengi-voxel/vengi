@@ -11,6 +11,7 @@
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/Map.h"
 #include "engine-config.h"
 #include "image/Image.h"
@@ -36,6 +37,9 @@
 #define ufbx_assert core_assert
 #include "voxelformat/external/ufbx.h"
 
+#define ufbxw_assert core_assert
+#include "voxelformat/external/ufbx_write.h"
+
 namespace voxelformat {
 
 #define wrapBool(read)                                                                                                 \
@@ -52,7 +56,7 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
-	return saveMeshesAscii(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
+	return saveMeshesBinary(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
 bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
@@ -87,84 +91,176 @@ bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename,
 								 io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 								 bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
-	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
-	stream.writeUInt8(0x1A); // unknown
-	stream.writeUInt8(0x00); // unknown
-	const uint32_t version = 7300;
-	stream.writeUInt32(version); // version
-	uint32_t sentinelLength = 25;
-	if constexpr (version < 7500) {
-		sentinelLength = 13;
+	ufbxw_scene_opts sceneOpts;
+	core_memset(&sceneOpts, 0, sizeof(sceneOpts));
+	ufbxw_scene *ws = ufbxw_create_scene(&sceneOpts);
+	if (!ws) {
+		Log::error("Failed to create ufbx_write scene");
+		return false;
 	}
+
+	ufbxw_scene_set_coordinate_axes(ws, {UFBXW_COORDINATE_AXIS_POSITIVE_X, UFBXW_COORDINATE_AXIS_POSITIVE_Y,
+										 UFBXW_COORDINATE_AXIS_POSITIVE_Z});
+	ufbxw_scene_set_unit_scale_factor(ws, 1.0);
+
+	// Map vengi node id -> ufbxw_node
+	core::Map<int, ufbxw_node> nodeMap;
+
+	// Create animation stacks and layers
+	core::DynamicStringMap<ufbxw_anim_layer> animLayerMap;
+	for (const core::String &animName : sceneGraph.animations()) {
+		ufbxw_anim_stack wStack = ufbxw_create_anim_stack(ws);
+		ufbxw_set_name(ws, wStack.id, animName.c_str());
+		ufbxw_anim_layer layer = ufbxw_create_anim_layer(ws, wStack);
+		ufbxw_set_name(ws, layer.id, animName.c_str());
+		animLayerMap.put(animName, layer);
+	}
+
+	// Build mesh index: nodeId -> ChunkMeshExt index
+	core::Map<int, int> meshNodeMap;
+	for (size_t mi = 0; mi < meshes.size(); ++mi) {
+		meshNodeMap.put(meshes[mi].nodeId, (int)mi);
+	}
+
+	const int fps = 30;
+
+	// Recursive function to create nodes
+	const auto createNodes = [&](const auto &self, const scenegraph::SceneGraphNode &sgNode,
+								 ufbxw_node parentWNode) -> void {
+		ufbxw_node wNode = ufbxw_create_node(ws);
+		ufbxw_set_name(ws, wNode.id, sgNode.name().c_str());
+		if (parentWNode.id != 0) {
+			ufbxw_node_set_parent(ws, wNode, parentWNode);
+		}
+		nodeMap.put(sgNode.id(), wNode);
+
+		// Set rest pose transform
+		const scenegraph::KeyFrameIndex kfIdx = 0;
+		const scenegraph::SceneGraphTransform &transform = sgNode.transform(kfIdx);
+		const glm::vec3 &t = transform.localTranslation();
+		const glm::quat &r = transform.localOrientation();
+		const glm::vec3 &s = transform.localScale();
+		ufbxw_node_set_translation(ws, wNode, {t.x, t.y, t.z});
+		ufbxw_node_set_rotation_quat(ws, wNode, {r.x, r.y, r.z, r.w}, UFBXW_ROTATION_ORDER_XYZ);
+		ufbxw_node_set_scaling(ws, wNode, {s.x, s.y, s.z});
+		ufbxw_node_set_visibility(ws, wNode, sgNode.visible());
+
+		// Attach mesh
+		int meshIdx = -1;
+		if (meshNodeMap.get(sgNode.id(), meshIdx)) {
+			const ChunkMeshExt &meshExt = meshes[meshIdx];
+			for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+				const voxel::Mesh *vmesh = &meshExt.mesh->mesh[i];
+				if (vmesh->isEmpty()) {
+					continue;
+				}
+				const int nv = (int)vmesh->getNoOfVertices();
+				const int ni = (int)vmesh->getNoOfIndices();
+				if (nv == 0 || ni == 0) {
+					continue;
+				}
+				const voxel::VoxelVertex *vertices = vmesh->getRawVertexData();
+				const voxel::IndexType *indices = vmesh->getRawIndexData();
+				const palette::Palette &palette = sgNode.palette();
+
+				ufbxw_mesh wMesh = ufbxw_create_mesh(ws);
+				ufbxw_node_set_attribute(ws, wNode, wMesh.id);
+
+				core::DynamicArray<ufbxw_vec3> verts(nv);
+				for (int j = 0; j < nv; ++j) {
+					glm::vec3 pos;
+					if (meshExt.applyTransform) {
+						pos = transform.apply(vertices[j].position, meshExt.pivot * meshExt.size);
+					} else {
+						pos = vertices[j].position;
+					}
+					pos *= scale;
+					verts[j] = {pos.x, pos.y, pos.z};
+				}
+				ufbxw_mesh_set_vertices(ws, wMesh, ufbxw_copy_vec3_array(ws, verts.data(), nv));
+
+				core::DynamicArray<int32_t> triIndices(ni);
+				for (int j = 0; j < ni; ++j) {
+					triIndices[j] = (int32_t)indices[j];
+				}
+				ufbxw_mesh_set_triangles(ws, wMesh, ufbxw_copy_int_array(ws, triIndices.data(), ni));
+
+				// TODO: vertex colors cause a crash in ufbx_write's ufbxwi_generate_indices
+				// Re-enable once ufbx_write is fixed
+				(void)withColor;
+			}
+		}
+
+		// Export animations
+		for (const core::String &animName : sceneGraph.animations()) {
+			if (!sgNode.allKeyFrames().hasKey(animName)) {
+				continue;
+			}
+			const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
+			if (kfs.size() <= 1) {
+				continue;
+			}
+			ufbxw_anim_layer layer;
+			if (!animLayerMap.get(animName, layer)) {
+				continue;
+			}
+			ufbxw_anim_prop animT = ufbxw_node_animate_translation(ws, wNode, layer);
+			ufbxw_anim_prop animR = ufbxw_node_animate_rotation(ws, wNode, layer);
+			ufbxw_anim_prop animS = ufbxw_node_animate_scaling(ws, wNode, layer);
+			for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
+				const ufbxw_ktime time = (ufbxw_ktime)kf.frameIdx * UFBXW_KTIME_SECOND / fps;
+				const glm::vec3 &kt = kf.transform().localTranslation();
+				ufbxw_anim_add_keyframe_vec3(ws, animT, time, {kt.x, kt.y, kt.z}, UFBXW_KEYFRAME_LINEAR);
+				const glm::quat &kr = kf.transform().localOrientation();
+				const glm::vec3 euler = glm::degrees(glm::eulerAngles(kr));
+				ufbxw_anim_add_keyframe_vec3(ws, animR, time, {euler.x, euler.y, euler.z}, UFBXW_KEYFRAME_LINEAR);
+				const glm::vec3 &ks = kf.transform().localScale();
+				ufbxw_anim_add_keyframe_vec3(ws, animS, time, {ks.x, ks.y, ks.z}, UFBXW_KEYFRAME_LINEAR);
+			}
+		}
+
+		for (int childId : sgNode.children()) {
+			self(self, sceneGraph.node(childId), wNode);
+		}
+	};
 
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
-	const scenegraph::SceneGraphNodeChildren &children = root.children();
-	for (int child : children) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream, sentinelLength))
+	for (int childId : root.children()) {
+		createNodes(createNodes, sceneGraph.node(childId), ufbxw_null_node);
 	}
 
-	for (uint32_t i = 0; i < sentinelLength; ++i) {
-		stream.writeUInt8(0x0);
-	}
-	// write footer
-	stream.writeUInt8(0xfa);
-	stream.writeUInt8(0xbc);
-	stream.writeUInt8(0xab);
-	stream.writeUInt8(0x09);
-	stream.writeUInt8(0xd0);
-	stream.writeUInt8(0xc8);
-	stream.writeUInt8(0xd4);
-	stream.writeUInt8(0x66);
-	stream.writeUInt8(0xb1);
-	stream.writeUInt8(0x76);
-	stream.writeUInt8(0xfb);
-	stream.writeUInt8(0x83);
-	stream.writeUInt8(0x1c);
-	stream.writeUInt8(0xf7);
-	stream.writeUInt8(0x26);
-	stream.writeUInt8(0x7e);
-	stream.writeUInt8(0x00);
-	stream.writeUInt8(0x00);
-	stream.writeUInt8(0x00);
-	stream.writeUInt8(0x00);
+	ufbxw_prepare_opts prepOpts = ufbxw_default_prepare_opts;
+	ufbxw_prepare_scene(ws, &prepOpts);
 
-	// Padding for 16 byte alignment
-	const int offset = (int)stream.pos();
-	int pad = ((offset + 15) & ~15) - offset;
-	if (pad == 0) {
-		pad = 16;
-	}
-	for (int i = 0; i < pad; ++i) {
-		stream.writeUInt8(0x00);
+	struct WriteCtx {
+		io::SeekableWriteStream *stream;
+	};
+	WriteCtx wCtx;
+	wCtx.stream = &stream;
+
+	ufbxw_write_stream wStream;
+	core_memset(&wStream, 0, sizeof(wStream));
+	wStream.user = &wCtx;
+	wStream.write_fn = [](void *user, uint64_t offset, const void *data, size_t size) -> bool {
+		WriteCtx *c = (WriteCtx *)user;
+		if (c->stream->seek((int64_t)offset) == -1) {
+			return false;
+		}
+		return c->stream->write(data, size) == (int64_t)size;
+	};
+
+	ufbxw_save_opts saveOpts;
+	core_memset(&saveOpts, 0, sizeof(saveOpts));
+	saveOpts.format = UFBXW_SAVE_FORMAT_BINARY;
+
+	ufbxw_error wError;
+	const bool ok = ufbxw_save_stream(ws, &wStream, &saveOpts, &wError);
+	if (!ok) {
+		Log::error("Failed to save FBX binary: %s", wError.description);
 	}
 
-	// Write the FBX version
-	stream.writeUInt32(version);
-
-	// Write some footer magic (120 zero bytes)
-	for (int i = 0; i < 120; ++i) {
-		stream.writeUInt8(0x00);
-	}
-	stream.writeUInt8(0xf8);
-	stream.writeUInt8(0x5a);
-	stream.writeUInt8(0x8c);
-	stream.writeUInt8(0x6a);
-	stream.writeUInt8(0xde);
-	stream.writeUInt8(0xf5);
-	stream.writeUInt8(0xd9);
-	stream.writeUInt8(0x7e);
-	stream.writeUInt8(0xec);
-	stream.writeUInt8(0xe9);
-	stream.writeUInt8(0x0c);
-	stream.writeUInt8(0xe3);
-	stream.writeUInt8(0x75);
-	stream.writeUInt8(0x8f);
-	stream.writeUInt8(0x29);
-	stream.writeUInt8(0x0b);
-
-	// TODO: VOXELFORMAT: implement me https://code.blender.org/2013/08/fbx-binary-file-format-specification/
-	return false;
+	ufbxw_free_scene(ws);
+	return ok;
 }
 
 void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
@@ -776,12 +872,12 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 									  const glm::vec3 &scale) {
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
+	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
 }
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
 									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
-	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
-	_ufbx_to_transform(transform, ufbxTransform, scale);
+	_ufbx_to_transform(transform, ufbxNode->local_transform, scale);
 }
 
 static color::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
@@ -987,7 +1083,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		}
 	}
 	const core::String &name = priv::_ufbx_to_string(ufbxNode->name);
-	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, false);
+	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true);
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
 		return nodeId;
@@ -1005,9 +1101,28 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	return nodeId;
 }
 
+static scenegraph::FrameIndex _timeToFrame(double time, double timeBegin, int fps) {
+	return core_max(0, (scenegraph::FrameIndex)((time - timeBegin) * fps + 0.5));
+}
+
+static void _insertFrameSorted(core::DynamicArray<scenegraph::FrameIndex> &frames, scenegraph::FrameIndex f) {
+	for (size_t j = 0; j < frames.size(); ++j) {
+		if (frames[j] == f) {
+			return;
+		}
+		if (frames[j] > f) {
+			frames.insert(frames.begin() + j, f);
+			return;
+		}
+	}
+	frames.push_back(f);
+}
+
 void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 								scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &sceneGraphNode,
 								const glm::vec3 &scale) const {
+	const int fps = ufbxScene->settings.frames_per_second > 0 ? (int)ufbxScene->settings.frames_per_second : 30;
+
 	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
 		const core::String &animId = priv::_ufbx_to_string(stack->name);
 		const double duration = stack->time_end - stack->time_begin;
@@ -1015,33 +1130,98 @@ void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *uf
 			Log::warn("Could not import animation '%s' with non-positive duration %f", animId.c_str(), duration);
 			continue;
 		}
-		if (!sceneGraphNode.setAnimation(animId)) {
-			Log::warn("Failed to set animation '%s' for node '%s'", animId.c_str(), sceneGraphNode.name().c_str());
+
+		ufbx_bake_opts bakeOpts;
+		core_memset(&bakeOpts, 0, sizeof(bakeOpts));
+		bakeOpts.temp_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+		bakeOpts.temp_allocator.allocator.free_fn = priv::_ufbx_free;
+		bakeOpts.temp_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+		bakeOpts.result_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+		bakeOpts.result_allocator.allocator.free_fn = priv::_ufbx_free;
+		bakeOpts.result_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+		bakeOpts.resample_rate = (double)fps;
+		bakeOpts.key_reduction_enabled = true;
+		bakeOpts.key_reduction_rotation = true;
+
+		ufbx_error bakeError;
+		ufbx_baked_anim *bake = ufbx_bake_anim(ufbxScene, stack->anim, &bakeOpts, &bakeError);
+		if (!bake) {
+			char err[512];
+			ufbx_format_error(err, sizeof(err), &bakeError);
+			Log::warn("Failed to bake animation '%s': %s", animId.c_str(), err);
 			continue;
 		}
 
-		const int fps = ufbxScene->settings.frames_per_second > 0 ? (int)ufbxScene->settings.frames_per_second : 30;
-		const int frames = (int)(duration * fps);
-		Log::debug("Import %i frames for animation '%s' on node '%s' (duration: %f, fps: %i)", frames, animId.c_str(),
-				   sceneGraphNode.name().c_str(), duration, fps);
-		for (int i = 0; i < frames; ++i) {
-			const double time = stack->time_begin + (double)i / (double)fps;
-			const ufbx_transform ufbxTransform = ufbx_evaluate_transform(stack->anim, ufbxNode, time);
-			scenegraph::KeyFrameIndex keyFrameIdx = sceneGraphNode.addKeyFrame(i);
-			if (keyFrameIdx == InvalidKeyFrame) {
-				keyFrameIdx = sceneGraphNode.keyFrameForFrame(i);
-				if (keyFrameIdx == InvalidKeyFrame) {
-					Log::warn("Failed to add or get keyframe %i/%i for animation '%s' on node '%s'", i, frames,
-							  animId.c_str(), sceneGraphNode.name().c_str());
+		const ufbx_baked_node *bakedNode = ufbx_find_baked_node(bake, (ufbx_node *)ufbxNode);
+		if (!bakedNode) {
+			Log::debug("No baked animation data for node '%s' in animation '%s'", sceneGraphNode.name().c_str(),
+					   animId.c_str());
+			ufbx_free_baked_anim(bake);
+			continue;
+		}
+
+		if (!sceneGraphNode.setAnimation(animId)) {
+			Log::warn("Failed to set animation '%s' for node '%s'", animId.c_str(), sceneGraphNode.name().c_str());
+			ufbx_free_baked_anim(bake);
+			continue;
+		}
+
+		// Use playback_time_begin as the reference point so frame 0 = animation start
+		const double timeBegin = bake->playback_time_begin;
+		const scenegraph::FrameIndex maxFrame = (scenegraph::FrameIndex)(duration * fps);
+
+		// Collect unique frame indices from T/R/S key lists, clamped to playback range
+		core::DynamicArray<scenegraph::FrameIndex> frames;
+		for (size_t i = 0; i < bakedNode->translation_keys.count; ++i) {
+			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->translation_keys.data[i].time, timeBegin, fps);
+			if (f <= maxFrame) {
+				_insertFrameSorted(frames, f);
+			}
+		}
+		for (size_t i = 0; i < bakedNode->rotation_keys.count; ++i) {
+			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->rotation_keys.data[i].time, timeBegin, fps);
+			if (f <= maxFrame) {
+				_insertFrameSorted(frames, f);
+			}
+		}
+		for (size_t i = 0; i < bakedNode->scale_keys.count; ++i) {
+			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->scale_keys.data[i].time, timeBegin, fps);
+			if (f <= maxFrame) {
+				_insertFrameSorted(frames, f);
+			}
+		}
+
+		if (frames.empty()) {
+			ufbx_free_baked_anim(bake);
+			continue;
+		}
+
+		Log::debug("Import %i keyframes for animation '%s' on node '%s'", (int)frames.size(), animId.c_str(),
+				   sceneGraphNode.name().c_str());
+
+		for (size_t i = 0; i < frames.size(); ++i) {
+			const scenegraph::FrameIndex frameIdx = frames[i];
+			// Convert frame index back to absolute time for evaluating baked keys
+			const double time = timeBegin + (double)frameIdx / (double)fps;
+			scenegraph::KeyFrameIndex kfIdx = sceneGraphNode.addKeyFrame(frameIdx);
+			if (kfIdx == InvalidKeyFrame) {
+				kfIdx = sceneGraphNode.keyFrameForFrame(frameIdx);
+				if (kfIdx == InvalidKeyFrame) {
 					continue;
 				}
 			}
-			Log::debug("Import frame %i/%i for animation '%s' on node '%s'", i, frames, animId.c_str(),
-					   sceneGraphNode.name().c_str());
-			scenegraph::SceneGraphKeyFrame &keyFrame = sceneGraphNode.keyFrame(keyFrameIdx);
-			keyFrame.interpolation = scenegraph::InterpolationType::Linear;
-			priv::_ufbx_to_transform(keyFrame.transform(), ufbxTransform, scale);
+			scenegraph::SceneGraphKeyFrame &kf = sceneGraphNode.keyFrame(kfIdx);
+			kf.interpolation = scenegraph::InterpolationType::Linear;
+			scenegraph::SceneGraphTransform &transform = kf.transform();
+			const ufbx_vec3 t = ufbx_evaluate_baked_vec3(bakedNode->translation_keys, time);
+			transform.setLocalTranslation(priv::_ufbx_to_vec3(t) * scale);
+			const ufbx_quat r = ufbx_evaluate_baked_quat(bakedNode->rotation_keys, time);
+			transform.setLocalOrientation(priv::_ufbx_to_quat(r));
+			const ufbx_vec3 s = ufbx_evaluate_baked_vec3(bakedNode->scale_keys, time);
+			transform.setLocalScale(priv::_ufbx_to_vec3(s));
 		}
+
+		ufbx_free_baked_anim(bake);
 	}
 }
 
@@ -1201,6 +1381,84 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		ufbx_free_scene(ufbxScene);
 		return false;
 	}
+
+	// Use skin deformers to parent mesh nodes under their primary bone.
+	// This makes the bone animation propagate to the mesh nodes.
+	sceneGraph.updateTransforms();
+	for (size_t mi = 0; mi < ufbxScene->meshes.count; ++mi) {
+		const ufbx_mesh *ufbxMesh = ufbxScene->meshes[mi];
+		if (ufbxMesh->skin_deformers.count == 0) {
+			continue;
+		}
+		// Find the mesh's ufbx_node
+		const ufbx_node *meshNode = nullptr;
+		for (size_t ni = 0; ni < ufbxMesh->instances.count; ++ni) {
+			meshNode = ufbxMesh->instances[ni];
+			break;
+		}
+		if (!meshNode) {
+			continue;
+		}
+		// Find the vengi node for this mesh by name
+		const core::String meshName = priv::_ufbx_to_string(meshNode->name);
+		int meshNodeId = InvalidNodeId;
+		for (const auto &entry : sceneGraph.nodes()) {
+			if (entry->second.name() == meshName && entry->second.isModelNode()) {
+				meshNodeId = entry->second.id();
+				break;
+			}
+		}
+		if (meshNodeId == InvalidNodeId) {
+			continue;
+		}
+
+		// Find the primary bone (highest total weight) from the first skin deformer
+		const ufbx_skin_deformer *skin = ufbxMesh->skin_deformers[0];
+		const ufbx_node *bestBone = nullptr;
+		size_t bestCount = 0;
+		for (const ufbx_skin_cluster *cluster : skin->clusters) {
+			if (cluster->bone_node && cluster->num_weights > bestCount) {
+				bestCount = cluster->num_weights;
+				bestBone = cluster->bone_node;
+			}
+		}
+		if (!bestBone) {
+			continue;
+		}
+
+		// Find the vengi node for this bone by name
+		const core::String boneName = priv::_ufbx_to_string(bestBone->name);
+		int boneNodeId = InvalidNodeId;
+		for (const auto &entry : sceneGraph.nodes()) {
+			if (entry->second.name() == boneName && entry->second.isGroupNode()) {
+				boneNodeId = entry->second.id();
+				break;
+			}
+		}
+		if (boneNodeId == InvalidNodeId) {
+			continue;
+		}
+
+		Log::debug("Re-parenting mesh '%s' under bone '%s'", meshName.c_str(), boneName.c_str());
+		sceneGraph.changeParent(meshNodeId, boneNodeId, scenegraph::NodeMoveFlag::KeepWorldTransform);
+
+		// Copy Default keyframes to all other animations so the mesh stays at the
+		// correct relative position regardless of which animation is active
+		scenegraph::SceneGraphNode &meshSgNode = sceneGraph.node(meshNodeId);
+		if (meshSgNode.allKeyFrames().hasKey(DEFAULT_ANIMATION)) {
+			const scenegraph::SceneGraphKeyFrames defaultKfs = meshSgNode.keyFrames(DEFAULT_ANIMATION);
+			for (const core::String &animName : sceneGraph.animations()) {
+				if (animName == DEFAULT_ANIMATION) {
+					continue;
+				}
+				meshSgNode.setAnimation(animName);
+				meshSgNode.setKeyFrames(defaultKfs);
+			}
+			meshSgNode.setAnimation(DEFAULT_ANIMATION);
+		}
+	}
+
+	sceneGraph.updateTransforms();
 	sceneGraph.setAnimation(DEFAULT_ANIMATION);
 
 	ufbx_free_scene(ufbxScene);

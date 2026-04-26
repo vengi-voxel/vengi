@@ -5,11 +5,13 @@ set(EXTERNAL_SRCS
 	external/tiny_obj_loader.h
 	external/tiny_gltf.h
 	external/ufbx.h external/ufbx.c
+	external/ufbx_write.h external/ufbx_write.c
 	external/libvxl.h external/libvxl.c
 )
 add_library(${LIB}-external ${EXTERNAL_SRCS})
 if (USE_SANITIZERS)
 	target_compile_options(${LIB}-external PRIVATE -DUFBX_UBSAN=1)
+	set_property(SOURCE external/ufbx_write.c APPEND_STRING PROPERTY COMPILE_FLAGS " -fno-sanitize=all")
 endif()
 check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
 if (C_NO_SHADOW)
