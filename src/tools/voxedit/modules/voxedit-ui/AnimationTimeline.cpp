@@ -142,7 +142,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isAnyModelNode() && !node.isCameraNode() && !node.isPointNode()) {
+			if (node.isRootNode()) {
 				continue;
 			}
 			timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);
