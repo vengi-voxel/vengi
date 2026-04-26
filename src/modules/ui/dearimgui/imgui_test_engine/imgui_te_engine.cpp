@@ -2409,7 +2409,11 @@ void ImGuiTestEngine_AssertLog(const char* expr, const char* file, const char* f
             ctx->LogError("Assert: '%s'", expr);
             ctx->LogWarning("In %s:%d, function %s()", file, line, function);
             if (ImGuiTest* test = ctx->Test)
+            {
                 ctx->LogWarning("While running test: %s %s", test->Category, test->Name);
+                if (test->Output.Status == ImGuiTestStatus_Running)
+                    test->Output.Status = ImGuiTestStatus_Error;
+            }
         }
 }
 

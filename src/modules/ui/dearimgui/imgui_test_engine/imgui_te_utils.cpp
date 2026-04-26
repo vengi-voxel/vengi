@@ -614,7 +614,7 @@ void ImStrTrimTrailingZeroesFromFloat(char* buf, char* buf_end)
     if (decimal_p == NULL)
         return;
     char* p = buf_end;
-    while (p > decimal_p && p[-1] == '0' || p[-1] == '.' || p[-1] == ',')
+    while (p > decimal_p && (p[-1] == '0' || p[-1] == '.' || p[-1] == ','))
         p--;
     if (p >= decimal_p)
         *p = 0;
