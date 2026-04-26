@@ -2,23 +2,26 @@
  * @file
  */
 
-#include "color/ColorUtil.h"
-#include "voxel/RawVolume.h"
 #include "SMFormat.h"
+#include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Bits.h"
-#include "color/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "io/ZipReadStream.h"
-#include "scenegraph/SceneGraph.h"
-#include "voxel/Voxel.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
+#include <SDL_stdinc.h>
+#include <glm/gtc/quaternion.hpp>
 
 // https://starmadepedia.net/wiki/ID_list
 #include "SMPalette.h"
@@ -36,10 +39,121 @@ constexpr int smd2SegmentHeaderSize = 25; // 8 timestamp + 12 position + 4 dataL
 
 // SMD3: 32x32x32 blocks per segment
 constexpr int smd3Blocks = 32;
-constexpr int smd3SegmentHeaderSize = 26; // 1 segmentVersion + 8 timestamp + 12 position + 1 hasValidData + 4 compressedSize
+constexpr int smd3SegmentHeaderSize =
+	26; // 1 segmentVersion + 8 timestamp + 12 position + 1 hasValidData + 4 compressedSize
 constexpr int smd3SegmentDataSize = ((smd3Blocks * smd3Blocks * smd3Blocks) * 3 / 2) - smd3SegmentHeaderSize;
 
 } // namespace priv
+
+struct DockEntry {
+	core::String subfolder;
+	glm::ivec3 position{0};
+	glm::mat3 rotation{1.0f};
+};
+
+// Parse dock entries from meta.smbpm - extracts attachment positions and rotations
+static void parseDockEntries(io::SeekableReadStream &stream, core::DynamicArray<DockEntry> &docks) {
+	const int64_t size = stream.remaining();
+	if (size <= 0) {
+		return;
+	}
+	core::DynamicArray<uint8_t> buf((size_t)size);
+	if (stream.read(buf.data(), (size_t)size) != (int)size) {
+		return;
+	}
+	const uint8_t *data = buf.data();
+	const size_t len = (size_t)size;
+
+	// Search for ATTACHED_ paths and extract dock position + rotation
+	size_t pos = 0;
+	while (pos < len) {
+		// Find next "ATTACHED_" occurrence
+		const uint8_t *found = nullptr;
+		for (size_t i = pos; i + 9 < len; ++i) {
+			if (SDL_memcmp(&data[i], "ATTACHED_", 9) == 0) {
+				found = &data[i];
+				break;
+			}
+		}
+		if (!found) {
+			break;
+		}
+		const size_t attachIdx = (size_t)(found - data);
+
+		// Find the 2-byte length prefix for the full path (Java writeUTF)
+		core::String subfolder;
+		size_t afterPath = 0;
+		for (size_t back = 2; back < 60 && attachIdx >= back; ++back) {
+			const size_t prefixOff = attachIdx - back;
+			const uint16_t strLen = (uint16_t)((data[prefixOff] << 8) | data[prefixOff + 1]);
+			if (strLen > 0 && strLen < 200 && prefixOff + 2 + strLen <= len) {
+				const char *str = (const char *)&data[prefixOff + 2];
+				// Verify it contains ATTACHED_
+				if (SDL_memcmp(str + (back - 2), "ATTACHED_", 9) == 0) {
+					subfolder = core::String(str, strLen);
+					afterPath = prefixOff + 2 + strLen;
+					break;
+				}
+			}
+		}
+		if (subfolder.empty()) {
+			pos = attachIdx + 1;
+			continue;
+		}
+
+		// Find the two 0xf6 markers: first is parent dock pos, second is attached dock pos
+		DockEntry entry;
+		entry.subfolder = subfolder;
+		glm::ivec3 parentDock{0};
+		glm::ivec3 attachedDock{0};
+		int markersFound = 0;
+		for (size_t i = afterPath; i + 13 < len && i < afterPath + 500; ++i) {
+			if (data[i] == 0xf6) {
+				const size_t p = i + 1;
+				if (p + 12 > len) {
+					break;
+				}
+				glm::ivec3 v;
+				v.x = (int32_t)((data[p] << 24) | (data[p + 1] << 16) | (data[p + 2] << 8) | data[p + 3]);
+				v.y = (int32_t)((data[p + 4] << 24) | (data[p + 5] << 16) | (data[p + 6] << 8) | data[p + 7]);
+				v.z = (int32_t)((data[p + 8] << 24) | (data[p + 9] << 16) | (data[p + 10] << 8) | data[p + 11]);
+				if (markersFound == 0) {
+					parentDock = v;
+				} else {
+					attachedDock = v;
+				}
+				++markersFound;
+				i = p + 11; // skip past this marker's data
+				if (markersFound == 2) {
+					break;
+				}
+			}
+		}
+		if (markersFound >= 2) {
+			entry.position = parentDock - attachedDock;
+			Log::debug("Dock entry: %s parent=(%i,%i,%i) attached=(%i,%i,%i) offset=(%i,%i,%i)",
+					   entry.subfolder.c_str(), parentDock.x, parentDock.y, parentDock.z, attachedDock.x,
+					   attachedDock.y, attachedDock.z, entry.position.x, entry.position.y, entry.position.z);
+			docks.push_back(entry);
+		} else if (markersFound == 1) {
+			entry.position = parentDock;
+			Log::debug("Dock entry: %s pos=(%i,%i,%i) (single marker)", entry.subfolder.c_str(), entry.position.x,
+					   entry.position.y, entry.position.z);
+			docks.push_back(entry);
+		}
+		pos = attachIdx + 1;
+	}
+}
+
+// Find dock entry for a given file path (e.g. "Ship/ATTACHED_0/DATA/file.smd3")
+static const DockEntry *findDockEntry(const core::DynamicArray<DockEntry> &docks, const core::String &filePath) {
+	for (const DockEntry &dock : docks) {
+		if (filePath.contains(dock.subfolder)) {
+			return &dock;
+		}
+	}
+	return nullptr;
+}
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -104,7 +218,22 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("No smd3 or smd2 files found in %s", filename.c_str());
 			return false;
 		}
-		// TODO: VOXELFORMAT: load meta data to get possible attachments (meta.smbpm)
+		// Parse meta.smbpm for dock positions/rotations of attached entities
+		core::DynamicArray<DockEntry> docks;
+		{
+			io::ArchiveFiles metaFiles;
+			zipArchive->list("*.smbpm", metaFiles);
+			for (const io::FilesystemEntry &m : metaFiles) {
+				// Only parse the root meta file, not those inside ATTACHED_N dirs
+				if (m.fullPath.contains("ATTACHED_")) {
+					continue;
+				}
+				core::ScopedPtr<io::SeekableReadStream> metaStream(zipArchive->readStream(m.fullPath));
+				if (metaStream) {
+					parseDockEntries(*metaStream, docks);
+				}
+			}
+		}
 		for (const io::FilesystemEntry &e : files) {
 			const core::String &fileExt = core::string::extractExtension(e.name);
 			const bool isSmd3 = fileExt == "smd3";
@@ -127,6 +256,8 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 					Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 					continue;
 				}
+				const DockEntry *dock = findDockEntry(docks, e.fullPath);
+				const int nodesBefore = (int)sceneGraph.nodeSize();
 				if (isSmd3) {
 					if (!readSmd3(*modelStream, sceneGraph, blockPal, position, palette)) {
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
@@ -134,6 +265,20 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 				} else if (isSmd2) {
 					if (!readSmd2(*modelStream, sceneGraph, blockPal, position, palette)) {
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
+					}
+				}
+				if (dock) {
+					const scenegraph::SceneGraphKeyFrame keyFrame;
+					for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+						if ((*iter).id() < nodesBefore) {
+							continue;
+						}
+						scenegraph::SceneGraphNode &node = *iter;
+						scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(0);
+						scenegraph::SceneGraphTransform &transform = kf.transform();
+						transform.setLocalTranslation(glm::vec3(dock->position));
+						const glm::quat orientation = glm::quat_cast(dock->rotation);
+						transform.setLocalOrientation(orientation);
 					}
 				}
 			}
@@ -234,7 +379,8 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	const bool isSmd2 = fileVersion == 2;
 	const int blocks = isSmd2 ? priv::smd2Blocks : priv::smd3Blocks;
 	const int segmentHeaderSize = isSmd2 ? priv::smd2SegmentHeaderSize : priv::smd3SegmentHeaderSize;
-	const int segmentTotalSize = isSmd2 ? priv::smd2ChunkDataSize : (priv::smd3SegmentDataSize + priv::smd3SegmentHeaderSize);
+	const int segmentTotalSize =
+		isSmd2 ? priv::smd2ChunkDataSize : (priv::smd3SegmentDataSize + priv::smd3SegmentHeaderSize);
 	Log::debug("read segment (fileVersion=%i, blocks=%i)", fileVersion, blocks);
 
 	if (headerVersion != 0) {
@@ -293,9 +439,8 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		wrap(blockDataStream.readUInt8(buf[1]))
 		wrap(blockDataStream.readUInt8(buf[2]))
 		// SMD2 uses big-endian byte assembly, SMD3 uses little-endian
-		const uint32_t blockData = isSmd2
-			? ((buf[0] << 16) | (buf[1] << 8) | buf[2])
-			: (buf[0] | (buf[1] << 8) | (buf[2] << 16));
+		const uint32_t blockData =
+			isSmd2 ? ((buf[0] << 16) | (buf[1] << 8) | buf[2]) : (buf[0] | (buf[1] << 8) | (buf[2] << 16));
 		if (blockData == 0u) {
 			continue;
 		}
