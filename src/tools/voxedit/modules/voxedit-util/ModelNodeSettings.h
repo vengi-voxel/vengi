@@ -6,14 +6,14 @@
 
 #include "core/Optional.h"
 #include "core/String.h"
+#include "core/Var.h"
 #include "palette/Palette.h"
+#include "voxedit-ui/ViewMode.h"
+#include "voxedit-util/Config.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 
 namespace voxedit {
-
-// you can import models with a bigger volume size - but you can't create them from within the editor
-static constexpr const int MaxVolumeSize = 256;
 
 /**
  * @brief A struct that holds the information that are needed when creating new model nodes
@@ -31,15 +31,22 @@ struct ModelNodeSettings {
 
 	inline void reset() {
 		position = glm::ivec3(0);
-		size = glm::ivec3(32);
+		if (core::getVar(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::AceOfSpades) {
+			size = glm::ivec3(512, 64, 512);
+		} else {
+			size = glm::ivec3(32);
+		}
 		parent = 0;
 	}
 
 	void checkMaxVoxels() {
-		if (size[0] * size[1] * size[2] > MaxVolumeSize * MaxVolumeSize * MaxVolumeSize) {
+		int64_t volumeVoxels = (int64_t)size.x * (int64_t)size.y * (int64_t)size.z;
+		const int64_t maxVolumeSize = core::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->intVal();
+		int64_t maxVoxels = (int64_t)maxVolumeSize * (int64_t)maxVolumeSize * (int64_t)maxVolumeSize;
+		if (volumeVoxels > maxVoxels) {
 			for (int i = 0; i < 3; ++i) {
-				if (size[i] > MaxVolumeSize) {
-					size[i] = MaxVolumeSize;
+				if (size[i] > maxVolumeSize) {
+					size[i] = maxVolumeSize;
 				}
 			}
 		}

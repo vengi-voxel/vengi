@@ -327,6 +327,7 @@ public:
 	bool isSliceModeActive() const;
 
 	bool exceedsMaxSuggestedVolumeSize() const;
+	bool exceedsMaxSuggestedVolumeSize(const voxel::Region &region) const;
 
 	scenegraph::SceneGraphNodeCamera *activeCameraNode();
 

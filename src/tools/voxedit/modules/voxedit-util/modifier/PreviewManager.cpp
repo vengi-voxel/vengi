@@ -10,15 +10,13 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/ModelNodeSettings.h"
-#include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 
 namespace voxedit {
 
 void PreviewManager::construct() {
 	const core::VarDef voxEditMaxSuggestedVolumeSizePreview(cfg::VoxEditMaxSuggestedVolumeSizePreview, 32, 16,
-															(int)voxedit::MaxVolumeSize,
+															2048,
 															N_("Max preview size"),
 															N_("The maximum size of the preview volume"), -1);
 	_maxSuggestedVolumeSizePreview = core::Var::registerVar(voxEditMaxSuggestedVolumeSizePreview);
