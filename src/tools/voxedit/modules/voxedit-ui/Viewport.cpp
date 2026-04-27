@@ -17,6 +17,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/Axis.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -40,6 +41,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelui/DragAndDropPayload.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -479,6 +481,67 @@ void Viewport::menuBarMementoOptions(command::CommandExecutionListener *listener
 	ImGui::CommandIconMenuItem(ICON_LC_REDO, _("Redo"), "redo", mementoHandler.canRedo(), listener);
 }
 
+void Viewport::menuBarRecentColors() {
+	if (isSceneMode()) {
+		return;
+	}
+	// TODO: UI: don't allow to overlap any of the toolbar menu items on the left side. collapse the colors into a single menu entry and show the
+	// colors in a popup or something liek that.
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+
+	const uint8_t currentIdx = _sceneMgr->modifier().cursorVoxel().getColor();
+	const color::RGBA currentColor = node->palette().color(currentIdx);
+	if (currentColor != _lastTrackedColor || _recentColors.empty()) {
+		_lastTrackedColor = currentColor;
+		_recentColors.push(currentColor);
+	}
+
+	if (_recentColors.empty()) {
+		return;
+	}
+
+	const palette::Palette &palette = node->palette();
+	const float height = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemSpacing.x;
+	const float elementWidth = height + spacing;
+	const float totalWidth = (float)_recentColors.size() * elementWidth;
+	const float availWidth = ImGui::GetContentRegionAvail().x;
+	if (availWidth < elementWidth) {
+		return;
+	}
+
+	const size_t maxColors = (size_t)(availWidth / elementWidth);
+	const size_t count = _recentColors.size() < maxColors ? _recentColors.size() : maxColors;
+	if (count <= 0) {
+		return;
+	}
+	ImGui::SameLine(ImGui::GetWindowWidth() - (count * elementWidth));
+
+	for (size_t i = 0; i < count; ++i) {
+		const color::RGBA color = _recentColors[i];
+		const core::String id = core::String::format("##recentcol%i", (int)i);
+		if (ImGui::ColorButton(id.c_str(), ImColor(color.rgba), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(height, height))) {
+			const int palIdx = palette.getClosestMatch(color);
+			if (palIdx != palette::PaletteColorNotFound) {
+				_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, palIdx));
+			}
+		}
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			ImVec4 col_rgb = ImColor(color.rgba);
+			ImGui::SetDragDropPayload(voxelui::dragdrop::RGBAPayload, &col_rgb, sizeof(float) * 4, ImGuiCond_Once);
+			const ImVec2 rectMins = ImGui::GetCursorScreenPos();
+			const ImVec2 rectMaxs(rectMins.x + height, rectMins.y + height);
+			ImGui::GetWindowDrawList()->AddRectFilled(rectMins, rectMaxs, ImColor(color.rgba));
+			ImGui::Dummy(ImVec2(height, height));
+			ImGui::EndDragDropSource();
+		}
+	}
+}
+
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	core_trace_scoped(Menubar);
 	if (ImGui::BeginMenuBar()) {
@@ -488,6 +551,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		CameraPanel::cameraModeCombo(listener, _camMode);
 		menuBarRenderModeToggle();
 		menuBarView(listener);
+		menuBarRecentColors();
 
 		ImGui::EndMenuBar();
 	}
