@@ -33,8 +33,7 @@ public:
 	void update(const char *id);
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *id) override {
-	}
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

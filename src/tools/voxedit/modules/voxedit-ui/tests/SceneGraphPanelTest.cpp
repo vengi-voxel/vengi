@@ -4,8 +4,10 @@
 
 #include "../SceneGraphPanel.h"
 #include "command/CommandHandler.h"
+#include "core/Var.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "../WindowTitles.h"
 
@@ -247,6 +249,45 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("toolbar/###button5"); // hide all
 		ctx->Yield();
 		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).visible());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "per-node visible toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphvisibletoggle", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+
+		// ensure hide-inactive is off so the checkbox is enabled
+		core::VarPtr hideInactive = core::getVar(cfg::VoxEditHideInactive);
+		hideInactive->setVal(false);
+		ctx->Yield();
+
+		const bool before = sceneGraph.node(nodeId).visible();
+		const core::String checkboxId = core::String::format("##nodelist/##%iv", nodeId);
+		ctx->ItemClick(checkboxId.c_str());
+		ctx->Yield();
+		IM_CHECK(sceneGraph.node(nodeId).visible() != before);
+		ctx->ItemClick(checkboxId.c_str());
+		ctx->Yield();
+		IM_CHECK(sceneGraph.node(nodeId).visible() == before);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "per-node locked toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphlockedtoggle", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+
+		const bool before = sceneGraph.node(nodeId).locked();
+		const core::String checkboxId = core::String::format("##nodelist/##%il", nodeId);
+		ctx->ItemClick(checkboxId.c_str());
+		ctx->Yield();
+		IM_CHECK(sceneGraph.node(nodeId).locked() != before);
+		ctx->ItemClick(checkboxId.c_str());
+		ctx->Yield();
+		IM_CHECK(sceneGraph.node(nodeId).locked() == before);
 	};
 }
 

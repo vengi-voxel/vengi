@@ -24,6 +24,15 @@ void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			IM_CHECK(before == var->boolVal());
 		}
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "grid size input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		core::VarPtr gridSize = core::getVar(cfg::VoxEditGridsize);
+		ctx->ItemInputValue("Grid size", 4);
+		IM_CHECK_EQ(gridSize->intVal(), 4);
+		ctx->ItemInputValue("Grid size", 1);
+		IM_CHECK_EQ(gridSize->intVal(), 1);
+	};
 }
 
 } // namespace voxedit

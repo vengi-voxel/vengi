@@ -169,6 +169,59 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		IM_CHECK(secondNode->keyFrames().size() == secondBefore + 1);
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "loop toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+		const bool before = _loop;
+		ctx->ItemClick("Loop");
+		IM_CHECK(_loop != before);
+		ctx->ItemClick("Loop");
+		IM_CHECK(_loop == before);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "fps input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemInputValue("FPS", 30);
+		IM_CHECK_EQ((int)_fps, 30);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "crop frames")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "timelinecrop", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+		_endFrame = 200;
+		ctx->Yield();
+		ctx->ItemClick(ICON_LC_ARROW_RIGHT_LEFT);
+		ctx->Yield();
+		IM_CHECK_EQ(_startFrame, (int32_t)0);
+		IM_CHECK(_endFrame < 200);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "play pause toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "timelineplaypause", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+
+		// add a keyframe so maxFrame > 0
+		IM_CHECK(focusWindow(ctx, id));
+		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
+		ctx->SetRef(wrapperId);
+		const ImGuiTestItemInfo frameSelector = ctx->ItemInfo("sequencer/currentframeselector");
+		ctx->MouseMove(frameSelector.ID);
+		ctx->MouseDragWithDelta({ImGui::Size(10.0f), 0.0f}, ImGuiMouseButton_Left);
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("###Add");
+		ctx->Yield();
+
+		IM_CHECK(!_animationPlaying->boolVal());
+		ctx->ItemClick(ICON_LC_PLAY);
+		ctx->Yield();
+		IM_CHECK(_animationPlaying->boolVal());
+		ctx->ItemClick(ICON_LC_PAUSE);
+		ctx->Yield();
+		IM_CHECK(!_animationPlaying->boolVal());
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "switch node from timeline")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(_sceneMgr->newScene(true, "timelineswitch", voxel::Region(0, 31)));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));

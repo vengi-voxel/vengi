@@ -56,6 +56,7 @@ if (USE_IMGUITESTENGINE)
 		tests/OptionsPanelTest.cpp
 		tests/PalettePanelTest.cpp
 		tests/RenderPanelTest.cpp
+		tests/SceneDebugPanelTest.cpp
 		tests/SceneGraphPanelTest.cpp
 		tests/SceneSettingsPanelTest.cpp
 		tests/ScriptPanelTest.cpp
