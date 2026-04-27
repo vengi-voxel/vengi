@@ -142,6 +142,7 @@ set(TEST_SRCS
 	tests/HashTest.cpp
 	tests/ListTest.cpp
 	tests/MapTest.cpp
+	tests/MRUBufferTest.cpp
 	tests/DynamicMapTest.cpp
 	tests/MD5Test.cpp
 	tests/OptionalTest.cpp
