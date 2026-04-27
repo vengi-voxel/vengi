@@ -10,6 +10,7 @@
 #include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
+#include "voxedit-ui/SceneGraphUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -72,7 +73,8 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 									  const scenegraph::SceneGraphNode &node) {
-	const core::String &label = core::String::format("%s###node-%i", node.name().c_str(), node.id());
+	const char *icon = nodeIcon(node.type());
+	const core::String &label = core::String::format("%s %s###node-%i", icon, node.name().c_str(), node.id());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {

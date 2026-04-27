@@ -17,6 +17,7 @@
 #include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
+#include "voxedit-ui/SceneGraphUtil.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/ModelNodeSettings.h"
@@ -194,32 +195,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 
 		ImGui::TableNextColumn();
 
-		const char *icon = "";
-		switch (node.type()) {
-		case scenegraph::SceneGraphNodeType::ModelReference:
-			icon = ICON_LC_CODESANDBOX;
-			break;
-		case scenegraph::SceneGraphNodeType::Model:
-			icon = ICON_LC_BOXES;
-			break;
-		case scenegraph::SceneGraphNodeType::Point:
-			icon = ICON_LC_POINTER;
-			break;
-		case scenegraph::SceneGraphNodeType::Root:
-		case scenegraph::SceneGraphNodeType::Group:
-			icon = ICON_LC_GROUP;
-			break;
-		case scenegraph::SceneGraphNodeType::Camera:
-			icon = ICON_LC_CAMERA;
-			break;
-		case scenegraph::SceneGraphNodeType::Unknown:
-			icon = ICON_LC_CIRCLE_QUESTION_MARK;
-			break;
-		case scenegraph::SceneGraphNodeType::AllModels:
-		case scenegraph::SceneGraphNodeType::All:
-		case scenegraph::SceneGraphNodeType::Max:
-			break;
-		}
+		const char *icon = nodeIcon(node.type());
 		const core::String &name = core::String::format("%s##%i", node.name().c_str(), nodeId);
 		const bool selected = nodeId == sceneGraph.activeNode();
 		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_NoTreePushOnOpen;
