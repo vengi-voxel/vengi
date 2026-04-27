@@ -10,8 +10,6 @@
 #include "imgui_internal.h"
 #include "imgui_neo_internal.h"
 
-#include <unordered_map>
-
 namespace ImGui {
 
 // Internal state, used for deletion of old keyframes.
@@ -41,8 +39,7 @@ struct ImGuiNeoSequencerInternalData {
 	}
 	ImVec2 TopLeftCursor = {0, 0};	   // Cursor on top of whole widget
 	ImVec2 TopBarStartCursor = {0, 0}; // Cursor on top, below Zoom slider
-	ImVec2 StartValuesCursor = {0, 0}; // Cursor on top of values
-	ImVec2 ValuesCursor = {0, 0};	   // Current cursor position, used for values drawing
+	float StartValuesX = 0.0f;        // X position for keyframe values
 
 	ImVec2 Size = {0, 0};		// Size of whole sequencer
 	ImVec2 TopBarSize = {0, 0}; // Size of top bar without Zoom
@@ -94,28 +91,20 @@ struct ImGuiNeoSequencerInternalData {
 	ImVector<ImGuiNeoTimelineKeyframes> SelectionData;
 };
 
-static ImGuiNeoSequencerStyle style; // NOLINT(cert-err58-cpp)
+struct ImGuiNeoSequencerContext {
+	ImGuiNeoSequencerStyle Style;
+	ImPool<ImGuiNeoSequencerInternalData> Sequencers;
+	ImGuiNeoSequencerInternalData *CurrentSequencer = nullptr;
+	bool InSequencer = false;
+	float CurrentTimelineHeight = 0.0f;
+	float CurrentTimelineY = 0.0f;
+	uint32_t CurrentTimelineDepth = 0;
+	ImVector<ImGuiColorMod> ColorStack;
+	ImVector<ImGuiNeoKeyframeDuplicate> KeyframeDuplicates;
+};
 
-// Global context stuff
-static bool inSequencer = false;
-
-// Height of timeline right now
-static float currentTimelineHeight = 0.0f;
-
-// Current active sequencer
-static ImGuiID currentSequencer;
-
-// Current timeline depth, used for offset of label
-static uint32_t currentTimelineDepth = 0;
-
-static ImVector<ImGuiColorMod> sequencerColorStack;
-
-// Data of all sequencers, this is main c++ part and I should create C alternative or use imgui ImVector or something
-static std::unordered_map<ImGuiID, ImGuiNeoSequencerInternalData> sequencerData;
-
-static ImVector<ImGuiNeoKeyframeDuplicate> keyframeDuplicates;
-
-static uint32_t idCounter = 0;
+static ImGuiNeoSequencerContext GNeoSequencerContext;
+static ImGuiNeoSequencerContext *GNeoSeq = &GNeoSequencerContext;
 
 ///////////// STATIC HELPERS ///////////////////////
 
@@ -136,12 +125,12 @@ static float GetWorkTimelineWidth(ImGuiNeoSequencerInternalData &context) {
 // Dont pull frame from context, its used for dragging
 static ImRect GetCurrentFrameBB(FrameIndexType frame, ImGuiNeoSequencerInternalData &context) {
 	const ImGuiStyle &imStyle = GetStyle();
-	const float width = style.CurrentFramePointerSize * GetStyle().FontScaleMain;
+	const float width = GNeoSeq->Style.CurrentFramePointerSize * GetStyle().FontScaleMain;
 	const ImVec2 cursor =
 		context.TopBarStartCursor + ImVec2{context.ValuesWidth + imStyle.FramePadding.x - width / 2.0f, 0};
 	const ImVec2 currentFrameCursor = cursor + ImVec2{GetKeyframePositionX(frame, context), 0};
 
-	float pointerHeight = style.CurrentFramePointerSize * 2.5f;
+	float pointerHeight = GNeoSeq->Style.CurrentFramePointerSize * 2.5f;
 	ImRect rect{currentFrameCursor, currentFrameCursor + ImVec2{width, pointerHeight * GetStyle().FontScaleMain}};
 
 	return rect;
@@ -155,7 +144,6 @@ static void ProcessCurrentFrame(FrameIndexType *frame, ImGuiNeoSequencerInternal
 	const ImGuiStyle &imStyle = GetStyle();
 
 	ImGuiID id = GetCurrentWindow()->GetID("currentframeselector");
-	ItemSize(pointerRect.GetSize(), imStyle.FramePadding.y);
 	if (!ItemAdd(pointerRect, id)) {
 		return;
 	}
@@ -186,11 +174,6 @@ static void ProcessCurrentFrame(FrameIndexType *frame, ImGuiNeoSequencerInternal
 	}
 
 	context.CurrentFrame = *frame;
-}
-
-static void FinishPreviousTimeline(ImGuiNeoSequencerInternalData &context) {
-	context.ValuesCursor = {context.TopBarStartCursor.x, context.ValuesCursor.y};
-	currentTimelineHeight = 0.0f;
 }
 
 static ImColor GetKeyframeColor(ImGuiNeoSequencerInternalData &context, bool hovered, bool inSelection) {
@@ -250,8 +233,8 @@ static bool GetKeyframeInSelection(int32_t value, ImGuiID id, ImGuiNeoSequencerI
 
 	const bool overlaps = bb.Overlaps(sel);
 
-	const bool forceRemove = IsKeyDown(style.ModRemoveKey);
-	const bool forceAdd = IsKeyDown(style.ModAddKey);
+	const bool forceRemove = IsKeyDown(GNeoSeq->Style.ModRemoveKey);
+	const bool forceAdd = IsKeyDown(GNeoSeq->Style.ModAddKey);
 
 	auto removeKeyframe = [&]() {
 		for (ImGuiNeoTimelineKeyframes &val : context.SelectionData) {
@@ -288,29 +271,32 @@ static ImGuiID GetKeyframeID(int32_t *frame) {
 
 static bool CreateKeyframe(int32_t *frame) {
 	const ImGuiStyle &imStyle = GetStyle();
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	const float timelineOffset = GetKeyframePositionX(*frame, context);
 	float offset = 0.0f;
 
-	for (ImGuiNeoKeyframeDuplicate &duplicateData : keyframeDuplicates) {
+	for (ImGuiNeoKeyframeDuplicate &duplicateData : GNeoSeq->KeyframeDuplicates) {
 		if (duplicateData.Frame == *frame) {
-			offset = (float)duplicateData.Count * style.CollidedKeyframeOffset;
+			offset = (float)duplicateData.Count * GNeoSeq->Style.CollidedKeyframeOffset;
 			duplicateData.Count++;
 		}
 	}
 
-	if (offset < style.CollidedKeyframeOffset) {
-		keyframeDuplicates.push_back({});
-		keyframeDuplicates.back().Frame = *frame;
-		keyframeDuplicates.back().Count = 1;
+	if (offset < GNeoSeq->Style.CollidedKeyframeOffset) {
+		GNeoSeq->KeyframeDuplicates.push_back({});
+		GNeoSeq->KeyframeDuplicates.back().Frame = *frame;
+		GNeoSeq->KeyframeDuplicates.back().Count = 1;
 	}
 
-	const ImVec2 pos = ImVec2{context.StartValuesCursor.x + imStyle.FramePadding.x, context.ValuesCursor.y} +
+	const ImVec2 pos = ImVec2{context.StartValuesX + imStyle.FramePadding.x, GNeoSeq->CurrentTimelineY} +
 					   ImVec2{timelineOffset + context.ValuesWidth + offset, 0};
-	const ImVec2 bbPos = pos - ImVec2{currentTimelineHeight / 2, 0};
-	const ImRect bb = {bbPos, bbPos + ImVec2{currentTimelineHeight, currentTimelineHeight}};
+	const ImVec2 bbPos = pos - ImVec2{GNeoSeq->CurrentTimelineHeight / 2, 0};
+	const ImRect bb = {bbPos, bbPos + ImVec2{GNeoSeq->CurrentTimelineHeight, GNeoSeq->CurrentTimelineHeight}};
 	const ImGuiID id = GetKeyframeID(frame);
+	if (!ItemAdd(bb, id)) {
+		return false;
+	}
 	bool hovered, held;
 	/*bool pressed =*/ButtonBehavior(bb, id, &hovered, &held, 0);
 
@@ -347,7 +333,7 @@ static bool CreateKeyframe(int32_t *frame) {
 	if (timelineOffset >= 0.0f) {
 		const ImColor color = GetKeyframeColor(context, hovered, inSelection);
 		ImDrawList *drawList = ImGui::GetWindowDrawList();
-		drawList->AddCircleFilled(pos + ImVec2{0, currentTimelineHeight / 2.f}, currentTimelineHeight / 3.0f, color, 4);
+		drawList->AddCircleFilled(pos + ImVec2{0, GNeoSeq->CurrentTimelineHeight / 2.f}, GNeoSeq->CurrentTimelineHeight / 3.0f, color, 4);
 	}
 
 	context.IsLastKeyframeHovered = hovered;
@@ -360,32 +346,18 @@ static bool CreateKeyframe(int32_t *frame) {
 	return true;
 }
 
-static const char *GenerateID() {
-	static char idBuffer[16];
-	idBuffer[0] = '#';
-	idBuffer[1] = '#';
-	memset(idBuffer + 2, 0, 14);
-	snprintf(idBuffer + 2, 14, "%o", idCounter++);
-
-	return &idBuffer[0];
-}
-
-static void ResetID() {
-	idCounter = 0;
-}
-
 static void RenderCurrentFrame(ImGuiNeoSequencerInternalData &context) {
 	const ImRect bb = GetCurrentFrameBB(context.CurrentFrame, context);
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
 
 	RenderNeoSequencerCurrentFrame(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerLine),
 								   context.CurrentFrameColor, bb, context.Size.y - context.TopBarSize.y,
-								   style.CurrentFrameLineWidth, drawList);
+								   GNeoSeq->Style.CurrentFrameLineWidth, drawList);
 }
 
 static float CalculateZoomBarHeight() {
 	const ImGuiStyle &imStyle = GetStyle();
-	return GetFontSize() * style.ZoomHeightScale + imStyle.FramePadding.y * 2.0f;
+	return GetFontSize() * GNeoSeq->Style.ZoomHeightScale + imStyle.FramePadding.y * 2.0f;
 }
 
 static void ProcessAndRenderZoom(ImGuiNeoSequencerInternalData &context, const ImVec2 &cursor, bool allowEditingLength,
@@ -410,6 +382,7 @@ static void ProcessAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 	if (allowEditingLength) {
 		const float sideOffset = imStyle.ItemSpacing.x / 2.0f;
 		ImVec2 prevWindowCursor = window->DC.CursorPos;
+		ImVec2 prevCursorMaxPos = window->DC.CursorMaxPos;
 
 		window->DC.CursorPos = cursor;
 
@@ -427,6 +400,7 @@ static void ProcessAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 					allowEditingLength ? 0 : ImGuiInputTextFlags_ReadOnly);
 
 		window->DC.CursorPos = prevWindowCursor;
+		window->DC.CursorMaxPos = prevCursorMaxPos;
 	}
 
 	if (endFrameVal <= startFrameVal) {
@@ -612,15 +586,15 @@ static void RenderSelection(ImGuiNeoSequencerInternalData &context) {
 
 	// Inner
 	drawList->AddRectFilled(context.SelectionMouseStart, currentMousePosition,
-							ColorConvertFloat4ToU32(style.Colors[ImGuiNeoSequencerCol_Selection]));
+							ColorConvertFloat4ToU32(GNeoSeq->Style.Colors[ImGuiNeoSequencerCol_Selection]));
 
 	// border
 	drawList->AddRect(context.SelectionMouseStart, currentMousePosition,
-					  ColorConvertFloat4ToU32(style.Colors[ImGuiNeoSequencerCol_SelectionBorder]), 0.0f, 0, 0.5f);
+					  ColorConvertFloat4ToU32(GNeoSeq->Style.Colors[ImGuiNeoSequencerCol_SelectionBorder]), 0.0f, 0, 0.5f);
 }
 
 static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize) {
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	ImGuiWindow *window = GetCurrentWindow();
 
 	const bool closable = open != nullptr;
@@ -628,10 +602,12 @@ static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
 	const float arrowWidth = drawList->_Data->FontSize;
 	const ImVec2 arrowSize = {arrowWidth, arrowWidth};
-	const ImRect arrowBB = {context.ValuesCursor, context.ValuesCursor + arrowSize};
-	const ImVec2 groupBBMin = {context.ValuesCursor + ImVec2{arrowSize.x, 0.0f}};
+	const ImVec2 cursor = {context.TopBarStartCursor.x, window->DC.CursorPos.y};
+	ItemSize(ImVec2{0, labelSize.y});
+	const ImRect arrowBB = {cursor, cursor + arrowSize};
+	const ImVec2 groupBBMin = {cursor + ImVec2{arrowSize.x, 0.0f}};
 	const ImRect groupBB = {groupBBMin, groupBBMin + labelSize};
-	const ImGuiID arrowID = window->GetID(GenerateID());
+	const ImGuiID arrowID = window->GetID("##arrow");
 	const bool addArrowRes = ItemAdd(arrowBB, arrowID);
 	if (addArrowRes) {
 		if (IsItemClicked() && closable) {
@@ -652,8 +628,11 @@ static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 }
 
 static bool TimelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
-	const ImRect groupBB = {context.ValuesCursor, context.ValuesCursor + labelSize};
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
+	ImGuiWindow *window = GetCurrentWindow();
+	const ImVec2 cursor = {context.TopBarStartCursor.x, window->DC.CursorPos.y};
+	ItemSize(ImVec2{0, labelSize.y});
+	const ImRect groupBB = {cursor, cursor + labelSize};
 	const bool addGroupRes = ItemAdd(groupBB, id);
 	if (addGroupRes) {
 		if (IsItemClicked()) {
@@ -662,7 +641,7 @@ static bool TimelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
 		}
 	}
 	const float width = groupBB.Max.x - groupBB.Min.x;
-	context.ValuesWidth = ImMax(context.ValuesWidth, width); // Make left panel wide enough
+	context.ValuesWidth = ImMax(context.ValuesWidth, width);
 
 	return addGroupRes;
 }
@@ -674,12 +653,12 @@ const ImVec4 &GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx) {
 }
 
 ImGuiNeoSequencerStyle &GetNeoSequencerStyle() {
-	return style;
+	return GNeoSeq->Style;
 }
 
 bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *startFrame, FrameIndexType *endFrame,
 					   const ImVec2 &size, ImGuiNeoSequencerFlags flags) {
-	IM_ASSERT(!inSequencer && "Called when while in other NeoSequencer, that won't work, call End!");
+	IM_ASSERT(!GNeoSeq->InSequencer && "Called when while in other NeoSequencer, that won't work, call End!");
 	IM_ASSERT(*startFrame < *endFrame && "Start frame must be smaller than end frame");
 
 	static char childNameStorage[64];
@@ -691,7 +670,7 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 		return openChild;
 	}
 
-	if (inSequencer) {
+	if (GNeoSeq->InSequencer) {
 		return false;
 	}
 
@@ -708,9 +687,11 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 	PushID(idin);
 	const unsigned int id = window->IDStack[window->IDStack.size() - 1];
 
-	inSequencer = true;
+	GNeoSeq->InSequencer = true;
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[id];
+	ImGuiNeoSequencerInternalData *sequencer = GNeoSeq->Sequencers.GetOrAddByKey(id);
+	GNeoSeq->CurrentSequencer = sequencer;
+	ImGuiNeoSequencerInternalData &context = *sequencer;
 	context.Id = id;
 
 	ImVec2 realSize = ImFloor(size);
@@ -734,14 +715,13 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 	context.EndFrame = *endFrame;
 	context.Size = realSize;
 
-	context.TopBarSize = ImVec2(context.Size.x, style.TopBarHeight);
+	context.TopBarSize = ImVec2(context.Size.x, GNeoSeq->Style.TopBarHeight);
 
 	if (context.TopBarSize.y <= 0.0f) {
 		const ImGuiStyle &imStyle = GetStyle();
 		context.TopBarSize.y = CalcTextSize("100").y + imStyle.FramePadding.y * 2.0f;
 	}
 
-	currentSequencer = window->IDStack[window->IDStack.size() - 1];
 
 	ImVec2 backgroundSize = context.Size;
 	const float topCut = abs(context.TopLeftCursor.y - cursor.y);
@@ -749,15 +729,15 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 
 	ImDrawList *drawList = GetWindowDrawList();
 	RenderNeoSequencerBackground(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_Bg), context.TopLeftCursor,
-								 backgroundSize, drawList, style.SequencerRounding);
+								 backgroundSize, drawList, GNeoSeq->Style.SequencerRounding);
 
 	RenderNeoSequencerTopBarBackground(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_TopBarBg),
 									   context.TopBarStartCursor, context.TopBarSize, drawList,
-									   style.SequencerRounding);
+									   GNeoSeq->Style.SequencerRounding);
 
 	RenderNeoSequencerTopBarOverlay(context.Zoom, context.ValuesWidth, context.StartFrame, context.EndFrame,
 									context.OffsetFrame, context.TopBarStartCursor, context.TopBarSize, drawList,
-									style.TopBarShowFrameLines, style.TopBarShowFrameTexts, style.MaxSizePerTick);
+									GNeoSeq->Style.TopBarShowFrameLines, GNeoSeq->Style.TopBarShowFrameTexts, GNeoSeq->Style.MaxSizePerTick);
 
 	if (showZoom) {
 		ProcessAndRenderZoom(context, context.TopLeftCursor, flags & ImGuiNeoSequencerFlags_AllowLengthChanging,
@@ -768,13 +748,14 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 		context.Size.y = context.FilledHeight;
 	}
 
-	context.FilledHeight = context.TopBarSize.y + style.TopBarSpacing + (showZoom ? CalculateZoomBarHeight() : 0.0f);
+	context.FilledHeight = context.TopBarSize.y + GNeoSeq->Style.TopBarSpacing + (showZoom ? CalculateZoomBarHeight() : 0.0f);
 
-	context.StartValuesCursor = cursor + ImVec2{0, context.TopBarSize.y + style.TopBarSpacing};
+	context.StartValuesX = cursor.x;
+	float startValuesY = cursor.y + context.TopBarSize.y + GNeoSeq->Style.TopBarSpacing;
 	if (showZoom) {
-		context.StartValuesCursor = context.StartValuesCursor + ImVec2{0, CalculateZoomBarHeight()};
+		startValuesY += CalculateZoomBarHeight();
 	}
-	context.ValuesCursor = context.StartValuesCursor;
+	window->DC.CursorPos.y = startValuesY;
 
 	ProcessCurrentFrame(frame, context);
 
@@ -785,17 +766,17 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 
 	drawList->PushClipRect(clipMin,
 						   clipMin + backgroundSize - ImVec2(0, context.TopBarSize.y) -
-							   ImVec2{0, GetFontSize() * style.ZoomHeightScale},
+							   ImVec2{0, GetFontSize() * GNeoSeq->Style.ZoomHeightScale},
 						   true);
 
 	return true;
 }
 
 void EndNeoSequencer() {
-	IM_ASSERT(inSequencer && "Called end sequencer when BeginSequencer didnt return true or wasn't called at all!");
-	IM_ASSERT(sequencerData.count(currentSequencer) != 0 && "Ended sequencer has no context!");
+	IM_ASSERT(GNeoSeq->InSequencer && "Called end sequencer when BeginSequencer didnt return true or wasn't called at all!");
+	IM_ASSERT(GNeoSeq->CurrentSequencer != nullptr && "Ended sequencer has no context!");
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	IM_ASSERT(context.TimelineStack.empty() && "Missmatch in timeline Begin / End");
 
 	if (context.SelectionEnabled)
@@ -810,15 +791,14 @@ void EndNeoSequencer() {
 
 	RenderCurrentFrame(context);
 
-	inSequencer = false;
+	GNeoSeq->InSequencer = false;
+	GNeoSeq->CurrentSequencer = nullptr;
 
-	const ImVec2 min = {0, 0};
+	ImGuiWindow *window = GetCurrentWindow();
+	context.FilledHeight = window->DC.CursorPos.y - window->DC.CursorStartPos.y;
 	context.Size.y = context.FilledHeight;
-	const ImVec2 max = context.Size;
 
-	ItemSize({min, max});
 	PopID();
-	ResetID();
 
 	EndChild();
 }
@@ -834,32 +814,32 @@ void EndNeoGroup() {
 void PushNeoSequencerStyleColor(ImGuiNeoSequencerCol idx, ImU32 col) {
 	ImGuiColorMod backup;
 	backup.Col = idx;
-	backup.BackupValue = style.Colors[idx];
-	sequencerColorStack.push_back(backup);
-	style.Colors[idx] = ColorConvertU32ToFloat4(col);
+	backup.BackupValue = GNeoSeq->Style.Colors[idx];
+	GNeoSeq->ColorStack.push_back(backup);
+	GNeoSeq->Style.Colors[idx] = ColorConvertU32ToFloat4(col);
 }
 
 void PushNeoSequencerStyleColor(ImGuiNeoSequencerCol idx, const ImVec4 &col) {
 	ImGuiColorMod backup;
 	backup.Col = idx;
-	backup.BackupValue = style.Colors[idx];
-	sequencerColorStack.push_back(backup);
-	style.Colors[idx] = col;
+	backup.BackupValue = GNeoSeq->Style.Colors[idx];
+	GNeoSeq->ColorStack.push_back(backup);
+	GNeoSeq->Style.Colors[idx] = col;
 }
 
 void PopNeoSequencerStyleColor(int count) {
 	while (count > 0) {
-		ImGuiColorMod &backup = sequencerColorStack.back();
-		style.Colors[backup.Col] = backup.BackupValue;
-		sequencerColorStack.pop_back();
+		ImGuiColorMod &backup = GNeoSeq->ColorStack.back();
+		GNeoSeq->Style.Colors[backup.Col] = backup.BackupValue;
+		GNeoSeq->ColorStack.pop_back();
 		count--;
 	}
 }
 
 void SetSelectedTimeline(const char *timelineLabel) {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	ImGuiWindow *window = GetCurrentWindow();
 
@@ -873,8 +853,8 @@ void SetSelectedTimeline(const char *timelineLabel) {
 }
 
 bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags) {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	IM_ASSERT(!context.TimelineStack.empty() && "No active timelines are present!");
 
@@ -890,11 +870,11 @@ bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags) {
 }
 
 bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags flags) {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
 
 	const bool closable = open != nullptr;
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	const ImGuiStyle &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
 	if (window->SkipItems) {
@@ -904,12 +884,13 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 	const ImGuiID id = window->GetID(label);
 	ImVec2 labelSize = CalcTextSize(label);
 
-	labelSize.y += imStyle.FramePadding.y * 2 + style.ItemSpacing.y * 2;
+	labelSize.y += imStyle.FramePadding.y * 2 + GNeoSeq->Style.ItemSpacing.y * 2;
 	labelSize.x +=
-		imStyle.FramePadding.x * 2 + style.ItemSpacing.x * 2 + (float)currentTimelineDepth * style.DepthItemSpacing;
+		imStyle.FramePadding.x * 2 + GNeoSeq->Style.ItemSpacing.x * 2 + (float)GNeoSeq->CurrentTimelineDepth * GNeoSeq->Style.DepthItemSpacing;
 
 	bool isGroup = flags & ImGuiNeoTimelineFlags_Group && closable;
 	bool addRes = false;
+	const float itemPosY = window->DC.CursorPos.y;
 	if (isGroup) {
 		labelSize.x += imStyle.ItemSpacing.x + GetFontSize();
 		addRes = GroupBehaviour(id, open, labelSize);
@@ -917,26 +898,20 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		addRes = TimelineBehaviour(id, labelSize);
 	}
 
-	currentTimelineHeight = labelSize.y;
+	GNeoSeq->CurrentTimelineHeight = labelSize.y;
+	GNeoSeq->CurrentTimelineY = itemPosY;
 	if (!ImGui::IsItemVisible()) {
-		context.FilledHeight += currentTimelineHeight;
-		context.ValuesCursor.y += currentTimelineHeight;
-		context.ValuesCursor.x = context.TopBarStartCursor.x;
-		currentTimelineHeight = 0.0f;
+		GNeoSeq->CurrentTimelineHeight = 0.0f;
 		return false;
 	}
 
-	if (currentTimelineDepth > 0) {
-		context.ValuesCursor = {context.TopBarStartCursor.x, context.ValuesCursor.y};
-	}
-
-	context.FilledHeight += currentTimelineHeight;
 	const bool result = !closable || (*open);
 	context.LastTimelineOpenned = result;
 
+	const ImVec2 cursor = {context.TopBarStartCursor.x, itemPosY};
 	if (addRes) {
-		RenderNeoTimelane(id == context.SelectedTimeline, context.ValuesCursor + ImVec2{context.ValuesWidth, 0},
-						  ImVec2{context.Size.x - context.ValuesWidth, currentTimelineHeight},
+		RenderNeoTimelane(id == context.SelectedTimeline, cursor + ImVec2{context.ValuesWidth, 0},
+						  ImVec2{context.Size.x - context.ValuesWidth, GNeoSeq->CurrentTimelineHeight},
 						  GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_SelectedTimeline));
 
 		ImVec4 color = GetStyleColorVec4(ImGuiCol_Text);
@@ -945,8 +920,8 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		}
 
 		RenderNeoTimelineLabel(label,
-							   context.ValuesCursor + imStyle.FramePadding +
-								   ImVec2{(float)currentTimelineDepth * style.DepthItemSpacing, 0},
+							   cursor + imStyle.FramePadding +
+								   ImVec2{(float)GNeoSeq->CurrentTimelineDepth * GNeoSeq->Style.DepthItemSpacing, 0},
 							   labelSize, color, isGroup, isGroup && (*open));
 	}
 
@@ -954,14 +929,13 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		context.TimelineStack.push_back(id);
 
 	if (isGroup) { // Group requires special behaviour if its closed
-		context.ValuesCursor.y += currentTimelineHeight;
 		if (result) {
-			currentTimelineDepth++;
+			GNeoSeq->CurrentTimelineDepth++;
 			context.GroupStack.push_back(id);
 		}
 	}
 
-	keyframeDuplicates.resize(0);
+	GNeoSeq->KeyframeDuplicates.resize(0);
 
 	return result;
 }
@@ -980,21 +954,17 @@ bool BeginNeoTimeline(const char *label, FrameIndexType **keyframes, uint32_t ke
 }
 
 void EndNeoTimeLine() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
-	const ImGuiStyle &imStyle = GetStyle();
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	IM_ASSERT(context.TimelineStack.size() > 0 && "Timeline stack push/pop missmatch!");
 
-	context.ValuesCursor.x += imStyle.FramePadding.x + (float)currentTimelineDepth * style.DepthItemSpacing;
-	context.ValuesCursor.y += currentTimelineHeight;
-
-	FinishPreviousTimeline(context);
+	GNeoSeq->CurrentTimelineHeight = 0.0f;
 
 	if (!context.TimelineStack.empty() && !context.GroupStack.empty() &&
 		context.TimelineStack.back() == context.GroupStack.back()) {
-		currentTimelineDepth--;
+		GNeoSeq->CurrentTimelineDepth--;
 		context.GroupStack.pop_back();
 	}
 
@@ -1002,8 +972,8 @@ void EndNeoTimeLine() {
 }
 
 void NeoKeyframe(int32_t *value) {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	IM_ASSERT(!context.TimelineStack.empty() && "Not in timeline!");
 	(void)context;
 
@@ -1011,51 +981,51 @@ void NeoKeyframe(int32_t *value) {
 }
 
 bool IsNeoKeyframeHovered() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.IsLastKeyframeHovered;
 }
 
 bool IsNeoKeyframeSelected() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.IsLastKeyframeSelected;
 }
 
 bool IsNeoKeyframeRightClicked() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.IsLastKeyframeRightClicked;
 }
 
 void NeoClearSelection() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	context.Selection.resize(0);
 	context.SelectionData.resize(0);
 }
 
 bool NeoIsSelecting() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.StateOfSelection == SelectionState::Selecting;
 }
 
 bool NeoHasSelection() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return !context.Selection.empty();
 }
 
 bool NeoIsDraggingSelection() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.StateOfSelection == SelectionState::Dragging;
 }
 
 uint32_t GetNeoKeyframeSelectionSize() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	if (!context.DeleteEnabled) {
 		return 0;
@@ -1074,8 +1044,8 @@ uint32_t GetNeoKeyframeSelectionSize() {
 }
 
 void GetNeoKeyframeSelection(FrameIndexType *selection) {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 
 	if (!context.DeleteEnabled) {
 		return;
@@ -1095,14 +1065,14 @@ void GetNeoKeyframeSelection(FrameIndexType *selection) {
 }
 
 bool IsNeoKeyframeSelectionRightClicked() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.IsSelectionRightClicked;
 }
 
 bool NeoCanDeleteSelection() {
-	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
+	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	return context.DeleteEnabled && NeoHasSelection() && !NeoIsSelecting() && !NeoIsDraggingSelection();
 }
 
