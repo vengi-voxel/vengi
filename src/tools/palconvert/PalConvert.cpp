@@ -3,6 +3,7 @@
  */
 
 #include "PalConvert.h"
+#include "color/ColorUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/concurrent/Concurrency.h"
@@ -85,6 +86,11 @@ static void printJsonPalette(const palette::ColorPalette &palette) {
 		if (!palette.colorName(i).empty()) {
 			Log::printf(",\"name\":\"%s\"", palette.colorName(i).c_str());
 		}
+
+		float h, s, b;
+		color::getHSB(color, h, s, b);
+		Log::printf(",\"hue\":%f,\"saturation\":%f,\"brightness\":%f", h, s, b);
+
 		const palette::Material &mat = palette.material(i);
 		int n = palette::MaterialProperty::MaterialMetal;
 		const int maxN = palette::MaterialProperty::MaterialMax;
