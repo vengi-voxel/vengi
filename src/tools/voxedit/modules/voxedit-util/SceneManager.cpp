@@ -3034,6 +3034,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
 			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
+			// TODO: PERF: here we need to hand in a modifier render context
 			_modifierFacade.render(camera, activePalette(), mat);
 		}
 	}

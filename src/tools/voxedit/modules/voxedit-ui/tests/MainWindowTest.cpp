@@ -98,6 +98,75 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("###Close");
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "welcome screen options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Help/Welcome screen");
+		ctx->Yield();
+		ctx->SetRef(POPUP_TITLE_WELCOME);
+
+		// the view mode combo should exist
+		const ImGuiTestItemInfo viewMode = ctx->ItemInfo("View mode", ImGuiTestOpFlags_NoError);
+		IM_CHECK(viewMode.ID != 0);
+
+		// close
+		ctx->ItemClick("Close###Close");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "resize node popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "resizenodetest", voxel::Region(0, 31)));
+
+		// open the resize popup via the scene graph context menu
+		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+		IM_CHECK(node != nullptr);
+		const core::String uiNodeId = core::String::format("##nodelist/%s##%i", node->name().c_str(), nodeId);
+		ctx->MouseMove(uiNodeId.c_str());
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->MenuClick("//$FOCUSED/Resize");
+		ctx->Yield();
+
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_RESIZE_NODE));
+		ctx->ItemInputValue("##minx", 0);
+		ctx->ItemInputValue("##miny", 0);
+		ctx->ItemInputValue("##minz", 0);
+		ctx->ItemInputValue("##maxx", 15);
+		ctx->ItemInputValue("##maxy", 15);
+		ctx->ItemInputValue("##maxz", 15);
+		ctx->ItemClick("###Ok");
+		ctx->Yield();
+
+		node = _sceneMgr->sceneGraphModelNode(nodeId);
+		IM_CHECK(node != nullptr);
+		IM_CHECK_EQ(node->region().getWidthInVoxels(), 16);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "rescale node popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(newFilledScene(ctx, _sceneMgr, "rescalenodetest"));
+
+		// open the rescale popup via the scene graph context menu
+		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+		IM_CHECK(node != nullptr);
+		const core::String uiNodeId = core::String::format("##nodelist/%s##%i", node->name().c_str(), nodeId);
+		ctx->MouseMove(uiNodeId.c_str());
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->MenuClick("//$FOCUSED/Rescale content");
+		ctx->Yield();
+
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_RESCALE_NODE));
+		// verify the popup opened and has the expected controls
+		const ImGuiTestItemInfo voxelSize = ctx->ItemInfo("Voxel size", ImGuiTestOpFlags_NoError);
+		IM_CHECK(voxelSize.ID != 0);
+		const ImGuiTestItemInfo aspectRatio = ctx->ItemInfo("Maintain aspect ratio", ImGuiTestOpFlags_NoError);
+		IM_CHECK(aspectRatio.ID != 0);
+		ctx->ItemClick("###Ok");
+		ctx->Yield(3);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "about screen")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/About");
@@ -293,6 +362,114 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// close the dialog by clicking the window close button
 		ctx->WindowClose("");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "model node settings popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "modelsettingstest", voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int modelsBefore = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+
+		// open the model node settings popup via the scene graph panel toolbar
+		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
+		ctx->ItemClick("toolbar/###button0");
+		ctx->Yield();
+
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_MODEL_NODE_SETTINGS));
+		ctx->ItemInputValue("##modelsettingsname", "test model node");
+		ctx->ItemInputValue("##posx", 1);
+		ctx->ItemInputValue("##posy", 2);
+		ctx->ItemInputValue("##posz", 3);
+		ctx->ItemInputValue("Width", 16);
+		ctx->ItemInputValue("Height", 16);
+		ctx->ItemInputValue("Depth", 16);
+		ctx->ItemClick("###Ok");
+		ctx->Yield();
+
+		IM_CHECK_EQ((int)sceneGraph.size(scenegraph::SceneGraphNodeType::Model), modelsBefore + 1);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "model unreference popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "unreferencetest", voxel::Region(0, 31)));
+
+		// create a reference node
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		command::executeCommands("modelref");
+		ctx->Yield(3);
+		const int refsBefore = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		IM_CHECK(refsBefore >= 1);
+
+		// find and activate the reference node
+		int refNodeId = InvalidNodeId;
+		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
+			if ((*iter).isReferenceNode()) {
+				refNodeId = (*iter).id();
+				break;
+			}
+		}
+		IM_CHECK(refNodeId != InvalidNodeId);
+		_sceneMgr->nodeActivate(refNodeId);
+		ctx->Yield();
+
+		// trigger the unreference popup
+		_popupModelUnreference = true;
+		ctx->Yield(3);
+
+		IM_CHECK(isPopupOpen(POPUP_TITLE_MODEL_UNREFERENCE));
+		ctx->SetRef(POPUP_TITLE_MODEL_UNREFERENCE);
+		ctx->ItemClick("###Yes");
+		ctx->Yield(3);
+
+		const int refsAfter = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		IM_CHECK(refsAfter < refsBefore);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "failed to save popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+
+		// trigger the failed to save popup
+		_popupFailedToSave = true;
+		ctx->Yield(3);
+
+		// the flag should have been consumed by the popup opening
+		IM_CHECK(!_popupFailedToSave);
+
+		// try to click Ok if the popup is open
+		if (isPopupOpen(POPUP_TITLE_FAILED_TO_SAVE)) {
+			ctx->SetRef(POPUP_TITLE_FAILED_TO_SAVE);
+			ctx->ItemClick("###Ok");
+			ctx->Yield();
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "volume split suggestion popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+
+		// trigger the volume split popup
+		_popupVolumeSplit = true;
+		ctx->Yield(3);
+
+		if (isPopupOpen(POPUP_TITLE_VOLUME_SPLIT)) {
+			ctx->SetRef(POPUP_TITLE_VOLUME_SPLIT);
+			ctx->ItemClick("###No");
+			ctx->Yield();
+		}
+		IM_CHECK(!_popupVolumeSplit);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "minecraft mapping popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		_popupMinecraftMapping->setVal(true);
+		ctx->Yield(3);
+		if (isPopupOpen(POPUP_TITLE_MINECRAFTMAPPING)) {
+			ctx->SetRef(POPUP_TITLE_MINECRAFTMAPPING);
+			const ImGuiTestItemInfo table = ctx->ItemInfo("##minecraftmapping", ImGuiTestOpFlags_NoError);
+			IM_CHECK(table.ID != 0);
+			ctx->ItemClick("Close###Close");
+			ctx->Yield();
+		}
+		IM_CHECK(!_popupMinecraftMapping->boolVal());
 	};
 }
 

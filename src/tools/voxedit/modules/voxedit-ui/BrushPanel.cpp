@@ -62,44 +62,6 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_SCROLL};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
-static constexpr const char *TransformModeStr[] = {NC_("Transform Modes", "Move"), NC_("Transform Modes", "Shear"),
-												   NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
-static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
-
-static constexpr const char *TransformModeIcons[] = {ICON_LC_MOVE, ICON_LC_ITALIC, ICON_LC_SCALING, ICON_LC_ROTATE_3D};
-static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "TransformModeIcons size mismatch");
-
-static constexpr const char *SculptModeStr[] = {
-	NC_("Sculpt Modes", "Erode"),		 NC_("Sculpt Modes", "Grow"),
-	NC_("Sculpt Modes", "Flatten"),		 NC_("Sculpt Modes", "Smooth Additive"),
-	NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"),
-	NC_("Sculpt Modes", "Bridge Gap"),	 NC_("Sculpt Modes", "Squash to Plane"),
-	NC_("Sculpt Modes", "Extend Plane"), NC_("Sculpt Modes", "Reskin")};
-static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
-
-static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT,	  ICON_LC_LAND_PLOT,
-												  ICON_LC_WAVES,  ICON_LC_WAVES,	  ICON_LC_BLEND,
-												  ICON_LC_LINK,	  ICON_LC_MINIMIZE_2, ICON_LC_EXPAND,
-												  ICON_LC_PALETTE};
-static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
-
-// clang-format off
-static constexpr const char *SelectModeIcons[] = {
-	ICON_LC_SQUARE_DASHED,       // All
-	ICON_LC_SCAN,                // Surface
-	ICON_LC_PIPETTE,             // SameColor
-	ICON_LC_DROPLETS,            // FuzzyColor
-	ICON_LC_WAYPOINTS,           // Connected
-	ICON_LC_LAND_PLOT,           // FlatSurface
-	ICON_LC_BOX,                 // Box3D
-	ICON_LC_CIRCLE,              // Circle
-	ICON_LC_LASSO,               // Lasso
-	ICON_LC_PAINTBRUSH,          // Paint
-	ICON_LC_CODE,                // Script
-};
-// clang-format on
-static_assert(lengthof(SelectModeIcons) == (int)SelectMode::Max, "SelectModeIcons size mismatch");
-
 static constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), NC_("Reskin Modes", "Blend"),
 												NC_("Reskin Modes", "Negate")};
 static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
@@ -686,21 +648,13 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	const bool luaModeActive = currentSelectMode == SelectMode::Script;
 	const core::DynamicArray<LUASelectionMode *> &luaModes = modifier.scriptManager().luaSelectionModes();
 
-	const char *SelectModeStr[] = {
-		C_("SelectMode", "All"),		   C_("SelectMode", "Surface"),		C_("SelectMode", "Same Color"),
-		C_("SelectMode", "Fuzzy Color"),   C_("SelectMode", "Connected"),	C_("SelectMode", "Flat Surface"),
-		C_("SelectMode", "3D Box"),		   C_("SelectMode", "Circle"),
-		C_("SelectMode", "Lasso"),		   C_("SelectMode", "Paint"),
-		C_("SelectMode", "Script")};
-	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
-
 	core::String currentSelectLabel;
 	if (luaModeActive) {
 		const LUASelectionMode *luaMode = brush.activeLuaSelectionMode();
 		currentSelectLabel = core::String::format("%s %s", luaMode->iconString(), luaMode->scriptName().c_str());
 	} else {
 		currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode],
-												  SelectModeStr[(int)currentSelectMode]);
+												  _(SelectModeStr[(int)currentSelectMode]));
 	}
 	if (ImGui::BeginCombo(_("Select mode"), currentSelectLabel.c_str(), ImGuiComboFlags_None)) {
 		// Native modes
@@ -709,7 +663,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 				continue;
 			}
 			const bool selected = !luaModeActive && (int)currentSelectMode == i;
-			const core::String selectLabel = core::String::format("%s %s", SelectModeIcons[i], SelectModeStr[i]);
+			const core::String selectLabel = core::String::format("%s %s", SelectModeIcons[i], _(SelectModeStr[i]));
 			if (ImGui::Selectable(selectLabel.c_str(), selected)) {
 				brush.setSelectMode((SelectMode)i);
 				brush.setLuaSelectionMode(-1, nullptr);

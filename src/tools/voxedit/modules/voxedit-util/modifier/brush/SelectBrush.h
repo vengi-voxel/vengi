@@ -5,8 +5,11 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "app/I18N.h"
 #include "color/Distance.h"
+#include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
+#include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
@@ -50,6 +53,31 @@ enum class SelectMode : uint8_t {
 	Script,
 	Max
 };
+
+// clang-format off
+static constexpr const char *SelectModeStr[] = {
+	NC_("SelectMode", "All"),          NC_("SelectMode", "Surface"),      NC_("SelectMode", "Same Color"),
+	NC_("SelectMode", "Fuzzy Color"),  NC_("SelectMode", "Connected"),    NC_("SelectMode", "Flat Surface"),
+	NC_("SelectMode", "3D Box"),       NC_("SelectMode", "Circle"),
+	NC_("SelectMode", "Lasso"),        NC_("SelectMode", "Paint"),
+	NC_("SelectMode", "Script")};
+static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "SelectModeStr size mismatch");
+
+static constexpr const char *SelectModeIcons[] = {
+	ICON_LC_SQUARE_DASHED,       // All
+	ICON_LC_SCAN,                // Surface
+	ICON_LC_PIPETTE,             // SameColor
+	ICON_LC_DROPLETS,            // FuzzyColor
+	ICON_LC_WAYPOINTS,           // Connected
+	ICON_LC_LAND_PLOT,           // FlatSurface
+	ICON_LC_BOX,                 // Box3D
+	ICON_LC_CIRCLE,              // Circle
+	ICON_LC_LASSO,               // Lasso
+	ICON_LC_PAINTBRUSH,          // Paint
+	ICON_LC_CODE,                // Script
+};
+static_assert(lengthof(SelectModeIcons) == (int)SelectMode::Max, "SelectModeIcons size mismatch");
+// clang-format on
 
 class LUASelectionMode;
 

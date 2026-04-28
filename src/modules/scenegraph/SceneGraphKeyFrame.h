@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/I18NMarkers.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicStringMap.h"
@@ -28,9 +29,12 @@ enum class InterpolationType : uint8_t {
 	Max
 };
 
-static constexpr const char *InterpolationTypeStr[]{"Instant",		 "Linear",		"QuadEaseIn",	"QuadEaseOut",
-													"QuadEaseInOut", "CubicEaseIn", "CubicEaseOut", "CubicEaseInOut",
-													"CubicBezier",	 "CatmullRom"};
+static constexpr const char *InterpolationTypeStr[]{
+	NC_("InterpolationType", "Instant"),	   NC_("InterpolationType", "Linear"),
+	NC_("InterpolationType", "QuadEaseIn"),	   NC_("InterpolationType", "QuadEaseOut"),
+	NC_("InterpolationType", "QuadEaseInOut"), NC_("InterpolationType", "CubicEaseIn"),
+	NC_("InterpolationType", "CubicEaseOut"),  NC_("InterpolationType", "CubicEaseInOut"),
+	NC_("InterpolationType", "CubicBezier"),   NC_("InterpolationType", "CatmullRom")};
 static_assert(int(scenegraph::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
 /**

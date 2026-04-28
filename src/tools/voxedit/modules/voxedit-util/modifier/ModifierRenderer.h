@@ -18,7 +18,7 @@ private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	voxelrender::RawVolumeRenderer _volumeRenderer;
-	voxelrender::RenderContext _volumeRendererCtx;
+	voxelrender::RenderContext _volumeRendererCtx; // TODO: PERF: move out of here and into the viewport to prevent recreation when the viewport changes.
 	int32_t _mirrorMeshIndex = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;

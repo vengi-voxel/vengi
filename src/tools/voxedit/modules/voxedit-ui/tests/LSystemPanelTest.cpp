@@ -27,6 +27,98 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		_sceneMgr->lsystemAbort();
 		IM_CHECK(voxelutil::countVoxels(*volume) > 0);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "template selection")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemtemplate", voxel::Region(0, 31)));
+
+		// verify the Templates combo exists and has entries
+		if (!_templates.empty()) {
+			const core::String &firstName = _templates[0].name;
+			ctx->ComboClick(core::String::format("Templates/%s", firstName.c_str()).c_str());
+			ctx->Yield();
+			// after selecting a template, the axiom should be filled
+			IM_CHECK(!_conf.axiom.empty());
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemparams", voxel::Region(0, 31)));
+
+		ctx->ItemInputValue("Angle", 45.0f);
+		IM_CHECK_EQ((int)glm::degrees(_conf.angle), 45);
+
+		ctx->ItemInputValue("Length", 5.0f);
+		IM_CHECK_EQ((int)_conf.length, 5);
+
+		ctx->ItemInputValue("Iterations", 3);
+		IM_CHECK_EQ(_conf.iterations, 3);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "add delete rule")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemrules", voxel::Region(0, 31)));
+
+		const int rulesBefore = (int)_conf.rules.size();
+		ctx->ItemClick("Add Rule###Add Rule");
+		ctx->Yield();
+		IM_CHECK_EQ((int)_conf.rules.size(), rulesBefore + 1);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "adopt dimensions")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemadopt", voxel::Region(0, 31)));
+
+		ctx->ItemClick("Adopt Dimensions");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "cancel generation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemcancel", voxel::Region(0, 31)));
+
+		ctx->ItemInputValue("Iterations", 5);
+		ctx->ItemClick("###Ok");
+		ctx->Yield(1);
+		// the cancel button should appear while running
+		if (_sceneMgr->lsystemRunning()) {
+			ctx->ItemClick("###Cancel");
+			ctx->Yield();
+			IM_CHECK(!_sceneMgr->lsystemRunning());
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "copy paste rules")->TestFunc = [=](ImGuiTestContext *ctx) {
+		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+			return;
+		}
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "lsystemcopypaste", voxel::Region(0, 31)));
+
+		// copy current rules to clipboard
+		ctx->MenuClick("Edit/Copy");
+		ctx->Yield();
+
+		// paste rules from clipboard
+		ctx->MenuClick("Edit/Paste");
+		ctx->Yield();
+	};
 }
 
 } // namespace voxedit

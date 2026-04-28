@@ -3,6 +3,8 @@
  */
 
 #include "scenegraph/SceneGraphNode.h"
+#include "command/CommandHandler.h"
+#include "core/Var.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/Viewport.h"
@@ -175,6 +177,54 @@ bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node,
 	IM_CHECK_RETV(volume->region().containsPoint(pos), false);
 	IM_CHECK_RETV(volume->setVoxel(pos, voxel), false);
 	sceneMgr->modified(node->id(), voxel::Region(pos, pos));
+	return true;
+}
+
+Viewport *viewportById(ui::IMGUIApp *app, int viewportId) {
+	const core::String &title = Viewport::viewportId(viewportId, true);
+	return (Viewport *)app->findPanel(title);
+}
+
+bool newFilledScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, const char *sceneName,
+					const voxel::Region &region) {
+	IM_CHECK_RETV(sceneMgr->newScene(true, sceneName, region), false);
+	command::executeCommands("fill");
+	ctx->Yield(3);
+	return true;
+}
+
+int prepareBrushViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, ui::IMGUIApp *app,
+						 const char *sceneName, const voxel::Region &region) {
+	IM_CHECK_RETV(newFilledScene(ctx, sceneMgr, sceneName, region), -1);
+	IM_CHECK_RETV(activateViewportEditMode(ctx, app), -1);
+	const int viewportId = viewportEditMode(ctx, app);
+	IM_CHECK_RETV(viewportId != -1, -1);
+	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportId, ImVec2(0, -50)), -1);
+	return viewportId;
+}
+
+void dragFromTo(ImGuiTestContext *ctx, const ImVec2 &from, const ImVec2 &to) {
+	ctx->MouseMoveToPos(from);
+	ctx->SleepStandard();
+	ctx->MouseDown(ImGuiMouseButton_Left);
+	ctx->Yield();
+	ctx->MouseLiftDragThreshold();
+	ctx->MouseMoveToPos(to);
+	ctx->SleepStandard();
+	ctx->MouseUp(ImGuiMouseButton_Left);
+	ctx->Yield();
+}
+
+bool toggleMenuCheckbox(ImGuiTestContext *ctx, const char *menuPath, const char *cvarName) {
+	core::VarPtr var = core::getVar(cvarName);
+	IM_CHECK_RETV(var, false);
+	const bool before = var->boolVal();
+	ctx->MenuClick(menuPath);
+	ctx->Yield();
+	IM_CHECK_RETV(var->boolVal() != before, false);
+	ctx->MenuClick(menuPath);
+	ctx->Yield();
+	IM_CHECK_RETV(var->boolVal() == before, false);
 	return true;
 }
 

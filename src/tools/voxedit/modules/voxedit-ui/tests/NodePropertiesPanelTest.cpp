@@ -5,6 +5,7 @@
  #include "../NodePropertiesPanel.h"
  #include "scenegraph/SceneGraph.h"
  #include "scenegraph/SceneGraphNode.h"
+ #include "ui/IconsLucide.h"
  #include "voxedit-util/SceneManager.h"
  #include "TestUtil.h"
 
@@ -37,14 +38,55 @@
 		 const int propsAfterAdd = (int)node.properties().size();
 		 IM_CHECK_EQ(propsAfterAdd, propsBefore + 1);
 
-		 // add a second property
-		 ctx->ItemInputValue("##nodeproperties/##newpropertykey", "TestPropKey2");
-		 ctx->ItemInputValue("##nodeproperties/##newpropertyvalue", "TestPropValue2");
+		 // click the delete button for the property we just added
+		 const core::String deleteId = core::String::format("##nodeproperties/TestPropKey/%s", ICON_LC_X);
+		 ctx->ItemClick(deleteId.c_str());
+		 ctx->Yield();
+
+		 IM_CHECK_EQ((int)node.properties().size(), propsBefore);
+	 };
+
+	 IM_REGISTER_TEST(engine, testCategory(), "boolean property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		 IM_CHECK(activateViewportSceneMode(ctx, _app));
+		 IM_CHECK(_sceneMgr->newScene(true, "nodepropsbool", voxel::Region(0, 31)));
+		 IM_CHECK(focusWindow(ctx, id));
+
+		 const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		 scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+
+		 // add a boolean property
+		 ctx->ItemInputValue("##nodeproperties/##newpropertykey", "BoolProp");
+		 ctx->ItemInputValue("##nodeproperties/##newpropertyvalue", "false");
 		 ctx->ItemClick("##nodeproperties/###nodepropertyadd");
 		 ctx->Yield();
 
-		 const int propsAfterAdd2 = (int)node.properties().size();
-		 IM_CHECK_EQ(propsAfterAdd2, propsBefore + 2);
+		 IM_CHECK(node.property("BoolProp") == "false");
+
+		 // click the checkbox to toggle it
+		 ctx->ItemClick("##nodeproperties/BoolProp/##val");
+		 ctx->Yield();
+		 IM_CHECK(node.property("BoolProp") == "true");
+	 };
+
+	 IM_REGISTER_TEST(engine, testCategory(), "edit existing property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		 IM_CHECK(activateViewportSceneMode(ctx, _app));
+		 IM_CHECK(_sceneMgr->newScene(true, "nodepropsedit", voxel::Region(0, 31)));
+		 IM_CHECK(focusWindow(ctx, id));
+
+		 const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		 scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+
+		 // add a text property
+		 ctx->ItemInputValue("##nodeproperties/##newpropertykey", "EditMe");
+		 ctx->ItemInputValue("##nodeproperties/##newpropertyvalue", "original");
+		 ctx->ItemClick("##nodeproperties/###nodepropertyadd");
+		 ctx->Yield();
+		 IM_CHECK(node.property("EditMe") == "original");
+
+		 // edit the value via the ##val input
+		 ctx->ItemInputValue("##nodeproperties/EditMe/##val", "modified");
+		 ctx->Yield();
+		 IM_CHECK(node.property("EditMe") == "modified");
 	 };
  }
 

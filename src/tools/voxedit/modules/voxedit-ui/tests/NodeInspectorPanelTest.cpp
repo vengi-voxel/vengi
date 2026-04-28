@@ -51,39 +51,66 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK_EQ(2, region.getDimensionsInVoxels().z);
 	};
 
-	// scene mode options menu
+	IM_REGISTER_TEST(engine, testCategory(), "region size add reset")->TestFunc = [=](ImGuiTestContext *ctx) {
+		util::ScopedVarChange scoped(cfg::VoxEditRegionSizes, "");
+		IM_CHECK(activateViewportEditMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		ctx->MenuClick("Options/Region sizes/Add");
+		ctx->Yield(3);
+		IM_CHECK(!_validRegionSizes.empty());
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "scene options")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
-		// toggle auto keyframe option and check the result
-		ctx->MenuClick("Options/Auto Keyframe");
-		ctx->Yield();
-
-		ctx->MenuClick("Options/Auto Keyframe");
-		ctx->Yield();
-
-		// toggle update children
-		ctx->MenuClick("Options/Update children");
-		ctx->Yield();
-
-		ctx->MenuClick("Options/Update children");
-		ctx->Yield();
-
-		// toggle local transforms
-		ctx->MenuClick("Options/Local transforms");
-		ctx->Yield();
-
-		ctx->MenuClick("Options/Local transforms");
-		ctx->Yield();
+		IM_CHECK(toggleMenuCheckbox(ctx, "Options/Auto Keyframe", cfg::VoxEditAutoKeyFrame));
+		IM_CHECK(toggleMenuCheckbox(ctx, "Options/Update children", cfg::VoxEditTransformUpdateChildren));
+		IM_CHECK(toggleMenuCheckbox(ctx, "Options/Local transforms", cfg::VoxEditLocalSpace));
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "transform tools")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "scene options auto keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "autokeyframetest", voxel::Region(0, 31)));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
-		ctx->MenuClick("Tools/Reset transforms");
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+		IM_CHECK(node != nullptr);
+
+		// enable auto keyframe
+		core::VarPtr autoKf = core::getVar(cfg::VoxEditAutoKeyFrame);
+		autoKf->setVal(true);
+
+		// move to a frame that has no keyframe yet
+		_sceneMgr->setCurrentFrame(10);
 		ctx->Yield();
+		const size_t keyframesBefore = node->keyFrames().size();
+
+		// modify a transform value - this should auto-create a keyframe
+		ctx->ItemInputValue("##node_props/Translation/$$1/$$0", 5.0f);
+		ctx->Yield(3);
+
+		IM_CHECK(node->keyFrames().size() > keyframesBefore);
+
+		// restore
+		autoKf->setVal(true);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "transform tools with verification")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "transformtoolstest", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		// set a non-zero translation
+		ctx->ItemInputValue("##node_props/Translation/$$1/$$0", 10.0f);
+		ctx->Yield();
+
+		// reset transforms and verify translation is back to zero
+		ctx->MenuClick("Tools/Reset transforms");
+		ctx->Yield(3);
 
 		ctx->MenuClick("Tools/Mirror X");
 		ctx->Yield();
@@ -93,45 +120,63 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ik constraints")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// IK constraints are only visible in animation view mode (Default includes animations)
 		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
 		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
-		// open the IK Constraints collapsing header
 		ctx->ItemOpen("**/IK Constraints");
 		ctx->Yield();
 
-		// the active node should not have IK constraints yet
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(node != nullptr);
 		IM_CHECK(!node->hasIKConstraint());
 
-		// enable IK
 		ctx->ItemClick("**/Enable IK");
 		ctx->Yield();
 		IM_CHECK(node->hasIKConstraint());
 
-		// toggle anchor
 		ctx->ItemClick("**/Anchor");
 		ctx->Yield();
 
-		// toggle visible
 		ctx->ItemClick("**/Visible");
 		ctx->Yield();
 
-		// open swing limits header and add a swing limit
 		ctx->ItemOpen("**/Swing Limits");
 		ctx->Yield();
 		ctx->ItemClick("**/Add swing limit");
 		ctx->Yield();
 
-		// disable IK again
 		ctx->ItemClick("**/Enable IK");
 		ctx->Yield();
 		IM_CHECK(!node->hasIKConstraint());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "interpolation settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "interpolationtest", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		for (int i = 0; i < lengthof(scenegraph::InterpolationTypeStr); ++i) {
+			const core::String path = core::String::format("Interpolation/%s", scenegraph::InterpolationTypeStr[i]);
+			ctx->ComboClick(path.c_str());
+			ctx->Yield();
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "color histogram")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(newFilledScene(ctx, _sceneMgr, "histogramtest", voxel::Region(0, 7)));
+		IM_CHECK(activateViewportEditMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		ctx->ItemOpen("**/Color Histogram");
+		ctx->Yield();
+
+		ctx->ItemClick("**/Analyze");
+		ctx->Yield(3);
+
+		IM_CHECK(!_cachedHistogram.empty());
 	};
 }
 

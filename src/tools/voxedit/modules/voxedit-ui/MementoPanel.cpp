@@ -28,7 +28,7 @@ static void stateTooltip(const memento::MementoState &state) {
 		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), uuidStr.c_str());
 		ImGui::Text(" - parent: %s", parentUUIDStr.c_str());
 		ImGui::Text(" - name: %s", state.name.c_str());
-		ImGui::Text(" - type: %s", scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]);
+		ImGui::Text(" - type: %s", _(scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]));
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
 		const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
 		const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();

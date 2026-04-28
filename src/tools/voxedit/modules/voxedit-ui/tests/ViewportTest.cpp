@@ -3,6 +3,7 @@
  */
 
 #include "../Viewport.h"
+#include "../WindowTitles.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
@@ -246,6 +247,57 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(!isSceneMode());
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "recent colors select")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		ctx->Yield();
+
+		// ensure this viewport is in edit mode
+		if (isSceneMode()) {
+			toggleScene();
+		}
+		IM_CHECK(!isSceneMode());
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->ItemClick(window->ID);
+		ctx->Yield();
+
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(model != nullptr);
+
+		Modifier &modifier = _sceneMgr->modifier();
+
+		// clear any colors tracked during scene setup
+		_recentColors.clear();
+
+		const palette::Palette &palette = model->palette();
+		// set two different cursor voxel colors to populate the MRU
+		modifier.setCursorVoxel(voxel::createVoxel(palette, 1));
+		ctx->Yield(3);
+		IM_CHECK_EQ(_recentColors.size(), (size_t)1);
+
+		modifier.setCursorVoxel(voxel::createVoxel(palette, 5));
+		ctx->Yield(3);
+		IM_CHECK_EQ(_recentColors.size(), (size_t)2);
+		IM_CHECK_EQ(_recentColors[0], palette.color(5));
+		IM_CHECK_EQ(_recentColors[1], palette.color(1));
+
+		// click the second recent color (index 1) to select it
+		ctx->SetRef(window);
+		ctx->ItemClick("##MenuBar/##recentcol1");
+		ctx->Yield(3);
+
+		// the cursor voxel should now be color index 1
+		IM_CHECK_EQ(modifier.cursorVoxel().getColor(), (uint8_t)1);
+		// and the MRU should have reordered: 1 is now most recent
+		IM_CHECK_EQ(_recentColors[0], palette.color(1));
+		IM_CHECK_EQ(_recentColors[1], palette.color(5));
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "scene mode with nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(_sceneMgr->newScene(true, "scenenodetest", voxel::Region(0, 31)));
 		ctx->Yield();
@@ -274,6 +326,126 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		_sceneMgr->nodeActivate(secondNode);
 		ctx->Yield();
 		IM_CHECK_EQ(sceneGraph.activeNode(), secondNode);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "camera projection combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "viewportcamproj", voxel::Region(0, 31)));
+		ctx->Yield();
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
+
+		// verify the camera projection combo exists in the menu bar
+		const ImGuiTestItemInfo projInfo = ctx->ItemInfo("##MenuBar/###cameraproj", ImGuiTestOpFlags_NoError);
+		IM_CHECK(projInfo.ID != 0);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "camera mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "viewportcammode", voxel::Region(0, 31)));
+		ctx->Yield();
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
+
+		// the camera mode combo should exist in the menu bar
+		const ImGuiTestItemInfo info = ctx->ItemInfo("##MenuBar/###cameramode", ImGuiTestOpFlags_NoError);
+		IM_CHECK(info.ID != 0);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "slicer toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		const int viewportId = prepareBrushViewport(ctx, _sceneMgr, _app, "viewportslicer");
+		IM_CHECK(viewportId != -1);
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
+
+		// the slicer checkbox should exist
+		const ImGuiTestItemInfo slicerInfo = ctx->ItemInfo("##sliceactive", ImGuiTestOpFlags_NoError);
+		IM_CHECK(slicerInfo.ID != 0);
+
+		// toggle slicer on
+		IM_CHECK(!_sceneMgr->isSliceModeActive());
+		ctx->ItemClick("##sliceactive");
+		ctx->Yield();
+		IM_CHECK(_sceneMgr->isSliceModeActive());
+
+		// toggle slicer off
+		ctx->ItemClick("##sliceactive");
+		ctx->Yield();
+		IM_CHECK(!_sceneMgr->isSliceModeActive());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "screenshot menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "viewportscreenshot", voxel::Region(0, 31)));
+		ctx->Yield();
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
+
+		// the screenshot menu item should exist under View
+		ctx->MenuClick("View/Screenshot");
+		ctx->Yield();
+		// screenshot triggers a save dialog - cancel it
+		cancelSaveFile(ctx);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "video recording toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "viewportvideo", voxel::Region(0, 31)));
+		ctx->Yield();
+
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
+
+		// click the Video menu item to start recording
+		ctx->MenuClick("View/Video");
+		ctx->Yield();
+		// if recording started, it opens a save dialog - cancel it
+		cancelSaveFile(ctx);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "drag palette color to viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
+		const int viewportId = prepareBrushViewport(ctx, _sceneMgr, _app, "viewportdragcolor");
+		IM_CHECK(viewportId != -1);
+
+		// find the palette panel window to get a cell position
+		ImGuiWindow *palWindow = ImGui::FindWindowByName(TITLE_PALETTE);
+		if (palWindow == nullptr || !palWindow->Active) {
+			return; // palette panel not visible in this layout
+		}
+
+		// get the viewport window center
+		const core::String vid = Viewport::viewportId(_id);
+		ImGuiWindow *vpWindow = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(vpWindow != nullptr);
+		const ImVec2 vpCenter = vpWindow->Rect().GetCenter();
+
+		// get palette cell 0 position
+		const float frameHeight = ImGui::GetFrameHeight();
+		const ImVec2 palPos(palWindow->ContentRegionRect.Min.x + frameHeight * 0.5f,
+							palWindow->ContentRegionRect.Min.y + frameHeight * 0.5f);
+
+		// drag from palette cell to viewport center using the proper drag pattern
+		dragFromTo(ctx, palPos, vpCenter);
 	};
 }
 

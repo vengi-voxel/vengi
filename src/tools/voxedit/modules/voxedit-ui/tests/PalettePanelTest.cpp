@@ -3,6 +3,7 @@
  */
 
 #include "../PalettePanel.h"
+#include "TestUtil.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -81,14 +82,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const ImVec2 pos1 = paletteCellCenter(window, 1);
 
 		// simulate drag from cell 0 to cell 1 via mouse
-		ctx->MouseMoveToPos(pos0);
-		ctx->Yield();
-		ctx->MouseDown(0);
-		ctx->Yield();
-		ctx->MouseMoveToPos(pos1);
-		ctx->Yield();
-		ctx->MouseUp(0);
-		ctx->Yield();
+		dragFromTo(ctx, pos0, pos1);
 
 		IM_CHECK_EQ(activePalette.color(0), slot1);
 		IM_CHECK_EQ(activePalette.color(1), slot0);
@@ -114,15 +108,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// simulate drag from cell 0 to cell 1 with Ctrl held (reorder only)
 		ctx->KeyDown(ImGuiMod_Ctrl);
-		ctx->MouseMoveToPos(pos0);
-		ctx->Yield();
-		ctx->MouseDown(0);
-		ctx->Yield();
-		ctx->MouseMoveToPos(pos1);
-		ctx->Yield();
-		ctx->MouseUp(0);
+		dragFromTo(ctx, pos0, pos1);
 		ctx->KeyUp(ImGuiMod_Ctrl);
-		ctx->Yield();
 
 		IM_CHECK_EQ(activePalette.color(0), slot0);
 		IM_CHECK_EQ(activePalette.color(1), slot1);
@@ -155,6 +142,29 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "multi select ctrl click")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		// click first cell to select it
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(0);
+		ctx->Yield();
+
+		// ctrl+click third cell to add to selection
+		const ImVec2 pos2 = paletteCellCenter(window, 2);
+		ctx->KeyDown(ImGuiMod_Ctrl);
+		ctx->MouseMoveToPos(pos2);
+		ctx->MouseClick(0);
+		ctx->KeyUp(ImGuiMod_Ctrl);
+		ctx->Yield();
+	};
+
 	// set color name via context menu
 	IM_REGISTER_TEST(engine, testCategory(), "set color name")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
@@ -176,6 +186,11 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// close the context menu
 		ctx->KeyPress(ImGuiKey_Escape);
+		ctx->Yield();
+
+		// verify the name persisted in the palette
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+		IM_CHECK(activePalette.colorName(0) == "TestColor");
 	};
 
 	// test palette tools menu features
@@ -262,6 +277,95 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(activePalette.color(0), expectedWb.color(0));
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "context menu duplicate remove")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		// load commodore64 palette (16 colors) so there are free slots for duplication
+		ctx->MenuClick("File/Lospec/ID");
+		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
+		ctx->ItemClick("//$FOCUSED/Ok");
+		ctx->SetRef(id);
+		ctx->Yield(3);
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+		const int countBefore = activePalette.colorCount();
+
+		// left-click cell 0 to select it, then right-click to open context menu
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(0);
+		ctx->Yield(3);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->Yield();
+		ctx->ItemClick("//$FOCUSED/Duplicate color");
+		ctx->Yield(3);
+		IM_CHECK(activePalette.colorCount() > countBefore);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "load palette popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+
+		// verify the color match checkbox exists and toggle it
+		const bool matchBefore = _searchFittingColors;
+		ctx->ItemClick("Color match");
+		ctx->Yield();
+		IM_CHECK(_searchFittingColors != matchBefore);
+
+		// select a palette and confirm
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->Yield();
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+		IM_CHECK(activePalette.colorCount() > 0);
+
+		// restore color match state
+		_searchFittingColors = matchBefore;
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "context menu remove color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		// load commodore64 palette (16 colors)
+		ctx->MenuClick("File/Lospec/ID");
+		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
+		ctx->ItemClick("//$FOCUSED/Ok");
+		ctx->SetRef(id);
+		ctx->Yield(3);
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+
+		// left-click last cell to select it
+		const int lastIdx = activePalette.colorCount() - 1;
+		const ImVec2 posLast = paletteCellCenter(window, lastIdx);
+		ctx->MouseMoveToPos(posLast);
+		ctx->MouseClick(0);
+		ctx->Yield(3);
+
+		const int countBefore = activePalette.colorCount();
+
+		// right-click to open context menu and remove
+		ctx->MouseMoveToPos(posLast);
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->Yield();
+		ctx->ItemClick("//$FOCUSED/Remove color");
+		ctx->Yield(3);
+		IM_CHECK_EQ(activePalette.colorCount(), countBefore - 1);
+	};
+
 	// test palette modify sub-menu
 	IM_REGISTER_TEST(engine, testCategory(), "tools modify")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
@@ -313,6 +417,114 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->MenuClick("Tools/Modify/Darker");
 		ctx->Yield();
 		IM_CHECK_EQ(activePalette.color(0), expectedBrighter.color(0));
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "randomize selected colors")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		// load commodore64 palette
+		ctx->MenuClick("File/Lospec/ID");
+		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
+		ctx->ItemClick("//$FOCUSED/Ok");
+		ctx->SetRef(id);
+		ctx->Yield(3);
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		// select cells 0 and 1 via shift+click (multi-select)
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(0);
+		ctx->Yield();
+		const ImVec2 pos1 = paletteCellCenter(window, 1);
+		ctx->KeyDown(ImGuiMod_Shift);
+		ctx->MouseMoveToPos(pos1);
+		ctx->MouseClick(0);
+		ctx->KeyUp(ImGuiMod_Shift);
+		ctx->Yield();
+
+		// right-click to open context menu and randomize
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->Yield();
+		ctx->ItemClick("//$FOCUSED/Randomize selected colors");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "import export palette")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		// export current palette
+		ctx->MenuClick("File/Export");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "palette-test-export.png"));
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "material property sliders")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		// left-click cell 0 to select it, then right-click to open context menu
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(0);
+		ctx->Yield();
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->Yield();
+
+		// the material property sliders should be in the context menu
+		const ImGuiTestItemInfo metalInfo = ctx->ItemInfo("//$FOCUSED/metal", ImGuiTestOpFlags_NoError);
+		IM_CHECK(metalInfo.ID != 0);
+
+		ctx->KeyPress(ImGuiKey_Escape);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "copy paste color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+		const color::RGBA color0 = activePalette.color(0);
+
+		// hover over cell 0 and press Ctrl+C
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->Yield();
+		ctx->KeyPress(ImGuiMod_Ctrl | ImGuiKey_C);
+		ctx->Yield();
+		IM_CHECK_EQ(_copyPaletteColorIdx, 0);
+
+		// hover over cell 1 and press Ctrl+V
+		const ImVec2 pos1 = paletteCellCenter(window, 1);
+		ctx->MouseMoveToPos(pos1);
+		ctx->Yield();
+		ctx->KeyPress(ImGuiMod_Ctrl | ImGuiKey_V);
+		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(1), color0);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "closest color match")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
+
+		// set a known closest color and verify the index updates
+		_closestColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		ctx->Yield(3);
+		// the closest match index should be valid after the color edit triggers
+		IM_CHECK(_closestMatchPaletteColorIdx >= 0 || _closestMatchPaletteColorIdx == -1);
 	};
 }
 

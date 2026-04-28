@@ -312,10 +312,10 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 	ImGui::BeginDisabled(node.type() == scenegraph::SceneGraphNodeType::Camera);
 	const scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	const int currentInterpolation = (int)keyFrame.interpolation;
-	if (ImGui::BeginCombo(_("Interpolation"), scenegraph::InterpolationTypeStr[currentInterpolation])) {
+	if (ImGui::BeginCombo(_("Interpolation"), _(scenegraph::InterpolationTypeStr[currentInterpolation]))) {
 		for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
 			const bool isSelected = (currentInterpolation == n);
-			if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
+			if (ImGui::Selectable(_(scenegraph::InterpolationTypeStr[n]), isSelected)) {
 				_sceneMgr->nodeUpdateKeyFrameInterpolation(node.id(), keyFrameIdx, (scenegraph::InterpolationType)n);
 			}
 			if (isSelected) {

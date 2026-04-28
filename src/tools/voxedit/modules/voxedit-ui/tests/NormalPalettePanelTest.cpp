@@ -60,17 +60,73 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(saveFile(ctx, "normalpalette-export.png"));
 	};
 
-	// change longitude and latitude
+	// change longitude and latitude and verify values change
 	IM_REGISTER_TEST(engine, testCategory(), "longitude latitude")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 
+		const glm::vec3 beforeLon = _targetNormal;
 		changeSlider(ctx, "Longitude", true);
+		ctx->Yield();
+		const glm::vec3 afterLon = _targetNormal;
+		IM_CHECK(afterLon.x != beforeLon.x || afterLon.z != beforeLon.z);
+
 		changeSlider(ctx, "Longitude", false);
 
+		const glm::vec3 beforeLat = _targetNormal;
 		changeSlider(ctx, "Latitude", true);
+		ctx->Yield();
+		const glm::vec3 afterLat = _targetNormal;
+		IM_CHECK(afterLat.y != beforeLat.y || afterLat.x != beforeLat.x || afterLat.z != beforeLat.z);
+
 		changeSlider(ctx, "Latitude", false);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "flip buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+
+		const glm::vec3 before = _targetNormal;
+		ctx->ItemClick("##flipnormal/X");
+		ctx->Yield();
+		IM_CHECK(_targetNormal.x != before.x || _targetNormal.y != before.y || _targetNormal.z != before.z);
+
+		ctx->ItemClick("##flipnormal/Y");
+		ctx->Yield();
+		ctx->ItemClick("##flipnormal/Z");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "rotate buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+
+		const glm::vec3 before = _targetNormal;
+		ctx->ItemClick("##rotnormal/X");
+		ctx->Yield();
+		IM_CHECK(_targetNormal.x != before.x || _targetNormal.y != before.y || _targetNormal.z != before.z);
+
+		ctx->ItemClick("##rotnormal/Y");
+		ctx->Yield();
+		ctx->ItemClick("##rotnormal/Z");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "direct normal input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+
+		// InputFloat3 "Normal" has 3 sub-inputs accessible via $$0, $$1, $$2
+		ctx->ItemInputValue("Normal/$$0", 1.0f);
+		ctx->Yield();
+		ctx->ItemInputValue("Normal/$$1", 0.0f);
+		ctx->Yield();
+		ctx->ItemInputValue("Normal/$$2", 0.0f);
+		ctx->Yield();
 	};
 }
 

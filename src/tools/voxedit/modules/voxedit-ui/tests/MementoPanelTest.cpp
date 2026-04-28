@@ -69,6 +69,36 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int posAfterRedo = mementoHandler.statePosition();
 		IM_CHECK(posAfterRedo > posAfterUndo);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "click history entry")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "mementoclick", voxel::Region(0, 31)));
+
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(model != nullptr);
+		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+
+		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+		const int posAtEnd = mementoHandler.statePosition();
+		IM_CHECK(posAtEnd >= 2);
+
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->Yield();
+
+		// verify the history listbox exists and has content
+		const ImGuiTestItemInfo listbox = ctx->ItemInfo("##history-actions", ImGuiTestOpFlags_NoError);
+		IM_CHECK(listbox.ID != 0);
+
+		// click the listbox near the top to select an earlier state
+		ImVec2 clickPos = listbox.RectFull.Min;
+		clickPos.x += 10.0f;
+		clickPos.y += 10.0f;
+		ctx->MouseMoveToPos(clickPos);
+		ctx->MouseClick();
+		ctx->Yield();
+		IM_CHECK(mementoHandler.statePosition() < posAtEnd);
+	};
 }
 
 } // namespace voxedit

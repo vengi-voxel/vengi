@@ -261,6 +261,64 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		// verify the active node changed to the second node
 		IM_CHECK_EQ(sceneGraph.activeNode(), secondNodeId);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "keyframe context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "timelinecontextmenu", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+		IM_CHECK(node != nullptr);
+
+		// add a keyframe at a non-zero frame so we have something to select
+		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
+		ctx->SetRef(wrapperId);
+		const ImGuiTestItemInfo frameSelector = ctx->ItemInfo("sequencer/currentframeselector");
+		ctx->MouseMove(frameSelector.ID);
+		ctx->MouseDragWithDelta({ImGui::Size(10.0f), 0.0f}, ImGuiMouseButton_Left);
+		const scenegraph::FrameIndex targetFrame = _sceneMgr->currentFrame();
+		IM_CHECK(targetFrame > 0);
+
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("###Add");
+		ctx->Yield();
+		IM_CHECK(node->hasKeyFrameForFrame(targetFrame));
+
+		// populate the selection buffer and open the context menu programmatically
+		_selectionBuffer.clear();
+		_selectionBuffer.push_back({targetFrame, nodeId});
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(wrapperId);
+		ImGui::OpenPopup("keyframe-context-menu");
+		ctx->Yield(3);
+
+		// test duplicate keyframe
+		const size_t kfBefore = node->keyFrames().size();
+		if (isPopupOpen("keyframe-context-menu")) {
+			ctx->SetRef("keyframe-context-menu");
+			ctx->ItemClick("Duplicate keyframe");
+			ctx->Yield();
+			IM_CHECK(node->keyFrames().size() > kfBefore);
+		}
+
+		// open context menu again and test delete
+		_selectionBuffer.clear();
+		_selectionBuffer.push_back({targetFrame, nodeId});
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(wrapperId);
+		ImGui::OpenPopup("keyframe-context-menu");
+		ctx->Yield(3);
+
+		const size_t kfBeforeDelete = node->keyFrames().size();
+		if (isPopupOpen("keyframe-context-menu")) {
+			ctx->SetRef("keyframe-context-menu");
+			ctx->ItemClick("Delete keyframes");
+			ctx->Yield();
+			IM_CHECK(node->keyFrames().size() < kfBeforeDelete);
+		}
+	};
 }
 
 } // namespace voxedit

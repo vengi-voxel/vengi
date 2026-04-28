@@ -7,8 +7,10 @@
 #include "core/Var.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeType.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "TestUtil.h"
 #include "../WindowTitles.h"
 
 namespace voxedit {
@@ -111,13 +113,9 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu merge visible locked")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphmerge", voxel::Region(0, 31)));
+		IM_CHECK(newFilledScene(ctx, _sceneMgr, "scenegraphmerge"));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-
-		// fill voxels so merging produces a valid region
-		command::executeCommands("fill");
-		ctx->Yield(3);
 
 		// duplicate node to have multiple nodes
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
@@ -288,6 +286,103 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick(checkboxId.c_str());
 		ctx->Yield();
 		IM_CHECK(sceneGraph.node(nodeId).locked() == before);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "filter by name")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphfilter", voxel::Region(0, 7)));
+
+		// add >10 nodes so the filter UI appears
+		for (int i = 0; i < 11; ++i) {
+			const core::String name = core::String::format("filternode%i", i);
+			_sceneMgr->addModelChild(name, 8, 8, 8);
+		}
+		ctx->Yield(3);
+
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemInputValue("Filter", "filternode5");
+		ctx->Yield(3);
+		IM_CHECK(!_filterName.empty());
+
+		// clear filter
+		ctx->ItemInputValue("Filter", "");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "filter by type")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphfiltertype", voxel::Region(0, 7)));
+
+		// add >10 nodes so the filter UI appears
+		for (int i = 0; i < 11; ++i) {
+			_sceneMgr->addModelChild(core::String::format("typenode%i", i), 8, 8, 8);
+		}
+		ctx->Yield(3);
+
+		IM_CHECK(focusWindow(ctx, id));
+
+		scenegraph::SceneGraphNodeType filters[] = {scenegraph::SceneGraphNodeType::Model, scenegraph::SceneGraphNodeType::Group,
+													scenegraph::SceneGraphNodeType::All};
+		for (scenegraph::SceneGraphNodeType filter : filters) {
+			const core::String filterId = core::String::format("##filtertype/%s", scenegraph::SceneGraphNodeTypeStr[(int)filter]);
+			ctx->ComboClick(filterId.c_str());
+			ctx->Yield();
+			IM_CHECK_EQ(_filterType, filter);
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "drag and drop node reorder")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphdnd", voxel::Region(0, 7)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int firstNodeId = sceneGraph.activeNode();
+
+		// add a second model node
+		const int secondNodeId = _sceneMgr->addModelChild("second", 8, 8, 8);
+		IM_CHECK(secondNodeId != InvalidNodeId);
+		ctx->Yield(3);
+
+		IM_CHECK(focusWindow(ctx, id));
+
+		// get the tree node items for both nodes
+		scenegraph::SceneGraphNode *firstNode = _sceneMgr->sceneGraphModelNode(firstNodeId);
+		scenegraph::SceneGraphNode *secondNode = _sceneMgr->sceneGraphModelNode(secondNodeId);
+		IM_CHECK(firstNode != nullptr);
+		IM_CHECK(secondNode != nullptr);
+
+		const core::String firstLabel = core::String::format("##nodelist/%s##%i", firstNode->name().c_str(), firstNodeId);
+		const core::String secondLabel = core::String::format("##nodelist/%s##%i", secondNode->name().c_str(), secondNodeId);
+
+		// use ItemDragAndDrop to drag the second node onto the first
+		ctx->ItemDragAndDrop(secondLabel.c_str(), firstLabel.c_str());
+		ctx->Yield(3);
+
+		// the drag-and-drop popup should appear
+		if (isPopupOpen(POPUP_TITLE_SCENEGRAPHDRAGANDDROP)) {
+			ctx->SetRef(POPUP_TITLE_SCENEGRAPHDRAGANDDROP);
+			// click "Move below" to complete the reorder
+			ctx->ItemClick("Move below###Move below");
+			ctx->Yield();
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "per-node color editor")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphcolor", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+
+		// click the color editor button
+		const core::String colorId = core::String::format("##nodelist/##%ic", nodeId);
+		const ImGuiTestItemInfo colorInfo = ctx->ItemInfo(colorId.c_str(), ImGuiTestOpFlags_NoError);
+		if (colorInfo.ID != 0) {
+			ctx->ItemClick(colorId.c_str());
+			ctx->Yield();
+			ctx->KeyPress(ImGuiKey_Escape);
+			ctx->Yield();
+		}
 	};
 }
 

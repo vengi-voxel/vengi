@@ -161,7 +161,6 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 				}
 				const voxel::VoxelVertex *vertices = vmesh->getRawVertexData();
 				const voxel::IndexType *indices = vmesh->getRawIndexData();
-				const palette::Palette &palette = sgNode.palette();
 
 				ufbxw_mesh wMesh = ufbxw_create_mesh(ws);
 				ufbxw_node_set_attribute(ws, wNode, wMesh.id);

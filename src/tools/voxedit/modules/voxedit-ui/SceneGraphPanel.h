@@ -51,7 +51,7 @@ private:
 	core::Set<int> _collapsedNodes;
 
 	core::String _filterName;
-	int _filterType = 0;
+	scenegraph::SceneGraphNodeType _filterType = scenegraph::SceneGraphNodeType::All;
 	bool isFiltered(const scenegraph::SceneGraphNode &node) const;
 
 	void registerPopups();

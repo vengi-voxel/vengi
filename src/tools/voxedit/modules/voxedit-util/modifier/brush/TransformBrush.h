@@ -6,16 +6,16 @@
 
 #include "Brush.h"
 #include "SnapshotHelper.h"
+#include "app/I18N.h"
+#include "core/ArrayLength.h"
 #include "core/GLM.h"
+#include "ui/IconsLucide.h"
 #include "voxel/Voxel.h"
 
 #include <glm/vec3.hpp>
 
 namespace voxedit {
 
-/**
- * @brief Transform mode for the TransformBrush
- */
 enum class TransformMode : uint8_t {
 	Move,
 	Shear,
@@ -24,6 +24,17 @@ enum class TransformMode : uint8_t {
 
 	Max
 };
+
+// clang-format off
+static constexpr const char *TransformModeStr[] = {
+	NC_("Transform Modes", "Move"),  NC_("Transform Modes", "Shear"),
+	NC_("Transform Modes", "Scale"), NC_("Transform Modes", "Rotate")};
+static_assert(lengthof(TransformModeStr) == (int)TransformMode::Max, "TransformModeStr size mismatch");
+
+static constexpr const char *TransformModeIcons[] = {
+	ICON_LC_MOVE, ICON_LC_ITALIC, ICON_LC_SCALING, ICON_LC_ROTATE_3D};
+static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "TransformModeIcons size mismatch");
+// clang-format on
 
 /**
  * @brief Transforms selected voxels: move, shear, scale, rotate
