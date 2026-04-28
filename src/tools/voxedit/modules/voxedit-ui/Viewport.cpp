@@ -336,8 +336,11 @@ void Viewport::renderViewport() {
 	ImVec2 cursorPos = ImGui::GetCursorPos();
 	const float headerSize = cursorPos.y;
 	if (setupFrameBuffer(contentSize)) {
-		if (_animationPlaying->boolVal() && _sceneMgr->activeCameraNode()) {
-			_camera = voxelrender::toCamera(_camera.size(), _sceneMgr->sceneGraph(), *_sceneMgr->activeCameraNode(), _sceneMgr->currentFrame());
+		const scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
+		const bool frameChanged = currentFrame != _lastFrameIdx;
+		_lastFrameIdx = currentFrame;
+		if ((_animationPlaying->boolVal() || frameChanged) && _sceneMgr->activeCameraNode()) {
+			_camera = voxelrender::toCamera(_camera.size(), _sceneMgr->sceneGraph(), *_sceneMgr->activeCameraNode(), currentFrame);
 		}
 		_camera.update(_app->deltaFrameSeconds());
 

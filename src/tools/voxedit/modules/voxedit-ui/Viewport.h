@@ -107,6 +107,7 @@ private:
 	core::VarPtr _localSpace;
 	core::VarPtr _renderNormals;
 	core::VarPtr _animationPlaying;
+	scenegraph::FrameIndex _lastFrameIdx = InvalidFrame;
 	core::VarPtr _clipping;
 	core::VarPtr _brushGizmo;
 

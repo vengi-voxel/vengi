@@ -9,6 +9,7 @@
 #include "core/Var.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -421,6 +422,62 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		ctx->Yield();
 		// if recording started, it opens a save dialog - cancel it
 		cancelSaveFile(ctx);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "camera node frame change")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "viewportcamframe", voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		ctx->Yield(2);
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// add a camera node
+		scenegraph::SceneGraphNodeCamera camNode;
+		camNode.setName("testcam");
+		camNode.setPerspective();
+		camNode.setFieldOfView(60);
+		camNode.setNearPlane(0.1f);
+		camNode.setFarPlane(500.0f);
+
+		// set transform at frame 0 with a known position
+		scenegraph::SceneGraphTransform transform0;
+		transform0.setWorldTranslation(glm::vec3(0.0f, 0.0f, 0.0f));
+		transform0.setWorldOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+		transform0.setWorldScale(glm::vec3(1.0f));
+		camNode.setTransform(0, transform0);
+
+		const int camNodeId = _sceneMgr->moveNodeToSceneGraph(camNode, sceneGraph.root().id());
+		IM_CHECK(camNodeId != InvalidNodeId);
+		ctx->Yield(2);
+
+		// add a keyframe at frame 10 with a different position
+		scenegraph::SceneGraphNode &camRef = sceneGraph.node(camNodeId);
+		const scenegraph::KeyFrameIndex kfIdx = camRef.addKeyFrame(10);
+		IM_CHECK(kfIdx != InvalidKeyFrame);
+		scenegraph::SceneGraphTransform transform10;
+		transform10.setWorldTranslation(glm::vec3(100.0f, 0.0f, 0.0f));
+		transform10.setWorldOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+		transform10.setWorldScale(glm::vec3(1.0f));
+		camRef.setTransform(kfIdx, transform10);
+
+		// activate the camera node so activeCameraNode() returns it
+		_sceneMgr->nodeActivate(camNodeId);
+		ctx->Yield(2);
+		IM_CHECK(sceneGraph.activeNode() == camNodeId);
+		IM_CHECK(_sceneMgr->activeCameraNode() != nullptr);
+
+		// set frame to 0 and let the viewport update
+		_sceneMgr->setCurrentFrame(0);
+		ctx->Yield(3);
+		const glm::vec3 posAtFrame0 = _camera.worldPosition();
+
+		// change to frame 10 (manual scrub)
+		_sceneMgr->setCurrentFrame(10);
+		ctx->Yield(3);
+		const glm::vec3 posAtFrame10 = _camera.worldPosition();
+
+		// the camera should have moved
+		IM_CHECK(glm::distance(posAtFrame0, posAtFrame10) > 1.0f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag palette color to viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
