@@ -378,7 +378,6 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	const int64_t startHeader = stream.pos();
 	const bool isSmd2 = fileVersion == 2;
 	const int blocks = isSmd2 ? priv::smd2Blocks : priv::smd3Blocks;
-	const int segmentHeaderSize = isSmd2 ? priv::smd2SegmentHeaderSize : priv::smd3SegmentHeaderSize;
 	const int segmentTotalSize =
 		isSmd2 ? priv::smd2ChunkDataSize : (priv::smd3SegmentDataSize + priv::smd3SegmentHeaderSize);
 	Log::debug("read segment (fileVersion=%i, blocks=%i)", fileVersion, blocks);
@@ -416,7 +415,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		return true;
 	}
 
-	core_assert(stream.pos() - startHeader == segmentHeaderSize);
+	core_assert(stream.pos() - startHeader == (isSmd2 ? priv::smd2SegmentHeaderSize : priv::smd3SegmentHeaderSize));
 
 	io::ZipReadStream blockDataStream(stream, (int)compressedSize);
 
