@@ -20,6 +20,7 @@ set(SRCS
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
 	LZFSEReadStream.cpp LZFSEReadStream.h
+	LZMAReadStream.cpp LZMAReadStream.h
 	MemoryArchive.cpp MemoryArchive.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	StdStreamBuf.h
@@ -43,7 +44,7 @@ set(SRCS
 )
 
 set(LIB io)
-set(LIBS core lzfse)
+set(LIBS core lzfse minlzma)
 
 if (USE_LIBDEFLATE)
 	find_package(libdeflate)

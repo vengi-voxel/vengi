@@ -445,6 +445,24 @@ def update_miniz():
         ]
     )
 
+def update_minlzma():
+    update_target(
+        "minlzma",
+        "https://github.com/ionescu007/minlzma.git",
+        [
+            (f"minlzlib/dictbuf.c", "contrib/libs/minlzma/dictbuf.c"),
+            (f"minlzlib/inputbuf.c", "contrib/libs/minlzma/inputbuf.c"),
+            (f"minlzlib/lzma2dec.c", "contrib/libs/minlzma/lzma2dec.c"),
+            (f"minlzlib/lzma2dec.h", "contrib/libs/minlzma/lzma2dec.h"),
+            (f"minlzlib/lzmadec.c", "contrib/libs/minlzma/lzmadec.c"),
+            (f"minlzlib/lzmadec.h", "contrib/libs/minlzma/lzmadec.h"),
+            (f"minlzlib/minlzlib.h", "contrib/libs/minlzma/minlzlib.h"),
+            (f"minlzlib/rangedec.c", "contrib/libs/minlzma/rangedec.c"),
+            (f"minlzlib/xzstream.c", "contrib/libs/minlzma/xzstream.c"),
+            (f"minlzlib/xzstream.h", "contrib/libs/minlzma/xzstream.h")
+        ]
+    )
+
 def update_cjson():
     update_target(
         "cJSON",
@@ -503,6 +521,7 @@ def main():
         update_ufbx,
         update_natsort,
         update_miniz,
+        update_minlzma,
         update_opengametools,
         update_imgui_markdown,
         update_gif_h
