@@ -24,6 +24,10 @@ namespace video {
 class Camera;
 }
 
+namespace voxelrender {
+struct RenderContext;
+}
+
 namespace voxedit {
 
 /**
@@ -108,7 +112,7 @@ public:
 	 * @param camera The camera for rendering.
 	 * @param modelMatrix The model transformation matrix.
 	 */
-	virtual void render(const video::Camera &camera, const glm::mat4 &modelMatrix) {
+	virtual void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
 	}
 };
 

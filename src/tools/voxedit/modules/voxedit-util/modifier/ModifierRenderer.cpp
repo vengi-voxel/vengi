@@ -63,7 +63,6 @@ void ModifierRenderer::shutdown() {
 	}
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
-	_volumeRendererCtx.shutdown();
 	_volumeRenderer.shutdown();
 	// the volumes in this state belong to the brush
 	(void)_meshState->shutdown();
@@ -157,11 +156,7 @@ void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region, c
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
 
-void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm::mat4 &model) {
-	if (_volumeRendererCtx.frameBuffer.dimension() != camera.size()) {
-		_volumeRendererCtx.shutdown();
-		_volumeRendererCtx.init(camera.size());
-	}
+void ModifierRenderer::renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model) {
 	_meshState->extractAllPending();
 	if (_meshState->volume(0) != nullptr) {
 		_meshState->setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(0.0f));
@@ -170,7 +165,7 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm:
 		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 	_volumeRenderer.update(_meshState);
-	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false, false);
+	_volumeRenderer.render(_meshState, renderContext, camera, false, false);
 }
 
 void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &region) {
@@ -225,7 +220,7 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	}
 }
 
-void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &modelMatrix) {
+void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	{
@@ -251,7 +246,7 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 		_shapeRenderer.render(_aabbMeshes[i], camera, biasedModelMatrix);
 	}
 
-	renderBrushVolume(camera, biasedModelMatrix);
+	renderBrushVolume(renderContext, camera, biasedModelMatrix);
 
 	const video::ScopedState blend(video::State::Blend, true);
 	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);

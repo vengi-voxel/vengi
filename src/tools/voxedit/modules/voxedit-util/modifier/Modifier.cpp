@@ -612,7 +612,7 @@ ModifierType Modifier::checkModifierType() {
 	return currentBrush()->modifierType(ModifierType::Mask);
 }
 
-void Modifier::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
+void Modifier::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
 	if (_locked) {
 		return;
 	}
@@ -700,7 +700,7 @@ void Modifier::render(const video::Camera &camera, palette::Palette &activePalet
 	_modifierRenderer->update(ctx);
 
 	// Render everything
-	_modifierRenderer->render(camera, model);
+	_modifierRenderer->render(renderContext, camera, model);
 }
 
 } // namespace voxedit

@@ -18,7 +18,6 @@ private:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	voxelrender::RawVolumeRenderer _volumeRenderer;
-	voxelrender::RenderContext _volumeRendererCtx; // TODO: PERF: move out of here and into the viewport to prevent recreation when the viewport changes.
 	int32_t _mirrorMeshIndex = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
@@ -40,7 +39,7 @@ private:
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
 	void clear();
 
-	void renderBrushVolume(const video::Camera &camera, const glm::mat4 &model);
+	void renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model);
 
 public:
 	ModifierRenderer(const core::TimeProviderPtr &timeProvider);
@@ -50,7 +49,7 @@ public:
 
 	void clearBrushVolumes() override;
 	void update(const ModifierRendererContext &ctx) override;
-	void render(const video::Camera &camera, const glm::mat4 &modelMatrix) override;
+	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override;
 	void waitForPendingExtractions() override;
 };
 

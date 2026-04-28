@@ -8,6 +8,7 @@
 #include "command/Command.h"
 #include "core/SharedPtr.h"
 #include "palette/Palette.h"
+#include "voxelrender/RenderContext.h"
 #include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -36,7 +37,7 @@ protected:
 			++updateCalls;
 			lastContext = ctx;
 		}
-		void render(const video::Camera &camera, const glm::mat4 &modelMatrix) override {
+		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override {
 			++renderCalls;
 		}
 		void waitForPendingExtractions() override {
@@ -77,10 +78,11 @@ protected:
 
 	void triggerPreviewUpdate(Modifier &modifier, palette::Palette &palette) {
 		video::Camera camera;
+		voxelrender::RenderContext renderContext;
 		modifier.update(1.0, &camera);
-		modifier.render(camera, palette);
+		modifier.render(renderContext, camera, palette);
 		modifier.update(1.2, &camera);
-		modifier.render(camera, palette);
+		modifier.render(renderContext, camera, palette);
 	}
 };
 

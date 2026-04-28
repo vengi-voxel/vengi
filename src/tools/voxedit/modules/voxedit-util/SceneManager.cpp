@@ -3018,7 +3018,7 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
-void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
+void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender::RenderContext &modifierRenderContext, const video::Camera& camera, uint8_t renderMask) {
 	renderContext.frameBuffer.bind(true);
 	_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), _sceneGraph, cursorPosition());
 
@@ -3034,8 +3034,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
 			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
-			// TODO: PERF: here we need to hand in a modifier render context
-			_modifierFacade.render(camera, activePalette(), mat);
+			_modifierFacade.render(modifierRenderContext, camera, activePalette(), mat);
 		}
 	}
 

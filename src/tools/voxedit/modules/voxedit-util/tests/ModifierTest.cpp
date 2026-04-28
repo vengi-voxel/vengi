@@ -13,6 +13,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxelrender/RenderContext.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
@@ -38,7 +39,7 @@ protected:
 			++updateCalls;
 			lastContext = ctx;
 		}
-		void render(const video::Camera &camera, const glm::mat4 &modelMatrix) override {
+		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override {
 			++renderCalls;
 		}
 		void waitForPendingExtractions() override {
@@ -334,7 +335,8 @@ TEST_F(ModifierTest, testRenderCallsRenderer) {
 	palette.tryAdd(color::RGBA{255, 0, 0, 255});
 
 	video::Camera camera;
-	modifier.render(camera, palette);
+	voxelrender::RenderContext renderContext;
+	modifier.render(renderContext, camera, palette);
 
 	EXPECT_EQ(renderer->updateCalls, 1) << "Renderer update should be called once per render";
 	EXPECT_EQ(renderer->renderCalls, 1) << "Renderer render should be called once per render";
@@ -359,7 +361,8 @@ TEST_F(ModifierTest, testRenderSkippedWhenLocked) {
 	palette.tryAdd(color::RGBA{255, 0, 0, 255});
 
 	video::Camera camera;
-	modifier.render(camera, palette);
+	voxelrender::RenderContext renderContext;
+	modifier.render(renderContext, camera, palette);
 
 	EXPECT_EQ(renderer->updateCalls, 0) << "Renderer should not be called when modifier is locked";
 	EXPECT_EQ(renderer->renderCalls, 0) << "Renderer should not be called when modifier is locked";

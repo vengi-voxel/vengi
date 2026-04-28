@@ -45,6 +45,10 @@ namespace video {
 class Camera;
 }
 
+namespace voxelrender {
+struct RenderContext;
+}
+
 namespace voxedit {
 
 class SceneManager;
@@ -147,7 +151,7 @@ public:
 	ScriptManager &scriptManager();
 	const ScriptManager &scriptManager() const;
 
-	void render(const video::Camera &camera, palette::Palette &activePalette,
+	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette,
 				const glm::mat4 &model = glm::mat4(1.0f));
 
 	ModifierType modifierType() const;

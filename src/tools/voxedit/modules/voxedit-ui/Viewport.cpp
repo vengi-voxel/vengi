@@ -98,6 +98,9 @@ bool Viewport::init() {
 	if (!_renderContext.init(_app->frameBufferDimension())) {
 		return false;
 	}
+	if (!_modifierRenderContext.init(_app->frameBufferDimension())) {
+		return false;
+	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
 	if (viewModeAllViewports(_viewMode->intVal())) {
@@ -140,6 +143,7 @@ void Viewport::resize(const glm::ivec2 &contentSize) {
 	const glm::vec2 scale = dpiScale();
 	const glm::ivec2 pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
 	_renderContext.resize(pixelSize);
+	_modifierRenderContext.resize(pixelSize);
 }
 
 bool Viewport::isFixedCamera() const {
@@ -605,10 +609,11 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 void Viewport::shutdown() {
 	_captureTool.abort();
 	_renderContext.shutdown();
+	_modifierRenderContext.shutdown();
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
-	_sceneMgr->render(_renderContext, camera(), SceneManager::RenderScene);
+	_sceneMgr->render(_renderContext, _modifierRenderContext, camera(), SceneManager::RenderScene);
 
 	// If multisampling is enabled, resolve first, then get image from resolve framebuffer
 	if (_renderContext.enableMultisampling) {
@@ -1172,7 +1177,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(RenderFramebuffer);
 	video::clearColor(color::Clear());
-	_sceneMgr->render(_renderContext, camera());
+	_sceneMgr->render(_renderContext, _modifierRenderContext, camera());
 }
 
 } // namespace voxedit

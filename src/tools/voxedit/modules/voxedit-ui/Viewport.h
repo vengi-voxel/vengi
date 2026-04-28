@@ -88,6 +88,7 @@ private:
 	Bounds _bounds;
 
 	voxelrender::RenderContext _renderContext;
+	voxelrender::RenderContext _modifierRenderContext;
 	video::Camera _camera;
 
 	core::VarPtr _showAxisVar;
