@@ -181,4 +181,35 @@ inline bool mortonIndexToCoord(uint32_t index, uint8_t &x, uint8_t &y, uint8_t &
 	return true;
 }
 
+// Extract every 3rd bit from a 30-bit morton code into a 10-bit coordinate
+inline uint32_t mortonExtractBits(uint32_t v) {
+	v = v & 0x49249249u;
+	v = (v ^ (v >> 2)) & 0x030C30C3u;
+	v = (v ^ (v >> 4)) & 0x0300F00Fu;
+	v = (v ^ (v >> 8)) & 0x030000FFu;
+	v = (v ^ (v >> 16)) & 0x000003FFu;
+	return v;
+}
+
+// Decode a 30-bit morton code into 10-bit x, y, z coordinates (bit order: x=2, y=1, z=0)
+inline void mortonIndexToCoord(uint32_t code, uint32_t &x, uint32_t &y, uint32_t &z) {
+	x = mortonExtractBits(code >> 2);
+	y = mortonExtractBits(code >> 1);
+	z = mortonExtractBits(code);
+}
+
+// Spread a 10-bit value into 30 bits with 2 zero-bit gaps between each bit
+inline uint32_t mortonExpandBits(uint32_t v) {
+	v = (v * 0x00010001u) & 0xFF0000FFu;
+	v = (v * 0x00000101u) & 0x0F00F00Fu;
+	v = (v * 0x00000011u) & 0xC30C30C3u;
+	v = (v * 0x00000005u) & 0x49249249u;
+	return v;
+}
+
+// Encode 10-bit x, y, z coordinates into a 30-bit morton code (bit order: x=2, y=1, z=0)
+inline uint32_t mortonEncode(uint32_t x, uint32_t y, uint32_t z) {
+	return (mortonExpandBits(x) << 2) | (mortonExpandBits(y) << 1) | mortonExpandBits(z);
+}
+
 } // namespace voxel
