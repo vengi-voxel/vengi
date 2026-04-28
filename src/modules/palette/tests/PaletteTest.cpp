@@ -12,6 +12,7 @@
 #include "image/Image.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
+#include "palette/PaletteUtil.h"
 #include "util/VarUtil.h"
 #include "gtest/gtest.h"
 
@@ -50,8 +51,8 @@ protected:
 				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::print(c1)
 										   << "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 										   << "\nPalette 1:\n"
-										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
-										   << palette::Palette::print(pal2);
+										   << palette::toString(pal1) << "\nPalette 2:\n"
+										   << palette::toString(pal2);
 			}
 			if ((flags & ValidateFlags::SkipColorNames) != ValidateFlags::SkipColorNames) {
 				ASSERT_EQ(pal1.colorName(i), pal2.colorName(i)) << "Color name differs at " << i;

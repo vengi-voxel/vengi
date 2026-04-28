@@ -414,26 +414,6 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 	return false;
 }
 
-core::String Palette::print(const Palette &palette, bool colorAsHex) {
-	if (palette._colorCount == 0) {
-		return "no colors";
-	}
-	core::String palStr;
-	core::String line;
-	for (int i = 0; i < palette._colorCount; ++i) {
-		if (i % 16 == 0 && !line.empty()) {
-			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
-			line = "";
-		}
-		const core::String c = color::print(palette._colors[i], colorAsHex);
-		line += c;
-	}
-	if (!line.empty()) {
-		palStr.append(core::String::format("%03i %s\n", (palette._colorCount - 1) / 16 * 16, line.c_str()));
-	}
-	return palStr;
-}
-
 int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::Distance distance) const {
 	if (size() == 0) {
 		return PaletteColorNotFound;

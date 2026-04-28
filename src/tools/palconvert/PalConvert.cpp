@@ -11,6 +11,7 @@
 #include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/StdoutWriteStream.h"
 #include "io/Stream.h"
 #include "palette/FormatConfig.h"
 #include "palette/Material.h"
@@ -75,60 +76,6 @@ app::AppState PalConvert::onConstruct() {
 	return state;
 }
 
-static void printJsonPalette(const palette::ColorPalette &palette) {
-	Log::printf("{");
-	Log::printf("\"name\":\"%s\",", palette.name().c_str());
-	Log::printf("\"colors\":[");
-	for (int i = 0; i < (int)palette.size(); ++i) {
-		const color::RGBA color = palette.color(i);
-		Log::printf("{");
-		Log::printf("\"r\":%u,\"g\":%u,\"b\":%u,\"a\":%u", color.r, color.g, color.b, color.a);
-		if (!palette.colorName(i).empty()) {
-			Log::printf(",\"name\":\"%s\"", palette.colorName(i).c_str());
-		}
-
-		float h, s, b;
-		color::getHSB(color, h, s, b);
-		Log::printf(",\"hue\":%f,\"saturation\":%f,\"brightness\":%f", h, s, b);
-
-		const palette::Material &mat = palette.material(i);
-		int n = palette::MaterialProperty::MaterialMetal;
-		const int maxN = palette::MaterialProperty::MaterialMax;
-		Log::printf(",\"material\":{");
-		int matPrinted = 0;
-		for (; n < maxN; ++n) {
-			const palette::MaterialProperty propEnum = (palette::MaterialProperty)n;
-			if (!mat.has(propEnum)) {
-				continue;
-			}
-			if (matPrinted > 0) {
-				Log::printf(",");
-			}
-			Log::printf("\"%s\":%f", palette::MaterialPropertyName(propEnum), mat.value(propEnum));
-			matPrinted++;
-		}
-		Log::printf("}"); // material
-		Log::printf("}"); // color
-
-		if (i != (int)palette.size() - 1) {
-			Log::printf(",");
-		}
-	}
-	Log::printf("]");
-	Log::printf("}\n");
-}
-
-static void printHexPalette(const palette::ColorPalette &palette) {
-	for (int i = 0; i < (int)palette.size(); ++i) {
-		const color::RGBA color = palette.color(i);
-		Log::printf("0x%02x%02x%02x%02x", color.r, color.g, color.b, color.a);
-		if (i != (int)palette.size() - 1) {
-			Log::printf(", ");
-		}
-	}
-	Log::printf("\n");
-}
-
 bool PalConvert::handleInputFile(const core::String &infile, const core::String &outfile) {
 	Log::info("-- current input file: %s", infile.c_str());
 	palette::ColorPalette palette;
@@ -171,15 +118,15 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 	if (outfile.empty()) {
 		const core::String type = getArgVal("--type", "ansi");
 		if (type == "json") {
-			printJsonPalette(palette);
+			palette::printJson(palette);
 		} else if (type == "hex") {
-			printHexPalette(palette);
+			palette::printHexPalette(palette);
 		} else {
 			const core::String &paletteName = palette.name();
 			if (!paletteName.empty()) {
 				Log::printf("Palette name: %s\n", paletteName.c_str());
 			}
-			const core::String palStr = palette::ColorPalette::print(palette);
+			const core::String palStr = palette::toString(palette);
 			Log::printf("%s", palStr.c_str());
 			Log::printf("\n");
 

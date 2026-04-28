@@ -22,6 +22,7 @@
 #include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -1691,7 +1692,7 @@ static int luaVoxel_palette_color_to_string(lua_State* s) {
 
 static int luaVoxel_palette_tostring(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
-	const core::String pal = palette::Palette::print(*palette);
+	const core::String pal = palette::toString(*palette);
 	lua_pushfstring(s, "%s", pal.c_str());
 	return 1;
 }

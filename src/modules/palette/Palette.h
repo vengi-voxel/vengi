@@ -135,8 +135,6 @@ public:
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
 
-	static core::String print(const Palette &palette, bool colorAsHex = false);
-
 	/**
 	 * @brief fill the remaining colors with black
 	 */

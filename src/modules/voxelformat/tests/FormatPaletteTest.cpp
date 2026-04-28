@@ -5,6 +5,7 @@
 #include "color/ColorUtil.h"
 #include "AbstractFormatTest.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
@@ -66,8 +67,8 @@ protected:
 			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))
 				<< i << ": rgb " << color::print(rgbPalette.color(i)) << " versus pal "
 				<< color::print(palPalette.color(i)) << "\n"
-				<< palette::Palette::print(rgbPalette) << "\n"
-				<< palette::Palette::print(palPalette);
+				<< palette::toString(rgbPalette) << "\n"
+				<< palette::toString(palPalette);
 		}
 	}
 
@@ -98,7 +99,7 @@ protected:
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
 			ASSERT_TRUE(palPalette.hasColor(rgbPalette.color(i)))
 				<< i << ": Could not find color " << color::print(rgbPalette.color(i)) << " in pal palette\n"
-				<< palette::Palette::print(palPalette);
+				<< palette::toString(palPalette);
 		}
 	}
 
@@ -128,7 +129,7 @@ protected:
 		for (size_t i = 0; i < expectedColors; ++i) {
 			ASSERT_TRUE(rgbPalette1.hasColor(rgbPalette2.color(i)))
 				<< i << ": Could not find color " << color::print(rgbPalette2.color(i)) << " in rgb palette\n"
-				<< palette::Palette::print(rgbPalette1);
+				<< palette::toString(rgbPalette1);
 		}
 	}
 
@@ -159,8 +160,8 @@ protected:
 			ASSERT_EQ(palPalette1.color(i), palPalette2.color(i))
 				<< i << ": pal " << color::print(palPalette1.color(i)) << " versus pal "
 				<< color::print(palPalette2.color(i)) << "\n"
-				<< palette::Palette::print(palPalette1) << "\n"
-				<< palette::Palette::print(palPalette2);
+				<< palette::toString(palPalette1) << "\n"
+				<< palette::toString(palPalette2);
 		}
 	}
 };

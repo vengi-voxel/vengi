@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "math/Random.h"
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -43,7 +44,7 @@ namespace glm {
 namespace palette {
 
 ::std::ostream &operator<<(::std::ostream &os, const Palette &palette) {
-	return os << Palette::print(palette).c_str();
+	return os << palette::toString(palette).c_str();
 }
 
 ::std::ostream &operator<<(::std::ostream &os, const palette::Material &material) {
@@ -134,8 +135,8 @@ void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2,
 		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << color::print(c1)
 									<< "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 									<< "\nPalette 1:\n"
-									<< palette::Palette::print(pal1) << "\nPalette 2:\n"
-									<< palette::Palette::print(pal2);
+									<< palette::toString(pal1) << "\nPalette 2:\n"
+									<< palette::toString(pal2);
 	}
 }
 
@@ -190,7 +191,7 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 
 		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << color::print(c1)
 						   << "] wasn't found in second palette 2:\n"
-						   << palette::Palette::print(pal2);
+						   << palette::toString(pal2);
 	}
 }
 
@@ -210,8 +211,8 @@ void partialPaletteComparator(const palette::Palette &pal1, const palette::Palet
 				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::print(c1)
 										<< "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 										<< "\nPalette 1:\n"
-										<< palette::Palette::print(pal1) << "\nPalette 2:\n"
-										<< palette::Palette::print(pal2);
+										<< palette::toString(pal1) << "\nPalette 2:\n"
+										<< palette::toString(pal2);
 			}
 		}
 	}
@@ -348,8 +349,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
 							<< ", " << (int)voxel2.getColor() << "], color1[" << color::print(c1) << "], color2["
 							<< color::print(c2) << "], delta[" << delta << "]\n"
-							<< palette::Palette::print(pal1) << "\n"
-							<< palette::Palette::print(pal2);
+							<< palette::toString(pal1) << "\n"
+							<< palette::toString(pal2);
 					} else {
 						ASSERT_LT(delta, maxDelta)
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"

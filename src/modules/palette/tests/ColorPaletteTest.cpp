@@ -124,7 +124,7 @@ TEST_F(ColorPaletteTest, testIterators) {
 TEST_F(ColorPaletteTest, testPrint) {
 	ColorPalette palette;
 	palette.add(color::RGBA(255, 0, 0, 255));
-	core::String str = ColorPalette::print(palette);
+	core::String str = palette::toString(palette);
 	EXPECT_FALSE(str.empty());
 }
 

@@ -15,6 +15,10 @@ namespace image {
 class Image;
 }
 
+namespace io {
+class WriteStream;
+}
+
 namespace palette {
 
 struct ColorPaletteEntry {
@@ -85,8 +89,6 @@ public:
 	const_iterator begin() const;
 
 	const_iterator end() const;
-
-	static core::String print(const ColorPalette &palette, bool colorAsHex = false);
 };
 
 inline const core::String &ColorPalette::filename() const {

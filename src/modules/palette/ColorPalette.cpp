@@ -164,24 +164,4 @@ ColorPalette::const_iterator ColorPalette::end() const {
 	return _entries.end();
 }
 
-core::String ColorPalette::print(const ColorPalette &palette, bool colorAsHex) {
-	if (palette.size() == 0) {
-		return "no colors";
-	}
-	core::String palStr;
-	core::String line;
-	for (int i = 0; i < palette.colorCount(); ++i) {
-		if (i % 16 == 0 && !line.empty()) {
-			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
-			line = "";
-		}
-		const core::String c = color::print(palette.color(i), colorAsHex);
-		line += c;
-	}
-	if (!line.empty()) {
-		palStr.append(core::String::format("%03i %s\n", (palette.colorCount() - 1) / 16 * 16, line.c_str()));
-	}
-	return palStr;
-}
-
 } // namespace palette

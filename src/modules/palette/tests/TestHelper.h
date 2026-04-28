@@ -5,12 +5,13 @@
 #pragma once
 
 #include "palette/Palette.h"
+#include "palette/PaletteUtil.h"
 #include <gtest/gtest.h>
 
 namespace palette {
 
 inline ::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette) {
-	return os << palette::Palette::print(palette).c_str();
+	return os << palette::toString(palette).c_str();
 }
 
 inline ::std::ostream &operator<<(::std::ostream &os, const palette::Material &material) {
