@@ -102,10 +102,12 @@ set(SRCS
 	SceneRenderer.h SceneRenderer.cpp
 
 	ModelNodeSettings.h
+
+	VoxBoxApi.h VoxBoxApi.cpp
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound)
+set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound http json)
 set(LUA_SRCS
 	brushes/path.lua
 	brushes/modules/brush.lua
@@ -141,6 +143,7 @@ set(TEST_SRCS
 	tests/ClientTest.cpp
 	tests/SessionRecorderTest.cpp
 	tests/LUABrushTest.cpp
+	tests/VoxBoxApiTest.cpp
 )
 set(TEST_FILES
 	shared/font.ttf

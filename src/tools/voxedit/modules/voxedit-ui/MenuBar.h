@@ -8,6 +8,7 @@
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "voxelui/ScriptBrowserPanel.h"
+#include "voxedit-ui/VoxBoxBrowserPanel.h"
 
 namespace voxedit {
 
@@ -21,12 +22,13 @@ private:
 	SceneManagerPtr _sceneMgr;
 	OptionsPanel *_optionsPanel;
 	voxelui::ScriptBrowserPanel *_scriptBrowserPanel;
+	VoxBoxBrowserPanel *_voxBoxBrowserPanel;
 
 public:
 	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, OptionsPanel *optionsPanel,
-			voxelui::ScriptBrowserPanel *scriptBrowserPanel)
+			voxelui::ScriptBrowserPanel *scriptBrowserPanel, VoxBoxBrowserPanel *voxBoxBrowserPanel)
 		: Super(app, "menubar"), _sceneMgr(sceneMgr), _optionsPanel(optionsPanel),
-		  _scriptBrowserPanel(scriptBrowserPanel) {
+		  _scriptBrowserPanel(scriptBrowserPanel), _voxBoxBrowserPanel(voxBoxBrowserPanel) {
 	}
 
 	static void viewportOptions();

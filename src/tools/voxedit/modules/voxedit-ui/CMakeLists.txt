@@ -33,6 +33,7 @@ set(SRCS
 	ToolsPanel.h ToolsPanel.cpp
 	ViewMode.h ViewMode.cpp
 	Viewport.h Viewport.cpp
+	VoxBoxBrowserPanel.h VoxBoxBrowserPanel.cpp
 	QuitDisallowReason.h
 	WindowTitles.h
 )
