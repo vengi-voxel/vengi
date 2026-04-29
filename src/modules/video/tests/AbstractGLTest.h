@@ -40,11 +40,11 @@ protected:
 	void setShaderVars(const ShaderVarState& val) {
 		const core::VarDef clientShadowMap(cfg::ClientShadowMap, 1, "", "", core::CV_SHADER);
 		core::Var::registerVar(clientShadowMap)->setVal(val.clientShadowMap);
-		const core::VarDef clientShadowMapSize(cfg::ClientShadowMapSize, 128, "", "", core::CV_SHADER);
-		core::Var::registerVar(clientShadowMapSize);
-		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "", core::CV_SHADER);
-		core::Var::registerVar(voxRenderMeshMode);
 
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "");
+		core::Var::registerVar(voxRenderMeshMode);
+		const core::VarDef clientShadowMapSize(cfg::ClientShadowMapSize, 128, "", "");
+		core::Var::registerVar(clientShadowMapSize);
 		const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, "", "");
 		core::Var::registerVar(renderCheckerBoard);
 		const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, 1, "", "");

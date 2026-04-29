@@ -42,8 +42,6 @@ app::AppState ShaderTool::onConstruct() {
 
 	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, "", "", core::CV_SHADER);
 	core::Var::registerVar(clientShadowMap);
-	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes, "", "", core::CV_SHADER);
-	core::Var::registerVar(voxRenderMeshMode);
 
 	return Super::onConstruct();
 }

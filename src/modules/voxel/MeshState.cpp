@@ -51,7 +51,7 @@ void MeshState::construct() {
 	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary,
 										 (int)voxel::SurfaceExtractionType::Cubic,
 										 (int)voxel::SurfaceExtractionType::Binary, N_("Mesh mode"),
-										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"), core::CV_SHADER);
+										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"));
 	core::Var::registerVar(voxRenderMeshMode);
 	const core::VarDef voxMeshAlloc(cfg::VoxelMeshAlloc, 0, 0, 1,
 									N_("Mesh allocation strategy"),
