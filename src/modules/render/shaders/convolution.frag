@@ -2,7 +2,7 @@ layout(location = 0) $out vec4 o_color;
 $in vec2 v_texcoord;
 
 $constant FilterSize 3
-layout(std140) uniform u_conv {
+layout(std140, binding = 0) uniform u_conv {
 	float u_coefficients0;
 	float u_coefficients1;
 	float u_coefficients2;
@@ -13,7 +13,7 @@ layout(std140) uniform u_conv {
 	uint u_padding1;
 	uint u_padding2;
 };
-uniform sampler2D u_image;
+layout(binding = 1) uniform sampler2D u_image;
 
 void main() {
 	vec4 sum = u_coefficients0 * $texture2D(u_image, v_texcoord + u_offsets0);

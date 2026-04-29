@@ -4,7 +4,7 @@ layout(line_strip, max_vertices = 64) out;
 $in vec3 g_color[];
 $out vec3 v_color;
 
-layout(std140) uniform u_geom {
+layout(std140, binding = 1) uniform u_geom {
 	int u_sides;
 	float u_radius;
 	mat4 u_projection;

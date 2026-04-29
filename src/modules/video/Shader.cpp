@@ -28,6 +28,69 @@ namespace video {
 
 // GLSL version used by shader source preprocessing (#version and compatibility rewrites).
 // Keep this backend-neutral so VK-only builds don't depend on GL-only GLSLVersion enums.
+
+/**
+ * @brief Strip a named layout qualifier (e.g. "binding" or "set") from shader source.
+ * Handles ", binding = N", "binding = N, " and standalone "binding = N" inside layout().
+ */
+static core::String stripLayoutQualifier(const core::String &src, const char *qualifier) {
+	core::String out = src;
+	// ", qualifier = N"
+	{
+		core::String pattern = core::String::format(", %s", qualifier);
+		size_t pos = 0;
+		while ((pos = out.find(pattern, pos)) != core::String::npos) {
+			size_t end = pos + pattern.size();
+			// skip whitespace
+			while (end < out.size() && (out[end] == ' ' || out[end] == '=')) {
+				++end;
+			}
+			while (end < out.size() && (out[end] == ' ')) {
+				++end;
+			}
+			while (end < out.size() && out[end] >= '0' && out[end] <= '9') {
+				++end;
+			}
+			out.erase(pos, end - pos);
+		}
+	}
+	// "qualifier = N, "
+	{
+		core::String pattern = core::String::format("%s", qualifier);
+		size_t pos = 0;
+		while ((pos = out.find(pattern, pos)) != core::String::npos) {
+			// make sure this is at a word boundary (preceded by '(' or space)
+			if (pos > 0 && out[pos - 1] != '(' && out[pos - 1] != ' ') {
+				pos += pattern.size();
+				continue;
+			}
+			size_t end = pos + pattern.size();
+			while (end < out.size() && out[end] == ' ') {
+				++end;
+			}
+			if (end >= out.size() || out[end] != '=') {
+				pos += pattern.size();
+				continue;
+			}
+			++end; // skip '='
+			while (end < out.size() && out[end] == ' ') {
+				++end;
+			}
+			while (end < out.size() && out[end] >= '0' && out[end] <= '9') {
+				++end;
+			}
+			// skip trailing ", "
+			if (end < out.size() && out[end] == ',') {
+				++end;
+				while (end < out.size() && out[end] == ' ') {
+					++end;
+				}
+			}
+			out.erase(pos, end - pos);
+		}
+	}
+	return out;
+}
 int Shader::glslVersion = 430;
 
 Shader::Shader() {
@@ -334,6 +397,12 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 
+#ifndef USE_OPENGLES
+	if (glslVersion < 420) {
+		src.append("#extension GL_ARB_shading_language_420pack : enable\n");
+	}
+#endif
+
 #ifdef USE_OPENGLES
 	if (shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment) {
 		src.append("precision highp float;\n");
@@ -437,6 +506,13 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
 		src = core::string::replaceAll(src, "$texture3D", replaceTexture3D);
 		src = core::string::replaceAll(src, "$shadow2D", replaceShadow2D);
+
+#ifdef USE_OPENGLES
+		if (glslVersion < 310) {
+			src = stripLayoutQualifier(src, "binding");
+			src = stripLayoutQualifier(src, "set");
+		}
+#endif
 	}
 	return src;
 }

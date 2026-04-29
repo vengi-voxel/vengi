@@ -1,5 +1,5 @@
 
-layout(std140) uniform u_frag {
+layout(std140, binding = 1) uniform u_frag {
 	mediump vec3 u_lightdir;
 	lowp vec3 u_diffuse_color;
 	lowp vec3 u_ambient_color;
@@ -23,7 +23,7 @@ $in vec3 v_lightspacepos;
 $in float v_viewz;
 $constant MaxDepthBuffers 4
 
-uniform sampler2DArrayShadow u_shadowmap;
+layout(binding = 2) uniform sampler2DArrayShadow u_shadowmap;
 
 /**
  * perform percentage-closer shadow map lookup

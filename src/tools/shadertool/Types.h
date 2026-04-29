@@ -106,6 +106,7 @@ struct Types {
 // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
 struct Layout {
 	int binding = -1;
+	int set = -1;
 	int components = -1;
 	int offset = -1;
 	int index = -1;

@@ -1,4 +1,4 @@
-layout(std140) uniform u_uniformblock {
+layout(std140, binding = 0) uniform u_uniformblock {
 	mat4 u_viewprojection;
 	mat4 u_model;
 	vec4 u_lightPos;

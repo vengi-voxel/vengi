@@ -3,7 +3,7 @@
 #define MATERIALCOLORS 256
 // NormalPaletteMaxNormals + NORMAL_PALETTE_OFFSET
 #define NORMALS 256
-layout(std140) uniform u_vert {
+layout(std140, binding = 0) uniform u_vert {
 	vec4 u_materialcolor[MATERIALCOLORS];
 	vec4 u_normals[NORMALS];
 	vec4 u_glowcolor[MATERIALCOLORS];

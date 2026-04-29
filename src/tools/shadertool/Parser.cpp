@@ -102,6 +102,15 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 				return false;
 			}
 			layout.binding = core::string::toInt(tok.next());
+		} else if (token == "set") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for set");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.set = core::string::toInt(tok.next());
 		} else if (token == "xfb_buffer") {
 			if (!tok.hasNext() || tok.next() != "=") {
 				Log::error("Expected = for xfb_buffer");
