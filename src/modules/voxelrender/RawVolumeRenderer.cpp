@@ -691,11 +691,9 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-			_voxelNormShader.setShadowmaptex(video::TextureUnit::One);
 		} else {
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-			_voxelShader.setShadowmaptex(video::TextureUnit::One);
 		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
@@ -757,11 +755,9 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-			_voxelNormShader.setShadowmaptex(video::TextureUnit::One);
 		} else {
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-			_voxelShader.setShadowmaptex(video::TextureUnit::One);
 		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
@@ -937,7 +933,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	} else {
 		_voxelShader.activate();
 	}
-	core_assert_always(_shadow.bind(video::TextureUnit::One));
+	core_assert_always(_shadow.bind(video::TextureUnit::Two));
 
 	const video::PolygonMode mode = camera.polygonMode();
 	if (mode == video::PolygonMode::Points) {

@@ -23,7 +23,6 @@ app::AppState TestGLSLGeom::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_testShader.recordUsedUniforms(true);
 	shader::TestData::GeomData geom;
 	if (!_testData.create(geom)) {
 		Log::error("Failed to init the geometry shader uniform buffer");

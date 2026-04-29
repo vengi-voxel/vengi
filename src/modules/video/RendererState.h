@@ -109,8 +109,6 @@ struct RendererState {
 	float pendingLineWidth = 1.0f;
 	core::BitSet<core::enumVal(Vendor::Max)> vendor;
 	int drawCalls = 0;
-	// Cache for uniform buffer bindings: maps (program << 32 | blockIndex) to blockBinding
-	core::Map<uint64_t, uint32_t, 64> uniformBufferBindings;
 	// Cache for buffer base bindings: maps (type << 32 | index) to buffer handle
 	core::Map<uint64_t, Id, 64> bufferBaseBindings;
 	// Pending integer uniforms: maps location to value (deferred until draw calls)

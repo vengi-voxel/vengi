@@ -16,7 +16,6 @@
 #include "core/Enum.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
-#include "UniformBuffer.h"
 #include "video/Renderer.h"
 #include "util/IncludeUtil.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -102,50 +101,6 @@ Shader::Shader() {
 
 Shader::~Shader() {
 	Shader::shutdown();
-}
-
-bool Shader::hasAttribute(const core::String& name) const {
-	return _attributes.hasKey(name);
-}
-
-bool Shader::hasUniform(const core::String& name) const {
-	return _uniforms.hasKey(name);
-}
-
-bool Shader::isUniformBlock(const core::String& name) const {
-	auto i = _uniforms.find(name);
-	if (i == _uniforms.end()) {
-		return false;
-	}
-	return i->second.block;
-}
-
-void Shader::checkAttribute(const core::String& attribute) {
-	if (!hasAttribute(attribute)) {
-		Log::warn("Attribute %s missing for shader %s", attribute.c_str(), _name.c_str());
-	} else {
-		Log::debug("Found attribute %s for shader %s", attribute.c_str(), _name.c_str());
-	}
-}
-
-void Shader::checkUniform(const core::String& uniform) {
-	if (!hasUniform(uniform)) {
-		Log::warn("Uniform %s missing for shader %s", uniform.c_str(), _name.c_str());
-	} else {
-		Log::debug("Found uniform %s for shader %s", uniform.c_str(), _name.c_str());
-	}
-}
-
-void Shader::checkAttributes(std::initializer_list<core::String> attributes) {
-	for (const core::String& attribute : attributes) {
-		checkAttribute(attribute);
-	}
-}
-
-void Shader::checkUniforms(std::initializer_list<core::String> uniforms) {
-	for (const core::String& uniform : uniforms) {
-		checkUniform(uniform);
-	}
 }
 
 void Shader::shutdown() {
@@ -237,10 +192,6 @@ bool Shader::init() {
 	createProgramFromShaders();
 	const bool success = _program != InvalidId;
 	_initialized = success;
-	if (_initialized) {
-		fetchAttributes();
-		fetchUniforms();
-	}
 	return success;
 }
 
@@ -270,13 +221,6 @@ bool Shader::deactivate() const {
 
 	_active = false;
 	_time = 0;
-	if (_recordUsedUniforms) {
-		for (const auto& e : _uniforms) {
-			if (_usedUniforms.find(e->value.location) == _usedUniforms.end()) {
-				Log::error("Didn't set the uniform %s (shader: %s)", e->key.c_str(), _name.c_str());
-			}
-		}
-	}
 
 	return _active;
 }
@@ -284,22 +228,6 @@ bool Shader::deactivate() const {
 void Shader::addDefine(const core::String& name, const core::String& value) {
 	core_assert_msg(!_initialized, "Shader is already initialized");
 	_defines.put(name, value);
-}
-
-int Shader::getAttributeLocation(const core::String& name) const {
-	const int location = checkAttributeLocation(name);
-	if (location == -1) {
-		Log::debug("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
-	}
-	return location;
-}
-
-int Shader::checkAttributeLocation(const core::String& name) const {
-	auto i = _attributes.find(name);
-	if (i == _attributes.end()) {
-		return -1;
-	}
-	return i->second;
 }
 
 bool Shader::checkUniformCache(int location, const void* value, int length) const {
@@ -319,38 +247,6 @@ bool Shader::checkUniformCache(int location, const void* value, int length) cons
 	_uniformStateMap.put(location, hash);
 	return true;
 #endif
-}
-
-int Shader::getUniformLocation(const core::String& name) const {
-	const Uniform* uniform = getUniform(name);
-	if (uniform == nullptr) {
-		return -1;
-	}
-	return uniform->location;
-}
-
-const Uniform* Shader::getUniform(const core::String& name) const {
-	auto i = _uniforms.find(name);
-	if (i == _uniforms.end()) {
-		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
-		for (const auto& uniformEntry : _uniforms) {
-			Log::trace("uniform %s", uniformEntry->key.c_str());
-		}
-		return nullptr;
-	}
-	return &i->second;
-}
-
-int Shader::fetchUniforms() {
-	_uniforms.clear();
-	Log::debug("Fetch uniforms");
-	return video::fetchUniforms(_program, _uniforms, _name);
-}
-
-int Shader::fetchAttributes() {
-	_attributes.clear();
-	Log::debug("Fetch attributes");
-	return video::fetchAttributes(_program, _attributes, _name);
 }
 
 core::String Shader::validPreprocessorName(const core::String& name) {
@@ -520,36 +416,10 @@ ScopedShader::~ScopedShader() {
 	useProgram(_oldShader);
 }
 
-bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
-	const Uniform* uniform = getUniform(name);
-	if (uniform == nullptr) {
-		Log::error("%s is no uniform", name.c_str());
-		return false;
-	}
-	if (!uniform->block) {
-		Log::error("%s is no uniform buffer", name.c_str());
-		return false;
-	}
-
-	if (uniform->size != (int)buffer.size()) {
-		Log::error("Uniform buffer %s: size %i differs from uploaded structure size %i", name.c_str(), uniform->size, (int)buffer.size());
-		return false;
-	}
-
-	video::setUniformBufferBinding(_program, uniform->blockIndex, uniform->blockBinding);
-	addUsedUniform(uniform->location);
-	return buffer.bind(uniform->blockIndex);
-}
-
 void Shader::setUniformi(int location, int value) const {
 	if (checkUniformCache(location, &value, sizeof(value))) {
 		video::setUniformi(location, value);
 	}
-	addUsedUniform(location);
-}
-
-int32_t Shader::getUniformBufferOffset(const char *name) {
-	return video::getUniformBufferOffset(_program, name);
 }
 
 }

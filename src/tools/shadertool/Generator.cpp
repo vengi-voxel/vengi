@@ -58,18 +58,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	core::String uniformArrayInfo;
 	const int uniformSize = int(shaderStruct.uniforms.size());
 	if (uniformSize > 0) {
-		uniforms += "checkUniforms({";
-		int i = 0;
-		for (const Variable& uniform : shaderStruct.uniforms) {
-			uniforms += "\"";
-			uniforms += uniform.name;
-			uniforms += "\"";
-			if (i < uniformSize - 1) {
-				uniforms += ", ";
-			}
-			++i;
-		}
-		uniforms += "});";
+		uniforms += "// ";
+		uniforms += core::string::toString(uniformSize);
+		uniforms += " uniforms";
 	} else {
 		uniforms += "// no uniforms";
 	}
@@ -77,18 +68,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	core::String attributes;
 	const int attributeSize = int(shaderStruct.attributes.size());
 	if (attributeSize > 0) {
-		attributes += "checkAttributes({";
-		int i = 0;
-		for (const Variable& v : shaderStruct.attributes) {
-			attributes += "\"";
-			attributes += v.name;
-			attributes += "\"";
-			if (i < attributeSize - 1) {
-				attributes += ", ";
-			}
-			++i;
-		}
-		attributes += "});\n";
+		attributes += "// ";
+		attributes += core::string::toString(attributeSize);
+		attributes += " attributes";
 	} else {
 		attributes += "// no attributes";
 	}
@@ -208,13 +190,53 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		if (layout.location != -1) {
 			methods += core::string::toString(layout.location);
 			methods += ";\n";
-		} else {
-			methods += "getUniformLocation(\"";
+		} else if ((v.isSampler() || v.isImage()) && layout.binding != -1) {
+			// layout(binding=X) already sets the texture unit at compile time in GLSL 4.2+
+			methods += "0; (void)location; (void)";
 			methods += v.name;
-			methods += "\");\n";
-			methods += "\tif (location == -1) {\n";
-			methods += "\t\treturn false;\n";
-			methods += "\t}\n";
+			methods += ";\n";
+			methods += "\treturn true;\n";
+			methods += "}\n";
+
+			// skip the rest of the setter generation for this uniform
+			if (v.isSampler()) {
+				if (layout.binding != -1) {
+					prototypes += "\n\tvideo::TextureUnit getBound";
+					prototypes += uniformName;
+					prototypes += "TexUnit() const;\n";
+					methods += "\n\nvideo::TextureUnit ";
+					methods += filename;
+					methods += "::getBound";
+					methods += uniformName;
+					methods += "TexUnit() const {\n";
+					methods += "\treturn video::TextureUnit::";
+					methods += convertToTexUnit(layout.binding);
+					methods += ";\n}\n";
+				}
+			}
+			if (v.isSampler() || v.isImage()) {
+				if (layout.imageFormat != video::ImageFormat::Max) {
+					prototypes += "\n\tvideo::ImageFormat getImageFormat";
+					prototypes += uniformName;
+					prototypes += "() const;\n";
+					methods += "\nvideo::ImageFormat ";
+					methods += filename;
+					methods += "::getImageFormat";
+					methods += uniformName;
+					methods += "() const {\n";
+					methods += "\treturn video::ImageFormat::";
+					methods += util::getImageFormatTypeString(layout.imageFormat);
+					methods += ";\n}\n";
+				}
+			}
+			if (n < uniformSize - 2) {
+				methods += "\n";
+			}
+			++n;
+			continue;
+		} else {
+			Log::error("Uniform '%s' has no layout(location=X) or layout(binding=X) qualifier", v.name.c_str());
+			return false;
 		}
 		methods += "\tsetUniform";
 		methods += util::uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
@@ -302,11 +324,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			methods += ", ";
 			methods += core::string::toString(v.arraySize);
 			methods += ">& var) const {\n";
-			methods += "\tconst int location = getUniformLocation(\"";
-			methods += v.name;
-			methods += "\");\n\tif (location == -1) {\n";
-			methods += "\t\treturn false;\n";
-			methods += "\t}\n";
+			methods += "\tconst int location = ";
+			methods += core::string::toString(layout.location);
+			methods += ";\n";
 			methods += "\tsetUniform";
 			methods += util::uniformSetterPostfix(v.type, v.arraySize);
 			methods += "(location, &var[0], var.size());\n";
@@ -321,6 +341,15 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	int i = 0;
 	for (const Variable& v : shaderStruct.attributes) {
 		const core::String& attributeName = util::convertName(v.name, true);
+		auto attrLayoutIter = shaderStruct.layouts.find(v.name);
+		Layout attrLayout;
+		if (attrLayoutIter != shaderStruct.layouts.end()) {
+			attrLayout = attrLayoutIter->second;
+		}
+		if (attrLayout.location == -1) {
+			Log::error("Attribute '%s' has no layout(location=X) qualifier", v.name.c_str());
+			return false;
+		}
 
 		prototypes += "\n\t/**\n";
 		prototypes += "\t * @brief This version takes the c++ data type as a reference\n";
@@ -357,7 +386,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		prototypes += "\t\tattribute";
 		prototypes += attributeName;
 		prototypes += ".type = video::mapType<TYPE>();\n";
-		// TODO: add validation that the given c++ data type fits the specified glsl type.
 		prototypes += "\t\treturn attribute";
 		prototypes += attributeName;
 		prototypes += ";\n";
@@ -366,12 +394,12 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		prototypes += "\n\t/**\n\t * @brief Return the binding location of the shader attribute @c ";
 		prototypes += attributeName;
 		prototypes += "\n\t */\n";
-		prototypes += "\tinline int getLocation";
+		prototypes += "\tstatic inline int getLocation";
 		prototypes += attributeName;
-		prototypes += "() const {\n";
-		prototypes += "\t\treturn getAttributeLocation(\"";
-		prototypes += v.name;
-		prototypes += "\");\n";
+		prototypes += "() {\n";
+		prototypes += "\t\treturn ";
+		prototypes += core::string::toString(attrLayout.location);
+		prototypes += ";\n";
 		prototypes += "\t}\n";
 
 		prototypes += "\n\t/**\n\t * @brief Return the components if the attribute @c ";
@@ -477,27 +505,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			ub += core::string::toString(align);
 			ub += "\n";
 
-			uniforms += "\n\tif (";
-			uniforms += core::string::toString((uint32_t)(offset * 4));
-			uniforms += " != getUniformBufferOffset(\"";
-			uniforms += v.name;
-			if (v.arraySize > 0) {
-				uniforms += "[0]";
-			}
-			uniforms += "\")) {\n";
-			uniforms += "\t\tLog::error(\"Invalid offset found for uniform ";
-			uniforms += v.name;
-			if (v.arraySize > 0) {
-				uniforms += "[0]";
-			}
-			uniforms += " %i - expected ";
-			uniforms += core::string::toString((uint32_t)(offset * 4));
-			uniforms += "\", getUniformBufferOffset(\"";
-			uniforms += v.name;
-			uniforms += "\"));\n";
-			//uniforms += "\t\treturn false;\n";
-			uniforms += "\t}\n";
-
 			if (offsetsIndex > 0) {
 				offsets += ", ";
 			}
@@ -575,9 +582,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		prototypes += "\tinline bool set";
 		prototypes += uniformBufferStructName;
 		prototypes += "(const video::UniformBuffer& buf) {\n";
-		prototypes += "\t\treturn setUniformBuffer(\"";
-		prototypes += ubuf.name;
-		prototypes += "\", buf);\n";
+		if (ubuf.layout.binding == -1) {
+			Log::error("Uniform block '%s' has no layout(binding=X) qualifier", ubuf.name.c_str());
+			return false;
+		}
+		prototypes += "\t\treturn buf.bind(";
+		prototypes += core::string::toString(ubuf.layout.binding);
+		prototypes += ");\n";
 		prototypes += "\t}\n";
 
 		core::String generatedUb = core::string::replaceAll(templateUniformBuffer, "$name$", uniformBufferClassName);

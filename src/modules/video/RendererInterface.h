@@ -7,7 +7,8 @@
 #pragma once
 
 #include "RenderBuffer.h"
-#include "ShaderTypes.h"
+#include "Types.h"
+#include "core/String.h"
 #include "core/SharedPtr.h"
 #include "video/RendererState.h"
 #include <glm/vec3.hpp>
@@ -552,14 +553,6 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait 
  * @brief Wait for the execution of a compute shader
  */
 void waitShader(MemoryBarrierType wait);
-/**
- * @brief Fetch all uniforms in a shader
- */
-int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name = "unknown-shader");
-/**
- * @brief Fetch all attributes in a shader
- */
-int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String &name = "unknown-shader");
 
 /**
  * @brief Flush queued rendering commands to the GPU driver.
@@ -587,10 +580,5 @@ void syncPendingState();
  * Typically implemented with glFinish() on OpenGL backends.
  */
 void finish();
-
-// shader stuff
-void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding);
-// only for validation purposes
-int32_t getUniformBufferOffset(Id program, const char *name);
 
 } // namespace video
