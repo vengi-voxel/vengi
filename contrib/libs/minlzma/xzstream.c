@@ -32,6 +32,9 @@ Environment:
 #include "xzstream.h"
 
 #ifdef _WIN32
+#ifndef _In_
+#define _In_
+#endif
 void __security_check_cookie(_In_ uintptr_t _StackCookie) { (void)(_StackCookie); }
 #endif
 
