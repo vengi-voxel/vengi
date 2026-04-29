@@ -67,7 +67,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ctx._body.c_str());
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)ctx._body.size());
 	}
-	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, ctx._type == RequestType::GET ? "GET" : "POST");
+	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, ctx._type == RequestType::GET ? "GET" : (ctx._type == RequestType::PATCH ? "PATCH" : "POST"));
 	curl_easy_setopt(curl, CURLOPT_URL, ctx._url.c_str());
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);

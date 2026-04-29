@@ -90,7 +90,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 		return false;
 	}
 
-	const wchar_t *method = ctx._type == RequestType::GET ? L"GET" : L"POST";
+	const wchar_t *method = ctx._type == RequestType::GET ? L"GET" : (ctx._type == RequestType::PATCH ? L"PATCH" : L"POST");
 	HINTERNET hRequest = WinHttpOpenRequest(hConnection, method, url_components.lpszUrlPath, nullptr,
 											WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
 											url_components.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0);
@@ -170,7 +170,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 							 WINHTTP_HEADER_NAME_BY_INDEX, &dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX)) {
 		printLastError("Failed to query status code");
 	}
-	const char *requestTypeStr = ctx._type == RequestType::GET ? "GET" : "POST";
+	const char *requestTypeStr = ctx._type == RequestType::GET ? "GET" : (ctx._type == RequestType::PATCH ? "PATCH" : "POST");
 	Log::debug("Http request for url: %s (%s) with status code: %d", ctx._url.c_str(), requestTypeStr, (int)dwStatusCode);
 	if (statusCode) {
 		*statusCode = (int)dwStatusCode;

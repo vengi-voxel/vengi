@@ -70,7 +70,7 @@ static bool http_request_sync(RequestResponse &userdata, RequestContext &ctx) {
 	attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_SYNCHRONOUS;
 
 	core_assert(!emscripten_is_main_browser_thread());
-	const char *method = ctx._type == RequestType::GET ? "GET" : "POST";
+	const char *method = ctx._type == RequestType::GET ? "GET" : (ctx._type == RequestType::PATCH ? "PATCH" : "POST");
 	core::string::strncpyz(method, strlen(method), attr.requestMethod, sizeof(attr.requestMethod));
 
 	Log::debug("Requesting %s via %s", ctx._url.c_str(), attr.requestMethod);

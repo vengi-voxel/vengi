@@ -37,8 +37,8 @@ Request::Request(const core::String &url, RequestType type) {
 }
 
 bool Request::setBody(const core::String &body) {
-	core_assert(_ctx._type == RequestType::POST);
-	if (_ctx._type != RequestType::POST) {
+	core_assert(_ctx._type == RequestType::POST || _ctx._type == RequestType::PATCH);
+	if (_ctx._type != RequestType::POST && _ctx._type != RequestType::PATCH) {
 		return false;
 	}
 	_ctx._body = body;

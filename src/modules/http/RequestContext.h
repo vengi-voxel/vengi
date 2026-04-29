@@ -10,7 +10,7 @@ namespace http {
 
 using Headers = core::DynamicStringMap<core::String>;
 
-enum class RequestType { GET, POST };
+enum class RequestType { GET, POST, PATCH };
 
 struct RequestContext {
 	int _timeoutSecond = 5;
