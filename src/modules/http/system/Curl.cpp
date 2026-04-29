@@ -65,6 +65,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	}
 	if (!ctx._body.empty()) {
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ctx._body.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)ctx._body.size());
 	}
 	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, ctx._type == RequestType::GET ? "GET" : "POST");
 	curl_easy_setopt(curl, CURLOPT_URL, ctx._url.c_str());
@@ -81,7 +82,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, ctx._connectTimeoutSecond);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, ctx._timeoutSecond);
 	// curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, ctx._followRedirects ? 1L : 0L);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3);
 	if (!ctx._userAgent.empty()) {
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, ctx._userAgent.c_str());

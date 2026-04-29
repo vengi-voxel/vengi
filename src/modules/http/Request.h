@@ -18,6 +18,7 @@ public:
 	void setUserAgent(const core::String &userAgent);
 	void setConnectTimeoutSecond(int timeoutSecond);
 	void setTimeoutSecond(int timeoutSecond);
+	void setFollowRedirects(bool follow);
 	bool setBody(const core::String &body);
 	void addHeader(const core::String &key, const core::String &value);
 	bool execute(io::WriteStream &stream, int *statusCode = nullptr, Headers *outheaders = nullptr);
@@ -57,6 +58,10 @@ inline void Request::setConnectTimeoutSecond(int timeoutSecond) {
 
 inline void Request::setTimeoutSecond(int timeoutSecond) {
 	_ctx._timeoutSecond = timeoutSecond;
+}
+
+inline void Request::setFollowRedirects(bool follow) {
+	_ctx._followRedirects = follow;
 }
 
 } // namespace http

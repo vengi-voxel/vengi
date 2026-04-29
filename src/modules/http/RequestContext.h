@@ -15,6 +15,7 @@ enum class RequestType { GET, POST };
 struct RequestContext {
 	int _timeoutSecond = 5;
 	int _connectTimeoutSecond = 5;
+	bool _followRedirects = true;
 	RequestType _type;
 	core::String _url;
 	core::String _userAgent;

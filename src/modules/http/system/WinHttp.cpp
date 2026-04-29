@@ -124,7 +124,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	}
 
 	// Send the request
-	int maxRedirects = 3;
+	int maxRedirects = ctx._followRedirects ? 3 : 0;
 	bool requestState = false;
 	if (ctx._type == RequestType::GET) {
 		while (!requestState) {
