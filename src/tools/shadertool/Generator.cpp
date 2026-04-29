@@ -70,14 +70,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			++i;
 		}
 		uniforms += "});";
-
-		for (const Variable& uniform : shaderStruct.uniforms) {
-			uniformArrayInfo += "\tsetUniformArraySize(\"";
-			uniformArrayInfo += uniform.name;
-			uniformArrayInfo += "\", ";
-			uniformArrayInfo += core::string::toString(uniform.arraySize);
-			uniformArrayInfo += ");\n";
-		}
 	} else {
 		uniforms += "// no uniforms";
 	}

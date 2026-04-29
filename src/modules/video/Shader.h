@@ -57,9 +57,6 @@ protected:
 	typedef core::DynamicStringMap<core::String> ShaderDefines;
 	ShaderDefines _defines;
 
-	typedef core::DynamicStringMap<int> ShaderUniformArraySizes;
-	ShaderUniformArraySizes _uniformArraySizes;
-
 	ShaderUniforms _uniforms;
 
 	// can be used to validate that every uniform was set. The value type is the location index
@@ -192,14 +189,6 @@ public:
 	 * @brief Adds a new define in the form '#define value' to the shader source code
 	 */
 	void addDefine(const core::String& name, const core::String& value);
-
-	void setUniformArraySize(const core::String& name, int size);
-
-	/**
-	 * @return -1 if uniform wasn't found, or no size is known. If the uniform is known, but
-	 * it is no array, this will return 0
-	 */
-	int getUniformArraySize(const core::String& name) const;
 
 	int checkAttributeLocation(const core::String& name) const;
 	int getAttributeLocation(const core::String& name) const;
