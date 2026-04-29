@@ -40,22 +40,8 @@ app::AppState ShaderTool::onConstruct() {
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
 
-	const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, "", "", core::CV_SHADER);
-	core::Var::registerVar(clientGamma);
 	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, "", "", core::CV_SHADER);
 	core::Var::registerVar(clientShadowMap);
-	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, "", "", core::CV_SHADER);
-	core::Var::registerVar(renderCheckerBoard);
-	const core::VarDef renderOutline(cfg::RenderOutline, false, "", "", core::CV_SHADER);
-	core::Var::registerVar(renderOutline);
-	const core::VarDef renderNormals(cfg::RenderNormals, false, "", "", core::CV_SHADER);
-	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::RenderToneMapping, 1, "", "", core::CV_SHADER);
-	core::Var::registerVar(toneMapping);
-	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, "", "", core::CV_SHADER);
-	core::Var::registerVar(clientDebugShadow);
-	const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, "", "", core::CV_SHADER);
-	core::Var::registerVar(clientDebugShadowMapCascade);
 	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes, "", "", core::CV_SHADER);
 	core::Var::registerVar(voxRenderMeshMode);
 

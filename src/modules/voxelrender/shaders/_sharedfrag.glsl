@@ -8,14 +8,16 @@ layout(std140, binding = 1) uniform u_frag {
 	mat4 u_cascades[4];
 	vec4 u_selectiontint;
 	uint u_timemillis;
+	float u_gamma;
+	int u_checkerboard;
+	int u_debug_shadow;
+	int u_debug_cascade;
+	int u_tonemapping;
+	int u_renderoutline;
 };
 
 layout(location = 0) $out vec4 o_color;
 layout(location = 1) $out vec4 o_glow;
-
-#ifndef cl_gamma
-#define cl_gamma 1.0
-#endif
 
 #if cl_shadowmap == 1
 
@@ -89,34 +91,33 @@ vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightD
 	// Use a smaller bias since we already applied normal offset
 	float slopeBias = depthBias * (0.1 + slopeScale * 0.4);
 	float shadow = sampleShadowPCF(slopeBias, cascade, uv.xy, uv.z);
-#if cl_debug_cascade
-	if (cascade == 0) {
-		color.r = 0.0;
-		color.g = 1.0;
-		color.b = 0.0;
-	} else if (cascade == 1) {
-		color.r = 0.0;
-		color.g = 1.0;
-		color.b = 1.0;
-	} else if (cascade == 2) {
-		color.r = 0.0;
-		color.g = 0.0;
-		color.b = 1.0;
-	} else if (cascade == 3) {
-		color.r = 0.0;
-		color.g = 0.5;
-		color.b = 0.5;
-	} else {
-		color.r = 1.0;
+	if (u_debug_cascade != 0) {
+		if (cascade == 0) {
+			color.r = 0.0;
+			color.g = 1.0;
+			color.b = 0.0;
+		} else if (cascade == 1) {
+			color.r = 0.0;
+			color.g = 1.0;
+			color.b = 1.0;
+		} else if (cascade == 2) {
+			color.r = 0.0;
+			color.g = 0.0;
+			color.b = 1.0;
+		} else if (cascade == 3) {
+			color.r = 0.0;
+			color.g = 0.5;
+			color.b = 0.5;
+		} else {
+			color.r = 1.0;
+		}
 	}
-#endif // cl_debug_cascade
-#if cl_debug_shadow == 1
-	// shadow only rendering
-	return vec3(shadow);
-#else // cl_debug_shadow
+	if (u_debug_shadow != 0) {
+		// shadow only rendering
+		return vec3(shadow);
+	}
 	vec3 lightvalue = ambient + (diffuse * shadow);
 	return color * lightvalue;
-#endif // cl_debug_shadow
 }
 
 vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
@@ -135,8 +136,6 @@ vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, in vec3 color, in v
 
 #endif // cl_shadowmap == 1
 
-#if r_checkerboard == 1
-
 // https://thebookofshaders.com
 float checker(in vec2 pos, float strength) {
 	vec2 c = floor(pos);
@@ -145,24 +144,19 @@ float checker(in vec2 pos, float strength) {
 }
 
 vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
-	float checkerBoardFactor = 1.0;
-	if (abs(normal.y) >= 0.999) {
-		checkerBoardFactor = checker(pos.xz, 0.2);
-	} else if (abs(normal.x) >= 0.999) {
-		checkerBoardFactor = checker(pos.yz, 0.2);
-	} else if (abs(normal.z) >= 0.999) {
-		checkerBoardFactor = checker(pos.xy, 0.2);
+	if (u_checkerboard != 0) {
+		float checkerBoardFactor = 1.0;
+		if (abs(normal.y) >= 0.999) {
+			checkerBoardFactor = checker(pos.xz, 0.2);
+		} else if (abs(normal.x) >= 0.999) {
+			checkerBoardFactor = checker(pos.yz, 0.2);
+		} else if (abs(normal.z) >= 0.999) {
+			checkerBoardFactor = checker(pos.xy, 0.2);
+		}
+		return color * checkerBoardFactor;
 	}
-	return color * checkerBoardFactor;
-}
-
-#else // r_checkerboard == 1
-
-vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
 	return color;
 }
-
-#endif // r_checkerboard == 1
 
 
 vec4 darken(vec4 color) {

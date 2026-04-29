@@ -38,15 +38,18 @@ protected:
 	RendererContext _ctx = nullptr;
 
 	void setShaderVars(const ShaderVarState& val) {
-		const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, "", "", core::CV_SHADER);
-		core::Var::registerVar(renderCheckerBoard);
 		const core::VarDef clientShadowMap(cfg::ClientShadowMap, 1, "", "", core::CV_SHADER);
 		core::Var::registerVar(clientShadowMap)->setVal(val.clientShadowMap);
-		const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, 1, "", "", core::CV_SHADER);
-		core::Var::registerVar(clientDebugShadow)->setVal(val.clientDebugShadow);
 		const core::VarDef clientShadowMapSize(cfg::ClientShadowMapSize, 128, "", "", core::CV_SHADER);
 		core::Var::registerVar(clientShadowMapSize);
-		const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, "", "", core::CV_SHADER);
+		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "", core::CV_SHADER);
+		core::Var::registerVar(voxRenderMeshMode);
+
+		const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, "", "");
+		core::Var::registerVar(renderCheckerBoard);
+		const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, 1, "", "");
+		core::Var::registerVar(clientDebugShadow)->setVal(val.clientDebugShadow);
+		const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, "", "");
 		core::Var::registerVar(clientGamma);
 		const core::VarDef clientBloom(cfg::ClientBloom, false, "", "");
 		core::Var::registerVar(clientBloom);
@@ -54,20 +57,18 @@ protected:
 		core::Var::registerVar(renderCullBuffers);
 		const core::VarDef renderCullNodes(cfg::RenderCullNodes, true, "", "");
 		core::Var::registerVar(renderCullNodes);
-		const core::VarDef renderOutline(cfg::RenderOutline, false, "", "", core::CV_SHADER);
+		const core::VarDef renderOutline(cfg::RenderOutline, false, "", "");
 		core::Var::registerVar(renderOutline);
 		const core::VarDef renderSelectionTint(cfg::RenderSelectionTint, false, "", "");
 		core::Var::registerVar(renderSelectionTint);
-		const core::VarDef renderNormals(cfg::RenderNormals, false, "", "", core::CV_SHADER);
+		const core::VarDef renderNormals(cfg::RenderNormals, false, "", "");
 		core::Var::registerVar(renderNormals);
-		const core::VarDef toneMapping(cfg::RenderToneMapping, 0, "", "", core::CV_SHADER);
+		const core::VarDef toneMapping(cfg::RenderToneMapping, 0, "", "");
 		core::Var::registerVar(toneMapping);
-		const core::VarDef clientDebugShadow2(cfg::ClientDebugShadow, false, "", "", core::CV_SHADER);
+		const core::VarDef clientDebugShadow2(cfg::ClientDebugShadow, false, "", "");
 		core::Var::registerVar(clientDebugShadow2);
-		const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, "", "", core::CV_SHADER);
+		const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, "", "");
 		core::Var::registerVar(clientDebugShadowMapCascade);
-		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "", core::CV_SHADER);
-		core::Var::registerVar(voxRenderMeshMode);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
 

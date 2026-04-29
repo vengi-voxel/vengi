@@ -143,6 +143,13 @@ bool RawVolumeRenderer::init(bool normals) {
 	_cullBuffers = core::getVar(cfg::RenderCullBuffers);
 	_cullNodes = core::getVar(cfg::RenderCullNodes);
 	_selectionTint = core::getVar(cfg::RenderSelectionTint);
+	_gamma = core::getVar(cfg::ClientGamma);
+	_checkerboard = core::getVar(cfg::RenderCheckerBoard);
+	_debugShadow = core::getVar(cfg::ClientDebugShadow);
+	_debugCascade = core::getVar(cfg::ClientDebugShadowMapCascade);
+	_tonemapping = core::getVar(cfg::RenderToneMapping);
+	_renderOutline = core::getVar(cfg::RenderOutline);
+	_renderNormals = core::getVar(cfg::RenderNormals);
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -192,6 +199,7 @@ bool RawVolumeRenderer::init(bool normals) {
 
 	_voxelShaderFragData.diffuseColor = glm::vec3(0.0f, 0.0f, 0.0f);
 	_voxelShaderFragData.ambientColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	_voxelShaderFragData.gamma = _gamma->floatVal();
 
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
@@ -674,6 +682,8 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+		_voxelShaderVertData.shownormals = _renderNormals->intVal();
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::cullFace(meshState->cullFace(idx));
@@ -741,6 +751,8 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+		_voxelShaderVertData.shownormals = _renderNormals->intVal();
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
@@ -916,6 +928,12 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
 	}
 	_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
+	_voxelShaderFragData.gamma = _gamma->floatVal();
+	_voxelShaderFragData.checkerboard = _checkerboard->intVal();
+	_voxelShaderFragData.debugShadow = _debugShadow->intVal();
+	_voxelShaderFragData.debugCascade = _debugCascade->intVal();
+	_voxelShaderFragData.tonemapping = _tonemapping->intVal();
+	_voxelShaderFragData.renderoutline = _renderOutline->intVal();
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();

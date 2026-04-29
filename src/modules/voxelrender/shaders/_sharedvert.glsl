@@ -11,8 +11,8 @@ layout(std140, binding = 0) uniform u_vert {
 	mat4 u_model;
 	int u_gray;
 	int u_locked;
-	int u_padding2;
-	int u_padding3;
+	int u_vert_renderoutline;
+	int u_shownormals;
 };
 
 $out vec3 v_pos;

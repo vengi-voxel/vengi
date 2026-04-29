@@ -25,29 +25,6 @@
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
 
-#if r_tonemapping != 0
-
-// 0: Default, 1: Golden, 2: Punchy
-#define AGXLOOK (r_tonemapping - 1)
-
-#if 0
-// Mean error^2: 1.85907662e-06
-vec3 agxDefaultContrastApprox(vec3 x) {
-	vec3 x2 = x * x;
-	vec3 x4 = x2 * x2;
-	vec3 x6 = x4 * x2;
-
-	return - 17.86     * x6 * x
-			+ 78.01     * x6
-			- 126.7     * x4 * x
-			+ 92.06     * x4
-			- 28.72     * x2 * x
-			+ 4.361     * x2
-			- 0.1718    * x
-			+ 0.002857;
-}
-#endif
-
 // Mean error^2: 3.6705141e-06
 vec3 agxDefaultContrastApprox(vec3 x) {
 	vec3 x2 = x * x;
@@ -101,7 +78,8 @@ vec3 agxEotf(vec3 val) {
 	return val;
 }
 
-vec3 agxLook(vec3 val) {
+// look: 0 = Default, 1 = Golden, 2 = Punchy
+vec3 agxLook(vec3 val, int look) {
 	const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
 	float luma = dot(val, lw);
 
@@ -111,32 +89,29 @@ vec3 agxLook(vec3 val) {
 	vec3 power = vec3(1.0);
 	float sat = 1.0;
 
-#if AGXLOOK == 1
-	// Golden
-	slope = vec3(1.0, 0.9, 0.5);
-	power = vec3(0.8);
-	sat = 0.8;
-#elif AGXLOOK == 2
-	// Punchy
-	slope = vec3(1.0);
-	power = vec3(1.35, 1.35, 1.35);
-	sat = 1.4;
-#endif
+	if (look == 1) {
+		// Golden
+		slope = vec3(1.0, 0.9, 0.5);
+		power = vec3(0.8);
+		sat = 0.8;
+	} else if (look == 2) {
+		// Punchy
+		slope = vec3(1.0);
+		power = vec3(1.35, 1.35, 1.35);
+		sat = 1.4;
+	}
 
 	// ASC CDL
 	val = pow(val * slope + offset, power);
 	return luma + sat * (val - luma);
 }
 
-#endif // r_tonemapping
-
 vec3 tonemapping(vec3 value) {
-#if r_tonemapping != 0
-	value = agx(value);
-	value = agxLook(value); // Optional
-	value = agxEotf(value);
-	return value;
-#else
+	if (u_tonemapping != 0) {
+		value = agx(value);
+		value = agxLook(value, u_tonemapping - 1);
+		value = agxEotf(value);
+		return value;
+	}
 	return clamp(value, 0.0, 1.0);
-#endif
 }
