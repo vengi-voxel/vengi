@@ -29,6 +29,7 @@ namespace video {
 // GLSL version used by shader source preprocessing (#version and compatibility rewrites).
 // Keep this backend-neutral so VK-only builds don't depend on GL-only GLSLVersion enums.
 
+#ifdef USE_OPENGLES
 /**
  * @brief Strip a named layout qualifier (e.g. "binding" or "set") from shader source.
  * Handles ", binding = N", "binding = N, " and standalone "binding = N" inside layout().
@@ -91,6 +92,8 @@ static core::String stripLayoutQualifier(const core::String &src, const char *qu
 	}
 	return out;
 }
+#endif
+
 int Shader::glslVersion = 430;
 
 Shader::Shader() {
