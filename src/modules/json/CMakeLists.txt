@@ -3,7 +3,7 @@ set(SRCS
 )
 
 set(LIB json)
-set(LIBS core cjson)
+set(LIBS core cjson io)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS

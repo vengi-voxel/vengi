@@ -144,6 +144,17 @@ TEST_F(Base64Test, testBinaryRoundTrip) {
 	EXPECT_TRUE(rs.eos());
 }
 
+TEST_F(Base64Test, testBase64UrlToBase64) {
+	// - becomes +, _ becomes /, padding added
+	EXPECT_EQ("abc+def/ghi=", io::Base64::base64urlToBase64("abc-def_ghi"));
+	// already standard base64 passes through
+	EXPECT_EQ("Zm9v", io::Base64::base64urlToBase64("Zm9v"));
+	// padding for different lengths
+	EXPECT_EQ("YQ==", io::Base64::base64urlToBase64("YQ"));
+	EXPECT_EQ("YWI=", io::Base64::base64urlToBase64("YWI"));
+	EXPECT_EQ("", io::Base64::base64urlToBase64(""));
+}
+
 TEST_F(Base64Test, testEmptyInput) {
 	io::BufferedReadWriteStream target(16);
 	{

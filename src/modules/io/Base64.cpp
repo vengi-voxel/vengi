@@ -132,5 +132,25 @@ bool decode(io::WriteStream &stream, const core::String &input) {
 	return decode(stream, inputStream);
 }
 
+core::String base64urlToBase64(const core::String &input) {
+	core::String output;
+	output.reserve(input.size() + 4);
+	for (size_t i = 0; i < input.size(); ++i) {
+		char c = input[i];
+		if (c == '-') {
+			output += '+';
+		} else if (c == '_') {
+			output += '/';
+		} else {
+			output += c;
+		}
+	}
+	// add padding
+	while (output.size() % 4 != 0) {
+		output += '=';
+	}
+	return output;
+}
+
 } // namespace Base64
 } // namespace util

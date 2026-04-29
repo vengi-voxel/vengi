@@ -3,6 +3,9 @@
  */
 
 #include "JSON.h"
+#include "io/Base64.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/MemoryReadStream.h"
 #include <cJSON.h>
 
 namespace json {
@@ -421,6 +424,28 @@ Json::Iterator Json::begin() const {
 
 Json::Iterator Json::end() const {
 	return Iterator(nullptr);
+}
+
+Json decodeJWTPayload(const core::String &jwt) {
+	// JWT format: header.payload.signature
+	const size_t firstDot = jwt.find_first_of('.');
+	if (firstDot == core::String::npos) {
+		return Json();
+	}
+	const size_t secondDot = jwt.find_first_of('.', firstDot + 1);
+	if (secondDot == core::String::npos) {
+		return Json();
+	}
+	const core::String payload = jwt.substr(firstDot + 1, secondDot - firstDot - 1);
+	const core::String base64 = io::Base64::base64urlToBase64(payload);
+	io::BufferedReadWriteStream decoded;
+	if (!io::Base64::decode(decoded, base64)) {
+		return Json();
+	}
+	decoded.seek(0);
+	core::String jsonStr;
+	decoded.readString((int)decoded.size(), jsonStr);
+	return Json::parse(jsonStr);
 }
 
 } // namespace json

@@ -552,4 +552,22 @@ TEST(JsonTest, buildComplexAndRoundTrip) {
 	EXPECT_NEAR(2.0, restored.get("position").doubleVal("y", 0.0), 0.001);
 }
 
+TEST(JsonTest, testDecodeJWTPayload) {
+	// Standard JWT test vector: {"sub":"1234567890","name":"John Doe","iat":1516239022}
+	const core::String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+							 "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ."
+							 "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+	Json payload = decodeJWTPayload(jwt);
+	ASSERT_TRUE(payload.isValid());
+	EXPECT_EQ("1234567890", payload.strVal("sub", ""));
+	EXPECT_EQ("John Doe", payload.strVal("name", ""));
+	EXPECT_EQ(1516239022, payload.intVal("iat", 0));
+}
+
+TEST(JsonTest, testDecodeJWTPayloadInvalid) {
+	EXPECT_FALSE(decodeJWTPayload("").isValid());
+	EXPECT_FALSE(decodeJWTPayload("nodots").isValid());
+	EXPECT_FALSE(decodeJWTPayload("one.two").isValid());
+}
+
 } // namespace json

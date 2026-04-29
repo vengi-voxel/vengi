@@ -162,4 +162,6 @@ inline core::String toStr(const Json &json) {
 	return json.str();
 }
 
+Json decodeJWTPayload(const core::String &jwt);
+
 } // namespace json
