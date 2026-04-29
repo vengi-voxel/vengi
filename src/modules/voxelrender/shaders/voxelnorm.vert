@@ -45,10 +45,8 @@ void main(void) {
 	}
 	v_glow = glowColor;
 
-#if cl_shadowmap == 1
 	v_lightspacepos = pos.xyz;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
-#endif // cl_shadowmap
 
 	gl_Position = u_viewprojection * pos;
 }

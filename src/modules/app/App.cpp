@@ -666,9 +666,6 @@ AppState App::onConstruct() {
 			if (c == 'R') {
 				flagsMaskFromFile |= core::CV_READONLY;
 				Log::debug("read only flag for %s", name.c_str());
-			} else if (c == 'S') {
-				flagsMaskFromFile |= core::CV_SHADER;
-				Log::debug("shader flag for %s", name.c_str());
 			} else if (c == 'X') {
 				flagsMaskFromFile |= core::CV_SECRET;
 				Log::debug("secret flag for %s", name.c_str());
@@ -1463,11 +1460,8 @@ void App::usage() const {
 			if ((flags & core::CV_NOPERSIST) != 0) {
 				flagsStr[1] = 'N';
 			}
-			if ((flags & core::CV_SHADER) != 0) {
-				flagsStr[2] = 'S';
-			}
 			if ((flags & core::CV_SECRET) != 0) {
-				flagsStr[3] = 'X';
+				flagsStr[2] = 'X';
 				value = "***secret***";
 			}
 			if (v->isDirty()) {
@@ -1648,9 +1642,6 @@ bool App::saveConfiguration() {
 			const char *value = var->strVal().c_str();
 			if ((flags & core::CV_READONLY) == core::CV_READONLY) {
 				flagsStr.append("R");
-			}
-			if ((flags & core::CV_SHADER) == core::CV_SHADER) {
-				flagsStr.append("S");
 			}
 			if ((flags & core::CV_SECRET) == core::CV_SECRET) {
 				flagsStr.append("X");

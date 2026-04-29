@@ -331,9 +331,6 @@ bool Var::useHistory(uint32_t historyIndex) {
 	_currentHistoryPos = historyIndex;
 
 	if (_dirty) {
-		if ((_flags & CV_SHADER) != 0u) {
-			_visitFlags |= NEEDS_SHADERUPDATE;
-		}
 		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
 			_visitFlags |= NEEDS_SAVING;
 		}
@@ -362,9 +359,6 @@ bool Var::setVal(const core::String &value) {
 	if (_dirty) {
 		addValueToHistory(value);
 		++_currentHistoryPos;
-		if ((_flags & CV_SHADER) != 0u) {
-			_visitFlags |= NEEDS_SHADERUPDATE;
-		}
 		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
 			_visitFlags |= NEEDS_SAVING;
 		}

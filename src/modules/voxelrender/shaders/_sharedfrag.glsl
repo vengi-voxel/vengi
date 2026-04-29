@@ -14,18 +14,17 @@ layout(std140, binding = 1) uniform u_frag {
 	int u_debug_cascade;
 	int u_tonemapping;
 	int u_renderoutline;
+	int u_shadowmap;
 };
 
 layout(location = 0) $out vec4 o_color;
 layout(location = 1) $out vec4 o_glow;
 
-#if cl_shadowmap == 1
-
 $in vec3 v_lightspacepos;
 $in float v_viewz;
 $constant MaxDepthBuffers 4
 
-layout(binding = 2) uniform sampler2DArrayShadow u_shadowmap;
+layout(binding = 2) uniform sampler2DArrayShadow u_shadowmaptex;
 
 /**
  * perform percentage-closer shadow map lookup
@@ -38,7 +37,7 @@ float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compar
 	for (int x = -r; x <= r; x++) {
 		for (int y = -r; y <= r; y++) {
 			vec2 off = vec2(x, y) / u_depthsize;
-			result += texture(u_shadowmap, vec4(uv + off, cascade, compareDepth));
+			result += texture(u_shadowmaptex, vec4(uv + off, cascade, compareDepth));
 		}
 	}
 	const float size = 2.0 * float(r) + 1.0;
@@ -56,6 +55,9 @@ vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
 }
 
 vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
+	if (u_shadowmap == 0) {
+		return color * (ambient + diffuse);
+	}
 	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
 	cascade = clamp(cascade, 0, MaxDepthBuffers - 1);
 	float cascadeNear = (cascade == 0) ? 0.0 : u_distances[cascade - 1];
@@ -123,18 +125,6 @@ vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightD
 vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return shadow(vec4(v_lightspacepos, 1.0), bias, normal, lightDir, color, diffuse, ambient);
 }
-
-#else // cl_shadowmap == 1
-
-vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, in vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return color * (ambient + diffuse);
-}
-
-vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, in vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return color * (ambient + diffuse);
-}
-
-#endif // cl_shadowmap == 1
 
 // https://thebookofshaders.com
 float checker(in vec2 pos, float strength) {

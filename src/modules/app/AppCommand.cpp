@@ -178,11 +178,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 				if ((flags & core::CV_NOPERSIST) != 0) {
 					flagsStr[1]  = 'N';
 				}
-				if ((flags & core::CV_SHADER) != 0) {
-					flagsStr[2]  = 'S';
-				}
 				if ((flags & core::CV_SECRET) != 0) {
-					flagsStr[3]  = 'X';
+					flagsStr[2]  = 'X';
 					value = "***secret***";
 				}
 				if (var->isDirty()) {

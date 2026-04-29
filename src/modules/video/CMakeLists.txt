@@ -29,7 +29,6 @@ set(SRCS
 	Shader.cpp Shader.h
 	ShaderTypes.h
 	ShapeBuilder.cpp ShapeBuilder.h
-	ShaderManager.cpp ShaderManager.h
 	ScopedLineWidth.h ScopedLineWidth.cpp
 	ScopedViewPort.h ScopedViewPort.cpp
 	ScopedFrameBuffer.h ScopedFrameBuffer.cpp

@@ -691,15 +691,11 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelNormShader.setShadowmap(video::TextureUnit::One);
-			}
+			_voxelNormShader.setShadowmaptex(video::TextureUnit::One);
 		} else {
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelShader.setShadowmap(video::TextureUnit::One);
-			}
+			_voxelShader.setShadowmaptex(video::TextureUnit::One);
 		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
@@ -761,15 +757,11 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelNormShader.setShadowmap(video::TextureUnit::One);
-			}
+			_voxelNormShader.setShadowmaptex(video::TextureUnit::One);
 		} else {
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelShader.setShadowmap(video::TextureUnit::One);
-			}
+			_voxelShader.setShadowmaptex(video::TextureUnit::One);
 		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
@@ -868,52 +860,52 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	video::ScopedState scopedDepthMask(video::State::DepthMask);
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
-		if (shadow) {
-			video::ScopedShader scoped(_shadowMapShader);
-			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
-				math::Frustum frustum;
-				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
-				alignas(16) shader::ShadowmapData::BlockData var;
-				var.lightviewprojection = lightViewProjection;
+	}
+	if (_shadowMap->boolVal() && shadow) {
+		video::ScopedShader scoped(_shadowMapShader);
+		auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+			math::Frustum frustum;
+			frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
+			alignas(16) shader::ShadowmapData::BlockData var;
+			var.lightviewprojection = lightViewProjection;
 
-				for (int idx : activeForRender) {
-					if (meshState->hidden(idx)) {
-						continue;
-					}
-					if (_state[idx]._empty) {
-						continue;
-					}
-					const glm::vec3 &mins = meshState->mins(idx);
-					const glm::vec3 &maxs = meshState->maxs(idx);
-					if (!frustum.isVisible(mins, maxs)) {
-						continue;
-					}
-					const int bufferIndex = meshState->resolveIdx(idx);
-					for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
-						const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
-						if (indices > 0u) {
-							video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
-							var.model = meshState->model(idx);
-							_shadowMapUniformBlock.update(var);
-							_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
-							// negative scaling might require to flip the cull face
-							// TODO: RENDERER: does this impact the shadow acne fix in the Shadow class render() function?
-							video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-							static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-							video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-						}
+			for (int idx : activeForRender) {
+				if (meshState->hidden(idx)) {
+					continue;
+				}
+				if (_state[idx]._empty) {
+					continue;
+				}
+				const glm::vec3 &mins = meshState->mins(idx);
+				const glm::vec3 &maxs = meshState->maxs(idx);
+				if (!frustum.isVisible(mins, maxs)) {
+					continue;
+				}
+				const int bufferIndex = meshState->resolveIdx(idx);
+				for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
+					const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
+					if (indices > 0u) {
+						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
+						var.model = meshState->model(idx);
+						_shadowMapUniformBlock.update(var);
+						_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+						// negative scaling might require to flip the cull face
+						// TODO: RENDERER: does this impact the shadow acne fix in the Shadow class render() function?
+						video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
+						static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+						video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 					}
 				}
-				return true;
-			};
-			_shadow.render(renderFunc, true);
-		} else {
-			auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
-				video::clear(video::ClearFlag::Depth);
-				return true;
-			};
-			_shadow.render(renderFunc);
-		}
+			}
+			return true;
+		};
+		_shadow.render(renderFunc, true);
+	} else {
+		auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
+			video::clear(video::ClearFlag::Depth);
+			return true;
+		};
+		_shadow.render(renderFunc);
 	}
 
 	_voxelShaderFragData.depthsize = _shadow.dimension();
@@ -934,6 +926,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	_voxelShaderFragData.debugCascade = _debugCascade->intVal();
 	_voxelShaderFragData.tonemapping = _tonemapping->intVal();
 	_voxelShaderFragData.renderoutline = _renderOutline->intVal();
+	_voxelShaderFragData.shadowmap = _shadowMap->intVal();
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
@@ -944,9 +937,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	} else {
 		_voxelShader.activate();
 	}
-	if (_shadowMap->boolVal()) {
-		core_assert_always(_shadow.bind(video::TextureUnit::One));
-	}
+	core_assert_always(_shadow.bind(video::TextureUnit::One));
 
 	const video::PolygonMode mode = camera.polygonMode();
 	if (mode == video::PolygonMode::Points) {

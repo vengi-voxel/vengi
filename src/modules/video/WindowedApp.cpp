@@ -4,7 +4,6 @@
 
 #include "WindowedApp.h"
 #include "Renderer.h"
-#include "ShaderManager.h"
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Common.h"
@@ -202,7 +201,6 @@ app::AppState WindowedApp::onRunning() {
 
 	core_trace_scoped(WindowedAppStartFrame);
 	video::startFrame(_window, _rendererContext);
-	core::Singleton<ShaderManager>::getInstance().update();
 
 	return app::AppState::Running;
 }
@@ -557,7 +555,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientMultiSampleSamples);
 	const core::VarDef clientWindowHighDPI(cfg::ClientWindowHighDPI, true, N_("High DPI"), _("Enable high DPI mode"), core::CV_READONLY);
 	core::Var::registerVar(clientWindowHighDPI);
-	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, N_("Shadow map"), _("Activate shadow map"), core::CV_SHADER);
+	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, N_("Shadow map"), _("Activate shadow map"));
 	core::Var::registerVar(clientShadowMap);
 	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, N_("Checkerboard"), _("Activate checkerboard rendering"));
 	core::Var::registerVar(renderCheckerBoard);

@@ -26,15 +26,4 @@ TEST_F(ShaderTest, testInclude) {
 	ASSERT_TRUE(core::string::contains(frag, "SUCCESS")) << "fragment shader: " << frag;
 }
 
-TEST_F(ShaderTest, testCvar) {
-	const core::VarDef awesomeName("awesome_name", true, "", "", core::CV_SHADER);
-	const core::VarPtr& v = core::Var::registerVar(awesomeName);
-	ASSERT_EQ(core::CV_SHADER, v->getFlags() & core::CV_SHADER);
-	ASSERT_EQ("true", v->strVal());
-	Shader s;
-	const core::String &vert = s.getSource(ShaderType::Vertex, "#define FOO");
-	const core::String &name = Shader::validPreprocessorName(v->name());
-	ASSERT_TRUE(core::string::contains(vert, name)) << "vertex shader: " << vert;
-}
-
 }

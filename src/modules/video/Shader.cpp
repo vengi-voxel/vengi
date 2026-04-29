@@ -16,11 +16,9 @@
 #include "core/Enum.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
-#include "ShaderManager.h"
 #include "UniformBuffer.h"
 #include "video/Renderer.h"
 #include "util/IncludeUtil.h"
-#include "util/VarUtil.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "engine-config.h"
 
@@ -151,10 +149,6 @@ void Shader::checkUniforms(std::initializer_list<core::String> uniforms) {
 }
 
 void Shader::shutdown() {
-	if (_initialized) {
-		core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
-	}
-
 	for (auto& shader : _shader) {
 		video::deleteShader(shader);
 	}
@@ -246,8 +240,6 @@ bool Shader::init() {
 	if (_initialized) {
 		fetchAttributes();
 		fetchUniforms();
-		Log::debug("Register shader: %s", _name.c_str());
-		core::Singleton<ShaderManager>::getInstance().registerShader(this);
 	}
 	return success;
 }
@@ -405,21 +397,6 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 #endif
 
-	util::visitVarSorted([&] (const core::VarPtr& var) {
-		src.append("#define ");
-		const core::String& validName = validPreprocessorName(var->name());
-		src.append(validName);
-		src.append(" ");
-		core::String val;
-		if (var->type() == core::VarType::Boolean) {
-			val = var->boolVal() ? "1" : "0";
-		} else {
-			val = var->strVal();
-		}
-		src.append(val);
-		src.append("\n");
-	}, core::CV_SHADER);
-
 	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
 		src.append("#ifndef ");
 		src.append(i->key);
@@ -446,13 +423,6 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 			break;
 		}
 	}
-
-	util::visitVarSorted([&] (const core::VarPtr& var) {
-		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			const core::String& validName = validPreprocessorName(var->name());
-			src = core::string::replaceAll(src, var->name(), validName);
-		}
-	}, core::CV_SHADER);
 
 	if (finalize) {
 		// TODO: RENDERER: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions

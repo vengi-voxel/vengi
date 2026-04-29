@@ -21,9 +21,7 @@ $out vec4 v_color;
 $out vec4 v_glow;
 flat $out uint v_flags;
 
-#if cl_shadowmap == 1
 $out vec3 v_lightspacepos;
 $out float v_viewz;
-#endif
 
 const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);

@@ -25,11 +25,9 @@ const int32_t CV_NONE = -1;
 const uint32_t CV_READONLY = 1 << 0;
 /** @brief will not get saved to the file */
 const uint32_t CV_NOPERSIST = 1 << 1;
-/** @brief will be put as define in every shader - a change will update the shaders at runtime */
-const uint32_t CV_SHADER = 1 << 2;
 /** @brief don't show the value to users, but just ***secure*** it out */
 const uint32_t CV_SECRET = 1 << 5;
-const uint32_t CV_PRESERVE = (CV_READONLY | CV_NOPERSIST | CV_SHADER | CV_SECRET);
+const uint32_t CV_PRESERVE = (CV_READONLY | CV_NOPERSIST | CV_SECRET);
 
 const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;
@@ -155,7 +153,6 @@ protected:
 	static VarMap _vars;
 	static Lock _lock;
 
-	static constexpr int NEEDS_SHADERUPDATE = 1 << 2;
 	static constexpr int NEEDS_SAVING = 1 << 3;
 
 	static uint8_t _visitFlags;
@@ -233,12 +230,6 @@ public:
 	/**
 	 * @brief Reset the flag after calling it
 	 */
-	static bool hasDirtyShaderVars() {
-		const bool dirty = _visitFlags & NEEDS_SHADERUPDATE;
-		_visitFlags &= ~NEEDS_SHADERUPDATE;
-		return dirty;
-	}
-
 	static bool needsSaving() {
 		const bool dirty = _visitFlags & NEEDS_SAVING;
 		_visitFlags &= ~NEEDS_SAVING;

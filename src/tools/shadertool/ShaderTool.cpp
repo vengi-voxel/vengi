@@ -40,7 +40,7 @@ app::AppState ShaderTool::onConstruct() {
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
 
-	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, "", "", core::CV_SHADER);
+	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, "", "");
 	core::Var::registerVar(clientShadowMap);
 
 	return Super::onConstruct();

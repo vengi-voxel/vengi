@@ -10,7 +10,6 @@
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "video/Renderer.h"
-#include "video/ShaderManager.h"
 #include "voxel/SurfaceExtractor.h"
 #include "core/sdl/SDLSystem.h"
 
@@ -38,7 +37,7 @@ protected:
 	RendererContext _ctx = nullptr;
 
 	void setShaderVars(const ShaderVarState& val) {
-		const core::VarDef clientShadowMap(cfg::ClientShadowMap, 1, "", "", core::CV_SHADER);
+		const core::VarDef clientShadowMap(cfg::ClientShadowMap, 1, "", "");
 		core::Var::registerVar(clientShadowMap)->setVal(val.clientShadowMap);
 
 		const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic, "", "");
@@ -69,7 +68,6 @@ protected:
 		core::Var::registerVar(clientDebugShadow2);
 		const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, "", "");
 		core::Var::registerVar(clientDebugShadowMapCascade);
-		core::Singleton<ShaderManager>::getInstance().update();
 	}
 
 public:
