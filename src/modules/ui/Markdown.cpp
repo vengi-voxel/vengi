@@ -4,6 +4,7 @@
 
 #include "Markdown.h"
 #include "IMGUIApp.h"
+#include "IMGUIEx.h"
 #include "IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "core/Log.h"
@@ -40,7 +41,7 @@ static ImGui::MarkdownImageData MarkdownImageCallback(ImGui::MarkdownLinkCallbac
 		return imageData;
 	}
 	imageData.useLinkCallback = false;
-	imageData.user_texture_id = (ImTextureID)(intptr_t)texture->handle();
+	imageData.user_texture_id = ImGui::toImTextureID(texture->handle());
 	imageData.size = ImVec2(texture->width(), texture->height()); // TODO: dpi
 
 	const ImVec2 contentSize = ImGui::GetContentRegionAvail();

@@ -46,7 +46,7 @@ set(SRCS
 if (USE_GL_RENDERER)
 	list(APPEND SRCS dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h)
 endif()
-if (USE_VULKAN_RENDERER)
+if (USE_VK_RENDERER)
 	list(APPEND SRCS dearimgui/backends/imgui_impl_vulkan.cpp dearimgui/backends/imgui_impl_vulkan.h)
 endif()
 

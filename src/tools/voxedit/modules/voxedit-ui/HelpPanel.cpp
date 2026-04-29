@@ -7,6 +7,7 @@
 #include "core/StringUtil.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
+#include "ui/IMGUIEx.h"
 #include "ui/Markdown.h"
 #include "voxedit-ui/MainWindow.h"
 
@@ -100,7 +101,7 @@ static ImGui::MarkdownImageData imageCallback(ImGui::MarkdownLinkCallbackData da
 		return imageData;
 	}
 	imageData.useLinkCallback = false;
-	imageData.user_texture_id = (ImTextureID)(intptr_t)texture->handle();
+	imageData.user_texture_id = ImGui::toImTextureID(texture->handle());
 	imageData.size = ImVec2(texture->width(), texture->height()); // TODO: dpi
 
 	const ImVec2 contentSize = ImGui::GetContentRegionAvail();
