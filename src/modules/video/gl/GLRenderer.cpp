@@ -2187,7 +2187,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			glTextureStorage1D(texture, levels, f.internalFormat, width);
 			checkError();
 			if (data) {
-				glTextureSubImage1D(texture, 0, 0, width, f.dataFormat, f.dataType, (const GLvoid *)data);
+				glTextureSubImage1D(texture, 0, 0, width, f.dataFormat, f.dataType, (const void *)data);
 				checkError();
 			}
 		} else if (type == TextureType::Texture2D) {
@@ -2196,7 +2196,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			glTextureStorage2D(texture, levels, f.internalFormat, width, height);
 			checkError();
 			if (data) {
-				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const GLvoid *)data);
+				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const void *)data);
 				checkError();
 			}
 		} else if (type == TextureType::Texture2DMultisample) {
@@ -2206,7 +2206,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			glTextureStorage2DMultisample(texture, samples, f.internalFormat, width, height, false);
 			checkError();
 			if (data) {
-				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const GLvoid *)data);
+				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const void *)data);
 				checkError();
 			}
 		} else if (type == TextureType::Texture2DMultisampleArray) {
@@ -2218,7 +2218,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			checkError();
 			if (data) {
 				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType,
-									(const GLvoid *)data);
+									(const void *)data);
 				checkError();
 			}
 		} else {
@@ -2228,7 +2228,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			checkError();
 			if (data) {
 				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType,
-									(const GLvoid *)data);
+									(const void *)data);
 				checkError();
 			}
 		}
@@ -2245,10 +2245,10 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		if (type == TextureType::Texture1D) {
 			core_assert(height == 1);
 			core_assert(glTexImage1D != nullptr);
-			glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
+			glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const void *)data);
 		} else if (type == TextureType::Texture2D) {
 			core_assert(glTexImage2D != nullptr);
-			glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
+			glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void *)data);
 			checkError();
 		} else if (type == TextureType::Texture2DMultisample) {
 			core_assert(samples > 0);
@@ -2262,7 +2262,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		} else {
 			core_assert(glTexImage3D != nullptr);
 			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType,
-						 (const GLvoid *)data);
+						 (const void *)data);
 			checkError();
 		}
 		if (wantMipmaps && levels > 1) {
@@ -2286,7 +2286,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	video::validate(rendererState().programHandle);
 	core_assert(glDrawElements != nullptr);
-	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid *)offset);
+	glDrawElements(glMode, (GLsizei)numIndices, glType, (void *)offset);
 	checkError();
 }
 

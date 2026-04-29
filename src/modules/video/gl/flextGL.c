@@ -1,101 +1,41 @@
-/* WARNING: This file was automatically generated */
-/* Do not edit. */
+/*
+    This file was generated using https://github.com/mosra/flextgl:
+
+        path/to/flextGLgen.py -T sdl -D /home/mgerhardy/dev/oss/vengi/src/modules/video/gl profiles/gl33.txt
+
+    Do not edit directly, modify the template or profile and regenerate.
+*/
 
 #include "flextGL.h"
-#include "core/sdl/SDLSystem.h"
 
+#include "core/sdl/SDLSystem.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-void flextLoadOpenGLFunctions(void);
-
-/**
- * \return -1 on error, 0 on success
- * \sa SDL_GetError
- */
-int flextInit(void)
-{
-    flextLoadOpenGLFunctions();
-
-    /* --- Check for extensions --- */
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
-        FLEXT_ARB_debug_output = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_direct_state_access")) {
-        FLEXT_ARB_direct_state_access = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_buffer_storage")) {
-        FLEXT_ARB_buffer_storage = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_multi_draw_indirect")) {
-        FLEXT_ARB_multi_draw_indirect = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_draw_indirect")) {
-        FLEXT_ARB_draw_indirect = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_instanced_arrays")) {
-        FLEXT_ARB_instanced_arrays = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
-        FLEXT_ARB_compute_shader = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_shader_image_load_store")) {
-        FLEXT_ARB_shader_image_load_store = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_transform_feedback2")) {
-        FLEXT_ARB_transform_feedback2 = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_shader_storage_buffer_object")) {
-        FLEXT_ARB_shader_storage_buffer_object = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_KHR_debug")) {
-        FLEXT_KHR_debug = GL_TRUE;
-    }
-
-    if (SDL_GL_ExtensionSupported("GL_ARB_texture_filter_anisotropic")) {
-        FLEXT_ARB_texture_filter_anisotropic = GL_TRUE;
-    }
-
-
-    return 0;
-}
-
-void flextLoadOpenGLFunctions(void)
-{
-    /* --- Function pointer loading --- */
+void flextLoadOpenGLFunctions(void) {
+    /* GL_ARB_ES2_compatibility */
+    glpfClearDepthf = (PFNGLCLEARDEPTHF_PROC*)SDL_GL_GetProcAddress("glClearDepthf");
+    glpfDepthRangef = (PFNGLDEPTHRANGEF_PROC*)SDL_GL_GetProcAddress("glDepthRangef");
+    glpfGetShaderPrecisionFormat = (PFNGLGETSHADERPRECISIONFORMAT_PROC*)SDL_GL_GetProcAddress("glGetShaderPrecisionFormat");
+    glpfReleaseShaderCompiler = (PFNGLRELEASESHADERCOMPILER_PROC*)SDL_GL_GetProcAddress("glReleaseShaderCompiler");
+    glpfShaderBinary = (PFNGLSHADERBINARY_PROC*)SDL_GL_GetProcAddress("glShaderBinary");
 
     /* GL_ARB_buffer_storage */
-
     glpfBufferStorage = (PFNGLBUFFERSTORAGE_PROC*)SDL_GL_GetProcAddress("glBufferStorage");
 
     /* GL_ARB_compute_shader */
-
     glpfDispatchCompute = (PFNGLDISPATCHCOMPUTE_PROC*)SDL_GL_GetProcAddress("glDispatchCompute");
     glpfDispatchComputeIndirect = (PFNGLDISPATCHCOMPUTEINDIRECT_PROC*)SDL_GL_GetProcAddress("glDispatchComputeIndirect");
 
     /* GL_ARB_debug_output */
-
     glpfDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKARB_PROC*)SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
     glpfDebugMessageControlARB = (PFNGLDEBUGMESSAGECONTROLARB_PROC*)SDL_GL_GetProcAddress("glDebugMessageControlARB");
     glpfDebugMessageInsertARB = (PFNGLDEBUGMESSAGEINSERTARB_PROC*)SDL_GL_GetProcAddress("glDebugMessageInsertARB");
     glpfGetDebugMessageLogARB = (PFNGLGETDEBUGMESSAGELOGARB_PROC*)SDL_GL_GetProcAddress("glGetDebugMessageLogARB");
 
     /* GL_ARB_direct_state_access */
-
     glpfBindTextureUnit = (PFNGLBINDTEXTUREUNIT_PROC*)SDL_GL_GetProcAddress("glBindTextureUnit");
     glpfBlitNamedFramebuffer = (PFNGLBLITNAMEDFRAMEBUFFER_PROC*)SDL_GL_GetProcAddress("glBlitNamedFramebuffer");
     glpfCheckNamedFramebufferStatus = (PFNGLCHECKNAMEDFRAMEBUFFERSTATUS_PROC*)SDL_GL_GetProcAddress("glCheckNamedFramebufferStatus");
@@ -195,33 +135,27 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexArrayVertexBuffers = (PFNGLVERTEXARRAYVERTEXBUFFERS_PROC*)SDL_GL_GetProcAddress("glVertexArrayVertexBuffers");
 
     /* GL_ARB_draw_indirect */
-
     glpfDrawArraysIndirect = (PFNGLDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawArraysIndirect");
     glpfDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawElementsIndirect");
 
-    /* GL_ARB_instanced_arrays */
+    /* GL_ARB_gl_spirv */
+    glpfSpecializeShaderARB = (PFNGLSPECIALIZESHADERARB_PROC*)SDL_GL_GetProcAddress("glSpecializeShaderARB");
 
+    /* GL_ARB_instanced_arrays */
     glpfVertexAttribDivisorARB = (PFNGLVERTEXATTRIBDIVISORARB_PROC*)SDL_GL_GetProcAddress("glVertexAttribDivisorARB");
 
     /* GL_ARB_multi_draw_indirect */
-
     glpfMultiDrawArraysIndirect = (PFNGLMULTIDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawArraysIndirect");
     glpfMultiDrawElementsIndirect = (PFNGLMULTIDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glMultiDrawElementsIndirect");
 
     /* GL_ARB_shader_image_load_store */
-
     glpfBindImageTexture = (PFNGLBINDIMAGETEXTURE_PROC*)SDL_GL_GetProcAddress("glBindImageTexture");
     glpfMemoryBarrier = (PFNGLMEMORYBARRIER_PROC*)SDL_GL_GetProcAddress("glMemoryBarrier");
 
     /* GL_ARB_shader_storage_buffer_object */
-
     glpfShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDING_PROC*)SDL_GL_GetProcAddress("glShaderStorageBlockBinding");
 
-    /* GL_ARB_texture_filter_anisotropic */
-
-
     /* GL_ARB_transform_feedback2 */
-
     glpfBindTransformFeedback = (PFNGLBINDTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glBindTransformFeedback");
     glpfDeleteTransformFeedbacks = (PFNGLDELETETRANSFORMFEEDBACKS_PROC*)SDL_GL_GetProcAddress("glDeleteTransformFeedbacks");
     glpfDrawTransformFeedback = (PFNGLDRAWTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glDrawTransformFeedback");
@@ -231,7 +165,6 @@ void flextLoadOpenGLFunctions(void)
     glpfResumeTransformFeedback = (PFNGLRESUMETRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glResumeTransformFeedback");
 
     /* GL_KHR_debug */
-
     glpfDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACK_PROC*)SDL_GL_GetProcAddress("glDebugMessageCallback");
     glpfDebugMessageControl = (PFNGLDEBUGMESSAGECONTROL_PROC*)SDL_GL_GetProcAddress("glDebugMessageControl");
     glpfDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERT_PROC*)SDL_GL_GetProcAddress("glDebugMessageInsert");
@@ -245,7 +178,6 @@ void flextLoadOpenGLFunctions(void)
     glpfPushDebugGroup = (PFNGLPUSHDEBUGGROUP_PROC*)SDL_GL_GetProcAddress("glPushDebugGroup");
 
     /* GL_VERSION_1_0 */
-
     glpfBlendFunc = (PFNGLBLENDFUNC_PROC*)SDL_GL_GetProcAddress("glBlendFunc");
     glpfClear = (PFNGLCLEAR_PROC*)SDL_GL_GetProcAddress("glClear");
     glpfClearColor = (PFNGLCLEARCOLOR_PROC*)SDL_GL_GetProcAddress("glClearColor");
@@ -296,7 +228,6 @@ void flextLoadOpenGLFunctions(void)
     glpfViewport = (PFNGLVIEWPORT_PROC*)SDL_GL_GetProcAddress("glViewport");
 
     /* GL_VERSION_1_1 */
-
     glpfBindTexture = (PFNGLBINDTEXTURE_PROC*)SDL_GL_GetProcAddress("glBindTexture");
     glpfCopyTexImage1D = (PFNGLCOPYTEXIMAGE1D_PROC*)SDL_GL_GetProcAddress("glCopyTexImage1D");
     glpfCopyTexImage2D = (PFNGLCOPYTEXIMAGE2D_PROC*)SDL_GL_GetProcAddress("glCopyTexImage2D");
@@ -312,14 +243,12 @@ void flextLoadOpenGLFunctions(void)
     glpfTexSubImage2D = (PFNGLTEXSUBIMAGE2D_PROC*)SDL_GL_GetProcAddress("glTexSubImage2D");
 
     /* GL_VERSION_1_2 */
-
     glpfCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3D_PROC*)SDL_GL_GetProcAddress("glCopyTexSubImage3D");
     glpfDrawRangeElements = (PFNGLDRAWRANGEELEMENTS_PROC*)SDL_GL_GetProcAddress("glDrawRangeElements");
     glpfTexImage3D = (PFNGLTEXIMAGE3D_PROC*)SDL_GL_GetProcAddress("glTexImage3D");
     glpfTexSubImage3D = (PFNGLTEXSUBIMAGE3D_PROC*)SDL_GL_GetProcAddress("glTexSubImage3D");
 
     /* GL_VERSION_1_3 */
-
     glpfActiveTexture = (PFNGLACTIVETEXTURE_PROC*)SDL_GL_GetProcAddress("glActiveTexture");
     glpfCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1D_PROC*)SDL_GL_GetProcAddress("glCompressedTexImage1D");
     glpfCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2D_PROC*)SDL_GL_GetProcAddress("glCompressedTexImage2D");
@@ -331,7 +260,6 @@ void flextLoadOpenGLFunctions(void)
     glpfSampleCoverage = (PFNGLSAMPLECOVERAGE_PROC*)SDL_GL_GetProcAddress("glSampleCoverage");
 
     /* GL_VERSION_1_4 */
-
     glpfBlendColor = (PFNGLBLENDCOLOR_PROC*)SDL_GL_GetProcAddress("glBlendColor");
     glpfBlendEquation = (PFNGLBLENDEQUATION_PROC*)SDL_GL_GetProcAddress("glBlendEquation");
     glpfBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATE_PROC*)SDL_GL_GetProcAddress("glBlendFuncSeparate");
@@ -343,7 +271,6 @@ void flextLoadOpenGLFunctions(void)
     glpfPointParameteriv = (PFNGLPOINTPARAMETERIV_PROC*)SDL_GL_GetProcAddress("glPointParameteriv");
 
     /* GL_VERSION_1_5 */
-
     glpfBeginQuery = (PFNGLBEGINQUERY_PROC*)SDL_GL_GetProcAddress("glBeginQuery");
     glpfBindBuffer = (PFNGLBINDBUFFER_PROC*)SDL_GL_GetProcAddress("glBindBuffer");
     glpfBufferData = (PFNGLBUFFERDATA_PROC*)SDL_GL_GetProcAddress("glBufferData");
@@ -365,7 +292,6 @@ void flextLoadOpenGLFunctions(void)
     glpfUnmapBuffer = (PFNGLUNMAPBUFFER_PROC*)SDL_GL_GetProcAddress("glUnmapBuffer");
 
     /* GL_VERSION_2_0 */
-
     glpfAttachShader = (PFNGLATTACHSHADER_PROC*)SDL_GL_GetProcAddress("glAttachShader");
     glpfBindAttribLocation = (PFNGLBINDATTRIBLOCATION_PROC*)SDL_GL_GetProcAddress("glBindAttribLocation");
     glpfBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATE_PROC*)SDL_GL_GetProcAddress("glBlendEquationSeparate");
@@ -461,7 +387,6 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTER_PROC*)SDL_GL_GetProcAddress("glVertexAttribPointer");
 
     /* GL_VERSION_2_1 */
-
     glpfUniformMatrix2x3fv = (PFNGLUNIFORMMATRIX2X3FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix2x3fv");
     glpfUniformMatrix2x4fv = (PFNGLUNIFORMMATRIX2X4FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix2x4fv");
     glpfUniformMatrix3x2fv = (PFNGLUNIFORMMATRIX3X2FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix3x2fv");
@@ -470,7 +395,6 @@ void flextLoadOpenGLFunctions(void)
     glpfUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FV_PROC*)SDL_GL_GetProcAddress("glUniformMatrix4x3fv");
 
     /* GL_VERSION_3_0 */
-
     glpfBeginConditionalRender = (PFNGLBEGINCONDITIONALRENDER_PROC*)SDL_GL_GetProcAddress("glBeginConditionalRender");
     glpfBeginTransformFeedback = (PFNGLBEGINTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glBeginTransformFeedback");
     glpfBindBufferBase = (PFNGLBINDBUFFERBASE_PROC*)SDL_GL_GetProcAddress("glBindBufferBase");
@@ -557,7 +481,6 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTER_PROC*)SDL_GL_GetProcAddress("glVertexAttribIPointer");
 
     /* GL_VERSION_3_1 */
-
     glpfCopyBufferSubData = (PFNGLCOPYBUFFERSUBDATA_PROC*)SDL_GL_GetProcAddress("glCopyBufferSubData");
     glpfDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCED_PROC*)SDL_GL_GetProcAddress("glDrawArraysInstanced");
     glpfDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCED_PROC*)SDL_GL_GetProcAddress("glDrawElementsInstanced");
@@ -572,7 +495,6 @@ void flextLoadOpenGLFunctions(void)
     glpfUniformBlockBinding = (PFNGLUNIFORMBLOCKBINDING_PROC*)SDL_GL_GetProcAddress("glUniformBlockBinding");
 
     /* GL_VERSION_3_2 */
-
     glpfClientWaitSync = (PFNGLCLIENTWAITSYNC_PROC*)SDL_GL_GetProcAddress("glClientWaitSync");
     glpfDeleteSync = (PFNGLDELETESYNC_PROC*)SDL_GL_GetProcAddress("glDeleteSync");
     glpfDrawElementsBaseVertex = (PFNGLDRAWELEMENTSBASEVERTEX_PROC*)SDL_GL_GetProcAddress("glDrawElementsBaseVertex");
@@ -594,7 +516,6 @@ void flextLoadOpenGLFunctions(void)
     glpfWaitSync = (PFNGLWAITSYNC_PROC*)SDL_GL_GetProcAddress("glWaitSync");
 
     /* GL_VERSION_3_3 */
-
     glpfBindFragDataLocationIndexed = (PFNGLBINDFRAGDATALOCATIONINDEXED_PROC*)SDL_GL_GetProcAddress("glBindFragDataLocationIndexed");
     glpfBindSampler = (PFNGLBINDSAMPLER_PROC*)SDL_GL_GetProcAddress("glBindSampler");
     glpfDeleteSamplers = (PFNGLDELETESAMPLERS_PROC*)SDL_GL_GetProcAddress("glDeleteSamplers");
@@ -626,7 +547,69 @@ void flextLoadOpenGLFunctions(void)
 
 }
 
-/* ----------------------- Extension flag definitions ---------------------- */
+int flextInit(void) {
+    int major;
+    int minor;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+
+    flextLoadOpenGLFunctions();
+
+    /* Check for minimal version and profile */
+
+    if (major * 10 + minor < 33) {
+        return SDL_SetError("OpenGL context hasn't the expected version 3.3.");
+    }
+
+    /* --- Check for extensions --- */
+
+    if (SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
+        FLEXT_ARB_debug_output = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_direct_state_access")) {
+        FLEXT_ARB_direct_state_access = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_buffer_storage")) {
+        FLEXT_ARB_buffer_storage = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_multi_draw_indirect")) {
+        FLEXT_ARB_multi_draw_indirect = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_draw_indirect")) {
+        FLEXT_ARB_draw_indirect = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_instanced_arrays")) {
+        FLEXT_ARB_instanced_arrays = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
+        FLEXT_ARB_compute_shader = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_shader_image_load_store")) {
+        FLEXT_ARB_shader_image_load_store = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_transform_feedback2")) {
+        FLEXT_ARB_transform_feedback2 = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_shader_storage_buffer_object")) {
+        FLEXT_ARB_shader_storage_buffer_object = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_KHR_debug")) {
+        FLEXT_KHR_debug = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_texture_filter_anisotropic")) {
+        FLEXT_ARB_texture_filter_anisotropic = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_gl_spirv")) {
+        FLEXT_ARB_gl_spirv = GL_TRUE;
+    }
+    if (SDL_GL_ExtensionSupported("GL_ARB_ES2_compatibility")) {
+        FLEXT_ARB_ES2_compatibility = GL_TRUE;
+    }
+
+    return 0;
+}
+
+/* Extension flag definitions */
 int FLEXT_ARB_debug_output = GL_FALSE;
 int FLEXT_ARB_direct_state_access = GL_FALSE;
 int FLEXT_ARB_buffer_storage = GL_FALSE;
@@ -639,8 +622,18 @@ int FLEXT_ARB_transform_feedback2 = GL_FALSE;
 int FLEXT_ARB_shader_storage_buffer_object = GL_FALSE;
 int FLEXT_KHR_debug = GL_FALSE;
 int FLEXT_ARB_texture_filter_anisotropic = GL_FALSE;
+int FLEXT_ARB_gl_spirv = GL_FALSE;
+int FLEXT_ARB_ES2_compatibility = GL_FALSE;
 
-/* ---------------------- Function pointer definitions --------------------- */
+/* Function pointer definitions */
+
+/* GL_ARB_ES2_compatibility */
+
+PFNGLCLEARDEPTHF_PROC* glpfClearDepthf = NULL;
+PFNGLDEPTHRANGEF_PROC* glpfDepthRangef = NULL;
+PFNGLGETSHADERPRECISIONFORMAT_PROC* glpfGetShaderPrecisionFormat = NULL;
+PFNGLRELEASESHADERCOMPILER_PROC* glpfReleaseShaderCompiler = NULL;
+PFNGLSHADERBINARY_PROC* glpfShaderBinary = NULL;
 
 /* GL_ARB_buffer_storage */
 
@@ -762,6 +755,10 @@ PFNGLVERTEXARRAYVERTEXBUFFERS_PROC* glpfVertexArrayVertexBuffers = NULL;
 
 PFNGLDRAWARRAYSINDIRECT_PROC* glpfDrawArraysIndirect = NULL;
 PFNGLDRAWELEMENTSINDIRECT_PROC* glpfDrawElementsIndirect = NULL;
+
+/* GL_ARB_gl_spirv */
+
+PFNGLSPECIALIZESHADERARB_PROC* glpfSpecializeShaderARB = NULL;
 
 /* GL_ARB_instanced_arrays */
 
@@ -1184,7 +1181,6 @@ PFNGLVERTEXATTRIBP3UI_PROC* glpfVertexAttribP3ui = NULL;
 PFNGLVERTEXATTRIBP3UIV_PROC* glpfVertexAttribP3uiv = NULL;
 PFNGLVERTEXATTRIBP4UI_PROC* glpfVertexAttribP4ui = NULL;
 PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv = NULL;
-
 
 #ifdef __cplusplus
 }
