@@ -125,16 +125,49 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		}
 		const bool isInteger = v.isSingleInteger();
 		const core::String& uniformName = util::convertName(v.name, true);
-		core::String mproto;
-		mproto += "set";
-		mproto += uniformName;
-		mproto += "(";
 		const Types& cType = util::resolveTypes(v.type);
 		auto layoutIter = shaderStruct.layouts.find(v.name);
 		Layout layout;
 		if (layoutIter != shaderStruct.layouts.end()) {
 			layout = layoutIter->second;
 		}
+
+		// samplers/images with layout(binding=X) need no setter - the binding is set at compile time
+		if ((v.isSampler() || v.isImage()) && layout.binding != -1 && layout.location == -1) {
+			if (v.isSampler()) {
+				prototypes += "\n\tvideo::TextureUnit getBound";
+				prototypes += uniformName;
+				prototypes += "TexUnit() const;\n";
+				methods += "\nvideo::TextureUnit ";
+				methods += filename;
+				methods += "::getBound";
+				methods += uniformName;
+				methods += "TexUnit() const {\n";
+				methods += "\treturn video::TextureUnit::";
+				methods += convertToTexUnit(layout.binding);
+				methods += ";\n}\n";
+			}
+			if (layout.imageFormat != video::ImageFormat::Max) {
+				prototypes += "\n\tvideo::ImageFormat getImageFormat";
+				prototypes += uniformName;
+				prototypes += "() const;\n";
+				methods += "\nvideo::ImageFormat ";
+				methods += filename;
+				methods += "::getImageFormat";
+				methods += uniformName;
+				methods += "() const {\n";
+				methods += "\treturn video::ImageFormat::";
+				methods += util::getImageFormatTypeString(layout.imageFormat);
+				methods += ";\n}\n";
+			}
+			++n;
+			continue;
+		}
+
+		core::String mproto;
+		mproto += "set";
+		mproto += uniformName;
+		mproto += "(";
 
 		if ((v.arraySize > 0 && isInteger) || cType.passBy == PassBy::Reference) {
 			mproto += "const ";
@@ -164,11 +197,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		methods += "::";
 		methods += mproto;
 
-		if (v.isSampler() && layout.binding != -1) {
-			mproto += " = video::TextureUnit::";
-			mproto += convertToTexUnit(layout.binding);
-		}
-
 		if (v.arraySize == -1) {
 			mproto += ", int amount";
 			methods += ", int amount";
@@ -190,50 +218,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		if (layout.location != -1) {
 			methods += core::string::toString(layout.location);
 			methods += ";\n";
-		} else if ((v.isSampler() || v.isImage()) && layout.binding != -1) {
-			// layout(binding=X) already sets the texture unit at compile time in GLSL 4.2+
-			methods += "0; (void)location; (void)";
-			methods += v.name;
-			methods += ";\n";
-			methods += "\treturn true;\n";
-			methods += "}\n";
-
-			// skip the rest of the setter generation for this uniform
-			if (v.isSampler()) {
-				if (layout.binding != -1) {
-					prototypes += "\n\tvideo::TextureUnit getBound";
-					prototypes += uniformName;
-					prototypes += "TexUnit() const;\n";
-					methods += "\n\nvideo::TextureUnit ";
-					methods += filename;
-					methods += "::getBound";
-					methods += uniformName;
-					methods += "TexUnit() const {\n";
-					methods += "\treturn video::TextureUnit::";
-					methods += convertToTexUnit(layout.binding);
-					methods += ";\n}\n";
-				}
-			}
-			if (v.isSampler() || v.isImage()) {
-				if (layout.imageFormat != video::ImageFormat::Max) {
-					prototypes += "\n\tvideo::ImageFormat getImageFormat";
-					prototypes += uniformName;
-					prototypes += "() const;\n";
-					methods += "\nvideo::ImageFormat ";
-					methods += filename;
-					methods += "::getImageFormat";
-					methods += uniformName;
-					methods += "() const {\n";
-					methods += "\treturn video::ImageFormat::";
-					methods += util::getImageFormatTypeString(layout.imageFormat);
-					methods += ";\n}\n";
-				}
-			}
-			if (n < uniformSize - 2) {
-				methods += "\n";
-			}
-			++n;
-			continue;
 		} else {
 			Log::error("Uniform '%s' has no layout(location=X) or layout(binding=X) qualifier", v.name.c_str());
 			return false;

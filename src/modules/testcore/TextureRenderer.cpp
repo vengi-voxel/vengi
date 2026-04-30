@@ -21,7 +21,6 @@ bool TextureRenderer::init(bool yFlipped) {
 
 void TextureRenderer::render(video::TextureUnit texUnit) {
 	video::ScopedShader scoped(_shader);
-	_shader.setTexture(texUnit);
 	video::ScopedBuffer scopedBuf(_vbo);
 	const int elements = (int)_vbo.elements(0, _shader.getComponentsPos());
 	core_assert(elements == 6);

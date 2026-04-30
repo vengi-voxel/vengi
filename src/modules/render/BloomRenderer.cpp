@@ -123,7 +123,7 @@ void BloomRenderer::blur(const video::TexturePtr &source, video::FrameBuffer &de
 	_convolutionFragData.coefficients2 = 0.25f;
 	core_assert_always(_convolutionData.update(_convolutionFragData));
 	core_assert_always(_convolutionShader.setConv(_convolutionData.getConvUniformBuffer()));
-	core_assert_always(video::bindTexture(video::TextureUnit::Zero, source));
+	core_assert_always(video::bindTexture(_convolutionShader.getBoundImageTexUnit(), source));
 	dest.bind(true);
 	video::viewport(0, 0, source->width(), source->height());
 	video::drawArrays(video::Primitive::Triangles, 6);
@@ -135,8 +135,6 @@ void BloomRenderer::apply(video::FrameBuffer *sources, video::FrameBuffer *dests
 		{
 			video::ScopedShader scoped(_combine2Shader);
 			dests[l].bind(true);
-			core_assert_always(_combine2Shader.setTexture0(video::TextureUnit::Zero));
-			core_assert_always(_combine2Shader.setTexture1(video::TextureUnit::One));
 			const video::TexturePtr &srcTex = sources[l].texture();
 			if (i != 0) {
 				const video::TexturePtr &destTex = dests[l + 1].texture();
@@ -170,7 +168,6 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 
 	{
 		video::ScopedShader scoped(_convolutionShader);
-		core_assert_always(_convolutionShader.setImage(video::TextureUnit::Zero));
 		core_assert_always(_vbo.bind());
 		blur(glowTexture, _bloom[0], false);
 		blur(_bloom[0].texture(), _bloom[1], true);
@@ -179,7 +176,6 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	// prepare the first source buffer by rendering the glow texture into it.
 	{
 		video::ScopedShader scoped(_textureShader);
-		core_assert_always(_textureShader.setTexture(video::TextureUnit::Zero));
 		_frameBuffers0[0].bind(true);
 		video::bindTexture(video::TextureUnit::Zero, _bloom[1].texture());
 		video::drawArrays(video::Primitive::Triangles, 6);
