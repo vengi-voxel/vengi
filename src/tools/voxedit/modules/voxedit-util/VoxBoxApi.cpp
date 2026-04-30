@@ -170,7 +170,7 @@ VoxBoxState VoxBoxApi::search(const VoxBoxSearchParams &params) const {
 	request.setFollowRedirects(false);
 	request.setUserAgent(app::App::getInstance()->fullAppname());
 	if (isLoggedIn()) {
-		request.addHeader("Authorization", "Bearer " + _refreshToken);
+		request.addHeader("Cookie", "jwt=" + _refreshToken);
 	}
 
 	io::BufferedReadWriteStream stream;
@@ -329,7 +329,7 @@ core::String VoxBoxApi::download(const io::FilesystemPtr &filesystem, const VoxB
 	writeMetadata(sceneGraph, info);
 
 	// save as .vengi
-	const core::String vengi = vengiPath(info);
+	core::String vengi = vengiPath(info);
 	voxelformat::SaveContext saveCtx;
 	if (!voxelformat::saveFormat(sceneGraph, filesystem->homeWritePath(vengi), nullptr, archive, saveCtx)) {
 		Log::error("Failed to save vengi file");
@@ -350,7 +350,7 @@ core::String VoxBoxApi::exportToVox(const io::FilesystemPtr &filesystem, scenegr
 	const core::String dir = downloadDir();
 	filesystem->sysCreateDir(filesystem->homeWritePath(dir));
 	const core::String tempVox = core::string::path(dir, "upload_temp.vox");
-	const core::String fullPath = filesystem->homeWritePath(tempVox);
+	core::String fullPath = filesystem->homeWritePath(tempVox);
 
 	const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
 	voxelformat::SaveContext saveCtx;
@@ -409,12 +409,18 @@ bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &
 	addField("name", info.name);
 	addField("description", info.description);
 	addField("category", VoxBoxCategoryStr(info.category));
-	addField("license", VoxBoxLicenseStr(info.license));
 	addField("animated", info.animated ? "true" : "false");
-	addField("public", info.isPublic ? "true" : "false");
 	if (!info.id.empty()) {
 		addField("id", info.id);
 	}
+
+	const core::String coverFilename = core::string::extractFilenameWithExtension(coverPath);
+	core::String coverHeader = core::String::format(
+		"--%s\r\nContent-Disposition: form-data; name=\"cover\"; filename=\"%s\"\r\nContent-Type: image/png\r\n\r\n",
+		boundary.c_str(), coverFilename.c_str());
+	bodyStream.write(coverHeader.c_str(), coverHeader.size());
+	bodyStream.write(coverBuf, coverSize);
+	bodyStream.write("\r\n", 2);
 
 	const core::String voxFilename = core::string::extractFilenameWithExtension(voxFilePath);
 	core::String voxHeader = core::String::format("--%s\r\nContent-Disposition: form-data; name=\"vox\"; "
@@ -424,13 +430,8 @@ bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &
 	bodyStream.write(voxBuf, voxSize);
 	bodyStream.write("\r\n", 2);
 
-	const core::String coverFilename = core::string::extractFilenameWithExtension(coverPath);
-	core::String coverHeader = core::String::format(
-		"--%s\r\nContent-Disposition: form-data; name=\"cover\"; filename=\"%s\"\r\nContent-Type: image/png\r\n\r\n",
-		boundary.c_str(), coverFilename.c_str());
-	bodyStream.write(coverHeader.c_str(), coverHeader.size());
-	bodyStream.write(coverBuf, coverSize);
-	bodyStream.write("\r\n", 2);
+	addField("license", VoxBoxLicenseStr(info.license));
+	addField("public", info.isPublic ? "true" : "false");
 
 	const core::String closing = core::String::format("--%s--\r\n", boundary.c_str());
 	bodyStream.write(closing.c_str(), closing.size());
@@ -449,7 +450,7 @@ bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &
 	http::Request uploadReq(uploadUrl, isUpdate ? http::RequestType::PATCH : http::RequestType::POST);
 	uploadReq.setFollowRedirects(false);
 	uploadReq.setUserAgent(app::App::getInstance()->fullAppname());
-	uploadReq.addHeader("Authorization", "Bearer " + _refreshToken);
+	uploadReq.addHeader("Cookie", "jwt=" + _refreshToken);
 	uploadReq.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
 	uploadReq.setBody(bodyStr);
 	uploadReq.setTimeoutSecond(120);
