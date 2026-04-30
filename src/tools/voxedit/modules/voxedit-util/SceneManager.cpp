@@ -4709,6 +4709,7 @@ bool SceneManager::update(double nowSeconds) {
 	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
 	_modifierFacade.update(nowSeconds, camera);
 
+	_sceneGraph.updateTransforms();
 	updateDirtyRendererStates();
 
 	_sceneRenderer->update();
