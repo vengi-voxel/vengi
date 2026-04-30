@@ -336,12 +336,6 @@ void Viewport::renderViewport() {
 	ImVec2 cursorPos = ImGui::GetCursorPos();
 	const float headerSize = cursorPos.y;
 	if (setupFrameBuffer(contentSize)) {
-		const scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
-		const bool frameChanged = currentFrame != _lastFrameIdx;
-		_lastFrameIdx = currentFrame;
-		if ((_animationPlaying->boolVal() || frameChanged) && _sceneMgr->activeCameraNode()) {
-			_camera = voxelrender::toCamera(_camera.size(), _sceneMgr->sceneGraph(), *_sceneMgr->activeCameraNode(), currentFrame);
-		}
 		_camera.update(_app->deltaFrameSeconds());
 
 		renderToFrameBuffer();
@@ -573,6 +567,19 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 	_visible = false;
 	_cameraManipulated = false;
 	_nowSeconds = nowSeconds;
+
+	{
+		const scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
+		const bool frameChanged = currentFrame != _lastFrameIdx;
+		_lastFrameIdx = currentFrame;
+		const scenegraph::SceneGraphNodeCamera *activeCam = _sceneMgr->activeCameraNode();
+		if (activeCam && (frameChanged || _animationPlaying->boolVal() || _lastActiveCameraNodeId != activeCam->id())) {
+			_lastActiveCameraNodeId = activeCam->id();
+			_camera = voxelrender::toCamera(_camera.size(), _sceneMgr->sceneGraph(), *activeCam, currentFrame);
+		} else if (!activeCam) {
+			_lastActiveCameraNodeId = InvalidNodeId;
+		}
+	}
 
 	ui::ScopedStyle style;
 	style.setWindowRounding(0.0f);
