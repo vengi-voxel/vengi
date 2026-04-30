@@ -71,8 +71,9 @@ enum struct trace_sampler_type {
   path,        // path tracing
   pathdirect,  // path tracing with direct
   pathmis,     // path tracing with mis
-  pathtest,    // path tracing test
-  naive,       // naive path tracing
+  pathtest,       // path tracing test
+  lightsampling,  // path tracing with light sampling
+  naive,          // naive path tracing
   eyelight,    // eyelight rendering
   diagram,     // diagram rendering
   furnace,     // furnace test
@@ -98,7 +99,7 @@ struct trace_params {
   trace_falsecolor_type falsecolor     = trace_falsecolor_type::color;
   int                   samples        = 512;
   int                   bounces        = 8;
-  float                 clamp          = 10;
+  float                 clamp          = 100;
   bool                  nocaustics     = false;
   bool                  envhidden      = false;
   bool                  tentfilter     = false;
@@ -232,7 +233,8 @@ namespace yocto {
 
 // trace sampler names
 inline const auto trace_sampler_names = vector<string>{"path", "pathdirect",
-    "pathmis", "pathtest", "naive", "eyelight", "furnace", "falsecolor"};
+    "pathmis", "pathtest", "lightsampling", "naive", "eyelight", "furnace",
+    "falsecolor"};
 
 // false color names
 inline const auto trace_falsecolor_names = vector<string>{"position", "normal",
@@ -246,6 +248,7 @@ inline const auto trace_sampler_labels =
         {trace_sampler_type::pathdirect, "pathdirect"},
         {trace_sampler_type::pathmis, "pathmis"},
         {trace_sampler_type::pathtest, "pathtest"},
+        {trace_sampler_type::lightsampling, "lightsampling"},
         {trace_sampler_type::naive, "naive"},
         {trace_sampler_type::eyelight, "eyelight"},
         {trace_sampler_type::diagram, "diagram"},

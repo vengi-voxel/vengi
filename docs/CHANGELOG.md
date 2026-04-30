@@ -35,6 +35,7 @@ VoxEdit:
    - Fixed missing cache invalidation regarding transforms and max frames
    - In AceOfSpades modes the new-scene-dialog uses the default map size now
    - Improved input capturing at startup (the console no longer forcefully requests the focus)
+   - Improved pathtracer material mapping
 
 VoxConvert:
 

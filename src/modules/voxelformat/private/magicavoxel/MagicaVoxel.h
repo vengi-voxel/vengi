@@ -82,6 +82,7 @@ bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, palette::Palette 
 void printDetails(const ogt_vox_scene *scene);
 void checkRotation(const ogt_vox_transform &transform);
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
+void loadSun(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 color::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);

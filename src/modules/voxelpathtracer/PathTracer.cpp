@@ -6,6 +6,7 @@
 #include "PathTracer.h"
 #include "color/Color.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "image/Image.h"
 #include "io/Stream.h"
@@ -13,6 +14,7 @@
 #include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "video/Camera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
@@ -174,7 +176,8 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 	const yocto::vec3f &to = priv::toVec3f(cam.target());
 	const yocto::vec3f &up = priv::toVec3f(cam.up());
 	camera.frame = yocto::lookat_frame(from, to, up);
-	camera.aspect = cam.aspect();
+	camera.aspect = (float)cam.size().x / (float)cam.size().y;
+	camera.aperture = _state->aperture;
 
 	camera.orthographic = cam.mode() == video::CameraMode::Orthogonal;
 	if (camera.orthographic) {
@@ -206,7 +209,7 @@ static yocto::material_type mapMaterialType(palette::MaterialType type) {
 	case palette::MaterialType::Diffuse:
 		return yocto::material_type::matte;
 	case palette::MaterialType::Emit:
-		return yocto::material_type::volumetric;
+		return yocto::material_type::matte;
 	case palette::MaterialType::Metal:
 		return yocto::material_type::reflective;
 	case palette::MaterialType::Glass:
@@ -214,7 +217,7 @@ static yocto::material_type mapMaterialType(palette::MaterialType type) {
 	case palette::MaterialType::Blend:
 		return yocto::material_type::transparent;
 	case palette::MaterialType::Media:
-		return yocto::material_type::subsurface;
+		return yocto::material_type::volumetric;
 	}
 	return yocto::material_type::matte;
 }
@@ -227,10 +230,8 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 	const glm::vec4 color = color::fromRGBA(palette.color(i));
 	material.color = priv::toVec3f(color);
 	if (ownMaterial.has(palette::MaterialProperty::MaterialEmit)) {
-		material.scattering = priv::toVec3f(color::fromRGBA(palette.emitColor(i)));
-		if (material.type == yocto::material_type::matte) {
-			material.type = yocto::material_type::volumetric;
-		}
+		const glm::vec4 emitColor = color::fromRGBA(palette.emitColor(i));
+		material.emission = priv::toVec3f(emitColor) * ownMaterial.value(palette::MaterialProperty::MaterialEmit);
 	}
 	if (ownMaterial.has(palette::MaterialProperty::MaterialMetal)) {
 		material.metallic = ownMaterial.value(palette::MaterialProperty::MaterialMetal);
@@ -241,14 +242,19 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 	if (ownMaterial.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
 		material.ior = ownMaterial.value(palette::MaterialProperty::MaterialIndexOfRefraction);
 	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialPhase)) {
+		material.scanisotropy = ownMaterial.value(palette::MaterialProperty::MaterialPhase);
+	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialDensity)) {
+		material.trdepth = ownMaterial.value(palette::MaterialProperty::MaterialDensity);
+	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialMedia)) {
+		material.scattering = priv::toVec3f(color) * ownMaterial.value(palette::MaterialProperty::MaterialMedia);
+	}
 	material.opacity = color.a;
 #if PATHTRACER_TEXTURES
 	#error "TODO: add texture support"
 #endif
-	// TODO: map these
-	// material.emission
-	// material.scanisotropy
-	// material.trdepth
 	scene.materials.push_back(material);
 }
 
@@ -339,7 +345,26 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	if (_state->scene.cameras.size() <= 1) {
 		yocto::add_camera(_state->scene);
 	}
-	yocto::add_sky(_state->scene);
+
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
+	const core::String &sunIntensity = root.property(scenegraph::PropSunIntensity);
+	if (!sunIntensity.empty()) {
+		_state->sunIntensity = core::string::toFloat(sunIntensity);
+		_state->sunArea = root.propertyf(scenegraph::PropSunArea);
+		_state->sunElevation = glm::radians(root.propertyf(scenegraph::PropSunElevation));
+		_state->sunAzimuth = glm::radians(root.propertyf(scenegraph::PropSunAzimuth));
+		_state->sunDisk = root.property(scenegraph::PropSunDisk) == "true";
+	}
+
+	_state->scene.texture_names.emplace_back("sky");
+	yocto::texture_data &texture = _state->scene.textures.emplace_back();
+	texture = yocto::image_to_texture(
+		yocto::make_sunsky(1024, 512, _state->sunElevation, 3, _state->sunDisk, _state->sunIntensity, _state->sunArea));
+	_state->scene.environment_names.emplace_back("sky");
+	yocto::environment_data &environment = _state->scene.environments.emplace_back();
+	environment.emission = {1, 1, 1};
+	environment.emission_tex = (int)_state->scene.textures.size() - 1;
+	environment.frame = yocto::rotation_frame({0, 1, 0}, _state->sunAzimuth);
 
 	return true;
 }

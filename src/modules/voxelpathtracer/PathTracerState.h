@@ -15,6 +15,12 @@ struct PathTracerState {
 	yocto::trace_lights lights;
 	yocto::trace_state state;
 	bool started = false;
+	float aperture = 0.0f;
+	float sunIntensity = 1.0f;
+	float sunArea = 1.0f;
+	float sunElevation = yocto::pif / 4.0f;
+	float sunAzimuth = yocto::pif / 4.0f;
+	bool sunDisk = false;
 
 	PathTracerState() : context(yocto::make_trace_context({})) {
 	}

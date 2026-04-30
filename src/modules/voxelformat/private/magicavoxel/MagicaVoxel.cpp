@@ -248,6 +248,21 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 	}
 }
 
+void loadSun(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
+	if (scene->sun == nullptr) {
+		return;
+	}
+	const ogt_vox_sun &sun = *scene->sun;
+	scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
+	root.setProperty(scenegraph::PropSunIntensity, sun.intensity);
+	root.setProperty(scenegraph::PropSunArea, sun.area);
+	root.setProperty(scenegraph::PropSunElevation, sun.angle[0]);
+	root.setProperty(scenegraph::PropSunAzimuth, sun.angle[1]);
+	const color::RGBA sunColor(sun.rgba.r, sun.rgba.g, sun.rgba.b, sun.rgba.a);
+	root.setProperty(scenegraph::PropSunColor, sunColor);
+	root.setProperty(scenegraph::PropSunDisk, sun.disk);
+}
+
 MVModelToNode::MVModelToNode() : volume(nullptr), nodeId(InvalidNodeId) {
 }
 

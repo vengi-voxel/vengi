@@ -101,6 +101,16 @@ void RenderPanel::updateSettings(const char *id, const scenegraph::SceneGraph &s
 		ImGui::TooltipTextUnformatted(_("High quality bounding volume hierarchy"));
 		changed += ImGui::Checkbox(_("Denoise"), &params.denoise);
 
+		changed += ImGui::SliderFloat(_("Aperture"), &state.aperture, 0.0f, 0.5f);
+		ImGui::TooltipTextUnformatted(_("Lens aperture for depth of field. 0 means pinhole (no DOF)."));
+		changed += ImGui::SliderFloat(_("Sun intensity"), &state.sunIntensity, 0.0f, 10.0f);
+		changed += ImGui::SliderFloat(_("Sun area"), &state.sunArea, 0.0f, 5.0f);
+		ImGui::TooltipTextUnformatted(_("Sun disk size. 1.0 is about 43.5 degrees."));
+		changed += ImGui::SliderAngle(_("Sun elevation"), &state.sunElevation, 0.0f, 90.0f);
+		changed += ImGui::SliderAngle(_("Sun azimuth"), &state.sunAzimuth, 0.0f, 360.0f);
+		changed += ImGui::Checkbox(_("Sun disk"), &state.sunDisk);
+		ImGui::TooltipTextUnformatted(_("Show visible sun disk in the sky."));
+
 		if (ImGui::Button(_("Reset all"))) {
 			params = yocto::trace_params();
 			++changed;

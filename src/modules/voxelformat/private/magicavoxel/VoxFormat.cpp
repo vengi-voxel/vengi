@@ -4,6 +4,7 @@
 
 #include "VoxFormat.h"
 #include "app/Async.h"
+#include "color/ColorUtil.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -399,6 +400,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 	}
 
 	loadCameras(scene, sceneGraph);
+	loadSun(scene, sceneGraph);
 	return true;
 }
 
@@ -755,6 +757,24 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_media;
 			mat.matl[i].media = material.value(palette::MaterialMedia);
 		}
+	}
+
+	ogt_vox_sun sun;
+	core_memset(&sun, 0, sizeof(sun));
+	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
+	const core::String &sunIntensity = rootNode.property(scenegraph::PropSunIntensity);
+	if (!sunIntensity.empty()) {
+		sun.intensity = core::string::toFloat(sunIntensity);
+		sun.area = rootNode.propertyf(scenegraph::PropSunArea);
+		sun.angle[0] = rootNode.propertyf(scenegraph::PropSunElevation);
+		sun.angle[1] = rootNode.propertyf(scenegraph::PropSunAzimuth);
+		const core::String &colorHex = rootNode.property(scenegraph::PropSunColor);
+		if (!colorHex.empty()) {
+			const color::RGBA c = color::fromHex(colorHex.c_str());
+			sun.rgba = {c.r, c.g, c.b, c.a};
+		}
+		sun.disk = rootNode.property(scenegraph::PropSunDisk) == "true";
+		output_scene.sun = &sun;
 	}
 
 	uint32_t buffersize = 0;

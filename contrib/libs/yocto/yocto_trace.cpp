@@ -1410,6 +1410,103 @@ static trace_result trace_falsecolor(const scene_data& scene,
   return {srgb_to_rgb(result), true, material.color, normal};
 }
 
+// Path tracing with direct light sampling.
+static trace_result trace_lightsampling(const scene_data& scene,
+    const trace_bvh& bvh, const trace_lights& lights, const ray3f& ray_,
+    rng_state& rng, const trace_params& params) {
+  auto radiance      = vec3f{0, 0, 0};
+  auto weight        = vec3f{1, 1, 1};
+  auto ray           = ray_;
+  auto hit           = false;
+  auto hit_albedo    = vec3f{0, 0, 0};
+  auto hit_normal    = vec3f{0, 0, 0};
+  auto next_emission = true;
+  auto opbounce      = 0;
+
+  for (auto bounce = 0; bounce < params.bounces; bounce++) {
+    auto intersection = intersect_scene(bvh, scene, ray);
+    if (!intersection.hit) {
+      if ((bounce > 0 || !params.envhidden) && next_emission)
+        radiance += weight * eval_environment(scene, ray.d);
+      break;
+    }
+
+    auto outgoing = -ray.d;
+    auto position = eval_shading_position(scene, intersection, outgoing);
+    auto normal   = eval_shading_normal(scene, intersection, outgoing);
+    auto material = eval_material(scene, intersection);
+
+    if (material.opacity < 1 && rand1f(rng) >= material.opacity) {
+      if (opbounce++ > 128) break;
+      ray = {position + ray.d * 1e-2f, ray.d};
+      bounce -= 1;
+      continue;
+    }
+
+    if (bounce == 0) {
+      hit        = true;
+      hit_albedo = material.color;
+      hit_normal = normal;
+    }
+
+    if (next_emission)
+      radiance += weight * eval_emission(material, normal, outgoing);
+
+    // direct light sampling
+    if (!is_delta(material)) {
+      auto incoming = sample_lights(
+          scene, lights, position, rand1f(rng), rand1f(rng), rand2f(rng));
+      auto pdf     = sample_lights_pdf(scene, bvh, lights, position, incoming);
+      auto bsdfcos = eval_bsdfcos(material, normal, outgoing, incoming);
+      if (bsdfcos != vec3f{0, 0, 0} && pdf > 0) {
+        auto intersection = intersect_scene(bvh, scene, {position, incoming});
+        auto emission =
+            !intersection.hit
+                ? eval_environment(scene, incoming)
+                : eval_emission(eval_material(scene,
+                                    scene.instances[intersection.instance],
+                                    intersection.element, intersection.uv),
+                      eval_shading_normal(scene,
+                          scene.instances[intersection.instance],
+                          intersection.element, intersection.uv, -incoming),
+                      -incoming);
+        radiance += weight * bsdfcos * emission / pdf;
+      }
+      next_emission = false;
+    } else {
+      next_emission = true;
+    }
+
+    // next direction
+    auto incoming = vec3f{0, 0, 0};
+    if (material.roughness != 0) {
+      incoming = sample_bsdfcos(
+          material, normal, outgoing, rand1f(rng), rand2f(rng));
+      if (incoming == vec3f{0, 0, 0}) break;
+      weight *= eval_bsdfcos(material, normal, outgoing, incoming) /
+                sample_bsdfcos_pdf(material, normal, outgoing, incoming);
+    } else {
+      incoming = sample_delta(material, normal, outgoing, rand1f(rng));
+      if (incoming == vec3f{0, 0, 0}) break;
+      weight *= eval_delta(material, normal, outgoing, incoming) /
+                sample_delta_pdf(material, normal, outgoing, incoming);
+    }
+
+    if (weight == vec3f{0, 0, 0} || !isfinite(weight)) break;
+
+    // russian roulette
+    if (bounce > 3) {
+      auto rr_prob = min((float)0.99, max(weight));
+      if (rand1f(rng) >= rr_prob) break;
+      weight *= 1 / rr_prob;
+    }
+
+    ray = {position, incoming};
+  }
+
+  return {radiance, hit, hit_albedo, hit_normal};
+}
+
 // Trace a single ray from the camera using the given algorithm.
 using sampler_func = trace_result (*)(const scene_data& scene,
     const trace_bvh& bvh, const trace_lights& lights, const ray3f& ray,
@@ -1420,6 +1517,7 @@ static sampler_func get_trace_sampler_func(const trace_params& params) {
     case trace_sampler_type::pathdirect: return trace_pathdirect;
     case trace_sampler_type::pathmis: return trace_pathmis;
     case trace_sampler_type::pathtest: return trace_pathtest;
+    case trace_sampler_type::lightsampling: return trace_lightsampling;
     case trace_sampler_type::naive: return trace_naive;
     case trace_sampler_type::eyelight: return trace_eyelight;
     case trace_sampler_type::diagram: return trace_diagram;
@@ -1438,6 +1536,7 @@ bool is_sampler_lit(const trace_params& params) {
     case trace_sampler_type::path: return true;
     case trace_sampler_type::pathdirect: return true;
     case trace_sampler_type::pathmis: return true;
+    case trace_sampler_type::lightsampling: return true;
     case trace_sampler_type::naive: return true;
     case trace_sampler_type::eyelight: return false;
     case trace_sampler_type::furnace: return true;
