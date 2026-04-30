@@ -36,6 +36,9 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 		}
 		ImGui::Dummy(ImVec2(20, 0));
 		if (_pathTracer.started()) {
+			if (ImGui::Button(_("Sync camera"))) {
+				_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
+			}
 			if (ImGui::Button(_("Stop path tracer"))) {
 				_pathTracer.stop();
 			}
