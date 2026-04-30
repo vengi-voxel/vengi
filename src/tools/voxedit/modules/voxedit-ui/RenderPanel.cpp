@@ -110,6 +110,10 @@ void RenderPanel::updateSettings(const char *id, const scenegraph::SceneGraph &s
 		changed += ImGui::SliderAngle(_("Sun azimuth"), &state.sunAzimuth, 0.0f, 360.0f);
 		changed += ImGui::Checkbox(_("Sun disk"), &state.sunDisk);
 		ImGui::TooltipTextUnformatted(_("Show visible sun disk in the sky."));
+		ImGui::SliderFloat(_("Exposure"), &state.exposure, -5.0f, 5.0f);
+		ImGui::TooltipTextUnformatted(_("Exposure compensation in stops for tonemapping."));
+		ImGui::Checkbox(_("Filmic"), &state.filmic);
+		ImGui::TooltipTextUnformatted(_("Use filmic tonemapping for softer highlight rolloff."));
 
 		if (ImGui::Button(_("Reset all"))) {
 			params = yocto::trace_params();

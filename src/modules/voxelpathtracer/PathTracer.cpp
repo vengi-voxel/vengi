@@ -422,8 +422,8 @@ bool PathTracer::update(int *currentSample) {
 }
 
 image::ImagePtr PathTracer::image() {
-	yocto::image_data image;
-	image = yocto::get_image(_state->state);
+	yocto::image_data hdr = yocto::get_image(_state->state);
+	yocto::image_data image = yocto::tonemap_image(hdr, _state->exposure, _state->filmic);
 
 	priv::YoctoImageReadStream stream(image);
 	image::ImagePtr i = image::createEmptyImage("pathtracer");
