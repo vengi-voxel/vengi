@@ -431,6 +431,7 @@ set(TEST_FILES
 	"tests/voxlap5.kv6"
 	"tests/vox-to-kv6-broken.vox"
 	"voxedit/chr_knight.vengi"
+	"voxedit/aquarium.vengi"
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

@@ -482,6 +482,15 @@ TEST_F(ConvertTest, testVengiToVox) {
 	testConvert("minecraft-skin.vengi", src, "minecraft-skin.vox", target, flags);
 }
 
+// https://github.com/vengi-voxel/vengi/issues/841
+TEST_F(ConvertTest, DISABLED_testVengiToVoxAquarium) {
+	VENGIFormat src;
+	VoxFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color | voxel::ValidateFlags::Scale |
+									   voxel::ValidateFlags::SceneGraphModels;
+	testLoadSaveAndLoadSceneGraph("aquarium.vengi", src, "convert-aquarium.vox", target, flags);
+}
+
 // https://github.com/vengi-voxel/vengi/issues/746
 // https://github.com/vengi-voxel/vengi/issues/670
 TEST_F(ConvertTest, testVXLToVox) {
