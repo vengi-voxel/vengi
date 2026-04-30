@@ -5789,8 +5789,12 @@ bool SceneManager::nodeQuantizeColors(scenegraph::SceneGraphNode &node, const co
 
 	// quantize to target count
 	color::RGBA quantizedColors[palette::PaletteMaxColors];
-	const color::ColorReductionType reductionType =
-		color::toColorReductionType(core::getVar(cfg::CoreColorReduction)->strVal().c_str());
+	const core::VarPtr &var = core::getVar(cfg::CoreColorReduction);
+	const color::ColorReductionType reductionType = color::toColorReductionType(var->strVal().c_str());
+	if (reductionType == color::ColorReductionType::Max) {
+		Log::warn("Invalid color reduction type '%s'", var->strVal().c_str());
+		return false;
+	}
 	const int quantizedCount = color::quantize(quantizedColors, (size_t)targetColorCount, inputColors, (size_t)selectedCount, reductionType);
 	if (quantizedCount <= 0) {
 		return false;

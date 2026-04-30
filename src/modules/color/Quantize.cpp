@@ -28,6 +28,9 @@ static_assert((int)ColorReductionType::Max == lengthof(ColorReductionAlgorithmSt
 			  "Array size doesn't match with enum");
 
 const char *toColorReductionTypeString(ColorReductionType type) {
+	if (type >= ColorReductionType::Max) {
+		return "";
+	}
 	return ColorReductionAlgorithmStr[(int)type];
 }
 
