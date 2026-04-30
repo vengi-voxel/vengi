@@ -148,7 +148,7 @@ VoxBoxState VoxBoxApi::search(const VoxBoxSearchParams &params) const {
 	VoxBoxState state;
 	state.count = 0;
 	core::String url =
-		core::String::format("%s/api/model/search?page=%d&count=%d", BASE_URL, params.page + 1, params.count);
+		core::String::format("%s/api/model/search?page=%d&count=%d", BASE_URL, params.page, params.count);
 
 	if (!params.nameFilter.empty()) {
 		url += "&name=" + params.nameFilter;

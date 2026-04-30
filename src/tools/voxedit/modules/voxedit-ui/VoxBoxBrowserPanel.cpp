@@ -355,6 +355,7 @@ void VoxBoxBrowserPanel::uploadPanel() {
 		ImGui::Text(_("Updating existing model: %s"), _uploadInfo.id.c_str());
 	}
 
+	// TODO: generate a preview image from the scene if no cover is selected using the thumbnail renderer
 	static const io::FormatDescription pngFormat[]{io::format::png(), io::FormatDescription::END};
 	ImGui::InputFile(_("Cover image"), true, &_uploadCoverFile, pngFormat);
 
