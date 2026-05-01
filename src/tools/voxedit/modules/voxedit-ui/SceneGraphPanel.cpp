@@ -187,13 +187,6 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		}
 	}
 	{ // column 4
-		ui::ScopedStyle refStyle;
-		if (referenceHighlight) {
-			refStyle.darker(ImGuiCol_Text);
-		} else if (node.locked()) {
-			refStyle.setColor(ImGuiCol_Text, ImVec4(style::color(style::ColorLockedNode)));
-		}
-
 		ImGui::TableNextColumn();
 
 		const char *icon = nodeIcon(node.type());
@@ -217,13 +210,22 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		bool isOpen = !_collapsedNodes.has(nodeId);
 		ImGui::SetNextItemOpen(isOpen);
 
-		bool visible = ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
-		if (!node.isLeaf()) {
-			if (visible != isOpen) {
-				if (visible)
-					_collapsedNodes.remove(nodeId);
-				else
-					_collapsedNodes.insert(nodeId);
+		{
+			ui::ScopedStyle refStyle;
+			if (referenceHighlight) {
+				refStyle.darker(ImGuiCol_Text);
+			} else if (node.locked()) {
+				refStyle.setColor(ImGuiCol_Text, ImVec4(style::color(style::ColorLockedNode)));
+			}
+
+			bool visible = ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
+			if (!node.isLeaf()) {
+				if (visible != isOpen) {
+					if (visible)
+						_collapsedNodes.remove(nodeId);
+					else
+						_collapsedNodes.insert(nodeId);
+				}
 			}
 		}
 		if (displayNode.depth > 0) {
