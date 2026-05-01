@@ -473,7 +473,12 @@ core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
 }
 
 void MeshState::resetReferences() {
-	for (int idx : _activeIndices) {
+	for (int i = (int)_activeIndices.size() - 1; i >= 0; --i) {
+		const int idx = _activeIndices[i];
+		if (_volumeData[idx]._reference != -1 && _volumeData[idx]._rawVolume == nullptr) {
+			_activeIndices[i] = _activeIndices.back();
+			_activeIndices.pop();
+		}
 		_volumeData[idx]._reference = -1;
 	}
 }
@@ -492,6 +497,9 @@ void MeshState::setReference(int idx, int referencedIdx) {
 	ensureSize(idx);
 	VolumeData &state = _volumeData[idx];
 	state._reference = referencedIdx;
+	if (referencedIdx != -1 && state._rawVolume == nullptr) {
+		_activeIndices.push_back(idx);
+	}
 }
 
 bool MeshState::hidden(int idx) const {

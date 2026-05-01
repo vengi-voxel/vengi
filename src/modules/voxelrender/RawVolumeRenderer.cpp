@@ -137,6 +137,13 @@ void RawVolumeRenderer::ensureRenderState(int idx) {
 	}
 }
 
+void RawVolumeRenderer::ensureSize(int idx) {
+	if (idx < (int)_state.size()) {
+		return;
+	}
+	_state.resize(idx + 1);
+}
+
 bool RawVolumeRenderer::init(bool normals) {
 	_shadowMap = core::getVar(cfg::ClientShadowMap);
 	_bloom = core::getVar(cfg::ClientBloom);

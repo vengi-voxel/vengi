@@ -37,7 +37,7 @@ protected:
 	void applyTransform(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
 						const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, int idx);
 	void prepareModelNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
-	void prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) const;
+	void prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 	void prepareCameraNodes(const RenderContext &renderContext);
 
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);

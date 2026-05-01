@@ -238,7 +238,7 @@ void SceneGraphRenderer::updateNodeState(const voxel::MeshStatePtr &meshState, c
 	meshState->setLocked(idx, node.locked());
 }
 
-void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) const {
+void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(PrepareReferenceNodes);
 	meshState->resetReferences();
 	if (!renderContext.isSceneMode()) {
@@ -253,10 +253,8 @@ void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshSt
 			continue;
 		}
 
-		const int idx = getVolumeIdx(node.id());
-		if (idx < 0) {
-			continue;
-		}
+		const int idx = getOrAssignVolumeIdx(node.id());
+		_volumeRenderer.ensureSize(idx);
 		updateNodeState(meshState, renderContext, activeNode, node, idx);
 		if (meshState->hidden(idx)) {
 			continue;
