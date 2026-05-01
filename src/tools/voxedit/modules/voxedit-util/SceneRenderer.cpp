@@ -81,6 +81,7 @@ bool SceneRenderer::init() {
 
 void SceneRenderer::clear() {
 	_sceneGraphRenderer.clear(_meshState);
+	markDirty();
 }
 
 const voxel::Region &SceneRenderer::sliceRegion() const {
