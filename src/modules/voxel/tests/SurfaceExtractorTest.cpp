@@ -1069,4 +1069,29 @@ TEST_F(SurfaceExtractorTest, testCubicSingleVoxelAtRegionBoundary) {
 	EXPECT_EQ(36u, (uint32_t)mesh.mesh[0].getNoOfIndices()) << "Single voxel should have 36 indices (6 faces * 2 tris * 3)";
 }
 
+// Test for overlapping faces at region boundary
+// https://github.com/vengi-voxel/vengi/issues/844
+TEST_F(SurfaceExtractorTest, testCubicOverlappingVoxelAtRegionBoundary) {
+	glm::ivec3 mins(-1, 16, 1);
+	glm::ivec3 maxs(0, 16, 1);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	v.setVoxel(-1, 16, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(0, 16, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	const bool mergeQuads = false;
+	const bool reuseVertices = true;
+	const bool ambientOcclusion = false;
+
+	voxel::ChunkMesh mesh;
+	SurfaceExtractionContext ctx =
+		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+	voxel::extractSurface(ctx);
+
+	// because we are on a mesh boundary here, the assumption is that two cubes exist - but the two connecting faces are invisible
+	// thus we have 10 visible faces (5 per cube) and 8 unique vertices per cube (corners of the cubes)
+	EXPECT_EQ(16u, (uint32_t)mesh.mesh[0].getNoOfVertices()) << "Each cube should have 8 vertices (16 in total - 2 cubes)";
+	EXPECT_EQ(60u, (uint32_t)mesh.mesh[0].getNoOfIndices()) << "Each cube should have 30 indices (5 faces * 2 tris * 3) (60 in total - 2 cubes)";
+}
+
 } // namespace voxel
