@@ -277,9 +277,17 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 				continue;
 			}
 			if (v->isEmpty(finalRegion)) {
-				const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
-				results[i] = {mins, idx, voxel::ChunkMesh(0, 0, false)};
-				continue;
+				// All surface extractors peek at neighbors one voxel outside the
+				// region (e.g. the cubic extractor checks voxelLeft at offset-1).
+				// If the region itself is empty but there are solid voxels just
+				// outside, we still need to run the extractor to generate boundary
+				// faces. Check the expanded region to catch this case.
+				const voxel::Region expandedRegion(finalRegion.getLowerCorner() - 1, finalRegion.getUpperCorner() + 1);
+				if (v->isEmpty(expandedRegion)) {
+					const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+					results[i] = {mins, idx, voxel::ChunkMesh(0, 0, false)};
+					continue;
+				}
 			}
 
 			const palette::Palette &pal = palette(resolveIdx(idx));

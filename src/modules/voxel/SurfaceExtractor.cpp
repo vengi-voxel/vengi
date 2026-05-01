@@ -66,13 +66,7 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 			voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region.getLowerCorner(), &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
 		}
 	} else {
-		// The cubic surface extractor assigns positive-direction boundary faces
-		// to the region with the greater coordinate (see CubicSurfaceExtractor.h).
-		// Expand the region by 1 in each positive direction so that the extractor
-		// can generate those boundary faces.
-		voxel::Region cubicRegion = ctx.region;
-		cubicRegion.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(ctx.volume, cubicRegion, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
+		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
 								ctx.reuseVertices);
 	}
 	if (ctx.optimize) {
