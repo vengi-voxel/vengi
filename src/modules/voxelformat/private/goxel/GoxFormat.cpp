@@ -362,7 +362,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		cropped->translate(-mins);
 
 		scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		transform.setWorldTranslation(mins);
+		transform.setWorldTranslation(glm::vec3(mins) + transform.worldTranslation());
 
 		node.setVolume(cropped);
 	} else {
@@ -816,7 +816,24 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 			return false;
 		}
 		wrapBool(saveChunk_DictString(stream, "name", node.name()))
+		// the load path mirrors X, crops, and sets translation = crop lower corner + mat translation
+		// simulate the load's mirror+crop to compute the crop offset, then store the correction in mat
 		glm::mat4 mat(1.0f);
+		{
+			const glm::vec3 &wt = node.transform(0).worldTranslation();
+			// compute what the load path's mirror+crop will produce as translation offset
+			// the load path: places BL16 blocks at local coords -> mirrors X within [0,BlockSize-1] -> crops
+			// we need the crop lower corner after mirror, which is determined by the actual voxel bounds
+			const voxel::Region &r = sceneGraph.resolveRegion(node);
+			// after mirror X within [0, BlockSize-1]: position x maps to (BlockSize - 1 - x)
+			// crop lower x = BlockSize - 1 - maxVoxelX, crop lower y = minVoxelY, crop lower z = minVoxelZ
+			// since the volume region is already cropped to the voxel bounds:
+			const glm::vec3 cropOffset(
+				(float)(BlockSize - 1 - r.getUpperX()),
+				(float)r.getLowerY(),
+				(float)r.getLowerZ());
+			mat[3] = glm::vec4(wt - cropOffset, 1.0f);
+		}
 		wrapBool(saveChunk_DictMat4(stream, "mat", mat))
 		wrapBool(saveChunk_DictInt(stream, "id", layerId))
 		const color::RGBA layerRGBA = node.color();

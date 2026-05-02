@@ -452,14 +452,11 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: VOXELFORMAT: translation broken - GOX save doesn't encode node translation into block positions.
-// The BL16 data format has an axis permutation between save and load that makes X compensation complex.
 TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
