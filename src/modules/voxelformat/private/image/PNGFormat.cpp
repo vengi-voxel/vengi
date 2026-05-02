@@ -11,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
@@ -265,12 +266,51 @@ size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		image->makeOpaque();
 	}
 
-	if (!palette.createPalette(image, palette)) {
-		Log::error("Failed to create palette from image %s", filename.c_str());
-		return 0;
+	if (image && image->isLoaded()) {
+		if (palette.createPalette(image, palette)) {
+			Log::debug("Created palette with %i colors from image %s", palette.colorCount(), filename.c_str());
+			return palette.colorCount();
+		}
 	}
-	Log::debug("Created palette with %i colors from image %s", palette.colorCount(), filename.c_str());
-	return palette.colorCount();
+
+	// if the main file doesn't exist, try to find slice images and collect all colors
+	core::String basename = core::string::extractFilename(filename);
+	const core::String &directory = core::string::extractDir(filename);
+	const size_t sep = basename.rfind('-');
+	if (sep != core::String::npos) {
+		basename = basename.substr(0, sep);
+	}
+	io::ArchiveFiles entities;
+	archive->list(directory, entities, core::String::format("%s-*.png", basename.c_str()));
+	core::Set<color::RGBA, 521> colorSet;
+	for (const auto &entity : entities) {
+		const image::ImagePtr &sliceImage = image::loadImage(entity.fullPath);
+		if (!sliceImage || !sliceImage->isLoaded()) {
+			continue;
+		}
+		for (int x = 0; x < sliceImage->width(); ++x) {
+			for (int y = 0; y < sliceImage->height(); ++y) {
+				const color::RGBA c = sliceImage->colorAt(x, y);
+				if (c.a > 0) {
+					colorSet.insert(c);
+				}
+			}
+		}
+	}
+	if (!colorSet.empty()) {
+		core::Buffer<color::RGBA> colors;
+		colors.reserve(colorSet.size());
+		for (const auto &e : colorSet) {
+			colors.push_back(e->first);
+		}
+		palette.quantize(colors.data(), colors.size());
+		palette.markDirty();
+		Log::debug("Created palette with %i colors from %i slices", palette.colorCount(), (int)entities.size());
+		return palette.colorCount();
+	}
+
+	Log::error("Failed to create palette from image %s", filename.c_str());
+	return 0;
 }
 
 bool PNGFormat::saveThumbnail(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

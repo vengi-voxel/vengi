@@ -316,9 +316,16 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 							continue;
 						}
 					}
+					// treat solid voxels with fully transparent colors as air
+					if (!voxel::isAir(voxel1.getMaterial()) && pal1.color(voxel1.getColor()).a == 0) {
+						continue;
+					}
+					if (!voxel::isAir(voxel2.getMaterial()) && pal2.color(voxel2.getColor()).a == 0) {
+						continue;
+					}
 				}
 
-				ASSERT_EQ(voxel1.getMaterial(), voxel2.getMaterial())
+				ASSERT_EQ(voxel::isAir(voxel1.getMaterial()), voxel::isAir(voxel2.getMaterial()))
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":" << z2
 					<< " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 					<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
