@@ -483,6 +483,7 @@ TEST_F(ConvertTest, testVengiToVox) {
 }
 
 // https://github.com/vengi-voxel/vengi/issues/841
+// TODO: VOXELFORMAT: activate me
 TEST_F(ConvertTest, DISABLED_testVengiToVoxAquarium) {
 	VENGIFormat src;
 	VoxFormat target;
@@ -501,5 +502,8 @@ TEST_F(ConvertTest, testVXLToVox) {
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color | voxel::ValidateFlags::SceneGraphModels;
 	testConvert("cc.vxl", src, "convert-cc.vox", target, flags);
 }
+
+// TODO: VOXELFORMAT: add a testConvertMaterial to AbstractFormatTest that sets every available material property and
+// checks the round trip for the vengi -> gltf and vengi -> vox e.g. (other formats might not properly support this)
 
 } // namespace voxelformat
