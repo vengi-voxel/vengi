@@ -336,31 +336,38 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	// Clear box region by default; Box3D case sets it below
 	_box3DSelectionRegion = voxel::Region::InvalidRegion;
 
-	auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
+	int selectionChangeCount = 0;
+	auto func = [&wrapper, &selectionChangeCount](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (wrapper.modifierType() == ModifierType::Erase) {
-			wrapper.removeFlagAt(x, y, z, voxel::FlagOutline);
+			if (wrapper.removeFlagAt(x, y, z, voxel::FlagOutline)) {
+				++selectionChangeCount;
+			}
 		} else {
-			wrapper.setFlagAt(x, y, z, voxel::FlagOutline);
+			if (wrapper.setFlagAt(x, y, z, voxel::FlagOutline)) {
+				++selectionChangeCount;
+			}
 		}
 	};
 
+	int n = 0;
 	switch (_selectMode) {
 	case SelectMode::All: {
 		voxelutil::VisitSolid condition;
-		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
+		n = voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		break;
 	}
 	case SelectMode::Surface: {
-		voxelutil::visitSurfaceVolumeParallel(wrapper, func);
+		n = voxelutil::visitSurfaceVolumeParallel(wrapper, func);
 		break;
 	}
 	case SelectMode::SameColor: {
 		const voxel::Voxel &referenceVoxel = ctx.hitCursorVoxel;
 		if (voxel::isAir(referenceVoxel.getMaterial())) {
+			// TODO: SELECTION: why shouldn't it be possible to select all air voxels?
 			return;
 		}
 		voxelutil::VisitVoxelColor condition = voxelutil::VisitVoxelColor(referenceVoxel);
-		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
+		n = voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		break;
 	}
 	case SelectMode::FuzzyColor: {
@@ -370,12 +377,13 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		}
 		const palette::Palette &palette = wrapper.node().palette();
 		voxelutil::VisitVoxelFuzzyColor condition(palette, referenceVoxel.getColor(), _colorThreshold);
-		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
+		n = voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		break;
 	}
 	case SelectMode::Connected: {
 		const voxel::Voxel &referenceVoxel = ctx.hitCursorVoxel;
 		if (voxel::isAir(referenceVoxel.getMaterial())) {
+			// TODO: SELECTION: why shouldn't it be possible to select all air voxels?
 			return;
 		}
 		const glm::ivec3 &startPos = ctx.cursorPosition;
@@ -384,7 +392,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		} else {
 			wrapper.setFlagAt(startPos.x, startPos.y, startPos.z, voxel::FlagOutline);
 		}
-		voxelutil::visitConnectedByCondition(wrapper, startPos, func);
+		n = voxelutil::visitConnectedByCondition(wrapper, startPos, func);
 		break;
 	}
 	case SelectMode::FlatSurface: {
@@ -395,7 +403,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		if (voxel::isAir(wrapper.voxel(startPos).getMaterial())) {
 			return;
 		}
-		voxelutil::visitFlatSurface(wrapper, startPos, ctx.cursorFace, _flatDeviation, func);
+		n = voxelutil::visitFlatSurface(wrapper, startPos, ctx.cursorFace, _flatDeviation, func);
 		break;
 	}
 	case SelectMode::Circle: {
@@ -468,7 +476,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	}
 	case SelectMode::Box3D: {
 		voxelutil::VisitSolid condition;
-		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
+		n = voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		// Store the exact box region so ModifierVolumeWrapper::skip() allows
 		// editing any position inside the box (including air voxels)
 		if (wrapper.modifierType() == ModifierType::Erase) {
@@ -546,7 +554,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 				func(x, y, z, v);
 			}
 		};
-		voxelutil::visitSurfaceVolume(wrapper, lassoFunc);
+		n = voxelutil::visitSurfaceVolume(wrapper, lassoFunc);
 		if (!_previewMode) {
 			_lassoPath.clear();
 		}
@@ -591,7 +599,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 			}
 			func(x, y, z, voxel);
 		};
-		voxelutil::visitVolume(wrapper, selectionRegion, paintFunc, condition);
+		n = voxelutil::visitVolume(wrapper, selectionRegion, paintFunc, condition);
 		_paintDirtyRegion.accumulate(selectionRegion);
 		break;
 	}
@@ -599,6 +607,17 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	case SelectMode::Max:
 		return;
 	}
+
+	if (selectionChangeCount <= 0) {
+		if (wrapper.modifierType() == ModifierType::Erase) {
+			setErrorReason(_("No voxels were deselected"));
+		} else {
+			setErrorReason(_("No voxels were selected"));
+		}
+	}
+
+	Log::debug("SelectBrush::generate: %i voxels touched and %i affected by selection mode %i", n, selectionChangeCount,
+			   (int)_selectMode);
 }
 
 void SelectBrush::redrawEdgesOnVolume(voxel::RawVolume *volume, const voxel::Region &region, voxel::Region &outDirty) {

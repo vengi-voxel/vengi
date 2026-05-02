@@ -185,7 +185,7 @@ public:
 	/**
 	 * @brief Set flags on a single voxel at the given position and mark it dirty
 	 * @note This directly modifies the volume, bypassing the Sampler validation
-	 * @return true if the voxel was modified (not air), false otherwise
+	 * @return true if the voxel was modified (not air, or not already set), false otherwise
 	 */
 	bool setFlagAt(int x, int y, int z, uint8_t flags) {
 		voxel::RawVolume::Sampler sampler(_volume);
@@ -194,6 +194,9 @@ public:
 		}
 		voxel::Voxel v = sampler.voxel();
 		if (voxel::isAir(v.getMaterial())) {
+			return false;
+		}
+		if ((v.getFlags() & flags) == flags) {
 			return false;
 		}
 		v.setFlags(v.getFlags() | flags);
@@ -209,7 +212,7 @@ public:
 	/**
 	 * @brief Remove flags from a single voxel at the given position and mark it dirty
 	 * @note This directly modifies the volume, bypassing the Sampler validation
-	 * @return true if the voxel was modified (not air), false otherwise
+	 * @return true if the voxel was modified (not air, or not already cleared), false otherwise
 	 */
 	bool removeFlagAt(int x, int y, int z, uint8_t flags) {
 		voxel::RawVolume::Sampler sampler(_volume);
@@ -218,6 +221,9 @@ public:
 		}
 		voxel::Voxel v = sampler.voxel();
 		if (voxel::isAir(v.getMaterial())) {
+			return false;
+		}
+		if ((v.getFlags() & flags) == 0) {
 			return false;
 		}
 		v.setFlags(v.getFlags() & ~flags);
