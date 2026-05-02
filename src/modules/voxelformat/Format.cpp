@@ -307,7 +307,7 @@ static void mergePalettesAndRemap(const scenegraph::SceneGraph &sceneGraph, scen
 	scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 	for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		node.remapToPalette(palette);
+		node.remapToPalette(palette, emptyIndex);
 		node.setPalette(palette);
 	}
 }
