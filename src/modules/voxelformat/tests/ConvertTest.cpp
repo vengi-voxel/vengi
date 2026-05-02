@@ -131,13 +131,13 @@ TEST_F(ConvertTest, testQbToQbt) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbt", target, flags);
 }
 
-// TODO: this is disabled because the png format tries to read all the pngs and some of them (from other test runs) have a different dimension
+// TODO: VOXELFORMAT: PNG round-trip fails - palette creation from saved image fails, causing voxel data loss
 TEST_F(ConvertTest, DISABLED_testQbToPng) {
 	QBFormat src;
 	PNGFormat target;
 	// we are only getting the used colors back when loading the png
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
-	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.png", target, flags);
+	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convertqbtopng-rgb.png", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToSproxel) {
@@ -421,10 +421,11 @@ TEST_F(ConvertTest, testVengiToKVX) {
 	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
 }
 
-// TODO: VOXELFORMAT: one color is missing
+// TODO: VOXELFORMAT: one color is missing - likely an interior-only color lost because KV6 only stores surface voxels
 TEST_F(ConvertTest, testVoxToKV6) {
 	VoxFormat src;
 	KV6Format target;
+	// KV6 is a single-volume format that doesn't store translation
 	const voxel::ValidateFlags flags =
 		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation;
 	testConvert("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
@@ -451,7 +452,8 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: VOXELFORMAT: translation broken
+// TODO: VOXELFORMAT: translation broken - GOX save doesn't encode node translation into block positions.
+// The BL16 data format has an axis permutation between save and load that makes X compensation complex.
 TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
@@ -498,7 +500,15 @@ TEST_F(ConvertTest, testVXLToVox) {
 	testConvert("cc.vxl", src, "convert-cc.vox", target, flags);
 }
 
-// TODO: VOXELFORMAT: add a testConvertMaterial to AbstractFormatTest that sets every available material property and
-// checks the round trip for the vengi -> gltf and vengi -> vox e.g. (other formats might not properly support this)
+TEST_F(ConvertTest, testConvertMaterialVengiToVox) {
+	scenegraph::SceneGraph sceneGraph;
+	testMaterial(sceneGraph, "test_material.vox");
+}
+
+// TODO: MATERIAL: materials are not yet properly loaded back from gltf
+TEST_F(ConvertTest, DISABLED_testConvertMaterialVengiToGLTF) {
+	scenegraph::SceneGraph sceneGraph;
+	testMaterial(sceneGraph, "test_material.gltf");
+}
 
 } // namespace voxelformat
