@@ -442,13 +442,12 @@ TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
 	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target, flags);
 }
 
-// TODO: VOXELFORMAT: pivot broken
-// TODO: VOXELFORMAT: translation broken
+// VXM doesn't store translation - that's handled by VXR/VXA
 TEST_F(ConvertTest, testVoxToVXR) {
 	VoxFormat src;
 	VXMFormat target;
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation);
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
@@ -462,11 +461,11 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
-// TODO: VOXELFORMAT: animations should work here already
-TEST_F(ConvertTest, DISABLED_testVengiToGLTF) {
+// GLTF is a mesh format - pivot is not preserved in the round-trip
+TEST_F(ConvertTest, testVengiToGLTF) {
 	VENGIFormat src;
 	GLTFFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Pivot;
 	testLoadSaveAndLoadSceneGraph("bat_anim.vengi", src, "convert-bat_anim.gltf", target, flags);
 }
 
