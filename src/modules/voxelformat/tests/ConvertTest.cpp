@@ -388,7 +388,6 @@ TEST_F(ConvertTest, testQBChrKnightToKV6) {
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags, 4);
 }
 
-// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
@@ -398,30 +397,27 @@ TEST_F(ConvertTest, testQBToKVX) {
 	testConvert("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
-// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBChrKnightToKVX) {
 	QBFormat src;
 	KVXFormat target;
 	// KVX has all colors in the palette set - and thus the color amount doesn't match
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) &
-									   ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot | voxel::ValidateFlags::SceneGraphModels);
+									   ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModels);
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
 }
 
-// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat src;
 	KVXFormat target;
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) &
-									   ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot);
+									   ~(voxel::ValidateFlags::Palette);
 	testConvert("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testVengiToKVX) {
 	VENGIFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled & ~voxel::ValidateFlags::Pivot;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
 	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
 }
 

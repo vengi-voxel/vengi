@@ -113,10 +113,9 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	pivz_h = zsiz_h - 1 - pivz_h;
 
 	glm::vec3 normalizedPivot;
-	normalizedPivot.x = (float)pivx_w / 256.0f;
-	normalizedPivot.y = (float)pivy_d / 256.0f;
-	normalizedPivot.z = (float)pivz_h / 256.0f;
-	core::exchange(normalizedPivot.y, normalizedPivot.z);
+	normalizedPivot.x = (float)pivx_w / (float)xsiz_w;
+	normalizedPivot.y = (float)pivz_h / (float)zsiz_h;
+	normalizedPivot.z = (float)pivy_d / (float)ysiz_d;
 
 	/**
 	 * For compression purposes, I store the column pointers
@@ -243,11 +242,17 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeUInt32(dim.y))
 	Log::debug("Dimensions: %i:%i:%i", dim.x, dim.z, dim.y);
 
-	// TODO: VOXELFORMAT: support the pivot
-	glm::ivec3 pivot(0); // normalized pivot
-	wrapBool(stream->writeInt32(-pivot.x))
-	wrapBool(stream->writeInt32(pivot.z))
-	wrapBool(stream->writeInt32(-pivot.y))
+	// convert normalized pivot to kvx voxel coordinates
+	const glm::vec3 &nodePivot = node->pivot();
+	// nodePivot is normalized [0,1] relative to dimensions
+	// kvx stores pivot in voxel coords shifted left by 8 bits
+	// swap y/z for kvx coordinate system
+	int32_t pivx_w = (int32_t)(nodePivot.x * (float)dim.x) << 8;
+	int32_t pivy_d = (int32_t)(nodePivot.z * (float)dim.z) << 8;
+	int32_t pivz_h = (int32_t)((float)(dim.y - 1) - nodePivot.y * (float)dim.y) << 8;
+	wrapBool(stream->writeInt32(pivx_w))
+	wrapBool(stream->writeInt32(pivy_d))
+	wrapBool(stream->writeInt32(pivz_h))
 
 	const int64_t offsetPos = stream->pos();
 	const size_t xoffsetSize = (dim.x + 1) * sizeof(uint32_t);
