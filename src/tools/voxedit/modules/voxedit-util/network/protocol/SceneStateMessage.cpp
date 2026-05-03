@@ -17,7 +17,7 @@ SceneStateMessage::SceneStateMessage(scenegraph::SceneGraph &sceneGraph) : Proto
 		return;
 	}
 	// we don't want to modify the voxels
-	util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, "-1");
+	util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, -1);
 
 	voxelformat::VENGIFormat vengiFormat;
 	io::SeekableWriteStream *writeStream = (io::SeekableWriteStream *)this;
@@ -30,7 +30,7 @@ SceneStateMessage::SceneStateMessage(scenegraph::SceneGraph &sceneGraph) : Proto
 SceneStateMessage::SceneStateMessage(network::MessageStream &in, uint32_t size) {
 	_id = PROTO_SCENE_STATE;
 	// we don't want to modify the voxels
-	util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, "-1");
+	util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, -1);
 
 	voxelformat::VENGIFormat vengiFormat;
 	io::BufferedReadWriteStream bufferedStream(in, size);
