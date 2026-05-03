@@ -14,6 +14,7 @@ set(SRCS
 	Random.cpp Random.h
 	Ray.h
 	Rect.h
+	SDF.h SDF.cpp
 	Tri.h Tri.cpp
 	Math.h Math.cpp
 )
