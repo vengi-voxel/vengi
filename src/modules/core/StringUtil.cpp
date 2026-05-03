@@ -89,20 +89,32 @@ const char *after(const char *input, int character) {
 	return s;
 }
 
-bool endsWith(const core::String& string, char end) {
+bool endsWith(const core::String& string, char end, bool ignoreCase) {
 	if (string.empty()) {
 		return false;
 	}
 	const size_t strLength = string.size();
+	if (ignoreCase) {
+		return toLower(string[strLength - 1]) == toLower(end);
+	}
 	return string[strLength - 1] == end;
 }
 
-bool endsWith(const core::String &string, const core::String &end) {
+bool endsWith(const core::String &string, const core::String &end, bool ignoreCase) {
 	const size_t strLength = string.size();
 	const size_t endLength = end.size();
 	if (strLength >= endLength) {
 		const size_t index = strLength - endLength;
-		return string.compare(index, endLength, end) == 0;
+		if (ignoreCase) {
+			for (size_t i = 0; i < endLength; ++i) {
+				if (toLower(string[index + i]) != toLower(end[i])) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return string.compare(index, endLength, end) == 0;
+		}
 	}
 	return false;
 }

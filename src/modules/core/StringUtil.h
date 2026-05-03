@@ -89,8 +89,8 @@ bool startsWith(const char* string, const char* token);
  */
 const char* after(const char* input, int character);
 
-bool endsWith(const core::String& string, const core::String& end);
-bool endsWith(const core::String& string, char end);
+bool endsWith(const core::String& string, const core::String& end, bool ignoreCase = false);
+bool endsWith(const core::String& string, char end, bool ignoreCase = false);
 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
