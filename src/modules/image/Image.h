@@ -86,6 +86,7 @@ public:
 	 * @return true if the image was successfully loaded, false otherwise.
 	 */
 	bool load(ImageType type, io::SeekableReadStream &stream, int length);
+	bool load(ImageType type, io::ReadStream &stream, int length);
 
 	/**
 	 * @brief Manually marks the image as loaded.

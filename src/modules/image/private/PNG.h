@@ -29,17 +29,17 @@ static void pngErrorHandler(png_structp png, png_const_charp msg) {
 }
 
 static void pngReadFunc(png_structp png, png_bytep data, png_size_t pnglength) {
-	io::SeekableReadStream *s = (io::SeekableReadStream *)png_get_io_ptr(png);
+	io::ReadStream *s = (io::ReadStream *)png_get_io_ptr(png);
 	s->read(data, pnglength);
 }
 
 static void pngWriteFunc(png_structp png, png_bytep data, png_size_t pnglength) {
-	io::SeekableWriteStream *s = (io::SeekableWriteStream *)png_get_io_ptr(png);
+	io::WriteStream *s = (io::WriteStream *)png_get_io_ptr(png);
 	s->write(data, pnglength);
 }
 #endif
 
-bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
+bool load(io::ReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 #if 0 // libpng reading is slower than stb_image
 // #ifdef USE_LIBPNG
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);

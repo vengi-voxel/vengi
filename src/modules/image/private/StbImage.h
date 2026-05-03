@@ -17,8 +17,29 @@ namespace image {
 namespace format {
 namespace StbImage {
 
+class StbReadStream {
+private:
+	io::ReadStream &_stream;
+public:
+	StbReadStream(io::ReadStream &stream) : _stream(stream) {
+	}
+
+	bool eos() const {
+		return _stream.eos();
+	}
+	int read(void *data, int size) {
+		return (int)_stream.read(data, size);
+	}
+	void skip(int n) {
+		for (int i = 0; i < n; ++i) {
+			uint8_t ignore;
+			_stream.readUInt8(ignore);
+		}
+	}
+};
+
 static int stream_read(void *user, char *data, int size) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	StbReadStream *stream = (StbReadStream *)user;
 	const int readSize = stream->read(data, size);
 	// prevent endless loops on errors
 	if (readSize < 0) {
@@ -28,21 +49,22 @@ static int stream_read(void *user, char *data, int size) {
 }
 
 static void stream_skip(void *user, int n) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	StbReadStream *stream = (StbReadStream *)user;
 	stream->skip(n);
 }
 
 static int stream_eos(void *user) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	StbReadStream *stream = (StbReadStream *)user;
 	return stream->eos() ? 1 : 0;
 }
 
-bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
+bool load(io::ReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 	stbi_io_callbacks clbk;
+	StbReadStream streamWrapper(stream);
 	clbk.read = stream_read;
 	clbk.skip = stream_skip;
 	clbk.eof = stream_eos;
-	*colors = stbi_load_from_callbacks(&clbk, &stream, &width, &height, &components, STBI_rgb_alpha);
+	*colors = stbi_load_from_callbacks(&clbk, &streamWrapper, &width, &height, &components, STBI_rgb_alpha);
 	// we are always using rgba
 	components = 4;
 	return true;

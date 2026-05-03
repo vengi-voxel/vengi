@@ -43,7 +43,7 @@ static void LibJPGOutputMessage(j_common_ptr cinfo) {
 }
 #endif
 
-bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
+bool load(io::ReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 #if USE_LIBJPEG
 	io::BufferedReadWriteStream buffer(stream, length);
 	if (buffer.size() != length) {

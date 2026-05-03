@@ -258,14 +258,27 @@ bool Image::load(ImageType type, io::SeekableReadStream &stream, int length) {
 		Log::debug("Failed to load image %s: buffer stream", _name.c_str());
 		return false;
 	}
-	if (_colors) {
-		core_free(_colors);
-	}
 	if (type == ImageType::Unknown) {
 		type = getImageType(_name);
 	}
 	if (type == ImageType::Unknown) {
 		type = getImageType(stream);
+	}
+	io::ReadStream &readStream = stream;
+	return load(type, readStream, length);
+}
+
+bool Image::load(ImageType type, io::ReadStream &stream, int length) {
+	if (type == ImageType::Unknown) {
+		return false;
+	}
+	if (length <= 0) {
+		_state = io::IOSTATE_FAILED;
+		Log::debug("Failed to load image %s: buffer stream", _name.c_str());
+		return false;
+	}
+	if (_colors) {
+		core_free(_colors);
 	}
 	bool success = false;
 	if (type == ImageType::JPEG) {
