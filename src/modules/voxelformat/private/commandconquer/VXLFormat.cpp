@@ -13,6 +13,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/StringSet.h"
 #include "io/Archive.h"
+#include "io/CachingArchive.h"
 #include "io/Stream.h"
 #include "io/StreamUtil.h"
 #include "palette/NormalPalette.h"
@@ -667,6 +668,14 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
+	io::CachingArchive cachingArchive(archive);
+	core::String dir = core::string::extractDir(filename);
+	if (dir.empty()) {
+		dir = "./";
+	}
+	cachingArchive.registerSearchDir(dir, "*.hva");
+	cachingArchive.registerSearchDir(dir, "*.vxl");
+
 	wrapBool(readHeader(*stream, mdl, palette))
 	wrapBool(prepareModel(mdl))
 
@@ -687,19 +696,19 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	const core::String &basename = core::string::stripExtension(filename);
 
 	const bool loadHVA = core::getVar(cfg::VoxformatVXLLoadHVA)->boolVal();
-	if (loadHVA && archive->exists(basename + ".hva")) {
+	if (loadHVA && cachingArchive.exists(basename + ".hva")) {
 		HVAFormat hva;
-		wrapBool(hva.loadHVA(basename + ".hva", archive, mdl, sceneGraph))
+		wrapBool(hva.loadHVA(cachingArchive.fullPath(basename + ".hva"), archive, mdl, sceneGraph))
 	}
 
-	if (!core::string::endsWith(filename, "barl.vxl")) {
-		if (archive->exists(basename + "barl.vxl")) {
-			wrapBool(loadGroupsPalette(basename + "barl.vxl", archive, sceneGraph, palette, ctx))
+	if (!core::string::endsWith(filename, "barl.vxl", true)) {
+		if (cachingArchive.exists(basename + "barl.vxl")) {
+			wrapBool(loadGroupsPalette(cachingArchive.fullPath(basename + "barl.vxl"), archive, sceneGraph, palette, ctx))
 		}
 	}
-	if (!core::string::endsWith(filename, "tur.vxl")) {
-		if (archive->exists(basename + "tur.vxl")) {
-			wrapBool(loadGroupsPalette(basename + "tur.vxl", archive, sceneGraph, palette, ctx))
+	if (!core::string::endsWith(filename, "tur.vxl", true)) {
+		if (cachingArchive.exists(basename + "tur.vxl")) {
+			wrapBool(loadGroupsPalette(cachingArchive.fullPath(basename + "tur.vxl"), archive, sceneGraph, palette, ctx))
 		}
 	}
 
