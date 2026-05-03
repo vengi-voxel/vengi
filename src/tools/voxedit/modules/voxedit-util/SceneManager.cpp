@@ -31,6 +31,7 @@
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
+#include "palette/Material.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteCompleter.h"
@@ -4019,6 +4020,20 @@ void SceneManager::construct() {
 				_modifierFacade.setCursorVoxel(voxel);
 			}
 		}).setHelp(_("Pick the current selected color from current cursor voxel"));
+
+	command::Command::registerCommand("pickmaterial")
+		.setHandler([&] (const command::CommandArgs& args) {
+			if (_traceViaMouse && !voxel::isAir(hitCursorVoxel().getMaterial())) {
+				const voxel::Voxel& voxel = hitCursorVoxel();
+				if (voxel.getColor() == _modifierFacade.cursorVoxel().getColor()) {
+					return;
+				}
+				palette::Palette &palette = activePalette();
+				const palette::Material &material = palette.material(voxel.getColor());
+				palette.setMaterial(_modifierFacade.cursorVoxel().getColor(), material);
+				return;
+			}
+		}).setHelp(_("Pick the current selected material from current cursor voxel"));
 
 	command::Command::registerCommand("flip")
 		.addArg({"axis", command::ArgType::String, false, "", "Axis to flip around: x|y|z"})
