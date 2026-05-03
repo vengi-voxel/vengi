@@ -2,10 +2,8 @@
  * @file
  */
 
-#include "voxelformat/FormatThumbnail.h"
-#include "color/ColorUtil.h"
 #include "GoxFormat.h"
-#include "app/Async.h"
+#include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
@@ -24,6 +22,8 @@
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/FormatThumbnail.h"
+#include "math/SDF.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -114,7 +114,8 @@ void GoxFormat::loadChunk_ValidateCRC(io::SeekableReadStream &stream) {
 	stream.readUInt32(crc);
 }
 
-bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize) {
+bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value,
+									int &valueSize) {
 	const int64_t endPos = c.streamStartPos + c.length;
 	if (stream.pos() >= endPos) {
 		return false;
@@ -187,6 +188,95 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, const io
 	return image::ImagePtr();
 }
 
+voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGBA shapeColor, const float box[4][4],
+									   const palette::Palette &palette) {
+	typedef float (*SdfFunc)(const glm::vec3 &, const glm::vec3 &);
+	SdfFunc sdf = nullptr;
+	if (shapeName == "sphere") {
+		sdf = math::sdf::goxSphere;
+	} else if (shapeName == "cube") {
+		sdf = math::sdf::goxCube;
+	} else if (shapeName == "cylinder") {
+		sdf = math::sdf::goxCylinder;
+	} else {
+		Log::warn("Unknown goxel shape: %s", shapeName.c_str());
+		return nullptr;
+	}
+
+	// Extract size (half-extents) from box column vector lengths
+	const glm::vec3 size(glm::length(glm::vec3(box[0][0], box[0][1], box[0][2])),
+						 glm::length(glm::vec3(box[1][0], box[1][1], box[1][2])),
+						 glm::length(glm::vec3(box[2][0], box[2][1], box[2][2])));
+	if (size.x < 0.5f || size.y < 0.5f || size.z < 0.5f) {
+		Log::warn("Shape box too small");
+		return nullptr;
+	}
+
+	// Build inverse transform: scale box by 1/size then invert
+	glm::mat4 mat;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			mat[i][j] = box[i][j];
+		}
+	}
+	mat[0] /= size.x;
+	mat[1] /= size.y;
+	mat[2] /= size.z;
+	const glm::mat4 invMat = glm::inverse(mat);
+
+	// Compute AABB by transforming the 8 corners of the [-1,1] cube through the box
+	glm::vec3 aabbMin(FLT_MAX);
+	glm::vec3 aabbMax(-FLT_MAX);
+	const glm::vec3 corners[8] = {{-1, -1, -1}, {1, -1, -1}, {-1, 1, -1}, {1, 1, -1},
+								  {-1, -1, 1},	{1, -1, 1},	 {-1, 1, 1},  {1, 1, 1}};
+	for (int i = 0; i < 8; i++) {
+		glm::vec4 wp = glm::vec4(0.0f);
+		for (int j = 0; j < 4; j++) {
+			wp[j] = box[0][j] * corners[i].x + box[1][j] * corners[i].y + box[2][j] * corners[i].z + box[3][j];
+		}
+		aabbMin = glm::min(aabbMin, glm::vec3(wp));
+		aabbMax = glm::max(aabbMax, glm::vec3(wp));
+	}
+
+	// Convert goxel AABB (Z-up) to vengi (Y-up) with Y negation
+	const int minX = (int)glm::floor(aabbMin.x);
+	const int minY = (int)glm::floor(aabbMin.z);
+	const int minZ = (int)glm::floor(-aabbMax.y);
+	const int maxX = (int)glm::ceil(aabbMax.x);
+	const int maxY = (int)glm::ceil(aabbMax.z);
+	const int maxZ = (int)glm::ceil(-aabbMin.y);
+
+	const voxel::Region region(minX, minY, minZ, maxX, maxY, maxZ);
+	if (!region.isValid()) {
+		Log::warn("Invalid shape region");
+		return nullptr;
+	}
+
+	palette::PaletteLookup palLookup(palette);
+	const uint8_t palIdx =
+		palLookup.findClosestIndex(flattenRGB(shapeColor.r, shapeColor.g, shapeColor.b, shapeColor.a));
+	const voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
+
+	voxel::RawVolume *vol = new voxel::RawVolume(region);
+	for (int vy = minY; vy <= maxY; vy++) {
+		for (int vz = minZ; vz <= maxZ; vz++) {
+			for (int vx = minX; vx <= maxX; vx++) {
+				// Convert vengi pos back to goxel pos for SDF evaluation
+				// goxX = vengiX, goxY = -vengiZ, goxZ = vengiY
+				const glm::vec3 goxP((float)vx + 0.5f, (float)(-vz) + 0.5f, (float)vy + 0.5f);
+				const glm::vec3 p = glm::vec3(invMat * glm::vec4(goxP, 1.0f));
+				if (sdf(p, size) >= 0.0f) {
+					vol->setVoxel(vx, vy, vz, voxel);
+				}
+			}
+		}
+	}
+
+	Log::debug("Generated shape '%s' with %i voxels", shapeName.c_str(),
+			   (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1));
+	return vol;
+}
+
 bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
 	const int size = (int)sceneGraph.size();
@@ -223,7 +313,9 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		int w = img->width();
 		int h = img->height();
 		core_assert(w == 64 && h == 64 && bpp == 4);
-		(void)bpp;(void)w;(void)h;
+		(void)bpp;
+		(void)w;
+		(void)h;
 
 		int32_t x, y, z;
 		if (stream.readInt32(x) != 0) {
@@ -258,9 +350,9 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		const voxel::Region blockRegion(x, z, vengiZ0, x + (BlockSize - 1), z + (BlockSize - 1), -y);
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
-		core::AtomicBool empty {true};
+		core::AtomicBool empty{true};
 		palette::PaletteLookup palLookup(palette);
-		auto fn = [blockVolume, rgba, &palLookup, &palette, x, y, z, vengiZ0, this, &empty](int start, int end) {
+		auto fn = [blockVolume, rgba, &palLookup, &palette, x, z, vengiZ0, this, &empty](int start, int end) {
 			voxel::RawVolume::Sampler sampler(blockVolume);
 			sampler.setPosition(x, z + start, vengiZ0);
 			for (int z1 = start; z1 < end; ++z1) {
@@ -318,6 +410,10 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(core::String::format("model %i", size));
+	// Shape layer data
+	core::String shapeName;
+	color::RGBA shapeColor(0);
+	float shapeMat[4][4] = {};
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
@@ -326,17 +422,18 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			// "visible" (bool)
 			visible = *(const bool *)dictValue;
 		} else if (!strcmp(dictKey, "mat")) {
-			// "mat" (4x4 matrix)
-			scenegraph::SceneGraphTransform transform;
+			// "mat" (4x4 matrix) - also used as shape box for shape layers
 			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
 			glm::mat4 mat(0.0f);
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
+				shapeMat[i / 4][i % 4] = mat[i / 4][i % 4];
 			}
 			// goxel Z-up to vengi Y-up: swap Y/Z, negate goxel Y to preserve handedness
 			const float tmp = mat[3][1];
 			mat[3][1] = mat[3][2];
 			mat[3][2] = -tmp;
+			scenegraph::SceneGraphTransform transform;
 			transform.setWorldMatrix(mat);
 			node.setTransform(keyFrameIdx, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
@@ -352,14 +449,29 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			node.setProperty(dictKey, core::string::toString(v));
 		} else if (!strcmp(dictKey, "marker_color")) {
 			if (valueLength == 4) {
-				node.setColor(color::RGBA((uint8_t)dictValue[0], (uint8_t)dictValue[1], (uint8_t)dictValue[2], (uint8_t)dictValue[3]));
+				node.setColor(color::RGBA((uint8_t)dictValue[0], (uint8_t)dictValue[1], (uint8_t)dictValue[2],
+										  (uint8_t)dictValue[3]));
 			}
-		} else if (!strcmp(dictKey, "color") || !strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
-			// "box" 4x4 bounding box float
-			// TODO: VOXELFORMAT: "shape" - currently unsupported
+		} else if (!strcmp(dictKey, "shape")) {
+			shapeName = dictValue;
+		} else if (!strcmp(dictKey, "color")) {
+			if (valueLength == 4) {
+				shapeColor = color::RGBA((uint8_t)dictValue[0], (uint8_t)dictValue[1], (uint8_t)dictValue[2],
+										 (uint8_t)dictValue[3]);
+			}
+		} else if (!strcmp(dictKey, "box")) {
+			// optional bounding box - not used for shape rasterization
 		} else {
 			Log::debug("LAYR chunk with key: %s and size %i", dictKey, valueLength);
 		}
+	}
+
+	// Generate voxels for shape layers (shape transform is in mat)
+	if (blockCount == 0 && !shapeName.empty()) {
+		modelVolume = loadShape(shapeName, shapeColor, shapeMat, palette);
+		// Shape position is baked into the volume; reset node transform
+		scenegraph::SceneGraphTransform transform;
+		node.setTransform(keyFrameIdx, transform);
 	}
 
 	if (modelVolume == nullptr) {
@@ -554,7 +666,7 @@ bool GoxFormat::loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableRead
 		}
 	}
 	Log::debug("Loaded LIGH chunk with pitch: %f, yaw: %f, intensity: %f, fixed: %i, ambient: %f, shadow: %f", pitch,
-		yaw, intensity, fixed, ambient, shadow);
+			   yaw, intensity, fixed, ambient, shadow);
 	return true;
 }
 
@@ -741,7 +853,7 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 }
 
 bool GoxFormat::saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
-							  const SaveContext &savectx) {
+							   const SaveContext &savectx) {
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
@@ -772,7 +884,8 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictColor(stream, "color", rgba));
 		const palette::Material &material = palette.material(i);
 		const color::RGBA emitRGBA = palette.emitColor(i);
-		const glm::vec3 &emitColor = glm::clamp(color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
+		const glm::vec3 &emitColor =
+			glm::clamp(color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
 		wrapBool(saveChunk_DictFloat(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
 		wrapBool(saveChunk_DictFloat(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
 		wrapBool(saveChunk_DictVec3(stream, "emission", emitColor))
@@ -897,7 +1010,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 					voxelutil::visitVolume(*vol, blockRegion, func, voxelutil::VisitAll());
 
 					image::Image image2("##");
-					if (!image2.loadRGBA((const uint8_t*)data, 64, 64)) {
+					if (!image2.loadRGBA((const uint8_t *)data, 64, 64)) {
 						Log::error("Could not load image data");
 						core_free(data);
 						return false;

@@ -10,6 +10,11 @@
 namespace math {
 namespace sdf {
 
+// Goxel-compatible SDFs (used by the gox format loader)
+float goxSphere(const glm::vec3 &p, const glm::vec3 &s);
+float goxCube(const glm::vec3 &p, const glm::vec3 &s);
+float goxCylinder(const glm::vec3 &p, const glm::vec3 &s);
+
 float sphere(const glm::vec3 &p, float r);
 float box(const glm::vec3 &p, const glm::vec3 &b);
 float roundBox(const glm::vec3 &p, const glm::vec3 &b, float r);

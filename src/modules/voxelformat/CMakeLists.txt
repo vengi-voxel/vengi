@@ -272,6 +272,7 @@ set(TEST_FILES
 	"tests/bug636/legs.hva"
 	"tests/chr_knight.fbx"
 	"tests/chr_knight.gox"
+	"tests/gox-shape-3-layers.gox"
 	"tests/chr_knight.qb"
 	"tests/chr_knight.qbcl"
 	"tests/chr_oldman.vengi"
@@ -451,6 +452,7 @@ set(BENCHMARK_FILES
 	tests/chr_knight.qb
 	tests/chr_knight.qbcl
 	tests/chr_knight.gox
+	tests/gox-shape-3-layers.gox
 	voxedit/chr_knight.vengi
 )
 

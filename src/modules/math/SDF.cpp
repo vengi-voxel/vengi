@@ -8,11 +8,45 @@
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <float.h>
 #include <math.h>
 
 namespace math {
 namespace sdf {
+
+float goxSphere(const glm::vec3 &p, const glm::vec3 &s) {
+	const float d = glm::length(p);
+	if (d == 0.0f) {
+		return glm::max(s.x, glm::max(s.y, s.z));
+	}
+	return d / glm::length(p / s) - d;
+}
+
+float goxCube(const glm::vec3 &p, const glm::vec3 &s) {
+	if (glm::any(glm::lessThan(p, -s)) || glm::any(glm::greaterThanEqual(p, s))) {
+		return -1.0f;
+	}
+	const glm::vec3 ap = glm::abs(p);
+	const glm::vec3 ratio = ap / s;
+	int axis = 0;
+	if (ratio.y > ratio[axis]) {
+		axis = 1;
+	}
+	if (ratio.z > ratio[axis]) {
+		axis = 2;
+	}
+	return s[axis] - ap[axis];
+}
+
+float goxCylinder(const glm::vec3 &p, const glm::vec3 &s) {
+	const glm::vec2 pxy(p.x, p.y);
+	const glm::vec2 sxy(s.x, s.y);
+	const float d = glm::length(pxy);
+	const float rz = s.z - glm::abs(p.z);
+	if (d == 0.0f) {
+		return glm::min(rz, glm::max(s.x, glm::max(s.y, s.z)));
+	}
+	return glm::min(rz, d / glm::length(pxy / sxy) - d);
+}
 
 float sphere(const glm::vec3 &p, float r) {
 	return glm::length(p) - r;
