@@ -39,6 +39,8 @@ public:
 	 * @return Stream pointer (ownership transferred to caller) or nullptr
 	 */
 	SeekableReadStream *findStream(const core::String &filename);
+	bool exists(const core::String &file) const;
+	core::String fullPath(const core::String &file) const;
 };
 
 } // namespace io

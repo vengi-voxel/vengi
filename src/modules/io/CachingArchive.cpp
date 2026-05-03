@@ -27,6 +27,20 @@ void CachingArchive::registerSearchDir(const core::String &path, const core::Str
 			   (int)files.size());
 }
 
+bool CachingArchive::exists(const core::String &file) const {
+	const core::String name = core::string::extractFilenameWithExtension(file);
+	return _nameToPath.hasKey(name.toLower());
+}
+
+core::String CachingArchive::fullPath(const core::String &file) const {
+	const core::String name = core::string::extractFilenameWithExtension(file);
+	core::String fullPath;
+	if (_nameToPath.get(name.toLower(), fullPath)) {
+		return fullPath;
+	}
+	return file;
+}
+
 SeekableReadStream *CachingArchive::findStream(const core::String &filename) {
 	const core::String sanitized = core::string::sanitizePath(filename);
 	const core::String name = core::string::extractFilenameWithExtension(sanitized);
