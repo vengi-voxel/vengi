@@ -50,6 +50,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	_uiKeyMaps.push_back("Blender");
 	_uiKeyMaps.push_back("Vengi");
 	_uiKeyMaps.push_back("Qubicle");
+	_uiKeyMaps.push_back("Goxel");
 	core_assert(KeyBindings::Max == (int)_uiKeyMaps.size());
 }
 
@@ -468,6 +469,14 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("alt+left_mouse",         "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("shift+middle_mouse",     "+camera_pan",                "editing");
+	} else if (keymap == KeyBindings::Goxel) {
+		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
+		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
+		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding(",",                      "camera_reset",               "editing");
+		_keybindingHandler.registerBinding("right_mouse",            "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("alt+right_mouse",        "+camera_rotate",             "editing");
 	} else if (keymap == KeyBindings::Magicavoxel) {
 		_keybindingHandler.registerBinding("shift+left_mouse",       "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("ctrl+shift+p",           "nodeduplicate",              "editing");

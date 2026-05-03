@@ -43,6 +43,7 @@ protected:
 		Blender = 1,
 		Vengi = 2,
 		Qubicle = 3,
+		Goxel = 4,
 		Max
 	};
 
