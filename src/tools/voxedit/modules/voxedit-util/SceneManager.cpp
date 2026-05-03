@@ -5924,6 +5924,21 @@ bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t pal
 	return true;
 }
 
+bool SceneManager::nodeResetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
+	palette::Palette &palette = node.palette();
+	palette.setMaterial(palIdx, {});
+	palette.markSave();
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
+	return true;
+}
+
+bool SceneManager::nodeResetMaterial(int nodeId, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeResetMaterial(*node, palIdx);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRemoveAlpha(int nodeId, uint8_t palIdx) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveAlpha(*node, palIdx);

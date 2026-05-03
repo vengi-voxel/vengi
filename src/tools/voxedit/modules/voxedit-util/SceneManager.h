@@ -285,6 +285,7 @@ protected:
 	 * representation of the palette)
 	 */
 	bool nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	bool nodeResetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
@@ -626,6 +627,8 @@ public:
 	 * representation of the palette)
 	 */
 	bool nodeRemoveAlpha(int nodeId, uint8_t palIdx);
+	bool nodeResetMaterial(int nodeId, uint8_t palIdx);
+
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)

@@ -94,6 +94,16 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					}
 				}
 			}
+			if (ImGui::IconMenuItem(ICON_LC_OCTAGON_MINUS, _("Reset material"))) {
+				memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "resetmaterial");
+				if (isCurrentInSelection) {
+					for (const auto &e : _selectedIndices) {
+						_sceneMgr->nodeResetMaterial(node.id(), e->key);
+					}
+				} else {
+					_sceneMgr->nodeResetMaterial(node.id(), paletteColorIdx);
+				}
+			}
 			if (singleSelection) {
 				// TODO: PALETTE: allow to extract multiple colors to a new node
 				const core::String &modelFromColorCmd = core::String::format("colortomodel %i", paletteColorIdx);
