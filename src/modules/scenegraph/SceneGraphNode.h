@@ -68,7 +68,7 @@ protected:
 
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
-	color::RGBA _color;
+	color::RGBA _color{255, 255, 255, 255};
 	glm::vec3 _pivot {0.0f};
 
 	core::UUID _uuid;
