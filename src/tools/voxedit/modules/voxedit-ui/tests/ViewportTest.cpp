@@ -24,7 +24,9 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
+		resetCamera();
+		ctx->Yield();
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
@@ -41,7 +43,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 		ctx->Yield();
 
@@ -76,7 +78,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 		ctx->Yield();
 
@@ -218,7 +220,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toggle scene mode")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -249,7 +251,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "recent colors select")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		// ensure this viewport is in edit mode
@@ -300,7 +302,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scene mode with nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "scenenodetest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -330,7 +332,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera projection combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "viewportcamproj", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -346,7 +348,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "viewportcammode", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -389,7 +391,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "screenshot menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "viewportscreenshot", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -407,7 +409,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "video recording toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "viewportvideo", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -425,7 +427,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera node frame change")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "viewportcamframe", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		ctx->Yield(2);
 

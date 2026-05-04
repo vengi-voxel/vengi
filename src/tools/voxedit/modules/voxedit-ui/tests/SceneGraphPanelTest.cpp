@@ -29,7 +29,7 @@ static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext
 void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -66,7 +66,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu bake and stamp")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphbakestamp", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -85,7 +85,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu add nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphaddnodes", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -158,7 +158,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu hide show")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphhideshowtest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -188,7 +188,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu lock unlock")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphlockunlocktest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -205,7 +205,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu center origin")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphcenterorigintest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -236,7 +236,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "toolbar show hide all")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtoolbartest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -251,7 +251,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node visible toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphvisibletoggle", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();
@@ -273,7 +273,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node locked toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphlockedtoggle", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();
@@ -290,7 +290,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "filter by name")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphfilter", voxel::Region(0, 7)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// add >10 nodes so the filter UI appears
 		for (int i = 0; i < 11; ++i) {
@@ -311,7 +311,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "filter by type")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphfiltertype", voxel::Region(0, 7)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// add >10 nodes so the filter UI appears
 		for (int i = 0; i < 11; ++i) {
@@ -333,7 +333,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop node reorder")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphdnd", voxel::Region(0, 7)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int firstNodeId = sceneGraph.activeNode();
@@ -369,7 +369,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node color editor")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "scenegraphcolor", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();

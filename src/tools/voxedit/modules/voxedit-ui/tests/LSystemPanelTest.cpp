@@ -4,6 +4,7 @@
 
 #include "../LSystemPanel.h"
 #include "../ViewMode.h"
+#include "TestUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -16,7 +17,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystem", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
 		IM_CHECK(volume != nullptr);
@@ -33,7 +34,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemtemplate", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// verify the Templates combo exists and has entries
 		if (!_templates.empty()) {
@@ -50,7 +51,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemparams", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemInputValue("Angle", 45.0f);
 		IM_CHECK_EQ((int)glm::degrees(_conf.angle), 45);
@@ -67,7 +68,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemrules", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		const int rulesBefore = (int)_conf.rules.size();
 		ctx->ItemClick("Add Rule###Add Rule");
@@ -80,7 +81,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemadopt", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemClick("Adopt Dimensions");
 		ctx->Yield();
@@ -91,7 +92,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemcancel", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemInputValue("Iterations", 5);
 		ctx->ItemClick("###Ok");
@@ -109,7 +110,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(_sceneMgr->newScene(true, "lsystemcopypaste", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// copy current rules to clipboard
 		ctx->MenuClick("Edit/Copy");

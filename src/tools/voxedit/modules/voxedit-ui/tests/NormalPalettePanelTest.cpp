@@ -36,7 +36,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	// auto normals and remove all normals afterwards
 	IM_REGISTER_TEST(engine, testCategory(), "auto normals")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// load a template model so there are voxels to calculate normals for
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
@@ -52,7 +52,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	// export normal palette
 	IM_REGISTER_TEST(engine, testCategory(), "export normal palette")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Export");
@@ -62,7 +62,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	// change longitude and latitude and verify values change
 	IM_REGISTER_TEST(engine, testCategory(), "longitude latitude")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -84,7 +84,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "flip buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -100,7 +100,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rotate buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -116,7 +116,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "direct normal input")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 

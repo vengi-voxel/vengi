@@ -29,6 +29,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "select categories")->TestFunc = [=](ImGuiTestContext *ctx) {
 		setVisible(true);
+		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->Yield();
 	};

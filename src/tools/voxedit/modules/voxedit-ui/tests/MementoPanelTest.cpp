@@ -11,7 +11,7 @@ namespace voxedit {
 
 void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "undo redo navigation")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "mementotest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		const int initialPos = mementoHandler.statePosition();
 		const int initialSize = (int)mementoHandler.stateSize();
@@ -39,7 +39,7 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "state list display")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "mementodisplay", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// create some undo states
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
@@ -71,7 +71,7 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "click history entry")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "mementoclick", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);

@@ -32,7 +32,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "create select and move")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelinemove", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -76,7 +76,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "create select and delete")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelinedelete", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -108,7 +108,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag frame pointer")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelinedrag", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -135,7 +135,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add keyframe to all nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelineaddall", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -187,7 +187,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "crop frames")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelinecrop", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		_endFrame = 200;
@@ -199,7 +199,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "play pause toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelineplaypause", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		// add a keyframe so maxFrame > 0
@@ -223,7 +223,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "switch node from timeline")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelineswitch", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -263,7 +263,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "keyframe context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "timelinecontextmenu", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 

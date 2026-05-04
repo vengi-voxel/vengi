@@ -60,7 +60,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
-		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -70,7 +70,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {
-		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -113,7 +113,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "resize node popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "resizenodetest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// open the resize popup via the scene graph context menu
 		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
@@ -183,7 +183,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "record start")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Record/Start recording");
 		ctx->Yield();
@@ -200,7 +200,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(!_sceneMgr->isRecording());
 
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// playback the recorded file
@@ -219,7 +219,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "selectmenutest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Select/None");
 		ctx->Yield();
@@ -232,14 +232,14 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file save")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Save");
 		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file load dialog")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Load");
 		ctx->Yield();
@@ -249,7 +249,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file save as")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Save as");
 		ctx->Yield();
@@ -257,7 +257,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const core::String suggestedFilename = _sceneMgr->getSuggestedFilename();
 		IM_CHECK(core::string::endsWith(suggestedFilename, "uitest.vengi"));
 		// load the saved file and verify the name is still correct
-		IM_CHECK(_sceneMgr->newScene(true, "empty", new voxel::RawVolume({0, 1})));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		io::FileDescription fd;
 		fd.set(suggestedFilename);
 		IM_CHECK(_sceneMgr->load(fd));
@@ -365,7 +365,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node settings popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "modelsettingstest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -391,7 +391,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model unreference popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, "unreferencetest", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// create a reference node
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();

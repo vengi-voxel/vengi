@@ -15,7 +15,7 @@
 namespace voxedit {
 
 static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
-	IM_CHECK_RETV(sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)), false);
+	IM_CHECK_RETV(resetScene(ctx, sceneMgr), false);
 
 	IM_CHECK_SILENT_RETV(activateViewportEditMode(ctx, panel->app()),	 false);
 
@@ -128,7 +128,6 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select color actions")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
 
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();

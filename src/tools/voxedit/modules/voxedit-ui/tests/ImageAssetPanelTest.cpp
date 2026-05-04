@@ -16,7 +16,7 @@ void ImageAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->LogInfo("No images found in asset panel");
 			return;
 		}
-		IM_CHECK(_sceneMgr->newScene(true, "image drag and drop", voxel::Region(0, 31)));
+		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
 		IM_CHECK(volume != nullptr);

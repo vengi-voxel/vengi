@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "imgui_te_context.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
@@ -15,6 +16,13 @@
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
+
+bool resetScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr) {
+	IM_CHECK_RETV(sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)), false);
+	IM_CHECK_RETV(command::executeCommands("camera_reset") == 1, false);
+	ctx->Yield();
+	return true;
+}
 
 bool newTemplateScene(ImGuiTestContext *ctx, const core::String &templateName) {
 	ImGuiWindow* window = ImGui::FindWindowByName("###app");
@@ -187,7 +195,7 @@ Viewport *viewportById(ui::IMGUIApp *app, int viewportId) {
 
 bool newFilledScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, const char *sceneName,
 					const voxel::Region &region) {
-	IM_CHECK_RETV(sceneMgr->newScene(true, sceneName, region), false);
+	IM_CHECK_RETV(resetScene(ctx, sceneMgr), false);
 	command::executeCommands("fill");
 	ctx->Yield(3);
 	return true;
