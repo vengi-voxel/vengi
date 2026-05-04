@@ -26,6 +26,10 @@ public:
 		return SceneManager::nodeColorToNewNode(nodeId, voxelColor);
 	}
 
+	int nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
+		return SceneManager::nodeColorToNewNode(nodeId, paletteIndices);
+	}
+
 	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
 		_lastFilename.set(name, desc);
 	}

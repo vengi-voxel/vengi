@@ -104,11 +104,24 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					_sceneMgr->nodeResetMaterial(node.id(), paletteColorIdx);
 				}
 			}
-			if (singleSelection) {
-				// TODO: PALETTE: allow to extract multiple colors to a new node
+			if (isCurrentInSelection) {
+				core::String modelFromColorCmd = "colortomodel ";
+				bool first = true;
+				for (const auto &e : _selectedIndices) {
+					if (!first) {
+						modelFromColorCmd.append(",");
+					}
+					modelFromColorCmd.append(core::String::format("%i", (int)e->key));
+					first = false;
+				}
+				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from selected colors"),
+										modelFromColorCmd.c_str(), true, &listener);
+			} else {
 				const core::String &modelFromColorCmd = core::String::format("colortomodel %i", paletteColorIdx);
 				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
 										&listener);
+			}
+			if (singleSelection) {
 				if (palette.hasFreeSlot()) {
 					if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
 						_sceneMgr->nodeDuplicateColor(node.id(), paletteColorIdx);

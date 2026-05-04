@@ -36,6 +36,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteCompleter.h"
 #include "palette/PaletteLookup.h"
+#include "palette/PaletteView.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -850,6 +851,50 @@ int SceneManager::nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) 
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume);
 	newNode.setName(core::String::format("color: %i", (int)voxelColor.getColor()));
+	return moveNodeToSceneGraph(newNode, node.parent());
+}
+
+int SceneManager::nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
+	if (paletteIndices.empty()) {
+		return InvalidNodeId;
+	}
+	if (paletteIndices.size() == 1u) {
+		return nodeColorToNewNode(nodeId, voxel::createVoxel(_sceneGraph.node(nodeId).palette(), paletteIndices[0]));
+	}
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
+	if (v == nullptr) {
+		return InvalidNodeId;
+	}
+	core::BitSet<palette::PaletteMaxColors> wanted;
+	core::String nameSuffix;
+	for (uint8_t idx : paletteIndices) {
+		wanted.set(idx, true);
+		if (!nameSuffix.empty()) {
+			nameSuffix.append(",");
+		}
+		nameSuffix.append(core::String::format("%i", (int)idx));
+	}
+	const voxel::Region &region = v->region();
+	voxel::RawVolume *newVolume = new voxel::RawVolume(region);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	auto func = [&](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
+		newVolume->setVoxel(x, y, z, voxel);
+		wrapper.setVoxel(x, y, z, voxel::Voxel());
+	};
+	auto condition = [&wanted](const auto &sampler) {
+		const voxel::Voxel &voxel = sampler.voxel();
+		if (voxel::isAir(voxel.getMaterial())) {
+			return false;
+		}
+		return wanted[voxel.getColor()];
+	};
+	voxelutil::visitVolumeParallel(wrapper, func, condition);
+	modified(nodeId, wrapper.dirtyRegion());
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	copyNode(node, newNode, false, true);
+	newNode.setVolume(newVolume);
+	newNode.setName(core::String::format("colors: %s", nameSuffix.c_str()));
 	return moveNodeToSceneGraph(newNode, node.parent());
 }
 
@@ -3570,19 +3615,33 @@ void SceneManager::construct() {
 		}).setHelp(_("Scale the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel")
-		.addArg({"index", command::ArgType::Int, true, "", "Palette color index"})
+		.addArg({"index", command::ArgType::String, true, "", "Palette color index, or a comma-separated list of indices"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to create"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			if (args.has("index")) {
-				const uint8_t index = (uint8_t)args.intVal("index");
-				const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-				nodeColorToNewNode(nodeId, voxel);
+				const core::String &indexArg = args.str("index");
+				core::DynamicArray<core::String> tokens;
+				core::string::splitString(indexArg, tokens, ",");
+				core::Buffer<uint8_t> indices;
+				indices.reserve(tokens.size());
+				for (const core::String &token : tokens) {
+					const core::String trimmed = core::string::trim(token);
+					if (trimmed.empty()) {
+						continue;
+					}
+					indices.push_back((uint8_t)trimmed.toInt());
+				}
+				if (indices.empty()) {
+					Log::warn("No valid palette index given for colortomodel");
+					return;
+				}
+				nodeColorToNewNode(nodeId, indices);
 			} else {
 				const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
 				nodeColorToNewNode(nodeId, voxel);
 			}
-		}).setHelp(_("Move the voxels of the current selected palette index or the given index into a new node"));
+		}).setHelp(_("Move the voxels of the current selected palette index, the given index or a comma-separated list of indices into a new node"));
 
 	command::Command::registerCommand("abortaction")
 		.setHandler([&] (const command::CommandArgs& args) {

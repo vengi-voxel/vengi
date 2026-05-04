@@ -206,6 +206,7 @@ protected:
 
 	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor);
 	int nodeColorToNewNode(const voxel::Voxel voxelColor);
+	int nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices);
 	void nodeCrop(int nodeId);
 	void nodeSplitObjects(int nodeId);
 	void nodeScaleDown(int nodeId);

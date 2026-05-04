@@ -1077,6 +1077,47 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, targetVoxel));
 }
 
+TEST_F(SceneManagerTest, testColorToNewNodeMultipleIndices) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
+
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	for (int i = 0; i < 4; ++i) {
+		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+	}
+	const voxel::Voxel voxel1(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel voxel2(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel voxel3(voxel::VoxelType::Generic, 3);
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, voxel1));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, voxel2));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, voxel3));
+
+	core::Buffer<uint8_t> indices;
+	indices.push_back(1);
+	indices.push_back(3);
+	const int newNodeId = sceneMgr()->nodeColorToNewNode(nodeId, indices);
+	EXPECT_NE(InvalidNodeId, newNodeId);
+	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
+	ASSERT_NE(nullptr, newV);
+	// indices 1 and 3 moved to new node
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*newV, voxel1));
+	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*newV, voxel2));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*newV, voxel3));
+	// removed from source, index 2 untouched
+	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, voxel1));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, voxel2));
+	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, voxel3));
+}
+
+TEST_F(SceneManagerTest, testColorToNewNodeEmptyIndices) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const core::Buffer<uint8_t> indices;
+	EXPECT_EQ(InvalidNodeId, sceneMgr()->nodeColorToNewNode(nodeId, indices));
+}
+
 TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.createVolume(voxel::Region(0, 1));
