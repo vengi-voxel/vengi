@@ -2,8 +2,9 @@ set(LIB voxelformat)
 
 set(EXTERNAL_SRCS
 	external/ogt_vox.h
+	external/cgltf.h
+	external/cgltf_write.h
 	external/tiny_obj_loader.h
-	external/tiny_gltf.h
 	external/ufbx.h external/ufbx.c
 	external/ufbx_write.h external/ufbx_write.c
 	external/libvxl.h external/libvxl.c

@@ -328,16 +328,6 @@ def update_sdl2():
         branch="SDL2"
     )
 
-def update_tinygltf():
-    update_target(
-        "tinygltf",
-        "https://github.com/syoyo/tinygltf.git",
-        [
-            (f"tiny_gltf.h", "src/modules/voxelformat/external"),
-            (f"json.hpp", "src/modules/json/private")
-        ]
-    )
-
 def update_tinyobjloader():
     update_target(
         "tinyobjloader",
@@ -508,7 +498,6 @@ def main():
         update_dearimgui_testengine,
         update_glm,
         update_sdl2,
-        update_tinygltf,
         update_tinyobjloader,
         update_simplecpp,
         update_simplexnoise,
