@@ -167,6 +167,10 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	ASSERT_TRUE(archive->exists("test_material.vox"));
+	ASSERT_NE(filename, "test_material.vox")
+		<< "This test is meant to check the material loading and saving - so we need to load the original file first "
+		   "to compare it with the saved version. If you want to test the original file, please use testLoad() instead "
+		   "of this test.";
 	SCOPED_TRACE(filename.c_str());
 	scenegraph::SceneGraph voxSceneGraph;
 	{

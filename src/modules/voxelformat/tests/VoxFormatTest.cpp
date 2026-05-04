@@ -226,4 +226,51 @@ TEST_F(VoxFormatTest, testAnimAsNodesSaveLoad) {
 	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("false");
 }
 
+TEST_F(VoxFormatTest, testPaletteRemapPreservesSemiTransparentColors) {
+	// Regression test: palettesRemap shift loop reads from index (uint8_t)-1 == 255
+	// when emptyIndex is 0, corrupting slot 0. This can cause semi-transparent colors
+	// to be lost during the closest-match remap on subsequent save/load cycles.
+	VoxFormat f;
+	palette::Palette pal;
+	// Fill all 255 slots with colors that have alpha > 0 at index 0
+	// so the shift path is triggered
+	for (int i = 0; i < 255; ++i) {
+		pal.setColor(i, color::RGBA((uint8_t)(i + 1), (uint8_t)(i * 2), (uint8_t)(i + 50), 255));
+	}
+	// Put a semi-transparent color at index 189 (the one that fails in practice)
+	const color::RGBA semiTransparent(0x2e, 0x5c, 0x6e, 0x7e);
+	pal.setColor(189, semiTransparent);
+
+	scenegraph::SceneGraph saveGraph;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		const voxel::Region region(0, 0, 0, 1, 1, 1);
+		node.createVolume(region);
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Transparent, 189));
+		node.setPalette(pal);
+		saveGraph.emplace(core::move(node));
+	}
+
+	const core::String filename = "test-semitransparent-remap.vox";
+	io::ArchivePtr archive = helper_archive();
+	ASSERT_TRUE(f.save(saveGraph, filename, archive, testSaveCtx));
+
+	scenegraph::SceneGraph loadGraph;
+	ASSERT_TRUE(f.load(filename, archive, loadGraph, testLoadCtx));
+
+	const palette::Palette &loadedPal = loadGraph.firstPalette();
+	// The semi-transparent color must be present in the loaded palette
+	bool found = false;
+	for (int i = 0; i < loadedPal.colorCount(); ++i) {
+		const color::RGBA c = loadedPal.color(i);
+		if (c.r == semiTransparent.r && c.g == semiTransparent.g &&
+			c.b == semiTransparent.b && c.a == semiTransparent.a) {
+			found = true;
+			break;
+		}
+	}
+	EXPECT_TRUE(found) << "Semi-transparent color " << color::print(semiTransparent)
+					   << " was lost during VOX save/load palette remap";
+}
+
 } // namespace voxel

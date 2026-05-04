@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "color/ColorUtil.h"
 #include "TestHelper.h"
+#include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -58,7 +58,7 @@ namespace palette {
 	return os;
 }
 
-}
+} // namespace palette
 
 namespace voxel {
 
@@ -386,16 +386,22 @@ void materialComparator(const palette::Palette &pal1, const palette::Palette &pa
 			if (pal2.color(i) != pal1.color(j)) {
 				continue;
 			}
-			foundColorMatch = true;
+			foundColorMatch = j;
 			const palette::Material &pal1Mat = pal1.material(j);
 			if (pal1Mat == pal2Mat) {
 				foundMaterialMatch = j;
 				break;
 			}
 		}
-		ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the pal1 palette: " << pal1.name();
-		ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << pal2Mat
-											<< " versus " << pal1.material(foundColorMatch) << " for entry " << i;
+		ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the pal1 palette: '" << pal1.name()
+									   << "' for color " << color::print(pal2.color(i)) << " at index " << i
+									   << " in pal2 palette: '" << pal2.name() << "' color counts: ("
+									   << pal1.colorCount() << " vs " << pal2.colorCount() << ")\n"
+									   << "Palette 1:\n"
+									   << palette::toString(pal1) << "\nPalette 2:\n"
+									   << palette::toString(pal2);
+		ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << pal2Mat << " versus "
+										  << pal1.material(foundColorMatch) << " for entry " << i;
 	}
 }
 
@@ -406,8 +412,11 @@ void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::
 		const palette::Palette &graph1Pal = graph1Node.palette();
 		const palette::Palette &graph2Pal = graph2Node.palette();
 		materialComparator(graph1Pal, graph2Pal);
-		if (testing::Test::HasFatalFailure())
+		if (testing::Test::HasFatalFailure()) {
+			ADD_FAILURE() << "Material comparison failed for node " << graph1Node.name() << " in graph1 and node "
+						  << graph2Node.name() << " in graph2";
 			break;
+		}
 	}
 }
 
