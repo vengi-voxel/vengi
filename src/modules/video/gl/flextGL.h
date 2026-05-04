@@ -8,8 +8,6 @@
     Do not edit directly, modify the template or profile and regenerate.
 */
 
-#include <KHR/khrplatform.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,21 +76,21 @@ typedef unsigned __int64 uint64_t;
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
-typedef khronos_int8_t GLbyte;
-typedef khronos_uint8_t GLubyte;
-typedef khronos_int16_t GLshort;
-typedef khronos_uint16_t GLushort;
+typedef int8_t GLbyte;
+typedef uint8_t GLubyte;
+typedef int16_t GLshort;
+typedef uint16_t GLushort;
 typedef int GLint;
 typedef unsigned int GLuint;
 typedef int GLsizei;
-typedef khronos_float_t GLfloat;
+typedef float GLfloat;
 typedef double GLdouble;
 typedef char GLchar;
-typedef khronos_uint16_t GLhalf;
-typedef khronos_intptr_t GLintptr;
-typedef khronos_ssize_t GLsizeiptr;
-typedef khronos_int64_t GLint64;
-typedef khronos_uint64_t GLuint64;
+typedef uint16_t GLhalf;
+typedef intptr_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+typedef int64_t GLint64;
+typedef uint64_t GLuint64;
 typedef struct __GLsync *GLsync;
 typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
