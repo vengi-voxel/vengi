@@ -201,6 +201,8 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	video::Id oldFB = video::currentFramebuffer();
 	int viewport[4];
 	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	int scissorRect[4];
+	video::getScissor(scissorRect[0], scissorRect[1], scissorRect[2], scissorRect[3]);
 
 	ensureUvBuffer();
 	const int passCount = activePasses();
@@ -251,14 +253,29 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	}
 
 	{
-		// Copy the scene out of the destination FBO, then combine scene+bloom
-		// back in. Sampling a color attachment while rendering into it is
-		// invalid on Vulkan; the blit path is valid on OpenGL too.
-		const int w = srcTexture->width();
-		const int h = srcTexture->height();
-		video::blitFramebuffer(oldFB, _bloom[1].handle(), video::ClearFlag::Color, w, h);
+		// Copy the scene into a scratch target, then combine scene+bloom back
+		// into the destination FBO. Sampling a color attachment while rendering
+		// into it is only valid for OpenGL. Drawing srcTexture into
+		// _bloom[1] works for offscreen FBOs and the default framebuffer
+		// (testbloom never draws the scene into the current FBO first).
+		{
+			video::ScopedShader scoped(_textureShader);
+			_bloom[1].bind(true);
+			core_assert_always(video::bindTexture(video::TextureUnit::Zero, srcTexture));
+			video::drawArrays(video::Primitive::Triangles, 6);
+		}
 		video::bindFramebuffer(oldFB);
 		video::viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+		video::scissor(scissorRect[0], scissorRect[1], scissorRect[2], scissorRect[3]);
+		if (oldFB == video::InvalidId) {
+			// bloom[1] is an FBO texture. Sampling it onto the default
+			// framebuffer needs framebufferUV() (FBO textures might be inverted)
+			// Buffer::update requires the VAO unbound.
+			_vbo.unbind();
+			_vbo.createFullscreenTextureBufferForFramebuffer(_texBufferIndex);
+			_uvBufferReady = false;
+			core_assert_always(_vbo.bind());
+		}
 		{
 			const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
 			const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
