@@ -16,7 +16,6 @@
 #include "io/Filesystem.h"
 #include "util/IncludeUtil.h"
 #include "video/Shader.h"
-#include "voxel/SurfaceExtractor.h"
 
 ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -32,6 +31,7 @@ bool ShaderTool::parse(const core::String &filename, const core::String &buffer,
 app::AppState ShaderTool::onConstruct() {
 	registerArg("--glslang").setShort("-g").setDescription("Path to glslang validator binary");
 	registerArg("--spirv").setDescription("Compile shaders to SPIR-V binary (requires glslang)");
+	registerArg("--spirv-env").setDescription("Target environment for SPIR-V (opengl or vulkan1.0)").setDefaultValue("opengl");
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("--constantstemplate").setShort("-t").setDescription("The shader constants template file");
 	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").addFlag(ARGUMENT_FLAG_MANDATORY);
@@ -139,7 +139,7 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 	}
 
 	const core::String &writePath = filesystem()->homePath();
-	const core::String tmpInput = writePath + "spirv_tmp" + shaderType;
+	const core::String tmpInput = writePath + _shaderfile + "_spirv_tmp" + shaderType;
 	const core::String tmpOutput = tmpInput + ".spv";
 	if (!io::Filesystem::sysWrite(tmpInput, processed)) {
 		Log::error("Failed to write temp shader for SPIR-V compilation");
@@ -148,7 +148,7 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 	core::DynamicArray<core::String> args;
 	args.push_back("-V");
 	args.push_back("--target-env");
-	args.push_back("opengl");
+	args.push_back(_spirvEnv);
 	args.push_back("-o");
 	args.push_back(tmpOutput);
 	args.push_back(tmpInput);
@@ -229,6 +229,7 @@ app::AppState ShaderTool::onRunning() {
 	if (!printIncludes) {
 		_glslangValidatorBin              = getArgVal("--glslang");
 		_spirv                            = hasArg("--spirv");
+		_spirvEnv                         = getArgVal("--spirv-env", "opengl");
 		_headerTemplateFile               = getArgVal("--headertemplate");
 		_sourceTemplateFile               = getArgVal("--sourcetemplate");
 		_uniformBufferTemplateFile        = getArgVal("--buffertemplate");

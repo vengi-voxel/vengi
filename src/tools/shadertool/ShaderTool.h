@@ -33,6 +33,7 @@ protected:
 	core::String _shaderfile;
 	core::String _shaderpath;
 	bool _spirv = false;
+	core::String _spirvEnv;
 	core::DynamicStringMap<int> _spirvVaryingLocations;
 	int _spirvNextVaryingLocation = 0;
 	core::List<core::String> _includes;

@@ -97,6 +97,11 @@ function(generate_shader TARGET SHADER GEN_DIR SHADERTOOL_INCLUDE_DIRS)
 			endif()
 			if (USE_SPIRV AND GLSLANG_EXECUTABLE)
 				list(APPEND _args --glslang ${GLSLANG_EXECUTABLE} --spirv)
+				if (USE_VK_RENDERER)
+					list(APPEND _args --spirv-env vulkan1.0)
+				else()
+					list(APPEND _args --spirv-env opengl)
+				endif()
 			endif()
 			add_custom_command(
 				OUTPUT ${SHADER_TARGET_HDR_FILE} ${SHADER_TARGET_CPP_FILE} ${SHADER_TARGET_CONST_FILE}
