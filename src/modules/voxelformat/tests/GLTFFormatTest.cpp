@@ -30,19 +30,19 @@ TEST_F(GLTFFormatTest, testImportMeshAnimationCompare) {
 	scenegraph::SceneGraph sceneGraph2;
 	testLoad(sceneGraph2, "chr_oldman.gltf", 10);
 
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Transform);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Pivot);
 	voxel::sceneGraphComparator(sceneGraph, sceneGraph2, flags);
 }
 
 TEST_F(GLTFFormatTest, testSaveChrKnight) {
 	GLTFFormat format;
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Translation);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Pivot);
 	testSaveMesh("chr_knight.qbcl", "chr_knight.gltf", &format, flags);
 }
 
 TEST_F(GLTFFormatTest, testSaveCC) {
 	GLTFFormat format;
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Transform);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Pivot);
 	testSaveMesh("cc.vxl", "cc.gltf", &format, flags);
 }
 

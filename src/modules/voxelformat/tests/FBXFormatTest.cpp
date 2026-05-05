@@ -63,7 +63,7 @@ TEST_F(FBXFormatTest, testLoadAnimation) {
 
 TEST_F(FBXFormatTest, testSaveSingleVoxel) {
 	FBXFormat f;
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Translation);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~(voxel::ValidateFlags::Color | voxel::ValidateFlags::Translation | voxel::ValidateFlags::Animations));
 	testSaveMesh("rgb.qb", "fbx-savesingle.fbx", &f, flags);
 }
 

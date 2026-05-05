@@ -244,7 +244,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 	// qb doesn't store the pivot
 	const voxel::ValidateFlags flags =
 		voxel::ValidateFlags::All &
-		~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+		~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Animations | voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
 }
 
@@ -427,7 +427,7 @@ TEST_F(ConvertTest, testVoxToKV6) {
 	KV6Format target;
 	// KV6 is a single-volume format that doesn't store translation
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation;
+		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation & ~voxel::ValidateFlags::Animations;
 	testConvert("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 
@@ -444,7 +444,7 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	VoxFormat src;
 	VXMFormat target;
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation);
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Animations);
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 

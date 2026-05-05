@@ -37,6 +37,8 @@
 
 namespace voxelformat {
 
+static const float GLTF_FPS = 24.0f;
+
 MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_material *mat,
 										 const core::String &filename, const io::ArchivePtr &archive) const {
 	core::String name = mat->name ? mat->name : "default";
@@ -249,6 +251,24 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 				meshName = "mesh";
 			}
 			nodeId = voxelizeMesh(meshName, sceneGraph, core::move(mesh), parent, false);
+			if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
+				scenegraph::SceneGraphNode &sgNode = sceneGraph.node(nodeId);
+				scenegraph::SceneGraphTransform transform;
+				if (node->has_matrix) {
+					transform.setLocalMatrix(glm::make_mat4(node->matrix));
+				} else {
+					if (node->has_translation) {
+						transform.setLocalTranslation(glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
+					}
+					if (node->has_rotation) {
+						transform.setLocalOrientation(glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
+					}
+					if (node->has_scale) {
+						transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
+					}
+				}
+				sgNode.setTransform(0, transform);
+			}
 		}
 	} else {
 		// No mesh - just recurse into children with the same parent
@@ -303,8 +323,7 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 			for (cgltf_size ki = 0; ki < input->count; ++ki) {
 				float time = 0.0f;
 				cgltf_accessor_read_float(input, ki, &time, 1);
-				// assume 30 fps
-				scenegraph::FrameIndex frameIdx = (scenegraph::FrameIndex)(time * 30.0f + 0.5f);
+				scenegraph::FrameIndex frameIdx = (scenegraph::FrameIndex)(time * GLTF_FPS + 0.5f);
 				scenegraph::KeyFrameIndex kfIdx = sgNode.addKeyFrame(frameIdx);
 				if (kfIdx == InvalidKeyFrame) {
 					kfIdx = sgNode.keyFrameForFrame(frameIdx);
@@ -531,18 +550,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		const palette::Palette &palette = graphNode.palette();
-		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 
 		float *vBuf = (float *)(buffer + info.vertexOffset);
 		const int stride = info.floatsPerVertex;
 		const voxel::UVArray &uvs = mesh->getUVVector();
+		const glm::vec3 pivotOffset = glm::vec3(mesh->getOffset()) - meshExt.pivot * meshExt.size;
 		for (int j = 0; j < info.vertexCount; ++j) {
-			glm::vec3 pos;
+			glm::vec3 pos = vertices[j].position;
 			if (meshExt.applyTransform) {
-				pos = transform.apply(vertices[j].position, meshExt.pivot * meshExt.size);
-			} else {
-				pos = vertices[j].position;
+				pos += pivotOffset;
 			}
 			pos *= scale;
 			vBuf[j * stride + 0] = pos.x;
@@ -741,6 +757,18 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		// Node
 		nodes[mi].mesh = &gltfMeshes[mi];
 		nodes[mi].name = (char *)meshes[info.meshExtIdx].name.c_str();
+		{
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshes[info.meshExtIdx].nodeId);
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(0);
+			glm::mat4x4 nodeLocalMatrix = transform.localMatrix();
+			if (nodeLocalMatrix != glm::mat4(1.0f)) {
+				nodes[mi].has_matrix = true;
+				const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
+				for (int k = 0; k < 16; ++k) {
+					nodes[mi].matrix[k] = pSource[k];
+				}
+			}
+		}
 		sceneNodes[mi] = &nodes[mi];
 	}
 
@@ -882,7 +910,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			size_t bufOffset = 0;
 			int bvI = 0, accI = 0, sampI = 0, chanI = 0;
-			const float fps = 30.0f;
 
 			for (int ai = 0; ai < animCount; ++ai) {
 				const core::String &animName = uniqueAnims[ai];
@@ -899,7 +926,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					size_t timeOffset = bufOffset;
 					float *timePtr = (float *)(animBuffer + bufOffset);
 					for (int k = 0; k < n; ++k) {
-						timePtr[k] = (float)kfs[k].frameIdx / fps;
+						timePtr[k] = (float)kfs[k].frameIdx / GLTF_FPS;
 					}
 					bufOffset += n * sizeof(float);
 
