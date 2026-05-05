@@ -475,6 +475,13 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
 			voxel::orderPaletteComparator(node1.palette(), node2.palette(), maxDelta);
 		}
+
+		if ((flags & ValidateFlags::SceneGraphModelsParent) == ValidateFlags::SceneGraphModelsParent) {
+			const scenegraph::SceneGraphNode &parent1 = graph1.node(node1.parent());
+			const scenegraph::SceneGraphNode &parent2 = graph2.node(node2.parent());
+			ASSERT_EQ(parent1.name(), parent2.name()) << "Parent name differs for node " << node1.name() << " and node " << node2.name();
+			ASSERT_EQ(parent1.type(), parent2.type()) << "Parent type differs for node " << node1.name() << " and node " << node2.name();
+		}
 		// it's intended that includingRegion is false here!
 		// Use resolveVolume to handle ModelReference nodes that don't have their own volume
 		const voxel::RawVolume *v1 = graph1.resolveVolume(node1);

@@ -15,7 +15,7 @@ TEST_F(AniVoxelFormatTest, testLoadRobo) {
 
 TEST_F(AniVoxelFormatTest, testSaveLoad) {
 	AniVoxelFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testSaveLoadVoxel("testsaveload.voxa", &f, 0, 10, flags);
 }
 

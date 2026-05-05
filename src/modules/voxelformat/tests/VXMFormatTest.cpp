@@ -36,7 +36,8 @@ TEST_F(VXMFormatTest, testSaveSmallVolume) {
 
 TEST_F(VXMFormatTest, testSaveLoadVoxel) {
 	VXMFormat f;
-	testSaveLoadVoxel("testSaveLoadVoxel.vxm", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("testSaveLoadVoxel.vxm", &f, 0, 1, flags);
 }
 
 } // namespace voxelformat

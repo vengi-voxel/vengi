@@ -127,7 +127,7 @@ TEST_F(ConvertTest, testQbToQbt) {
 	QBFormat src;
 	QBTFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbt", target, flags);
 }
 
@@ -192,7 +192,7 @@ TEST_F(ConvertTest, testQBCLToQb) {
 	// qb doesn't store a pivot
 	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
 	const voxel::ValidateFlags flags =
-		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette)) |
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
 		voxel::ValidateFlags::PaletteColorOrderDiffers;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
@@ -203,7 +203,7 @@ TEST_F(ConvertTest, testQbtToQb) {
 	// qb doesn't store a pivot
 	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
 	const voxel::ValidateFlags flags =
-		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette)) |
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
 		voxel::ValidateFlags::PaletteColorOrderDiffers;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
 }
@@ -224,7 +224,7 @@ TEST_F(ConvertTest, testQbToVXR) {
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
@@ -325,7 +325,7 @@ TEST_F(ConvertTest, testVXLToVXR) {
 	// the palette of vxm contains one transparent entry that is used to indicate empty voxels - thus the palette has
 	// one entry less
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 

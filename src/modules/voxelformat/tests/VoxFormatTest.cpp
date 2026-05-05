@@ -151,7 +151,8 @@ TEST_F(VoxFormatTest, testLoadRGBSmallSaveLoad) {
 
 TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 	VoxFormat f;
-	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f, 0, 1, flags);
 }
 
 TEST_F(VoxFormatTest, testSaveMultipleModels) {

@@ -17,7 +17,7 @@ TEST_F(QBCLFormatTest, testLoad) {
 
 TEST_F(QBCLFormatTest, testSaveSmallVoxel) {
 	QBCLFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbcl", &f, 0, 1, flags);
 }
 
@@ -42,7 +42,8 @@ TEST_F(QBCLFormatTest, testLoadCrabby) {
 	testLoad(qbclsceneGraph, "crabby.qbcl", 2);
 	scenegraph::SceneGraph voxsceneGraph;
 	testLoad(voxsceneGraph, "crabby.vox", 2);
-	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
+	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, flags);
 }
 
 }

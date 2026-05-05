@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 
 namespace voxelformat {
@@ -29,12 +30,14 @@ TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 
 TEST_F(QBTFormatTest, testSaveSmallVoxel) {
 	QBTFormat f;
-	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f);
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f, 0, 1, flags);
 }
 
 TEST_F(QBTFormatTest, testSaveMultipleModels) {
 	QBTFormat f;
-	testSaveMultipleModels("qubicle-multiplemodelsavetest.qbt", &f);
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveMultipleModels("qubicle-multiplemodelsavetest.qbt", &f, flags);
 }
 
 TEST_F(QBTFormatTest, testSave) {

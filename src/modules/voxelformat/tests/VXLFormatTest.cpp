@@ -146,8 +146,8 @@ TEST_F(VXLFormatTest, DISABLED_testLegsVXLAndHVAIssue636) {
 
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {
 	VXLFormat f;
-	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f, 0, 1,
-					  voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f, 0, 1, flags);
 }
 
 } // namespace voxelformat

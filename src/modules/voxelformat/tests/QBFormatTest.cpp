@@ -34,7 +34,7 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 
 TEST_F(QBFormatTest, testSaveSmallVoxel) {
 	QBFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
 	testSaveLoadVoxel("qubicle-smallvolumesavetest.qb", &f, 0, 1, flags);
 }
 

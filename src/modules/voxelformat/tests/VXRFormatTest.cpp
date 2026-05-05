@@ -24,17 +24,20 @@ TEST_F(VXRFormatTest, testSaveSmallVoxel) {
 	testSave("sandbox-smallvolumesavetest0.vxm", &vxm, pal,
 			 voxel::ValidateFlags::AllPaletteMinMatchingColors & ~(voxel::ValidateFlags::Pivot));
 	VXRFormat f;
-	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxr", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxr", &f, 0, 1, flags);
 }
 
 TEST_F(VXRFormatTest, testSaveSmallVolume) {
 	VXRFormat f;
-	testSaveSmallVolume("testSaveSmallVolume.vxr", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveSmallVolume("testSaveSmallVolume.vxr", &f, flags);
 }
 
 TEST_F(VXRFormatTest, testSaveLoadVoxel) {
 	VXRFormat f;
-	testSaveLoadVoxel("testSaveLoadVoxel.vxr", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	testSaveLoadVoxel("testSaveLoadVoxel.vxr", &f, 0, 1, flags);
 }
 
 TEST_F(VXRFormatTest, testGiantDinosaur) {

@@ -276,14 +276,24 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 				sgNode.setTransform(0, transform);
 			}
 		}
-	} else {
-		// No mesh - just recurse into children with the same parent
-		nodeId = parent;
+	} else if (node->children_count > 0) {
+		// Non-mesh node with children - create a group node to preserve hierarchy
+		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+		if (node->name) {
+			groupNode.setName(node->name);
+		}
+		nodeId = sceneGraph.emplace(core::move(groupNode), parent);
+		if (nodeId == InvalidNodeId) {
+			nodeId = parent;
+		}
 		for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
 			addNode_r(data, node->children[ci], filename, archive, sceneGraph, nodeId, nodeMap);
 		}
 		nodeMap.put(node, nodeId);
 		return nodeId;
+	} else {
+		nodeMap.put(node, parent);
+		return parent;
 	}
 
 	for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
@@ -469,9 +479,18 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	core::Map<const cgltf_node *, int> nodeMap(64);
 
 	const cgltf_scene *scene = data->scene ? data->scene : &data->scenes[0];
-	for (cgltf_size ni = 0; ni < scene->nodes_count; ++ni) {
-		const cgltf_node *node = scene->nodes[ni];
-		addNode_r(data, node, filename, archive, sceneGraph, 0, nodeMap);
+	// If there's a single scene-level node without a mesh, it's just a wrapper - skip it
+	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
+		const cgltf_node *wrapper = scene->nodes[0];
+		nodeMap.put(wrapper, 0);
+		for (cgltf_size ci = 0; ci < wrapper->children_count; ++ci) {
+			addNode_r(data, wrapper->children[ci], filename, archive, sceneGraph, 0, nodeMap);
+		}
+	} else {
+		for (cgltf_size ni = 0; ni < scene->nodes_count; ++ni) {
+			const cgltf_node *node = scene->nodes[ni];
+			addNode_r(data, node, filename, archive, sceneGraph, 0, nodeMap);
+		}
 	}
 
 	if (data->animations_count > 0) {
@@ -612,10 +631,33 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	int maxAttrsPerMesh = 3; // POSITION, COLOR_0, TEXCOORD_0
 	cgltf_attribute *attributes = (cgltf_attribute *)core_malloc(totalMeshes * maxAttrsPerMesh * sizeof(cgltf_attribute));
 	core_memset(attributes, 0, totalMeshes * maxAttrsPerMesh * sizeof(cgltf_attribute));
-	cgltf_node *nodes = (cgltf_node *)core_malloc(totalMeshes * sizeof(cgltf_node));
-	core_memset(nodes, 0, totalMeshes * sizeof(cgltf_node));
-	cgltf_node **sceneNodes = (cgltf_node **)core_malloc(totalMeshes * sizeof(cgltf_node *));
-	core_memset(sceneNodes, 0, totalMeshes * sizeof(cgltf_node *));
+
+	// Build hierarchy: find group nodes that need to be created as GLTF nodes
+	// Map scene graph node ID -> GLTF node index for mesh nodes
+	core::Map<int, int> sgNodeToGltfIdx(totalMeshes * 2);
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		sgNodeToGltfIdx.put(meshes[meshInfos[mi].meshExtIdx].nodeId, mi);
+	}
+
+	// Collect group nodes (non-mesh parents that aren't root)
+	core::DynamicArray<int> groupNodeIds; // scene graph node IDs of group nodes we need to create
+	core::Map<int, int> groupSgNodeToGltfIdx(16);
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
+		int parentId = sceneGraph.node(sgNodeId).parent();
+		while (parentId != 0 && !sgNodeToGltfIdx.hasKey(parentId) && !groupSgNodeToGltfIdx.hasKey(parentId)) {
+			groupNodeIds.push_back(parentId);
+			groupSgNodeToGltfIdx.put(parentId, totalMeshes + (int)groupNodeIds.size() - 1);
+			parentId = sceneGraph.node(parentId).parent();
+		}
+	}
+
+	int totalNodes = totalMeshes + (int)groupNodeIds.size();
+	cgltf_node *nodes = (cgltf_node *)core_malloc(totalNodes * sizeof(cgltf_node));
+	core_memset(nodes, 0, totalNodes * sizeof(cgltf_node));
+	// Allocate children pointer arrays - worst case each node could have totalNodes children
+	cgltf_node ***childrenArrays = (cgltf_node ***)core_malloc(totalNodes * sizeof(cgltf_node **));
+	core_memset(childrenArrays, 0, totalNodes * sizeof(cgltf_node **));
 
 	// Texture/material/image arrays for textured meshes
 	cgltf_image *gltfImages = nullptr;
@@ -775,14 +817,96 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				}
 			}
 		}
-		sceneNodes[mi] = &nodes[mi];
+	}
+
+	// Set up group nodes
+	for (int gi = 0; gi < (int)groupNodeIds.size(); ++gi) {
+		int gltfIdx = totalMeshes + gi;
+		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(groupNodeIds[gi]);
+		nodes[gltfIdx].name = (char *)sgNode.name().c_str();
+	}
+
+	// Build children arrays
+	// Count children per GLTF node by walking the scene graph's child lists
+	core::DynamicArray<int> childCounts;
+	childCounts.resize(totalNodes);
+
+	// Helper to get the GLTF index for a scene graph node ID (-1 if not mapped)
+	auto getGltfIdx = [&sgNodeToGltfIdx, &groupSgNodeToGltfIdx](int sgId) -> int {
+		auto iter = sgNodeToGltfIdx.find(sgId);
+		if (iter != sgNodeToGltfIdx.end()) {
+			return iter->second;
+		}
+		auto giter = groupSgNodeToGltfIdx.find(sgId);
+		if (giter != groupSgNodeToGltfIdx.end()) {
+			return giter->second;
+		}
+		return -1;
+	};
+
+	// Count root-level nodes and children per parent
+	int rootChildCount = 0;
+	for (int ni = 0; ni < totalNodes; ++ni) {
+		int sgNodeId;
+		if (ni < totalMeshes) {
+			sgNodeId = meshes[meshInfos[ni].meshExtIdx].nodeId;
+		} else {
+			sgNodeId = groupNodeIds[ni - totalMeshes];
+		}
+		int parentSgId = sceneGraph.node(sgNodeId).parent();
+		int parentGltfIdx = (parentSgId == 0) ? -1 : getGltfIdx(parentSgId);
+		if (parentGltfIdx >= 0) {
+			++childCounts[parentGltfIdx];
+		} else {
+			++rootChildCount;
+		}
+	}
+
+	// Allocate children arrays
+	for (int ni = 0; ni < totalNodes; ++ni) {
+		if (childCounts[ni] > 0) {
+			childrenArrays[ni] = (cgltf_node **)core_malloc(childCounts[ni] * sizeof(cgltf_node *));
+			nodes[ni].children = childrenArrays[ni];
+		}
+	}
+	cgltf_node **sceneNodes = (cgltf_node **)core_malloc(rootChildCount * sizeof(cgltf_node *));
+
+	// Assign children in scene graph order by walking each parent's children list
+	// First, handle root's children
+	int rootIdx = 0;
+	const scenegraph::SceneGraphNode &rootNode = sceneGraph.node(0);
+	for (int childSgId : rootNode.children()) {
+		int gltfIdx = getGltfIdx(childSgId);
+		if (gltfIdx >= 0) {
+			sceneNodes[rootIdx++] = &nodes[gltfIdx];
+		}
+	}
+
+	// Then handle each GLTF node's children
+	for (int ni = 0; ni < totalNodes; ++ni) {
+		int sgNodeId;
+		if (ni < totalMeshes) {
+			sgNodeId = meshes[meshInfos[ni].meshExtIdx].nodeId;
+		} else {
+			sgNodeId = groupNodeIds[ni - totalMeshes];
+		}
+		if (childCounts[ni] == 0) {
+			continue;
+		}
+		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
+		for (int childSgId : sgNode.children()) {
+			int childGltfIdx = getGltfIdx(childSgId);
+			if (childGltfIdx >= 0) {
+				nodes[ni].children[nodes[ni].children_count++] = &nodes[childGltfIdx];
+			}
+		}
 	}
 
 	// Scene
 	cgltf_scene gltfScene;
 	core_memset(&gltfScene, 0, sizeof(gltfScene));
 	gltfScene.nodes = sceneNodes;
-	gltfScene.nodes_count = totalMeshes;
+	gltfScene.nodes_count = rootIdx;
 
 	// Data
 	cgltf_data gltfData;
@@ -798,7 +922,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	gltfData.buffers = &gltfBuffer;
 	gltfData.buffers_count = 1;
 	gltfData.nodes = nodes;
-	gltfData.nodes_count = totalMeshes;
+	gltfData.nodes_count = totalNodes;
 	gltfData.scenes = &gltfScene;
 	gltfData.scenes_count = 1;
 	gltfData.scene = &gltfScene;
@@ -1157,6 +1281,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		core_free(gltfMeshes);
 		core_free(primitives);
 		core_free(attributes);
+		for (int i = 0; i < totalNodes; ++i) {
+			core_free(childrenArrays[i]);
+		}
+		core_free(childrenArrays);
 		core_free(nodes);
 		core_free(sceneNodes);
 		core_free(gltfAnimations);
@@ -1224,6 +1352,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_free(gltfMeshes);
 	core_free(primitives);
 	core_free(attributes);
+	for (int i = 0; i < totalNodes; ++i) {
+		core_free(childrenArrays[i]);
+	}
+	core_free(childrenArrays);
 	core_free(nodes);
 	core_free(sceneNodes);
 	core_free(gltfAnimations);
