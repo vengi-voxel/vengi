@@ -81,6 +81,16 @@ public:
 
 	bool load(const core::String& name, const core::String& buffer, ShaderType shaderType);
 
+	/**
+	 * @brief Load a SPIR-V binary into the shader. Falls back to GLSL if the extension is not available.
+	 * @param name Human-readable shader name for logging.
+	 * @param spirv Pointer to the SPIR-V binary data.
+	 * @param spirvSize Size in bytes of the SPIR-V binary.
+	 * @param shaderType The shader stage type.
+	 * @return @c true on success, @c false if SPIR-V loading is not supported or failed.
+	 */
+	bool loadSPIRV(const core::String& name, const uint8_t* spirv, size_t spirvSize, ShaderType shaderType);
+
 	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
 
 	Id handle() const;

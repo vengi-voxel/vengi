@@ -2324,6 +2324,46 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 	return false;
 }
 
+bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
+	video_trace_scoped(LoadShaderSPIRV);
+	(void)shaderType;
+	if (id == InvalidId) {
+		return false;
+	}
+	if (!FLEXT_ARB_gl_spirv) {
+		Log::debug("GL_ARB_gl_spirv not available");
+		return false;
+	}
+	const GLuint lid = (GLuint)id;
+	video::checkError();
+	glShaderBinary(1, &lid, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, spirv, (GLsizei)spirvSize);
+	if (video::checkError(false)) {
+		Log::warn("glShaderBinary failed for %s", name.c_str());
+		return false;
+	}
+	glSpecializeShaderARB(lid, "main", 0, nullptr, nullptr);
+	if (video::checkError(false)) {
+		Log::warn("glSpecializeShaderARB failed for %s", name.c_str());
+		return false;
+	}
+	GLint status = 0;
+	glGetShaderiv(lid, GL_COMPILE_STATUS, &status);
+	video::checkError();
+	if (status == GL_TRUE) {
+		Log::debug("SPIR-V shader loaded successfully: %s", name.c_str());
+		return true;
+	}
+	GLint infoLogLength = 0;
+	glGetShaderiv(lid, GL_INFO_LOG_LENGTH, &infoLogLength);
+	if (infoLogLength > 1) {
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
+		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+		Log::warn("SPIR-V specialization failed for %s: %s", name.c_str(), strInfoLog);
+		delete[] strInfoLog;
+	}
+	return false;
+}
+
 bool linkComputeShader(Id program, Id comp, const core::String &name) {
 	video_trace_scoped(LinkComputeShader);
 	const GLuint lid = (GLuint)program;

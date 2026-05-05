@@ -13,6 +13,24 @@
 
 namespace shadertool {
 
+static core::String spirvToString(const core::DynamicArray<uint32_t>& binary) {
+	if (binary.empty()) {
+		return "";
+	}
+	core::String s;
+	s.reserve(binary.size() * 12);
+	for (size_t i = 0; i < binary.size(); ++i) {
+		if (i > 0) {
+			s += ",";
+			if (i % 8 == 0) {
+				s += "\n\t";
+			}
+		}
+		s += core::String::format("0x%08xu", binary[i]);
+	}
+	return s;
+}
+
 static const char *convertToTexUnit(int unit) {
 	switch (unit) {
 	default:
@@ -47,7 +65,8 @@ static core::String maxStringLength(const core::String& input) {
 bool generateSrc(const core::String& templateHeader, const core::String& templateSource, const core::String& templateConstantsHeader,
 		const core::String& templateUniformBuffer, const ShaderStruct& shaderStruct,
 		const io::FilesystemPtr& filesystem, const core::String& namespaceSrc, const core::String& sourceDirectory, const core::String& shaderDirectory, const core::String& postfix,
-		const core::String& vertexBuffer, const core::String& geometryBuffer, const core::String& fragmentBuffer, const core::String& computeBuffer) {
+		const core::String& vertexBuffer, const core::String& geometryBuffer, const core::String& fragmentBuffer, const core::String& computeBuffer,
+		const SPIRVData& spirvData) {
 	core::String srcHeader(templateHeader);
 	core::String srcSource(templateSource);
 	core::String srcConstantsHeader(templateConstantsHeader);
@@ -878,6 +897,99 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	srcSource = core::string::replaceAll(srcSource, "$computeshaderbuffer$", maxStringLength(computeBuffer));
 	srcSource = core::string::replaceAll(srcSource, "$fragmentshaderbuffer$", maxStringLength(fragmentBuffer));
 	srcSource = core::string::replaceAll(srcSource, "$geometryshaderbuffer$", maxStringLength(geometryBuffer));
+
+	// SPIR-V binary data
+	const core::String vertSpirv = spirvToString(spirvData.vertex);
+	const core::String fragSpirv = spirvToString(spirvData.fragment);
+	const core::String geomSpirv = spirvToString(spirvData.geometry);
+	const core::String compSpirv = spirvToString(spirvData.compute);
+	const bool hasSpirv = !vertSpirv.empty() || !compSpirv.empty();
+
+	core::String spirvBlock;
+	if (hasSpirv) {
+		spirvBlock += "#ifdef USE_SPIRV\n";
+		if (!vertSpirv.empty()) {
+			spirvBlock += "static const uint32_t VertexShaderSPIRV[] = {\n\t";
+			spirvBlock += vertSpirv;
+			spirvBlock += "\n};\n";
+		}
+		if (!fragSpirv.empty()) {
+			spirvBlock += "static const uint32_t FragmentShaderSPIRV[] = {\n\t";
+			spirvBlock += fragSpirv;
+			spirvBlock += "\n};\n";
+		}
+		if (!geomSpirv.empty()) {
+			spirvBlock += "static const uint32_t GeometryShaderSPIRV[] = {\n\t";
+			spirvBlock += geomSpirv;
+			spirvBlock += "\n};\n";
+		}
+		if (!compSpirv.empty()) {
+			spirvBlock += "static const uint32_t ComputeShaderSPIRV[] = {\n\t";
+			spirvBlock += compSpirv;
+			spirvBlock += "\n};\n";
+		}
+		spirvBlock += "#endif\n";
+	}
+	srcSource = core::string::replaceAll(srcSource, "$spirvdata$", spirvBlock);
+
+	// Generate SPIR-V setup code
+	core::String spirvSetup;
+	if (hasSpirv) {
+		spirvSetup += "#ifdef USE_SPIRV\n";
+		spirvSetup += "\tdo {\n";
+		if (!compSpirv.empty()) {
+			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += shaderDirectory + shaderStruct.filename;
+			spirvSetup += "\", (const uint8_t*)priv";
+			spirvSetup += filename;
+			spirvSetup += "::ComputeShaderSPIRV, sizeof(priv";
+			spirvSetup += filename;
+			spirvSetup += "::ComputeShaderSPIRV), video::ShaderType::Compute)) {\n";
+			spirvSetup += "\t\t\tbreak;\n";
+			spirvSetup += "\t\t}\n";
+		} else {
+			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += shaderDirectory + shaderStruct.filename;
+			spirvSetup += "\", (const uint8_t*)priv";
+			spirvSetup += filename;
+			spirvSetup += "::VertexShaderSPIRV, sizeof(priv";
+			spirvSetup += filename;
+			spirvSetup += "::VertexShaderSPIRV), video::ShaderType::Vertex)) {\n";
+			spirvSetup += "\t\t\tbreak;\n";
+			spirvSetup += "\t\t}\n";
+			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += shaderDirectory + shaderStruct.filename;
+			spirvSetup += "\", (const uint8_t*)priv";
+			spirvSetup += filename;
+			spirvSetup += "::FragmentShaderSPIRV, sizeof(priv";
+			spirvSetup += filename;
+			spirvSetup += "::FragmentShaderSPIRV), video::ShaderType::Fragment)) {\n";
+			spirvSetup += "\t\t\tbreak;\n";
+			spirvSetup += "\t\t}\n";
+			if (!geomSpirv.empty()) {
+				spirvSetup += "\t\tloadSPIRV(\"";
+				spirvSetup += shaderDirectory + shaderStruct.filename;
+				spirvSetup += "\", (const uint8_t*)priv";
+				spirvSetup += filename;
+				spirvSetup += "::GeometryShaderSPIRV, sizeof(priv";
+				spirvSetup += filename;
+				spirvSetup += "::GeometryShaderSPIRV), video::ShaderType::Geometry);\n";
+			}
+		}
+		spirvSetup += "\t\t_name = \"";
+		spirvSetup += shaderDirectory + shaderStruct.filename;
+		spirvSetup += "\";\n";
+		spirvSetup += "\t\tif (init()) {\n";
+		spirvSetup += "\t\t\treturn true;\n";
+		spirvSetup += "\t\t}\n";
+		spirvSetup += "\t} while (false);\n";
+		spirvSetup += "\t// SPIR-V failed, reset and fall back to GLSL\n";
+		spirvSetup += "\tfor (auto& s : _shader) {\n";
+		spirvSetup += "\t\tvideo::deleteShader(s);\n";
+		spirvSetup += "\t}\n";
+		spirvSetup += "#endif\n";
+	}
+	srcSource = core::string::replaceAll(srcSource, "$spirvsetup$", spirvSetup);
 
 	Log::debug("Generate shader bindings for %s", shaderStruct.name.c_str());
 	const core::String targetHeaderFile = sourceDirectory + filename + ".h" + postfix;

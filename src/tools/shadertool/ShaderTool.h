@@ -6,6 +6,8 @@
 
 #include "app/CommandlineApp.h"
 #include "Types.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/List.h"
 #include "core/Pair.h"
 
@@ -30,11 +32,15 @@ protected:
 	core::String _constantsTemplateFile;
 	core::String _shaderfile;
 	core::String _shaderpath;
+	bool _spirv = false;
+	core::DynamicStringMap<int> _spirvVaryingLocations;
+	int _spirvNextVaryingLocation = 0;
 	core::List<core::String> _includes;
 	core::List<core::String> _includeDirs;
 
 	bool parse(const core::String& filename, const core::String& src, bool vertex);
 	void validate(const core::String& name);
+	bool compileSPIRV(const core::String& source, const core::String& shaderType, core::DynamicArray<uint32_t>& spirvBinary);
 	core::Pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();
 public:

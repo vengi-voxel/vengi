@@ -6,6 +6,7 @@
 #include "core/GLM.h"
 #include "video/UniformBuffer.h"
 #include "core/Log.h"
+#include "engine-config.h"
 
 $includes$
 
@@ -18,6 +19,8 @@ static const char* ComputeShaderBuffer = $computeshaderbuffer$;
 static const char* FragmentShaderBuffer = $fragmentshaderbuffer$;
 static const char* GeometryShaderBuffer = $geometryshaderbuffer$;
 
+$spirvdata$
+
 }
 
 $name$::~$name$() {
@@ -29,6 +32,7 @@ bool $name$::setup() {
 	if (_initialized) {
 		return true;
 	}
+$spirvsetup$
 	const bool vertex = load("$filename$", priv$name$::VertexShaderBuffer, video::ShaderType::Vertex);
 	if (!vertex) {
 		const bool compute = load("$filename$", priv$name$::ComputeShaderBuffer, video::ShaderType::Compute);

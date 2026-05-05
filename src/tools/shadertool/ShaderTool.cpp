@@ -12,6 +12,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/File.h"
 #include "io/Filesystem.h"
 #include "util/IncludeUtil.h"
 #include "video/Shader.h"
@@ -30,6 +31,7 @@ bool ShaderTool::parse(const core::String &filename, const core::String &buffer,
 
 app::AppState ShaderTool::onConstruct() {
 	registerArg("--glslang").setShort("-g").setDescription("Path to glslang validator binary");
+	registerArg("--spirv").setDescription("Compile shaders to SPIR-V binary (requires glslang)");
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("--constantstemplate").setShort("-t").setDescription("The shader constants template file");
 	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").addFlag(ARGUMENT_FLAG_MANDATORY);
@@ -66,6 +68,112 @@ void ShaderTool::validate(const core::String &name) {
 		Log::debug("%s %s%s", _glslangValidatorBin.c_str(), writePath.c_str(), name.c_str());
 		_exitCode = exitCode;
 	}
+}
+
+bool ShaderTool::compileSPIRV(const core::String& source, const core::String& shaderType, core::DynamicArray<uint32_t>& spirvBinary) {
+	if (_glslangValidatorBin.empty()) {
+		Log::error("glslang binary is required for SPIR-V compilation");
+		return false;
+	}
+
+	// Inject layout(location=N) on bare in/out varyings that lack it.
+	// Use variable name as key to ensure matching locations across stages.
+	core::String processed;
+	{
+		core::DynamicArray<core::String> lines;
+		core::string::splitString(source, lines, "\n");
+		for (const core::String &line : lines) {
+			core::String trimmed = core::string::trim(line);
+			// Strip interpolation qualifiers for detection
+			core::String check = trimmed;
+			if (core::string::startsWith(check, "flat ")) {
+				check = check.substr(5);
+			} else if (core::string::startsWith(check, "smooth ")) {
+				check = check.substr(7);
+			} else if (core::string::startsWith(check, "noperspective ")) {
+				check = check.substr(14);
+			}
+			// Match lines like "in type name;" or "out type name;" without layout
+			if ((core::string::startsWith(check, "in ") || core::string::startsWith(check, "out ")) &&
+				!core::string::contains(line, "layout") &&
+				core::string::contains(trimmed, ";")) {
+				// Extract variable name to get a consistent location from the map
+				// Format: "[flat ]in/out type name;" - extract name
+				core::String varName;
+				size_t semi = check.find(";");
+				if (semi != core::String::npos) {
+					// find last space before semicolon
+					size_t lastSpace = core::String::npos;
+					for (size_t si = semi; si > 0; --si) {
+						if (check[si - 1] == ' ') {
+							lastSpace = si - 1;
+							break;
+						}
+					}
+					if (lastSpace != core::String::npos) {
+						varName = check.substr(lastSpace + 1, semi - lastSpace - 1);
+					}
+				}
+				int loc = -1;
+				if (!varName.empty()) {
+					auto it = _spirvVaryingLocations.find(varName);
+					if (it != _spirvVaryingLocations.end()) {
+						loc = it->second;
+					} else {
+						loc = _spirvNextVaryingLocation++;
+						_spirvVaryingLocations.put(varName, loc);
+					}
+				} else {
+					loc = _spirvNextVaryingLocation++;
+				}
+				processed += "layout(location = ";
+				processed += core::string::toString(loc);
+				processed += ") ";
+				processed += line;
+				processed += "\n";
+			} else {
+				processed += line;
+				processed += "\n";
+			}
+		}
+	}
+
+	const core::String &writePath = filesystem()->homePath();
+	const core::String tmpInput = writePath + "spirv_tmp" + shaderType;
+	const core::String tmpOutput = tmpInput + ".spv";
+	if (!io::Filesystem::sysWrite(tmpInput, processed)) {
+		Log::error("Failed to write temp shader for SPIR-V compilation");
+		return false;
+	}
+	core::DynamicArray<core::String> args;
+	args.push_back("-V");
+	args.push_back("--target-env");
+	args.push_back("opengl");
+	args.push_back("-o");
+	args.push_back(tmpOutput);
+	args.push_back(tmpInput);
+	io::BufferedReadWriteStream stream(4096);
+	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, &stream);
+	if (exitCode != 0) {
+		stream.seek(0);
+		core::String output;
+		stream.readString(stream.size(), output);
+		Log::error("SPIR-V compilation failed for %s: %s", shaderType.c_str(), output.c_str());
+		return false;
+	}
+	io::File spvFile(tmpOutput, io::FileMode::SysRead);
+	spvFile.open(io::FileMode::SysRead);
+	void *buf = nullptr;
+	const int bytesRead = spvFile.read(&buf);
+	if (bytesRead <= 0 || buf == nullptr) {
+		Log::error("Failed to read SPIR-V output %s", tmpOutput.c_str());
+		return false;
+	}
+	const size_t wordCount = (size_t)bytesRead / sizeof(uint32_t);
+	spirvBinary.resize(wordCount);
+	core_memcpy(spirvBinary.data(), buf, wordCount * sizeof(uint32_t));
+	delete[] (uint8_t*)buf;
+	return true;
 }
 
 bool ShaderTool::printInfo() {
@@ -120,6 +228,7 @@ app::AppState ShaderTool::onRunning() {
 	const bool printIncludes              = hasArg("--printincludes");
 	if (!printIncludes) {
 		_glslangValidatorBin              = getArgVal("--glslang");
+		_spirv                            = hasArg("--spirv");
 		_headerTemplateFile               = getArgVal("--headertemplate");
 		_sourceTemplateFile               = getArgVal("--sourcetemplate");
 		_uniformBufferTemplateFile        = getArgVal("--buffertemplate");
@@ -188,9 +297,20 @@ app::AppState ShaderTool::onRunning() {
 			return app::AppState::Cleanup;
 		}
 
+		shadertool::SPIRVData spirvData;
+		if (_spirv) {
+			_spirvVaryingLocations.clear();
+			_spirvNextVaryingLocation = 0;
+			const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
+			if (!compileSPIRV(computeSource, ".comp", spirvData.compute)) {
+				Log::warn("SPIR-V compilation failed for compute shader %s, continuing without SPIR-V", _shaderfile.c_str());
+				spirvData = shadertool::SPIRVData();
+			}
+		}
+
 		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer, _shaderStruct,
 				filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
-				"", "", "", computeBuffer.first)) {
+				"", "", "", computeBuffer.first, spirvData)) {
 			Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 			_exitCode = 1;
 			return app::AppState::Cleanup;
@@ -255,9 +375,36 @@ app::AppState ShaderTool::onRunning() {
 		return app::AppState::Cleanup;
 	}
 
+	shadertool::SPIRVData spirvData;
+	if (_spirv) {
+		_spirvVaryingLocations.clear();
+		_spirvNextVaryingLocation = 0;
+		const core::String& vertSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
+		const core::String& fragSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
+		bool spirvOk = true;
+		if (!compileSPIRV(vertSource, ".vert", spirvData.vertex)) {
+			Log::warn("SPIR-V compilation failed for vertex shader %s", _shaderfile.c_str());
+			spirvOk = false;
+		}
+		if (spirvOk && !compileSPIRV(fragSource, ".frag", spirvData.fragment)) {
+			Log::warn("SPIR-V compilation failed for fragment shader %s", _shaderfile.c_str());
+			spirvOk = false;
+		}
+		if (spirvOk && !geometryBuffer.first.empty()) {
+			const core::String& geomSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, true);
+			if (!compileSPIRV(geomSource, ".geom", spirvData.geometry)) {
+				Log::warn("SPIR-V compilation failed for geometry shader %s", _shaderfile.c_str());
+				spirvOk = false;
+			}
+		}
+		if (!spirvOk) {
+			spirvData = shadertool::SPIRVData();
+		}
+	}
+
 	if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer,
 			_shaderStruct, filesystem(), _namespaceSrc, _sourceDirectory, _shaderDirectory, _postfix,
-			vertexBuffer.first, geometryBuffer.first, fragmentBuffer.first, computeBuffer.first)) {
+			vertexBuffer.first, geometryBuffer.first, fragmentBuffer.first, computeBuffer.first, spirvData)) {
 		Log::error("Failed to generate shader source for %s", _shaderfile.c_str());
 		_exitCode = 1;
 		return app::AppState::Cleanup;

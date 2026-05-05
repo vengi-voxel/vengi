@@ -149,6 +149,28 @@ bool Shader::load(const core::String& name, const core::String& buffer, ShaderTy
 	return true;
 }
 
+bool Shader::loadSPIRV(const core::String& name, const uint8_t* spirv, size_t spirvSize, ShaderType shaderType) {
+	if (spirv == nullptr || spirvSize == 0) {
+		return false;
+	}
+	_name = name;
+
+	Id id = getShader(shaderType);
+	if (id == InvalidId) {
+		id = video::genShader(shaderType);
+		if (id == InvalidId) {
+			Log::error("Failed to generate shader handle for %s\n", name.c_str());
+			return false;
+		}
+		_shader[(int)shaderType] = id;
+	}
+	if (!video::loadShaderSPIRV(id, shaderType, spirv, spirvSize, _name)) {
+		_shader[(int)shaderType] = InvalidId;
+		return false;
+	}
+	return true;
+}
+
 bool Shader::loadFromFile(const core::String& filename, ShaderType shaderType) {
 	const core::String& buffer = io::filesystem()->load(filename);
 	if (buffer.empty()) {

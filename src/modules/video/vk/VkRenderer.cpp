@@ -349,6 +349,10 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 	return false;
 }
 
+bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
+	return false;
+}
+
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
 	return false;
 }

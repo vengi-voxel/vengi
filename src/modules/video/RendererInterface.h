@@ -499,6 +499,21 @@ void enableDebug(DebugSeverity severity);
 bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name = "unknown-shader");
 
 /**
+ * @brief Load a SPIR-V binary into a shader object via GL_ARB_gl_spirv.
+ *
+ * Uses glShaderBinary + glSpecializeShaderARB. Returns false if the extension
+ * is not available or loading fails.
+ *
+ * @param id Shader object id (must be valid).
+ * @param shaderType Type of shader (vertex/fragment/geometry/compute).
+ * @param spirv Pointer to the SPIR-V binary data.
+ * @param spirvSize Size in bytes of the SPIR-V binary.
+ * @param name Optional human-readable name for logging.
+ * @return @c true if the SPIR-V binary was loaded and specialized successfully.
+ */
+bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name = "unknown-shader");
+
+/**
  * @brief Link a shader program from attached shader objects.
  *
  * Attaches the provided shader objects, links the program and detaches the
