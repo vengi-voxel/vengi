@@ -103,6 +103,8 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		_sceneGraph.emplace(core::move(node));
 	}
 
+	_sceneGraph.updateTransforms();
+
 	const voxel::Region sceneRegion = _sceneGraph.sceneRegion();
 	voxelrender::configureCamera(camera(), sceneRegion, voxelrender::SceneCameraMode::Free, 500.0f);
 	camera().update(0.0);
