@@ -208,6 +208,7 @@ constexpr const char *PathTracerVoxelEdge = "pathtracer_voxeledge";
 constexpr const char *PathTracerBloom = "pathtracer_bloom";
 constexpr const char *PathTracerAtmosphere = "pathtracer_atmosphere";
 constexpr const char *PathTracerRenderScale = "pathtracer_renderscale";
+constexpr const char *PathTracerRayQuery = "pathtracer_rayquery";
 
 constexpr const char *GameModeClipping = "g_clipping";
 constexpr const char *GameModeApplyGravity = "g_applygravity";

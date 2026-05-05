@@ -121,3 +121,13 @@ layout(std430, binding = 0) buffer DynamicBuffer {
 ```
 
 The generated struct uses `[1]` as a placeholder, and you allocate the actual size when creating the buffer.
+
+## SPIR-V / Vulkan
+
+When `USE_SPIRV` is on, shadertool runs `glslangValidator` and embeds SPIR-V in the generated shader C++.
+
+For `--spirv-env vulkan*` it sets `video::Shader::vulkan` before `getSource()`. That skips GL_ARB extension preambles and defines `CLIPDEPTHZ0TO1` and `CLIPORIGINUPPERLEFT` so baked SPIR-V matches the runtime clip-control flags (`Camera` / `Shadow` ZO projections, upper-left origin). Vertex clip Z is **not** remapped in shadertool; the CPU projection matrices already use the [0, 1] depth range.
+
+`#extension GL_ARB_*` lines that still appear in shader file bodies (for example compute tests) are dropped for the Vulkan SPIR-V compile only.
+
+OpenGL keeps separate binding namespaces for uniform blocks and texture/image units, so `layout(binding = 0)` may legally appear on both a UBO and a sampler in the same shader. Vulkan puts every descriptor in one set-binding space, so those numbers must be unique across UBOs, samplers, images, and SSBOs within a program. Prefer giving UBOs bindings after the samplers (for example samplers `0..N-1`, UBO at `N`).

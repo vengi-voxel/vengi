@@ -17,6 +17,9 @@ class ShaderTest : public app::AbstractTest {};
 class IndirectComputeTest : public AbstractGLTest {};
 
 TEST_F(IndirectComputeTest, testDispatchOffsetAndEmptyQueue) {
+#ifdef USE_VK_RENDERER
+	GTEST_SKIP() << "Vulkan has no runtime GLSL compiler for ad-hoc compute shaders";
+#endif
 	if (!hasFeature(Feature::ComputeShaders)) {
 		GTEST_SKIP() << "Compute shaders required";
 	}
@@ -80,12 +83,15 @@ TEST_F(ShaderTest, testStripUnsupportedEsslRemovesNoperspective) {
 TEST_F(ShaderTest, testGetSourceEsslStripsNoperspective) {
 	const bool savedEssl = Shader::essl;
 	const int savedVersion = Shader::glslVersion;
+	const bool savedVulkan = Shader::vulkan;
 	Shader::essl = true;
 	Shader::glslVersion = 300;
+	Shader::vulkan = false;
 	Shader s;
 	const core::String out = s.getSource(ShaderType::Vertex, "noperspective out float v_edge;\nflat out float v_keep;\n", true);
 	Shader::essl = savedEssl;
 	Shader::glslVersion = savedVersion;
+	Shader::vulkan = savedVulkan;
 	EXPECT_TRUE(core::string::contains(out, "#version 300 es")) << out.c_str();
 	EXPECT_FALSE(core::string::contains(out, "noperspective")) << out.c_str();
 	EXPECT_TRUE(core::string::contains(out, "out float v_edge")) << out.c_str();
@@ -95,12 +101,15 @@ TEST_F(ShaderTest, testGetSourceEsslStripsNoperspective) {
 TEST_F(ShaderTest, testGetSourceDesktopKeepsNoperspective) {
 	const bool savedEssl = Shader::essl;
 	const int savedVersion = Shader::glslVersion;
+	const bool savedVulkan = Shader::vulkan;
 	Shader::essl = false;
 	Shader::glslVersion = 430;
+	Shader::vulkan = false;
 	Shader s;
 	const core::String out = s.getSource(ShaderType::Vertex, "noperspective out float v_edge;\n", true);
 	Shader::essl = savedEssl;
 	Shader::glslVersion = savedVersion;
+	Shader::vulkan = savedVulkan;
 	EXPECT_TRUE(core::string::contains(out, "noperspective")) << out.c_str();
 	EXPECT_FALSE(core::string::contains(out, " es\n")) << out.c_str();
 }
@@ -108,14 +117,63 @@ TEST_F(ShaderTest, testGetSourceDesktopKeepsNoperspective) {
 TEST_F(ShaderTest, testGetSourcePragmaConstantBecomesDefine) {
 	const bool savedEssl = Shader::essl;
 	const int savedVersion = Shader::glslVersion;
+	const bool savedVulkan = Shader::vulkan;
 	Shader::essl = false;
 	Shader::glslVersion = 430;
+	Shader::vulkan = false;
 	Shader s;
 	const core::String out = s.getSource(ShaderType::Vertex, "#pragma constant FilterSize 3\n", true);
 	Shader::essl = savedEssl;
 	Shader::glslVersion = savedVersion;
+	Shader::vulkan = savedVulkan;
 	EXPECT_TRUE(core::string::contains(out, "#define FilterSize 3")) << out.c_str();
 	EXPECT_FALSE(core::string::contains(out, "#pragma constant")) << out.c_str();
+}
+
+TEST_F(ShaderTest, testGetSourceDesktopComputeEmitsArbExtensions) {
+	const bool savedEssl = Shader::essl;
+	const int savedVersion = Shader::glslVersion;
+	const bool savedVulkan = Shader::vulkan;
+	RenderState &rs = renderState();
+	const bool savedOrigin = rs.clipOriginLowerLeft;
+	const bool savedDepth = rs.clipDepthZeroToOne;
+	Shader::essl = false;
+	Shader::glslVersion = 430;
+	Shader::vulkan = false;
+	// Classic GL clip state: lower-left origin, depth in [-1, 1].
+	rs.clipOriginLowerLeft = true;
+	rs.clipDepthZeroToOne = false;
+	Shader s;
+	const core::String out = s.getSource(ShaderType::Compute, "void main() {}\n", true);
+	Shader::essl = savedEssl;
+	Shader::glslVersion = savedVersion;
+	Shader::vulkan = savedVulkan;
+	rs.clipOriginLowerLeft = savedOrigin;
+	rs.clipDepthZeroToOne = savedDepth;
+	EXPECT_TRUE(core::string::contains(out, "GL_ARB_compute_shader")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "#define CLIPDEPTHZ0TO1")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "#define CLIPORIGINUPPERLEFT")) << out.c_str();
+}
+
+TEST_F(ShaderTest, testGetSourceVulkanBakesClipMacrosAndOmitsArb) {
+	const bool savedEssl = Shader::essl;
+	const int savedVersion = Shader::glslVersion;
+	const bool savedVulkan = Shader::vulkan;
+	Shader::essl = false;
+	Shader::glslVersion = 430;
+	Shader::vulkan = true;
+	Shader s;
+	const core::String vert = s.getSource(ShaderType::Vertex, "void main() { gl_Position = vec4(0.0); }\n", true);
+	const core::String comp = s.getSource(ShaderType::Compute, "void main() {}\n", true);
+	Shader::essl = savedEssl;
+	Shader::glslVersion = savedVersion;
+	Shader::vulkan = savedVulkan;
+	EXPECT_TRUE(core::string::contains(vert, "CLIPDEPTHZ0TO1")) << vert.c_str();
+	EXPECT_TRUE(core::string::contains(vert, "CLIPORIGINUPPERLEFT")) << vert.c_str();
+	EXPECT_FALSE(core::string::contains(vert, "GL_ARB_")) << vert.c_str();
+	EXPECT_FALSE(core::string::contains(vert, "_vengi_orig_main")) << vert.c_str();
+	EXPECT_FALSE(core::string::contains(comp, "GL_ARB_")) << comp.c_str();
+	EXPECT_TRUE(core::string::contains(comp, "CLIPDEPTHZ0TO1")) << comp.c_str();
 }
 
 TEST_F(ShaderTest, testGetSourceEsslIntegerSamplerPrecision) {

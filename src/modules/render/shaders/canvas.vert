@@ -8,7 +8,7 @@ out vec2 v_screen;
 flat out vec4 v_clip;
 void main() {
     gl_Position = vec4(a_pos, 0.0, 1.0);
-#ifdef CLIPORIGINUPPERLEFT
+#if defined(CLIPORIGINUPPERLEFT) && !defined(VULKAN)
     gl_Position.y = -gl_Position.y;
 #endif
     v_uv = a_texcoord;

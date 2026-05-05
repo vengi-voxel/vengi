@@ -88,6 +88,11 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 		return false;
 	}
 
+	const bool needsRayQuery = core::string::contains(source, "GL_EXT_ray_query") ||
+							   core::string::contains(source, "accelerationStructureEXT");
+	const bool needsDrawParams = core::string::startsWith(_spirvEnv, "vulkan") &&
+								 (core::string::contains(source, "VENGIDRAWID") ||
+								  core::string::contains(source, "gl_DrawIDARB"));
 	// Inject layout(location=N) on bare in/out varyings that lack it.
 	// Use variable name as key to ensure matching locations across stages.
 	core::String processed;
@@ -96,6 +101,22 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 		core::string::splitString(source, lines, "\n");
 		for (const core::String &line : lines) {
 			core::String trimmed = core::string::trim(line);
+			if (core::string::startsWith(trimmed, "#version ")) {
+				if (needsRayQuery || needsDrawParams) {
+					processed += "#version 460\n";
+				} else {
+					processed += line;
+					processed += "\n";
+				}
+				continue;
+			}
+			// Shader file bodies may still enable GL_ARB_* (compute tests).
+			// Keep GL_ARB_shader_draw_parameters because Vulkan GLSL 430 needs it for gl_DrawIDARB.
+			if (core::string::startsWith(_spirvEnv, "vulkan") &&
+				core::string::contains(trimmed, "#extension GL_ARB_") &&
+				!core::string::contains(trimmed, "GL_ARB_shader_draw_parameters")) {
+				continue;
+			}
 			// Strip interpolation qualifiers for detection
 			core::String check = trimmed;
 			if (core::string::startsWith(check, "flat ")) {
@@ -160,7 +181,11 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 	core::DynamicArray<core::String> args;
 	args.push_back("-V");
 	args.push_back("--target-env");
-	args.push_back(_spirvEnv);
+	const core::String targetEnv =
+		core::string::startsWith(_spirvEnv, "vulkan")
+			? (needsRayQuery ? "vulkan1.2" : (needsDrawParams ? "vulkan1.1" : _spirvEnv))
+			: _spirvEnv;
+	args.push_back(targetEnv);
 	args.push_back("-o");
 	args.push_back(tmpOutput);
 	args.push_back(tmpInput);
@@ -314,11 +339,16 @@ app::AppState ShaderTool::onRunning() {
 		if (_spirv) {
 			_spirvVaryingLocations.clear();
 			_spirvNextVaryingLocation = 0;
+			const bool savedVulkan = video::Shader::vulkan;
+			if (core::string::startsWith(_spirvEnv, "vulkan")) {
+				video::Shader::vulkan = true;
+			}
 			const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
 			if (!compileSPIRV(computeSource, ".comp", spirvData.compute)) {
 				Log::warn("SPIR-V compilation failed for compute shader %s, continuing without SPIR-V", _shaderfile.c_str());
 				spirvData = shadertool::SPIRVData();
 			}
+			video::Shader::vulkan = savedVulkan;
 		}
 
 		if (!shadertool::generateSrc(templateShaderHeader, templateShaderSource, templateConstantsBuffer, templateUniformBuffer, _shaderStruct,
@@ -392,6 +422,10 @@ app::AppState ShaderTool::onRunning() {
 	if (_spirv) {
 		_spirvVaryingLocations.clear();
 		_spirvNextVaryingLocation = 0;
+		const bool savedVulkan = video::Shader::vulkan;
+		if (core::string::startsWith(_spirvEnv, "vulkan")) {
+			video::Shader::vulkan = true;
+		}
 		const core::String& vertSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
 		const core::String& fragSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
 		bool spirvOk = true;
@@ -410,6 +444,7 @@ app::AppState ShaderTool::onRunning() {
 				spirvOk = false;
 			}
 		}
+		video::Shader::vulkan = savedVulkan;
 		if (!spirvOk) {
 			spirvData = shadertool::SPIRVData();
 		}
@@ -428,12 +463,15 @@ app::AppState ShaderTool::onRunning() {
 
 	const bool savedEssl = video::Shader::essl;
 	const int savedVersion = video::Shader::glslVersion;
+	const bool savedVulkan = video::Shader::vulkan;
 	video::Shader::essl = true;
 	video::Shader::glslVersion = 300;
+	video::Shader::vulkan = false;
 	const core::String esslFragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
 	const core::String esslVertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
 	video::Shader::essl = savedEssl;
 	video::Shader::glslVersion = savedVersion;
+	video::Shader::vulkan = savedVulkan;
 
 	if (changedDir) {
 		fs->sysPopDir();
@@ -446,6 +484,13 @@ app::AppState ShaderTool::onRunning() {
 	fs->homeWrite(finalVertexFilename, vertexSource);
 	if (!geometrySource.empty()) {
 		fs->homeWrite(finalGeometryFilename, geometrySource);
+	}
+
+	const bool vulkanRayQueryOnly =
+		core::string::contains(fragmentBuffer.first, "GL_EXT_ray_query") ||
+		core::string::contains(fragmentBuffer.first, "accelerationStructureEXT");
+	if (vulkanRayQueryOnly) {
+		return app::AppState::Cleanup;
 	}
 
 	Log::debug("Validating shader file %s", _shaderfile.c_str());

@@ -83,23 +83,29 @@ bool RenderContext::init(const glm::ivec2 &size) {
 	multisampleSamples = multisampleSamplesVar->intVal();
 
 	if (enableMultisampling && multisampleSamples > 1) {
-		// Clamp to supported range
+		// Clamp to supported range. Vulkan currently reports MaxSamples=0 until MSAA FBOs are implemented.
 		const int maxSamples = video::limiti(video::Limit::MaxSamples);
 		Log::debug("Hardware supports up to %d multisampling samples, requested: %d", maxSamples, multisampleSamples);
-		multisampleSamples = glm::clamp(multisampleSamples, 2, maxSamples);
+		if (maxSamples < 2) {
+			Log::debug("Multisampling unavailable (MaxSamples=%d), falling back to single sample", maxSamples);
+			enableMultisampling = false;
+			multisampleSamples = 0;
+		} else {
+			multisampleSamples = glm::clamp(multisampleSamples, 2, maxSamples);
 
-		// Ensure it's a power of 2 (common requirement)
-		if ((multisampleSamples & (multisampleSamples - 1)) != 0) {
-			// Find the next lower power of 2
-			int powerOf2 = 2;
-			while (powerOf2 * 2 <= multisampleSamples) {
-				powerOf2 *= 2;
+			// Ensure it's a power of 2 (common requirement)
+			if ((multisampleSamples & (multisampleSamples - 1)) != 0) {
+				// Find the next lower power of 2
+				int powerOf2 = 2;
+				while (powerOf2 * 2 <= multisampleSamples) {
+					powerOf2 *= 2;
+				}
+				multisampleSamples = powerOf2;
+				Log::debug("Adjusted to power of 2: %d samples", multisampleSamples);
 			}
-			multisampleSamples = powerOf2;
-			Log::debug("Adjusted to power of 2: %d samples", multisampleSamples);
-		}
 
-		Log::debug("Initializing volume renderer framebuffer with %d multisampling samples", multisampleSamples);
+			Log::debug("Initializing volume renderer framebuffer with %d multisampling samples", multisampleSamples);
+		}
 	} else {
 		enableMultisampling = false;
 		multisampleSamples = 0;

@@ -1,7 +1,7 @@
 in vec2 v_texcoord;
 
 layout(binding = 0) uniform sampler2D u_texture;
-layout(std140, binding = 0) uniform u_filter {
+layout(std140, binding = 1) uniform u_filter {
 	vec2 u_resolution;
 	float u_exposure;
 };

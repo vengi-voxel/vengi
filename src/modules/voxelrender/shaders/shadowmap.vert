@@ -4,12 +4,18 @@
 
 layout(location = 0) in vec3 a_pos;
 
+#if defined(VULKAN) && !defined(USEDRAWPARAMETERS)
+#define USEDRAWPARAMETERS 1
+#endif
+
 #ifdef USEDRAWPARAMETERS
 #include "_drawinstance.glsl"
-#if __VERSION__ >= 460
-#define VENGIBASEINSTANCE gl_BaseInstance
+#ifdef VULKAN
+#define VENGIINSTANCEINDEX gl_InstanceIndex
+#elif __VERSION__ >= 460
+#define VENGIINSTANCEINDEX (gl_BaseInstance + gl_InstanceID)
 #else
-#define VENGIBASEINSTANCE gl_BaseInstanceARB
+#define VENGIINSTANCEINDEX (gl_BaseInstanceARB + gl_InstanceID)
 #endif
 #endif
 
@@ -22,7 +28,7 @@ layout(std140, binding = 0) uniform u_block {
 void main() {
 	mat4 model = u_model;
 #ifdef USEDRAWPARAMETERS
-	if (u_usedrawinstances > 0) model = u_drawinstances[VENGIBASEINSTANCE + gl_InstanceID].model;
+	if (u_usedrawinstances > 0) model = u_drawinstances[VENGIINSTANCEINDEX].model;
 #endif
 	vec4 worldpos = model * vec4(a_pos, 1.0f);
 	gl_Position = u_lightviewprojection * worldpos;

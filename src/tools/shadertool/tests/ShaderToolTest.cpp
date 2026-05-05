@@ -199,13 +199,51 @@ TEST_F(ShaderToolTest, testParsePragmaDirectives) {
 TEST_F(ShaderToolTest, testEsslFinalizeStripsNoperspective) {
 	const bool savedEssl = video::Shader::essl;
 	const int savedVersion = video::Shader::glslVersion;
+	const bool savedVulkan = video::Shader::vulkan;
 	video::Shader::essl = true;
 	video::Shader::glslVersion = 300;
+	video::Shader::vulkan = false;
 	video::Shader shader;
 	const core::String out = shader.getSource(video::ShaderType::Vertex, "noperspective out float v_edge;\n", true);
 	video::Shader::essl = savedEssl;
 	video::Shader::glslVersion = savedVersion;
+	video::Shader::vulkan = savedVulkan;
 	EXPECT_TRUE(core::string::contains(out, "#version 300 es")) << out.c_str();
 	EXPECT_FALSE(core::string::contains(out, "noperspective")) << out.c_str();
 	EXPECT_TRUE(core::string::contains(out, "out float v_edge")) << out.c_str();
+}
+
+TEST_F(ShaderToolTest, testVulkanFinalizeBakesClipMacros) {
+	const bool savedEssl = video::Shader::essl;
+	const int savedVersion = video::Shader::glslVersion;
+	const bool savedVulkan = video::Shader::vulkan;
+	video::Shader::essl = false;
+	video::Shader::glslVersion = 430;
+	video::Shader::vulkan = true;
+	video::Shader shader;
+	const core::String out = shader.getSource(video::ShaderType::Vertex, "void main() { gl_Position = vec4(0.0); }\n", true);
+	video::Shader::essl = savedEssl;
+	video::Shader::glslVersion = savedVersion;
+	video::Shader::vulkan = savedVulkan;
+	EXPECT_TRUE(core::string::contains(out, "CLIPDEPTHZ0TO1")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "CLIPORIGINUPPERLEFT")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "GL_ARB_")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "_vengi_orig_main")) << out.c_str();
+}
+
+TEST_F(ShaderToolTest, testParseAccelerationStructure) {
+	ShaderStruct shaderStruct;
+	const core::String buffer =
+		"layout(binding = 7) uniform accelerationStructureEXT u_tlas;\n"
+		"layout(location = 0) out vec4 o_color;\n"
+		"void main() { o_color = vec4(1.0); }\n";
+	ASSERT_TRUE(shadertool::parse("**unittest**", shaderStruct, "rayquery.frag", buffer, false));
+	ASSERT_EQ(1u, shaderStruct.uniforms.size());
+	const Variable &v = shaderStruct.uniforms.begin()->value;
+	EXPECT_EQ("u_tlas", v.name);
+	EXPECT_EQ(Variable::ACCELERATION_STRUCTURE, v.type);
+	EXPECT_TRUE(v.isAccelerationStructure());
+	auto layoutIt = shaderStruct.layouts.find("u_tlas");
+	ASSERT_NE(shaderStruct.layouts.end(), layoutIt);
+	EXPECT_EQ(7, layoutIt->second.binding);
 }

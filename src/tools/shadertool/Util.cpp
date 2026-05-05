@@ -37,7 +37,8 @@ static const Types cTypes[] = {
 	{ Variable::SAMPLERCUBEMAP,       -1, -1, 1, "video::TextureUnit", Value, "samplerCube" },
 	{ Variable::SAMPLER1DSHADOW,      -1, -1, 1, "video::TextureUnit", Value, "sampler1DShadow" },
 	{ Variable::SAMPLER2DSHADOW,      -1, -1, 1, "video::TextureUnit", Value, "sampler2DShadow" },
-	{ Variable::USAMPLER3D,           -1, -1, 1, "video::TextureUnit", Value, "usampler3D" }
+	{ Variable::USAMPLER3D,           -1, -1, 1, "video::TextureUnit", Value, "usampler3D" },
+	{ Variable::ACCELERATION_STRUCTURE, -1, -1, 1, "uint32_t",        Value, "accelerationStructureEXT" }
 };
 static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
 

@@ -161,4 +161,22 @@ TEST_F(RendererTest, testIntegerTextureConfigForcesNearest) {
 	EXPECT_FLOAT_EQ(0.0f, cfg.maxAnisotropy());
 }
 
+TEST_F(RendererStreamingTest, testAABBAccelerationStructureLifecycle) {
+	if (!hasFeature(Feature::RayQuery)) {
+		GTEST_SKIP() << "Feature::RayQuery unavailable on this Vulkan device";
+	}
+	const AccelerationStructureAABB aabbs[2] = {
+		{0.0f, 0.0f, 0.0f, 8.0f, 8.0f, 8.0f},
+		{16.0f, 0.0f, 0.0f, 24.0f, 8.0f, 8.0f},
+	};
+	Id as = createAABBAccelerationStructure(aabbs, 2u);
+	ASSERT_NE(InvalidId, as);
+	EXPECT_TRUE(bindAccelerationStructure(as, 8u));
+	EXPECT_FALSE(bindAccelerationStructure(as, 8u));
+	EXPECT_TRUE(bindAccelerationStructure(InvalidId, 8u));
+	deleteAccelerationStructure(as);
+	EXPECT_EQ(InvalidId, as);
+	EXPECT_EQ(InvalidId, createAABBAccelerationStructure(nullptr, 0u));
+}
+
 } // namespace video

@@ -8,11 +8,13 @@ set(SRCS
 )
 set(SHADERS
 	voxelpathtracer
+	voxelpathtracer_rt
 	voxelpathtracer_display
 	voxelpathtracer_bloom
 )
 set(SRCS_SHADERS
 	shaders/_dda.glsl
+	shaders/_pathtracermain.glsl
 	shaders/_pathtracershared.glsl
 	shaders/_gpuscene.inc
 	shaders/_struct.glsl
@@ -21,6 +23,8 @@ set(SRCS_SHADERS
 	shaders/_camera.glsl
 	shaders/voxelpathtracer.vert
 	shaders/voxelpathtracer.frag
+	shaders/voxelpathtracer_rt.vert
+	shaders/voxelpathtracer_rt.frag
 	shaders/voxelpathtracer_display.vert
 	shaders/voxelpathtracer_display.frag
 	shaders/voxelpathtracer_bloom.vert

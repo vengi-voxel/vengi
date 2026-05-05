@@ -496,8 +496,22 @@ enum class Feature {
 	ShaderDrawParameters,
 	/** Always enabled when the driver supports it (no r_* cvar). */
 	ClipControl,
+	/** Hardware ray query (VK_KHR_acceleration_structure + VK_KHR_ray_query). */
+	RayQuery,
 
 	Max
+};
+
+/**
+ * Axis-aligned bounding box for bottom-level acceleration structures (matches VkAabbPositionsKHR).
+ */
+struct AccelerationStructureAABB {
+	float minX = 0.0f;
+	float minY = 0.0f;
+	float minZ = 0.0f;
+	float maxX = 0.0f;
+	float maxY = 0.0f;
+	float maxZ = 0.0f;
 };
 
 enum class DataType {

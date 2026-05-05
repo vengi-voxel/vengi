@@ -71,8 +71,8 @@ bool intersectRoundedVoxel(vec3 localOrigin, vec3 rayDir, ivec3 cell, float star
 // sparse indirection grid.
 // "A Fast Voxel Traversal Algorithm for Ray Tracing", Eurographics 1987:
 // https://doi.org/10.2312/egtp.19871000
-bool traceVoxels(vec3 rayOrigin, vec3 rayDir, float maxDist, bool insideMedium, out float hitDist, out ivec3 hitCell,
-				 out uint hitIndex) {
+bool traceVoxelsDda(vec3 rayOrigin, vec3 rayDir, float maxDist, bool insideMedium, out float hitDist, out ivec3 hitCell,
+					out uint hitIndex) {
 	hitDist = 0.0;
 	hitCell = ivec3(0);
 	hitIndex = 0u;
@@ -182,6 +182,127 @@ bool traceVoxels(vec3 rayOrigin, vec3 rayDir, float maxDist, bool insideMedium, 
 
 	return false;
 }
+
+#ifdef VENGIRAYQUERY
+// Hardware BVH traversal over occupied 8x8x8 brick AABBs via VK_KHR_ray_query,
+// with a tight 8x8x8 local DDA inside each candidate brick directly on u_bricks.
+bool traceVoxels(vec3 rayOrigin, vec3 rayDir, float maxDist, bool insideMedium, out float hitDist, out ivec3 hitCell,
+				 out uint hitIndex) {
+	if (insideMedium) {
+		return traceVoxelsDda(rayOrigin, rayDir, maxDist, true, hitDist, hitCell, hitIndex);
+	}
+	hitDist = 0.0;
+	hitCell = ivec3(0);
+	hitIndex = 0u;
+	if (u_volumeactive == 0) {
+		return false;
+	}
+
+	vec3 localOrigin = rayOrigin - vec3(u_volumemin);
+	vec3 invDir = 1.0 / rayDir;
+	vec3 distToMinPlanes = -localOrigin * invDir;
+	vec3 distToMaxPlanes = (vec3(u_volumesize) - localOrigin) * invDir;
+	vec3 axisEnterDist = min(distToMinPlanes, distToMaxPlanes);
+	vec3 axisExitDist = max(distToMinPlanes, distToMaxPlanes);
+	float enterDist = max(max(max(axisEnterDist.x, axisEnterDist.y), axisEnterDist.z), 0.0);
+	float exitDist = min(min(min(axisExitDist.x, axisExitDist.y), axisExitDist.z), maxDist);
+	if (enterDist > exitDist) {
+		return false;
+	}
+
+	float tMin = max(enterDist - 1e-4, 0.0);
+	float tMax = exitDist + 1e-4;
+	ivec3 cellStep = ivec3(sign(rayDir));
+	vec3 deltaDist = abs(invDir);
+
+	bool found = false;
+	float bestDist = exitDist;
+	ivec3 bestCell = ivec3(0);
+	uint bestIndex = 0u;
+
+	rayQueryEXT rq;
+	rayQueryInitializeEXT(rq, u_tlas, gl_RayFlagsNoneEXT, 0xFFu, localOrigin, tMin, rayDir, tMax);
+	while (rayQueryProceedEXT(rq)) {
+		if (rayQueryGetIntersectionTypeEXT(rq, false) == gl_RayQueryCandidateIntersectionAABBEXT) {
+			int brickIndex = rayQueryGetIntersectionPrimitiveIndexEXT(rq, false);
+			vec3 brickCoordF = texelFetch(u_brickcoords, ivec2(brickIndex & 1023, brickIndex >> 10), 0).xyz;
+			ivec3 brickCoord = ivec3(brickCoordF + 0.5);
+			ivec3 brickBase = brickCoord * BrickSize;
+			vec3 bMin = vec3(brickBase);
+			vec3 bMax = bMin + vec3(BrickSize);
+			vec3 t0 = (bMin - localOrigin) * invDir;
+			vec3 t1 = (bMax - localOrigin) * invDir;
+			vec3 tSmall = min(t0, t1);
+			vec3 tBig = max(t0, t1);
+			float bEnter = max(max(max(tSmall.x, tSmall.y), tSmall.z), enterDist);
+			float bExit = min(min(min(tBig.x, tBig.y), tBig.z), bestDist);
+			if (bEnter > bExit) {
+				continue;
+			}
+
+			int abx = brickIndex % u_bricksperrow;
+			int atmp = brickIndex / u_bricksperrow;
+			int aby = atmp % u_brickspercol;
+			int abz = atmp / u_brickspercol;
+			ivec3 atlasBase = ivec3(abx, aby, abz) * BrickSize;
+
+			float dist = bEnter;
+			float startDist = bEnter + 1e-5 * (1.0 + abs(bEnter));
+			ivec3 localCell =
+				clamp(ivec3(floor(localOrigin + rayDir * startDist)) - brickBase, ivec3(0), ivec3(BrickSize - 1));
+			ivec3 cell = brickBase + localCell;
+			vec3 nextDist = (vec3(cell) + max(vec3(cellStep), vec3(0.0)) - localOrigin) * invDir;
+
+			for (int stepIdx = 0; stepIdx < BrickSize * 3; ++stepIdx) {
+				if (!isOutside(cell)) {
+					uint voxelIndex = texelFetch(u_bricks, atlasBase + localCell, 0).r;
+					if (voxelIndex != 0u) {
+						float candidateDist = dist;
+						bool accepted = true;
+						if (u_edgeradius > 1e-4) {
+							accepted = intersectRoundedVoxel(localOrigin, rayDir, cell, dist, candidateDist);
+						}
+						if (accepted && candidateDist <= bestDist) {
+							bestDist = candidateDist;
+							bestCell = cell;
+							bestIndex = voxelIndex;
+							found = true;
+							float commitT = clamp(candidateDist, tMin, tMax);
+							rayQueryGenerateIntersectionEXT(rq, commitT);
+							break;
+						}
+					}
+				}
+				bool stepX = nextDist.x < nextDist.y && nextDist.x < nextDist.z;
+				bool stepY = !stepX && nextDist.y < nextDist.z;
+				bvec3 stepAxis = bvec3(stepX, stepY, !stepX && !stepY);
+				dist = min(nextDist.x, min(nextDist.y, nextDist.z));
+				nextDist += vec3(stepAxis) * deltaDist;
+				ivec3 stepVec = ivec3(stepAxis) * cellStep;
+				localCell += stepVec;
+				cell += stepVec;
+				if (dist > bExit || any(lessThan(localCell, ivec3(0))) ||
+					any(greaterThanEqual(localCell, ivec3(BrickSize)))) {
+					break;
+				}
+			}
+		}
+	}
+
+	if (found) {
+		hitDist = bestDist;
+		hitCell = bestCell;
+		hitIndex = bestIndex;
+		return true;
+	}
+	return false;
+}
+#else
+bool traceVoxels(vec3 rayOrigin, vec3 rayDir, float maxDist, bool insideMedium, out float hitDist, out ivec3 hitCell,
+				 out uint hitIndex) {
+	return traceVoxelsDda(rayOrigin, rayDir, maxDist, insideMedium, hitDist, hitCell, hitIndex);
+}
+#endif
 
 vec3 avoidZero(vec3 dir) {
 	return vec3(abs(dir.x) < 1e-6 ? 1e-6 : dir.x, abs(dir.y) < 1e-6 ? 1e-6 : dir.y, abs(dir.z) < 1e-6 ? 1e-6 : dir.z);

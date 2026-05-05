@@ -8,6 +8,7 @@
 #include "VoxelpathtracerBloomShader.h"
 #include "VoxelpathtracerDisplayShader.h"
 #include "VoxelpathtracerShader.h"
+#include "VoxelpathtracerRtShader.h"
 #include "VoxelpathtracerShaderConstants.h"
 #include "color/ColorUtil.h"
 #include "core/Common.h"
@@ -137,6 +138,14 @@ bool PathTracer::initGpu() {
 		traceShader.shutdown();
 		return false;
 	}
+	if (video::hasFeature(video::Feature::RayQuery)) {
+		_rtShaderReady = shader::VoxelpathtracerRtShader::getInstance().setup();
+		if (_rtShaderReady) {
+			Log::info("Pathtracer hardware ray query shader ready");
+		} else {
+			Log::warn("Failed to init pathtracer ray query shader; falling back to DDA");
+		}
+	}
 	_initialized = true;
 	return true;
 }
@@ -151,6 +160,8 @@ void PathTracer::shutdownGpu() {
 	_bloomFbo.shutdown();
 	_bloomDirty = true;
 	_displayDirty = true;
+	video::deleteAccelerationStructure(_accelStruct);
+	shutdownTexture(_brickCoordsTex);
 	shutdownTexture(_bricksTex);
 	shutdownTexture(_indirectionTex);
 	shutdownTexture(_paletteTex);
@@ -166,6 +177,10 @@ void PathTracer::shutdownGpu() {
 	_paramsUbo.shutdown();
 	_displayUbo.shutdown();
 	_bloomUbo.shutdown();
+	if (_rtShaderReady) {
+		shader::VoxelpathtracerRtShader::getInstance().shutdown();
+		_rtShaderReady = false;
+	}
 	shader::VoxelpathtracerBloomShader::getInstance().shutdown();
 	shader::VoxelpathtracerShader::getInstance().shutdown();
 	shader::VoxelpathtracerDisplayShader::getInstance().shutdown();
@@ -375,6 +390,39 @@ bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materi
 	}
 	_bricksPerRow = volume.bricksPerRow;
 	_bricksPerCol = bricksPerCol;
+
+	if (_rtShaderReady && volume.brickCount > 0 && volume.brickCoords != nullptr) {
+		core::Buffer<video::AccelerationStructureAABB> aabbs;
+		aabbs.resize((size_t)volume.brickCount);
+		const int coordsWidth = 1024;
+		const int coordsHeight = (volume.brickCount + coordsWidth - 1) / coordsWidth;
+		core::Buffer<glm::vec4> brickCoordTexels;
+		brickCoordTexels.resize((size_t)coordsWidth * (size_t)coordsHeight);
+		core_memset(brickCoordTexels.data(), 0, brickCoordTexels.size() * sizeof(glm::vec4));
+		for (int i = 0; i < volume.brickCount; ++i) {
+			const glm::ivec3 &c = volume.brickCoords[i];
+			video::AccelerationStructureAABB &box = aabbs[i];
+			box.minX = (float)(c.x * brickSize);
+			box.minY = (float)(c.y * brickSize);
+			box.minZ = (float)(c.z * brickSize);
+			box.maxX = (float)((c.x + 1) * brickSize);
+			box.maxY = (float)((c.y + 1) * brickSize);
+			box.maxZ = (float)((c.z + 1) * brickSize);
+			brickCoordTexels[i] = glm::vec4((float)c.x, (float)c.y, (float)c.z, 0.0f);
+		}
+		_accelStruct = video::createAABBAccelerationStructure(aabbs.data(), (uint32_t)aabbs.size());
+		if (_accelStruct != video::InvalidId) {
+			video::TextureConfig coordCfg =
+				nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA32F);
+			coordCfg.alignment(4);
+			_brickCoordsTex =
+				core::make_shared<video::Texture>(coordCfg, coordsWidth, coordsHeight, "pathtracer-brickcoords");
+			_brickCoordsTex->upload(coordsWidth, coordsHeight, (const uint8_t *)brickCoordTexels.data());
+		} else {
+			Log::warn("Failed to build hardware acceleration structure for %d bricks; falling back to DDA",
+					  volume.brickCount);
+		}
+	}
 	return true;
 }
 
@@ -423,6 +471,8 @@ bool PathTracer::uploadPreparedScene(PreparedGpuScene &prepared) {
 	_state.volumeTruncated = prepared.volumeTruncated;
 	_hasVolume = false;
 
+	video::deleteAccelerationStructure(_accelStruct);
+	shutdownTexture(_brickCoordsTex);
 	shutdownTexture(_bricksTex);
 	shutdownTexture(_indirectionTex);
 	shutdownTexture(_paletteTex);
@@ -463,18 +513,6 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 
 void PathTracer::tracePass(int samples) {
 	core_trace_scoped(PathTracerTracePass);
-	shader::VoxelpathtracerShader &shader = shader::VoxelpathtracerShader::getInstance();
-	video::ScopedShader scoped(shader);
-	FullscreenPassState passState;
-
-	const int readAccum = 1 - _writeAccum;
-	core_assert_always(video::bindTexture(shader.getBoundBricksTexUnit(), _bricksTex));
-	core_assert_always(video::bindTexture(shader.getBoundIndirectionTexUnit(), _indirectionTex));
-	core_assert_always(video::bindTexture(shader.getBoundPaletteTexUnit(), _paletteTex));
-	core_assert_always(video::bindTexture(shader.getBoundMaterialsTexUnit(), _materialTex));
-	core_assert_always(video::bindTexture(shader.getBoundAccumulationTextureTexUnit(), _accum[readAccum].texture()));
-	core_assert_always(video::bindTexture(shader.getBoundLightsTexUnit(), _emitTex));
-
 	const PathTracerParams &params = _state.params;
 	const glm::mat4 invViewProj = glm::inverse(_traceCamera.viewProjectionMatrix());
 	const float elevScale = glm::clamp((_state.params.sunElevation + 6.0f) / 12.0f, 0.1f, 1.0f);
@@ -526,8 +564,35 @@ void PathTracer::tracePass(int samples) {
 	_paramsUniforms.bricksperrow = _bricksPerRow;
 	_paramsUniforms.brickspercol = _bricksPerCol;
 	core_assert_always(_paramsUbo.update(_paramsUniforms));
-	core_assert_always(shader.setParams(_paramsUbo.getParamsUniformBuffer()));
-	drawFullscreen(_accum[_writeAccum]);
+
+	const int readAccum = 1 - _writeAccum;
+	FullscreenPassState passState;
+	if (usingRayQuery()) {
+		shader::VoxelpathtracerRtShader &rtShader = shader::VoxelpathtracerRtShader::getInstance();
+		video::ScopedShader scoped(rtShader);
+		core_assert_always(video::bindTexture(rtShader.getBoundBricksTexUnit(), _bricksTex));
+		core_assert_always(video::bindTexture(rtShader.getBoundIndirectionTexUnit(), _indirectionTex));
+		core_assert_always(video::bindTexture(rtShader.getBoundPaletteTexUnit(), _paletteTex));
+		core_assert_always(video::bindTexture(rtShader.getBoundMaterialsTexUnit(), _materialTex));
+		core_assert_always(
+			video::bindTexture(rtShader.getBoundAccumulationTextureTexUnit(), _accum[readAccum].texture()));
+		core_assert_always(video::bindTexture(rtShader.getBoundLightsTexUnit(), _emitTex));
+		core_assert_always(video::bindTexture(rtShader.getBoundBrickcoordsTexUnit(), _brickCoordsTex));
+		video::bindAccelerationStructure(_accelStruct, rtShader.getBoundTlasBinding());
+		core_assert_always(rtShader.setParams(_paramsUbo.getParamsUniformBuffer()));
+		drawFullscreen(_accum[_writeAccum]);
+	} else {
+		shader::VoxelpathtracerShader &shader = shader::VoxelpathtracerShader::getInstance();
+		video::ScopedShader scoped(shader);
+		core_assert_always(video::bindTexture(shader.getBoundBricksTexUnit(), _bricksTex));
+		core_assert_always(video::bindTexture(shader.getBoundIndirectionTexUnit(), _indirectionTex));
+		core_assert_always(video::bindTexture(shader.getBoundPaletteTexUnit(), _paletteTex));
+		core_assert_always(video::bindTexture(shader.getBoundMaterialsTexUnit(), _materialTex));
+		core_assert_always(video::bindTexture(shader.getBoundAccumulationTextureTexUnit(), _accum[readAccum].texture()));
+		core_assert_always(video::bindTexture(shader.getBoundLightsTexUnit(), _emitTex));
+		core_assert_always(shader.setParams(_paramsUbo.getParamsUniformBuffer()));
+		drawFullscreen(_accum[_writeAccum]);
+	}
 
 	_state.currentSample += samples;
 	_writeAccum = readAccum;
@@ -698,6 +763,11 @@ bool PathTracer::started() const {
 
 bool PathTracer::hasVolume() const {
 	return _hasVolume;
+}
+
+bool PathTracer::usingRayQuery() const {
+	return _rtShaderReady && _state.params.rayQuery && _hasVolume && _accelStruct != video::InvalidId &&
+		   _brickCoordsTex;
 }
 
 bool PathTracer::update(int *currentSample) {

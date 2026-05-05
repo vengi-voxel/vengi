@@ -1,7 +1,7 @@
 layout(binding = 0) uniform sampler2D u_surfaces;
 layout(binding = 1) uniform sampler2D u_surfaceDepth;
 layout(binding = 2) uniform sampler2D u_sceneDepth;
-layout(std140, binding = 0) uniform u_frag {
+layout(std140, binding = 3) uniform u_frag {
 	vec4 u_tint;
 };
 

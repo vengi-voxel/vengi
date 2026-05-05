@@ -452,4 +452,91 @@ TEST_F(PathTracerTest, testGpuDisplayTextureSupportsExportAndResize) {
 	ASSERT_TRUE(pathTracer.stop());
 }
 
+TEST_F(PathTracerTest, testHardwareRayQueryMatchesSoftwareDDA) {
+	if (!video::hasFeature(video::Feature::RayQuery)) {
+		GTEST_SKIP() << "Feature::RayQuery unavailable on this device";
+	}
+	// Multi-brick sparse scene with diffuse, emissive, and glass voxels so primary rays,
+	// shadow rays, NEE, and transmission are all exercised across brick boundaries.
+	scenegraph::SceneGraph sceneGraph;
+	voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 23, 15, 23));
+	palette::Palette pal;
+	pal.setColor(1, color::RGBA(210, 60, 50, 255));
+	pal.setColor(2, color::RGBA(50, 190, 80, 255));
+	pal.setColor(3, color::RGBA(255, 230, 160, 255));
+	pal.setEmit(3, 1.0f);
+	pal.setColor(4, color::RGBA(190, 220, 255, 160));
+	pal.setMaterialType(4, palette::MaterialType::Glass);
+	pal.setIndexOfRefraction(4, 1.3f);
+
+	fillRegion(v, pal, 1, voxel::Region(0, 0, 0, 5, 7, 5));
+	fillRegion(v, pal, 2, voxel::Region(16, 0, 16, 22, 11, 22));
+	fillRegion(v, pal, 3, voxel::Region(10, 10, 10, 12, 12, 12));
+	fillRegion(v, pal, 4, voxel::Region(2, 0, 16, 6, 6, 20));
+	ASSERT_NE(InvalidNodeId, sceneGraph.emplace(makeModelNode("sparse", v, pal)));
+	sceneGraph.updateTransforms();
+
+	video::Camera camera;
+	camera.setSize(glm::ivec2(64, 64));
+	voxelrender::configureCamera(camera, sceneGraph.sceneRegion(), voxelrender::SceneCameraMode::Free, 200.0f);
+	camera.update(0.0);
+
+	auto renderVariant = [&](bool useRayQuery, bool &wasRayQuery) -> image::ImagePtr {
+		voxelpathtracer::PathTracer pt;
+		auto &params = pt.state().params;
+		params.resolution = 64;
+		params.samples = 16;
+		params.samplesThisPass = 8;
+		params.bounces = 3;
+		params.floorEnabled = true;
+		params.vignette = 0.0f;
+		params.rayQuery = useRayQuery;
+		EXPECT_TRUE(pt.start(sceneGraph, &camera));
+		wasRayQuery = pt.usingRayQuery();
+		renderUntilDone(pt);
+		image::ImagePtr img = pt.image();
+		EXPECT_TRUE(pt.stop());
+		return img;
+	};
+
+	bool rtActive = false;
+	bool ddaActive = true;
+	const image::ImagePtr rtImg = renderVariant(true, rtActive);
+	const image::ImagePtr ddaImg = renderVariant(false, ddaActive);
+	ASSERT_TRUE(rtActive) << "Expected hardware ray query path to be active";
+	ASSERT_FALSE(ddaActive) << "Expected software DDA path when rayQuery=false";
+	ASSERT_TRUE(rtImg && rtImg->isLoaded());
+	ASSERT_TRUE(ddaImg && ddaImg->isLoaded());
+	ASSERT_EQ(rtImg->width(), ddaImg->width());
+	ASSERT_EQ(rtImg->height(), ddaImg->height());
+
+	double totalDiff = 0.0;
+	int nonZeroPixels = 0;
+	int largeDiffPixels = 0;
+	const int totalPixels = rtImg->width() * rtImg->height();
+	for (int y = 0; y < rtImg->height(); ++y) {
+		for (int x = 0; x < rtImg->width(); ++x) {
+			const color::RGBA a = rtImg->colorAt(x, y);
+			const color::RGBA b = ddaImg->colorAt(x, y);
+			if (a.r > 10 || a.g > 10 || a.b > 10) {
+				++nonZeroPixels;
+			}
+			const int dr = glm::abs((int)a.r - (int)b.r);
+			const int dg = glm::abs((int)a.g - (int)b.g);
+			const int db = glm::abs((int)a.b - (int)b.b);
+			const int maxCh = core_max(dr, core_max(dg, db));
+			totalDiff += (double)(dr + dg + db) / 3.0;
+			if (maxCh > 12) {
+				++largeDiffPixels;
+			}
+		}
+	}
+	const double meanAbsDiff = totalDiff / (double)totalPixels;
+	EXPECT_GT(nonZeroPixels, 500);
+	EXPECT_LT(meanAbsDiff, 1.5) << "Hardware ray query diverged from software DDA (meanAbsDiff=" << meanAbsDiff
+								<< ", largeDiffPixels=" << largeDiffPixels << ")";
+	EXPECT_LT(largeDiffPixels, totalPixels / 50)
+		<< "Too many mismatched pixels between hardware ray query and software DDA: " << largeDiffPixels;
+}
+
 } // namespace

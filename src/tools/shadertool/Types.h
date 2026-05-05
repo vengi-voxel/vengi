@@ -31,6 +31,7 @@ struct Variable {
 		SAMPLER1D, SAMPLER2D, SAMPLER3D, SAMPLER2DMS,
 		SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
 		SAMPLER1DSHADOW, SAMPLER2DSHADOW, USAMPLER3D, IMAGE2D,
+		ACCELERATION_STRUCTURE,
 		MAX
 		// TODO: atomics
 	};
@@ -67,6 +68,7 @@ struct Variable {
 		case SAMPLER2DSHADOW:
 		case USAMPLER3D:
 		case IMAGE2D:
+		case ACCELERATION_STRUCTURE:
 			return "video::DataType::Int";
 		case MAX:
 			break;
@@ -86,6 +88,10 @@ struct Variable {
 
 	inline bool isImage() const {
 		return type == Variable::IMAGE2D;
+	}
+
+	inline bool isAccelerationStructure() const {
+		return type == Variable::ACCELERATION_STRUCTURE;
 	}
 
 	inline bool isInteger() const {

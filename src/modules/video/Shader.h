@@ -82,6 +82,13 @@ public:
 	 * Shadertool sets this for an ESSL 300 validation pass. GLES builds default to true.
 	 */
 	static bool essl;
+	/**
+	 * When true, getSource() targets Vulkan GLSL / SPIR-V: no GL_ARB extensions,
+	 * and CLIPDEPTHZ0TO1 / CLIPORIGINUPPERLEFT are always defined so baked SPIR-V
+	 * matches Camera/Shadow ZO clip control. Shadertool sets this for
+	 * --spirv-env vulkan*. VK builds default to true.
+	 */
+	static bool vulkan;
 
 	virtual void shutdown();
 

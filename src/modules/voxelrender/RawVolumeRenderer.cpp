@@ -322,6 +322,27 @@ bool RawVolumeRenderer::init(bool normals) {
 	_voxelShaderVertData.opacity = 1.0f;
 	_voxelShaderVertData.usedrawinstances = 0;
 
+	// Vulkan: map VertData per-draw fields into the shader DrawPush block so the
+	// backend can keep the large palette UBO stable across unique-mesh draws.
+	// DrawPush layout matches DrawInstanceData (see _sharedvert.glsl).
+	{
+		using Vert = shader::VoxelData::VertData;
+		using Push = DrawInstanceData;
+		const video::UniformPushOverlayField fields[] = {
+			{(uint32_t)offsetof(Vert, model), (uint32_t)sizeof(glm::mat4), (uint32_t)offsetof(Push, model)},
+			{(uint32_t)offsetof(Vert, gray), (uint32_t)sizeof(int32_t), (uint32_t)offsetof(Push, gray)},
+			{(uint32_t)offsetof(Vert, locked), (uint32_t)sizeof(int32_t), (uint32_t)offsetof(Push, locked)},
+			{(uint32_t)offsetof(Vert, opacity), (uint32_t)sizeof(float), (uint32_t)offsetof(Push, opacity)},
+		};
+		const uint32_t pcSize = (uint32_t)sizeof(Push);
+		video::setUniformBufferPushOverlay(_voxelData.getVertUniformBuffer().handle(), fields,
+										  (int)lengthof(fields));
+		video::setProgramPushConstantSize(_voxelShader.handle(), pcSize);
+		video::setProgramPushConstantSize(_voxelNormShader.handle(), pcSize);
+		video::setProgramPushConstantSize(_voxelOitShader.handle(), pcSize);
+		video::setProgramPushConstantSize(_voxelNormOitShader.handle(), pcSize);
+	}
+
 	if (_useMultiDraw) {
 		DrawInstanceData emptyInstance;
 		if (!_drawInstanceSSBO.create(&emptyInstance, sizeof(emptyInstance))) {
@@ -348,7 +369,7 @@ void RawVolumeRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &mesh
 	}
 }
 
-void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
+void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState, bool ignoreTimeBudget) {
 	core_trace_scoped(RawVolumeRendererUpdateMeshState);
 	if (meshState->update()) {
 		resetStateBuffers(meshState->hasNormals());
@@ -379,10 +400,12 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 			Log::error("Failed to update the mesh at index %i", idx);
 		}
 		++cnt;
-		const uint64_t deltaT = timeProvider->systemMillis() - startTime;
-		if (deltaT > 10u) { // 10ms max
-			Log::debug("Update took too long: %u ms", (int32_t)(deltaT));
-			break;
+		if (!ignoreTimeBudget) {
+			const uint64_t deltaT = timeProvider->systemMillis() - startTime;
+			if (deltaT > 10u) { // 10ms max
+				Log::debug("Update took too long: %u ms", (int32_t)(deltaT));
+				break;
+			}
 		}
 	}
 	for (int idx : deferred) {

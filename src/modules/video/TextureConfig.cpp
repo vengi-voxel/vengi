@@ -113,9 +113,11 @@ TextureConfig& TextureConfig::alignment(uint8_t alignment) {
 }
 
 TextureConfig& TextureConfig::samples(int samples) {
-	_samples = glm::clamp(samples, 0, video::limiti(Limit::MaxSamples));
-	if (samples != _samples) {
-		Log::warn("Could get get the requested number of samples - using %i instead of %i", _samples, samples);
+	const int maxSamples = video::limiti(Limit::MaxSamples);
+	_samples = glm::clamp(samples, 0, maxSamples);
+	// MaxSamples==0 means MSAA is unavailable (e.g. Vulkan until MSAA FBOs exist).
+	if (samples != _samples && maxSamples > 0) {
+		Log::warn("Could not get the requested number of samples - using %i instead of %i", _samples, samples);
 	}
 	return *this;
 }

@@ -46,6 +46,9 @@ private:
 	video::TexturePtr _paletteTex;
 	video::TexturePtr _materialTex;
 	video::TexturePtr _emitTex;
+	video::TexturePtr _brickCoordsTex;
+	video::Id _accelStruct = video::InvalidId;
+	bool _rtShaderReady = false;
 	int _lightCount = 0;
 	float _emitterLuminance = 0.0f;
 	int _bricksPerRow = 1;
@@ -111,6 +114,7 @@ public:
 	bool resume();
 	bool started() const;
 	bool hasVolume() const;
+	bool usingRayQuery() const;
 	void applyCamera(const video::Camera *camera);
 	void resetAccumulation();
 

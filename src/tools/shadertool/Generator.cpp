@@ -47,6 +47,14 @@ static const char *convertToTexUnit(int unit) {
 		return "Four";
 	case 5:
 		return "Five";
+	case 6:
+		return "Six";
+	case 7:
+		return "Seven";
+	case 8:
+		return "Eight";
+	case 9:
+		return "Nine";
 	}
 }
 
@@ -138,8 +146,8 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	}
 	int n = 0;
 	for (const Variable& v : shaderStruct.uniforms) {
-		if (!v.isSampler() && !v.isImage()) {
-			Log::error("Uniform '%s' found in shader sources. You must use uniform blocks for everything except opaques (samplers, images).", v.name.c_str());
+		if (!v.isSampler() && !v.isImage() && !v.isAccelerationStructure()) {
+			Log::error("Uniform '%s' found in shader sources. You must use uniform blocks for everything except opaques (samplers, images, acceleration structures).", v.name.c_str());
 			return false;
 		}
 		const bool isInteger = v.isSingleInteger();
@@ -151,8 +159,8 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			layout = layoutIter->second;
 		}
 
-		// samplers/images with layout(binding=X) need no setter - the binding is set at compile time
-		if ((v.isSampler() || v.isImage()) && layout.binding != -1 && layout.location == -1) {
+		// samplers/images/acceleration structures with layout(binding=X) need no setter - the binding is set at compile time
+		if ((v.isSampler() || v.isImage() || v.isAccelerationStructure()) && layout.binding != -1 && layout.location == -1) {
 			if (v.isSampler()) {
 				prototypes += "\n\tvideo::TextureUnit getBound";
 				prototypes += uniformName;
@@ -165,6 +173,18 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 				methods += "\treturn video::TextureUnit::";
 				methods += convertToTexUnit(layout.binding);
 				methods += ";\n}\n";
+			} else if (v.isAccelerationStructure()) {
+				prototypes += "\n\tuint32_t getBound";
+				prototypes += uniformName;
+				prototypes += "Binding() const;\n";
+				methods += "\nuint32_t ";
+				methods += filename;
+				methods += "::getBound";
+				methods += uniformName;
+				methods += "Binding() const {\n";
+				methods += "\treturn ";
+				methods += core::string::toString(layout.binding);
+				methods += "u;\n}\n";
 			}
 			if (layout.imageFormat != video::ImageFormat::Max) {
 				prototypes += "\n\tvideo::ImageFormat getImageFormat";
@@ -893,20 +913,41 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	{
 		core::String entries;
 		int bindingCount = 0;
-		// UBOs: present in vertex (and possibly fragment) stage
+		const bool computeOnly = !computeBuffer.empty() && vertexBuffer.empty();
+		const core::String uboStages = computeOnly ? "8" : "1 | 2";
 		for (const auto &ubuf : shaderStruct.uniformBlocks) {
 			if (ubuf.layout.binding >= 0) {
 				entries += "\t\t{\"";
 				entries += ubuf.name;
 				entries += "\", ";
 				entries += core::string::toString(ubuf.layout.binding);
-				entries += ", video::ShaderResourceBinding::UniformBuffer, 1 | 2},\n"; // vertex + fragment
+				entries += ", video::ShaderResourceBinding::UniformBuffer, ";
+				entries += uboStages;
+				entries += "},\n";
 				++bindingCount;
 			}
 		}
-		// Samplers/images: present in fragment stage
+		for (const auto &buf : shaderStruct.bufferBlocks) {
+			if (buf.layout.binding >= 0) {
+				entries += "\t\t{\"";
+				entries += buf.name;
+				entries += "\", ";
+				entries += core::string::toString(buf.layout.binding);
+				entries += ", video::ShaderResourceBinding::StorageBuffer, ";
+				entries += computeOnly ? "8" : "1 | 2";
+				entries += "},\n";
+				++bindingCount;
+			}
+		}
+		const bool hasVulkanDrawInstances =
+			!computeOnly && core::string::contains(vertexBuffer, "DrawInstanceBuffer");
+		if (hasVulkanDrawInstances) {
+			entries += "#ifdef USE_VK_RENDERER\n";
+			entries += "\t\t{\"DrawInstanceBuffer\", 3, video::ShaderResourceBinding::StorageBuffer, 1},\n";
+			entries += "#endif\n";
+		}
 		for (const auto &v : shaderStruct.uniforms) {
-			if (!v.isSampler() && !v.isImage()) {
+			if (!v.isSampler() && !v.isImage() && !v.isAccelerationStructure()) {
 				continue;
 			}
 			auto layoutIter = shaderStruct.layouts.find(v.name);
@@ -915,18 +956,25 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 				entries += v.name;
 				entries += "\", ";
 				entries += core::string::toString(layoutIter->second.binding);
-				entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2},\n"; // fragment
+				if (v.isImage()) {
+					entries += ", video::ShaderResourceBinding::StorageImage, ";
+					entries += computeOnly ? "8" : "2 | 8";
+				} else if (v.isAccelerationStructure()) {
+					entries += ", video::ShaderResourceBinding::AccelerationStructure, ";
+					entries += computeOnly ? "8" : "2";
+				} else {
+					entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2";
+				}
+				entries += "},\n";
 				++bindingCount;
 			}
 		}
-		if (bindingCount > 0) {
+		if (bindingCount > 0 || hasVulkanDrawInstances) {
 			shaderBindings += "\t{\n";
 			shaderBindings += "\t\tstatic const video::ShaderResourceBinding _bindings[] = {\n";
 			shaderBindings += entries;
 			shaderBindings += "\t\t};\n";
-			shaderBindings += "\t\tvideo::registerShaderBindings(_program, _bindings, ";
-			shaderBindings += core::string::toString(bindingCount);
-			shaderBindings += ");\n";
+			shaderBindings += "\t\tvideo::registerShaderBindings(_program, _bindings, (int)(sizeof(_bindings) / sizeof(_bindings[0])));\n";
 			shaderBindings += "\t}\n";
 		}
 	}

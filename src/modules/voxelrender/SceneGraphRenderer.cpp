@@ -424,7 +424,7 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 	if (waitPending) {
 		core_trace_scoped(SceneGraphRendererWaitPending);
 		meshState->extractAllPending();
-		_volumeRenderer.update(meshState);
+		_volumeRenderer.update(meshState, true);
 	}
 
 	_volumeRenderer.render(meshState, renderContext, camera, shadow);

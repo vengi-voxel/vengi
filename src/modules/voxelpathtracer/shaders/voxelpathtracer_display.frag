@@ -3,7 +3,7 @@ in vec2 v_texcoord;
 layout(binding = 0) uniform sampler2D u_texture;
 layout(binding = 1) uniform sampler2D u_bloomTexture;
 
-layout(std140, binding = 0) uniform u_display {
+layout(std140, binding = 2) uniform u_display {
 	vec2 u_screensize;
 	float u_exposure;
 	float u_contrast;

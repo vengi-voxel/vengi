@@ -57,6 +57,7 @@ struct PathTracerParams {
 	float bloom = 0.0f;
 	float atmosphere = 0.0f;
 	float renderScale = 1.0f;
+	bool rayQuery = true;
 };
 
 /** @brief Apply a quality preset. Default replaces all params; Preview/High only adjust quality fields. */

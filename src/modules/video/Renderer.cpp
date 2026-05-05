@@ -36,6 +36,7 @@ static struct RenderFeature {
 	{"r_transformfeedback", N_("Support for capturing shader output into buffers")},
 	{nullptr, nullptr},
 	{nullptr, nullptr},
+	{nullptr, nullptr},
 	{nullptr, nullptr}
 };
 static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");

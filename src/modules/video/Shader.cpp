@@ -134,6 +134,11 @@ bool Shader::essl = true;
 #else
 bool Shader::essl = false;
 #endif
+#ifdef USE_VK_RENDERER
+bool Shader::vulkan = true;
+#else
+bool Shader::vulkan = false;
+#endif
 int Shader::glslVersion = 430;
 
 core::String Shader::stripUnsupportedEssl(const core::String &src) {
@@ -364,12 +369,12 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	src.append("// ");
 	src.append(_name);
 	src.append("\n");
-	if (!essl && shaderType == ShaderType::Compute) {
+	if (!essl && !vulkan && shaderType == ShaderType::Compute) {
 		src.append("#extension GL_ARB_compute_shader : enable\n");
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
-	if (!essl && _defines.hasKey("USEDRAWPARAMETERS") &&
+	if (!essl && !vulkan && _defines.hasKey("USEDRAWPARAMETERS") &&
 		(shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment)) {
 		// ARB names keep MDI working on GLSL < 460; core gl_DrawID needs 460+.
 		src.append("#extension GL_ARB_shader_draw_parameters : enable\n");
@@ -379,7 +384,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		}
 	}
 
-	if (!essl && glslVersion < 420) {
+	if (!essl && !vulkan && glslVersion < 420) {
 		src.append("#extension GL_ARB_shading_language_420pack : enable\n");
 	}
 
@@ -396,10 +401,10 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src.append("precision highp sampler2DArrayShadow;\n");
 	}
 
-	if (clipDepthZeroToOne()) {
+	if (vulkan || clipDepthZeroToOne()) {
 		src.append("#define CLIPDEPTHZ0TO1\n");
 	}
-	if (!clipOriginLowerLeft()) {
+	if (vulkan || !clipOriginLowerLeft()) {
 		src.append("#define CLIPORIGINUPPERLEFT\n");
 	}
 

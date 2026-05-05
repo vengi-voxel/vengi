@@ -209,7 +209,7 @@ public:
 	 */
 	bool init(bool normals);
 
-	void update(const voxel::MeshStatePtr &meshState);
+	void update(const voxel::MeshStatePtr &meshState, bool ignoreTimeBudget = false);
 
 	/**
 	 * @sa init()

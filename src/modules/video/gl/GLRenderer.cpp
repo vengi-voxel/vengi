@@ -639,7 +639,8 @@ void setupFeatures(GLVersion version) {
 		{"GL_ARB_transform_feedback2"},
 		{"GL_ARB_shader_storage_buffer_object"},
 		{"GL_ARB_shader_draw_parameters"},
-		{"GL_ARB_clip_control"}
+		{"GL_ARB_clip_control"},
+		{}
 	};
 	static_assert(core::enumVal(Feature::Max) == (int)lengthof(extensionArray), "Array sizes don't match for Feature enum");
 
@@ -1629,6 +1630,17 @@ void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, i
 
 	syncPendingState();
 	useProgram(previousProgram);
+}
+
+void setProgramPushConstantSize(Id program, uint32_t size) {
+	(void)program;
+	(void)size;
+}
+
+void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
+	(void)buffer;
+	(void)fields;
+	(void)count;
 }
 
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
@@ -3258,6 +3270,22 @@ void traceVideoEnd() {
 	if (glPopDebugGroup == nullptr)
 		return;
 	// glPopDebugGroup();
+}
+
+Id createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count) {
+	(void)aabbs;
+	(void)count;
+	return InvalidId;
+}
+
+void deleteAccelerationStructure(Id &handle) {
+	handle = InvalidId;
+}
+
+bool bindAccelerationStructure(Id handle, uint32_t binding) {
+	(void)handle;
+	(void)binding;
+	return false;
 }
 
 } // namespace video

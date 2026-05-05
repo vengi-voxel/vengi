@@ -110,6 +110,9 @@ bool PathTracerConfig::init() {
 	core::registerVar(core::VarDef(cfg::PathTracerRenderScale, defaults.renderScale, 0.25f, 1.0f, N_("Render scale"),
 								   N_("Trace at a fraction of the output resolution, then upsample"),
 								   core::CV_NOPERSIST));
+	core::registerVar(core::VarDef(cfg::PathTracerRayQuery, defaults.rayQuery, N_("Hardware ray query"),
+								   N_("Use Vulkan hardware ray query acceleration when available"),
+								   core::CV_NOPERSIST));
 	return true;
 }
 
@@ -146,6 +149,7 @@ void PathTracerConfig::loadParams(PathTracerParams &params) {
 	params.bloom = core::getVar(cfg::PathTracerBloom)->floatVal();
 	params.atmosphere = core::getVar(cfg::PathTracerAtmosphere)->floatVal();
 	params.renderScale = core::getVar(cfg::PathTracerRenderScale)->floatVal();
+	params.rayQuery = core::getVar(cfg::PathTracerRayQuery)->boolVal();
 }
 
 void PathTracerConfig::saveParams(const PathTracerParams &params) {
@@ -180,6 +184,7 @@ void PathTracerConfig::saveParams(const PathTracerParams &params) {
 	core::getVar(cfg::PathTracerBloom)->setVal(params.bloom);
 	core::getVar(cfg::PathTracerAtmosphere)->setVal(params.atmosphere);
 	core::getVar(cfg::PathTracerRenderScale)->setVal(params.renderScale);
+	core::getVar(cfg::PathTracerRayQuery)->setVal(params.rayQuery);
 }
 
 } // namespace voxelpathtracer

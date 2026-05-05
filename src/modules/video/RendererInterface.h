@@ -620,6 +620,20 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name 
 void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count);
 
 /**
+ * @brief Declare the push-constant block size for a program (bytes, multiple of 4).
+ * Vulkan only; GL no-op. Must be set before the program's pipeline layout is created.
+ */
+void setProgramPushConstantSize(Id program, uint32_t size);
+
+/**
+ * @brief Mark UBO regions that are supplied via push constants for this buffer.
+ * When only those regions change, the Vulkan backend can reuse the previous
+ * uniform-ring snapshot instead of re-uploading the whole UBO.
+ * @p fields describe UBO -> push-constant copies (offsets from generated layouts).
+ */
+void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count);
+
+/**
  * @brief Link a compute shader program.
  *
  * Similar to @c linkShader but for compute-only programs. On failure the
@@ -700,5 +714,15 @@ void endTimerQuery();
 bool timerQueryAvailable(Id query);
 /** @brief Wait for a completed query and return its GPU elapsed time in nanoseconds. */
 uint64_t timerQueryResult(Id query);
+
+/**
+ * @brief Build a hardware ray tracing acceleration structure (BLAS + 1-instance TLAS) from AABBs.
+ * Requires @c Feature::RayQuery. Returns @c InvalidId when unsupported or @p count is 0.
+ */
+Id createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count);
+/** @brief Destroy an acceleration structure created by @c createAABBAccelerationStructure() and reset @p handle. */
+void deleteAccelerationStructure(Id &handle);
+/** @brief Bind an acceleration structure to descriptor @p binding for subsequent ray-query draws/dispatches. */
+bool bindAccelerationStructure(Id handle, uint32_t binding = 0u);
 
 } // namespace video

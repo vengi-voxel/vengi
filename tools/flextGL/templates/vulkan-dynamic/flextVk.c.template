@@ -40,15 +40,16 @@ int flextVkInit(void) {
     if (vulkanLibrary == NULL) {
         return SDL_SetError("Could not load the vulkan library");
     }
+    /* Cast via void* to silence -Wcast-function-type on SDL_FunctionPointer. */
     @for category,funcs in functions:
     @if funcs:
     @for f in funcs:
     @if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
-    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)SDL_LoadFunction(vulkanLibrary, "vk@f.name");
+    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)(void*)SDL_LoadFunction(vulkanLibrary, "vk@f.name");
     @end
     @if f.name in ['EnumerateInstanceVersion']:
     if (flextvkGetInstanceProcAddr) {
-        flextvk@f.name = (PFNVK@f.name.upper()_PROC*)flextvkGetInstanceProcAddr(NULL, "vk@f.name");
+        flextvk@f.name = (PFNVK@f.name.upper()_PROC*)(void*)flextvkGetInstanceProcAddr(NULL, "vk@f.name");
     } else {
         return SDL_SetError("Could not load vkGetInstanceProcAddr from vulkan library");
     }
@@ -60,11 +61,12 @@ int flextVkInit(void) {
 }
 
 void flextVkInitInstance(VkInstance instance) {
+    /* Cast via void* to silence -Wcast-function-type on PFN_vkVoidFunction. */
     @for category,funcs in functions:
     @if funcs:
     @for f in funcs:
     @if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceVersion', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
-    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)flextvkGetInstanceProcAddr(instance, "vk@f.name");
+    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)(void*)flextvkGetInstanceProcAddr(instance, "vk@f.name");
     @end
     @end
     @end
