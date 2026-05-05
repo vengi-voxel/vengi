@@ -105,6 +105,8 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		const cgltf_pbr_specular_glossiness &sg = mat->pbr_specular_glossiness;
 		palMat.setValue(palette::MaterialProperty::MaterialDensity, sg.diffuse_factor[0]);
 		palMat.setValue(palette::MaterialProperty::MaterialPhase, sg.glossiness_factor);
+		palMat.setValue(palette::MaterialProperty::MaterialSpecular,
+			sg.specular_factor[0] * sg.specular_factor[1] * sg.specular_factor[2]);
 	}
 
 	if (mat->has_ior) {
@@ -119,10 +121,14 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		palMat.setValue(palette::MaterialProperty::MaterialAttenuation, mat->volume.attenuation_distance > 0.0f ? 1.0f / mat->volume.attenuation_distance : 0.0f);
 	}
 
+	float emit = 0.0f;
+	if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
+		emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
+	}
 	if (mat->has_emissive_strength) {
-		palMat.setValue(palette::MaterialProperty::MaterialEmit, mat->emissive_strength.emissive_strength);
-	} else if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
-		float emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
+		emit *= mat->emissive_strength.emissive_strength;
+	}
+	if (emit > 0.0f) {
 		palMat.setValue(palette::MaterialProperty::MaterialEmit, emit);
 	}
 
