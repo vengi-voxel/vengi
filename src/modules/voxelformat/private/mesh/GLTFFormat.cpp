@@ -29,6 +29,8 @@
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include <glm/gtc/type_ptr.hpp>
 
+#define CGLTF_MALLOC(size) core_malloc(size)
+#define CGLTF_FREE(ptr) core_free(ptr)
 #define CGLTF_IMPLEMENTATION
 #define CGLTF_WRITE_IMPLEMENTATION
 #include "../../external/cgltf_write.h"
