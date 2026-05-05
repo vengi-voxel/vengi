@@ -17,6 +17,7 @@
 #include "io/FormatDescription.h"
 #include "io/MemoryArchive.h"
 #include "io/Stream.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -164,7 +165,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	voxel::sceneGraphComparator(sceneGraphsave1, sceneGraphLoad, flags, 0.001f);
 }
 
-void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename) {
+void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const core::Buffer<palette::MaterialProperty> &ignoredMaterials) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	ASSERT_TRUE(archive->exists("test_material.vox"));
 	ASSERT_NE(filename, "test_material.vox")
@@ -186,7 +187,7 @@ void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const 
 		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx));
 		EXPECT_EQ(12u, sceneGraph.size());
 	}
-	voxel::materialComparator(voxSceneGraph, sceneGraph);
+	voxel::materialComparator(voxSceneGraph, sceneGraph, ignoredMaterials);
 }
 
 void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,

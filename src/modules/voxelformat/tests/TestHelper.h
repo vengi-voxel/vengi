@@ -79,7 +79,9 @@ void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta = 0.
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
-void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2);
-void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2);
+
+// this also allows you to skip some material properties, because a format might not support it.
+void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {});
+void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {});
 
 }

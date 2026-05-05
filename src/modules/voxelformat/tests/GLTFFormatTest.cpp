@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "AbstractFormatTest.h"
 #include "io/Stream.h"
+#include "palette/Material.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -90,7 +91,9 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 // TODO: MATERIAL: materials are not yet properly loaded back from gltf
 TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
-	testMaterial(sceneGraph, "test_material.gltf");
+	core::Buffer<palette::MaterialProperty> ignoredMaterials;
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
+	testMaterial(sceneGraph, "test_material.gltf", ignoredMaterials);
 }
 
 class VoxelizeLantern : public AbstractFormatTest, public ::testing::WithParamInterface<bool> {};

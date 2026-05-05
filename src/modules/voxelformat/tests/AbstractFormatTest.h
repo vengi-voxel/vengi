@@ -58,7 +58,7 @@ protected:
 							int expectedX, int expectedY);
 
 	// load test_material.vox and check the material for the given target format (identified by the filename)
-	void testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
+	void testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {});
 
 	void testTransform(const core::String &filename);
 	void testTransform(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
