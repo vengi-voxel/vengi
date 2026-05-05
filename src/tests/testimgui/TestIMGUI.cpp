@@ -14,6 +14,8 @@
 TestIMGUI::TestIMGUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testimgui");
+	setRenderAxis(false);
+	setCameraMotion(false);
 }
 
 void TestIMGUI::onRenderUI() {
@@ -71,6 +73,9 @@ app::AppState TestIMGUI::onInit() {
 	video::clearColor(::color::Black());
 	// video::enableDebug(video::DebugSeverity::Medium);
 	return state;
+}
+
+void TestIMGUI::doRender() {
 }
 
 TEST_APP(TestIMGUI)

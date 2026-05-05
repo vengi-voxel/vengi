@@ -4,17 +4,19 @@
 
 #pragma once
 
-#include "ui/IMGUIApp.h"
+#include "testcore/TestApp.h"
 
 /**
  * @brief Renders the imgui demo
  */
-class TestIMGUI: public ui::IMGUIApp {
+class TestIMGUI: public TestApp {
 private:
-	using Super = ui::IMGUIApp;
+	using Super = TestApp;
 	bool _showTestWindow = false;
 	bool _showMetricsWindow = false;
 	bool _showImPlotWindow = false;
+
+	void doRender() override;
 
 public:
 	TestIMGUI(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
