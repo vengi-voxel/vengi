@@ -4,7 +4,6 @@
 
 #include "color/ColorUtil.h"
 #include "FBXFormat.h"
-#include "app/App.h"
 #include "color/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -29,8 +28,6 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
-#include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/gtc/color_space.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <limits>
 
@@ -41,12 +38,6 @@
 #include "voxelformat/external/ufbx_write.h"
 
 namespace voxelformat {
-
-#define wrapBool(read)                                                                                                 \
-	if ((read) == false) {                                                                                             \
-		Log::error("Failed to write fbx " CORE_STRINGIFY(read));                                                       \
-		return false;                                                                                                  \
-	}
 
 bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
@@ -59,40 +50,13 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	return saveMeshesBinary(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
-bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-								  const core::String &filename, io::SeekableWriteStream &stream,
-								  uint32_t sentinelLength) {
-	const int64_t endOffsetPos = stream.pos();
-	stream.writeUInt32(0); // Placeholder for EndOffset
-
-	// TODO: VOXELFORMAT: write the node name and properties - this is not yet implemented
-
-	// Write children recursively
-	const scenegraph::SceneGraphNodeChildren &children = node.children();
-	for (int childId : children) {
-		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		if (!saveRecursiveNode(sceneGraph, child, filename, stream, sentinelLength)) {
-			return false;
-		}
-	}
-
-	for (uint32_t i = 0; i < sentinelLength; ++i) {
-		stream.writeUInt8(0x00);
-	}
-
-	const int64_t endOffset = stream.pos();
-	stream.seek(endOffsetPos);
-	stream.writeUInt32((uint32_t)endOffset);
-	stream.seek(endOffset);
-
-	return true;
-}
-
 bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename,
 								 io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 								 bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	ufbxw_scene_opts sceneOpts;
 	core_memset(&sceneOpts, 0, sizeof(sceneOpts));
+	(void)quad;
+	(void)withTexCoords;
 	ufbxw_scene *ws = ufbxw_create_scene(&sceneOpts);
 	if (!ws) {
 		Log::error("Failed to create ufbx_write scene");
@@ -134,15 +98,27 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 		}
 		nodeMap.put(sgNode.id(), wNode);
 
-		// Set rest pose transform
+		// Set rest pose transform - only for non-mesh nodes or when applyTransform is false
+		// (when applyTransform is true, vertices are already transformed)
+		bool meshAppliesTransform = false;
+		if (meshNodeMap.hasKey(sgNode.id())) {
+			int mi = -1;
+			meshNodeMap.get(sgNode.id(), mi);
+			if (mi >= 0) {
+				meshAppliesTransform = meshes[mi].applyTransform;
+			}
+		}
+
 		const scenegraph::KeyFrameIndex kfIdx = 0;
 		const scenegraph::SceneGraphTransform &transform = sgNode.transform(kfIdx);
-		const glm::vec3 &t = transform.localTranslation();
-		const glm::quat &r = transform.localOrientation();
-		const glm::vec3 &s = transform.localScale();
-		ufbxw_node_set_translation(ws, wNode, {t.x, t.y, t.z});
-		ufbxw_node_set_rotation_quat(ws, wNode, {r.x, r.y, r.z, r.w}, UFBXW_ROTATION_ORDER_XYZ);
-		ufbxw_node_set_scaling(ws, wNode, {s.x, s.y, s.z});
+		if (!meshAppliesTransform) {
+			const glm::vec3 &t = transform.localTranslation();
+			const glm::quat &r = transform.localOrientation();
+			const glm::vec3 &s = transform.localScale();
+			ufbxw_node_set_translation(ws, wNode, {t.x, t.y, t.z});
+			ufbxw_node_set_rotation_quat(ws, wNode, {r.x, r.y, r.z, r.w}, UFBXW_ROTATION_ORDER_XYZ);
+			ufbxw_node_set_scaling(ws, wNode, {s.x, s.y, s.z});
+		}
 		ufbxw_node_set_visibility(ws, wNode, sgNode.visible());
 
 		// Attach mesh
@@ -260,527 +236,6 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 
 	ufbxw_free_scene(ws);
 	return ok;
-}
-
-void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
-										   const scenegraph::SceneGraphTransform &transform) {
-	const glm::vec3 &lclTranslation = transform.localTranslation();
-	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Translation\", \"Lcl Translation\", \"\",%f,%f,%f\n",
-							 lclTranslation.x, lclTranslation.y, lclTranslation.z);
-	const glm::quat &lclRotationQuat = transform.localOrientation();
-	const glm::vec3 lclRotationEulerDegrees(glm::degrees(glm::eulerAngles(lclRotationQuat)));
-	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Rotation\", \"Lcl Rotation\", \"\",%f,%f,%f\n",
-							 lclRotationEulerDegrees.x, lclRotationEulerDegrees.y, lclRotationEulerDegrees.z);
-	const glm::vec3 &lclScaling = transform.localScale();
-	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Scaling\", \"Lcl Scaling\", \"\",%f,%f,%f\n", lclScaling.x,
-							 lclScaling.y, lclScaling.z);
-	stream.writeStringFormat(false, "\t\t\tProperty: \"InheritType\", \"enum\", \"\",1\n");
-}
-
-// https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
-bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename,
-								io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
-								bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
-	int meshCount = 0;
-	for (const ChunkMeshExt &meshExt : meshes) {
-		for (int i = 0; i < 2; ++i) {
-			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
-			if (mesh->isEmpty()) {
-				continue;
-			}
-			if (meshExt.texture && meshExt.texture->isLoaded()) {
-				Log::error("FBX ASCII export with textures is not yet supported");
-				return false;
-			}
-			++meshCount;
-		}
-	}
-
-	stream.writeLine("; FBX 6.1.0 project file");
-	stream.writeLine("; ----------------------------------------------------");
-
-	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
-	FBXHeaderVersion: 1003
-	FBXVersion: 6100
-	Creator: "github.com/vengi-voxel/vengi %s"
-	OtherFlags:  {
-		FlagPLE: 0
-	}
-}
-
-Creator: "%s %s"
-
-Definitions: {
-	Version: 100
-	Count: 1
-	ObjectType: "Model" {
-		Count: %i
-	}
-	ObjectType: "Geometry" {
-		Count: %i
-	}
-	ObjectType: "Material" {
-		Count: %i
-		PropertyTemplate: "FbxSurfacePhong" {
-			Properties60:  {
-				Property: "ShadingModel", "KString", "", "Phong"
-				Property: "MultiLayer", "bool", "", 0
-				Property: "EmissiveColor", "ColorRGB", "", 0, 0, 0
-				Property: "EmissiveFactor", "double", "", 1
-				Property: "AmbientColor", "ColorRGB", "", 0.2, 0.2, 0.2
-				Property: "AmbientFactor", "double", "", 1
-				Property: "DiffuseColor", "ColorRGB", "", 0.8, 0.8, 0.8
-				Property: "DiffuseFactor", "double", "", 1
-				Property: "Bump", "Vector3D", "", 0, 0, 0
-				Property: "NormalMap", "Vector3D", "", 0, 0, 0
-				Property: "BumpFactor", "double", "", 1
-				Property: "TransparentColor", "ColorRGB", "", 0, 0, 0
-				Property: "TransparencyFactor", "double", "", 0
-				Property: "DisplacementColor", "ColorRGB", "", 0, 0, 0
-				Property: "DisplacementFactor", "double", "", 1
-				Property: "VectorDisplacementColor", "ColorRGB", "", 0, 0, 0
-				Property: "VectorDisplacementFactor", "double", "", 1
-				Property: "SpecularColor", "ColorRGB", "", 0.2, 0.2, 0.2
-				Property: "SpecularFactor", "double", "", 1
-				Property: "ShininessExponent", "double", "", 20
-				Property: "ReflectionColor", "ColorRGB", "", 0, 0, 0
-				Property: "ReflectionFactor", "double", "", 1
-			}
-		}
-	}
-	ObjectType: "GlobalSettings" {
-		Count: 1
-	}
-}
-
-Objects: {
-	GlobalSettings:  {
-		Version: 1000
-		Properties60:  {
-			Property: "UpAxis", "int", "",1
-			Property: "UpAxisSign", "int", "",1
-			Property: "FrontAxis", "int", "",2
-			Property: "FrontAxisSign", "int", "",1
-			Property: "CoordAxis", "int", "",0
-			Property: "CoordAxisSign", "int", "",1
-			Property: "OriginalUpAxis", "int", "",1
-			Property: "OriginalUpAxisSign", "int", "",1
-			Property: "UnitScaleFactor", "double", "",1.0
-			Property: "OriginalUnitScaleFactor", "double", "",1.0
-			Property: "AmbientColor", "ColorRGB", "",0,0,0
-			Property: "DefaultCamera", "KString", "", "Producer Perspective"
-			Property: "TimeMode", "enum", "",6
-			Property: "TimeSpan", "time", "",0,4611686018427387904
-		}
-	}
-)",
-							 PROJECT_VERSION, app::App::getInstance()->fullAppname().c_str(), PROJECT_VERSION,
-							 meshCount, meshCount, meshCount);
-
-	Log::debug("Exporting %i models", meshCount);
-
-	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
-
-	uint32_t objectIndex = 0;
-	core::DynamicArray<core::String> connections;
-	core::Map<int, core::DynamicArray<core::String>> nodeModelNames;
-
-	for (const ChunkMeshExt &meshExt : meshes) {
-		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
-			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
-			if (mesh->isEmpty()) {
-				continue;
-			}
-			Log::debug("Exporting model %s", meshExt.name.c_str());
-			const int nv = (int)mesh->getNoOfVertices();
-			const int ni = (int)mesh->getNoOfIndices();
-			if (ni % 3 != 0) {
-				Log::error("Unexpected indices amount");
-				return false;
-			}
-			const voxel::NormalArray &normals = mesh->getNormalVector();
-			const bool exportNormals = !normals.empty();
-			if (exportNormals) {
-				Log::debug("Export normals for mesh %i", i);
-			}
-			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-			const palette::Palette &palette = graphNode.palette();
-			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-			const voxel::IndexType *indices = mesh->getRawIndexData();
-			const char *objectName = meshExt.name.c_str();
-			const core::String &uuidStr = graphNode.uuid().str();
-			if (objectName[0] == '\0') {
-				objectName = uuidStr.c_str();
-			}
-
-			const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
-			auto iter = nodeModelNames.find(meshExt.nodeId);
-			if (iter == nodeModelNames.end()) {
-				core::DynamicArray<core::String> names;
-				names.push_back(modelName);
-				nodeModelNames.put(meshExt.nodeId, names);
-			} else {
-				iter->value.push_back(modelName);
-			}
-			const core::String geometryName = core::String::format("Geometry::%s-%u", objectName, objectIndex);
-			connections.push_back(
-				core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", geometryName.c_str(), modelName.c_str()));
-			const core::String materialName = core::String::format("Material::Material-%u", objectIndex);
-			connections.push_back(
-				core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", materialName.c_str(), modelName.c_str()));
-
-			// TODO: MATERIAL: implement palette material export
-			stream.writeStringFormat(false, "\tMaterial: \"%s\", \"\" {\n", materialName.c_str());
-			wrapBool(stream.writeLine("\t\tVersion: 102"))
-			wrapBool(stream.writeLine("\t\tShadingModel: \"Phong\""))
-			wrapBool(stream.writeLine("\t\tMultiLayer: 0"))
-			wrapBool(stream.writeLine("\t\tProperties60:  {"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"ShadingModel\", \"KString\", \"\", \"Phong\""))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"MultiLayer\", \"bool\", \"\",0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"EmissiveColor\", \"ColorRGB\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"EmissiveFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"AmbientColor\", \"ColorRGB\", \"\",0.2,0.2,0.2"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"AmbientFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"DiffuseColor\", \"ColorRGB\", \"\",0.8,0.8,0.8"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"DiffuseFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"Bump\", \"Vector3D\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"NormalMap\", \"Vector3D\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"BumpFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"TransparentColor\", \"ColorRGB\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"TransparencyFactor\", \"double\", \"\",0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"DisplacementColor\", \"ColorRGB\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"DisplacementFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"VectorDisplacementColor\", \"ColorRGB\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"VectorDisplacementFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"SpecularColor\", \"ColorRGB\", \"\",0.2,0.2,0.2"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"SpecularFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"ShininessExponent\", \"double\", \"\",20"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"ReflectionColor\", \"ColorRGB\", \"\",0,0,0"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"ReflectionFactor\", \"double\", \"\",1"))
-			wrapBool(stream.writeLine("\t\t}"))
-			wrapBool(stream.writeLine("\t}"))
-
-			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", modelName.c_str());
-			wrapBool(stream.writeLine("\t\tVersion: 232"))
-			wrapBool(stream.writeLine("\t\tProperties60:  {"))
-			stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n",
-									 graphNode.visible() ? 1 : 0);
-			stream.writeStringFormat(false, "\t\t\tProperty: \"DefaultAttributeIndex\", \"int\", \"\",0\n");
-			if (meshExt.applyTransform) {
-				writeTransformToProperties(stream, scenegraph::SceneGraphTransform());
-			} else {
-				writeTransformToProperties(stream, graphNode.transform(keyFrameIdx));
-			}
-			wrapBool(stream.writeLine("\t\t}"))
-			wrapBool(stream.writeLine("\t\tShading: Y"))
-			wrapBool(stream.writeLine("\t\tCulling: \"CullingOff\""))
-			wrapBool(stream.writeLine("\t}"))
-
-			stream.writeStringFormat(false, "\tGeometry: \"%s\", \"Mesh\" {\n", geometryName.c_str());
-			wrapBool(stream.writeLine("\t\tProperties60:  {"))
-			wrapBool(stream.writeLine("\t\t\tProperty: \"Color\", \"ColorRGB\", \"\",0.8,0.8,0.8"))
-			wrapBool(stream.writeLine("\t\t}"))
-
-			wrapBool(stream.writeString("\t\tVertices: ", false))
-			for (int j = 0; j < nv; ++j) {
-				const voxel::VoxelVertex &v = vertices[j];
-
-				glm::vec3 pos;
-				if (meshExt.applyTransform) {
-					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
-				} else {
-					pos = v.position;
-				}
-				pos *= scale;
-				if (j > 0) {
-					wrapBool(stream.writeString(",", false))
-				}
-				stream.writeStringFormat(false, "%.04f,%.04f,%.04f", pos.x, pos.y, pos.z);
-			}
-			wrapBool(stream.writeString("\n", false))
-
-			wrapBool(stream.writeString("\t\tPolygonVertexIndex: ", false))
-
-			for (int j = 0; j < ni; j += 3) {
-				const uint32_t one = indices[j + 0];
-				const uint32_t two = indices[j + 1];
-				const uint32_t three = indices[j + 2];
-				if (j > 0) {
-					wrapBool(stream.writeString(",", false))
-				}
-				stream.writeStringFormat(false, "%u,%u,-%u", one, two, (three + 1u));
-			}
-			wrapBool(stream.writeString("\n", false))
-			wrapBool(stream.writeLine("\t\tGeometryVersion: 124"))
-
-			wrapBool(stream.writeString("\t\tLayerElementMaterial: 0 {\n"
-										"\t\t\tVersion: 101\n"
-										"\t\t\tName: \"\"\n"
-										"\t\t\tMappingInformationType: \"ByPolygon\"\n"
-										"\t\t\tReferenceInformationType: \"IndexToDirect\"\n"
-										"\t\t\tMaterials: ",
-										false))
-			const int polyCount = ni / 3;
-			stream.writeStringFormat(false, "*%i {\n\t\t\t\ta: ", polyCount);
-			for (int k = 0; k < polyCount; ++k) {
-				if (k > 0) {
-					stream.writeString(",", false);
-				}
-				stream.writeString("0", false);
-			}
-			wrapBool(stream.writeString("\n\t\t\t}\n\t\t}\n", false))
-
-			if (exportNormals) {
-				stream.writeString("\t\tLayerElementNormal: 0 {\n"
-								   "\t\t\tVersion: 101\n"
-								   "\t\t\tName: \"\"\n"
-								   "\t\t\tMappingInformationType: \"ByVertice\"\n"
-								   "\t\t\tReferenceInformationType: \"Direct\"\n",
-								   false);
-
-				wrapBool(stream.writeString("\t\t\tNormals: ", false))
-				for (size_t j = 0; j < normals.size(); j++) {
-					const glm::vec3 &norm = normals[j];
-					if (j > 0) {
-						wrapBool(stream.writeString(",", false))
-					}
-					stream.writeStringFormat(false, "%f,%f,%f", norm.x, norm.y, norm.z);
-				}
-				wrapBool(stream.writeLine("\n\t\t}"))
-			}
-
-			if (withTexCoords) {
-				wrapBool(stream.writeLine("\t\tLayerElementUV: 0 {"))
-				wrapBool(stream.writeLine("\t\t\tVersion: 101"))
-				wrapBool(stream.writeLine("\t\t\tName: \"\""))
-				wrapBool(stream.writeLine("\t\t\tMappingInformationType: \"ByPolygonVertex\""))
-				wrapBool(stream.writeLine("\t\t\tReferenceInformationType: \"Direct\""))
-				wrapBool(stream.writeString("\t\t\tUV: ", false))
-
-				for (int j = 0; j < ni; j++) {
-					const uint32_t index = indices[j];
-					const voxel::VoxelVertex &v = vertices[index];
-					const glm::vec2 &uv = paletteUV(v.colorIndex);
-					if (j > 0) {
-						wrapBool(stream.writeString(",", false))
-					}
-					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
-				}
-				wrapBool(stream.writeString("\n\t\t}\n", false))
-			}
-			if (withColor) {
-				wrapBool(stream.writeString("\t\tLayerElementColor: 0 {\n"
-											"\t\t\tVersion: 101\n"
-											"\t\t\tName: \"\"\n"
-											"\t\t\tMappingInformationType: \"ByVertice\"\n"
-											"\t\t\tReferenceInformationType: \"Direct\"\n"
-											"\t\t\tColors: ",
-											false))
-				for (int j = 0; j < nv; j++) {
-					const voxel::VoxelVertex &v = vertices[j];
-					const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
-					if (j > 0) {
-						wrapBool(stream.writeString(",", false))
-					}
-					stream.writeStringFormat(false, "%f,%f,%f,%f", color.r, color.g, color.b, color.a);
-				}
-				// close LayerElementColor
-
-				wrapBool(stream.writeLine("\n\t\t}"))
-			}
-
-			wrapBool(stream.writeString("\t\tLayer: 0 {\n"
-										"\t\t\tVersion: 100\n",
-										false))
-
-			wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
-										"\t\t\t\tTypedIndex: 0\n"
-										"\t\t\t\tType: \"LayerElementMaterial\"\n"
-										"\t\t\t}\n",
-										false))
-
-			if (exportNormals) {
-				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
-											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementNormal\"\n"
-											"\t\t\t}\n",
-											false))
-			}
-			if (withTexCoords) {
-				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
-											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementUV\"\n"
-											"\t\t\t}\n",
-											false))
-			}
-			if (withColor) {
-				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
-											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementColor\"\n"
-											"\t\t\t}\n",
-											false))
-			}
-			wrapBool(stream.writeLine("\t\t}"))
-
-			// close the geometry
-			wrapBool(stream.writeLine("\t}"))
-			++objectIndex;
-		}
-	}
-
-	for (const auto &e : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &graphNode = e->second;
-		if (nodeModelNames.find(graphNode.id()) != nodeModelNames.end()) {
-			continue;
-		}
-		const char *objectName = graphNode.name().c_str();
-		const core::String &uuidStr = graphNode.uuid().str();
-		if (objectName[0] == '\0') {
-			objectName = uuidStr.c_str();
-		}
-		const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
-		core::DynamicArray<core::String> names;
-		names.push_back(modelName);
-		nodeModelNames.put(graphNode.id(), names);
-
-		const char *type = "Null";
-		if (graphNode.isCameraNode()) {
-			type = "Camera";
-		}
-		stream.writeStringFormat(false, "\tModel: \"%s\", \"%s\" {\n", modelName.c_str(), type);
-		wrapBool(stream.writeLine("\t\tVersion: 232"))
-		wrapBool(stream.writeLine("\t\tProperties60:  {"))
-		scenegraph::KeyFrameIndex keyFrameIndex = 0;
-		writeTransformToProperties(stream, graphNode.transform(keyFrameIndex));
-		stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n", graphNode.visible() ? 1 : 0);
-
-		if (graphNode.isCameraNode()) {
-			const scenegraph::SceneGraphNodeCamera &camera = scenegraph::toCameraNode(graphNode);
-			stream.writeStringFormat(false, "\t\t\tProperty: \"NearPlane\", \"double\", \"\",%f\n", camera.nearPlane());
-			stream.writeStringFormat(false, "\t\t\tProperty: \"FarPlane\", \"double\", \"\",%f\n", camera.farPlane());
-			stream.writeStringFormat(false, "\t\t\tProperty: \"CameraProjectionType\", \"enum\", \"\",%d\n",
-									 camera.isPerspective() ? 0 : 1);
-		}
-
-		wrapBool(stream.writeLine("\t\t}"))
-		wrapBool(stream.writeLine("\t}"))
-		++objectIndex;
-	}
-
-	for (const auto &e : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &graphNode = e->second;
-		auto iter = nodeModelNames.find(graphNode.id());
-		if (iter == nodeModelNames.end()) {
-			continue;
-		}
-		const core::DynamicArray<core::String> &myModels = iter->value;
-		int parentId = graphNode.parent();
-		core::String parentModelName = "Model::Scene";
-		if (parentId != -1) {
-			auto parentIter = nodeModelNames.find(parentId);
-			if (parentIter != nodeModelNames.end() && !parentIter->value.empty()) {
-				parentModelName = parentIter->value[0];
-			}
-		}
-
-		for (const core::String &modelName : myModels) {
-			connections.push_back(core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", modelName.c_str(),
-													   parentModelName.c_str()));
-		}
-	}
-
-	// close objects
-	wrapBool(stream.writeLine("}"))
-
-	wrapBool(stream.writeLine("Connections:  {"))
-	for (const core::String &connection : connections) {
-		stream.writeString(connection, false);
-	}
-	wrapBool(stream.writeLine("}"))
-
-	wrapBool(stream.writeLine("Takes:  {"))
-	wrapBool(stream.writeLine("\tCurrent: \"Default\""))
-	for (const core::String &anim : sceneGraph.animations()) {
-		stream.writeStringFormat(false, "\tTake: \"%s\" {\n", anim.c_str());
-		if (!stream.writeStringFormat(false, "\t\tFileName: \"%s.tak\"\n", anim.c_str())) {
-			Log::error("Failed to write take filename");
-			return false;
-		}
-		scenegraph::FrameIndex maxFrame = 0;
-		for (const auto &e : sceneGraph.nodes()) {
-			const scenegraph::SceneGraphNode &graphNode = e->second;
-			if (!graphNode.allKeyFrames().hasKey(anim)) {
-				continue;
-			}
-			const scenegraph::SceneGraphKeyFrames &keyFrames = graphNode.keyFrames(anim);
-			for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-				maxFrame = core_max(maxFrame, kf.frameIdx);
-			}
-		}
-		const int64_t endTime = (int64_t)maxFrame * 1539538600L;
-		stream.writeStringFormat(false, "\t\tLocalTime: 0, %" SDL_PRIs64 "\n", endTime);
-		stream.writeStringFormat(false, "\t\tReferenceTime: 0, %" SDL_PRIs64 "\n", endTime);
-
-		for (const auto &e : sceneGraph.nodes()) {
-			const scenegraph::SceneGraphNode &graphNode = e->second;
-			if (!graphNode.allKeyFrames().hasKey(anim)) {
-				continue;
-			}
-			const scenegraph::SceneGraphKeyFrames &keyFrames = graphNode.keyFrames(anim);
-			if (keyFrames.empty()) {
-				continue;
-			}
-			core::DynamicArray<core::String> modelNames;
-			if (!nodeModelNames.get(graphNode.id(), modelNames)) {
-				continue;
-			}
-			for (const core::String &modelName : modelNames) {
-				stream.writeStringFormat(false, "\t\tModel: \"%s\" {\n", modelName.c_str());
-				wrapBool(stream.writeLine("\t\t\tVersion: 100"))
-				wrapBool(stream.writeLine("\t\t\tChannel: \"Transform\" {"))
-
-				// Translation
-				wrapBool(stream.writeLine("\t\t\t\tChannel: \"T\" {"))
-				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
-					const glm::vec3 &pos = kf.transform().localTranslation();
-					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, pos.x, pos.y,
-											 pos.z);
-				}
-				wrapBool(stream.writeLine("\t\t\t\t}"))
-
-				// Rotation
-				wrapBool(stream.writeLine("\t\t\t\tChannel: \"R\" {"))
-				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
-					const glm::quat &rot = kf.transform().localOrientation();
-					const glm::vec3 euler = glm::degrees(glm::eulerAngles(rot));
-					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, euler.x,
-											 euler.y, euler.z);
-				}
-				wrapBool(stream.writeLine("\t\t\t\t}"))
-
-				// Scaling
-				wrapBool(stream.writeLine("\t\t\t\tChannel: \"S\" {"))
-				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
-					const glm::vec3 &localScale = kf.transform().localScale();
-					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, localScale.x,
-											 localScale.y, localScale.z);
-				}
-				wrapBool(stream.writeLine("\t\t\t\t}"))
-
-				wrapBool(stream.writeLine("\t\t\t}")) // Channel: Transform
-				wrapBool(stream.writeLine("\t\t}"))	  // Model
-			}
-		}
-		wrapBool(stream.writeLine("\t}")) // Take
-	}
-	wrapBool(stream.writeLine("}")) // Takes
-
-	return true;
 }
 
 namespace priv {
@@ -1060,16 +515,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx0);
 					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
 					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx2);
-					// TODO: VOXELFORMAT: this is sRGB - need to convert to linear ??
-#if 1
 					meshTri.setColor(color::getRGBA(priv::_ufbx_to_vec4(color0)),
 									 color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 color::getRGBA(priv::_ufbx_to_vec4(color2)));
-#else
-					meshTri.setColor(color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color0))),
-									 color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color1))),
-									 color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color2))));
-#endif
 				}
 				if (useUVs) {
 					const ufbx_vec2 &uv0 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx0);
@@ -1117,18 +565,12 @@ static void _insertFrameSorted(core::DynamicArray<scenegraph::FrameIndex> &frame
 	frames.push_back(f);
 }
 
-void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
-								scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &sceneGraphNode,
-								const glm::vec3 &scale) const {
+void FBXFormat::importAnimations(const ufbx_scene *ufbxScene, scenegraph::SceneGraph &sceneGraph,
+								 const core::Map<const ufbx_node *, int> &ufbxNodeMap, const glm::vec3 &scale) const {
 	const int fps = ufbxScene->settings.frames_per_second > 0 ? (int)ufbxScene->settings.frames_per_second : 30;
 
 	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
 		const core::String &animId = priv::_ufbx_to_string(stack->name);
-		const double duration = stack->time_end - stack->time_begin;
-		if (duration <= 0.0) {
-			Log::warn("Could not import animation '%s' with non-positive duration %f", animId.c_str(), duration);
-			continue;
-		}
 
 		ufbx_bake_opts bakeOpts;
 		core_memset(&bakeOpts, 0, sizeof(bakeOpts));
@@ -1151,73 +593,74 @@ void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *uf
 			continue;
 		}
 
-		const ufbx_baked_node *bakedNode = ufbx_find_baked_node(bake, (ufbx_node *)ufbxNode);
-		if (!bakedNode) {
-			Log::debug("No baked animation data for node '%s' in animation '%s'", sceneGraphNode.name().c_str(),
-					   animId.c_str());
-			ufbx_free_baked_anim(bake);
-			continue;
-		}
+		const double timeBegin = bake->key_time_min;
+		const double keyDuration = bake->key_time_max - bake->key_time_min;
+		const scenegraph::FrameIndex maxFrame = (scenegraph::FrameIndex)(keyDuration * fps);
 
-		if (!sceneGraphNode.setAnimation(animId)) {
-			Log::warn("Failed to set animation '%s' for node '%s'", animId.c_str(), sceneGraphNode.name().c_str());
-			ufbx_free_baked_anim(bake);
-			continue;
-		}
+		for (size_t ni = 0; ni < bake->nodes.count; ++ni) {
+			const ufbx_baked_node &bakedNode = bake->nodes.data[ni];
+			const ufbx_node *ufbxNode = ufbxScene->nodes.data[bakedNode.typed_id];
 
-		// Use playback_time_begin as the reference point so frame 0 = animation start
-		const double timeBegin = bake->playback_time_begin;
-		const scenegraph::FrameIndex maxFrame = (scenegraph::FrameIndex)(duration * fps);
-
-		// Collect unique frame indices from T/R/S key lists, clamped to playback range
-		core::DynamicArray<scenegraph::FrameIndex> frames;
-		for (size_t i = 0; i < bakedNode->translation_keys.count; ++i) {
-			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->translation_keys.data[i].time, timeBegin, fps);
-			if (f <= maxFrame) {
-				_insertFrameSorted(frames, f);
+			int sgNodeId = InvalidNodeId;
+			if (!ufbxNodeMap.get(ufbxNode, sgNodeId)) {
+				continue;
 			}
-		}
-		for (size_t i = 0; i < bakedNode->rotation_keys.count; ++i) {
-			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->rotation_keys.data[i].time, timeBegin, fps);
-			if (f <= maxFrame) {
-				_insertFrameSorted(frames, f);
+			if (!sceneGraph.hasNode(sgNodeId)) {
+				continue;
 			}
-		}
-		for (size_t i = 0; i < bakedNode->scale_keys.count; ++i) {
-			const scenegraph::FrameIndex f = _timeToFrame(bakedNode->scale_keys.data[i].time, timeBegin, fps);
-			if (f <= maxFrame) {
-				_insertFrameSorted(frames, f);
+			scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(sgNodeId);
+
+			if (!sceneGraphNode.setAnimation(animId)) {
+				continue;
 			}
-		}
 
-		if (frames.empty()) {
-			ufbx_free_baked_anim(bake);
-			continue;
-		}
-
-		Log::debug("Import %i keyframes for animation '%s' on node '%s'", (int)frames.size(), animId.c_str(),
-				   sceneGraphNode.name().c_str());
-
-		for (size_t i = 0; i < frames.size(); ++i) {
-			const scenegraph::FrameIndex frameIdx = frames[i];
-			// Convert frame index back to absolute time for evaluating baked keys
-			const double time = timeBegin + (double)frameIdx / (double)fps;
-			scenegraph::KeyFrameIndex kfIdx = sceneGraphNode.addKeyFrame(frameIdx);
-			if (kfIdx == InvalidKeyFrame) {
-				kfIdx = sceneGraphNode.keyFrameForFrame(frameIdx);
-				if (kfIdx == InvalidKeyFrame) {
-					continue;
+			core::DynamicArray<scenegraph::FrameIndex> frames;
+			for (size_t i = 0; i < bakedNode.translation_keys.count; ++i) {
+				const scenegraph::FrameIndex f = _timeToFrame(bakedNode.translation_keys.data[i].time, timeBegin, fps);
+				if (f <= maxFrame) {
+					_insertFrameSorted(frames, f);
 				}
 			}
-			scenegraph::SceneGraphKeyFrame &kf = sceneGraphNode.keyFrame(kfIdx);
-			kf.interpolation = scenegraph::InterpolationType::Linear;
-			scenegraph::SceneGraphTransform &transform = kf.transform();
-			const ufbx_vec3 t = ufbx_evaluate_baked_vec3(bakedNode->translation_keys, time);
-			transform.setLocalTranslation(priv::_ufbx_to_vec3(t) * scale);
-			const ufbx_quat r = ufbx_evaluate_baked_quat(bakedNode->rotation_keys, time);
-			transform.setLocalOrientation(priv::_ufbx_to_quat(r));
-			const ufbx_vec3 s = ufbx_evaluate_baked_vec3(bakedNode->scale_keys, time);
-			transform.setLocalScale(priv::_ufbx_to_vec3(s));
+			for (size_t i = 0; i < bakedNode.rotation_keys.count; ++i) {
+				const scenegraph::FrameIndex f = _timeToFrame(bakedNode.rotation_keys.data[i].time, timeBegin, fps);
+				if (f <= maxFrame) {
+					_insertFrameSorted(frames, f);
+				}
+			}
+			for (size_t i = 0; i < bakedNode.scale_keys.count; ++i) {
+				const scenegraph::FrameIndex f = _timeToFrame(bakedNode.scale_keys.data[i].time, timeBegin, fps);
+				if (f <= maxFrame) {
+					_insertFrameSorted(frames, f);
+				}
+			}
+
+			if (frames.empty()) {
+				continue;
+			}
+
+			Log::debug("Import %i keyframes for animation '%s' on node '%s'", (int)frames.size(), animId.c_str(),
+					   sceneGraphNode.name().c_str());
+
+			for (size_t i = 0; i < frames.size(); ++i) {
+				const scenegraph::FrameIndex frameIdx = frames[i];
+				const double time = timeBegin + (double)frameIdx / (double)fps;
+				scenegraph::KeyFrameIndex kfIdx = sceneGraphNode.addKeyFrame(frameIdx);
+				if (kfIdx == InvalidKeyFrame) {
+					kfIdx = sceneGraphNode.keyFrameForFrame(frameIdx);
+					if (kfIdx == InvalidKeyFrame) {
+						continue;
+					}
+				}
+				scenegraph::SceneGraphKeyFrame &kf = sceneGraphNode.keyFrame(kfIdx);
+				kf.interpolation = scenegraph::InterpolationType::Linear;
+				scenegraph::SceneGraphTransform &transform = kf.transform();
+				const ufbx_vec3 t = ufbx_evaluate_baked_vec3(bakedNode.translation_keys, time);
+				transform.setLocalTranslation(priv::_ufbx_to_vec3(t) * scale);
+				const ufbx_quat r = ufbx_evaluate_baked_quat(bakedNode.rotation_keys, time);
+				transform.setLocalOrientation(priv::_ufbx_to_quat(r));
+				const ufbx_vec3 s = ufbx_evaluate_baked_vec3(bakedNode.scale_keys, time);
+				transform.setLocalScale(priv::_ufbx_to_vec3(s));
+			}
 		}
 
 		ufbx_free_baked_anim(bake);
@@ -1266,7 +709,7 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 
 int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-						 const glm::vec3 &scale) const {
+						 const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap) const {
 	int nodeId = parent;
 	if (ufbxNode->attrib_type == UFBX_ELEMENT_MESH) {
 		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent);
@@ -1280,14 +723,13 @@ int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 		return nodeId;
 	}
 
-	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraph.node(nodeId), scale);
+	ufbxNodeMap.put(ufbxNode, nodeId);
 
 	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
-		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId, scale);
+		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId, scale, ufbxNodeMap);
 		if (newNodeId == InvalidNodeId) {
-			const core::String name = priv::_ufbx_to_string(ufbxNode->name);
-			Log::error("Failed to add child node '%s'", name.c_str());
-			return newNodeId;
+			const core::String name = priv::_ufbx_to_string(ufbxChildNode->name);
+			Log::warn("Failed to add child node '%s', skipping", name.c_str());
 		}
 	}
 	return nodeId;
@@ -1375,11 +817,14 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 	const glm::vec3 scale = getInputScale(sceneMins, sceneMaxs);
 
-	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale) < 0) {
+	core::Map<const ufbx_node *, int> ufbxNodeMap(64);
+	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale, ufbxNodeMap) < 0) {
 		Log::error("Failed to add root child node");
 		ufbx_free_scene(ufbxScene);
 		return false;
 	}
+
+	importAnimations(ufbxScene, sceneGraph, ufbxNodeMap, scale);
 
 	// Use skin deformers to parent mesh nodes under their primary bone.
 	// This makes the bone animation propagate to the mesh nodes.
@@ -1398,16 +843,9 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		if (!meshNode) {
 			continue;
 		}
-		// Find the vengi node for this mesh by name
-		const core::String meshName = priv::_ufbx_to_string(meshNode->name);
+		// Find the vengi node for this mesh using the ufbx_node-to-nodeId map
 		int meshNodeId = InvalidNodeId;
-		for (const auto &entry : sceneGraph.nodes()) {
-			if (entry->second.name() == meshName && entry->second.isModelNode()) {
-				meshNodeId = entry->second.id();
-				break;
-			}
-		}
-		if (meshNodeId == InvalidNodeId) {
+		if (!ufbxNodeMap.get(meshNode, meshNodeId)) {
 			continue;
 		}
 
@@ -1425,19 +863,14 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			continue;
 		}
 
-		// Find the vengi node for this bone by name
-		const core::String boneName = priv::_ufbx_to_string(bestBone->name);
+		// Find the vengi node for this bone using the ufbx_node-to-nodeId map
 		int boneNodeId = InvalidNodeId;
-		for (const auto &entry : sceneGraph.nodes()) {
-			if (entry->second.name() == boneName && entry->second.isGroupNode()) {
-				boneNodeId = entry->second.id();
-				break;
-			}
-		}
-		if (boneNodeId == InvalidNodeId) {
+		if (!ufbxNodeMap.get(bestBone, boneNodeId)) {
 			continue;
 		}
 
+		const core::String meshName = priv::_ufbx_to_string(meshNode->name);
+		const core::String boneName = priv::_ufbx_to_string(bestBone->name);
 		Log::debug("Re-parenting mesh '%s' under bone '%s'", meshName.c_str(), boneName.c_str());
 		sceneGraph.changeParent(meshNodeId, boneNodeId, scenegraph::NodeMoveFlag::KeepWorldTransform);
 
@@ -1531,7 +964,5 @@ image::ImagePtr FBXFormat::loadScreenshot(const core::String &filename, const io
 	ufbx_free_scene(ufbxScene);
 	return img;
 }
-
-#undef wrapBool
 
 } // namespace voxelformat

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "MeshFormat.h"
-#include "scenegraph/SceneGraphTransform.h"
 
 struct ufbx_node;
 struct ufbx_scene;
@@ -14,7 +13,6 @@ namespace voxelformat {
 
 /**
  * @brief Autodesk FBX
- * https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
  * https://code.blender.org/2013/08/fbx-binary-file-format-specification/
  * https://github.com/libgdx/fbx-conv/
  * https://github.com/BobbyAnguelov/FbxFormatConverter/releases/tag/v0.3
@@ -26,25 +24,19 @@ private:
 	bool saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						  const scenegraph::SceneGraph &sceneGraph);
-	void writeTransformToProperties(io::SeekableWriteStream &stream, const scenegraph::SceneGraphTransform &transform);
-	bool saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
-						 const scenegraph::SceneGraph &sceneGraph);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-				  const glm::vec3 &scale) const;
+				  const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addGroupNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					 int parent, const glm::vec3 &scale) const;
-	void importAnimation(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-						 scenegraph::SceneGraphNode &sceneGraphNode, const glm::vec3 &scale) const;
+	void importAnimations(const ufbx_scene *scene, scenegraph::SceneGraph &sceneGraph,
+						  const core::Map<const ufbx_node *, int> &ufbxNodeMap, const glm::vec3 &scale) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					  int parent, const glm::vec3 &scale) const;
-	bool saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-						   const core::String &filename, io::SeekableWriteStream &stream, uint32_t sentinelLength);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
