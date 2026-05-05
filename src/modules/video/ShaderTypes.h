@@ -20,7 +20,8 @@ typedef core::DynamicStringMap<int> ShaderAttributes;
 struct ShaderResourceBinding {
 	enum Type : uint8_t {
 		UniformBuffer = 1,
-		CombinedImageSampler = 2
+		CombinedImageSampler = 2,
+		StorageImage = 3
 	};
 	const char *name;
 	uint8_t binding;

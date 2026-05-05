@@ -403,6 +403,40 @@ app::AppState IMGUIApp::onInit() {
 	ImGui_ImplOpenGL3_Init(nullptr);
 #endif
 
+#ifdef USE_VK_RENDERER
+	if (_imguiBackendInitialized) {
+		auto procAddr = [](const char *functionName, void *userData) -> PFN_vkVoidFunction {
+			(void)userData;
+			return (PFN_vkVoidFunction)video::getVulkanInstanceProcAddr(functionName);
+		};
+		if (!ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, procAddr, nullptr)) {
+			Log::error("Failed to load ImGui Vulkan functions");
+			_imguiBackendInitialized = false;
+		}
+	}
+	if (_imguiBackendInitialized) {
+		ImGui_ImplVulkan_InitInfo initInfo = {};
+		initInfo.ApiVersion = VK_API_VERSION_1_1;
+		initInfo.Instance = (VkInstance)video::getVulkanInstance();
+		initInfo.PhysicalDevice = (VkPhysicalDevice)video::getVulkanPhysicalDevice();
+		initInfo.Device = (VkDevice)video::getVulkanDevice();
+		initInfo.QueueFamily = video::getVulkanDeviceQueueFamily();
+		initInfo.Queue = (VkQueue)video::getVulkanDeviceQueue();
+		initInfo.DescriptorPool = (VkDescriptorPool)video::getVulkanDescriptorPool();
+		initInfo.PipelineInfoMain.RenderPass = (VkRenderPass)video::getVulkanRenderPass();
+		initInfo.PipelineInfoMain.Subpass = 1;
+		initInfo.MinImageCount = video::getVulkanMinImageCount();
+		initInfo.ImageCount = video::getVulkanImageCount();
+		initInfo.MinAllocationSize = 1024 * 1024;
+		initInfo.CheckVkResultFn = [](VkResult err) {
+			if (err != VK_SUCCESS) {
+				Log::error("ImGui Vulkan error: %d", (int)err);
+			}
+		};
+		_imguiBackendInitialized = ImGui_ImplVulkan_Init(&initInfo);
+	}
+#endif
+
 	ImGui::GetIO().ConfigColorEditFlags = ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueBar;
 
 	_console.init();
@@ -853,10 +887,10 @@ app::AppState IMGUIApp::onRunning() {
 		beforeUI();
 	}
 
-#ifndef USE_VK_RENDERER
-	ImGui_ImplOpenGL3_NewFrame();
-#else
+#ifdef USE_VK_RENDERER
 	ImGui_ImplVulkan_NewFrame();
+#else
+	ImGui_ImplOpenGL3_NewFrame();
 #endif
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
@@ -937,7 +971,15 @@ app::AppState IMGUIApp::onRunning() {
 	ImGui::EndFrame();
 	ImGui::Render();
 
+#ifdef USE_VK_RENDERER
+	video::nextSubpass();
+	VkCommandBuffer cmd = (VkCommandBuffer)video::getVulkanCommandBuffer();
+	if (cmd != VK_NULL_HANDLE) {
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+	}
+#else
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 
 	// Update and Render additional Platform Windows
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -1064,10 +1106,10 @@ app::AppState IMGUIApp::onCleanup() {
 	}
 #endif
 	if (_imguiBackendInitialized) {
-#ifndef USE_VK_RENDERER
-		ImGui_ImplOpenGL3_Shutdown();
-#else
+#ifdef USE_VK_RENDERER
 		ImGui_ImplVulkan_Shutdown();
+#else
+		ImGui_ImplOpenGL3_Shutdown();
 #endif
 		ImGui_ImplSDL3_Shutdown();
 		_imguiBackendInitialized = false;
