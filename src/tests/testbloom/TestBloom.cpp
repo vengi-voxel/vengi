@@ -67,6 +67,9 @@ app::AppState TestBloom::onCleanup() {
 
 void TestBloom::onRenderUI() {
 	Super::onRenderUI();
+	if (_screenshotFrames >= 0) {
+		return;
+	}
 
 	ImGui::Text("scene");
 	ImGui::Image(_sceneTexture->handle(), glm::ivec2(_sceneTexture->width(), _sceneTexture->height()));
