@@ -37,7 +37,66 @@
 #define CGLTF_WRITE_IMPLEMENTATION
 #include "../../external/cgltf_write.h"
 
+// Note on `(char *)` casts in this file:
+// The cgltf API expects `char*` for string fields (like names, URIs, etc.) because it is originally
+// designed to parse and potentially modify data in-place when reading. However, when writing
+// (cgltf_write_file / cgltf_write), these strings are only read. We cast C string literals and
+// `std::string::c_str()` to `(char *)` to satisfy the C struct types. This is safe as cgltf_write
+// doesn't attempt to modify them. It would technically be Undefined Behavior if actually written through.
+
 namespace voxelformat {
+
+static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &archive,
+							bool isGlb, const char *jsonBuf, size_t jsonSize,
+							const void *binBuf, size_t binSize) {
+	bool success = false;
+	if (isGlb) {
+		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+		if (stream) {
+			const uint32_t glbMagic = 0x46546C67;
+			const uint32_t glbVersion = 2;
+			// JSON chunk (padded to 4 bytes with spaces)
+			uint32_t jsonLen = (uint32_t)(jsonSize - 1); // exclude null terminator
+			uint32_t jsonPadded = (jsonLen + 3) & ~3u;
+			// BIN chunk (padded to 4 bytes with zeros)
+			uint32_t binLen = (uint32_t)binSize;
+			uint32_t binPadded = (binLen + 3) & ~3u;
+			uint32_t totalLen = 12 + 8 + jsonPadded + 8 + binPadded;
+
+			stream->writeUInt32(glbMagic);
+			stream->writeUInt32(glbVersion);
+			stream->writeUInt32(totalLen);
+			// JSON chunk
+			stream->writeUInt32(jsonPadded);
+			stream->writeUInt32(0x4E4F534A); // "JSON"
+			stream->write(jsonBuf, jsonLen);
+			for (uint32_t p = jsonLen; p < jsonPadded; ++p) {
+				stream->writeUInt8(' ');
+			}
+			// BIN chunk
+			stream->writeUInt32(binPadded);
+			stream->writeUInt32(0x004E4942); // "BIN\0"
+			stream->write(binBuf, binLen);
+			for (uint32_t p = binLen; p < binPadded; ++p) {
+				stream->writeUInt8(0);
+			}
+			success = true;
+		}
+	} else {
+		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+		if (stream) {
+			stream->write(jsonBuf, jsonSize - 1);
+			success = true;
+		}
+		// Write binary buffer
+		const core::String binPath = core::string::replaceExtension(filename, "bin");
+		core::ScopedPtr<io::SeekableWriteStream> binStream(archive->writeStream(binPath));
+		if (binStream) {
+			binStream->write(binBuf, binSize);
+		}
+	}
+	return success;
+}
 
 static const float GLTF_FPS = 24.0f;
 
@@ -522,6 +581,13 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+
+	struct DelayedTexture {
+		core::String path;
+		image::ImagePtr image;
+	};
+	core::DynamicArray<DelayedTexture> delayedTextures;
+
 	// Count total meshes
 	int totalMeshes = 0;
 	int totalAccessors = 0;
@@ -790,12 +856,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			// Set up image/texture/material for this mesh
 			const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
-			// Write texture as PNG to archive
+			// Queue texture as PNG to archive, wait until JSON building succeeds
 			const core::String texName = core::String::format("texture_%i.png", texIdx);
-			core::ScopedPtr<io::SeekableWriteStream> texStream(archive->writeStream(
-				core::string::extractDir(filename) + texName));
-			if (texStream && meshExt.texture) {
-				image::writePNG(meshExt.texture, *texStream);
+			if (meshExt.texture) {
+				delayedTextures.push_back({core::string::extractDir(filename) + texName, meshExt.texture});
 			}
 			gltfImages[texIdx].uri = (char *)core_malloc(texName.size() + 1);
 			core_memcpy(gltfImages[texIdx].uri, texName.c_str(), texName.size() + 1);
@@ -1333,51 +1397,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	char *jsonBuf = (char *)core_malloc(jsonSize);
 	cgltf_write(&writeOptions, jsonBuf, jsonSize, &gltfData);
 
-	bool success = false;
-	if (isGlb) {
-		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
-		if (stream) {
-			// GLB header
-			const uint32_t glbMagic = 0x46546C67;
-			const uint32_t glbVersion = 2;
-			// JSON chunk (padded to 4 bytes with spaces)
-			uint32_t jsonLen = (uint32_t)(jsonSize - 1); // exclude null terminator
-			uint32_t jsonPadded = (jsonLen + 3) & ~3u;
-			// BIN chunk (padded to 4 bytes with zeros)
-			uint32_t binLen = (uint32_t)bufferSize;
-			uint32_t binPadded = (binLen + 3) & ~3u;
-			uint32_t totalLen = 12 + 8 + jsonPadded + 8 + binPadded;
+	bool success = writeGltfBuffer(filename, archive, isGlb, jsonBuf, jsonSize, buffer, bufferSize);
 
-			stream->writeUInt32(glbMagic);
-			stream->writeUInt32(glbVersion);
-			stream->writeUInt32(totalLen);
-			// JSON chunk
-			stream->writeUInt32(jsonPadded);
-			stream->writeUInt32(0x4E4F534A); // "JSON"
-			stream->write(jsonBuf, jsonLen);
-			for (uint32_t p = jsonLen; p < jsonPadded; ++p) {
-				stream->writeUInt8(' ');
+	if (success) {
+		for (const DelayedTexture &t : delayedTextures) {
+			core::ScopedPtr<io::SeekableWriteStream> texStream(archive->writeStream(t.path));
+			if (texStream && t.image) {
+				image::writePNG(t.image, *texStream);
 			}
-			// BIN chunk
-			stream->writeUInt32(binPadded);
-			stream->writeUInt32(0x004E4942); // "BIN\0"
-			stream->write(buffer, binLen);
-			for (uint32_t p = binLen; p < binPadded; ++p) {
-				stream->writeUInt8(0);
-			}
-			success = true;
-		}
-	} else {
-		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
-		if (stream) {
-			stream->write(jsonBuf, jsonSize - 1);
-			success = true;
-		}
-		// Write binary buffer
-		const core::String binPath = core::string::replaceExtension(filename, "bin");
-		core::ScopedPtr<io::SeekableWriteStream> binStream(archive->writeStream(binPath));
-		if (binStream) {
-			binStream->write(buffer, bufferSize);
 		}
 	}
 
@@ -1566,47 +1593,7 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	char *jsonBuf = (char *)core_malloc(jsonSize);
 	cgltf_write(&writeOptions, jsonBuf, jsonSize, &gltfData);
 
-	bool success = false;
-	if (isGlb) {
-		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
-		if (stream) {
-			const uint32_t glbMagic = 0x46546C67;
-			const uint32_t glbVersion = 2;
-			uint32_t jsonLen = (uint32_t)(jsonSize - 1);
-			uint32_t jsonPadded = (jsonLen + 3) & ~3u;
-			uint32_t binLen = (uint32_t)bufferSize;
-			uint32_t binPadded = (binLen + 3) & ~3u;
-			uint32_t totalLen = 12 + 8 + jsonPadded + 8 + binPadded;
-
-			stream->writeUInt32(glbMagic);
-			stream->writeUInt32(glbVersion);
-			stream->writeUInt32(totalLen);
-			stream->writeUInt32(jsonPadded);
-			stream->writeUInt32(0x4E4F534A);
-			stream->write(jsonBuf, jsonLen);
-			for (uint32_t p = jsonLen; p < jsonPadded; ++p) {
-				stream->writeUInt8(' ');
-			}
-			stream->writeUInt32(binPadded);
-			stream->writeUInt32(0x004E4942);
-			stream->write(buffer, binLen);
-			for (uint32_t p = binLen; p < binPadded; ++p) {
-				stream->writeUInt8(0);
-			}
-			success = true;
-		}
-	} else {
-		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
-		if (stream) {
-			stream->write(jsonBuf, jsonSize - 1);
-			success = true;
-		}
-		const core::String binPath = core::string::replaceExtension(filename, "bin");
-		core::ScopedPtr<io::SeekableWriteStream> binStream(archive->writeStream(binPath));
-		if (binStream) {
-			binStream->write(buffer, bufferSize);
-		}
-	}
+	bool success = writeGltfBuffer(filename, archive, isGlb, jsonBuf, jsonSize, buffer, bufferSize);
 
 	core_free(jsonBuf);
 	core_free(buffer);
