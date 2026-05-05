@@ -45,6 +45,7 @@ public:
 	 * @see setup()
 	 */
 	void shutdown() override;
+	void initBindings() override;
 $prototypes$
 };
 

@@ -126,6 +126,12 @@ public:
 		return false;
 	}
 
+	/**
+	 * @brief Called after the program is linked. Override to register descriptor bindings.
+	 */
+	virtual void initBindings() {
+	}
+
 	bool loadFromFile(const core::String& filename, ShaderType shaderType);
 
 	/**

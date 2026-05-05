@@ -888,6 +888,46 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	srcSource = core::string::replaceAll(srcSource, "$uniformarrayinfo$", uniformArrayInfo);
 	srcSource = core::string::replaceAll(srcSource, "$uniforms$", uniforms);
 
+	// Generate shader resource bindings table for Vulkan descriptor set layout
+	core::String shaderBindings;
+	{
+		core::String entries;
+		int bindingCount = 0;
+		// UBOs: present in vertex (and possibly fragment) stage
+		for (const auto &ubuf : shaderStruct.uniformBlocks) {
+			if (ubuf.layout.binding >= 0) {
+				entries += "\t\t{";
+				entries += core::string::toString(ubuf.layout.binding);
+				entries += ", video::ShaderResourceBinding::UniformBuffer, 1 | 2},\n"; // vertex + fragment
+				++bindingCount;
+			}
+		}
+		// Samplers/images: present in fragment stage
+		for (const auto &v : shaderStruct.uniforms) {
+			if (!v.isSampler() && !v.isImage()) {
+				continue;
+			}
+			auto layoutIter = shaderStruct.layouts.find(v.name);
+			if (layoutIter != shaderStruct.layouts.end() && layoutIter->second.binding >= 0) {
+				entries += "\t\t{";
+				entries += core::string::toString(layoutIter->second.binding);
+				entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2},\n"; // fragment
+				++bindingCount;
+			}
+		}
+		if (bindingCount > 0) {
+			shaderBindings += "\t{\n";
+			shaderBindings += "\t\tstatic const video::ShaderResourceBinding _bindings[] = {\n";
+			shaderBindings += entries;
+			shaderBindings += "\t\t};\n";
+			shaderBindings += "\t\tvideo::registerShaderBindings(_program, _bindings, ";
+			shaderBindings += core::string::toString(bindingCount);
+			shaderBindings += ");\n";
+			shaderBindings += "\t}\n";
+		}
+	}
+	srcSource = core::string::replaceAll(srcSource, "$shaderbindings$", shaderBindings);
+
 	srcSource = core::string::replaceAll(srcSource, "$attributes$", attributes);
 	srcSource = core::string::replaceAll(srcSource, "$methods$", methods);
 	srcSource = core::string::replaceAll(srcSource, "$prototypes$", prototypes);

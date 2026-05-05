@@ -4,6 +4,8 @@
 
 #include "$name$.h"
 #include "core/GLM.h"
+#include "video/Renderer.h"
+#include "video/ShaderTypes.h"
 #include "video/UniformBuffer.h"
 #include "core/Log.h"
 #include "engine-config.h"
@@ -65,6 +67,10 @@ void $name$::shutdown() {
 	if (_setupCalls == 0) {
 		Super::shutdown();
 	}
+}
+
+void $name$::initBindings() {
+$shaderbindings$
 }
 $methods$
 

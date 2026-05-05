@@ -1474,6 +1474,12 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	}
 }
 
+void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
+	(void)program;
+	(void)bindings;
+	(void)count;
+}
+
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 #if 0
 	// TODO: this is throwing a lot of GL_INVALID_VALUE errors

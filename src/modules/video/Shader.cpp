@@ -214,6 +214,9 @@ bool Shader::init() {
 	createProgramFromShaders();
 	const bool success = _program != InvalidId;
 	_initialized = success;
+	if (success) {
+		initBindings();
+	}
 	return success;
 }
 
