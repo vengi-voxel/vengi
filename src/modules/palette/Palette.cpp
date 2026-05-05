@@ -1195,7 +1195,7 @@ void Palette::setAlpha(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected alpha factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	_colors[paletteColorIdx].a = (float)_colors[paletteColorIdx].a * glm::clamp(factor, 0.0f, 1.0f);
+	_colors[paletteColorIdx].a = (uint8_t)(((float)_colors[paletteColorIdx].a * glm::clamp(factor, 0.0f, 1.0f)) + 0.5f);
 	markDirty();
 }
 

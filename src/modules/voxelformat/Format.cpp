@@ -323,10 +323,12 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 			Log::debug("Need to replace %i", emptyIndex);
 			if (palette.colorCount() < palette::PaletteMaxColors) {
 				Log::debug("Shift colors in palettes to make slot %i empty", emptyIndex);
-				for (int i = palette.colorCount(); i >= emptyIndex; --i) {
+				for (int i = palette.colorCount(); i > emptyIndex; --i) {
 					palette.setColor(i, palette.color(i - 1));
 					palette.setMaterial(i, palette.material(i - 1));
 				}
+				palette.setColor(emptyIndex, color::RGBA(0, 0, 0, 0));
+				palette.setMaterial(emptyIndex, palette::Material());
 				if (emptyIndex <= palette.colorCount()) {
 					palette.changeSize(1);
 				}
