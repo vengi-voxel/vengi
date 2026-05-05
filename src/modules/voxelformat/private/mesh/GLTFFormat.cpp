@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "engine-config.h"
 #include "image/Image.h"
@@ -28,6 +29,7 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <float.h>
 
 #define CGLTF_MALLOC(size) core_malloc(size)
 #define CGLTF_FREE(ptr) core_free(ptr)
@@ -165,7 +167,9 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 				pointCloud.reserve((int)posAccessor->count);
 				for (cgltf_size vi = 0; vi < posAccessor->count; ++vi) {
 					float pos[3] = {0};
-					cgltf_accessor_read_float(posAccessor, vi, pos, 3);
+					if (!cgltf_accessor_read_float(posAccessor, vi, pos, 3)) {
+						continue;
+					}
 					PointCloudVertex v;
 					v.position = glm::vec3(pos[0], pos[1], pos[2]);
 					if (colAccessor) {
@@ -212,7 +216,9 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			for (cgltf_size vi = 0; vi < vertexCount; ++vi) {
 				MeshVertex v;
 				float pos[3] = {0};
-				cgltf_accessor_read_float(posAccessor, vi, pos, 3);
+				if (!cgltf_accessor_read_float(posAccessor, vi, pos, 3)) {
+					continue;
+				}
 				v.pos = glm::vec3(pos[0], pos[1], pos[2]);
 
 				if (normalAccessor) {
@@ -338,7 +344,9 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 
 			for (cgltf_size ki = 0; ki < input->count; ++ki) {
 				float time = 0.0f;
-				cgltf_accessor_read_float(input, ki, &time, 1);
+				if (!cgltf_accessor_read_float(input, ki, &time, 1)) {
+					continue;
+				}
 				scenegraph::FrameIndex frameIdx = (scenegraph::FrameIndex)(time * GLTF_FPS + 0.5f);
 				scenegraph::KeyFrameIndex kfIdx = sgNode.addKeyFrame(frameIdx);
 				if (kfIdx == InvalidKeyFrame) {
@@ -478,7 +486,16 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	// Build a map from cgltf_node* to scenegraph node id for animation import
 	core::Map<const cgltf_node *, int> nodeMap(64);
 
-	const cgltf_scene *scene = data->scene ? data->scene : &data->scenes[0];
+	const cgltf_scene *scene = data->scene;
+	if (!scene) {
+		if (data->scenes_count == 0) {
+			Log::error("No scenes found in gltf file %s", filename.c_str());
+			cgltf_free(data);
+			core_free(buf);
+			return false;
+		}
+		scene = &data->scenes[0];
+	}
 	// If there's a single scene-level node without a mesh, it's just a wrapper - skip it
 	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
 		const cgltf_node *wrapper = scene->nodes[0];
@@ -634,14 +651,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	// Build hierarchy: find group nodes that need to be created as GLTF nodes
 	// Map scene graph node ID -> GLTF node index for mesh nodes
-	core::Map<int, int> sgNodeToGltfIdx(totalMeshes * 2);
+	core::DynamicMap<int, int> sgNodeToGltfIdx;
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		sgNodeToGltfIdx.put(meshes[meshInfos[mi].meshExtIdx].nodeId, mi);
 	}
 
 	// Collect group nodes (non-mesh parents that aren't root)
 	core::DynamicArray<int> groupNodeIds; // scene graph node IDs of group nodes we need to create
-	core::Map<int, int> groupSgNodeToGltfIdx(16);
+	core::DynamicMap<int, int> groupSgNodeToGltfIdx;
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
 		int parentId = sceneGraph.node(sgNodeId).parent();
@@ -694,8 +711,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		accessors[accIdx].has_min = true;
 		accessors[accIdx].has_max = true;
 		float *vBuf = (float *)(buffer + info.vertexOffset);
-		accessors[accIdx].min[0] = accessors[accIdx].min[1] = accessors[accIdx].min[2] = 1e30f;
-		accessors[accIdx].max[0] = accessors[accIdx].max[1] = accessors[accIdx].max[2] = -1e30f;
+		accessors[accIdx].min[0] = accessors[accIdx].min[1] = accessors[accIdx].min[2] = FLT_MAX;
+		accessors[accIdx].max[0] = accessors[accIdx].max[1] = accessors[accIdx].max[2] = -FLT_MAX;
 		for (int j = 0; j < info.vertexCount; ++j) {
 			for (int k = 0; k < 3; ++k) {
 				float v = vBuf[j * stride + k];
@@ -824,6 +841,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int gltfIdx = totalMeshes + gi;
 		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(groupNodeIds[gi]);
 		nodes[gltfIdx].name = (char *)sgNode.name().c_str();
+		const scenegraph::SceneGraphTransform &transform = sgNode.transform(0);
+		glm::mat4x4 localMatrix = transform.localMatrix();
+		if (localMatrix != glm::mat4(1.0f)) {
+			nodes[gltfIdx].has_matrix = true;
+			const float *pSource = (const float *)glm::value_ptr(localMatrix);
+			for (int k = 0; k < 16; ++k) {
+				nodes[gltfIdx].matrix[k] = pSource[k];
+			}
+		}
 	}
 
 	// Build children arrays
@@ -937,11 +963,16 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	// Export animations
 	const scenegraph::SceneGraphAnimationIds &animIds = sceneGraph.animations();
-	// Count total keyframes across all animations and nodes
+	// Count total keyframes across all animations and nodes (mesh + group)
 	size_t totalAnimKeyframes = 0;
 	for (const core::String &animName : animIds) {
-		for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
-			const int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
+		for (int ni = 0; ni < totalNodes; ++ni) {
+			int sgNodeId;
+			if (ni < totalMeshes) {
+				sgNodeId = meshes[meshInfos[ni].meshExtIdx].nodeId;
+			} else {
+				sgNodeId = groupNodeIds[ni - totalMeshes];
+			}
 			if (!sceneGraph.hasNode(sgNodeId)) continue;
 			const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
 			if (!sgNode.allKeyFrames().hasKey(animName)) continue;
@@ -971,7 +1002,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		// Samplers: 3 per animated node
 
 		struct AnimNodeInfo {
-			int meshIdx;
+			int gltfNodeIdx;
 			int sgNodeId;
 			core::String animName;
 			int keyframeCount;
@@ -979,15 +1010,20 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		core::DynamicArray<AnimNodeInfo> animNodes;
 
 		for (const core::String &animName : animIds) {
-			for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
-				const int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
+			for (int ni = 0; ni < totalNodes; ++ni) {
+				int sgNodeId;
+				if (ni < totalMeshes) {
+					sgNodeId = meshes[meshInfos[ni].meshExtIdx].nodeId;
+				} else {
+					sgNodeId = groupNodeIds[ni - totalMeshes];
+				}
 				if (!sceneGraph.hasNode(sgNodeId)) continue;
 				const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
 				if (!sgNode.allKeyFrames().hasKey(animName)) continue;
 				const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
 				if (kfs.size() <= 1) continue;
 				AnimNodeInfo info;
-				info.meshIdx = mi;
+				info.gltfNodeIdx = ni;
 				info.sgNodeId = sgNodeId;
 				info.animName = animName;
 				info.keyframeCount = (int)kfs.size();
@@ -1162,15 +1198,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 					// Channels
 					gltfChannels[chanI].sampler = &gltfSamplers[transSamp];
-					gltfChannels[chanI].target_node = &nodes[ani.meshIdx];
+					gltfChannels[chanI].target_node = &nodes[ani.gltfNodeIdx];
 					gltfChannels[chanI].target_path = cgltf_animation_path_type_translation;
 					++chanI;
 					gltfChannels[chanI].sampler = &gltfSamplers[rotSamp];
-					gltfChannels[chanI].target_node = &nodes[ani.meshIdx];
+					gltfChannels[chanI].target_node = &nodes[ani.gltfNodeIdx];
 					gltfChannels[chanI].target_path = cgltf_animation_path_type_rotation;
 					++chanI;
 					gltfChannels[chanI].sampler = &gltfSamplers[scaleSamp];
-					gltfChannels[chanI].target_node = &nodes[ani.meshIdx];
+					gltfChannels[chanI].target_node = &nodes[ani.gltfNodeIdx];
 					gltfChannels[chanI].target_path = cgltf_animation_path_type_scale;
 					++chanI;
 				}
@@ -1419,14 +1455,14 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	// Position buffer view
 	bufferViews[0].buffer = &gltfBuffer;
 	bufferViews[0].offset = 0;
-	bufferViews[0].size = vertexCount * 3 * sizeof(float);
+	bufferViews[0].size = bufferSize;
 	bufferViews[0].stride = 7 * sizeof(float);
 	bufferViews[0].type = cgltf_buffer_view_type_vertices;
 
 	// Color buffer view
 	bufferViews[1].buffer = &gltfBuffer;
-	bufferViews[1].offset = 3 * sizeof(float);
-	bufferViews[1].size = vertexCount * 4 * sizeof(float);
+	bufferViews[1].offset = 0;
+	bufferViews[1].size = bufferSize;
 	bufferViews[1].stride = 7 * sizeof(float);
 	bufferViews[1].type = cgltf_buffer_view_type_vertices;
 
@@ -1438,11 +1474,10 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	accessors[0].component_type = cgltf_component_type_r_32f;
 	accessors[0].type = cgltf_type_vec3;
 	accessors[0].count = vertexCount;
-	accessors[0].stride = 7 * sizeof(float);
 	accessors[0].has_min = true;
 	accessors[0].has_max = true;
-	accessors[0].min[0] = accessors[0].min[1] = accessors[0].min[2] = 1e30f;
-	accessors[0].max[0] = accessors[0].max[1] = accessors[0].max[2] = -1e30f;
+	accessors[0].min[0] = accessors[0].min[1] = accessors[0].min[2] = FLT_MAX;
+	accessors[0].max[0] = accessors[0].max[1] = accessors[0].max[2] = -FLT_MAX;
 	for (int i = 0; i < vertexCount; ++i) {
 		for (int k = 0; k < 3; ++k) {
 			float v = vBuf[i * 7 + k];
@@ -1456,7 +1491,7 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	accessors[1].component_type = cgltf_component_type_r_32f;
 	accessors[1].type = cgltf_type_vec4;
 	accessors[1].count = vertexCount;
-	accessors[1].stride = 7 * sizeof(float);
+	accessors[1].offset = 3 * sizeof(float);
 
 	cgltf_attribute attrs[2];
 	core_memset(attrs, 0, sizeof(attrs));
