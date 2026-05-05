@@ -263,6 +263,8 @@ public:
 	}
 	BrushApplyResult parametersChanged();
 	const scenegraph::SceneGraph &renderSceneGraph();
+	/** Non-zero while an edit-mode draft volume is the one on screen. */
+	uint64_t renderRevision() const;
 	void brushHandles(core::DynamicArray<BrushGizmoState> &output);
 	bool editBrushHandle(const BrushHandleEvent &event);
 

@@ -23,6 +23,7 @@
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxel/Region.h"
 #include "voxelpathtracer/PathTracer.h"
 #include "voxelpathtracer/PathTracerConfig.h"
@@ -333,6 +334,15 @@ void RenderPanel::cancelScenePrep() {
 	_prepStamp = 0;
 }
 
+uint64_t RenderPanel::sceneContentStamp() const {
+	uint64_t stamp = _sceneMgr->calculateHash();
+	const uint64_t revision = _sceneMgr->modifier().renderRevision();
+	if (revision != 0u) {
+		stamp ^= revision + 0x9e3779b97f4a7c15ull + (stamp << 6u) + (stamp >> 2u);
+	}
+	return stamp;
+}
+
 bool RenderPanel::pollScenePrep(const scenegraph::SceneGraph &sceneGraph) {
 	if (!_prepFuture.valid()) {
 		return false;
@@ -347,7 +357,7 @@ bool RenderPanel::pollScenePrep(const scenegraph::SceneGraph &sceneGraph) {
 	_prepStamp = 0;
 	_prepProgress.reset();
 
-	const uint64_t stamp = _sceneMgr->calculateHash();
+	const uint64_t stamp = sceneContentStamp();
 	if (finishedStamp != stamp) {
 		prepared.free();
 		return false;
@@ -387,7 +397,7 @@ void RenderPanel::updateSceneState(const scenegraph::SceneGraph &sceneGraph) {
 		return;
 	}
 
-	const uint64_t stamp = _sceneMgr->calculateHash();
+	const uint64_t stamp = sceneContentStamp();
 	if (pollScenePrep(sceneGraph)) {
 		return;
 	}
@@ -432,7 +442,8 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 		_camera.update(0.0);
 	}
 
-	updateSceneState(sceneGraph);
+	// Edit mode draws the draft volume, which is not the committed scene graph.
+	updateSceneState(_sceneMgr->modifier().renderSceneGraph());
 
 	if (isPreparing()) {
 		renderPrepProgress();

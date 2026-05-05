@@ -45,6 +45,7 @@ private:
 	void ensureTraceCamera(const scenegraph::SceneGraph &sceneGraph);
 	void renderPrepProgress();
 	void cancelScenePrep();
+	uint64_t sceneContentStamp() const;
 	bool pollScenePrep(const scenegraph::SceneGraph &sceneGraph);
 	void startScenePrep(const scenegraph::SceneGraph &sceneGraph, uint64_t stamp);
 	void updateSceneState(const scenegraph::SceneGraph &sceneGraph);

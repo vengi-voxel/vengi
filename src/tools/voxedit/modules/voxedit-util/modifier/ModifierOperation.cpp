@@ -208,6 +208,13 @@ const scenegraph::SceneGraph &Modifier::renderSceneGraph() {
 	return _sceneMgr->sceneGraph();
 }
 
+uint64_t Modifier::renderRevision() const {
+	if (const BrushDraft *draft = _registry.activeDraft()) {
+		return draft->revision();
+	}
+	return 0;
+}
+
 void Modifier::brushHandles(core::DynamicArray<BrushGizmoState> &output) {
 	Brush *brush = currentBrush();
 	if (!brush) {

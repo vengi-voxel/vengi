@@ -161,6 +161,9 @@ protected:
 	core::VarPtr _lastDirectory;
 
 	bool _dirty = false;
+	// Bumped on every volume edit. The undo ring stays at 64 groups, so memento
+	// size alone does not change once that buffer is full.
+	uint64_t _volumeEditSerial = 0;
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;

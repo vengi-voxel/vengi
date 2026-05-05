@@ -3559,6 +3559,19 @@ TEST_F(SceneManagerTest, testCalculateHash) {
 	ASSERT_NE(nullptr, node);
 	node->palette().setColor(1, color::RGBA(1, 2, 3, 255));
 	EXPECT_NE(resized, _sceneMgr->calculateHash());
+
+	// The undo ring holds 64 groups. Further in-place voxel edits must still change the hash,
+	// otherwise the path tracer keeps the previous GPU volume.
+	for (int i = 0; i < 80; ++i) {
+		ASSERT_TRUE(_sceneMgr->mementoHandler().markModification(_sceneMgr->sceneGraph(), *node, node->region()));
+	}
+	const uint64_t full = _sceneMgr->calculateHash();
+	voxel::RawVolume *volume = node->volume();
+	ASSERT_NE(nullptr, volume);
+	const glm::ivec3 pos = volume->region().getCenter();
+	volume->setVoxel(pos, voxel::createVoxel(node->palette(), 1));
+	_sceneMgr->modified(node->uuid(), voxel::Region(pos, pos), SceneModifiedFlags::NoUndo);
+	EXPECT_NE(full, _sceneMgr->calculateHash());
 }
 
 TEST_F(SceneManagerTest, testLSystemExpandsRegion) {

@@ -1032,6 +1032,7 @@ glm::mat4 SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyT
 }
 
 void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, SceneModifiedFlags flags, uint64_t renderRegionMillis) {
+	++_volumeEditSerial;
 	const bool markUndo = (flags & SceneModifiedFlags::MarkUndo) == SceneModifiedFlags::MarkUndo;
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
@@ -3590,6 +3591,7 @@ uint64_t SceneManager::calculateHash() const {
 	};
 	mix((uint64_t)_mementoHandler->stateSize());
 	mix((uint64_t)_mementoHandler->statePosition());
+	mix(_volumeEditSerial);
 	mix((uint64_t)_sceneGraph.size());
 	const voxel::Region region = _sceneGraph.sceneRegion();
 	if (region.isValid()) {
@@ -3681,6 +3683,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	_modifier->cancelDraft();
 	_modifier->finishEdit(BrushEditFinishReason::ExternalInvalidate);
+	++_volumeEditSerial;
 	node.setVolume(volume);
 	// the old volume pointer might no longer be used
 	_sceneRenderer->removeNode(node.uuid());
