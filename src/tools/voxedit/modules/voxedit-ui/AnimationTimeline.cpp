@@ -79,6 +79,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
+		bool keyFrameChanged = false;
 		for (scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
 			int32_t oldFrameIdx = kf.frameIdx;
 			ImGui::NeoKeyframe(&kf.frameIdx);
@@ -86,7 +87,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				kf.frameIdx = 0;
 			}
 			if (oldFrameIdx != kf.frameIdx) {
-				sceneGraph.markKeyFramesDirty(node.id());
+				keyFrameChanged = true;
 			}
 
 			if (ImGui::IsNeoKeyframeHovered()) {
@@ -95,6 +96,21 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				ImGui::Text(_("Keyframe %i, Interpolation: %s"), kf.frameIdx, interpolation);
 				ImGui::EndTooltip();
 			}
+		}
+		if (keyFrameChanged) {
+			scenegraph::SceneGraphNode &mutableNode = sceneGraph.node(node.id());
+			scenegraph::SceneGraphKeyFrames *kfs = mutableNode.keyFrames();
+			if (kfs != nullptr) {
+				kfs->sort([](const scenegraph::SceneGraphKeyFrame &a, const scenegraph::SceneGraphKeyFrame &b) {
+					return a.frameIdx > b.frameIdx;
+				});
+				for (size_t i = 1; i < kfs->size(); ++i) {
+					if ((*kfs)[i].frameIdx <= (*kfs)[i - 1].frameIdx) {
+						(*kfs)[i].frameIdx = (*kfs)[i - 1].frameIdx + 1;
+					}
+				}
+			}
+			sceneGraph.markKeyFramesDirty(node.id());
 		}
 		if (activeNode != _lastActivedNodeId && node.id() == activeNode) {
 			_lastActivedNodeId = activeNode;
