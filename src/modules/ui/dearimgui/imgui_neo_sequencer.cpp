@@ -519,9 +519,12 @@ static void ProcessSelection(ImGuiNeoSequencerInternalData &context) {
 		ImRect{context.TopBarStartCursor + ImVec2{context.ValuesWidth, context.TopBarSize.y},
 			   context.TopBarStartCursor + context.Size - ImVec2{0, context.TopBarSize.y}};
 
-	if (IsMouseDown(ImGuiMouseButton_Left) && windowWorkRect.Contains(GetMousePos()) &&
-		sequencerWorkRect.Contains(GetMousePos())) {
-		// Not dragging yet
+	const bool mouseInWorkArea = windowWorkRect.Contains(GetMousePos()) &&
+		sequencerWorkRect.Contains(GetMousePos());
+
+	if (IsMouseDown(ImGuiMouseButton_Left) &&
+		(mouseInWorkArea || context.StateOfSelection != SelectionState::Idle)) {
+		// Keep selecting/dragging even if mouse leaves the window while button is held
 		switch (context.StateOfSelection) {
 		case SelectionState::Idle: {
 			if (!IsMouseClicked(ImGuiMouseButton_Left))
