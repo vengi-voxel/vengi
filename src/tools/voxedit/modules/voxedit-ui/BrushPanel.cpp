@@ -354,7 +354,6 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 	Modifier &modifier = _sceneMgr->modifier();
 
 	ImGui::CommandButton(_("Rescan"), "brushscriptrescan", listener);
-	ImGui::TooltipTextUnformatted(_("Re-scan the brushes directory for new or changed scripts"));
 
 	LUABrush *activeBrush = modifier.scriptManager().activeLuaBrush();
 	if (activeBrush == nullptr) {
