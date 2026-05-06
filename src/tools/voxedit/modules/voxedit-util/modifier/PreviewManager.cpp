@@ -206,7 +206,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			(selectBrush.selectMode() == SelectMode::Circle ||
 			 selectBrush.selectMode() == SelectMode::Lasso);
 		if (isCircleSelect) {
-			selectBrush.setPreviewMode(true);
+			selectBrush.circle().setPreviewMode(true);
 		}
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
@@ -221,7 +221,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		dummyNode.setUnownedVolume(_previewVolume);
 		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 		if (isCircleSelect) {
-			selectBrush.setPreviewMode(false);
+			selectBrush.circle().setPreviewMode(false);
 		}
 	} else if (simplePreview) {
 		_brushPreview.useSimplePreview = true;

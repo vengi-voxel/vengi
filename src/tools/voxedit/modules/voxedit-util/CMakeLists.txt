@@ -13,6 +13,18 @@ set(SRCS
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
 	modifier/brush/LUASelectionMode.cpp modifier/brush/LUASelectionMode.h
+	modifier/brush/select/SelectStrategy.cpp modifier/brush/select/SelectStrategy.h
+	modifier/brush/select/All.cpp modifier/brush/select/All.h
+	modifier/brush/select/Surface.cpp modifier/brush/select/Surface.h
+	modifier/brush/select/SameColor.cpp modifier/brush/select/SameColor.h
+	modifier/brush/select/FuzzyColor.cpp modifier/brush/select/FuzzyColor.h
+	modifier/brush/select/Connected.cpp modifier/brush/select/Connected.h
+	modifier/brush/select/FlatSurface.cpp modifier/brush/select/FlatSurface.h
+	modifier/brush/select/Box3D.cpp modifier/brush/select/Box3D.h
+	modifier/brush/select/Circle.cpp modifier/brush/select/Circle.h
+	modifier/brush/select/Lasso.cpp modifier/brush/select/Lasso.h
+	modifier/brush/select/Paint.cpp modifier/brush/select/Paint.h
+	modifier/brush/select/Script.cpp modifier/brush/select/Script.h
 	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
 	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
 	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
@@ -136,6 +148,7 @@ set(TEST_SRCS
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
 	tests/SelectBrushTest.cpp
+	tests/SelectStrategyTest.cpp
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp
@@ -185,6 +198,7 @@ if (USE_BENCHMARKS)
 		benchmarks/SculptBrushBenchmark.cpp
 		benchmarks/TransformBrushBenchmark.cpp
 		benchmarks/ExtrudeBrushBenchmark.cpp
+		benchmarks/SelectBrushBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})

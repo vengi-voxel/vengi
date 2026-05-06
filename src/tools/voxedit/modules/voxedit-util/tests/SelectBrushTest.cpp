@@ -347,7 +347,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 	ctx.targetVolumeRegion = volume.region();
 
 	// With deviation=0: only the lower floor (y=0) should be selected
-	brush.setFlatDeviation(0);
+	brush.flatSurface().setDeviation(0);
 	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
 	ctx.cursorPosition = glm::ivec3(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
@@ -370,7 +370,7 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 	}
 
 	// With deviation=1: both floors should be reachable (step of 1 in Y from start)
-	brush.setFlatDeviation(1);
+	brush.flatSurface().setDeviation(1);
 	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
 	ctx.cursorPosition = glm::ivec3(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
@@ -481,7 +481,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
 	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Circle);
-	EXPECT_FALSE(brush.ellipseValid());
+	EXPECT_FALSE(brush.circle().valid());
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -495,15 +495,15 @@ TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// After execution, ellipse params should be cached
-	EXPECT_TRUE(brush.ellipseValid());
-	EXPECT_EQ(brush.ellipseCenter(), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(brush.ellipseRadiusU(), 3);
-	EXPECT_EQ(brush.ellipseRadiusV(), 3);
-	EXPECT_EQ(brush.ellipseFace(), voxel::FaceNames::PositiveY);
+	EXPECT_TRUE(brush.circle().valid());
+	EXPECT_EQ(brush.circle().center(), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(brush.circle().radiusU(), 3);
+	EXPECT_EQ(brush.circle().radiusV(), 3);
+	EXPECT_EQ(brush.circle().face(), voxel::FaceNames::PositiveY);
 
 	// Changing select mode should invalidate ellipse
 	brush.setSelectMode(SelectMode::All);
-	EXPECT_FALSE(brush.ellipseValid());
+	EXPECT_FALSE(brush.circle().valid());
 
 	brush.shutdown();
 }
@@ -530,7 +530,7 @@ TEST_F(SelectBrushTest, testSelectModeCircle_invalidFace) {
 
 	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "No voxel should be selected when face is invalid";
-	EXPECT_FALSE(brush.ellipseValid());
+	EXPECT_FALSE(brush.circle().valid());
 	brush.shutdown();
 }
 
@@ -931,185 +931,34 @@ TEST_F(SelectBrushTest, testLassoContains_insideTriangle) {
 	EXPECT_FALSE(voxelutil::lassoContains(path, 6, 6, uAxis, vAxis));
 }
 
-TEST_F(SelectBrushTest, testLassoSelectSquareSurface) {
-	// Flat XZ surface at y=0, spanning x=[0..8], z=[0..8]
-	voxel::RawVolume volume({-1, 10});
-	for (int z = 0; z <= 8; ++z) {
-		for (int x = 0; x <= 8; ++x) {
-			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		}
-	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
-
+TEST_F(SelectBrushTest, testLassoScreenSpaceStateManagement) {
 	SelectBrush brush(nullptr);
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Lasso);
 
 	BrushContext ctx;
-	ctx.targetVolumeRegion = volume.region();
 	ctx.gridResolution = 1;
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 
-	// Click vertices of a square: (2,0,2), (6,0,2), (6,0,6), (2,0,6)
-	// then close by clicking (2,0,2) again.
-	// Note: a triangle with vertices (2,0,2),(6,0,2),(6,0,6) would have (3,0,3) and
-	// (4,0,4) on the hypotenuse (z=x diagonal) - a boundary case for lassoContains.
-	// Using 4 vertices gives a square where both interior test points are strictly inside.
-	const glm::ivec3 vertices[] = {
-		glm::ivec3(2, 0, 2), glm::ivec3(6, 0, 2), glm::ivec3(6, 0, 6), glm::ivec3(2, 0, 6)
-	};
-	for (const glm::ivec3 &vertex : vertices) {
-		ctx.cursorPosition = vertex;
-		EXPECT_TRUE(brush.beginBrush(ctx));
-		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
-		brush.preExecute(ctx, wrapper.volume());
-		brush.execute(sceneGraph, wrapper, ctx);
-		brush.endBrush(ctx);
-	}
-
-	// Close by clicking near first vertex
-	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+	// beginBrush starts the screen-space drag
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	EXPECT_FALSE(brush.lassoAccumulating()) << "Polygon should be closed";
+	EXPECT_TRUE(brush.lasso().screenDragging());
+	EXPECT_TRUE(brush.lasso().screenPoints().empty());
 
-	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
-	brush.preExecute(ctx, wrapper.volume());
-	brush.execute(sceneGraph, wrapper, ctx);
-	brush.endBrush(ctx);
-
-	// Interior voxels should be selected
-	EXPECT_NE(volume.voxel(4, 0, 4).getFlags() & voxel::FlagOutline, 0)
-		<< "Interior voxel (4,0,4) should be selected";
-	EXPECT_NE(volume.voxel(3, 0, 3).getFlags() & voxel::FlagOutline, 0)
-		<< "Interior voxel (3,0,3) should be selected";
-
-	// Voxels outside the polygon should not be selected
-	EXPECT_EQ(volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline, 0)
-		<< "Voxel (0,0,0) outside polygon should not be selected";
-	EXPECT_EQ(volume.voxel(8, 0, 8).getFlags() & voxel::FlagOutline, 0)
-		<< "Voxel (8,0,8) outside polygon should not be selected";
-
-	brush.shutdown();
-}
-
-TEST_F(SelectBrushTest, testLassoCancel_edgeMarksReverted) {
-	// Draw two vertices (producing an edge), cancel, verify no FlagOutline remains
-	voxel::RawVolume volume({-1, 10});
-	for (int z = 0; z <= 8; ++z) {
-		for (int x = 0; x <= 8; ++x) {
-			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		}
-	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
-
-	SelectBrush brush(nullptr);
-	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Lasso);
-
-	BrushContext ctx;
-	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
-	ctx.cursorFace = voxel::FaceNames::PositiveY;
-
-	// Click 1: first vertex (no edge yet)
-	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+	// Subsequent beginBrush calls while dragging just return true
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	{
-		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
-		brush.preExecute(ctx, wrapper.volume());
-		brush.execute(sceneGraph, wrapper, ctx);
-	}
-	brush.endBrush(ctx);
+	EXPECT_TRUE(brush.lasso().screenDragging());
 
-	// Click 2: second vertex (edge 1->2 drawn on real volume)
-	ctx.cursorPosition = glm::ivec3(6, 0, 2);
+	// endBrush cleans up
+	brush.endBrush(ctx);
+	EXPECT_FALSE(brush.lasso().screenDragging());
+	EXPECT_TRUE(brush.lasso().screenPoints().empty());
+
+	// abort also cleans up
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	{
-		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
-		brush.preExecute(ctx, wrapper.volume());
-		brush.execute(sceneGraph, wrapper, ctx);
-	}
-	brush.endBrush(ctx);
-
-	EXPECT_TRUE(brush.hasPendingChanges()) << "Should have pending edge marks after two clicks";
-
-	// Cancel: revert edge marks (simulates ESC / cancellasso command)
-	brush.revertChanges(&volume);
-	brush.invalidateLasso();
-	EXPECT_FALSE(brush.lassoAccumulating());
-
-	// No voxels should remain selected after cancel
-	for (int z = 0; z <= 8; ++z) {
-		for (int x = 0; x <= 8; ++x) {
-			EXPECT_EQ(volume.voxel(x, 0, z).getFlags() & voxel::FlagOutline, 0)
-				<< "Voxel (" << x << ",0," << z << ") should not be selected after cancel";
-		}
-	}
-
-	brush.shutdown();
-}
-
-TEST_F(SelectBrushTest, testLassoUndoVertex_revertsLastEdge) {
-	// Flat XZ surface at y=0, spanning x=[0..8], z=[0..8]
-	voxel::RawVolume volume({-1, 10});
-	for (int z = 0; z <= 8; ++z) {
-		for (int x = 0; x <= 8; ++x) {
-			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		}
-	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setUnownedVolume(&volume);
-
-	SelectBrush brush(nullptr);
-	ASSERT_TRUE(brush.init());
-	brush.setSelectMode(SelectMode::Lasso);
-
-	BrushContext ctx;
-	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
-	ctx.cursorFace = voxel::FaceNames::PositiveY;
-
-	auto clickVertex = [&](const glm::ivec3 &pos) {
-		ctx.cursorPosition = pos;
-		EXPECT_TRUE(brush.beginBrush(ctx));
-		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
-		brush.preExecute(ctx, wrapper.volume());
-		brush.execute(sceneGraph, wrapper, ctx);
-		brush.endBrush(ctx);
-	};
-
-	// Click 3 vertices: (2,0,2) -> (6,0,2) -> (6,0,6)
-	clickVertex(glm::ivec3(2, 0, 2));
-	clickVertex(glm::ivec3(6, 0, 2));
-	clickVertex(glm::ivec3(6, 0, 6));
-
-	EXPECT_EQ((int)brush.lassoPath().size(), 3);
-	EXPECT_TRUE(brush.hasPendingChanges());
-
-	// Edge (6,0,2)-(6,0,6) should be marked: x=6 along z=[2..6]
-	EXPECT_NE(volume.voxel(6, 0, 4).getFlags() & voxel::FlagOutline, 0)
-		<< "Voxel on second edge should be selected";
-
-	// Undo the last vertex - path shrinks to 2, edge to (6,0,6) should vanish
-	voxel::Region dummy = voxel::Region::InvalidRegion;
-	brush.revertChanges(&volume);
-	brush.popLastLassoPathEntry();
-	EXPECT_EQ((int)brush.lassoPath().size(), 2);
-	brush.redrawEdgesOnVolume(&volume, volume.region(), dummy);
-
-	// Only the first edge (2,0,2)-(6,0,2) should be marked now
-	EXPECT_NE(volume.voxel(4, 0, 2).getFlags() & voxel::FlagOutline, 0)
-		<< "Voxel on first edge should still be selected";
-	// The second edge voxels (x=6 at z=4,5,6) should no longer be marked
-	EXPECT_EQ(volume.voxel(6, 0, 4).getFlags() & voxel::FlagOutline, 0)
-		<< "Voxel on removed second edge should not be selected after vertex undo";
+	EXPECT_TRUE(brush.lasso().screenDragging());
+	brush.abort(ctx);
+	EXPECT_FALSE(brush.lasso().screenDragging());
 
 	brush.shutdown();
 }
@@ -1634,7 +1483,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegion) {
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(2);
-	brush.setPaintGrowRegion(true);
+	brush.paint().setGrowRegion(true);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -1683,7 +1532,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
 	ASSERT_TRUE(brush.init());
 	brush.setSelectMode(SelectMode::Paint);
 	brush.setRadius(2);
-	brush.setPaintGrowRegion(true);
+	brush.paint().setGrowRegion(true);
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();

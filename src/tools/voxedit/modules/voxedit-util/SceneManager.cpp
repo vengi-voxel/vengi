@@ -47,7 +47,6 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
-#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxedit-util/network/ServerNetwork.h"
@@ -79,7 +78,6 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
-#include "voxelutil/VolumeSelect.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VoxelUtil.h"
@@ -2246,7 +2244,7 @@ void SceneManager::selectionUnselect(int nodeId) {
 	// Only re-extract where voxels actually had FlagOutline set
 	const voxel::Region dirtyRegion = selectionCalculateRegion(*node);
 	node->clearSelection();
-	_modifierFacade.selectBrush().setBox3DSelectionRegion(voxel::Region::InvalidRegion);
+	_modifierFacade.selectBrush().box3D().setSelectionRegion(voxel::Region::InvalidRegion);
 	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
 }
 
@@ -2261,7 +2259,7 @@ void SceneManager::selectionSelectAll(int nodeId) {
 	}
 	node->select(volume->region());
 	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		_modifierFacade.selectBrush().setBox3DSelectionRegion(volume->region());
+		_modifierFacade.selectBrush().box3D().setSelectionRegion(volume->region());
 	}
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
@@ -2328,7 +2326,7 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	node->select(clamped);
 	SelectBrush &selectBrush = _modifierFacade.selectBrush();
 	if (selectBrush.selectMode() == SelectMode::Box3D) {
-		selectBrush.setBox3DSelectionRegion(clamped);
+		selectBrush.box3D().setSelectionRegion(clamped);
 	}
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
@@ -2339,19 +2337,19 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 		return;
 	}
 	SelectBrush &brush = _modifierFacade.selectBrush();
-	if (!brush.ellipseValid()) {
+	if (!brush.circle().valid()) {
 		return;
 	}
-	const glm::ivec3 &center = brush.ellipseCenter();
-	const int radiusU = brush.ellipseRadiusU();
-	const int radiusV = brush.ellipseRadiusV();
-	const int depth = brush.ellipseDepth();
-	const voxel::FaceNames face = brush.ellipseFace();
+	const glm::ivec3 &center = brush.circle().center();
+	const int radiusU = brush.circle().radiusU();
+	const int radiusV = brush.circle().radiusV();
+	const int depth = brush.circle().depth();
+	const voxel::FaceNames face = brush.circle().face();
 	int uAxis;
 	int vAxis;
-	SelectBrush::ellipseAxes(face, uAxis, vAxis);
+	select::Circle::ellipseAxes(face, uAxis, vAxis);
 	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
-	const bool is3D = brush.ellipse3D();
+	const bool is3D = brush.circle().is3D();
 	const bool positiveNormal = voxel::isPositiveFace(face);
 
 	// Calculate the bounding region of the new ellipse
@@ -2374,7 +2372,7 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 
 	// Clear only the positions flagged by the previous ellipse (not all selections)
 	voxel::Region dirtyRegion = ellipseRegion;
-	core::DynamicArray<glm::ivec3> &history = brush.ellipseHistory();
+	core::DynamicArray<glm::ivec3> &history = brush.circle().history();
 	for (const glm::ivec3 &pos : history) {
 		const voxel::Voxel &v = volume->voxel(pos);
 		if (!voxel::isAir(v.getMaterial())) {
@@ -2389,8 +2387,8 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	// Apply the new ellipse selection and record positions
 	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
 		const glm::ivec3 pos(x, y, z);
-		if (SelectBrush::insideSelection(pos, center, radiusU, radiusV, depth, is3D,
-										 uAxis, vAxis, faceAxisIdx, positiveNormal)) {
+		if (select::Circle::insideSelection(pos, center, radiusU, radiusV, depth, is3D,
+										  uAxis, vAxis, faceAxisIdx, positiveNormal)) {
 			voxel::Voxel modified = v;
 			modified.setFlags(modified.getFlags() | voxel::FlagOutline);
 			volume->setVoxel(x, y, z, modified);
@@ -2405,90 +2403,6 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	}
 
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
-}
-
-void SceneManager::selectionFinalizeLasso(int nodeId) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-	if (node == nullptr) {
-		return;
-	}
-	SelectBrush &brush = _modifierFacade.selectBrush();
-	if (!brush.lassoAccumulating() || brush.lassoPath().size() < 3) {
-		return;
-	}
-	// Copy path and axes before invalidating the brush (invalidateLasso clears them)
-	const core::DynamicArray<glm::ivec3> path = brush.lassoPath();
-	const int uAxis = brush.lassoUAxis();
-	const int vAxis = brush.lassoVAxis();
-
-	voxel::RawVolume *volume = node->volume();
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
-
-	// Restore edge history voxels first so they appear in the dirty region.
-	// This ensures undo also reverts edge marks outside the polygon perimeter.
-	if (brush.hasPendingChanges()) {
-		dirtyRegion.accumulate(brush.revertChanges(volume));
-	}
-	brush.invalidateLasso();
-
-	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
-		const glm::ivec3 pos(x, y, z);
-		if (!voxelutil::lassoContains(path, pos[uAxis], pos[vAxis], uAxis, vAxis)) {
-			return;
-		}
-		voxel::Voxel modified = v;
-		modified.setFlags(modified.getFlags() | voxel::FlagOutline);
-		volume->setVoxel(pos, modified);
-		dirtyRegion.accumulate(pos);
-	};
-	voxelutil::visitSurfaceVolume(*volume, selectFunc);
-
-	if (dirtyRegion.isValid()) {
-		modified(nodeId, dirtyRegion, SceneModifiedFlags::All);
-	}
-}
-
-void SceneManager::selectionCancelLasso(int nodeId) {
-	SelectBrush &brush = _modifierFacade.selectBrush();
-	if (brush.hasPendingChanges()) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-		if (node != nullptr) {
-			voxel::RawVolume *volume = node->volume();
-			const voxel::Region dirtyRegion = brush.revertChanges(volume);
-			if (dirtyRegion.isValid()) {
-				modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
-			}
-		}
-	}
-	brush.invalidateLasso();
-}
-
-void SceneManager::selectionLassoUndoVertex(int nodeId) {
-	SelectBrush &brush = _modifierFacade.selectBrush();
-	if (!brush.lassoAccumulating() || brush.lassoPath().size() < 2) {
-		return;
-	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-	if (node == nullptr) {
-		return;
-	}
-	voxel::RawVolume *volume = node->volume();
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
-
-	// Restore all existing edge marks to their original state
-	if (brush.hasPendingChanges()) {
-		dirtyRegion.accumulate(brush.revertChanges(volume));
-	}
-
-	// Drop the last vertex and redraw the remaining edges
-	brush.popLastLassoPathEntry();
-	if (brush.lassoPath().size() >= 2) {
-		brush.redrawEdgesOnVolume(volume, volume->region(), dirtyRegion);
-	}
-
-	if (dirtyRegion.isValid()) {
-		modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
-	}
 }
 
 void SceneManager::resetLastTrace() {
@@ -3687,21 +3601,6 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			nodeGroupDeselectColor(_modifierFacade.cursorVoxel().getColor());
 		}).setHelp(_("Deselect all voxels matching the active palette color"));
-
-	command::Command::registerCommand("finalizelasso")
-		.setHandler([&] (const command::CommandArgs& args) {
-			selectionFinalizeLasso(sceneGraph().activeNode());
-		}).setHelp(_("Close the lasso polygon and apply the selection to enclosed surface voxels"));
-
-	command::Command::registerCommand("cancellasso")
-		.setHandler([&] (const command::CommandArgs& args) {
-			selectionCancelLasso(sceneGraph().activeNode());
-		}).setHelp(_("Discard the in-progress lasso polygon without applying any selection"));
-
-	command::Command::registerCommand("undolassovertex")
-		.setHandler([&] (const command::CommandArgs& args) {
-			selectionLassoUndoVertex(sceneGraph().activeNode());
-		}).setHelp(_("Remove the last placed lasso vertex and redraw edges"));
 
 	command::Command::registerCommand("selectonlycolor")
 		.setHandler([&] (const command::CommandArgs& args) {

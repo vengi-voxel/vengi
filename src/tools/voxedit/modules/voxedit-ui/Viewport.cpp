@@ -344,6 +344,30 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
+		// Render screen-space lasso polygon overlay
+		{
+			const SelectBrush &selectBrush = _sceneMgr->modifier().selectBrush();
+			if (selectBrush.lasso().screenDragging() && selectBrush.lasso().screenPoints().size() >= 2) {
+				const auto &points = selectBrush.lasso().screenPoints();
+				ImDrawList *drawList = ImGui::GetWindowDrawList();
+				const ImVec2 windowPos = ImGui::GetWindowPos();
+				const float offsetY = headerSize;
+				const glm::vec2 scale = dpiScale();
+
+				// Build ImVec2 array for the polygon
+				const int n = (int)points.size();
+				ImVec2 *imPoints = (ImVec2 *)alloca(sizeof(ImVec2) * n);
+				for (int i = 0; i < n; ++i) {
+					imPoints[i] = ImVec2(windowPos.x + points[i].x / scale.x,
+										 windowPos.y + offsetY + points[i].y / scale.y);
+				}
+				// Filled polygon with 0.1 alpha white (supports non-convex shapes)
+				drawList->AddConcavePolyFilled(imPoints, n, IM_COL32(255, 255, 255, 25));
+				// Outline
+				drawList->AddPolyline(imPoints, n, IM_COL32(255, 255, 255, 200), ImDrawFlags_Closed, 1.5f);
+			}
+		}
+
 		if (_sceneMgr->isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
 			ImGui::LoadingIndicatorCircle(_("Loading"), radius, color::White(), color::Gray());

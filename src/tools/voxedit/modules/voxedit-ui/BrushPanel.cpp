@@ -411,6 +411,7 @@ void BrushPanel::handleSelectBox3D(int nodeId) {
 	glm::ivec3 maxs = sel.getUpperCorner();
 	bool changed = false;
 
+	// TODO: SELECTION: this should be a default imgui component already. The slider does afair als have the +/- buttons, no?
 	// Slider with -/+ buttons for fine single-step adjustment
 	auto selSlider = [&changed](const char *id, int *val, int lo, int hi) {
 		ImGui::PushID(id);
@@ -477,19 +478,19 @@ void BrushPanel::handleSelectCircle(int nodeId) {
 	if (node == nullptr) {
 		return;
 	}
-	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
+	select::Circle &circle = _sceneMgr->modifier().selectBrush().circle();
 	ImGui::SeparatorText(_("Circle selection"));
 	const voxel::Region &vol = node->region();
 	const glm::ivec3 &vMins = vol.getLowerCorner();
 	const glm::ivec3 &vMaxs = vol.getUpperCorner();
-	glm::ivec3 center = brush.ellipseCenter();
-	int radiusU = brush.ellipseRadiusU();
-	int radiusV = brush.ellipseRadiusV();
+	glm::ivec3 center = circle.center();
+	int radiusU = circle.radiusU();
+	int radiusV = circle.radiusV();
 	bool changed = false;
 
 	int uAxis;
 	int vAxis;
-	SelectBrush::ellipseAxes(brush.ellipseFace(), uAxis, vAxis);
+	select::Circle::ellipseAxes(circle.face(), uAxis, vAxis);
 	const char *axisNames[] = {"X", "Y", "Z"};
 
 	auto ellipseSlider = [&changed](const char *id, int *val, int lo, int hi) {
@@ -523,27 +524,27 @@ void BrushPanel::handleSelectCircle(int nodeId) {
 	ImGui::Text(_("Radius %s"), axisNames[vAxis]);
 	ellipseSlider("##rv", &radiusV, 0, maxRadiusV);
 
-	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(brush.ellipseFace()));
+	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(circle.face()));
 	const int maxDepth = (vMaxs[faceAxisIdx] - vMins[faceAxisIdx]) / 2;
-	int depth = brush.ellipseDepth();
+	int depth = circle.depth();
 	ImGui::Text(_("Depth %s"), axisNames[faceAxisIdx]);
 	ImGui::TooltipTextUnformatted(
 		_("How far from the center the selection extends along the face-normal axis (0 = single layer)"));
 	ellipseSlider("##depth", &depth, 1, maxDepth);
 
-	bool is3D = brush.ellipse3D();
+	bool is3D = circle.is3D();
 	if (ImGui::Checkbox(_("3D ellipsoid"), &is3D)) {
-		brush.setEllipse3D(is3D);
+		circle.set3D(is3D);
 		changed = true;
 	}
 	ImGui::TooltipTextUnformatted(
 		_("Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"));
 
 	if (changed) {
-		brush.setEllipseCenter(center);
-		brush.setEllipseRadiusU(radiusU);
-		brush.setEllipseRadiusV(radiusV);
-		brush.setEllipseDepth(depth);
+		circle.setCenter(center);
+		circle.setRadiusU(radiusU);
+		circle.setRadiusV(radiusV);
+		circle.setDepth(depth);
 		_sceneMgr->selectionSetEllipse(nodeId);
 	}
 }
@@ -573,9 +574,9 @@ void BrushPanel::handleSelectPaint(int nodeId) {
 		brush.setRadius(rad);
 	}
 	ImGui::PopID();
-	bool growRegion = brush.paintGrowRegion();
+	bool growRegion = brush.paint().growRegion();
 	if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
-		brush.setPaintGrowRegion(growRegion);
+		brush.paint().setGrowRegion(growRegion);
 	}
 	ImGui::TooltipTextUnformatted(
 		_("Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."));
@@ -583,18 +584,18 @@ void BrushPanel::handleSelectPaint(int nodeId) {
 
 void BrushPanel::handleSelectFuzzyColor() {
 	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
-	float threshold = brush.colorThreshold();
+	float threshold = brush.fuzzyColor().colorThreshold();
 	if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin,
 						   color::ApproximationDistanceLoose, "%.0f")) {
-		brush.setColorThreshold(threshold);
+		brush.fuzzyColor().setColorThreshold(threshold);
 	}
 	ImGui::TooltipTextUnformatted(
 		_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
 }
 
 void BrushPanel::handleSelectFlatSurface() {
-	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
-	int deviation = brush.flatDeviation();
+	select::FlatSurface &flatSurface = _sceneMgr->modifier().selectBrush().flatSurface();
+	int deviation = flatSurface.deviation();
 	const float btnW = ImGui::GetFrameHeight();
 	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	ImGui::TextUnformatted(_("Accepted deviation"));
@@ -603,41 +604,24 @@ void BrushPanel::handleSelectFlatSurface() {
 	ImGui::PushID("flatdeviation");
 	if (ImGui::Button("-", ImVec2(btnW, 0))) {
 		deviation = glm::max(deviation - 1, 0);
-		brush.setFlatDeviation(deviation);
+		flatSurface.setDeviation(deviation);
 	}
 	ImGui::SameLine(0, spacing);
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-	if (ImGui::SliderInt("##flatdeviation", &deviation, 0, SelectBrush::MaxFlatDeviation)) {
-		brush.setFlatDeviation(deviation);
+	if (ImGui::SliderInt("##flatdeviation", &deviation, 0, select::FlatSurface::MaxDeviation)) {
+		flatSurface.setDeviation(deviation);
 	}
 	ImGui::SameLine(0, spacing);
 	if (ImGui::Button("+", ImVec2(btnW, 0))) {
-		deviation = glm::min(deviation + 1, SelectBrush::MaxFlatDeviation);
-		brush.setFlatDeviation(deviation);
+		deviation = glm::min(deviation + 1, select::FlatSurface::MaxDeviation);
+		flatSurface.setDeviation(deviation);
 	}
 	ImGui::PopID();
 }
 
 void BrushPanel::handleSelectLasso(command::CommandExecutionListener &listener) {
-	SelectBrush &brush = _sceneMgr->modifier().selectBrush();
 	ImGui::SeparatorText(_("Lasso selection"));
-	if (brush.lassoAccumulating()) {
-		const int vertexCount = (int)brush.lassoPath().size();
-		ImGui::Text(_("%d vertices - click near first vertex to close"), vertexCount);
-		ImGui::CommandIconButton(ICON_LC_CHECK, _("Apply Lasso"), "finalizelasso", listener);
-		ImGui::TooltipTextUnformatted(
-			_("Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"));
-		ImGui::SameLine();
-		ImGui::CommandIconButton(ICON_LC_X, _("Cancel Lasso"), "cancellasso", listener);
-		ImGui::TooltipTextUnformatted(_("Discard the in-progress lasso polygon (bind Escape to cancellasso)"));
-		if (vertexCount > 1) {
-			ImGui::SameLine();
-			ImGui::CommandIconButton(ICON_LC_UNDO_2, _("Undo Vertex"), "undolassovertex", listener);
-			ImGui::TooltipTextUnformatted(_("Remove the last placed lasso vertex"));
-		}
-	} else {
-		ImGui::TextUnformatted(_("Click on the surface to start drawing a polygon"));
-	}
+	ImGui::TextUnformatted(_("Click and drag to draw a selection polygon"));
 }
 
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
@@ -718,7 +702,7 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 		handleSelectPaint(nodeId);
 	}
 
-	if (brush.selectMode() == SelectMode::Circle && brush.ellipseValid() && _sceneMgr->hasSelection(nodeId)) {
+	if (brush.selectMode() == SelectMode::Circle && brush.circle().valid() && _sceneMgr->hasSelection(nodeId)) {
 		handleSelectCircle(nodeId);
 	}
 

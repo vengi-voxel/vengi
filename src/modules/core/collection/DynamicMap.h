@@ -302,6 +302,29 @@ public:
 		}
 	}
 
+	bool putIfAbsent(const KEYTYPE& key, const VALUETYPE& value) {
+		const size_t hashValue = (size_t)_hasher(key);
+		KeyValue *prev = nullptr;
+		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+
+		while (entry != nullptr && !COMPARE()(entry->key, key)) {
+			prev = entry;
+			entry = entry->next;
+		}
+
+		if (entry == nullptr) {
+			entry = allocateNode(key, value);
+			if (prev == nullptr) {
+				_buckets[hashValue % BUCKETSIZE] = entry;
+			} else {
+				prev->next = entry;
+			}
+			++_size;
+			return true;
+		}
+		return false;
+	}
+
 	void put(const KEYTYPE& key, const VALUETYPE& value) {
 		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *prev = nullptr;

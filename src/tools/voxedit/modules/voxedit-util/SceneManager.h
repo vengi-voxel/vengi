@@ -316,6 +316,7 @@ public:
 	 * @brief Update the cursor position used for tracing
 	 */
 	void setMousePos(int x, int y);
+	const glm::ivec2 &mousePos() const;
 	void setMouseLook(bool active);
 	void setMouseDelta(int dx, int dy);
 
@@ -417,9 +418,6 @@ public:
 	void selectionSelectAll(int nodeId);
 	void selectionSetBounds(int nodeId, const voxel::Region &region);
 	void selectionSetEllipse(int nodeId);
-	void selectionFinalizeLasso(int nodeId);
-	void selectionCancelLasso(int nodeId);
-	void selectionLassoUndoVertex(int nodeId);
 	bool hasSelection(int nodeId) const;
 	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
 	voxel::Region selectionCalculateRegion(int nodeId) const;
@@ -757,6 +755,10 @@ inline voxelgenerator::LUAApi &SceneManager::luaApi() {
 
 inline bool SceneManager::lsystemRunning() const {
 	return _lsystemRunning;
+}
+
+inline const glm::ivec2 &SceneManager::mousePos() const {
+	return _mouseCursor;
 }
 
 using SceneManagerPtr = core::SharedPtr<SceneManager>;

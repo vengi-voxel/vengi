@@ -127,12 +127,12 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	// Save previous state
 	const BrushType prevBrushType = modifier.brushType();
 	const SelectMode prevSelectMode = selectBrush.selectMode();
-	const float prevColorThreshold = selectBrush.colorThreshold();
+	const float prevColorThreshold = selectBrush.fuzzyColor().colorThreshold();
 
 	// Configure the select brush
 	modifier.setBrushType(BrushType::Select);
 	selectBrush.setSelectMode(selectMode);
-	selectBrush.setColorThreshold(colorThreshold);
+	selectBrush.fuzzyColor().setColorThreshold(colorThreshold);
 	selectBrush.setAABBMode();
 
 	// Set up the AABB region
@@ -150,7 +150,7 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 
 	// Restore previous state
 	selectBrush.setSelectMode(prevSelectMode);
-	selectBrush.setColorThreshold(prevColorThreshold);
+	selectBrush.fuzzyColor().setColorThreshold(prevColorThreshold);
 	modifier.setBrushType(prevBrushType);
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();

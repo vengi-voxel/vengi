@@ -180,9 +180,9 @@ void ClientNetwork::update(double nowSeconds) {
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 #ifdef _WIN32
-	const int ready = select(0, &readFDsOut, &writeFDsOut, nullptr, &tv);
+	const int ready = ::select(0, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #else
-	const int ready = select(_impl->socketFD + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
+	const int ready = ::select(_impl->socketFD + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #endif
 	if (ready < 0) {
 		Log::error("select() failed: %s", network::getNetworkErrorString());

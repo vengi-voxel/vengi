@@ -1,0 +1,19 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "SelectStrategy.h"
+
+namespace voxedit {
+namespace select {
+
+class Connected : public Strategy {
+public:
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+				  const voxel::Region &region, const AABBBrushState &state) override;
+};
+
+} // namespace select
+} // namespace voxedit
