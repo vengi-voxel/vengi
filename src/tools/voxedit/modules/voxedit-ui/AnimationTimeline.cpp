@@ -3,6 +3,7 @@
  */
 
 #include "AnimationTimeline.h"
+#include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -203,6 +204,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				}
 #endif
 				if (ImGui::IconSelectable(ICON_LC_COPY, _("Duplicate keyframe"))) {
+					memento::ScopedMementoGroup mementoGroup(_sceneMgr->mementoHandler(), "duplicate_keyframes");
 					for (const Selection &sel : _selectionBuffer) {
 						_sceneMgr->nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
 					}
@@ -210,6 +212,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 					ImGui::CloseCurrentPopup();
 				}
 				if (ImGui::IconSelectable(ICON_LC_TRASH, _("Delete keyframes"))) {
+					memento::ScopedMementoGroup mementoGroup(_sceneMgr->mementoHandler(), "delete_keyframes");
 					for (const Selection &sel : _selectionBuffer) {
 						_sceneMgr->nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
 					}
