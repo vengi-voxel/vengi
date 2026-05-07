@@ -7,7 +7,7 @@
 #include "../modifier/brush/select/Lasso.h"
 #include "../modifier/brush/select/SameColor.h"
 #include "../modifier/brush/select/Surface.h"
-#include "app/tests/AbstractTest.h"
+#include "AbstractSceneManagerTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -18,7 +18,7 @@
 
 namespace voxedit {
 
-class SelectStrategyTest : public app::AbstractTest {
+class SelectStrategyTest : public AbstractSceneManagerTest {
 protected:
 	scenegraph::SceneGraph _sceneGraph;
 
@@ -168,7 +168,7 @@ TEST_F(SelectStrategyTest, testConnectedStrategy) {
 
 TEST_F(SelectStrategyTest, testLassoPointInPolygon) {
 	// Test the lasso's pointInPolygon indirectly through state management
-	select::Lasso strategy(nullptr);
+	select::Lasso strategy(_sceneMgr.get());
 
 	EXPECT_FALSE(strategy.active());
 	EXPECT_TRUE(strategy.screenPoints().empty());
@@ -191,7 +191,7 @@ TEST_F(SelectStrategyTest, testLassoPointInPolygon) {
 }
 
 TEST_F(SelectStrategyTest, testLassoGenerateRequiresMinPoints) {
-	select::Lasso strategy(nullptr);
+	select::Lasso strategy(_sceneMgr.get());
 
 	BrushContext ctx;
 	select::AABBBrushState state;
