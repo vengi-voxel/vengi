@@ -68,8 +68,6 @@ bool Lasso::beginBrush(const BrushContext &ctx, const AABBBrushState &state) {
 void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 					 const voxel::Region &region, const AABBBrushState &state) {
 	if (!_screenDragging || _screenPoints.size() < 3 || !_sceneManager) {
-		_screenDragging = false;
-		_screenPoints.clear();
 		return;
 	}
 	const video::Camera *camera = _sceneManager->activeCamera();

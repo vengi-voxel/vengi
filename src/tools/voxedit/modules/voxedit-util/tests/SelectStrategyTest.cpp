@@ -33,7 +33,7 @@ protected:
 	}
 
 	int countSelected(const voxel::RawVolume &volume, const voxel::Region &region) {
-		// TODO: PERF: use a visitor here instead of iterating manually
+		// TODO: PERF: use a visitor here instead of iterating manually - VisitSolidOutline
 		int count = 0;
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
@@ -197,7 +197,7 @@ TEST_F(SelectStrategyTest, testLassoGenerateRequiresMinPoints) {
 	select::AABBBrushState state;
 	strategy.beginBrush(ctx, state);
 
-	// generate with < 3 points should just clean up without crashing
+	// generate with < 3 points should be a no-op (e.g. preview manager calling mid-recording)
 
 	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
 	voxel::RawVolume volume(region);
@@ -208,8 +208,12 @@ TEST_F(SelectStrategyTest, testLassoGenerateRequiresMinPoints) {
 
 	strategy.generate(_sceneGraph, wrapper, ctx, volume.region(), state);
 
-	// Nothing should be selected (not enough points, no SceneManager)
+	// Nothing should be selected (not enough points)
 	EXPECT_EQ(countSelected(volume, volume.region()), 0);
+	// Lasso should remain active - generate with too few points is a no-op
+	EXPECT_TRUE(strategy.active());
+
+	strategy.endBrush(ctx);
 	EXPECT_FALSE(strategy.active());
 }
 
