@@ -58,6 +58,7 @@ void TransformBrush::commitCurrentTransform() {
 	_snapshotHelper.clear();
 	_cachedRegionValid = false;
 	_cachedRegion = voxel::Region::InvalidRegion;
+	_prevTransformedRegion = voxel::Region::InvalidRegion;
 	_moveOffset = glm::ivec3(0);
 	_shearOffset = glm::ivec3(0);
 	_scale = glm::vec3(1.0f);
@@ -143,6 +144,50 @@ voxel::Region TransformBrush::computeTransformedRegion() const {
 	const glm::ivec3 unionLo = glm::min(srcLo, dstLo) - Margin;
 	const glm::ivec3 unionHi = glm::max(srcHi, dstHi) + Margin;
 	return voxel::Region(unionLo, unionHi);
+}
+
+voxel::Region TransformBrush::computeDestinationRegion() const {
+	if (!_snapshotHelper.hasSnapshot() || _snapshotHelper.snapshotVoxelCount() == 0) {
+		return voxel::Region::InvalidRegion;
+	}
+	const glm::ivec3 &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
+	const glm::ivec3 &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
+	glm::ivec3 dstLo(INT_MAX);
+	glm::ivec3 dstHi(INT_MIN);
+
+	static constexpr int NumCorners = 8;
+	for (int corner = 0; corner < NumCorners; ++corner) {
+		const glm::ivec3 cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
+								   (corner & 4) ? srcHi.z : srcLo.z);
+		const glm::ivec3 transformed = transformPosition(cornerPos);
+		dstLo = glm::min(dstLo, transformed);
+		dstHi = glm::max(dstHi, transformed);
+	}
+	static constexpr int Margin = 2;
+	return voxel::Region(dstLo - Margin, dstHi + Margin);
+}
+
+bool TransformBrush::dirtyRegions(core::Buffer<voxel::Region> &regions) const {
+	if (!_snapshotHelper.hasSnapshot()) {
+		return false;
+	}
+	// Report source (erased) and destination (written) regions separately
+	// to avoid extracting the empty space between them.
+	const voxel::Region &srcRegion = _snapshotHelper.snapshotRegion();
+	const voxel::Region dstRegion = computeDestinationRegion();
+	if (srcRegion.isValid()) {
+		regions.push_back(srcRegion);
+	}
+	if (dstRegion.isValid()) {
+		regions.push_back(dstRegion);
+	}
+	// Also include the previous frame's destination if it differs
+	if (_prevTransformedRegion.isValid()) {
+		regions.push_back(_prevTransformedRegion);
+	}
+	// Update for next frame
+	_prevTransformedRegion = dstRegion;
+	return !regions.empty();
 }
 
 glm::ivec3 TransformBrush::transformPosition(const glm::ivec3 &pos) const {

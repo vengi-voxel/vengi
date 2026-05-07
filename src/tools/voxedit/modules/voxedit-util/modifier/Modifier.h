@@ -151,6 +151,12 @@ public:
 	ScriptManager &scriptManager();
 	const ScriptManager &scriptManager() const;
 
+	/**
+	 * @brief Execute pending brush changes for brushes that modify the real volume (TransformBrush, etc).
+	 * Must be called before mesh extraction runs to avoid stale mesh data.
+	 */
+	void flushPendingBrushChanges();
+
 	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette,
 				const glm::mat4 &model = glm::mat4(1.0f));
 

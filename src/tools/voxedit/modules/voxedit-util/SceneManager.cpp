@@ -4685,6 +4685,11 @@ bool SceneManager::update(double nowSeconds) {
 	_sceneGraph.updateTransforms();
 	updateDirtyRendererStates();
 
+	// Flush pending brush changes before mesh extraction to ensure the volume
+	// is in its final state. This prevents stale/partial mesh extraction that
+	// occurs when extractions read from a volume that's about to be modified.
+	_modifierFacade.flushPendingBrushChanges();
+
 	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {

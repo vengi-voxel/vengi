@@ -63,6 +63,8 @@ private:
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
 	bool _cachedRegionValid = false;
+	// Previous frame's transformed destination region (for dirty region tracking)
+	mutable voxel::Region _prevTransformedRegion = voxel::Region::InvalidRegion;
 
 	// Transform parameters
 	glm::ivec3 _moveOffset{0};
@@ -74,6 +76,7 @@ private:
 	void eraseSnapshotPositions(ModifierVolumeWrapper &wrapper);
 	void applyInverseMapping(ModifierVolumeWrapper &wrapper);
 	voxel::Region computeTransformedRegion() const;
+	voxel::Region computeDestinationRegion() const;
 	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
 	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
 
@@ -100,6 +103,7 @@ public:
 	void endBrush(BrushContext &ctx) override;
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
+	bool dirtyRegions(core::Buffer<voxel::Region> &regions) const override;
 	bool managesOwnSelection() const override;
 
 	TransformMode transformMode() const;

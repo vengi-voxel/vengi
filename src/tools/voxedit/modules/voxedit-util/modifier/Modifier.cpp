@@ -415,7 +415,18 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		voxel::logRegion("Dirty region", modifiedRegion);
 		if (callback) {
 			const SceneModifiedFlags flags = brush->sceneModifiedFlags();
-			callback(modifiedRegion, _brushContext.modifierType, flags);
+			// Allow brushes to provide tighter dirty regions (e.g. source + destination
+			// separately) to avoid extracting empty space in between.
+			core::Buffer<voxel::Region> regions;
+			if (brush->dirtyRegions(regions)) {
+				for (const voxel::Region &r : regions) {
+					if (r.isValid()) {
+						callback(r, _brushContext.modifierType, flags);
+					}
+				}
+			} else {
+				callback(modifiedRegion, _brushContext.modifierType, flags);
+			}
 		}
 	}
 	_brushContext.cursorPosition = prevCursorPos;
@@ -605,6 +616,30 @@ void Modifier::resetPreview() {
 	_previewManager.resetPreview();
 }
 
+void Modifier::flushPendingBrushChanges() {
+	if (_locked) {
+		return;
+	}
+	Brush *brush = currentBrush();
+	if (!brush || !brush->dirty() || !brush->hasPendingChanges()) {
+		return;
+	}
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const int activeNodeId = sceneGraph.activeNode();
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId);
+	if (!node) {
+		return;
+	}
+	resetPreview();
+	brush->markClean();
+	voxel::RawVolume *activeVolume = node->volume();
+	preExecuteBrush(activeVolume);
+	executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
+		[this, activeNodeId](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
+			_sceneMgr->modified(activeNodeId, region, flags);
+		});
+}
+
 ModifierType Modifier::checkModifierType() {
 	if (_brushType == BrushType::None) {
 		return ModifierType::ColorPicker;
@@ -657,21 +692,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 			// rendering, then regenerate immediately at the new position.
 			resetPreview();
 			brush->markClean();
-			if (brush->hasPendingChanges()) {
-				// Brushes with pending changes (TransformBrush, ExtrudeBrush, SculptBrush)
-				// modify the real volume directly. Re-execute on the real node so the
-				// updated transform is applied to the scene - generating a separate preview
-				// overlay would corrupt brush history state and produce ghost meshes.
-				scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId);
-				if (node) {
-					voxel::RawVolume *activeVolume = node->volume();
-					preExecuteBrush(activeVolume);
-					executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
-						[this, activeNodeId](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
-							_sceneMgr->modified(activeNodeId, region, flags);
-						});
-				}
-			} else {
+			if (!brush->hasPendingChanges()) {
 				_previewManager.scheduleUpdate(_nowSeconds);
 			}
 		}
