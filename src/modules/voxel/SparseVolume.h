@@ -6,12 +6,15 @@
 
 #include "core/GLM.h"
 #include "core/SharedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {
+
+struct VoxelPosition;
 
 /**
  * Non-thread-safe sparse volume implementation which stores data in a hashmap. This is useful for volumes where most of
@@ -156,6 +159,12 @@ public:
 
 	// Batch set voxels in a row (same Y, same Z, varying X)
 	void setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel);
+
+	/**
+	 * @brief Batch insert voxels from a DynamicVoxelArray.
+	 * Sorts the array by chunk position for optimal cache utilization.
+	 */
+	void insertBatch(core::DynamicArray<VoxelPosition> &voxels);
 
 	void clear();
 

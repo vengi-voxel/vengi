@@ -3,6 +3,7 @@
  */
 
 #include "SparseVolume.h"
+#include "DynamicVoxelArray.h"
 
 namespace voxel {
 
@@ -79,6 +80,42 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 		++_size;
 	}
 	return true;
+}
+
+void SparseVolume::insertBatch(core::DynamicArray<VoxelPosition> &voxels) {
+	if (voxels.empty()) {
+		return;
+	}
+	// Sort by chunk position for optimal cache utilization
+	voxels.sort([](const VoxelPosition &a, const VoxelPosition &b) {
+		const glm::ivec3 ca = chunkPosition(a.pos);
+		const glm::ivec3 cb = chunkPosition(b.pos);
+		if (ca.z != cb.z) return ca.z < cb.z;
+		if (ca.y != cb.y) return ca.y < cb.y;
+		return ca.x < cb.x;
+	});
+
+	glm::ivec3 currentChunkPos(INT32_MAX);
+	Chunk *currentChunk = nullptr;
+
+	for (const VoxelPosition &vp : voxels) {
+		if (_isRegionValid && !_region.containsPoint(vp.pos)) {
+			continue;
+		}
+		const glm::ivec3 cp = chunkPosition(vp.pos);
+		if (cp != currentChunkPos) {
+			currentChunkPos = cp;
+			ChunkPtr ptr = findOrCreateChunk(cp);
+			currentChunk = ptr.get();
+		}
+		const glm::u8vec3 lp = localPosition(vp.pos, currentChunkPos);
+		const uint32_t packed = packLocal(lp);
+		const size_t sizeBefore = currentChunk->voxels.size();
+		currentChunk->voxels.put(packed, vp.voxel);
+		if (currentChunk->voxels.size() > sizeBefore) {
+			++_size;
+		}
+	}
 }
 
 void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel) {
