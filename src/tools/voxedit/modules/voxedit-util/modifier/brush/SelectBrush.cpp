@@ -50,11 +50,7 @@ void SelectBrush::reset() {
 
 void SelectBrush::onSceneChange() {
 	Super::onSceneChange();
-	// TODO: SELECTION: why only these ones? and not all of them via loop? is there some state we want to keep here even
-	// after a scene change?
-	_paintStrategy.reset();
-	_box3DStrategy.reset();
-	_sceneModifiedFlags = SceneModifiedFlags::All;
+	reset();
 }
 
 void SelectBrush::abort(BrushContext &ctx) {
