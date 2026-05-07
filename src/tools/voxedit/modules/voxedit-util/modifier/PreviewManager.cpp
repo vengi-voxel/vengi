@@ -175,9 +175,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		SelectBrush &selectBrush = modifier.selectBrush();
 		const BrushType brushType = modifier.brushType();
-		const bool isCircleSelect = brushType == BrushType::Select &&
-			(selectBrush.selectMode() == SelectMode::Circle ||
-			 selectBrush.selectMode() == SelectMode::Lasso);
+		const bool isCircleSelect = brushType == BrushType::Select && selectBrush.selectMode() == SelectMode::Circle;
 		if (isCircleSelect) {
 			selectBrush.circle().setPreviewMode(true);
 		}

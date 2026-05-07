@@ -123,18 +123,13 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 	};
 	if (_previewMode) {
 		voxel::RawVolume *vol = wrapper.volume();
-		const voxel::Region &r = vol->region();
 		const voxel::Voxel air;
-		// TODO: PERF: use volume sampler
-		for (int z = r.getLowerZ(); z <= r.getUpperZ(); ++z) {
-			for (int y = r.getLowerY(); y <= r.getUpperY(); ++y) {
-				for (int x = r.getLowerX(); x <= r.getUpperX(); ++x) {
-					if (!inBounds(x, y, z)) {
-						vol->setVoxel(x, y, z, air);
-					}
-				}
+		auto func = [&](int x, int y, int z, const voxel::Voxel &v) {
+			if (!inBounds(x, y, z)) {
+				vol->setVoxel(x, y, z, air);
 			}
-		}
+		};
+		voxelutil::visitVolumeParallel(*vol, func);
 	} else {
 		_ellipseHistory.clear();
 		auto circleFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
