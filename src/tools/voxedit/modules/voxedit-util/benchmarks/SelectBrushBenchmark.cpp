@@ -25,6 +25,20 @@ public:
 	}
 };
 
+/**
+ * @brief Benchmark the point-in-polygon test used by the lasso strategy.
+ * This isolates the polygon containment check which is called per-pixel.
+ */
+class LassoPointInPolygonBenchmark : public app::AbstractBenchmark {
+};
+
+/**
+ * @brief Benchmark isolated strategy generate() calls to establish baselines
+ * for comparison
+ */
+class SelectStrategyBenchmark : public BrushBenchmark {
+};
+
 BENCHMARK_DEFINE_F(SelectBrushBenchmark, All)(benchmark::State &state) {
 	brush.setSelectMode(voxedit::SelectMode::All);
 	for (auto _ : state) {
@@ -33,7 +47,6 @@ BENCHMARK_DEFINE_F(SelectBrushBenchmark, All)(benchmark::State &state) {
 		runBrushLifecycle(brush);
 	}
 }
-BENCHMARK_REGISTER_F(SelectBrushBenchmark, All);
 
 BENCHMARK_DEFINE_F(SelectBrushBenchmark, Surface)(benchmark::State &state) {
 	brush.setSelectMode(voxedit::SelectMode::Surface);
@@ -42,7 +55,6 @@ BENCHMARK_DEFINE_F(SelectBrushBenchmark, Surface)(benchmark::State &state) {
 		runBrushLifecycle(brush);
 	}
 }
-BENCHMARK_REGISTER_F(SelectBrushBenchmark, Surface);
 
 BENCHMARK_DEFINE_F(SelectBrushBenchmark, Connected)(benchmark::State &state) {
 	brush.setSelectMode(voxedit::SelectMode::Connected);
@@ -51,14 +63,6 @@ BENCHMARK_DEFINE_F(SelectBrushBenchmark, Connected)(benchmark::State &state) {
 		runBrushLifecycle(brush);
 	}
 }
-BENCHMARK_REGISTER_F(SelectBrushBenchmark, Connected);
-
-/**
- * @brief Benchmark the point-in-polygon test used by the lasso strategy.
- * This isolates the polygon containment check which is called per-pixel.
- */
-class LassoPointInPolygonBenchmark : public app::AbstractBenchmark {
-};
 
 BENCHMARK_DEFINE_F(LassoPointInPolygonBenchmark, SquarePolygon)(benchmark::State &state) {
 	const int numPoints = state.range(0);
@@ -86,14 +90,6 @@ BENCHMARK_DEFINE_F(LassoPointInPolygonBenchmark, SquarePolygon)(benchmark::State
 	}
 	state.SetItemsProcessed(state.iterations() * 10000);
 }
-BENCHMARK_REGISTER_F(LassoPointInPolygonBenchmark, SquarePolygon)->Arg(4)->Arg(20)->Arg(100)->Arg(500);
-
-/**
- * @brief Benchmark isolated strategy generate() calls to establish baselines
- * for comparison when optimizing the lasso.
- */
-class SelectStrategyBenchmark : public BrushBenchmark {
-};
 
 BENCHMARK_DEFINE_F(SelectStrategyBenchmark, AllGenerate)(benchmark::State &state) {
 	voxedit::select::All strategy;
@@ -108,7 +104,6 @@ BENCHMARK_DEFINE_F(SelectStrategyBenchmark, AllGenerate)(benchmark::State &state
 		strategy.generate(sceneGraph, wrapper, ctx, node->region(), brushState);
 	}
 }
-BENCHMARK_REGISTER_F(SelectStrategyBenchmark, AllGenerate);
 
 BENCHMARK_DEFINE_F(SelectStrategyBenchmark, SurfaceGenerate)(benchmark::State &state) {
 	voxedit::select::Surface strategy;
@@ -123,7 +118,6 @@ BENCHMARK_DEFINE_F(SelectStrategyBenchmark, SurfaceGenerate)(benchmark::State &s
 		strategy.generate(sceneGraph, wrapper, ctx, node->region(), brushState);
 	}
 }
-BENCHMARK_REGISTER_F(SelectStrategyBenchmark, SurfaceGenerate);
 
 BENCHMARK_DEFINE_F(SelectStrategyBenchmark, ConnectedGenerate)(benchmark::State &state) {
 	voxedit::select::Connected strategy;
@@ -140,4 +134,11 @@ BENCHMARK_DEFINE_F(SelectStrategyBenchmark, ConnectedGenerate)(benchmark::State 
 		strategy.generate(sceneGraph, wrapper, ctx, node->region(), brushState);
 	}
 }
+
 BENCHMARK_REGISTER_F(SelectStrategyBenchmark, ConnectedGenerate);
+BENCHMARK_REGISTER_F(SelectStrategyBenchmark, SurfaceGenerate);
+BENCHMARK_REGISTER_F(SelectStrategyBenchmark, AllGenerate);
+BENCHMARK_REGISTER_F(LassoPointInPolygonBenchmark, SquarePolygon)->Arg(4)->Arg(20)->Arg(100)->Arg(500);
+BENCHMARK_REGISTER_F(SelectBrushBenchmark, Connected);
+BENCHMARK_REGISTER_F(SelectBrushBenchmark, Surface);
+BENCHMARK_REGISTER_F(SelectBrushBenchmark, All);
