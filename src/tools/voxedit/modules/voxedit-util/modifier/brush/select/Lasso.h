@@ -16,6 +16,7 @@ namespace select {
 
 class Lasso : public Strategy {
 private:
+	using Super = Strategy;
 	SceneManager *_sceneManager;
 	core::DynamicArray<glm::vec2> _screenPoints;
 	bool _screenDragging = false;

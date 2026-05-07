@@ -15,6 +15,7 @@ namespace select {
 
 class Script : public Strategy {
 private:
+	using Super = Strategy;
 	SceneManager *_sceneManager;
 	LUASelectionMode *_activeLuaMode = nullptr;
 

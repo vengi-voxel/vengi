@@ -15,6 +15,7 @@ namespace select {
 
 class Circle : public Strategy {
 private:
+	using Super = Strategy;
 	glm::ivec3 _ellipseCenter{0};
 	int _ellipseRadiusU = 0;
 	int _ellipseRadiusV = 0;
@@ -36,24 +37,31 @@ public:
 	bool valid() const {
 		return _ellipseValid;
 	}
+
 	const glm::ivec3 &center() const {
 		return _ellipseCenter;
 	}
+
 	int radiusU() const {
 		return _ellipseRadiusU;
 	}
+
 	int radiusV() const {
 		return _ellipseRadiusV;
 	}
+
 	int depth() const {
 		return _ellipseDepth;
 	}
+
 	bool is3D() const {
 		return _ellipse3D;
 	}
+
 	voxel::FaceNames face() const {
 		return _ellipseFace;
 	}
+
 	core::DynamicArray<glm::ivec3> &history() {
 		return _ellipseHistory;
 	}
@@ -61,15 +69,19 @@ public:
 	void setCenter(const glm::ivec3 &center) {
 		_ellipseCenter = center;
 	}
+
 	void setRadiusU(int r) {
 		_ellipseRadiusU = glm::max(r, 0);
 	}
+
 	void setRadiusV(int r) {
 		_ellipseRadiusV = glm::max(r, 0);
 	}
+
 	void setDepth(int d) {
 		_ellipseDepth = glm::max(d, 1);
 	}
+
 	void set3D(bool v) {
 		_ellipse3D = v;
 	}

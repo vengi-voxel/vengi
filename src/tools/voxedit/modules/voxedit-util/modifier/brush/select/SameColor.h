@@ -10,8 +10,10 @@ namespace voxedit {
 namespace select {
 
 class SameColor : public Strategy {
+private:
+	using Super = Strategy;
+
 public:
-	bool isSimplePreview() const override { return true; }
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 };

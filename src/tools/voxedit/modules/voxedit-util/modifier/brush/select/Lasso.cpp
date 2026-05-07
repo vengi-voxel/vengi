@@ -159,21 +159,19 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 				for (int x = xStart; x <= xEnd; x += stride) {
 					const math::Ray worldRay = camera->mouseRay(glm::ivec2(x, y));
 					const glm::vec3 origin = glm::vec3(invModel * glm::vec4(worldRay.origin, 1.0f));
-					const glm::vec3 dir =
-						glm::normalize(glm::vec3(invModel * glm::vec4(worldRay.direction, 0.0f)));
+					const glm::vec3 dir = glm::normalize(glm::vec3(invModel * glm::vec4(worldRay.direction, 0.0f)));
 					const glm::vec3 end = origin + dir * rayLength;
-					voxelutil::raycastWithEndpoints(
-						volume, origin, end, [&](const voxel::RawVolume::Sampler &sampler) {
-							const voxel::Voxel &voxel = sampler.voxel();
-							if (voxel::isAir(voxel.getMaterial())) {
-								return true;
-							}
-							const glm::ivec3 &pos = sampler.position();
-							if (visited.putIfAbsent(pos, true)) {
-								results.push_back(pos);
-							}
-							return false;
-						});
+					voxelutil::raycastWithEndpoints(volume, origin, end, [&](const voxel::RawVolume::Sampler &sampler) {
+						const voxel::Voxel &voxel = sampler.voxel();
+						if (voxel::isAir(voxel.getMaterial())) {
+							return true;
+						}
+						const glm::ivec3 &pos = sampler.position();
+						if (visited.putIfAbsent(pos, true)) {
+							results.push_back(pos);
+						}
+						return false;
+					});
 				}
 			}
 		}

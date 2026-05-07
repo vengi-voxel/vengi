@@ -13,6 +13,14 @@
 namespace voxedit {
 namespace select {
 
+voxel::Region Paint::calcRegion(const BrushContext &ctx, const AABBBrushState &state) const {
+	const int rad = state.radius;
+	if (rad > 0) {
+		return voxel::Region(ctx.cursorPosition - rad, ctx.cursorPosition + rad);
+	}
+	return voxel::Region(ctx.cursorPosition, ctx.cursorPosition);
+}
+
 bool Paint::beginBrush(const BrushContext &ctx, const AABBBrushState &state) {
 	_accumulating = true;
 	_hadSelection = false;

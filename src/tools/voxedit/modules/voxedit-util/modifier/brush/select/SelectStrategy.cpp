@@ -3,12 +3,13 @@
  */
 
 #include "SelectStrategy.h"
+#include "voxedit-util/modifier/brush/Brush.h"
 
 namespace voxedit {
 namespace select {
 
 voxel::Region Strategy::calcRegion(const BrushContext &ctx, const AABBBrushState &state) const {
-	return voxel::Region::InvalidRegion;
+	return ctx.targetVolumeRegion;
 }
 
 bool Strategy::needsAdditionalAction(const BrushContext &ctx) const {

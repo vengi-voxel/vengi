@@ -12,6 +12,7 @@ namespace select {
 
 class Paint : public Strategy {
 private:
+	using Super = Strategy;
 	bool _accumulating = false;
 	bool _growRegion = false;
 	bool _hadSelection = false;
@@ -19,6 +20,7 @@ private:
 	voxel::Region _finalUndoRegion = voxel::Region::InvalidRegion;
 
 public:
+	voxel::Region calcRegion(const BrushContext &ctx, const AABBBrushState &state) const override;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 	bool beginBrush(const BrushContext &ctx, const AABBBrushState &state) override;

@@ -88,10 +88,8 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 			setAABBMode();
 			_sceneModifiedFlags = SceneModifiedFlags::All;
 		}
-		if (_selectMode == SelectMode::Lasso || _selectMode == SelectMode::Paint || _selectMode == SelectMode::Circle ||
-			_selectMode == SelectMode::Box3D) {
-			activeStrategy()->reset();
-		}
+		activeStrategy()->reset();
+		_circleStrategy.reset();
 		if (mode == SelectMode::Paint) {
 			setSingleMode();
 			if (_radius == 0) {
@@ -123,12 +121,9 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	const select::AABBBrushState state = buildState(ctx);
 	if (activeStrategy()->beginBrush(ctx, state)) {
 		_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
-		// TODO: SELECTION: why only in lasso - this class should not know this. ideally the strategy is either doing
-		// this in beginBrush() and is triggered by the SelectBrush implementation or it's done for all strategies,
-		// because this class should not decide on that
-		if (_selectMode == SelectMode::Lasso) {
-			_aabbFace = ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY;
-		}
+		// When the strategy handles beginBrush itself (e.g. Lasso), Super::beginBrush
+		// is not called, so _aabbFace must be set here for buildState() to work.
+		_aabbFace = ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY;
 		return true;
 	}
 	return Super::beginBrush(ctx);
@@ -144,10 +139,7 @@ voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 	if (strategyRegion.isValid()) {
 		return strategyRegion;
 	}
-	// TODO: SELECTION: this is a bit hacky - we should ideally have the strategies return the region in activeStrategy()->calcRegion()
-	if (_selectMode != SelectMode::All && _selectMode != SelectMode::Box3D && _selectMode != SelectMode::Paint) {
-		return ctx.targetVolumeRegion;
-	}
+	// Strategy returned InvalidRegion - use the parent AABB region
 	return Super::calcRegion(ctx);
 }
 
@@ -157,8 +149,12 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	if (_brushClamping) {
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
-	// TODO: SELECTION: this reset is hacky - why is it here? if needed - at least document why.
-	_box3DStrategy.reset();
+	// Reset Box3D selection region before each generate so that the previous
+	// Box3D selection doesn't persist as a masking region in ModifierVolumeWrapper
+	// when a different strategy is active.
+	if (_selectMode != SelectMode::Box3D) {
+		_box3DStrategy.reset();
+	}
 	const select::AABBBrushState state = buildState(ctx);
 	activeStrategy()->generate(sceneGraph, wrapper, ctx, selectionRegion, state);
 	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;

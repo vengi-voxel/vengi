@@ -12,10 +12,16 @@ namespace select {
 
 class Box3D : public Strategy {
 private:
+	using Super = Strategy;
 	voxel::Region _selectionRegion = voxel::Region::InvalidRegion;
 
 public:
-	bool isSimplePreview() const override { return true; }
+	bool isSimplePreview() const override {
+		return true;
+	}
+	voxel::Region calcRegion(const BrushContext &ctx, const AABBBrushState &state) const override {
+		return voxel::Region::InvalidRegion;
+	}
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 	bool needsAdditionalAction(const BrushContext &ctx) const override;
@@ -24,6 +30,7 @@ public:
 	const voxel::Region &selectionRegion() const {
 		return _selectionRegion;
 	}
+
 	void setSelectionRegion(const voxel::Region &region) {
 		_selectionRegion = region;
 	}

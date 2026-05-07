@@ -12,6 +12,7 @@ namespace select {
 
 class FlatSurface : public Strategy {
 private:
+	using Super = Strategy;
 	int _flatDeviation = 0;
 
 public:
