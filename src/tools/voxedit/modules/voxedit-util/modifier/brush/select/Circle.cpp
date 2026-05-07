@@ -150,7 +150,8 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 			voxelutil::VisitSolid condition;
 			voxelutil::visitVolume(wrapper, region, circleFunc, condition);
 		} else {
-			voxelutil::visitSurfaceVolume(wrapper, circleFunc);
+			voxelutil::VisitVisible condition;
+			voxelutil::visitVolume(wrapper, region, circleFunc, condition);
 		}
 		_ellipseCenter = center;
 		_ellipseRadiusU = radiusU;
