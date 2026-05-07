@@ -86,13 +86,12 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 	if (_selectMode != mode) {
 		if (_selectMode == SelectMode::Paint) {
 			setAABBMode();
-			activeStrategy()->reset();
 			_sceneModifiedFlags = SceneModifiedFlags::All;
 		}
-		if (_selectMode == SelectMode::Lasso) {
+		if (_selectMode == SelectMode::Lasso || _selectMode == SelectMode::Paint || _selectMode == SelectMode::Circle ||
+			_selectMode == SelectMode::Box3D) {
 			activeStrategy()->reset();
 		}
-		_circleStrategy.reset();
 		if (mode == SelectMode::Paint) {
 			setSingleMode();
 			if (_radius == 0) {
