@@ -10,6 +10,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
+#include "voxedit-util/modifier/brush/BrushGizmo.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/Raycast.h"
@@ -17,6 +18,15 @@
 
 namespace voxedit {
 namespace select {
+
+bool Lasso::wantBrushGizmo(const BrushContext &ctx) const {
+	return _screenDragging && _screenPoints.size() >= 2;
+}
+
+void Lasso::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	state.operations = BrushGizmo_ScreenPolygon;
+	state.screenPolygon = &_screenPoints;
+}
 
 bool Lasso::active() const {
 	return _screenDragging;

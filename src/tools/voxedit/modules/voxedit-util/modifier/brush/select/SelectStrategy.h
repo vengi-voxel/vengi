@@ -15,6 +15,7 @@ class SceneGraph;
 
 namespace voxedit {
 
+struct BrushGizmoState;
 struct BrushContext;
 class ModifierVolumeWrapper;
 
@@ -57,6 +58,13 @@ public:
 	virtual void reset();
 	virtual void update(const BrushContext &ctx, double nowSeconds);
 	virtual bool active() const;
+
+	virtual bool wantBrushGizmo(const BrushContext &ctx) const {
+		return false;
+	}
+
+	virtual void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	}
 };
 
 } // namespace select

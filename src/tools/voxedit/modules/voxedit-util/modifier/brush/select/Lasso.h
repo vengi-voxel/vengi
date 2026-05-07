@@ -33,6 +33,9 @@ public:
 	void update(const BrushContext &ctx, double nowSeconds) override;
 	bool active() const override;
 
+	bool wantBrushGizmo(const BrushContext &ctx) const override;
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
+
 	bool screenDragging() const {
 		return _screenDragging;
 	}

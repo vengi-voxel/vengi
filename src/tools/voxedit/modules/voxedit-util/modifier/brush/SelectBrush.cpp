@@ -90,13 +90,13 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 	if (_selectMode != mode) {
 		if (_selectMode == SelectMode::Paint) {
 			setAABBMode();
-			_paintStrategy.reset();
+			activeStrategy()->reset();
 			_sceneModifiedFlags = SceneModifiedFlags::All;
 		}
 		if (_selectMode == SelectMode::Lasso) {
-			_lassoStrategy.reset();
+			activeStrategy()->reset();
 		}
-		_circleStrategy.invalidate();
+		_circleStrategy.reset();
 		if (mode == SelectMode::Paint) {
 			setSingleMode();
 			if (_radius == 0) {
@@ -128,6 +128,9 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	const select::AABBBrushState state = buildState(ctx);
 	if (activeStrategy()->beginBrush(ctx, state)) {
 		_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
+		// TODO: SELECTION: why only in lasso - this class should not know this. ideally the strategy is either doing
+		// this in beginBrush() and is triggered by the SelectBrush implementation or it's done for all strategies,
+		// because this class should not decide on that
 		if (_selectMode == SelectMode::Lasso) {
 			_aabbFace = ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY;
 		}
@@ -146,6 +149,7 @@ voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 	if (strategyRegion.isValid()) {
 		return strategyRegion;
 	}
+	// TODO: SELECTION: this is a bit hacky - we should ideally have the strategies return the region in activeStrategy()->calcRegion()
 	if (_selectMode != SelectMode::All && _selectMode != SelectMode::Box3D && _selectMode != SelectMode::Paint) {
 		return ctx.targetVolumeRegion;
 	}
@@ -158,6 +162,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	if (_brushClamping) {
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
+	// TODO: SELECTION: this reset is hacky - why is it here? if needed - at least document why.
 	_box3DStrategy.reset();
 	const select::AABBBrushState state = buildState(ctx);
 	activeStrategy()->generate(sceneGraph, wrapper, ctx, selectionRegion, state);
@@ -165,13 +170,11 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 }
 
 bool SelectBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return _selectMode == SelectMode::Lasso && _lassoStrategy.screenDragging() &&
-		   _lassoStrategy.screenPoints().size() >= 2;
+	return activeStrategy()->wantBrushGizmo(ctx);
 }
 
 void SelectBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	state.operations = BrushGizmo_ScreenPolygon;
-	state.screenPolygon = &_lassoStrategy.screenPoints();
+	activeStrategy()->brushGizmoState(ctx, state);
 }
 
 } // namespace voxedit
