@@ -3,6 +3,9 @@
  */
 
 #include "ExtrudeBrush.h"
+#include "app/App.h"
+#include "app/ForParallel.h"
+#include "core/Common.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Connectivity.h"
@@ -236,18 +239,44 @@ void ExtrudeBrush::cacheSelection(const voxel::RawVolume *vol, const voxel::Regi
 		return;
 	}
 
-	// Collect selected (FlagOutline) voxel positions
+	// Collect selected (FlagOutline) voxel positions using parallel scan.
+	// Each thread collects into its own array - no locks needed.
+	const int zStart = volRegion.getLowerZ();
+	const int zEnd = volRegion.getUpperZ() + 1;
+	const int zRange = zEnd - zStart;
+	const int threadCount = app::App::getInstance()->threads();
+	const int chunkCount = (threadCount > 1 && zRange > 1) ? core_min(threadCount, zRange) : 1;
+
+	core::DynamicArray<core::DynamicArray<glm::ivec3>> threadResults;
+	threadResults.resize(chunkCount);
+
+	app::for_parallel(0, chunkCount, [&](int chunkStart, int chunkEnd) {
+		for (int chunk = chunkStart; chunk < chunkEnd; ++chunk) {
+			const int sliceStart = zStart + (zRange * chunk) / chunkCount;
+			const int sliceEnd = zStart + (zRange * (chunk + 1)) / chunkCount;
+			const voxel::Region subRegion(
+				volRegion.getLowerX(), volRegion.getLowerY(), sliceStart,
+				volRegion.getUpperX(), volRegion.getUpperY(), sliceEnd - 1);
+			voxelutil::visitVolume(*vol, subRegion,
+				[&threadResults, chunk](int x, int y, int z, const voxel::Voxel &) {
+					threadResults[chunk].push_back(glm::ivec3(x, y, z));
+				},
+				voxelutil::VisitSolidOutline());
+		}
+	});
+
+	// Merge results
 	glm::ivec3 selLo(volRegion.getUpperCorner());
 	glm::ivec3 selHi(volRegion.getLowerCorner());
 	PositionSet selectedSet;
-
-	voxelutil::visitVolume(*vol, volRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		const glm::ivec3 pos(x, y, z);
-		_cachedSelectedPositions.push_back(pos);
-		selectedSet.insert(pos);
-		selLo = glm::min(selLo, pos);
-		selHi = glm::max(selHi, pos);
-	}, voxelutil::VisitSolidOutline());
+	for (auto &arr : threadResults) {
+		for (const glm::ivec3 &pos : arr) {
+			_cachedSelectedPositions.push_back(pos);
+			selectedSet.insert(pos);
+			selLo = glm::min(selLo, pos);
+			selHi = glm::max(selHi, pos);
+		}
+	}
 
 	if (_cachedSelectedPositions.empty()) {
 		return;
@@ -330,9 +359,18 @@ void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wra
 
 	// Step 1: Restore all positions modified by the previous generate() call.
 	// This makes depth/offset changes fully reversible without touching the undo stack.
+	// Track the bounding box of all restored positions for dirty region.
+	const voxel::Region &volRegion = vol->region();
+	glm::ivec3 dirtyLo(volRegion.getUpperCorner());
+	glm::ivec3 dirtyHi(volRegion.getLowerCorner());
 	for (const voxel::VoxelPosition &entry : _history) {
 		vol->setVoxel(entry.pos, entry.voxel);
-		wrapper.addToDirtyRegion(entry.pos);
+		dirtyLo = glm::min(dirtyLo, entry.pos);
+		dirtyHi = glm::max(dirtyHi, entry.pos);
+	}
+	if (!_history.empty()) {
+		wrapper.addToDirtyRegion(dirtyLo);
+		wrapper.addToDirtyRegion(dirtyHi);
 	}
 	_history.clear();
 

@@ -3,6 +3,9 @@
  */
 
 #include "SnapshotHelper.h"
+#include "app/App.h"
+#include "app/ForParallel.h"
+#include "core/Common.h"
 #include "core/Trace.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/DynamicVoxelArray.h"
@@ -15,23 +18,68 @@ namespace voxedit {
 void SnapshotHelper::captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion) {
 	core_trace_scoped(SnapshotHelperCaptureSnapshot);
 	_snapshot.clear();
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
 
-	voxelutil::visitVolume(
-		*volume, volRegion,
-		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const glm::ivec3 pos(x, y, z);
-			_snapshot.setVoxel(pos, voxel);
-			selLo = glm::min(selLo, pos);
-			selHi = glm::max(selHi, pos);
-		},
-		voxelutil::VisitSolidOutline());
+	// Parallel scan: split Z-axis into chunks, each thread collects into its own array.
+	// No locks needed - each thread writes to its own DynamicVoxelArray.
+	const int zStart = volRegion.getLowerZ();
+	const int zEnd = volRegion.getUpperZ() + 1;
+	const int zRange = zEnd - zStart;
 
-	if (_snapshot.empty()) {
+	if (zRange <= 0) {
 		_hasSnapshot = false;
 		return;
 	}
+
+	// Determine chunk count based on available threads
+	const int threadCount = app::App::getInstance()->threads();
+	const int chunkCount = (threadCount > 1) ? core_min(threadCount, zRange) : 1;
+
+	core::DynamicArray<voxel::DynamicVoxelArray> threadResults;
+	threadResults.resize(chunkCount);
+
+	app::for_parallel(0, chunkCount, [&](int chunkStart, int chunkEnd) {
+		for (int chunk = chunkStart; chunk < chunkEnd; ++chunk) {
+			const int sliceStart = zStart + (zRange * chunk) / chunkCount;
+			const int sliceEnd = zStart + (zRange * (chunk + 1)) / chunkCount;
+			const voxel::Region subRegion(
+				volRegion.getLowerX(), volRegion.getLowerY(), sliceStart,
+				volRegion.getUpperX(), volRegion.getUpperY(), sliceEnd - 1);
+			voxelutil::visitVolume(*volume, subRegion,
+				[&threadResults, chunk](int x, int y, int z, const voxel::Voxel &voxel) {
+					threadResults[chunk].push_back({glm::ivec3(x, y, z), voxel});
+				},
+				voxelutil::VisitSolidOutline());
+		}
+	});
+
+	// Merge thread-local results
+	size_t totalCount = 0;
+	for (const auto &arr : threadResults) {
+		totalCount += arr.size();
+	}
+	if (totalCount == 0) {
+		_hasSnapshot = false;
+		return;
+	}
+
+	voxel::DynamicVoxelArray collected;
+	collected.reserve(totalCount);
+	for (auto &arr : threadResults) {
+		for (const voxel::VoxelPosition &vp : arr) {
+			collected.push_back(vp);
+		}
+	}
+
+	// Compute bounding box
+	glm::ivec3 selLo(collected[0].pos);
+	glm::ivec3 selHi(collected[0].pos);
+	for (const voxel::VoxelPosition &vp : collected) {
+		selLo = glm::min(selLo, vp.pos);
+		selHi = glm::max(selHi, vp.pos);
+	}
+
+	// Batch insert into sparse volume (sorts by chunk for cache efficiency)
+	_snapshot.insertBatch(collected);
 
 	_snapshotRegion = voxel::Region(selLo, selHi);
 	_capturedVolumeLower = volRegion.getLowerCorner();
