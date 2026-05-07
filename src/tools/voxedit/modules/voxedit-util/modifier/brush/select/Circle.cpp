@@ -125,6 +125,7 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 		voxel::RawVolume *vol = wrapper.volume();
 		const voxel::Region &r = vol->region();
 		const voxel::Voxel air;
+		// TODO: PERF: use volume sampler
 		for (int z = r.getLowerZ(); z <= r.getUpperZ(); ++z) {
 			for (int y = r.getLowerY(); y <= r.getUpperY(); ++y) {
 				for (int x = r.getLowerX(); x <= r.getUpperX(); ++x) {

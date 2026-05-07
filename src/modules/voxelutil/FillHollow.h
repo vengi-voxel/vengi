@@ -72,7 +72,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	app::for_parallel(0, width, fnWidth);
 
 	auto fnHeight = [&volume, &visited, width, depth, &mins](int start, int end) {
-		// TODO: PERF: use volume samplers
+		// TODO: PERF: use volume sampler
 		for (int y = start; y < end; ++y) {
 			for (int z = 1; z < depth - 1; ++z) {
 				const glm::ivec3 v1(0, y, z);

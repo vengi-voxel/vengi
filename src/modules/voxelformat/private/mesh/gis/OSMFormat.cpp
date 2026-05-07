@@ -1265,7 +1265,7 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		groundPalette.setColor(0, groundColor);
 		const voxel::Voxel groundVoxel = voxel::createVoxel(groundPalette, 0);
 
-		// TODO: PERF: use a sampler
+		// TODO: PERF: use volume sampler
 		for (int x = x0; x <= x1; ++x) {
 			for (int z = z0; z <= z1; ++z) {
 				groundVolume->setVoxel(x, -1, z, groundVoxel);
