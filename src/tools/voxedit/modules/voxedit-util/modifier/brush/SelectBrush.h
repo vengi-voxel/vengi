@@ -141,9 +141,10 @@ public:
 	LUASelectionMode *activeLuaSelectionMode() const;
 
 	void endBrush(BrushContext &ctx) override;
+
 	bool hasPendingChanges() const override;
-	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	voxel::Region consumePendingUndoRegion() override;
+
 	void abort(BrushContext &ctx) override;
 
 	bool wantBrushGizmo(const BrushContext &ctx) const override;

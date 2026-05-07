@@ -63,11 +63,7 @@ bool SelectBrush::hasPendingChanges() const {
 	if (_selectMode == SelectMode::Paint) {
 		return _paintStrategy.hasPendingChanges();
 	}
-	return false;
-}
-
-voxel::Region SelectBrush::revertChanges(voxel::RawVolume *) {
-	return voxel::Region::InvalidRegion;
+	return Super::hasPendingChanges();
 }
 
 void SelectBrush::endBrush(BrushContext &ctx) {
@@ -77,7 +73,10 @@ void SelectBrush::endBrush(BrushContext &ctx) {
 }
 
 voxel::Region SelectBrush::consumePendingUndoRegion() {
-	return _paintStrategy.consumeFinalUndoRegion();
+	if (_selectMode == SelectMode::Paint) {
+		return _paintStrategy.consumeFinalUndoRegion();
+	}
+	return Super::consumePendingUndoRegion();
 }
 
 void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
