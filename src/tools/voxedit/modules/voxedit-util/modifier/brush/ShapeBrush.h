@@ -77,6 +77,10 @@ public:
 	void construct() override;
 	void reset() override;
 
+	bool isSimplePreview() const override {
+		return _shapeType == ShapeType::AABB;
+	}
+
 	/**
 	 * @return The currently active shape type
 	 */

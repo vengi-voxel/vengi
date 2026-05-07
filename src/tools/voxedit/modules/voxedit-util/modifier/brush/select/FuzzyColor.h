@@ -15,6 +15,7 @@ private:
 	float _colorThreshold = color::ApproximationDistanceModerate;
 
 public:
+	bool isSimplePreview() const override { return true; }
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 

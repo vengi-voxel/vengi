@@ -122,6 +122,8 @@ public:
 	SelectBrush(SceneManager *sceneManager);
 	virtual ~SelectBrush() = default;
 
+	bool isSimplePreview() const override;
+
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	bool managesOwnSelection() const override;
 	bool active() const override;

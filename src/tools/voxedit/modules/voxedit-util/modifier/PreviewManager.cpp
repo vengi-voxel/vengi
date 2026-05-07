@@ -10,7 +10,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/modifier/brush/BrushType.h"
 
 namespace voxedit {
 
@@ -121,33 +120,7 @@ bool PreviewManager::previewNeedsExistingVolume(const Modifier &modifier) const 
 }
 
 bool PreviewManager::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
-	if (brush->type() == BrushType::Script) {
-		const LUABrush *luaBrush = (const LUABrush *)brush;
-		if (luaBrush->useSimplePreview()) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Shape) {
-		const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
-		if (shapeBrush->shapeType() == ShapeType::AABB) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Select) {
-		const SelectBrush *selectBrush = (const SelectBrush *)brush;
-		const SelectMode mode = selectBrush->selectMode();
-		if (mode == SelectMode::All || mode == SelectMode::Surface || mode == SelectMode::Box3D ||
-			mode == SelectMode::SameColor || mode == SelectMode::FuzzyColor) {
-			return true;
-		}
-	}
-	if (brush->type() == BrushType::Sculpt) {
-		const SculptBrush *sculptBrush = (const SculptBrush *)brush;
-		if (sculptBrush->sculptMode() == SculptMode::ExtendPlane && sculptBrush->planeFitted()) {
-			return true;
-		}
-	}
-	return false;
+	return brush->isSimplePreview();
 }
 
 void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palette &activePalette,

@@ -136,6 +136,10 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	return Super::beginBrush(ctx);
 }
 
+bool SelectBrush::isSimplePreview() const {
+	return activeStrategy()->isSimplePreview();
+}
+
 voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 	const select::AABBBrushState state = buildState(ctx);
 	const voxel::Region strategyRegion = activeStrategy()->calcRegion(ctx, state);

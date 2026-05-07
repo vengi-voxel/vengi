@@ -317,6 +317,10 @@ public:
 		return false;
 	}
 
+	virtual bool isSimplePreview() const {
+		return false;
+	}
+
 	/**
 	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
 	 *

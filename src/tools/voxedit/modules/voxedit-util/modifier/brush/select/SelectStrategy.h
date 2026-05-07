@@ -42,6 +42,10 @@ public:
 
 	virtual ~Strategy() = default;
 
+	virtual bool isSimplePreview() const {
+		return false;
+	}
+
 	virtual void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region, const AABBBrushState &state) = 0;
 

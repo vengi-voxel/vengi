@@ -110,7 +110,7 @@ public:
 	/**
 	 * @brief Whether the script requested simple (outline-only) preview mode
 	 */
-	bool useSimplePreview() const;
+	bool isSimplePreview() const override;
 
 	/**
 	 * @brief Get the icon string for this script brush (mapped from the Lua icon() callback)
@@ -140,7 +140,7 @@ inline const core::DynamicArray<core::String> &LUABrush::parameters() const {
 	return _parameters;
 }
 
-inline bool LUABrush::useSimplePreview() const {
+inline bool LUABrush::isSimplePreview() const {
 	return _useSimplePreview;
 }
 
