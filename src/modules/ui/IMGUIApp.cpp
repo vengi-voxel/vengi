@@ -562,6 +562,8 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 			return color::Orange();
 		}
 		return color::Yellow();
+	case style::ColorBrushGizmoPolygon:
+		return glm::vec4(1.0f, 1.0f, 1.0f, 0.1f);
 	}
 	return color::White();
 }

@@ -27,6 +27,7 @@ enum StyleColor {
 	ColorChatSender,
 	ColorWarningText,
 	ColorBrushGizmoLine,
+	ColorBrushGizmoPolygon,
 };
 
 const glm::vec4 &color(StyleColor color);

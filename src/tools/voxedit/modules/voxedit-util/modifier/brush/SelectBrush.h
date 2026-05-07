@@ -144,6 +144,9 @@ public:
 	voxel::Region consumePendingUndoRegion() override;
 	void abort(BrushContext &ctx) override;
 
+	bool wantBrushGizmo(const BrushContext &ctx) const override;
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
+
 	select::Circle &circle();
 	const select::Circle &circle() const;
 	select::Lasso &lasso();

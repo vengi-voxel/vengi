@@ -160,4 +160,14 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
 }
 
+bool SelectBrush::wantBrushGizmo(const BrushContext &ctx) const {
+	return _selectMode == SelectMode::Lasso && _lassoStrategy.screenDragging() &&
+		   _lassoStrategy.screenPoints().size() >= 2;
+}
+
+void SelectBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	state.operations = BrushGizmo_ScreenPolygon;
+	state.screenPolygon = &_lassoStrategy.screenPoints();
+}
+
 } // namespace voxedit

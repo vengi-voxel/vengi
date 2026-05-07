@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 
 namespace voxedit {
 
@@ -27,6 +29,8 @@ enum BrushGizmoOperation : uint32_t {
 	BrushGizmo_TranslateZ = (1u << 6),
 	BrushGizmo_BezierControl = (1u << 7),
 	BrushGizmo_Line = (1u << 8),
+	/** Screen-space polygon overlay (e.g. lasso selection) - does not use ImGuizmo */
+	BrushGizmo_ScreenPolygon = (1u << 9),
 };
 
 /**
@@ -60,6 +64,9 @@ struct BrushGizmoState {
 	glm::vec3 positions[4] = {};
 	/** Number of valid entries in positions[] */
 	int numPositions = 0;
+
+	/** Screen-space polygon points for BrushGizmo_ScreenPolygon (e.g. lasso) */
+	const core::DynamicArray<glm::vec2> *screenPolygon = nullptr;
 };
 
 } // namespace voxedit
