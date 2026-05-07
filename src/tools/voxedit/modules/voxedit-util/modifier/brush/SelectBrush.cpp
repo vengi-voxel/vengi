@@ -60,7 +60,10 @@ void SelectBrush::abort(BrushContext &ctx) {
 }
 
 bool SelectBrush::hasPendingChanges() const {
-	return _paintStrategy.hasPendingChanges();
+	if (_selectMode == SelectMode::Paint) {
+		return _paintStrategy.hasPendingChanges();
+	}
+	return false;
 }
 
 voxel::Region SelectBrush::revertChanges(voxel::RawVolume *) {
@@ -166,6 +169,15 @@ bool SelectBrush::wantBrushGizmo(const BrushContext &ctx) const {
 
 void SelectBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
 	activeStrategy()->brushGizmoState(ctx, state);
+}
+
+bool SelectBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+								  uint32_t operation) {
+	if (activeStrategy()->applyBrushGizmo(ctx, matrix, deltaMatrix, operation)) {
+		markDirty();
+		return true;
+	}
+	return false;
 }
 
 } // namespace voxedit

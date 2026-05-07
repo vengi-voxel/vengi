@@ -7,7 +7,6 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {

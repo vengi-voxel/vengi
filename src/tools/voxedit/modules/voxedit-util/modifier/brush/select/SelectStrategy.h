@@ -7,6 +7,7 @@
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
 namespace scenegraph {
@@ -64,6 +65,11 @@ public:
 	}
 
 	virtual void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	}
+
+	virtual bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+								 uint32_t operation) {
+		return false;
 	}
 };
 
