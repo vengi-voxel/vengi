@@ -341,7 +341,7 @@ void ServerNetwork::update(double nowSeconds) {
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 #ifdef _WIN32
-	const int ready = select(0, &readFDsOut, &writeFDsOut, nullptr, &tv);
+	const int ready = ::select(0, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #else
 	int maxFd = _impl->socketFD;
 	for (const auto &client : _clients) {
@@ -350,7 +350,7 @@ void ServerNetwork::update(double nowSeconds) {
 			maxFd = clientSocket;
 		}
 	}
-	const int ready = select(maxFd + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
+	const int ready = ::select(maxFd + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #endif
 	if (ready < 0) {
 		Log::warn("select() failed: %s", network::getNetworkErrorString());
