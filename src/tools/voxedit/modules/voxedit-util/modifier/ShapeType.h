@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/I18NMarkers.h"
 #include "core/ArrayLength.h"
 #include "ui/IconsLucide.h"
 
@@ -24,13 +25,13 @@ enum ShapeType {
 
 // clang-format off
 static constexpr const char *ShapeTypeStr[ShapeType::Max]{
-	"AABB",
-	"Torus",
-	"Cylinder",
-	"Cone",
-	"Dome",
-	"Ellipse",
-	"Circle"
+	NC_("ShapeType", "AABB"),
+	NC_("ShapeType", "Torus"),
+	NC_("ShapeType", "Cylinder"),
+	NC_("ShapeType", "Cone"),
+	NC_("ShapeType", "Dome"),
+	NC_("ShapeType", "Ellipse"),
+	NC_("ShapeType", "Circle")
 };
 
 static constexpr const char *ShapeTypeIcons[ShapeType::Max]{

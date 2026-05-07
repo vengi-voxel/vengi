@@ -101,23 +101,14 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 
 	const ShapeType currentSelectedShapeType = modifier.shapeBrush().shapeType();
-	const core::String currentLabel = core::String::format("%s %s", ShapeTypeIcons[(int)currentSelectedShapeType],
-														   ShapeTypeStr[(int)currentSelectedShapeType]);
-	if (ImGui::BeginCombo(_("Shape"), currentLabel.c_str(), ImGuiComboFlags_None)) {
+	{
+		ui::Toolbar toolbar("shapes", &listener);
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
-			const ShapeType type = (ShapeType)i;
-			const bool selected = type == currentSelectedShapeType;
-			const core::String label = core::String::format("%s %s", ShapeTypeIcons[i], ShapeTypeStr[i]);
-			if (ImGui::Selectable(label.c_str(), selected)) {
-				const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
-				const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
-				command::executeCommands(cmd, &listener);
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
+			const bool active = (ShapeType)i == currentSelectedShapeType;
+			const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
+			const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
+			toolbar.button(ShapeTypeIcons[i], cmd.c_str(), !active);
 		}
-		ImGui::EndCombo();
 	}
 
 	if (currentSelectedShapeType == ShapeType::Circle) {
@@ -631,50 +622,27 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	const bool luaModeActive = currentSelectMode == SelectMode::Script;
 	const core::DynamicArray<LUASelectionMode *> &luaModes = modifier.scriptManager().luaSelectionModes();
 
-	core::String currentSelectLabel;
-	if (luaModeActive) {
-		const LUASelectionMode *luaMode = brush.activeLuaSelectionMode();
-		currentSelectLabel = core::String::format("%s %s", luaMode->iconString(), luaMode->scriptName().c_str());
-	} else {
-		currentSelectLabel = core::String::format("%s %s", SelectModeIcons[(int)currentSelectMode],
-												  _(SelectModeStr[(int)currentSelectMode]));
-	}
-	if (ImGui::BeginCombo(_("Select mode"), currentSelectLabel.c_str(), ImGuiComboFlags_None)) {
+	{
+		ui::Toolbar toolbar("selectmode");
 		// Native modes
 		for (int i = 0; i < (int)SelectMode::Max; ++i) {
 			if ((SelectMode)i == SelectMode::Script) {
 				continue;
 			}
-			const bool selected = !luaModeActive && (int)currentSelectMode == i;
-			const core::String selectLabel = core::String::format("%s %s", SelectModeIcons[i], _(SelectModeStr[i]));
-			if (ImGui::Selectable(selectLabel.c_str(), selected)) {
+			const bool active = !luaModeActive && (int)currentSelectMode == i;
+			toolbar.button(SelectModeIcons[i], _(SelectModeStr[i]), [&brush, i]() {
 				brush.setSelectMode((SelectMode)i);
 				brush.setLuaSelectionMode(-1, nullptr);
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
+			}, !active);
 		}
 		// Lua selection modes
-		if (!luaModes.empty()) {
-			ImGui::Separator();
-			for (int i = 0; i < (int)luaModes.size(); ++i) {
-				const LUASelectionMode *mode = luaModes[i];
-				const bool selected = luaModeActive && brush.luaSelectionModeIndex() == i;
-				const core::String label =
-					core::String::format("%s %s", mode->iconString(), mode->scriptName().c_str());
-				if (ImGui::Selectable(label.c_str(), selected)) {
-					brush.setLuaSelectionMode(i, luaModes[i]);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-				if (!mode->scriptDescription().empty()) {
-					ImGui::TooltipTextUnformatted(mode->scriptDescription().c_str());
-				}
-			}
+		for (int i = 0; i < (int)luaModes.size(); ++i) {
+			const LUASelectionMode *mode = luaModes[i];
+			const bool active = luaModeActive && brush.luaSelectionModeIndex() == i;
+			toolbar.button(mode->iconString(), mode->scriptName().c_str(), [&brush, &luaModes, i]() {
+				brush.setLuaSelectionMode(i, luaModes[i]);
+			}, !active);
 		}
-		ImGui::EndCombo();
 	}
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -910,18 +878,14 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	PaintBrush &brush = modifier.paintBrush();
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
-	if (ImGui::BeginCombo(_("Mode"), _(PaintBrush::PaintModeStr[(int)paintMode]), ImGuiComboFlags_None)) {
+	{
+		ui::Toolbar toolbar("paintmode");
 		for (int i = 0; i < (int)PaintBrush::PaintMode::Max; ++i) {
-			const PaintBrush::PaintMode mode = (PaintBrush::PaintMode)i;
-			const bool selected = mode == paintMode;
-			if (ImGui::Selectable(_(PaintBrush::PaintModeStr[i]), selected)) {
-				brush.setPaintMode(mode);
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
+			const bool active = (PaintBrush::PaintMode)i == paintMode;
+			toolbar.button(PaintBrush::PaintModeIcons[i], _(PaintBrush::PaintModeStr[i]), [&brush, i]() {
+				brush.setPaintMode((PaintBrush::PaintMode)i);
+			}, !active);
 		}
-		ImGui::EndCombo();
 	}
 
 	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
@@ -1199,26 +1163,18 @@ void BrushPanel::updateTransformBrushPanel(command::CommandExecutionListener &li
 	}
 
 	const TransformMode currentTransformMode = brush.transformMode();
-	const core::String currentTransformLabel = core::String::format(
-		"%s %s", TransformModeIcons[(int)currentTransformMode], _(TransformModeStr[(int)currentTransformMode]));
-	if (ImGui::BeginCombo(_("Transform mode"), currentTransformLabel.c_str(), ImGuiComboFlags_None)) {
+	{
+		ui::Toolbar toolbar("transformmode");
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {
-			const TransformMode mode = (TransformMode)i;
-			const bool selected = mode == currentTransformMode;
-			const core::String transformLabel =
-				core::String::format("%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
-			if (ImGui::Selectable(transformLabel.c_str(), selected)) {
+			const bool active = (TransformMode)i == currentTransformMode;
+			toolbar.button(TransformModeIcons[i], _(TransformModeStr[i]), [this, &brush, i]() {
 				if (_transformDirty || brush.hasSnapshot()) {
 					executeTransformBrush();
 					_transformDirty = false;
 				}
-				brush.setTransformMode(mode);
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
+				brush.setTransformMode((TransformMode)i);
+			}, !active);
 		}
-		ImGui::EndCombo();
 	}
 
 	switch (brush.transformMode()) {

@@ -6,6 +6,7 @@
 
 #include "AABBBrush.h"
 #include "app/I18NMarkers.h"
+#include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
 namespace palette {
@@ -49,6 +50,10 @@ public:
 	static constexpr const char *PaintModeStr[] = {N_("Replace"), N_("Brighten"), N_("Darken"), N_("Random"),
 												   N_("Variation")};
 	static_assert(lengthof(PaintModeStr) == (int)PaintBrush::PaintMode::Max, "PaintModeStr size mismatch");
+
+	static constexpr const char *PaintModeIcons[] = {ICON_LC_REPLACE, ICON_LC_SUN, ICON_LC_MOON, ICON_LC_SHUFFLE,
+													 ICON_LC_BLEND};
+	static_assert(lengthof(PaintModeIcons) == (int)PaintBrush::PaintMode::Max, "PaintModeIcons size mismatch");
 
 private:
 	using Super = AABBBrush;
