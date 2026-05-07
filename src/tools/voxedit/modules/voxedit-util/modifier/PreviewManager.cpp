@@ -57,6 +57,31 @@ bool PreviewManager::checkPendingUpdate(double nowSeconds, Modifier &modifier, p
 	return false;
 }
 
+/**
+ * @brief Remove all voxels from the volume that don't have FlagOutline set.
+ * Used to clean up selection preview volumes so only the selected voxels are visible.
+ */
+static void stripUnflaggedVoxels(voxel::RawVolume *vol) {
+	if (!vol) {
+		return;
+	}
+	const voxel::Region &region = vol->region();
+	const voxel::Voxel air;
+	voxel::RawVolume::Sampler sampler(vol);
+	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			sampler.setPosition(region.getLowerX(), y, z);
+			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel &v = sampler.voxel();
+				if (!voxel::isAir(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
+					sampler.setVoxel(air);
+				}
+				sampler.movePositiveX();
+			}
+		}
+	}
+}
+
 static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume,
 									   voxel::Region region) {
 	if (existingVolume == nullptr) {
@@ -173,12 +198,6 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
 	bool simplePreview = isSimplePreview(brush, region);
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
-		SelectBrush &selectBrush = modifier.selectBrush();
-		const BrushType brushType = modifier.brushType();
-		const bool isCircleSelect = brushType == BrushType::Select && selectBrush.selectMode() == SelectMode::Circle;
-		if (isCircleSelect) {
-			selectBrush.circle().setPreviewMode(true);
-		}
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
@@ -191,13 +210,27 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setUnownedVolume(_previewVolume);
 		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-		if (isCircleSelect) {
-			selectBrush.circle().setPreviewMode(false);
+
+		// For selection brushes: remove voxels without FlagOutline from the preview
+		// volume. The preview is a copy of the real volume, and only voxels that the
+		// brush flagged should be visible - otherwise the unflagged copies brighten
+		// the underlying real volume when rendered as an overlay.
+		if (modifier.brushType() == BrushType::Select && existingVolume != nullptr) {
+			stripUnflaggedVoxels(_previewVolume);
+			if (_previewMirrorVolume) {
+				stripUnflaggedVoxels(_previewMirrorVolume);
+			}
 		}
 	} else if (simplePreview) {
 		_brushPreview.useSimplePreview = true;
 		_brushPreview.simplePreviewRegion = region;
-		_brushPreview.simplePreviewColor = activePalette.color(brushContext.cursorVoxel.getColor());
+		if (modifier.brushType() == BrushType::Select) {
+			// Selection brushes use a fixed high-contrast color so the preview
+			// is always visible regardless of the current palette color
+			_brushPreview.simplePreviewColor = color::RGBA(0, 200, 0, 100);
+		} else {
+			_brushPreview.simplePreviewColor = activePalette.color(brushContext.cursorVoxel.getColor());
+		}
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {

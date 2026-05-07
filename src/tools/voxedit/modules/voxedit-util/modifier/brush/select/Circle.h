@@ -15,7 +15,6 @@ namespace select {
 
 class Circle : public Strategy {
 private:
-	bool _previewMode = false;
 	glm::ivec3 _ellipseCenter{0};
 	int _ellipseRadiusU = 0;
 	int _ellipseRadiusV = 0;
@@ -73,9 +72,6 @@ public:
 	}
 	void set3D(bool v) {
 		_ellipse3D = v;
-	}
-	void setPreviewMode(bool v) {
-		_previewMode = v;
 	}
 
 	static void ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis);

@@ -121,42 +121,31 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 		const glm::ivec3 pos(x, y, z);
 		return insideSelection(pos, center, radiusU, radiusV, depth, is3D, uAxis, vAxis, faceAxisIdx, positiveNormal);
 	};
-	if (_previewMode) {
-		voxel::RawVolume *vol = wrapper.volume();
-		const voxel::Voxel air;
-		auto func = [&](int x, int y, int z, const voxel::Voxel &v) {
-			if (!inBounds(x, y, z)) {
-				vol->setVoxel(x, y, z, air);
+	_ellipseHistory.clear();
+	auto circleFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
+		if (inBounds(x, y, z)) {
+			if (wrapper.modifierType() == ModifierType::Erase) {
+				wrapper.removeFlagAt(x, y, z, voxel::FlagOutline);
+			} else {
+				wrapper.setFlagAt(x, y, z, voxel::FlagOutline);
 			}
-		};
-		voxelutil::visitVolumeParallel(*vol, func);
-	} else {
-		_ellipseHistory.clear();
-		auto circleFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
-			if (inBounds(x, y, z)) {
-				if (wrapper.modifierType() == ModifierType::Erase) {
-					wrapper.removeFlagAt(x, y, z, voxel::FlagOutline);
-				} else {
-					wrapper.setFlagAt(x, y, z, voxel::FlagOutline);
-				}
-				_ellipseHistory.push_back(glm::ivec3(x, y, z));
-			}
-		};
-		if (depth > 1) {
-			voxelutil::VisitSolid condition;
-			voxelutil::visitVolume(wrapper, region, circleFunc, condition);
-		} else {
-			voxelutil::VisitVisible condition;
-			voxelutil::visitVolume(wrapper, region, circleFunc, condition);
+			_ellipseHistory.push_back(glm::ivec3(x, y, z));
 		}
-		_ellipseCenter = center;
-		_ellipseRadiusU = radiusU;
-		_ellipseRadiusV = radiusV;
-		_ellipseDepth = depth;
-		_ellipse3D = is3D;
-		_ellipseFace = state.aabbFace;
-		_ellipseValid = true;
+	};
+	if (depth > 1) {
+		voxelutil::VisitSolid condition;
+		voxelutil::visitVolume(wrapper, region, circleFunc, condition);
+	} else {
+		voxelutil::VisitVisible condition;
+		voxelutil::visitVolume(wrapper, region, circleFunc, condition);
 	}
+	_ellipseCenter = center;
+	_ellipseRadiusU = radiusU;
+	_ellipseRadiusV = radiusV;
+	_ellipseDepth = depth;
+	_ellipse3D = is3D;
+	_ellipseFace = state.aabbFace;
+	_ellipseValid = true;
 }
 
 } // namespace select
