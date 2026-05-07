@@ -5,6 +5,7 @@
 #include "BrushBenchmark.h"
 #include "voxedit-util/modifier/brush/SelectBrush.h"
 #include "voxedit-util/modifier/brush/select/All.h"
+#include "voxedit-util/modifier/brush/select/Circle.h"
 #include "voxedit-util/modifier/brush/select/Connected.h"
 #include "voxedit-util/modifier/brush/select/Surface.h"
 #include "voxelutil/VolumeSelect.h"
@@ -142,3 +143,56 @@ BENCHMARK_REGISTER_F(LassoPointInPolygonBenchmark, SquarePolygon)->Arg(4)->Arg(2
 BENCHMARK_REGISTER_F(SelectBrushBenchmark, Connected);
 BENCHMARK_REGISTER_F(SelectBrushBenchmark, Surface);
 BENCHMARK_REGISTER_F(SelectBrushBenchmark, All);
+
+/**
+ * @brief Large-volume benchmark for Circle selection on a 512x512x256 volume.
+ * Simulates selecting a circle of radius 80 on a flat surface.
+ */
+class CircleSelectLargeBenchmark : public app::AbstractBenchmark {
+protected:
+	scenegraph::SceneGraphNode *node = nullptr;
+
+public:
+	void SetUp(::benchmark::State &state) override {
+		app::AbstractBenchmark::SetUp(state);
+		const voxel::Region region(0, 0, 0, 511, 511, 255);
+		node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+		node->createVolume(region);
+		voxel::RawVolume *vol = node->volume();
+		const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x < 512; ++x) {
+			for (int z = 0; z < 512; ++z) {
+				vol->setVoxel(x, 0, z, solid);
+			}
+		}
+	}
+
+	void TearDown(::benchmark::State &state) override {
+		delete node;
+		node = nullptr;
+		app::AbstractBenchmark::TearDown(state);
+	}
+};
+
+BENCHMARK_DEFINE_F(CircleSelectLargeBenchmark, Radius80)(benchmark::State &state) {
+	voxedit::select::Circle strategy;
+	scenegraph::SceneGraph sceneGraph;
+	voxedit::BrushContext ctx;
+	ctx.targetVolumeRegion = node->region();
+	ctx.cursorPosition = glm::ivec3(256 + 80, 0, 256);
+	voxedit::select::AABBBrushState brushState;
+	brushState.aabbMode = true;
+	brushState.aabbFace = voxel::FaceNames::PositiveY;
+	brushState.aabbFirstPos = glm::ivec3(256, 0, 256);
+	brushState.cursorPosition = ctx.cursorPosition;
+
+	const voxel::Region circleRegion = strategy.calcRegion(ctx, brushState);
+
+	for (auto _ : state) {
+		node->volume()->removeFlags(node->region(), voxel::FlagOutline);
+		voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
+		strategy.generate(sceneGraph, wrapper, ctx, circleRegion, brushState);
+	}
+}
+
+BENCHMARK_REGISTER_F(CircleSelectLargeBenchmark, Radius80)->Unit(benchmark::kMillisecond);

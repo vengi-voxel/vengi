@@ -7,7 +7,9 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/SnapshotHelper.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 class SnapshotHelperBenchmark : public app::AbstractBenchmark {
 protected:
@@ -147,3 +149,87 @@ BENCHMARK_REGISTER_F(SnapshotHelperBenchmark, CaptureSnapshot);
 BENCHMARK_REGISTER_F(SnapshotHelperBenchmark, WriteAndRevert);
 BENCHMARK_REGISTER_F(SnapshotHelperBenchmark, RestoreHistory);
 BENCHMARK_REGISTER_F(SnapshotHelperBenchmark, AdjustForRegionShift);
+
+/**
+ * @brief Large-volume benchmark simulating a 512x512x256 volume with a circle
+ * selection of radius 80 (~20K selected voxels out of 67M total).
+ * Uses threadPoolSize=0 (auto-detect CPU count) to properly benchmark parallel code.
+ */
+class SnapshotHelperLargeBenchmark : public app::AbstractBenchmark {
+protected:
+	scenegraph::SceneGraphNode *node = nullptr;
+
+	static voxel::Voxel selectedVoxel(uint8_t color = 1) {
+		voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, color);
+		v.setFlags(voxel::FlagOutline);
+		return v;
+	}
+
+public:
+	SnapshotHelperLargeBenchmark() : app::AbstractBenchmark(4) {
+	}
+
+	void SetUp(::benchmark::State &state) override {
+		app::AbstractBenchmark::SetUp(state);
+		const voxel::Region region(0, 0, 0, 511, 511, 255);
+		node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+		node->createVolume(region);
+		voxel::RawVolume *vol = node->volume();
+		// Fill a flat layer at y=0
+		const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x < 512; ++x) {
+			for (int z = 0; z < 512; ++z) {
+				vol->setVoxel(x, 0, z, solid);
+			}
+		}
+		// Select a circle of radius 80 centered at (256, 0, 256)
+		const voxel::Voxel sel = selectedVoxel();
+		const int radius = 80;
+		const int cx = 256, cz = 256;
+		for (int x = cx - radius; x <= cx + radius; ++x) {
+			for (int z = cz - radius; z <= cz + radius; ++z) {
+				const int dx = x - cx;
+				const int dz = z - cz;
+				if (dx * dx + dz * dz <= radius * radius) {
+					vol->setVoxel(x, 0, z, sel);
+				}
+			}
+		}
+	}
+
+	void TearDown(::benchmark::State &state) override {
+		delete node;
+		node = nullptr;
+		app::AbstractBenchmark::TearDown(state);
+	}
+};
+
+BENCHMARK_DEFINE_F(SnapshotHelperLargeBenchmark, CaptureSnapshot)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxedit::SnapshotHelper helper;
+		helper.captureSnapshot(node->volume(), node->region());
+		benchmark::DoNotOptimize(helper.snapshotVoxelCount());
+	}
+}
+
+// Sequential baseline: uses visitVolume (non-parallel) + one-by-one setVoxel
+BENCHMARK_DEFINE_F(SnapshotHelperLargeBenchmark, CaptureSnapshotSequential)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::SparseVolume snapshot;
+		glm::ivec3 selLo(node->region().getUpperCorner());
+		glm::ivec3 selHi(node->region().getLowerCorner());
+		voxelutil::visitVolume(
+			*node->volume(), node->region(),
+			[&](int x, int y, int z, const voxel::Voxel &voxel) {
+				const glm::ivec3 pos(x, y, z);
+				snapshot.setVoxel(pos, voxel);
+				selLo = glm::min(selLo, pos);
+				selHi = glm::max(selHi, pos);
+			},
+			voxelutil::VisitSolidOutline());
+		benchmark::DoNotOptimize(snapshot.size());
+	}
+}
+
+BENCHMARK_REGISTER_F(SnapshotHelperLargeBenchmark, CaptureSnapshot)->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(SnapshotHelperLargeBenchmark, CaptureSnapshotSequential)->Unit(benchmark::kMillisecond);
