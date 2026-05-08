@@ -4273,6 +4273,35 @@ void SceneManager::construct() {
 			camera->setRotationType(video::CameraRotationType::Target);
 		}).setHelp(_("Set the camera orbit target to the reference point position"));
 
+	command::Command::registerCommand("camera_position")
+		.addArg({"x", command::ArgType::Float, false, "", "X position"})
+		.addArg({"y", command::ArgType::Float, false, "", "Y position"})
+		.addArg({"z", command::ArgType::Float, false, "", "Z position"})
+		.setHandler([&] (const command::CommandArgs& args) {
+			video::Camera *camera = activeCamera();
+			if (camera == nullptr) {
+				Log::error("No active camera found");
+				return;
+			}
+			const glm::vec3 pos(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
+			camera->setWorldPosition(pos);
+		}).setHelp(_("Set the camera world position"));
+
+	command::Command::registerCommand("camera_target")
+		.addArg({"x", command::ArgType::Float, false, "", "X target position"})
+		.addArg({"y", command::ArgType::Float, false, "", "Y target position"})
+		.addArg({"z", command::ArgType::Float, false, "", "Z target position"})
+		.setHandler([&] (const command::CommandArgs& args) {
+			video::Camera *camera = activeCamera();
+			if (camera == nullptr) {
+				Log::error("No active camera found");
+				return;
+			}
+			const glm::vec3 target(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
+			camera->setTarget(target);
+			camera->setRotationType(video::CameraRotationType::Target);
+		}).setHelp(_("Set the camera orbit target position"));
+
 	command::Command::registerCommand("camera_projection")
 		.addArg({"mode", command::ArgType::String, true, "", "Projection mode: perspective|orthogonal (toggles if not specified)"})
 		.setHandler([&] (const command::CommandArgs& args) {

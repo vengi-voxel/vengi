@@ -113,7 +113,8 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 		if (ImGui::BeginTable("##camera_props", 2, ImGuiTableFlags_SizingStretchProp)) {
 			glm::vec3 pos = camera.worldPosition();
 			if (ImGui::InputXYZ(_("Position"), pos)) {
-				camera.setWorldPosition(pos);
+				const core::String &cmd = core::String::format("camera_position %f %f %f", pos.x, pos.y, pos.z);
+				command::executeCommands(cmd.c_str(), &listener);
 			}
 
 			float farplane = camera.farPlane();
@@ -129,7 +130,8 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 				ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Target);
 				glm::vec3 target = camera.target();
 				if (ImGui::InputXYZ(_("Target"), target)) {
-					camera.setTarget(target);
+					const core::String &cmd = core::String::format("camera_target %f %f %f", target.x, target.y, target.z);
+					command::executeCommands(cmd.c_str(), &listener);
 				}
 				float targetDistance = camera.targetDistance();
 				if (ImGui::InputFloat(_("Target distance"), targetDistance)) {
