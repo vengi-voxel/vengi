@@ -5,9 +5,12 @@
 #include "color/ColorUtil.h"
 #include "OBJFormat.h"
 #include "color/Color.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
+#include "voxel/SurfaceExtractor.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "image/Image.h"
@@ -620,6 +623,393 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 	}
 	return !sceneGraph.empty();
+}
+
+bool OBJFormat::saveSingleMesh(StreamState &state, const scenegraph::SceneGraph &sceneGraph,
+							   const ChunkMeshExt &meshExt, const core::String &filename,
+							   const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad, bool withColor,
+							   bool withTexCoords) {
+	io::SeekableWriteStream &stream = *state.objStream;
+	io::SeekableWriteStream &matlstream = *state.mtlStream;
+
+	for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+		if (mesh->isEmpty()) {
+			continue;
+		}
+		const int nv = (int)mesh->getNoOfVertices();
+		const int ni = (int)mesh->getNoOfIndices();
+		if (ni % 3 != 0) {
+			Log::error("Unexpected indices amount");
+			return false;
+		}
+		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+		const palette::Palette &palette = graphNode.palette();
+
+		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
+
+		const voxel::VertexArray &vertices = mesh->getVertexVector();
+		const voxel::IndexArray &indices = mesh->getIndexVector();
+		const voxel::NormalArray &normals = mesh->getNormalVector();
+		const voxel::UVArray &uvs = mesh->getUVVector();
+
+		const bool useTexture = meshExt.texture && meshExt.texture->isLoaded() && !uvs.empty();
+		const bool withNormals = !normals.empty();
+
+		core::String matName = hashId;
+		if (useTexture) {
+			matName = core::string::stripExtension(meshExt.texture->name());
+			if (matName.empty()) {
+				matName = "texture";
+			}
+			if (state.writtenTextures.find(matName) == state.writtenTextures.end()) {
+				state.writtenTextures.put(matName, 1);
+				const core::String &texName = core::string::extractFilenameWithExtension(meshExt.texture->name());
+				if (!writeMtlFile(matlstream, matName, texName)) {
+					return false;
+				}
+				const core::String texDir = core::string::extractDir(filename);
+				const core::String texPath = texDir + texName;
+				core::ScopedPtr<io::SeekableWriteStream> texStream(archive->writeStream(texPath));
+				if (texStream) {
+					if (!image::writePNG(meshExt.texture, *texStream)) {
+						Log::warn("Failed to save texture %s", texPath.c_str());
+					}
+				} else {
+					Log::warn("Failed to open stream for texture %s", texPath.c_str());
+				}
+			}
+		} else {
+			if (state.paletteMaterialIndices.find(palette.hash()) == state.paletteMaterialIndices.end()) {
+				core::String palettename = core::string::stripExtension(filename);
+				palettename.append(hashId);
+				palettename.append(".png");
+				state.paletteMaterialIndices.put(palette.hash(), 1);
+				const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
+				if (!writeMtlFile(matlstream, hashId, mapKd)) {
+					return false;
+				}
+				if (!palette.save(palettename.c_str())) {
+					return false;
+				}
+			}
+		}
+
+		if (matName != state.currentMaterial) {
+			if (!stream.writeStringFormat(false, "usemtl %s\n", matName.c_str())) {
+				Log::error("Failed to write obj usemtl %s\n", matName.c_str());
+				return false;
+			}
+			state.currentMaterial = matName;
+		}
+
+		for (int j = 0; j < nv; ++j) {
+			const voxel::VoxelVertex &v = vertices[j];
+			glm::vec3 pos;
+			if (meshExt.applyTransform) {
+				pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
+			} else {
+				pos = v.position;
+			}
+			pos *= scale;
+			stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
+			if (withColor) {
+				const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
+				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
+			}
+			if (!stream.writeStringFormat(false, "\n")) {
+				return false;
+			}
+		}
+		if (withNormals) {
+			for (int j = 0; j < nv; ++j) {
+				const glm::vec3 &norm = normals[j];
+				stream.writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
+			}
+		}
+
+		if (quad) {
+			if (withTexCoords) {
+				if (useTexture) {
+					for (const glm::vec2 &uv : uvs) {
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
+					}
+				} else {
+					for (int j = 0; j < ni; j += 6) {
+						const voxel::VoxelVertex &v = vertices[indices[j]];
+						const glm::vec2 &uv = paletteUV(v.colorIndex);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					}
+				}
+			}
+
+			int uvi = state.texcoordOffset;
+			for (int j = 0; j < ni - 5; j += 6) {
+				const uint32_t one = state.idxOffset + indices[j + 0] + 1;
+				const uint32_t two = state.idxOffset + indices[j + 1] + 1;
+				const uint32_t three = state.idxOffset + indices[j + 2] + 1;
+				const uint32_t four = state.idxOffset + indices[j + 5] + 1;
+
+				uint32_t uvOne, uvTwo, uvThree, uvFour;
+
+				if (withTexCoords) {
+					if (useTexture) {
+						uvOne = state.texcoordOffset + indices[j + 0] + 1;
+						uvTwo = state.texcoordOffset + indices[j + 1] + 1;
+						uvThree = state.texcoordOffset + indices[j + 2] + 1;
+						uvFour = state.texcoordOffset + indices[j + 5] + 1;
+					} else {
+						uvOne = uvi + 1;
+						uvTwo = uvi + 2;
+						uvThree = uvi + 3;
+						uvFour = uvi + 4;
+						uvi += 4;
+					}
+
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
+												 (int)uvOne, (int)one, (int)two, (int)uvTwo, (int)two, (int)three,
+												 (int)uvThree, (int)three, (int)four, (int)uvFour, (int)four);
+					} else {
+						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, (int)uvOne,
+												 (int)two, (int)uvTwo, (int)three, (int)uvThree, (int)four,
+												 (int)uvFour);
+					}
+				} else {
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two,
+												 (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
+					} else {
+						stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three,
+												 (int)four);
+					}
+				}
+			}
+			if (withTexCoords) {
+				if (useTexture) {
+					state.texcoordOffset += (int)uvs.size();
+				} else {
+					state.texcoordOffset += ni / 6 * 4;
+				}
+			}
+		} else {
+			if (withTexCoords) {
+				if (useTexture) {
+					for (const glm::vec2 &uv : uvs) {
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
+					}
+				} else {
+					for (int j = 0; j < ni; j += 3) {
+						const voxel::VoxelVertex &v = vertices[indices[j]];
+						const glm::vec2 &uv = paletteUV(v.colorIndex);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					}
+				}
+			}
+
+			for (int j = 0; j < ni; j += 3) {
+				const uint32_t one = state.idxOffset + indices[j + 0] + 1;
+				const uint32_t two = state.idxOffset + indices[j + 1] + 1;
+				const uint32_t three = state.idxOffset + indices[j + 2] + 1;
+
+				if (withTexCoords) {
+					if (withNormals) {
+						const int uvOne = useTexture ? state.texcoordOffset + indices[j + 0] + 1
+													 : state.texcoordOffset + j + 1;
+						const int uvTwo = useTexture ? state.texcoordOffset + indices[j + 1] + 1
+													 : state.texcoordOffset + j + 2;
+						const int uvThree = useTexture ? state.texcoordOffset + indices[j + 2] + 1
+													   : state.texcoordOffset + j + 3;
+						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvOne,
+												 (int)one, (int)two, uvTwo, (int)two, (int)three, uvThree,
+												 (int)three);
+					} else {
+						const int uvOne = useTexture ? state.texcoordOffset + indices[j + 0] + 1
+													 : state.texcoordOffset + j + 1;
+						const int uvTwo = useTexture ? state.texcoordOffset + indices[j + 1] + 1
+													 : state.texcoordOffset + j + 2;
+						const int uvThree = useTexture ? state.texcoordOffset + indices[j + 2] + 1
+													   : state.texcoordOffset + j + 3;
+						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, uvOne, (int)two, uvTwo,
+												 (int)three, uvThree);
+					}
+				} else {
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three,
+												 (int)one, (int)two, (int)three);
+					} else {
+						stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+					}
+				}
+			}
+			if (withTexCoords) {
+				if (useTexture) {
+					state.texcoordOffset += (int)uvs.size();
+				} else {
+					state.texcoordOffset += ni;
+				}
+			}
+		}
+		state.idxOffset += nv;
+	}
+	return true;
+}
+
+bool OBJFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	if (core::getVar(cfg::VoxformatStreamProcessOBJ)->boolVal()) {
+		return saveGroupsStreaming(sceneGraph, filename, archive, ctx);
+	}
+	return Format::save(sceneGraph, filename, archive, ctx);
+}
+
+bool OBJFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	return MeshFormat::saveGroups(sceneGraph, filename, archive, ctx);
+}
+
+bool OBJFormat::saveGroupsStreaming(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+									const io::ArchivePtr &archive, const SaveContext &saveCtx) {
+	const bool withColor = core::getVar(cfg::VoxformatWithColor)->boolVal();
+	const bool quads = core::getVar(cfg::VoxformatQuads)->boolVal();
+	const bool withTexCoords = core::getVar(cfg::VoxformatWithtexcoords)->boolVal();
+	const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
+	const bool optimizeMesh = core::getVar(cfg::VoxformatOptimize)->boolVal();
+	const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
+	const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
+	const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
+	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
+	const voxel::SurfaceExtractionType type =
+		(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
+	const bool useQuads = type == voxel::SurfaceExtractionType::Cubic ? quads : false;
+
+	core::ScopedPtr<io::SeekableWriteStream> objStream(archive->writeStream(filename));
+	if (!objStream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	objStream->writeStringFormat(false, "# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	objStream->writeStringFormat(false, "\n");
+	objStream->writeStringFormat(false, "g Model\n");
+
+	const core::String &mtlname = core::string::replaceExtension(filename, "mtl");
+	core::ScopedPtr<io::SeekableWriteStream> mtlStream(archive->writeStream(mtlname));
+	if (!mtlStream) {
+		Log::error("Could not open mtl file %s", mtlname.c_str());
+		return false;
+	}
+	mtlStream->writeString("# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n", false);
+	mtlStream->writeString("\n", false);
+
+	StreamState state;
+	state.objStream = &(*objStream);
+	state.mtlStream = &(*mtlStream);
+
+	objStream->writeStringFormat(false, "o Model\n");
+	objStream->writeStringFormat(false, "mtllib %s\n",
+								 core::string::extractFilenameWithExtension(mtlname).c_str());
+
+	const bool saveVisibleOnly = core::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal();
+
+	static constexpr int ChunkSize = 256;
+	int chunksProcessed = 0;
+	const int totalNodes = (int)sceneGraph.nodes().size();
+	for (int i = 0; i < totalNodes; ++i) {
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(i);
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		if (saveVisibleOnly && !node.visible()) {
+			continue;
+		}
+		auto volume = sceneGraph.resolveVolume(node);
+		if (volume == nullptr) {
+			continue;
+		}
+		const voxel::Region region = sceneGraph.resolveRegion(node);
+		const glm::ivec3 &lower = region.getLowerCorner();
+		const glm::ivec3 &upper = region.getUpperCorner();
+
+		// split node region into spatial chunks to limit peak memory
+		for (int cz = lower.z; cz <= upper.z; cz += ChunkSize) {
+			for (int cy = lower.y; cy <= upper.y; cy += ChunkSize) {
+				for (int cx = lower.x; cx <= upper.x; cx += ChunkSize) {
+					const glm::ivec3 chunkLower(cx, cy, cz);
+					glm::ivec3 chunkUpper(
+						glm::min(cx + ChunkSize - 1, upper.x),
+						glm::min(cy + ChunkSize - 1, upper.y),
+						glm::min(cz + ChunkSize - 1, upper.z));
+
+					// extend by +1 on upper corner at volume outer boundary only
+					// at internal chunk boundaries the neighboring chunk generates those faces
+					if (chunkUpper.x >= upper.x) {
+						chunkUpper.x += 1;
+					}
+					if (chunkUpper.y >= upper.y) {
+						chunkUpper.y += 1;
+					}
+					if (chunkUpper.z >= upper.z) {
+						chunkUpper.z += 1;
+					}
+					const voxel::Region extractRegion(chunkLower, chunkUpper);
+
+					// Vertex positions must match the merge path's coordinate system:
+					// merge uses volume region coordinates (region.lower-based), while
+					// the cubic extractor produces 0-based positions offset by translate.
+					// Use chunkLower directly so vertices are in region coordinate space,
+					// matching what bakeIntoSparse/applyTransformToVolume expects.
+					const glm::ivec3 chunkTranslate = chunkLower;
+
+					voxel::ChunkMesh mesh;
+					voxel::SurfaceExtractionContext ctx = voxel::createContext(
+						type, volume, extractRegion, node.palette(), mesh, chunkTranslate,
+						mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
+					voxel::extractSurface(ctx);
+					if (withNormals) {
+						mesh.calculateNormals();
+					}
+
+					if (mesh.isEmpty()) {
+						continue;
+					}
+
+					ChunkMeshExt meshExt(&mesh, node, applyTransform);
+					if (!ctx.textureData.empty()) {
+						core::String texName = node.name();
+						if (texName.empty()) {
+							texName = core::String::format("texture%i", i);
+						}
+						texName = core::string::sanitizeFilename(texName);
+						texName += ".png";
+						meshExt.texture = image::createEmptyImage(texName);
+						meshExt.texture->loadRGBA(ctx.textureData.data(), ctx.textureWidth, ctx.textureHeight);
+					}
+
+					if (!saveSingleMesh(state, sceneGraph, meshExt, filename, archive, {1.0f, 1.0f, 1.0f},
+										useQuads, withColor, withTexCoords)) {
+						return false;
+					}
+
+					meshExt.mesh = nullptr;
+					++chunksProcessed;
+				}
+			}
+		}
+	}
+
+	if (chunksProcessed == 0) {
+		Log::warn("Empty scene can't get saved as mesh");
+		return false;
+	}
+
+	return true;
 }
 
 } // namespace voxelformat
