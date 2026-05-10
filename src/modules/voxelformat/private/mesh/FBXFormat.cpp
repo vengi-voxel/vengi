@@ -55,8 +55,13 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 								 bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	ufbxw_scene_opts sceneOpts;
 	core_memset(&sceneOpts, 0, sizeof(sceneOpts));
+	if (quad) {
+		Log::warn("FBX format does not support quads - exporting as triangles");
+	}
+	if (withColor) {
+		Log::warn("FBX vertex colors are currently disabled due to a bug in ufbx_write");
+	}
 	(void)quad;
-	(void)withTexCoords;
 	ufbxw_scene *ws = ufbxw_create_scene(&sceneOpts);
 	if (!ws) {
 		Log::error("Failed to create ufbx_write scene");
@@ -163,6 +168,40 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 				// TODO: vertex colors cause a crash in ufbx_write's ufbxwi_generate_indices
 				// Re-enable once ufbx_write is fixed
 				(void)withColor;
+#if 0
+				if (withColor) {
+					const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+					const palette::Palette &palette = graphNode.palette();
+					core::DynamicArray<ufbxw_vec4> colors(nv);
+					for (int j = 0; j < nv; ++j) {
+						const color::RGBA rgba = palette.color(vertices[j].colorIndex);
+						colors[j] = {(double)rgba.r / 255.0, (double)rgba.g / 255.0,
+									 (double)rgba.b / 255.0, (double)rgba.a / 255.0};
+					}
+					ufbxw_mesh_attribute_desc colorDesc;
+					core_memset(&colorDesc, 0, sizeof(colorDesc));
+					colorDesc.mapping = UFBXW_ATTRIBUTE_MAPPING_VERTEX;
+					colorDesc.values = ufbxw_copy_vec4_array(ws, colors.data(), nv).id;
+					colorDesc.generate_indices = true;
+					ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_COLOR, 0, &colorDesc);
+				}
+#endif
+
+				if (withTexCoords) {
+					const voxel::UVArray &uvs = vmesh->getUVVector();
+					if (!uvs.empty() && meshExt.texture && meshExt.texture->isLoaded()) {
+						core::DynamicArray<ufbxw_vec2> uvData(nv);
+						for (int j = 0; j < nv; ++j) {
+							uvData[j] = {(double)uvs[j].x, (double)(1.0f - uvs[j].y)};
+						}
+						ufbxw_mesh_attribute_desc uvDesc;
+						core_memset(&uvDesc, 0, sizeof(uvDesc));
+						uvDesc.mapping = UFBXW_ATTRIBUTE_MAPPING_VERTEX;
+						uvDesc.values = ufbxw_copy_vec2_array(ws, uvData.data(), nv).id;
+						uvDesc.generate_indices = true;
+						ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_UV, 0, &uvDesc);
+					}
+				}
 			}
 		}
 

@@ -25,6 +25,10 @@
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/FBXFormat.h"
+#include "voxelformat/private/mesh/OBJFormat.h"
+#include "voxelformat/private/mesh/PLYFormat.h"
+#include "voxelformat/private/mesh/STLFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
@@ -155,19 +159,30 @@ static void saveOptionsPng(const io::FilesystemEntry &entry) {
 }
 
 static void saveOptionsMesh(const io::FormatDescription *desc) {
+	const bool supportsQuads = *desc == voxelformat::OBJFormat::format() ||
+							   *desc == voxelformat::PLYFormat::format();
+	const bool supportsColor = !(*desc == voxelformat::STLFormat::format());
+	const bool supportsTexCoords = !(*desc == voxelformat::STLFormat::format());
+
 	ImGui::CheckboxVar(cfg::VoxformatMergequads);
 	ImGui::CheckboxVar(cfg::VoxformatReusevertices);
 	ImGui::CheckboxVar(cfg::VoxformatAmbientocclusion);
 	ImGui::CheckboxVar(cfg::VoxformatTransform);
 	ImGui::CheckboxVar(cfg::VoxformatOptimize);
 	ImGui::CheckboxVar(cfg::VoxformatPointCloud);
+	ImGui::BeginDisabled(!supportsQuads);
 	ImGui::CheckboxVar(cfg::VoxformatQuads);
+	ImGui::EndDisabled();
+	ImGui::BeginDisabled(!supportsColor);
 	ImGui::CheckboxVar(cfg::VoxformatWithColor);
+	ImGui::EndDisabled();
 	ImGui::CheckboxVar(cfg::VoxformatWithNormals);
-	ImGui::BeginDisabled(!core::getVar(cfg::VoxformatWithColor)->boolVal());
+	ImGui::BeginDisabled(!supportsColor || !core::getVar(cfg::VoxformatWithColor)->boolVal());
 	ImGui::CheckboxVar(cfg::VoxformatColorAsFloat);
 	ImGui::EndDisabled();
+	ImGui::BeginDisabled(!supportsTexCoords);
 	ImGui::CheckboxVar(cfg::VoxformatWithtexcoords);
+	ImGui::EndDisabled();
 	if (*desc == voxelformat::GLTFFormat::format()) {
 		ImGui::CheckboxVar(						   cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness);
 		ImGui::CheckboxVar(cfg::VoxformatGLTF_KHR_materials_specular);

@@ -15,6 +15,7 @@
 #include "image/Image.h"
 #include "image/ImageType.h"
 #include "io/Archive.h"
+#include "io/Base64.h"
 #include "io/Base64ReadStream.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
@@ -582,11 +583,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 
-	struct DelayedTexture {
-		core::String path;
-		image::ImagePtr image;
-	};
-	core::DynamicArray<DelayedTexture> delayedTextures;
+	if (quad) {
+		Log::warn("glTF format does not support quads - exporting as triangles");
+	}
+	(void)quad; // glTF only supports triangles
 
 	// Count total meshes
 	int totalMeshes = 0;
@@ -621,9 +621,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core::DynamicArray<MeshInfo> meshInfos;
 	meshInfos.reserve(totalMeshes);
 
-	// Check if output is GLB (textures not supported in this implementation for GLB)
-	const bool outputIsGlb = core::string::extractExtension(filename) == "glb";
-
 	for (int mi = 0; mi < (int)meshes.size(); ++mi) {
 		const ChunkMeshExt &meshExt = meshes[mi];
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
@@ -636,8 +633,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			info.subMeshIdx = i;
 			info.vertexCount = (int)mesh->getNoOfVertices();
 			info.indexCount = (int)mesh->getNoOfIndices();
-			info.hasTexture = !outputIsGlb && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
-			info.floatsPerVertex = info.hasTexture ? 9 : 7; // pos(3) + color(4) + uv(2)
+			info.hasTexture = withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
+			info.floatsPerVertex = 3 + (withColor ? 4 : 0) + (info.hasTexture ? 2 : 0); // pos(3) [+ color(4)] [+ uv(2)]
 			info.vertexOffset = bufferSize;
 			info.vertexSize = info.vertexCount * info.floatsPerVertex * sizeof(float);
 			bufferSize += info.vertexSize;
@@ -669,17 +666,20 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				pos += pivotOffset;
 			}
 			pos *= scale;
-			vBuf[j * stride + 0] = pos.x;
-			vBuf[j * stride + 1] = pos.y;
-			vBuf[j * stride + 2] = pos.z;
-			const color::RGBA rgba = palette.color(vertices[j].colorIndex);
-			vBuf[j * stride + 3] = (float)rgba.r / 255.0f;
-			vBuf[j * stride + 4] = (float)rgba.g / 255.0f;
-			vBuf[j * stride + 5] = (float)rgba.b / 255.0f;
-			vBuf[j * stride + 6] = (float)rgba.a / 255.0f;
+			int off = 0;
+			vBuf[j * stride + off++] = pos.x;
+			vBuf[j * stride + off++] = pos.y;
+			vBuf[j * stride + off++] = pos.z;
+			if (withColor) {
+				const color::RGBA rgba = palette.color(vertices[j].colorIndex);
+				vBuf[j * stride + off++] = (float)rgba.r / 255.0f;
+				vBuf[j * stride + off++] = (float)rgba.g / 255.0f;
+				vBuf[j * stride + off++] = (float)rgba.b / 255.0f;
+				vBuf[j * stride + off++] = (float)rgba.a / 255.0f;
+			}
 			if (info.hasTexture) {
-				vBuf[j * stride + 7] = uvs[j].x;
-				vBuf[j * stride + 8] = 1.0f - uvs[j].y; // GLTF uses top-left origin
+				vBuf[j * stride + off++] = uvs[j].x;
+				vBuf[j * stride + off++] = 1.0f - uvs[j].y; // GLTF uses top-left origin
 			}
 		}
 
@@ -694,8 +694,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	for (const MeshInfo &info : meshInfos) {
 		if (info.hasTexture) ++texturedMeshCount;
 	}
-	totalAccessors = totalMeshes * 3 + texturedMeshCount; // position, color, indices + texcoord per textured mesh
-	totalBufferViews = totalMeshes * 3 + texturedMeshCount;
+	totalAccessors = totalMeshes * 2 + (withColor ? totalMeshes : 0) + texturedMeshCount; // position + indices [+ color] [+ texcoord]
+	totalBufferViews = totalMeshes * 2 + (withColor ? totalMeshes : 0) + texturedMeshCount;
 
 	cgltf_buffer gltfBuffer;
 	core_memset(&gltfBuffer, 0, sizeof(gltfBuffer));
@@ -758,6 +758,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		core_memset(gltfTextureSampler, 0, sizeof(cgltf_sampler));
 		gltfTextureSampler->mag_filter = cgltf_filter_type_nearest;
 		gltfTextureSampler->min_filter = cgltf_filter_type_nearest;
+		gltfTextureSampler->wrap_s = cgltf_wrap_mode_repeat;
+		gltfTextureSampler->wrap_t = cgltf_wrap_mode_repeat;
 	}
 
 	int bvIdx = 0, accIdx = 0, texIdx = 0;
@@ -794,22 +796,25 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int posAccIdx = accIdx;
 		++bvIdx; ++accIdx;
 
-		// Color buffer view (same interleaved view, different offset in accessor)
-		bufferViews[bvIdx].buffer = &gltfBuffer;
-		bufferViews[bvIdx].offset = info.vertexOffset;
-		bufferViews[bvIdx].size = info.vertexSize;
-		bufferViews[bvIdx].stride = strideBytes;
-		bufferViews[bvIdx].type = cgltf_buffer_view_type_vertices;
+		// Color buffer view + accessor (if withColor)
+		int colAccIdx = -1;
+		if (withColor) {
+			bufferViews[bvIdx].buffer = &gltfBuffer;
+			bufferViews[bvIdx].offset = info.vertexOffset;
+			bufferViews[bvIdx].size = info.vertexSize;
+			bufferViews[bvIdx].stride = strideBytes;
+			bufferViews[bvIdx].type = cgltf_buffer_view_type_vertices;
 
-		// Color accessor
-		accessors[accIdx].buffer_view = &bufferViews[bvIdx];
-		accessors[accIdx].component_type = cgltf_component_type_r_32f;
-		accessors[accIdx].type = cgltf_type_vec4;
-		accessors[accIdx].count = info.vertexCount;
-		accessors[accIdx].offset = 3 * sizeof(float);
-		/* stride is defined on buffer view */
-		int colAccIdx = accIdx;
-		++bvIdx; ++accIdx;
+			// Color accessor
+			accessors[accIdx].buffer_view = &bufferViews[bvIdx];
+			accessors[accIdx].component_type = cgltf_component_type_r_32f;
+			accessors[accIdx].type = cgltf_type_vec4;
+			accessors[accIdx].count = info.vertexCount;
+			accessors[accIdx].offset = 3 * sizeof(float);
+			/* stride is defined on buffer view */
+			colAccIdx = accIdx;
+			++bvIdx; ++accIdx;
+		}
 
 		// Texcoord buffer view + accessor (if textured)
 		int uvAccIdx = -1;
@@ -824,7 +829,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			accessors[accIdx].component_type = cgltf_component_type_r_32f;
 			accessors[accIdx].type = cgltf_type_vec2;
 			accessors[accIdx].count = info.vertexCount;
-			accessors[accIdx].offset = 7 * sizeof(float);
+			accessors[accIdx].offset = (3 + (withColor ? 4 : 0)) * sizeof(float);
 			/* stride is defined on buffer view */
 			uvAccIdx = accIdx;
 			++bvIdx; ++accIdx;
@@ -849,25 +854,33 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		attributes[attrBase + 0].name = (char *)"POSITION";
 		attributes[attrBase + 0].type = cgltf_attribute_type_position;
 		attributes[attrBase + 0].data = &accessors[posAccIdx];
-		attributes[attrBase + 1].name = (char *)"COLOR_0";
-		attributes[attrBase + 1].type = cgltf_attribute_type_color;
-		attributes[attrBase + 1].data = &accessors[colAccIdx];
-		int attrCount = 2;
+		int attrCount = 1;
+		if (withColor && colAccIdx >= 0) {
+			attributes[attrBase + attrCount].name = (char *)"COLOR_0";
+			attributes[attrBase + attrCount].type = cgltf_attribute_type_color;
+			attributes[attrBase + attrCount].data = &accessors[colAccIdx];
+			++attrCount;
+		}
 		if (info.hasTexture && uvAccIdx >= 0) {
-			attributes[attrBase + 2].name = (char *)"TEXCOORD_0";
-			attributes[attrBase + 2].type = cgltf_attribute_type_texcoord;
-			attributes[attrBase + 2].data = &accessors[uvAccIdx];
-			attrCount = 3;
+			attributes[attrBase + attrCount].name = (char *)"TEXCOORD_0";
+			attributes[attrBase + attrCount].type = cgltf_attribute_type_texcoord;
+			attributes[attrBase + attrCount].data = &accessors[uvAccIdx];
+			++attrCount;
 
 			// Set up image/texture/material for this mesh
 			const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
-			// Queue texture as PNG to archive, wait until JSON building succeeds
-			const core::String texName = core::String::format("texture_%i.png", texIdx);
+			// Embed texture as base64-encoded PNG data URI
 			if (meshExt.texture) {
-				delayedTextures.push_back({core::string::extractDir(filename) + texName, meshExt.texture});
+				io::BufferedReadWriteStream pngStream;
+				image::writePNG(meshExt.texture, pngStream);
+				pngStream.seek(0);
+				const core::String b64 = io::Base64::encode(pngStream);
+				const core::String dataUri = "data:image/png;base64," + b64;
+				gltfImages[texIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+				core_memcpy(gltfImages[texIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+			} else {
+				gltfImages[texIdx].uri = nullptr;
 			}
-			gltfImages[texIdx].uri = (char *)core_malloc(texName.size() + 1);
-			core_memcpy(gltfImages[texIdx].uri, texName.c_str(), texName.size() + 1);
 			gltfTextures[texIdx].image = &gltfImages[texIdx];
 			gltfTextures[texIdx].sampler = gltfTextureSampler;
 			gltfMaterials[texIdx].has_pbr_metallic_roughness = true;
@@ -1407,15 +1420,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	cgltf_write(&writeOptions, jsonBuf, jsonSize, &gltfData);
 
 	bool success = writeGltfBuffer(filename, archive, isGlb, jsonBuf, jsonSize, buffer, bufferSize);
-
-	if (success) {
-		for (const DelayedTexture &t : delayedTextures) {
-			core::ScopedPtr<io::SeekableWriteStream> texStream(archive->writeStream(t.path));
-			if (texStream && t.image) {
-				image::writePNG(t.image, *texStream);
-			}
-		}
-	}
 
 	core_free(jsonBuf);
 	core_free(buffer);
