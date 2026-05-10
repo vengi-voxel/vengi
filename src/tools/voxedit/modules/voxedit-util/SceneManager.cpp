@@ -4168,6 +4168,19 @@ void SceneManager::construct() {
 			_sceneRenderer->markDirty();
 		}).setHelp(_("Unlock all nodes"));
 
+	command::Command::registerCommand("nodesetpivot")
+		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID or UUID"})
+		.addArg({"x", command::ArgType::Float, false, "", "X coordinate of the pivot"})
+		.addArg({"y", command::ArgType::Float, false, "", "Y coordinate of the pivot"})
+		.addArg({"z", command::ArgType::Float, false, "", "Z coordinate of the pivot"})
+		.setHandler([&](const command::CommandArgs& args) {
+			const int nodeId = toNodeId(args, activeNode());
+			const float x = args.floatVal("x");
+			const float y = args.floatVal("y");
+			const float z = args.floatVal("z");
+			nodeUpdatePivot(nodeId, glm::vec3(x, y, z));
+		}).setHelp(_("Set the pivot point for a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
+
 	command::Command::registerCommand("noderename")
 		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID or UUID"})
 		.addArg({"newname", command::ArgType::String, true, "", "New name"})
