@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
 #include "core/collection/Map.h"
@@ -47,7 +48,28 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
-	return saveMeshesBinary(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
+	const bool ok = saveMeshesBinary(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
+	if (ok && withTexCoords) {
+		// Write palette PNG alongside the FBX file
+		const core::String palPath = core::string::stripExtension(filename) + "_palette.png";
+		core::ScopedPtr<io::SeekableWriteStream> palStream(archive->writeStream(palPath));
+		if (palStream) {
+			// Use the first node's palette
+			for (const ChunkMeshExt &meshExt : meshes) {
+				const scenegraph::SceneGraphNode &node = sceneGraph.node(meshExt.nodeId);
+				const palette::Palette &pal = node.palette();
+				color::RGBA colors[palette::PaletteMaxColors];
+				for (int i = 0; i < palette::PaletteMaxColors; i++) {
+					colors[i] = pal.color(i);
+				}
+				image::Image palImage("palette");
+				palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
+				palImage.writePNG(*palStream);
+				break;
+			}
+		}
+	}
+	return ok;
 }
 
 bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename,
@@ -189,18 +211,24 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 
 				if (withTexCoords) {
 					const voxel::UVArray &uvs = vmesh->getUVVector();
+					core::DynamicArray<ufbxw_vec2> uvData(nv);
 					if (!uvs.empty() && meshExt.texture && meshExt.texture->isLoaded()) {
-						core::DynamicArray<ufbxw_vec2> uvData(nv);
 						for (int j = 0; j < nv; ++j) {
 							uvData[j] = {(double)uvs[j].x, (double)(1.0f - uvs[j].y)};
 						}
-						ufbxw_mesh_attribute_desc uvDesc;
-						core_memset(&uvDesc, 0, sizeof(uvDesc));
-						uvDesc.mapping = UFBXW_ATTRIBUTE_MAPPING_VERTEX;
-						uvDesc.values = ufbxw_copy_vec2_array(ws, uvData.data(), nv).id;
-						uvDesc.generate_indices = true;
-						ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_UV, 0, &uvDesc);
+					} else {
+						// Palette UV fallback
+						for (int j = 0; j < nv; ++j) {
+							const glm::vec2 uv = paletteUV(vertices[j].colorIndex);
+							uvData[j] = {(double)uv.x, (double)uv.y};
+						}
 					}
+					ufbxw_mesh_attribute_desc uvDesc;
+					core_memset(&uvDesc, 0, sizeof(uvDesc));
+					uvDesc.mapping = UFBXW_ATTRIBUTE_MAPPING_VERTEX;
+					uvDesc.values = ufbxw_copy_vec2_array(ws, uvData.data(), nv).id;
+					uvDesc.generate_indices = true;
+					ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_UV, 0, &uvDesc);
 				}
 			}
 		}

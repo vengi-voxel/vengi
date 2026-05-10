@@ -4,7 +4,9 @@
 
 #include "GLTFFormat.h"
 #include "core/Log.h"
+#include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -616,7 +618,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int vertexCount;
 		int indexCount;
 		bool hasTexture;
-		int floatsPerVertex; // 7 without UV, 9 with UV
+		bool useGreedyTexture; // true = use meshExt.texture + UVs, false = palette texture + paletteUV
+		int floatsPerVertex;
 	};
 	core::DynamicArray<MeshInfo> meshInfos;
 	meshInfos.reserve(totalMeshes);
@@ -633,7 +636,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			info.subMeshIdx = i;
 			info.vertexCount = (int)mesh->getNoOfVertices();
 			info.indexCount = (int)mesh->getNoOfIndices();
-			info.hasTexture = withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
+			info.useGreedyTexture = withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
+			info.hasTexture = info.useGreedyTexture || withTexCoords;
 			info.floatsPerVertex = 3 + (withColor ? 4 : 0) + (info.hasTexture ? 2 : 0); // pos(3) [+ color(4)] [+ uv(2)]
 			info.vertexOffset = bufferSize;
 			info.vertexSize = info.vertexCount * info.floatsPerVertex * sizeof(float);
@@ -678,8 +682,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				vBuf[j * stride + off++] = (float)rgba.a / 255.0f;
 			}
 			if (info.hasTexture) {
-				vBuf[j * stride + off++] = uvs[j].x;
-				vBuf[j * stride + off++] = 1.0f - uvs[j].y; // GLTF uses top-left origin
+				if (info.useGreedyTexture) {
+					vBuf[j * stride + off++] = uvs[j].x;
+					vBuf[j * stride + off++] = 1.0f - uvs[j].y; // GLTF uses top-left origin
+				} else {
+					const glm::vec2 uv = paletteUV(vertices[j].colorIndex);
+					vBuf[j * stride + off++] = uv.x;
+					vBuf[j * stride + off++] = uv.y;
+				}
 			}
 		}
 
@@ -747,11 +757,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	cgltf_texture *gltfTextures = nullptr;
 	cgltf_material *gltfMaterials = nullptr;
 	cgltf_sampler *gltfTextureSampler = nullptr;
+	const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
+	// Up to 3 textures per mesh: base color, metallic-roughness, emissive
+	const int maxTexturesPerMesh = withMaterials ? 3 : 1;
+	const int maxImageCount = texturedMeshCount * maxTexturesPerMesh;
 	if (texturedMeshCount > 0) {
-		gltfImages = (cgltf_image *)core_malloc(texturedMeshCount * sizeof(cgltf_image));
-		core_memset(gltfImages, 0, texturedMeshCount * sizeof(cgltf_image));
-		gltfTextures = (cgltf_texture *)core_malloc(texturedMeshCount * sizeof(cgltf_texture));
-		core_memset(gltfTextures, 0, texturedMeshCount * sizeof(cgltf_texture));
+		gltfImages = (cgltf_image *)core_malloc(maxImageCount * sizeof(cgltf_image));
+		core_memset(gltfImages, 0, maxImageCount * sizeof(cgltf_image));
+		gltfTextures = (cgltf_texture *)core_malloc(maxImageCount * sizeof(cgltf_texture));
+		core_memset(gltfTextures, 0, maxImageCount * sizeof(cgltf_texture));
 		gltfMaterials = (cgltf_material *)core_malloc(texturedMeshCount * sizeof(cgltf_material));
 		core_memset(gltfMaterials, 0, texturedMeshCount * sizeof(cgltf_material));
 		gltfTextureSampler = (cgltf_sampler *)core_malloc(sizeof(cgltf_sampler));
@@ -762,7 +776,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		gltfTextureSampler->wrap_t = cgltf_wrap_mode_repeat;
 	}
 
-	int bvIdx = 0, accIdx = 0, texIdx = 0;
+	int bvIdx = 0, accIdx = 0, texIdx = 0, imgIdx = 0;
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		const MeshInfo &info = meshInfos[mi];
 		const int stride = info.floatsPerVertex;
@@ -869,26 +883,103 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			// Set up image/texture/material for this mesh
 			const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
-			// Embed texture as base64-encoded PNG data URI
-			if (meshExt.texture) {
+			// Embed base color texture as base64-encoded PNG data URI
+			if (info.useGreedyTexture && meshExt.texture) {
 				io::BufferedReadWriteStream pngStream;
 				image::writePNG(meshExt.texture, pngStream);
 				pngStream.seek(0);
 				const core::String b64 = io::Base64::encode(pngStream);
 				const core::String dataUri = "data:image/png;base64," + b64;
-				gltfImages[texIdx].uri = (char *)core_malloc(dataUri.size() + 1);
-				core_memcpy(gltfImages[texIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+				gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+				core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
 			} else {
-				gltfImages[texIdx].uri = nullptr;
+				// Generate palette texture (256x1 RGBA)
+				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+				const palette::Palette &pal = graphNode.palette();
+				color::RGBA colors[palette::PaletteMaxColors];
+				for (int i = 0; i < palette::PaletteMaxColors; i++) {
+					colors[i] = pal.color(i);
+				}
+				image::Image palImage("palette");
+				palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
+				const core::String dataUri = "data:image/png;base64," + palImage.pngBase64();
+				gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+				core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
 			}
-			gltfTextures[texIdx].image = &gltfImages[texIdx];
-			gltfTextures[texIdx].sampler = gltfTextureSampler;
+			gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+			gltfTextures[imgIdx].sampler = gltfTextureSampler;
+			int baseColorTexIdx = imgIdx;
+			++imgIdx;
+
+			// Material setup
 			gltfMaterials[texIdx].has_pbr_metallic_roughness = true;
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[texIdx];
+			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[baseColorTexIdx];
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[0] = 1.0f;
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[1] = 1.0f;
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[2] = 1.0f;
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[3] = 1.0f;
+			gltfMaterials[texIdx].pbr_metallic_roughness.roughness_factor = 1.0f;
+			gltfMaterials[texIdx].pbr_metallic_roughness.metallic_factor = 1.0f;
+
+			// Generate per-palette-entry material textures
+			if (withMaterials && !info.useGreedyTexture) {
+				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+				const palette::Palette &pal = graphNode.palette();
+
+				// Metallic-roughness texture (256x1): G=roughness, B=metallic
+				uint8_t mrPixels[palette::PaletteMaxColors * 4];
+				bool hasMR = false;
+				for (int i = 0; i < palette::PaletteMaxColors; i++) {
+					const palette::Material &mat = pal.material(i);
+					float r = mat.has(palette::MaterialProperty::MaterialRoughness) ? mat.value(palette::MaterialProperty::MaterialRoughness) : 1.0f;
+					float m = mat.has(palette::MaterialProperty::MaterialMetal) ? mat.value(palette::MaterialProperty::MaterialMetal) : 0.0f;
+					if (r < 1.0f || m > 0.0f) hasMR = true;
+					mrPixels[i * 4 + 0] = 0; // R unused (occlusion if combined)
+					mrPixels[i * 4 + 1] = (uint8_t)(r * 255.0f); // G = roughness
+					mrPixels[i * 4 + 2] = (uint8_t)(m * 255.0f); // B = metallic
+					mrPixels[i * 4 + 3] = 255;
+				}
+				if (hasMR) {
+					image::Image mrImage("metallic_roughness");
+					mrImage.loadRGBA(mrPixels, palette::PaletteMaxColors, 1);
+					const core::String mrUri = "data:image/png;base64," + mrImage.pngBase64();
+					gltfImages[imgIdx].uri = (char *)core_malloc(mrUri.size() + 1);
+					core_memcpy(gltfImages[imgIdx].uri, mrUri.c_str(), mrUri.size() + 1);
+					gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+					gltfTextures[imgIdx].sampler = gltfTextureSampler;
+					gltfMaterials[texIdx].pbr_metallic_roughness.metallic_roughness_texture.texture = &gltfTextures[imgIdx];
+					++imgIdx;
+				}
+
+				// Emissive texture (256x1): RGB = emit * color
+				uint8_t emPixels[palette::PaletteMaxColors * 4];
+				bool hasEmit = false;
+				for (int i = 0; i < palette::PaletteMaxColors; i++) {
+					const palette::Material &mat = pal.material(i);
+					float emit = mat.has(palette::MaterialProperty::MaterialEmit) ? mat.value(palette::MaterialProperty::MaterialEmit) : 0.0f;
+					if (emit > 0.0f) hasEmit = true;
+					const color::RGBA c = pal.color(i);
+					emPixels[i * 4 + 0] = (uint8_t)((float)c.r * emit);
+					emPixels[i * 4 + 1] = (uint8_t)((float)c.g * emit);
+					emPixels[i * 4 + 2] = (uint8_t)((float)c.b * emit);
+					emPixels[i * 4 + 3] = 255;
+				}
+				if (hasEmit) {
+					image::Image emImage("emissive");
+					emImage.loadRGBA(emPixels, palette::PaletteMaxColors, 1);
+					const core::String emUri = "data:image/png;base64," + emImage.pngBase64();
+					gltfImages[imgIdx].uri = (char *)core_malloc(emUri.size() + 1);
+					core_memcpy(gltfImages[imgIdx].uri, emUri.c_str(), emUri.size() + 1);
+					gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+					gltfTextures[imgIdx].sampler = gltfTextureSampler;
+					gltfMaterials[texIdx].emissive_texture.texture = &gltfTextures[imgIdx];
+					gltfMaterials[texIdx].emissive_factor[0] = 1.0f;
+					gltfMaterials[texIdx].emissive_factor[1] = 1.0f;
+					gltfMaterials[texIdx].emissive_factor[2] = 1.0f;
+					++imgIdx;
+				}
+			}
+
 			primitives[mi].material = &gltfMaterials[texIdx];
 			++texIdx;
 		}
@@ -1037,9 +1128,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	gltfData.scene = &gltfScene;
 	if (texturedMeshCount > 0) {
 		gltfData.images = gltfImages;
-		gltfData.images_count = texturedMeshCount;
+		gltfData.images_count = imgIdx;
 		gltfData.textures = gltfTextures;
-		gltfData.textures_count = texturedMeshCount;
+		gltfData.textures_count = imgIdx;
 		gltfData.materials = gltfMaterials;
 		gltfData.materials_count = texturedMeshCount;
 		gltfData.samplers = gltfTextureSampler;
@@ -1438,7 +1529,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_free(gltfSamplers);
 	core_free(gltfChannels);
 	if (gltfImages) {
-		for (int i = 0; i < texturedMeshCount; ++i) {
+		for (cgltf_size i = 0; i < gltfData.images_count; ++i) {
 			core_free(gltfImages[i].uri);
 		}
 		core_free(gltfImages);
