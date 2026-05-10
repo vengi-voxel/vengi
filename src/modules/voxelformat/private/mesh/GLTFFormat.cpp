@@ -3,13 +3,14 @@
  */
 
 #include "GLTFFormat.h"
-#include "core/Log.h"
+#include "color/ColorUtil.h"
 #include "core/ConfigVar.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/Var.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
@@ -31,8 +32,8 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
-#include <glm/gtc/type_ptr.hpp>
 #include <float.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #define CGLTF_MALLOC(size) core_malloc(size)
 #define CGLTF_FREE(ptr) core_free(ptr)
@@ -49,9 +50,8 @@
 
 namespace voxelformat {
 
-static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &archive,
-							bool isGlb, const char *jsonBuf, size_t jsonSize,
-							const void *binBuf, size_t binSize) {
+static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &archive, bool isGlb,
+							const char *jsonBuf, size_t jsonSize, const void *binBuf, size_t binSize) {
 	bool success = false;
 	if (isGlb) {
 		core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -113,11 +113,9 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		const cgltf_pbr_metallic_roughness &pbr = mat->pbr_metallic_roughness;
 		palMat.setValue(palette::MaterialProperty::MaterialMetal, pbr.metallic_factor);
 		palMat.setValue(palette::MaterialProperty::MaterialRoughness, pbr.roughness_factor);
-		meshMat->baseColor = color::RGBA(
-			(uint8_t)(pbr.base_color_factor[0] * 255.0f),
-			(uint8_t)(pbr.base_color_factor[1] * 255.0f),
-			(uint8_t)(pbr.base_color_factor[2] * 255.0f),
-			(uint8_t)(pbr.base_color_factor[3] * 255.0f));
+		meshMat->baseColor =
+			color::RGBA((uint8_t)(pbr.base_color_factor[0] * 255.0f), (uint8_t)(pbr.base_color_factor[1] * 255.0f),
+						(uint8_t)(pbr.base_color_factor[2] * 255.0f), (uint8_t)(pbr.base_color_factor[3] * 255.0f));
 
 		if (pbr.base_color_texture.texture && pbr.base_color_texture.texture->image) {
 			const cgltf_image *img = pbr.base_color_texture.texture->image;
@@ -170,7 +168,7 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		palMat.setValue(palette::MaterialProperty::MaterialDensity, sg.diffuse_factor[0]);
 		palMat.setValue(palette::MaterialProperty::MaterialPhase, sg.glossiness_factor);
 		palMat.setValue(palette::MaterialProperty::MaterialSpecular,
-			sg.specular_factor[0] * sg.specular_factor[1] * sg.specular_factor[2]);
+						sg.specular_factor[0] * sg.specular_factor[1] * sg.specular_factor[2]);
 	}
 
 	if (mat->has_ior) {
@@ -182,7 +180,8 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 	}
 
 	if (mat->has_volume) {
-		palMat.setValue(palette::MaterialProperty::MaterialAttenuation, mat->volume.attenuation_distance > 0.0f ? 1.0f / mat->volume.attenuation_distance : 0.0f);
+		palMat.setValue(palette::MaterialProperty::MaterialAttenuation,
+						mat->volume.attenuation_distance > 0.0f ? 1.0f / mat->volume.attenuation_distance : 0.0f);
 	}
 
 	float emit = 0.0f;
@@ -196,10 +195,9 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		palMat.setValue(palette::MaterialProperty::MaterialEmit, emit);
 	}
 
-	meshMat->emitColor = color::RGBA(
-		(uint8_t)(mat->emissive_factor[0] * 255.0f),
-		(uint8_t)(mat->emissive_factor[1] * 255.0f),
-		(uint8_t)(mat->emissive_factor[2] * 255.0f), 255);
+	meshMat->emitColor =
+		color::RGBA((uint8_t)(mat->emissive_factor[0] * 255.0f), (uint8_t)(mat->emissive_factor[1] * 255.0f),
+					(uint8_t)(mat->emissive_factor[2] * 255.0f), 255);
 
 	if (mat->alpha_mode == cgltf_alpha_mode_blend) {
 		meshMat->transparency = 1.0f - mat->pbr_metallic_roughness.base_color_factor[3];
@@ -332,10 +330,12 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 					transform.setLocalMatrix(glm::make_mat4(node->matrix));
 				} else {
 					if (node->has_translation) {
-						transform.setLocalTranslation(glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
+						transform.setLocalTranslation(
+							glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
 					}
 					if (node->has_rotation) {
-						transform.setLocalOrientation(glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
+						transform.setLocalOrientation(
+							glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
 					}
 					if (node->has_scale) {
 						transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
@@ -449,7 +449,7 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 }
 
 bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -582,13 +582,15 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 }
 
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 
 	if (quad) {
 		Log::warn("glTF format does not support quads - exporting as triangles");
 	}
 	(void)quad; // glTF only supports triangles
+
+	const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
 
 	// Count total meshes
 	int totalMeshes = 0;
@@ -620,6 +622,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		bool hasTexture;
 		bool useGreedyTexture; // true = use meshExt.texture + UVs, false = palette texture + paletteUV
 		int floatsPerVertex;
+		bool perColorMaterials; // true = split into per-color primitives with per-color materials
 	};
 	core::DynamicArray<MeshInfo> meshInfos;
 	meshInfos.reserve(totalMeshes);
@@ -636,9 +639,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			info.subMeshIdx = i;
 			info.vertexCount = (int)mesh->getNoOfVertices();
 			info.indexCount = (int)mesh->getNoOfIndices();
-			info.useGreedyTexture = withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
+			info.useGreedyTexture =
+				withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
 			info.hasTexture = info.useGreedyTexture || withTexCoords;
 			info.floatsPerVertex = 3 + (withColor ? 4 : 0) + (info.hasTexture ? 2 : 0); // pos(3) [+ color(4)] [+ uv(2)]
+			info.perColorMaterials = withMaterials && !info.useGreedyTexture && info.hasTexture;
 			info.vertexOffset = bufferSize;
 			info.vertexSize = info.vertexCount * info.floatsPerVertex * sizeof(float);
 			bufferSize += info.vertexSize;
@@ -649,6 +654,48 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			meshInfos.push_back(info);
 		}
 	}
+
+	// Pre-scan: for meshes with perColorMaterials, determine used colors and per-color index counts
+	// We store indices grouped by color in the buffer (after the original indices)
+	struct PerColorIndexInfo {
+		uint8_t colorIdx;
+		int indexCount;
+		size_t bufferOffset; // offset in the main buffer
+	};
+	// Per mesh: array of per-color index infos
+	core::DynamicArray<core::DynamicArray<PerColorIndexInfo>> perColorIndices;
+	perColorIndices.resize(totalMeshes);
+
+	size_t perColorBufferSize = 0;
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		const MeshInfo &info = meshInfos[mi];
+		if (!info.perColorMaterials) {
+			continue;
+		}
+		const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh[info.subMeshIdx];
+		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
+		const voxel::IndexType *indices = mesh->getRawIndexData();
+
+		// Count indices per color (a triangle belongs to a color if its first vertex has that color)
+		int colorCounts[palette::PaletteMaxColors];
+		core_memset(colorCounts, 0, sizeof(colorCounts));
+		for (int t = 0; t < info.indexCount; t += 3) {
+			uint8_t ci = vertices[indices[t]].colorIndex;
+			colorCounts[ci] += 3;
+		}
+		for (int c = 0; c < palette::PaletteMaxColors; ++c) {
+			if (colorCounts[c] > 0) {
+				PerColorIndexInfo pci;
+				pci.colorIdx = (uint8_t)c;
+				pci.indexCount = colorCounts[c];
+				pci.bufferOffset = bufferSize + perColorBufferSize;
+				perColorBufferSize += colorCounts[c] * sizeof(uint32_t);
+				perColorIndices[mi].push_back(pci);
+			}
+		}
+	}
+	bufferSize += perColorBufferSize;
 
 	// Allocate and fill buffer
 	uint8_t *buffer = (uint8_t *)core_malloc(bufferSize);
@@ -699,13 +746,115 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		}
 	}
 
+	// Fill per-color index buffers
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		const MeshInfo &info = meshInfos[mi];
+		if (!info.perColorMaterials) {
+			continue;
+		}
+		const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh[info.subMeshIdx];
+		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
+		const voxel::IndexType *indices = mesh->getRawIndexData();
+
+		// Write per-color index arrays
+		// First set up write pointers for each color
+		core::DynamicArray<uint32_t *> colorWritePtrs;
+		colorWritePtrs.resize(perColorIndices[mi].size());
+		for (int ci = 0; ci < (int)perColorIndices[mi].size(); ++ci) {
+			colorWritePtrs[ci] = (uint32_t *)(buffer + perColorIndices[mi][ci].bufferOffset);
+		}
+		// Build a lookup from colorIdx -> index in perColorIndices[mi]
+		int colorToSlot[palette::PaletteMaxColors];
+		core_memset(colorToSlot, -1, sizeof(colorToSlot));
+		for (int ci = 0; ci < (int)perColorIndices[mi].size(); ++ci) {
+			colorToSlot[perColorIndices[mi][ci].colorIdx] = ci;
+		}
+		// Distribute triangles
+		for (int t = 0; t < info.indexCount; t += 3) {
+			uint8_t c = vertices[indices[t]].colorIndex;
+			int slot = colorToSlot[c];
+			uint32_t *ptr = colorWritePtrs[slot];
+			ptr[0] = (uint32_t)indices[t];
+			ptr[1] = (uint32_t)indices[t + 1];
+			ptr[2] = (uint32_t)indices[t + 2];
+			colorWritePtrs[slot] += 3;
+		}
+	}
+
+	// Count total primitives (for perColorMaterials meshes, one per used color; otherwise 1)
+	int totalPrimitives = 0;
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		if (meshInfos[mi].perColorMaterials) {
+			totalPrimitives += (int)perColorIndices[mi].size();
+		} else {
+			totalPrimitives += 1;
+		}
+	}
+
 	// Build cgltf_data
 	int texturedMeshCount = 0;
 	for (const MeshInfo &info : meshInfos) {
-		if (info.hasTexture) ++texturedMeshCount;
+		if (info.hasTexture)
+			++texturedMeshCount;
 	}
-	totalAccessors = totalMeshes * 2 + (withColor ? totalMeshes : 0) + texturedMeshCount; // position + indices [+ color] [+ texcoord]
-	totalBufferViews = totalMeshes * 2 + (withColor ? totalMeshes : 0) + texturedMeshCount;
+
+	// Count unique palettes for per-color material allocation
+	// Each unique palette gets up to 256 materials
+	struct PaletteMaterialInfo {
+		int baseMaterialIdx; // index into gltfMaterials array
+		int colorCount;
+	};
+	core::DynamicMap<uint64_t, PaletteMaterialInfo> paletteMaterialMap;
+	int totalPerColorMaterials = 0;
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		if (!meshInfos[mi].perColorMaterials) {
+			continue;
+		}
+		const ChunkMeshExt &meshExt = meshes[meshInfos[mi].meshExtIdx];
+		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		const palette::Palette &pal = graphNode.palette();
+		uint64_t palHash = pal.hash();
+		if (!paletteMaterialMap.hasKey(palHash)) {
+			PaletteMaterialInfo pmi;
+			pmi.baseMaterialIdx = totalPerColorMaterials;
+			pmi.colorCount = pal.colorCount();
+			paletteMaterialMap.put(palHash, pmi);
+			totalPerColorMaterials += palette::PaletteMaxColors; // reserve slots for all 256 colors
+		}
+	}
+
+	// Materials: per-color materials + one per non-perColorMaterials textured mesh
+	int nonPerColorTexturedCount = 0;
+	for (const MeshInfo &info : meshInfos) {
+		if (info.hasTexture && !info.perColorMaterials) {
+			++nonPerColorTexturedCount;
+		}
+	}
+	int totalMaterialCount = totalPerColorMaterials + nonPerColorTexturedCount;
+
+	// Per-color primitives need extra index buffer views and accessors
+	int extraIndexBVs = 0;
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		if (meshInfos[mi].perColorMaterials) {
+			extraIndexBVs += (int)perColorIndices[mi].size();
+		}
+	}
+	// Base: each mesh gets position BV+acc, [color BV+acc], [texcoord BV+acc], index BV+acc
+	// For perColorMaterials meshes, we still need the vertex BVs but replace the single index BV+acc
+	// with N per-color index BV+accs. The original index BV is not needed for those meshes.
+	// So: vertex BVs/accs stay the same, but index BVs/accs change.
+	int vertexBVCount = totalMeshes + (withColor ? totalMeshes : 0) + texturedMeshCount;
+	int indexBVCount = 0;
+	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+		if (meshInfos[mi].perColorMaterials) {
+			indexBVCount += (int)perColorIndices[mi].size();
+		} else {
+			indexBVCount += 1;
+		}
+	}
+	totalBufferViews = vertexBVCount + indexBVCount;
+	totalAccessors = vertexBVCount + indexBVCount;
 
 	cgltf_buffer gltfBuffer;
 	core_memset(&gltfBuffer, 0, sizeof(gltfBuffer));
@@ -719,11 +868,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_memset(accessors, 0, totalAccessors * sizeof(cgltf_accessor));
 	cgltf_mesh *gltfMeshes = (cgltf_mesh *)core_malloc(totalMeshes * sizeof(cgltf_mesh));
 	core_memset(gltfMeshes, 0, totalMeshes * sizeof(cgltf_mesh));
-	cgltf_primitive *primitives = (cgltf_primitive *)core_malloc(totalMeshes * sizeof(cgltf_primitive));
-	core_memset(primitives, 0, totalMeshes * sizeof(cgltf_primitive));
-	int maxAttrsPerMesh = 3; // POSITION, COLOR_0, TEXCOORD_0
-	cgltf_attribute *attributes = (cgltf_attribute *)core_malloc(totalMeshes * maxAttrsPerMesh * sizeof(cgltf_attribute));
-	core_memset(attributes, 0, totalMeshes * maxAttrsPerMesh * sizeof(cgltf_attribute));
+	cgltf_primitive *primitives = (cgltf_primitive *)core_malloc(totalPrimitives * sizeof(cgltf_primitive));
+	core_memset(primitives, 0, totalPrimitives * sizeof(cgltf_primitive));
+	int maxAttrsPerPrimitive = 3; // POSITION, COLOR_0, TEXCOORD_0
+	cgltf_attribute *attributes =
+		(cgltf_attribute *)core_malloc(totalPrimitives * maxAttrsPerPrimitive * sizeof(cgltf_attribute));
+	core_memset(attributes, 0, totalPrimitives * maxAttrsPerPrimitive * sizeof(cgltf_attribute));
 
 	// Build hierarchy: find group nodes that need to be created as GLTF nodes
 	// Map scene graph node ID -> GLTF node index for mesh nodes
@@ -757,17 +907,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	cgltf_texture *gltfTextures = nullptr;
 	cgltf_material *gltfMaterials = nullptr;
 	cgltf_sampler *gltfTextureSampler = nullptr;
-	const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
-	// Up to 3 textures per mesh: base color, metallic-roughness, emissive
+	// Up to 3 textures per non-perColor mesh: base color, metallic-roughness, emissive
+	// Plus 1 palette texture per unique palette for perColor meshes
 	const int maxTexturesPerMesh = withMaterials ? 3 : 1;
-	const int maxImageCount = texturedMeshCount * maxTexturesPerMesh;
-	if (texturedMeshCount > 0) {
+	const int maxImageCount = nonPerColorTexturedCount * maxTexturesPerMesh + (int)paletteMaterialMap.size();
+	if (totalMaterialCount > 0 || nonPerColorTexturedCount > 0) {
 		gltfImages = (cgltf_image *)core_malloc(maxImageCount * sizeof(cgltf_image));
 		core_memset(gltfImages, 0, maxImageCount * sizeof(cgltf_image));
 		gltfTextures = (cgltf_texture *)core_malloc(maxImageCount * sizeof(cgltf_texture));
 		core_memset(gltfTextures, 0, maxImageCount * sizeof(cgltf_texture));
-		gltfMaterials = (cgltf_material *)core_malloc(texturedMeshCount * sizeof(cgltf_material));
-		core_memset(gltfMaterials, 0, texturedMeshCount * sizeof(cgltf_material));
+		gltfMaterials = (cgltf_material *)core_malloc(totalMaterialCount * sizeof(cgltf_material));
+		core_memset(gltfMaterials, 0, totalMaterialCount * sizeof(cgltf_material));
 		gltfTextureSampler = (cgltf_sampler *)core_malloc(sizeof(cgltf_sampler));
 		core_memset(gltfTextureSampler, 0, sizeof(cgltf_sampler));
 		gltfTextureSampler->mag_filter = cgltf_filter_type_nearest;
@@ -776,7 +926,153 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		gltfTextureSampler->wrap_t = cgltf_wrap_mode_repeat;
 	}
 
-	int bvIdx = 0, accIdx = 0, texIdx = 0, imgIdx = 0;
+	// Set up per-color materials for each unique palette
+	int imgIdx = 0;
+	core::DynamicMap<uint64_t, int> paletteTextureIdx; // palHash -> texture index in gltfTextures
+	for (auto iter = paletteMaterialMap.begin(); iter != paletteMaterialMap.end(); ++iter) {
+		uint64_t palHash = iter->key;
+		const PaletteMaterialInfo &pmi = iter->value;
+
+		// Find the palette for this hash
+		const palette::Palette *pal = nullptr;
+		for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
+			if (!meshInfos[mi].perColorMaterials)
+				continue;
+			const ChunkMeshExt &meshExt = meshes[meshInfos[mi].meshExtIdx];
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			const palette::Palette &p = graphNode.palette();
+			if (p.hash() == palHash) {
+				pal = &p;
+				break;
+			}
+		}
+		if (!pal)
+			continue;
+
+		// Create palette texture for this palette (shared by all its materials)
+		color::RGBA colors[palette::PaletteMaxColors];
+		for (int i = 0; i < palette::PaletteMaxColors; i++) {
+			colors[i] = pal->color(i);
+		}
+		image::Image palImage("palette");
+		palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
+		const core::String dataUri = "data:image/png;base64," + palImage.pngBase64();
+		gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+		core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+		gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+		gltfTextures[imgIdx].sampler = gltfTextureSampler;
+		paletteTextureIdx.put(palHash, imgIdx);
+		int palTexIdx = imgIdx;
+		++imgIdx;
+
+		// Create one material per palette color
+		const bool usePbrSG = core::getVar(cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
+		const bool useKhrSpec = core::getVar(cfg::VoxformatGLTF_KHR_materials_specular)->boolVal();
+		for (int c = 0; c < palette::PaletteMaxColors; ++c) {
+			int matIdx = totalPerColorMaterials - palette::PaletteMaxColors * (int)paletteMaterialMap.size() +
+						 pmi.baseMaterialIdx + c;
+			// Simpler: baseMaterialIdx is already the offset
+			matIdx = pmi.baseMaterialIdx + c;
+			cgltf_material &mat = gltfMaterials[matIdx];
+			const palette::Material &palMat = pal->material(c);
+			const color::RGBA rgba = pal->color(c);
+			const glm::vec4 fcolor = color::fromRGBA(rgba);
+
+			mat.has_pbr_metallic_roughness = true;
+			mat.pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[palTexIdx];
+			mat.pbr_metallic_roughness.base_color_factor[0] = 1.0f;
+			mat.pbr_metallic_roughness.base_color_factor[1] = 1.0f;
+			mat.pbr_metallic_roughness.base_color_factor[2] = 1.0f;
+			mat.pbr_metallic_roughness.base_color_factor[3] = 1.0f;
+			mat.pbr_metallic_roughness.metallic_factor = palMat.has(palette::MaterialProperty::MaterialMetal)
+															 ? palMat.value(palette::MaterialProperty::MaterialMetal)
+															 : 0.0f;
+			mat.pbr_metallic_roughness.roughness_factor =
+				palMat.has(palette::MaterialProperty::MaterialRoughness)
+					? palMat.value(palette::MaterialProperty::MaterialRoughness)
+					: 1.0f;
+
+			mat.alpha_mode = (rgba.a < 255) ? cgltf_alpha_mode_blend : cgltf_alpha_mode_opaque;
+
+			// Emissive
+			if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
+				float emit = palMat.value(palette::MaterialProperty::MaterialEmit);
+				mat.emissive_factor[0] = emit;
+				mat.emissive_factor[1] = emit;
+				mat.emissive_factor[2] = emit;
+			}
+
+			// KHR_materials_pbrSpecularGlossiness (takes priority over other extensions)
+			bool hasPbrSG = false;
+			if (usePbrSG) {
+				if (palMat.has(palette::MaterialProperty::MaterialDensity)) {
+					float density = palMat.value(palette::MaterialProperty::MaterialDensity);
+					mat.pbr_specular_glossiness.diffuse_factor[0] = fcolor.r * density;
+					mat.pbr_specular_glossiness.diffuse_factor[1] = fcolor.g * density;
+					mat.pbr_specular_glossiness.diffuse_factor[2] = fcolor.b * density;
+					mat.pbr_specular_glossiness.diffuse_factor[3] = fcolor.a;
+					hasPbrSG = true;
+				}
+				if (palMat.has(palette::MaterialProperty::MaterialSpecular)) {
+					float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
+					mat.pbr_specular_glossiness.specular_factor[0] = spec;
+					mat.pbr_specular_glossiness.specular_factor[1] = spec;
+					mat.pbr_specular_glossiness.specular_factor[2] = spec;
+					hasPbrSG = true;
+				}
+				if (palMat.has(palette::MaterialProperty::MaterialPhase)) {
+					mat.pbr_specular_glossiness.glossiness_factor =
+						palMat.value(palette::MaterialProperty::MaterialPhase);
+					hasPbrSG = true;
+				}
+				if (hasPbrSG && !palMat.has(palette::MaterialProperty::MaterialDensity)) {
+					// Default diffuse to white so base color texture shows through
+					mat.pbr_specular_glossiness.diffuse_factor[0] = 1.0f;
+					mat.pbr_specular_glossiness.diffuse_factor[1] = 1.0f;
+					mat.pbr_specular_glossiness.diffuse_factor[2] = 1.0f;
+					mat.pbr_specular_glossiness.diffuse_factor[3] = 1.0f;
+				}
+				mat.has_pbr_specular_glossiness = hasPbrSG;
+			}
+
+			// When pbrSpecularGlossiness is set, skip other extensions (matching old behavior)
+			if (!hasPbrSG) {
+				// KHR_materials_ior
+				if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+					mat.has_ior = true;
+					mat.ior.ior = palMat.value(palette::MaterialProperty::MaterialIndexOfRefraction);
+				}
+
+				// KHR_materials_specular
+				if (palMat.has(palette::MaterialProperty::MaterialSpecular) && useKhrSpec) {
+					float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
+					mat.has_specular = true;
+					mat.specular.specular_factor = spec;
+					mat.specular.specular_color_factor[0] = 1.0f;
+					mat.specular.specular_color_factor[1] = 1.0f;
+					mat.specular.specular_color_factor[2] = 1.0f;
+				}
+
+				// KHR_materials_volume
+				if (palMat.has(palette::MaterialProperty::MaterialAttenuation)) {
+					float atten = palMat.value(palette::MaterialProperty::MaterialAttenuation);
+					mat.has_volume = true;
+					mat.volume.attenuation_color[0] = fcolor.r * atten;
+					mat.volume.attenuation_color[1] = fcolor.g * atten;
+					mat.volume.attenuation_color[2] = fcolor.b * atten;
+				}
+			}
+
+			// KHR_materials_emissive_strength
+			if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
+				mat.has_emissive_strength = true;
+				mat.emissive_strength.emissive_strength = palMat.value(palette::MaterialProperty::MaterialEmit);
+			}
+		}
+	}
+
+	int bvIdx = 0, accIdx = 0, primIdx = 0;
+	int texIdx = totalPerColorMaterials; // non-perColor materials start after per-color ones
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		const MeshInfo &info = meshInfos[mi];
 		const int stride = info.floatsPerVertex;
@@ -794,7 +1090,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		accessors[accIdx].component_type = cgltf_component_type_r_32f;
 		accessors[accIdx].type = cgltf_type_vec3;
 		accessors[accIdx].count = info.vertexCount;
-		/* stride is defined on buffer view */
 		accessors[accIdx].has_min = true;
 		accessors[accIdx].has_max = true;
 		float *vBuf = (float *)(buffer + info.vertexOffset);
@@ -803,12 +1098,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		for (int j = 0; j < info.vertexCount; ++j) {
 			for (int k = 0; k < 3; ++k) {
 				float v = vBuf[j * stride + k];
-				if (v < accessors[accIdx].min[k]) accessors[accIdx].min[k] = v;
-				if (v > accessors[accIdx].max[k]) accessors[accIdx].max[k] = v;
+				if (v < accessors[accIdx].min[k])
+					accessors[accIdx].min[k] = v;
+				if (v > accessors[accIdx].max[k])
+					accessors[accIdx].max[k] = v;
 			}
 		}
 		int posAccIdx = accIdx;
-		++bvIdx; ++accIdx;
+		++bvIdx;
+		++accIdx;
 
 		// Color buffer view + accessor (if withColor)
 		int colAccIdx = -1;
@@ -827,7 +1125,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			accessors[accIdx].offset = 3 * sizeof(float);
 			/* stride is defined on buffer view */
 			colAccIdx = accIdx;
-			++bvIdx; ++accIdx;
+			++bvIdx;
+			++accIdx;
 		}
 
 		// Texcoord buffer view + accessor (if textured)
@@ -846,152 +1145,210 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			accessors[accIdx].offset = (3 + (withColor ? 4 : 0)) * sizeof(float);
 			/* stride is defined on buffer view */
 			uvAccIdx = accIdx;
-			++bvIdx; ++accIdx;
+			++bvIdx;
+			++accIdx;
 		}
 
-		// Index buffer view
-		bufferViews[bvIdx].buffer = &gltfBuffer;
-		bufferViews[bvIdx].offset = info.indexOffset;
-		bufferViews[bvIdx].size = info.indexSize;
-		bufferViews[bvIdx].type = cgltf_buffer_view_type_indices;
-
-		// Index accessor
-		accessors[accIdx].buffer_view = &bufferViews[bvIdx];
-		accessors[accIdx].component_type = cgltf_component_type_r_32u;
-		accessors[accIdx].type = cgltf_type_scalar;
-		accessors[accIdx].count = info.indexCount;
-		int idxAccIdx = accIdx;
-		++bvIdx; ++accIdx;
-
-		// Primitive
-		int attrBase = mi * maxAttrsPerMesh;
-		attributes[attrBase + 0].name = (char *)"POSITION";
-		attributes[attrBase + 0].type = cgltf_attribute_type_position;
-		attributes[attrBase + 0].data = &accessors[posAccIdx];
-		int attrCount = 1;
-		if (withColor && colAccIdx >= 0) {
-			attributes[attrBase + attrCount].name = (char *)"COLOR_0";
-			attributes[attrBase + attrCount].type = cgltf_attribute_type_color;
-			attributes[attrBase + attrCount].data = &accessors[colAccIdx];
-			++attrCount;
-		}
-		if (info.hasTexture && uvAccIdx >= 0) {
-			attributes[attrBase + attrCount].name = (char *)"TEXCOORD_0";
-			attributes[attrBase + attrCount].type = cgltf_attribute_type_texcoord;
-			attributes[attrBase + attrCount].data = &accessors[uvAccIdx];
-			++attrCount;
-
-			// Set up image/texture/material for this mesh
+		// Index buffer view(s) and accessor(s)
+		int firstPrimIdx = primIdx;
+		if (info.perColorMaterials) {
+			// Per-color index buffers - one primitive per used color
 			const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
-			// Embed base color texture as base64-encoded PNG data URI
-			if (info.useGreedyTexture && meshExt.texture) {
-				io::BufferedReadWriteStream pngStream;
-				image::writePNG(meshExt.texture, pngStream);
-				pngStream.seek(0);
-				const core::String b64 = io::Base64::encode(pngStream);
-				const core::String dataUri = "data:image/png;base64," + b64;
-				gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
-				core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
-			} else {
-				// Generate palette texture (256x1 RGBA)
-				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-				const palette::Palette &pal = graphNode.palette();
-				color::RGBA colors[palette::PaletteMaxColors];
-				for (int i = 0; i < palette::PaletteMaxColors; i++) {
-					colors[i] = pal.color(i);
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			const palette::Palette &pal = graphNode.palette();
+			uint64_t palHash = pal.hash();
+			PaletteMaterialInfo pmi;
+			paletteMaterialMap.get(palHash, pmi);
+
+			for (int ci = 0; ci < (int)perColorIndices[mi].size(); ++ci) {
+				const PerColorIndexInfo &pci = perColorIndices[mi][ci];
+				bufferViews[bvIdx].buffer = &gltfBuffer;
+				bufferViews[bvIdx].offset = pci.bufferOffset;
+				bufferViews[bvIdx].size = pci.indexCount * sizeof(uint32_t);
+				bufferViews[bvIdx].type = cgltf_buffer_view_type_indices;
+
+				accessors[accIdx].buffer_view = &bufferViews[bvIdx];
+				accessors[accIdx].component_type = cgltf_component_type_r_32u;
+				accessors[accIdx].type = cgltf_type_scalar;
+				accessors[accIdx].count = pci.indexCount;
+
+				int attrBase = primIdx * maxAttrsPerPrimitive;
+				attributes[attrBase + 0].name = (char *)"POSITION";
+				attributes[attrBase + 0].type = cgltf_attribute_type_position;
+				attributes[attrBase + 0].data = &accessors[posAccIdx];
+				int attrCount = 1;
+				if (withColor && colAccIdx >= 0) {
+					attributes[attrBase + attrCount].name = (char *)"COLOR_0";
+					attributes[attrBase + attrCount].type = cgltf_attribute_type_color;
+					attributes[attrBase + attrCount].data = &accessors[colAccIdx];
+					++attrCount;
 				}
-				image::Image palImage("palette");
-				palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
-				const core::String dataUri = "data:image/png;base64," + palImage.pngBase64();
-				gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
-				core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+				if (uvAccIdx >= 0) {
+					attributes[attrBase + attrCount].name = (char *)"TEXCOORD_0";
+					attributes[attrBase + attrCount].type = cgltf_attribute_type_texcoord;
+					attributes[attrBase + attrCount].data = &accessors[uvAccIdx];
+					++attrCount;
+				}
+
+				primitives[primIdx].type = cgltf_primitive_type_triangles;
+				primitives[primIdx].indices = &accessors[accIdx];
+				primitives[primIdx].attributes = &attributes[attrBase];
+				primitives[primIdx].attributes_count = attrCount;
+				primitives[primIdx].material = &gltfMaterials[pmi.baseMaterialIdx + pci.colorIdx];
+				++primIdx;
+				++bvIdx;
+				++accIdx;
 			}
-			gltfTextures[imgIdx].image = &gltfImages[imgIdx];
-			gltfTextures[imgIdx].sampler = gltfTextureSampler;
-			int baseColorTexIdx = imgIdx;
-			++imgIdx;
+		} else {
+			// Single index buffer for the whole mesh
+			bufferViews[bvIdx].buffer = &gltfBuffer;
+			bufferViews[bvIdx].offset = info.indexOffset;
+			bufferViews[bvIdx].size = info.indexSize;
+			bufferViews[bvIdx].type = cgltf_buffer_view_type_indices;
 
-			// Material setup
-			gltfMaterials[texIdx].has_pbr_metallic_roughness = true;
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[baseColorTexIdx];
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[0] = 1.0f;
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[1] = 1.0f;
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[2] = 1.0f;
-			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[3] = 1.0f;
-			gltfMaterials[texIdx].pbr_metallic_roughness.roughness_factor = 1.0f;
-			gltfMaterials[texIdx].pbr_metallic_roughness.metallic_factor = 1.0f;
+			accessors[accIdx].buffer_view = &bufferViews[bvIdx];
+			accessors[accIdx].component_type = cgltf_component_type_r_32u;
+			accessors[accIdx].type = cgltf_type_scalar;
+			accessors[accIdx].count = info.indexCount;
+			int idxAccIdx = accIdx;
+			++bvIdx;
+			++accIdx;
 
-			// Generate per-palette-entry material textures
-			if (withMaterials && !info.useGreedyTexture) {
-				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-				const palette::Palette &pal = graphNode.palette();
-
-				// Metallic-roughness texture (256x1): G=roughness, B=metallic
-				uint8_t mrPixels[palette::PaletteMaxColors * 4];
-				bool hasMR = false;
-				for (int i = 0; i < palette::PaletteMaxColors; i++) {
-					const palette::Material &mat = pal.material(i);
-					float r = mat.has(palette::MaterialProperty::MaterialRoughness) ? mat.value(palette::MaterialProperty::MaterialRoughness) : 1.0f;
-					float m = mat.has(palette::MaterialProperty::MaterialMetal) ? mat.value(palette::MaterialProperty::MaterialMetal) : 0.0f;
-					if (r < 1.0f || m > 0.0f) hasMR = true;
-					mrPixels[i * 4 + 0] = 0; // R unused (occlusion if combined)
-					mrPixels[i * 4 + 1] = (uint8_t)(r * 255.0f); // G = roughness
-					mrPixels[i * 4 + 2] = (uint8_t)(m * 255.0f); // B = metallic
-					mrPixels[i * 4 + 3] = 255;
-				}
-				if (hasMR) {
-					image::Image mrImage("metallic_roughness");
-					mrImage.loadRGBA(mrPixels, palette::PaletteMaxColors, 1);
-					const core::String mrUri = "data:image/png;base64," + mrImage.pngBase64();
-					gltfImages[imgIdx].uri = (char *)core_malloc(mrUri.size() + 1);
-					core_memcpy(gltfImages[imgIdx].uri, mrUri.c_str(), mrUri.size() + 1);
-					gltfTextures[imgIdx].image = &gltfImages[imgIdx];
-					gltfTextures[imgIdx].sampler = gltfTextureSampler;
-					gltfMaterials[texIdx].pbr_metallic_roughness.metallic_roughness_texture.texture = &gltfTextures[imgIdx];
-					++imgIdx;
-				}
-
-				// Emissive texture (256x1): RGB = emit * color
-				uint8_t emPixels[palette::PaletteMaxColors * 4];
-				bool hasEmit = false;
-				for (int i = 0; i < palette::PaletteMaxColors; i++) {
-					const palette::Material &mat = pal.material(i);
-					float emit = mat.has(palette::MaterialProperty::MaterialEmit) ? mat.value(palette::MaterialProperty::MaterialEmit) : 0.0f;
-					if (emit > 0.0f) hasEmit = true;
-					const color::RGBA c = pal.color(i);
-					emPixels[i * 4 + 0] = (uint8_t)((float)c.r * emit);
-					emPixels[i * 4 + 1] = (uint8_t)((float)c.g * emit);
-					emPixels[i * 4 + 2] = (uint8_t)((float)c.b * emit);
-					emPixels[i * 4 + 3] = 255;
-				}
-				if (hasEmit) {
-					image::Image emImage("emissive");
-					emImage.loadRGBA(emPixels, palette::PaletteMaxColors, 1);
-					const core::String emUri = "data:image/png;base64," + emImage.pngBase64();
-					gltfImages[imgIdx].uri = (char *)core_malloc(emUri.size() + 1);
-					core_memcpy(gltfImages[imgIdx].uri, emUri.c_str(), emUri.size() + 1);
-					gltfTextures[imgIdx].image = &gltfImages[imgIdx];
-					gltfTextures[imgIdx].sampler = gltfTextureSampler;
-					gltfMaterials[texIdx].emissive_texture.texture = &gltfTextures[imgIdx];
-					gltfMaterials[texIdx].emissive_factor[0] = 1.0f;
-					gltfMaterials[texIdx].emissive_factor[1] = 1.0f;
-					gltfMaterials[texIdx].emissive_factor[2] = 1.0f;
-					++imgIdx;
-				}
+			int attrBase = primIdx * maxAttrsPerPrimitive;
+			attributes[attrBase + 0].name = (char *)"POSITION";
+			attributes[attrBase + 0].type = cgltf_attribute_type_position;
+			attributes[attrBase + 0].data = &accessors[posAccIdx];
+			int attrCount = 1;
+			if (withColor && colAccIdx >= 0) {
+				attributes[attrBase + attrCount].name = (char *)"COLOR_0";
+				attributes[attrBase + attrCount].type = cgltf_attribute_type_color;
+				attributes[attrBase + attrCount].data = &accessors[colAccIdx];
+				++attrCount;
+			}
+			if (info.hasTexture && uvAccIdx >= 0) {
+				attributes[attrBase + attrCount].name = (char *)"TEXCOORD_0";
+				attributes[attrBase + attrCount].type = cgltf_attribute_type_texcoord;
+				attributes[attrBase + attrCount].data = &accessors[uvAccIdx];
+				++attrCount;
 			}
 
-			primitives[mi].material = &gltfMaterials[texIdx];
-			++texIdx;
+			primitives[primIdx].type = cgltf_primitive_type_triangles;
+			primitives[primIdx].indices = &accessors[idxAccIdx];
+			primitives[primIdx].attributes = &attributes[attrBase];
+			primitives[primIdx].attributes_count = attrCount;
+
+			// Set up image/texture/material for non-perColor meshes
+			if (info.hasTexture) {
+				const ChunkMeshExt &meshExt = meshes[info.meshExtIdx];
+				if (info.useGreedyTexture && meshExt.texture) {
+					io::BufferedReadWriteStream pngStream;
+					image::writePNG(meshExt.texture, pngStream);
+					pngStream.seek(0);
+					const core::String b64 = io::Base64::encode(pngStream);
+					const core::String dataUri = "data:image/png;base64," + b64;
+					gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+					core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+				} else {
+					const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+					const palette::Palette &pal = graphNode.palette();
+					color::RGBA colors[palette::PaletteMaxColors];
+					for (int i = 0; i < palette::PaletteMaxColors; i++) {
+						colors[i] = pal.color(i);
+					}
+					image::Image palImage("palette");
+					palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
+					const core::String dataUri = "data:image/png;base64," + palImage.pngBase64();
+					gltfImages[imgIdx].uri = (char *)core_malloc(dataUri.size() + 1);
+					core_memcpy(gltfImages[imgIdx].uri, dataUri.c_str(), dataUri.size() + 1);
+				}
+				gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+				gltfTextures[imgIdx].sampler = gltfTextureSampler;
+				int baseColorTexIdx = imgIdx;
+				++imgIdx;
+
+				gltfMaterials[texIdx].has_pbr_metallic_roughness = true;
+				gltfMaterials[texIdx].pbr_metallic_roughness.base_color_texture.texture =
+					&gltfTextures[baseColorTexIdx];
+				gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[0] = 1.0f;
+				gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[1] = 1.0f;
+				gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[2] = 1.0f;
+				gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[3] = 1.0f;
+				gltfMaterials[texIdx].pbr_metallic_roughness.roughness_factor = 1.0f;
+				gltfMaterials[texIdx].pbr_metallic_roughness.metallic_factor = 1.0f;
+
+				if (withMaterials && !info.useGreedyTexture) {
+					const scenegraph::SceneGraphNode &gn = sceneGraph.node(meshExt.nodeId);
+					const palette::Palette &pal = gn.palette();
+					// MR texture
+					uint8_t mrPixels[palette::PaletteMaxColors * 4];
+					bool hasMR = false;
+					for (int i = 0; i < palette::PaletteMaxColors; i++) {
+						const palette::Material &m = pal.material(i);
+						float r = m.has(palette::MaterialProperty::MaterialRoughness)
+									  ? m.value(palette::MaterialProperty::MaterialRoughness)
+									  : 1.0f;
+						float met = m.has(palette::MaterialProperty::MaterialMetal)
+										? m.value(palette::MaterialProperty::MaterialMetal)
+										: 0.0f;
+						if (r < 1.0f || met > 0.0f)
+							hasMR = true;
+						mrPixels[i * 4 + 0] = 0;
+						mrPixels[i * 4 + 1] = (uint8_t)(r * 255.0f);
+						mrPixels[i * 4 + 2] = (uint8_t)(met * 255.0f);
+						mrPixels[i * 4 + 3] = 255;
+					}
+					if (hasMR) {
+						image::Image mrImage("metallic_roughness");
+						mrImage.loadRGBA(mrPixels, palette::PaletteMaxColors, 1);
+						const core::String mrUri = "data:image/png;base64," + mrImage.pngBase64();
+						gltfImages[imgIdx].uri = (char *)core_malloc(mrUri.size() + 1);
+						core_memcpy(gltfImages[imgIdx].uri, mrUri.c_str(), mrUri.size() + 1);
+						gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+						gltfTextures[imgIdx].sampler = gltfTextureSampler;
+						gltfMaterials[texIdx].pbr_metallic_roughness.metallic_roughness_texture.texture =
+							&gltfTextures[imgIdx];
+						++imgIdx;
+					}
+					// Emissive texture
+					uint8_t emPixels[palette::PaletteMaxColors * 4];
+					bool hasEmit = false;
+					for (int i = 0; i < palette::PaletteMaxColors; i++) {
+						const palette::Material &m = pal.material(i);
+						float emit = m.has(palette::MaterialProperty::MaterialEmit)
+										 ? m.value(palette::MaterialProperty::MaterialEmit)
+										 : 0.0f;
+						if (emit > 0.0f)
+							hasEmit = true;
+						const color::RGBA c = pal.color(i);
+						emPixels[i * 4 + 0] = (uint8_t)((float)c.r * emit);
+						emPixels[i * 4 + 1] = (uint8_t)((float)c.g * emit);
+						emPixels[i * 4 + 2] = (uint8_t)((float)c.b * emit);
+						emPixels[i * 4 + 3] = 255;
+					}
+					if (hasEmit) {
+						image::Image emImage("emissive");
+						emImage.loadRGBA(emPixels, palette::PaletteMaxColors, 1);
+						const core::String emUri = "data:image/png;base64," + emImage.pngBase64();
+						gltfImages[imgIdx].uri = (char *)core_malloc(emUri.size() + 1);
+						core_memcpy(gltfImages[imgIdx].uri, emUri.c_str(), emUri.size() + 1);
+						gltfTextures[imgIdx].image = &gltfImages[imgIdx];
+						gltfTextures[imgIdx].sampler = gltfTextureSampler;
+						gltfMaterials[texIdx].emissive_texture.texture = &gltfTextures[imgIdx];
+						gltfMaterials[texIdx].emissive_factor[0] = 1.0f;
+						gltfMaterials[texIdx].emissive_factor[1] = 1.0f;
+						gltfMaterials[texIdx].emissive_factor[2] = 1.0f;
+						++imgIdx;
+					}
+				}
+				primitives[primIdx].material = &gltfMaterials[texIdx];
+				++texIdx;
+			}
+			++primIdx;
 		}
-
-		primitives[mi].type = cgltf_primitive_type_triangles;
-		primitives[mi].indices = &accessors[idxAccIdx];
-		primitives[mi].attributes = &attributes[attrBase];
-		primitives[mi].attributes_count = attrCount;
 
 		// Mesh
-		gltfMeshes[mi].primitives = &primitives[mi];
-		gltfMeshes[mi].primitives_count = 1;
+		gltfMeshes[mi].primitives = &primitives[firstPrimIdx];
+		gltfMeshes[mi].primitives_count = primIdx - firstPrimIdx;
 
 		// Node
 		nodes[mi].mesh = &gltfMeshes[mi];
@@ -1126,13 +1483,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	gltfData.scenes = &gltfScene;
 	gltfData.scenes_count = 1;
 	gltfData.scene = &gltfScene;
-	if (texturedMeshCount > 0) {
+	if (totalMaterialCount > 0 || nonPerColorTexturedCount > 0) {
 		gltfData.images = gltfImages;
 		gltfData.images_count = imgIdx;
 		gltfData.textures = gltfTextures;
 		gltfData.textures_count = imgIdx;
 		gltfData.materials = gltfMaterials;
-		gltfData.materials_count = texturedMeshCount;
+		gltfData.materials_count = totalMaterialCount;
 		gltfData.samplers = gltfTextureSampler;
 		gltfData.samplers_count = 1;
 	}
@@ -1149,11 +1506,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			} else {
 				sgNodeId = groupNodeIds[ni - totalMeshes];
 			}
-			if (!sceneGraph.hasNode(sgNodeId)) continue;
+			if (!sceneGraph.hasNode(sgNodeId))
+				continue;
 			const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
-			if (!sgNode.allKeyFrames().hasKey(animName)) continue;
+			if (!sgNode.allKeyFrames().hasKey(animName))
+				continue;
 			const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
-			if (kfs.size() <= 1) continue;
+			if (kfs.size() <= 1)
+				continue;
 			totalAnimKeyframes += kfs.size();
 		}
 	}
@@ -1170,11 +1530,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core::DynamicArray<core::String> uniqueAnims;
 
 	if (totalAnimKeyframes > 0) {
-		// Calculate animation buffer size: for each keyframe we need time(1f) + translation(3f) + rotation(4f) + scale(3f)
-		// Per node per animation: N times + N translations + N rotations + N scales
-		// Buffer views: 4 per animated node (time, T, R, S)
-		// Accessors: 4 per animated node
-		// Channels: 3 per animated node (T, R, S)
+		// Calculate animation buffer size: for each keyframe we need time(1f) + translation(3f) + rotation(4f) +
+		// scale(3f) Per node per animation: N times + N translations + N rotations + N scales Buffer views: 4 per
+		// animated node (time, T, R, S) Accessors: 4 per animated node Channels: 3 per animated node (T, R, S)
 		// Samplers: 3 per animated node
 
 		struct AnimNodeInfo {
@@ -1193,11 +1551,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				} else {
 					sgNodeId = groupNodeIds[ni - totalMeshes];
 				}
-				if (!sceneGraph.hasNode(sgNodeId)) continue;
+				if (!sceneGraph.hasNode(sgNodeId))
+					continue;
 				const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
-				if (!sgNode.allKeyFrames().hasKey(animName)) continue;
+				if (!sgNode.allKeyFrames().hasKey(animName))
+					continue;
 				const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
-				if (kfs.size() <= 1) continue;
+				if (kfs.size() <= 1)
+					continue;
 				AnimNodeInfo info;
 				info.gltfNodeIdx = ni;
 				info.sgNodeId = sgNodeId;
@@ -1211,10 +1572,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			// Calculate buffer size
 			for (const AnimNodeInfo &ani : animNodes) {
 				int n = ani.keyframeCount;
-				animBufferSize += n * sizeof(float);       // times
-				animBufferSize += n * 3 * sizeof(float);   // translations
-				animBufferSize += n * 4 * sizeof(float);   // rotations
-				animBufferSize += n * 3 * sizeof(float);   // scales
+				animBufferSize += n * sizeof(float);	 // times
+				animBufferSize += n * 3 * sizeof(float); // translations
+				animBufferSize += n * 4 * sizeof(float); // rotations
+				animBufferSize += n * 3 * sizeof(float); // scales
 			}
 
 			animBuffer = (uint8_t *)core_malloc(animBufferSize);
@@ -1236,9 +1597,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			for (const AnimNodeInfo &ani : animNodes) {
 				bool found = false;
 				for (const core::String &s : uniqueAnims) {
-					if (s == ani.animName) { found = true; break; }
+					if (s == ani.animName) {
+						found = true;
+						break;
+					}
 				}
-				if (!found) uniqueAnims.push_back(ani.animName);
+				if (!found)
+					uniqueAnims.push_back(ani.animName);
 			}
 			animCount = (int)uniqueAnims.size();
 			gltfAnimations = (cgltf_animation *)core_malloc(animCount * sizeof(cgltf_animation));
@@ -1259,7 +1624,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				int firstChannel = chanI;
 
 				for (const AnimNodeInfo &ani : animNodes) {
-					if (ani.animName != animName) continue;
+					if (ani.animName != animName)
+						continue;
 					const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(ani.sgNodeId);
 					const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
 					int n = (int)kfs.size();
@@ -1362,15 +1728,18 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[transAcc];
 					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
-					int transSamp = sampI; ++sampI;
+					int transSamp = sampI;
+					++sampI;
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[rotAcc];
 					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
-					int rotSamp = sampI; ++sampI;
+					int rotSamp = sampI;
+					++sampI;
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[scaleAcc];
 					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
-					int scaleSamp = sampI; ++sampI;
+					int scaleSamp = sampI;
+					++sampI;
 
 					// Channels
 					gltfChannels[chanI].sampler = &gltfSamplers[transSamp];
@@ -1433,13 +1802,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				mergedAccessors[totalAccessors + i].buffer_view = &mergedBVs[totalBufferViews + idx];
 			}
 			// Fix primitive index accessor pointers
-			for (int i = 0; i < totalMeshes; ++i) {
+			for (int i = 0; i < totalPrimitives; ++i) {
 				ptrdiff_t idx = primitives[i].indices - accessors;
 				primitives[i].indices = &mergedAccessors[idx];
 			}
 			// Fix attribute accessor pointers
-			for (int i = 0; i < totalMeshes * maxAttrsPerMesh; ++i) {
-				if (attributes[i].data == nullptr) continue;
+			for (int i = 0; i < totalPrimitives * maxAttrsPerPrimitive; ++i) {
+				if (attributes[i].data == nullptr)
+					continue;
 				ptrdiff_t idx = attributes[i].data - accessors;
 				attributes[i].data = &mergedAccessors[idx];
 			}
@@ -1474,8 +1844,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	cgltf_options writeOptions;
 	core_memset(&writeOptions, 0, sizeof(writeOptions));
 
-	const core::String binFilename = core::string::extractFilenameWithExtension(
-		core::string::replaceExtension(filename, "bin"));
+	const core::String binFilename =
+		core::string::extractFilenameWithExtension(core::string::replaceExtension(filename, "bin"));
 
 	if (isGlb) {
 		writeOptions.type = cgltf_file_type_glb;
@@ -1613,8 +1983,10 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	for (int i = 0; i < vertexCount; ++i) {
 		for (int k = 0; k < 3; ++k) {
 			float v = vBuf[i * 7 + k];
-			if (v < accessors[0].min[k]) accessors[0].min[k] = v;
-			if (v > accessors[0].max[k]) accessors[0].max[k] = v;
+			if (v < accessors[0].min[k])
+				accessors[0].min[k] = v;
+			if (v > accessors[0].max[k])
+				accessors[0].max[k] = v;
 		}
 	}
 
@@ -1678,8 +2050,8 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	cgltf_options writeOptions;
 	core_memset(&writeOptions, 0, sizeof(writeOptions));
 
-	const core::String binFilename = core::string::extractFilenameWithExtension(
-		core::string::replaceExtension(filename, "bin"));
+	const core::String binFilename =
+		core::string::extractFilenameWithExtension(core::string::replaceExtension(filename, "bin"));
 
 	if (isGlb) {
 		writeOptions.type = cgltf_file_type_glb;
