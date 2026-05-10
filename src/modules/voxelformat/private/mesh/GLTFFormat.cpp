@@ -746,6 +746,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	cgltf_image *gltfImages = nullptr;
 	cgltf_texture *gltfTextures = nullptr;
 	cgltf_material *gltfMaterials = nullptr;
+	cgltf_sampler *gltfTextureSampler = nullptr;
 	if (texturedMeshCount > 0) {
 		gltfImages = (cgltf_image *)core_malloc(texturedMeshCount * sizeof(cgltf_image));
 		core_memset(gltfImages, 0, texturedMeshCount * sizeof(cgltf_image));
@@ -753,6 +754,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		core_memset(gltfTextures, 0, texturedMeshCount * sizeof(cgltf_texture));
 		gltfMaterials = (cgltf_material *)core_malloc(texturedMeshCount * sizeof(cgltf_material));
 		core_memset(gltfMaterials, 0, texturedMeshCount * sizeof(cgltf_material));
+		gltfTextureSampler = (cgltf_sampler *)core_malloc(sizeof(cgltf_sampler));
+		core_memset(gltfTextureSampler, 0, sizeof(cgltf_sampler));
+		gltfTextureSampler->mag_filter = cgltf_filter_type_nearest;
+		gltfTextureSampler->min_filter = cgltf_filter_type_nearest;
 	}
 
 	int bvIdx = 0, accIdx = 0, texIdx = 0;
@@ -864,6 +869,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			gltfImages[texIdx].uri = (char *)core_malloc(texName.size() + 1);
 			core_memcpy(gltfImages[texIdx].uri, texName.c_str(), texName.size() + 1);
 			gltfTextures[texIdx].image = &gltfImages[texIdx];
+			gltfTextures[texIdx].sampler = gltfTextureSampler;
 			gltfMaterials[texIdx].has_pbr_metallic_roughness = true;
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[texIdx];
 			gltfMaterials[texIdx].pbr_metallic_roughness.base_color_factor[0] = 1.0f;
@@ -1023,6 +1029,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		gltfData.textures_count = texturedMeshCount;
 		gltfData.materials = gltfMaterials;
 		gltfData.materials_count = texturedMeshCount;
+		gltfData.samplers = gltfTextureSampler;
+		gltfData.samplers_count = 1;
 	}
 
 	// Export animations
@@ -1390,6 +1398,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		core_free(gltfAnimations);
 		core_free(gltfSamplers);
 		core_free(gltfChannels);
+		core_free(gltfTextureSampler);
 		Log::error("Failed to calculate gltf json size");
 		return false;
 	}
@@ -1432,6 +1441,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 	core_free(gltfTextures);
 	core_free(gltfMaterials);
+	core_free(gltfTextureSampler);
 
 	if (!success) {
 		Log::error("Failed to write gltf file %s", filename.c_str());
