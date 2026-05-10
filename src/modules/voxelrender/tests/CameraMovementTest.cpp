@@ -159,4 +159,40 @@ TEST_F(CameraMovementTest, testClippingPreventsEnteringSolidVolume) {
 	m.shutdown();
 }
 
+TEST_F(CameraMovementTest, testOrthogonalRotationAllowsPitch) {
+	CameraMovementExt m;
+	m.construct();
+
+	video::Camera camera;
+	camera.setMode(video::CameraMode::Orthogonal);
+	camera.setSize({800, 600});
+	camera.setAngles(0.0f, 0.0f, 0.0f);
+	camera.update(0.0);
+
+	m.rotate(camera, 20.0f, 20.0f);
+	camera.update(0.0);
+
+	EXPECT_GT(glm::length(camera.forward() - glm::forward()), 0.01f);
+	EXPECT_GT(glm::abs(camera.horizontalYaw()), 0.1f);
+}
+
+TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
+	CameraMovementExt m;
+	m.construct();
+
+	video::Camera camera;
+	camera.setMode(video::CameraMode::Isometric);
+	camera.setSize({800, 600});
+	camera.setAngles(video::Camera::IsometricPitch, 0.0f, 0.0f);
+	camera.update(0.0);
+	const glm::vec3 initialForward = camera.forward();
+
+	m.rotate(camera, 20.0f, 20.0f);
+	camera.update(0.0);
+
+	EXPECT_NEAR(initialForward.y, camera.forward().y, 0.02f);
+	EXPECT_GT(glm::abs(camera.horizontalYaw()), 0.1f);
+	EXPECT_GT(glm::length(camera.forward() - initialForward), 0.01f);
+}
+
 } // namespace voxedit

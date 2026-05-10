@@ -82,13 +82,13 @@ void CameraPanel::cameraModeCombo(command::CommandExecutionListener *listener, v
 }
 
 void CameraPanel::cameraProjectionCombo(video::Camera &camera) {
-	const char *modes[] = {_("Perspective"), _("Orthogonal")};
+	const char *modes[] = {_("Perspective"), _("Orthogonal"), _("Isometric")};
 	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
 	const int currentMode = (int)camera.mode();
 	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
 	if (ImGui::BeginCombo("###cameraproj", modes[currentMode])) {
-		const char *projModeArgs[] = {"perspective", "orthogonal"};
+		const char *projModeArgs[] = {"perspective", "orthogonal", "isometric"};
 		static_assert(lengthof(projModeArgs) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
 		for (int n = 0; n < lengthof(modes); n++) {
 			const bool isSelected = (currentMode == n);
@@ -140,7 +140,7 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 				ImGui::EndDisabled();
 			}
 			{
-				ImGui::BeginDisabled(camera.mode() == video::CameraMode::Orthogonal);
+				ImGui::BeginDisabled(camera.mode() != video::CameraMode::Perspective);
 				float fov = camera.fieldOfView();
 				if (ImGui::InputFloat(_("FOV"), fov)) {
 					camera.setFieldOfView(fov);

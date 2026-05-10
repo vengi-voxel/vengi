@@ -24,7 +24,7 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sce
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 // I18N: These are not translated, because they are also the values of configuration variables
-static constexpr const char *SceneCameraModeStr[] = {N_("Free"),  N_("Top"),   N_("Bottom"), N_("Left"),
+static constexpr const char *SceneCameraModeStr[] = {N_("Free"), N_("Top"), N_("Bottom"), N_("Left"),
 													 N_("Right"), N_("Front"), N_("Back")};
 static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max,
 			  "Array size doesn't match enum values");

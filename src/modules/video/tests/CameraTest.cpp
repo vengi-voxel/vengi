@@ -13,6 +13,10 @@
 
 namespace video {
 
+namespace {
+
+}
+
 class CameraTest : public app::AbstractTest {
 public:
 	virtual ~CameraTest() {
@@ -205,6 +209,96 @@ TEST_F(CameraTest, testOrthoZoom) {
 	const float zoomedIn = camera.orthoZoom();
 	EXPECT_FLOAT_EQ(zoomedIn, initialZoom);
 	EXPECT_GE(zoomedIn, _minZoom->floatVal());
+}
+
+TEST_F(CameraTest, testIsometricProjectionSanitizesOrientation) {
+	Camera camera;
+	camera.setSize(glm::ivec2(1024, 768));
+	camera.setMode(CameraMode::Isometric);
+	camera.setAngles(0.1f, glm::radians(30.0f), glm::radians(10.0f));
+	camera.update(0.0);
+
+	EXPECT_TRUE(camera.isOrthographic());
+	EXPECT_LT(camera.horizontalYaw(), 0.0f);
+	EXPECT_GT(camera.horizontalYaw(), -glm::half_pi<float>());
+	EXPECT_LT(camera.forward().y, -0.45f);
+	EXPECT_GT(camera.forward().y, -0.75f);
+}
+
+TEST_F(CameraTest, testIsometricYawWraps) {
+	Camera camera;
+	camera.setSize(glm::ivec2(1024, 768));
+	camera.setMode(CameraMode::Isometric);
+	camera.setAngles(Camera::IsometricPitch, glm::radians(179.0f), 0.0f);
+	camera.update(0.0);
+	const glm::vec3 before = camera.forward();
+
+	camera.turn(glm::radians(20.0f));
+	camera.update(0.0);
+
+	EXPECT_LT(camera.horizontalYaw(), 0.0f);
+	EXPECT_GT(glm::length(camera.forward() - before), 0.01f);
+}
+
+TEST_F(CameraTest, testIsometricTurnTwoCirclesSmallSteps) {
+	Camera camera;
+	camera.setSize(glm::ivec2(1024, 768));
+	camera.setMode(CameraMode::Isometric);
+	camera.setRotationType(CameraRotationType::Target);
+	camera.setTarget(glm::zero<glm::vec3>());
+	camera.setTargetDistance(10.0f);
+	camera.setAngles(Camera::IsometricPitch, 0.0f, 0.0f);
+	camera.update(0.0);
+
+	const glm::vec3 initialForward = camera.forward();
+	const glm::vec3 initialWorldPos = camera.worldPosition();
+	glm::vec3 previousForward = initialForward;
+	glm::vec3 previousWorldPos = initialWorldPos;
+	float accumulatedTravel = 0.0f;
+	const float step = glm::radians(1.0f);
+
+	for (int i = 0; i < 720; ++i) {
+		camera.turn(step);
+		camera.update(1.0 / 60.0);
+
+		const float worldDelta = glm::distance(previousWorldPos, camera.worldPosition());
+		const float forwardDelta = glm::length(previousForward - camera.forward());
+		EXPECT_GT(worldDelta, 0.01f);
+		EXPECT_GT(forwardDelta, 0.001f);
+		EXPECT_NEAR(10.0f, camera.targetDistance(), 0.0001f);
+		accumulatedTravel += worldDelta;
+		previousWorldPos = camera.worldPosition();
+		previousForward = camera.forward();
+	}
+
+	EXPECT_GT(accumulatedTravel, 50.0f);
+	const float finalForwardDelta = glm::length(initialForward - camera.forward());
+	const float finalWorldPosDelta = glm::distance(initialWorldPos, camera.worldPosition());
+	EXPECT_LT(finalForwardDelta, 0.01f) << "final forward delta: " << finalForwardDelta;
+	EXPECT_LT(finalWorldPosDelta, 0.05f) << "final world position delta: " << finalWorldPosDelta;
+}
+
+TEST_F(CameraTest, testIsometricIdleUpdateIsStable) {
+	Camera camera;
+	camera.setSize(glm::ivec2(1024, 768));
+	camera.setMode(CameraMode::Isometric);
+	camera.setAngles(Camera::IsometricPitch, glm::radians(30.0f), 0.0f);
+	camera.update(0.0);
+
+	const glm::quat beforeQuat = camera.quaternion();
+	const glm::vec3 beforeForward = camera.forward();
+	const float beforeYaw = camera.horizontalYaw();
+
+	for (int i = 0; i < 120; ++i) {
+		camera.update(1.0 / 60.0);
+	}
+
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(beforeForward, camera.forward(), 0.0001f)));
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::vec4(beforeQuat.x, beforeQuat.y, beforeQuat.z, beforeQuat.w),
+										   glm::vec4(camera.quaternion().x, camera.quaternion().y,
+													 camera.quaternion().z, camera.quaternion().w),
+										   0.0001f)));
+	EXPECT_NEAR(beforeYaw, camera.horizontalYaw(), 0.0001f);
 }
 
 TEST_F(CameraTest, testWorldToScreen) {

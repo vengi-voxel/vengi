@@ -88,6 +88,26 @@ TEST_F(RenderUtilTest, testConfigureCameraFrontMode) {
 	EXPECT_LT(cameraPos.z, center.z);
 }
 
+TEST_F(RenderUtilTest, testConfigureCameraIsometricProjection) {
+	video::Camera camera;
+	camera.setMode(video::CameraMode::Isometric);
+	camera.setSize(glm::ivec2(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(101, 51, 101));
+
+	configureCamera(camera, sceneRegion, SceneCameraMode::Free, 5000.0f);
+	camera.update(0.0);
+
+	EXPECT_EQ(video::CameraMode::Isometric, camera.mode());
+	EXPECT_TRUE(camera.isOrthographic());
+	video::Camera reference;
+	reference.setSize(glm::ivec2(1920, 1080));
+	reference.setMode(video::CameraMode::Isometric);
+	reference.setAngles(video::Camera::IsometricPitch, glm::radians(45.0f), 0.0f);
+	reference.update(0.0);
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.forward(), reference.forward(), 0.001f)));
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.up(), reference.up(), 0.001f)));
+}
+
 // Test with a flat scene (512x64x512) (ace of spades)
 TEST_F(RenderUtilTest, testConfigureCameraFlatSceneDistances) {
 	video::Camera camera;

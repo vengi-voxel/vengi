@@ -24,6 +24,23 @@
 
 namespace video {
 
+namespace {
+
+static float quatHorizontalYaw(const glm::quat &quat) {
+	const glm::vec3 backward = -(glm::conjugate(quat) * glm::forward());
+	const glm::vec2 projected(backward.x, backward.z);
+	if (glm::length2(projected) <= glm::epsilon<float>()) {
+		return 0.0f;
+	}
+	return glm::atan(projected.x, projected.y);
+}
+
+static glm::quat isometricQuat(float yaw) {
+	return glm::normalize(glm::angleAxis(Camera::IsometricPitch, glm::right()) * glm::angleAxis(-yaw, glm::up()));
+}
+
+}
+
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _quat(glm::quat_identity<float, glm::defaultp>()) {
 }
@@ -56,7 +73,21 @@ void Camera::turn(float radians) {
 	if (fabs((double)radians) < 0.00001) {
 		return;
 	}
-	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up());
+	if (isIsometric() && _rotationType == CameraRotationType::Target) {
+		const glm::vec3 offset = _worldPos - _target;
+		const glm::vec3 rotatedOffset = glm::angleAxis(radians, glm::up()) * offset;
+		_worldPos = _target + rotatedOffset;
+		_quat = isometricQuat(glm::atan(rotatedOffset.x, rotatedOffset.z));
+		_dirty |= DIRTY_POSITION | DIRTY_ORIENTATION;
+		_lerp = false;
+		return;
+	}
+	if (isIsometric()) {
+		setOrientation(isometricQuat(quatHorizontalYaw(_quat) + radians));
+		return;
+	}
+	const glm::vec3 axis = _quat * glm::up();
+	const glm::quat& quat = glm::angleAxis(radians, axis);
 	rotate(quat);
 }
 
@@ -71,7 +102,7 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 void Camera::pan(int screenDeltaX, int screenDeltaY) {
 	float zoomFactor = 1.0f;
 	if (_rotationType == CameraRotationType::Target) {
-		if (_mode == CameraMode::Orthogonal) {
+		if (isOrthographic()) {
 			zoomFactor = _orthoZoom / PIXELS_PER_UNIT;
 		} else {
 			const float rad = glm::radians(_fieldOfView);
@@ -229,14 +260,7 @@ void Camera::rotate(const glm::vec3& radians) {
 }
 
 float Camera::horizontalYaw() const {
-	const glm::vec3& dir = direction();
-	const glm::vec3 yawDirection(dir.x, 0.0f, dir.z);
-	const float dotResult = glm::dot(glm::normalize(yawDirection), glm::backward());
-	const float yaw = glm::acos(dotResult);
-	if (yawDirection.x < 0.0f) {
-		return yaw * -1.0f;
-	}
-	return yaw;
+	return quatHorizontalYaw(_quat);
 }
 
 void Camera::setPitch(float radians) {
@@ -343,7 +367,7 @@ void Camera::resetZoom() {
 
 void Camera::zoom(float value) {
 	float *target;
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		target = &_orthoZoom;
 		_dirty |= DIRTY_PERSPECTIVE;
 	} else {
@@ -391,6 +415,13 @@ void Camera::update(double deltaFrameSeconds) {
 			rotate(_omega * (float)deltaFrameSeconds);
 		}
 	}
+	if (_mode == CameraMode::Isometric && isDirty(DIRTY_ORIENTATION)) {
+		const glm::quat isoQuat = isometricQuat(quatHorizontalYaw(_quat));
+		if (glm::abs(glm::dot(_quat, isoQuat)) < 0.99999f) {
+			_quat = isoQuat;
+			_dirty |= DIRTY_ORIENTATION;
+		}
+	}
 	updateTarget();
 	updateOrientation();
 	updateViewMatrix();
@@ -408,7 +439,7 @@ void Camera::updateOrientation() {
 
 	_quat = glm::normalize(_quat);
 	_orientation = glm::mat4_cast(_quat);
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		const glm::ivec3 &angles = glm::abs(glm::degrees(glm::eulerAngles(_quat)));
 		const glm::ivec3 r(angles.x % 90, angles.y % 90, angles.z % 90);
 		if ((r.x < 1 || r.x >= 89) && (r.y < 1 || r.y >= 89) && (r.z < 1 || r.z >= 89)) {
@@ -427,6 +458,7 @@ void Camera::updateProjectionMatrix() {
 	}
 	switch(_mode) {
 	case CameraMode::Orthogonal:
+	case CameraMode::Isometric:
 		_projectionMatrix = orthogonalMatrix(nearPlane(), farPlane());
 		break;
 	case CameraMode::Perspective:
@@ -452,7 +484,7 @@ math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	const float winX = (float)pixelPos.x;
 	const float winY = (float)(_windowSize.y - pixelPos.y);
 
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		// For orthogonal projection, manually compute the ray origin
 		// Map screen coordinates to normalized device coordinates [-1, 1]
 		const float ndcX = (2.0f * winX) / _windowSize.x - 1.0f;
@@ -538,6 +570,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
+	case CameraMode::Isometric:
 		proj = orthogonalMatrix(nearPlane, farPlane);
 		break;
 	case CameraMode::Perspective:
@@ -606,7 +639,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	float nearZ = nplane;
 	float farZ = fplane;
 
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		// Make depth camera-relative
 		nearZ = -_orthoDepth * 0.5f;
 		farZ =  _orthoDepth * 0.5f;
@@ -631,7 +664,7 @@ void Camera::setNearPlane(float nearPlane) {
 	}
 
 	_dirty |= DIRTY_PERSPECTIVE;
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		_nearPlane = nearPlane;
 	} else {
 		_nearPlane = core_max(0.1f, nearPlane);

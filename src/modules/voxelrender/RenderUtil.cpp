@@ -22,7 +22,7 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	cameraNode.setHeight(camera.size().y);
 	cameraNode.setFarPlane(camera.farPlane());
 	cameraNode.setNearPlane(camera.nearPlane());
-	if (camera.mode() == video::CameraMode::Orthogonal) {
+	if (camera.isOrthographic()) {
 		cameraNode.setOrthographic();
 	} else {
 		cameraNode.setPerspective();
@@ -74,6 +74,11 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 		camera.setOmega({0.0f, 0.0f, 0.0f});
 	}
 	if (mode == SceneCameraMode::Free) {
+		if (camera.isIsometric()) {
+			constexpr float isoYaw = glm::radians(45.0f);
+			camera.setAngles(video::Camera::IsometricPitch, isoYaw, 0.0f);
+			return;
+		}
 		const float diagonalDistance = distance / glm::sqrt(2.0f);
 		camera.setWorldPosition(glm::vec3(center.x - diagonalDistance, (float)sceneRegion.getUpperY(), center.z - diagonalDistance));
 	} else if (mode == SceneCameraMode::Top) {

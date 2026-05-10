@@ -179,7 +179,7 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 	camera.aspect = (float)cam.size().x / (float)cam.size().y;
 	camera.aperture = _state->aperture;
 
-	camera.orthographic = cam.mode() == video::CameraMode::Orthogonal;
+	camera.orthographic = cam.isOrthographic();
 	if (camera.orthographic) {
 		camera.film = cam.size().x;
 		if (cam.rotationType() == video::CameraRotationType::Target) {

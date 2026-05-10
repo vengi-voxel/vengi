@@ -35,6 +35,7 @@ enum class CameraRotationType {
 enum class CameraMode {
 	Perspective,
 	Orthogonal,
+	Isometric,
 	Max
 };
 
@@ -127,6 +128,8 @@ protected:
 	math::Frustum _frustum;
 
 public:
+	static constexpr float IsometricPitch = 0.6154797f;
+
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
 	const glm::ivec2 &size() const;
@@ -148,6 +151,8 @@ public:
 
 	CameraMode mode() const;
 	void setMode(CameraMode mode);
+	bool isOrthographic() const;
+	bool isIsometric() const;
 
 	CameraRotationType rotationType() const;
 	void setRotationType(CameraRotationType rotationType);
@@ -330,6 +335,14 @@ inline CameraMode Camera::mode() const {
 	return _mode;
 }
 
+inline bool Camera::isOrthographic() const {
+	return _mode == CameraMode::Orthogonal || _mode == CameraMode::Isometric;
+}
+
+inline bool Camera::isIsometric() const {
+	return _mode == CameraMode::Isometric;
+}
+
 inline CameraRotationType Camera::rotationType() const {
 	return _rotationType;
 }
@@ -351,14 +364,14 @@ inline void Camera::setPolygonMode(PolygonMode polygonMode) {
 }
 
 inline float Camera::nearPlane() const {
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		return -_orthoDepth * 0.5f;
 	}
 	return _nearPlane;
 }
 
 inline float Camera::farPlane() const {
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		return _orthoDepth * 0.5f;
 	}
 	return _farPlane;
@@ -368,7 +381,7 @@ inline float Camera::aspect() const {
 	if (_windowSize.y == 0) {
 		return 1.0f;
 	}
-	if (_mode == CameraMode::Orthogonal) {
+	if (isOrthographic()) {
 		return (float)_windowSize.x / (float)_windowSize.y;
 	}
 	return (float)_windowSize.y / (float)_windowSize.x;

@@ -1172,7 +1172,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	}
 	core_trace_scoped(RenderGizmo);
 
-	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
+	const bool orthographic = camera.isOrthographic();
 
 	ImGuizmo::PushID(_id);
 	ImGuizmo::SetDrawlist();

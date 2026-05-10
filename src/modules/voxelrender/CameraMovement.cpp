@@ -79,7 +79,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	if (_movement.moving()) {
 		glm::vec3 direction(0);
 		// In orthographic mode, forward/backward should zoom instead of move
-		const bool orthographic = camera->mode() == video::CameraMode::Orthogonal;
+		const bool orthographic = camera->isOrthographic();
 		if (orthographic && !clipping) {
 			if (_movement.forward()) {
 				camera->zoom(-speed * _deltaSeconds);
@@ -193,12 +193,14 @@ void CameraMovement::pan(video::Camera &camera, int mouseDeltaX, int mouseDeltaY
 void CameraMovement::rotate(video::Camera &camera, float yaw, float pitch) {
 	const float s = _rotationSpeed->floatVal();
 	camera.turn(yaw * s);
-	camera.setPitch(pitch * s);
+	if (!camera.isIsometric()) {
+		camera.setPitch(pitch * s);
+	}
 }
 
 void CameraMovement::zoom(video::Camera &camera, float level) {
 	if (!_clipping->boolVal()) {
-		if (camera.mode() == video::CameraMode::Orthogonal) {
+		if (camera.isOrthographic()) {
 			camera.zoom(level);
 		} else {
 			float speed = level * (1.0f + _zoomSpeed->floatVal());

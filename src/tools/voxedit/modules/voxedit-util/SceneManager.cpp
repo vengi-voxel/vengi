@@ -4303,7 +4303,7 @@ void SceneManager::construct() {
 		}).setHelp(_("Set the camera orbit target position"));
 
 	command::Command::registerCommand("camera_projection")
-		.addArg({"mode", command::ArgType::String, true, "", "Projection mode: perspective|orthogonal (toggles if not specified)"})
+		.addArg({"mode", command::ArgType::String, true, "", "Projection mode: perspective|orthogonal|isometric (cycles if not specified)"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			video::Camera *camera = activeCamera();
 			if (camera == nullptr) {
@@ -4313,6 +4313,8 @@ void SceneManager::construct() {
 			if (!args.has("mode")) {
 				if (camera->mode() == video::CameraMode::Perspective) {
 					camera->setMode(video::CameraMode::Orthogonal);
+				} else if (camera->mode() == video::CameraMode::Orthogonal) {
+					camera->setMode(video::CameraMode::Isometric);
 				} else {
 					camera->setMode(video::CameraMode::Perspective);
 				}
@@ -4323,10 +4325,13 @@ void SceneManager::construct() {
 				camera->setMode(video::CameraMode::Perspective);
 			} else if (modeStr == "orthogonal") {
 				camera->setMode(video::CameraMode::Orthogonal);
+			} else if (modeStr == "isometric") {
+				camera->setMode(video::CameraMode::Isometric);
 			} else {
-				Log::error("Unknown projection mode: %s (valid are: perspective, orthogonal)", modeStr.c_str());
+				Log::error("Unknown projection mode: %s (valid are: perspective, orthogonal, isometric)", modeStr.c_str());
 			}
-		}).setHelp(_("Set or toggle the camera projection mode (perspective or orthogonal)")).setArgumentCompleter(command::valueCompleter({"perspective", "orthogonal"}));
+		}).setHelp(_("Set or cycle the camera projection mode (perspective, orthogonal or isometric)"))
+			.setArgumentCompleter(command::valueCompleter({"perspective", "orthogonal", "isometric"}));
 
 	command::Command::registerCommand("net_server_start")
 		.addArg({"port", command::ArgType::Int, true, "", "Port to listen on (default: ve_netport cvar)"})
