@@ -567,7 +567,7 @@ core::String Filesystem::load(const core::String &filename) const {
 core::String Filesystem::homeWritePath(const core::String &name) const {
 	core::String fullPath = core::string::sanitizePath(core::string::path(_homePath, name));
 	if (!core::string::startsWith(fullPath, _homePath)) {
-		Log::error("Refused path that escapes the home directory: %s", name.c_str());
+		Log::error("Refused path that escapes the home directory: %s (homePath: \"%s\", fullPath: \"%s\")", name.c_str(), _homePath.c_str(), fullPath.c_str());
 		return core::String::Empty;
 	}
 	return fullPath;
