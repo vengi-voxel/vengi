@@ -24,18 +24,22 @@ General:
    - Improved sandbox `vmx` support
    - Fixed invisible faces in some situations with the cube mesher
    - Fixed UTF8 issues with the tokenizer (visible in the file dialog bread crump menu)
+   - Heavily reduced memory consumption for mesh format loading (voxelization)
+   - Replaced `tinygltf` with `cgltf` for loading and writing `gltf` and `glb` files
 
 VoxEdit:
 
    - Fixed massive performance issue with multiple viewports
    - Added the last recently used 10 colors to the viewport
-   - Fixed animation timeline node selection scrolling
+   - Fixed animation timeline node selection scrolling and keyframe selection
    - Fixed pivot translation via gizmo
    - Fixed z axis input handling
    - Fixed missing cache invalidation regarding transforms and max frames
    - In AceOfSpades modes the new-scene-dialog uses the default map size now
    - Improved input capturing at startup (the console no longer forcefully requests the focus)
    - Improved pathtracer material mapping
+   - Fixed missing memento group and deleting multiple selection keyframes
+   - Refactored selection modes again and updated the lasso selection mode
 
 VoxConvert:
 
