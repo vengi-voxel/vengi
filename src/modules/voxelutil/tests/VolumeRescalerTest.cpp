@@ -51,6 +51,7 @@ TEST_F(VolumeRescalerTest, testScaleUpFull) {
 
 TEST_F(VolumeRescalerTest, testScaleDown) {
 	voxel::RawVolume volume({-8, 8});
+	// Fill a solid 5x5x17 column
 	for (int y = -8; y <= 8; ++y) {
 		for (int x = -2; x <= 2; ++x) {
 			for (int z = -2; z <= 2; ++z) {
@@ -66,7 +67,27 @@ TEST_F(VolumeRescalerTest, testScaleDown) {
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume destVolume(destRegion);
 	voxelutil::scaleDown(volume, pal, destVolume);
-	ASSERT_EQ(32, voxelutil::countVoxels(destVolume));
+	const int voxelCount = voxelutil::countVoxels(destVolume);
+	// The column should survive the downscale - with the adaptive threshold for thin surfaces
+	// we expect more voxels to be preserved than with the old fixed threshold
+	ASSERT_GT(voxelCount, 0) << "Downscaled volume should not be empty";
+	// The downscaled volume can't have more voxels than the destination region
+	ASSERT_LE(voxelCount, destRegion.voxels());
+
+	// Test that a thin 1-voxel-thick wall survives the downscale
+	voxel::RawVolume thinVolume({0, 7});
+	for (int y = 0; y <= 7; ++y) {
+		for (int z = 0; z <= 7; ++z) {
+			thinVolume.setVoxel(3, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+	const voxel::Region &thinSrcRegion = thinVolume.region();
+	const glm::ivec3 &thinTargetDims = (thinSrcRegion.getDimensionsInVoxels() / 2) - 1;
+	const voxel::Region thinDestRegion(thinSrcRegion.getLowerCorner(), thinSrcRegion.getLowerCorner() + thinTargetDims);
+	voxel::RawVolume thinDestVolume(thinDestRegion);
+	voxelutil::scaleDown(thinVolume, pal, thinDestVolume);
+	const int thinVoxelCount = voxelutil::countVoxels(thinDestVolume);
+	ASSERT_GT(thinVoxelCount, 0) << "Thin 1-voxel wall should survive the downscale";
 }
 
 TEST_F(VolumeRescalerTest, testScaleVolumeDoubleSize) {

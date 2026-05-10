@@ -81,9 +81,11 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 						srcSampler1.movePositiveZ();
 					}
 
-					// We only make a voxel solid if the eight corresponding voxels are also all solid. This
-					// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
-					if (solidVoxels >= 7.0f) {
+					// Adaptive threshold: thin/exposed features (high ratio of visible faces)
+					// need fewer solid children to survive the downscale.
+					const float exposureRatio = solidVoxels > 0.0f ? colorContributors / solidVoxels : 0.0f;
+					const float threshold = 7.0f - exposureRatio * 6.0f;
+					if (solidVoxels >= threshold && solidVoxels > 0.0f) {
 						if (colorContributors <= 0.0f) {
 							const glm::vec4 &color = color::fromRGBA(palette.color(colorGuardVoxel.getColor()));
 							avgColorRed += color.r;

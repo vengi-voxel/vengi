@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/Log.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"
