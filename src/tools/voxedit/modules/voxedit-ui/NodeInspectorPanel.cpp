@@ -485,6 +485,11 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			pivotChanged = change = true;
 		}
 		ImGui::TooltipTextUnformatted(reset);
+		if (ImGui::Button(ICON_LC_CIRCLE_DOT "##centerpv")) {
+			pivot[0] = pivot[1] = pivot[2] = 0.5f;
+			pivotChanged = change = true;
+		}
+		ImGui::TooltipTextUnformatted(_("Center pivot"));
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
 			_sceneMgr->nodeGroupUpdatePivot(pivot);
