@@ -15,7 +15,6 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Atomic.h"
-#include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "meshoptimizer.h"
 #include "palette/NormalPalette.h"
@@ -140,7 +139,7 @@ void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, color:
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
-	const int idx = region.index(pos);
+	const int64_t idx = region.index(pos);
 	auto iter = posMap.find(idx);
 	if (iter == posMap.end()) {
 		posMap.emplace(idx, {area, rgba, normalIdx, materialIdx});
@@ -179,7 +178,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 	core::DynamicArray<PosMap> localMaps;
 	localMaps.reserve(parallel);
 	for (int i = 0; i < parallel; ++i) {
-		localMaps.emplace_back((int)posMap.capacity());
+		localMaps.emplace_back(((int)tris.size() / parallel) + 1);
 	}
 	core::AtomicInt mapIdx(0);
 	auto fn = [&tris, &region, &normalLookup, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
@@ -223,7 +222,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 	core::DynamicArray<PosMap> localMaps;
 	localMaps.reserve(parallel);
 	for (int i = 0; i < parallel; ++i) {
-		localMaps.emplace_back((int)posMap.capacity());
+		localMaps.emplace_back((int)(tris.size() / parallel) + 1);
 	}
 	core::AtomicInt mapIdx(0);
 	auto fn = [&tris, &normalLookup, region, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
@@ -601,7 +600,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	const int maxVoxels = vdim.x * vdim.y * vdim.z;
 	if (axisAligned) {
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
-		PosMap posMap(maxVoxels);
+		PosMap posMap(tris.size());
 		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
 		tris.release();
 		node.createVolume(region);
@@ -712,7 +711,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			return InvalidNodeId;
 		}
 
-		PosMap posMap(maxVoxels);
+		PosMap posMap(subdivided.size());
 		transformTris(region, subdivided, posMap, meshMaterialArray, normalPalette);
 		subdivided.release();
 		node.createVolume(region);
