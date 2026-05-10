@@ -63,7 +63,9 @@ app::AppState TestApp::onConstruct() {
 			_cameraMotion ^= true;
 		}).setHelp(_("Toggle relative mouse rotation mode"));
 
-	registerArg("--screenshot").setDescription("Take a screenshot after the given number of frames and quit");
+	registerArg("--screenshot")
+		.setDescription("Take a screenshot after the given number of frames and quit")
+		.setDefaultValue("5");
 	registerArg("--screenshottype")
 		.addValidValue("png")
 		.addValidValue("txt")

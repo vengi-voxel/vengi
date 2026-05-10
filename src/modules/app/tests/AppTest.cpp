@@ -21,7 +21,68 @@ public:
 	bool createPid() override {
 		return false;
 	}
+
+	bool doValidateArguments() {
+		return validateArguments();
+	}
 };
+
+TEST(AppTest, testValidateArguments) {
+	{
+		const char *args[] = {"testbinary", "-set", "core_loglevel", "2", "--help"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "-unknownarg"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_FALSE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "-set", "core_loglevel", "2", "-unknownarg"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_FALSE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "--help", "--completion"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "--help", "--completion", "bash", "--jsonconfig"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "--language", "de"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "--language"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_FALSE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "--error"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+	{
+		const char *args[] = {"testbinary", "-clear", "-i18nlist"};
+		TestApp app(lengthof(args), args);
+		app.onConstruct();
+		EXPECT_TRUE(app.doValidateArguments());
+	}
+}
 
 TEST(AppTest, testLifecycleManual) {
 	TestApp app;

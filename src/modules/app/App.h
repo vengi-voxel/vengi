@@ -150,6 +150,10 @@ protected:
 #ifdef __EMSCRIPTEN__
 	static void runFrameEmscripten();
 #endif
+	/**
+	 * @brief Checks that no unknown arguments were given
+	 */
+	bool validateArguments();
 
 public:
 	App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
@@ -223,6 +227,7 @@ public:
 	static const uint32_t ARGUMENT_FLAG_MANDATORY = 1 << 0;
 	static const uint32_t ARGUMENT_FLAG_FILE = 1 << 1;
 	static const uint32_t ARGUMENT_FLAG_DIRECTORY = 1 << 2;
+	static const uint32_t ARGUMENT_FLAG_BOOL = 1 << 3;
 
 	class Argument {
 	private:
@@ -239,7 +244,7 @@ public:
 		}
 
 		Argument& addFlag(uint32_t flag) {
-			_flag = flag;
+			_flag |= flag;
 			return *this;
 		}
 
@@ -293,6 +298,10 @@ public:
 
 		inline bool needsDirectory() const {
 			return (_flag & ARGUMENT_FLAG_DIRECTORY) == ARGUMENT_FLAG_DIRECTORY;
+		}
+
+		inline bool isBool() const {
+			return (_flag & ARGUMENT_FLAG_BOOL) == ARGUMENT_FLAG_BOOL;
 		}
 	};
 

@@ -548,11 +548,11 @@ bool App::setLanguage(const core::String &language) {
 }
 
 AppState App::onConstruct() {
-	registerArg("--trace").setDescription("Change log level to trace");
-	registerArg("--debug").setDescription("Change log level to debug");
-	registerArg("--info").setDescription("Change log level to info");
-	registerArg("--warn").setDescription("Change log level to warn");
-	registerArg("--error").setDescription("Change log level to error");
+	registerArg("--trace").setDescription("Change log level to trace").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--debug").setDescription("Change log level to debug").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--info").setDescription("Change log level to info").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--warn").setDescription("Change log level to warn").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--error").setDescription("Change log level to error").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--language").setDescription("Set the application language");
 
 	if (!_filesystem->init(_organisation, _appname)) {
@@ -721,9 +721,9 @@ AppState App::onConstruct() {
 								   N_("The username to use in network sessions"));
 	core::Var::registerVar(appUserName);
 
-	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
-	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
-	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
+	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format")).addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit")).addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit")).addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--completion").setDescription(_("Generate completion for bash, zsh and powershell")).addValidValue("bash").addValidValue("zsh").addValidValue("powershell");
 	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
 	const core::String &logLevelVal = getArgVal("--loglevel");
@@ -821,6 +821,92 @@ AppState App::onConstruct() {
 void App::onBeforeInit() {
 }
 
+bool App::validateArguments() {
+	bool valid = true;
+	for (int i = 1; i < _argc; ++i) {
+		const char *argv = _argv[i];
+		if (argv[0] != '-') {
+			continue;
+		}
+
+		// single dash commands like -set are registered commands
+		if (argv[1] != '-' && argv[1] != '\0') {
+			const core::String command = &argv[1];
+			const command::Command *cmd = command::Command::getCommand(command);
+			if (cmd != nullptr) {
+				// skip command arguments until the next dash-prefixed token
+				for (++i; i < _argc; ++i) {
+					if (_argv[i][0] == '-') {
+						--i;
+						break;
+					}
+				}
+				continue;
+			}
+		}
+
+		const core::String arg = argv;
+
+		// check if this matches a registered argument (by long or short name)
+		const Argument *matched = nullptr;
+		for (const Argument &a : _arguments) {
+			if (a.longArg() == arg || a.shortArg() == arg) {
+				matched = &a;
+				break;
+			}
+		}
+		if (matched != nullptr) {
+			// skip the value of non-bool arguments
+			if (!matched->isBool()) {
+				if (i + 1 < _argc && _argv[i + 1][0] != '-') {
+					++i;
+				} else if (matched->defaultValue().empty() && matched->validValues().empty()) {
+					Log::error("Argument '%s' requires a value", arg.c_str());
+					valid = false;
+				}
+			}
+			continue;
+		}
+
+		// check if this is a cvar name (strip leading dashes)
+		const core::String varName = arg.substr(core::string::startsWith(arg, "--") ? 2 : 1);
+		if (core::findVar(varName)) {
+			// skip the cvar value
+			if (i + 1 < _argc && _argv[i + 1][0] != '-') {
+				++i;
+			}
+			continue;
+		}
+
+		// unknown argument - find closest match for suggestion
+		core::String closestArg;
+		size_t closestDistance = (size_t)-1;
+		for (const Argument &a : _arguments) {
+			size_t distance = core::string::levenshteinDistance(arg, a.longArg());
+			if (distance < closestDistance) {
+				closestDistance = distance;
+				closestArg = a.longArg();
+			}
+			if (!a.shortArg().empty()) {
+				distance = core::string::levenshteinDistance(arg, a.shortArg());
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					closestArg = a.shortArg();
+				}
+			}
+		}
+		// use a threshold relative to the argument length
+		const size_t threshold = arg.size() / 2;
+		if (closestDistance <= threshold && !closestArg.empty()) {
+			Log::error("Unknown argument '%s'. Did you mean '%s'?", arg.c_str(), closestArg.c_str());
+		} else {
+			Log::error("Unknown argument '%s'", arg.c_str());
+		}
+		valid = false;
+	}
+	return valid;
+}
+
 AppState App::onInit() {
 	Log::debug("Initialize sdl");
 
@@ -853,6 +939,10 @@ AppState App::onInit() {
 	if (hasArg("--completion")) {
 		const core::String type = getArgVal("--completion", "bash");
 		handleCompletion(type);
+		return AppState::Destroy;
+	}
+
+	if (!validateArguments()) {
 		return AppState::Destroy;
 	}
 

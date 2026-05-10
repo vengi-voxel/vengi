@@ -31,16 +31,16 @@ FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::Ti
 }
 
 app::AppState FormatPrinter::onConstruct() {
-	registerArg("--palette").setDescription("Print the supported palettes");
-	registerArg("--image").setDescription("Print the supported image");
-	registerArg("--manpage").setDescription("Print the manpage entries for loading and saving");
-	registerArg("--voxel").setDescription("Print the supported voxel formats");
-	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats");
-	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats");
-	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
-	registerArg("--wix").setDescription("Generate the wix file for msi installers");
-	registerArg("--magic").setDescription("Generate the magic file");
-	registerArg("--lua-api").setDescription("Generate the lua api markdown documentation files");
+	registerArg("--palette").setDescription("Print the supported palettes").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--image").setDescription("Print the supported image").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--manpage").setDescription("Print the manpage entries for loading and saving").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--voxel").setDescription("Print the supported voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--plist").setDescription("Generate the plist file for voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--wix").setDescription("Generate the wix file for msi installers").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--magic").setDescription("Generate the magic file").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--lua-api").setDescription("Generate the lua api markdown documentation files").addFlag(ARGUMENT_FLAG_BOOL);
 	app::AppState state = Super::onConstruct();
 
 	core::Var::visit([this](const core::VarPtr &var) {

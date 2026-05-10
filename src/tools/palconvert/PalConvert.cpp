@@ -63,13 +63,13 @@ app::AppState PalConvert::onConstruct() {
 		.setDescription("Allow to specify input files")
 		.addFlag(ARGUMENT_FLAG_FILE | ARGUMENT_FLAG_MANDATORY);
 	registerArg("--type").setShort("-t").setDescription("Specify the output type (ansi, json, hex)");
-	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--force").setShort("-f").setDescription("Overwrite existing files").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--output")
 		.setShort("-o")
 		.setDescription("Allow to specify the output file")
 		.addFlag(ARGUMENT_FLAG_FILE);
-	registerArg("--quantize").setShort("-q").setDescription("Quantize the input palette to 256 colors");
-	registerArg("--optimize").setDescription("Optimize the palette by removing duplicated or full transparent colors");
+	registerArg("--quantize").setShort("-q").setDescription("Quantize the input palette to 256 colors").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--optimize").setDescription("Optimize the palette by removing duplicated or full transparent colors").addFlag(ARGUMENT_FLAG_BOOL);
 
 	palette::FormatConfig::init();
 

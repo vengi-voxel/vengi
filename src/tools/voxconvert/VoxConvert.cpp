@@ -65,23 +65,23 @@ VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProv
 
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
+	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--json")
 		.setDescription("Print the scene graph of the input file as json. Comma separated values to control the detail "
 						"level: default, all, palette, meshdetails, nodedetails, children, palettematerials")
 		.setDefaultValue("default");
-	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console");
-	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
-	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
-	registerArg("--export-palette").setDescription("Export the palette data into the given output file format");
+	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--export-models").setDescription("Export all the models of a scene into single files").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--export-palette").setDescription("Export the palette data into the given output file format").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
 	registerArg("--filter-property").setDescription("Model filter by property. For example 'name:foo'");
-	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--force").setShort("-f").setDescription("Overwrite existing files").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--wildcard")
 		.setShort("-w")
 		.setDescription("Allow to specify input file filter if --input is a directory");
-	registerArg("--merge").setShort("-m").setDescription("Merge models into one volume");
+	registerArg("--merge").setShort("-m").setDescription("Merge models into one volume").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output")
 		.setShort("-o")
@@ -91,7 +91,7 @@ app::AppState VoxConvert::onConstruct() {
 		.setDescription(
 			"Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
-	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");
+	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--script").setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor")
 		.setDefaultValue("1")
@@ -99,11 +99,12 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
 	registerArg("--surface-only")
 		.setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner "
-						"side of your mesh.");
+						"side of your mesh.")
+		.addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
-	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
-	registerArg("--print-scripts").setDescription("Print found lua scripts as json for easier parsing in other tools");
-	registerArg("--print-lua-api").setDescription("Print the lua api documentation as json for easier parsing in other tools");
+	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--print-scripts").setDescription("Print found lua scripts as json for easier parsing in other tools").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--print-lua-api").setDescription("Print the lua api documentation as json for easier parsing in other tools").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--osm-lat").setDescription("Latitude for OSM data download (decimal degrees). Requires --osm-lon");
 	registerArg("--osm-lon").setDescription("Longitude for OSM data download (decimal degrees). Requires --osm-lat");
 	registerArg("--osm-radius").setDefaultValue("0.5").setDescription("Radius in km for OSM data download (default: 0.5km)");

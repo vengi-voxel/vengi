@@ -49,11 +49,12 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDescription("The output image file")
 		.addFlag(ARGUMENT_FLAG_FILE | ARGUMENT_FLAG_MANDATORY);
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128");
-	registerArg("--turntable").setShort("-t").setDescription("Render in different angles (16 by default)");
-	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs");
+	registerArg("--turntable").setShort("-t").setDescription("Render in different angles (16 by default)").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--use-scene-camera")
 		.setShort("-c")
-		.setDescription("Use the first scene camera for rendering the thumbnail");
+		.setDescription("Use the first scene camera for rendering the thumbnail")
+		.addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--distance")
 		.setShort("-d")
 		.setDefaultValue("-1")
@@ -69,8 +70,8 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDefaultValue("135")
 		.setDescription("Set the sun azimuth");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
-	registerArg("--image").setDescription("Create a simple 2d side view image of the scene - doesn't take any camera settings or lighting settings into account");
-	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
+	registerArg("--image").setDescription("Create a simple 2d side view image of the scene - doesn't take any camera settings or lighting settings into account").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used").addFlag(ARGUMENT_FLAG_BOOL);
 	Argument &cameraMode =
 		registerArg("--camera-mode")
 			.setDefaultValue(voxelrender::SceneCameraModeStr[(int)voxelrender::SceneCameraMode::Free])
