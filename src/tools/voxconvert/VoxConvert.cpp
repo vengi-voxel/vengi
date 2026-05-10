@@ -24,7 +24,6 @@
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "io/StdoutWriteStream.h"
-#include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
@@ -50,7 +49,6 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
-#include "voxelutil/VolumeVisitor.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
