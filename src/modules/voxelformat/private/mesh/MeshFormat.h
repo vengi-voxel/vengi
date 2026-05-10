@@ -9,7 +9,7 @@
 #include "core/Common.h"
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/ParallelMap.h"
+#include "core/collection/DynamicParallelMap.h"
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
@@ -28,7 +28,8 @@ struct PointCloudVertex {
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
 using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
-using PosMap = core::ParallelMap<int, PosSampling, 3541>;
+using PosMap = core::DynamicParallelMap<int64_t, PosSampling, 3541, core::privdynamicmap::DefaultHasher,
+										core::privdynamicmap::EqualCompare, 32768>;
 
 /**
  * @brief Convert the volume data into a mesh
