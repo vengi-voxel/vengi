@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
 #include "io/Stream.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraph.h"
@@ -88,11 +89,13 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
 }
 
-// TODO: MATERIAL: materials are not yet properly loaded back from gltf
-TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
+TEST_F(GLTFFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
 	core::Buffer<palette::MaterialProperty> ignoredMaterials;
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSp);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
 	testMaterial(sceneGraph, "test_material.gltf", ignoredMaterials);
 }
 

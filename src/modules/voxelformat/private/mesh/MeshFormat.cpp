@@ -390,7 +390,11 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 				trisMins, meshTri,
 				[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
-					colorMaterials.put(rgba, tri.materialIdx > 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr);
+					const palette::Material *newMat = tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr;
+					auto iter = colorMaterials.find(rgba);
+					if (iter == colorMaterials.end() || (newMat && (!iter->value || newMat->mask > iter->value->mask))) {
+						colorMaterials.put(rgba, newMat);
+					}
 				});
 		}
 		createPalette(colorMaterials, palette);
@@ -628,7 +632,13 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 					trisMins, meshTri,
 					[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 						const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
-						colorMaterials.put(rgba, tri.materialIdx > 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr);
+						const palette::Material *newMat = tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr;
+						auto iter = colorMaterials.find(rgba);
+						if (iter == colorMaterials.end()) {
+							colorMaterials.put(rgba, newMat);
+						} else if (newMat && (!iter->value || newMat->mask > iter->value->mask)) {
+							colorMaterials.put(rgba, newMat);
+						}
 					});
 #else
 				const glm::vec2 &uv = meshTri.centerUV();
@@ -782,7 +792,13 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 				continue;
 			}
 			MeshMaterialIndex materialIdx = pos.getMaterialIndex();
-			colorMaterials.put(rgba, materialIdx > 0 && materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[materialIdx]->material : nullptr);
+			const palette::Material *newMat = materialIdx >= 0 && materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[materialIdx]->material : nullptr;
+			auto iter = colorMaterials.find(rgba);
+			if (iter == colorMaterials.end()) {
+				colorMaterials.put(rgba, newMat);
+			} else if (newMat && (!iter->value || newMat->mask > iter->value->mask)) {
+				colorMaterials.put(rgba, newMat);
+			}
 		}
 		createPalette(colorMaterials, palette);
 	} else {

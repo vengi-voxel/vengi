@@ -49,11 +49,11 @@ namespace palette {
 
 ::std::ostream &operator<<(::std::ostream &os, const palette::Material &material) {
 	os << "Material: " << (int)material.type << " ";
-	for (uint32_t i = 0; i < palette::MaterialProperty::MaterialMax - 1; ++i) {
+	for (uint32_t i = 1; i < palette::MaterialProperty::MaterialMax; ++i) {
 		if (!material.has((palette::MaterialProperty)i)) {
 			continue;
 		}
-		os << palette::MaterialPropertyNames[i] << ": " << material.value((palette::MaterialProperty)i) << ", ";
+		os << palette::MaterialPropertyNames[i - 1] << ": " << material.value((palette::MaterialProperty)i) << ", ";
 	}
 	return os;
 }
