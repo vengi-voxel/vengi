@@ -3,6 +3,7 @@
  */
 
 #include "VolumeRescaler.h"
+#include "app/App.h"
 #include "app/ForParallel.h"
 #include "voxel/VolumeSamplerUtil.h"
 
