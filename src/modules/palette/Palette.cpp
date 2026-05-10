@@ -146,9 +146,10 @@ glm::vec4 Palette::color4(uint8_t i) const {
 
 void Palette::reduce(uint8_t targetColors) {
 	const core::VarPtr &var = core::getVar(cfg::CoreColorReduction);
-	color::ColorReductionType reductionType = color::toColorReductionType(var->strVal().c_str());
+	const core::String &strVal = var->strVal();
+	color::ColorReductionType reductionType = color::toColorReductionType(strVal.c_str());
 	if (reductionType == color::ColorReductionType::Max) {
-		Log::warn("Invalid color reduction type '%s'", var->strVal().c_str());
+		Log::warn("Invalid color reduction type '%s'", strVal.c_str());
 		reductionType = color::ColorReductionType::MedianCut;
 	}
 	color::RGBA oldcolors[PaletteMaxColors];
@@ -160,9 +161,10 @@ void Palette::reduce(uint8_t targetColors) {
 void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount, int targetColors) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
 	const core::VarPtr &var = core::getVar(cfg::CoreColorReduction);
-	color::ColorReductionType reductionType = color::toColorReductionType(var->strVal().c_str());
+	const core::String &strVal = var->strVal();
+	color::ColorReductionType reductionType = color::toColorReductionType(strVal.c_str());
 	if (reductionType == color::ColorReductionType::Max) {
-		Log::warn("Invalid color reduction type '%s'", var->strVal().c_str());
+		Log::warn("Invalid color reduction type '%s'", strVal.c_str());
 		reductionType = color::ColorReductionType::MedianCut;
 	}
 	const size_t maxColors = targetColors > 0 ? (size_t)targetColors : lengthof(_colors);
