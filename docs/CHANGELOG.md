@@ -26,6 +26,7 @@ General:
    - Fixed UTF8 issues with the tokenizer (visible in the file dialog bread crump menu)
    - Heavily reduced memory consumption for mesh format loading (voxelization)
    - Replaced `tinygltf` with `cgltf` for loading and writing `gltf` and `glb` files
+   - Added support for Luanti WorldEdit `we` files
 
 VoxEdit:
 
@@ -40,6 +41,9 @@ VoxEdit:
    - Improved pathtracer material mapping
    - Fixed missing memento group and deleting multiple selection keyframes
    - Refactored selection modes again and updated the lasso selection mode
+   - Added isometric camera mode
+   - Added shortcut to render the pivot to the Node Inspector panel
+   - Added support for browsing the voxbox store
 
 VoxConvert:
 
