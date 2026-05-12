@@ -24,24 +24,24 @@ struct IKConstraint {
 	 * @brief The node id of the IK end-effector target. This is the node the IK chain tries
 	 * to reach and can be any node in the scene graph or @c InvalidNodeId if no effector is assigned.
 	 */
-	int effectorNodeId;
+	int effectorNodeId = 0;
 	/** @brief Minimum roll angle in radians */
-	float rollMin;
+	float rollMin = 0.0f;
 	/** @brief Maximum roll angle in radians */
-	float rollMax;
+	float rollMax = 0.0f;
 	/** @brief Whether this IK constraint is visible in the editor */
-	bool visible;
+	bool visible = true;
 	/** @brief Whether this node acts as an anchor (fixed point) in the IK chain - usually the leg and arm nodes are no anchor nodes */
-	bool anchor;
+	bool anchor = false;
 
 	/**
 	 * @brief Defines a swing limit as a circle on the constraint cone surface
 	 */
 	struct RadiusConstraint {
 		/** @brief Center of the swing limit circle (polar coordinates on the cone) */
-		glm::vec2 center; // yaw, pitch
+		glm::vec2 center {0.0f, 0.0f}; // yaw, pitch
 		/** @brief Radius of the allowed swing region */
-		float radius;
+		float radius = 0.0f;
 	};
 	/** @brief Array of swing constraints that limit the angular range of the joint */
 	core::DynamicArray<RadiusConstraint> swingLimits;

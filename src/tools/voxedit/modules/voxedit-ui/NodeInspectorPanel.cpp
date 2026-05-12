@@ -670,7 +670,6 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 		}
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add swing limit"))) {
 			scenegraph::IKConstraint::RadiusConstraint rc;
-			rc.center = glm::vec2(0.0f);
 			rc.radius = glm::half_pi<float>();
 			constraint.swingLimits.push_back(rc);
 			changed = true;
