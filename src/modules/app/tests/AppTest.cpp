@@ -16,6 +16,7 @@ public:
 	TestApp(int argc = 0, const char *args[] = nullptr)
 		: App(core::make_shared<io::Filesystem>(),
 			  core::make_shared<core::TimeProvider>()) {
+		init("testbinary", "Test App");
 		setArgs(argc, (char **)args);
 	}
 	bool createPid() override {
@@ -28,7 +29,7 @@ public:
 };
 
 TEST(AppTest, testValidateArguments1) {
-	const char *args[] = {"testbinary", "-set", "core_loglevel", "2", "--help"};
+	const char *args[] = {"testbinary", "-set", "app_username", "testuser", "--help"};
 	TestApp app(lengthof(args), args);
 	app.onConstruct();
 	EXPECT_TRUE(app.doValidateArguments());
@@ -42,7 +43,7 @@ TEST(AppTest, testValidateArguments2) {
 }
 
 TEST(AppTest, testValidateArguments3) {
-	const char *args[] = {"testbinary", "-set", "core_loglevel", "2", "-unknownarg"};
+	const char *args[] = {"testbinary", "-set", "app_username", "testuser", "-unknownarg"};
 	TestApp app(lengthof(args), args);
 	app.onConstruct();
 	EXPECT_FALSE(app.doValidateArguments());
