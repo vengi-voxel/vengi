@@ -64,7 +64,7 @@ TEST(AppTest, testValidateArguments5) {
 }
 
 TEST(AppTest, testValidateArguments6) {
-	const char *args[] = {"testbinary", "--language", "de"};
+	const char *args[] = {"testbinary", "--completion", "bash"};
 	TestApp app(lengthof(args), args);
 	app.onConstruct();
 	EXPECT_TRUE(app.doValidateArguments());
