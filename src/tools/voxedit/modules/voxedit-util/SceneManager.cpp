@@ -1416,6 +1416,7 @@ bool SceneManager::doUndo() {
 	}
 	const int n = (int)group.states.size() - 1;
 
+	markDirty();
 	core::DynamicArray<const memento::MementoState*> parentFixupStates;
 	parentFixupStates.reserve(n);
 
@@ -1448,6 +1449,7 @@ bool SceneManager::doRedo() {
 		return false;
 	}
 
+	markDirty();
 	const memento::MementoStateGroup& group = _mementoHandler.redo();
 	for (const memento::MementoState& s : group.states) {
 		if (!mementoStateExecute(s, true)) {
@@ -4100,7 +4102,7 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
-				node.setVisible(true);
+				nodeSetVisible(node.id(), true);
 			}
 		}).setHelp(_("Show all nodes"));
 
@@ -4108,7 +4110,7 @@ void SceneManager::construct() {
 		.setHandler([&](const command::CommandArgs &args) {
 			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
-				node.setVisible(false);
+				nodeSetVisible(node.id(), false);
 			}
 		}).setHelp(_("Hide all nodes"));
 
@@ -4116,11 +4118,11 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
-				node.setVisible(true);
+			_sceneGraph.visitChildren(nodeId, true, [&] (scenegraph::SceneGraphNode &node) {
+				nodeSetVisible(node.id(), true);
 			});
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-				node->setVisible(true);
+				nodeSetVisible(node->id(), true);
 			}
 		}).setHelp(_("Show all children nodes"));
 
@@ -4128,11 +4130,11 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&](const command::CommandArgs &args) {
 			const int nodeId = toNodeId(args, activeNode());
-			_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
-				node.setVisible(false);
+			_sceneGraph.visitChildren(nodeId, true, [&] (scenegraph::SceneGraphNode &node) {
+				nodeSetVisible(node.id(), false);
 			});
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-				node->setVisible(false);
+				nodeSetVisible(node->id(), false);
 			}
 		}).setHelp(_("Hide all children nodes"));
 
@@ -4143,10 +4145,10 @@ void SceneManager::construct() {
 			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
 				if (node.id() == nodeId) {
-					node.setVisible(true);
+					nodeSetVisible(node.id(), true);
 					continue;
 				}
-				node.setVisible(false);
+				nodeSetVisible(node.id(), false);
 			}
 		}).setHelp(_("Hide all model nodes except the active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
@@ -4154,18 +4156,16 @@ void SceneManager::construct() {
 		.setHandler([&](const command::CommandArgs &args) {
 			for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
-				node.setLocked(true);
+				nodeSetLocked(node.id(), true);
 			}
-			_sceneRenderer->markDirty();
 		}).setHelp(_("Lock all nodes"));
 
 	command::Command::registerCommand("modelunlockall")
 		.setHandler([&] (const command::CommandArgs& args) {
 			for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
-				node.setLocked(false);
+				nodeSetLocked(node.id(), false);
 			}
-			_sceneRenderer->markDirty();
 		}).setHelp(_("Unlock all nodes"));
 
 	command::Command::registerCommand("nodesetpivot")
@@ -5595,7 +5595,7 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 				childNode.setVisible(visible);
 			});
 		}
-		_sceneRenderer->markDirty();
+		markDirty();
 		return true;
 	}
 	return false;
@@ -5604,7 +5604,7 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setLocked(locked);
-		_sceneRenderer->markDirty();
+		markDirty();
 		return true;
 	}
 	return false;
