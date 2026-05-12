@@ -63,91 +63,90 @@ void ModelAssetPanel::updateFilters() {
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
-	{
-		if (_filterFormatTextWidth < 0.0f) {
-			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-				_filterEntries.push_back(*desc);
-				const core::String &str = io::convertToFilePattern(*desc);
-				const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
-				_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
-			}
-			_filterEntries.sort(core::Greater<io::FormatDescription>());
-			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
-			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
-			_filterFormatTextWidth = core_min(itemWidth * 2.0f, _filterFormatTextWidth);
+	if (_filterFormatTextWidth < 0.0f) {
+		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+			_filterEntries.push_back(*desc);
+			const core::String &str = io::convertToFilePattern(*desc);
+			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
+			_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
 		}
-
-		const char *formatFilterLabel = _("Format");
-		ImGui::PushItemWidth(_filterFormatTextWidth);
-		int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
-		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
-
-		if (ImGui::BeginCombo(formatFilterLabel, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
-			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-				const bool selected = i == currentlySelected;
-				const io::FormatDescription &format = _filterEntries[i];
-				const core::String &text = io::convertToFilePattern(format);
-				if (ImGui::Selectable(text.c_str(), selected)) {
-					_currentFilterFormatEntry = i;
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
+		_filterEntries.sort(core::Greater<io::FormatDescription>());
+		io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
+		_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
+		_filterFormatTextWidth = core_min(itemWidth * 2.0f, _filterFormatTextWidth);
 	}
+
+	const char *formatFilterLabel = _("Format");
+	ImGui::PushItemWidth(_filterFormatTextWidth);
+	int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
+	const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
+
+	if (ImGui::BeginCombo(formatFilterLabel, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
+		for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+			const bool selected = i == currentlySelected;
+			const io::FormatDescription &format = _filterEntries[i];
+			const core::String &text = io::convertToFilePattern(format);
+			if (ImGui::Selectable(text.c_str(), selected)) {
+				_currentFilterFormatEntry = i;
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopItemWidth();
 }
 
 void ModelAssetPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
-	if (ImGui::BeginPopupContextItem()) {
-		if (!voxelFile->downloaded) {
-			_collectionMgr->download(*voxelFile);
-		}
-
-		if (ImGui::MenuItem(_("Use stamp"))) {
-			Modifier &modifier = _sceneMgr->modifier();
-			StampBrush &brush = modifier.stampBrush();
-			if (brush.load(voxelFile->targetFile())) {
-				modifier.setBrushType(BrushType::Stamp);
-			} else {
-				Log::error("Failed to load stamp brush");
-			}
-		}
-		ImGui::TooltipTextUnformatted(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
-
-		if (ImGui::MenuItem(_("Add to scene"))) {
-			import(voxelFile);
-		}
-
-		if (_thumbnails) {
-			if (ImGui::MenuItem(_("Hide thumbnails"))) {
-				_thumbnails = false;
-			}
-		} else {
-			if (ImGui::MenuItem(_("Show thumbnails"))) {
-				_thumbnails = true;
-			}
-		}
-
-		if (!io::isA(voxelFile->name, voxelformat::voxelLoad())) {
-			if (ImGui::MenuItem(_("Open target file"))) {
-				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
-				command::executeCommands("url \"file://" + absPath + "\"");
-			}
-			if (ImGui::MenuItem(_("Open target dir"))) {
-				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
-				command::executeCommands("url \"file://" + core::string::extractDir(absPath) + "\"");
-			}
-		} else if (!thumbnailLookup(*voxelFile)) {
-			if (ImGui::MenuItem(_("Create thumbnail"))) {
-				_collectionMgr->createThumbnail(*voxelFile);
-			}
-		}
-
-		ImGui::EndPopup();
+	if (!ImGui::BeginPopupContextItem()) {
+		return;
 	}
+	if (!voxelFile->downloaded) {
+		_collectionMgr->download(*voxelFile);
+	}
+
+	if (ImGui::MenuItem(_("Use stamp"))) {
+		Modifier &modifier = _sceneMgr->modifier();
+		StampBrush &brush = modifier.stampBrush();
+		if (brush.load(voxelFile->targetFile())) {
+			modifier.setBrushType(BrushType::Stamp);
+		} else {
+			Log::error("Failed to load stamp brush");
+		}
+	}
+	ImGui::TooltipTextUnformatted(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+
+	if (ImGui::MenuItem(_("Add to scene"))) {
+		import(voxelFile);
+	}
+
+	if (_thumbnails) {
+		if (ImGui::MenuItem(_("Hide thumbnails"))) {
+			_thumbnails = false;
+		}
+	} else {
+		if (ImGui::MenuItem(_("Show thumbnails"))) {
+			_thumbnails = true;
+		}
+	}
+
+	if (!io::isA(voxelFile->name, voxelformat::voxelLoad())) {
+		if (ImGui::MenuItem(_("Open target file"))) {
+			core::String absPath = _collectionMgr->absolutePath(*voxelFile);
+			command::executeCommands("url \"file://" + absPath + "\"");
+		}
+		if (ImGui::MenuItem(_("Open target dir"))) {
+			core::String absPath = _collectionMgr->absolutePath(*voxelFile);
+			command::executeCommands("url \"file://" + core::string::extractDir(absPath) + "\"");
+		}
+	} else if (!thumbnailLookup(*voxelFile)) {
+		if (ImGui::MenuItem(_("Create thumbnail"))) {
+			_collectionMgr->createThumbnail(*voxelFile);
+		}
+	}
+
+	ImGui::EndPopup();
 }
 
 bool ModelAssetPanel::import(voxelcollection::VoxelFile *voxelFile) {
