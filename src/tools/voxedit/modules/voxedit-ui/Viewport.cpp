@@ -509,7 +509,6 @@ void Viewport::menuBarRecentColors() {
 	const float height = ImGui::GetFrameHeight();
 	const float spacing = ImGui::GetStyle().ItemSpacing.x;
 	const float elementWidth = height + spacing;
-	const float totalWidth = (float)_recentColors.size() * elementWidth;
 	const float availWidth = ImGui::GetContentRegionAvail().x;
 	if (availWidth < elementWidth) {
 		return;

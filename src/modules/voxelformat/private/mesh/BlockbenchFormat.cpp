@@ -286,8 +286,8 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 		return false;
 	}
 
-	bbElement.cube.from = scale * priv::toVec3(elementJson, "from");
-	bbElement.cube.to = scale * priv::toVec3(elementJson, "to");
+	bbElement.cube.from = scale * priv::toVec3(from);
+	bbElement.cube.to = scale * priv::toVec3(to);
 
 	// Apply inflate: expand geometry in all directions without changing UV mapping
 	if (bbElement.inflate != 0.0f) {

@@ -53,20 +53,17 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		// Write palette PNG alongside the FBX file
 		const core::String palPath = core::string::stripExtension(filename) + "_palette.png";
 		core::ScopedPtr<io::SeekableWriteStream> palStream(archive->writeStream(palPath));
-		if (palStream) {
+		if (palStream && !meshes.empty()) {
 			// Use the first node's palette
-			for (const ChunkMeshExt &meshExt : meshes) {
-				const scenegraph::SceneGraphNode &node = sceneGraph.node(meshExt.nodeId);
-				const palette::Palette &pal = node.palette();
-				color::RGBA colors[palette::PaletteMaxColors];
-				for (int i = 0; i < palette::PaletteMaxColors; i++) {
-					colors[i] = pal.color(i);
-				}
-				image::Image palImage("palette");
-				palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
-				palImage.writePNG(*palStream);
-				break;
+			const scenegraph::SceneGraphNode &node = sceneGraph.node(meshes.front().nodeId);
+			const palette::Palette &pal = node.palette();
+			color::RGBA colors[palette::PaletteMaxColors];
+			for (int i = 0; i < palette::PaletteMaxColors; i++) {
+				colors[i] = pal.color(i);
 			}
+			image::Image palImage("palette");
+			palImage.loadRGBA((const uint8_t *)colors, palette::PaletteMaxColors, 1);
+			palImage.writePNG(*palStream);
 		}
 	}
 	return ok;
@@ -903,9 +900,8 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 		// Find the mesh's ufbx_node
 		const ufbx_node *meshNode = nullptr;
-		for (size_t ni = 0; ni < ufbxMesh->instances.count; ++ni) {
-			meshNode = ufbxMesh->instances[ni];
-			break;
+		if (ufbxMesh->instances.count > 0) {
+			meshNode = ufbxMesh->instances[0];
 		}
 		if (!meshNode) {
 			continue;
