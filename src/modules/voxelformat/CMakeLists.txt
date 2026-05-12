@@ -138,8 +138,9 @@ set(SRCS
 	private/minecraft/MCWorldFormat.h        private/minecraft/MCWorldFormat.cpp
 	private/minecraft/MinecraftPaletteMap.h  private/minecraft/MinecraftPaletteMap.cpp
 	private/minecraft/NamedBinaryTag.h       private/minecraft/NamedBinaryTag.cpp
-	private/minecraft/schematic/Axiom.cpp    private/minecraft/schematic/Axiom.h
+	private/minecraft/LuantiWorldEditFormat.h private/minecraft/LuantiWorldEditFormat.cpp
 	private/minecraft/schematic/Litematic.cpp private/minecraft/schematic/Litematic.h
+	private/minecraft/schematic/Axiom.cpp    private/minecraft/schematic/Axiom.h
 	private/minecraft/schematic/Nbt.cpp      private/minecraft/schematic/Nbt.h
 	private/minecraft/schematic/Sponge.cpp   private/minecraft/schematic/Sponge.h
 	private/minecraft/schematic/Util.cpp     private/minecraft/schematic/Util.h
@@ -174,6 +175,7 @@ set(SRCS
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric tinyxml2 json ${LIB}-external)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES commonlua)
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
@@ -225,6 +227,7 @@ set(TEST_SRCS
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/LDrawFormatTest.cpp
+	tests/LuantiWorldEditFormatTest.cpp
 	tests/MeshTriTest.cpp
 	tests/TeardownFormatTest.cpp
 	tests/ThingFormatTest.cpp

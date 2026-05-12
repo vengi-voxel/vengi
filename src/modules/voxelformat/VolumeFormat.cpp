@@ -56,6 +56,7 @@
 #include "voxelformat/private/mesh/quake/MapFormat.h"
 #include "voxelformat/private/mesh/quake/QuakeBSPFormat.h"
 #include "voxelformat/private/minecraft/DatFormat.h"
+#include "voxelformat/private/minecraft/LuantiWorldEditFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/minecraft/MCWorldFormat.h"
 #include "voxelformat/private/minecraft/MTSFormat.h"
@@ -128,6 +129,7 @@ const io::FormatDescription *voxelFormats() {
 												 AnimaToonFormat::format(),
 												 VBXFormat::format(),
 												 TeardownFormat::format(),
+												 LuantiWorldEditFormat::format(),
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
@@ -270,6 +272,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<PLYFormat>();
 		} else if (io::isA(TeardownFormat::format(), desc, ext, magic)) {
 			return core::make_shared<TeardownFormat>();
+		} else if (io::isA(LuantiWorldEditFormat::format(), desc, ext, magic)) {
+			return core::make_shared<LuantiWorldEditFormat>();
 		} else if (io::isA(FBXFormat::format(), desc, ext, magic)) {
 			return core::make_shared<FBXFormat>();
 		} else if (io::isA(Autodesk3DSFormat::format(), desc, ext, magic)) {
