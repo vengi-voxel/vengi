@@ -205,6 +205,86 @@ msgctxt "A palette of normal vectors converted to RGBA values"
 msgid "The normal palette"
 msgstr ""
 
+msgctxt "InterpolationType"
+msgid "Instant"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "Linear"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "QuadEaseIn"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "QuadEaseOut"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "CubicEaseIn"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "QuadEaseInOut"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "CubicEaseInOut"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "CubicEaseOut"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "CatmullRom"
+msgstr ""
+
+msgctxt "InterpolationType"
+msgid "CubicBezier"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Model"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Root"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Group"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "ModelReference"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Camera"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Point"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "None"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "Unknown"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "All"
+msgstr ""
+
+msgctxt "SceneGraphNodeType"
+msgid "AllModels"
+msgstr ""
+
 msgid "Enable or disable sound playback"
 msgstr ""
 
@@ -1527,6 +1607,124 @@ msgstr ""
 msgid "Download %s"
 msgstr ""
 
+msgid "VoxBox username"
+msgstr ""
+
+msgid "Your VoxBox account username"
+msgstr ""
+
+msgid "VoxBox password"
+msgstr ""
+
+msgid "Your VoxBox account password"
+msgstr ""
+
+msgid "VoxBox API key"
+msgstr ""
+
+msgid "VoxBox refresh token for authenticated requests"
+msgstr ""
+
+msgid "Logged in"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Login"
+msgstr ""
+
+msgid "Login failed"
+msgstr ""
+
+msgid "Fetching models..."
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Search by name..."
+msgstr ""
+
+msgid "Search Options"
+msgstr ""
+
+msgid "Filter by author..."
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
+msgid "License"
+msgstr ""
+
+msgid "Filter animated"
+msgstr ""
+
+msgid "Animated only"
+msgstr ""
+
+msgid "No models found"
+msgstr ""
+
+msgid "Rating"
+msgstr ""
+
+msgid "Load as new scene"
+msgstr ""
+
+msgid "Import into current scene"
+msgstr ""
+
+msgid "Remove downloaded file"
+msgstr ""
+
+msgid "Download and open"
+msgstr ""
+
+msgid "Please log in to upload models"
+msgstr ""
+
+msgid "Category##upload"
+msgstr ""
+
+msgid "License##upload"
+msgstr ""
+
+msgid "Animated##upload"
+msgstr ""
+
+msgid "Public##upload"
+msgstr ""
+
+#, c-format
+msgid "Updating existing model: %s"
+msgstr ""
+
+msgid "Cover image"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "VoxBox Browser"
+msgstr ""
+
+msgid "VoxBox Store"
+msgstr ""
+
+msgid "Upload current scene..."
+msgstr ""
+
+msgid "Update on VoxBox..."
+msgstr ""
+
 msgid "2D depth factor"
 msgstr ""
 
@@ -1722,62 +1920,6 @@ msgstr ""
 msgid "Delete %i keyframes"
 msgstr ""
 
-msgctxt "Transform Modes"
-msgid "Move"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Shear"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Rotate"
-msgstr ""
-
-msgctxt "Transform Modes"
-msgid "Scale"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Erode"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Grow"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Flatten"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Smooth Additive"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Smooth Erode"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Smooth Gaussian"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Bridge Gap"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Squash to Plane"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Extend Plane"
-msgstr ""
-
-msgctxt "Sculpt Modes"
-msgid "Reskin"
-msgstr ""
-
 msgctxt "Reskin Modes"
 msgid "Blend"
 msgstr ""
@@ -1870,9 +2012,6 @@ msgctxt "Scale Sampling"
 msgid "Cubic"
 msgstr ""
 
-msgid "Shape"
-msgstr ""
-
 msgid "Thickness"
 msgstr ""
 
@@ -1949,9 +2088,6 @@ msgid "Length of the stipple pattern <= 1 to disable"
 msgstr ""
 
 msgid "Rescan"
-msgstr ""
-
-msgid "Re-scan the brushes directory for new or changed scripts"
 msgstr ""
 
 msgid "Use reference position"
@@ -2056,77 +2192,7 @@ msgstr ""
 msgid "Lasso selection"
 msgstr ""
 
-#, c-format
-msgid "%d vertices - click near first vertex to close"
-msgstr ""
-
-msgid "Apply Lasso"
-msgstr ""
-
-msgid ""
-"Close the polygon and apply the lasso selection (bind Enter to finalizelasso)"
-msgstr ""
-
-msgid "Cancel Lasso"
-msgstr ""
-
-msgid "Discard the in-progress lasso polygon (bind Escape to cancellasso)"
-msgstr ""
-
-msgid "Undo Vertex"
-msgstr ""
-
-msgid "Remove the last placed lasso vertex"
-msgstr ""
-
-msgid "Click on the surface to start drawing a polygon"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "All"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Same Color"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Surface"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Connected"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Flat Surface"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Fuzzy Color"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "3D Box"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Circle"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Lasso"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Paint"
-msgstr ""
-
-msgctxt "SelectMode"
-msgid "Script"
-msgstr ""
-
-msgid "Select mode"
+msgid "Click and drag to draw a selection polygon"
 msgstr ""
 
 msgid "Selection actions"
@@ -2225,9 +2291,6 @@ msgstr ""
 
 #, c-format
 msgid "Offset %s"
-msgstr ""
-
-msgid "Transform mode"
 msgstr ""
 
 msgid "Maintain aspect ratio"
@@ -2365,6 +2428,9 @@ msgid "Eye"
 msgstr ""
 
 msgid "Camera movement"
+msgstr ""
+
+msgid "Isometric"
 msgstr ""
 
 msgid "Orthogonal"
@@ -2539,6 +2605,9 @@ msgid ""
 msgstr ""
 
 msgid "Download scripts..."
+msgstr ""
+
+msgid "VoxBox Browser..."
 msgstr ""
 
 msgid "Unreference Model"
@@ -2735,9 +2804,6 @@ msgstr ""
 msgid "Invert"
 msgstr ""
 
-msgid "All"
-msgstr ""
-
 msgid "Select Only Edges"
 msgstr ""
 
@@ -2760,9 +2826,6 @@ msgid "Welcome screen"
 msgstr ""
 
 msgid "Install script..."
-msgstr ""
-
-msgid "License"
 msgstr ""
 
 msgid "Format"
@@ -2931,6 +2994,9 @@ msgid "Translation"
 msgstr ""
 
 msgid "Scale"
+msgstr ""
+
+msgid "Center pivot"
 msgstr ""
 
 msgid "Pivot"
@@ -3116,10 +3182,13 @@ msgstr ""
 msgid "All Variables"
 msgstr ""
 
-msgid "Search"
+msgid "Remove alpha"
 msgstr ""
 
-msgid "Remove alpha"
+msgid "Reset material"
+msgstr ""
+
+msgid "Model from selected colors"
 msgstr ""
 
 msgid "Model from color"
@@ -3250,6 +3319,9 @@ msgstr ""
 msgid "Save image"
 msgstr ""
 
+msgid "Sync camera"
+msgstr ""
+
 msgid "Stop path tracer"
 msgstr ""
 
@@ -3322,6 +3394,45 @@ msgid "High quality bounding volume hierarchy"
 msgstr ""
 
 msgid "Denoise"
+msgstr ""
+
+msgid "Aperture"
+msgstr ""
+
+msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
+msgstr ""
+
+msgid "Sun intensity"
+msgstr ""
+
+msgid "Sun area"
+msgstr ""
+
+msgid "Sun disk size. 1.0 is about 43.5 degrees."
+msgstr ""
+
+msgid "Sun elevation"
+msgstr ""
+
+msgid "Sun azimuth"
+msgstr ""
+
+msgid "Sun disk"
+msgstr ""
+
+msgid "Show visible sun disk in the sky."
+msgstr ""
+
+msgid "Exposure"
+msgstr ""
+
+msgid "Exposure compensation in stops for tonemapping."
+msgstr ""
+
+msgid "Filmic"
+msgstr ""
+
+msgid "Use filmic tonemapping for softer highlight rolloff."
 msgstr ""
 
 msgid "Reset all"
@@ -3484,18 +3595,6 @@ msgid "Add a new group"
 msgstr ""
 
 msgid "Remove the active node with all its children"
-msgstr ""
-
-msgid "Cameras"
-msgstr ""
-
-msgid "Groups"
-msgstr ""
-
-msgid "Points"
-msgstr ""
-
-msgid "References"
 msgstr ""
 
 msgid "Merge onto"
@@ -3850,6 +3949,9 @@ msgstr ""
 msgid "Lines"
 msgstr ""
 
+msgid "Points"
+msgstr ""
+
 msgid "Solid"
 msgstr ""
 
@@ -3894,6 +3996,10 @@ msgid "SceneMode"
 msgstr ""
 
 msgid "Create a reference node"
+msgstr ""
+
+#, c-format
+msgid "Logged in as %s"
 msgstr ""
 
 msgid "merged_temp"
@@ -4216,8 +4322,8 @@ msgid "Scale the given node up"
 msgstr ""
 
 msgid ""
-"Move the voxels of the current selected palette index or the given index "
-"into a new node"
+"Move the voxels of the current selected palette index, the given index or a "
+"comma-separated list of indices into a new node"
 msgstr ""
 
 msgid "Aborts the current modifier action"
@@ -4245,16 +4351,6 @@ msgid "Recolor selected voxels with the active palette color"
 msgstr ""
 
 msgid "Deselect all voxels matching the active palette color"
-msgstr ""
-
-msgid ""
-"Close the lasso polygon and apply the selection to enclosed surface voxels"
-msgstr ""
-
-msgid "Discard the in-progress lasso polygon without applying any selection"
-msgstr ""
-
-msgid "Remove the last placed lasso vertex and redraw edges"
 msgstr ""
 
 msgid "Deselect all voxels not matching the active palette color"
@@ -4401,6 +4497,9 @@ msgstr ""
 msgid "Pick the current selected color from current cursor voxel"
 msgstr ""
 
+msgid "Pick the current selected material from current cursor voxel"
+msgstr ""
+
 msgid "Flip the selected nodes around the given axis"
 msgstr ""
 
@@ -4461,6 +4560,9 @@ msgstr ""
 msgid "Unlock all nodes"
 msgstr ""
 
+msgid "Set the pivot point for a node"
+msgstr ""
+
 msgid "Change the name of a node"
 msgstr ""
 
@@ -4482,7 +4584,15 @@ msgstr ""
 msgid "Set the camera orbit target to the reference point position"
 msgstr ""
 
-msgid "Set or toggle the camera projection mode (perspective or orthogonal)"
+msgid "Set the camera world position"
+msgstr ""
+
+msgid "Set the camera orbit target position"
+msgstr ""
+
+msgid ""
+"Set or cycle the camera projection mode (perspective, orthogonal or "
+"isometric)"
 msgstr ""
 
 msgid "Start the local voxedit server"
@@ -4567,6 +4677,34 @@ msgstr ""
 msgid "The maximum size of the preview volume"
 msgstr ""
 
+msgctxt "ShapeType"
+msgid "AABB"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Torus"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Cylinder"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Cone"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Dome"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Ellipse"
+msgstr ""
+
+msgctxt "ShapeType"
+msgid "Circle"
+msgstr ""
+
 msgid "Set center plane building"
 msgstr ""
 
@@ -4622,7 +4760,92 @@ msgstr ""
 msgid "Toggle measuring from the reference position"
 msgstr ""
 
-msgid "Change the modifier shape type"
+msgctxt "Sculpt Modes"
+msgid "Erode"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Grow"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Flatten"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Additive"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Erode"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Smooth Gaussian"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Bridge Gap"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Squash to Plane"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Extend Plane"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Reskin"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "All"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Same Color"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Surface"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Connected"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "3D Box"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Circle"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Lasso"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Paint"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Script"
+msgstr ""
+
+#, c-format
+msgid "Change the shape type to %s"
 msgstr ""
 
 msgid "Toggle center at cursor"
@@ -4662,6 +4885,22 @@ msgid "Reset the uv coordinates"
 msgstr ""
 
 msgid "Create a texture from the active model's face colors"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr ""
+
+msgctxt "Transform Modes"
+msgid "Scale"
 msgstr ""
 
 msgid "Host name"

@@ -22,6 +22,7 @@
 | Goxel txt                  | txt         | X       | X      |            |         |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
 | Luanti (Minetest)          | mts         | X       | X      |            | X       |            |
+| Luanti World Edit          | we          | X       |        |            |         |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
 | Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |
 | Minecraft level dat        | dat         | X       |        |            |         |            |

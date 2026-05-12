@@ -864,6 +864,17 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Luanti World Edit",
+      "extensions": [
+        "we"
+      ],
+      "magics": [],
+      "mimetype": "application/x-luanti-world-edit",
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Wavefront Object",
       "extensions": [
         "obj"

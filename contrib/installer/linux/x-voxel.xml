@@ -276,6 +276,10 @@
 		<comment>Teardown bin</comment>
 		<glob pattern="*.bin"/>
 	</mime-type>
+	<mime-type type="application/x-luanti-world-edit">
+		<comment>Luanti World Edit</comment>
+		<glob pattern="*.we"/>
+	</mime-type>
 	<mime-type type="text/plain">
 		<comment>Wavefront Object</comment>
 		<glob pattern="*.obj"/>

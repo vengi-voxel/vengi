@@ -401,6 +401,8 @@ LDraw Model (*.ldr, *.mpd)
 .TP
 Luanti (Minetest) (*.mts)
 .TP
+Luanti World Edit (*.we)
+.TP
 MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)

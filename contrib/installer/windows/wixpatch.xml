@@ -154,6 +154,9 @@
 		<RegistryKey Root="HKCR" Key=".bin">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".we">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".obj">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -681,6 +684,15 @@
 		<RegistryValue Root="HKCR" Key=".bin\OpenWithProgids" Name="vengi-voxedit.bin" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.bin" Description="Teardown bin" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="bin" ContentType="application/x-teardown-bin">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".we" Value="vengi-voxedit.we" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".we" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".we\OpenWithProgids" Name="vengi-voxedit.we" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.we" Description="Luanti World Edit" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="we" ContentType="application/x-luanti-world-edit">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
