@@ -116,7 +116,7 @@ void RenderNeoTimelinesBorder(const ImVec4 &color, const ImVec2 &cursor, const I
 	if (!drawList)
 		drawList = ImGui::GetWindowDrawList();
 
-	drawList->AddRect(cursor, cursor + size, ColorConvertFloat4ToU32(color), rounding, 0, borderSize);
+	drawList->AddRect(cursor, cursor + size, ColorConvertFloat4ToU32(color), rounding, borderSize);
 }
 
 void RenderNeoTimelane(bool selected, const ImVec2 &cursor, const ImVec2 &size, const ImVec4 &highlightColor,

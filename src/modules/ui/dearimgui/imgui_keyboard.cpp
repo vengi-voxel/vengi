@@ -741,7 +741,7 @@ static void RenderKey(ImDrawList *draw_list, const ImVec2 &key_min, const ImVec2
 	ImVec2 face_min = ImVec2(key_min.x + key_face_pos.x, key_min.y + key_face_pos.y);
 	ImVec2 face_max = ImVec2(face_min.x + key_face_size.x, face_min.y + key_face_size.y);
 	draw_list->AddRect(face_min, face_max, GetColorU32(ImGuiKeyboardCol_KeyFaceBorder), key_face_rounding,
-					   ImDrawFlags_None, style.KeyFaceBorderSize);
+					   style.KeyFaceBorderSize, ImDrawFlags_None);
 	draw_list->AddRectFilled(face_min, face_max, GetColorU32(ImGuiKeyboardCol_KeyFace), key_face_rounding);
 
 	// Label rendering

@@ -1163,7 +1163,11 @@ void ImGui::ItemErrorFrame(ImU32 col)
     ImDrawList* drawlist = GetWindowDrawList();
     ImGuiStyle& style = GetStyle();
     // FIXME: GetItemRectMin() / GetItemRectMax() will include label. NavRect is not probably defined :(
+#if IMGUI_VERSION_NUM < 19276
     drawlist->AddRect(g.LastItemData.NavRect.Min, g.LastItemData.NavRect.Max, GetColorU32(col), style.FrameRounding, ImDrawFlags_None, ImMax(1.0f, style.FrameBorderSize));
+#else
+    drawlist->AddRect(g.LastItemData.NavRect.Min, g.LastItemData.NavRect.Max, GetColorU32(col), style.FrameRounding, ImMax(1.0f, style.FrameBorderSize));
+#endif
 }
 
 bool ImGui::InputText(const char* label, Str* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)

@@ -79,13 +79,13 @@ void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float c
 	}
 
 	if (hovered) {
-		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
+		drawList->AddRect(v1, v2, _redColor, 0.0f, 2.0f);
 	} else if (paletteColorIdx == currentSceneNormal()) {
 		if (color.a > 0) {
-			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
+			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 2.0f);
 		}
 	} else if (_selectedIndex == paletteColorIdx) {
-		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
+		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 2.0f);
 	}
 
 	cursorPos.x += colorButtonSize;

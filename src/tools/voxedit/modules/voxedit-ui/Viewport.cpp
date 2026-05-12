@@ -1088,7 +1088,7 @@ bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
 			}
 			drawList->AddConcavePolyFilled(imPoints, n, ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoPolygon))));
 			const glm::vec4 outlineColor = glm::vec4(glm::vec3(style::color(style::ColorBrushGizmoPolygon)), 0.8f);
-			drawList->AddPolyline(imPoints, n, ImGui::GetColorU32(ImVec4(outlineColor)), ImDrawFlags_Closed, 1.5f);
+			drawList->AddPolyline(imPoints, n, ImGui::GetColorU32(ImVec4(outlineColor)), 1.5f, ImDrawFlags_Closed);
 		}
 	}
 

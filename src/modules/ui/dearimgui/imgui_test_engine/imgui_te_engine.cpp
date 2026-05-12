@@ -2123,7 +2123,7 @@ void ImGuiTestEngine_InstallDefaultCrashHandler()
     // Install a crash handler to relevant signals.
     struct sigaction action = {};
     action.sa_handler = ImGuiTestEngine_CrashHandlerUnix;
-    action.sa_flags = SA_SIGINFO;
+    action.sa_flags = SA_RESETHAND; // one-shot
     sigaction(SIGILL, &action, nullptr);
     sigaction(SIGABRT, &action, nullptr);
     sigaction(SIGFPE, &action, nullptr);

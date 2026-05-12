@@ -949,7 +949,7 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 	bool hovered = false, held = false;
 	/*bool clicked = */ ImGui::ButtonBehavior(rect, id, &hovered, &held);
 
-	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0,
+		ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f,
 										hovered ? 2.0f : 1.0f);
 	if (held && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
 		const glm::ivec2 &pixelPos = image::Image::pixels({u, v}, uiImageSize.x, uiImageSize.y);
@@ -1002,7 +1002,7 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 		const uint32_t colorInt = IM_COL32(color.r, color.g, color.b, color.a);
 
 		bool dirty = false;
-		ImGui::GetWindowDrawList()->AddRect(pixelMins, pixelMaxs, colorInt, 0.0f, 0, 1.0f);
+				ImGui::GetWindowDrawList()->AddRect(pixelMins, pixelMaxs, colorInt, 0.0f, 1.0f);
 		if (addUVHandle(UVEdge::UpperLeft, pixelMins, pixelMaxs, uiImageSize, colorInt, uv0.x, uv0.y)) {
 			dirty = true;
 		}

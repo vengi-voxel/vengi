@@ -593,7 +593,7 @@ static void RenderSelection(ImGuiNeoSequencerInternalData &context) {
 
 	// border
 	drawList->AddRect(context.SelectionMouseStart, currentMousePosition,
-					  ColorConvertFloat4ToU32(GNeoSeq->Style.Colors[ImGuiNeoSequencerCol_SelectionBorder]), 0.0f, 0, 0.5f);
+					  ColorConvertFloat4ToU32(GNeoSeq->Style.Colors[ImGuiNeoSequencerCol_SelectionBorder]), 0.0f, 0.5f);
 }
 
 static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize) {
