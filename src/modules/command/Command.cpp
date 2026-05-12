@@ -3,7 +3,6 @@
  */
 
 #include "Command.h"
-#include "core/StringUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
@@ -14,8 +13,6 @@ namespace command {
 
 Command::CommandMap Command::_cmds{MAX_COMMANDS};
 core_trace_mutex_static(core::Lock, Command, _lock);
-core::DynamicArray<core::String> Command::_delayedTokens;
-double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
 Command* Command::_sortedCommandList[MAX_COMMANDS] {};
 
@@ -145,28 +142,7 @@ int Command::completeArg(int argIndex, const core::String& str, const core::Toke
 }
 
 int Command::update(double deltaFrameSeconds) {
-	if (_delaySeconds <= 0.0) {
-		return 0;
-	}
-	Log::trace("Waiting %f seconds", _delaySeconds);
-	if (deltaFrameSeconds > _delaySeconds) {
-		_delaySeconds = 0.0;
-	} else {
-		_delaySeconds -= deltaFrameSeconds;
-	}
-	if (_delaySeconds > 0.0) {
-		return 0;
-	}
-	// make a copy - it might get modified inside the execute call
-	core::DynamicArray<core::String> copy = _delayedTokens;
-	_delayedTokens.clear();
-	int executed = 0;
-	for (const core::String& fullCmd : copy) {
-		Log::trace("execute delayed %s", fullCmd.c_str());
-		executed += execute(fullCmd);
-	}
-
-	return executed;
+	return 0;
 }
 
 void Command::updateSortedList() {
@@ -208,11 +184,6 @@ int Command::execute(const core::String& command) {
 		if (fullCmd.size() >= 2 && fullCmd[0] == '/' && fullCmd[1] == '/') {
 			continue;
 		}
-		if (_delaySeconds > 0.0) {
-			Log::trace("add command %s to delayed buffer", fullCmd.c_str());
-			_delayedTokens.push_back(fullCmd);
-			continue;
-		}
 		Log::trace("full command: '%s'", fullCmd.c_str());
 		core::Tokenizer commandTokenizer(cfg, fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
@@ -233,14 +204,6 @@ int Command::execute(const core::String& command) {
 }
 
 bool Command::execute(const core::String& command, const core::DynamicArray<core::String>& rawArgs) {
-	if (command == "wait") {
-		if (rawArgs.size() == 1) {
-			_delaySeconds += core_max(1, rawArgs[0].toInt());
-		} else {
-			_delaySeconds += 1.0;
-		}
-		return true;
-	}
 	if ((command[0] == COMMAND_PRESSED[0] || command[0] == COMMAND_RELEASED[0]) && rawArgs.empty()) {
 		Log::warn("Skip execution of %s - no arguments provided", command.c_str());
 		return false;
@@ -252,16 +215,6 @@ bool Command::execute(const core::String& command, const core::DynamicArray<core
 		if (i == _cmds.end()) {
 			Log::debug("could not find command callback for %s", command.c_str());
 			return false;
-		}
-		if (_delaySeconds > 0.0) {
-			core::String fullCmd = command;
-			for (const core::String& arg : rawArgs) {
-				fullCmd.append(" ");
-				fullCmd.append(arg);
-			}
-			Log::trace("delay %s", fullCmd.c_str());
-			_delayedTokens.push_back(fullCmd);
-			return true;
 		}
 		cmd = i->second;
 	}

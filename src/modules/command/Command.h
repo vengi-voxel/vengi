@@ -153,9 +153,6 @@ private:
 	static size_t _sortedCommandListSize;
 	static Command* _sortedCommandList[MAX_COMMANDS];
 
-	static double _delaySeconds;
-	static core::DynamicArray<core::String> _delayedTokens;
-
 	core::String _name;
 	core::String _help;
 	FunctionType _func;
