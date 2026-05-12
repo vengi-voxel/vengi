@@ -1607,124 +1607,6 @@ msgstr ""
 msgid "Download %s"
 msgstr ""
 
-msgid "VoxBox username"
-msgstr ""
-
-msgid "Your VoxBox account username"
-msgstr ""
-
-msgid "VoxBox password"
-msgstr ""
-
-msgid "Your VoxBox account password"
-msgstr ""
-
-msgid "VoxBox API key"
-msgstr ""
-
-msgid "VoxBox refresh token for authenticated requests"
-msgstr ""
-
-msgid "Logged in"
-msgstr ""
-
-msgid "Logout"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
-msgid "Login"
-msgstr ""
-
-msgid "Login failed"
-msgstr ""
-
-msgid "Fetching models..."
-msgstr ""
-
-msgid "Search"
-msgstr ""
-
-msgid "Search by name..."
-msgstr ""
-
-msgid "Search Options"
-msgstr ""
-
-msgid "Filter by author..."
-msgstr ""
-
-msgid "All"
-msgstr ""
-
-msgid "Category"
-msgstr ""
-
-msgid "License"
-msgstr ""
-
-msgid "Filter animated"
-msgstr ""
-
-msgid "Animated only"
-msgstr ""
-
-msgid "No models found"
-msgstr ""
-
-msgid "Rating"
-msgstr ""
-
-msgid "Load as new scene"
-msgstr ""
-
-msgid "Import into current scene"
-msgstr ""
-
-msgid "Remove downloaded file"
-msgstr ""
-
-msgid "Download and open"
-msgstr ""
-
-msgid "Please log in to upload models"
-msgstr ""
-
-msgid "Category##upload"
-msgstr ""
-
-msgid "License##upload"
-msgstr ""
-
-msgid "Animated##upload"
-msgstr ""
-
-msgid "Public##upload"
-msgstr ""
-
-#, c-format
-msgid "Updating existing model: %s"
-msgstr ""
-
-msgid "Cover image"
-msgstr ""
-
-msgid "Submit"
-msgstr ""
-
-msgid "VoxBox Browser"
-msgstr ""
-
-msgid "VoxBox Store"
-msgstr ""
-
-msgid "Upload current scene..."
-msgstr ""
-
-msgid "Update on VoxBox..."
-msgstr ""
-
 msgid "2D depth factor"
 msgstr ""
 
@@ -2804,6 +2686,9 @@ msgstr ""
 msgid "Invert"
 msgstr ""
 
+msgid "All"
+msgstr ""
+
 msgid "Select Only Edges"
 msgstr ""
 
@@ -2826,6 +2711,9 @@ msgid "Welcome screen"
 msgstr ""
 
 msgid "Install script..."
+msgstr ""
+
+msgid "License"
 msgstr ""
 
 msgid "Format"
@@ -3180,6 +3068,9 @@ msgid "Advanced"
 msgstr ""
 
 msgid "All Variables"
+msgstr ""
+
+msgid "Search"
 msgstr ""
 
 msgid "Remove alpha"
@@ -3998,8 +3889,105 @@ msgstr ""
 msgid "Create a reference node"
 msgstr ""
 
+msgid "VoxBox username"
+msgstr ""
+
+msgid "Your VoxBox account username"
+msgstr ""
+
+msgid "VoxBox password"
+msgstr ""
+
+msgid "Your VoxBox account password"
+msgstr ""
+
+msgid "VoxBox API key"
+msgstr ""
+
+msgid "VoxBox refresh token for authenticated requests"
+msgstr ""
+
 #, c-format
 msgid "Logged in as %s"
+msgstr ""
+
+msgid "Logout"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Login"
+msgstr ""
+
+msgid "Login failed"
+msgstr ""
+
+msgid "Fetching models..."
+msgstr ""
+
+msgid "Search by name..."
+msgstr ""
+
+msgid "Search Options"
+msgstr ""
+
+msgid "Filter by author..."
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
+msgid "Filter animated"
+msgstr ""
+
+msgid "Animated only"
+msgstr ""
+
+msgid "No models found"
+msgstr ""
+
+msgid "Rating"
+msgstr ""
+
+msgid "Load as new scene"
+msgstr ""
+
+msgid "Import into current scene"
+msgstr ""
+
+msgid "Remove downloaded file"
+msgstr ""
+
+msgid "Download and open"
+msgstr ""
+
+msgid "Please log in to upload models"
+msgstr ""
+
+msgid "Animated"
+msgstr ""
+
+#, c-format
+msgid "Updating existing model: %s"
+msgstr ""
+
+msgid "Cover image"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "VoxBox Browser"
+msgstr ""
+
+msgid "VoxBox Store"
+msgstr ""
+
+msgid "Upload current scene..."
+msgstr ""
+
+msgid "Update on VoxBox..."
 msgstr ""
 
 msgid "merged_temp"

@@ -3,6 +3,7 @@
  */
 
 #include "VoxBoxBrowserPanel.h"
+#include "ScopedID.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
@@ -326,10 +327,12 @@ void VoxBoxBrowserPanel::uploadPanel() {
 		return;
 	}
 
+	ui::ScopedID id("upload");
+
 	ImGui::InputText(_("Name"), &_uploadInfo.name);
 	ImGui::InputTextMultiline(_("Description"), &_uploadInfo.description, ImVec2(0, ImGui::GetTextLineHeight() * 3));
 
-	if (ImGui::BeginCombo(_("Category##upload"), VoxBoxCategoryStr(_uploadInfo.category))) {
+	if (ImGui::BeginCombo(_("Category"), VoxBoxCategoryStr(_uploadInfo.category))) {
 		for (int i = 0; i < (int)VoxBoxCategory::Max; ++i) {
 			if (ImGui::Selectable(VoxBoxCategoryStr((VoxBoxCategory)i), _uploadInfo.category == (VoxBoxCategory)i)) {
 				_uploadInfo.category = (VoxBoxCategory)i;
@@ -338,7 +341,7 @@ void VoxBoxBrowserPanel::uploadPanel() {
 		ImGui::EndCombo();
 	}
 
-	if (ImGui::BeginCombo(_("License##upload"), VoxBoxLicenseStr(_uploadInfo.license))) {
+	if (ImGui::BeginCombo(_("License"), VoxBoxLicenseStr(_uploadInfo.license))) {
 		for (int i = 0; i < (int)VoxBoxLicense::Max; ++i) {
 			if (ImGui::Selectable(VoxBoxLicenseStr((VoxBoxLicense)i), _uploadInfo.license == (VoxBoxLicense)i)) {
 				_uploadInfo.license = (VoxBoxLicense)i;
@@ -347,9 +350,9 @@ void VoxBoxBrowserPanel::uploadPanel() {
 		ImGui::EndCombo();
 	}
 
-	ImGui::Checkbox(_("Animated##upload"), &_uploadInfo.animated);
+	ImGui::Checkbox(_("Animated"), &_uploadInfo.animated);
 	ImGui::SameLine();
-	ImGui::Checkbox(_("Public##upload"), &_uploadInfo.isPublic);
+	ImGui::Checkbox(_("Public"), &_uploadInfo.isPublic);
 
 	if (!_uploadInfo.id.empty()) {
 		ImGui::Text(_("Updating existing model: %s"), _uploadInfo.id.c_str());

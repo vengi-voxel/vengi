@@ -36,6 +36,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 #if ENABLE_RENDER_PANEL
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
 #endif
+	_voxBoxBrowserPanel.registerUITests(engine, TITLE_VOXBOX_BROWSER);
 	_sceneDebugPanel.registerUITests(engine, TITLE_SCENEDEBUGPANEL);
 	_sceneGraphPanel.registerUITests(engine, TITLE_SCENEGRAPH);
 	_sceneSettingsPanel.registerUITests(engine, TITLE_SCENE_SETTINGS);

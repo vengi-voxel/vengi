@@ -65,6 +65,7 @@ if (USE_IMGUITESTENGINE)
 		tests/StatusBarTest.cpp
 		tests/ToolsPanelTest.cpp
 		tests/ViewportTest.cpp
+		tests/VoxBoxBrowserPanelTest.cpp
 
 		tests/TestUtil.h tests/TestUtil.cpp
 	)

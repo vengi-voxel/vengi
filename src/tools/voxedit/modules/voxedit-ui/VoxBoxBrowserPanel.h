@@ -50,6 +50,9 @@ public:
 	VoxBoxBrowserPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool);
 	void open();
 	void update(const char *id, command::CommandExecutionListener *listener = nullptr);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
+#endif
 };
 
 } // namespace voxedit
