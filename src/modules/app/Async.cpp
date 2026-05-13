@@ -4,6 +4,8 @@
 
 #include "Async.h"
 #include "app/App.h"
+#include "command/Command.h"
+#include "command/CommandHandler.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/ThreadPool.h"
 
@@ -62,6 +64,24 @@ void for_parallel_impl(int start, int end, ForParallelFunc fn, void *ctx, bool w
 
 void schedule(core::Function<void()> &&f) {
 	app::App::getInstance()->schedule(core::forward<core::Function<void()>>(f));
+}
+
+core::Future<int> executeCommandsAsync(const core::String &commandline) {
+	return app::async([commandline = commandline] () {
+		return command::executeCommands(commandline);
+	});
+}
+
+core::Future<int> executeCommandAsync(const core::String& command) {
+	return app::async([cmd = command] () {
+		return command::Command::execute(cmd);
+	});
+}
+
+core::Future<bool> executeCommandAsync(const core::String& command, const core::DynamicArray<core::String>& rawArgs) {
+	return app::async([cmd = command, args = rawArgs] () {
+		return command::Command::execute(cmd, args);
+	});
 }
 
 } // namespace app

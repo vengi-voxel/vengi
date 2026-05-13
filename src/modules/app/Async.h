@@ -69,4 +69,8 @@ void sort_parallel(Iter first, Iter last, Comparator comp) {
 	}
 }
 
+core::Future<int> executeCommandsAsync(const core::String &commandline);
+core::Future<int> executeCommandAsync(const core::String& command);
+core::Future<bool> executeCommandAsync(const core::String& command, const core::DynamicArray<core::String>& rawArgs);
+
 } // namespace app

@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 
 #include "app/Async.h"
+#include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
 #include "app/I18N.h"
 #include "color/ColorUtil.h"
@@ -4598,6 +4599,19 @@ bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
 
+bool SceneManager::isCommandRunning() const {
+	return _commandFuture.valid();
+}
+
+bool SceneManager::executeCommandsAsync(const char *commands) {
+	if (isCommandRunning() || isLoading()) {
+		Log::warn("Another command is already running");
+		return false;
+	}
+	_commandFuture = app::executeCommandsAsync(commands);
+	return true;
+}
+
 void SceneManager::stopLocalServer() {
 	disconnectFromServer();
 	server().stop();
@@ -4688,6 +4702,12 @@ bool SceneManager::update(double nowSeconds) {
 			loadedNewScene = true;
 		}
 		_loadingFuture = {};
+	}
+
+	if (_commandFuture.ready()) {
+		int commands = _commandFuture.get();
+		Log::debug("Finished executing %i commands", commands);
+		_commandFuture = {};
 	}
 
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);

@@ -344,9 +344,9 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		if (_sceneMgr->isLoading()) {
+		if (_sceneMgr->isLoading() || _sceneMgr->isCommandRunning()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
-			ImGui::LoadingIndicatorCircle(_("Loading"), radius, color::White(), color::Gray());
+			ImGui::LoadingIndicatorCircle(_("Working"), radius, color::White(), color::Gray());
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
 			updateViewportInput(headerSize);

@@ -71,6 +71,7 @@ protected:
 	memento::MementoHandler _mementoHandler;
 	voxel::ClipboardData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
+	core::Future<int> _commandFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
 	Modifier _modifierFacade;
@@ -472,6 +473,12 @@ public:
 	bool load(const io::FileDescription &file, const uint8_t *data, size_t size);
 	bool isLoading() const;
 	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect = true);
+
+	/**
+	 * @brief Returns @c true if an async command is currently running
+	 */
+	bool isCommandRunning() const;
+	bool executeCommandsAsync(const char *commands);
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);

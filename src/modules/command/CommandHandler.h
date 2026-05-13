@@ -26,6 +26,6 @@ struct CommandExecutionListener {
 /**
  * @return -1 if the commandline contained anything that couldn't get handled, otherwise the amount of handled commands
  */
-extern int executeCommands(const core::String &commandline, CommandExecutionListener *listener = nullptr);
+int executeCommands(const core::String &commandline, CommandExecutionListener *listener = nullptr);
 
 } // namespace command
