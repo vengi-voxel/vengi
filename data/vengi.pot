@@ -3674,8 +3674,9 @@ msgid ""
 msgstr ""
 
 msgid ""
-"You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
-"Vengi own style. Check the bindings window in the options menu."
+"You can change your default key bindings to Magicavoxel, Blender, Vengi, "
+"Qubicle, Goxel or 3dsMax style. Check the bindings window in the options "
+"menu."
 msgstr ""
 
 msgid "You can save your viewport as video or as screenshot."
@@ -3741,8 +3742,8 @@ msgstr ""
 
 msgid ""
 "Open the bindings dialog in the options menu to change the default key "
-"bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check "
-"which commands are available."
+"bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style and "
+"also check which commands are available."
 msgstr ""
 
 msgid ""

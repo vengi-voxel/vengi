@@ -19,7 +19,7 @@ static const char *tips[]{
 	N_("Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."),
 	N_("Switch between different color themes in the options menu."),
 	N_("Please activate anonymous usage metrics in the options or the about dialog."),
-	N_("You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."),
+	N_("You can change your default key bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style. Check the bindings window in the options menu."),
 	N_("You can save your viewport as video or as screenshot."),
 	N_("Press <cmd:pickcolor> to pick a color from the scene."),
 	N_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."),
@@ -34,7 +34,7 @@ static const char *tips[]{
 	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features."),
 	N_("You can use the 'View' menu in the viewport to enable/disable various visual features such as the grid, axis, ..."),
 	N_("Use you can <cmd:camera_rotation> to switch between different camera rotation modes such as 'Orbit' and 'First person'."),
-	N_("Open the bindings dialog in the options menu to change the default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style and also check which commands are available."),
+	N_("Open the bindings dialog in the options menu to change the default key bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style and also check which commands are available."),
 	N_("You can download and install community scripts for brushes, generators and selection modes from the Help menu.")
 	// clang-format on
 };

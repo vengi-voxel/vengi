@@ -51,6 +51,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	_uiKeyMaps.push_back("Vengi");
 	_uiKeyMaps.push_back("Qubicle");
 	_uiKeyMaps.push_back("Goxel");
+	_uiKeyMaps.push_back("3dsMax");
 	core_assert(KeyBindings::Max == (int)_uiKeyMaps.size());
 }
 
@@ -445,7 +446,9 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
 
 	if (keymap != KeyBindings::Qubicle) {
-		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
+		if (keymap != KeyBindings::_3dsMax) {
+			_keybindingHandler.registerBinding("left_alt",           "+camera_pan",                "editing");
+		}
 		if (_keyboardLayout == video::KeyboardLayout::AZERTY) {
 			_keybindingHandler.registerBinding("z",                  "+move_forward",              "editing");
 			_keybindingHandler.registerBinding("q",                  "+move_left",                 "editing");
@@ -461,7 +464,14 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("left_shift",             "+sprint",                    "editing");
 	}
 
-	if (keymap == KeyBindings::Blender) {
+	if (keymap == KeyBindings::_3dsMax) {
+		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
+		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
+		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding(",",                      "camera_reset",               "editing");
+		_keybindingHandler.registerBinding("alt+middle_mouse",       "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_pan",                "editing");
+	} else if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");

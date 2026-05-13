@@ -44,6 +44,7 @@ protected:
 		Vengi = 2,
 		Qubicle = 3,
 		Goxel = 4,
+		_3dsMax = 5,
 		Max
 	};
 

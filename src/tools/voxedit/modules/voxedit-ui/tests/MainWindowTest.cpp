@@ -344,7 +344,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int initialKeyMap = uiKeyMap->intVal();
 
 		// change to a different keymap via the combo
-		// the keymaps are: 0=Magicavoxel, 1=Blender, 2=Vengi, 3=Qubicle
+		// the keymaps are: 0=Magicavoxel, 1=Blender, 2=Vengi, 3=Qubicle, 4=Goxel, 5=3dsMax
 		const int targetKeyMap = (initialKeyMap == 1) ? 2 : 1;
 		const char *targetName = (targetKeyMap == 1) ? "Blender" : "Vengi";
 		const core::String comboPath = core::String::format("Keymap/%s", targetName);
@@ -362,6 +362,56 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(uiKeyMap->intVal(), initialKeyMap);
 
 		// close the dialog by clicking the window close button
+		ctx->WindowClose("");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog 3dsmax keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Edit/Bindings");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, "Bindings"));
+
+		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
+		const int initialKeyMap = uiKeyMap->intVal();
+
+		ctx->ComboClick("Keymap/3dsMax");
+		ctx->Yield();
+
+		const util::BindMap bindings = app()->keybindingHandler().bindings();
+		bool altMiddleRotate = false;
+		bool middlePan = false;
+		bool rightMouseRotate = false;
+		bool leftAltPan = false;
+		for (auto it = bindings.begin(); it != bindings.end(); ++it) {
+			const core::String &command = it->second.command;
+			const core::String keyBinding = util::KeyBindingHandler::toString(it->first, it->second.modifier, it->second.count);
+			if (command == "+camera_rotate" && keyBinding == "alt+middle_mouse") {
+				altMiddleRotate = true;
+			} else if (command == "+camera_pan" && keyBinding == "middle_mouse") {
+				middlePan = true;
+			} else if (command == "+camera_rotate" && keyBinding == "right_mouse") {
+				rightMouseRotate = true;
+			} else if (command == "+camera_pan" && keyBinding == "left_alt") {
+				leftAltPan = true;
+			}
+		}
+
+		IM_CHECK(altMiddleRotate);
+		IM_CHECK(middlePan);
+		IM_CHECK(!rightMouseRotate);
+		IM_CHECK(!leftAltPan);
+
+		const char *originalName = (initialKeyMap == 0) ? "Magicavoxel" :
+			((initialKeyMap == 1) ? "Blender" :
+			((initialKeyMap == 2) ? "Vengi" :
+			((initialKeyMap == 3) ? "Qubicle" :
+			((initialKeyMap == 4) ? "Goxel" : "3dsMax"))));
+		const core::String restorePath = core::String::format("Keymap/%s", originalName);
+		ctx->ComboClick(restorePath.c_str());
+		ctx->Yield();
+
+		IM_CHECK_EQ(uiKeyMap->intVal(), initialKeyMap);
+
 		ctx->WindowClose("");
 	};
 
