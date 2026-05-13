@@ -338,6 +338,17 @@ void sortedUnion(const Type *buf1, int buf1Length, const Type *buf2, int buf2Len
 	}
 }
 
+/**
+ * @brief Scans memory for a byte that does not match a specified value.
+ *
+ * This function is the opposite of @c memchr. It searches the first @c n bytes of the memory area
+ * pointed to by @c s for the first byte that is not equal to @c c (interpreted as an unsigned char).
+ *
+ * @param s Pointer to the memory area to scan.
+ * @param c The byte value to check against.
+ * @param n Number of bytes to scan.
+ * @return A pointer to the first byte that does not match @c c, or @c nullptr if all @c n bytes match @c c.
+ */
 void *memchr_not(const void *s, int c, size_t n);
 
 template<typename T, typename Compare>
