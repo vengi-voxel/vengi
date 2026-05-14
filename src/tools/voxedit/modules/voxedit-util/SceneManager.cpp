@@ -2747,9 +2747,9 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 	_sceneRenderer->removeNode(node.id());
 
 	const voxel::Region& region = volume->region();
-	_sceneRenderer->updateGridRegion(region);
 
-	_dirty = false;
+	_dirtyRenderer = DirtyRendererLockedAxis | DirtyRendererGridRenderer;
+	_dirty = false; // TODO: why is this not dirty? should it be dirty when the volume changes?
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
 	setReferencePosition(region.getLowerCenter());
@@ -2976,8 +2976,6 @@ bool SceneManager::setGridResolution(int resolution) {
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender::RenderContext &modifierRenderContext, const video::Camera& camera, uint8_t renderMask) {
 	renderContext.frameBuffer.bind(true);
-	_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), _sceneGraph, cursorPosition());
-
 	renderContext.frame = _currentFrameIdx;
 	renderContext.sceneGraph = &_sceneGraph;
 
