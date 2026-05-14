@@ -117,9 +117,6 @@ protected:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
-	static const uint32_t DirtyRendererGridRenderer = 1 << 0;
-	uint32_t _dirtyRenderer = 0u;
-
 	// model animation speed
 	double _frameAnimationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;

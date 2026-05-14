@@ -7,7 +7,6 @@
 #include "app/App.h"
 #include "core/TimedValue.h"
 #include "math/Axis.h"
-#include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -31,29 +30,21 @@ private:
 
 	voxel::MeshStatePtr _meshState;
 	voxelrender::SceneGraphRenderer _sceneGraphRenderer;
-	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 
-	core::VarPtr _showGrid;
-	core::VarPtr _showLockedAxis;
 	core::VarPtr _showAABB;
 	core::VarPtr _showBones;
 	core::VarPtr _renderShadow;
 	core::VarPtr _shadingMode;
-	core::VarPtr _gridSize;
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;
 	core::VarPtr _ambientColor;
 	core::VarPtr _sunAngle;
 	core::VarPtr _diffuseColor;
-	core::VarPtr _planeSize;
-	core::VarPtr _showPlane;
 
 	/** @brief Shape renderer mesh index */
 	struct ShapeIndices {
-		/** @brief for the locked planes (X, Y, Z). */
-		int32_t plane[3] = {-1, -1, -1};
 		/** @brief for the highlighted active region. */
 		int32_t highlight = -1;
 		/** @brief for the global scene or node bounding box. */
@@ -69,8 +60,6 @@ private:
 		bool aabbDirty = true;
 		/** @brief Flag indicating if the skeletal bone visualization mesh needs to be rebuilt. */
 		bool boneDirty = true;
-		/** @brief Flag indicating if the locked axis visualization mesh needs to be rebuilt. */
-		bool lockedAxisDirty = true;
 		/** @brief Caches the frame index for which the AABB mesh was last generated. */
 		scenegraph::FrameIndex lastAABBFrame = InvalidFrame;
 		/** @brief Caches the frame index for which the bone mesh was last generated. */
@@ -86,17 +75,9 @@ private:
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	/** @brief A region highlight that fades out over time (used for visual feedback on modifications). */
 	TimedRegion _highlightRegion;
-	/** @brief The AABB representing the current grid rendering bounds. */
-	math::AABB<float> _gridRegion;
-
-	/** @brief The currently locked axis for modifications. */
-	math::Axis _lockedAxis = math::Axis::None;
-	/** @brief The tracked 3D cursor position in the voxel scene. */
-	glm::ivec3 _lockedAxisPosition{0};
 
 	void doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
-	void doUpdateLockedPlane(math::Axis axis, const scenegraph::SceneGraph &sceneGraph);
 	void doUpdateSliceRegionMesh();
 
 	void handleCommandBuffer();

@@ -2749,7 +2749,6 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	const voxel::Region& region = volume->region();
 
-	_dirtyRenderer = DirtyRendererGridRenderer;
 	_dirty = false; // TODO: why is this not dirty? should it be dirty when the volume changes?
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
@@ -2962,7 +2961,6 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 	voxel::Region region = v->region();
 	v->translate(m);
 	region.accumulate(v->region());
-	_dirtyRenderer = DirtyRendererGridRenderer;
 	modified(nodeId, region);
 }
 
@@ -4951,10 +4949,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 }
 
 void SceneManager::updateDirtyRendererStates() {
-	if (_dirtyRenderer & DirtyRendererGridRenderer) {
-		_dirtyRenderer &= ~DirtyRendererGridRenderer;
-		_sceneRenderer->updateGridRegion(_sceneGraph.node(activeNode()).region());
-	}
 }
 
 bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) {
@@ -6075,7 +6069,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 
 	if (node.isModelNode()) {
 		const voxel::Region& region = node.region();
-		_dirtyRenderer |= DirtyRendererGridRenderer;
 		if (!region.containsPoint(referencePosition())) {
 			const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
 			setReferencePosition(glm::ivec3(pivot));

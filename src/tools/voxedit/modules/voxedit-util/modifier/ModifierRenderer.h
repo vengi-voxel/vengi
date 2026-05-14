@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/App.h"
+#include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
@@ -17,7 +18,13 @@ private:
 	voxel::MeshStatePtr _meshState;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
+	render::GridRenderer _gridRenderer;
 	voxelrender::RawVolumeRenderer _volumeRenderer;
+	core::VarPtr _showGrid;
+	core::VarPtr _showLockedAxis;
+	core::VarPtr _showAABB;
+	core::VarPtr _planeSize;
+	core::VarPtr _showPlane;
 	int32_t _mirrorMeshIndex = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
@@ -29,11 +36,13 @@ private:
 	math::Axis _lastMirrorAxis = math::Axis::None;
 	math::Axis _lastLockedAxis = math::Axis::None;
 	glm::ivec3 _lastMirrorPos{0};
-	voxel::Region _lastActiveRegion;
+	voxel::Region _lastMirrorRegion;
+	voxel::Region _lastLockedAxisRegion;
 
 	// Cursor state for rendering
 	glm::ivec3 _cursorPosition{0};
 	int _gridResolution = 1;
+	voxel::Region _activeRegion;
 
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);

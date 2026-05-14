@@ -29,7 +29,7 @@ namespace voxedit {
  */
 class ISceneRenderer : public core::IComponent {
 protected:
-	enum class CommandType : uint8_t { NodeRegion, GridRegion, SliceRegion, RemoveNode, UnhideNode, Clear, MarkDirty };
+	enum class CommandType : uint8_t { NodeRegion, SliceRegion, RemoveNode, UnhideNode, Clear, MarkDirty };
 
 	struct CommandEvent {
 		CommandType type;
@@ -40,11 +40,6 @@ protected:
 				int32_t regionMaxs[3];
 				uint64_t renderRegionMillis;
 			} nodeRegion;
-
-			struct {
-				int32_t regionMins[3];
-				int32_t regionMaxs[3];
-			} gridRegion;
 
 			struct {
 				int32_t regionMins[3];
@@ -110,19 +105,6 @@ public:
 
 	virtual RendererStats rendererStats() const {
 		return {};
-	}
-
-	virtual void updateGridRegion(const voxel::Region &region) {
-		CommandEvent cmd;
-		cmd.type = CommandType::GridRegion;
-		cmd.gridRegion.regionMins[0] = region.getLowerX();
-		cmd.gridRegion.regionMins[1] = region.getLowerY();
-		cmd.gridRegion.regionMins[2] = region.getLowerZ();
-		cmd.gridRegion.regionMaxs[0] = region.getUpperX();
-		cmd.gridRegion.regionMaxs[1] = region.getUpperY();
-		cmd.gridRegion.regionMaxs[2] = region.getUpperZ();
-		core::ScopedLock lock(_commandBufferMutex);
-		_commandBuffer.push_back(cmd);
 	}
 
 	virtual void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) {

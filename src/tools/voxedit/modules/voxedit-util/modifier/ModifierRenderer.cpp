@@ -5,10 +5,12 @@
 #include "color/ColorUtil.h"
 #include "ModifierRenderer.h"
 #include "../AxisUtil.h"
+#include "../Config.h"
 #include "color/Color.h"
 #include "core/Log.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
@@ -30,8 +32,17 @@ ModifierRenderer::ModifierRenderer(const core::TimeProviderPtr &timeProvider, co
 }
 
 bool ModifierRenderer::init() {
+	_showGrid = core::getVar(cfg::VoxEditShowgrid);
+	_showLockedAxis = core::getVar(cfg::VoxEditShowlockedaxis);
+	_showAABB = core::getVar(cfg::VoxEditShowaabb);
+	_planeSize = core::getVar(cfg::VoxEditPlaneSize);
+	_showPlane = core::getVar(cfg::VoxEditShowPlane);
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to initialize the shape renderer");
+		return false;
+	}
+	if (!_gridRenderer.init()) {
+		Log::error("Failed to initialize the grid renderer");
 		return false;
 	}
 
@@ -65,6 +76,7 @@ void ModifierRenderer::shutdown() {
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_aabbMeshes[i] = -1;
 	}
+	_gridRenderer.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_volumeRenderer.shutdown();
@@ -217,23 +229,35 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	updateCursor(ctx.cursorVoxel, ctx.cursorFace, flip);
 
 	if (ctx.mirrorAxis != _lastMirrorAxis || ctx.mirrorPos != _lastMirrorPos ||
-		ctx.activeRegion != _lastActiveRegion) {
+		ctx.activeRegion != _lastMirrorRegion) {
 		updateMirrorPlane(ctx.mirrorAxis, ctx.mirrorPos, ctx.activeRegion);
 		_lastMirrorAxis = ctx.mirrorAxis;
 		_lastMirrorPos = ctx.mirrorPos;
-		_lastActiveRegion = ctx.activeRegion;
+		_lastMirrorRegion = ctx.activeRegion;
 	}
 
-	if (ctx.lockedAxis != _lastLockedAxis || ctx.cursorPosition != _cursorPosition || ctx.activeRegion != _lastActiveRegion) {
+	if (ctx.lockedAxis != _lastLockedAxis || ctx.cursorPosition != _cursorPosition ||
+		ctx.activeRegion != _lastLockedAxisRegion) {
 		updateLockedPlane(ctx.lockedAxis, math::Axis::X, ctx.cursorPosition, ctx.activeRegion);
 		updateLockedPlane(ctx.lockedAxis, math::Axis::Y, ctx.cursorPosition, ctx.activeRegion);
 		updateLockedPlane(ctx.lockedAxis, math::Axis::Z, ctx.cursorPosition, ctx.activeRegion);
 		_lastLockedAxis = ctx.lockedAxis;
+		_lastLockedAxisRegion = ctx.activeRegion;
 	}
 
+	_activeRegion = ctx.activeRegion;
 	_cursorPosition = ctx.cursorPosition;
 	_gridResolution = ctx.gridResolution;
 	_referencePoint = glm::vec3(ctx.referencePosition) + 0.5f;
+	_gridRenderer.setRenderAABB(_showAABB->boolVal());
+	_gridRenderer.setRenderGrid(_showGrid->boolVal());
+	_gridRenderer.setGridResolution(_gridResolution);
+	_gridRenderer.setPlaneGridSize(_planeSize->intVal());
+	_gridRenderer.setRenderPlane(_showPlane->boolVal());
+	_gridRenderer.setColor(style::color(style::ColorGridBorder));
+	if (_activeRegion.isValid()) {
+		_gridRenderer.update(scenegraph::toAABB(_activeRegion));
+	}
 
 	// Update brush preview volumes
 	if (ctx.brushActive) {
@@ -260,6 +284,19 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
+	{
+		const video::ScopedState blend(video::State::Blend, true);
+		if (_activeRegion.isValid()) {
+			_gridRenderer.renderForwardArrow(camera);
+			_gridRenderer.renderPlane(camera);
+			_gridRenderer.render(camera, scenegraph::toAABB(_activeRegion), modelMatrix);
+		}
+		if (_showLockedAxis->boolVal()) {
+			for (int i = 0; i < lengthof(_lockedAxisIndices); ++i) {
+				_shapeRenderer.render(_lockedAxisIndices[i], camera, modelMatrix);
+			}
+		}
+	}
 	{
 		const video::ScopedState depthTest(video::State::DepthTest, false);
 		const video::ScopedState cullFace(video::State::CullFace, false);

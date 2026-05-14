@@ -342,6 +342,7 @@ TEST_F(ModifierTest, testRenderCallsRenderer) {
 	EXPECT_EQ(renderer->renderCalls, 1) << "Renderer render should be called once per render";
 	// Check that cursor position was passed to the renderer
 	EXPECT_EQ(renderer->lastContext.cursorPosition, glm::ivec3(5));
+	EXPECT_EQ(renderer->lastContext.activeRegion, voxel::Region(glm::ivec3(0), glm::ivec3(31)));
 	modifier.shutdown();
 	mgr.shutdown();
 }
