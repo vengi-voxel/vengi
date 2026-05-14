@@ -4926,7 +4926,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 void SceneManager::updateDirtyRendererStates() {
 	if (_dirtyRenderer & DirtyRendererLockedAxis) {
 		_dirtyRenderer &= ~DirtyRendererLockedAxis;
-		_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), _sceneGraph, cursorPosition());
+		_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), cursorPosition());
 	}
 	if (_dirtyRenderer & DirtyRendererGridRenderer) {
 		_dirtyRenderer &= ~DirtyRendererGridRenderer;

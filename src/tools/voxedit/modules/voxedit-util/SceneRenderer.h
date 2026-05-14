@@ -15,6 +15,7 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include <cstdint>
 
 namespace voxedit {
 
@@ -26,6 +27,8 @@ namespace voxedit {
  */
 class SceneRenderer : public ISceneRenderer {
 private:
+	using Super = ISceneRenderer;
+
 	voxel::MeshStatePtr _meshState;
 	voxelrender::SceneGraphRenderer _sceneGraphRenderer;
 	render::GridRenderer _gridRenderer;
@@ -47,14 +50,9 @@ private:
 	core::VarPtr _planeSize;
 	core::VarPtr _showPlane;
 
-	/** @brief The currently locked axis for modifications. */
-	math::Axis _lockedAxis = math::Axis::None;
-	/** @brief The tracked 3D cursor position in the voxel scene. */
-	glm::ivec3 _cursorPosition{0};
-
 	/** @brief Shape renderer mesh index */
 	struct ShapeIndices {
-		/** @brief for the locked mathematical planes (X, Y, Z). */
+		/** @brief for the locked planes (X, Y, Z). */
 		int32_t plane[3] = {-1, -1, -1};
 		/** @brief for the highlighted active region. */
 		int32_t highlight = -1;
@@ -66,18 +64,13 @@ private:
 		int32_t sliceRegion = -1;
 	} _indices;
 
-	/** @brief The AABB representing the current grid rendering bounds. */
-	math::AABB<float> _nextGridRegionUpdate;
-
-	using TimedRegion = core::TimedValue<voxel::Region>;
-	/** @brief A region highlight that fades out over time (used for visual feedback on modifications). */
-	TimedRegion _highlightRegion;
-
 	struct Cache {
 		/** @brief Flag indicating if the AABB visualization mesh needs to be rebuilt. */
 		bool aabbDirty = true;
 		/** @brief Flag indicating if the skeletal bone visualization mesh needs to be rebuilt. */
 		bool boneDirty = true;
+		/** @brief Flag indicating if the locked axis visualization mesh needs to be rebuilt. */
+		bool lockedAxisDirty = true;
 		/** @brief Caches the frame index for which the AABB mesh was last generated. */
 		scenegraph::FrameIndex lastAABBFrame = InvalidFrame;
 		/** @brief Caches the frame index for which the bone mesh was last generated. */
@@ -90,11 +83,24 @@ private:
 		bool lastGrayInactive = false;
 	} _cache;
 
-	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
-	void updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
-	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
-						   const glm::ivec3 &cursorPosition);
-	void updateSliceRegionMesh();
+	using TimedRegion = core::TimedValue<voxel::Region>;
+	/** @brief A region highlight that fades out over time (used for visual feedback on modifications). */
+	TimedRegion _highlightRegion;
+	/** @brief The AABB representing the current grid rendering bounds. */
+	math::AABB<float> _gridRegion;
+
+	/** @brief The currently locked axis for modifications. */
+	math::Axis _lockedAxis = math::Axis::None;
+	/** @brief The tracked 3D cursor position in the voxel scene. */
+	glm::ivec3 _lockedAxisPosition{0};
+
+	void doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
+	void doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
+	void doUpdateLockedPlane(math::Axis axis, const scenegraph::SceneGraph &sceneGraph);
+	void doUpdateSliceRegionMesh();
+
+	void handleCommandBuffer();
+	void checkMainThread() const;
 
 public:
 	SceneRenderer(const core::TimeProviderPtr &timeProvider);
@@ -107,22 +113,12 @@ public:
 
 	// ISceneRenderer
 	void update() override;
-	void clear() override;
-	void updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
-							const glm::ivec3 &cursorPosition) override;
-	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) override;
-	void updateGridRegion(const voxel::Region &region) override;
-	void removeNode(int nodeId) override;
 	bool isVisible(int nodeId, bool hideEmpty = true) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) override;
 	const voxel::Region &sliceRegion() const override;
-	void setSliceRegion(const voxel::Region &region) override;
-	bool isSliceModeActive() const override;
 	RendererStats rendererStats() const override;
-	void markDirty() override;
-	void unhideNode(int nodeId) override;
 };
 
 } // namespace voxedit

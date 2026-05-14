@@ -2,17 +2,18 @@
  * @file
  */
 
-#include "color/ColorUtil.h"
 #include "SceneRenderer.h"
 #include "app/App.h"
 #include "app/I18N.h"
-#include "core/TimeProvider.h"
+#include "color/ColorUtil.h"
 #include "core/Log.h"
+#include "core/TimeProvider.h"
 #include "core/Trace.h"
+#include "core/concurrent/Thread.h"
 #include "scenegraph/FrameTransform.h"
-#include "ui/Style.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneUtil.h"
+#include "ui/Style.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/AxisUtil.h"
@@ -42,16 +43,20 @@ bool SceneRenderer::init() {
 	_showAABB = core::getVar(cfg::VoxEditShowaabb);
 	_showBones = core::getVar(cfg::VoxEditShowBones);
 	_renderShadow = core::getVar(cfg::VoxEditRendershadow);
-	const core::VarDef voxEditShadingMode(cfg::VoxEditShadingMode, 1, 0, 2, N_("Shading mode"), N_("Shading mode: 0=Unlit, 1=Lit, 2=Shadows"));
+	const core::VarDef voxEditShadingMode(cfg::VoxEditShadingMode, 1, 0, 2, N_("Shading mode"),
+										  N_("Shading mode: 0=Unlit, 1=Lit, 2=Shadows"));
 	_shadingMode = core::Var::registerVar(voxEditShadingMode);
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
 	_grayInactive = core::getVar(cfg::VoxEditGrayInactive);
 	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
-	const core::VarDef voxEditAmbientColor(cfg::VoxEditAmbientColor, "0.3 0.3 0.3", N_("Ambient color"), N_("Ambient color for lit rendering in r g b format"));
+	const core::VarDef voxEditAmbientColor(cfg::VoxEditAmbientColor, "0.3 0.3 0.3", N_("Ambient color"),
+										   N_("Ambient color for lit rendering in r g b format"));
 	_ambientColor = core::Var::registerVar(voxEditAmbientColor);
-	const core::VarDef voxEditDiffuseColor(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7", N_("Diffuse color"), N_("Diffuse color for lit rendering in r g b format"));
+	const core::VarDef voxEditDiffuseColor(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7", N_("Diffuse color"),
+										   N_("Diffuse color for lit rendering in r g b format"));
 	_diffuseColor = core::Var::registerVar(voxEditDiffuseColor);
-	const core::VarDef voxEditSunAngle(cfg::VoxEditSunAngle, "35.0 135.0 0.0", N_("Sun angle"), N_("pitch, yaw and ignored roll in degrees"));
+	const core::VarDef voxEditSunAngle(cfg::VoxEditSunAngle, "35.0 135.0 0.0", N_("Sun angle"),
+									   N_("pitch, yaw and ignored roll in degrees"));
 	_sunAngle = core::Var::registerVar(voxEditSunAngle);
 	_planeSize = core::getVar(cfg::VoxEditPlaneSize);
 	_showPlane = core::getVar(cfg::VoxEditShowPlane);
@@ -79,24 +84,12 @@ bool SceneRenderer::init() {
 	return true;
 }
 
-void SceneRenderer::clear() {
-	_sceneGraphRenderer.clear(_meshState);
-	markDirty();
-}
-
 const voxel::Region &SceneRenderer::sliceRegion() const {
 	return _sceneGraphRenderer.sliceRegion();
 }
 
-void SceneRenderer::setSliceRegion(const voxel::Region &region) {
-	_sceneGraphRenderer.setSliceRegion(region);
-}
-
-bool SceneRenderer::isSliceModeActive() const {
-	return _sceneGraphRenderer.isSliceModeActive();
-}
-
 SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
+	checkMainThread();
 	RendererStats stats;
 	stats.pendingExtractions = _meshState->pendingExtractions();
 	stats.pendingMeshes = _meshState->pendingMeshes();
@@ -122,17 +115,6 @@ void SceneRenderer::shutdown() {
 	_indices.highlight = -1;
 }
 
-void SceneRenderer::updateGridRegion(const voxel::Region &region) {
-	_nextGridRegionUpdate = scenegraph::toAABB(region);
-}
-
-void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
-	_sceneGraphRenderer.scheduleRegionExtraction(_meshState, nodeId, region);
-	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-	_highlightRegion = TimedRegion(region, timeProvider->tickNow(), renderRegionMillis);
-	markDirty();
-}
-
 /**
  * @brief Return the real model node, not the reference
  */
@@ -149,26 +131,13 @@ static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGr
 	return nullptr;
 }
 
-void SceneRenderer::updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
-									   const glm::ivec3 &cursorPosition) {
-	if (_lockedAxis == lockedAxis && _cursorPosition == cursorPosition) {
-		return;
-	}
-	_lockedAxis = lockedAxis;
-	_cursorPosition = cursorPosition;
-	updateLockedPlane(lockedAxis, math::Axis::X, sceneGraph, cursorPosition);
-	updateLockedPlane(lockedAxis, math::Axis::Y, sceneGraph, cursorPosition);
-	updateLockedPlane(lockedAxis, math::Axis::Z, sceneGraph, cursorPosition);
-}
-
-void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
-									  const glm::ivec3 &cursorPosition) {
+void SceneRenderer::doUpdateLockedPlane(math::Axis axis, const scenegraph::SceneGraph &sceneGraph) {
 	if (axis == math::Axis::None) {
 		return;
 	}
 	const int index = math::getIndexForAxis(axis);
 	int32_t &meshIndex = _indices.plane[index];
-	if ((lockedAxis & axis) == math::Axis::None) {
+	if ((_lockedAxis & axis) == math::Axis::None) {
 		if (meshIndex != -1) {
 			_shapeRenderer.deleteMesh(meshIndex);
 			meshIndex = -1;
@@ -193,13 +162,13 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 	} else if (axis == math::Axis::Z) {
 		color = style::color(style::ColorAxisZ);
 	}
-	updateShapeBuilderForPlane(_shapeBuilder, node.region(), false, cursorPosition, axis,
+	updateShapeBuilderForPlane(_shapeBuilder, node.region(), false, _lockedAxisPosition, axis,
 							   color::alpha(color, 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
-void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
-								   scenegraph::FrameIndex frameIdx) {
+void SceneRenderer::doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
+									 scenegraph::FrameIndex frameIdx) {
 	if (!sceneMode || !_showAABB->boolVal()) {
 		return;
 	}
@@ -230,10 +199,11 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 			_shapeBuilder.setColor(style::color(style::ColorInactiveNode));
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		core_assert_msg(region.isValid(), "Region for node %s of type %i is invalid", node.name().c_str(), (int)node.type());
+		core_assert_msg(region.isValid(), "Region for node %s of type %i is invalid", node.name().c_str(),
+						(int)node.type());
 		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
-		const math::OBBF& obb = scenegraph::toOBB(true, region, pivot, transform);
+		const math::OBBF &obb = scenegraph::toOBB(true, region, pivot, transform);
 		_shapeBuilder.obb(obb);
 		++modelNodes;
 	}
@@ -261,8 +231,8 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_cache.lastAABBActiveNode = activeNodeId;
 }
 
-void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
-								   scenegraph::FrameIndex frameIdx) {
+void SceneRenderer::doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
+									 scenegraph::FrameIndex frameIdx) {
 	if (!sceneMode) {
 		return;
 	}
@@ -325,36 +295,101 @@ const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGrap
 }
 
 bool SceneRenderer::isVisible(int nodeId, bool hideEmpty) const {
+	checkMainThread();
 	return _sceneGraphRenderer.isVisible(_meshState, nodeId, hideEmpty);
 }
 
-void SceneRenderer::removeNode(int nodeId) {
-	_sceneGraphRenderer.nodeRemove(_meshState, nodeId);
-	markDirty();
+void SceneRenderer::checkMainThread() const {
+	core_assert(app::App::getInstance()->isMainThread(core::getCurrentThreadId()));
 }
 
-void SceneRenderer::markDirty() {
-	_cache.aabbDirty = true;
-	_cache.boneDirty = true;
-}
-
-void SceneRenderer::unhideNode(int nodeId) {
-	const int idx = _sceneGraphRenderer.getVolumeIdx(nodeId);
-	if (idx < 0) {
-		return;
+void SceneRenderer::handleCommandBuffer() {
+	core::DynamicArray<CommandEvent> cmds;
+	{
+		core::ScopedLock lock(_commandBufferMutex);
+		cmds = core::move(_commandBuffer);
 	}
-	_meshState->hide(idx, false);
+
+	for (const CommandEvent &cmd : cmds) {
+		switch (cmd.type) {
+		case CommandType::NodeRegion: {
+			const voxel::Region region(
+				glm::ivec3(cmd.nodeRegion.regionMins[0], cmd.nodeRegion.regionMins[1], cmd.nodeRegion.regionMins[2]),
+				glm::ivec3(cmd.nodeRegion.regionMaxs[0], cmd.nodeRegion.regionMaxs[1], cmd.nodeRegion.regionMaxs[2]));
+			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, cmd.nodeRegion.nodeId, region);
+			const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+			_highlightRegion = TimedRegion(region, timeProvider->tickNow(), cmd.nodeRegion.renderRegionMillis);
+			_cache.aabbDirty = true;
+			_cache.boneDirty = true;
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		case CommandType::GridRegion: {
+			const voxel::Region region(
+				glm::ivec3(cmd.gridRegion.regionMins[0], cmd.gridRegion.regionMins[1], cmd.gridRegion.regionMins[2]),
+				glm::ivec3(cmd.gridRegion.regionMaxs[0], cmd.gridRegion.regionMaxs[1], cmd.gridRegion.regionMaxs[2]));
+			_gridRegion = scenegraph::toAABB(region);
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		case CommandType::SliceRegion: {
+			const voxel::Region region(
+				glm::ivec3(cmd.sliceRegion.regionMins[0], cmd.sliceRegion.regionMins[1], cmd.sliceRegion.regionMins[2]),
+				glm::ivec3(cmd.sliceRegion.regionMaxs[0], cmd.sliceRegion.regionMaxs[1],
+						   cmd.sliceRegion.regionMaxs[2]));
+			_sceneGraphRenderer.setSliceRegion(region);
+			break;
+		}
+		case CommandType::RemoveNode: {
+			_sceneGraphRenderer.nodeRemove(_meshState, cmd.node.nodeId);
+			_cache.aabbDirty = true;
+			_cache.boneDirty = true;
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		case CommandType::UnhideNode: {
+			const int idx = _sceneGraphRenderer.getVolumeIdx(cmd.node.nodeId);
+			if (idx >= 0) {
+				_meshState->hide(idx, false);
+			}
+			break;
+		}
+		case CommandType::Clear: {
+			_sceneGraphRenderer.clear(_meshState);
+			_cache.aabbDirty = true;
+			_cache.boneDirty = true;
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		case CommandType::MarkDirty: {
+			_cache.aabbDirty = true;
+			_cache.boneDirty = true;
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		case CommandType::LockedPlanes: {
+			_lockedAxis = cmd.lockedPlanes.lockedAxis;
+			_lockedAxisPosition = glm::ivec3(cmd.lockedPlanes.cursorPosition[0], cmd.lockedPlanes.cursorPosition[1],
+											 cmd.lockedPlanes.cursorPosition[2]);
+			_cache.lockedAxisDirty = true;
+			break;
+		}
+		}
+	}
 }
 
 void SceneRenderer::update() {
 	core_trace_scoped(SceneRendererUpdate);
+
+	handleCommandBuffer();
+
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());
 	_gridRenderer.setGridResolution(_gridSize->intVal());
 	_gridRenderer.setPlaneGridSize(_planeSize->intVal());
 	_gridRenderer.setRenderPlane(_showPlane->boolVal());
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
-	_gridRenderer.update(_nextGridRegionUpdate);
+	_gridRenderer.update(_gridRegion);
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
 	_sceneGraphRenderer.setAmbientColor(val);
@@ -365,7 +400,7 @@ void SceneRenderer::update() {
 	_sceneGraphRenderer.update(_meshState);
 }
 
-void SceneRenderer::updateSliceRegionMesh() {
+void SceneRenderer::doUpdateSliceRegionMesh() {
 	if (!isSliceModeActive()) {
 		return;
 	}
@@ -380,6 +415,7 @@ void SceneRenderer::updateSliceRegionMesh() {
 
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
+	checkMainThread();
 	if (renderContext.sceneGraph == nullptr) {
 		Log::error("No scenegraph given to render");
 		return;
@@ -396,17 +432,30 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 	renderContext.grayInactive = grayInactiveNow;
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
-	updateSliceRegionMesh();
-	updateAABBMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
-	updateBoneMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
 	_sceneGraphRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
 }
 
 void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
+	core_trace_scoped(RenderUI);
+	checkMainThread();
 	if (renderContext.sceneGraph == nullptr) {
 		Log::error("No scenegraph given to render");
 		return;
 	}
+
+	doUpdateAABBMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
+	doUpdateBoneMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
+
+	if (_cache.lockedAxisDirty) {
+		doUpdateLockedPlane(math::Axis::X, *renderContext.sceneGraph);
+		doUpdateLockedPlane(math::Axis::Y, *renderContext.sceneGraph);
+		doUpdateLockedPlane(math::Axis::Z, *renderContext.sceneGraph);
+		_cache.lockedAxisDirty = false;
+	}
+
+	// TODO: PERF: add dirty state checks here by comparing the old with the current value with values in struct Cache
+	doUpdateSliceRegionMesh();
+
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	video::ScopedState blend(video::State::Blend, true);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
@@ -452,7 +501,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeBuilder.clear();
 			_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
 			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
-							_highlightRegion.value().getUpperCornerf() + 1.0f);
+							   _highlightRegion.value().getUpperCornerf() + 1.0f);
 			_shapeRenderer.createOrUpdate(_indices.highlight, _shapeBuilder);
 			_shapeRenderer.render(_indices.highlight, camera, model);
 			video::polygonOffset(glm::vec2(0.0f));
