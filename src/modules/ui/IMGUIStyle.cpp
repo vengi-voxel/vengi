@@ -5,9 +5,10 @@
 
 #include "IMGUIStyle.h"
 #include "app/I18N.h"
-#include "dearimgui/imgui.h"
-#include "dearimgui/imgui_neo_sequencer.h"
 #include "dearimgui/ImGuizmo.h"
+#include "dearimgui/imgui.h"
+#include "dearimgui/imgui_internal.h"
+#include "dearimgui/imgui_neo_sequencer.h"
 
 namespace ImGui {
 
@@ -50,6 +51,7 @@ void StyleColorsCorporateGrey() {
 	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
 	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
 	colors[ImGuiCol_CheckMark] = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
+	colors[ImGuiCol_CheckboxSelectedBg] = ImLerp(colors[ImGuiCol_FrameBg], colors[ImGuiCol_FrameBgActive], 0.65f);
 	colors[ImGuiCol_SliderGrab] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
 	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.64f, 0.64f, 0.64f, 1.00f);
 	colors[ImGuiCol_Button] = ImVec4(0.54f, 0.54f, 0.54f, 0.35f);
