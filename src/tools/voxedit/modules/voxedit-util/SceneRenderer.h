@@ -55,6 +55,8 @@ private:
 	int32_t _boneMeshIndex = -1;
 	int32_t _sliceRegionMeshIndex = -1;
 
+	math::AABB<float> _nextGridRegionUpdate;
+
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 

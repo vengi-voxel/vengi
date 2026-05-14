@@ -123,8 +123,7 @@ void SceneRenderer::shutdown() {
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
-	const math::AABB<float> &aabb = scenegraph::toAABB(region);
-	_gridRenderer.update(aabb);
+	_nextGridRegionUpdate = scenegraph::toAABB(region);
 }
 
 void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
@@ -355,6 +354,7 @@ void SceneRenderer::update() {
 	_gridRenderer.setPlaneGridSize(_planeSize->intVal());
 	_gridRenderer.setRenderPlane(_showPlane->boolVal());
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
+	_gridRenderer.update(_nextGridRegionUpdate);
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
 	_sceneGraphRenderer.setAmbientColor(val);
