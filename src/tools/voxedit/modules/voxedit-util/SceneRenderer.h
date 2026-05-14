@@ -5,7 +5,6 @@
 #pragma once
 
 #include "app/App.h"
-#include "core/TimedValue.h"
 #include "math/Axis.h"
 #include "render/ShapeRenderer.h"
 #include "scenegraph/SceneGraph.h"
@@ -45,8 +44,6 @@ private:
 
 	/** @brief Shape renderer mesh index */
 	struct ShapeIndices {
-		/** @brief for the highlighted active region. */
-		int32_t highlight = -1;
 		/** @brief for the global scene or node bounding box. */
 		int32_t aabb = -1;
 		/** @brief for the skeletal bone connections. */
@@ -71,10 +68,6 @@ private:
 		/** @brief Caches the gray inactive state to trigger AABB/Bone rebuilds when toggled. */
 		bool lastGrayInactive = false;
 	} _cache;
-
-	using TimedRegion = core::TimedValue<voxel::Region>;
-	/** @brief A region highlight that fades out over time (used for visual feedback on modifications). */
-	TimedRegion _highlightRegion;
 
 	void doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);

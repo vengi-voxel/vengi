@@ -7,6 +7,9 @@
 #include "color/RGBA.h"
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
+#include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
+#include "core/concurrent/Lock.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
@@ -69,6 +72,32 @@ struct ModifierRendererContext {
 };
 
 class IModifierRenderer : public core::IComponent {
+protected:
+	enum class CommandType : uint8_t { HighlightRegion };
+
+	struct CommandEvent {
+		CommandType type;
+		union {
+			struct {
+				int32_t regionMins[3];
+				int32_t regionMaxs[3];
+				uint64_t renderRegionMillis;
+			} highlightRegion;
+		};
+	};
+
+	core_trace_mutex(core::Lock, _commandBufferMutex, "IModifierRenderer");
+	core::DynamicArray<CommandEvent> _commandBuffer;
+
+	core::DynamicArray<CommandEvent> popCommandBuffer() {
+		core::DynamicArray<CommandEvent> cmds;
+		{
+			core::ScopedLock lock(_commandBufferMutex);
+			cmds = core::move(_commandBuffer);
+		}
+		return cmds;
+	}
+
 public:
 	bool init() override {
 		return true;
@@ -88,6 +117,20 @@ public:
 	 * @param ctx The context containing all necessary state for the update.
 	 */
 	virtual void update(const ModifierRendererContext &ctx) {
+	}
+
+	virtual void setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis = 0) {
+		CommandEvent cmd;
+		cmd.type = CommandType::HighlightRegion;
+		cmd.highlightRegion.regionMins[0] = region.getLowerX();
+		cmd.highlightRegion.regionMins[1] = region.getLowerY();
+		cmd.highlightRegion.regionMins[2] = region.getLowerZ();
+		cmd.highlightRegion.regionMaxs[0] = region.getUpperX();
+		cmd.highlightRegion.regionMaxs[1] = region.getUpperY();
+		cmd.highlightRegion.regionMaxs[2] = region.getUpperZ();
+		cmd.highlightRegion.renderRegionMillis = renderRegionMillis;
+		core::ScopedLock lock(_commandBufferMutex);
+		_commandBuffer.push_back(cmd);
 	}
 
 	/**

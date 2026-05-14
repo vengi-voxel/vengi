@@ -38,7 +38,6 @@ protected:
 				int nodeId;
 				int32_t regionMins[3];
 				int32_t regionMaxs[3];
-				uint64_t renderRegionMillis;
 			} nodeRegion;
 
 			struct {
@@ -107,7 +106,7 @@ public:
 		return {};
 	}
 
-	virtual void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) {
+	virtual void updateNodeRegion(int nodeId, const voxel::Region &region) {
 		CommandEvent cmd;
 		cmd.type = CommandType::NodeRegion;
 		cmd.nodeRegion.nodeId = nodeId;
@@ -117,7 +116,6 @@ public:
 		cmd.nodeRegion.regionMaxs[0] = region.getUpperX();
 		cmd.nodeRegion.regionMaxs[1] = region.getUpperY();
 		cmd.nodeRegion.regionMaxs[2] = region.getUpperZ();
-		cmd.nodeRegion.renderRegionMillis = renderRegionMillis;
 		core::ScopedLock lock(_commandBufferMutex);
 		_commandBuffer.push_back(cmd);
 	}

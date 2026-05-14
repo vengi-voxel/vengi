@@ -97,7 +97,7 @@ namespace voxedit {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
-	  _modifierFacade(this, modifierRenderer), _luaApi(filesystem),
+	  _modifier(this, modifierRenderer), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
 	  _server(&_luaApi, this), _client(this), _recorder(this), _player(this) {
 	server().setState(&_sceneGraph);
@@ -173,9 +173,9 @@ bool SceneManager::nodeCalculateNormals(int nodeId, voxel::Connectivity connecti
 			Log::warn("Node %i has no normal palette", nodeId);
 			return false;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(node->volume());
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(node->volume());
 		if (fillAndHollow) {
-			voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
+			voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
 		}
 		const palette::NormalPalette &normalPalette = node->normalPalette();
 		voxelutil::visitSurfaceVolumeParallel(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
@@ -270,8 +270,8 @@ void SceneManager::nodeGroupFillHollow() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-		voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
@@ -286,8 +286,8 @@ void SceneManager::nodeGroupFill() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-		voxelutil::fill(wrapper, _modifierFacade.cursorVoxel(), _modifierFacade.isMode(ModifierType::Override));
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		voxelutil::fill(wrapper, _modifier.cursorVoxel(), _modifier.isMode(ModifierType::Override));
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
@@ -302,7 +302,7 @@ void SceneManager::nodeGroupClear() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::clear(wrapper);
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
@@ -322,7 +322,7 @@ void SceneManager::nodeGroupDeleteSelected() {
 		if (!selRegion.isValid()) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxel::Voxel());
 		}, voxelutil::VisitSolidOutline());
@@ -344,7 +344,7 @@ void SceneManager::nodeGroupColorSelected(uint8_t colorIndex) {
 		if (!selRegion.isValid()) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::recolorSelected(wrapper, *v, selRegion, colorIndex);
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
@@ -566,7 +566,7 @@ void SceneManager::nodeGroupHollow() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::hollow(wrapper);
 		modified(groupNodeId, wrapper.dirtyRegion());
 	});
@@ -583,9 +583,9 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 		Log::error("No volume for active node %i", nodeId);
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	const glm::ivec3 &pos = _modifierFacade.cursorPosition();
-	const voxel::FaceNames face = _modifierFacade.cursorFace();
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+	const glm::ivec3 &pos = _modifier.cursorPosition();
+	const voxel::FaceNames face = _modifier.cursorFace();
 	const voxel::Voxel hitVoxel/* = hitCursorVoxel()*/; // TODO: should be an option
 	voxelutil::fillPlane(wrapper, image, hitVoxel, pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
@@ -596,7 +596,7 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	auto func = [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &) {
 		wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
 	};
@@ -812,7 +812,8 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	const bool updateRegion = (flags & SceneModifiedFlags::UpdateRendererRegion) == SceneModifiedFlags::UpdateRendererRegion;
 	if (updateRegion && modifiedRegion.isValid()) {
 		Log::debug("Modify region for nodeid %i", nodeId);
-		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
+		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion);
+		_modifier.setHighlightRegion(modifiedRegion, renderRegionMillis);
 	}
 	const bool invalidateNodeCache = (flags & SceneModifiedFlags::InvalidateNodeCache) == SceneModifiedFlags::InvalidateNodeCache;
 	if (invalidateNodeCache) {
@@ -839,7 +840,7 @@ int SceneManager::nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) 
 	}
 	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	auto func = [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 		newVolume->setVoxel(x, y, z, voxel);
 		wrapper.setVoxel(x, y, z, voxel::Voxel());
@@ -876,7 +877,7 @@ int SceneManager::nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &pa
 	}
 	const voxel::Region &region = v->region();
 	voxel::RawVolume *newVolume = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	auto func = [&](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
 		newVolume->setVoxel(x, y, z, voxel);
 		wrapper.setVoxel(x, y, z, voxel::Voxel());
@@ -1389,7 +1390,7 @@ bool SceneManager::undo(int n) {
 			return false;
 		}
 	}
-	_modifierFacade.onSceneChange();
+	_modifier.onSceneChange();
 	return true;
 }
 
@@ -1400,7 +1401,7 @@ bool SceneManager::redo(int n) {
 			return false;
 		}
 	}
-	_modifierFacade.onSceneChange();
+	_modifier.onSceneChange();
 	return true;
 }
 
@@ -2241,7 +2242,7 @@ void SceneManager::selectionUnselect(int nodeId) {
 	// Only re-extract where voxels actually had FlagOutline set
 	const voxel::Region dirtyRegion = selectionCalculateRegion(*node);
 	node->clearSelection();
-	_modifierFacade.selectBrush().box3D().setSelectionRegion(voxel::Region::InvalidRegion);
+	_modifier.selectBrush().box3D().setSelectionRegion(voxel::Region::InvalidRegion);
 	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
 }
 
@@ -2255,8 +2256,8 @@ void SceneManager::selectionSelectAll(int nodeId) {
 		return;
 	}
 	node->select(volume->region());
-	if (_modifierFacade.selectBrush().selectMode() == SelectMode::Box3D) {
-		_modifierFacade.selectBrush().box3D().setSelectionRegion(volume->region());
+	if (_modifier.selectBrush().selectMode() == SelectMode::Box3D) {
+		_modifier.selectBrush().box3D().setSelectionRegion(volume->region());
 	}
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
 	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
@@ -2321,7 +2322,7 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	}
 	node->clearSelection();
 	node->select(clamped);
-	SelectBrush &selectBrush = _modifierFacade.selectBrush();
+	SelectBrush &selectBrush = _modifier.selectBrush();
 	if (selectBrush.selectMode() == SelectMode::Box3D) {
 		selectBrush.box3D().setSelectionRegion(clamped);
 	}
@@ -2333,7 +2334,7 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	if (node == nullptr) {
 		return;
 	}
-	SelectBrush &brush = _modifierFacade.selectBrush();
+	SelectBrush &brush = _modifier.selectBrush();
 	if (!brush.circle().valid()) {
 		return;
 	}
@@ -2534,7 +2535,7 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 void SceneManager::resetSceneState() {
 	// this also resets the cursor voxel - but nodeActivate() will set it to the first usable index
 	// that's why this call must happen before the nodeActivate() call.
-	_modifierFacade.reset();
+	_modifier.reset();
 	int nodeId = (*_sceneGraph.beginModel()).id();
 	for (const auto &entry : _sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
@@ -2554,7 +2555,7 @@ void SceneManager::resetSceneState() {
 	_mementoHandler.markInitialSceneState(_sceneGraph);
 	_dirty = false;
 	_result = voxelutil::PickResult();
-	_modifierFacade.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
+	_modifier.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
 	{
 		// TODO: happens in nodeActivate already
 		setCursorPosition(cursorPosition(), voxel::FaceNames::Max, true);
@@ -2751,7 +2752,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	_dirty = false; // TODO: why is this not dirty? should it be dirty when the volume changes?
 	_result = voxelutil::PickResult();
-	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
+	setCursorPosition(cursorPosition(), _modifier.cursorFace(), true);
 	setReferencePosition(region.getLowerCenter());
 	resetLastTrace();
 	return true;
@@ -2972,11 +2973,11 @@ void SceneManager::nodeGroupShift(int x, int y, int z) {
 }
 
 bool SceneManager::setGridResolution(int resolution) {
-	if (_modifierFacade.gridResolution() == resolution) {
+	if (_modifier.gridResolution() == resolution) {
 		return false;
 	}
-	_modifierFacade.setGridResolution(resolution);
-	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
+	_modifier.setGridResolution(resolution);
+	setCursorPosition(cursorPosition(), _modifier.cursorFace(), true);
 	return true;
 }
 
@@ -2994,7 +2995,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
 			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
-			_modifierFacade.render(modifierRenderContext, camera, activePalette(), mat);
+			_modifier.render(modifierRenderContext, camera, activePalette(), mat);
 		}
 	}
 
@@ -3116,7 +3117,7 @@ void SceneManager::construct() {
 
 	voxelformat::FormatConfig::init();
 
-	_modifierFacade.construct();
+	_modifier.construct();
 	_mementoHandler.construct();
 	_sceneRenderer->construct();
 	_camMovement.construct();
@@ -3552,19 +3553,19 @@ void SceneManager::construct() {
 				}
 				nodeColorToNewNode(nodeId, indices);
 			} else {
-				const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
+				const voxel::Voxel voxel = _modifier.cursorVoxel();
 				nodeColorToNewNode(nodeId, voxel);
 			}
 		}).setHelp(_("Move the voxels of the current selected palette index, the given index or a comma-separated list of indices into a new node"));
 
 	command::Command::registerCommand("abortaction")
 		.setHandler([&] (const command::CommandArgs& args) {
-			_modifierFacade.abort();
+			_modifier.abort();
 		}).setHelp(_("Aborts the current modifier action"));
 
 	command::Command::registerCommand("brushapply")
 		.setHandler([&] (const command::CommandArgs& args) {
-			_modifierFacade.brushApply();
+			_modifier.brushApply();
 		}).setHelp(_("Apply pending brush changes without switching brushes"));
 
 	command::Command::registerCommand("fillhollow")
@@ -3594,17 +3595,17 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("colorselected")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupColorSelected(_modifierFacade.cursorVoxel().getColor());
+			nodeGroupColorSelected(_modifier.cursorVoxel().getColor());
 		}).setHelp(_("Recolor selected voxels with the active palette color"));
 
 	command::Command::registerCommand("deselectcolor")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupDeselectColor(_modifierFacade.cursorVoxel().getColor());
+			nodeGroupDeselectColor(_modifier.cursorVoxel().getColor());
 		}).setHelp(_("Deselect all voxels matching the active palette color"));
 
 	command::Command::registerCommand("selectonlycolor")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupSelectOnlyColor(_modifierFacade.cursorVoxel().getColor());
+			nodeGroupSelectOnlyColor(_modifier.cursorVoxel().getColor());
 		}).setHelp(_("Deselect all voxels not matching the active palette color"));
 
 	command::Command::registerCommand("selectonlyedges")
@@ -3682,7 +3683,7 @@ void SceneManager::construct() {
 			const int x = args.intVal("x");
 			const int y = args.intVal("y");
 			const int z = args.intVal("z");
-			setCursorPosition(glm::ivec3(x, y, z), _modifierFacade.cursorFace(), true);
+			setCursorPosition(glm::ivec3(x, y, z), _modifier.cursorFace(), true);
 			_traceViaMouse = false;
 		}).setHelp(_("Set the cursor to the specified position"));
 
@@ -3945,7 +3946,7 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			const uint8_t index = (uint8_t)args.intVal("index");
 			const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-			_modifierFacade.setCursorVoxel(voxel);
+			_modifier.setCursorVoxel(voxel);
 		}).setHelp(_("Use the given index to select the color from the current palette"));
 
 	command::Command::registerCommand("setcolorrgb")
@@ -3959,7 +3960,7 @@ void SceneManager::construct() {
 			const color::RGBA color(red, green, blue);
 			const int index = activePalette().getClosestMatch(color);
 			const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-			_modifierFacade.setCursorVoxel(voxel);
+			_modifier.setCursorVoxel(voxel);
 		}).setHelp(_("Set the current selected color by finding the closest rgb match in the palette"));
 
 	command::Command::registerCommand("pickcolor")
@@ -3968,14 +3969,14 @@ void SceneManager::construct() {
 			// depends on the mode you are editing in), thus we should use the cursor voxel in
 			// that case
 			if (_traceViaMouse && !voxel::isAir(hitCursorVoxel().getMaterial())) {
-				_modifierFacade.setCursorVoxel(hitCursorVoxel());
+				_modifier.setCursorVoxel(hitCursorVoxel());
 				return;
 			}
 			// resolve the voxel via cursor position. This allows to use also get the proper
 			// result if we moved the cursor via keys (and thus might have skipped tracing)
 			if (const voxel::RawVolume *v = activeVolume()) {
 				const voxel::Voxel& voxel = v->voxel(cursorPosition());
-				_modifierFacade.setCursorVoxel(voxel);
+				_modifier.setCursorVoxel(voxel);
 			}
 		}).setHelp(_("Pick the current selected color from current cursor voxel"));
 
@@ -3983,12 +3984,12 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			if (_traceViaMouse && !voxel::isAir(hitCursorVoxel().getMaterial())) {
 				const voxel::Voxel& voxel = hitCursorVoxel();
-				if (voxel.getColor() == _modifierFacade.cursorVoxel().getColor()) {
+				if (voxel.getColor() == _modifier.cursorVoxel().getColor()) {
 					return;
 				}
 				palette::Palette &palette = activePalette();
 				const palette::Material &material = palette.material(voxel.getColor());
-				palette.setMaterial(_modifierFacade.cursorVoxel().getColor(), material);
+				palette.setMaterial(_modifier.cursorVoxel().getColor(), material);
 				return;
 			}
 		}).setHelp(_("Pick the current selected material from current cursor voxel"));
@@ -4474,7 +4475,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the scene renderer");
 		return false;
 	}
-	if (!_modifierFacade.init()) {
+	if (!_modifier.init()) {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
@@ -4489,7 +4490,7 @@ bool SceneManager::init() {
 
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();
-	_modifierFacade.setLockedAxis(math::Axis::None, true);
+	_modifier.setLockedAxis(math::Axis::None, true);
 	return true;
 }
 
@@ -4513,7 +4514,7 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	// TODO: MEMENTO: there are still no memento states for direct node modifications during the script run
 	//                we can e.g. set or modify the transforms, properties and so on of a node.
 	_sceneGraph.registerListener(&_luaApiListener);
-	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args)) {
+	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), args)) {
 		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
 		return false;
@@ -4744,7 +4745,7 @@ bool SceneManager::update(double nowSeconds) {
 	scenegraph::FrameIndex frameIdx = currentFrame();
 	// TODO: Set to InvalidFrameIndex if transforms should not get applied
 	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
-	_modifierFacade.update(nowSeconds, camera);
+	_modifier.update(nowSeconds, camera);
 
 	_sceneGraph.updateTransforms();
 	updateDirtyRendererStates();
@@ -4752,7 +4753,7 @@ bool SceneManager::update(double nowSeconds) {
 	// Flush pending brush changes before mesh extraction to ensure the volume
 	// is in its final state. This prevents stale/partial mesh extraction that
 	// occurs when extractions read from a volume that's about to be modified.
-	_modifierFacade.flushPendingBrushChanges();
+	_modifier.flushPendingBrushChanges();
 
 	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());
@@ -4817,7 +4818,7 @@ void SceneManager::shutdown() {
 	_sceneGraph.clear();
 
 	_camMovement.shutdown();
-	_modifierFacade.shutdown();
+	_modifier.shutdown();
 	_mementoHandler.unregisterListener(&_client);
 	_mementoHandler.unregisterListener(&_recorder);
 	_mementoHandler.shutdown();
@@ -4852,7 +4853,7 @@ void SceneManager::lsystem(const voxelgenerator::lsystem::LSystemConfig &conf) {
 	if (v == nullptr) {
 		return;
 	}
-	_lsystemVoxel = _modifierFacade.cursorVoxel();
+	_lsystemVoxel = _modifier.cursorVoxel();
 	voxelgenerator::lsystem::prepareState(_lsystemConfig, _lsystemState);
 	_lsystemRunning = true;
 	_mementoHandler.beginGroup("LSystem generation");
@@ -4868,7 +4869,7 @@ void SceneManager::stepLSystem() {
 		_mementoHandler.endGroup();
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	if (!voxelgenerator::lsystem::step(wrapper, _lsystemVoxel, _lsystemState, _lsystemExecState)) {
 		_lsystemRunning = false;
 		_mementoHandler.endGroup();
@@ -4884,20 +4885,20 @@ float SceneManager::lsystemProgress() const {
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
-	_modifierFacade.setReferencePosition(pos);
+	_modifier.setReferencePosition(pos);
 }
 
 void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
-	const int res = _modifierFacade.gridResolution();
+	const int res = _modifier.gridResolution();
 	p.x += x * res;
 	p.y += y * res;
 	p.z += z * res;
-	setCursorPosition(p, _modifierFacade.cursorFace(), true);
+	setCursorPosition(p, _modifier.cursorFace(), true);
 	_traceViaMouse = false;
 	if (const voxel::RawVolume *v = activeVolume()) {
 		const voxel::Voxel &voxel = v->voxel(cursorPosition());
-		_modifierFacade.setHitCursorVoxel(voxel);
+		_modifier.setHitCursorVoxel(voxel);
 	}
 }
 
@@ -4907,7 +4908,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 		return;
 	}
 
-	const int res = _modifierFacade.gridResolution();
+	const int res = _modifier.gridResolution();
 	const voxel::Region& region = v->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3 delta = pos - mins;
@@ -4921,7 +4922,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 		pos.z = mins.z + (delta.z / res) * res;
 	}
 
-	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
+	const math::Axis lockedAxis = _modifier.lockedAxis();
 
 	// make a copy here - no reference - otherwise the comparison below won't
 	// do anything else than comparing the same values.
@@ -4941,7 +4942,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
-	_modifierFacade.setCursorPosition(pos, hitFace);
+	_modifier.setCursorPosition(pos, hitFace);
 	if (oldCursorPos == pos) {
 		return;
 	}
@@ -4952,7 +4953,7 @@ void SceneManager::updateDirtyRendererStates() {
 }
 
 bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) {
-	if (_modifierFacade.isLocked()) {
+	if (_modifier.isLocked()) {
 		return false;
 	}
 	if (sceneMode) {
@@ -5003,7 +5004,7 @@ int SceneManager::traceScene() {
 
 void SceneManager::updateCursor() {
 	voxel::FaceNames hitFace = _result.hitFace;
-	if (_modifierFacade.modifierTypeRequiresExistingVoxel()) {
+	if (_modifier.modifierTypeRequiresExistingVoxel()) {
 		if (_result.didHit) {
 			setCursorPosition(_result.hitVoxel, hitFace);
 		} else if (_result.validPreviousPosition) {
@@ -5017,12 +5018,12 @@ void SceneManager::updateCursor() {
 
 	const voxel::RawVolume *v = activeVolume();
 	if (_result.didHit && v != nullptr) {
-		_modifierFacade.setHitCursorVoxel(v->voxel(_result.hitVoxel));
+		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
 	} else {
-		_modifierFacade.setHitCursorVoxel(voxel::Voxel());
+		_modifier.setHitCursorVoxel(voxel::Voxel());
 	}
 	if (v) {
-		_modifierFacade.setVoxelAtCursor(v->voxel(_modifierFacade.cursorPosition()));
+		_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
 	}
 }
 
@@ -5069,7 +5070,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	_result = {};
 	_result.direction = ray.direction;
 
-	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
+	const math::Axis lockedAxis = _modifier.lockedAxis();
 	// TODO: we could optionally limit the raycast to the selection
 
 	const float offset = voxelutil::RaycastOffset;
@@ -5753,7 +5754,7 @@ bool SceneManager::nodeReduceColors(scenegraph::SceneGraphNode &node, const core
 	}
 	palette::Palette &palette = node.palette();
 	const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, targetPalIdx);
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	auto func = [&wrapper, &srcPalIdx, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
 		for (uint8_t srcPal : srcPalIdx) {
 			if (voxel.getColor() == srcPal) {
@@ -5779,14 +5780,14 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 		palette.markSave();
 		const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, replacement);
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		auto func = [&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &) {
 			wrapper.setVoxel(x, y, z, replacementVoxel);
 		};
 		voxelutil::visitVolumeParallel(wrapper, func, voxelutil::VisitVoxelColor(palIdx));
 		modified(node.id(), wrapper.dirtyRegion());
-		if (_modifierFacade.cursorVoxel().getColor() == palIdx) {
-			_modifierFacade.setCursorVoxel(replacementVoxel);
+		if (_modifier.cursorVoxel().getColor() == palIdx) {
+			_modifier.setCursorVoxel(replacementVoxel);
 		}
 		return true;
 	}
@@ -5876,7 +5877,7 @@ bool SceneManager::nodeQuantizeColors(scenegraph::SceneGraphNode &node, const co
 		if (!srcPalIdx.empty()) {
 			// remap voxels from the other indices to the keeper
 			const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, keeperPalIdx);
-			voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+			voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 			auto func = [&wrapper, &srcPalIdx, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
 				for (uint8_t srcPal : srcPalIdx) {
 					if (voxel.getColor() == srcPal) {
@@ -6025,7 +6026,7 @@ bool SceneManager::nodeRemoveNormals(int nodeId) {
 		if (v == nullptr) {
 			return false;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel.getNormal() == NO_NORMAL) {
 				return;
@@ -6054,7 +6055,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	}
 	Log::debug("Activate node %i", nodeId);
 	// cancel any in-progress brush operation before switching nodes
-	_modifierFacade.abort();
+	_modifier.abort();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	// a node switch will disable the locked axis as the positions might have changed anyway
 	modifier().setLockedAxis(math::Axis::X | math::Axis::Y | math::Axis::Z, true);
@@ -6062,7 +6063,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	const palette::Palette &palette = node.palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		if (palette.color(i).a > 0) {
-			_modifierFacade.setCursorVoxel(voxel::createVoxel(palette, i));
+			_modifier.setCursorVoxel(voxel::createVoxel(palette, i));
 			break;
 		}
 	}

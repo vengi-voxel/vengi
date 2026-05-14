@@ -284,6 +284,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const core::String label = core::String::format("Shape/%s %s", ShapeTypeIcons[i], ShapeTypeStr[i]);
+			// TODO: this is no combo box anymore but a toolbar with buttons
 			ctx->ComboClick(label.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.shapeType(), i);
@@ -298,6 +299,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		PaintBrush &brush = modifier.paintBrush();
 
+		// TODO: this is no combo box anymore but a toolbar with buttons
 		ctx->ComboClick("Mode/Brighten");
 		ctx->Yield();
 		IM_CHECK_EQ((int)brush.paintMode(), (int)PaintBrush::PaintMode::Brighten);
@@ -378,6 +380,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				continue;
 			}
 			const core::String label = core::String::format("Select mode/%s %s", SelectModeIcons[i], _(SelectModeStr[i]));
+			// TODO: this is no combo box anymore but a toolbar with buttons
 			ctx->ComboClick(label.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.selectMode(), i);
@@ -421,6 +424,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {
 			const core::String label = core::String::format("Transform mode/%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
+			// TODO: this is no combo box anymore but a toolbar with buttons
 			ctx->ComboClick(label.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.transformMode(), i);

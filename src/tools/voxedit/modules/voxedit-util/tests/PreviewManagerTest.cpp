@@ -31,6 +31,7 @@ protected:
 		int updateCalls = 0;
 		int renderCalls = 0;
 		int waitCalls = 0;
+		int clearCalls = 0;
 		ModifierRendererContext lastContext;
 
 		void update(const ModifierRendererContext &ctx) override {
@@ -42,6 +43,9 @@ protected:
 		}
 		void waitForPendingExtractions() override {
 			++waitCalls;
+		}
+		void clearBrushVolumes() override {
+			++clearCalls;
 		}
 	};
 

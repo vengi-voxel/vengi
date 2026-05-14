@@ -74,7 +74,7 @@ protected:
 	core::Future<int> _commandFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
-	Modifier _modifierFacade;
+	Modifier _modifier;
 	voxelgenerator::LUAApi _luaApi;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
@@ -760,23 +760,23 @@ inline void SceneManager::clearDirty() {
 }
 
 inline const voxel::Voxel &SceneManager::hitCursorVoxel() const {
-	return _modifierFacade.hitCursorVoxel();
+	return _modifier.hitCursorVoxel();
 }
 
 inline const glm::ivec3 &SceneManager::cursorPosition() const {
-	return _modifierFacade.cursorPosition();
+	return _modifier.cursorPosition();
 }
 
 inline const glm::ivec3 &SceneManager::referencePosition() const {
-	return _modifierFacade.referencePosition();
+	return _modifier.referencePosition();
 }
 
 inline const Modifier &SceneManager::modifier() const {
-	return _modifierFacade;
+	return _modifier;
 }
 
 inline Modifier &SceneManager::modifier() {
-	return _modifierFacade;
+	return _modifier;
 }
 
 inline voxelgenerator::LUAApi &SceneManager::luaApi() {

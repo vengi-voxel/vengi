@@ -13,7 +13,6 @@
 #include "brush/Brush.h"
 #include "brush/BrushType.h"
 #include "brush/LineBrush.h"
-#include "brush/LUABrush.h"
 #include "brush/LUASelectionMode.h"
 #include "brush/PaintBrush.h"
 #include "brush/PlaneBrush.h"
@@ -65,7 +64,7 @@ class SceneManager;
 class Modifier : public core::IComponent {
 public:
 	using ModifiedRegionCallback =
-		std::function<void(const voxel::Region &region, ModifierType type, SceneModifiedFlags flags)>;
+		core::Function<void(const voxel::Region &region, ModifierType type, SceneModifiedFlags flags)>;
 
 protected:
 	// lock the modifier to not perform any modification
@@ -156,6 +155,7 @@ public:
 	 * Must be called before mesh extraction runs to avoid stale mesh data.
 	 */
 	void flushPendingBrushChanges();
+	void setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis);
 
 	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette,
 				const glm::mat4 &model = glm::mat4(1.0f));
@@ -283,7 +283,6 @@ public:
 
 	void onSceneChange();
 	void reset();
-
 };
 
 inline uint8_t Modifier::normalColorIndex() const {

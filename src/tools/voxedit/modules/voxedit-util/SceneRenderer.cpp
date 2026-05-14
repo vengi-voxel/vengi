@@ -7,14 +7,12 @@
 #include "app/I18N.h"
 #include "color/ColorUtil.h"
 #include "core/Log.h"
-#include "core/TimeProvider.h"
 #include "core/Trace.h"
 #include "core/concurrent/Thread.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneUtil.h"
 #include "ui/Style.h"
-#include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
@@ -98,7 +96,6 @@ void SceneRenderer::shutdown() {
 	_indices.sliceRegion = -1;
 	_indices.aabb = -1;
 	_indices.bone = -1;
-	_indices.highlight = -1;
 }
 
 /**
@@ -267,8 +264,6 @@ void SceneRenderer::handleCommandBuffer() {
 				glm::ivec3(cmd.nodeRegion.regionMins[0], cmd.nodeRegion.regionMins[1], cmd.nodeRegion.regionMins[2]),
 				glm::ivec3(cmd.nodeRegion.regionMaxs[0], cmd.nodeRegion.regionMaxs[1], cmd.nodeRegion.regionMaxs[2]));
 			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, cmd.nodeRegion.nodeId, region);
-			const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-			_highlightRegion = TimedRegion(region, timeProvider->tickNow(), cmd.nodeRegion.renderRegionMillis);
 			_cache.aabbDirty = true;
 			_cache.boneDirty = true;
 			break;
@@ -402,19 +397,6 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		const glm::mat4 &model = sceneGraph.worldMatrix(*n, renderContext.frame, applyTransforms);
 		if (isSliceModeActive()) {
 			_shapeRenderer.render(_indices.sliceRegion, camera, model);
-		}
-
-		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-		const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
-		if (highlightMillis > 0) {
-			video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
-			_shapeBuilder.clear();
-			_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
-			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
-							   _highlightRegion.value().getUpperCornerf() + 1.0f);
-			_shapeRenderer.createOrUpdate(_indices.highlight, _shapeBuilder);
-			_shapeRenderer.render(_indices.highlight, camera, model);
-			video::polygonOffset(glm::vec2(0.0f));
 		}
 	}
 }

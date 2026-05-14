@@ -8,10 +8,12 @@
 #include "../Config.h"
 #include "color/Color.h"
 #include "core/Log.h"
+#include "core/TimeProvider.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
+#include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
 #include "video/Types.h"
@@ -68,6 +70,7 @@ bool ModifierRenderer::init() {
 
 void ModifierRenderer::shutdown() {
 	_mirrorMeshIndex = -1;
+	_highlightMesh = -1;
 	for (int i = 0; i < 3; ++i) {
 		_lockedAxisIndices[i] = -1;
 	}
@@ -224,9 +227,38 @@ void ModifierRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis,
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
+void ModifierRenderer::handleCommandBuffer() {
+	core::DynamicArray<CommandEvent> cmds = popCommandBuffer();
+	for (const CommandEvent &cmd : cmds) {
+		switch (cmd.type) {
+		case CommandType::HighlightRegion: {
+			const voxel::Region region(
+				glm::ivec3(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
+						   cmd.highlightRegion.regionMins[2]),
+				glm::ivec3(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
+						   cmd.highlightRegion.regionMaxs[2]));
+			const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+			_highlightRegion = TimedRegion(region, timeProvider->tickNow(), cmd.highlightRegion.renderRegionMillis);
+			if (_highlightMesh != -1 && (!region.isValid() || cmd.highlightRegion.renderRegionMillis == 0u)) {
+				_shapeRenderer.deleteMesh(_highlightMesh);
+				_highlightMesh = -1;
+			}
+			break;
+		}
+		}
+	}
+}
+
 void ModifierRenderer::update(const ModifierRendererContext &ctx) {
-	const bool flip = voxel::isAir(ctx.voxelAtCursor.getMaterial());
-	updateCursor(ctx.cursorVoxel, ctx.cursorFace, flip);
+	handleCommandBuffer();
+
+	if (ctx.cursorFace == voxel::FaceNames::Max) {
+		_shapeRenderer.deleteMesh(_voxelCursorMesh);
+		_voxelCursorMesh = -1;
+	} else {
+		const bool flip = voxel::isAir(ctx.voxelAtCursor.getMaterial());
+		updateCursor(ctx.cursorVoxel, ctx.cursorFace, flip);
+	}
 
 	if (ctx.mirrorAxis != _lastMirrorAxis || ctx.mirrorPos != _lastMirrorPos ||
 		ctx.activeRegion != _lastMirrorRegion) {
@@ -305,6 +337,18 @@ void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const v
 		const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
 		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
+	}
+
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
+	if (highlightMillis > 0u && _highlightRegion.value().isValid()) {
+		video::ScopedPolygonMode solid(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
+		_shapeBuilder.clear();
+		_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
+		_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(), _highlightRegion.value().getUpperCornerf() + 1.0f);
+		_shapeRenderer.createOrUpdate(_highlightMesh, _shapeBuilder);
+		_shapeRenderer.render(_highlightMesh, camera, modelMatrix);
+		video::polygonOffset(glm::vec2(0.0f));
 	}
 
 	// Apply a small world-space depth bias toward the camera to avoid z-fighting

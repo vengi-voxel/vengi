@@ -33,6 +33,9 @@ protected:
 		int updateCalls = 0;
 		int renderCalls = 0;
 		int waitCalls = 0;
+		int highlightCalls = 0;
+		voxel::Region lastHighlightRegion = voxel::Region::InvalidRegion;
+		uint64_t lastHighlightMillis = 0;
 		ModifierRendererContext lastContext;
 
 		void update(const ModifierRendererContext &ctx) override {
@@ -44,6 +47,36 @@ protected:
 		}
 		void waitForPendingExtractions() override {
 			++waitCalls;
+		}
+		void setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis = 0) override {
+			++highlightCalls;
+			lastHighlightRegion = region;
+			lastHighlightMillis = renderRegionMillis;
+		}
+	};
+
+	class QueuedModifierRenderer : public IModifierRenderer {
+	public:
+		int drainedHighlightCommands = 0;
+		voxel::Region lastHighlightRegion = voxel::Region::InvalidRegion;
+		uint64_t lastHighlightMillis = 0;
+
+		void update(const ModifierRendererContext &ctx) override {
+			(void)ctx;
+			const core::DynamicArray<CommandEvent> cmds = popCommandBuffer();
+			for (const CommandEvent &cmd : cmds) {
+				switch (cmd.type) {
+				case CommandType::HighlightRegion:
+					lastHighlightRegion = voxel::Region(
+						glm::ivec3(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
+								   cmd.highlightRegion.regionMins[2]),
+						glm::ivec3(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
+								   cmd.highlightRegion.regionMaxs[2]));
+					lastHighlightMillis = cmd.highlightRegion.renderRegionMillis;
+					++drainedHighlightCommands;
+					break;
+				}
+			}
 		}
 	};
 
@@ -345,6 +378,40 @@ TEST_F(ModifierTest, testRenderCallsRenderer) {
 	EXPECT_EQ(renderer->lastContext.activeRegion, voxel::Region(glm::ivec3(0), glm::ivec3(31)));
 	modifier.shutdown();
 	mgr.shutdown();
+}
+
+TEST_F(ModifierTest, testSetHighlightRegionDelegatesToRenderer) {
+	auto renderer = core::make_shared<TrackingModifierRenderer>();
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
+	ASSERT_TRUE(mgr.init());
+	mgr.newScene(true, "test", voxel::Region(0, 31));
+
+	Modifier modifier(&mgr, renderer);
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+
+	const voxel::Region highlightRegion(glm::ivec3(2), glm::ivec3(4));
+	modifier.setHighlightRegion(highlightRegion, 250);
+	EXPECT_EQ(renderer->highlightCalls, 1);
+	EXPECT_EQ(renderer->lastHighlightRegion, highlightRegion);
+	EXPECT_EQ(renderer->lastHighlightMillis, 250u);
+
+	modifier.shutdown();
+	mgr.shutdown();
+}
+
+TEST_F(ModifierTest, testQueuedHighlightRegionCommand) {
+	QueuedModifierRenderer renderer;
+	const voxel::Region highlightRegion(glm::ivec3(1), glm::ivec3(3));
+
+	renderer.setHighlightRegion(highlightRegion, 123);
+	renderer.update(ModifierRendererContext{});
+
+	EXPECT_EQ(renderer.drainedHighlightCommands, 1);
+	EXPECT_EQ(renderer.lastHighlightRegion, highlightRegion);
+	EXPECT_EQ(renderer.lastHighlightMillis, 123u);
 }
 
 TEST_F(ModifierTest, testRenderSkippedWhenLocked) {

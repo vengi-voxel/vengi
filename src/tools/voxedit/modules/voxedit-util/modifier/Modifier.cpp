@@ -9,7 +9,6 @@
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include "io/Filesystem.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -178,6 +177,10 @@ void Modifier::shutdown() {
 	_scriptManager.shutdown();
 	_previewManager.shutdown();
 	_modifierRenderer->shutdown();
+}
+
+void Modifier::setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis) {
+	_modifierRenderer->setHighlightRegion(region, renderRegionMillis);
 }
 
 void Modifier::update(double nowSeconds, const video::Camera *camera) {

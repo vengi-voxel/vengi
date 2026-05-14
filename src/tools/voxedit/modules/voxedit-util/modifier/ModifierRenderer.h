@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/App.h"
+#include "core/TimedValue.h"
 #include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
@@ -26,6 +27,7 @@ private:
 	core::VarPtr _planeSize;
 	core::VarPtr _showPlane;
 	int32_t _mirrorMeshIndex = -1;
+	int32_t _highlightMesh = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
 	glm::vec3 _referencePoint{0.0f};
@@ -43,6 +45,8 @@ private:
 	glm::ivec3 _cursorPosition{0};
 	int _gridResolution = 1;
 	voxel::Region _activeRegion;
+	using TimedRegion = core::TimedValue<voxel::Region>;
+	TimedRegion _highlightRegion;
 
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);
@@ -50,6 +54,7 @@ private:
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
 	void clear();
+	void handleCommandBuffer();
 
 	void renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model);
 
