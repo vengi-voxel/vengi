@@ -409,8 +409,35 @@ public:
 	bool globalCopyVisible();
 	bool globalPasteNode(const glm::ivec3 &pos);
 
+	/**
+	 * @brief Splats (merges) a source node into all other intersecting nodes in the scene.
+	 *
+	 * Projects the source node's voxels into world space and overwrites voxels in any
+	 * intersecting background or model nodes.
+	 *
+	 * @param sourceNodeId The ID of the node to merge into the scene.
+	 * @return @c true if the merge was successful, @c false otherwise.
+	 */
 	bool splatMerge(int sourceNodeId);
+
+	/**
+	 * @brief Merges the currently active node into the background structure.
+	 *
+	 * Slices the active node into chunks matching the background layer structure
+	 * (or modifies underlying background nodes if they already exist).
+	 *
+	 * @return @c true if the operation succeeded, @c false otherwise.
+	 */
 	bool mergeActiveToBackground();
+
+	/**
+	 * @brief Merges all visible model nodes into a single temporary combined node.
+	 *
+	 * This does not modify the existing visible nodes, but creates a new, temporary node
+	 * containing the baked world-space volume of all visible nodes.
+	 *
+	 * @return The node ID of the newly created temporary node, or @c InvalidNodeId if no merge was performed.
+	 */
 	int mergeVisibleToTemp();
 
 	void selectionInvert(int nodeId);
