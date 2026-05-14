@@ -1875,10 +1875,7 @@ bool SceneManager::splatMerge(int sourceNodeId) {
 	}
 
 	Log::info("splatmerge: merged %i voxels into overlapping nodes", mergedCount);
-	_mementoHandler.markNodeRemove(_sceneGraph, *sourceNode);
-	if (_sceneGraph.removeNode(sourceNodeId, false)) {
-		_sceneRenderer->removeNode(sourceNodeId);
-	}
+	nodeRemove(sourceNodeId, false);
 	return true;
 }
 
@@ -2139,10 +2136,7 @@ bool SceneManager::mergeActiveToBackground() {
 		modified(entry.nodeId, entry.region, SceneModifiedFlags::All);
 	}
 
-	_mementoHandler.markNodeRemove(_sceneGraph, *sourceNode);
-	if (_sceneGraph.removeNode(sourceNodeId, false)) {
-		_sceneRenderer->removeNode(sourceNodeId);
-	}
+	nodeRemove(sourceNodeId, false);
 	return true;
 }
 
