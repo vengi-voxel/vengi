@@ -2749,7 +2749,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	const voxel::Region& region = volume->region();
 
-	_dirtyRenderer = DirtyRendererLockedAxis | DirtyRendererGridRenderer;
+	_dirtyRenderer = DirtyRendererGridRenderer;
 	_dirty = false; // TODO: why is this not dirty? should it be dirty when the volume changes?
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
@@ -2962,7 +2962,7 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 	voxel::Region region = v->region();
 	v->translate(m);
 	region.accumulate(v->region());
-	_dirtyRenderer = DirtyRendererLockedAxis | DirtyRendererGridRenderer;
+	_dirtyRenderer = DirtyRendererGridRenderer;
 	modified(nodeId, region);
 }
 
@@ -4947,14 +4947,10 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_dirtyRenderer |= DirtyRendererLockedAxis;
+
 }
 
 void SceneManager::updateDirtyRendererStates() {
-	if (_dirtyRenderer & DirtyRendererLockedAxis) {
-		_dirtyRenderer &= ~DirtyRendererLockedAxis;
-		_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), cursorPosition());
-	}
 	if (_dirtyRenderer & DirtyRendererGridRenderer) {
 		_dirtyRenderer &= ~DirtyRendererGridRenderer;
 		_sceneRenderer->updateGridRegion(_sceneGraph.node(activeNode()).region());

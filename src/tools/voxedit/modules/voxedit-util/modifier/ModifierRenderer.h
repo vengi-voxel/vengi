@@ -23,9 +23,11 @@ private:
 	int32_t _referencePointMesh = -1;
 	glm::vec3 _referencePoint{0.0f};
 	int32_t _aabbMeshes[2]{-1, -1};
+	int32_t _lockedAxisIndices[3] = {-1, -1, -1};
 
 	// State tracking to avoid redundant updates
 	math::Axis _lastMirrorAxis = math::Axis::None;
+	math::Axis _lastLockedAxis = math::Axis::None;
 	glm::ivec3 _lastMirrorPos{0};
 	voxel::Region _lastActiveRegion;
 
@@ -35,6 +37,7 @@ private:
 
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);
+	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region);
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
 	void clear();

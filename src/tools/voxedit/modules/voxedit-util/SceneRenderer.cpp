@@ -367,13 +367,7 @@ void SceneRenderer::handleCommandBuffer() {
 			_cache.lockedAxisDirty = true;
 			break;
 		}
-		case CommandType::LockedPlanes: {
-			_lockedAxis = cmd.lockedPlanes.lockedAxis;
-			_lockedAxisPosition = glm::ivec3(cmd.lockedPlanes.cursorPosition[0], cmd.lockedPlanes.cursorPosition[1],
-											 cmd.lockedPlanes.cursorPosition[2]);
-			_cache.lockedAxisDirty = true;
-			break;
-		}
+
 		}
 	}
 }

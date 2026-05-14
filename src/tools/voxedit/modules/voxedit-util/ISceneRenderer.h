@@ -29,7 +29,7 @@ namespace voxedit {
  */
 class ISceneRenderer : public core::IComponent {
 protected:
-	enum class CommandType : uint8_t { NodeRegion, GridRegion, SliceRegion, RemoveNode, UnhideNode, Clear, MarkDirty, LockedPlanes };
+	enum class CommandType : uint8_t { NodeRegion, GridRegion, SliceRegion, RemoveNode, UnhideNode, Clear, MarkDirty };
 
 	struct CommandEvent {
 		CommandType type;
@@ -54,11 +54,6 @@ protected:
 			struct {
 				int nodeId;
 			} node;
-
-			struct {
-				math::Axis lockedAxis;
-				int32_t cursorPosition[3];
-			} lockedPlanes;
 		};
 	};
 
@@ -115,17 +110,6 @@ public:
 
 	virtual RendererStats rendererStats() const {
 		return {};
-	}
-
-	virtual void updateLockedPlanes(math::Axis lockedAxis, const glm::ivec3 &cursorPosition) {
-		CommandEvent cmd;
-		cmd.type = CommandType::LockedPlanes;
-		cmd.lockedPlanes.lockedAxis = lockedAxis;
-		cmd.lockedPlanes.cursorPosition[0] = cursorPosition.x;
-		cmd.lockedPlanes.cursorPosition[1] = cursorPosition.y;
-		cmd.lockedPlanes.cursorPosition[2] = cursorPosition.z;
-		core::ScopedLock lock(_commandBufferMutex);
-		_commandBuffer.push_back(cmd);
 	}
 
 	virtual void updateGridRegion(const voxel::Region &region) {

@@ -17,6 +17,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/transform.hpp>
+#include "ui/Style.h"
 
 namespace voxedit {
 
@@ -56,6 +57,9 @@ bool ModifierRenderer::init() {
 
 void ModifierRenderer::shutdown() {
 	_mirrorMeshIndex = -1;
+	for (int i = 0; i < 3; ++i) {
+		_lockedAxisIndices[i] = -1;
+	}
 	_voxelCursorMesh = -1;
 	_referencePointMesh = -1;
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
@@ -182,13 +186,35 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirr
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
+void ModifierRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region) {
+	if (axis == math::Axis::None) {
+		return;
+	}
+	const int index = math::getIndexForAxis(axis);
+	int32_t &meshIndex = _lockedAxisIndices[index];
+	if ((lockedAxis & axis) == math::Axis::None) {
+		if (meshIndex != -1) {
+			_shapeRenderer.deleteMesh(meshIndex);
+			meshIndex = -1;
+		}
+		return;
+	}
+
+	glm::vec4 color{0.0f};
+	if (axis == math::Axis::X) {
+		color = style::color(style::ColorAxisX);
+	} else if (axis == math::Axis::Y) {
+		color = style::color(style::ColorAxisY);
+	} else if (axis == math::Axis::Z) {
+		color = style::color(style::ColorAxisZ);
+	}
+	updateShapeBuilderForPlane(_shapeBuilder, region, false, cursorPosition, axis, color::alpha(color, 0.4f));
+	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
+}
+
 void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	const bool flip = voxel::isAir(ctx.voxelAtCursor.getMaterial());
 	updateCursor(ctx.cursorVoxel, ctx.cursorFace, flip);
-
-	_cursorPosition = ctx.cursorPosition;
-	_gridResolution = ctx.gridResolution;
-	_referencePoint = glm::vec3(ctx.referencePosition) + 0.5f;
 
 	if (ctx.mirrorAxis != _lastMirrorAxis || ctx.mirrorPos != _lastMirrorPos ||
 		ctx.activeRegion != _lastActiveRegion) {
@@ -197,6 +223,17 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 		_lastMirrorPos = ctx.mirrorPos;
 		_lastActiveRegion = ctx.activeRegion;
 	}
+
+	if (ctx.lockedAxis != _lastLockedAxis || ctx.cursorPosition != _cursorPosition || ctx.activeRegion != _lastActiveRegion) {
+		updateLockedPlane(ctx.lockedAxis, math::Axis::X, ctx.cursorPosition, ctx.activeRegion);
+		updateLockedPlane(ctx.lockedAxis, math::Axis::Y, ctx.cursorPosition, ctx.activeRegion);
+		updateLockedPlane(ctx.lockedAxis, math::Axis::Z, ctx.cursorPosition, ctx.activeRegion);
+		_lastLockedAxis = ctx.lockedAxis;
+	}
+
+	_cursorPosition = ctx.cursorPosition;
+	_gridResolution = ctx.gridResolution;
+	_referencePoint = glm::vec3(ctx.referencePosition) + 0.5f;
 
 	// Update brush preview volumes
 	if (ctx.brushActive) {

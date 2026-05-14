@@ -51,6 +51,10 @@ struct ModifierRendererContext {
 	// Mirror plane
 	math::Axis mirrorAxis = math::Axis::None;
 	glm::ivec3 mirrorPos{0};
+
+	// Locked planes
+	math::Axis lockedAxis = math::Axis::None;
+
 	voxel::Region activeRegion;
 
 	// Brush preview

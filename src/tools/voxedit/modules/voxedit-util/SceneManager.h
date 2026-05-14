@@ -117,8 +117,7 @@ protected:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
-	static const uint32_t DirtyRendererLockedAxis = 1 << 0;
-	static const uint32_t DirtyRendererGridRenderer = 1 << 1;
+	static const uint32_t DirtyRendererGridRenderer = 1 << 0;
 	uint32_t _dirtyRenderer = 0u;
 
 	// model animation speed
