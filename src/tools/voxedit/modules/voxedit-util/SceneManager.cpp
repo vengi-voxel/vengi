@@ -2790,7 +2790,14 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	if (dirty() && !force) {
 		return false;
 	}
-	voxel::RawVolume* v = new voxel::RawVolume(region);
+	const size_t bytes = voxel::RawVolume::size(region);
+	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
+		const core::String &humanReadableSize = core::string::humanSize(bytes);
+		Log::error("Not enough memory to create new scene with region %s (need %s)", region.toString().c_str(),
+				   humanReadableSize.c_str());
+		return false;
+	}
+	voxel::RawVolume *v = new voxel::RawVolume(region);
 	return newScene(force, name, v);
 }
 
