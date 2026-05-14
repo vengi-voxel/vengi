@@ -46,33 +46,56 @@ private:
 	core::VarPtr _diffuseColor;
 	core::VarPtr _planeSize;
 	core::VarPtr _showPlane;
+
+	/** @brief The currently locked axis for modifications. */
 	math::Axis _lockedAxis = math::Axis::None;
+	/** @brief The tracked 3D cursor position in the voxel scene. */
 	glm::ivec3 _cursorPosition{0};
 
-	int32_t _planeMeshIndex[3] = {-1, -1, -1};
-	int32_t _highlightMeshIndex = -1;
-	int32_t _aabbMeshIndex = -1;
-	int32_t _boneMeshIndex = -1;
-	int32_t _sliceRegionMeshIndex = -1;
+	/** @brief Shape renderer mesh index */
+	struct ShapeIndices {
+		/** @brief for the locked mathematical planes (X, Y, Z). */
+		int32_t plane[3] = {-1, -1, -1};
+		/** @brief for the highlighted active region. */
+		int32_t highlight = -1;
+		/** @brief for the global scene or node bounding box. */
+		int32_t aabb = -1;
+		/** @brief for the skeletal bone connections. */
+		int32_t bone = -1;
+		/** @brief for visualizing the active slice region. */
+		int32_t sliceRegion = -1;
+	} _indices;
 
+	/** @brief The AABB representing the current grid rendering bounds. */
 	math::AABB<float> _nextGridRegionUpdate;
 
 	using TimedRegion = core::TimedValue<voxel::Region>;
+	/** @brief A region highlight that fades out over time (used for visual feedback on modifications). */
 	TimedRegion _highlightRegion;
 
-	bool _aabbDirty = true;
-	bool _boneDirty = true;
-	scenegraph::FrameIndex _lastAABBFrame = -1;
-	scenegraph::FrameIndex _lastBoneFrame = -1;
-	int _lastAABBActiveNode = -1;
-	bool _lastHideInactive = false;
-	bool _lastGrayInactive = false;
+	struct Cache {
+		/** @brief Flag indicating if the AABB visualization mesh needs to be rebuilt. */
+		bool aabbDirty = true;
+		/** @brief Flag indicating if the skeletal bone visualization mesh needs to be rebuilt. */
+		bool boneDirty = true;
+		/** @brief Caches the frame index for which the AABB mesh was last generated. */
+		scenegraph::FrameIndex lastAABBFrame = InvalidFrame;
+		/** @brief Caches the frame index for which the bone mesh was last generated. */
+		scenegraph::FrameIndex lastBoneFrame = InvalidFrame;
+		/** @brief Caches the active node ID used during the last AABB mesh generation to detect swaps. */
+		int lastAABBActiveNode = InvalidNodeId;
+		/** @brief Caches the hide inactive state to trigger AABB rebuilds when toggled. */
+		bool lastHideInactive = false;
+		/** @brief Caches the gray inactive state to trigger AABB/Bone rebuilds when toggled. */
+		bool lastGrayInactive = false;
+	} _cache;
 
 	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
 						   const glm::ivec3 &cursorPosition);
 	void updateSliceRegionMesh();
+
 public:
 	SceneRenderer(const core::TimeProviderPtr &timeProvider);
 	virtual ~SceneRenderer() = default;

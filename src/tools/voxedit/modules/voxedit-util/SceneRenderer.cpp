@@ -73,8 +73,8 @@ bool SceneRenderer::init() {
 		return false;
 	}
 
-	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
-		_planeMeshIndex[i] = -1;
+	for (int i = 0; i < lengthof(_indices.plane); ++i) {
+		_indices.plane[i] = -1;
 	}
 	return true;
 }
@@ -116,10 +116,10 @@ void SceneRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 
-	_sliceRegionMeshIndex = -1;
-	_aabbMeshIndex = -1;
-	_boneMeshIndex = -1;
-	_highlightMeshIndex = -1;
+	_indices.sliceRegion = -1;
+	_indices.aabb = -1;
+	_indices.bone = -1;
+	_indices.highlight = -1;
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
@@ -167,7 +167,7 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 		return;
 	}
 	const int index = math::getIndexForAxis(axis);
-	int32_t &meshIndex = _planeMeshIndex[index];
+	int32_t &meshIndex = _indices.plane[index];
 	if ((lockedAxis & axis) == math::Axis::None) {
 		if (meshIndex != -1) {
 			_shapeRenderer.deleteMesh(meshIndex);
@@ -204,7 +204,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		return;
 	}
 	const int activeNodeId = sceneGraph.activeNode();
-	if (!_aabbDirty && frameIdx == _lastAABBFrame && activeNodeId == _lastAABBActiveNode) {
+	if (!_cache.aabbDirty && frameIdx == _cache.lastAABBFrame && activeNodeId == _cache.lastAABBActiveNode) {
 		return;
 	}
 	core_trace_scoped(UpdateAABBMesh);
@@ -255,10 +255,10 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		}
 	}
 
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-	_aabbDirty = false;
-	_lastAABBFrame = frameIdx;
-	_lastAABBActiveNode = activeNodeId;
+	_shapeRenderer.createOrUpdate(_indices.aabb, _shapeBuilder);
+	_cache.aabbDirty = false;
+	_cache.lastAABBFrame = frameIdx;
+	_cache.lastAABBActiveNode = activeNodeId;
 }
 
 void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
@@ -269,7 +269,7 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	if (!_showBones->boolVal()) {
 		return;
 	}
-	if (!_boneDirty && frameIdx == _lastBoneFrame) {
+	if (!_cache.boneDirty && frameIdx == _cache.lastBoneFrame) {
 		return;
 	}
 	core_trace_scoped(UpdateBoneMesh);
@@ -310,9 +310,9 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 		_shapeBuilder.bone(ptranslation, translation);
 	}
 
-	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
-	_boneDirty = false;
-	_lastBoneFrame = frameIdx;
+	_shapeRenderer.createOrUpdate(_indices.bone, _shapeBuilder);
+	_cache.boneDirty = false;
+	_cache.lastBoneFrame = frameIdx;
 }
 
 const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGraphNode &node) {
@@ -334,8 +334,8 @@ void SceneRenderer::removeNode(int nodeId) {
 }
 
 void SceneRenderer::markDirty() {
-	_aabbDirty = true;
-	_boneDirty = true;
+	_cache.aabbDirty = true;
+	_cache.boneDirty = true;
 }
 
 void SceneRenderer::unhideNode(int nodeId) {
@@ -375,7 +375,7 @@ void SceneRenderer::updateSliceRegionMesh() {
 	const math::AABB<float> &aabb = scenegraph::toAABB(sliceRegion());
 	_shapeBuilder.setColor(style::color(style::ColorSliceRegion));
 	_shapeBuilder.aabb(aabb);
-	_shapeRenderer.createOrUpdate(_sliceRegionMeshIndex, _shapeBuilder);
+	_shapeRenderer.createOrUpdate(_indices.sliceRegion, _shapeBuilder);
 }
 
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
@@ -387,9 +387,9 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 
 	const bool hideInactiveNow = _hideInactive->boolVal();
 	const bool grayInactiveNow = _grayInactive->boolVal();
-	if (hideInactiveNow != _lastHideInactive || grayInactiveNow != _lastGrayInactive) {
-		_lastHideInactive = hideInactiveNow;
-		_lastGrayInactive = grayInactiveNow;
+	if (hideInactiveNow != _cache.lastHideInactive || grayInactiveNow != _cache.lastGrayInactive) {
+		_cache.lastHideInactive = hideInactiveNow;
+		_cache.lastGrayInactive = grayInactiveNow;
 		markDirty();
 	}
 	renderContext.hideInactive = hideInactiveNow;
@@ -415,18 +415,18 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	_gridRenderer.renderPlane(camera);
 	if (renderContext.isSceneMode()) {
 		if (_showAABB->boolVal()) {
-			_shapeRenderer.render(_aabbMeshIndex, camera);
+			_shapeRenderer.render(_indices.aabb, camera);
 		}
 		if (_showBones->boolVal()) {
 			video::ScopedState depthDepthTest(video::State::DepthTest, false);
-			_shapeRenderer.render(_boneMeshIndex, camera);
+			_shapeRenderer.render(_indices.bone, camera);
 		}
 		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 
 		if (isSliceModeActive()) {
 			// TODO: model matrix for the slice region
-			_shapeRenderer.render(_sliceRegionMeshIndex, camera);
+			_shapeRenderer.render(_indices.sliceRegion, camera);
 		}
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
@@ -435,14 +435,14 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		_gridRenderer.render(camera, scenegraph::toAABB(region), model);
 
 		if (_showLockedAxis->boolVal()) {
-			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
+			for (int i = 0; i < lengthof(_indices.plane); ++i) {
 				// TODO: fix z-fighting
-				_shapeRenderer.render(_planeMeshIndex[i], camera, model);
+				_shapeRenderer.render(_indices.plane[i], camera, model);
 			}
 		}
 
 		if (isSliceModeActive()) {
-			_shapeRenderer.render(_sliceRegionMeshIndex, camera, model);
+			_shapeRenderer.render(_indices.sliceRegion, camera, model);
 		}
 
 		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
@@ -453,8 +453,8 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
 			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
 							_highlightRegion.value().getUpperCornerf() + 1.0f);
-			_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);
-			_shapeRenderer.render(_highlightMeshIndex, camera, model);
+			_shapeRenderer.createOrUpdate(_indices.highlight, _shapeBuilder);
+			_shapeRenderer.render(_indices.highlight, camera, model);
 			video::polygonOffset(glm::vec2(0.0f));
 		}
 	}
