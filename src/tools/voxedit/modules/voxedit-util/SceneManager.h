@@ -471,6 +471,11 @@ public:
 	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect = true);
 
 	/**
+	 * @brief Returns @c true if the scene is locked and no modifications should be made.
+	 */
+	bool isLocked() const;
+
+	/**
 	 * @brief Returns @c true if an async command is currently running
 	 */
 	bool isCommandRunning() const;

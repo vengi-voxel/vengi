@@ -108,6 +108,9 @@ SceneManager::~SceneManager() {
 }
 
 bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors, bool save) {
+	if (isLocked()) {
+		return false;
+	}
 	palette::Palette palette;
 
 	const bool isNodePalette = core::string::startsWith(paletteName, NODE_PALETTE_PREFIX);
@@ -142,6 +145,9 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 }
 
 bool SceneManager::importPalette(const core::String& file, bool setActive, bool searchBestColors) {
+	if (isLocked()) {
+		return false;
+	}
 	palette::Palette palette;
 	if (!voxelformat::importPalette(file, palette)) {
 		Log::warn("Failed to import a palette from file '%s'", file.c_str());
@@ -162,12 +168,18 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 }
 
 void SceneManager::nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
+	if (isLocked()) {
+		return;
+	}
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeCalculateNormals(groupNodeId, connectivity, recalcAll, fillAndHollow);
 	});
 }
 
 bool SceneManager::nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId)) {
 		if (!node->hasNormalPalette()) {
 			Log::warn("Node %i has no normal palette", nodeId);
@@ -573,6 +585,9 @@ void SceneManager::nodeGroupHollow() {
 }
 
 void SceneManager::fillPlane(const image::ImagePtr &image) {
+	if (isLocked()) {
+		return;
+	}
 	const int nodeId = activeNode();
 	if (nodeId == InvalidNodeId) {
 		Log::error("No active node for fill plane operation");
@@ -592,6 +607,9 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 }
 
 void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType) {
+	if (isLocked()) {
+		return;
+	}
 	voxel::RawVolume *v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -624,6 +642,9 @@ bool SceneManager::saveModels(const core::String& dir) {
 }
 
 bool SceneManager::save(const io::FileDescription &file, bool autosave) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_sceneGraph.empty()) {
 		Log::debug("No volumes for saving found");
 		return false;
@@ -652,6 +673,9 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 }
 
 bool SceneManager::import(const core::String& file) {
+	if (isLocked()) {
+		return false;
+	}
 	if (file.empty()) {
 		Log::error("Can't import model: No file given");
 		return false;
@@ -678,6 +702,9 @@ bool SceneManager::import(const core::String& file) {
 }
 
 bool SceneManager::importDirectory(const core::String& directory, const io::FormatDescription *format, int depth) {
+	if (isLocked()) {
+		return false;
+	}
 	if (directory.empty()) {
 		return false;
 	}
@@ -735,6 +762,9 @@ bool SceneManager::load(const io::FileDescription& file) {
 }
 
 bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
+	if (isLocked()) {
+		return false;
+	}
 	scenegraph::SceneGraph newSceneGraph;
 	io::MemoryArchivePtr archive = io::openMemoryArchive();
 	archive->add(file.name, data, size);
@@ -972,6 +1002,9 @@ void SceneManager::nodeCrop(int nodeId) {
 
 // TODO: not yet working for reference nodes
 void SceneManager::nodeBakeTransform(int nodeId) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -999,6 +1032,9 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 }
 
 void SceneManager::nodeResize(int nodeId, const glm::ivec3& size) {
+	if (isLocked()) {
+		return;
+	}
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -1009,6 +1045,9 @@ void SceneManager::nodeResize(int nodeId, const glm::ivec3& size) {
 }
 
 void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
+	if (isLocked()) {
+		return;
+	}
 	if (!region.isValid()) {
 		return;
 	}
@@ -1054,6 +1093,9 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 }
 
 void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) {
+	if (isLocked()) {
+		return;
+	}
 	voxel::RawVolume *vol = volume(nodeId);
 	if (vol == nullptr) {
 		Log::error("Failed to lookup volume for node %i", nodeId);
@@ -1119,6 +1161,9 @@ palette::Palette &SceneManager::activePalette() const {
 }
 
 bool SceneManager::setActivePalette(const palette::Palette &palette, bool searchBestColors) {
+	if (isLocked()) {
+		return false;
+	}
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
 		Log::warn("Failed to set the active palette - node with id %i not found", nodeId);
@@ -1384,6 +1429,9 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 }
 
 bool SceneManager::undo(int n) {
+	if (isLocked()) {
+		return false;
+	}
 	Log::debug("undo %i steps", n);
 	for (int i = 0; i < n; ++i) {
 		if (!doUndo()) {
@@ -1395,6 +1443,9 @@ bool SceneManager::undo(int n) {
 }
 
 bool SceneManager::redo(int n) {
+	if (isLocked()) {
+		return false;
+	}
 	Log::debug("redo %i steps", n);
 	for (int i = 0; i < n; ++i) {
 		if (!doRedo()) {
@@ -1492,6 +1543,9 @@ voxel::ClipboardData SceneManager::nodeClipboardCopy(scenegraph::SceneGraphNode 
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
+	if (isLocked()) {
+		return false;
+	}
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
@@ -1525,6 +1579,9 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 }
 
 bool SceneManager::nodeCopy(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return false;
@@ -1538,6 +1595,9 @@ bool SceneManager::nodeCopy(int nodeId) {
 }
 
 bool SceneManager::nodePasteAsNewNode(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
@@ -1595,11 +1655,17 @@ bool SceneManager::loadGlobalClipboard(voxel::ClipboardData &clipData) {
 }
 
 bool SceneManager::paste(const glm::ivec3& pos) {
+	if (isLocked()) {
+		return false;
+	}
 	const int nodeId = activeNode();
 	return nodePaste(nodeId, pos);
 }
 
 bool SceneManager::nodePaste(int nodeId, const glm::ivec3& pos) {
+	if (isLocked()) {
+		return false;
+	}
 	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
@@ -1635,6 +1701,9 @@ bool SceneManager::nodePaste(int nodeId, const glm::ivec3& pos) {
 }
 
 bool SceneManager::nodeCut(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	voxel::Region selectionRegion = selectionCalculateRegion(nodeId);
 	if (!selectionRegion.isValid()) {
 		Log::debug("Cut failed: no selected voxels found");
@@ -1688,6 +1757,9 @@ bool SceneManager::nodeCut(int nodeId) {
 }
 
 bool SceneManager::globalCopy() {
+	if (isLocked()) {
+		return false;
+	}
 	// Always try to capture the current selection first.
 	// copy() only updates _copy when a selection exists; if there is no
 	// selection it leaves _copy unchanged, so a previously copied region
@@ -1697,6 +1769,9 @@ bool SceneManager::globalCopy() {
 }
 
 bool SceneManager::nodeGlobalCopy(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	nodeCopy(nodeId);
 	if (!_copy) {
 		Log::warn("globalcopy: nothing to copy - make a selection first");
@@ -1719,6 +1794,9 @@ bool SceneManager::nodeGlobalCopy(int nodeId) {
 }
 
 bool SceneManager::globalCopyVisible() {
+	if (isLocked()) {
+		return false;
+	}
 	const scenegraph::SceneGraph::MergeResult &merged = _sceneGraph.merge(true);
 	if (!merged.hasVolume()) {
 		Log::warn("globalcopyvisible: no visible model nodes to copy");
@@ -1741,11 +1819,17 @@ bool SceneManager::globalCopyVisible() {
 }
 
 bool SceneManager::globalPaste(const glm::ivec3 &pos) {
+	if (isLocked()) {
+		return false;
+	}
 	const int nodeId = activeNode();
 	return nodeGlobalPaste(nodeId, pos);
 }
 
 bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
+	if (isLocked()) {
+		return false;
+	}
 	if (!loadGlobalClipboard(_copy)) {
 		return false;
 	}
@@ -1779,6 +1863,9 @@ bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
 }
 
 bool SceneManager::globalPasteNode(const glm::ivec3 &pos) {
+	if (isLocked()) {
+		return false;
+	}
 	voxel::ClipboardData clipData;
 	if (!loadGlobalClipboard(clipData)) {
 		return false;
@@ -1802,6 +1889,9 @@ bool SceneManager::globalPasteNode(const glm::ivec3 &pos) {
 }
 
 bool SceneManager::splatMerge(int sourceNodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(sourceNodeId);
 	if (sourceNode == nullptr) {
 		Log::warn("splatmerge: no valid source node");
@@ -1882,6 +1972,9 @@ bool SceneManager::splatMerge(int sourceNodeId) {
 }
 
 bool SceneManager::mergeActiveToBackground() {
+	if (isLocked()) {
+		return false;
+	}
 	const int sourceNodeId = activeNode();
 	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(sourceNodeId);
 	if (sourceNode == nullptr) {
@@ -2143,6 +2236,9 @@ bool SceneManager::mergeActiveToBackground() {
 }
 
 int SceneManager::mergeVisibleToTemp() {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	core::Buffer<int> visibleNodeIds;
 	visibleNodeIds.reserve(_sceneGraph.size());
 	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
@@ -2223,6 +2319,9 @@ int SceneManager::mergeVisibleToTemp() {
 }
 
 void SceneManager::selectionInvert(int nodeId) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2235,6 +2334,9 @@ void SceneManager::selectionInvert(int nodeId) {
 }
 
 void SceneManager::selectionUnselect(int nodeId) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2247,6 +2349,9 @@ void SceneManager::selectionUnselect(int nodeId) {
 }
 
 void SceneManager::selectionSelectAll(int nodeId) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2302,6 +2407,9 @@ voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
 }
 
 void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2330,6 +2438,9 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 }
 
 void SceneManager::selectionSetEllipse(int nodeId) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2497,6 +2608,9 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 }
 
 int SceneManager::mergeNodes(NodeMergeFlags flags) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	core::Buffer<int> nodeIds;
 	nodeIds.reserve(_sceneGraph.size());
 	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
@@ -2515,6 +2629,9 @@ int SceneManager::mergeNodes(NodeMergeFlags flags) {
 }
 
 int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	if (!_sceneGraph.hasNode(nodeId1) || !_sceneGraph.hasNode(nodeId2)) {
 		return InvalidNodeId;
 	}
@@ -2607,6 +2724,9 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 }
 
 int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	const int newNodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, node, parent);
 	onNewNodeAdded(newNodeId, false);
 	return newNodeId;
@@ -2643,6 +2763,9 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 }
 
 bool SceneManager::splitVolumes() {
+	if (isLocked()) {
+		return false;
+	}
 	const int splitSize = _maxSuggestedVolumeSize->intVal();
 	const glm::ivec3 maxSize(splitSize);
 	scenegraph::SceneGraph newSceneGraph;
@@ -2700,10 +2823,16 @@ scenegraph::SceneGraph &SceneManager::sceneGraph() {
 }
 
 bool SceneManager::setAnimation(const core::String &animation) {
+	if (isLocked()) {
+		return false;
+	}
 	return _sceneGraph.setAnimation(animation);
 }
 
 bool SceneManager::addAnimation(const core::String &animation) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_sceneGraph.addAnimation(animation)) {
 		_mementoHandler.markAnimationAdded(_sceneGraph, animation);
 		return true;
@@ -2712,6 +2841,9 @@ bool SceneManager::addAnimation(const core::String &animation) {
 }
 
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
 		_mementoHandler.markAnimationAdded(_sceneGraph, animation);
 		return true;
@@ -2720,6 +2852,9 @@ bool SceneManager::duplicateAnimation(const core::String &animation, const core:
 }
 
 bool SceneManager::removeAnimation(const core::String &animation) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_sceneGraph.removeAnimation(animation)) {
 		_mementoHandler.markAnimationRemoved(_sceneGraph, animation);
 		return true;
@@ -2759,6 +2894,9 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 }
 
 bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolume *v) {
+	if (isLocked()) {
+		return false;
+	}
 	_sceneGraph.clear();
 	_sceneRenderer->clear();
 
@@ -2787,6 +2925,9 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 }
 
 bool SceneManager::newScene(bool force, const core::String& name, const voxel::Region& region) {
+	if (isLocked()) {
+		return false;
+	}
 	if (dirty() && !force) {
 		return false;
 	}
@@ -2904,6 +3045,9 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 }
 
 void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
+	if (isLocked()) {
+		return;
+	}
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -2944,6 +3088,9 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 }
 
 void SceneManager::nodeGroupMoveVoxels(int x, int y, int z) {
+	if (isLocked()) {
+		return;
+	}
 	const glm::ivec3 v(x, y, z);
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeMoveVoxels(groupNodeId, v);
@@ -2951,6 +3098,9 @@ void SceneManager::nodeGroupMoveVoxels(int x, int y, int z) {
 }
 
 void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -2966,6 +3116,9 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 }
 
 void SceneManager::nodeGroupShift(int x, int y, int z) {
+	if (isLocked()) {
+		return;
+	}
 	const glm::ivec3 v(x, y, z);
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeShift(groupNodeId, v);
@@ -2973,6 +3126,9 @@ void SceneManager::nodeGroupShift(int x, int y, int z) {
 }
 
 bool SceneManager::setGridResolution(int resolution) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_modifier.gridResolution() == resolution) {
 		return false;
 	}
@@ -4382,6 +4538,9 @@ void SceneManager::construct() {
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
+	if (isLocked()) {
+		return;
+	}
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	node.removeUnusedColors(reindexPalette);
 	if (reindexPalette) {
@@ -4394,6 +4553,9 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
 }
 
 int SceneManager::addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::UUID &uuid) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Point, uuid);
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(position);
@@ -4414,6 +4576,9 @@ int SceneManager::addPointChild(const core::String& name, const glm::ivec3& posi
 }
 
 int SceneManager::addModelChild(const core::String& name, int width, int height, int depth, const core::UUID &uuid) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
@@ -4499,6 +4664,9 @@ bool SceneManager::isScriptRunning() const {
 }
 
 bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
+	if (isLocked()) {
+		return false;
+	}
 	if (luaCode.empty()) {
 		Log::warn("No script selected");
 		return false;
@@ -4603,6 +4771,10 @@ void SceneManager::animateFrames(double nowSeconds) {
 
 bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
+}
+
+bool SceneManager::isLocked() const {
+	return false;
 }
 
 bool SceneManager::isCommandRunning() const {
@@ -4837,6 +5009,9 @@ void SceneManager::shutdown() {
 }
 
 void SceneManager::lsystemAbort() {
+	if (isLocked()) {
+		return;
+	}
 	if (_lsystemRunning) {
 		_mementoHandler.endGroup();
 		_lsystemRunning = false;
@@ -4846,6 +5021,9 @@ void SceneManager::lsystemAbort() {
 }
 
 void SceneManager::lsystem(const voxelgenerator::lsystem::LSystemConfig &conf) {
+	if (isLocked()) {
+		return;
+	}
 	lsystemAbort();
 	_lsystemConfig = conf;
 	_lsystemNodeId = activeNode();
@@ -5163,6 +5341,9 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 }
 
 bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
+	if (isLocked()) {
+		return false;
+	}
 	nodeForeachGroup([&] (int groupNodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 			nodeUpdatePivot(*node, pivot);
@@ -5172,6 +5353,9 @@ bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
 }
 
 bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdatePivot(*node, pivot);
 	}
@@ -5193,6 +5377,9 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &n
 }
 
 bool SceneManager::nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, scenegraph::InterpolationType interpolation) {
+	if (isLocked()) {
+		return false;
+	}
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
@@ -5228,6 +5415,9 @@ bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegr
 }
 
 bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeTransformMirror(*node, keyFrameIdx, axis);
 	}
@@ -5236,6 +5426,9 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 
 bool SceneManager::nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 											scenegraph::FrameIndex frameIdx, bool local) {
+	if (isLocked()) {
+		return false;
+	}
 	nodeForeachGroup([&] (int groupNodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 			const scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(frameIdx);
@@ -5248,6 +5441,9 @@ bool SceneManager::nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::
 }
 
 void SceneManager::nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume) {
+	if (isLocked()) {
+		return;
+	}
 	if (!node.isAnyModelNode()) {
 		return;
 	}
@@ -5259,6 +5455,9 @@ void SceneManager::nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, con
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
 	}
@@ -5274,6 +5473,9 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 }
 
 void SceneManager::nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (isLocked()) {
+		return;
+	}
 	nodeForeachGroup([&] (int groupNodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 			nodeResetTransform(*node, keyFrameIdx);
@@ -5282,6 +5484,9 @@ void SceneManager::nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx
 }
 
 bool SceneManager::nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeResetTransform(*node, keyFrameIdx);
 	}
@@ -5324,6 +5529,9 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 }
 
 void SceneManager::nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx) {
+	if (isLocked()) {
+		return;
+	}
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
 		nodeAddKeyframe(node, frameIdx);
@@ -5331,6 +5539,9 @@ void SceneManager::nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx) {
 }
 
 bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeAddKeyframe(*node, frameIdx);
 	}
@@ -5338,6 +5549,9 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 }
 
 bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	for (auto iter = sceneGraph().beginAllModels(); iter != sceneGraph().end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		if (!node.hasKeyFrame(frameIdx)) {
@@ -5348,6 +5562,9 @@ bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
 }
 
 void SceneManager::nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx) {
+	if (isLocked()) {
+		return;
+	}
 	nodeForeachGroup([&](int groupNodeId) {
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
 		nodeRemoveKeyFrame(node, frameIdx);
@@ -5355,6 +5572,9 @@ void SceneManager::nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx) {
 }
 
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrame(*node, frameIdx);
 	}
@@ -5362,6 +5582,9 @@ bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameId
 }
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrameByIndex(*node, keyFrameIdx);
 	}
@@ -5405,6 +5628,9 @@ bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const
 }
 
 bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeShiftAllKeyframes(*node, shift);
 	}
@@ -5488,6 +5714,9 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 }
 
 int SceneManager::nodeReference(int nodeId) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->isReferenceNode()) {
 			return nodeReference(node->reference());
@@ -5498,6 +5727,9 @@ int SceneManager::nodeReference(int nodeId) {
 }
 
 bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
@@ -5509,6 +5741,9 @@ bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
 }
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags) {
+	if (isLocked()) {
+		return false;
+	}
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId, flags)) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
@@ -5520,6 +5755,9 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId, scenegraph::Node
 }
 
 bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->setProperty(key, value)) {
 			_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
@@ -5530,6 +5768,9 @@ bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const co
 }
 
 bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->properties().remove(key)) {
 			_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
@@ -5540,6 +5781,9 @@ bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 }
 
 bool SceneManager::nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setIkConstraint(constraint);
 		_mementoHandler.markIKConstraintChange(_sceneGraph, *node);
@@ -5550,6 +5794,9 @@ bool SceneManager::nodeSetIKConstraint(int nodeId, const scenegraph::IKConstrain
 }
 
 bool SceneManager::nodeRemoveIKConstraint(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (!node->hasIKConstraint()) {
 			return false;
@@ -5563,6 +5810,9 @@ bool SceneManager::nodeRemoveIKConstraint(int nodeId) {
 }
 
 bool SceneManager::nodeRename(int nodeId, const core::String &name) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRename(*node, name);
 	}
@@ -5598,6 +5848,9 @@ bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::Stri
 }
 
 bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setVisible(visible);
 		if (node->type() == scenegraph::SceneGraphNodeType::Group) {
@@ -5612,6 +5865,9 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 }
 
 bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setLocked(locked);
 		markDirty();
@@ -5621,6 +5877,9 @@ bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 }
 
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 		return nodeRemove(*node, recursive);
 	}
@@ -5639,6 +5898,9 @@ bool SceneManager::exceedsMaxSuggestedVolumeSize(const voxel::Region &region) co
 }
 
 void SceneManager::markDirty() {
+	if (isLocked()) {
+		return;
+	}
 	_sceneGraph.markMaxFramesDirty();
 	// we only autosave if the volumes in the scene graph are not exceeding the
 	// max suggested voxel count
@@ -5741,6 +6003,9 @@ bool SceneManager::nodeUnreference(scenegraph::SceneGraphNode &node) {
 }
 
 bool SceneManager::nodeUnreference(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 		return nodeUnreference(*node);
 	}
@@ -5795,6 +6060,9 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 }
 
 bool SceneManager::nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeReduceColors(*node, srcPalIdx, targetPalIdx);
 	}
@@ -5902,6 +6170,9 @@ bool SceneManager::nodeQuantizeColors(scenegraph::SceneGraphNode &node, const co
 }
 
 bool SceneManager::nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeQuantizeColors(*node, selectedIndices, targetColorCount);
 	}
@@ -5909,6 +6180,9 @@ bool SceneManager::nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &s
 }
 
 bool SceneManager::nodeRemoveColor(int nodeId, uint8_t palIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveColor(*node, palIdx);
 	}
@@ -5924,6 +6198,9 @@ bool SceneManager::nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t 
 }
 
 bool SceneManager::nodeDuplicateColor(int nodeId, uint8_t palIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeDuplicateColor(*node, palIdx);
 	}
@@ -5953,6 +6230,9 @@ bool SceneManager::nodeResetMaterial(scenegraph::SceneGraphNode &node, uint8_t p
 }
 
 bool SceneManager::nodeResetMaterial(int nodeId, uint8_t palIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeResetMaterial(*node, palIdx);
 	}
@@ -5960,6 +6240,9 @@ bool SceneManager::nodeResetMaterial(int nodeId, uint8_t palIdx) {
 }
 
 bool SceneManager::nodeRemoveAlpha(int nodeId, uint8_t palIdx) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveAlpha(*node, palIdx);
 	}
@@ -5975,6 +6258,9 @@ bool SceneManager::nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t pal
 }
 
 bool SceneManager::nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeSetMaterial(*node, palIdx, material, value);
 	}
@@ -6000,6 +6286,9 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 }
 
 bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeSetColor(*node, palIdx, color);
 	}
@@ -6012,12 +6301,18 @@ void SceneManager::nodeForeachGroup(const core::Function<void(int)>& f) {
 }
 
 void SceneManager::nodeGroupRemoveNormals() {
+	if (isLocked()) {
+		return;
+	}
 	nodeForeachGroup([&] (int groupNodeId) {
 		nodeRemoveNormals(groupNodeId);
 	});
 }
 
 bool SceneManager::nodeRemoveNormals(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (!node->isAnyModelNode()) {
 			return false;
@@ -6043,6 +6338,9 @@ bool SceneManager::nodeRemoveNormals(int nodeId) {
 }
 
 bool SceneManager::nodeActivate(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
