@@ -404,6 +404,16 @@ def update_yocto():
         ]
     )
 
+def update_ufbx_write():
+    update_target(
+        "ufbx_write",
+        "https://github.com/bqqbarbhg/ufbx_write.git",
+        [
+            (f"ufbx_write.h", "src/modules/voxelformat/external/ufbx_write.h"),
+            (f"ufbx_write.c", "src/modules/voxelformat/external/ufbx_write.c")
+        ]
+    )
+
 def update_ufbx():
     update_target(
         "ufbx",
@@ -508,6 +518,7 @@ def main():
         update_meshoptimizer,
         update_yocto,
         update_ufbx,
+        update_ufbx_write,
         update_natsort,
         update_miniz,
         update_minlzma,

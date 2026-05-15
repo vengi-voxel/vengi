@@ -77,9 +77,6 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 	if (quad) {
 		Log::warn("FBX format does not support quads - exporting as triangles");
 	}
-	if (withColor) {
-		Log::warn("FBX vertex colors are currently disabled due to a bug in ufbx_write");
-	}
 	(void)quad;
 	ufbxw_scene *ws = ufbxw_create_scene(&sceneOpts);
 	if (!ws) {
@@ -184,10 +181,6 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 				}
 				ufbxw_mesh_set_triangles(ws, wMesh, ufbxw_copy_int_array(ws, triIndices.data(), ni));
 
-				// TODO: vertex colors cause a crash in ufbx_write's ufbxwi_generate_indices
-				// Re-enable once ufbx_write is fixed
-				(void)withColor;
-#if 0
 				if (withColor) {
 					const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 					const palette::Palette &palette = graphNode.palette();
@@ -204,7 +197,6 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					colorDesc.generate_indices = true;
 					ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_COLOR, 0, &colorDesc);
 				}
-#endif
 
 				if (withTexCoords) {
 					const voxel::UVArray &uvs = vmesh->getUVVector();

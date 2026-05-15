@@ -294,6 +294,9 @@ typedef enum ufbxw_error_type {
 	UFBXW_ERROR_WRONG_DATA_TYPE,
 	UFBXW_ERROR_INDEX_OUT_OF_BOUNDS,
 	UFBXW_ERROR_CYCLICAL_PARENT,
+	UFBXW_ERROR_BUFFER_NOT_FOUND,
+	UFBXW_ERROR_BUFFER_WRONG_TYPE,
+	UFBXW_ERROR_BUFFER_NOT_EDITABLE,
 
 	// Fatal errors
 	UFBXW_ERROR_FATAL,
@@ -301,6 +304,7 @@ typedef enum ufbxw_error_type {
 	UFBXW_ERROR_MEMORY_LIMIT,
 	UFBXW_ERROR_ALLOCATION_LIMIT,
 	UFBXW_ERROR_ALLOCATION_FAILURE,
+	UFBXW_ERROR_FILE_SIZE_LIMIT,
 	UFBXW_ERROR_BUFFER_STREAM,
 	UFBXW_ERROR_WRITE_FAILED,
 	UFBXW_ERROR_DEFLATE_FAILED,
@@ -309,6 +313,7 @@ typedef enum ufbxw_error_type {
 	UFBXW_ERROR_FILE_OPEN_FAILED,
 	UFBXW_ERROR_ASCII_FORMAT,
 	UFBXW_ERROR_THREAD_SYNC_INIT,
+	UFBXW_ERROR_THREAD_POOL_INIT,
 
 } ufbxw_error_type;
 
@@ -326,6 +331,7 @@ typedef struct ufbxw_error {
 
 typedef struct ufbxw_memory_stats {
 	size_t allocated_bytes;
+	size_t max_allocated_bytes;
 	size_t allocation_count;
 	size_t block_allocation_count;
 } ufbxw_memory_stats;
@@ -432,7 +438,7 @@ typedef enum ufbxw_prop_type {
 	UFBXW_PROP_TYPE_USER_STRING,  // < "KString", "", `UFBXW_PROP_DATA_STRING`
 	UFBXW_PROP_TYPE_USER_ENUM,    // < "Enum", "", `UFBXW_PROP_DATA_USER_ENUM`
 
-	// Decicated types
+	// Dedicated types
 	UFBXW_PROP_TYPE_VISIBILITY,             // < "Visibility", "", `UFBXW_PROP_DATA_BOOL`
 	UFBXW_PROP_TYPE_VISIBILITY_INHERITANCE, // < "Visibility Inheritance", "", `UFBXW_PROP_DATA_BOOL`
 	UFBXW_PROP_TYPE_ROLL,                   // < "Roll", "", `UFBXW_PROP_DATA_REAL`
@@ -714,7 +720,7 @@ ufbxw_abi void ufbxw_set_name(ufbxw_scene *scene, ufbxw_id id, const char *name)
 ufbxw_abi void ufbxw_set_name_len(ufbxw_scene *scene, ufbxw_id id, const char *name, size_t name_len);
 ufbxw_abi ufbxw_string ufbxw_get_name(ufbxw_scene *scene, ufbxw_id id);
 
-// TODO: Connect function taht takes connection type as an argument
+// TODO: Connect function that takes connection type as an argument
 ufbxw_abi void ufbxw_connect(ufbxw_scene *scene, ufbxw_id src, ufbxw_id dst);
 ufbxw_abi void ufbxw_connect_prop(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
 ufbxw_abi void ufbxw_connect_prop_len(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
@@ -1130,7 +1136,7 @@ ufbxw_abi ufbxw_id ufbxw_get_template_id(ufbxw_scene *scene, ufbxw_element_type 
 typedef struct ufbxw_save_info {
 	uint32_t _begin_zero;
 
-	// Usually aboslute path of the exported FBX
+	// Usually absolute path of the exported FBX
 	ufbxw_string document_url;
 
 	// Application info
@@ -1295,6 +1301,16 @@ typedef struct ufbxw_deflate {
 
 // -- ASCII formatting
 
+// Number of characters reserved for formatting ASCII, per element
+// Allow space for maximum length, comma, and optional space.
+#define UFBXW_ASCII_FORMAT_INT_CHARS 13
+#define UFBXW_ASCII_FORMAT_LONG_CHARS 22
+#define UFBXW_ASCII_FORMAT_FLOAT_CHARS 20
+#define UFBXW_ASCII_FORMAT_DOUBLE_CHARS 28
+
+// Number of additional bytes in the end of the buffer, in case the formatter needs scratch space.
+#define UFBXW_ASCII_FORMAT_EXTRA_BUFFER_CHARS 64
+
 // TODO: Should round trip be default?
 typedef enum ufbxw_ascii_float_format {
 	// Fixed-precision formatting, matching what the FBX SDK outputs.
@@ -1353,6 +1369,9 @@ typedef struct ufbxw_save_opts {
 	// How to format floating point numbers in ASCII files.
 	ufbxw_ascii_float_format ascii_float_format;
 
+	// Do not compress binary data
+	bool disable_compression;
+
 	// TODO: Do not save animation
 	bool ignore_animation;
 
@@ -1377,13 +1396,29 @@ typedef struct ufbxw_save_opts {
 	size_t threaded_min_ascii_floats;
 	size_t threaded_min_ascii_ints;
 
+	// Maximum output file size
+	uint64_t file_size_limit;
+
+	// Maximum amount of allocations to do
+	size_t max_allocations;
+	size_t thread_max_allocations;
+
 	uint32_t _end_zero;
 } ufbxw_save_opts;
 
+typedef struct ufbxw_save_stats {
+	uint64_t file_size;
+	ufbxw_memory_stats memory;
+	ufbxw_memory_stats thread_memory;
+} ufbxw_save_stats;
+
 ufbxw_abi bool ufbxw_save_file(ufbxw_scene *scene, const char *path, const ufbxw_save_opts *opts, ufbxw_error *error);
 ufbxw_abi bool ufbxw_save_file_len(ufbxw_scene *scene, const char *path, size_t path_len, const ufbxw_save_opts *opts, ufbxw_error *error);
-
 ufbxw_abi bool ufbxw_save_stream(ufbxw_scene *scene, ufbxw_write_stream *stream, const ufbxw_save_opts *opts, ufbxw_error *error);
+
+ufbxw_abi bool ufbxw_save_file_ex(ufbxw_scene *scene, const char *path, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
+ufbxw_abi bool ufbxw_save_file_ex_len(ufbxw_scene *scene, const char *path, size_t path_len, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
+ufbxw_abi bool ufbxw_save_stream_ex(ufbxw_scene *scene, ufbxw_write_stream *stream, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
 
 // -- Thread pool
 
