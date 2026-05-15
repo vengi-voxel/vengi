@@ -276,22 +276,21 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "shape brush type combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "shape brush type toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Shape));
 
 		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		ShapeBrush &brush = modifier.shapeBrush();
 
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
-			const core::String label = core::String::format("Shape/%s %s", ShapeTypeIcons[i], ShapeTypeStr[i]);
-			// TODO: this is no combo box anymore but a toolbar with buttons
-			ctx->ComboClick(label.c_str());
+			const core::String buttonId = core::String::format("shapes/###button%d", i);
+			ctx->ItemClick(buttonId.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.shapeType(), i);
 		}
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "paint brush mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "paint brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Paint));
 		command::executeCommands("fill");
 		ctx->Yield(3);
@@ -299,12 +298,11 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		PaintBrush &brush = modifier.paintBrush();
 
-		// TODO: this is no combo box anymore but a toolbar with buttons
-		ctx->ComboClick("Mode/Brighten");
+		ctx->ItemClick("paintmode/###button1");
 		ctx->Yield();
 		IM_CHECK_EQ((int)brush.paintMode(), (int)PaintBrush::PaintMode::Brighten);
 
-		ctx->ComboClick("Mode/Darken");
+		ctx->ItemClick("paintmode/###button2");
 		ctx->Yield();
 		IM_CHECK_EQ((int)brush.paintMode(), (int)PaintBrush::PaintMode::Darken);
 	};
@@ -368,22 +366,23 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		command::executeCommands("select none");
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "select brush mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "select brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
 
 		IM_CHECK(focusWindow(ctx, id));
 		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		SelectBrush &brush = modifier.selectBrush();
 
+		int buttonIdx = 0;
 		for (int i = 0; i < (int)SelectMode::Max; ++i) {
 			if ((SelectMode)i == SelectMode::Script) {
 				continue;
 			}
-			const core::String label = core::String::format("Select mode/%s %s", SelectModeIcons[i], _(SelectModeStr[i]));
-			// TODO: this is no combo box anymore but a toolbar with buttons
-			ctx->ComboClick(label.c_str());
+			const core::String buttonId = core::String::format("selectmode/###button%d", buttonIdx);
+			ctx->ItemClick(buttonId.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.selectMode(), i);
+			++buttonIdx;
 		}
 	};
 
@@ -410,7 +409,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "transform brush mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "transform brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Transform));
 		// transform brush needs a selection
 		command::executeCommands("fill");
@@ -423,9 +422,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		TransformBrush &brush = modifier.transformBrush();
 
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {
-			const core::String label = core::String::format("Transform mode/%s %s", TransformModeIcons[i], _(TransformModeStr[i]));
-			// TODO: this is no combo box anymore but a toolbar with buttons
-			ctx->ComboClick(label.c_str());
+			const core::String buttonId = core::String::format("transformmode/###button%d", i);
+			ctx->ItemClick(buttonId.c_str());
 			ctx->Yield();
 			IM_CHECK_EQ((int)brush.transformMode(), i);
 		}
