@@ -99,19 +99,19 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		style.pushFontSize(imguiApp()->bigFontSize());
 		Toolbar toolbar("toolbar", &listener, _sceneMgr);
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		toolbar.asyncButton(ICON_LC_CROP, "crop");
-		toolbar.asyncButton(ICON_LC_SCALING, "resizetoselection", !_sceneMgr->hasSelection(nodeId));
-		toolbar.asyncButton(ICON_LC_SPLIT, "splitobjects");
-		toolbar.asyncButton(ICON_LC_EXPAND, "modelsize");
-		toolbar.asyncButton(ICON_LC_UNGROUP, "colortomodel");
-		toolbar.asyncButton(ICON_LC_SQUARE_CHEVRON_DOWN, "scaledown");
-		toolbar.asyncButton(ICON_LC_SQUARE_CHEVRON_UP, "scaleup");
-		toolbar.asyncButton(ICON_LC_PAINT_BUCKET, "fillhollow");
-		toolbar.asyncButton(ICON_LC_ERASER, "hollow");
-		toolbar.asyncButton(ICON_LC_X, "clear");
-		toolbar.asyncButton(ICON_LC_TRASH, "deleteselected");
-		toolbar.asyncButton(ICON_LC_PAINT_BUCKET, "fill");
-		toolbar.asyncButton(ICON_LC_MERGE, "splatmerge");
+		toolbar.button(ICON_LC_CROP, "crop");
+		toolbar.button(ICON_LC_SCALING, "resizetoselection", !_sceneMgr->hasSelection(nodeId));
+		toolbar.button(ICON_LC_SPLIT, "splitobjects");
+		toolbar.button(ICON_LC_EXPAND, "modelsize");
+		toolbar.button(ICON_LC_UNGROUP, "colortomodel");
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_DOWN, "scaledown");
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_UP, "scaleup");
+		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow");
+		toolbar.button(ICON_LC_ERASER, "hollow");
+		toolbar.button(ICON_LC_X, "clear");
+		toolbar.button(ICON_LC_TRASH, "deleteselected");
+		toolbar.button(ICON_LC_PAINT_BUCKET, "fill");
+		toolbar.button(ICON_LC_MERGE, "splatmerge");
 	}
 
 	const float buttonWidth = ImGui::GetFontSize() * 4;
