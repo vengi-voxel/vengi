@@ -88,17 +88,8 @@ inline core::String &TextBrush::input() {
 	return _input;
 }
 
-inline void TextBrush::setInput(const core::String &input) {
-	_input = input;
-}
-
 inline int TextBrush::size() const {
 	return _size;
-}
-
-inline void TextBrush::setSpacing(int spacing) {
-	_spacing = spacing;
-	markDirty();
 }
 
 inline int TextBrush::spacing() const {

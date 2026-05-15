@@ -62,11 +62,17 @@ void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 }
 
 void TextBrush::setSize(int size) {
+	if (_size == size) {
+		return;
+	}
 	_size = glm::clamp(size, 6, 255);
 	markDirty();
 }
 
 void TextBrush::setThickness(int thickness) {
+	if (_thickness == thickness) {
+		return;
+	}
 	_thickness = glm::clamp(thickness, 1, 255);
 	markDirty();
 }
@@ -86,6 +92,22 @@ void TextBrush::update(const BrushContext &ctx, double nowSeconds) {
 		_lastCursorPosition = ctx.cursorPosition;
 		markDirty();
 	}
+}
+
+void TextBrush::setInput(const core::String &input) {
+	if (_input == input) {
+		return;
+	}
+	_input = input;
+	markDirty();
+}
+
+void TextBrush::setSpacing(int spacing) {
+	if (_spacing == spacing) {
+		return;
+	}
+	_spacing = spacing;
+	markDirty();
 }
 
 void TextBrush::shutdown() {
