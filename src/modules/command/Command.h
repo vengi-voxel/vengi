@@ -228,8 +228,6 @@ public:
 
 	static int execute(const core::String& command);
 
-	static int execute(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
-
 	static bool execute(const core::String& command, const core::DynamicArray<core::String>& rawArgs);
 
 	static Command* getCommand(const core::String& name) {

@@ -89,7 +89,8 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 		}
 		Log::trace("Execute the command %s for key %i", command.c_str(), key);
 		if (command[0] == COMMAND_PRESSED[0]) {
-			if (command::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
+			const core::String &cmd = core::String::format("%s %i %f", command.c_str(), key, nowSeconds);
+			if (command::Command::execute(cmd) == 1) {
 				Log::trace("The tracking command was executed");
 				handled = true;
 				continue;
@@ -491,7 +492,8 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					continue;
 				}
 				Log::debug("Execute the command %s for key %i", pair.command.c_str(), commandKey);
-				command::Command::execute("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);
+				const core::String &cmd = core::String::format("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);
+				command::Command::execute(cmd);
 				recheck.insert(commandKey);
 			}
 			// for those keys that were activated because only a modifier was pressed (bound to e.g. left_shift),
@@ -503,7 +505,8 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					if (pair.modifier != 0) {
 						continue;
 					}
-					command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), checkKey->key, nowSeconds);
+					const core::String &cmd = core::String::format(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), checkKey->key, nowSeconds);
+					command::Command::execute(cmd);
 				}
 			}
 		}
@@ -528,7 +531,8 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 			if (!isPressed(commandKey)) {
 				continue;
 			}
-			command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
+			const core::String &cmd = core::String::format(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), commandKey, nowSeconds);
+			command::Command::execute(cmd);
 			executeCommands(commandKey, modifier, nowSeconds, 0u);
 		}
 		_pressedModifierMask &= ~(uint32_t)code;
@@ -538,7 +542,8 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 		const CommandModifierPair& pair = i->second;
 		const core::String& command = pair.command;
 		if (command[0] == COMMAND_PRESSED[0]) {
-			handled = command::Command::execute(COMMAND_RELEASED "%s %i %f", &(command.c_str()[1]), key, nowSeconds) > 0;
+			const core::String &cmd = core::String::format(COMMAND_RELEASED "%s %i %f", &(command.c_str()[1]), key, nowSeconds);
+			handled = command::Command::execute(cmd) > 0;
 		}
 	}
 	_keys.remove(key);

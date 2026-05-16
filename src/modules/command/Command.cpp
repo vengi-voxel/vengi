@@ -157,17 +157,6 @@ void Command::updateSortedList() {
 	});
 }
 
-int Command::execute(const char* msg, ...) {
-	va_list args;
-	va_start(args, msg);
-	char buf[4096];
-	SDL_vsnprintf(buf, sizeof(buf), msg, args);
-	buf[sizeof(buf) - 1] = '\0';
-	const int cmds = execute(core::String(buf));
-	va_end(args);
-	return cmds;
-}
-
 int Command::execute(const core::String& command) {
 	int executed = 0;
 	core::TokenizerConfig cfg;

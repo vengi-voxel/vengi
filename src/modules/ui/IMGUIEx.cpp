@@ -769,7 +769,7 @@ bool ImageButton(const char *str_id, video::Id handle, const ImVec2 &size) {
 
 bool MenuItemCmd(const char *label, const char *command) {
 	if (ImGui::MenuItem(label)) {
-		command::Command::execute("%s", command);
+		command::Command::execute(command);
 		return true;
 	}
 	return false;
