@@ -143,7 +143,7 @@ int Command::completeArg(int argIndex, const core::String& str, const core::Toke
 }
 
 int Command::update(double deltaFrameSeconds) {
-	return drainDeferredCommands();
+	return 0;
 }
 
 void Command::updateSortedList() {

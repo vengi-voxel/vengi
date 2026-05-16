@@ -45,8 +45,6 @@ int drainDeferredCommands() {
 	}
 	int executed = 0;
 	for (const core::String &cmd : commands) {
-		// These are re-dispatched via Command::execute which will re-check the gate
-		// but at this point no async command should be running
 		executed += Command::execute(cmd);
 	}
 	return executed;
