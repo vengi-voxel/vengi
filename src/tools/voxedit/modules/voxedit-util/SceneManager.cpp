@@ -6,6 +6,7 @@
 
 #include "app/Async.h"
 #include "command/CommandHandler.h"
+#include "command/CommandLock.h"
 #include "core/ConfigVar.h"
 #include "app/I18N.h"
 #include "color/ColorUtil.h"
@@ -4774,6 +4775,9 @@ bool SceneManager::isLoading() const {
 }
 
 bool SceneManager::isLocked() const {
+	if (!command::commandExecutionAllowed()) {
+		return true;
+	}
 	return false;
 }
 

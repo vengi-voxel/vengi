@@ -2,6 +2,7 @@ set(SRCS
 	ActionButton.h ActionButton.cpp
 	CommandHandler.h CommandHandler.cpp
 	CommandCompleter.h CommandCompleter.cpp
+	CommandLock.h CommandLock.cpp
 	Command.h Command.cpp
 )
 set(LIB command)

@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
+#include "command/CommandLock.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/ThreadPool.h"
 
@@ -68,18 +69,21 @@ void schedule(core::Function<void()> &&f) {
 
 core::Future<int> executeCommandsAsync(const core::String &commandline) {
 	return app::async([commandline = commandline] () {
+		command::ScopedCommandOwnership ownership;
 		return command::executeCommands(commandline);
 	});
 }
 
 core::Future<int> executeCommandAsync(const core::String& command) {
 	return app::async([cmd = command] () {
+		command::ScopedCommandOwnership ownership;
 		return command::Command::execute(cmd);
 	});
 }
 
 core::Future<bool> executeCommandAsync(const core::String& command, const core::DynamicArray<core::String>& rawArgs) {
 	return app::async([cmd = command, args = rawArgs] () {
+		command::ScopedCommandOwnership ownership;
 		return command::Command::execute(cmd, args);
 	});
 }
