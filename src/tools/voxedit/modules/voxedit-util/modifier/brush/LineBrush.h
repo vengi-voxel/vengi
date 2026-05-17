@@ -70,6 +70,8 @@ protected:
 	glm::ivec3 _controlPoint{0};
 	/** Line thickness in voxels (1 = single voxel) */
 	int _thickness = 1;
+	/** Downward sag in voxels for rope/cable effect (0 = straight line) */
+	int _sag = 0;
 	/** 9-bit pattern controlling which voxels are placed */
 	LineStipplePattern _stipplePattern;
 
@@ -132,6 +134,7 @@ public:
 	bool continuous() const;
 	bool bezier() const;
 	int thickness() const;
+	int sag() const;
 
 	/**
 	 * @brief Enable or disable continuous line mode
@@ -140,6 +143,7 @@ public:
 	void setContinuous(bool continuous);
 	void setBezier(bool bezier);
 	void setThickness(int thickness);
+	void setSag(int sag);
 	void setControlPoint(const glm::ivec3 &controlPoint);
 	int pendingSegmentCount() const;
 	int selectedSegment() const;
@@ -178,6 +182,18 @@ inline int LineBrush::thickness() const {
 
 inline void LineBrush::setThickness(int thickness) {
 	_thickness = glm::clamp(thickness, 1, 64);
+}
+
+inline int LineBrush::sag() const {
+	return _sag;
+}
+
+inline void LineBrush::setSag(int sag) {
+	if (_sag == sag) {
+		return;
+	}
+	_sag = sag;
+	markDirty();
 }
 
 inline void LineBrush::setBezier(bool bezier) {

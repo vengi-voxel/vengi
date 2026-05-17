@@ -110,4 +110,36 @@ TEST_P(BrushTestParamTest, testLineBrush) {
 	testPlaceAndOverride(brush);
 }
 
+TEST_F(LineBrushTest, testSag) {
+	LineBrush brush;
+
+	ASSERT_TRUE(brush.init());
+	voxel::RawVolume volume(voxel::Region(glm::ivec3(0), glm::ivec3(10, 10, 1)));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	scenegraph::SceneGraph sceneGraph;
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
+	BrushContext brushContext;
+	brushContext.referencePos = glm::ivec3(0, 5, 0);
+	brushContext.cursorPosition = glm::ivec3(10, 5, 0);
+	brushContext.cursorFace = voxel::FaceNames::PositiveY;
+	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
+
+	brush.setSag(3);
+	EXPECT_EQ(3, brush.sag());
+
+	brush.preExecute(brushContext, nullptr);
+	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+
+	// The midpoint should be displaced downward by the sag amount
+	// midpoint is (5, 5, 0), control is (5, 2, 0), bezier midpoint at t=0.5 is (5, 3.5, 0)
+	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.referencePos).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
+	// Check that a voxel below the straight line was placed (sag effect)
+	const glm::ivec3 belowMid(5, 4, 0);
+	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(belowMid).getMaterial())) << "sag should place voxels below the straight line";
+
+	brush.shutdown();
+}
+
 } // namespace voxedit

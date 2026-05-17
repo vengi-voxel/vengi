@@ -285,6 +285,14 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 		brush.setThickness(thickness);
 	}
 
+	if (!bezier) {
+		int sag = brush.sag();
+		if (ImGui::InputInt(_("Sag"), &sag)) {
+			brush.setSag(sag);
+		}
+		ImGui::TooltipTextUnformatted(_("Downward sag in voxels for rope/cable effect"));
+	}
+
 	if (bezier && brush.pendingSegmentCount() > 0) {
 		ImGui::SeparatorText(_("Pending segments"));
 		const ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |

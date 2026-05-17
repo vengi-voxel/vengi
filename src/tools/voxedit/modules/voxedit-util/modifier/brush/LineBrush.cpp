@@ -113,7 +113,14 @@ void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrappe
 	voxel::Voxel voxel = ctx.cursorVoxel;
 	int stippleState = 0;
 	if (!_bezier) {
-		voxelgenerator::shape::drawStippledLine(wrapper, start, end, voxel, _stipplePattern, stippleState, false, _thickness);
+		if (_sag != 0) {
+			const glm::ivec3 mid = start + (end - start) / 2;
+			const glm::ivec3 control = mid - glm::ivec3(0, _sag, 0);
+			voxelgenerator::shape::drawBezierSegment(wrapper, BezierSegment{start, end, control}, voxel,
+													 _stipplePattern, _thickness);
+		} else {
+			voxelgenerator::shape::drawStippledLine(wrapper, start, end, voxel, _stipplePattern, stippleState, false, _thickness);
+		}
 		return;
 	}
 
@@ -171,6 +178,12 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 	}
 	glm::ivec3 mins = glm::min(ctx.referencePos, ctx.cursorPosition);
 	glm::ivec3 maxs = glm::max(ctx.referencePos, ctx.cursorPosition);
+	if (_sag != 0) {
+		const glm::ivec3 mid = ctx.referencePos + (ctx.cursorPosition - ctx.referencePos) / 2;
+		const glm::ivec3 control = mid - glm::ivec3(0, _sag, 0);
+		mins = glm::min(mins, control);
+		maxs = glm::max(maxs, control);
+	}
 	if (_thickness > 1) {
 		mins -= _thickness;
 		maxs += _thickness;
