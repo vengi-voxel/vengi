@@ -214,7 +214,7 @@ def update_imguizmo():
     update_target(
         "imguizmo",
         "https://github.com/CedricGuillemet/ImGuizmo.git",
-        [(f"ImGuizmo.*", "src/modules/ui/dearimgui")]
+        [(f"src/ImGuizmo.*", "src/modules/ui/dearimgui")]
     )
 
 def update_implot():
