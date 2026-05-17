@@ -98,7 +98,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);
 		break;
 	case ShapeType::Torus: {
-		voxelgenerator::shape::createTorus(wrapper, center, axis, dimensions, voxel);
+		voxelgenerator::shape::createTorus(wrapper, center, axis, dimensions, _thickness, voxel);
 		break;
 	}
 	case ShapeType::Cylinder: {

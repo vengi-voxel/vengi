@@ -16,6 +16,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/norm.hpp>
+#include <glm/trigonometric.hpp>
 
 namespace voxelgenerator {
 namespace shape {
@@ -578,7 +579,7 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 }
 
 template<class Volume, class VoxelType>
-void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, const glm::ivec3& dimensions, const VoxelType& voxel) {
+void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, const glm::ivec3& dimensions, int minorRadiusOverride, const VoxelType& voxel) {
 	const int halfW = dimensions.x / 2;
 	const int halfH = dimensions.y / 2;
 	const int halfD = dimensions.z / 2;
@@ -601,7 +602,7 @@ void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, cons
 
 	// in-plane tube radius: at most half the smaller plane dimension to preserve the hole
 	const double maxMinorP = core_min(halfA, halfB) / 2.0;
-	const double minorRadiusP = core_min(minorRadiusH, maxMinorP);
+	const double minorRadiusP = (minorRadiusOverride > 0) ? core_min((double)minorRadiusOverride, maxMinorP) : core_min(minorRadiusH, maxMinorP);
 	const double majorRadiusA = core_max(1.0, halfA - minorRadiusP);
 	const double majorRadiusB = core_max(1.0, halfB - minorRadiusP);
 

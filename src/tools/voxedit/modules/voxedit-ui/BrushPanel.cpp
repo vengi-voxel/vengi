@@ -111,7 +111,7 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 		}
 	}
 
-	if (currentSelectedShapeType == ShapeType::Circle) {
+	if (currentSelectedShapeType == ShapeType::Circle || currentSelectedShapeType == ShapeType::Torus) {
 		int thickness = modifier.shapeBrush().thickness();
 		if (ImGui::InputInt(_("Thickness"), &thickness)) {
 			modifier.shapeBrush().setThickness(thickness);

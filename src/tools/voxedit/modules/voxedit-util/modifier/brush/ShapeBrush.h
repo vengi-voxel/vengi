@@ -53,7 +53,7 @@ protected:
 										int &depth) const;
 
 	ShapeType _shapeType = ShapeType::AABB; ///< Current shape being generated
-	int _thickness = 1; ///< Wall thickness for hollow shapes (e.g., Circle)
+	int _thickness = 1; ///< Wall thickness for hollow shapes (e.g., Circle, Torus)
 
 	/**
 	 * @brief Generate the selected shape within the given region

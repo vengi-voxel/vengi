@@ -1377,8 +1377,9 @@ static int luaVoxel_shape_torus(lua_State* s) {
 	const int width = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
 	const int depth = (int)luaL_checkinteger(s, 6);
-	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 7);
-	shape::createTorus(*volume, center, axis, glm::ivec3(width, height, depth), voxel);
+	const int minorRadius = (int)luaL_optinteger(s, 7, 0);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 8);
+	shape::createTorus(*volume, center, axis, glm::ivec3(width, height, depth), minorRadius, voxel);
 	return 0;
 }
 
@@ -4423,6 +4424,7 @@ static int luaVoxel_shape_torus_jsonhelp(lua_State* s) {
 			{"name": "width", "type": "integer", "description": "The width of the bounding box."},
 			{"name": "height", "type": "integer", "description": "The height of the bounding box."},
 			{"name": "depth", "type": "integer", "description": "The depth of the bounding box."},
+			{"name": "minorRadius", "type": "integer", "description": "The minor (tube) radius (optional, 0 = auto)."},
 			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
 		],
 		"returns": []})";
