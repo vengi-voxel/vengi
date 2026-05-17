@@ -56,35 +56,48 @@ inline voxel::Region bezierRegion(const math::BezierSegment& segment, int thickn
 }
 
 /**
- * @brief Creates a filled circle
+ * @brief Creates a filled circle or ellipse plane
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] depth The height (z-axis) of the object
- * @param[in] radius The radius that defines the circle
+ * @param[in] radiusX The radius along the width axis
+ * @param[in] radiusZ The radius along the depth axis
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
-	const double xRadius = width / 2.0;
-	const double zRadius = depth / 2.0;
+void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, const VoxelType& voxel) {
+	const int halfW = width / 2;
+	const int halfD = depth / 2;
 
-	for (double z = -zRadius; z <= zRadius; ++z) {
-		const double distanceZ = glm::pow(z, 2.0);
-		for (double x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::sqrt(glm::pow(x, 2.0) + distanceZ);
-			if (distance > radius) {
+	for (int iz = 0; iz < depth; ++iz) {
+		const double z = iz - depth / 2.0 + 0.5;
+		for (int ix = 0; ix < width; ++ix) {
+			const double x = ix - width / 2.0 + 0.5;
+			const double nx = (radiusX > 0.0) ? (x / radiusX) : 0.0;
+			const double nz = (radiusZ > 0.0) ? (z / radiusZ) : 0.0;
+			if (nx * nx + nz * nz > 1.0) {
 				continue;
 			}
+			const int ox = ix - halfW;
+			const int oz = iz - halfD;
 			if (axis == math::Axis::X) {
-				volume.setVoxel(center.x, center.y + x, center.z + z, voxel);
+				volume.setVoxel(center.x, center.y + ox, center.z + oz, voxel);
 			} else if (axis == math::Axis::Y) {
-				volume.setVoxel(center.x + x, center.y, center.z + z, voxel);
+				volume.setVoxel(center.x + ox, center.y, center.z + oz, voxel);
 			} else {
-				volume.setVoxel(center.x + x, center.y + z, center.z, voxel);
+				volume.setVoxel(center.x + ox, center.y + oz, center.z, voxel);
 			}
 		}
 	}
+}
+
+/**
+ * @brief Creates a filled circle plane (convenience overload with single radius)
+ */
+template<class Volume, class VoxelType>
+void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
+	createCirclePlane(volume, center, axis, width, depth, radius, radius, voxel);
 }
 
 /**
@@ -100,23 +113,26 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis
  */
 template<class Volume, class VoxelType>
 void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, int thickness, const VoxelType& voxel) {
-	const double xRadius = width / 2.0;
-	const double zRadius = depth / 2.0;
+	const int halfW = width / 2;
+	const int halfD = depth / 2;
 	const double innerRadius = core_max(0.0, radius - thickness);
 
-	for (double z = -zRadius; z <= zRadius; ++z) {
-		const double distanceZ = glm::pow(z, 2.0);
-		for (double x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::sqrt(glm::pow(x, 2.0) + distanceZ);
+	for (int iz = 0; iz < depth; ++iz) {
+		const double z = iz - depth / 2.0 + 0.5;
+		for (int ix = 0; ix < width; ++ix) {
+			const double x = ix - width / 2.0 + 0.5;
+			const double distance = glm::sqrt(x * x + z * z);
 			if (distance > radius || distance < innerRadius) {
 				continue;
 			}
+			const int ox = ix - halfW;
+			const int oz = iz - halfD;
 			if (axis == math::Axis::X) {
-				volume.setVoxel(center.x, center.y + x, center.z + z, voxel);
+				volume.setVoxel(center.x, center.y + ox, center.z + oz, voxel);
 			} else if (axis == math::Axis::Y) {
-				volume.setVoxel(center.x + x, center.y, center.z + z, voxel);
+				volume.setVoxel(center.x + ox, center.y, center.z + oz, voxel);
 			} else {
-				volume.setVoxel(center.x + x, center.y + z, center.z, voxel);
+				volume.setVoxel(center.x + ox, center.y + oz, center.z, voxel);
 			}
 		}
 	}
@@ -206,23 +222,17 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 	if (axis == math::Axis::None) {
 		return;
 	}
-	const int heightLow = core_max(1, height / 2);
-	const double minDimension = core_min(width, depth);
-	const double adjustedMinRadius = core_max(1.0, minDimension / 2.0);
-	const double heightFactor = heightLow / adjustedMinRadius;
-	const double minRadius = glm::pow(adjustedMinRadius + 0.5, 2.0);
+	const double xRadius = core_max(1.0, width / 2.0);
+	const double zRadius = core_max(1.0, depth / 2.0);
+	const double halfHeight = core_max(1.0, height / 2.0);
 	const int axisIdx = math::getIndexForAxis(axis);
 	glm::ivec3 circleCenter = centerBottom;
 	glm::ivec3 offset{0};
 	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
-		const double percent = glm::pow(glm::abs((i - heightLow + 1) / heightFactor), 2.0);
-		const double yRadiusSquared = minRadius - percent;
-		if (yRadiusSquared < 0.0) {
-			break;
-		}
-		const double circleRadius = glm::sqrt(yRadiusSquared);
-		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		const double normalizedY = (i - halfHeight + 0.5) / halfHeight;
+		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
+		createCirclePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
 }
@@ -243,8 +253,8 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	if (axis == math::Axis::None) {
 		return;
 	}
-	const double minDimension = core_min(width, depth);
-	const double minRadius = minDimension / 2.0;
+	const double xRadius = width / 2.0;
+	const double zRadius = depth / 2.0;
 	const double dHeight = (double)height;
 	const int axisIdx = math::getIndexForAxis(axis);
 	glm::ivec3 circleCenter = centerBottom;
@@ -256,8 +266,7 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	}
 	for (int i = 0; i < height; ++i) {
 		const double percent = 1.0 - (i / dHeight);
-		const double circleRadius = percent * minRadius;
-		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, circleCenter, axis, width, depth, percent * xRadius, percent * zRadius, voxel);
 		circleCenter += offset;
 	}
 }
@@ -291,9 +300,8 @@ void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::A
  */
 template<class Volume, class VoxelType>
 void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis, bool negative, int width, int height, int depth, const VoxelType& voxel) {
-	const double minDimension = core_min(width, depth);
-	const double minRadius = glm::pow(minDimension / 2.0, 2.0);
-	const double heightFactor = height / (minDimension / 2.0);
+	const double xRadius = core_max(1.0, width / 2.0);
+	const double zRadius = core_max(1.0, depth / 2.0);
 
 	const int axisIdx = math::getIndexForAxis(axis);
 	glm::ivec3 circleCenter = centerBottom;
@@ -304,14 +312,9 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 		offset *= -1;
 	}
 	for (int i = 0; i < height; ++i) {
-		const double percent = glm::abs((double)i / heightFactor);
-		const double yRadius = glm::pow(percent, 2.0);
-		const double circleRadiusSquared = minRadius - yRadius;
-		if (circleRadiusSquared < 0.0) {
-			break;
-		}
-		const double circleRadius = glm::sqrt(circleRadiusSquared);
-		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		const double normalizedY = (double)i / (double)height;
+		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
+		createCirclePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
 }

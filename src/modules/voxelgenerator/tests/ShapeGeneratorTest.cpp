@@ -9,6 +9,7 @@
 #include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"
 #include "math/Axis.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -40,12 +41,12 @@ protected:
 	void save(const core::String &filename) const {
 #if 0
 		scenegraph::SceneGraph sceneGraph;
-		scenegraph::SceneGraphNode node1;
+		scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
 		node1.setUnownedVolume(_volume);
 		sceneGraph.emplace(core::move(node1));
-		const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+		const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
 		voxelformat::SaveContext saveCtx;
-		ASSERT_TRUE(voxelformat::saveFormat(file, nullptr, sceneGraph, saveCtx));
+		ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, filename, nullptr, archive, saveCtx));
 #endif
 	}
 
@@ -93,10 +94,11 @@ protected:
 		voxelformat::LoadContext loadCtx;
 		voxelformat::QBFormat format;
 		ASSERT_TRUE(format.load(filename, archive, sceneGraph, loadCtx));
-		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+		const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+		ASSERT_NE(nullptr, node) << "No model node found in " << filename;
+		const voxel::RawVolume *v = node->volume();
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
-		volumeComparator(*v, merged.palette, *_volume, merged.palette);
+		volumeComparator(*v, node->palette(), *_volume, node->palette());
 	}
 
 	void testCreateCirclePlane(math::Axis axis) {

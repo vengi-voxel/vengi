@@ -81,9 +81,10 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	const bool negative = voxel::isNegativeFace(face);
 
 	const int axisIdx = math::getIndexForAxis(axis);
-	const glm::ivec3 &center = region.getCenter();
+	const glm::ivec3 &lc = region.getLowerCorner();
+	const glm::ivec3 center = lc + region.getDimensionsInVoxels() / 2;
 	glm::ivec3 centerBottom = center;
-	centerBottom[axisIdx] = region.getLowerCorner()[axisIdx];
+	centerBottom[axisIdx] = lc[axisIdx];
 
 	const voxel::Voxel &voxel = ctx.cursorVoxel;
 	if (!voxel::isAir(voxel.getMaterial())) {

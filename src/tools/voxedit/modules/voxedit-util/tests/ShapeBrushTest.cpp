@@ -9,11 +9,59 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/tests/AbstractBrushTest.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
 class ShapeBrushTest : public app::AbstractTest {
 protected:
+	class TestShapeBrush : public ShapeBrush {
+	public:
+		using ShapeBrush::setShapeType;
+	};
+
+	void ellipse(const glm::ivec2 &mins2, const glm::ivec2 &maxs2) {
+		TestShapeBrush brush;
+		BrushContext brushContext;
+		ASSERT_TRUE(brush.init());
+		brush.setShapeType(ShapeType::Ellipse);
+
+		const glm::ivec3 mins(0, 0, 31);
+		const glm::ivec3 maxs(31, 31, 31);
+		const voxel::Region vregion(mins, maxs);
+		voxel::RawVolume volume(vregion);
+		scenegraph::SceneGraph sceneGraph;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&volume);
+		ModifierVolumeWrapper wrapper(node, ModifierType::Place);
+		brush.preExecute(brushContext, wrapper.volume());
+		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		brushContext.cursorPosition = glm::ivec3(mins2.x, mins2.y, maxs.z);
+		brushContext.cursorFace = voxel::FaceNames::PositiveX;
+		EXPECT_TRUE(brush.beginBrush(brushContext));
+		EXPECT_TRUE(brush.active());
+		brushContext.cursorPosition = glm::ivec3(maxs2.x, maxs2.y, maxs.z);
+		brush.step(brushContext);
+		const voxel::Region region = brush.calcRegion(brushContext);
+		const glm::ivec3 &lc = region.getLowerCorner();
+		const glm::ivec3 &uc = region.getUpperCorner();
+		ASSERT_EQ(lc, glm::ivec3(mins2.x, mins2.y, maxs.z));
+		ASSERT_EQ(uc, glm::ivec3(maxs2.x, maxs2.y, maxs.z));
+		brush.execute(sceneGraph, wrapper, brushContext);
+		const int voxelCount = voxelutil::countVoxels(volume);
+		ASSERT_LT(voxelCount, region.voxels());
+		ASSERT_GE(voxelCount, 80); // a 10x10 ellipse has approximately pi*5*5 ~= 78-80 voxels
+		EXPECT_FALSE(voxel::isAir(volume.voxel(maxs2.x, mins2.y + (maxs2.y - mins2.y) / 2, lc.z).getMaterial()))
+			<< "side voxel expected in the middle of the aabb: " << voxelCount << " voxels in total";
+		EXPECT_FALSE(voxel::isAir(volume.voxel(mins2.x, mins2.y + (maxs2.y - mins2.y) / 2, lc.z).getMaterial()))
+			<< "side voxel expected in the middle of the aabb: " << voxelCount << " voxels in total";
+		EXPECT_FALSE(voxel::isAir(volume.voxel(mins2.x + (maxs2.x - mins2.x) / 2, maxs2.y, lc.z).getMaterial()))
+			<< "top voxel expected in the middle of the aabb: " << voxelCount << " voxels in total";
+		EXPECT_FALSE(voxel::isAir(volume.voxel(mins2.x + (maxs2.x - mins2.x) / 2, mins2.y, lc.z).getMaterial()))
+			<< "bottom voxel expected in the middle of the aabb: " << voxelCount << " voxels in total";
+		brush.shutdown();
+	}
+
 	void prepare(ShapeBrush &brush, BrushContext &brushContext, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		brushContext.cursorPosition = mins;
@@ -118,6 +166,10 @@ TEST_F(ShapeBrushTest, testModifierActionMirrorAxisZ) {
 TEST_P(BrushTestParamTest, testShapeBrush) {
 	ShapeBrush brush;
 	testPlaceAndOverride(brush);
+}
+
+TEST_F(ShapeBrushTest, testEllipse) {
+	ellipse(glm::ivec2(10, 10), glm::ivec2(19, 19));
 }
 
 }; // namespace voxedit
