@@ -6,6 +6,7 @@
 
 #include "app/App.h"
 #include "core/SharedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
@@ -27,7 +28,10 @@ class BrushPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	core::String _stamp;
-	core::String _lastFont;
+	core::DynamicArray<core::String> _fontPaths;
+	core::DynamicArray<core::String> _fontLabels;
+	core::String _fontSearchFilter;
+	bool _fontsLoaded = false;
 	int _stampPaletteIndex = 0;
 	SceneManagerPtr _sceneMgr;
 	video::TexturePoolPtr _texturePool;
@@ -85,6 +89,7 @@ private:
 	void aabbBrushModeOptions(AABBBrush &brush);
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
+	void loadFontList();
 	void updateTextBrushPanel(command::CommandExecutionListener &listener);
 	void updateScriptBrushPanel(command::CommandExecutionListener &listener);
 
