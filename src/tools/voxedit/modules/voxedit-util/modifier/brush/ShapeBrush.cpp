@@ -77,7 +77,6 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		face = voxel::FaceNames::PositiveX;
 	}
 	const math::Axis axis = getShapeDimensionForAxis(face, dimensions, width, height, depth);
-	const double size = (glm::max)(width, depth);
 	const bool negative = voxel::isNegativeFace(face);
 
 	const int axisIdx = math::getIndexForAxis(axis);
@@ -99,9 +98,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);
 		break;
 	case ShapeType::Torus: {
-		const double minorRadius = size / 5.0;
-		const double majorRadius = size / 2.0 - minorRadius;
-		voxelgenerator::shape::createTorus(wrapper, center, minorRadius, majorRadius, voxel);
+		voxelgenerator::shape::createTorus(wrapper, center, axis, dimensions, voxel);
 		break;
 	}
 	case ShapeType::Cylinder: {

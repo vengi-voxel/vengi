@@ -578,30 +578,81 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 }
 
 template<class Volume, class VoxelType>
-void createTorus(Volume& volume, const glm::ivec3& center, double minorRadius, double majorRadius, const VoxelType& voxel) {
-	glm::dvec3 mins(-majorRadius - minorRadius, -majorRadius - minorRadius, -majorRadius - minorRadius);
-	glm::dvec3 maxs(majorRadius + minorRadius, majorRadius + minorRadius, majorRadius + minorRadius);
+void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, const glm::ivec3& dimensions, const VoxelType& voxel) {
+	const int halfW = dimensions.x / 2;
+	const int halfH = dimensions.y / 2;
+	const int halfD = dimensions.z / 2;
 
-	// shift to the voxel center
-	mins += 0.5;
-	maxs += 0.5;
+	// determine which world dimensions form the ring plane vs the axis (tube height)
+	double minorRadiusH, halfA, halfB;
+	if (axis == math::Axis::X) {
+		minorRadiusH = core_max(1.0, (double)halfW);
+		halfA = halfH;
+		halfB = halfD;
+	} else if (axis == math::Axis::Y) {
+		minorRadiusH = core_max(1.0, (double)halfH);
+		halfA = halfW;
+		halfB = halfD;
+	} else {
+		minorRadiusH = core_max(1.0, (double)halfD);
+		halfA = halfW;
+		halfB = halfH;
+	}
 
-	const double aPow = glm::pow(majorRadius, 2);
-	const double bPow = glm::pow(minorRadius, 2);
-	for (double x = mins.x; x <= maxs.x; ++x) {
-		const double xPow = glm::pow(x, 2);
-		for (double y = mins.y; y <= maxs.y; ++y) {
-			const double yPow = glm::pow(y, 2);
-			for (double z = mins.z; z <= maxs.z; ++z) {
-				// This term is smaller than zero if the point is inside the torus
-				const double zPow = glm::pow(z, 2);
-				// https://stackoverflow.com/questions/13460711/given-origin-and-radii-how-to-find-out-if-px-y-z-is-inside-torus
-				// (x^2+y^2+z^2+a^2-b^2)^2-4a^2(x^2+y^2)
-				if (glm::pow(xPow + yPow + zPow + aPow - bPow, 2) - 4.0 * aPow * (xPow + yPow) > 0.0) {
+	// in-plane tube radius: at most half the smaller plane dimension to preserve the hole
+	const double maxMinorP = core_min(halfA, halfB) / 2.0;
+	const double minorRadiusP = core_min(minorRadiusH, maxMinorP);
+	const double majorRadiusA = core_max(1.0, halfA - minorRadiusP);
+	const double majorRadiusB = core_max(1.0, halfB - minorRadiusP);
+
+	for (int iz = -halfD; iz < dimensions.z - halfD; ++iz) {
+		const double z = iz + 0.5;
+		for (int iy = -halfH; iy < dimensions.y - halfH; ++iy) {
+			const double y = iy + 0.5;
+			for (int ix = -halfW; ix < dimensions.x - halfW; ++ix) {
+				const double x = ix + 0.5;
+
+				double pa, pb, h;
+				if (axis == math::Axis::X) {
+					pa = y;
+					pb = z;
+					h = x;
+				} else if (axis == math::Axis::Y) {
+					pa = x;
+					pb = z;
+					h = y;
+				} else {
+					pa = x;
+					pb = y;
+					h = z;
+				}
+
+				// find closest point on the major ellipse
+				const double na = (majorRadiusA > 0.0) ? (pa / majorRadiusA) : 0.0;
+				const double nb = (majorRadiusB > 0.0) ? (pb / majorRadiusB) : 0.0;
+				const double planeDist = glm::sqrt(na * na + nb * nb);
+				if (planeDist < 0.0001) {
+					const double nh = (minorRadiusH > 0.0) ? (h / minorRadiusH) : 0.0;
+					if (nh * nh <= 1.0) {
+						volume.setVoxel(center.x + ix, center.y + iy, center.z + iz, voxel);
+					}
 					continue;
 				}
 
-				volume.setVoxel(center.x + (int)x, center.y + (int)y, center.z + (int)z, voxel);
+				const double angle = glm::atan(pb * majorRadiusA, pa * majorRadiusB);
+				const double ellipseA = majorRadiusA * glm::cos(angle);
+				const double ellipseB = majorRadiusB * glm::sin(angle);
+
+				const double da = pa - ellipseA;
+				const double db = pb - ellipseB;
+				// elliptical tube cross-section check
+				const double inPlaneDist = glm::sqrt(da * da + db * db);
+				const double np = (minorRadiusP > 0.0) ? (inPlaneDist / minorRadiusP) : 0.0;
+				const double nh = (minorRadiusH > 0.0) ? (h / minorRadiusH) : 0.0;
+
+				if (np * np + nh * nh <= 1.0) {
+					volume.setVoxel(center.x + ix, center.y + iy, center.z + iz, voxel);
+				}
 			}
 		}
 	}

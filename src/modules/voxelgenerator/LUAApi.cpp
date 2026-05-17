@@ -1373,10 +1373,12 @@ static int luaVoxel_shape_cylinder(lua_State* s) {
 static int luaVoxel_shape_torus(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const glm::ivec3& center = clua_tovec<glm::ivec3>(s, 2);
-	const int minorRadius = (int)luaL_checkinteger(s, 3);
-	const int majorRadius = (int)luaL_checkinteger(s, 4);
-	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
-	shape::createTorus(*volume, center, minorRadius, majorRadius, voxel);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const int width = (int)luaL_checkinteger(s, 4);
+	const int height = (int)luaL_checkinteger(s, 5);
+	const int depth = (int)luaL_checkinteger(s, 6);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 7);
+	shape::createTorus(*volume, center, axis, glm::ivec3(width, height, depth), voxel);
 	return 0;
 }
 
@@ -4417,8 +4419,10 @@ static int luaVoxel_shape_torus_jsonhelp(lua_State* s) {
 		"parameters": [
 			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
 			{"name": "center", "type": "ivec3", "description": "The center position."},
-			{"name": "minorRadius", "type": "integer", "description": "The minor (tube) radius."},
-			{"name": "majorRadius", "type": "integer", "description": "The major (ring) radius."},
+			{"name": "axis", "type": "string", "description": "The axis perpendicular to the torus ring plane: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "width", "type": "integer", "description": "The width of the bounding box."},
+			{"name": "height", "type": "integer", "description": "The height of the bounding box."},
+			{"name": "depth", "type": "integer", "description": "The depth of the bounding box."},
 			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
 		],
 		"returns": []})";

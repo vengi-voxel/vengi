@@ -172,4 +172,58 @@ TEST_F(ShapeBrushTest, testEllipse) {
 	ellipse(glm::ivec2(10, 10), glm::ivec2(19, 19));
 }
 
+TEST_F(ShapeBrushTest, testTorus) {
+	TestShapeBrush brush;
+	BrushContext brushContext;
+	ASSERT_TRUE(brush.init());
+	brush.setShapeType(ShapeType::Torus);
+
+	const glm::ivec3 mins(0, 0, 0);
+	const glm::ivec3 maxs(19, 9, 14);
+	const voxel::Region vregion(mins, maxs);
+	voxel::RawVolume volume(vregion);
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place);
+	brush.preExecute(brushContext, wrapper.volume());
+	brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	brushContext.cursorPosition = mins;
+	brushContext.cursorFace = voxel::FaceNames::PositiveY;
+	EXPECT_TRUE(brush.beginBrush(brushContext));
+	EXPECT_TRUE(brush.active());
+	brushContext.cursorPosition = maxs;
+	brush.step(brushContext);
+	brush.execute(sceneGraph, wrapper, brushContext);
+	const int voxelCount = voxelutil::countVoxels(volume);
+	ASSERT_GT(voxelCount, 0) << "Torus should generate voxels";
+
+	// verify the center is empty (torus hole)
+	const glm::ivec3 center = mins + (maxs - mins) / 2;
+	EXPECT_TRUE(voxel::isAir(volume.voxel(center).getMaterial()))
+		<< "Center of torus should be empty";
+
+	// verify all voxels are within the region (not cut off)
+	const voxel::Region dirtyRegion = wrapper.dirtyRegion();
+	EXPECT_TRUE(vregion.containsRegion(dirtyRegion))
+		<< "Torus must fit within the AABB region";
+
+	// verify the torus fills the height - check that voxels exist at or near the min/max y boundaries
+	bool hasVoxelAtMinY = false;
+	bool hasVoxelAtMaxY = false;
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			if (!voxel::isAir(volume.voxel(x, mins.y, z).getMaterial())) {
+				hasVoxelAtMinY = true;
+			}
+			if (!voxel::isAir(volume.voxel(x, maxs.y, z).getMaterial())) {
+				hasVoxelAtMaxY = true;
+			}
+		}
+	}
+	EXPECT_TRUE(hasVoxelAtMinY) << "Torus should have voxels at the minimum height boundary";
+	EXPECT_TRUE(hasVoxelAtMaxY) << "Torus should have voxels at the maximum height boundary";
+	brush.shutdown();
+}
+
 }; // namespace voxedit
