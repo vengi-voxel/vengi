@@ -210,13 +210,13 @@ A brush script can define the following functions:
 - `generate(node, region, color, ...)` **(required)** - Called when the brush is applied. Same API as generator scripts but uses `generate` instead of `main`.
 - `arguments()` - Returns parameter definitions (same format as generator scripts).
 - `description()` - Returns a brief description string.
-- `calcregion(cx, cy, cz, ...)` - Returns 6 integers (minX, minY, minZ, maxX, maxY, maxZ) defining the brush region for preview. If not defined, a single voxel at the cursor is used.
+- `calcregion(cx, cy, cz, ...)` - Returns 6 integers (minX, minY, minZ, maxX, maxY, maxZ) defining the brush region for preview. The `...` receives the same extra arguments defined by `arguments()`, in the same order. The `g_brushcontext` global is available inside this function. If `calcregion` is not defined, a single voxel at the cursor is used.
 - `settings()` - Returns a table with script settings. Currently supports `{ preview = "simple" }` to use outline-only preview instead of full voxel preview (useful for expensive scripts).
 - `icon()` - Returns an icon name string for the brush toolbar button (e.g. `"circle"`, `"star"`, `"wand"`). If not defined, a default icon is used. Available icon names include: blend, box, boxes, brush, circle, cloud, diamond, eraser, expand, flame, footprints, grid2x2, grid3x3, group, hammer, hexagon, image, layers, mountain, move, paintbrush, palette, penline, pencil, pipette, ruler, scan, scroll, snowflake, sparkles, spray, square, stamp, star, sun, swords, target, trees, triangle, wand, waves, zap.
 - `gizmo()` - Returns a table describing a 3D gizmo to display in the viewport, or `nil` for no gizmo.
 - `applygizmo(translation, rotation, scale, operation)` - Called when the user interacts with the gizmo. Returns `true` if the brush state was changed by the gizmo.
 
-The `generate()` function receives the same global objects as generator scripts (`g_noise`, `g_shape`, `g_palette`, etc.). Additionally, brush scripts have access to `g_brushcontext` which. For further details see [g_brushcontext](lua/brushcontext.md)
+The `generate()` function receives the same global objects as generator scripts (`g_noise`, `g_shape`, `g_palette`, etc.). Additionally, brush scripts have access to `g_brushcontext` which provides cursor position, reference position, face direction, and other context about the current brush action. For further details see [g_brushcontext](lua/brushcontext.md).
 
 ### Brush script examples
 
