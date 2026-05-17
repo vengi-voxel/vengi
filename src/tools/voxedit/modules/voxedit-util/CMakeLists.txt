@@ -103,6 +103,7 @@ set(SRCS
 	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp
 	network/handler/server/ChatHandler.h network/handler/server/ChatHandler.cpp
 
+	SceneJob.h SceneJob.cpp
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	Config.h

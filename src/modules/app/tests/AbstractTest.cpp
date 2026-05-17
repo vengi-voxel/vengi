@@ -24,6 +24,10 @@ core::String AbstractTest::fileToString(const core::String& filename) const {
 	return file->load();
 }
 
+void AbstractTest::wait(uint32_t ms) {
+	_testApp->wait(ms);
+}
+
 void AbstractTest::SetUp() {
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();

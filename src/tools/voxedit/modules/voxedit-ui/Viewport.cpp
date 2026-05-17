@@ -55,6 +55,67 @@
 
 namespace voxedit {
 
+static void renderSceneJobQueue(SceneManager &sceneMgr) {
+	if (!sceneMgr.isSceneJobRunning() && sceneMgr.pendingSceneJobs() == 0) {
+		return;
+	}
+
+	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+	const ImVec2 padding(ImGui::GetStyle().WindowPadding.x, ImGui::GetStyle().WindowPadding.y);
+	const ImVec2 pos(viewport->Pos.x + viewport->Size.x - padding.x, viewport->Pos.y + viewport->Size.y - padding.y);
+	ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
+	ImGui::SetNextWindowBgAlpha(0.9f);
+	ImGui::SetNextWindowSizeConstraints(ImVec2(ImGui::GetFontSize() * 18.0f, 0.0f),
+										ImVec2(ImGui::GetFontSize() * 32.0f, FLT_MAX));
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration |
+								   ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoSavedSettings |
+								   ImGuiWindowFlags_NoFocusOnAppearing;
+	if (!ImGui::Begin("##scenejobqueue", nullptr, flags)) {
+		ImGui::End();
+		return;
+	}
+
+	ImGui::TextUnformatted(_("Scene jobs"));
+	ImGui::Separator();
+
+	if (sceneMgr.isSceneJobRunning()) {
+		ImGui::Text("%s %s", ICON_LC_LOADER, sceneMgr.sceneJobText().c_str());
+		ImGui::SameLine();
+		if (ImGui::SmallButton(_("Abort"))) {
+			sceneMgr.cancelSceneJob();
+		}
+	}
+
+	const int pending = sceneMgr.pendingSceneJobs();
+	if (pending > 0) {
+		if (sceneMgr.isSceneJobRunning()) {
+			ImGui::Separator();
+		}
+		ImGui::Text(_("Pending: %i"), pending);
+		for (int i = 0; i < pending; ++i) {
+			ImGui::PushID(i);
+			ImGui::Text("%i. %s", i + 1, sceneMgr.pendingSceneJobText(i).c_str());
+			ImGui::SameLine();
+			if (ImGui::SmallButton(ICON_LC_X)) {
+				sceneMgr.cancelPendingSceneJob(i);
+				ImGui::PopID();
+				break;
+			}
+			ImGui::PopID();
+		}
+		if (ImGui::SmallButton(_("Clear pending"))) {
+			sceneMgr.clearPendingSceneJobs();
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton(_("Abort all"))) {
+			sceneMgr.clearPendingSceneJobs();
+			sceneMgr.cancelSceneJob();
+		}
+	}
+
+	ImGui::End();
+}
+
 static bool s_hideAxis[3]{false, false, false};
 
 core::String Viewport::viewportId(int id, bool printable) {
@@ -347,6 +408,12 @@ void Viewport::renderViewport() {
 		if (_sceneMgr->isLoading() || _sceneMgr->isCommandRunning()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
 			ImGui::LoadingIndicatorCircle(_("Working"), radius, color::White(), color::Gray());
+			if (_sceneMgr->isSceneJobRunning()) {
+				ImGui::TextUnformatted(_sceneMgr->sceneJobText().c_str());
+				if (ImGui::Button(_("Cancel"))) {
+					_sceneMgr->cancelSceneJob();
+				}
+			}
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
 			updateViewportInput(headerSize);
@@ -355,6 +422,7 @@ void Viewport::renderViewport() {
 
 		dragAndDrop(headerSize);
 	}
+	renderSceneJobQueue(*_sceneMgr.get());
 }
 
 bool Viewport::isGameMode() const {

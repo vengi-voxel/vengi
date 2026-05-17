@@ -36,6 +36,8 @@ protected:
 
 	core::String fileToString(const core::String& filename) const;
 
+	void wait(uint32_t ms);
+
 	virtual void onCleanupApp() {
 	}
 

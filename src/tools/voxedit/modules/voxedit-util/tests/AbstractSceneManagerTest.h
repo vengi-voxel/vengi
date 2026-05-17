@@ -106,8 +106,20 @@ public:
 		return saveModels(dir);
 	}
 
+	bool testStartSceneJob(SceneJobType type, int nodeId) {
+		return startSceneJob(type, nodeId);
+	}
+
 	void testSplitObjects(int nodeId) {
 		nodeSplitObjects(nodeId);
+	}
+
+	void testNodeCrop(int nodeId) {
+		nodeCrop(nodeId);
+	}
+
+	void testNodeScaleUp(int nodeId) {
+		nodeScaleUp(nodeId);
 	}
 
 	void testNodeRotateAll(math::Axis axis) {

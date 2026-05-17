@@ -50,6 +50,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
+#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxedit-util/network/ServerNetwork.h"
 #include "voxel/ClipboardData.h"
@@ -999,6 +1000,358 @@ void SceneManager::nodeCrop(int nodeId) {
 		return;
 	}
 	modified(nodeId, newVolume->region());
+}
+
+bool SceneManager::startCropSceneJob(int nodeId, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr || node->volume() == nullptr) {
+		return false;
+	}
+
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([nodeId, snapshot]() {
+		SceneJobResult result;
+		result.type = SceneJobType::CropVolume;
+		result.nodeId = nodeId;
+
+		voxel::RawVolume *newVolume = voxelutil::cropVolume(snapshot);
+		delete snapshot;
+		if (newVolume == nullptr) {
+			result.error = "Failed to crop volume";
+			return result;
+		}
+		result.volume = newVolume;
+		result.modifiedRegion = newVolume->region();
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::CropVolume, text, core::move(future));
+}
+
+bool SceneManager::nodeResizeAsync(int nodeId, const voxel::Region &region) {
+	SceneJobRequest request;
+	request.type = SceneJobType::ResizeVolume;
+	request.nodeId = nodeId;
+	request.region = region;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::nodeResizeAsync(int nodeId, const glm::ivec3 &size) {
+	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return false;
+	}
+	voxel::Region region = v->region();
+	region.shiftUpperCorner(size);
+	return nodeResizeAsync(nodeId, region);
+}
+
+bool SceneManager::nodeColorToNewNodeAsync(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
+	SceneJobRequest request;
+	request.type = SceneJobType::ColorToModel;
+	request.nodeId = nodeId;
+	request.paletteIndices = paletteIndices;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::startScaleUpSceneJob(int nodeId, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr || node->volume() == nullptr) {
+		return false;
+	}
+
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([nodeId, snapshot]() {
+		SceneJobResult result;
+		result.type = SceneJobType::ScaleUpVolume;
+		result.nodeId = nodeId;
+
+		voxel::RawVolume *newVolume = voxelutil::scaleUp(*snapshot);
+		delete snapshot;
+		if (newVolume == nullptr) {
+			result.error = "Failed to scale up volume";
+			return result;
+		}
+		result.volume = newVolume;
+		result.modifiedRegion = newVolume->region();
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::ScaleUpVolume, text, core::move(future));
+}
+
+bool SceneManager::startScaleDownSceneJob(int nodeId, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr || node->volume() == nullptr) {
+		return false;
+	}
+
+	const voxel::Region srcRegion = node->volume()->region();
+	const glm::ivec3 &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	if (targetDimensionsHalf.x < 0 || targetDimensionsHalf.y < 0 || targetDimensionsHalf.z < 0) {
+		Log::debug("Can't scale anymore");
+		return false;
+	}
+	const palette::Palette palette = node->palette();
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([nodeId, snapshot, srcRegion, targetDimensionsHalf, palette]() {
+		SceneJobResult result;
+		result.type = SceneJobType::ScaleDownVolume;
+		result.nodeId = nodeId;
+
+		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
+		voxel::RawVolume *newVolume = new voxel::RawVolume(destRegion);
+		voxelutil::scaleDown(*snapshot, palette, *newVolume);
+		delete snapshot;
+		result.volume = newVolume;
+		result.modifiedRegion = srcRegion;
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::ScaleDownVolume, text, core::move(future));
+}
+
+bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	if (node == nullptr || node->volume() == nullptr || !request.region.isValid()) {
+		return false;
+	}
+
+	const voxel::Region oldRegion = node->volume()->region();
+	const voxel::Region newRegion = request.region;
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([nodeId = request.nodeId, snapshot, oldRegion, newRegion]() {
+		SceneJobResult result;
+		result.type = SceneJobType::ResizeVolume;
+		result.nodeId = nodeId;
+
+		voxel::RawVolume *newVolume = voxelutil::resize(snapshot, newRegion);
+		delete snapshot;
+		if (newVolume == nullptr) {
+			result.error = "Failed to resize volume";
+			return result;
+		}
+		result.volume = newVolume;
+		result.modifiedRegion = sceneJobModifiedRegionForResize(oldRegion, newRegion);
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::ResizeVolume, request.text, core::move(future));
+}
+
+bool SceneManager::startVolumeOperationSceneJob(const SceneJobRequest &request) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	if (node == nullptr || node->volume() == nullptr) {
+		return false;
+	}
+	voxel::Region selectionRegion = voxel::Region::InvalidRegion;
+	if (request.type == SceneJobType::DeleteSelectedVolume) {
+		selectionRegion = selectionCalculateRegion(*node);
+		if (!selectionRegion.isValid()) {
+			return false;
+		}
+	}
+
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([request, snapshot, selectionRegion]() {
+		return makeVolumeOperationSceneJobResult(request.type, request.nodeId, snapshot, selectionRegion,
+												 request.voxel, request.overrideVoxels);
+	});
+	return startActiveSceneJob(request.type, request.text, core::move(future));
+}
+
+bool SceneManager::startSplitObjectsSceneJob(int nodeId, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr || node->volume() == nullptr) {
+		return false;
+	}
+
+	const int parentNodeId = node->id();
+	const core::String name = node->name();
+	const palette::Palette palette = node->palette();
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([nodeId, parentNodeId, name, palette, snapshot]() {
+		SceneJobResult result;
+		result.type = SceneJobType::SplitObjects;
+		result.nodeId = nodeId;
+
+		core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(snapshot);
+		delete snapshot;
+		if (volumes.empty()) {
+			result.error = "No objects to split";
+			return result;
+		}
+		for (voxel::RawVolume *volume : volumes) {
+			SceneJobNewNode newNode;
+			newNode.sourceNodeId = nodeId;
+			newNode.parentNodeId = parentNodeId;
+			newNode.name = name;
+			newNode.palette = palette;
+			newNode.volume = volume;
+			result.newNodes.push_back(core::move(newNode));
+		}
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::SplitObjects, text, core::move(future));
+}
+
+bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	if (node == nullptr || node->volume() == nullptr || request.paletteIndices.empty()) {
+		return false;
+	}
+
+	const int parentNodeId = node->parent();
+	const palette::Palette palette = node->palette();
+	core::String nameSuffix;
+	for (uint8_t idx : request.paletteIndices) {
+		if (!nameSuffix.empty()) {
+			nameSuffix.append(",");
+		}
+		nameSuffix.append(core::String::format("%i", (int)idx));
+	}
+	core::BitSet<palette::PaletteMaxColors> wanted;
+	for (uint8_t idx : request.paletteIndices) {
+		wanted.set(idx, true);
+	}
+
+	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
+	core::Future<SceneJobResult> future = app::async([request, parentNodeId, palette, nameSuffix, wanted, snapshot]() {
+		SceneJobResult result;
+		result.type = SceneJobType::ColorToModel;
+		result.nodeId = request.nodeId;
+
+		const voxel::Region region = snapshot->region();
+		voxel::RawVolume *newVolume = new voxel::RawVolume(region);
+		voxel::RawVolumeWrapper wrapper(snapshot);
+		auto func = [&](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
+			newVolume->setVoxel(x, y, z, voxel);
+			wrapper.setVoxel(x, y, z, voxel::Voxel());
+		};
+		auto condition = [&wanted](const auto &sampler) {
+			const voxel::Voxel &voxel = sampler.voxel();
+			if (voxel::isAir(voxel.getMaterial())) {
+				return false;
+			}
+			return wanted[voxel.getColor()];
+		};
+		voxelutil::visitVolumeParallel(wrapper, func, condition);
+		if (!wrapper.dirtyRegion().isValid()) {
+			delete snapshot;
+			delete newVolume;
+			result.error = "No matching colors found";
+			return result;
+		}
+
+		result.volume = snapshot;
+		result.modifiedRegion = wrapper.dirtyRegion();
+		SceneJobNewNode newNode;
+		newNode.sourceNodeId = request.nodeId;
+		newNode.parentNodeId = parentNodeId;
+		newNode.name = core::String::format("colors: %s", nameSuffix.c_str());
+		newNode.palette = palette;
+		newNode.volume = newVolume;
+		result.newNodes.push_back(core::move(newNode));
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::ColorToModel, request.text, core::move(future));
+}
+
+bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text) {
+	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(nodeId);
+	if (sourceNode == nullptr) {
+		Log::warn("splatmerge: no valid source node");
+		return false;
+	}
+	const voxel::RawVolume *sourceVolume = _sceneGraph.resolveVolume(*sourceNode);
+	if (sourceVolume == nullptr) {
+		Log::warn("splatmerge: source node has no volume");
+		return false;
+	}
+
+	const scenegraph::FrameTransform &srcTransform = _sceneGraph.transformForFrame(*sourceNode, _currentFrameIdx);
+	const glm::mat4 sourceWorldMatrix = srcTransform.worldMatrix();
+	const glm::vec3 sourcePivot = sourceNode->pivot();
+	const bool transformSource = !srcTransform.isIdentity();
+	const palette::Palette sourcePalette = sourceNode->palette();
+	voxel::RawVolume *sourceSnapshot = new voxel::RawVolume(*sourceVolume);
+
+	core::DynamicArray<SceneJobSplatTarget> targets;
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &targetNode = *iter;
+		if (targetNode.id() == nodeId || !targetNode.isModelNode() || targetNode.volume() == nullptr) {
+			continue;
+		}
+		const voxel::Region targetWorldRegion = _sceneGraph.sceneRegion(targetNode, _currentFrameIdx);
+		if (!targetWorldRegion.isValid()) {
+			continue;
+		}
+		SceneJobSplatTarget target;
+		target.nodeId = targetNode.id();
+		target.volume = new voxel::RawVolume(*targetNode.volume());
+		target.palette = targetNode.palette();
+		target.worldRegion = targetWorldRegion;
+		targets.push_back(core::move(target));
+	}
+	if (targets.empty()) {
+		delete sourceSnapshot;
+		return false;
+	}
+
+	core::Future<SceneJobResult> future = app::async([nodeId, sourceSnapshot, sourcePalette, sourceWorldMatrix, sourcePivot,
+													 transformSource, targets = core::move(targets)]() mutable {
+		SceneJobResult result;
+		result.type = SceneJobType::SplatMerge;
+		result.nodeId = nodeId;
+
+		core::ScopedPtr<voxel::RawVolume> bakedSource;
+		const voxel::RawVolume *worldSource = sourceSnapshot;
+		if (transformSource) {
+			bakedSource = voxelutil::applyTransformToVolume(*sourceSnapshot, sourceWorldMatrix, sourcePivot);
+			worldSource = &(*bakedSource);
+		}
+		if (worldSource == nullptr) {
+			delete sourceSnapshot;
+			result.error = "Failed to transform source volume";
+			return result;
+		}
+		const voxel::Region &sourceWorldRegion = worldSource->region();
+		int mergedCount = 0;
+		for (SceneJobSplatTarget &target : targets) {
+			if (!voxel::intersects(sourceWorldRegion, target.worldRegion)) {
+				continue;
+			}
+			voxel::Region worldOverlap = sourceWorldRegion;
+			worldOverlap.cropTo(target.worldRegion);
+			const glm::ivec3 worldToLocal =
+				target.volume->region().getLowerCorner() - target.worldRegion.getLowerCorner();
+			const voxel::Region targetLocalOverlap(worldOverlap.getLowerCorner() + worldToLocal,
+												   worldOverlap.getUpperCorner() + worldToLocal);
+			const int count = voxelutil::mergeVolumes(target.volume, target.palette, worldSource, sourcePalette,
+													  targetLocalOverlap, worldOverlap);
+			if (count <= 0) {
+				continue;
+			}
+			SceneJobVolumeResult volumeResult;
+			volumeResult.nodeId = target.nodeId;
+			volumeResult.volume = target.volume;
+			volumeResult.modifiedRegion = targetLocalOverlap;
+			target.volume = nullptr;
+			result.volumes.push_back(core::move(volumeResult));
+			mergedCount += count;
+		}
+		delete sourceSnapshot;
+		if (mergedCount == 0) {
+			result.error = "No overlapping nodes found";
+			return result;
+		}
+		result.removeSourceNode = true;
+		result.success = true;
+		return result;
+	});
+	return startActiveSceneJob(SceneJobType::SplatMerge, text, core::move(future));
 }
 
 // TODO: not yet working for reference nodes
@@ -3291,7 +3644,7 @@ void SceneManager::construct() {
 				return;
 			}
 			const voxel::Region &region = selectionCalculateRegion(*node);
-			nodeResize(activeNodeId, region);
+			nodeResizeAsync(activeNodeId, region);
 		}).setHelp(_("Resize the volume to the current selection"));
 
 	command::Command::registerCommand("xs")
@@ -3662,28 +4015,28 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to crop"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			nodeCrop(nodeId);
+			startSceneJob(SceneJobType::CropVolume, nodeId);
 		}).setHelp(_("Crop the given node to the voxel boundaries"));
 
 	command::Command::registerCommand("splitobjects")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to split"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			nodeSplitObjects(nodeId);
+			startSceneJob(SceneJobType::SplitObjects, nodeId);
 		}).setHelp(_("Split the given node into multiple nodes"));
 
 	command::Command::registerCommand("scaledown")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			nodeScaleDown(nodeId);
+			startSceneJob(SceneJobType::ScaleDownVolume, nodeId);
 		}).setHelp(_("Scale the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("scaleup")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			nodeScaleUp(nodeId);
+			startSceneJob(SceneJobType::ScaleUpVolume, nodeId);
 		}).setHelp(_("Scale the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel")
@@ -3708,10 +4061,12 @@ void SceneManager::construct() {
 					Log::warn("No valid palette index given for colortomodel");
 					return;
 				}
-				nodeColorToNewNode(nodeId, indices);
+				nodeColorToNewNodeAsync(nodeId, indices);
 			} else {
 				const voxel::Voxel voxel = _modifier.cursorVoxel();
-				nodeColorToNewNode(nodeId, voxel);
+				core::Buffer<uint8_t> indices;
+				indices.push_back(voxel.getColor());
+				nodeColorToNewNodeAsync(nodeId, indices);
 			}
 		}).setHelp(_("Move the voxels of the current selected palette index, the given index or a comma-separated list of indices into a new node"));
 
@@ -3727,27 +4082,27 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("fillhollow")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupFillHollow();
+			queueSceneJobForGroup(SceneJobType::FillHollowVolume);
 		}).setHelp(_("Fill the inner parts of closed models"));
 
 	command::Command::registerCommand("hollow")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupHollow();
+			queueSceneJobForGroup(SceneJobType::HollowVolume);
 		}).setHelp(_("Remove non visible voxels"));
 
 	command::Command::registerCommand("fill")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupFill();
+			queueSceneJobForGroup(SceneJobType::FillVolume);
 		}).setHelp(_("Fill voxels in the current selection"));
 
 	command::Command::registerCommand("clear")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupClear();
+			queueSceneJobForGroup(SceneJobType::ClearVolume);
 		}).setHelp(_("Remove all voxels in the current selection"));
 
 	command::Command::registerCommand("deleteselected")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupDeleteSelected();
+			queueSceneJobForGroup(SceneJobType::DeleteSelectedVolume);
 		}).setHelp(_("Remove selected voxels"));
 
 	command::Command::registerCommand("colorselected")
@@ -3859,7 +4214,7 @@ void SceneManager::construct() {
 			const int y = args.intVal("y", x);
 			const int z = args.intVal("z", y);
 			const int nodeId = toNodeId(args, activeNode());
-			nodeResize(nodeId, glm::ivec3(x, y, z));
+			nodeResizeAsync(nodeId, glm::ivec3(x, y, z));
 		}).setHelp(_("Resize your current model node by the specified size"));
 
 	command::Command::registerCommand("rescalecontent")
@@ -3987,7 +4342,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("splatmerge")
 		.setHandler([&] (const command::CommandArgs&) {
-			splatMerge(activeNode());
+			startSceneJob(SceneJobType::SplatMerge, activeNode());
 		}).setHelp(_("Merge active node voxels into all overlapping nodes and remove the source node"));
 
 	command::Command::registerCommand("mergeactivetobackground")
@@ -4775,6 +5130,9 @@ bool SceneManager::isLoading() const {
 }
 
 bool SceneManager::isLocked() const {
+	if (isSceneJobRunning()) {
+		return true;
+	}
 	if (!command::commandExecutionAllowed()) {
 		return true;
 	}
@@ -4782,16 +5140,273 @@ bool SceneManager::isLocked() const {
 }
 
 bool SceneManager::isCommandRunning() const {
-	return _commandFuture.valid();
+	return isSceneJobRunning();
 }
 
-bool SceneManager::executeCommandsAsync(const char *commands) {
-	if (isCommandRunning() || isLoading()) {
-		Log::warn("Another command is already running");
+bool SceneManager::isSceneJobRunning() const {
+	return _sceneJobFuture.valid();
+}
+
+const core::String &SceneManager::sceneJobText() const {
+	return _sceneJobText;
+}
+
+float SceneManager::sceneJobProgress() const {
+	return _sceneJobProgress;
+}
+
+bool SceneManager::cancelSceneJob() {
+	if (!isSceneJobRunning()) {
 		return false;
 	}
-	_commandFuture = app::executeCommandsAsync(commands);
+	_sceneJobCancelRequested = true;
+	_sceneJobText = _("Cancelling");
 	return true;
+}
+
+bool SceneManager::cancelPendingSceneJob(int index) {
+	if (index < 0 || index >= (int)_sceneJobQueue.size()) {
+		return false;
+	}
+	_sceneJobQueue.erase(_sceneJobQueue.begin() + index);
+	return true;
+}
+
+void SceneManager::clearPendingSceneJobs() {
+	_sceneJobQueue.clear();
+}
+
+int SceneManager::pendingSceneJobs() const {
+	return (int)_sceneJobQueue.size();
+}
+
+const core::String &SceneManager::pendingSceneJobText(int index) const {
+	if (index < 0 || index >= (int)_sceneJobQueue.size()) {
+		return core::String::Empty;
+	}
+	return _sceneJobQueue[index].text;
+}
+
+bool SceneManager::startSceneJob(SceneJobType type, int nodeId) {
+	SceneJobRequest request;
+	request.type = type;
+	request.nodeId = nodeId;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::startSceneJob(SceneJobRequest &&request) {
+	if (isLoading()) {
+		Log::warn("Scene is loading - can't schedule background task");
+		return false;
+	}
+	request.text = voxedit::sceneJobText(request.type);
+	if (isSceneJobRunning()) {
+		_sceneJobQueue.push_back(core::move(request));
+		return true;
+	}
+
+	switch (request.type) {
+	case SceneJobType::CropVolume:
+		return startCropSceneJob(request.nodeId, request.text);
+	case SceneJobType::ScaleUpVolume:
+		return startScaleUpSceneJob(request.nodeId, request.text);
+	case SceneJobType::ScaleDownVolume:
+		return startScaleDownSceneJob(request.nodeId, request.text);
+	case SceneJobType::ResizeVolume:
+		return startResizeSceneJob(request);
+	// These jobs all snapshot one volume and select the concrete edit by request.type.
+	case SceneJobType::FillVolume:
+	case SceneJobType::ClearVolume:
+	case SceneJobType::DeleteSelectedVolume:
+	case SceneJobType::HollowVolume:
+	case SceneJobType::FillHollowVolume:
+		return startVolumeOperationSceneJob(request);
+	case SceneJobType::SplitObjects:
+		return startSplitObjectsSceneJob(request.nodeId, request.text);
+	case SceneJobType::ColorToModel:
+		return startColorToModelSceneJob(request);
+	case SceneJobType::SplatMerge:
+		return startSplatMergeSceneJob(request.nodeId, request.text);
+	case SceneJobType::None:
+	case SceneJobType::Max:
+		break;
+	}
+	return false;
+}
+
+bool SceneManager::startActiveSceneJob(SceneJobType type, const core::String &text, core::Future<SceneJobResult> &&future) {
+	if (isSceneJobRunning() || isLoading()) {
+		Log::warn("Another background task is already running");
+		return false;
+	}
+	_sceneJobType = type;
+	_sceneJobText = text;
+	_sceneJobProgress = -1.0f;
+	_sceneJobCancelRequested = false;
+	_sceneJobFuture = core::move(future);
+	return true;
+}
+
+void SceneManager::startNextQueuedSceneJob() {
+	while (!_sceneJobQueue.empty() && !isSceneJobRunning()) {
+		SceneJobRequest request = core::move(_sceneJobQueue.front());
+		_sceneJobQueue.erase(_sceneJobQueue.begin());
+		if (!startSceneJob(core::move(request))) {
+			Log::warn("Failed to start pending background scene job");
+		}
+	}
+}
+
+bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
+	if (!result.success) {
+		Log::warn("Background scene job failed: %s", result.error.c_str());
+		return false;
+	}
+
+	switch (result.type) {
+	case SceneJobType::CropVolume:
+	case SceneJobType::ScaleUpVolume:
+	case SceneJobType::ScaleDownVolume:
+	case SceneJobType::FillVolume:
+	case SceneJobType::ClearVolume:
+	case SceneJobType::DeleteSelectedVolume:
+	case SceneJobType::HollowVolume:
+	case SceneJobType::FillHollowVolume: {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+		if (node == nullptr) {
+			Log::warn("Can't apply background scene job result - node %i no longer exists", result.nodeId);
+			return false;
+		}
+		voxel::RawVolume *newVolume = result.releaseVolume();
+		if (!setNewVolume(result.nodeId, newVolume, true)) {
+			delete newVolume;
+			return false;
+		}
+		modified(result.nodeId, result.modifiedRegion);
+		return true;
+	}
+	case SceneJobType::ResizeVolume: {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+		if (node == nullptr) {
+			Log::warn("Can't apply background scene job result - node %i no longer exists", result.nodeId);
+			return false;
+		}
+		const voxel::Region oldRegion = node->region();
+		voxel::RawVolume *newVolume = result.releaseVolume();
+		if (!setNewVolume(result.nodeId, newVolume, false)) {
+			delete newVolume;
+			return false;
+		}
+		const voxel::Region &newRegion = newVolume->region();
+		const glm::ivec3 oldMins = oldRegion.getLowerCorner();
+		const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
+		const glm::ivec3 mins = newRegion.getLowerCorner();
+		const glm::ivec3 maxs = newRegion.getUpperCorner();
+		if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
+			modified(result.nodeId, result.modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
+		} else {
+			modified(result.nodeId, result.modifiedRegion);
+		}
+		if (activeNode() == result.nodeId) {
+			const glm::ivec3 &refPos = referencePosition();
+			if (!newRegion.containsPoint(refPos)) {
+				setReferencePosition(newRegion.getCenter());
+			}
+		}
+		return true;
+	}
+	case SceneJobType::SplitObjects:
+	case SceneJobType::ColorToModel: {
+		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "scenejob");
+		if (result.volume != nullptr) {
+			scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+			if (node == nullptr) {
+				return false;
+			}
+			voxel::RawVolume *newVolume = result.releaseVolume();
+			if (!setNewVolume(result.nodeId, newVolume, true)) {
+				delete newVolume;
+				return false;
+			}
+			modified(result.nodeId, result.modifiedRegion);
+		}
+		for (SceneJobNewNode &newNodeResult : result.newNodes) {
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+			if (scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(newNodeResult.sourceNodeId)) {
+				scenegraph::copyNode(*sourceNode, newNode, false, true);
+			}
+			newNode.setName(newNodeResult.name);
+			newNode.setPalette(newNodeResult.palette);
+			newNode.setVolume(newNodeResult.releaseVolume());
+			moveNodeToSceneGraph(newNode, newNodeResult.parentNodeId);
+		}
+		return true;
+	}
+	case SceneJobType::SplatMerge: {
+		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "splatmerge");
+		for (SceneJobVolumeResult &volumeResult : result.volumes) {
+			scenegraph::SceneGraphNode *node = sceneGraphModelNode(volumeResult.nodeId);
+			if (node == nullptr) {
+				continue;
+			}
+			voxel::RawVolume *newVolume = volumeResult.releaseVolume();
+			if (!setNewVolume(volumeResult.nodeId, newVolume, true)) {
+				delete newVolume;
+				continue;
+			}
+			modified(volumeResult.nodeId, volumeResult.modifiedRegion, SceneModifiedFlags::All);
+		}
+		if (result.removeSourceNode) {
+			nodeRemove(result.nodeId, false);
+		}
+		return !result.volumes.empty();
+	}
+	case SceneJobType::None:
+	case SceneJobType::Max:
+		break;
+	}
+	return false;
+}
+
+bool SceneManager::queueSceneJobForGroup(SceneJobType type) {
+	bool queued = false;
+	_sceneGraph.foreachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
+		if (node == nullptr || node->volume() == nullptr) {
+			return;
+		}
+		SceneJobRequest request;
+		request.type = type;
+		request.nodeId = groupNodeId;
+		request.voxel = _modifier.cursorVoxel();
+		request.overrideVoxels = _modifier.isMode(ModifierType::Override);
+		queued |= startSceneJob(core::move(request));
+	});
+	return queued;
+}
+
+void SceneManager::updateSceneJob() {
+	if (!_sceneJobFuture.ready()) {
+		return;
+	}
+
+	SceneJobResult result = _sceneJobFuture.get();
+	_sceneJobFuture = {};
+	const bool cancelled = _sceneJobCancelRequested;
+	_sceneJobType = SceneJobType::None;
+	_sceneJobProgress = -1.0f;
+	_sceneJobCancelRequested = false;
+	_sceneJobText = "";
+
+	if (cancelled) {
+		Log::debug("Discarded cancelled background scene job result");
+		startNextQueuedSceneJob();
+		return;
+	}
+	if (applySceneJobResult(core::move(result))) {
+		Log::debug("Applied background scene job");
+	}
+	startNextQueuedSceneJob();
 }
 
 void SceneManager::stopLocalServer() {
@@ -4886,11 +5501,7 @@ bool SceneManager::update(double nowSeconds) {
 		_loadingFuture = {};
 	}
 
-	if (_commandFuture.ready()) {
-		int commands = _commandFuture.get();
-		Log::debug("Finished executing %i commands", commands);
-		_commandFuture = {};
-	}
+	updateSceneJob();
 
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
 	if (state == voxelgenerator::ScriptState::Error) {

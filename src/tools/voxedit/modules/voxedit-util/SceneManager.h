@@ -6,6 +6,7 @@
 
 #include "ISceneRenderer.h"
 #include "LUAApiListener.h"
+#include "SceneJob.h"
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/TimeProvider.h"
@@ -25,6 +26,7 @@
 #include "voxedit-util/network/SessionPlayer.h"
 #include "sound/SoundManager.h"
 #include "voxel/ClipboardData.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
@@ -60,7 +62,15 @@ enum class NodeMergeFlags {
 CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
 /**
- * @note The data is shared across all viewports
+ * @brief Owns and coordinates the editable voxel scene.
+ *
+ * SceneManager is the central mutation boundary for voxedit: it owns the scene
+ * graph, memento state, modifier state, networking hooks and background scene
+ * jobs. Long running volume operations are snapshotted here, computed on a
+ * worker thread and applied back on the main thread to keep live scene graph
+ * state single-threaded.
+ *
+ * @note The data is shared across all viewports.
  */
 class SceneManager : public core::DeltaFrameSeconds {
 	friend class LUAApiListener;
@@ -71,7 +81,12 @@ protected:
 	memento::MementoHandler _mementoHandler;
 	voxel::ClipboardData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
-	core::Future<int> _commandFuture;
+	core::Future<SceneJobResult> _sceneJobFuture;
+	core::DynamicArray<SceneJobRequest> _sceneJobQueue;
+	SceneJobType _sceneJobType = SceneJobType::None;
+	core::String _sceneJobText;
+	float _sceneJobProgress = -1.0f;
+	bool _sceneJobCancelRequested = false;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
 	Modifier _modifier;
@@ -176,6 +191,21 @@ protected:
 
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
 	int activeNode() const;
+	bool startSceneJob(SceneJobRequest &&request);
+	bool startSceneJob(SceneJobType type, int nodeId);
+	bool startActiveSceneJob(SceneJobType type, const core::String &text, core::Future<SceneJobResult> &&future);
+	bool startVolumeOperationSceneJob(const SceneJobRequest &request);
+	bool startCropSceneJob(int nodeId, const core::String &text);
+	bool startScaleUpSceneJob(int nodeId, const core::String &text);
+	bool startScaleDownSceneJob(int nodeId, const core::String &text);
+	bool startResizeSceneJob(const SceneJobRequest &request);
+	bool startSplitObjectsSceneJob(int nodeId, const core::String &text);
+	bool startColorToModelSceneJob(const SceneJobRequest &request);
+	bool startSplatMergeSceneJob(int nodeId, const core::String &text);
+	void startNextQueuedSceneJob();
+	void updateSceneJob();
+	bool applySceneJobResult(SceneJobResult &&result);
+	bool queueSceneJobForGroup(SceneJobType type);
 
 	void animateFrames(double nowSeconds);
 	/**
@@ -476,10 +506,21 @@ public:
 	bool isLocked() const;
 
 	/**
-	 * @brief Returns @c true if an async command is currently running
+	 * @brief Returns @c true if a background scene job is currently running.
 	 */
 	bool isCommandRunning() const;
-	bool executeCommandsAsync(const char *commands);
+	bool isSceneJobRunning() const;
+	const core::String &sceneJobText() const;
+	float sceneJobProgress() const;
+	bool cancelSceneJob();
+	bool cancelPendingSceneJob(int index);
+	void clearPendingSceneJobs();
+	int pendingSceneJobs() const;
+	const core::String &pendingSceneJobText(int index) const;
+
+	bool nodeResizeAsync(int nodeId, const voxel::Region &region);
+	bool nodeResizeAsync(int nodeId, const glm::ivec3 &size);
+	bool nodeColorToNewNodeAsync(int nodeId, const core::Buffer<uint8_t> &paletteIndices);
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);

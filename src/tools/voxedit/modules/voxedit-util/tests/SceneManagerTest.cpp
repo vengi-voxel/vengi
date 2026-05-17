@@ -5,6 +5,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/Config.h"
 #include "AbstractSceneManagerTest.h"
+#include "command/CommandHandler.h"
 #include "image/Image.h"
 #include "io/FilesystemArchive.h"
 #include "math/tests/TestMathHelper.h"
@@ -143,6 +144,14 @@ protected:
 		return v;
 	}
 
+	void waitForSceneJob() {
+		for (int i = 0; i < 1000 && _sceneMgr->isSceneJobRunning(); ++i) {
+			_sceneMgr->update((double)i * 0.016);
+			wait(1);
+		}
+		ASSERT_FALSE(_sceneMgr->isSceneJobRunning());
+	}
+
 	glm::ivec3 testMins() {
 		return testVolume()->region().getLowerCorner();
 	}
@@ -154,6 +163,121 @@ protected:
 
 TEST_F(SceneManagerTest, testNewScene) {
 	EXPECT_TRUE(_sceneMgr->newScene(true, "newscene", voxel::Region{0, 1}));
+}
+
+TEST_F(SceneManagerTest, testNodeCropAsyncMatchesSync) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "sync", sourceRegion));
+	int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, nodeId);
+	ASSERT_NE(nullptr, testVolume());
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	sceneMgr()->testNodeCrop(nodeId);
+	const voxel::Region syncRegion = testVolume()->region();
+
+	ASSERT_TRUE(_sceneMgr->newScene(true, "async", sourceRegion));
+	nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, nodeId);
+	ASSERT_NE(nullptr, testVolume());
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::CropVolume, nodeId));
+	EXPECT_TRUE(_sceneMgr->isSceneJobRunning());
+	EXPECT_TRUE(_sceneMgr->isLocked());
+	waitForSceneJob();
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ(syncRegion, testVolume()->region());
+}
+
+TEST_F(SceneManagerTest, testNodeCropAsyncCancelBeforeApply) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "cancel", sourceRegion));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, nodeId);
+	ASSERT_NE(nullptr, testVolume());
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::CropVolume, nodeId));
+	ASSERT_TRUE(_sceneMgr->cancelSceneJob());
+	waitForSceneJob();
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ(sourceRegion, testVolume()->region());
+}
+
+TEST_F(SceneManagerTest, testNodeCropAsyncUndoRedo) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "undo", sourceRegion));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, nodeId);
+	ASSERT_NE(nullptr, testVolume());
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::CropVolume, nodeId));
+	waitForSceneJob();
+	const voxel::Region croppedRegion = testVolume()->region();
+	EXPECT_NE(sourceRegion, croppedRegion);
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ(sourceRegion, testVolume()->region());
+
+	ASSERT_TRUE(_sceneMgr->redo());
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ(croppedRegion, testVolume()->region());
+}
+
+TEST_F(SceneManagerTest, testSceneJobQueueCropThenScaleUp) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "sync", sourceRegion));
+	int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(testVolume()->setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	sceneMgr()->testNodeCrop(nodeId);
+	sceneMgr()->testNodeScaleUp(nodeId);
+	const voxel::Region syncRegion = testVolume()->region();
+
+	ASSERT_TRUE(_sceneMgr->newScene(true, "async", sourceRegion));
+	nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(testVolume()->setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::CropVolume, nodeId));
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::ScaleUpVolume, nodeId));
+	EXPECT_EQ(1, _sceneMgr->pendingSceneJobs());
+	waitForSceneJob();
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ(syncRegion, testVolume()->region());
+	EXPECT_EQ(0, _sceneMgr->pendingSceneJobs());
+}
+
+TEST_F(SceneManagerTest, testSceneJobQueueCommandChain) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "commandchain", sourceRegion));
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(testVolume()->setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_EQ(2, command::executeCommands("crop;scaleup"));
+	EXPECT_EQ(1, _sceneMgr->pendingSceneJobs());
+	waitForSceneJob();
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ((voxel::Region(2, 2, 2, 5, 3, 3)), testVolume()->region());
+}
+
+TEST_F(SceneManagerTest, testSceneJobQueueCancelPending) {
+	const voxel::Region sourceRegion(0, 0, 0, 4, 4, 4);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "cancelpending", sourceRegion));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testVolume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(testVolume()->setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::CropVolume, nodeId));
+	ASSERT_TRUE(sceneMgr()->testStartSceneJob(SceneJobType::ScaleUpVolume, nodeId));
+	ASSERT_EQ(1, _sceneMgr->pendingSceneJobs());
+	ASSERT_TRUE(_sceneMgr->cancelPendingSceneJob(0));
+	EXPECT_EQ(0, _sceneMgr->pendingSceneJobs());
+	waitForSceneJob();
+	ASSERT_NE(nullptr, testVolume());
+	EXPECT_EQ((voxel::Region(2, 2, 2, 3, 2, 2)), testVolume()->region());
 }
 
 TEST_F(SceneManagerTest, testUndoRedoModification) {
