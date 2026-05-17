@@ -103,6 +103,7 @@ public:
 	void onActivated() override;
 	bool onDeactivated() override;
 	bool hasPendingChanges() const override;
+	bool needsPerFrameFlush() const override;
 	void construct() override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;

@@ -105,6 +105,60 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 	brush.shutdown();
 }
 
+TEST_F(LineBrushTest, testBezierNoFlushOnCursorMove) {
+	// Regression test for #860: moving the cursor in bezier mode should not
+	// execute the brush on the real volume or add segments every frame.
+	LineBrush brush;
+
+	ASSERT_TRUE(brush.init());
+	voxel::RawVolume volume(voxel::Region(glm::ivec3(0), glm::ivec3(10, 6, 1)));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	scenegraph::SceneGraph sceneGraph;
+	BrushContext brushContext;
+	brushContext.referencePos = glm::ivec3(0);
+	brushContext.cursorPosition = glm::ivec3(5, 0, 0);
+	brushContext.cursorFace = voxel::FaceNames::PositiveY;
+	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
+	brushContext.gridResolution = 1;
+
+	brush.setBezier(true);
+
+	// Simulate first click: begin + execute on real volume to lock a segment
+	ASSERT_TRUE(brush.beginBrush(brushContext));
+	brush.preExecute(brushContext, &volume);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
+	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	brush.endBrush(brushContext);
+	EXPECT_EQ(1, brush.pendingSegmentCount());
+	EXPECT_TRUE(brush.hasPendingChanges());
+
+	// needsPerFrameFlush must be false - this is the core fix
+	EXPECT_FALSE(brush.needsPerFrameFlush());
+
+	// Simulate cursor movement: update should mark dirty but must NOT add segments
+	brushContext.cursorPosition = glm::ivec3(8, 0, 0);
+	brush.update(brushContext, 1.0);
+	EXPECT_EQ(1, brush.pendingSegmentCount()) << "cursor move must not add segments";
+
+	// Simulate what flushPendingBrushChanges would do if it ran (it shouldn't):
+	// executing on the real volume with _lastVolume == real volume would call lockSegment.
+	// Verify that after another preExecute+execute on the real volume the segment count
+	// only grows by one (the intentional click), not on every frame.
+	brushContext.cursorPosition = glm::ivec3(10, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(brushContext));
+	brush.preExecute(brushContext, &volume);
+	ModifierVolumeWrapper wrapper2(node, brush.modifierType());
+	EXPECT_TRUE(brush.execute(sceneGraph, wrapper2, brushContext));
+	brush.endBrush(brushContext);
+	EXPECT_EQ(2, brush.pendingSegmentCount()) << "only explicit clicks should add segments";
+
+	// The real volume should still be empty - segments are only committed on deactivation
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(glm::ivec3(5, 0, 0)).getMaterial()));
+
+	brush.shutdown();
+}
+
 TEST_P(BrushTestParamTest, testLineBrush) {
 	LineBrush brush;
 	testPlaceAndOverride(brush);

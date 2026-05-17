@@ -30,6 +30,10 @@ bool LineBrush::hasPendingChanges() const {
 	return _bezier && !_segments.empty();
 }
 
+bool LineBrush::needsPerFrameFlush() const {
+	return false;
+}
+
 bool LineBrush::onDeactivated() {
 	_commitPending = hasPendingChanges();
 	return _commitPending;
@@ -100,8 +104,11 @@ bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	}
 	if (allowNextBezierPreview(ctx, _selectedSegment, (int)_segments.size()) &&
 		ctx.referencePos != ctx.cursorPosition) {
-		const BezierSegment previewSegment{ctx.referencePos, ctx.cursorPosition, previewControlPoint(ctx)};
-		voxelgenerator::shape::drawBezierSegment(wrapper, previewSegment, ctx.cursorVoxel, _stipplePattern, _thickness);
+		const glm::ivec3 start = _segments.empty() ? ctx.referencePos : _segments.back().end;
+		if (start != ctx.cursorPosition) {
+			const BezierSegment previewSegment{start, ctx.cursorPosition, previewControlPoint(ctx)};
+			voxelgenerator::shape::drawBezierSegment(wrapper, previewSegment, ctx.cursorVoxel, _stipplePattern, _thickness);
+		}
 	}
 	return true;
 }
@@ -166,12 +173,15 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 		}
 		if (allowNextBezierPreview(ctx, _selectedSegment, (int)_segments.size()) &&
 			ctx.referencePos != ctx.cursorPosition) {
-			const voxel::Region previewBounds =
-				voxelgenerator::shape::bezierRegion({ctx.referencePos, ctx.cursorPosition, previewControlPoint(ctx)}, _thickness);
-			if (!region.isValid()) {
-				region = previewBounds;
-			} else {
-				region.accumulate(previewBounds);
+			const glm::ivec3 start = _segments.empty() ? ctx.referencePos : _segments.back().end;
+			if (start != ctx.cursorPosition) {
+				const voxel::Region previewBounds =
+					voxelgenerator::shape::bezierRegion({start, ctx.cursorPosition, previewControlPoint(ctx)}, _thickness);
+				if (!region.isValid()) {
+					region = previewBounds;
+				} else {
+					region.accumulate(previewBounds);
+				}
 			}
 		}
 		return region;
@@ -192,7 +202,8 @@ voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
 }
 
 glm::ivec3 LineBrush::defaultControlPoint(const BrushContext &ctx) const {
-	return ctx.referencePos + (ctx.cursorPosition - ctx.referencePos) / 2;
+	const glm::ivec3 start = _segments.empty() ? ctx.referencePos : _segments.back().end;
+	return start + (ctx.cursorPosition - start) / 2;
 }
 
 glm::ivec3 LineBrush::previewControlPoint(const BrushContext &ctx) const {
@@ -224,7 +235,8 @@ void LineBrush::syncControlPoint(const BrushContext &ctx) {
 	if (_state.referencePos == ctx.referencePos && _state.cursorPosition == ctx.cursorPosition) {
 		return;
 	}
-	const glm::ivec3 oldDefault = _state.referencePos + (_state.cursorPosition - _state.referencePos) / 2;
+	const glm::ivec3 oldStart = _segments.empty() ? _state.referencePos : _segments.back().end;
+	const glm::ivec3 oldDefault = oldStart + (_state.cursorPosition - oldStart) / 2;
 	_controlPoint += newDefault - oldDefault;
 }
 
@@ -248,7 +260,7 @@ void LineBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state)
 		start = _segments[_selectedSegment].start;
 		end = _segments[_selectedSegment].end;
 	} else {
-		start = ctx.referencePos;
+		start = _segments.empty() ? ctx.referencePos : _segments.back().end;
 		end = ctx.cursorPosition;
 	}
 	state.positions[0] = glm::vec3(start) + 0.5f;

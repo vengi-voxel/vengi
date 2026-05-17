@@ -186,7 +186,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	// Safety net: brushes with pending changes are handled in render() by
 	// executing on the real volume. If we reach here anyway, bail out to
 	// avoid corrupting brush history state against a temporary dummy volume.
-	if (brush->hasPendingChanges()) {
+	if (brush->needsPerFrameFlush()) {
 		return;
 	}
 

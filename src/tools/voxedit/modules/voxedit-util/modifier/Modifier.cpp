@@ -624,7 +624,7 @@ void Modifier::flushPendingBrushChanges() {
 		return;
 	}
 	Brush *brush = currentBrush();
-	if (!brush || !brush->dirty() || !brush->hasPendingChanges()) {
+	if (!brush || !brush->dirty() || !brush->needsPerFrameFlush()) {
 		return;
 	}
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -695,7 +695,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 			// rendering, then regenerate immediately at the new position.
 			resetPreview();
 			brush->markClean();
-			if (!brush->hasPendingChanges()) {
+			if (!brush->needsPerFrameFlush()) {
 				_previewManager.scheduleUpdate(_nowSeconds);
 			}
 		}

@@ -317,6 +317,16 @@ public:
 		return false;
 	}
 
+	/**
+	 * @brief Whether this brush needs its pending changes flushed to the real
+	 * volume every frame (e.g. TransformBrush, ExtrudeBrush, SculptBrush).
+	 * Brushes that accumulate state for a deferred commit (e.g. LineBrush in
+	 * bezier mode) should return false.
+	 */
+	virtual bool needsPerFrameFlush() const {
+		return hasPendingChanges();
+	}
+
 	virtual bool isSimplePreview() const {
 		return false;
 	}
