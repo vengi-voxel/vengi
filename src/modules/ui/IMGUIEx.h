@@ -142,6 +142,61 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	return changed;
 }
 
+/**
+ * @brief Edit a repeating line stipple pattern as a row of dash (on) and gap (off) cells.
+ * @tparam Pattern Type with bits(), operator[] and set(index, bool).
+ * @return @c true if any bit was toggled.
+ */
+template<typename Pattern>
+bool StipplePattern(const char *label, Pattern &pattern) {
+	const int bitCount = pattern.bits();
+	if (bitCount <= 0) {
+		return false;
+	}
+
+	bool changed = false;
+	const ImGuiStyle &style = ImGui::GetStyle();
+	const float cellH = GetFrameHeight() * 0.7f;
+	const float cellW = cellH * 2.0f;
+	const float gap = 1.0f;
+
+	PushID(label);
+	for (int i = 0; i < bitCount; ++i) {
+		PushID(i);
+		const bool on = pattern[i];
+		const ImVec2 size(cellW, cellH);
+		if (InvisibleButton("##seg", size)) {
+			pattern.set(i, !on);
+			changed = true;
+		}
+		const bool hovered = IsItemHovered();
+		const ImVec2 rectMin = GetItemRectMin();
+		const ImVec2 rectMax = GetItemRectMax();
+		ImDrawList *drawList = GetWindowDrawList();
+		const float rounding = style.FrameRounding * 0.5f;
+
+		if (on) {
+			const ImU32 bg = GetColorU32(hovered ? ImGuiCol_FrameBgActive : ImGuiCol_CheckboxSelectedBg);
+			drawList->AddRectFilled(rectMin, rectMax, bg, rounding);
+			const ImU32 dashCol = GetColorU32(ImGuiCol_CheckMark);
+			const float thickness = core_max(cellH / 5.0f, 1.0f);
+			const float padX = core_max(1.0f, cellW * 0.15f);
+			const float y = (rectMin.y + rectMax.y) * 0.5f;
+			drawList->AddLine(ImVec2(rectMin.x + padX, y), ImVec2(rectMax.x - padX, y), dashCol, thickness);
+		} else {
+			const ImU32 border = GetColorU32(hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_Border);
+			drawList->AddRect(rectMin, rectMax, border, rounding, 1.0f);
+		}
+
+		if (i + 1 < bitCount) {
+			SameLine(0.0f, gap);
+		}
+		PopID();
+	}
+	PopID();
+	return changed;
+}
+
 // TODO: replace with SetItemTooltip
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API bool TooltipTextUnformatted(const char *text);

@@ -336,19 +336,14 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 	}
 
 	ImGui::TextUnformatted(_("Stipple Pattern:"));
-	LineStipplePattern &stipplePattern = brush.stipplePattern();
-	ui::ScopedStyle style;
-	style.setItemSpacing({0.0f, 0.0f});
-	for (int i = 0; i < stipplePattern.bits(); ++i) {
-		ImGui::PushID(i);
-		bool bit = stipplePattern[i];
-		if (ImGui::Checkbox("", &bit)) {
-			brush.setStippleBit(i, bit);
-		}
-		ImGui::PopID();
-		ImGui::SameLine();
+	ImGui::SameLine();
+	ImGui::BeginGroup();
+	if (ImGui::StipplePattern("##linestipple", brush.stipplePattern())) {
+		brush.markDirty();
 	}
-	ImGui::TooltipTextUnformatted(_("Length of the stipple pattern <= 1 to disable"));
+	ImGui::EndGroup();
+	ImGui::TooltipTextUnformatted(
+		_("Click cells to toggle: dash places a voxel, gap skips. Pattern length <= 1 disables stippling"));
 }
 
 void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &listener) {
