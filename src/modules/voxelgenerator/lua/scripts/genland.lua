@@ -18,7 +18,11 @@ function arguments()
 		{ name = 'offsety', type = 'int', default = 0, min = 0, max = 100000, desc = 'Y offset for the landscape generation.' },
 		{ name = 'shadow', type = 'bool', default = 'true', desc = 'Generate shadows in the landscape.' },
 		{ name = 'river', type = 'bool', default = 'true', desc = 'Generate rivers in the landscape.' },
-		{ name = 'ambience', type = 'bool', default = 'true', desc = 'Generate ambient sounds for the landscape.' }
+		{ name = 'ambience', type = 'bool', default = 'true', desc = 'Generate ambient sounds for the landscape.' },
+		{ name = 'groundColor', type = 'hexcolor', default = '#8C7D73', desc = 'Ground color.' },
+		{ name = 'grassColor', type = 'hexcolor', default = '#485020', desc = 'Primary grass color.' },
+		{ name = 'grass2Color', type = 'hexcolor', default = '#444E28', desc = 'Secondary grass color.' },
+		{ name = 'waterColor', type = 'hexcolor', default = '#3C6478', desc = 'Water color.' }
 	}
 end
 
@@ -26,7 +30,6 @@ function description()
 	return "Genland - procedural landscape generator by Tom Dobrowolski."
 end
 
-function main(_, _, _, seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetx, offsety, shadow, river, ambience)
-	-- TODO: colors
-	g_algorithm.genland(seed, tonumber(size), height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetx, offsety, shadow, river, ambience)
+function main(_, _, _, seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetx, offsety, shadow, river, ambience, groundColor, grassColor, grass2Color, waterColor)
+	g_algorithm.genland(seed, tonumber(size), height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetx, offsety, shadow, river, ambience, groundColor, grassColor, grass2Color, waterColor)
 end

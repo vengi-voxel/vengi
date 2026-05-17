@@ -27,6 +27,7 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
@@ -2421,16 +2422,38 @@ static int luaVoxel_genland(lua_State *s) {
 	settings.river = clua_optboolean(s, 14, true);
 	settings.ambience = clua_optboolean(s, 15, true);
 
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
+	lua_getglobal(s, luaVoxel_globalnodeid());
+	int currentNodeId = lua_tointeger(s, -1);
+	lua_pop(s, 1);
+	const scenegraph::SceneGraphNode &currentNode = sceneGraph->node(currentNodeId);
+
+	const palette::Palette &palette = currentNode.palette();
+	if (lua_gettop(s) >= 16) {
+		if (lua_isnumber(s, 16)) {
+			settings.ground = palette.color((int)luaL_checkinteger(s, 16));
+		}
+		if (lua_isnumber(s, 17)) {
+			settings.grass = palette.color((int)luaL_checkinteger(s, 17));
+		}
+		if (lua_isnumber(s, 18)) {
+			settings.grass2 = palette.color((int)luaL_checkinteger(s, 18));
+		}
+		if (lua_isnumber(s, 19)) {
+			settings.water = palette.color((int)luaL_checkinteger(s, 19));
+		}
+	}
+
 	voxel::RawVolume *v = voxelgenerator::genland(settings);
 	if (v == nullptr) {
 		return clua_error(s, "Failed to generate land");
 	}
-	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v);
 	node.setName("Generated Land");
-	node.setProperty("Generator", "Genland by Tom Dobrowolski");
-	int newNodeId = sceneGraph->emplace(core::move(node));
+	node.setProperty(scenegraph::PropGenerator, "Genland by Tom Dobrowolski");
+	node.setPalette(palette);
+	int newNodeId = sceneGraph->emplace(core::move(node), currentNodeId);
 	if (newNodeId == InvalidNodeId) {
 		return clua_error(s, "Failed to add generated land node to scene graph");
 	}
@@ -6361,7 +6384,11 @@ static int luaVoxel_genland_jsonhelp(lua_State* s) {
 			{"name": "offsetZ", "type": "integer", "description": "Z offset (optional, default 0)."},
 			{"name": "shadow", "type": "boolean", "description": "Add shadows (optional, default true)."},
 			{"name": "river", "type": "boolean", "description": "Add rivers (optional, default true)."},
-			{"name": "ambience", "type": "boolean", "description": "Add ambient effects (optional, default true)."}
+			{"name": "ambience", "type": "boolean", "description": "Add ambient effects (optional, default true)."},
+			{"name": "groundColor", "type": "integer", "description": "Ground color palette index (optional)."},
+			{"name": "grassColor", "type": "integer", "description": "Grass color palette index (optional)."},
+			{"name": "grass2Color", "type": "integer", "description": "Secondary grass color palette index (optional)."},
+			{"name": "waterColor", "type": "integer", "description": "Water color palette index (optional)."}
 		],
 		"returns": [
 			{"type": "node", "description": "The generated terrain node."}
