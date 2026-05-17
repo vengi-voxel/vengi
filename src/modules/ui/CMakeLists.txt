@@ -19,6 +19,10 @@ set(SRCS
 	Toolbar.h Toolbar.cpp
 	DragAndDropPayload.h
 
+	font/FontResolver.h
+	font/system/Unix.cpp
+	font/system/Windows.cpp
+
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
 	dearimgui/imgui_widgets.cpp
 	dearimgui/imgui_tables.cpp
