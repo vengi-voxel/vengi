@@ -1433,11 +1433,21 @@ static int luaVoxel_shape_circle(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const glm::vec3& centerBottom = clua_tovec<glm::vec3>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
-	const int radius = (int)luaL_checkinteger(s, 4);
+	const int width = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
-	const int thickness = (int)luaL_optinteger(s, 6, 1);
-	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 7);
-	shape::createHollowCylinder(*volume, centerBottom, axis, radius, height, thickness, voxel);
+	const int depth = (int)luaL_checkinteger(s, 6);
+	const int thickness = (int)luaL_optinteger(s, 7, 1);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 8);
+	const double radiusX = width / 2.0;
+	const double radiusZ = depth / 2.0;
+	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
+	for (int i = 0; i < height; ++i) {
+		shape::createEllipseOutline(*volume, circleCenter, axis, width, depth, radiusX, radiusZ, thickness, voxel);
+		circleCenter += offset;
+	}
 	return 0;
 }
 
@@ -4564,8 +4574,9 @@ static int luaVoxel_shape_circle_jsonhelp(lua_State* s) {
 			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
 			{"name": "centerBottom", "type": "vec3", "description": "The center bottom position."},
 			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
-			{"name": "radius", "type": "integer", "description": "The outer radius of the cylinder."},
+			{"name": "width", "type": "integer", "description": "The width of the ellipse cross-section."},
 			{"name": "height", "type": "integer", "description": "The height of the cylinder."},
+			{"name": "depth", "type": "integer", "description": "The depth of the ellipse cross-section."},
 			{"name": "thickness", "type": "integer", "description": "The wall thickness in voxels (optional, default 1)."},
 			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
 		],

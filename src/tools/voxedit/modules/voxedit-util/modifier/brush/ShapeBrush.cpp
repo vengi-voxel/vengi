@@ -105,8 +105,15 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		break;
 	}
 	case ShapeType::Cylinder: {
-		const int radius = (int)glm::round(size / 2.0);
-		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, radius, height, voxel);
+		const double radiusX = width / 2.0;
+		const double radiusZ = depth / 2.0;
+		glm::ivec3 circleCenter = centerBottom;
+		glm::ivec3 offset{0};
+		offset[axisIdx] = 1;
+		for (int i = 0; i < height; ++i) {
+			voxelgenerator::shape::createEllipsePlane(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ, voxel);
+			circleCenter += offset;
+		}
 		break;
 	}
 	case ShapeType::Cone:
@@ -119,8 +126,15 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelgenerator::shape::createEllipse(wrapper, centerBottom, axis, width, height, depth, voxel);
 		break;
 	case ShapeType::Circle: {
-		const int radius = (int)glm::round(size / 2.0);
-		voxelgenerator::shape::createHollowCylinder(wrapper, centerBottom, axis, radius, height, _thickness, voxel);
+		const double radiusX = width / 2.0;
+		const double radiusZ = depth / 2.0;
+		glm::ivec3 circleCenter = centerBottom;
+		glm::ivec3 offset{0};
+		offset[axisIdx] = 1;
+		for (int i = 0; i < height; ++i) {
+			voxelgenerator::shape::createEllipseOutline(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ, _thickness, voxel);
+			circleCenter += offset;
+		}
 		break;
 	}
 	case ShapeType::Max:

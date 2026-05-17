@@ -66,7 +66,7 @@ inline voxel::Region bezierRegion(const math::BezierSegment& segment, int thickn
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, const VoxelType& voxel) {
+void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, const VoxelType& voxel) {
 	const int halfW = width / 2;
 	const int halfD = depth / 2;
 
@@ -96,8 +96,8 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis
  * @brief Creates a filled circle plane (convenience overload with single radius)
  */
 template<class Volume, class VoxelType>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
-	createCirclePlane(volume, center, axis, width, depth, radius, radius, voxel);
+void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
+	createEllipsePlane(volume, center, axis, width, depth, radius, radius, voxel);
 }
 
 /**
@@ -139,28 +139,50 @@ void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis ax
 }
 
 /**
- * @brief Creates a hollow cylinder (tube) by stacking circle outlines
+ * @brief Creates an ellipse outline (ring) - only the perimeter voxels
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
- * @param[in] centerBottom The bottom center position
- * @param[in] axis The axis along which the cylinder extends
- * @param[in] radius The outer radius of the cylinder
- * @param[in] height The height of the cylinder
+ * @param[in] center The position to place the object at
+ * @param[in] axis The axis perpendicular to the ellipse plane
+ * @param[in] width The width of the bounding box
+ * @param[in] depth The depth of the bounding box
+ * @param[in] radiusX The outer radius along the width axis
+ * @param[in] radiusZ The outer radius along the depth axis
  * @param[in] thickness The wall thickness in voxels
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createHollowCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, int thickness, const VoxelType& voxel) {
-	if (axis == math::Axis::None) {
-		return;
-	}
+void createEllipseOutline(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, int thickness, const VoxelType& voxel) {
+	const int halfW = width / 2;
+	const int halfD = depth / 2;
+	const double innerRadiusX = core_max(0.0, radiusX - thickness);
+	const double innerRadiusZ = core_max(0.0, radiusZ - thickness);
 
-	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
-	offset[axisIdx] = 1;
-	for (int i = 0; i < height; ++i) {
-		createCircleOutline(volume, circleCenter, axis, radius * 2, radius * 2, radius, thickness, voxel);
-		circleCenter += offset;
+	for (int iz = 0; iz < depth; ++iz) {
+		const double z = iz - depth / 2.0 + 0.5;
+		for (int ix = 0; ix < width; ++ix) {
+			const double x = ix - width / 2.0 + 0.5;
+			const double nx = (radiusX > 0.0) ? (x / radiusX) : 0.0;
+			const double nz = (radiusZ > 0.0) ? (z / radiusZ) : 0.0;
+			const double outerDist = nx * nx + nz * nz;
+			if (outerDist > 1.0) {
+				continue;
+			}
+			const double inx = (innerRadiusX > 0.0) ? (x / innerRadiusX) : 0.0;
+			const double inz = (innerRadiusZ > 0.0) ? (z / innerRadiusZ) : 0.0;
+			const double innerDist = inx * inx + inz * inz;
+			if (innerDist < 1.0) {
+				continue;
+			}
+			const int ox = ix - halfW;
+			const int oz = iz - halfD;
+			if (axis == math::Axis::X) {
+				volume.setVoxel(center.x, center.y + ox, center.z + oz, voxel);
+			} else if (axis == math::Axis::Y) {
+				volume.setVoxel(center.x + ox, center.y, center.z + oz, voxel);
+			} else {
+				volume.setVoxel(center.x + ox, center.y + oz, center.z, voxel);
+			}
+		}
 	}
 }
 
@@ -232,7 +254,7 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 	for (int i = 0; i < height; ++i) {
 		const double normalizedY = (i - halfHeight + 0.5) / halfHeight;
 		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
-		createCirclePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
+		createEllipsePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
 }
@@ -266,7 +288,7 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	}
 	for (int i = 0; i < height; ++i) {
 		const double percent = 1.0 - (i / dHeight);
-		createCirclePlane(volume, circleCenter, axis, width, depth, percent * xRadius, percent * zRadius, voxel);
+		createEllipsePlane(volume, circleCenter, axis, width, depth, percent * xRadius, percent * zRadius, voxel);
 		circleCenter += offset;
 	}
 }
@@ -282,7 +304,7 @@ void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::A
 	glm::ivec3 offset{0};
 	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
-		createCirclePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
+		createEllipsePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
 		circleCenter += offset;
 	}
 }
@@ -314,7 +336,7 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 	for (int i = 0; i < height; ++i) {
 		const double normalizedY = (double)i / (double)height;
 		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
-		createCirclePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
+		createEllipsePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
 }

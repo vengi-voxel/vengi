@@ -10,7 +10,7 @@ private:
 BENCHMARK_DEFINE_F(ShapeGeneratorBenchmark, circle)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxel::RawVolume v{voxel::Region(-20, 20)};
-		voxelgenerator::shape::createCirclePlane(v, glm::vec3(0, 0, 0), math::Axis::X, 10, 10, 4.0, voxel::Voxel());
+		voxelgenerator::shape::createEllipsePlane(v, glm::vec3(0, 0, 0), math::Axis::X, 10, 10, 4.0, voxel::Voxel());
 	}
 }
 
