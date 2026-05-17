@@ -70,25 +70,51 @@ void VoxBoxBrowserPanel::loginPanel() {
 		return;
 	}
 
-	core::String username = _varUsername->strVal();
-	core::String password = _varPassword->strVal();
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
-	if (ImGui::InputTextWithHint("##voxbox_user", _("Username"), &username)) {
-		_varUsername->setVal(username);
-	}
-	ImGui::SameLine();
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-	if (ImGui::InputTextWithHint("##voxbox_pass", _("Password"), &password, ImGuiInputTextFlags_Password)) {
-		_varPassword->setVal(password);
-	}
-	ImGui::SameLine();
-	if (ImGui::IconButton(ICON_LC_LOG_IN, _("Login"))) {
-		if (_api.login(username, password)) {
-			_loginError = "";
-			_varPassword->setVal("");
-			_varApiKey->setVal(_api.refreshToken());
-		} else {
-			_loginError = _("Login failed");
+	if (_useApiKey) {
+		core::String apiKey = _varApiKey->strVal();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
+		if (ImGui::InputTextWithHint("##voxbox_apikey", _("API key (refresh token)"), &apiKey, ImGuiInputTextFlags_Password)) {
+			_varApiKey->setVal(apiKey);
+		}
+		ImGui::SameLine();
+		if (ImGui::IconButton(ICON_LC_LOG_IN, _("Connect"))) {
+			if (apiKey.empty()) {
+				_loginError = _("API key is empty");
+			} else {
+				_api.setRefreshToken(apiKey);
+				_varApiKey->setVal(apiKey);
+				_loginError = "";
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton(_("Use password"))) {
+			_useApiKey = false;
+		}
+	} else {
+		core::String username = _varUsername->strVal();
+		core::String password = _varPassword->strVal();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
+		if (ImGui::InputTextWithHint("##voxbox_user", _("Username"), &username)) {
+			_varUsername->setVal(username);
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+		if (ImGui::InputTextWithHint("##voxbox_pass", _("Password"), &password, ImGuiInputTextFlags_Password)) {
+			_varPassword->setVal(password);
+		}
+		ImGui::SameLine();
+		if (ImGui::IconButton(ICON_LC_LOG_IN, _("Login"))) {
+			if (_api.login(username, password)) {
+				_loginError = "";
+				_varPassword->setVal("");
+				_varApiKey->setVal(_api.refreshToken());
+			} else {
+				_loginError = _("Login failed");
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton(_("Use API key"))) {
+			_useApiKey = true;
 		}
 	}
 	if (!_loginError.empty()) {
