@@ -456,6 +456,7 @@ app::AppState IMGUIApp::onInit() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	if (registerUITests()) {
 		ImGuiTestEngine_Start(_imguiTestEngine, ImGui::GetCurrentContext());
+		_imguiTestEngineStarted = true;
 	}
 #endif
 	// if we decide to hide the window, we don't want docking to show externalized windows
@@ -1086,8 +1087,13 @@ void IMGUIApp::colorReductionOptions() {
 
 app::AppState IMGUIApp::onCleanup() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	ImGuiTestEngine_Stop(_imguiTestEngine);
-	_fileDialog.unregisterUITests(_imguiTestEngine);
+	if (_imguiTestEngine != nullptr) {
+		if (_imguiTestEngineStarted) {
+			ImGuiTestEngine_Stop(_imguiTestEngine);
+			_imguiTestEngineStarted = false;
+		}
+		_fileDialog.unregisterUITests(_imguiTestEngine);
+	}
 #endif
 	if (_imguiBackendInitialized) {
 #ifndef USE_VK_RENDERER
@@ -1108,8 +1114,10 @@ app::AppState IMGUIApp::onCleanup() {
 		ImGui::DestroyContext();
 	}
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	ImGuiTestEngine_DestroyContext(_imguiTestEngine);
-	_imguiTestEngine = nullptr;
+	if (_imguiTestEngine != nullptr) {
+		ImGuiTestEngine_DestroyContext(_imguiTestEngine);
+		_imguiTestEngine = nullptr;
+	}
 #endif
 	_console.shutdown();
 	return Super::onCleanup();

@@ -101,6 +101,7 @@ protected:
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *_imguiTestEngine = nullptr;
+	bool _imguiTestEngineStarted = false;
 	int _startedFromCommandlineFrameDelay = 3;
 	// used for the imgui test engine (IM_REGISTER_TEST)
 	virtual bool registerUITests() {
