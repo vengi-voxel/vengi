@@ -310,7 +310,6 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, 0.0f,
 											&fontIconCfg);
-	_monospace = io.Fonts->AddFontDefaultVector();
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list("font", entities, "*.ttf");
 	Log::debug("Found %i additional font files", (int)entities.size());
@@ -323,6 +322,7 @@ void IMGUIApp::loadFonts() {
 			Log::error("Failed to load font from %s", name.c_str());
 		}
 	}
+	_monospace = io.Fonts->AddFontDefaultVector();
 }
 
 static void *_imguiAlloc(size_t size, void *) {
