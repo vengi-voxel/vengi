@@ -16,8 +16,7 @@ namespace voxedit {
 void ShapeBrush::construct() {
 	Super::construct();
 	for (int type = ShapeType::Min; type < ShapeType::Max; ++type) {
-		const core::String &typeStr = core::String::lower(ShapeTypeStr[type]);
-		const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
+		const core::String &cmd = core::String::format("shape%s", ShapeTypeCmdStr[type]);
 		const core::String &help = core::String::format(_("Change the shape type to %s"), _(ShapeTypeStr[type]));
 		command::Command::registerCommand(cmd.c_str())
 			.setHandler([&, type](const command::CommandArgs &args) {

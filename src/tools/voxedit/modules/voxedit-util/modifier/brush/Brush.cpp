@@ -142,7 +142,7 @@ void Brush::construct() {
 	command::Command::registerCommand("mirroraxis" + cmdName + "none")
 		.setHandler([&](const command::CommandArgs &args) {
 			setMirrorAxis(math::Axis::None, _referencePosition);
-		}).setHelp(_("Disable mirror axis"));
+		}).setHelp(_("Turn off mirroring"));
 }
 
 bool Brush::init() {

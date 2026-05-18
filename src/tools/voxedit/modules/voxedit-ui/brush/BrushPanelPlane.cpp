@@ -14,11 +14,11 @@ namespace voxedit {
 void BrushPanelPlane::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	if (modifier.isMode(ModifierType::Place)) {
-		ImGui::TextWrappedUnformatted(_("Extrude voxels"));
+		ImGui::TextWrappedUnformatted(_("Fill the clicked face, or drag to extrude the plane"));
 	} else if (modifier.isMode(ModifierType::Erase)) {
-		ImGui::TextWrappedUnformatted(_("Erase voxels"));
+		ImGui::TextWrappedUnformatted(_("Erase voxels on the clicked face, or drag to extrude"));
 	} else if (modifier.isMode(ModifierType::Override)) {
-		ImGui::TextWrappedUnformatted(_("Override voxels"));
+		ImGui::TextWrappedUnformatted(_("Recolor voxels on the clicked face, or drag to extrude"));
 	}
 }
 

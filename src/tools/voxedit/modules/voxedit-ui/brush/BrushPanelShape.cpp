@@ -8,6 +8,7 @@
 #include "command/CommandHandler.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/ShapeType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 
 namespace voxedit {
@@ -20,8 +21,7 @@ void BrushPanelShape::addShapes(BrushPanelContext &ctx, command::CommandExecutio
 		ui::Toolbar toolbar("shapes", &listener);
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const bool active = (ShapeType)i == currentSelectedShapeType;
-			const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
-			const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
+			const core::String &cmd = core::String::format("shape%s", ShapeTypeCmdStr[i]);
 			toolbar.button(ShapeTypeIcons[i], cmd.c_str(), !active);
 		}
 	}

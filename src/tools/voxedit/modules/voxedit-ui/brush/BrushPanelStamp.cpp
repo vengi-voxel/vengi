@@ -93,7 +93,7 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 	ImGui::TooltipTextUnformatted(_("Replace all voxels in the stamp with the selected color"));
 
 	const float buttonWidth = ImGui::GetFontSize() * 4.0f;
-	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Rotate 90"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth,
 								 &listener);
@@ -106,7 +106,7 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 		ImGui::PopID();
 	}
 
-	if (ImGui::CollapsingHeader(_("Reduce size"))) {
+	if (ImGui::CollapsingHeader(_("Crop stamp"))) {
 		voxel::Region region = brush.volume()->region();
 		glm::ivec3 size = region.getDimensionsInVoxels();
 		if (ImGui::InputXYZ(_("Size"), size, nullptr, ImGuiInputTextFlags_EnterReturnsTrue)) {

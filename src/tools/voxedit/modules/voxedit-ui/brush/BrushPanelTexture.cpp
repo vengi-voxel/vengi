@@ -68,14 +68,14 @@ void BrushPanelTexture::update(BrushPanelContext &ctx, command::CommandExecution
 		ImGui::AddImage(texture->handle(), uv0, uv1);
 		ImGui::OpenPopupOnItemClick(POPUP_TITLE_UV_EDITOR, ImGuiPopupFlags_MouseButtonLeft);
 	}
-	if (ImGui::InputFloat2(_("UV0"), glm::value_ptr(uv0))) {
+	if (ImGui::InputFloat2(_("UV min"), glm::value_ptr(uv0))) {
 		brush.setUV0(uv0);
 	}
-	ImGui::TooltipTextUnformatted(_("Texture coordinates"));
-	if (ImGui::InputFloat2(_("UV1"), glm::value_ptr(uv1))) {
+	ImGui::TooltipTextUnformatted(_("Lower-left corner of the texture on the brush"));
+	if (ImGui::InputFloat2(_("UV max"), glm::value_ptr(uv1))) {
 		brush.setUV1(uv1);
 	}
-	ImGui::TooltipTextUnformatted(_("Texture coordinates"));
+	ImGui::TooltipTextUnformatted(_("Upper-right corner of the texture on the brush"));
 }
 
 enum class UVEdge { UpperLeft, LowerRight, UpperRight, LowerLeft, Max };

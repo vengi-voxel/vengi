@@ -155,7 +155,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		IM_CHECK(focusWindow(ctx, settingsId));
-		ctx->ItemClick("Select Only Color");
+		ctx->ItemClick("Select by color");
 		ctx->Yield(3);
 		IM_CHECK_EQ(selectedCount(), 2);
 		voxel::RawVolume *v = node->volume();
@@ -163,7 +163,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		IM_CHECK((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0u);
 		IM_CHECK((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) == 0u);
 
-		ctx->ItemClick("Deselect Color");
+		ctx->ItemClick("Deselect by color");
 		ctx->Yield(3);
 		IM_CHECK_EQ(selectedCount(), 0);
 
@@ -173,7 +173,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		IM_CHECK(focusWindow(ctx, settingsId));
-		ctx->ItemClick("Color Selected");
+		ctx->ItemClick("Paint selection");
 		ctx->Yield(3);
 		IM_CHECK_EQ(v->voxel(0, 0, 0).getColor(), 2);
 		IM_CHECK_EQ(v->voxel(1, 0, 0).getColor(), 2);

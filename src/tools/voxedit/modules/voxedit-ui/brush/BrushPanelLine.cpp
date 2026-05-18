@@ -84,7 +84,7 @@ void BrushPanelLine::update(BrushPanelContext &ctx, command::CommandExecutionLis
 		ImGui::TooltipTextUnformatted(_("Select a pending segment to edit its control point with the gizmo"));
 	}
 
-	ImGui::TextUnformatted(_("Stipple Pattern:"));
+	ImGui::TextUnformatted(_("Stipple pattern"));
 	ImGui::SameLine();
 	ImGui::BeginGroup();
 	if (ImGui::StipplePattern("##linestipple", brush.stipplePattern())) {

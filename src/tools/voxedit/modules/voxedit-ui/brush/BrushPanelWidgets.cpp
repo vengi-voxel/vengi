@@ -36,7 +36,7 @@ bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandE
 
 void addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush) {
 	ImGui::PushID("##mirrorplanes");
-	mirrorAxisRadioButton(_("Disable mirror"), math::Axis::None, listener, brush);
+	mirrorAxisRadioButton(_("Off"), math::Axis::None, listener, brush);
 	ImGui::SameLine();
 	mirrorAxisRadioButton(_("X"), math::Axis::X, listener, brush);
 	ImGui::SameLine();
@@ -56,11 +56,11 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 
 	const bool single = brush.singleMode();
 	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
-	ImGui::CommandRadioButton(_("Single"), toggleSingleCmd, single, &listener);
+	ImGui::CommandRadioButton(_("Stroke"), toggleSingleCmd, single, &listener);
 
 	const bool singleMove = brush.singleModeMove();
 	core::String toggleSingleMoveCmd = "set" + brush.name().toLower() + "brushsinglemove";
-	ImGui::CommandRadioButton(_("Single Move"), toggleSingleMoveCmd, singleMove, &listener);
+	ImGui::CommandRadioButton(_("No overlap"), toggleSingleMoveCmd, singleMove, &listener);
 
 	const bool center = brush.centerMode();
 	core::String toggleCenterCmd = "set" + brush.name().toLower() + "brushcenter";
@@ -74,16 +74,16 @@ void aabbBrushModeOptions(AABBBrush &brush) {
 		if (ImGui::InputInt(_("Radius"), &radius)) {
 			brush.setRadius(radius);
 		}
-		ImGui::TooltipTextUnformatted(_("Use a radius around the current voxel - 0 for spanning a region"));
+		ImGui::TooltipTextUnformatted(_("Use a radius around the current voxel - 0 for spanning a box"));
 	}
 }
 
 void addBrushClampingOption(Brush &brush) {
 	bool clamping = brush.brushClamping();
-	if (ImGui::Checkbox(_("Clamping"), &clamping)) {
+	if (ImGui::Checkbox(_("Clamp to volume"), &clamping)) {
 		brush.setBrushClamping(clamping);
 	}
-	ImGui::TooltipTextUnformatted(_("Clamp the brush to the volume"));
+	ImGui::TooltipTextUnformatted(_("Keep the brush inside the active volume bounds"));
 }
 
 } // namespace brushpanel

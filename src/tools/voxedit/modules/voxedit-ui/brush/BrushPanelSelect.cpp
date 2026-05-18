@@ -174,13 +174,13 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 
 void BrushPanelSelect::handleSelectPaint(BrushPanelContext &ctx, int nodeId) {
 	SelectBrush &brush = ctx.sceneMgr->modifier().selectBrush();
-	ImGui::SeparatorText(_("Paint selection"));
+	ImGui::SeparatorText(_("Brush selection"));
 	static constexpr int MaxPaintRadius = 32;
 	int rad = brush.radius();
 	const float btnW = ImGui::GetFrameHeight();
 	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	ImGui::TextUnformatted(_("Radius"));
-	ImGui::TooltipTextUnformatted(_("Brush radius for paint selection. Hold mouse and drag to select voxels."));
+	ImGui::TooltipTextUnformatted(_("Radius of the round selection brush. Hold the mouse button and drag to select."));
 	ImGui::PushID("paintradius");
 	if (ImGui::Button("-", ImVec2(btnW, 0))) {
 		rad = glm::max(rad - 1, 0);
@@ -221,7 +221,7 @@ void BrushPanelSelect::handleSelectFlatSurface(BrushPanelContext &ctx) {
 	int deviation = flatSurface.deviation();
 	const float btnW = ImGui::GetFrameHeight();
 	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-	ImGui::TextUnformatted(_("Accepted deviation"));
+	ImGui::TextUnformatted(_("Surface deviation"));
 	ImGui::TooltipTextUnformatted(
 		_("How many voxels above or below the clicked face the fill may deviate from the start position"));
 	ImGui::PushID("flatdeviation");
@@ -283,10 +283,10 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 
 	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
 	ImGui::SeparatorText(_("Selection actions"));
-	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select Only Color"), "selectonlycolor", listener);
-	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Color Selected"), "colorselected", listener);
+	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select by color"), "selectonlycolor", listener);
+	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Paint selection"), "colorselected", listener);
 	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(nodeId));
-	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect Color"), "deselectcolor", listener);
+	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect by color"), "deselectcolor", listener);
 	ImGui::EndDisabled();
 
 	if (brush.selectMode() == SelectMode::FuzzyColor) {

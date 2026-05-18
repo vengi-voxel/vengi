@@ -67,7 +67,7 @@ static constexpr const char *SelectModeStr[] = {
 	NC_("SelectMode", "All"),          NC_("SelectMode", "Surface"),      NC_("SelectMode", "Same Color"),
 	NC_("SelectMode", "Fuzzy Color"),  NC_("SelectMode", "Connected"),    NC_("SelectMode", "Flat Surface"),
 	NC_("SelectMode", "3D Box"),       NC_("SelectMode", "Circle"),
-	NC_("SelectMode", "Lasso"),        NC_("SelectMode", "Paint"),
+	NC_("SelectMode", "Lasso"),        NC_("SelectMode", "Brush select"),
 	NC_("SelectMode", "Script")};
 static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "SelectModeStr size mismatch");
 

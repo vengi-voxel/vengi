@@ -24,7 +24,7 @@ void AABBBrush::construct() {
 	command::Command::registerCommand("set" + cmdName + "center")
 		.setHandler([this](const command::CommandArgs &args) {
 			setCenterMode();
-		}).setHelp(_("Set center plane building"));
+		}).setHelp(_("Grow the box from the first click as the center"));
 
 	command::Command::registerCommand("set" + cmdName + "aabb")
 		.setHandler([this](const command::CommandArgs &args) {
@@ -34,12 +34,12 @@ void AABBBrush::construct() {
 	command::Command::registerCommand("set" + cmdName + "single")
 		.setHandler([this](const command::CommandArgs &args) {
 			setSingleMode();
-		}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
+		}).setHelp(_("Place voxels along the cursor while the action button is held"));
 
 	command::Command::registerCommand("set" + cmdName + "singlemove")
 		.setHandler([this](const command::CommandArgs &args) {
 			setSingleModeMove();
-		}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button - but don't overwrite the last voxel"));
+		}).setHelp(_("Like stroke mode, but do not replace the same voxel twice"));
 }
 
 void AABBBrush::onSceneChange() {

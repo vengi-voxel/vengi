@@ -34,6 +34,7 @@ void BrushPanelRuler::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		ImGui::Separator();
 		ImGui::Text(_("Length: %.2f"), brush.euclideanDistance());
 		ImGui::Text(_("Manhattan: %i"), brush.manhattanDistance());
+		ImGui::TooltipTextUnformatted(_("Grid distance: sum of steps along each axis"));
 	}
 }
 

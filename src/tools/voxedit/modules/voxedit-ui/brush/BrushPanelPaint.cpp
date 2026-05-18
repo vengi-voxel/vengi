@@ -31,26 +31,29 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
 		paintMode == PaintBrush::PaintMode::Variation) {
 		float factor = brush.factor();
-		if (ImGui::InputFloat(_("Factor"), &factor)) {
+		if (ImGui::InputFloat(_("Strength"), &factor)) {
 			brush.setFactor(factor);
 		}
+		ImGui::TooltipTextUnformatted(_("Amount of brighten or darken to apply"));
 	}
 	if (paintMode == PaintBrush::PaintMode::Variation) {
 		int variationThreshold = brush.variationThreshold();
-		if (ImGui::InputInt(_("Variation threshold"), &variationThreshold)) {
+		if (ImGui::InputInt(_("Variation chance (1 in N)"), &variationThreshold)) {
 			brush.setVariationThreshold(variationThreshold);
 		}
+		ImGui::TooltipTextUnformatted(_("Each voxel has a 1 in N chance to be varied"));
 	}
 
 	brushpanel::aabbBrushOptions(listener, brush);
-	if (ImGui::RadioButton(_("Plane"), brush.plane())) {
+	if (ImGui::RadioButton(_("Flood fill"), brush.plane())) {
 		brush.setPlane();
 	}
-	ImGui::TooltipTextUnformatted(_("Paint the selected plane"));
+	ImGui::TooltipTextUnformatted(_("Fill connected voxels of the same color on the clicked face"));
 
 	if (ImGui::RadioButton(_("Gradient"), brush.gradient())) {
 		brush.setGradient();
 	}
+	ImGui::TooltipTextUnformatted(_("Blend from the hit color to the cursor color across the box"));
 
 	brushpanel::aabbBrushModeOptions(brush);
 }

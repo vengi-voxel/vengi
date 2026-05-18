@@ -23,9 +23,13 @@ enum ShapeType {
 	Min = AABB,
 };
 
+// Command names (shapeaabb, shapetorus, ...) - keep stable for keybindings and scripts.
+static constexpr const char *ShapeTypeCmdStr[ShapeType::Max]{"aabb", "torus", "cylinder", "cone", "dome", "ellipse",
+															"circle"};
+
 // clang-format off
 static constexpr const char *ShapeTypeStr[ShapeType::Max]{
-	NC_("ShapeType", "AABB"),
+	NC_("ShapeType", "Box"),
 	NC_("ShapeType", "Torus"),
 	NC_("ShapeType", "Cylinder"),
 	NC_("ShapeType", "Cone"),
@@ -45,6 +49,7 @@ static constexpr const char *ShapeTypeIcons[ShapeType::Max]{
 };
 // clang-format on
 static_assert(lengthof(ShapeTypeStr) == (int)ShapeType::Max, "Array size mismatch");
+static_assert(lengthof(ShapeTypeCmdStr) == (int)ShapeType::Max, "Array size mismatch");
 static_assert(lengthof(ShapeTypeIcons) == (int)ShapeType::Max, "Array size mismatch");
 
 } // namespace voxedit

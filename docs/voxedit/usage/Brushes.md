@@ -6,11 +6,11 @@ VoxEdit provides several specialized brushes for different types of voxel editin
 
 ## Shape brush
 
-The shape brush creates geometric primitives by spanning an axis-aligned bounding box (AABB) in the viewport. Click and drag to define the size of the shape. The orientation is determined by which face you clicked on initially.
+The shape brush creates geometric primitives by spanning a box in the viewport. Click and drag to define the size of the shape. The orientation is determined by which face you clicked on initially.
 
 **Available shapes:**
 
-- **AABB (Cube)**: Creates rectangular volumes. Can be hollow or filled depending on the modifier.
+- **Box**: Creates rectangular volumes. Can be hollow or filled depending on the modifier.
 - **Torus**: Creates donut shapes with configurable radii.
 - **Cylinder**: Generates circular columns along the axis perpendicular to the face you clicked.
 - **Cone**: Creates tapered cylinders with the base on the clicked face.
@@ -26,21 +26,21 @@ The paint brush provides various methods for coloring and modifying existing vox
 
 **Paint modes:**
 
-- **Replace**: Changes all voxels in the region to the cursor color
-- **Brighten**: Makes colors lighter by a configurable factor
-- **Darken**: Makes colors darker by a configurable factor
+- **Replace**: Changes all voxels in the box to the cursor color
+- **Brighten**: Makes colors lighter by a configurable strength
+- **Darken**: Makes colors darker by a configurable strength
 - **Random**: Replaces voxels with random colors from the palette
 - **Variation**: Randomly brightens or darkens voxels for natural-looking surfaces
 
 **Special modes:**
 
-- **Plane**: Fills all connected voxels of the same color on the clicked surface
-- **Gradient**: Creates smooth color transitions across the region from the hit color to the cursor color
+- **Flood fill**: Fills all connected voxels of the same color on the clicked surface
+- **Gradient**: Creates smooth color transitions across the box from the hit color to the cursor color
 
 **Options:**
 
-- **Factor**: Controls the brightness adjustment for Brighten/Darken modes (1.0 = no change)
-- **Variation Threshold**: For Variation mode, sets the 1 in N chance to modify each voxel
+- **Strength**: Controls the brightness adjustment for Brighten/Darken modes (1.0 = no change)
+- **Variation chance (1 in N)**: For Variation mode, sets the chance to modify each voxel
 
 ## Plane brush
 
@@ -72,7 +72,7 @@ The line brush draws straight lines of voxels from the reference position to whe
 
 **Line options:**
 
-- **Stipple Pattern**: A 9-bit pattern that controls which voxels are placed along the line. Each bit represents one step - set bits place voxels, cleared bits skip them. This allows creating dashed or dotted lines.
+- **Stipple pattern**: A 9-bit pattern that controls which voxels are placed along the line. Each bit represents one step - set bits place voxels, cleared bits skip them. This allows creating dashed or dotted lines.
 - **Continuous Mode**: When enabled, the end point of each line becomes the reference position for the next line, allowing you to chain line segments together without manually updating the reference position.
 
 Lines are drawn using raycasting, ensuring a clean voxel path between the two points.
@@ -99,7 +99,7 @@ The texture brush projects image textures onto voxel surfaces, automatically map
 
 - **Image**: Load any supported image format (PNG, JPG, etc.)
 - **UV Coordinates**: Define which portion of the texture to use (UV0 to UV1)
-- **Project onto surface**: When enabled, the texture is projected onto existing voxel surfaces. When disabled, it fills the spanned AABB volume.
+- **Project onto surface**: When enabled, the texture is projected onto existing voxel surfaces. When disabled, it fills the spanned box volume.
 
 The texture brush is excellent for adding detailed patterns, logos, or textures to models by converting pixel art into voxels.
 
