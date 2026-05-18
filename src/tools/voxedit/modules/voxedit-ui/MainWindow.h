@@ -127,6 +127,7 @@ private:
 	void configureRightTopWidgetDock(ImGuiID dockId);
 	void configureRightBottomWidgetDock(ImGuiID dockId);
 	void configureLeftTopWidgetDock(ImGuiID dockId);
+	void configureBrushToolbarDock(ImGuiID dockId);
 	void configureLeftBottomWidgetDock(ImGuiID dockId);
 
 	const char *getTip() const;

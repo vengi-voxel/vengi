@@ -48,6 +48,7 @@ constexpr const char *VoxEditGizmoAllowAxisFlip = "ve_gizmoallowaxisflip";
 constexpr const char *VoxEditGizmoSnap = "ve_gizmosnap";
 constexpr const char *VoxEditModelGizmo = "ve_modelgizmo";
 constexpr const char *VoxEditBrushGizmo = "ve_brushgizmo";
+constexpr const char *VoxEditBrushHud = "ve_brushhud";
 constexpr const char *VoxEditViewdistance = "ve_viewdistance";
 constexpr const char *VoxEditShowlockedaxis = "ve_showlockedaxis";
 constexpr const char *VoxEditRendershadow = "ve_rendershadow";

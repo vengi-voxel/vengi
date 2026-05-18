@@ -30,6 +30,7 @@
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/WindowedApp.h"
+#include "voxedit-ui/BrushHud.h"
 #include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-util/Config.h"
@@ -154,6 +155,7 @@ bool Viewport::init() {
 	_animationPlaying = core::getVar(cfg::VoxEditAnimationPlaying);
 	_clipping = core::getVar(cfg::GameModeClipping);
 	_brushGizmo = core::getVar(cfg::VoxEditBrushGizmo);
+	_brushHud = core::getVar(cfg::VoxEditBrushHud);
 	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
 	// crisp rendering on HiDPI displays
 	if (!_renderContext.init(_app->frameBufferDimension())) {
@@ -404,6 +406,10 @@ void Viewport::renderViewport() {
 		ImGui::SetCursorPos(cursorPos);
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
+
+		if (!isSceneMode() && _brushHud->boolVal()) {
+			brushhud::render(_sceneMgr, ImGui::GetWindowPos(), contentSize, headerSize);
+		}
 
 		if (_sceneMgr->isLoading() || _sceneMgr->isCommandRunning()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;

@@ -28,6 +28,24 @@ set(SRCS
 	SceneSettingsPanel.h SceneSettingsPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
+	BrushPanelCommon.h
+	brush/BrushPanelContext.h
+	brush/BrushPanelWidgets.h brush/BrushPanelWidgets.cpp
+	brush/BrushPanelShape.h brush/BrushPanelShape.cpp
+	brush/BrushPanelStamp.h brush/BrushPanelStamp.cpp
+	brush/BrushPanelPlane.h brush/BrushPanelPlane.cpp
+	brush/BrushPanelLine.h brush/BrushPanelLine.cpp
+	brush/BrushPanelScript.h brush/BrushPanelScript.cpp
+	brush/BrushPanelRuler.h brush/BrushPanelRuler.cpp
+	brush/BrushPanelSelect.h brush/BrushPanelSelect.cpp
+	brush/BrushPanelNormal.h brush/BrushPanelNormal.cpp
+	brush/BrushPanelTexture.h brush/BrushPanelTexture.cpp
+	brush/BrushPanelPaint.h brush/BrushPanelPaint.cpp
+	brush/BrushPanelText.h brush/BrushPanelText.cpp
+	brush/BrushPanelExtrude.h brush/BrushPanelExtrude.cpp
+	brush/BrushPanelTransform.h brush/BrushPanelTransform.cpp
+	brush/BrushPanelSculpt.h brush/BrushPanelSculpt.cpp
+	BrushHud.h BrushHud.cpp
 	StatusBar.h StatusBar.cpp
 	TipOfTheDay.h
 	ToolsPanel.h ToolsPanel.cpp

@@ -47,6 +47,7 @@ bool ToolsPanel::init() {
 	_showGizmoScene = core::getVar(cfg::VoxEditShowaxis);
 	_showGizmoModel = core::getVar(cfg::VoxEditModelGizmo);
 	_showGizmoBrush = core::getVar(cfg::VoxEditBrushGizmo);
+	_brushHud = core::getVar(cfg::VoxEditBrushHud);
 	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
 	_cursorDetails = core::getVar(cfg::VoxEditCursorDetails);
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
@@ -254,6 +255,8 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			ImGui::Unindent();
 			ImGui::IconCheckboxVar(ICON_LC_HAND, _showGizmoBrush);
 			ImGui::TooltipTextUnformatted(_("Show gizmo for brushes that support it"));
+			ImGui::IconCheckboxVar(ICON_LC_BRUSH, _brushHud);
+			ImGui::TooltipTextUnformatted(_("Show brush status and hints in the viewport"));
 		}
 	}
 	ImGui::End();

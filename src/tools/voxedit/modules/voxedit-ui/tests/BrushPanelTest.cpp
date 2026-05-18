@@ -14,13 +14,13 @@
 
 namespace voxedit {
 
-static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
+static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *toolbarId, const SceneManagerPtr &sceneMgr,
+					   BrushType type) {
 	IM_CHECK_RETV(resetScene(ctx, sceneMgr), false);
 
 	IM_CHECK_SILENT_RETV(activateViewportEditMode(ctx, panel->app()),	 false);
 
-	// now we can focus the brush panel
-	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, id), false);
+	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, toolbarId), false);
 
 	const core::String buttonId = core::String::format("brushes/###button%d", (int)type);
 	ctx->ItemClick(buttonId.c_str());
@@ -55,8 +55,9 @@ static bool setModifierType(ImGuiTestContext *ctx, voxedit::Modifier &modifier, 
 	return true;
 }
 
-static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
-	IM_CHECK_RETV(activeBrush(panel, ctx, id, sceneMgr, type), false);
+static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const char *toolbarId,
+							  const SceneManagerPtr &sceneMgr, BrushType type) {
+	IM_CHECK_RETV(activeBrush(panel, ctx, toolbarId, sceneMgr, type), false);
 	voxedit::Modifier &modifier = sceneMgr->modifier();
 
 	setModifierType(ctx, modifier, ModifierType::Place);
@@ -79,16 +80,15 @@ static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const ch
 	return true;
 }
 
-void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId, const char *settingsId) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
-		const bool normalPaletteMode = viewModeNormalPalette(_viewMode->intVal());
+		const bool normalPaletteMode = viewModeNormalPalette(_ctx.viewMode->intVal());
 
-		// now we can focus the brush panel
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(focusWindow(ctx, toolbarId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		int buttonIdx = 0;
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
 			if (i == (int)BrushType::Normal && !normalPaletteMode) {
@@ -104,23 +104,23 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
 		// fill a flat layer of voxels so the camera ray will reliably hit something
 		command::executeCommands("fill");
 		ctx->Yield(3);
 
 		command::executeCommands("select none");
-		const scenegraph::SceneGraphNode *nodeBeforeSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		const scenegraph::SceneGraphNode *nodeBeforeSelect = _ctx.sceneMgr->sceneGraphModelNode(_ctx.sceneMgr->sceneGraph().activeNode());
 		IM_CHECK(nodeBeforeSelect != nullptr);
 		IM_CHECK(!nodeBeforeSelect->hasSelection());
 
 		const int viewportId = viewportEditMode(ctx, _app);
-		IM_CHECK(executeViewportClickArea(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
+		IM_CHECK(executeViewportClickArea(ctx, _ctx.sceneMgr, viewportId, ImVec2(-100, -100)));
 		// The AABB brush requires a second action to complete the 3D selection when the
 		// drag only spans 2 dimensions (needsAdditionalAction returns true)
 		executeViewportClick();
-		const scenegraph::SceneGraphNode *nodeAfterSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		const scenegraph::SceneGraphNode *nodeAfterSelect = _ctx.sceneMgr->sceneGraphModelNode(_ctx.sceneMgr->sceneGraph().activeNode());
 		IM_CHECK(nodeAfterSelect != nullptr);
 		IM_CHECK(nodeAfterSelect->hasSelection());
 
@@ -128,14 +128,14 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select color actions")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		const int activeNode = _ctx.sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
 		auto selectedCount = [&]() {
 			int count = 0;
@@ -152,9 +152,9 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(node->hasSelection());
 		IM_CHECK_EQ(selectedCount(), 3);
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(focusWindow(ctx, settingsId));
 		ctx->ItemClick("Select Only Color");
 		ctx->Yield(3);
 		IM_CHECK_EQ(selectedCount(), 2);
@@ -172,7 +172,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(selectedCount(), 3);
 
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(focusWindow(ctx, settingsId));
 		ctx->ItemClick("Color Selected");
 		ctx->Yield(3);
 		IM_CHECK_EQ(v->voxel(0, 0, 0).getColor(), 2);
@@ -181,47 +181,47 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Shape));
+		IM_CHECK(runBrushModifiers(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "plane brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Plane));
+		IM_CHECK(runBrushModifiers(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Plane));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Paint));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Paint));
 		// fill to create existing voxels that paint brush can operate on
 		command::executeCommands("fill");
 		ctx->Yield(3);
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
 		executeViewportClick();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "stamp brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Stamp));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Stamp));
 		// use selection as stamp source
 		command::executeCommands("fill");
 		ctx->Yield(3);
 		command::executeCommands("select all");
 		ctx->Yield(3);
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(focusWindow(ctx, settingsId));
 		ctx->ItemClick("Use selection");
 		ctx->Yield(3);
 
 		// create a new empty model node to stamp into
-		const int newNodeId = _sceneMgr->addModelChild("stamp target", 32, 32, 32);
+		const int newNodeId = _ctx.sceneMgr->addModelChild("stamp target", 32, 32, 32);
 		IM_CHECK(newNodeId != InvalidNodeId);
 		ctx->Yield(3);
 
 		// verify the new node is empty
-		scenegraph::SceneGraphNode *newModel = _sceneMgr->sceneGraphModelNode(newNodeId);
+		scenegraph::SceneGraphNode *newModel = _ctx.sceneMgr->sceneGraphModelNode(newNodeId);
 		IM_CHECK(newModel != nullptr);
 		IM_CHECK(voxelutil::countVoxels(*newModel->volume()) == 0);
 
 		// center on viewport and place the stamp
-		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
 		executeViewportClick();
 
 		// validate that voxels were placed by the stamp
@@ -234,15 +234,15 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield(3);
 
 		// activeBrush creates a new scene internally, so fill afterwards
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Normal));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Normal));
 
 		// fill to create existing voxels that normal brush can operate on
 		command::executeCommands("fill");
 		ctx->Yield(3);
 
 		// verify all voxels have NO_NORMAL after filling
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		const int activeNode = _ctx.sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(node != nullptr);
 		bool allNoNormal = true;
 		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
@@ -252,17 +252,17 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		});
 		IM_CHECK(allNoNormal);
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 
 		// set a specific normal index on the modifier (the value the normal brush will paint)
 		const uint8_t expectedNormal = 7;
 		modifier.setNormalColorIndex(expectedNormal);
 
-		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
 		executeViewportClick();
 
 		// find any voxel that had its normal changed to the expected value
-		node = _sceneMgr->sceneGraphModelNode(activeNode);
+		node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(node != nullptr);
 		bool foundPaintedNormal = false;
 		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
@@ -277,9 +277,10 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush type toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Shape));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
+		IM_CHECK(focusWindow(ctx, settingsId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		ShapeBrush &brush = modifier.shapeBrush();
 
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
@@ -291,11 +292,12 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Paint));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Paint));
 		command::executeCommands("fill");
 		ctx->Yield(3);
+		IM_CHECK(focusWindow(ctx, settingsId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		PaintBrush &brush = modifier.paintBrush();
 
 		ctx->ItemClick("paintmode/###button1");
@@ -308,9 +310,10 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "line brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Line));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Line));
+		IM_CHECK(focusWindow(ctx, settingsId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		LineBrush &brush = modifier.lineBrush();
 
 		const bool contBefore = brush.continuous();
@@ -329,9 +332,10 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "text brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Text));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Text));
+		IM_CHECK(focusWindow(ctx, settingsId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		TextBrush &brush = modifier.textBrush();
 
 		ctx->ItemInputValue("Text", "Hello");
@@ -344,7 +348,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "sculpt brush mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Sculpt));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Sculpt));
 
 		// sculpt brush needs a selection to show controls
 		command::executeCommands("fill");
@@ -352,8 +356,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		command::executeCommands("select all");
 		ctx->Yield(3);
 
-		IM_CHECK(focusWindow(ctx, id));
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		IM_CHECK(focusWindow(ctx, settingsId));
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		SculptBrush &brush = modifier.sculptBrush();
 
 		for (int i = 0; i < (int)SculptMode::Max; ++i) {
@@ -367,10 +371,10 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
-		IM_CHECK(focusWindow(ctx, id));
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		IM_CHECK(focusWindow(ctx, settingsId));
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		SelectBrush &brush = modifier.selectBrush();
 
 		int buttonIdx = 0;
@@ -387,10 +391,10 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ruler brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Ruler));
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Ruler));
+		IM_CHECK(focusWindow(ctx, settingsId));
 
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		RulerBrush &brush = modifier.rulerBrush();
 
 		const bool before = brush.useReferencePos();
@@ -403,22 +407,22 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "script brush rescan")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Script));
-		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Script));
+		IM_CHECK(focusWindow(ctx, settingsId));
 		ctx->ItemClick("Rescan###Rescan");
 		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "transform brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Transform));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Transform));
 		// transform brush needs a selection
 		command::executeCommands("fill");
 		ctx->Yield(3);
 		command::executeCommands("select all");
 		ctx->Yield(3);
 
-		IM_CHECK(focusWindow(ctx, id));
-		voxedit::Modifier &modifier = _sceneMgr->modifier();
+		IM_CHECK(focusWindow(ctx, settingsId));
+		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		TransformBrush &brush = modifier.transformBrush();
 
 		for (int i = 0; i < (int)TransformMode::Max; ++i) {

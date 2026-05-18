@@ -26,6 +26,7 @@ private:
 	core::VarPtr _localSpace;
 	core::VarPtr _cursorDetails;
 	core::VarPtr _gridSize;
+	core::VarPtr _brushHud;
 
 	void updateSceneMode(command::CommandExecutionListener &listener);
 	void updateEditMode(command::CommandExecutionListener &listener);

@@ -358,8 +358,12 @@ void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_NORMALPALETTE, dockId);
 }
 
+void MainWindow::configureBrushToolbarDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_BRUSH_TOOLBAR, dockId);
+}
+
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_BRUSHPANEL, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_BRUSH_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NODE_PROPERTIES, dockId);
 }
@@ -370,7 +374,8 @@ void MainWindow::leftWidget() {
 	if (viewModeNormalPalette(_viewMode->intVal())) {
 		_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
 	}
-	_brushPanel.update(TITLE_BRUSHPANEL, _lastSceneMode, listener);
+	_brushPanel.updateToolbar(TITLE_BRUSH_TOOLBAR, _lastSceneMode, listener);
+	_brushPanel.updateSettings(TITLE_BRUSH_SETTINGS, _lastSceneMode, listener);
 	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	_nodePropertiesPanel.update(TITLE_NODE_PROPERTIES, listener);
 }
@@ -1231,12 +1236,30 @@ void MainWindow::update(double nowSeconds) {
 		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.2f, nullptr, &dockIdMain);
 		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.3f, nullptr, &dockIdMain);
 		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &dockIdLeft);
+		ImGuiID dockIdBrushToolbar = 0;
+		ImGuiID dockIdLeftBottomRest = dockIdLeftDown;
+		const float brushToolbarHeight = _brushPanel.toolbarDockHeight();
+		if (ImGuiDockNode *leftDownNode = ImGui::DockBuilderGetNode(dockIdLeftDown)) {
+			const float parentHeight = leftDownNode->Size.y;
+			const float splitRatio = parentHeight > 0.0f
+										 ? glm::clamp(brushToolbarHeight / parentHeight, 0.18f, 0.45f)
+										 : 0.22f;
+			// Brush toolbar on top, settings + inspectors below (both visible, not tabbed together).
+			ImGui::DockBuilderSplitNode(dockIdLeftDown, ImGuiDir_Up, splitRatio, &dockIdBrushToolbar,
+										&dockIdLeftBottomRest);
+			ImVec2 toolbarNodeSize(leftDownNode->Size.x, brushToolbarHeight);
+			ImGui::DockBuilderSetNodeSize(dockIdBrushToolbar, toolbarNodeSize);
+			if (ImGuiDockNode *toolbarNode = ImGui::DockBuilderGetNode(dockIdBrushToolbar)) {
+				toolbarNode->SetLocalFlags(toolbarNode->LocalFlags | ImGuiDockNodeFlags_NoResize);
+			}
+		}
 		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.5f, nullptr, &dockIdRight);
 		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &dockIdMain);
 
 		// left side
 		configureLeftTopWidgetDock(dockIdLeft);
-		configureLeftBottomWidgetDock(dockIdLeftDown);
+		configureBrushToolbarDock(dockIdBrushToolbar);
+		configureLeftBottomWidgetDock(dockIdLeftBottomRest);
 
 		// right side
 		configureRightTopWidgetDock(dockIdRight);

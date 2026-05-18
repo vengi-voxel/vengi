@@ -20,7 +20,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_modelAssetPanel.registerUITests(engine, TITLE_ASSET_MODELS);
 	_imageAssetPanel.registerUITests(engine, TITLE_ASSET_IMAGES);
 	// collection panel tests belong to the asset panel
-	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
+	_brushPanel.registerUITests(engine, TITLE_BRUSH_TOOLBAR, TITLE_BRUSH_SETTINGS);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 	_gameModePanel.registerUITests(engine, TITLE_GAMEMODE);
 	_helpPanel.registerUITests(engine, TITLE_HELP);

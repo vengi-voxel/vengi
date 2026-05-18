@@ -201,7 +201,7 @@ g_import.scene("model.vox", stream)
 
 VoxEdit supports Lua-based brush scripts that let you create custom interactive brushes. Unlike generator scripts (which use `main()` and are executed once via the `xs` command), brush scripts define a `generate()` function that is called each time the brush is applied. They also provide an interactive preview in the viewport.
 
-Brush scripts are placed in the `brushes/` directory and are automatically discovered when VoxEdit starts. Each script appears as its own selectable entry in the brush toolbar with a script-defined icon. Use the **Rescan** button in the brush panel to reload scripts after adding or modifying them.
+Brush scripts are placed in the `brushes/` directory and are automatically discovered when VoxEdit starts. Each script appears as its own selectable entry in the brush toolbar with a script-defined icon. Use the **Rescan** button in the brush settings panel to reload scripts after adding or modifying them.
 
 ### Brush script structure
 
