@@ -63,13 +63,7 @@ bool Toolbar::button(const char *icon, const char *command, bool disable) {
 	ImGui::PushID(_id.c_str());
 	char label[64];
 	core::String::formatBuf(label, sizeof(label), "%s###button%d", icon, _nextId);
-	bool pressed = false;
-	if (disable) {
-		ImGui::DisabledButton(label, true, _size);
-		ImGui::TooltipCommand(command);
-	} else {
-		pressed = ImGui::CommandButton(label, command, nullptr, _size, _listener);
-	}
+	bool pressed = ImGui::CommandButton(label, command, nullptr, _size, _listener);
 	ImGui::PopID();
 	next();
 

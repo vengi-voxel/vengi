@@ -46,13 +46,8 @@ public:
 		ImGui::PushID(_id.c_str());
 		char label[64];
 		core::String::formatBuf(label, sizeof(label), "%s###button%d", icon, _nextId);
-		bool pressed = false;
-		if (disable) {
-			ImGui::DisabledButton(label, true, _size);
-		} else {
-			pressed = ImGui::Button(label, _size);
-		}
-		if (pressed && !disable) {
+		bool pressed = ImGui::Button(label, _size);
+		if (pressed) {
 			func();
 		}
 		ImGui::PopID();
