@@ -3,7 +3,6 @@
  */
 
 #include "Command.h"
-#include "CommandLock.h"
 #include "core/ArrayLength.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
@@ -194,15 +193,6 @@ int Command::execute(const core::String& command) {
 }
 
 bool Command::execute(const core::String& command, const core::DynamicArray<core::String>& rawArgs) {
-	if (!commandExecutionAllowed()) {
-		core::String deferred = command;
-		for (const core::String &arg : rawArgs) {
-			deferred.append(" ");
-			deferred.append(arg);
-		}
-		deferCommand(deferred);
-		return false;
-	}
 	if ((command[0] == COMMAND_PRESSED[0] || command[0] == COMMAND_RELEASED[0]) && rawArgs.empty()) {
 		Log::warn("Skip execution of %s - no arguments provided", command.c_str());
 		return false;

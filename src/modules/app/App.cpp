@@ -7,7 +7,6 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "command/CommandHandler.h"
-#include "command/CommandLock.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
@@ -1606,7 +1605,6 @@ void App::usage() const {
 }
 
 void App::onAfterRunning() {
-	command::drainDeferredCommands();
 }
 
 void App::onBeforeRunning() {
