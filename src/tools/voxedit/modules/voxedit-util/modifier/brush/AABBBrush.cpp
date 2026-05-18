@@ -29,7 +29,7 @@ void AABBBrush::construct() {
 	command::Command::registerCommand("set" + cmdName + "aabb")
 		.setHandler([this](const command::CommandArgs &args) {
 			setAABBMode();
-		}).setHelp(_("Set default aabb voxel building mode"));
+		}).setHelp(_("Click and drag to define a box of voxels"));
 
 	command::Command::registerCommand("set" + cmdName + "single")
 		.setHandler([this](const command::CommandArgs &args) {

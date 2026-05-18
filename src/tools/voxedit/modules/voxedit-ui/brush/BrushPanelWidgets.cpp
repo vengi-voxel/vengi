@@ -52,7 +52,7 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 
 	const bool aabb = brush.aabbMode();
 	core::String toggleAABBCmd = "set" + brush.name().toLower() + "brushaabb";
-	ImGui::CommandRadioButton(_("Default"), toggleAABBCmd, aabb, &listener);
+	ImGui::CommandRadioButton(_("Box"), toggleAABBCmd, aabb, &listener);
 
 	const bool single = brush.singleMode();
 	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
