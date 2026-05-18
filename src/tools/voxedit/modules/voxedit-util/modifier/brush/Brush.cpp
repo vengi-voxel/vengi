@@ -20,7 +20,7 @@ void Brush::onSceneChange() {
 }
 
 void Brush::reset() {
-	_brushClamping = false;
+	_clampToVolume = false;
 	_referencePosition = glm::ivec3(0);
 	_mirrorAxis = math::Axis::None;
 	_mirrorPos = glm::ivec3(0);
@@ -31,12 +31,12 @@ void Brush::update(const BrushContext &ctx, double nowSeconds) {
 	_referencePosition = ctx.referencePos;
 }
 
-void Brush::setBrushClamping(bool brushClamping) {
-	_brushClamping = brushClamping;
+void Brush::setClampToVolume(bool clampToVolume) {
+	_clampToVolume = clampToVolume;
 }
 
-bool Brush::brushClamping() const {
-	return _brushClamping;
+bool Brush::clampToVolume() const {
+	return _clampToVolume;
 }
 
 void Brush::toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
@@ -72,7 +72,7 @@ bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &w
 	voxel::Region region = calcRegion(ctx);
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
-	if (!getMirrorAABB(minsMirror, maxsMirror)) {
+	if (!getMirrorBox(minsMirror, maxsMirror)) {
 		generate(sceneGraph, wrapper, ctx, region);
 	} else {
 		Log::debug("Execute mirror action");
@@ -90,7 +90,7 @@ bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &w
 void Brush::endBrush(BrushContext &ctx) {
 }
 
-bool Brush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {
+bool Brush::getMirrorBox(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 	math::Axis mirrorAxis = _mirrorAxis;
 	if (mirrorAxis == math::Axis::None) {
 		return false;
@@ -120,8 +120,8 @@ bool Brush::active() const {
 }
 
 void Brush::construct() {
-	// mirroraxisshapebrush, setshapebrushcenter, setshapebrushsingle, setshapebrushaabb
-	// mirroraxispaintbrush, setpaintbrushcenter, setpaintbrushsingle, setpaintbrushaabb
+	// mirroraxisshapebrush, setshapebrushcenter, setshapebrushstroke, setshapebrushbox
+	// mirroraxispaintbrush, setpaintbrushcenter, setpaintbrushstroke, setpaintbrushbox
 
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x")

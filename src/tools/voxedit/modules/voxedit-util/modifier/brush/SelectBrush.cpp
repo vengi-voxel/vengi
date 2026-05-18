@@ -9,7 +9,7 @@ namespace voxedit {
 SelectBrush::SelectBrush(SceneManager *sceneManager)
 	: Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase),
 	  _sceneManager(sceneManager), _lassoStrategy(sceneManager), _scriptStrategy(sceneManager) {
-	setBrushClamping(true);
+	setClampToVolume(true);
 	_strategies[(int)SelectMode::All] = &_selectAll;
 	_strategies[(int)SelectMode::Surface] = &_selectSurface;
 	_strategies[(int)SelectMode::SameColor] = &_selectSameColor;
@@ -25,7 +25,7 @@ SelectBrush::SelectBrush(SceneManager *sceneManager)
 
 select::AABBBrushState SelectBrush::buildState(const BrushContext &ctx) const {
 	select::AABBBrushState state;
-	state.aabbMode = _aabbMode;
+	state.boxMode = _boxMode;
 	state.aabbFace = _aabbFace;
 	state.aabbFirstPos = applyGridResolution(_aabbFirstPos, ctx.gridResolution);
 	state.cursorPosition = currentCursorPosition(ctx);
@@ -87,13 +87,13 @@ void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
 void SelectBrush::setSelectMode(SelectMode mode) {
 	if (_selectMode != mode) {
 		if (_selectMode == SelectMode::Paint) {
-			setAABBMode();
+			setBoxMode();
 			_sceneModifiedFlags = SceneModifiedFlags::All;
 		}
 		activeStrategy()->reset();
 		_circleStrategy.reset();
 		if (mode == SelectMode::Paint) {
-			setSingleMode();
+			setStrokeMode();
 			if (_radius == 0) {
 				setRadius(1);
 			}
@@ -148,7 +148,7 @@ voxel::Region SelectBrush::calcRegion(const BrushContext &ctx) const {
 void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &region) {
 	voxel::Region selectionRegion = region;
-	if (_brushClamping) {
+	if (_clampToVolume) {
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
 	// Reset Box3D selection region before each generate so that the previous

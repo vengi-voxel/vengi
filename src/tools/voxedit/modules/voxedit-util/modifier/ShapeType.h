@@ -11,7 +11,7 @@
 namespace voxedit {
 
 enum ShapeType {
-	AABB,
+	Box,
 	Torus,
 	Cylinder,
 	Cone,
@@ -20,7 +20,7 @@ enum ShapeType {
 	Circle,
 
 	Max,
-	Min = AABB,
+	Min = Box,
 };
 
 // Command names (shapeaabb, shapetorus, ...) - keep stable for keybindings and scripts.

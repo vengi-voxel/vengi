@@ -124,13 +124,13 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	// Save previous state
 	const BrushType prevBrushType = modifier.brushType();
 	const PaintBrush::PaintMode prevPaintMode = paintBrush.paintMode();
-	const float prevFactor = paintBrush.factor();
+	const float prevStrength = paintBrush.strength();
 
 	// Configure the paint brush
 	modifier.setBrushType(BrushType::Paint);
 	paintBrush.setPaintMode(paintMode);
-	paintBrush.setFactor(factor);
-	paintBrush.setAABBMode();
+	paintBrush.setStrength(factor);
+	paintBrush.setBoxMode();
 
 	// Set up the AABB region
 	brushContext.cursorPosition = mins;
@@ -147,7 +147,7 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 
 	// Restore previous state
 	paintBrush.setPaintMode(prevPaintMode);
-	paintBrush.setFactor(prevFactor);
+	paintBrush.setStrength(prevStrength);
 	modifier.setBrushType(prevBrushType);
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();

@@ -93,7 +93,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		}
 	}
 	switch (_shapeType) {
-	case ShapeType::AABB:
+	case ShapeType::Box:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);
 		break;
 	case ShapeType::Torus: {
@@ -149,7 +149,7 @@ void ShapeBrush::setThickness(int thickness) {
 
 void ShapeBrush::reset() {
 	Super::reset();
-	_shapeType = ShapeType::AABB;
+	_shapeType = ShapeType::Box;
 	_thickness = 1;
 }
 

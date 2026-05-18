@@ -48,7 +48,7 @@ private:
 	bool _hasApplyGizmo = false;
 	bool _useSimplePreview = false;
 	bool _previewNeedsExistingVolume = false;
-	bool _wantAABB = false;
+	bool _wantBox = false;
 
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _parameterDescription;
 	core::DynamicArray<core::String> _parameters;
@@ -56,7 +56,7 @@ private:
 	bool initLuaState();
 	static uint32_t mapGizmoOperation(const char *name);
 
-	bool wantAABB() const override;
+	bool wantBox() const override;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,

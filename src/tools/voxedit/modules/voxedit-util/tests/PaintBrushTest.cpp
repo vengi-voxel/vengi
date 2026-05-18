@@ -42,7 +42,7 @@ protected:
 TEST_F(PaintBrushTest, testExecuteSingle) {
 	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSingleMode();
+	brush.setStrokeMode();
 
 	scenegraph::SceneGraph sceneGraph;
 	const int nodeId = prepareSceneGraph(sceneGraph);
@@ -74,7 +74,7 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 TEST_F(PaintBrushTest, testExecuteSingleRadius) {
 	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
-	brush.setSingleMode();
+	brush.setStrokeMode();
 	brush.setRadius(1);
 
 	scenegraph::SceneGraph sceneGraph;

@@ -50,17 +50,17 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 	addMirrorPlanes(listener, brush);
 	ImGui::Separator();
 
-	const bool aabb = brush.aabbMode();
-	core::String toggleAABBCmd = "set" + brush.name().toLower() + "brushaabb";
-	ImGui::CommandRadioButton(_("Box"), toggleAABBCmd, aabb, &listener);
+	const bool box = brush.boxMode();
+	core::String toggleBoxCmd = "set" + brush.name().toLower() + "brushbox";
+	ImGui::CommandRadioButton(_("Box"), toggleBoxCmd, box, &listener);
 
-	const bool single = brush.singleMode();
-	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
-	ImGui::CommandRadioButton(_("Stroke"), toggleSingleCmd, single, &listener);
+	const bool stroke = brush.strokeMode();
+	core::String toggleStrokeCmd = "set" + brush.name().toLower() + "brushstroke";
+	ImGui::CommandRadioButton(_("Stroke"), toggleStrokeCmd, stroke, &listener);
 
-	const bool singleMove = brush.singleModeMove();
-	core::String toggleSingleMoveCmd = "set" + brush.name().toLower() + "brushsinglemove";
-	ImGui::CommandRadioButton(_("No overlap"), toggleSingleMoveCmd, singleMove, &listener);
+	const bool strokeNoOverlap = brush.strokeNoOverlap();
+	core::String toggleStrokeNoOverlapCmd = "set" + brush.name().toLower() + "brushstrokenooverlap";
+	ImGui::CommandRadioButton(_("No overlap"), toggleStrokeNoOverlapCmd, strokeNoOverlap, &listener);
 
 	const bool center = brush.centerMode();
 	core::String toggleCenterCmd = "set" + brush.name().toLower() + "brushcenter";
@@ -69,7 +69,7 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 
 // doing this after aabbBrushOptions() allows us to extend the radio buttons
 void aabbBrushModeOptions(AABBBrush &brush) {
-	if (brush.anySingleMode()) {
+	if (brush.anyStrokeMode()) {
 		int radius = brush.radius();
 		if (ImGui::InputInt(_("Radius"), &radius)) {
 			brush.setRadius(radius);
@@ -79,9 +79,9 @@ void aabbBrushModeOptions(AABBBrush &brush) {
 }
 
 void addBrushClampingOption(Brush &brush) {
-	bool clamping = brush.brushClamping();
+	bool clamping = brush.clampToVolume();
 	if (ImGui::Checkbox(_("Clamp to volume"), &clamping)) {
-		brush.setBrushClamping(clamping);
+		brush.setClampToVolume(clamping);
 	}
 	ImGui::TooltipTextUnformatted(_("Keep the brush inside the active volume bounds"));
 }

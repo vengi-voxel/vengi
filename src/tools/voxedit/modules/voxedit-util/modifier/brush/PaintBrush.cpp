@@ -25,7 +25,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 
 	bool brighten = _paintMode == PaintMode::Brighten;
 	if (_paintMode == PaintMode::Variation) {
-		if (rand() % _variationThreshold != 0) {
+		if (rand() % _variationChance != 0) {
 			return old;
 		}
 		brighten = rand() % 2 == 0;
@@ -34,9 +34,9 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	const color::RGBA voxelColor = _palette.color(old.getColor());
 	color::RGBA newColor;
 	if (brighten) {
-		newColor = color::brighter(voxelColor, _factor);
+		newColor = color::brighter(voxelColor, _strength);
 	} else {
-		newColor = color::darker(voxelColor, _factor);
+		newColor = color::darker(voxelColor, _strength);
 	}
 	const int index = _palette.getClosestMatch(newColor, old.getColor());
 	if (index == palette::PaletteColorNotFound) {
@@ -67,8 +67,8 @@ static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from
 
 void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region) {
-	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _factor, _variationThreshold);
-	if (plane()) {
+	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance);
+	if (floodFill()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
 							  voxelColor.evaluate(ctx.hitCursorVoxel));
 	} else if (gradient()) {
@@ -89,20 +89,20 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	}
 }
 
-bool PaintBrush::wantAABB() const {
-	if (plane()) {
+bool PaintBrush::wantBox() const {
+	if (floodFill()) {
 		return false;
 	}
-	return Super::wantAABB();
+	return Super::wantBox();
 }
 
-void PaintBrush::setFactor(float factor) {
-	_factor = glm::clamp(factor, 0.1f, 10.0f);
+void PaintBrush::setStrength(float strength) {
+	_strength = glm::clamp(strength, 0.1f, 10.0f);
 	markDirty();
 }
 
-void PaintBrush::setVariationThreshold(int variationThreshold) {
-	_variationThreshold = glm::clamp(variationThreshold, 2, 20);
+void PaintBrush::setVariationChance(int variationChance) {
+	_variationChance = glm::clamp(variationChance, 2, 20);
 	markDirty();
 }
 

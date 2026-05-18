@@ -142,7 +142,7 @@ bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 
 	// Configure the plane brush
 	modifier.setBrushType(BrushType::Plane);
-	planeBrush.setAABBMode();
+	planeBrush.setBoxMode();
 
 	// Begin and execute the brush
 	planeBrush.beginBrush(brushContext);

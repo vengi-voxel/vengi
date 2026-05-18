@@ -30,23 +30,23 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 
 	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
 		paintMode == PaintBrush::PaintMode::Variation) {
-		float factor = brush.factor();
-		if (ImGui::InputFloat(_("Strength"), &factor)) {
-			brush.setFactor(factor);
+		float strength = brush.strength();
+		if (ImGui::InputFloat(_("Strength"), &strength)) {
+			brush.setStrength(strength);
 		}
 		ImGui::TooltipTextUnformatted(_("Amount of brighten or darken to apply"));
 	}
 	if (paintMode == PaintBrush::PaintMode::Variation) {
-		int variationThreshold = brush.variationThreshold();
-		if (ImGui::InputInt(_("Variation chance (1 in N)"), &variationThreshold)) {
-			brush.setVariationThreshold(variationThreshold);
+		int variationChance = brush.variationChance();
+		if (ImGui::InputInt(_("Variation chance (1 in N)"), &variationChance)) {
+			brush.setVariationChance(variationChance);
 		}
 		ImGui::TooltipTextUnformatted(_("Each voxel has a 1 in N chance to be varied"));
 	}
 
 	brushpanel::aabbBrushOptions(listener, brush);
-	if (ImGui::RadioButton(_("Flood fill"), brush.plane())) {
-		brush.setPlane();
+	if (ImGui::RadioButton(_("Flood fill"), brush.floodFill())) {
+		brush.setFloodFill();
 	}
 	ImGui::TooltipTextUnformatted(_("Fill connected voxels of the same color on the clicked face"));
 

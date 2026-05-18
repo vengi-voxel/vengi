@@ -31,12 +31,12 @@ ModifierType BrushTool::parseModifierType(const core::String &type) {
 
 uint32_t BrushTool::parseBrushMode(const core::String &mode) {
 	if (mode == "single") {
-		return BRUSH_MODE_SINGLE;
+		return BRUSH_MODE_STROKE;
 	}
 	if (mode == "center") {
 		return BRUSH_MODE_CENTER;
 	}
-	return BRUSH_MODE_AABB;
+	return BRUSH_MODE_BOX;
 }
 
 json::Json BrushTool::propModifierType() {
@@ -160,7 +160,7 @@ bool BrushTool::executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, Brush
 
 	// For AABB brushes, we need to set up the region using currentAABBBrush()
 	if (AABBBrush *aabbBrush = modifier.currentAABBBrush()) {
-		aabbBrush->setAABBMode();
+		aabbBrush->setBoxMode();
 
 		// Manually set up the AABB region by simulating begin/step
 		brushContext.cursorPosition = mins;

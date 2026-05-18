@@ -23,7 +23,7 @@ protected:
 		brushContext.cursorPosition = mins;
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
 		EXPECT_TRUE(brush.beginBrush(brushContext));
-		if (brush.singleMode()) {
+		if (brush.strokeMode()) {
 			EXPECT_FALSE(brush.active());
 		} else {
 			EXPECT_TRUE(brush.active());

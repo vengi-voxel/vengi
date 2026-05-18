@@ -49,7 +49,7 @@ void PlaneBrush::reset() {
 
 void PlaneBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
 	Super::preExecute(ctx, volume);
-	if (!_aabbMode) {
+	if (!_boxMode) {
 		_secondPosValid = false;
 		return;
 	}

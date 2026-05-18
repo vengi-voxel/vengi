@@ -422,7 +422,7 @@ void LUABrush::shutdown() {
 	_hasApplyGizmo = false;
 	_useSimplePreview = false;
 	_previewNeedsExistingVolume = false;
-	_wantAABB = false;
+	_wantBox = false;
 	_scriptSource.clear();
 	_parameterDescription.clear();
 	_parameters.clear();
@@ -528,7 +528,7 @@ bool LUABrush::loadScript(const core::String &filename) {
 	// Check for settings() callback to configure preview mode and brush mode
 	_useSimplePreview = false;
 	_previewNeedsExistingVolume = false;
-	_wantAABB = false;
+	_wantBox = false;
 	lua_getglobal(_lua, "settings");
 	if (lua_isfunction(_lua, -1)) {
 		if (lua_pcall(_lua, 0, 1, 0) == LUA_OK) {
@@ -543,7 +543,7 @@ bool LUABrush::loadScript(const core::String &filename) {
 				lua_getfield(_lua, -1, "mode");
 				if (lua_isstring(_lua, -1)) {
 					const char *mode = lua_tostring(_lua, -1);
-					_wantAABB = SDL_strcmp(mode, "aabb") == 0;
+					_wantBox = SDL_strcmp(mode, "box") == 0 || SDL_strcmp(mode, "aabb") == 0;
 				}
 				lua_pop(_lua, 1); // pop mode field
 
@@ -597,40 +597,40 @@ core::String LUABrush::scriptName() const {
 
 void LUABrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
-	if (!_wantAABB && _hasCalcRegion) {
+	if (!_wantBox && _hasCalcRegion) {
 		markDirty();
 	}
 }
 
 bool LUABrush::needsAdditionalAction(const BrushContext &ctx) const {
-	if (!_wantAABB) {
+	if (!_wantBox) {
 		return false;
 	}
 	return Super::needsAdditionalAction(ctx);
 }
 
-bool LUABrush::wantAABB() const {
-	return _wantAABB && Super::wantAABB();
+bool LUABrush::wantBox() const {
+	return _wantBox && Super::wantBox();
 }
 
 bool LUABrush::active() const {
 	if (!_scriptLoaded) {
 		return false;
 	}
-	if (_wantAABB) {
+	if (_wantBox) {
 		return Super::active();
 	}
 	return true;
 }
 
 voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
-	if (_wantAABB && _aabbMode) {
+	if (_wantBox && _boxMode) {
 		return Super::calcRegion(ctx);
 	}
 
 	const glm::ivec3 &pos = ctx.cursorPosition;
 	if (!_hasCalcRegion || !_scriptLoaded) {
-		if (_wantAABB) {
+		if (_wantBox) {
 			return Super::calcRegion(ctx);
 		}
 		return voxel::Region(pos, pos);
@@ -707,7 +707,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	voxelgenerator::luaVoxel_setGlobalData(s, voxelgenerator::luaVoxel_globalscenegraph(), &sceneGraph);
 
 	BrushContext ctxCopy = ctx;
-	if (_wantAABB && _aabbFace != voxel::FaceNames::Max) {
+	if (_wantBox && _aabbFace != voxel::FaceNames::Max) {
 		ctxCopy.cursorFace = _aabbFace;
 	}
 	voxelgenerator::luaVoxel_setGlobalData(s, luaBrush_metaname(), &ctxCopy);

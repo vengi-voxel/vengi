@@ -133,7 +133,7 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	modifier.setBrushType(BrushType::Select);
 	selectBrush.setSelectMode(selectMode);
 	selectBrush.fuzzyColor().setColorThreshold(colorThreshold);
-	selectBrush.setAABBMode();
+	selectBrush.setBoxMode();
 
 	// Set up the AABB region
 	brushContext.cursorPosition = mins;

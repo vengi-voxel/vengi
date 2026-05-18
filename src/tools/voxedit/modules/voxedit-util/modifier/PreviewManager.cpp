@@ -200,7 +200,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
 			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
@@ -233,7 +233,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		}
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
 			_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
 		}
 	}

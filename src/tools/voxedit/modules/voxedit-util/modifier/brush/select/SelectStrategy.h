@@ -26,7 +26,7 @@ namespace select {
  * @brief AABB state passed from the brush to strategies that need it
  */
 struct AABBBrushState {
-	bool aabbMode = false;
+	bool boxMode = false;
 	voxel::FaceNames aabbFace = voxel::FaceNames::Max;
 	glm::ivec3 aabbFirstPos{0};
 	glm::ivec3 cursorPosition{0};

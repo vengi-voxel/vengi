@@ -68,7 +68,7 @@ TEST_F(SessionRecorderTest, testRecordAndPlaybackRoundtrip) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	modifier.setBrushType(BrushType::Shape);
-	modifier.shapeBrush().setSingleMode();
+	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
@@ -175,7 +175,7 @@ TEST_F(SessionRecorderTest, testPlaybackPausesOnDirtyScene) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	modifier.setBrushType(BrushType::Shape);
-	modifier.shapeBrush().setSingleMode();
+	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
@@ -224,7 +224,7 @@ TEST_F(SessionRecorderTest, testRecordingDuringNetworkMode) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	modifier.setBrushType(BrushType::Shape);
-	modifier.shapeBrush().setSingleMode();
+	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());

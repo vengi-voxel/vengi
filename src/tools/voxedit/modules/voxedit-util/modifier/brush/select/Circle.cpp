@@ -67,7 +67,7 @@ void Circle::invalidate() {
 }
 
 voxel::Region Circle::calcRegion(const BrushContext &ctx, const AABBBrushState &state) const {
-	if (!state.aabbMode || state.aabbFace == voxel::FaceNames::Max) {
+	if (!state.boxMode || state.aabbFace == voxel::FaceNames::Max) {
 		return voxel::Region::InvalidRegion;
 	}
 	const glm::ivec3 center = state.aabbFirstPos;

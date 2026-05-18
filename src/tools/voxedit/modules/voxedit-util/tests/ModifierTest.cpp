@@ -99,7 +99,7 @@ protected:
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX); // mins for aabb
 		EXPECT_TRUE(modifier.beginBrush());
 		if (brushType == BrushType::Shape) {
-			if (modifier.shapeBrush().singleMode()) {
+			if (modifier.shapeBrush().strokeMode()) {
 				EXPECT_FALSE(modifier.shapeBrush().active())
 					<< "ShapeBrush is active in single mode for modifierType " << (int)modifierType;
 				return;
@@ -330,7 +330,7 @@ TEST_F(ModifierTest, testClamp) {
 	modifier.setCursorPosition(volume.region().getLowerCenter(), voxel::FaceNames::PositiveX); // mins for aabb
 
 	{
-		brush.setBrushClamping(false);
+		brush.setClampToVolume(false);
 		voxel::Region dirtyRegion;
 		EXPECT_TRUE(modifier.execute(sceneGraph, node,
 									 [&dirtyRegion](const voxel::Region &region, ModifierType type,
@@ -339,7 +339,7 @@ TEST_F(ModifierTest, testClamp) {
 	}
 	volume.clear();
 	{
-		brush.setBrushClamping(true);
+		brush.setClampToVolume(true);
 		voxel::Region dirtyRegion;
 		EXPECT_TRUE(modifier.execute(sceneGraph, node,
 									 [&dirtyRegion](const voxel::Region &region, ModifierType type,

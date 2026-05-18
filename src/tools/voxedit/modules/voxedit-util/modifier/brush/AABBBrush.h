@@ -18,7 +18,7 @@ enum BrushFlags : uint32_t {
 	 * Standard AABB mode - first click sets one corner, second click sets opposite corner.
 	 * The user can then drag to extend the third dimension.
 	 */
-	BRUSH_MODE_AABB = 0,
+	BRUSH_MODE_BOX = 0,
 
 	/**
 	 * Center mode - the AABB expands symmetrically around the first position.
@@ -27,16 +27,15 @@ enum BrushFlags : uint32_t {
 	BRUSH_MODE_CENTER = 1,
 
 	/**
-	 * Single mode - continuously set voxels at each cursor position until the
-	 * action button is released. Useful for "painting" multiple voxels.
+	 * Stroke mode - continuously set voxels at each cursor position until the
+	 * action button is released.
 	 */
-	BRUSH_MODE_SINGLE = 2,
+	BRUSH_MODE_STROKE = 2,
 
 	/**
-	 * Single move mode - like SINGLE but doesn't overwrite the last voxel position.
-	 * Prevents repeated placement at the same location.
+	 * Stroke without overlap - like stroke mode but skips the last voxel position.
 	 */
-	BRUSH_MODE_SINGLE_MOVE = 3,
+	BRUSH_MODE_STROKE_NO_OVERLAP = 3,
 
 	/**
 	 * Starting value for derived classes to define their own custom flags.
@@ -91,7 +90,7 @@ protected:
 	 * True if currently spanning an AABB (between beginBrush() and endBrush()).
 	 * The first position of the AABB is now set.
 	 */
-	bool _aabbMode = false;
+	bool _boxMode = false;
 
 	/**
 	 * True if the AABB has both valid mins and maxs positions, but the maxs
@@ -107,7 +106,7 @@ protected:
 	 */
 	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
 
-	uint32_t _mode = BRUSH_MODE_AABB; ///< Current brush mode flags
+	uint32_t _mode = BRUSH_MODE_BOX; ///< Current brush mode flags
 	int _radius = 0;				  ///< Radius for single mode (0 = single voxel)
 
 	/**
@@ -156,7 +155,7 @@ protected:
 	 *
 	 * @return True if the brush should span an AABB when dragging
 	 */
-	virtual bool wantAABB() const;
+	virtual bool wantBox() const;
 
 public:
 	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
@@ -263,38 +262,32 @@ public:
 	bool centerMode() const;
 
 	/**
-	 * @brief Enable single mode - place voxels continuously
+	 * @brief Enable stroke mode - place voxels continuously while the action is held
+	 */
+	void setStrokeMode();
+	bool strokeMode() const;
+
+	/**
+	 * @brief Enable stroke mode without revisiting the last voxel position
+	 */
+	void setStrokeNoOverlap();
+	bool strokeNoOverlap() const;
+
+	/**
+	 * @return True if either stroke mode is active
+	 */
+	bool anyStrokeMode() const;
+
+	/**
+	 * @brief Enable box mode (default) - span a rectangular region
+	 */
+	void setBoxMode();
+	bool boxMode() const;
+
+	/**
+	 * @brief Set the radius for stroke mode operations
 	 *
-	 * In single mode, voxels are placed at each cursor position as long as the
-	 * action button is held. Useful for "painting" voxels.
-	 */
-	void setSingleMode();
-	bool singleMode() const;
-
-	/**
-	 * @brief Enable single move mode - like single mode but avoids repeating last position
-	 *
-	 * Similar to single mode but prevents placing the same voxel multiple times
-	 * at the same location. The scene trace is not reset between placements.
-	 */
-	void setSingleModeMove();
-	bool singleModeMove() const;
-
-	/**
-	 * @return True if either single mode or single move mode is active
-	 */
-	bool anySingleMode() const;
-
-	/**
-	 * @brief Enable AABB mode (default) - span rectangular region
-	 */
-	void setAABBMode();
-	bool aabbMode() const;
-
-	/**
-	 * @brief Set the radius for single mode operations
-	 *
-	 * When in single mode with a radius > 0, each placement creates a cube of
+	 * When in stroke mode with a radius > 0, each placement creates a cube of
 	 * voxels with the given radius around the cursor position.
 	 *
 	 * @param[in] radius The radius in voxels (0 = single voxel)
@@ -302,13 +295,13 @@ public:
 	void setRadius(int radius);
 
 	/**
-	 * @return The current radius, or 0 if not in single mode
+	 * @return The current radius, or 0 if not in stroke mode
 	 */
 	int radius() const;
 };
 
 inline int AABBBrush::radius() const {
-	if (!anySingleMode()) {
+	if (!anyStrokeMode()) {
 		return 0;
 	}
 	return _radius;
@@ -322,32 +315,32 @@ inline void AABBBrush::setCenterMode() {
 	setMode(BRUSH_MODE_CENTER);
 }
 
-inline bool AABBBrush::anySingleMode() const {
-	return singleMode() || singleModeMove();
+inline bool AABBBrush::anyStrokeMode() const {
+	return strokeMode() || strokeNoOverlap();
 }
 
-inline bool AABBBrush::singleMode() const {
-	return isMode(BRUSH_MODE_SINGLE);
+inline bool AABBBrush::strokeMode() const {
+	return isMode(BRUSH_MODE_STROKE);
 }
 
-inline void AABBBrush::setSingleMode() {
-	setMode(BRUSH_MODE_SINGLE);
+inline void AABBBrush::setStrokeMode() {
+	setMode(BRUSH_MODE_STROKE);
 }
 
-inline bool AABBBrush::singleModeMove() const {
-	return isMode(BRUSH_MODE_SINGLE_MOVE);
+inline bool AABBBrush::strokeNoOverlap() const {
+	return isMode(BRUSH_MODE_STROKE_NO_OVERLAP);
 }
 
-inline void AABBBrush::setSingleModeMove() {
-	setMode(BRUSH_MODE_SINGLE_MOVE);
+inline void AABBBrush::setStrokeNoOverlap() {
+	setMode(BRUSH_MODE_STROKE_NO_OVERLAP);
 }
 
-inline bool AABBBrush::aabbMode() const {
-	return isMode(BRUSH_MODE_AABB);
+inline bool AABBBrush::boxMode() const {
+	return isMode(BRUSH_MODE_BOX);
 }
 
-inline void AABBBrush::setAABBMode() {
-	setMode(BRUSH_MODE_AABB);
+inline void AABBBrush::setBoxMode() {
+	setMode(BRUSH_MODE_BOX);
 }
 
 } // namespace voxedit

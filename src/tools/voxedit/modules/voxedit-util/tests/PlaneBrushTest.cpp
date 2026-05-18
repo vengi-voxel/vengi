@@ -30,7 +30,7 @@ protected:
 		_brushContext.cursorPosition = mins;
 		_brushContext.cursorFace = face;
 		EXPECT_TRUE(_brush.beginBrush(_brushContext));
-		ASSERT_FALSE(_brush.singleMode());
+		ASSERT_FALSE(_brush.strokeMode());
 		EXPECT_TRUE(_brush.active());
 		_brushContext.cursorPosition = maxs;
 	}

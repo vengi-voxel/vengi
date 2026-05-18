@@ -181,7 +181,7 @@ BENCHMARK_DEFINE_F(CircleSelectLargeBenchmark, Radius80)(benchmark::State &state
 	ctx.targetVolumeRegion = node->region();
 	ctx.cursorPosition = glm::ivec3(256 + 80, 0, 256);
 	voxedit::select::AABBBrushState brushState;
-	brushState.aabbMode = true;
+	brushState.boxMode = true;
 	brushState.aabbFace = voxel::FaceNames::PositiveY;
 	brushState.aabbFirstPos = glm::ivec3(256, 0, 256);
 	brushState.cursorPosition = ctx.cursorPosition;

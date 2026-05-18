@@ -64,7 +64,7 @@ protected:
 	bool testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Shape);
-		modifier.shapeBrush().setSingleMode();
+		modifier.shapeBrush().setStrokeMode();
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
@@ -98,7 +98,7 @@ protected:
 	bool testSetVoxelOnRealNode(const glm::ivec3 &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Shape);
-		modifier.shapeBrush().setSingleMode();
+		modifier.shapeBrush().setStrokeMode();
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
@@ -2093,7 +2093,7 @@ TEST_F(SceneManagerTest, testUndoInvalidatesAABBBrush) {
 
 	// undo - AABB mode should be cancelled
 	EXPECT_TRUE(_sceneMgr->undo());
-	EXPECT_FALSE(sb.aabbMode());
+	EXPECT_FALSE(sb.boxMode());
 }
 
 TEST_F(SceneManagerTest, testSplatMerge) {

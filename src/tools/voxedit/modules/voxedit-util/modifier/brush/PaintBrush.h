@@ -58,8 +58,8 @@ public:
 private:
 	using Super = AABBBrush;
 
-	float _factor = 1.0f;					   ///< Brightness factor for Brighten/Darken modes (1.0 = no change)
-	int _variationThreshold = 3;			   ///< 1 in N chance to apply variation
+	float _strength = 1.0f;					   ///< Brightness factor for Brighten/Darken modes (1.0 = no change)
+	int _variationChance = 3;			   ///< 1 in N chance to apply variation
 	PaintMode _paintMode = PaintMode::Replace; ///< Active paint mode
 
 	/**
@@ -67,7 +67,7 @@ private:
 	 */
 	enum PaintFlags : uint32_t {
 		/** Fill all connected voxels with the same color as the hit voxel */
-		BRUSH_MODE_PLANE = BRUSH_MODE_CUSTOM,
+		BRUSH_MODE_FLOOD_FILL = BRUSH_MODE_CUSTOM,
 		/** Create smooth gradient from hit color to cursor color */
 		BRUSH_MODE_GRADIENT = BRUSH_MODE_CUSTOM + 1
 	};
@@ -85,14 +85,14 @@ protected:
 		const voxel::Voxel _voxel;	 ///< Target color/voxel
 		palette::Palette &_palette;	 ///< Palette for color lookups and additions
 		const PaintMode _paintMode;	 ///< Active paint mode
-		float _factor = 1.0f;		 ///< Brightness factor
-		int _variationThreshold = 3; ///< Variation threshold
+		float _strength = 1.0f;		 ///< Brightness factor
+		int _variationChance = 3; ///< Variation threshold
 
 	public:
-		VoxelColor(palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor,
-				   int variationThreshold)
-			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _factor(factor),
-			  _variationThreshold(variationThreshold) {
+		VoxelColor(palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float strength,
+				   int variationChance)
+			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _strength(strength),
+			  _variationChance(variationChance) {
 		}
 
 		/**
@@ -118,21 +118,18 @@ public:
 	virtual ~PaintBrush() = default;
 
 	/**
-	 * @brief Override to disable AABB spanning in plane mode
-	 *
-	 * In plane mode, the brush immediately fills connected voxels without
-	 * requiring the user to span an AABB.
+	 * @brief Override to disable box spanning in flood fill mode
 	 */
-	bool wantAABB() const override;
+	bool wantBox() const override;
 
 	PaintMode paintMode() const;
 	void setPaintMode(PaintMode mode);
 
 	/**
-	 * @brief Enable plane fill mode - fill all connected voxels of the same color
+	 * @brief Enable flood fill mode - fill connected voxels of the same color on a face
 	 */
-	void setPlane();
-	bool plane() const;
+	void setFloodFill();
+	bool floodFill() const;
 
 	/**
 	 * @brief Enable gradient mode - smooth color transition across region
@@ -142,25 +139,25 @@ public:
 
 	/**
 	 * @brief Set the variation threshold (1 in N chance to modify)
-	 * @param[in] variationThreshold Value between 2 and 20
+	 * @param[in] variationChance Value between 2 and 20
 	 */
-	void setVariationThreshold(int variationThreshold);
-	int variationThreshold() const;
+	void setVariationChance(int variationChance);
+	int variationChance() const;
 
 	/**
 	 * @brief Set the brightness factor for Brighten/Darken modes
-	 * @param[in] factor Value between 0.1 and 10.0 (1.0 = no change)
+	 * @param[in] strength Value between 0.1 and 10.0 (1.0 = no change)
 	 */
-	void setFactor(float factor);
-	float factor() const;
+	void setStrength(float strength);
+	float strength() const;
 };
 
-inline int PaintBrush::variationThreshold() const {
-	return _variationThreshold;
+inline int PaintBrush::variationChance() const {
+	return _variationChance;
 }
 
-inline float PaintBrush::factor() const {
-	return _factor;
+inline float PaintBrush::strength() const {
+	return _strength;
 }
 
 inline PaintBrush::PaintMode PaintBrush::paintMode() const {
@@ -172,12 +169,12 @@ inline void PaintBrush::setPaintMode(PaintMode mode) {
 	markDirty();
 }
 
-inline bool PaintBrush::plane() const {
-	return isMode(BRUSH_MODE_PLANE);
+inline bool PaintBrush::floodFill() const {
+	return isMode(BRUSH_MODE_FLOOD_FILL);
 }
 
-inline void PaintBrush::setPlane() {
-	setMode(BRUSH_MODE_PLANE);
+inline void PaintBrush::setFloodFill() {
+	setMode(BRUSH_MODE_FLOOD_FILL);
 }
 
 inline bool PaintBrush::gradient() const {

@@ -106,7 +106,7 @@ bool ShapeBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	// Configure the shape brush via command (command is "shape" + type, e.g., "shapeaabb")
 	command::Command::execute(core::String::format("shape%s", shapeTypeStr.c_str()));
 	modifier.setBrushType(BrushType::Shape);
-	shapeBrush.setAABBMode();
+	shapeBrush.setBoxMode();
 
 	// Set up the AABB region
 	brushContext.cursorPosition = mins;
