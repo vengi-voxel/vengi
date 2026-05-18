@@ -305,6 +305,11 @@ void OptionsPanel::renderMeshExport() {
 	if (matchesVarFilter(cfg::VoxformatOptimize)) {
 		ImGui::CheckboxVar(cfg::VoxformatOptimize);
 	}
+	if (matchesVarFilter(cfg::VoxformatMeshSimplifyRatio)) {
+		ImGui::BeginDisabled(!core::getVar(cfg::VoxformatOptimize)->boolVal());
+		ImGui::InputVarFloat(cfg::VoxformatMeshSimplifyRatio);
+		ImGui::EndDisabled();
+	}
 }
 
 void OptionsPanel::renderVoxelImportExport() {

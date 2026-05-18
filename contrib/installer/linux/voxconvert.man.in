@@ -187,6 +187,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_mesh_simplify\fP: Simplify the mesh when voxelizing a mesh format
 .PP
+\fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when applying mesh optimization (0 = disable simplification)
+.PP
 \fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
 .PP
 \fBvoxformat_optimize\fP: Apply mesh optimization steps to meshes

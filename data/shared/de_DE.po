@@ -1405,6 +1405,14 @@ msgstr "Vereinfachen"
 msgid "Simplify the mesh when voxelizing a mesh format"
 msgstr "Vereinfache das Mesh bei der Voxelisierung eines Mesh-Formats"
 
+msgid "Mesh simplify ratio"
+msgstr ""
+
+msgid ""
+"Target fraction of triangle indices to keep when applying mesh optimization "
+"(0 = disable simplification)"
+msgstr ""
+
 msgid "Region filter"
 msgstr "Regionenfilter"
 

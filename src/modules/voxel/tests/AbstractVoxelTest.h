@@ -6,6 +6,7 @@
 
 #include "app/tests/AbstractTest.h"
 #include "math/Random.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxel/Region.h"
 #include <glm/geometric.hpp>
 
@@ -23,6 +24,7 @@ public:
 
 	void SetUp() override {
 		app::AbstractTest::SetUp();
+		voxelformat::FormatConfig::init();
 		_random.setSeed(_seed);
 	}
 

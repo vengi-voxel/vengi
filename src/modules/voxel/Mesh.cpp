@@ -7,6 +7,7 @@
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "meshoptimizer.h"
@@ -568,22 +569,45 @@ void Mesh::optimize() {
 	if (isEmpty()) {
 		return;
 	}
-#if 0
-	// TODO: https://github.com/vengi-voxel/vengi/issues/707
 	core_trace_scoped(MeshOptimize);
+
 	meshopt_optimizeVertexCache(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.size());
-	meshopt_optimizeOverdraw(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), &_vecVertices.data()->position.x, _vecVertices.size(), sizeof(VoxelVertex), 1.05f);
-	meshopt_optimizeVertexFetch(_vecVertices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.data(), _vecVertices.size(), sizeof(VoxelVertex));
-	const IndexArray oldIndices(_vecIndices);
-	const unsigned int options = meshopt_SimplifyPermissive;
-	const size_t newSize =
-		meshopt_simplify(_vecIndices.data(), oldIndices.data(), oldIndices.size(), &_vecVertices.data()->position.x,
-						 _vecVertices.size(), sizeof(VoxelVertex), oldIndices.size() / 2, 0.1f, options, nullptr);
-	Log::debug("newSize: %i, oldsize: %i", (int)newSize, (int)oldIndices.size());
-	_vecIndices.shrink(newSize);
-#else
-	Log::warn("Mesh optimization is currently disabled");
-#endif
+	meshopt_optimizeOverdraw(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), &_vecVertices.data()->position.x,
+							 _vecVertices.size(), sizeof(VoxelVertex), 1.05f);
+
+	const float simplifyRatio = core::getVar(cfg::VoxformatMeshSimplifyRatio)->floatVal();
+	const size_t oldIndexCount = _vecIndices.size();
+	if (simplifyRatio > 0.0f && simplifyRatio < 1.0f && oldIndexCount >= 9) {
+		const size_t vertexCount = _vecVertices.size();
+		constexpr size_t attributeCount = 3;
+		constexpr size_t attributeStride = attributeCount * sizeof(float);
+		static const float attributeWeights[attributeCount] = {10.0f, 2.0f, 2.0f};
+
+		core::Buffer<float> attributes(vertexCount * attributeCount);
+		for (size_t i = 0; i < vertexCount; ++i) {
+			const VoxelVertex &vertex = _vecVertices[i];
+			attributes[i * attributeCount + 0] = (float)vertex.colorIndex;
+			attributes[i * attributeCount + 1] = (float)vertex.ambientOcclusion;
+			attributes[i * attributeCount + 2] = (float)vertex.normalIndex;
+		}
+
+		const IndexArray oldIndices(_vecIndices);
+		const size_t targetIndexCount =
+			core_max((size_t)3, (size_t)((float)oldIndexCount * simplifyRatio));
+		const float targetError = 0.02f;
+		const unsigned int options = meshopt_SimplifyLockBorder;
+		float resultError = 0.0f;
+		const size_t newSize = meshopt_simplifyWithAttributes(
+			_vecIndices.data(), oldIndices.data(), oldIndexCount, &_vecVertices.data()->position.x, vertexCount,
+			sizeof(VoxelVertex), attributes.data(), attributeStride, attributeWeights, attributeCount, nullptr,
+			targetIndexCount, targetError, options, &resultError);
+		Log::debug("Mesh simplify: %i -> %i indices (target %i), error %f", (int)oldIndexCount, (int)newSize,
+				   (int)targetIndexCount, resultError);
+		_vecIndices.shrink(newSize);
+	}
+
+	meshopt_optimizeVertexFetch(_vecVertices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.data(),
+								_vecVertices.size(), sizeof(VoxelVertex));
 }
 
 } // namespace voxel
