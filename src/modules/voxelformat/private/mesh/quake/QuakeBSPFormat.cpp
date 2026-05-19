@@ -606,7 +606,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	return state;
 }
 
-bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::Buffer<Face> &faces,
+bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
 							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
 							  const core::Buffer<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
 							  const core::String &name, const MeshMaterialArray &meshMaterialArray) {

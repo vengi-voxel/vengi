@@ -3314,8 +3314,8 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 		r.accumulate(v->region());
 		setSceneGraphNodeVolume(*node, newVolume);
 		modified(groupNodeId, r);
-		for (const auto &kfAnim : node->allKeyFrames()) {
-			for (auto &kf : kfAnim->second) {
+		for (auto *kfAnim : node->allKeyFrames()) {
+			for (auto &kf : kfAnim->value) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
 				transform.rotate(axis);
 			}
@@ -3377,8 +3377,8 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 		setSceneGraphNodeVolume(node, newVolume);
 		modified(node.id(), r);
 
-		for (const auto &kfAnim : node.allKeyFrames()) {
-			for (auto &kf : kfAnim->second) {
+		for (auto *kfAnim : node.allKeyFrames()) {
+			for (auto &kf : kfAnim->value) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
 				// Rotate the volume's world-space center around the scene pivot,
 				// then back-compute the new translation so the center lands correctly.

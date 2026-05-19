@@ -73,14 +73,14 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 
 void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
-									  const scenegraph::SceneGraphNode &node) {
+									  scenegraph::SceneGraphNode &node) {
 	const char *icon = nodeIcon(node.type());
 	const core::String &label = core::String::format("%s %s###node-%i", icon, node.name().c_str(), node.id());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		bool keyFrameChanged = false;
-		for (scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
+		for (scenegraph::SceneGraphKeyFrame &kf : *node.keyFrames()) {
 			int32_t oldFrameIdx = kf.frameIdx;
 			ImGui::NeoKeyframe(&kf.frameIdx);
 			if (kf.frameIdx < 0) {
@@ -173,7 +173,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		clipper.Begin((int)displayNodes.size());
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-				const scenegraph::SceneGraphNode &node = sceneGraph.node(displayNodes[i]);
+				scenegraph::SceneGraphNode &node = sceneGraph.node(displayNodes[i]);
 				timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);
 			}
 		}

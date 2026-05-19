@@ -688,6 +688,16 @@ const SceneGraphKeyFrames &SceneGraphNode::keyFrames(const core::String &anim) c
 	return iter->value;
 }
 
+SceneGraphKeyFrames &SceneGraphNode::keyFrames(const core::String &anim) {
+	static SceneGraphKeyFrames kfDummy{SceneGraphKeyFrame{}};
+	auto iter = _keyFramesMap.find(anim);
+	if (iter == _keyFramesMap.end()) {
+		Log::error("No keyframes for animation '%s'", anim.c_str());
+		return kfDummy;
+	}
+	return iter->value;
+}
+
 SceneGraphKeyFrames *SceneGraphNode::keyFrames() {
 	return _keyFrames;
 }

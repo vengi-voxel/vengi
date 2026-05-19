@@ -127,6 +127,77 @@ public:
 		return _size == 0u;
 	}
 
+	class const_iterator {
+	private:
+		const TYPE* _ptr;
+	public:
+		constexpr const_iterator() :
+			_ptr(nullptr) {
+		}
+
+		const_iterator(const TYPE *ptr) :
+			_ptr(ptr) {
+		}
+
+		inline const TYPE& operator*() const {
+			return *_ptr;
+		}
+
+		const_iterator& operator++() {
+			++_ptr;
+			return *this;
+		}
+
+		const_iterator operator++(int) {
+			return const_iterator(_ptr++);
+		}
+
+		const_iterator operator--(int) {
+			return const_iterator(_ptr--);
+		}
+
+		int operator-(const_iterator rhs) const {
+			return (int)(intptr_t)(_ptr - rhs._ptr);
+		}
+
+		const_iterator& operator+(size_t n) {
+			_ptr += n;
+			return *this;
+		}
+
+		const_iterator& operator+=(size_t n) {
+			_ptr += n;
+			return *this;
+		}
+
+		const_iterator& operator--() {
+			--_ptr;
+			return *this;
+		}
+
+		const_iterator& operator-(size_t n) {
+			_ptr -= n;
+			return *this;
+		}
+
+		const_iterator& operator-=(size_t n) {
+			_ptr -= n;
+			return *this;
+		}
+
+		inline const TYPE* operator->() const {
+			return _ptr;
+		}
+
+		inline bool operator!=(const const_iterator& rhs) const {
+			return _ptr != rhs._ptr;
+		}
+
+		inline bool operator==(const const_iterator& rhs) const {
+			return _ptr == rhs._ptr;
+		}
+	};
+
 	class iterator {
 	private:
 		TYPE* _ptr;
@@ -161,6 +232,10 @@ public:
 		}
 
 		int operator-(iterator rhs) const {
+			return (int)(intptr_t)(_ptr - rhs._ptr);
+		}
+
+		int operator-(const_iterator rhs) const {
 			return (int)(intptr_t)(_ptr - rhs._ptr);
 		}
 
@@ -204,8 +279,19 @@ public:
 		inline bool operator==(const iterator& rhs) const {
 			return _ptr == rhs._ptr;
 		}
+
+		inline bool operator!=(const const_iterator& rhs) const {
+			return _ptr != rhs._ptr;
+		}
+
+		inline bool operator==(const const_iterator& rhs) const {
+			return _ptr == rhs._ptr;
+		}
+
+		operator const_iterator() const {
+			return const_iterator(_ptr);
+		}
 	};
-	using const_iterator = iterator;
 
 	void push_front(const TYPE& val) {
 		insert(begin(), &val, 1);
@@ -453,12 +539,28 @@ public:
 		return _capacity;
 	}
 
-	CORE_FORCE_INLINE iterator begin() const {
+	CORE_FORCE_INLINE iterator begin() {
 		return iterator(_buffer);
 	}
 
-	CORE_FORCE_INLINE iterator end() const {
+	CORE_FORCE_INLINE iterator end() {
 		return iterator(_buffer + _size);
+	}
+
+	CORE_FORCE_INLINE const_iterator begin() const {
+		return const_iterator(_buffer);
+	}
+
+	CORE_FORCE_INLINE const_iterator end() const {
+		return const_iterator(_buffer + _size);
+	}
+
+	CORE_FORCE_INLINE const_iterator cbegin() const {
+		return begin();
+	}
+
+	CORE_FORCE_INLINE const_iterator cend() const {
+		return end();
 	}
 
 	CORE_FORCE_INLINE const TYPE& operator[](size_t idx) const {
@@ -477,8 +579,12 @@ private:
 			return 0;
 		}
 		const TYPE* ptr = iter.operator->();
-		const size_t idx = ptr - begin().operator->();
+		const size_t idx = (size_t)(ptr - data());
 		return idx;
+	}
+
+	CORE_FORCE_INLINE constexpr size_t index(iterator iter) {
+		return index(static_cast<const_iterator>(iter));
 	}
 };
 

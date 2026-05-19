@@ -337,6 +337,19 @@ TEST(BufferTest, testInsertIteratorDistance) {
 	EXPECT_EQ(6, other.end() - other.begin());
 }
 
+TEST(BufferTest, testConstIterator) {
+	Buffer<int> array;
+	array.push_back(1);
+	array.push_back(2);
+	const Buffer<int>& cref = array;
+	static_assert(core::is_same<decltype(*cref.begin()), const int&>::value, "const_iterator must yield const reference");
+	int sum = 0;
+	for (Buffer<int>::const_iterator it = cref.begin(); it != cref.end(); ++it) {
+		sum += *it;
+	}
+	EXPECT_EQ(3, sum);
+}
+
 TEST(BufferTest, testInsertIteratorOperatorInt) {
 	const BufferStruct buf[] = {
 		BufferStruct(0),
