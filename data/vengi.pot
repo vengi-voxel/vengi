@@ -1810,6 +1810,52 @@ msgstr ""
 msgid "Delete %i keyframes"
 msgstr ""
 
+msgid "Color picker"
+msgstr ""
+
+msgid "Place"
+msgstr ""
+
+msgid "Erase"
+msgstr ""
+
+msgid "Override"
+msgstr ""
+
+msgid "Paint"
+msgstr ""
+
+msgid "Normal paint"
+msgstr ""
+
+msgid "No brush"
+msgstr ""
+
+msgid "Click on a voxel to pick the color"
+msgstr ""
+
+msgid "Click a voxel face to set extrusion direction"
+msgstr ""
+
+msgid "Select voxels first (Select brush)"
+msgstr ""
+
+msgid "Select voxels, then switch to Sculpt"
+msgstr ""
+
+msgid "Click a voxel face to set direction"
+msgstr ""
+
+msgid "Brushes"
+msgstr ""
+
+msgid ""
+"Brushes are only available in edit mode - you are currently in scene mode"
+msgstr ""
+
+msgid "Brush settings"
+msgstr ""
+
 msgctxt "Reskin Modes"
 msgid "Blend"
 msgstr ""
@@ -1900,412 +1946,6 @@ msgstr ""
 
 msgctxt "Scale Sampling"
 msgid "Cubic"
-msgstr ""
-
-msgid "Thickness"
-msgstr ""
-
-msgid "Disable mirror"
-msgstr ""
-
-msgid "Use selection"
-msgstr ""
-
-msgid "Model"
-msgstr ""
-
-msgid "Select a model from the asset panel or scene graph panel"
-msgstr ""
-
-msgid "Center"
-msgstr ""
-
-msgid "Continuous"
-msgstr ""
-
-msgid "Offset"
-msgstr ""
-
-msgid "Replace"
-msgstr ""
-
-msgid "Replace all voxels in the stamp with the selected color"
-msgstr ""
-
-msgid "Rotate on axis"
-msgstr ""
-
-msgid "Reduce size"
-msgstr ""
-
-msgid "Extrude voxels"
-msgstr ""
-
-msgid "Erase voxels"
-msgstr ""
-
-msgid "Override voxels"
-msgstr ""
-
-msgid "Draws a line from the reference position to the current cursor position"
-msgstr ""
-
-msgid "Bezier"
-msgstr ""
-
-msgid ""
-"First click locks the segment end, the gizmo edits its control point, and "
-"pending segments commit when you apply or leave the brush"
-msgstr ""
-
-msgid "Pending segments"
-msgstr ""
-
-msgid "Segment"
-msgstr ""
-
-#, c-format
-msgid "Segment %i"
-msgstr ""
-
-msgid "Select a pending segment to edit its control point with the gizmo"
-msgstr ""
-
-msgid "Stipple Pattern:"
-msgstr ""
-
-msgid "Length of the stipple pattern <= 1 to disable"
-msgstr ""
-
-msgid "Rescan"
-msgstr ""
-
-msgid "Use reference position"
-msgstr ""
-
-msgid "Measure the distance from the reference position to the cursor"
-msgstr ""
-
-msgid "Click two points to measure the distance between them"
-msgstr ""
-
-msgid "Measurement"
-msgstr ""
-
-msgid "Start"
-msgstr ""
-
-msgid "End"
-msgstr ""
-
-msgid "Delta"
-msgstr ""
-
-#, c-format
-msgid "Length: %.2f"
-msgstr ""
-
-#, c-format
-msgid "Manhattan: %i"
-msgstr ""
-
-msgid "Selection bounds"
-msgstr ""
-
-msgid "Min"
-msgstr ""
-
-msgid "Max"
-msgstr ""
-
-#, c-format
-msgid "Size: %d x %d x %d"
-msgstr ""
-
-msgid "Circle selection"
-msgstr ""
-
-#, c-format
-msgid "Radius %s"
-msgstr ""
-
-#, c-format
-msgid "Depth %s"
-msgstr ""
-
-msgid ""
-"How far from the center the selection extends along the face-normal axis (0 "
-"= single layer)"
-msgstr ""
-
-msgid "3D ellipsoid"
-msgstr ""
-
-msgid ""
-"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
-"a 2D ellipse with depth"
-msgstr ""
-
-msgid "Paint selection"
-msgstr ""
-
-msgid "Radius"
-msgstr ""
-
-msgid "Brush radius for paint selection. Hold mouse and drag to select voxels."
-msgstr ""
-
-msgid "Grow region"
-msgstr ""
-
-msgid ""
-"Only select voxels adjacent to already-selected voxels. Useful for expanding "
-"an existing selection."
-msgstr ""
-
-msgid "Threshold"
-msgstr ""
-
-msgid ""
-"Color distance threshold for fuzzy matching (0 = exact, higher = more "
-"similar colors)"
-msgstr ""
-
-msgid "Accepted deviation"
-msgstr ""
-
-msgid ""
-"How many voxels above or below the clicked face the fill may deviate from "
-"the start position"
-msgstr ""
-
-msgid "Lasso selection"
-msgstr ""
-
-msgid "Click and drag to draw a selection polygon"
-msgstr ""
-
-msgid "Selection actions"
-msgstr ""
-
-msgid "Select Only Color"
-msgstr ""
-
-msgid "Color Selected"
-msgstr ""
-
-msgid "Deselect Color"
-msgstr ""
-
-msgid "Enable normal rendering to see your changes"
-msgstr ""
-
-msgid "Mode"
-msgstr ""
-
-msgid "None"
-msgstr ""
-
-msgid "Texture"
-msgstr ""
-
-msgid "Project onto surface"
-msgstr ""
-
-msgid "UV0"
-msgstr ""
-
-msgid "UV1"
-msgstr ""
-
-msgid "Convert palette"
-msgstr ""
-
-msgid "Default"
-msgstr ""
-
-msgid "Single"
-msgstr ""
-
-msgid "Single Move"
-msgstr ""
-
-msgid "Use a radius around the current voxel - 0 for spanning a region"
-msgstr ""
-
-msgid "Clamping"
-msgstr ""
-
-msgid "Clamp the brush to the volume"
-msgstr ""
-
-msgid "Text"
-msgstr ""
-
-msgid "Horizontal spacing"
-msgstr ""
-
-msgid "Font"
-msgstr ""
-
-msgid "Factor"
-msgstr ""
-
-msgid "Variation threshold"
-msgstr ""
-
-msgid "Paint the selected plane"
-msgstr ""
-
-msgid "Gradient"
-msgstr ""
-
-msgid "UV editor"
-msgstr ""
-
-msgid "Click a voxel face in the viewport to set the extrusion direction"
-msgstr ""
-
-#, c-format
-msgid "Direction: %s"
-msgstr ""
-
-msgid "No selection active - use the Select brush first"
-msgstr ""
-
-msgid "Depth"
-msgstr ""
-
-msgid "Fill walls"
-msgstr ""
-
-#, c-format
-msgid "Offset %s"
-msgstr ""
-
-msgid "Maintain aspect ratio"
-msgstr ""
-
-msgid "Uniform"
-msgstr ""
-
-#, c-format
-msgid "Original: %i x %i x %i"
-msgstr ""
-
-msgid "Sampling"
-msgstr ""
-
-msgid "Select voxels first, then switch to sculpt"
-msgstr ""
-
-msgid "Sculpt mode"
-msgstr ""
-
-msgid "Click a voxel face in the viewport to set the direction"
-msgstr ""
-
-msgid "Height threshold"
-msgstr ""
-
-msgid "Preserve top height"
-msgstr ""
-
-msgid "Trim per step"
-msgstr ""
-
-msgid "Kernel size"
-msgstr ""
-
-msgid "Sigma"
-msgstr ""
-
-msgid "Copy voxels to clipboard or load a skin file"
-msgstr ""
-
-msgid "Load skin"
-msgstr ""
-
-msgid "Reload"
-msgstr ""
-
-msgid "Skin up axis"
-msgstr ""
-
-msgid ""
-"Which axis of the skin points outward from the surface. Set to Y if your "
-"skin was built with the pattern facing up."
-msgstr ""
-
-msgid "Reskin mode"
-msgstr ""
-
-msgid "Follow surface"
-msgstr ""
-
-msgid "Anchor"
-msgstr ""
-
-msgid "Rotation"
-msgstr ""
-
-msgid "Tile"
-msgstr ""
-
-msgid "Mirror U"
-msgstr ""
-
-msgid "Mirror V"
-msgstr ""
-
-msgid "Offset U"
-msgstr ""
-
-msgid "Offset V"
-msgstr ""
-
-msgid "Surface offset"
-msgstr ""
-
-msgid "Positive = skin floats above surface, negative = sinks below"
-msgstr ""
-
-msgid "Skin layers"
-msgstr ""
-
-msgid "Invert skin"
-msgstr ""
-
-msgid "Brush radius"
-msgstr ""
-
-msgid "Extend only"
-msgstr ""
-
-msgid "Remove above"
-msgstr ""
-
-msgid ""
-"Perpendicular depth of voxels to remove above the plane (0 = no removal)"
-msgstr ""
-
-msgid "Strength"
-msgstr ""
-
-msgid "Iterations"
-msgstr ""
-
-msgid "Brush settings"
-msgstr ""
-
-msgid "Click on a voxel to pick the color"
-msgstr ""
-
-msgid "Brush"
-msgstr ""
-
-msgid ""
-"Brushes are only available in edit mode - you are currently in scene mode"
 msgstr ""
 
 msgid "Add new camera"
@@ -2435,6 +2075,9 @@ msgstr ""
 msgid "The amount to increment/decrement the width"
 msgstr ""
 
+msgid "Iterations"
+msgstr ""
+
 msgid "The number of iterations to run"
 msgstr ""
 
@@ -2518,6 +2161,9 @@ msgstr ""
 msgid "Height"
 msgstr ""
 
+msgid "Depth"
+msgstr ""
+
 msgid "Failed to save"
 msgstr ""
 
@@ -2564,6 +2210,13 @@ msgid "Size: %ix%ix%i"
 msgstr ""
 
 msgid "Rescale content"
+msgstr ""
+
+#, c-format
+msgid "Original: %i x %i x %i"
+msgstr ""
+
+msgid "Maintain aspect ratio"
 msgstr ""
 
 msgid "Target size"
@@ -2691,10 +2344,22 @@ msgstr ""
 msgid "Select"
 msgstr ""
 
+msgid "None"
+msgstr ""
+
 msgid "Invert"
 msgstr ""
 
 msgid "All"
+msgstr ""
+
+msgid "Paint selection"
+msgstr ""
+
+msgid "Deselect by color"
+msgstr ""
+
+msgid "Select by color"
 msgstr ""
 
 msgid "Select Only Edges"
@@ -2889,6 +2554,9 @@ msgstr ""
 msgid "Translation"
 msgstr ""
 
+msgid "Rotation"
+msgstr ""
+
 msgid "Scale"
 msgstr ""
 
@@ -2902,6 +2570,9 @@ msgid "IK Constraints"
 msgstr ""
 
 msgid "Enable IK"
+msgstr ""
+
+msgid "Anchor"
 msgstr ""
 
 msgid "Mark this node as a fixed point in the IK chain"
@@ -2929,6 +2600,9 @@ msgid "Yaw"
 msgstr ""
 
 msgid "Pitch"
+msgstr ""
+
+msgid "Radius"
 msgstr ""
 
 msgid "Add swing limit"
@@ -3592,6 +3266,9 @@ msgstr ""
 msgid "Script Editor"
 msgstr ""
 
+msgid "Reload"
+msgstr ""
+
 #, c-format
 msgid "Overwrite scripts/%s"
 msgstr ""
@@ -3771,6 +3448,9 @@ msgstr ""
 msgid "Rotate by 90 degree on the z axis"
 msgstr ""
 
+msgid "Rotate on axis"
+msgstr ""
+
 msgid "Flip on axis"
 msgstr ""
 
@@ -3810,10 +3490,32 @@ msgstr ""
 msgid "Show gizmo for brushes that support it"
 msgstr ""
 
+msgid "Show brush status and hints in the viewport"
+msgstr ""
+
 msgid "Simple"
 msgstr ""
 
 msgid "Minecraft Skin"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Scene jobs"
+msgstr ""
+
+msgid "Abort"
+msgstr ""
+
+#, c-format
+msgid "Pending: %i"
+msgstr ""
+
+msgid "Clear pending"
+msgstr ""
+
+msgid "Abort all"
 msgstr ""
 
 #, c-format
@@ -3843,7 +3545,7 @@ msgstr ""
 msgid "Slice view"
 msgstr ""
 
-msgid "Loading"
+msgid "Working"
 msgstr ""
 
 msgid "Lines"
@@ -3923,6 +3625,18 @@ msgstr ""
 msgid "Logout"
 msgstr ""
 
+msgid "API key (refresh token)"
+msgstr ""
+
+msgid "Connect"
+msgstr ""
+
+msgid "API key is empty"
+msgstr ""
+
+msgid "Use password"
+msgstr ""
+
 msgid "Password"
 msgstr ""
 
@@ -3930,6 +3644,9 @@ msgid "Login"
 msgstr ""
 
 msgid "Login failed"
+msgstr ""
+
+msgid "Use API key"
 msgstr ""
 
 msgid "Fetching models..."
@@ -3999,6 +3716,445 @@ msgstr ""
 msgid "Update on VoxBox..."
 msgstr ""
 
+msgid "Click a voxel face in the viewport to set the extrusion direction"
+msgstr ""
+
+#, c-format
+msgid "Direction: %s"
+msgstr ""
+
+msgid "No selection active - use the Select brush first"
+msgstr ""
+
+msgid "Fill walls"
+msgstr ""
+
+#, c-format
+msgid "Offset %s"
+msgstr ""
+
+msgid "Draws a line from the reference position to the current cursor position"
+msgstr ""
+
+msgid "Continuous"
+msgstr ""
+
+msgid "Bezier"
+msgstr ""
+
+msgid ""
+"First click locks the segment end, the gizmo edits its control point, and "
+"pending segments commit when you apply or leave the brush"
+msgstr ""
+
+msgid "Thickness"
+msgstr ""
+
+msgid "Sag"
+msgstr ""
+
+msgid "Downward sag in voxels for rope/cable effect"
+msgstr ""
+
+msgid "Pending segments"
+msgstr ""
+
+msgid "Segment"
+msgstr ""
+
+#, c-format
+msgid "Segment %i"
+msgstr ""
+
+msgid "Select a pending segment to edit its control point with the gizmo"
+msgstr ""
+
+msgid "Stipple pattern"
+msgstr ""
+
+msgid ""
+"Click cells to toggle: dash places a voxel, gap skips. Pattern length <= 1 "
+"disables stippling"
+msgstr ""
+
+msgid "Enable normal rendering to see your changes"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Strength"
+msgstr ""
+
+msgid "Amount of brighten or darken to apply"
+msgstr ""
+
+msgid "Variation chance (1 in N)"
+msgstr ""
+
+msgid "Each voxel has a 1 in N chance to be varied"
+msgstr ""
+
+msgid "Flood fill"
+msgstr ""
+
+msgid "Fill connected voxels of the same color on the clicked face"
+msgstr ""
+
+msgid "Gradient"
+msgstr ""
+
+msgid "Blend from the hit color to the cursor color across the box"
+msgstr ""
+
+msgid "Fill the clicked face, or drag to extrude the plane"
+msgstr ""
+
+msgid "Erase voxels on the clicked face, or drag to extrude"
+msgstr ""
+
+msgid "Recolor voxels on the clicked face, or drag to extrude"
+msgstr ""
+
+msgid "Use reference position"
+msgstr ""
+
+msgid "Measure the distance from the reference position to the cursor"
+msgstr ""
+
+msgid "Click two points to measure the distance between them"
+msgstr ""
+
+msgid "Measurement"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "End"
+msgstr ""
+
+msgid "Delta"
+msgstr ""
+
+#, c-format
+msgid "Length: %.2f"
+msgstr ""
+
+#, c-format
+msgid "Manhattan: %i"
+msgstr ""
+
+msgid "Grid distance: sum of steps along each axis"
+msgstr ""
+
+msgid "Rescan"
+msgstr ""
+
+msgid "Select voxels first, then switch to sculpt"
+msgstr ""
+
+msgid "Sculpt mode"
+msgstr ""
+
+msgid "Click a voxel face in the viewport to set the direction"
+msgstr ""
+
+msgid "Height threshold"
+msgstr ""
+
+msgid "Preserve top height"
+msgstr ""
+
+msgid "Trim per step"
+msgstr ""
+
+msgid "Kernel size"
+msgstr ""
+
+msgid "Sigma"
+msgstr ""
+
+msgid "Copy voxels to clipboard or load a skin file"
+msgstr ""
+
+msgid "Load skin"
+msgstr ""
+
+msgid "Skin up axis"
+msgstr ""
+
+msgid ""
+"Which axis of the skin points outward from the surface. Set to Y if your "
+"skin was built with the pattern facing up."
+msgstr ""
+
+msgid "Reskin mode"
+msgstr ""
+
+msgid "Follow surface"
+msgstr ""
+
+msgid "Tile"
+msgstr ""
+
+msgid "Mirror U"
+msgstr ""
+
+msgid "Mirror V"
+msgstr ""
+
+msgid "Offset U"
+msgstr ""
+
+msgid "Offset V"
+msgstr ""
+
+msgid "Surface offset"
+msgstr ""
+
+msgid "Positive = skin floats above surface, negative = sinks below"
+msgstr ""
+
+msgid "Skin layers"
+msgstr ""
+
+msgid "Invert skin"
+msgstr ""
+
+msgid "Brush radius"
+msgstr ""
+
+msgid "Extend only"
+msgstr ""
+
+msgid "Remove above"
+msgstr ""
+
+msgid ""
+"Perpendicular depth of voxels to remove above the plane (0 = no removal)"
+msgstr ""
+
+msgid "Selection bounds"
+msgstr ""
+
+msgid "Min"
+msgstr ""
+
+msgid "Max"
+msgstr ""
+
+#, c-format
+msgid "Size: %d x %d x %d"
+msgstr ""
+
+msgid "Circle selection"
+msgstr ""
+
+msgid "Center"
+msgstr ""
+
+#, c-format
+msgid "Radius %s"
+msgstr ""
+
+#, c-format
+msgid "Depth %s"
+msgstr ""
+
+msgid ""
+"How far from the center the selection extends along the face-normal axis (0 "
+"= single layer)"
+msgstr ""
+
+msgid "3D ellipsoid"
+msgstr ""
+
+msgid ""
+"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
+"a 2D ellipse with depth"
+msgstr ""
+
+msgid "Brush selection"
+msgstr ""
+
+msgid ""
+"Radius of the round selection brush. Hold the mouse button and drag to "
+"select."
+msgstr ""
+
+msgid "Grow region"
+msgstr ""
+
+msgid ""
+"Only select voxels adjacent to already-selected voxels. Useful for expanding "
+"an existing selection."
+msgstr ""
+
+msgid "Threshold"
+msgstr ""
+
+msgid ""
+"Color distance threshold for fuzzy matching (0 = exact, higher = more "
+"similar colors)"
+msgstr ""
+
+msgid "Surface deviation"
+msgstr ""
+
+msgid ""
+"How many voxels above or below the clicked face the fill may deviate from "
+"the start position"
+msgstr ""
+
+msgid "Lasso selection"
+msgstr ""
+
+msgid "Click and drag to draw a selection polygon"
+msgstr ""
+
+msgid "Selection actions"
+msgstr ""
+
+msgid "Use selection"
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "Select a model from the asset panel or scene graph panel"
+msgstr ""
+
+msgid "Offset"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Replace all voxels in the stamp with the selected color"
+msgstr ""
+
+msgid "Rotate 90"
+msgstr ""
+
+msgid "Crop stamp"
+msgstr ""
+
+msgid "Convert palette"
+msgstr ""
+
+msgid "Text"
+msgstr ""
+
+msgid "Horizontal spacing"
+msgstr ""
+
+msgid "Font"
+msgstr ""
+
+msgid "Font to use for rendering text"
+msgstr ""
+
+msgid "Texture"
+msgstr ""
+
+msgid "Project onto surface"
+msgstr ""
+
+msgid "UV min"
+msgstr ""
+
+msgid "Lower-left corner of the texture on the brush"
+msgstr ""
+
+msgid "UV max"
+msgstr ""
+
+msgid "Upper-right corner of the texture on the brush"
+msgstr ""
+
+msgid "UV editor"
+msgstr ""
+
+msgid "Uniform"
+msgstr ""
+
+msgid "Sampling"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "Box"
+msgstr ""
+
+msgid "Stroke"
+msgstr ""
+
+msgid "No overlap"
+msgstr ""
+
+msgid "Use a radius around the current voxel - 0 for spanning a box"
+msgstr ""
+
+msgid "Clamp to volume"
+msgstr ""
+
+msgid "Keep the brush inside the active volume bounds"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Scene job"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Cropping"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Scaling up"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Scaling down"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Resizing"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Filling"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Clearing"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Deleting selected voxels"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Hollowing"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Filling hollow voxels"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Splitting objects"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Moving color to model"
+msgstr ""
+
+msgctxt "SceneJob"
+msgid "Splat merging"
+msgstr ""
+
 msgid "merged_temp"
 msgstr ""
 
@@ -4009,9 +4165,6 @@ msgid "Use the color wheel in the palette color editing"
 msgstr ""
 
 msgid "Always show the color picker below the palette"
-msgstr ""
-
-msgid "Color picker"
 msgstr ""
 
 msgid "Milliseconds that a region should get highlighted in a few situations"
@@ -4166,6 +4319,9 @@ msgid "Brush gizmo"
 msgstr ""
 
 msgid "Show the gizmo for brushes that support it"
+msgstr ""
+
+msgid "Brush HUD"
 msgstr ""
 
 msgid "Last palette"
@@ -4607,6 +4763,9 @@ msgstr ""
 msgid "Disconnect from the current voxedit server"
 msgstr ""
 
+msgid "Cancelling"
+msgstr ""
+
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
 msgstr ""
 
@@ -4675,7 +4834,7 @@ msgid "The maximum size of the preview volume"
 msgstr ""
 
 msgctxt "ShapeType"
-msgid "AABB"
+msgid "Box"
 msgstr ""
 
 msgctxt "ShapeType"
@@ -4702,20 +4861,16 @@ msgctxt "ShapeType"
 msgid "Circle"
 msgstr ""
 
-msgid "Set center plane building"
+msgid "Grow the box from the first click as the center"
 msgstr ""
 
-msgid "Set default aabb voxel building mode"
+msgid "Click and drag to define a box of voxels"
 msgstr ""
 
-msgid ""
-"Set single voxel building mode - continue setting voxels until you release "
-"the action button"
+msgid "Place voxels along the cursor while the action button is held"
 msgstr ""
 
-msgid ""
-"Set single voxel building mode - continue setting voxels until you release "
-"the action button - but don't overwrite the last voxel"
+msgid "Like stroke mode, but do not replace the same voxel twice"
 msgstr ""
 
 msgid "Mirror along the x axis at the reference position"
@@ -4727,7 +4882,7 @@ msgstr ""
 msgid "Mirror along the z axis at the reference position"
 msgstr ""
 
-msgid "Disable mirror axis"
+msgid "Turn off mirroring"
 msgstr ""
 
 msgid "Toggle continuous line drawing"
@@ -4830,11 +4985,11 @@ msgid "Circle"
 msgstr ""
 
 msgctxt "SelectMode"
-msgid "Lasso"
+msgid "Brush select"
 msgstr ""
 
 msgctxt "SelectMode"
-msgid "Paint"
+msgid "Lasso"
 msgstr ""
 
 msgctxt "SelectMode"
