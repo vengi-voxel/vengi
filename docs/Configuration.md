@@ -121,6 +121,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_imagesliceoffset`                         | The offset of the slices when importing images as volumes or heightmaps            | 0            |
 | `voxformat_imagevolumemaxdepth`                      | The maximum depth of the volume when importing an image as volume                  | 1            |
 | `voxformat_imagevolumebothsides`                     | Import the image as volume for both sides                                          | true/false   |
+| `voxformat_ldrawdir`          | Path to the LDraw parts library directory for resolving part references                  |              |
 | `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 | true/false   |
 | `voxformat_merge`             | Merge all models into one object                                                         | true/false   |
 | `voxformat_mesh_simplify`     | Simplify the mesh before voxelizing it                                                   | true/false   |

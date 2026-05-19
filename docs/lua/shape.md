@@ -8,7 +8,7 @@ Global: `g_shape`
 | -------- | ----------- |
 | `bezier(volume, start, end, control, color, thickness)` | Draw a quadratic bezier curve in the volume. |
 | `bezierSegment(volume, start, end, control, color, pattern)` | Draw a stippled quadratic bezier segment in the volume. |
-| `circle(volume, centerBottom, axis, radius, height, thickness, color)` | Create a hollow cylinder (tube) shape in the volume. |
+| `circle(volume, centerBottom, axis, width, height, depth, thickness, color)` | Create a hollow cylinder (tube) shape in the volume. |
 | `cone(volume, centerBottom, axis, negative, width, height, depth, color)` | Create a cone shape in the volume. |
 | `cube(volume, position, width, height, depth, color)` | Create a cube shape in the volume. |
 | `cylinder(volume, centerBottom, axis, radius, height, color)` | Create a cylinder shape in the volume. |
@@ -16,7 +16,7 @@ Global: `g_shape`
 | `ellipse(volume, centerBottom, axis, width, height, depth, color)` | Create an ellipse (filled oval) shape in the volume. |
 | `line(volume, start, end, color, thickness)` | Draw a line between two points in the volume. |
 | `stippledLine(volume, start, end, color, pattern, skipFirst)` | Draw a stippled line between two points in the volume. |
-| `torus(volume, center, minorRadius, majorRadius, color)` | Create a torus shape in the volume. |
+| `torus(volume, center, axis, width, height, depth, minorRadius, color)` | Create a torus shape in the volume. |
 
 ## Detailed Documentation
 
@@ -61,8 +61,9 @@ Create a hollow cylinder (tube) shape in the volume.
 | `volume` | `volume` | The volume to draw in. |
 | `centerBottom` | `vec3` | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
-| `radius` | `integer` | The outer radius of the cylinder. |
+| `width` | `integer` | The width of the ellipse cross-section. |
 | `height` | `integer` | The height of the cylinder. |
+| `depth` | `integer` | The depth of the ellipse cross-section. |
 | `thickness` | `integer` | The wall thickness in voxels (optional, default 1). |
 | `color` | `integer` | The color index (optional, default 1). |
 
@@ -185,7 +186,10 @@ Create a torus shape in the volume.
 | ---- | ---- | ----------- |
 | `volume` | `volume` | The volume to draw in. |
 | `center` | `ivec3` | The center position. |
-| `minorRadius` | `integer` | The minor (tube) radius. |
-| `majorRadius` | `integer` | The major (ring) radius. |
+| `axis` | `string` | The axis perpendicular to the torus ring plane: 'x', 'y', or 'z' (default 'y'). |
+| `width` | `integer` | The width of the bounding box. |
+| `height` | `integer` | The height of the bounding box. |
+| `depth` | `integer` | The depth of the bounding box. |
+| `minorRadius` | `integer` | The minor (tube) radius (optional, 0 = auto). |
 | `color` | `integer` | The color index (optional, default 1). |
 

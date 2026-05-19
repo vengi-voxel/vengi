@@ -6,7 +6,7 @@ Global: `g_algorithm`
 
 | Function | Description |
 | -------- | ----------- |
-| `genland(seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetX, offsetZ, shadow, river, ambience)` | Generate procedural terrain. |
+| `genland(seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetX, offsetZ, shadow, river, ambience, groundColor, grassColor, grass2Color, waterColor)` | Generate procedural terrain. |
 | `shadow(volume, lightStep)` | Add shadow coloring to a volume. |
 
 ## Detailed Documentation
@@ -34,6 +34,10 @@ Generate procedural terrain.
 | `shadow` | `boolean` | Add shadows (optional, default true). |
 | `river` | `boolean` | Add rivers (optional, default true). |
 | `ambience` | `boolean` | Add ambient effects (optional, default true). |
+| `groundColor` | `integer` | Ground color palette index (optional). |
+| `grassColor` | `integer` | Grass color palette index (optional). |
+| `grass2Color` | `integer` | Secondary grass color palette index (optional). |
+| `waterColor` | `integer` | Water color palette index (optional). |
 
 **Returns:**
 
