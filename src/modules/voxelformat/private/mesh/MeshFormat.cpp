@@ -601,7 +601,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	node.setNormalPalette(normalPalette);
 
 	const bool fillHollow = core::getVar(cfg::VoxformatFillHollow)->boolVal();
-	const int maxVoxels = vdim.x * vdim.y * vdim.z;
+	const int64_t maxVoxels = (int64_t)vdim.x * vdim.y * vdim.z;
 	if (axisAligned) {
 		// estimate capacity from triangle bounding volumes (each axis-aligned tri covers a 2D area)
 		int64_t estimatedVoxels = 0;
@@ -611,8 +611,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			const glm::ivec3 size = glm::max(maxs - mins, glm::ivec3(1));
 			estimatedVoxels += (int64_t)size.x * size.y * size.z;
 		}
-		const int posMapCapacity = (int)core_min((int64_t)maxVoxels, estimatedVoxels);
-		Log::debug("max voxels: %i, estimated: %i (%i:%i:%i)", maxVoxels, posMapCapacity, vdim.x, vdim.y, vdim.z);
+		const int64_t posMapCapacity = (int64_t)core_min((int64_t)maxVoxels, estimatedVoxels);
+		Log::debug("max voxels: %i, estimated: %i (%i:%i:%i)", (int)maxVoxels, (int)posMapCapacity, vdim.x, vdim.y, vdim.z);
 		PosMap posMap;
 		posMap.reserve(posMapCapacity);
 		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
