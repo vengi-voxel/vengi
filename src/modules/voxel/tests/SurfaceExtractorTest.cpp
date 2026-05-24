@@ -12,6 +12,7 @@
 #include "voxel/Voxel.h"
 #include <glm/gtc/epsilon.hpp>
 #include "voxel/private/BinaryGreedyMesher.h"
+#include "voxelformat/FormatConfig.h"
 
 namespace voxel {
 
@@ -43,6 +44,11 @@ protected:
 			}
 		}
 		return count;
+	}
+
+	bool onInitApp() override {
+		voxelformat::FormatConfig::init();
+		return true;
 	}
 };
 
