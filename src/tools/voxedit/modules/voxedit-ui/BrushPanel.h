@@ -53,8 +53,6 @@ private:
 	void brushSettings(command::CommandExecutionListener &listener);
 
 public:
-	using Super::registerUITests;
-
 	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
 		: Super(app, "brush") {
 		_ctx.app = app;
