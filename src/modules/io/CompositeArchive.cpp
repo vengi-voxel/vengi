@@ -4,6 +4,7 @@
 
 #include "CompositeArchive.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/StringMap.h"
 
 namespace io {
@@ -39,7 +40,7 @@ bool CompositeArchive::exists(const core::Path &file) const {
 }
 
 void CompositeArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
-	core::StringMap<bool> seen;
+	core::DynamicStringMap<bool> seen;
 	for (const ArchivePtr &archive : _archives) {
 		ArchiveFiles archiveFiles;
 		archive->list(basePath, archiveFiles, filter);
