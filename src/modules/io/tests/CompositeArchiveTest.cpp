@@ -112,4 +112,15 @@ TEST_F(CompositeArchiveTest, testShutdownClearsArchives) {
 	EXPECT_FALSE(composite.exists("file.txt"));
 }
 
+TEST_F(CompositeArchiveTest, testWriteStreamNewFile) {
+	MemoryArchivePtr a1 = openMemoryArchive();
+
+	CompositeArchive composite;
+	composite.add(a1);
+
+	// Writing to a file that doesn't exist yet should succeed
+	core::ScopedPtr<SeekableWriteStream> stream(composite.writeStream("newfile.hva"));
+	ASSERT_TRUE(stream);
+}
+
 } // namespace io

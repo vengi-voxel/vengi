@@ -93,6 +93,46 @@ TEST_F(CachingArchiveTest, testMultipleSearchDirs) {
 	EXPECT_EQ(2, s2->size());
 }
 
+TEST_F(CachingArchiveTest, testFindStreamSubdirPath) {
+	MemoryArchivePtr mem = openMemoryArchive();
+	uint8_t buf[] = {10, 20, 30};
+	mem->add("p/48/1-12cylo.dat", buf, sizeof(buf));
+
+	CachingArchive cache(mem);
+	cache.registerSearchDir("p", "*.dat");
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("48/1-12cylo.dat"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(3, stream->size());
+
+	core::ScopedPtr<SeekableReadStream> streamBs(cache.findStream("48\\1-12cylo.dat"));
+	ASSERT_TRUE(streamBs);
+	EXPECT_EQ(3, streamBs->size());
+}
+
+TEST_F(CachingArchiveTest, testFindStreamRelativeCurrentDir) {
+	MemoryArchivePtr mem = openMemoryArchive();
+	uint8_t buf[] = {10, 20, 30};
+	mem->add("./hmec.hva", buf, sizeof(buf));
+
+	CachingArchive cache(mem);
+	cache.registerSearchDir("./", "*.hva");
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("hmec.hva"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(3, stream->size());
+}
+
+TEST_F(CachingArchiveTest, testFindStreamEmptyDir) {
+	MemoryArchivePtr mem = openMemoryArchive();
+	uint8_t buf[] = {1, 2};
+	mem->add("test.vxl", buf, sizeof(buf));
+
+	CachingArchive cache(mem);
+	cache.registerSearchDir("", "*.vxl");
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("test.vxl"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(2, stream->size());
+}
+
 TEST_F(CachingArchiveTest, testFirstRegisteredWins) {
 	MemoryArchivePtr mem = openMemoryArchive();
 	uint8_t buf1[] = {1};

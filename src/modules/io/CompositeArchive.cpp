@@ -56,6 +56,9 @@ void CompositeArchive::list(const core::String &basePath, ArchiveFiles &out, con
 SeekableReadStream *CompositeArchive::readStream(const core::String &filePath) {
 	const core::String normalized = core::string::sanitizePath(filePath);
 	for (const ArchivePtr &archive : _archives) {
+		if (!archive->exists(normalized)) {
+			continue;
+		}
 		SeekableReadStream *stream = archive->readStream(normalized);
 		if (stream) {
 			return stream;
