@@ -269,6 +269,8 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
+		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
 		const int modelsBefore = (int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button4"); // colortomodel
