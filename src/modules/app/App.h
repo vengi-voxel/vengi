@@ -210,6 +210,10 @@ public:
 
 	bool saveConfiguration();
 
+	/**
+	 * @brief Returns the current used process memory in GB
+	 */
+	double rssGB();
 	bool hasEnoughMemory(size_t bytes) const;
 
 	bool setLanguage(const core::String &language);
