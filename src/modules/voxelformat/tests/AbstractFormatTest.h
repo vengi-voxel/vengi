@@ -45,7 +45,7 @@ protected:
 												const core::String &destFilename,
 												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
-	void testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1);
+	void testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1, bool skipOnLoadFailure = false);
 	void testLoad(const core::String &filename, size_t expectedVolumes = 1) {
 		scenegraph::SceneGraph sceneGraph;
 		testLoad(sceneGraph, filename, expectedVolumes);

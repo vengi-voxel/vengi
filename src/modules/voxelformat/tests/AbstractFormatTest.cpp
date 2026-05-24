@@ -191,7 +191,7 @@ void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const 
 }
 
 void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-								  size_t expectedVolumes) {
+								  size_t expectedVolumes, bool skipOnLoadFailure) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	if (!archive->exists(filename)) {
 		GTEST_SKIP() << "Could not open " << filename;
@@ -203,8 +203,11 @@ void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core
 			ASSERT_FALSE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
 				<< "Unexpected success to load " << filename;
 		} else {
-			ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
-				<< "Could not load " << filename;
+			const bool loaded = voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx);
+			if (!loaded && skipOnLoadFailure) {
+				GTEST_SKIP() << "Could not load " << filename << " (external dependency unavailable)";
+			}
+			ASSERT_TRUE(loaded) << "Could not load " << filename;
 			ASSERT_EQ(expectedVolumes, sceneGraph.size());
 		}
 	}

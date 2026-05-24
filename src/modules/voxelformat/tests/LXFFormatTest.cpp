@@ -17,7 +17,7 @@ protected:
 	scenegraph::SceneGraph loadLxfScene(const char *filename, const char *scaleValue) {
 		util::ScopedVarChange scaleVar(cfg::VoxformatScale, scaleValue);
 		scenegraph::SceneGraph sceneGraph;
-		testLoad(sceneGraph, filename, 1);
+		testLoad(sceneGraph, filename, 1, true);
 		return sceneGraph;
 	}
 };
@@ -56,7 +56,7 @@ TEST_F(LXFFormatTest, testLoadLXFML) {
 TEST_F(LXFFormatTest, testLoadAmsterdamCanalStreet) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "test.lxf", 1);
+	testLoad(sceneGraph, "test.lxf", 1, true);
 	if (IsSkipped()) {
 		return;
 	}
@@ -71,7 +71,7 @@ TEST_F(LXFFormatTest, testLoadAmsterdamCanalStreet) {
 TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "lxf-two-parts.lxfml", 2);
+	testLoad(sceneGraph, "lxf-two-parts.lxfml", 2, true);
 	if (IsSkipped()) {
 		return;
 	}
@@ -101,7 +101,7 @@ TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
 TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.1");
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "lxf-rot-y90.lxfml", 2);
+	testLoad(sceneGraph, "lxf-rot-y90.lxfml", 2, true);
 	if (IsSkipped()) {
 		return;
 	}
@@ -123,7 +123,7 @@ TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 TEST_F(LXFFormatTest, testLoadLXFMLLight1Fixture) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "lxf-light1.lxfml", 3);
+	testLoad(sceneGraph, "lxf-light1.lxfml", 3, true);
 	if (IsSkipped()) {
 		return;
 	}

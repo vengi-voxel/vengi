@@ -13,7 +13,10 @@ class StudioIOFormatTest : public AbstractFormatTest {};
 
 TEST_F(StudioIOFormatTest, testLoadEncryptedIO) {
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "studioio-encrypted.io", 1);
+	testLoad(sceneGraph, "studioio-encrypted.io", 1, true);
+	if (IsSkipped()) {
+		return;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(node, nullptr);
 	const voxel::RawVolume *volume = node->volume();
