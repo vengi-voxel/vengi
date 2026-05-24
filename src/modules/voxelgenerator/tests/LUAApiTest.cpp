@@ -1501,4 +1501,9 @@ TEST_F(LUAApiTest, testSparseVolumeWithVolumeModule) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testScriptTerrainColoring) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "terrain-coloring.lua");
+}
+
 } // namespace voxelgenerator

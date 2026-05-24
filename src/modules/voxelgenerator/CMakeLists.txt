@@ -59,6 +59,7 @@ set(LUA_SRCS
 	scripts/smooth.lua
 	scripts/splitcolor.lua
 	scripts/splitobjects.lua
+	scripts/terrain-coloring.lua
 	scripts/thicken.lua
 	scripts/tree_americanbeech.lua
 	scripts/tree_americanelm.lua
