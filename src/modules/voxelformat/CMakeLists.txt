@@ -114,6 +114,7 @@ set(SRCS
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
+	private/mesh/lego/LegoUtil.h             private/mesh/lego/LegoUtil.cpp
 	private/mesh/lego/LDrawFormat.h          private/mesh/lego/LDrawFormat.cpp
 	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
 	private/mesh/gis/GMLFormat.h             private/mesh/gis/GMLFormat.cpp
