@@ -154,7 +154,7 @@ TEST_F(ZipArchiveTest, testZipArchiveEncrypted) {
 	ASSERT_TRUE(archive);
 	ArchiveFiles files;
 	archive->list("*.ldr", files);
-	ASSERT_EQ(1u, files.size());
+	ASSERT_EQ(2u, files.size());
 	core::ScopedPtr<io::SeekableReadStream> modelStream(archive->readStream("model.ldr"));
 	ASSERT_TRUE(modelStream);
 	ASSERT_GT(modelStream->size(), 0);
