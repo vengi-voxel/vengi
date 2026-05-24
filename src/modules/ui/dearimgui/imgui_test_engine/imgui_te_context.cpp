@@ -1777,7 +1777,7 @@ void ImGuiTestContext::_MakeAimingSpaceOverPos(ImGuiViewport* viewport, ImGuiWin
         if (window->Flags & ImGuiWindowFlags_NoMove)
             continue;
 #endif
-        if (window->Rect().Contains(window_min_pos))
+        if (window->Rect().ContainsWithPad(window_min_pos, hover_padding))
         {
             WindowMove(window->ID, window_min_pos);
 
@@ -1874,7 +1874,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
     // When dragging it makes sense to avoid checking HoveredId
     // We check for this ahead of time to result likelihood of false positives.
-    if (g.ActiveId != 0)
+    if (g.ActiveId != 0 && !g.ActiveIdAllowOverlap)
         flags |= ImGuiTestOpFlags_NoCheckHoveredId;
 
     // FIXME-TESTS: If window was not brought to front (because of either ImGuiWindowFlags_NoBringToFrontOnFocus or ImGuiTestOpFlags_NoFocusWindow)
@@ -1983,7 +1983,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
         FocusOrMakeClickableAtPos(this, item.Window, pos);
 
     // Check hovering target: may be an item (common) or a window (rare)
-    if (!Abort && !(flags & ImGuiTestOpFlags_NoCheckHoveredId))
+    if (!Abort)
     {
         ImGuiID hovered_id;
         bool is_hovered_item;
@@ -2030,9 +2030,11 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
             // Update item
             item = ItemInfo(item.ID);
+        }
 
-            // Log message
-            // FIXME: Consider a second attempt?
+        // Error message
+        if (!is_hovered_item && !is_hovered_window && !(flags & ImGuiTestOpFlags_NoCheckHoveredId))
+        {
             ImVec2 pos_old = item_initial_state.RectFull.Min;
             ImVec2 pos_new = item.RectFull.Min;
             ImVec2 size_old = item_initial_state.RectFull.GetSize();
@@ -4534,7 +4536,9 @@ void    ImGuiTestContext::PerfCapture(const char* category, const char* test_nam
     entry.OS = build_info->OS;
     entry.Compiler = build_info->Compiler;
     entry.Date = build_info->Date;
-    ImGuiTestEngine_PerfToolAppendToCSV(Engine->PerfTool, &entry, csv_file);
+    ImGuiTestEngine_PerfToolAppendToCSV(&entry, csv_file);
+    if (Engine->PerfTool)
+        Engine->PerfTool->AddEntry(&entry);
 
     // Disable the "Success" message
     RunFlags |= ImGuiTestRunFlags_NoSuccessMsg;

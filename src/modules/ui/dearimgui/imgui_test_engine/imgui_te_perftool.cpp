@@ -96,11 +96,11 @@ typedef void(*FormatEntryLabelFn)(ImGuiPerfTool* perftool, Str* result, ImGuiPer
 
 struct ImGuiPerfToolColumnInfo
 {
-    const char*     Title;
-    int             Offset;
-    ImGuiDataType   Type;
-    bool            ShowAlways;
-    ImGuiTableFlags Flags;
+    const char*             Title;
+    int                     Offset;
+    ImGuiDataType           Type;
+    bool                    ShowAlways;
+    ImGuiTableColumnFlags   ColumnsFlags;
 
     template<typename T>
     T GetValue(const ImGuiPerfToolEntry* entry) const { return *(T*)((const char*)entry + Offset); }
@@ -110,12 +110,12 @@ struct ImGuiPerfToolColumnInfo
 static const ImGuiPerfToolColumnInfo PerfToolColumnInfo[] =
 {
     { /* 00 */ "Date",        offsetof(ImGuiPerfToolEntry, Timestamp),        ImGuiDataType_U64,    true,  ImGuiTableColumnFlags_DefaultHide },
-    { /* 01 */ "Test Name",   offsetof(ImGuiPerfToolEntry, TestName),         ImGuiDataType_COUNT,  true,  0 },
-    { /* 02 */ "Branch",      offsetof(ImGuiPerfToolEntry, GitBranchName),    ImGuiDataType_COUNT,  true,  0 },
-    { /* 03 */ "Compiler",    offsetof(ImGuiPerfToolEntry, Compiler),         ImGuiDataType_COUNT,  true,  0 },
-    { /* 04 */ "OS",          offsetof(ImGuiPerfToolEntry, OS),               ImGuiDataType_COUNT,  true,  0 },
-    { /* 05 */ "CPU",         offsetof(ImGuiPerfToolEntry, Cpu),              ImGuiDataType_COUNT,  true,  0 },
-    { /* 06 */ "Build",       offsetof(ImGuiPerfToolEntry, BuildType),        ImGuiDataType_COUNT,  true,  0 },
+    { /* 01 */ "Test Name",   offsetof(ImGuiPerfToolEntry, TestName),         ImGuiDataType_String, true,  0 },
+    { /* 02 */ "Branch",      offsetof(ImGuiPerfToolEntry, GitBranchName),    ImGuiDataType_String, true,  0 },
+    { /* 03 */ "Compiler",    offsetof(ImGuiPerfToolEntry, Compiler),         ImGuiDataType_String, true,  0 },
+    { /* 04 */ "OS",          offsetof(ImGuiPerfToolEntry, OS),               ImGuiDataType_String, true,  0 },
+    { /* 05 */ "CPU",         offsetof(ImGuiPerfToolEntry, Cpu),              ImGuiDataType_String, true,  0 },
+    { /* 06 */ "Build",       offsetof(ImGuiPerfToolEntry, BuildType),        ImGuiDataType_String, true,  0 },
     { /* 07 */ "Stress",      offsetof(ImGuiPerfToolEntry, PerfStressAmount), ImGuiDataType_S32,    true,  0 },
     { /* 08 */ "Avg ms",      offsetof(ImGuiPerfToolEntry, DtDeltaMs),        ImGuiDataType_Double, true,  0 },
     { /* 09 */ "Min ms",      offsetof(ImGuiPerfToolEntry, DtDeltaMsMin),     ImGuiDataType_Double, false, 0 },
@@ -127,7 +127,7 @@ static const ImGuiPerfToolColumnInfo PerfToolColumnInfo[] =
 static const char* PerfToolReportDefaultOutputPath = "./output/capture_perf_report.html";
 
 // This is declared as a standalone function in order to run without a PerfTool instance
-void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolEntry* entry, const char* filename)
+void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfToolEntry* entry, const char* filename)
 {
     if (filename == nullptr)
         filename = IMGUI_PERFLOG_DEFAULT_FILENAME;
@@ -150,10 +150,6 @@ void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolE
             entry->Compiler, entry->Date);
     fflush(f);
     fclose(f);
-
-    // Register to runtime perf tool if any
-    if (perf_log != nullptr)
-        perf_log->AddEntry(entry);
 }
 
 // Tri-state button. Copied and modified ButtonEx().
@@ -302,7 +298,7 @@ static int IMGUI_CDECL CompareWithSortSpecs(const void* lhs, const void* rhs)
         case ImGuiDataType_Double:
             result = (int)((col_info.GetValue<double>(a) - col_info.GetValue<double>(b)) * 1000.0);
             break;
-        case ImGuiDataType_COUNT:
+        case ImGuiDataType_String:
             result = strcmp(col_info.GetValue<const char*>(a), col_info.GetValue<const char*>(b));
             break;
         default:
@@ -416,37 +412,38 @@ static bool InputDate(const char* label, char* date, int date_len, bool valid)
     return date_changed;
 }
 
-static void FormatDate(ImU64 microseconds, char* buf, size_t buf_size)
+static void ImTimeFormatDate(ImU64 microseconds, char* buf, size_t buf_size)
 {
     time_t timestamp = (time_t)(microseconds / 1000000);
     tm* time = localtime(&timestamp);
     ImFormatString(buf, buf_size, "%04d-%02d-%02d", time->tm_year + 1900, time->tm_mon + 1, time->tm_mday);
 }
 
-static void FormatDateAndTime(ImU64 microseconds, char* buf, size_t buf_size)
+// FIXME: Compare with ImTimestampToISO8601()
+static void ImTimeFormatDateAndTime(ImU64 microseconds, char* buf, size_t buf_size)
 {
     time_t timestamp = (time_t)(microseconds / 1000000);
     tm* time = localtime(&timestamp);
     ImFormatString(buf, buf_size, "%04d-%02d-%02d %02d:%02d:%02d", time->tm_year + 1900, time->tm_mon + 1, time->tm_mday, time->tm_hour, time->tm_min, time->tm_sec);
 }
 
-static void RenderFilterInput(ImGuiPerfTool* perf, const char* hint, float width = -FLT_MIN)
+static void RenderFilterInput(ImGuiPerfTool* perftool, const char* hint, float width = -FLT_MIN)
 {
     if (ImGui::IsWindowAppearing())
-        strcpy(perf->_Filter, "");
+        strcpy(perftool->_Filter, "");
     ImGui::SetNextItemWidth(width);
-    ImGui::InputTextWithHint("##filter", hint, perf->_Filter, IM_COUNTOF(perf->_Filter));
+    ImGui::InputTextWithHint("##filter", hint, perftool->_Filter, IM_COUNTOF(perftool->_Filter));
     if (ImGui::IsWindowAppearing())
         ImGui::SetKeyboardFocusHere();
 }
 
-static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint, ImVector<const char*>* labels)
+static bool RenderMultiSelectFilter(ImGuiPerfTool* perftool, const char* filter_hint, ImVector<const char*>* labels)
 {
     ImGuiContext& g = *ImGui::GetCurrentContext();
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiStorage& visibility = perf->_Visibility;
+    ImGuiStorage& visibility = perftool->_Visibility;
     bool modified = false;
-    RenderFilterInput(perf, filter_hint, -(ImGui::CalcTextSize("(?)").x + g.Style.ItemSpacing.x));
+    RenderFilterInput(perftool, filter_hint, -(ImGui::CalcTextSize("(?)").x + g.Style.ItemSpacing.x));
     ImGui::SameLine();
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered())
@@ -464,7 +461,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     if (ImGui::MenuItem("Show All"))
     {
         for (const char* label : *labels)
-            if (strstr(label, perf->_Filter) != nullptr)
+            if (strstr(label, perftool->_Filter) != nullptr)
                 visibility.SetBool(ImHashStr(label), true);
         modified = true;
     }
@@ -472,7 +469,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     if (ImGui::MenuItem("Hide All"))
     {
         for (const char* label : *labels)
-            if (strstr(label, perf->_Filter) != nullptr)
+            if (strstr(label, perftool->_Filter) != nullptr)
                 visibility.SetBool(ImHashStr(label), false);
         modified = true;
     }
@@ -483,7 +480,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     for (int i = labels->Size - 1; i >= 0; i--)
     {
         const char* label = (*labels)[i];
-        if (strstr(label, perf->_Filter) == nullptr)   // Filter out entries not matching a filter query
+        if (strstr(label, perftool->_Filter) == nullptr)   // Filter out entries not matching a filter query
             continue;
 
         if (filtered_entries == 0)
@@ -1011,7 +1008,7 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
                 case 0:
                 {
                     char date[64];
-                    FormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
+                    ImTimeFormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
                     fprintf(fp, "| %s ", date);
                     break;
                 }
@@ -1129,7 +1126,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
             if (ImGui::MenuItem("Set Today"))
             {
                 time_t now = time(nullptr);
-                FormatDate((ImU64)now * 1000000, date, date_size);
+                ImTimeFormatDate((ImU64)now * 1000000, date, date_size);
                 dirty = true;
             }
             ImGui::EndPopup();
@@ -1531,7 +1528,7 @@ void ImGuiPerfTool::_ShowEntriesPlot()
 void ImGuiPerfTool::_ShowEntriesTable()
 {
     ImGuiTableFlags table_flags = ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable |
-        ImGuiTableFlags_SortMulti | ImGuiTableFlags_SortTristate | ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SortMulti | ImGuiTableFlags_SortTristate | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable |
         ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
     if (!ImGui::BeginTable("PerfInfo", IM_COUNTOF(PerfToolColumnInfo), table_flags))
         return;
@@ -1544,7 +1541,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
     for (int i = 0; i < IM_COUNTOF(PerfToolColumnInfo); i++)
     {
         const ImGuiPerfToolColumnInfo& info = PerfToolColumnInfo[i];
-        ImGuiTableColumnFlags column_flags = info.Flags;
+        ImGuiTableColumnFlags column_flags = info.ColumnsFlags;
         if (i == 0 && _DisplayType != ImGuiPerfToolDisplayType_Simple)
             column_flags |= ImGuiTableColumnFlags_Disabled; // Date only visible in non-combining mode.
         if (!info.ShowAlways && _DisplayType != ImGuiPerfToolDisplayType_CombineByBuildInfo)
@@ -1553,6 +1550,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
     }
     ImGui::TableSetupScrollFreeze(0, 1);
 
+    // FIXME: Should be done below the headers row.
     if (ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs())
         if (sorts_specs->SpecsDirty || _InfoTableSortDirty)
         {
@@ -1617,7 +1615,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
         if (ImGui::TableNextColumn())
         {
             char date[64];
-            FormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
+            ImTimeFormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
             ImGui::TextUnformatted(date);
         }
 

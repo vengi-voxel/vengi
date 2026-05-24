@@ -26,20 +26,23 @@ struct ImGuiCsvParser;
 // As a result our solution also doesn't make many allocations.
 struct IMGUI_API ImGuiPerfToolEntry
 {
+    // Raw CSV data
     ImU64                       Timestamp = 0;                  // Title of a particular batch of perftool entries.
-    const char*                 Category = nullptr;             // Name of category perf test is in.
-    const char*                 TestName = nullptr;             // Name of perf test.
+    const char*                 Category = nullptr;             // Name of category the test is in.
+    const char*                 TestName = nullptr;             // Name of test.
     double                      DtDeltaMs = 0.0;                // Result of perf test.
+    int                         PerfStressAmount = 0;           //
+    const char*                 GitBranchName = nullptr;        // e.g. "master"
+    const char*                 BuildType = nullptr;            // e.g. "Debug"
+    const char*                 Cpu = nullptr;                  // e.g. "X64"
+    const char*                 OS = nullptr;                   // e.g. "Windows"
+    const char*                 Compiler = nullptr;             // e.g. "MSVC"
+    const char*                 Date = nullptr;                 // e.g. "2026-01-01". Date of this entry or min date of combined entries.
+
+    // Runtime data
     double                      DtDeltaMsMin = +FLT_MAX;        // May be used by perftool.
     double                      DtDeltaMsMax = -FLT_MAX;        // May be used by perftool.
     int                         NumSamples = 1;                 // Number aggregated samples.
-    int                         PerfStressAmount = 0;           //
-    const char*                 GitBranchName = nullptr;        // Build information.
-    const char*                 BuildType = nullptr;            //
-    const char*                 Cpu = nullptr;                  //
-    const char*                 OS = nullptr;                   //
-    const char*                 Compiler = nullptr;             //
-    const char*                 Date = nullptr;                 // Date of this entry or min date of combined entries.
     //const char*               DateMax = nullptr;              // Max date of combined entries, or nullptr.
     double                      VsBaseline = 0.0;               // Percent difference vs baseline.
     int                         LabelIndex = 0;                 // Index of TestName in ImGuiPerfTool::_LabelsVisible.
@@ -131,4 +134,4 @@ struct IMGUI_API ImGuiPerfTool
     void        _UnpackSortedKey(ImU64 key, int* batch_index, int* entry_index, int* monotonic_index = nullptr);
 };
 
-IMGUI_API void    ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolEntry* entry, const char* filename = nullptr);
+IMGUI_API void    ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfToolEntry* entry, const char* filename = nullptr);

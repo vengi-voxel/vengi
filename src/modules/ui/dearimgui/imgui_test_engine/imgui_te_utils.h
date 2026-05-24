@@ -64,7 +64,7 @@ bool        ImParseFindIniSection(const char* ini_config, const char* header, Im
 //-----------------------------------------------------------------------------
 
 uint64_t    ImTimeGetInMicroseconds();
-void        ImTimestampToISO8601(uint64_t timestamp, Str* out_date);
+void        ImTimestampToISO8601(uint64_t timestamp_us, Str* out_date);
 
 //-----------------------------------------------------------------------------
 // Threading Helpers
