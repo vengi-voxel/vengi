@@ -22,6 +22,7 @@ set(SRCS
 	font/FontResolver.h
 	font/system/Unix.cpp
 	font/system/Windows.cpp
+	font/system/Emscripten.cpp
 
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
 	dearimgui/imgui_widgets.cpp

@@ -4,7 +4,7 @@
 
 #include "ui/font/FontResolver.h"
 
-#if defined(__linux__) || defined(__APPLE__)
+#if (defined(__linux__) || defined(__APPLE__)) && !defined(__EMSCRIPTEN__)
 
 #include "core/ArrayLength.h"
 #include "core/Log.h"
@@ -86,4 +86,4 @@ core::DynamicArray<core::String> findSystemFonts() {
 } // namespace font
 } // namespace ui
 
-#endif // __linux__ || __APPLE__
+#endif // (__linux__ || __APPLE__) && !__EMSCRIPTEN__
