@@ -6,6 +6,7 @@
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-ui/Viewport.h"
+#include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
 #include "voxel/RawVolume.h"
@@ -80,7 +81,7 @@ static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const ch
 	return true;
 }
 
-void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId, const char *settingsId) {
+void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
@@ -154,7 +155,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ctx->ItemClick("Select by color");
 		ctx->Yield(3);
 		IM_CHECK_EQ(selectedCount(), 2);
@@ -172,7 +173,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		IM_CHECK_EQ(selectedCount(), 3);
 
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ctx->ItemClick("Paint selection");
 		ctx->Yield(3);
 		IM_CHECK_EQ(v->voxel(0, 0, 0).getColor(), 2);
@@ -206,7 +207,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		ctx->Yield(3);
 		command::executeCommands("select all");
 		ctx->Yield(3);
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ctx->ItemClick("Use selection");
 		ctx->Yield(3);
 
@@ -278,7 +279,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush type toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		ShapeBrush &brush = modifier.shapeBrush();
@@ -295,7 +296,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Paint));
 		command::executeCommands("fill");
 		ctx->Yield(3);
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		PaintBrush &brush = modifier.paintBrush();
@@ -311,7 +312,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 	IM_REGISTER_TEST(engine, testCategory(), "line brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Line));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		LineBrush &brush = modifier.lineBrush();
@@ -333,7 +334,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 	IM_REGISTER_TEST(engine, testCategory(), "text brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Text));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		TextBrush &brush = modifier.textBrush();
@@ -356,7 +357,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		command::executeCommands("select all");
 		ctx->Yield(3);
 
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		SculptBrush &brush = modifier.sculptBrush();
 
@@ -373,7 +374,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 	IM_REGISTER_TEST(engine, testCategory(), "select brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		SelectBrush &brush = modifier.selectBrush();
 
@@ -392,7 +393,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 	IM_REGISTER_TEST(engine, testCategory(), "ruler brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Ruler));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		RulerBrush &brush = modifier.rulerBrush();
@@ -408,7 +409,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 
 	IM_REGISTER_TEST(engine, testCategory(), "script brush rescan")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Script));
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ctx->ItemClick("Rescan###Rescan");
 		ctx->Yield();
 	};
@@ -421,7 +422,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId,
 		command::executeCommands("select all");
 		ctx->Yield(3);
 
-		IM_CHECK(focusWindow(ctx, settingsId));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		TransformBrush &brush = modifier.transformBrush();
 

@@ -64,7 +64,7 @@ public:
 	void updateToolbar(const char *id, bool sceneMode, command::CommandExecutionListener &listener);
 	void updateSettings(const char *id, bool sceneMode, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *toolbarId, const char *settingsId);
+	void registerUITests(ImGuiTestEngine *engine, const char *toolbarId) override;
 #endif
 };
 
