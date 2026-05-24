@@ -61,6 +61,18 @@ MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sc
 	return nullptr;
 }
 
+glm::vec3 MeshFormat::getScale() {
+	const float scale = core::getVar(cfg::VoxformatScale)->floatVal();
+	float scaleX = core::getVar(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::getVar(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::getVar(cfg::VoxformatScaleZ)->floatVal();
+	scaleX = glm::epsilonNotEqual(scaleX, 1.0f, glm::epsilon<float>()) ? scaleX : scale;
+	scaleY = glm::epsilonNotEqual(scaleY, 1.0f, glm::epsilon<float>()) ? scaleY : scale;
+	scaleZ = glm::epsilonNotEqual(scaleZ, 1.0f, glm::epsilon<float>()) ? scaleZ : scale;
+	Log::debug("scale: %f:%f:%f", scaleX, scaleY, scaleZ);
+	return {scaleX, scaleY, scaleZ};
+}
+
 glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) {
 	const int voxelSize = core::getVar(cfg::VoxformatVoxelSize)->intVal();
 	if (voxelSize > 0) {
@@ -72,15 +84,7 @@ glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &
 			return glm::vec3(uniformScale);
 		}
 	}
-	const float scale = core::getVar(cfg::VoxformatScale)->floatVal();
-	float scaleX = core::getVar(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::getVar(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::getVar(cfg::VoxformatScaleZ)->floatVal();
-	scaleX = glm::epsilonNotEqual(scaleX, 1.0f, glm::epsilon<float>()) ? scaleX : scale;
-	scaleY = glm::epsilonNotEqual(scaleY, 1.0f, glm::epsilon<float>()) ? scaleY : scale;
-	scaleZ = glm::epsilonNotEqual(scaleZ, 1.0f, glm::epsilon<float>()) ? scaleZ : scale;
-	Log::debug("scale: %f:%f:%f", scaleX, scaleY, scaleZ);
-	return {scaleX, scaleY, scaleZ};
+	return getScale();
 }
 
 bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth) {
