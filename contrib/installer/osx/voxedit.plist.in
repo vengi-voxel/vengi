@@ -834,6 +834,43 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>LEGO Digital Designer</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/xml</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>lxf</string>
+          <string>lxfml</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>BrickLink Studio</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-bricklink-studio</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>io</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Polygon File Format</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

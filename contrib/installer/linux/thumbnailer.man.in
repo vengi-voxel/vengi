@@ -230,6 +230,8 @@ BinVox (*.binvox)
 .TP
 Blockbench (*.bbmodel)
 .TP
+BrickLink Studio (*.io)
+.TP
 Build engine (*.kvx)
 .TP
 Chronovox (*.csm)
@@ -253,6 +255,8 @@ Goxel txt (*.txt)
 KenShape (*.kenshape)
 .TP
 LDraw Model (*.ldr, *.mpd)
+.TP
+LEGO Digital Designer (*.lxf, *.lxfml)
 .TP
 Luanti (Minetest) (*.mts)
 .TP

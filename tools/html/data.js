@@ -926,6 +926,31 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "LEGO Digital Designer",
+      "extensions": [
+        "lxf",
+        "lxfml"
+      ],
+      "magics": [],
+      "mimetype": "application/xml",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
+      "name": "BrickLink Studio",
+      "extensions": [
+        "io"
+      ],
+      "magics": [],
+      "mimetype": "application/x-bricklink-studio",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Polygon File Format",
       "extensions": [
         "ply"
