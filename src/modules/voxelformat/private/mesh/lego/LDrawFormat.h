@@ -61,8 +61,7 @@ namespace voxelformat {
 class LDrawFormat : public MeshFormat {
 protected:
 	bool parseStream(io::SeekableReadStream &stream, Mesh &mesh, legoutil::ColorMap &colors,
-					 core::DynamicArray<legoutil::SubFileRef> &subFiles, core::String &name,
-					 core::String &author) const;
+					 core::DynamicArray<legoutil::SubFileRef> &subFiles, core::String &name, core::String &author) const;
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;

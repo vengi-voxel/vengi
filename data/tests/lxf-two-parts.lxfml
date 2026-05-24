@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<LXFML versionMajor="5" versionMinor="0" name="lxf-two-parts">
+  <Meta>
+    <Application name="LEGO Digital Designer" versionMajor="4" versionMinor="3"/>
+    <Brand name="LDD"/>
+    <BrickSet version="1564.2"/>
+  </Meta>
+  <Bricks>
+    <Brick refID="0" designID="3001" itemNos="300121">
+      <Part refID="0" designID="3001" materials="21">
+        <Bone refID="0" transformation="1,0,0,0,1,0,0,0,1,40,0,0"/>
+      </Part>
+    </Brick>
+    <Brick refID="1" designID="3001" itemNos="300121">
+      <Part refID="1" designID="3001" materials="21">
+        <Bone refID="1" transformation="1,0,0,0,1,0,0,0,1,80,0,0"/>
+      </Part>
+    </Brick>
+  </Bricks>
+  <RigidSystems>
+    <RigidSystem>
+      <Rigid refID="0" transformation="0,0,-1,0,1,0,1,0,0,40,0,0" boneRefs="0,1"/>
+    </RigidSystem>
+  </RigidSystems>
+  <GroupSystems>
+    <GroupSystem/>
+  </GroupSystems>
+</LXFML>

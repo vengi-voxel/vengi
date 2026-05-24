@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<LXFML versionMajor="5" versionMinor="0" name="Light1">
+  <Meta>
+    <Application name="LEGO Digital Designer" versionMajor="4" versionMinor="3"/>
+    <Brand name="LDDExtended"/>
+    <BrickSet version="1264"/>
+  </Meta>
+  <Cameras>
+    <Camera refID="0" fieldOfView="80" distance="79.281982421875" transformation="0.030392518267035484,0,-0.99953794479370117,-0.93535268306732178,0.35257109999656677,-0.028440864756703377,0.3524080216884613,0.93578499555587769,0.010715517215430737,27.939624786376953,74.190887451171875,0.84954798221588135"/>
+  </Cameras>
+  <Bricks cameraRef="0">
+    <Brick refID="0" designID="3062">
+      <Part refID="0" designID="3062" materials="44,0" decoration="0">
+        <Bone refID="0" transformation="0.70710670948028564,0,0.7071068286895752,0,1,0,-0.7071068286895752,0,0.70710670948028564,-0.79999923706054688,1.5809999704360962,3.200000524520874"/>
+      </Part>
+    </Brick>
+    <Brick refID="1" designID="2566">
+      <Part refID="1" designID="2566" materials="26">
+        <Bone refID="1" transformation="1,0,0,0,1,0,0,0,1,-0.79999935626983643,-0.1390000581741333,3.2000002861022949"/>
+      </Part>
+    </Brick>
+    <Brick refID="4" designID="32064">
+      <Part refID="4" designID="32064" materials="194">
+        <Bone refID="4" transformation="1,0,0,0,1,0,0,0,1,-1.2000000476837158,0.0010000000474974513,2"/>
+      </Part>
+    </Brick>
+  </Bricks>
+  <RigidSystems>
+    <RigidSystem>
+      <Rigid refID="0" transformation="0.70710670948028564,0,0.7071068286895752,0,1,0,-0.7071068286895752,0,0.70710670948028564,-0.79999923706054688,1.5809999704360962,3.200000524520874" boneRefs="0,1"/>
+      <Rigid refID="2" transformation="1,0,0,0,1,0,0,0,1,-1.2000000476837158,0.0010000000474974513,2" boneRefs="4"/>
+    </RigidSystem>
+  </RigidSystems>
+  <GroupSystems>
+    <GroupSystem/>
+  </GroupSystems>
+</LXFML>

@@ -36,6 +36,8 @@
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/private/mesh/lego/LDrawFormat.h"
+#include "voxelformat/private/mesh/lego/LXFFormat.h"
+#include "voxelformat/private/mesh/lego/StudioIOFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/ImageUtils.h"
 
@@ -413,7 +415,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 		ImGui::CheckboxVar(cfg::VoxformatVOXAnimAsNodes);
 	}
 
-	if (*desc == voxelformat::LDrawFormat::format()) {
+	if (*desc == voxelformat::LDrawFormat::format() || *desc == voxelformat::StudioIOFormat::format() || *desc == voxelformat::LXFFormat::format()) {
 		ImGui::InputVarString(cfg::VoxformatLDrawDir);
 	}
 

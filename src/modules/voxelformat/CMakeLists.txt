@@ -116,6 +116,8 @@ set(SRCS
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
 	private/mesh/lego/LegoUtil.h             private/mesh/lego/LegoUtil.cpp
 	private/mesh/lego/LDrawFormat.h          private/mesh/lego/LDrawFormat.cpp
+	private/mesh/lego/LXFFormat.h            private/mesh/lego/LXFFormat.cpp
+	private/mesh/lego/StudioIOFormat.h       private/mesh/lego/StudioIOFormat.cpp
 	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
 	private/mesh/gis/GMLFormat.h             private/mesh/gis/GMLFormat.cpp
 	private/mesh/gis/OSMFormat.h             private/mesh/gis/OSMFormat.cpp
@@ -228,6 +230,8 @@ set(TEST_SRCS
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/LDrawFormatTest.cpp
+	tests/LXFFormatTest.cpp
+	tests/StudioIOFormatTest.cpp
 	tests/LuantiWorldEditFormatTest.cpp
 	tests/MeshTriTest.cpp
 	tests/TeardownFormatTest.cpp
@@ -272,6 +276,11 @@ set(TEST_FILES
 	"tests/cc.hva"
 	"tests/ldraw-simple.ldr"
 	"tests/ldraw-simple.mpd"
+	"tests/lxf-simple.lxfml"
+	"tests/lxf-two-parts.lxfml"
+	"tests/lxf-rot-y90.lxfml"
+	"tests/lxf-light1.lxfml"
+	"tests/parts/3001.dat"
 	"testio/studioio-encrypted.io"
 	"tests/cc.vxl"
 	"tests/bug636/legs.vxl"

@@ -27,6 +27,8 @@ General:
    - Heavily reduced memory consumption for mesh format loading (voxelization)
    - Replaced `tinygltf` with `cgltf` for loading and writing `gltf` and `glb` files
    - Added support for Luanti WorldEdit `we` files
+   - Added support for BrickLink Studio `io` lego archives
+   - Added support for Digital designer lego files (`lxf`, `lxfml`)
 
 VoxEdit:
 
