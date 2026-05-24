@@ -110,13 +110,30 @@ TEST_F(MeshTest, testOptimizeReducesIndices) {
 	const float previousRatio = simplifyRatio->floatVal();
 	simplifyRatio->setVal(0.5f);
 
+	// Build a grid with shared vertices so the simplifier can identify interior edges
+	constexpr int gridSize = 8;
 	Mesh mesh;
 	const uint8_t color = 42;
-	for (int x = 0; x < 8; ++x) {
-		for (int z = 0; z < 8; ++z) {
-			const float xf = (float)x;
-			const float zf = (float)z;
-			addColoredQuad(mesh, {xf, 0, zf}, {xf + 1, 0, zf}, {xf + 1, 0, zf + 1}, {xf, 0, zf + 1}, color);
+	// Create shared vertex grid
+	for (int z = 0; z <= gridSize; ++z) {
+		for (int x = 0; x <= gridSize; ++x) {
+			VoxelVertex vertex;
+			vertex.position = glm::vec3((float)x, 0.0f, (float)z);
+			vertex.colorIndex = color;
+			vertex.ambientOcclusion = 3;
+			vertex.normalIndex = 0;
+			mesh.addVertex(vertex);
+		}
+	}
+	// Create triangles referencing shared vertices
+	for (int z = 0; z < gridSize; ++z) {
+		for (int x = 0; x < gridSize; ++x) {
+			const IndexType i0 = (IndexType)(z * (gridSize + 1) + x);
+			const IndexType i1 = i0 + 1;
+			const IndexType i2 = (IndexType)((z + 1) * (gridSize + 1) + x + 1);
+			const IndexType i3 = (IndexType)((z + 1) * (gridSize + 1) + x);
+			mesh.addTriangle(i0, i1, i2);
+			mesh.addTriangle(i0, i2, i3);
 		}
 	}
 
