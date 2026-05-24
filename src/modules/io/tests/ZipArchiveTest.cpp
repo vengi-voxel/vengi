@@ -144,6 +144,25 @@ TEST_F(ZipArchiveTest, testZipArchiveWriteBinary) {
 	}
 }
 
+TEST_F(ZipArchiveTest, testZipArchiveEncrypted) {
+	const io::FilePtr &file = _testApp->filesystem()->open("studioio-encrypted.io", io::FileMode::Read);
+	if (!file) {
+		GTEST_SKIP() << "Could not open studioio-encrypted.io";
+	}
+	FileStream fileStream(file);
+	const io::ArchivePtr archive = openZipArchive(&fileStream, "soho0909");
+	ASSERT_TRUE(archive);
+	ArchiveFiles files;
+	archive->list("*.ldr", files);
+	ASSERT_EQ(1u, files.size());
+	core::ScopedPtr<io::SeekableReadStream> modelStream(archive->readStream("model.ldr"));
+	ASSERT_TRUE(modelStream);
+	ASSERT_GT(modelStream->size(), 0);
+	char buf[32];
+	ASSERT_GT(modelStream->read(buf, sizeof(buf)), 0);
+	EXPECT_EQ('0', buf[0]);
+}
+
 TEST_F(ZipArchiveTest, testZipArchiveWriteEmpty) {
 	// Test writing an empty ZIP
 	BufferedReadWriteStream archiveStream(4096);

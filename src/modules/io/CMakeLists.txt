@@ -109,6 +109,7 @@ target_compile_definitions(${LIB} PRIVATE MINIZ_NO_STDIO)
 set(TEST_FILES
 	testio/iotest.txt
 	testio/iotest.zip
+	testio/studioio-encrypted.io
 )
 
 set(TEST_SRCS

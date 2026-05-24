@@ -5,6 +5,7 @@
 #pragma once
 
 #include "io/Archive.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 
 namespace io {
@@ -16,11 +17,17 @@ class ZipArchive : public Archive {
 private:
 	void *_zip = nullptr;
 	ArchiveFiles _files;
+	core::String _password;
 	void reset();
 	bool flush();
+	bool readEncryptedStream(uint32_t fileIndex, BufferedReadWriteStream &out);
 public:
 	ZipArchive();
 	virtual ~ZipArchive();
+
+	void setPassword(const core::String &password) {
+		_password = password;
+	}
 
 	bool isWrite() const;
 	static bool validStream(io::SeekableReadStream &stream);
@@ -34,6 +41,6 @@ public:
 	void shutdown() override;
 };
 
-ArchivePtr openZipArchive(io::SeekableReadStream *stream);
+ArchivePtr openZipArchive(io::SeekableReadStream *stream, const core::String &password = {});
 
 } // namespace io

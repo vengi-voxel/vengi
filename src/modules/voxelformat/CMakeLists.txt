@@ -271,6 +271,7 @@ set(TEST_FILES
 	"tests/cc.hva"
 	"tests/ldraw-simple.ldr"
 	"tests/ldraw-simple.mpd"
+	"testio/studioio-encrypted.io"
 	"tests/cc.vxl"
 	"tests/bug636/legs.vxl"
 	"tests/bug636/legs.hva"

@@ -7,10 +7,66 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/ZipReadStream.h"
 #include "io/external/miniz.h"
 #include "io/Stream.h"
 
 namespace io {
+
+namespace priv {
+
+constexpr int kZipLocalHeaderSize = 30;
+constexpr int kZipEncryptHeaderSize = 12;
+
+// PKWARE traditional zip encryption uses a different CRC-32 update than mz_crc32().
+static uint32_t zipCryptoCrc32(uint32_t crc, uint8_t b) {
+	static uint32_t table[256];
+	static bool tableInit = false;
+	if (!tableInit) {
+		for (uint32_t i = 0; i < 256; ++i) {
+			uint32_t r = i;
+			for (int j = 0; j < 8; ++j) {
+				r = (r & 1) ? (r >> 1) ^ 0xEDB88320u : (r >> 1);
+			}
+			table[i] = r;
+		}
+		tableInit = true;
+	}
+	return table[(crc ^ b) & 0xff] ^ (crc >> 8);
+}
+
+static void zipCryptoUpdateKeys(mz_uint32 keys[3], uint8_t c) {
+	keys[0] = zipCryptoCrc32(keys[0], c);
+	keys[1] = (keys[1] + (keys[0] & 0xff)) * 134775813 + 1;
+	const uint8_t keyshift = (uint8_t)(keys[1] >> 24);
+	keys[2] = zipCryptoCrc32(keys[2], keyshift);
+}
+
+static void zipCryptoInitKeys(const char *password, mz_uint32 keys[3]) {
+	keys[0] = 305419896;
+	keys[1] = 591751049;
+	keys[2] = 878082192;
+	if (password == nullptr) {
+		return;
+	}
+	while (*password != '\0') {
+		zipCryptoUpdateKeys(keys, (uint8_t)*password);
+		++password;
+	}
+}
+
+static uint8_t zipCryptoDecryptByte(const mz_uint32 keys[3]) {
+	const mz_uint32 temp = ((keys[2] & 0xffff) | 2);
+	return (uint8_t)(((temp * (temp ^ 1)) >> 8) & 0xff);
+}
+
+static uint8_t zipCryptoDecode(mz_uint32 keys[3], uint8_t c) {
+	c ^= zipCryptoDecryptByte(keys);
+	zipCryptoUpdateKeys(keys, c);
+	return c;
+}
+
+} // namespace priv
 
 static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf, size_t targetBufSize) {
 	io::SeekableReadStream *stream = (io::SeekableReadStream *)userdata;
@@ -177,7 +233,7 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 		if (mz_zip_reader_is_file_a_directory(zip, i)) {
 			continue;
 		}
-		if (mz_zip_reader_is_file_encrypted(zip, i)) {
+		if (mz_zip_reader_is_file_encrypted(zip, i) && _password.empty()) {
 			continue;
 		}
 		if (!mz_zip_reader_file_stat(zip, i, &zipStat)) {
@@ -246,6 +302,83 @@ bool ZipArchive::flush() {
 	return true;
 }
 
+bool ZipArchive::readEncryptedStream(uint32_t fileIndex, BufferedReadWriteStream &out) {
+	mz_zip_archive *zip = (mz_zip_archive *)_zip;
+	mz_zip_archive_file_stat stat;
+	if (!mz_zip_reader_file_stat(zip, fileIndex, &stat)) {
+		return false;
+	}
+	uint8_t localHeader[priv::kZipLocalHeaderSize];
+	if (zip->m_pRead(zip->m_pIO_opaque, stat.m_local_header_ofs, localHeader, priv::kZipLocalHeaderSize) !=
+		priv::kZipLocalHeaderSize) {
+		Log::error("Failed to read zip local header");
+		return false;
+	}
+	const uint16_t filenameLen = (uint16_t)localHeader[26] | ((uint16_t)localHeader[27] << 8);
+	const uint16_t extraLen = (uint16_t)localHeader[28] | ((uint16_t)localHeader[29] << 8);
+	const mz_uint32 compSize =
+		(mz_uint32)localHeader[18] | ((mz_uint32)localHeader[19] << 8) | ((mz_uint32)localHeader[20] << 16) |
+		((mz_uint32)localHeader[21] << 24);
+	const mz_uint64 dataOffset = stat.m_local_header_ofs + priv::kZipLocalHeaderSize + filenameLen + extraLen;
+
+	if (compSize < priv::kZipEncryptHeaderSize) {
+		Log::error("Encrypted zip entry is too small");
+		return false;
+	}
+
+	uint8_t *encrypted = (uint8_t *)core_malloc((size_t)compSize);
+	if (encrypted == nullptr) {
+		return false;
+	}
+	if (zip->m_pRead(zip->m_pIO_opaque, dataOffset, encrypted, (size_t)compSize) != compSize) {
+		Log::error("Failed to read encrypted zip data");
+		core_free(encrypted);
+		return false;
+	}
+
+	mz_uint32 keys[3];
+	priv::zipCryptoInitKeys(_password.c_str(), keys);
+	uint8_t *const encryptedData = encrypted;
+	for (int i = 0; i < priv::kZipEncryptHeaderSize; ++i) {
+		priv::zipCryptoDecode(keys, encryptedData[i]);
+	}
+
+	BufferedReadWriteStream decryptedCompressed;
+	const size_t encryptedPayloadSize = (size_t)stat.m_comp_size - priv::kZipEncryptHeaderSize;
+	decryptedCompressed.reserve((int)encryptedPayloadSize);
+	for (size_t i = priv::kZipEncryptHeaderSize; i < (size_t)compSize; ++i) {
+		const uint8_t b = priv::zipCryptoDecode(keys, encryptedData[i]);
+		if (decryptedCompressed.write(&b, 1) != 1) {
+			return false;
+		}
+	}
+	decryptedCompressed.seek(0);
+
+	bool success = false;
+	if (stat.m_method == 0) {
+		success = out.write(decryptedCompressed.getBuffer(), decryptedCompressed.size()) == decryptedCompressed.size();
+	} else if (stat.m_method != MZ_DEFLATED) {
+		Log::error("Unsupported compression method %i in encrypted zip entry", stat.m_method);
+	} else {
+		ZipReadStream inflateStream(decryptedCompressed, (int)decryptedCompressed.size());
+		uint8_t buf[4096];
+		success = true;
+		while (!inflateStream.eos() && !inflateStream.err()) {
+			const int read = inflateStream.read(buf, sizeof(buf));
+			if (read <= 0) {
+				break;
+			}
+			if (out.write(buf, (size_t)read) != read) {
+				success = false;
+				break;
+			}
+		}
+		success = success && !inflateStream.err();
+	}
+	core_free(encrypted);
+	return success;
+}
+
 SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
 	if ((mz_zip_archive *)_zip == nullptr) {
 		Log::error("No zip archive loaded");
@@ -264,8 +397,20 @@ SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
 		return nullptr;
 	}
 
-	BufferedReadWriteStream *stream = new BufferedReadWriteStream(stat.m_uncomp_size);
-	if (!mz_zip_reader_extract_to_callback((mz_zip_archive *)_zip, fileIndex, ziparchive_write_callback, stream, 0)) {
+	BufferedReadWriteStream *stream = new BufferedReadWriteStream((int)stat.m_uncomp_size);
+	if (stat.m_is_encrypted) {
+		if (_password.empty()) {
+			Log::error("File '%s' is encrypted but no zip password was given", normalized.c_str());
+			delete stream;
+			return nullptr;
+		}
+		if (!readEncryptedStream(fileIndex, *stream)) {
+			Log::error("Failed to decrypt file '%s' from zip", normalized.c_str());
+			delete stream;
+			return nullptr;
+		}
+	} else if (!mz_zip_reader_extract_to_callback((mz_zip_archive *)_zip, fileIndex, ziparchive_write_callback, stream,
+												  0)) {
 		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::error("Failed to extract file '%s' from zip: %s", normalized.c_str(), err);
@@ -319,12 +464,22 @@ SeekableWriteStream *ZipArchive::writeStream(const core::String &filePath) {
 	return stream;
 }
 
-ArchivePtr openZipArchive(io::SeekableReadStream *stream) {
+ArchivePtr openZipArchive(io::SeekableReadStream *stream, const core::String &password) {
 	if (!stream || !ZipArchive::validStream(*stream)) {
 		return ArchivePtr{};
 	}
 	core::SharedPtr<ZipArchive> za = core::make_shared<ZipArchive>();
-	za->init("", stream);
+	za->setPassword(password);
+	if (!za->init("", stream)) {
+		return ArchivePtr{};
+	}
+	if (!password.empty()) {
+		ArchiveFiles files;
+		za->list("", files, "");
+		if (files.empty()) {
+			return ArchivePtr{};
+		}
+	}
 	return za;
 }
 
