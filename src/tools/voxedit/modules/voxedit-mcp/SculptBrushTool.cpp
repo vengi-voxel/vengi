@@ -42,12 +42,15 @@ static SculptMode parseSculptMode(const core::String &mode) {
 	if (mode == "reskin") {
 		return SculptMode::Reskin;
 	}
+	if (mode == "smoothwall") {
+		return SculptMode::SmoothWall;
+	}
 	return SculptMode::Erode;
 }
 
 SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	_tool.set("description",
-			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap, SquashToPlane, Reskin). "
+			  "Sculpt selected voxels with various modes (Erode, Grow, Flatten, SmoothAdditive, SmoothErode, SmoothGaussian, BridgeGap, SquashToPlane, Reskin, SmoothWall). "
 			  "Requires a selection first (use voxedit_select_brush to select voxels before sculpting). "
 			  "Reskin mode applies a skin pattern from the clipboard onto the selected surface.");
 
@@ -69,7 +72,8 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 					   "'smootherode' (smooth by removing), 'smoothgaussian' (Gaussian height blur), "
 				   "'bridgegap' (connect boundary voxels with lines to bridge gaps), "
 				   "'squashtoplane' (project all voxels onto the clicked plane), "
-				   "'reskin' (apply skin pattern from clipboard onto surface)");
+				   "'reskin' (apply skin pattern from clipboard onto surface), "
+				   "'smoothwall' (interpolate surface heights from edge columns to smooth a wall)");
 	json::Json enumArr = json::Json::array();
 	enumArr.push("erode");
 	enumArr.push("grow");
@@ -80,6 +84,7 @@ SculptBrushTool::SculptBrushTool() : BrushTool("voxedit_sculpt_brush") {
 	enumArr.push("bridgegap");
 	enumArr.push("squashtoplane");
 	enumArr.push("reskin");
+	enumArr.push("smoothwall");
 	sculptModeProp.set("enum", enumArr);
 	sculptModeProp.set("default", "erode");
 	properties.set("sculptMode", sculptModeProp);

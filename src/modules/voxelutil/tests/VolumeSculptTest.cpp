@@ -1015,20 +1015,20 @@ TEST_F(VolumeSculptTest, testReskinBlendTiling) {
 		}
 	}
 
-	// 2x2x1 skin: checkerboard pattern
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	// 2x2x1 skin: checkerboard pattern (Y=depth, X=U, Z=V)
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
-	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
-	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+	skin.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 13));
 
 	ReskinConfig config;
 	config.mode = ReskinMode::Blend;
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
-	config.skinUpAxis = math::Axis::Z;
+	config.preview = false;
 
 	const int changed = sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	EXPECT_GT(changed, 0);
@@ -1053,12 +1053,12 @@ TEST_F(VolumeSculptTest, testReskinBlendWithOffset) {
 		}
 	}
 
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
-	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
-	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+	skin.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 13));
 
 	// First apply without offset
 	ReskinConfig config;
@@ -1066,6 +1066,7 @@ TEST_F(VolumeSculptTest, testReskinBlendWithOffset) {
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
+	config.preview = false;
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	const uint8_t colorAtOriginNoOffset = volume.voxel(0, 0, 0).getColor();
 
@@ -1100,16 +1101,16 @@ TEST_F(VolumeSculptTest, testReskinNegateCarves) {
 	}
 
 	// 2x2x1 skin: only one voxel solid (at 0,0,0), rest air
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Negate;
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
+	config.preview = false;
 
 	const int before = countSolid(volume);
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
@@ -1130,17 +1131,17 @@ TEST_F(VolumeSculptTest, testReskinReplaceRemovesWhereAir) {
 	}
 
 	// 2x2x1 skin: only top-left is solid
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
-	// (1,0,0), (0,1,0), (1,1,0) are air
+	// (1,0,0), (0,0,1), (1,0,1) are air
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Replace;
 	config.tile = ReskinTile::Once;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
+	config.preview = false;
 
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	// Only 1 voxel should remain (where skin had solid)
@@ -1159,21 +1160,21 @@ TEST_F(VolumeSculptTest, testReskinFollowSurface) {
 	volume.setVoxel(1, 0, 0, surface);
 	volume.setVoxel(1, 1, 0, surface);
 
-	// 1x1x2 skin: 2 layers deep, both solid with different colors
-	voxel::Region skinRegion(0, 0, 0, 0, 0, 1);
+	// 1x1x2 skin: 2 layers deep, both solid with different colors (Y=depth)
+	voxel::Region skinRegion(0, 0, 0, 0, 1, 0);
 	voxel::RawVolume skin(skinRegion);
-	skin.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 20)); // top layer
+	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 20)); // top layer
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 21)); // deeper layer
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Blend;
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 2;
+	config.preview = false;
 
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
-	// Skin base (Z=0, color 21) placed at surface, peak (Z=1, color 20) one layer above.
+	// Skin base (Y=0, color 21) placed at surface, peak (Y=1, color 20) one layer above.
 	// Low column surface at y=0: base goes to y=0
 	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 21);
 	// High column surface at y=1: base goes to y=1
@@ -1202,12 +1203,12 @@ TEST_F(VolumeSculptTest, testReskinZOffsetNegative) {
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 30));
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Blend;
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
 	config.zOffset = -1;
+	config.preview = false;
 
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	// Surface is y=1. zOffset=-1 shifts down: skin applies at y=0.
@@ -1237,12 +1238,12 @@ TEST_F(VolumeSculptTest, testReskinZOffsetPositive) {
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 30));
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Blend;
 	config.tile = ReskinTile::Repeat;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
 	config.zOffset = 1;
+	config.preview = false;
 
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	// Surface is y=0. zOffset=+1 shifts up: skin applies at y=1 (above surface).
@@ -1266,24 +1267,63 @@ TEST_F(VolumeSculptTest, testReskinInvertSkin) {
 	}
 
 	// 2x2x1 skin: only (0,0,0) is solid
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 
-	// Negate + Invert: where skin is solid → treated as air → keep. Where air → treated as solid → remove.
+	// Negate + Invert: where skin is solid -> treated as air -> keep. Where air -> treated as solid -> remove.
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Negate;
 	config.tile = ReskinTile::Once;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
 	config.invertSkin = true;
+	config.preview = false;
 
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	// Position (0,0,0) had skin solid → inverted to air → Negate keeps it
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()));
 	// Position (1,0,0) had skin air → inverted to solid → Negate removes it
 	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 0, 0).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testReskinInvertSkinReplace) {
+	// Replace + Invert: skin solid positions are removed, skin air positions keep existing voxels.
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x < 2; ++x) {
+		for (int z = 0; z < 2; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 2x2x1 skin: only (0,0,0) is solid
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
+	voxel::RawVolume skin(skinRegion);
+	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+
+	// Replace + Invert: skin solid → effectiveSolid=false → removed.
+	// Skin air → effectiveSolid=true → existing voxel preserved (no skin color to apply).
+	ReskinConfig config;
+	config.mode = ReskinMode::Replace;
+	config.tile = ReskinTile::Once;
+	config.follow = ReskinFollow::Voxel;
+	config.skinDepth = 1;
+	config.invertSkin = true;
+	config.preview = false;
+
+	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
+	// Position (0,0,0) had skin solid → inverted to air → Replace removes it
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
+	// Position (1,0,0) had skin air → inverted to solid → existing surface voxel preserved
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 0).getMaterial()));
+	EXPECT_EQ(1, volume.voxel(1, 0, 0).getColor());
+	// Position (0,0,1) had skin air → inverted to solid → existing surface voxel preserved
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 1).getMaterial()));
+	// Position (1,0,1) had skin air → inverted to solid → existing surface voxel preserved
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(1, 0, 1).getMaterial()));
 }
 
 TEST_F(VolumeSculptTest, testReskinNoClipboardNoChange) {
@@ -1303,7 +1343,7 @@ TEST_F(VolumeSculptTest, testReskinNoClipboardNoChange) {
 	voxel::RawVolume skin(skinRegion);
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
+	config.preview = false;
 	const int before = countSolid(volume);
 	sculptReskin(volume, region, skin, voxel::FaceNames::PositiveY, config);
 	EXPECT_EQ(countSolid(volume), before);
@@ -1324,23 +1364,23 @@ TEST_F(VolumeSculptTest, testReskinStretchMode) {
 		}
 	}
 
-	// 2x2x1 skin: quadrants with different colors
-	voxel::Region skinRegion(0, 0, 0, 1, 1, 0);
+	// 2x2x1 skin: quadrants with different colors (Y=depth, X=U, Z=V)
+	voxel::Region skinRegion(0, 0, 0, 1, 0, 1);
 	voxel::RawVolume skin(skinRegion);
 	skin.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
 	skin.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 11));
-	skin.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 12));
-	skin.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+	skin.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+	skin.setVoxel(1, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 13));
 
 	ReskinConfig config;
-	config.skinUpAxis = math::Axis::Z;
 	config.mode = ReskinMode::Blend;
 	config.tile = ReskinTile::Stretch;
 	config.follow = ReskinFollow::Voxel;
 	config.skinDepth = 1;
+	config.preview = false;
 
 	sculptReskin(solid, voxelMap, skin, voxel::FaceNames::PositiveY, config);
-	// With PositiveY face: U=Z, V=X. Stretch maps V(X) 0..3 to skin V(Y) 0..1.
+	// With PositiveY face: U=Z, V=X. Stretch maps V(X) 0..3 to skin V(Z) 0..1.
 	// Nearest-neighbor: X=0,1,2 -> skinV=0, X=3 -> skinV=1.
 	// Corner (X=0,Z=0) and corner (X=3,Z=3) should have different colors.
 	const voxel::Voxel v00 = voxelMap.voxel(glm::ivec3(0, 0, 0));
@@ -1353,6 +1393,497 @@ TEST_F(VolumeSculptTest, testReskinStretchMode) {
 	EXPECT_NE(v00.getColor(), v03.getColor());
 	// Opposite corners should differ
 	EXPECT_NE(v00.getColor(), v33.getColor());
+}
+
+TEST_F(VolumeSculptTest, testReskinFollowMedianSharedCorners) {
+	// 8x8 bumpy surface with a tall outlier column. Median follow should smooth the
+	// outlier into a plane rather than spike one column up like Voxel follow would.
+	// PositiveY face: perp1=Z(U), perp2=X(V).
+	voxel::Region region(0, 10);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Flat 8x8 surface at y=0
+	for (int x = 0; x < 8; ++x) {
+		for (int z = 0; z < 8; ++z) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+	// Single outlier column much higher
+	volume.setVoxel(0, 1, 0, surface);
+	volume.setVoxel(0, 2, 0, surface);
+	volume.setVoxel(0, 3, 0, surface);
+
+	// 4x4 skin, 1 layer deep, single color
+	voxel::Region skinRegion(0, 0, 0, 3, 0, 3);
+	voxel::RawVolume skin(skinRegion);
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			skin.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 50));
+		}
+	}
+
+	ReskinConfig config;
+	config.mode = ReskinMode::Replace;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::Median;
+	config.skinDepth = 1;
+	config.preview = false;
+
+	voxel::Region selRegion(0, 0, 0, 7, 3, 7);
+	sculptReskin(volume, selRegion, skin, voxel::FaceNames::PositiveY, config);
+
+	// The outlier column contributes one sample (out of tileW*tileH=16) to the corner
+	// medians around (0,0), so the median there stays at y=0. The skin should land at
+	// y=0 for most columns, NOT be pulled up to y=3 by the outlier.
+	int skinAtY0 = 0;
+	for (int x = 0; x < 8; ++x) {
+		for (int z = 0; z < 8; ++z) {
+			if (volume.voxel(x, 0, z).getColor() == 50) {
+				++skinAtY0;
+			}
+		}
+	}
+	// Most non-outlier columns should have skin at y=0 (on the median plane).
+	// (There are 63 non-outlier columns out of 64; the outlier column at (0,0) has
+	// surface at y=3 so it clamps upward and won't appear at y=0.)
+	EXPECT_GT(skinAtY0, 50);
+
+	// Adjacent tiles share corners: at the boundary between tile origin (0,0) and
+	// tile origin (0,4) in V (X direction), both tiles sample the same corner at v=4.
+	// So the interpolated height at v=3 (end of tile 0) and v=4 (start of tile 1)
+	// should be very close - no seam.
+	int heightV3 = -1;
+	int heightV4 = -1;
+	for (int y = 0; y < 10; ++y) {
+		if (volume.voxel(3, y, 2).getColor() == 50) {
+			heightV3 = y;
+		}
+		if (volume.voxel(4, y, 2).getColor() == 50) {
+			heightV4 = y;
+		}
+	}
+	EXPECT_GE(heightV3, 0);
+	EXPECT_GE(heightV4, 0);
+	EXPECT_LE(glm::abs(heightV3 - heightV4), 1);
+}
+
+TEST_F(VolumeSculptTest, testReskinAnchorTopRightCorner) {
+	// TopRight anchor + Once tile must place skin(0,0) at the max-U, min-V corner of the
+	// selection in the SAME world position whether in preview or final mode.
+	// Regression: the anchor offset formerly used effectiveSelW-1 which differs between preview
+	// and final, causing the texture to shift between modes.
+	// PositiveY face: perp1=Z(U), perp2=X(V). Selection Z=[0..19] is U axis, X=[0..3] is V axis.
+	voxel::Region region(0, 21);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surface = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int z = 0; z < 20; ++z) {
+		for (int x = 0; x < 4; ++x) {
+			volume.setVoxel(x, 0, z, surface);
+		}
+	}
+
+	// 4x4x1 skin. Rows in skin's U axis (Z) carry distinct colors.
+	voxel::Region skinRegion(0, 0, 0, 3, 0, 3);
+	voxel::RawVolume skin(skinRegion);
+	for (int x = 0; x < 4; ++x) {
+		skin.setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+		skin.setVoxel(x, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 11));
+		skin.setVoxel(x, 0, 2, voxel::createVoxel(voxel::VoxelType::Generic, 12));
+		skin.setVoxel(x, 0, 3, voxel::createVoxel(voxel::VoxelType::Generic, 13));
+	}
+
+	ReskinConfig config;
+	config.mode = ReskinMode::Replace;
+	config.tile = ReskinTile::Once;
+	config.follow = ReskinFollow::Voxel;
+	config.anchor = ReskinAnchor::TopRight;
+	config.skinDepth = 1;
+	config.preview = false;
+
+	voxel::Region selRegion(0, 0, 0, 3, 0, 19);
+	sculptReskin(volume, selRegion, skin, voxel::FaceNames::PositiveY, config);
+
+	// TopRight anchor: skin(0,0) lands at uIdx=selW-1=19 (Z=19), vIdx=0 (X=0).
+	// Skin covers Z=[16..19]. skin col 0 at Z=19, col 3 at Z=16.
+	EXPECT_EQ(volume.voxel(0, 0, 19).getColor(), 10);
+	EXPECT_EQ(volume.voxel(0, 0, 18).getColor(), 11);
+	EXPECT_EQ(volume.voxel(0, 0, 17).getColor(), 12);
+	EXPECT_EQ(volume.voxel(0, 0, 16).getColor(), 13);
+	// Outside the tile footprint (Z<16), surface stays untouched
+	EXPECT_EQ(volume.voxel(0, 0, 0).getColor(), 1);
+	EXPECT_EQ(volume.voxel(0, 0, 15).getColor(), 1);
+
+	// Now repeat in preview mode and verify preview puts skin at the SAME world positions.
+	voxel::RawVolume volume2(region);
+	for (int z = 0; z < 20; ++z) {
+		for (int x = 0; x < 4; ++x) {
+			volume2.setVoxel(x, 0, z, surface);
+		}
+	}
+	config.preview = true;
+	sculptReskin(volume2, selRegion, skin, voxel::FaceNames::PositiveY, config);
+	EXPECT_EQ(volume2.voxel(0, 0, 19).getColor(), 10);
+	EXPECT_EQ(volume2.voxel(0, 0, 18).getColor(), 11);
+	EXPECT_EQ(volume2.voxel(0, 0, 17).getColor(), 12);
+	EXPECT_EQ(volume2.voxel(0, 0, 16).getColor(), 13);
+}
+
+TEST_F(VolumeSculptTest, testReskinCornerOutsideSelectionStaysOnSurface) {
+	// Regression: tile corners that fall outside the selection used to return an absolute-zero
+	// fallback from cornerAvgAt/cornerMedianAt. For a selection at non-zero world Y, that zero
+	// pulled the bilinear interpolation off the surface, making the skin visibly float above
+	// (or below) the actual wall.
+	// Setup: flat surface at y=-5 (so absolute 0 disagrees with the real surface by 5 voxels),
+	// selection width 11 is not a multiple of tileW=4, and offsetU=3 pushes the last tile's
+	// far corner well past the selection edge so the sample neighborhood is entirely OOB.
+	// PositiveY face: perp1=Z(U), perp2=X(V).
+	voxel::Region region(-1, -10, -1, 12, 5, 12);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel surfaceVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	for (int x = 0; x <= 10; ++x) {
+		for (int z = 0; z <= 10; ++z) {
+			volume.setVoxel(x, -5, z, surfaceVoxel);
+		}
+	}
+
+	voxel::Region skinRegion(0, 0, 0, 3, 0, 3);
+	voxel::RawVolume skin(skinRegion);
+	const voxel::Voxel skinVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 50);
+	for (int x = 0; x < 4; ++x) {
+		for (int z = 0; z < 4; ++z) {
+			skin.setVoxel(x, 0, z, skinVoxel);
+		}
+	}
+
+	ReskinConfig config;
+	config.mode = ReskinMode::Replace;
+	config.tile = ReskinTile::Repeat;
+	config.follow = ReskinFollow::CornerAverage;
+	config.anchor = ReskinAnchor::TopLeft;
+	config.offsetU = 3;
+	config.skinDepth = 1;
+	config.zOffset = 0;
+	config.preview = false;
+
+	voxel::Region selRegion(0, -10, 0, 10, 5, 10);
+	sculptReskin(volume, selRegion, skin, voxel::FaceNames::PositiveY, config);
+
+	// The surface is flat at y=-5, so every skin voxel must land exactly there. Before the fix,
+	// columns where the far tile corner was entirely outside the selection saw an interpolated
+	// height pulled toward y=0 and the skin floated above the wall.
+	int skinAtSurface = 0;
+	int skinFloating = 0;
+	for (int x = 0; x <= 10; ++x) {
+		for (int z = 0; z <= 10; ++z) {
+			for (int y = -10; y <= 5; ++y) {
+				if (volume.voxel(x, y, z).getColor() == 50) {
+					if (y == -5) {
+						++skinAtSurface;
+					} else {
+						++skinFloating;
+					}
+				}
+			}
+		}
+	}
+	EXPECT_GT(skinAtSurface, 0);
+	EXPECT_EQ(skinFloating, 0);
+
+	// Same scenario but with Median follow: wider neighborhood, same OOB failure mode.
+	voxel::RawVolume volume2(region);
+	for (int x = 0; x <= 10; ++x) {
+		for (int z = 0; z <= 10; ++z) {
+			volume2.setVoxel(x, -5, z, surfaceVoxel);
+		}
+	}
+	config.follow = ReskinFollow::Median;
+	sculptReskin(volume2, selRegion, skin, voxel::FaceNames::PositiveY, config);
+
+	int medianAtSurface = 0;
+	int medianFloating = 0;
+	for (int x = 0; x <= 10; ++x) {
+		for (int z = 0; z <= 10; ++z) {
+			for (int y = -10; y <= 5; ++y) {
+				if (volume2.voxel(x, y, z).getColor() == 50) {
+					if (y == -5) {
+						++medianAtSurface;
+					} else {
+						++medianFloating;
+					}
+				}
+			}
+		}
+	}
+	EXPECT_GT(medianAtSurface, 0);
+	EXPECT_EQ(medianFloating, 0);
+}
+
+// ---- SmoothWall tests ----
+
+TEST_F(VolumeSculptTest, testSmoothWallFlatWallUnchanged) {
+	// A flat wall should not be modified since edge heights match interior heights
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill a flat slab: X=[1,6], Z=[1,6], Y=3 (face=PositiveY, height is uniform)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+
+	const int beforeCount = countSolid(volume);
+	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+										 voxel::FaceNames::PositiveY, 1, solid);
+	EXPECT_EQ(changed, 0);
+	EXPECT_EQ(countSolid(volume), beforeCount);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallTrimsProtrusion) {
+	// A flat wall with a single column bump in the center should be trimmed
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Flat slab at Y=3, X=[1,8], Z=[1,8]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	// Add a bump at center (4,4,4) and (4,5,4) -- 2 voxels high above the slab
+	volume.setVoxel(4, 4, 4, solid);
+	volume.setVoxel(4, 5, 4, solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const int clearDepth = 256;
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid, clearDepth);
+	EXPECT_GT(changed, 0);
+	// The bump should be trimmed -- the center column should no longer protrude
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 5, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallFillsValley) {
+	// Edges are high, center is low -- center should be filled up toward edge height
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill full slab at Y=[3,5], X=[1,8], Z=[1,8] (height 3 everywhere)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8)), solid);
+	// Dig a valley at center columns: remove Y=5 and Y=4 at (4,*,4)
+	volume.setVoxel(4, 5, 4, voxel::Voxel());
+	volume.setVoxel(4, 4, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
+	EXPECT_GT(changed, 0);
+	// Center column should have been filled back up toward Y=5
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 5, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallPreservesEdges) {
+	// Edge columns should never be modified even when they differ
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill slab Y=[3,5], X=[1,5], Z=[1,5]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5)), solid);
+
+	// Record edge column heights before smoothing
+	const bool edgeTopBefore = voxel::isBlocked(volume.voxel(1, 5, 1).getMaterial());
+	const bool edgeBotBefore = voxel::isBlocked(volume.voxel(1, 3, 1).getMaterial());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5));
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 10, solid);
+
+	// Edge columns (1,*,1) should be unchanged
+	EXPECT_EQ(voxel::isBlocked(volume.voxel(1, 5, 1).getMaterial()), edgeTopBefore);
+	EXPECT_EQ(voxel::isBlocked(volume.voxel(1, 3, 1).getMaterial()), edgeBotBefore);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallClearsFloatingVoxels) {
+	// Floating voxels above the smooth surface should be removed
+	voxel::Region region(0, 9);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Flat slab at Y=3, X=[1,8], Z=[1,8]
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	// Add floating voxels at Y=6 in the center (disconnected from the slab)
+	volume.setVoxel(4, 6, 4, solid);
+	volume.setVoxel(5, 6, 5, solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 7, 8));
+	const int clearDepth = 256;
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, clearDepth);
+	EXPECT_GT(changed, 0);
+	// Floating voxels should be gone -- they are above the smooth target
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 6, 4).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(5, 6, 5).getMaterial()));
+	// Slab should still exist
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallInverseDistanceReducesEdgeJump) {
+	// With a height difference between edges, IDW should produce a smaller
+	// jump at the first interior column compared to linear interpolation.
+	// IDW gives nearby edges much stronger influence (1/dist weighting).
+	voxel::Region region(0, 11);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Linear test: slab X=[1,10], Z=[1,10], left edge Y=3, right edge Y=8
+	voxel::RawVolume volumeLinear(region);
+	for (int zz = 1; zz <= 10; ++zz) {
+		for (int xx = 1; xx <= 10; ++xx) {
+			// Base height at Y=1..3 everywhere
+			fillRegion(volumeLinear, voxel::Region(glm::ivec3(xx, 1, zz), glm::ivec3(xx, 3, zz)), solid);
+		}
+		// Right edge columns taller (Y up to 8)
+		fillRegion(volumeLinear, voxel::Region(glm::ivec3(10, 1, zz), glm::ivec3(10, 8, zz)), solid);
+	}
+	// Copy for IDW test
+	voxel::RawVolume volumeIDW(volumeLinear);
+
+	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 9, 10));
+	sculptSmoothWall(volumeLinear, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::Linear);
+	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance);
+
+	// Find the height of column (X=2, Z=5) -- first interior column near the low edge.
+	// IDW should ease in, producing a height closer to the low edge (3)
+	// than linear interpolation does.
+	int linearHeight = 0;
+	int idwHeight = 0;
+	for (int yy = 9; yy >= 1; --yy) {
+		if (linearHeight == 0 && voxel::isBlocked(volumeLinear.voxel(2, yy, 5).getMaterial())) {
+			linearHeight = yy;
+		}
+		if (idwHeight == 0 && voxel::isBlocked(volumeIDW.voxel(2, yy, 5).getMaterial())) {
+			idwHeight = yy;
+		}
+	}
+	EXPECT_GT(linearHeight, 0);
+	EXPECT_GT(idwHeight, 0);
+	// IDW near the low edge should produce equal or lower height than linear
+	EXPECT_LE(idwHeight, linearHeight);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFlatWallUnchanged) {
+	// On a flat wall, all edge heights match interior heights, so EdgeAware
+	// should produce zero changes (same as other modes).
+	voxel::Region region(0, 7);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+
+	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+										 voxel::FaceNames::PositiveY, 1, solid, 0,
+										 voxelutil::SmoothWallInterp::EdgeAware);
+	EXPECT_EQ(changed, 0);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFollowsCorner) {
+	// L-shaped wall: left half at Y=3, right half at Y=6.
+	// At the corner column, EdgeAware should favor the coplanar edge that has
+	// the same height, while IDW would average more freely.
+	voxel::Region region(0, 11);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Left half: X=[1,5], Z=[1,10], height Y=1..3
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 1, 1), glm::ivec3(5, 3, 10)), solid);
+	// Right half: X=[6,10], Z=[1,10], height Y=1..6
+	fillRegion(volume, voxel::Region(glm::ivec3(6, 1, 1), glm::ivec3(10, 6, 10)), solid);
+
+	voxel::RawVolume volumeIDW(volume);
+
+	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 7, 10));
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::EdgeAware);
+	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance);
+
+	// Column at (3, *, 5) is interior, left half. Its coplanar left edge (1,*,5)
+	// is at height 3, which matches. EdgeAware should keep it closer to 3.
+	int edgeAwareHeight = 0;
+	int idwHeight = 0;
+	for (int yy = 7; yy >= 1; --yy) {
+		if (edgeAwareHeight == 0 && voxel::isBlocked(volume.voxel(3, yy, 5).getMaterial())) {
+			edgeAwareHeight = yy;
+		}
+		if (idwHeight == 0 && voxel::isBlocked(volumeIDW.voxel(3, yy, 5).getMaterial())) {
+			idwHeight = yy;
+		}
+	}
+	EXPECT_GT(edgeAwareHeight, 0);
+	EXPECT_GT(idwHeight, 0);
+	// EdgeAware should stay closer to the matching edge (height 3)
+	EXPECT_LE(edgeAwareHeight, idwHeight);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallTooSmallSelection) {
+	// Selection smaller than 3x3 in UV should return 0 changes
+	voxel::Region region(0, 5);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// 2-wide slab (too narrow for interior columns)
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2)), solid);
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2));
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
+	EXPECT_EQ(changed, 0);
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallFillHolesFilledInteriorHole) {
+	// A ring of solid columns surrounding an empty interior hole.
+	// With fillHoles=true the hole should be filled with interpolated heights.
+	// Layout (top view, face=PositiveY, Y=3):
+	//   X=[1,6], Z=[1,6] ring is solid at Y=3. Center (3,4) empty.
+	voxel::Region region(0, 8);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	// Fill the full slab first, then punch a 2x2 hole in the middle
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	volume.setVoxel(3, 3, 3, voxel::Voxel());
+	volume.setVoxel(3, 3, 4, voxel::Voxel());
+	volume.setVoxel(4, 3, 3, voxel::Voxel());
+	volume.setVoxel(4, 3, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	// fillHoles=true: hole should be filled
+	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+										 voxelutil::SmoothWallInterp::InverseDistance, true);
+	EXPECT_GT(changed, 0);
+	// All four hole positions should now be solid
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 3, 4).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 3).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
+}
+
+TEST_F(VolumeSculptTest, testSmoothWallSkipHolesLeavesInteriorHole) {
+	// Same ring setup as above, but with fillHoles=false.
+	// The hole should remain empty -- only solid columns are smoothed.
+	voxel::Region region(0, 8);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	volume.setVoxel(3, 3, 3, voxel::Voxel());
+	volume.setVoxel(3, 3, 4, voxel::Voxel());
+	volume.setVoxel(4, 3, 3, voxel::Voxel());
+	volume.setVoxel(4, 3, 4, voxel::Voxel());
+
+	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	// fillHoles=false: hole positions must stay empty
+	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
+					 voxelutil::SmoothWallInterp::InverseDistance, false);
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(3, 3, 3).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(3, 3, 4).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 3, 3).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(4, 3, 4).getMaterial()));
 }
 
 } // namespace voxelutil

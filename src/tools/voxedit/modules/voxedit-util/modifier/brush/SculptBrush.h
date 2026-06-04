@@ -9,9 +9,14 @@
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/GLM.h"
+#include "core/Optional.h"
 #include "core/ScopedPtr.h"
 #include "ui/IconsLucide.h"
 #include "core/String.h"
+#include "palette/Palette.h"
+#include "voxel/BitVolume.h"
+#include "voxel/DynamicVoxelArray.h"
+#include "voxel/SparseVolume.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
@@ -32,6 +37,7 @@ enum class SculptMode : uint8_t {
 	SmoothAdditive,
 	SmoothErode,
 	SmoothGaussian,
+	SmoothWall,
 	BridgeGap,
 	SquashToPlane,
 	ExtendPlane,
@@ -42,17 +48,18 @@ enum class SculptMode : uint8_t {
 
 // clang-format off
 static constexpr const char *SculptModeStr[] = {
-	NC_("Sculpt Modes", "Erode"),        NC_("Sculpt Modes", "Grow"),
-	NC_("Sculpt Modes", "Flatten"),      NC_("Sculpt Modes", "Smooth Additive"),
-	NC_("Sculpt Modes", "Smooth Erode"), NC_("Sculpt Modes", "Smooth Gaussian"),
-	NC_("Sculpt Modes", "Bridge Gap"),   NC_("Sculpt Modes", "Squash to Plane"),
-	NC_("Sculpt Modes", "Extend Plane"), NC_("Sculpt Modes", "Reskin")};
+	NC_("Sculpt Modes", "Erode"),         NC_("Sculpt Modes", "Grow"),
+	NC_("Sculpt Modes", "Flatten"),       NC_("Sculpt Modes", "Smooth Additive"),
+	NC_("Sculpt Modes", "Smooth Erode"),  NC_("Sculpt Modes", "Smooth Gaussian"),
+	NC_("Sculpt Modes", "Smooth Wall"),   NC_("Sculpt Modes", "Bridge Gap"),
+	NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Extend Plane"),
+	NC_("Sculpt Modes", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
-static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER, ICON_LC_SPROUT,    ICON_LC_LAND_PLOT,
-                                                  ICON_LC_WAVES,  ICON_LC_WAVES,     ICON_LC_BLEND,
-                                                  ICON_LC_LINK,   ICON_LC_MINIMIZE_2, ICON_LC_EXPAND,
-                                                  ICON_LC_PALETTE};
+static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER,    ICON_LC_SPROUT,     ICON_LC_LAND_PLOT,
+                                                  ICON_LC_WAVES,     ICON_LC_WAVES,      ICON_LC_BLEND,
+                                                  ICON_LC_BRICK_WALL, ICON_LC_LINK,      ICON_LC_MINIMIZE_2,
+                                                  ICON_LC_EXPAND,    ICON_LC_PALETTE};
 static_assert(lengthof(SculptModeIcons) == (int)SculptMode::Max, "SculptModeIcons size mismatch");
 // clang-format on
 
@@ -77,14 +84,20 @@ private:
 	int _trimPerStep = 1;
 	int _kernelSize = 4;
 	float _sigma = 4.0f;
+	int _smoothWallClearDepth = MaxSmoothWallClearDepth; ///< 0 = don't clear, max = clear entire depth
+	voxelutil::SmoothWallInterp _smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
+	bool _smoothWallFillHoles = true; ///< Fill enclosed empty areas with interpolated heights
 	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
 	int _squashPlaneCoord = 0;
 	bool _active = false;
+	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
 
 	// ExtendPlane parameters
 	int _removeAboveDepth = 0;
 	bool _extendOnly = true;
+	/** When set, ExtendPlane only removes voxels above the plane and never places new ones. */
+	bool _removeOnly = false;
 	int _brushRadius = 3;
 	float _planeGradU = 0.0f;
 	float _planeGradV = 0.0f;
@@ -102,14 +115,43 @@ private:
 	const voxel::RawVolume *_skinVolume = nullptr;
 	core::ScopedPtr<voxel::RawVolume> _ownedSkinVolume;
 	core::String _skinFilePath;
+	core::Optional<palette::Palette> _skinPalette;
 
-	SnapshotHelper _snapshotHelper;
+	// Original selected voxels captured at brush activation, stored as a flat array.
+	// Using DynamicVoxelArray instead of SparseVolume avoids O(N) hash insertions.
+	voxel::DynamicVoxelArray _snapshotEntries;
+	// Selection bounding box at capture time
+	voxel::Region _snapshotRegion;
+	// Volume region lower corner at snapshot capture time (to detect region shifts)
+	glm::ivec3 _capturedVolumeLower{0};
+
+	// Per-generate bookkeeping: tracks positions written during a single generate()
+	// call so the previous state can be restored before re-applying.
+	// Using BitVolume + flat array instead of SparseVolume avoids O(N) hash chain traversal
+	// per lookup/insert. For 5M+ entries this reduces history operations from ~30s to ~50ms.
+	voxel::DynamicVoxelArray _historyEntries;
+	voxel::BitVolume _historyBits;
+	voxel::Region _historyRegion;
+
+	// Cached data structures built from snapshot entries. Rebuilt when snapshot changes.
+	// Avoids rebuilding O(N) hash maps and bit arrays every frame.
+	bool _cachedBitVolumeValid = false;
+	voxel::BitVolume _cachedBitVolume;
+	voxel::SparseVolume _cachedVoxelMap;
+	bool _cachedVoxelMapValid = false;
+
+	void rebuildCachedBitVolume();
+	void rebuildCachedVoxelMap();
 
 	// Cached region for preview
 	voxel::Region _cachedRegion;
 	bool _cachedRegionValid = false;
 
+	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
+	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
 	void applySculpt(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
+	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 	void fitPlaneFromSnapshot();
 	void paintExtendPlane(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
@@ -177,33 +219,47 @@ public:
 	float sigma() const;
 	void setSigma(float sigma);
 
+	// SmoothWall accessors
+	static constexpr int MaxSmoothWallClearDepth = 256;
+	int smoothWallClearDepth() const;
+	void setSmoothWallClearDepth(int depth);
+	voxelutil::SmoothWallInterp smoothWallInterp() const;
+	void setSmoothWallInterp(voxelutil::SmoothWallInterp interp);
+	bool smoothWallFillHoles() const;
+	void setSmoothWallFillHoles(bool fillHoles);
+
 	// ExtendPlane accessors
 	static constexpr int MaxBrushRadius = 32;
-	static constexpr int MaxRemoveAboveDepth = 32;
+	static constexpr int MaxRemoveAboveDepth = 64;
 	int removeAboveDepth() const;
 	void setRemoveAboveDepth(int depth);
 	bool extendOnly() const;
 	void setExtendOnly(bool extend);
+	bool removeOnly() const;
+	void setRemoveOnly(bool removeOnly);
 	int brushRadius() const;
 	void setBrushRadius(int radius);
 	bool planeFitted() const;
 
 	// Reskin accessors
 	static constexpr int MaxReskinDepth = 32;
+	static constexpr int MaxReskinRepeat = 64;
 	const voxelutil::ReskinConfig &reskinConfig() const;
 	void setReskinMode(voxelutil::ReskinMode mode);
 	void setReskinFollow(voxelutil::ReskinFollow follow);
-	void setReskinAnchor(voxelutil::ReskinAnchor anchor);
 	void setReskinRotation(voxelutil::ReskinRotation rotation);
 	void setReskinTile(voxelutil::ReskinTile tile);
-	void setReskinMirrorU(bool mirror);
-	void setReskinMirrorV(bool mirror);
 	void setReskinOffsetU(int offset);
 	void setReskinOffsetV(int offset);
 	void setReskinSkinDepth(int depth);
 	void setReskinZOffset(int offset);
 	void setReskinInvertSkin(bool invert);
-	void setReskinSkinUpAxis(math::Axis axis);
+	void cycleReskinFace();
+	void cycleReskinAnchor();
+	void setReskinPreview(bool preview);
+	void setReskinMaxRepeatU(int count);
+	void setReskinMaxRepeatV(int count);
+	void setReskinSkinFace(voxel::FaceNames face);
 
 	/**
 	 * @brief Set the skin volume for reskin mode.
@@ -214,10 +270,12 @@ public:
 	/**
 	 * @brief Set an owned skin volume loaded from a file. The brush takes ownership.
 	 */
-	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath);
+	void setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath,
+							const palette::Palette *skinPalette = nullptr);
 
 	const voxel::RawVolume *skinVolume() const;
 	const core::String &skinFilePath() const;
+	const palette::Palette *skinPalette() const;
 };
 
 inline bool SculptBrush::managesOwnSelection() const {
@@ -231,7 +289,7 @@ inline bool SculptBrush::wantsContinuousExecution() const {
 inline bool SculptBrush::modeNeedsFace(SculptMode mode) {
 	return mode == SculptMode::Flatten || mode == SculptMode::SmoothAdditive || mode == SculptMode::SmoothErode ||
 		   mode == SculptMode::SmoothGaussian || mode == SculptMode::SquashToPlane || mode == SculptMode::ExtendPlane ||
-		   mode == SculptMode::Reskin;
+		   mode == SculptMode::Reskin || mode == SculptMode::SmoothWall;
 }
 
 inline SculptMode SculptBrush::sculptMode() const {
@@ -257,7 +315,7 @@ inline void SculptBrush::setIterations(int iterations) {
 }
 
 inline bool SculptBrush::hasSnapshot() const {
-	return _snapshotHelper.hasSnapshot();
+	return _hasSnapshot;
 }
 
 inline voxel::FaceNames SculptBrush::flattenFace() const {
@@ -309,6 +367,33 @@ inline void SculptBrush::setSigma(float sigma) {
 	_paramsDirty = true;
 }
 
+inline int SculptBrush::smoothWallClearDepth() const {
+	return _smoothWallClearDepth;
+}
+
+inline void SculptBrush::setSmoothWallClearDepth(int depth) {
+	_smoothWallClearDepth = glm::clamp(depth, 0, MaxSmoothWallClearDepth);
+	_paramsDirty = true;
+}
+
+inline voxelutil::SmoothWallInterp SculptBrush::smoothWallInterp() const {
+	return _smoothWallInterp;
+}
+
+inline void SculptBrush::setSmoothWallInterp(voxelutil::SmoothWallInterp interp) {
+	_smoothWallInterp = interp;
+	_paramsDirty = true;
+}
+
+inline bool SculptBrush::smoothWallFillHoles() const {
+	return _smoothWallFillHoles;
+}
+
+inline void SculptBrush::setSmoothWallFillHoles(bool fillHoles) {
+	_smoothWallFillHoles = fillHoles;
+	_paramsDirty = true;
+}
+
 inline const voxelutil::ReskinConfig &SculptBrush::reskinConfig() const {
 	return _reskinConfig;
 }
@@ -323,11 +408,6 @@ inline void SculptBrush::setReskinFollow(voxelutil::ReskinFollow follow) {
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinAnchor(voxelutil::ReskinAnchor anchor) {
-	_reskinConfig.anchor = anchor;
-	_paramsDirty = true;
-}
-
 inline void SculptBrush::setReskinRotation(voxelutil::ReskinRotation rotation) {
 	_reskinConfig.rotation = rotation;
 	_paramsDirty = true;
@@ -338,13 +418,30 @@ inline void SculptBrush::setReskinTile(voxelutil::ReskinTile tile) {
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinMirrorU(bool mirror) {
-	_reskinConfig.mirrorU = mirror;
+inline void SculptBrush::setReskinPreview(bool preview) {
+	_reskinConfig.preview = preview;
 	_paramsDirty = true;
 }
 
-inline void SculptBrush::setReskinMirrorV(bool mirror) {
-	_reskinConfig.mirrorV = mirror;
+inline void SculptBrush::setReskinMaxRepeatU(int count) {
+	_reskinConfig.maxRepeatU = glm::clamp(count, 0, MaxReskinRepeat);
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinMaxRepeatV(int count) {
+	_reskinConfig.maxRepeatV = glm::clamp(count, 0, MaxReskinRepeat);
+	_paramsDirty = true;
+}
+
+inline void SculptBrush::setReskinSkinFace(voxel::FaceNames face) {
+	_reskinConfig.skinFace = face;
+	// Re-populate skin depth for the new axis
+	if (_skinVolume != nullptr) {
+		const voxel::Region &sr = _skinVolume->region();
+		const int upIdx = math::getIndexForAxis(voxel::faceToAxis(face));
+		const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
+		_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+	}
 	_paramsDirty = true;
 }
 
@@ -373,6 +470,29 @@ inline void SculptBrush::setReskinInvertSkin(bool invert) {
 	_paramsDirty = true;
 }
 
+inline void SculptBrush::cycleReskinFace() {
+	// Cycle through: PositiveX, NegativeX, PositiveY, NegativeY, PositiveZ, NegativeZ
+	static constexpr voxel::FaceNames faces[] = {
+		voxel::FaceNames::PositiveX, voxel::FaceNames::NegativeX,
+		voxel::FaceNames::PositiveY, voxel::FaceNames::NegativeY,
+		voxel::FaceNames::PositiveZ, voxel::FaceNames::NegativeZ,
+	};
+	static constexpr int numFaces = 6;
+	for (int i = 0; i < numFaces; ++i) {
+		if (faces[i] == _reskinConfig.skinFace) {
+			setReskinSkinFace(faces[(i + 1) % numFaces]);
+			return;
+		}
+	}
+	setReskinSkinFace(voxel::FaceNames::PositiveX);
+}
+
+inline void SculptBrush::cycleReskinAnchor() {
+	int next = ((int)_reskinConfig.anchor + 1) % (int)voxelutil::ReskinAnchor::Max;
+	_reskinConfig.anchor = (voxelutil::ReskinAnchor)next;
+	_paramsDirty = true;
+}
+
 inline int SculptBrush::removeAboveDepth() const {
 	return _removeAboveDepth;
 }
@@ -388,6 +508,14 @@ inline bool SculptBrush::extendOnly() const {
 
 inline void SculptBrush::setExtendOnly(bool extend) {
 	_extendOnly = extend;
+}
+
+inline bool SculptBrush::removeOnly() const {
+	return _removeOnly;
+}
+
+inline void SculptBrush::setRemoveOnly(bool removeOnly) {
+	_removeOnly = removeOnly;
 }
 
 inline int SculptBrush::brushRadius() const {
@@ -408,6 +536,10 @@ inline const voxel::RawVolume *SculptBrush::skinVolume() const {
 
 inline const core::String &SculptBrush::skinFilePath() const {
 	return _skinFilePath;
+}
+
+inline const palette::Palette *SculptBrush::skinPalette() const {
+	return _skinPalette.value();
 }
 
 } // namespace voxedit

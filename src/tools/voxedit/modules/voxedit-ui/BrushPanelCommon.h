@@ -25,7 +25,8 @@ inline constexpr const char *ReskinModeStr[] = {NC_("Reskin Modes", "Replace"), 
 static_assert(lengthof(ReskinModeStr) == (int)voxelutil::ReskinMode::Max, "ReskinModeStr size mismatch");
 
 inline constexpr const char *ReskinFollowStr[] = {NC_("Reskin Follow", "None"), NC_("Reskin Follow", "Median"),
-												  NC_("Reskin Follow", "Voxel")};
+												  NC_("Reskin Follow", "Voxel"),
+												  NC_("Reskin Follow", "Corner Average")};
 static_assert(lengthof(ReskinFollowStr) == (int)voxelutil::ReskinFollow::Max, "ReskinFollowStr size mismatch");
 
 inline constexpr const char *ReskinAnchorStr[] = {NC_("Reskin Anchor", "Min/Min"), NC_("Reskin Anchor", "Min/Max"),
@@ -47,6 +48,11 @@ static_assert(lengthof(ReskinSkinAxisStr) == 3, "ReskinSkinAxisStr size mismatch
 inline constexpr const char *VoxelSamplingStr[] = {NC_("Scale Sampling", "Nearest"), NC_("Scale Sampling", "Linear"),
 												   NC_("Scale Sampling", "Cubic")};
 static_assert(lengthof(VoxelSamplingStr) == (int)voxel::VoxelSampling::Max, "VoxelSamplingStr size mismatch");
+
+inline constexpr const char *SmoothWallInterpStr[] = {NC_("Smooth Wall Interp", "Linear"),
+													  NC_("Smooth Wall Interp", "Inverse Distance"),
+													  NC_("Smooth Wall Interp", "Edge Aware")};
+static_assert(lengthof(SmoothWallInterpStr) == (int)voxelutil::SmoothWallInterp::Max, "SmoothWallInterpStr size mismatch");
 
 inline constexpr size_t BrushPanelDeferredTransformThreshold = 10000;
 

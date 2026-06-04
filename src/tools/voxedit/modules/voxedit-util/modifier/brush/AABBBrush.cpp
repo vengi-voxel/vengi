@@ -53,7 +53,10 @@ void AABBBrush::reset() {
 	Super::reset();
 	_secondPosValid = false;
 	_boxMode = false;
-	_mode = 0u;
+	// Preserve _mode (AABB/Single/Center) - it is a user preference set via UI commands
+	// (e.g., SelectBrush::setSelectMode(Paint) calls setSingleMode()). Resetting it here
+	// causes a mismatch: the derived brush still shows its mode in the UI, but the
+	// underlying AABBBrush reverts to AABB behavior after a brush type round-trip.
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);

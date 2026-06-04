@@ -2662,9 +2662,9 @@ static int luaVoxel_sculpt_reskin(lua_State *s) {
 	const char *followStr = luaL_optstring(s, 5, "voxel");
 	const int skinDepth = (int)luaL_optinteger(s, 6, 0);
 	const int surfaceOffset = (int)luaL_optinteger(s, 7, 0);
-	const char *skinUpStr = luaL_optstring(s, 8, "y");
 
 	voxelutil::ReskinConfig config;
+	config.preview = false;
 
 	if (core::string::iequals(modeStr, "replace")) {
 		config.mode = voxelutil::ReskinMode::Replace;
@@ -2678,16 +2678,24 @@ static int luaVoxel_sculpt_reskin(lua_State *s) {
 		config.follow = voxelutil::ReskinFollow::None;
 	} else if (core::string::iequals(followStr, "median")) {
 		config.follow = voxelutil::ReskinFollow::Median;
+	} else if (core::string::iequals(followStr, "corneraverage")) {
+		config.follow = voxelutil::ReskinFollow::CornerAverage;
 	} else {
 		config.follow = voxelutil::ReskinFollow::Voxel;
 	}
 
-	const math::Axis parsedAxis = math::toAxis(skinUpStr);
-	config.skinUpAxis = (parsedAxis != math::Axis::None) ? parsedAxis : math::Axis::Y;
-
 	const voxel::Region &skinRegion = skinVolume->volume()->region();
-	const int skinUpIdx = math::getIndexForAxis(config.skinUpAxis);
-	const int defaultDepth = skinRegion.getUpperCorner()[skinUpIdx] - skinRegion.getLowerCorner()[skinUpIdx] + 1;
+	// Auto-detect depth axis from thinnest dimension
+	const glm::ivec3 skinExtents = skinRegion.getUpperCorner() - skinRegion.getLowerCorner() + 1;
+	if (skinExtents.x <= skinExtents.y && skinExtents.x <= skinExtents.z) {
+		config.skinFace = voxel::FaceNames::PositiveX;
+	} else if (skinExtents.z <= skinExtents.x && skinExtents.z <= skinExtents.y) {
+		config.skinFace = voxel::FaceNames::PositiveZ;
+	} else {
+		config.skinFace = voxel::FaceNames::PositiveY;
+	}
+	const int depthIdx = math::getIndexForAxis(voxel::faceToAxis(config.skinFace));
+	const int defaultDepth = skinExtents[depthIdx];
 	config.skinDepth = skinDepth > 0 ? skinDepth : defaultDepth;
 	config.zOffset = surfaceOffset;
 
@@ -2722,10 +2730,9 @@ static int luaVoxel_sculpt_reskin_jsonhelp(lua_State *s) {
 			{"name": "skin", "type": "volume", "description": "The skin volume providing the pattern."},
 			{"name": "face", "type": "string", "description": "Face direction defining surface normal: 'up', 'down', 'left', 'right', 'front', 'back'."},
 			{"name": "mode", "type": "string", "description": "Reskin mode: 'replace' (skin overwrites, air removes), 'blend' (skin overwrites, air preserves), 'negate' (skin removes, air preserves) (optional, default 'blend')."},
-			{"name": "follow", "type": "string", "description": "Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column) (optional, default 'voxel')."},
-			{"name": "skinDepth", "type": "integer", "description": "Number of skin layers to apply (optional, default: full skin depth along up axis)."},
-			{"name": "surfaceOffset", "type": "integer", "description": "Offset from surface: positive = above, negative = below (optional, default 0)."},
-			{"name": "skinUpAxis", "type": "string", "description": "Which skin axis is outward: 'x', 'y', 'z' (optional, default 'y')."}
+			{"name": "follow", "type": "string", "description": "Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column), 'corneraverage' (bilinear from corners) (optional, default 'voxel')."},
+			{"name": "skinDepth", "type": "integer", "description": "Number of skin layers to apply (optional, default: full skin Y-axis depth)."},
+			{"name": "surfaceOffset", "type": "integer", "description": "Offset from surface: positive = above, negative = below (optional, default 0)."}
 		],
 		"returns": [
 			{"type": "integer", "description": "Number of voxels changed."}
@@ -2759,6 +2766,52 @@ static int luaVoxel_sculpt_smoothgaussian_jsonhelp(lua_State *s) {
 			{"name": "sigma", "type": "number", "description": "Standard deviation of the Gaussian bell curve (optional, default 1.0). Lower = sharper, higher = broader smoothing."},
 			{"name": "iterations", "type": "integer", "description": "Number of blur passes (optional, default 1)."},
 			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Number of voxels changed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static voxelutil::SmoothWallInterp luaVoxel_parseSmoothWallInterp(const char *str) {
+	if (SDL_strcmp(str, "linear") == 0) {
+		return voxelutil::SmoothWallInterp::Linear;
+	}
+	if (SDL_strcmp(str, "edgeaware") == 0) {
+		return voxelutil::SmoothWallInterp::EdgeAware;
+	}
+	return voxelutil::SmoothWallInterp::InverseDistance;
+}
+
+static int luaVoxel_sculpt_smoothwall(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 2);
+	const int iterations = (int)luaL_optinteger(s, 3, 1);
+	const int color = (int)luaL_optinteger(s, 4, 1);
+	const int removeAboveDepth = (int)luaL_optinteger(s, 5, 0);
+	const char *interpStr = luaL_optstring(s, 6, "inversedistance");
+	const voxelutil::SmoothWallInterp interp = luaVoxel_parseSmoothWallInterp(interpStr);
+	const bool fillHoles = lua_toboolean(s, 7) != 0 || lua_isnoneornil(s, 7);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	const int changed = voxelutil::sculptSmoothWall(*volume->volume(), volume->volume()->region(), face,
+													iterations, fillVoxel, removeAboveDepth, interp, fillHoles);
+	lua_pushinteger(s, changed);
+	return 1;
+}
+
+static int luaVoxel_sculpt_smoothwall_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "smoothwall",
+		"summary": "Smooth a wall surface by interpolating interior column heights from edge columns. For each interior (U,V) position, computes a target height from the nearest boundary columns in 4 directions. Edge columns are preserved for seamless blending.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to smooth."},
+			{"name": "face", "type": "string", "description": "Face direction defining the surface normal: 'up', 'down', 'left', 'right', 'front', 'back'."},
+			{"name": "iterations", "type": "integer", "description": "Number of smoothing passes (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "Palette color index for new voxels (optional, default 1)."},
+			{"name": "removeAboveDepth", "type": "integer", "description": "How many voxels above the smooth surface to clear (optional, default 0 = don't clear)."},
+			{"name": "interpolation", "type": "string", "description": "Interpolation mode: 'linear', 'inversedistance' (default, smooth curves), or 'edgeaware' (follows sharp corners by favoring edges with similar height)."},
+			{"name": "fillHoles", "type": "boolean", "description": "Fill enclosed empty areas with interpolated heights (optional, default true). When false, empty columns are skipped and only solid columns are smoothed."}
 		],
 		"returns": [
 			{"type": "integer", "description": "Number of voxels changed."}
@@ -6840,6 +6893,7 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"bridgegap", luaVoxel_sculpt_bridgegap, luaVoxel_sculpt_bridgegap_jsonhelp},
 		{"squashtoplane", luaVoxel_sculpt_squashtoplane, luaVoxel_sculpt_squashtoplane_jsonhelp},
 		{"reskin", luaVoxel_sculpt_reskin, luaVoxel_sculpt_reskin_jsonhelp},
+		{"smoothwall", luaVoxel_sculpt_smoothwall, luaVoxel_sculpt_smoothwall_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sculptFuncs, luaVoxel_metasculpt(), "g_sculpt");
