@@ -79,6 +79,7 @@
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeSelect.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VolumeMerger.h"
@@ -2865,6 +2866,68 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 	}
 
 	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+}
+
+void SceneManager::selectionFinalizeLasso(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	SelectBrush &brush = _modifier.selectBrush();
+	select::PolygonLasso &lasso = brush.polygonLasso();
+	if (!lasso.accumulating() || lasso.path().size() < 3) {
+		return;
+	}
+	// Copy path and axes before invalidating the strategy (invalidate() clears them)
+	const core::DynamicArray<glm::ivec3> path = lasso.path();
+	const int uAxis = lasso.uAxis();
+	const int vAxis = lasso.vAxis();
+	const int wAxis = lasso.faceAxisIdx();
+	const bool positiveNormal = voxel::isPositiveFace(lasso.face());
+	const int depthTolerance = lasso.depthTolerance();
+
+	voxel::RawVolume *volume = node->volume();
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+
+	// The in-progress polygon is only a viewport overlay (no volume marks), so there is
+	// nothing to revert before applying the selection.
+	lasso.invalidate();
+
+	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
+		const glm::ivec3 pos(x, y, z);
+		voxel::Voxel modified = v;
+		modified.setFlags(modified.getFlags() | voxel::FlagOutline);
+		volume->setVoxel(pos, modified);
+		dirtyRegion.accumulate(pos);
+	};
+	// Flood-fill the front surface inside the polygon: seed along the drawn edges, then expand
+	// across (u,v) cells staying on the same surface (depth continuity within the tolerance).
+	// This keeps the selection on the visible skin instead of wrapping down side walls, and
+	// still skips a disjoint structure that merely shares the (u, v) silhouette.
+	voxelutil::lassoFloodFillSurface(*volume, path, uAxis, vAxis, wAxis, positiveNormal,
+									 volume->region(), selectFunc, depthTolerance);
+
+	if (dirtyRegion.isValid()) {
+		modified(nodeId, dirtyRegion, SceneModifiedFlags::All);
+	}
+}
+
+void SceneManager::selectionCancelLasso(int nodeId) {
+	// The in-progress polygon is only a viewport overlay (no volume marks), so cancelling
+	// just discards the accumulated vertices.
+	SelectBrush &brush = _modifier.selectBrush();
+	brush.polygonLasso().invalidate();
+}
+
+void SceneManager::selectionLassoUndoVertex(int nodeId) {
+	SelectBrush &brush = _modifier.selectBrush();
+	select::PolygonLasso &lasso = brush.polygonLasso();
+	if (!lasso.accumulating() || lasso.path().size() < 2) {
+		return;
+	}
+	// Drop the last vertex. The overlay polyline is rebuilt from the path on the next
+	// PolygonLasso::update(), so no volume update is needed here.
+	lasso.popLastPathEntry();
 }
 
 void SceneManager::resetLastTrace() {

@@ -25,11 +25,17 @@ static SelectMode parseSelectMode(const core::String &mode) {
 	if (mode == "connected") {
 		return SelectMode::Connected;
 	}
+	if (mode == "rectangle") {
+		return SelectMode::Rectangle;
+	}
+	if (mode == "line") {
+		return SelectMode::Line;
+	}
 	return SelectMode::All;
 }
 
 SelectBrushTool::SelectBrushTool() : BrushTool("voxedit_select_brush") {
-	_tool.set("description", "Select voxels in a region with various modes (All, Surface, SameColor, FuzzyColor, Connected)");
+	_tool.set("description", "Select voxels in a region with various modes (All, Surface, SameColor, FuzzyColor, Connected, Rectangle, Line)");
 
 	json::Json inputSchema = json::Json::object();
 	inputSchema.set("type", "object");
@@ -47,16 +53,57 @@ SelectBrushTool::SelectBrushTool() : BrushTool("voxedit_select_brush") {
 	selectModeProp.set("type", "string");
 	selectModeProp.set("description",
 		"The selection mode: 'all' (all voxels), 'surface' (visible surface only), 'samecolor' (exact color match), "
-		"'fuzzycolor' (similar colors), 'connected' (flood fill same color)");
+		"'fuzzycolor' (similar colors), 'connected' (flood fill same color), 'rectangle' (only the twelve wireframe "
+		"edges of the box), 'line' (solid voxels along the straight 3D line between the region corners)");
 	json::Json _enumArr = json::Json::array();
 	_enumArr.push("all");
 	_enumArr.push("surface");
 	_enumArr.push("samecolor");
 	_enumArr.push("fuzzycolor");
 	_enumArr.push("connected");
+	_enumArr.push("rectangle");
+	_enumArr.push("line");
 	selectModeProp.set("enum", _enumArr);
 	selectModeProp.set("default", "all");
 	properties.set("selectMode", selectModeProp);
+
+	// Edge width for rectangle mode
+	json::Json edgeWidthProp = json::Json::object();
+	edgeWidthProp.set("type", "integer");
+	edgeWidthProp.set("description", "Edge width in voxels for rectangle mode (thickness of the selected box edges)");
+	edgeWidthProp.set("default", 1);
+	edgeWidthProp.set("minimum", 1);
+	edgeWidthProp.set("maximum", 32);
+	properties.set("edgeWidth", edgeWidthProp);
+
+	// Width for line mode
+	json::Json lineWidthProp = json::Json::object();
+	lineWidthProp.set("type", "integer");
+	lineWidthProp.set("description", "Width in voxels for line mode (thickness of the selected line)");
+	lineWidthProp.set("default", 1);
+	lineWidthProp.set("minimum", 1);
+	lineWidthProp.set("maximum", 32);
+	properties.set("lineWidth", lineWidthProp);
+
+	// Path mode for line and rectangle modes
+	json::Json pathModeProp = json::Json::object();
+	pathModeProp.set("type", "string");
+	pathModeProp.set("description", "Path tracking for 'line'/'rectangle' modes: 'followsurface' (snap depth to the "
+									"surface) or 'straight' (plain 3D chord). Default: followsurface for line, straight for rectangle");
+	json::Json _pathEnumArr = json::Json::array();
+	_pathEnumArr.push("followsurface");
+	_pathEnumArr.push("straight");
+	pathModeProp.set("enum", _pathEnumArr);
+	properties.set("pathMode", pathModeProp);
+
+	// In-plane rotation for the 2D rectangle outline
+	json::Json rectAngleProp = json::Json::object();
+	rectAngleProp.set("type", "integer");
+	rectAngleProp.set("description", "In-plane rotation in degrees for the rectangle outline (-180..180)");
+	rectAngleProp.set("default", 0);
+	rectAngleProp.set("minimum", -180);
+	rectAngleProp.set("maximum", 180);
+	properties.set("rectAngle", rectAngleProp);
 
 	// Color threshold for fuzzy color mode
 	json::Json thresholdProp = json::Json::object();
@@ -95,6 +142,10 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	const core::String selectModeStr = args.strVal("selectMode", "all").c_str();
 	const SelectMode selectMode = parseSelectMode(selectModeStr);
 	const float colorThreshold = args.floatVal("colorThreshold", 0.3f);
+	const int edgeWidth = args.intVal("edgeWidth", 1);
+	const int lineWidth = args.intVal("lineWidth", 1);
+	const core::String pathModeStr = args.strVal("pathMode", "").c_str();
+	const int rectAngle = args.intVal("rectAngle", 0);
 	const bool clearSelection = args.boolVal("clearSelection", false);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
@@ -128,11 +179,23 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	const BrushType prevBrushType = modifier.brushType();
 	const SelectMode prevSelectMode = selectBrush.selectMode();
 	const float prevColorThreshold = selectBrush.fuzzyColor().colorThreshold();
+	const int prevEdgeWidth = selectBrush.rectangle().edgeWidth();
+	const int prevLineWidth = selectBrush.line().width();
+	const select::PathMode prevLinePathMode = selectBrush.line().pathMode();
+	const int prevRectAngle = selectBrush.rectangle().angle();
 
 	// Configure the select brush
 	modifier.setBrushType(BrushType::Select);
 	selectBrush.setSelectMode(selectMode);
 	selectBrush.fuzzyColor().setColorThreshold(colorThreshold);
+	selectBrush.rectangle().setEdgeWidth(edgeWidth);
+	selectBrush.line().setWidth(lineWidth);
+	if (pathModeStr == "followsurface") {
+		selectBrush.line().setPathMode(select::PathMode::FollowSurface);
+	} else if (pathModeStr == "straight") {
+		selectBrush.line().setPathMode(select::PathMode::Straight);
+	}
+	selectBrush.rectangle().setAngle(rectAngle);
 	selectBrush.setBoxMode();
 
 	// Set up the AABB region
@@ -151,6 +214,10 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	// Restore previous state
 	selectBrush.setSelectMode(prevSelectMode);
 	selectBrush.fuzzyColor().setColorThreshold(prevColorThreshold);
+	selectBrush.rectangle().setEdgeWidth(prevEdgeWidth);
+	selectBrush.line().setWidth(prevLineWidth);
+	selectBrush.line().setPathMode(prevLinePathMode);
+	selectBrush.rectangle().setAngle(prevRectAngle);
 	modifier.setBrushType(prevBrushType);
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();

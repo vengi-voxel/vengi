@@ -332,6 +332,15 @@ public:
 	}
 
 	/**
+	 * @brief Whether the brush wants a voxel-volume preview generated each frame.
+	 * Brushes that preview themselves cheaply (e.g. a gizmo overlay) can return false to
+	 * skip the per-frame revert/mark of a preview volume - important for large operations.
+	 */
+	virtual bool wantsVolumePreview() const {
+		return true;
+	}
+
+	/**
 	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
 	 *
 	 * Called after endBrush() by the modifier button to push a single deferred undo entry

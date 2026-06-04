@@ -190,6 +190,13 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		return;
 	}
 
+	// Some brushes preview themselves with a cheap gizmo overlay (e.g. Line/Rectangle select) and
+	// don't want a per-frame preview volume - skip it. resetPreview() above already cleared any
+	// previous preview, and the gizmo is drawn separately by the viewport.
+	if (!brush->wantsVolumePreview()) {
+		return;
+	}
+
 	modifier.preExecuteBrush(activeVolume);
 	const voxel::Region &region = brush->calcRegion(brushContext);
 	if (!region.isValid()) {

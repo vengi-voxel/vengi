@@ -9,6 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace voxedit {
 
@@ -31,6 +32,8 @@ enum BrushGizmoOperation : uint32_t {
 	BrushGizmo_Line = (1u << 8),
 	/** Screen-space polygon overlay (e.g. lasso selection) - does not use ImGuizmo */
 	BrushGizmo_ScreenPolygon = (1u << 9),
+	/** World-space polyline overlay of arbitrary length (e.g. polygon lasso edges) - does not use ImGuizmo */
+	BrushGizmo_WorldPolyline = (1u << 10),
 };
 
 /**
@@ -67,6 +70,11 @@ struct BrushGizmoState {
 
 	/** Screen-space polygon points for BrushGizmo_ScreenPolygon (e.g. lasso) */
 	const core::DynamicArray<glm::vec2> *screenPolygon = nullptr;
+
+	/** World-space points for BrushGizmo_WorldPolyline - drawn as a polyline with a dot at each vertex */
+	const core::DynamicArray<glm::vec3> *worldPolyline = nullptr;
+	/** When true, draw a closing segment from the last point back to the first (polygon ready to close) */
+	bool worldPolylineClosed = false;
 };
 
 } // namespace voxedit

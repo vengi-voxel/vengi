@@ -96,6 +96,100 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 	ImGui::Text(_("Size: %d x %d x %d"), size.x, size.y, size.z);
 }
 
+void BrushPanelSelect::handleSelectRectangle(BrushPanelContext &ctx, int nodeId) {
+	select::Rectangle &rect = ctx.sceneMgr->modifier().selectBrush().rectangle();
+	ImGui::SeparatorText(_("Rectangle"));
+	ImGui::TextUnformatted(_("Draw a 2D rectangle outline on the surface"));
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+	auto adjusterSlider = [&](const char *id, const char *label, const char *tooltip, int value, int lo, int hi,
+							  void (select::Rectangle::*setter)(int)) {
+		ImGui::TextUnformatted(label);
+		ImGui::TooltipTextUnformatted(tooltip);
+		ImGui::PushID(id);
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			(rect.*setter)(value - 1);
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##slider", &value, lo, hi)) {
+			(rect.*setter)(value);
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			(rect.*setter)(value + 1);
+		}
+		ImGui::PopID();
+	};
+
+	adjusterSlider("rectthickness", _("Thickness"), _("Thickness in voxels of the rectangle outline lines."),
+				   rect.edgeWidth(), 1, 32, &select::Rectangle::setEdgeWidth);
+	adjusterSlider("rectangle", _("Rotation (deg)"),
+				   _("Rotate the rectangle in the surface plane, e.g. for a 45 degree rectangle."), rect.angle(), -180,
+				   180, &select::Rectangle::setAngle);
+	adjusterSlider("rectdeviation", _("Max surface deviation"),
+				   _("How far the surface may deviate from the straight edge and still be followed."),
+				   rect.maxDeviation(), 0, 64, &select::Rectangle::setMaxDeviation);
+}
+
+void BrushPanelSelect::handleSelectLine(BrushPanelContext &ctx, int nodeId) {
+	SelectBrush &brush = ctx.sceneMgr->modifier().selectBrush();
+	ImGui::SeparatorText(_("Line"));
+	int pathMode = (int)brush.line().pathMode();
+	if (ImGui::Combo(_("Path"), &pathMode, select::PathModeStr, (int)select::PathMode::Max)) {
+		brush.line().setPathMode((select::PathMode)pathMode);
+	}
+	ImGui::TooltipTextUnformatted(
+		_("Follow surface snaps the line depth to the surface so the width always reaches it; "
+		  "Straight draws a plain 3D chord between the two clicked points."));
+	static constexpr int MaxLineWidth = 32;
+	int width = brush.line().width();
+	const float btnW = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	ImGui::TextUnformatted(_("Width"));
+	ImGui::TooltipTextUnformatted(
+		_("Thickness in voxels of the selected line. Solid voxels within this width of the straight line "
+		  "between the two clicked points are selected."));
+	ImGui::PushID("linewidth");
+	if (ImGui::Button("-", ImVec2(btnW, 0))) {
+		brush.line().setWidth(width - 1);
+	}
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+	if (ImGui::SliderInt("##linewidth", &width, 1, MaxLineWidth)) {
+		brush.line().setWidth(width);
+	}
+	ImGui::SameLine(0, spacing);
+	if (ImGui::Button("+", ImVec2(btnW, 0))) {
+		brush.line().setWidth(width + 1);
+	}
+	ImGui::PopID();
+
+	if (brush.line().pathMode() == select::PathMode::FollowSurface) {
+		static constexpr int MaxLineDeviation = 64;
+		int deviation = brush.line().maxDeviation();
+		ImGui::TextUnformatted(_("Max surface deviation"));
+		ImGui::TooltipTextUnformatted(
+			_("Follow surface: how far the surface may deviate from the straight 3D line and still be followed. "
+			  "Larger values crawl further over steps; too large may snap to a far surface."));
+		ImGui::PushID("linedeviation");
+		if (ImGui::Button("-", ImVec2(btnW, 0))) {
+			brush.line().setMaxDeviation(deviation - 1);
+		}
+		ImGui::SameLine(0, spacing);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
+		if (ImGui::SliderInt("##linedeviation", &deviation, 0, MaxLineDeviation)) {
+			brush.line().setMaxDeviation(deviation);
+		}
+		ImGui::SameLine(0, spacing);
+		if (ImGui::Button("+", ImVec2(btnW, 0))) {
+			brush.line().setMaxDeviation(deviation + 1);
+		}
+		ImGui::PopID();
+	}
+}
+
 void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNode(nodeId);
 	if (node == nullptr) {
@@ -247,6 +341,12 @@ void BrushPanelSelect::handleSelectLasso(command::CommandExecutionListener &list
 	ImGui::TextUnformatted(_("Click and drag to draw a selection polygon"));
 }
 
+void BrushPanelSelect::handleSelectPolygonLasso(BrushPanelContext &ctx) {
+	ImGui::SeparatorText(_("Polygon lasso"));
+	ImGui::TextUnformatted(_("Click to drop vertices; click near the first to close"));
+	ImGui::TextUnformatted(_("Fills the visible surface inside the polygon"));
+}
+
 void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	SelectBrush &brush = modifier.selectBrush();
@@ -301,6 +401,10 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 		handleSelectLasso(listener);
 	}
 
+	if (brush.selectMode() == SelectMode::PolygonLasso) {
+		handleSelectPolygonLasso(ctx);
+	}
+
 	if (brush.selectMode() == SelectMode::Paint) {
 		handleSelectPaint(ctx, nodeId);
 	}
@@ -311,6 +415,14 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 
 	if (brush.selectMode() == SelectMode::Box3D) {
 		handleSelectBox3D(ctx, nodeId);
+	}
+
+	if (brush.selectMode() == SelectMode::Rectangle) {
+		handleSelectRectangle(ctx, nodeId);
+	}
+
+	if (brush.selectMode() == SelectMode::Line) {
+		handleSelectLine(ctx, nodeId);
 	}
 
 	if (brush.selectMode() == SelectMode::Script) {
