@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "../Config.h"
 #include "../SceneManager.h"
 #include "app/tests/AbstractTest.h"

@@ -547,6 +547,10 @@ public:
 	bool newScene(bool force, const core::String &name, const voxel::Region &region);
 	int moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
 
+	// Called by Regrid after bulk add/remove operations that bypass moveNodeToSceneGraph
+	// and nodeRemove to avoid O(N^2) updateTransforms. Notifies the renderer and marks dirty.
+	void onRegridComplete(const core::DynamicArray<int> &newCellIds, const core::DynamicArray<int> &deletedSourceIds);
+
 	/**
 	 * @return @c true if the scene was modified and not saved yet
 	 */
