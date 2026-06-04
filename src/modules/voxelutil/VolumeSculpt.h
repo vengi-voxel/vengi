@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include "math/Axis.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Face.h"
@@ -11,12 +12,24 @@
 
 #include <stdint.h>
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 class RawVolume;
 class Region;
 } // namespace voxel
 
 namespace voxelutil {
+
+enum class SmoothWallInterp : uint8_t {
+	Linear,           ///< Bilinear interpolation between opposite edges (constant slope)
+	InverseDistance,   ///< Inverse-distance weighting from 4 coplanar edge columns (smooth curves)
+	EdgeAware,         ///< IDW weighted by height similarity: flat coplanar edges dominate (sharp corners)
+
+	Max
+};
 
 enum class ReskinMode : uint8_t {
 	Replace, ///< Skin solid overwrites surface; skin air removes surface voxels
@@ -27,18 +40,10 @@ enum class ReskinMode : uint8_t {
 };
 
 enum class ReskinFollow : uint8_t {
-	None,   ///< Flat plane at max/min surface height
-	Median, ///< Flat plane at median surface height
-	Voxel,  ///< Per-column surface following
-
-	Max
-};
-
-enum class ReskinAnchor : uint8_t {
-	MinMin, ///< UV origin at min-U, min-V corner
-	MinMax, ///< UV origin at min-U, max-V corner
-	MaxMin, ///< UV origin at max-U, min-V corner
-	MaxMax, ///< UV origin at max-U, max-V corner
+	None,           ///< Flat plane at max/min surface height
+	Median,         ///< Flat plane at median surface height
+	Voxel,          ///< Per-column surface following
+	CornerAverage,  ///< Bilinear interpolation from 4 corner averages
 
 	Max
 };
@@ -60,25 +65,41 @@ enum class ReskinTile : uint8_t {
 	Max
 };
 
+enum class ReskinAnchor : uint8_t {
+	TopLeft,     ///< Skin (0,0) maps to selection min-U, min-V corner
+	TopRight,    ///< Skin (0,0) maps to selection max-U, min-V corner
+	BottomLeft,  ///< Skin (0,0) maps to selection min-U, max-V corner
+	BottomRight, ///< Skin (0,0) maps to selection max-U, max-V corner
+
+	Max
+};
+
 /**
  * @brief Configuration for the reskin sculpt operation.
  */
 struct ReskinConfig {
 	ReskinMode mode = ReskinMode::Blend;
 	ReskinFollow follow = ReskinFollow::Voxel;
-	ReskinAnchor anchor = ReskinAnchor::MinMin;
 	ReskinRotation rotation = ReskinRotation::R0;
 	ReskinTile tile = ReskinTile::Repeat;
-	bool mirrorU = false;
-	bool mirrorV = false;
 	int offsetU = 0;
 	int offsetV = 0;
 	int skinDepth = 1;
 	/// Vertical offset: positive = skin floats above surface, negative = sinks below
 	int zOffset = 0;
 	bool invertSkin = false;
-	/// Which axis of the skin volume is the outward direction (default Y = natural up in editor)
-	math::Axis skinUpAxis = math::Axis::Y;
+	/// Preview mode: only apply a 2x2 tile area for fast feedback
+	bool preview = true;
+	/// Max repeat count for U tiling (0 = unlimited)
+	int maxRepeatU = 0;
+	/// Max repeat count for V tiling (0 = unlimited)
+	int maxRepeatV = 0;
+	/// Which face of the skin volume points outward. Encodes both the depth axis
+	/// and the reading direction (positive = read hi-to-lo, negative = read lo-to-hi).
+	/// Auto-detected from the thinnest axis on load; user can cycle through all 6.
+	voxel::FaceNames skinFace = voxel::FaceNames::PositiveY;
+	/// Which corner of the selection the skin (0,0) maps to
+	ReskinAnchor anchor = ReskinAnchor::TopLeft;
 };
 
 /**
@@ -288,6 +309,54 @@ int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, v
 						int planeCoord);
 
 /**
+ * @brief Smooth wall: interpolate surface heights from edge columns inward.
+ *
+ * The face defines "up" (the surface normal). For each (U,V) column in the selection,
+ * computes a target height by bilinear interpolation from the edge column heights:
+ * - Line 1: interpolate between the heights at (u, v_min) and (u, v_max)
+ * - Line 2: interpolate between the heights at (u_min, v) and (u_max, v)
+ * - Target = average of both lines
+ *
+ * Edge columns (on the boundary) are never modified, ensuring seamless blending with
+ * surrounding geometry. Interior columns are trimmed or filled toward the target.
+ * Each iteration blends partway toward the target to allow gradual convergence.
+ * No gaps are created because column bases are preserved -- only the top is adjusted.
+ *
+ * @param[in,out] solid BitVolume marking solid positions.
+ * @param[in,out] voxelMap Color map kept in sync with @p solid.
+ * @param[in] anchors Immovable solid positions included in height computation.
+ * @param face The face direction that defines the surface normal ("up").
+ * @param iterations Number of smoothing passes. Each pass blends toward the interpolated target.
+ * @param fillVoxel Fallback voxel when no solid neighbor has a color entry.
+ * @param removeAboveDepth How many voxels above the target surface to clear. 0 means
+ *        don't clear anything above the target. Default 0.
+ * @param interp Interpolation mode: Linear, InverseDistance, or EdgeAware.
+ */
+void sculptSmoothWall(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
+					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
+					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
+					  core::DynamicArray<glm::ivec3> &addedPositions);
+
+/**
+ * @brief Smooth wall using RawVolume as color source (fast path -- no SparseVolume allocation).
+ */
+void sculptSmoothWall(voxel::BitVolume &solid, voxel::RawVolume &colorVolume, const voxel::BitVolume &anchors,
+					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
+					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
+					  core::DynamicArray<glm::ivec3> &addedPositions);
+
+
+/**
+ * @brief Smooth wall on a volume region along a face normal.
+ *
+ * @return The number of voxels changed.
+ */
+int sculptSmoothWall(voxel::RawVolume &volume, const voxel::Region &region, voxel::FaceNames face,
+					 int iterations, const voxel::Voxel &fillVoxel, int removeAboveDepth = 0,
+					 SmoothWallInterp interp = SmoothWallInterp::InverseDistance,
+					 bool fillHoles = true);
+
+/**
  * @brief Reskin: apply a skin volume (texture pattern) onto the selected surface.
  *
  * The face defines the surface normal ("up"). The skin volume's +Z axis maps to the
@@ -306,7 +375,9 @@ int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, v
  * @param config Reskin configuration parameters.
  */
 void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::RawVolume &skin,
-				  voxel::FaceNames face, const ReskinConfig &config);
+				  voxel::FaceNames face, const ReskinConfig &config,
+				  const palette::Palette *skinPalette = nullptr,
+				  palette::Palette *targetPalette = nullptr);
 
 /**
  * @brief Reskin on a volume region.

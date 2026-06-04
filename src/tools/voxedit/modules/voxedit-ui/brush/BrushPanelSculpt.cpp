@@ -168,6 +168,47 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			brush.setSigma(sigma);
 			executeSculptBrush(ctx);
 		}
+	} else if (currentMode == SculptMode::SmoothWall) {
+		// Interpolation mode
+		const voxelutil::SmoothWallInterp interp = brush.smoothWallInterp();
+		if (ImGui::BeginCombo(_("Interpolation"), _(SmoothWallInterpStr[(int)interp]), ImGuiComboFlags_None)) {
+			for (int i = 0; i < (int)voxelutil::SmoothWallInterp::Max; ++i) {
+				const bool selected = i == (int)interp;
+				if (ImGui::Selectable(_(SmoothWallInterpStr[i]), selected)) {
+					brush.setSmoothWallInterp((voxelutil::SmoothWallInterp)i);
+					executeSculptBrush(ctx);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		bool fillHoles = brush.smoothWallFillHoles();
+		if (ImGui::Checkbox(_("Fill holes"), &fillHoles)) {
+			brush.setSmoothWallFillHoles(fillHoles);
+			executeSculptBrush(ctx);
+		}
+		ImGui::SetItemTooltipUnformatted(_("Fill enclosed empty areas with interpolated heights"));
+
+		int clearDepth = brush.smoothWallClearDepth();
+		ImGui::TextUnformatted(_("Clear depth"));
+		if (ImGui::Button("-##smoothwall_clear")) {
+			brush.setSmoothWallClearDepth(clearDepth - 1);
+			executeSculptBrush(ctx);
+		}
+		ImGui::SameLine();
+		if (ImGui::SliderInt("##smoothwall_clear_slider", &clearDepth, 0, SculptBrush::MaxSmoothWallClearDepth)) {
+			brush.setSmoothWallClearDepth(clearDepth);
+			executeSculptBrush(ctx);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("+##smoothwall_clear")) {
+			brush.setSmoothWallClearDepth(clearDepth + 1);
+			executeSculptBrush(ctx);
+		}
+		ImGui::SetItemTooltipUnformatted(_("How many voxels above the smoothed surface to clear (0 = none)"));
 	} else if (currentMode == SculptMode::Reskin) {
 		if (brush.skinVolume() == nullptr) {
 			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
@@ -191,27 +232,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 
 		const voxelutil::ReskinConfig &cfg = brush.reskinConfig();
 
-		// Skin up axis combo (which axis of the skin is outward)
-		{
-			static constexpr math::Axis skinAxisValues[] = {math::Axis::X, math::Axis::Y, math::Axis::Z};
-			const int currentAxisIdx = math::getIndexForAxis(cfg.skinUpAxis);
-			if (ImGui::BeginCombo(_("Skin up axis"), _(ReskinSkinAxisStr[currentAxisIdx]), ImGuiComboFlags_None)) {
-				for (int i = 0; i < 3; ++i) {
-					const bool selected = i == currentAxisIdx;
-					if (ImGui::Selectable(_(ReskinSkinAxisStr[i]), selected)) {
-						brush.setReskinSkinUpAxis(skinAxisValues[i]);
-						executeSculptBrush(ctx);
-					}
-					if (selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
-		}
-		ImGui::SetItemTooltipUnformatted(_("Which axis of the skin points outward from the surface. "
-										   "Set to Y if your skin was built with the pattern facing up."));
-
 		// Reskin mode combo
 		if (ImGui::BeginCombo(_("Reskin mode"), _(ReskinModeStr[(int)cfg.mode]), ImGuiComboFlags_None)) {
 			for (int i = 0; i < (int)voxelutil::ReskinMode::Max; ++i) {
@@ -233,21 +253,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)cfg.follow;
 				if (ImGui::Selectable(_(ReskinFollowStr[i]), selected)) {
 					brush.setReskinFollow((voxelutil::ReskinFollow)i);
-					executeSculptBrush(ctx);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-
-		// Anchor combo
-		if (ImGui::BeginCombo(_("Anchor"), _(ReskinAnchorStr[(int)cfg.anchor]), ImGuiComboFlags_None)) {
-			for (int i = 0; i < (int)voxelutil::ReskinAnchor::Max; ++i) {
-				const bool selected = i == (int)cfg.anchor;
-				if (ImGui::Selectable(_(ReskinAnchorStr[i]), selected)) {
-					brush.setReskinAnchor((voxelutil::ReskinAnchor)i);
 					executeSculptBrush(ctx);
 				}
 				if (selected) {
@@ -285,21 +290,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				}
 			}
 			ImGui::EndCombo();
-		}
-
-		// Mirror checkboxes (only for Repeat tile mode)
-		if (cfg.tile == voxelutil::ReskinTile::Repeat) {
-			bool mirrorU = cfg.mirrorU;
-			if (ImGui::Checkbox(_("Mirror U"), &mirrorU)) {
-				brush.setReskinMirrorU(mirrorU);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			bool mirrorV = cfg.mirrorV;
-			if (ImGui::Checkbox(_("Mirror V"), &mirrorV)) {
-				brush.setReskinMirrorV(mirrorV);
-				executeSculptBrush(ctx);
-			}
 		}
 
 		// Offset sliders (not for Stretch)
@@ -400,6 +390,13 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		if (ImGui::Checkbox(_("Extend only"), &extendOnly)) {
 			brush.setExtendOnly(extendOnly);
 		}
+		ImGui::TooltipTextUnformatted(_("Only place voxels adjacent to existing solid voxels"));
+		bool removeOnly = brush.removeOnly();
+		if (ImGui::Checkbox(_("Remove only"), &removeOnly)) {
+			brush.setRemoveOnly(removeOnly);
+		}
+		ImGui::TooltipTextUnformatted(
+			_("Do not place any voxels - only carve away the voxels above the plane (set the Remove above depth)"));
 		int removeDepth = brush.removeAboveDepth();
 		ImGui::TextUnformatted(_("Remove above"));
 		if (ImGui::Button("-##remove_depth")) {
