@@ -6,13 +6,13 @@
 
 #include <SDL_cpuinfo.h>
 #include "core/StandardLib.h"
-#include <process.h>
-#include <psapi.h>
-#include <stdio.h>
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
+#include <process.h>
+#include <psapi.h>
+#include <stdio.h>
 
 static HANDLE alarmThread = nullptr;
 static HANDLE alarmCancel = nullptr;
