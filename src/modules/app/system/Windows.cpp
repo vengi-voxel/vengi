@@ -2,8 +2,12 @@
  * @file
  */
 
+#include "System.h"
+
+#include <SDL_cpuinfo.h>
 #include "core/StandardLib.h"
 #include <process.h>
+#include <psapi.h>
 #include <stdio.h>
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -50,3 +54,19 @@ void alarm(int seconds) {
 	unsigned tid;
 	alarmThread = (HANDLE)_beginthreadex(nullptr, 0, alarm_thread, param, 0, &tid);
 }
+
+namespace app {
+
+int systemTotalMemoryMiB() {
+	return SDL_GetSystemRAM();
+}
+
+double systemProcessMemoryGB() {
+	PROCESS_MEMORY_COUNTERS counters;
+	if (!GetProcessMemoryInfo(GetCurrentProcess(), &counters, sizeof(counters))) {
+		return 0.0;
+	}
+	return (double)counters.WorkingSetSize / (1024.0 * 1024.0 * 1024.0);
+}
+
+} // namespace app

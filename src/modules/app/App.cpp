@@ -26,7 +26,6 @@
 #include "util/VarUtil.h"
 #include "core/sdl/SDLSystem.h"
 #include <SDL_messagebox.h>
-#include <SDL_cpuinfo.h>
 #include <stdio.h>
 #include <signal.h>
 #ifdef HAVE_SYS_RESOURCE_H
@@ -34,23 +33,11 @@
 #endif
 #include <cfenv>
 #include <signal.h>
-#ifdef _WIN32
-#include "system/Windows.h"
-#include <io.h>
-#else
-#include <sys/select.h>
-#include <unistd.h>
-#endif
+#include "system/System.h"
 #ifdef HAVE_BACKWARD
 #include <backward.h>
 #else
 #define OWN_SIGNAL_HANDLER
-#endif
-
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include <psapi.h>
-#elif defined(__APPLE__)
-#include <mach/mach.h>
 #endif
 
 // osx delayed loading of a NSDocument derived file type
@@ -952,7 +939,7 @@ AppState App::onInit() {
 		return AppState::Destroy;
 	}
 
-	_availableMemoryMiB = SDL_GetSystemRAM();
+	_availableMemoryMiB = systemTotalMemoryMiB();
 
 	for (const Argument &arg : _arguments) {
 		if (!arg.mandatory()) {
@@ -1029,36 +1016,7 @@ void App::onAfterInit() {
 }
 
 double App::rssGB() {
-#if defined(__linux__)
-	FILE *f = fopen("/proc/self/statm", "r");
-	if (!f)
-		return 0.0;
-	long sz = 0, resident = 0;
-	if (fscanf(f, "%ld %ld", &sz, &resident) != 2) {
-		fclose(f);
-		return 0.0;
-	}
-	fclose(f);
-	const long pageSize = sysconf(_SC_PAGESIZE);
-	return (double)resident * (double)pageSize / (1024.0 * 1024.0 * 1024.0);
-#elif defined(_WIN32) || defined(__CYGWIN__)
-	PROCESS_MEMORY_COUNTERS counters;
-	if (!GetProcessMemoryInfo(GetCurrentProcess(), &counters, sizeof(counters))) {
-		return 0.0;
-	}
-	return (double)counters.WorkingSetSize / (1024.0 * 1024.0 * 1024.0);
-#elif defined(__APPLE__)
-	mach_task_basic_info info;
-	mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
-	const kern_return_t result =
-		task_info(mach_task_self(), MACH_TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &count);
-	if (result != KERN_SUCCESS) {
-		return 0.0;
-	}
-	return (double)info.resident_size / (1024.0 * 1024.0 * 1024.0);
-#else
-	return 0.0;
-#endif
+	return systemProcessMemoryGB();
 }
 
 bool App::hasEnoughMemory(size_t bytes) const {

@@ -7,6 +7,7 @@ set(SRCS
 	I18N.cpp I18N.h
 	I18NMarkers.h
 	Pipe.cpp Pipe.h
+	system/System.h
 
 	i18n/Dictionary.cpp i18n/Dictionary.h
 	i18n/DictionaryManager.cpp i18n/DictionaryManager.h
@@ -15,6 +16,9 @@ set(SRCS
 	i18n/PluralForms.cpp i18n/PluralForms.h
 	i18n/POParser.cpp i18n/POParser.h
 )
+if (NOT WINDOWS)
+	list(APPEND SRCS system/Unix.cpp)
+endif()
 if (APPLE)
 	list(APPEND SRCS system/AppDocument.m)
 endif()
@@ -28,6 +32,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 if (WINDOWS)
 	# All this windows.h insanities ... giving up on this module
 	set_target_properties(${LIB} PROPERTIES UNITY_BUILD FALSE)
+	target_link_libraries(${LIB} PRIVATE Psapi)
 endif()
 if (APPLE)
 	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation -framework AppKit")
