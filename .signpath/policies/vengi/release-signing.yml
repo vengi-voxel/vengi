@@ -1,0 +1,8 @@
+# SignPath signing policy for vengi release builds
+# https://docs.signpath.io/trusted-build-systems/github#define-policies-for-source-code-and-builds
+
+github-policies:
+  runners:
+    require_github_hosted: true
+  build:
+    disallow_reruns: true
