@@ -16,6 +16,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      id-token: write
     strategy:
       matrix:
         artifact:
@@ -23,13 +24,13 @@ jobs:
             file: vengi.msi
             signing-config: msi
           - name: win-voxedit
-            signing-config: zip
+            signing-config: pe
           - name: win-voxconvert
-            signing-config: zip
+            signing-config: pe
           - name: win-palconvert
-            signing-config: zip
+            signing-config: pe
           - name: win-thumbnailer
-            signing-config: zip
+            signing-config: pe
     steps:
       - name: Download unsigned artifact
         uses: actions/download-artifact@v4
@@ -40,7 +41,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack artifact for signing (ZIP)
-        if: matrix.artifact.signing-config == 'zip'
+        if: matrix.artifact.signing-config == 'pe'
         run: |
           cd unsigned
           zip -r ../to-sign.zip .
@@ -54,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact.name }}-unsigned
-          path: ${{ matrix.artifact.signing-config == 'zip' && 'to-sign.zip' || 'to-sign.msi' }}
+          path: ${{ matrix.artifact.signing-config == 'pe' && 'to-sign.zip' || 'to-sign.msi' }}
 
       - name: Submit signing request
         uses: signpath/github-action-submit-signing-request@v2
@@ -62,90 +63,18 @@ jobs:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '${{ secrets.SIGNPATH_ORGANIZATION_ID }}'
           project-slug: 'vengi'
-          signing-policy-slug: 'release-signing'
+          signing-policy-slug: 'test-signing'
           artifact-configuration-slug: '${{ matrix.artifact.signing-config }}'
           github-artifact-id: '${{ steps.upload-unsigned.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: signed
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
 
       - name: Upload signed artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact.name }}-signed
           path: signed/
-
-  sign-macos:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      startsWith(github.event.workflow_run.head_branch, 'refs/tags/') == false &&
-      github.event.workflow_run.event == 'push'
-    runs-on: macos-15
-    permissions:
-      actions: read
-      contents: read
-    strategy:
-      matrix:
-        artifact:
-          - name: mac-vengi-voxedit-app
-            app: vengi-voxedit.app
-          - name: mac-vengi-voxconvert-app
-            app: vengi-voxconvert.app
-          - name: mac-vengi-palconvert-app
-            app: vengi-palconvert.app
-          - name: mac-vengi-thumbnailer-app
-            app: vengi-thumbnailer.app
-    steps:
-      - name: Download unsigned artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.artifact.name }}
-          path: unsigned
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install SignPath CryptoTokenKit
-        run: |
-          curl -Lo SignPathCryptoTokenKit.dmg \
-            https://download.signpath.io/cryptoproviders/macos-cryptotokenkit/2-latest/SignPathCryptoTokenKit.dmg
-          hdiutil attach SignPathCryptoTokenKit.dmg
-          cp -R /Volumes/SignPathCryptoTokenKit/SignPathCryptoTokenKit.app /Applications/
-          hdiutil detach /Volumes/SignPathCryptoTokenKit
-
-      - name: Start SignPath CryptoTokenKit
-        env:
-          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
-        run: |
-          open /Applications/SignPathCryptoTokenKit.app --args \
-            --organization-id '${{ secrets.SIGNPATH_ORGANIZATION_ID }}' \
-            --project-slug 'vengi' \
-            --signing-policy-slug 'release-signing'
-          sleep 20
-
-      - name: Sign app bundle
-        run: |
-          codesign --deep --force --timestamp --options runtime \
-            -s '${{ secrets.APPLE_SIGNING_IDENTITY }}' \
-            unsigned/${{ matrix.artifact.app }}
-
-      - name: Notarize app bundle
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          ditto -c -k --keepParent unsigned/${{ matrix.artifact.app }} app.zip
-          xcrun notarytool submit app.zip \
-            --apple-id "$APPLE_ID" \
-            --password "$APPLE_ID_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \
-            --wait
-          xcrun stapler staple unsigned/${{ matrix.artifact.app }}
-
-      - name: Upload signed artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ matrix.artifact.name }}-signed
-          path: unsigned/${{ matrix.artifact.app }}
 
   sign-windows-release:
     if: >
@@ -155,6 +84,7 @@ jobs:
     permissions:
       actions: read
       contents: write
+      id-token: write
     strategy:
       matrix:
         artifact:
@@ -163,16 +93,16 @@ jobs:
             signing-config: msi
             release-name: vengi.msi
           - name: win-voxedit
-            signing-config: zip
+            signing-config: pe
             release-name: win-voxedit.zip
           - name: win-voxconvert
-            signing-config: zip
+            signing-config: pe
             release-name: win-voxconvert.zip
           - name: win-palconvert
-            signing-config: zip
+            signing-config: pe
             release-name: win-palconvert.zip
           - name: win-thumbnailer
-            signing-config: zip
+            signing-config: pe
             release-name: win-thumbnailer.zip
     steps:
       - name: Download unsigned artifact
@@ -184,7 +114,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack artifact for signing (ZIP)
-        if: matrix.artifact.signing-config == 'zip'
+        if: matrix.artifact.signing-config == 'pe'
         run: |
           cd unsigned
           zip -r ../to-sign.zip .
@@ -198,7 +128,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact.name }}-release-unsigned
-          path: ${{ matrix.artifact.signing-config == 'zip' && 'to-sign.zip' || 'to-sign.msi' }}
+          path: ${{ matrix.artifact.signing-config == 'pe' && 'to-sign.zip' || 'to-sign.msi' }}
 
       - name: Submit signing request
         uses: signpath/github-action-submit-signing-request@v2
@@ -206,101 +136,20 @@ jobs:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '${{ secrets.SIGNPATH_ORGANIZATION_ID }}'
           project-slug: 'vengi'
-          signing-policy-slug: 'release-signing'
+          signing-policy-slug: 'test-signing'
           artifact-configuration-slug: '${{ matrix.artifact.signing-config }}'
           github-artifact-id: '${{ steps.upload-unsigned.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: signed
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
 
       - name: Prepare release file (ZIP)
-        if: matrix.artifact.signing-config == 'zip'
+        if: matrix.artifact.signing-config == 'pe'
         run: cp signed/to-sign.zip ${{ matrix.artifact.release-name }}
 
       - name: Prepare release file (MSI)
         if: matrix.artifact.signing-config == 'msi'
         run: cp signed/to-sign.msi ${{ matrix.artifact.release-name }}
-
-      - name: Upload signed artifact to release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.event.workflow_run.head_branch }}
-          files: ${{ matrix.artifact.release-name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  sign-macos-release:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      startsWith(github.event.workflow_run.head_branch, 'refs/tags/')
-    runs-on: macos-15
-    permissions:
-      actions: read
-      contents: write
-    strategy:
-      matrix:
-        artifact:
-          - name: mac-vengi-voxedit-app
-            app: vengi-voxedit.app
-            release-name: mac-voxedit.zip
-          - name: mac-vengi-voxconvert-app
-            app: vengi-voxconvert.app
-            release-name: mac-voxconvert.zip
-          - name: mac-vengi-palconvert-app
-            app: vengi-palconvert.app
-            release-name: mac-palconvert.zip
-          - name: mac-vengi-thumbnailer-app
-            app: vengi-thumbnailer.app
-            release-name: mac-thumbnailer.zip
-    steps:
-      - name: Download unsigned artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ matrix.artifact.name }}
-          path: unsigned
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install SignPath CryptoTokenKit
-        run: |
-          curl -Lo SignPathCryptoTokenKit.dmg \
-            https://download.signpath.io/cryptoproviders/macos-cryptotokenkit/2-latest/SignPathCryptoTokenKit.dmg
-          hdiutil attach SignPathCryptoTokenKit.dmg
-          cp -R /Volumes/SignPathCryptoTokenKit/SignPathCryptoTokenKit.app /Applications/
-          hdiutil detach /Volumes/SignPathCryptoTokenKit
-
-      - name: Start SignPath CryptoTokenKit
-        env:
-          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
-        run: |
-          open /Applications/SignPathCryptoTokenKit.app --args \
-            --organization-id '${{ secrets.SIGNPATH_ORGANIZATION_ID }}' \
-            --project-slug 'vengi' \
-            --signing-policy-slug 'release-signing'
-          sleep 20
-
-      - name: Sign app bundle
-        run: |
-          codesign --deep --force --timestamp --options runtime \
-            -s '${{ secrets.APPLE_SIGNING_IDENTITY }}' \
-            unsigned/${{ matrix.artifact.app }}
-
-      - name: Notarize app bundle
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          ditto -c -k --keepParent unsigned/${{ matrix.artifact.app }} app.zip
-          xcrun notarytool submit app.zip \
-            --apple-id "$APPLE_ID" \
-            --password "$APPLE_ID_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID" \
-            --wait
-          xcrun stapler staple unsigned/${{ matrix.artifact.app }}
-
-      - name: Package signed app for release
-        run: |
-          ditto -c -k --keepParent unsigned/${{ matrix.artifact.app }} ${{ matrix.artifact.release-name }}
 
       - name: Upload signed artifact to release
         uses: softprops/action-gh-release@v3
