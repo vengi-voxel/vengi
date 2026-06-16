@@ -1866,7 +1866,6 @@ typedef struct VkPipelineShaderStageCreateInfo {
     VkShaderStageFlagBits  stage;
     VkShaderModule module;
     const char* pName;
-    const char* pName;
     const VkSpecializationInfo* pSpecializationInfo;
 } VkPipelineShaderStageCreateInfo;
 
@@ -2017,7 +2016,6 @@ typedef struct VkGraphicsPipelineCreateInfo {
     VkPipelineCreateFlags  flags;
     uint32_t stageCount;
     const VkPipelineShaderStageCreateInfo* pStages;
-    const VkPipelineShaderStageCreateInfo* pStages;
     const VkPipelineVertexInputStateCreateInfo* pVertexInputState;
     const VkPipelineInputAssemblyStateCreateInfo* pInputAssemblyState;
     const VkPipelineTessellationStateCreateInfo* pTessellationState;
@@ -2038,7 +2036,6 @@ typedef struct VkPipelineCacheCreateInfo {
     VkStructureType sType;
     const void*            pNext;
     VkPipelineCacheCreateFlags    flags;
-    size_t           initialDataSize;
     size_t                         initialDataSize;
     const void*            pInitialData;
 } VkPipelineCacheCreateInfo;
@@ -2305,7 +2302,6 @@ typedef struct VkSwapchainCreateInfoKHR {
     VkCompositeAlphaFlagBitsKHR      compositeAlpha;
     VkPresentModeKHR                 presentMode;
     VkBool32                         clipped;
-    VkSwapchainKHR       oldSwapchain;
     VkSwapchainKHR oldSwapchain;
 } VkSwapchainCreateInfoKHR;
 
@@ -2734,7 +2730,7 @@ typedef void (VKAPI_PTR PFNVKCMDDRAWINDIRECT_PROC (VkCommandBuffer commandBuffer
 typedef void (VKAPI_PTR PFNVKCMDENDRENDERPASS_PROC (VkCommandBuffer commandBuffer));
 typedef void (VKAPI_PTR PFNVKCMDNEXTSUBPASS_PROC (VkCommandBuffer commandBuffer, VkSubpassContents contents));
 typedef void (VKAPI_PTR PFNVKCMDRESOLVEIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve* pRegions));
-typedef void (VKAPI_PTR PFNVKCMDSETBLENDCONSTANTS_PROC (VkCommandBuffer commandBuffer, const float [4] blendConstants));
+typedef void (VKAPI_PTR PFNVKCMDSETBLENDCONSTANTS_PROC (VkCommandBuffer commandBuffer, const float blendConstants[4]));
 typedef void (VKAPI_PTR PFNVKCMDSETDEPTHBIAS_PROC (VkCommandBuffer commandBuffer, float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor));
 typedef void (VKAPI_PTR PFNVKCMDSETDEPTHBOUNDS_PROC (VkCommandBuffer commandBuffer, float minDepthBounds, float maxDepthBounds));
 typedef void (VKAPI_PTR PFNVKCMDSETLINEWIDTH_PROC (VkCommandBuffer commandBuffer, float lineWidth));
@@ -2842,7 +2838,7 @@ VKAPI PFNVKGETPHYSICALDEVICESURFACESUPPORTKHR_PROC* flextvkGetPhysicalDeviceSurf
 /* VK_KHR_swapchain */
 
 typedef VkResult (VKAPI_PTR PFNVKACQUIRENEXTIMAGEKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex));
-typedef VkResult (VKAPI_PTR PFNVKCREATESWAPCHAINKHR_PROC (VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain));
+typedef VkResult (VKAPI_PTR PFNVKCREATESWAPCHAINKHR_PROC (VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain));
 typedef void (VKAPI_PTR PFNVKDESTROYSWAPCHAINKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator));
 typedef VkResult (VKAPI_PTR PFNVKGETSWAPCHAINIMAGESKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages));
 typedef VkResult (VKAPI_PTR PFNVKQUEUEPRESENTKHR_PROC (VkQueue queue, const VkPresentInfoKHR* pPresentInfo));
