@@ -34,12 +34,26 @@ private:
 public:
 	static const core::String Empty;
 	static const size_t npos;
-	/* constexpr */String() {}
+	constexpr String() {}
 	String(size_t len, char chr);
 	String(const char *str);
 	String(const char *str, size_t len);
 	String(const String &str);
 	String(String &&str) noexcept;
+
+	template <size_t N>
+	constexpr String(const char (&str)[N]) {
+		if constexpr (N <= sizeof(_buf)) {
+			_data._str = _buf;
+			_data._size = N - 1;
+			for (size_t i = 0; i < N; ++i) {
+				_buf[i] = str[i];
+			}
+		} else {
+			copyBuf(str, N - 1);
+		}
+	}
+
 	~String();
 
 	void resize(size_t bytes, char c = '\0');
