@@ -847,7 +847,9 @@ app::AppState IMGUIApp::onRunning() {
 		localizeRegisterEntry(ImGuiLocKey_TableSizeOne, _("Size column to fit###SizeOne"));
 		localizeRegisterEntry(ImGuiLocKey_TableSizeAllFit, _("Size all columns to fit###SizeAll"));
 		localizeRegisterEntry(ImGuiLocKey_TableSizeAllDefault, _("Size all columns to default###SizeAll"));
+		localizeRegisterEntry(ImGuiLocKey_TableReset, _("Reset###Reset"));
 		localizeRegisterEntry(ImGuiLocKey_TableResetOrder, _("Reset order###ResetOrder"));
+		localizeRegisterEntry(ImGuiLocKey_TableResetVisibility, _("Reset visibility###ResetVisibility"));
 		localizeRegisterEntry(ImGuiLocKey_WindowingMainMenuBar, _("(Main menu bar)"));
 		localizeRegisterEntry(ImGuiLocKey_WindowingPopup, _("(Popup)"));
 		localizeRegisterEntry(ImGuiLocKey_WindowingUntitled, _("(Untitled)"));
@@ -857,7 +859,7 @@ app::AppState IMGUIApp::onRunning() {
 		localizeRegisterEntry(ImGuiLocKey_DockingHoldShiftToDock, _("Hold SHIFT to enable Docking window."));
 		localizeRegisterEntry(ImGuiLocKey_DockingDragToUndockOrMoveNode,
 							  _("Click and drag to move or undock whole node."));
-		static_assert(ImGuiLocKey_COUNT == 13, "Please update ImGui translations");
+		static_assert(ImGuiLocKey_COUNT == 15, "Please update ImGui translations");
 	}
 
 	if (_uistyle->isDirty()) {
