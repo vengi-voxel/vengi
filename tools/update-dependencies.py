@@ -434,6 +434,16 @@ def update_natsort():
         ]
     )
 
+def update_cgltf():
+    update_target(
+        "cgltf",
+        "https://github.com/jkuhlmann/cgltf.git",
+        [
+            (f"cgltf.h", "src/modules/voxelformat/external/cgltf.h"),
+            (f"cgltf_write.h", "src/modules/voxelformat/external/cgltf_write.h"),
+        ]
+    )
+
 def update_miniz():
     # TODO: call ./amalgamate.sh
     update_target(
@@ -520,6 +530,7 @@ def main():
         update_ufbx,
         update_ufbx_write,
         update_natsort,
+        update_cgltf,
         update_miniz,
         update_minlzma,
         update_opengametools,

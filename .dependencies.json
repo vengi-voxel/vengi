@@ -29,5 +29,6 @@
     "gif-h": "70b645280d5e687f5217177c9cfa2889b0a2ad5f",
     "cJSON": "fb16e5cf358798aabb049655975cde8427101056",
     "minlzma": "69244d624502bbc367dde1e39ec5862cf05413d1",
-    "ufbx_write": "e5f63e6a2b5669127684cc70f49a61af6842cc2c"
+    "ufbx_write": "e5f63e6a2b5669127684cc70f49a61af6842cc2c",
+    "cgltf": "85cd62382dfea638278962690cf515023f33ed00"
 }
