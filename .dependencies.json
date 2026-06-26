@@ -19,7 +19,7 @@
     "libvxl": "2d482be6e738f0befdbb4f63d740c51eef9970a3",
     "meshoptimizer": "f105bb570c4fa16a687e869f1bcf9d4b84158e23",
     "yocto-gl": "7e35c631b5ee29f1a7ee1010c5dcf0879aa3dcf3",
-    "ufbx": "83bc7cf44f76bc8622de63b809a42b5d557cd733",
+    "ufbx": "fcc5d6ba444cfd3eb80677dba5e37e493941abe5",
     "natsort": "cdd8df9602e727482ae5e051cff74b7ec7ffa07a",
     "miniz": "c883286f1a6443720e7705450f59e579a4bbb8e2",
     "imgui_test_engine": "1e0f23e66af74ee867503a40f5f5c94f3c0e86cd",
@@ -29,6 +29,6 @@
     "gif-h": "70b645280d5e687f5217177c9cfa2889b0a2ad5f",
     "cJSON": "fb16e5cf358798aabb049655975cde8427101056",
     "minlzma": "69244d624502bbc367dde1e39ec5862cf05413d1",
-    "ufbx_write": "e5f63e6a2b5669127684cc70f49a61af6842cc2c",
+    "ufbx_write": "2b65caaaa7fada7db9a2d25cd924997838169056",
     "cgltf": "85cd62382dfea638278962690cf515023f33ed00"
 }

@@ -72,7 +72,7 @@
 // `ufbxw_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbxw_pack_version()`,
 // for example `#if UFBXW_VERSION >= ufbxw_pack_version(0, 12, 0)`.
-#define UFBXW_HEADER_VERSION ufbxw_pack_version(0, 1, 0)
+#define UFBXW_HEADER_VERSION ufbxw_pack_version(0, 2, 0)
 #define UFBXW_VERSION UFBXW_HEADER_VERSION
 
 // -- Configuration
@@ -144,10 +144,10 @@ typedef enum ufbxw_rotation_order {
 	UFBXW_ROTATION_ORDER_SPHERIC,
 } ufbxw_rotation_order;
 
-typedef enum ufbxw_inherit_mode {
+typedef enum ufbxw_inherit_type {
+	UFBXW_INHERIT_TYPE_COMPONENTWISE_SCALE,
 	UFBXW_INHERIT_TYPE_NORMAL,
 	UFBXW_INHERIT_TYPE_IGNORE_PARENT_SCALE,
-	UFBXW_INHERIT_TYPE_COMPONENTWISE_SCALE,
 } ufbxw_inherit_type;
 
 typedef struct ufbxw_scene ufbxw_scene;
@@ -163,14 +163,23 @@ typedef enum ufbxw_element_type {
 	UFBXW_ELEMENT_BLEND_DEFORMER,
 	UFBXW_ELEMENT_BLEND_CHANNEL,
 	UFBXW_ELEMENT_BLEND_SHAPE,
+	UFBXW_ELEMENT_CACHE_DEFORMER,
+	UFBXW_ELEMENT_CACHE_FILE,
 	UFBXW_ELEMENT_LIGHT,
 	UFBXW_ELEMENT_CAMERA,
-	UFBXW_ELEMENT_SKELETON,
+	UFBXW_ELEMENT_BONE,
 	UFBXW_ELEMENT_BIND_POSE,
 
 	UFBXW_ELEMENT_MATERIAL,
+	UFBXW_ELEMENT_IMPLEMENTATION,
+	UFBXW_ELEMENT_BINDING_TABLE,
 
 	UFBXW_ELEMENT_TEXTURE,
+	UFBXW_ELEMENT_VIDEO,
+
+	UFBXW_ELEMENT_DISPLAY_LAYER,
+	UFBXW_ELEMENT_SELECTION_SET,
+	UFBXW_ELEMENT_SELECTION_NODE,
 
 	UFBXW_ELEMENT_ANIM_CURVE,
 	UFBXW_ELEMENT_ANIM_PROP,
@@ -193,16 +202,28 @@ typedef struct ufbxw_skin_cluster { ufbxw_id id; } ufbxw_skin_cluster;
 typedef struct ufbxw_blend_deformer { ufbxw_id id; } ufbxw_blend_deformer;
 typedef struct ufbxw_blend_channel { ufbxw_id id; } ufbxw_blend_channel;
 typedef struct ufbxw_blend_shape { ufbxw_id id; } ufbxw_blend_shape;
+typedef struct ufbxw_cache_deformer { ufbxw_id id; } ufbxw_cache_deformer;
+typedef struct ufbxw_cache_file { ufbxw_id id; } ufbxw_cache_file;
 typedef struct ufbxw_light { ufbxw_id id; } ufbxw_light;
 typedef struct ufbxw_camera { ufbxw_id id; } ufbxw_camera;
+typedef struct ufbxw_bone { ufbxw_id id; } ufbxw_bone;
 typedef struct ufbxw_bind_pose { ufbxw_id id; } ufbxw_bind_pose;
 typedef struct ufbxw_material { ufbxw_id id; } ufbxw_material;
+typedef struct ufbxw_implementation { ufbxw_id id; } ufbxw_implementation;
+typedef struct ufbxw_binding_table { ufbxw_id id; } ufbxw_binding_table;
+typedef struct ufbxw_texture { ufbxw_id id; } ufbxw_texture;
+typedef struct ufbxw_video { ufbxw_id id; } ufbxw_video;
+typedef struct ufbxw_display_layer { ufbxw_id id; } ufbxw_display_layer;
+typedef struct ufbxw_selection_set { ufbxw_id id; } ufbxw_selection_set;
+typedef struct ufbxw_selection_node { ufbxw_id id; } ufbxw_selection_node;
 typedef struct ufbxw_anim_prop { ufbxw_id id; } ufbxw_anim_prop;
 typedef struct ufbxw_anim_curve { ufbxw_id id; } ufbxw_anim_curve;
 typedef struct ufbxw_anim_layer { ufbxw_id id; } ufbxw_anim_layer;
 typedef struct ufbxw_anim_stack { ufbxw_id id; } ufbxw_anim_stack;
+typedef struct ufbxw_template { ufbxw_id id; } ufbxw_template;
 
 typedef uint64_t ufbxw_buffer_id;
+typedef struct ufbxw_byte_buffer { ufbxw_buffer_id id; } ufbxw_byte_buffer;
 typedef struct ufbxw_int_buffer { ufbxw_buffer_id id; } ufbxw_int_buffer;
 typedef struct ufbxw_long_buffer { ufbxw_buffer_id id; } ufbxw_long_buffer;
 typedef struct ufbxw_real_buffer { ufbxw_buffer_id id; } ufbxw_real_buffer;
@@ -211,6 +232,7 @@ typedef struct ufbxw_vec3_buffer { ufbxw_buffer_id id; } ufbxw_vec3_buffer;
 typedef struct ufbxw_vec4_buffer { ufbxw_buffer_id id; } ufbxw_vec4_buffer;
 typedef struct ufbxw_float_buffer { ufbxw_buffer_id id; } ufbxw_float_buffer;
 
+UFBXW_LIST_TYPE(ufbxw_byte_list, char);
 UFBXW_LIST_TYPE(ufbxw_int_list, int32_t);
 UFBXW_LIST_TYPE(ufbxw_long_list, int64_t);
 UFBXW_LIST_TYPE(ufbxw_real_list, ufbxw_real);
@@ -240,39 +262,60 @@ typedef struct ufbxw_ktime_range {
 #define ufbxw_null_blend_deformer (ufbxw_new(ufbxw_blend_deformer){0})
 #define ufbxw_null_blend_channel (ufbxw_new(ufbxw_blend_channel){0})
 #define ufbxw_null_blend_shape (ufbxw_new(ufbxw_blend_shape){0})
+#define ufbxw_null_cache_deformer (ufbxw_new(ufbxw_cache_deformer){0})
+#define ufbxw_null_cache_file (ufbxw_new(ufbxw_cache_file){0})
 #define ufbxw_null_light (ufbxw_new(ufbxw_light){0})
 #define ufbxw_null_camera (ufbxw_new(ufbxw_camera){0})
+#define ufbxw_null_bone (ufbxw_new(ufbxw_bone){0})
 #define ufbxw_null_bind_pose (ufbxw_new(ufbxw_bind_pose){0})
 #define ufbxw_null_material (ufbxw_new(ufbxw_material){0})
+#define ufbxw_null_implementation (ufbxw_new(ufbxw_implementation){0})
+#define ufbxw_null_binding_table (ufbxw_new(ufbxw_binding_table){0})
+#define ufbxw_null_texture (ufbxw_new(ufbxw_texture){0})
+#define ufbxw_null_video (ufbxw_new(ufbxw_video){0})
+#define ufbxw_null_display_layer (ufbxw_new(ufbxw_display_layer){0})
+#define ufbxw_null_selection_set (ufbxw_new(ufbxw_selection_set){0})
+#define ufbxw_null_selection_node (ufbxw_new(ufbxw_selection_node){0})
 #define ufbxw_null_anim_prop (ufbxw_new(ufbxw_anim_prop){0})
 #define ufbxw_null_anim_curve (ufbxw_new(ufbxw_anim_curve){0})
 #define ufbxw_null_anim_layer (ufbxw_new(ufbxw_anim_layer){0})
 #define ufbxw_null_anim_stack (ufbxw_new(ufbxw_anim_stack){0})
+#define ufbxw_null_template (ufbxw_new(ufbxw_template){0})
 
 typedef enum ufbxw_connection_type {
-	UFBXW_CONNECTION_NODE_PARENT = 1,   // NODE* -> NODE
-	UFBXW_CONNECTION_NODE_ATTRIBUTE,    // NODE_ATTRIBUTE -> NODE*
-	UFBXW_CONNECTION_MATERIAL,          // MATERIAL* -> NODE*
-	UFBXW_CONNECTION_TEXTURE,           // TEXTURE* -> MATERIAL(property)*
-	UFBXW_CONNECTION_MESH_DEFORMER,     // DEFORMER -> MESH
-	UFBXW_CONNECTION_SKIN_CLUSTER,      // SKIN_CLUSTER -> SKIN_DEFORMER
-	UFBXW_CONNECTION_SKIN_CLUSTER_NODE, // NODE -> SKIN_CLUSTER
-	UFBXW_CONNECTION_BLEND_CHANNEL,     // BLEND_CHANNEL -> BLEND_DEFORMER
-	UFBXW_CONNECTION_BLEND_SHAPE,       // BLEND_SHAPE -> BLEND_CHANNEL
-	UFBXW_CONNECTION_ANIM_PROPERTY,     // ANIM_PROP* -> ANY(property)*
-	UFBXW_CONNECTION_ANIM_CURVE_PROP,   // ANIM_CURVE* -> ANIM_PROP
-	UFBXW_CONNECTION_ANIM_PROP_LAYER,   // ANIM_PROP* -> ANIM_LAYER
-	UFBXW_CONNECTION_ANIM_LAYER_STACK,  // ANIM_LAYER* -> ANIM_STACK
-	UFBXW_CONNECTION_CUSTOM,            // ANY* -> ANY*
+	UFBXW_CONNECTION_NODE_PARENT = 1,         // NODE* -> NODE
+	UFBXW_CONNECTION_NODE_ATTRIBUTE,          // NODE_ATTRIBUTE -> NODE*
+	UFBXW_CONNECTION_MATERIAL,                // MATERIAL* -> NODE*
+	UFBXW_CONNECTION_TEXTURE,                 // TEXTURE* -> MATERIAL(property)*
+	UFBXW_CONNECTION_VIDEO_TEXTURE,           // VIDEO -> TEXTURE
+	UFBXW_CONNECTION_MESH_DEFORMER,           // DEFORMER -> MESH
+	UFBXW_CONNECTION_SKIN_CLUSTER,            // SKIN_CLUSTER -> SKIN_DEFORMER
+	UFBXW_CONNECTION_SKIN_CLUSTER_NODE,       // NODE -> SKIN_CLUSTER
+	UFBXW_CONNECTION_BLEND_CHANNEL,           // BLEND_CHANNEL -> BLEND_DEFORMER
+	UFBXW_CONNECTION_BLEND_SHAPE,             // BLEND_SHAPE -> BLEND_CHANNEL
+	UFBXW_CONNECTION_CACHE_FILE,              // CACHE_FILE -> CACHE_DEFORMER
+	UFBXW_CONNECTION_MATERIAL_IMPLEMENTATION, // MATERIAL -> IMPLEMENTATION
+	UFBXW_CONNECTION_BINDING_IMPLEMENTATION,  // BINDING_TABLE -> IMPLEMENTATION
+	UFBXW_CONNECTION_DISPLAY_LAYER_NODE,      // NODE -> DISPLAY_LAYER
+	UFBXW_CONNECTION_SELECTION_SET_NODE,      // SELECTION_NODE -> SELECTION_SET
+	UFBXW_CONNECTION_SELECTION_NODE_NODE,     // NODE -> SELECTION_NODE
+	UFBXW_CONNECTION_ANIM_PROPERTY,           // ANIM_PROP* -> ANY(property)*
+	UFBXW_CONNECTION_ANIM_CURVE_PROP,         // ANIM_CURVE* -> ANIM_PROP
+	UFBXW_CONNECTION_ANIM_PROP_LAYER,         // ANIM_PROP* -> ANIM_LAYER
+	UFBXW_CONNECTION_ANIM_LAYER_STACK,        // ANIM_LAYER* -> ANIM_STACK
+	UFBXW_CONNECTION_CUSTOM,                  // ANY* -> ANY*
 
 	UFBXW_CONNECTION_TYPE_COUNT,
 } ufbxw_connection_type;
 
 // -- Memory callbacks
 
+// TODO: Formatter issue on function typedefs
+// ufbxwi_disable_format
 typedef void *ufbxw_alloc_fn(void *user, size_t size);
 typedef void ufbxw_free_fn(void *user, void *ptr, size_t size);
 typedef void ufbxw_free_allocator_fn(void *user);
+// ufbxwi_enable_format
 
 typedef struct ufbxw_allocator {
 	ufbxw_alloc_fn *alloc_fn;
@@ -314,6 +357,7 @@ typedef enum ufbxw_error_type {
 	UFBXW_ERROR_ASCII_FORMAT,
 	UFBXW_ERROR_THREAD_SYNC_INIT,
 	UFBXW_ERROR_THREAD_POOL_INIT,
+	UFBXW_ERROR_STREAM_BEGIN,
 
 } ufbxw_error_type;
 
@@ -484,7 +528,6 @@ typedef enum ufbxw_keyframe_flags {
 
 	UFBXW_KEYFRAME_WEIGHTED_LEFT = 0x1000,
 	UFBXW_KEYFRAME_WEIGHTED_RIGHT = 0x2000,
-	UFBXW_KEYFRAME_WEIGHTED_BOTH = 0x4000,
 
 	UFBXW_KEYFRAME_TANGENT_SHOW_LEFT = 0x10000,
 	UFBXW_KEYFRAME_TANGENT_SHOW_RIGHT = 0x20000,
@@ -501,6 +544,14 @@ typedef enum ufbxw_keyframe_type {
 	UFBXW_KEYFRAME_CUBIC_USER_UNIFIED = UFBXW_KEYFRAME_INTERPOLATION_CUBIC | UFBXW_KEYFRAME_TANGENT_USER,
 	UFBXW_KEYFRAME_CUBIC_USER_BROKEN = UFBXW_KEYFRAME_INTERPOLATION_CUBIC | UFBXW_KEYFRAME_TANGENT_USER | UFBXW_KEYFRAME_TANGENT_BROKEN,
 } ufbxw_keyframe_type;
+
+typedef enum ufbxw_extrapolation_type {
+	UFBXW_EXTRAPOLATION_CONSTANT,        // < Use the value of the first/last keyframe
+	UFBXW_EXTRAPOLATION_REPEAT,          // < Repeat the whole animation curve
+	UFBXW_EXTRAPOLATION_MIRROR,          // < Repeat with mirroring
+	UFBXW_EXTRAPOLATION_SLOPE,           // < Use the tangent of the last keyframe to linearly extrapolate
+	UFBXW_EXTRAPOLATION_REPEAT_RELATIVE, // < Repeat the animation curve but connect the first and last keyframe values
+} ufbxw_extrapolation_type;
 
 typedef enum ufbxw_time_mode {
 	UFBXW_TIME_MODE_DEFAULT,
@@ -633,6 +684,7 @@ typedef void ufbxw_error_fn(void *user, const ufbxw_error *error);
 extern "C" {
 #endif
 
+typedef size_t ufbxw_byte_stream_fn(void *user, void *dst, size_t dst_size, size_t offset);
 typedef size_t ufbxw_int_stream_fn(void *user, int32_t *dst, size_t dst_size, size_t offset);
 typedef size_t ufbxw_long_stream_fn(void *user, int64_t *dst, size_t dst_size, size_t offset);
 typedef size_t ufbxw_real_stream_fn(void *user, ufbxw_real *dst, size_t dst_size, size_t offset);
@@ -646,6 +698,12 @@ ufbxw_abi void ufbxw_retain_buffer(ufbxw_scene *scene, ufbxw_buffer_id buffer);
 ufbxw_abi void ufbxw_free_buffer(ufbxw_scene *scene, ufbxw_buffer_id buffer);
 
 ufbxw_abi void ufbxw_buffer_set_deleter(ufbxw_scene *scene, ufbxw_buffer_id buffer, ufbxw_buffer_deleter_fn *fn, void *user);
+
+ufbxw_abi ufbxw_byte_buffer ufbxw_create_byte_buffer(ufbxw_scene *scene, size_t count);
+ufbxw_abi ufbxw_byte_buffer ufbxw_copy_byte_array(ufbxw_scene *scene, const void *data, size_t count);
+ufbxw_abi ufbxw_byte_buffer ufbxw_view_byte_array(ufbxw_scene *scene, const void *data, size_t count);
+ufbxw_abi ufbxw_byte_buffer ufbxw_external_byte_array(ufbxw_scene *scene, const void *data, size_t count);
+ufbxw_abi ufbxw_byte_buffer ufbxw_external_byte_stream(ufbxw_scene *scene, ufbxw_byte_stream_fn *fn, void *user, size_t count);
 
 ufbxw_abi ufbxw_int_buffer ufbxw_create_int_buffer(ufbxw_scene *scene, size_t count);
 ufbxw_abi ufbxw_int_buffer ufbxw_copy_int_array(ufbxw_scene *scene, const int32_t *data, size_t count);
@@ -677,26 +735,27 @@ ufbxw_abi ufbxw_vec3_buffer ufbxw_view_vec3_array(ufbxw_scene *scene, const ufbx
 ufbxw_abi ufbxw_vec3_buffer ufbxw_external_vec3_array(ufbxw_scene *scene, const ufbxw_vec3 *data, size_t count);
 ufbxw_abi ufbxw_vec3_buffer ufbxw_external_vec3_stream(ufbxw_scene *scene, ufbxw_vec3_stream_fn *fn, void *user, size_t count);
 
-ufbxw_abi ufbxw_vec4_buffer ufbxw_create_vec4_buffer(ufbxw_scene* scene, size_t count);
+ufbxw_abi ufbxw_vec4_buffer ufbxw_create_vec4_buffer(ufbxw_scene *scene, size_t count);
 ufbxw_abi ufbxw_vec4_buffer ufbxw_copy_vec4_array(ufbxw_scene *scene, const ufbxw_vec4 *data, size_t count);
 ufbxw_abi ufbxw_vec4_buffer ufbxw_view_vec4_array(ufbxw_scene *scene, const ufbxw_vec4 *data, size_t count);
 ufbxw_abi ufbxw_vec4_buffer ufbxw_external_vec4_array(ufbxw_scene *scene, const ufbxw_vec4 *data, size_t count);
 ufbxw_abi ufbxw_vec4_buffer ufbxw_external_vec4_stream(ufbxw_scene *scene, ufbxw_vec4_stream_fn *fn, void *user, size_t count);
 
-ufbxw_abi ufbxw_float_buffer ufbxw_create_float_buffer(ufbxw_scene* scene, size_t count);
+ufbxw_abi ufbxw_float_buffer ufbxw_create_float_buffer(ufbxw_scene *scene, size_t count);
 ufbxw_abi ufbxw_float_buffer ufbxw_copy_float_array(ufbxw_scene *scene, const float *data, size_t count);
 ufbxw_abi ufbxw_float_buffer ufbxw_view_float_array(ufbxw_scene *scene, const float *data, size_t count);
 ufbxw_abi ufbxw_float_buffer ufbxw_external_float_array(ufbxw_scene *scene, const float *data, size_t count);
 ufbxw_abi ufbxw_float_buffer ufbxw_external_float_stream(ufbxw_scene *scene, ufbxw_float_stream_fn *fn, void *user, size_t count);
 
 // TODO: Lock/unlock version for Rust
+ufbxw_abi ufbxw_byte_list ufbxw_edit_byte_buffer(ufbxw_scene *scene, ufbxw_byte_buffer buffer);
 ufbxw_abi ufbxw_int_list ufbxw_edit_int_buffer(ufbxw_scene *scene, ufbxw_int_buffer buffer);
 ufbxw_abi ufbxw_long_list ufbxw_edit_long_buffer(ufbxw_scene *scene, ufbxw_long_buffer buffer);
 ufbxw_abi ufbxw_real_list ufbxw_edit_real_buffer(ufbxw_scene *scene, ufbxw_real_buffer buffer);
 ufbxw_abi ufbxw_vec2_list ufbxw_edit_vec2_buffer(ufbxw_scene *scene, ufbxw_vec2_buffer buffer);
 ufbxw_abi ufbxw_vec3_list ufbxw_edit_vec3_buffer(ufbxw_scene *scene, ufbxw_vec3_buffer buffer);
-ufbxw_abi ufbxw_vec4_list ufbxw_edit_vec4_buffer(ufbxw_scene* scene, ufbxw_vec4_buffer buffer);
-ufbxw_abi ufbxw_float_list ufbxw_edit_float_buffer(ufbxw_scene* scene, ufbxw_float_buffer buffer);
+ufbxw_abi ufbxw_vec4_list ufbxw_edit_vec4_buffer(ufbxw_scene *scene, ufbxw_vec4_buffer buffer);
+ufbxw_abi ufbxw_float_list ufbxw_edit_float_buffer(ufbxw_scene *scene, ufbxw_float_buffer buffer);
 
 // --
 
@@ -720,10 +779,21 @@ ufbxw_abi void ufbxw_set_name(ufbxw_scene *scene, ufbxw_id id, const char *name)
 ufbxw_abi void ufbxw_set_name_len(ufbxw_scene *scene, ufbxw_id id, const char *name, size_t name_len);
 ufbxw_abi ufbxw_string ufbxw_get_name(ufbxw_scene *scene, ufbxw_id id);
 
-// TODO: Connect function that takes connection type as an argument
-ufbxw_abi void ufbxw_connect(ufbxw_scene *scene, ufbxw_id src, ufbxw_id dst);
-ufbxw_abi void ufbxw_connect_prop(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
-ufbxw_abi void ufbxw_connect_prop_len(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
+ufbxw_abi void ufbxw_connect(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, ufbxw_id dst);
+ufbxw_abi void ufbxw_connect_prop(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
+ufbxw_abi void ufbxw_connect_prop_len(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
+ufbxw_abi void ufbxw_disconnect(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, ufbxw_id dst);
+ufbxw_abi void ufbxw_disconnect_prop(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
+ufbxw_abi void ufbxw_disconnect_prop_len(ufbxw_scene *scene, ufbxw_connection_type type, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
+
+ufbxw_abi void ufbxw_fbx_connect(ufbxw_scene *scene, ufbxw_id src, ufbxw_id dst);
+ufbxw_abi void ufbxw_fbx_connect_prop(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
+ufbxw_abi void ufbxw_fbx_connect_prop_len(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
+ufbxw_abi void ufbxw_fbx_disconnect(ufbxw_scene *scene, ufbxw_id src, ufbxw_id dst);
+ufbxw_abi void ufbxw_fbx_disconnect_prop(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, ufbxw_id dst, const char *dst_prop);
+ufbxw_abi void ufbxw_fbx_disconnect_prop_len(ufbxw_scene *scene, ufbxw_id src, const char *src_prop, size_t src_prop_len, ufbxw_id dst, const char *dst_prop, size_t dst_prop_len);
+
+ufbxw_abi void ufbxw_clear_props(ufbxw_scene *scene, ufbxw_id id);
 
 ufbxw_abi void ufbxw_set_bool(ufbxw_scene *scene, ufbxw_id id, const char *prop, bool value);
 ufbxw_abi void ufbxw_set_int(ufbxw_scene *scene, ufbxw_id id, const char *prop, int32_t value);
@@ -752,8 +822,12 @@ ufbxw_abi ufbxw_vec3 ufbxw_get_vec3(ufbxw_scene *scene, ufbxw_id id, const char 
 ufbxw_abi ufbxw_vec4 ufbxw_get_vec4(ufbxw_scene *scene, ufbxw_id id, const char *prop);
 ufbxw_abi ufbxw_string ufbxw_get_string(ufbxw_scene *scene, ufbxw_id id, const char *prop);
 
+ufbxw_abi ufbxw_prop_data_type ufbxw_get_prop_data_type(ufbxw_scene *scene, ufbxw_id id, const char *prop);
+
 ufbxw_abi ufbxw_anim_prop ufbxw_animate_prop(ufbxw_scene *scene, ufbxw_id id, const char *prop, ufbxw_anim_layer layer);
 ufbxw_abi ufbxw_anim_prop ufbxw_animate_prop_len(ufbxw_scene *scene, ufbxw_id id, const char *prop, size_t prop_len, ufbxw_anim_layer layer);
+
+ufbxw_abi ufbxw_template ufbxw_get_element_template(ufbxw_scene *scene, ufbxw_id id);
 
 // -- Node
 
@@ -793,12 +867,17 @@ ufbxw_abi ufbxw_rotation_order ufbxw_node_get_rotation_order(ufbxw_scene *scene,
 // Set the rotation as a quaternion.
 ufbxw_abi void ufbxw_node_set_rotation_quat(ufbxw_scene *scene, ufbxw_node node, ufbxw_quat rotation, ufbxw_rotation_order order);
 
+// -- Materials
+
+ufbxw_abi void ufbxw_node_set_material(ufbxw_scene *scene, ufbxw_node node, size_t index, ufbxw_material material);
+ufbxw_abi ufbxw_material ufbxw_node_get_material(ufbxw_scene *scene, ufbxw_node node, size_t index);
+
 // -- Advanced transform
 
 // Controls how transformations are inherited to from the parent.
 // See `ufbxw_inherit_type` for more information.
 // FBX property: `InheritType`.
-ufbxw_abi void ufbxw_node_set_inherit_type(ufbxw_scene *scene, ufbxw_node node, ufbxw_inherit_type order);
+ufbxw_abi void ufbxw_node_set_inherit_type(ufbxw_scene *scene, ufbxw_node node, ufbxw_inherit_type type);
 ufbxw_abi ufbxw_inherit_type ufbxw_node_get_inherit_type(ufbxw_scene *scene, ufbxw_node node);
 
 // Rotation applied before the main `rotation`.
@@ -927,6 +1006,8 @@ ufbxw_abi void ufbxw_skin_deformer_set_mesh_bind_transform(ufbxw_scene *scene, u
 
 ufbxw_abi void ufbxw_skin_deformer_set_bind_pose(ufbxw_scene *scene, ufbxw_skin_deformer skin, ufbxw_bind_pose pose);
 
+ufbxw_abi void ufbxw_skin_deformer_set_dual_quaternion_weights(ufbxw_scene *scene, ufbxw_skin_deformer skin, ufbxw_int_buffer indices, ufbxw_real_buffer weights);
+
 // -- Skin cluster
 
 ufbxw_abi ufbxw_skin_cluster ufbxw_create_skin_cluster(ufbxw_scene *scene, ufbxw_skin_deformer skin, ufbxw_node node);
@@ -965,6 +1046,37 @@ ufbxw_abi ufbxw_blend_shape ufbxw_create_blend_shape(ufbxw_scene *scene);
 
 ufbxw_abi void ufbxw_blend_shape_set_offsets(ufbxw_scene *scene, ufbxw_blend_shape shape, ufbxw_int_buffer indices, ufbxw_vec3_buffer offsets);
 ufbxw_abi void ufbxw_blend_shape_set_normals(ufbxw_scene *scene, ufbxw_blend_shape shape, ufbxw_vec3_buffer normals);
+
+// -- Cache deformer
+
+ufbxw_abi ufbxw_cache_deformer ufbxw_create_cache_deformer(ufbxw_scene *scene, ufbxw_mesh mesh);
+
+ufbxw_abi void ufbxw_cache_deformer_add_mesh(ufbxw_scene *scene, ufbxw_cache_deformer deformer, ufbxw_mesh mesh);
+
+ufbxw_abi void ufbxw_cache_deformer_set_channel_name(ufbxw_scene *scene, ufbxw_cache_deformer deformer, const char *name);
+ufbxw_abi void ufbxw_cache_deformer_set_channel_name_len(ufbxw_scene *scene, ufbxw_cache_deformer deformer, const char *name, size_t name_len);
+
+ufbxw_abi void ufbxw_cache_deformer_set_cache_file(ufbxw_scene *scene, ufbxw_cache_deformer deformer, ufbxw_cache_file cache);
+ufbxw_abi ufbxw_cache_file ufbxw_cache_deformer_get_cache_file(ufbxw_scene *scene, ufbxw_cache_deformer deformer);
+
+// -- Cache file
+
+typedef enum ufbxw_cache_file_format {
+	UFBXW_CACHE_FILE_FORMAT_UNKNOWN, // < Unknown cache file format
+	UFBXW_CACHE_FILE_FORMAT_PC2,     // < .pc2 Point cache file
+	UFBXW_CACHE_FILE_FORMAT_MC,      // < .mc/.mcx Maya cache file
+} ufbxw_cache_file_format;
+
+ufbxw_abi ufbxw_cache_file ufbxw_create_cache_file(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_cache_file_set_format(ufbxw_scene *scene, ufbxw_cache_file cache, ufbxw_cache_file_format format);
+ufbxw_abi ufbxw_cache_file_format ufbxw_cache_file_get_format(ufbxw_scene *scene, ufbxw_cache_file cache);
+
+ufbxw_abi void ufbxw_cache_file_set_filename(ufbxw_scene *scene, ufbxw_cache_file cache, const char *filename);
+ufbxw_abi void ufbxw_cache_file_set_filename_len(ufbxw_scene *scene, ufbxw_cache_file cache, const char *filename, size_t filename_len);
+
+ufbxw_abi void ufbxw_cache_file_set_relative_filename(ufbxw_scene *scene, ufbxw_cache_file cache, const char *relative_filename);
+ufbxw_abi void ufbxw_cache_file_set_relative_filename_len(ufbxw_scene *scene, ufbxw_cache_file cache, const char *relative_filename, size_t relative_filename_len);
 
 // -- Light
 
@@ -1022,11 +1134,109 @@ ufbxw_abi ufbxw_real ufbxw_light_get_outer_angle(ufbxw_scene *scene, ufbxw_light
 
 ufbxw_abi ufbxw_camera ufbxw_create_camera(ufbxw_scene *scene, ufbxw_node node);
 
+// -- Bone
+
+typedef enum ufbxw_bone_type {
+	UFBXW_BONE_LIMB_NODE,
+	UFBXW_BONE_ROOT,
+} ufbxw_bone_type;
+
+ufbxw_abi ufbxw_bone ufbxw_create_bone(ufbxw_scene *scene, ufbxw_bone_type type, ufbxw_node node);
+
 // -- Bind pose
 
 ufbxw_abi ufbxw_bind_pose ufbxw_create_bind_pose(ufbxw_scene *scene);
 
 ufbxw_abi void ufbxw_bind_pose_add_node(ufbxw_scene *scene, ufbxw_bind_pose pose, ufbxw_node node, ufbxw_matrix matrix);
+
+// -- Material
+
+typedef enum {
+	UFBXW_MATERIAL_FBX_LAMBERT,
+	UFBXW_MATERIAL_FBX_PHONG,
+	UFBXW_MATERIAL_CUSTOM,
+} ufbxw_material_type;
+
+ufbxw_abi ufbxw_material ufbxw_create_material(ufbxw_scene *scene, ufbxw_material_type type);
+
+ufbxw_abi void ufbxw_material_set_implementation(ufbxw_scene *scene, ufbxw_material material, ufbxw_implementation implementation);
+ufbxw_abi ufbxw_implementation ufbxw_material_get_implementation(ufbxw_scene *scene, ufbxw_material material);
+
+ufbxw_abi void ufbxw_material_set_texture(ufbxw_scene *scene, ufbxw_material material, const char *prop, ufbxw_texture texture);
+ufbxw_abi void ufbxw_material_set_texture_len(ufbxw_scene *scene, ufbxw_material material, const char *prop, size_t prop_len, ufbxw_texture texture);
+
+// -- Texture
+
+typedef enum {
+	UFBXW_TEXTURE_FILE,
+} ufbxw_texture_type;
+
+ufbxw_abi ufbxw_texture ufbxw_create_texture(ufbxw_scene *scene, ufbxw_texture_type type);
+
+ufbxw_abi void ufbxw_texture_set_video(ufbxw_scene *scene, ufbxw_texture texture, ufbxw_video video);
+ufbxw_abi ufbxw_video ufbxw_texture_get_video(ufbxw_scene *scene, ufbxw_texture texture);
+
+ufbxw_abi void ufbxw_texture_set_filename(ufbxw_scene *scene, ufbxw_texture texture, const char *filename);
+ufbxw_abi void ufbxw_texture_set_filename_len(ufbxw_scene *scene, ufbxw_texture texture, const char *filename, size_t filename_len);
+
+ufbxw_abi void ufbxw_texture_set_relative_filename(ufbxw_scene *scene, ufbxw_texture texture, const char *relative_filename);
+ufbxw_abi void ufbxw_texture_set_relative_filename_len(ufbxw_scene *scene, ufbxw_texture texture, const char *relative_filename, size_t relative_filename_len);
+
+ufbxw_abi void ufbxw_texture_set_content(ufbxw_scene *scene, ufbxw_texture texture, ufbxw_byte_buffer content);
+
+// -- Implementation (material)
+// TODO: Hide these somehow?
+
+ufbxw_abi ufbxw_implementation ufbxw_create_implementation(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_implementation_set_render_api(ufbxw_scene *scene, ufbxw_implementation implementation, const char *api);
+ufbxw_abi void ufbxw_implementation_set_render_api_len(ufbxw_scene *scene, ufbxw_implementation implementation, const char *api, size_t api_len);
+ufbxw_abi ufbxw_string ufbxw_implementation_get_render_api(ufbxw_scene *scene, ufbxw_implementation implementation);
+
+ufbxw_abi void ufbxw_implementation_set_binding_table(ufbxw_scene *scene, ufbxw_implementation implementation, ufbxw_binding_table binding_table);
+ufbxw_abi ufbxw_binding_table ufbxw_implementation_get_binding_table(ufbxw_scene *scene, ufbxw_implementation implementation);
+
+// -- BindingTable (material)
+
+ufbxw_abi ufbxw_binding_table ufbxw_create_binding_table(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_binding_table_add_entry(ufbxw_scene *scene, ufbxw_binding_table binding_table, const char *property, const char *semantic);
+ufbxw_abi void ufbxw_binding_table_add_entry_len(ufbxw_scene *scene, ufbxw_binding_table binding_table, const char *property, size_t property_len, const char *semantic, size_t semantic_len);
+
+// -- Video
+
+ufbxw_abi ufbxw_video ufbxw_create_video(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_video_set_filename(ufbxw_scene *scene, ufbxw_video video, const char *filename);
+ufbxw_abi void ufbxw_video_set_filename_len(ufbxw_scene *scene, ufbxw_video video, const char *filename, size_t filename_len);
+
+ufbxw_abi void ufbxw_video_set_relative_filename(ufbxw_scene *scene, ufbxw_video video, const char *relative_filename);
+ufbxw_abi void ufbxw_video_set_relative_filename_len(ufbxw_scene *scene, ufbxw_video video, const char *relative_filename, size_t relative_filename_len);
+
+ufbxw_abi void ufbxw_video_set_content(ufbxw_scene *scene, ufbxw_video video, ufbxw_byte_buffer content);
+
+// -- Display layer
+
+ufbxw_abi ufbxw_display_layer ufbxw_create_display_layer(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_display_layer_add_node(ufbxw_scene *scene, ufbxw_display_layer layer, ufbxw_node node);
+
+// -- Selection set
+
+ufbxw_abi ufbxw_selection_set ufbxw_create_selection_set(ufbxw_scene *scene);
+
+ufbxw_abi void ufbxw_selection_set_add_node(ufbxw_scene *scene, ufbxw_selection_set set, ufbxw_selection_node node);
+
+// -- Selection node
+
+ufbxw_abi ufbxw_selection_node ufbxw_create_selection_node(ufbxw_scene *scene, ufbxw_selection_set set);
+
+ufbxw_abi void ufbxw_selection_node_set_node(ufbxw_scene *scene, ufbxw_selection_node selection, ufbxw_node node);
+
+ufbxw_abi void ufbxw_selection_node_set_include_node(ufbxw_scene *scene, ufbxw_selection_node selection, bool included);
+ufbxw_abi void ufbxw_selection_node_set_vertices(ufbxw_scene *scene, ufbxw_selection_node selection, ufbxw_int_buffer vertices);
+ufbxw_abi void ufbxw_selection_node_set_edges(ufbxw_scene *scene, ufbxw_selection_node selection, ufbxw_int_buffer edges);
+ufbxw_abi void ufbxw_selection_node_set_polygons(ufbxw_scene *scene, ufbxw_selection_node selection, ufbxw_int_buffer polygons);
 
 // -- Animation stack
 
@@ -1076,6 +1286,18 @@ ufbxw_abi void ufbxw_anim_curve_add_keyframe(ufbxw_scene *scene, ufbxw_anim_curv
 ufbxw_abi void ufbxw_anim_curve_add_keyframe_key(ufbxw_scene *scene, ufbxw_anim_curve curve, ufbxw_keyframe_real key);
 ufbxw_abi void ufbxw_anim_curve_finish_keyframes(ufbxw_scene *scene, ufbxw_anim_curve curve);
 
+ufbxw_abi void ufbxw_anim_curve_set_pre_extrapolation(ufbxw_scene *scene, ufbxw_anim_curve curve, ufbxw_extrapolation_type extrapolation);
+ufbxw_abi ufbxw_extrapolation_type ufbxw_anim_curve_get_pre_extrapolation(ufbxw_scene *scene, ufbxw_anim_curve curve);
+
+ufbxw_abi void ufbxw_anim_curve_set_pre_extrapolation_repeat_count(ufbxw_scene *scene, ufbxw_anim_curve curve, int32_t repeat_count);
+ufbxw_abi int32_t ufbxw_anim_curve_get_pre_extrapolation_repeat_count(ufbxw_scene *scene, ufbxw_anim_curve curve);
+
+ufbxw_abi void ufbxw_anim_curve_set_post_extrapolation(ufbxw_scene *scene, ufbxw_anim_curve curve, ufbxw_extrapolation_type extrapolation);
+ufbxw_abi ufbxw_extrapolation_type ufbxw_anim_curve_get_post_extrapolation(ufbxw_scene *scene, ufbxw_anim_curve curve);
+
+ufbxw_abi void ufbxw_anim_curve_set_post_extrapolation_repeat_count(ufbxw_scene *scene, ufbxw_anim_curve curve, int32_t repeat_count);
+ufbxw_abi int32_t ufbxw_anim_curve_get_post_extrapolation_repeat_count(ufbxw_scene *scene, ufbxw_anim_curve curve);
+
 typedef struct ufbxw_anim_curve_data_desc {
 	uint32_t _begin_zero;
 
@@ -1123,13 +1345,29 @@ ufbxw_abi ufbxw_coordinate_axes ufbxw_scene_get_coordinate_axes(ufbxw_scene *sce
 ufbxw_abi void ufbxw_scene_set_unit_scale_factor(ufbxw_scene *scene, ufbxw_real unit_scale);
 ufbxw_abi ufbxw_real ufbxw_scene_get_unit_scale_factor(ufbxw_scene *scene);
 
+// Frame rate of the file.
+// FBX property: `TimeMode`.
+ufbxw_abi void ufbxw_scene_set_time_mode(ufbxw_scene *scene, ufbxw_time_mode time_mode);
+ufbxw_abi ufbxw_time_mode ufbxw_scene_get_time_mode(ufbxw_scene *scene);
+
+// Custom frame rate, used if time mode is `UFBXW_TIME_MODE_CUSTOM`.
+// FBX property: `CustomFrameRate`.
+ufbxw_abi void ufbxw_scene_set_custom_frame_rate(ufbxw_scene *scene, ufbxw_real frame_rate);
+ufbxw_abi ufbxw_real ufbxw_scene_get_custom_frame_rate(ufbxw_scene *scene);
+
 // -- Scene info
 
 ufbxw_abi ufbxw_id ufbxw_get_scene_info_id(ufbxw_scene *scene);
 
 // -- Templates
 
-ufbxw_abi ufbxw_id ufbxw_get_template_id(ufbxw_scene *scene, ufbxw_element_type type);
+ufbxw_abi ufbxw_template ufbxw_get_template(ufbxw_scene *scene, ufbxw_element_type type);
+
+ufbxw_abi ufbxw_template ufbxw_get_template_ex(ufbxw_scene *scene, ufbxw_element_type type, const char *class_type);
+ufbxw_abi ufbxw_template ufbxw_get_template_ex_len(ufbxw_scene *scene, ufbxw_element_type type, const char *class_type, size_t class_type_len);
+
+// Mark `template_id` as the preferred template to use for the object type.
+ufbxw_abi void ufbxw_set_template_preferred(ufbxw_scene *scene, ufbxw_template template_id);
 
 // -- Pre-saving
 
@@ -1173,6 +1411,8 @@ typedef struct ufbxw_prepare_opts {
 	bool patch_global_settings_times;
 	bool patch_original_up_axis;
 	bool patch_original_units;
+	bool patch_video_filename;
+	bool add_missing_videos;
 	bool add_missing_skeletons;
 	bool add_missing_bind_poses;
 } ufbxw_prepare_opts;
@@ -1185,6 +1425,9 @@ ufbxw_abi void ufbxw_validate_scene(const ufbxw_scene *scene);
 
 // -- IO callbacks
 
+// Begin writing to a stream
+typedef bool ufbxw_begin_fn(void *user, uint64_t required_size);
+
 // Write at a specified offset in the file
 typedef bool ufbxw_write_fn(void *user, uint64_t offset, const void *data, size_t size);
 
@@ -1192,6 +1435,7 @@ typedef bool ufbxw_write_fn(void *user, uint64_t offset, const void *data, size_
 typedef void ufbxw_close_fn(void *user);
 
 typedef struct ufbxw_write_stream {
+	ufbxw_begin_fn *begin_fn; // < Optional
 	ufbxw_write_fn *write_fn; // < Required
 	ufbxw_close_fn *close_fn; // < Optional
 
@@ -1201,11 +1445,34 @@ typedef struct ufbxw_write_stream {
 
 ufbxw_abi bool ufbxw_open_file_write(ufbxw_write_stream *stream, const char *path, size_t path_len, ufbxw_error *error);
 
+// TODO: Formatter issue on function typedefs
+// ufbxwi_disable_format
+typedef void *ufbxw_result_alloc_fn(void *user, size_t size);
+// ufbxwi_enable_format
+
+// Callback for allocating a result `ufbx_write_buffer`
+typedef struct ufbxw_result_alloc_cb {
+	ufbxw_result_alloc_fn *fn;
+	void *user;
+} ufbxw_result_alloc_cb;
+
+typedef struct ufbxw_write_buffer {
+	void *data;
+	size_t size;
+} ufbxw_write_buffer;
+
+// Free a `ufbxw_write_buffer` that uses the default allocator.
+// NOTE: If you use a custom `ufbxw_result_alloc_cb` you are responsible for freeing the buffer yourself.
+ufbxw_abi void ufbxw_free_write_buffer(ufbxw_write_buffer buffer);
+
 // TODO: Unify all these kind of APIs, they're all a bit different now...
+// TODO: Formatter issue on function typedefs
+// ufbxwi_disable_format
 typedef void *ufbxw_thread_sync_init_fn(void *user);
 typedef void ufbxw_thread_sync_wait_fn(void *user, void *ctx, uint32_t *p_value, uint32_t ref_value);
 typedef void ufbxw_thread_sync_notify_fn(void *user, void *ctx, uint32_t *p_value, uint32_t wake_count);
 typedef void ufbxw_thread_sync_free_fn(void *user, void *ctx);
+// ufbxwi_enable_format
 
 //  support interface.
 typedef struct ufbxw_thread_sync {
@@ -1358,6 +1625,10 @@ typedef struct ufbxw_save_opts {
 
 	ufbxw_allocator allocator;
 
+	// Callback for allocating the result memory.
+	// NOTE: Only applies to `ufbxw_save_memory()`
+	ufbxw_result_alloc_cb result_alloc_cb;
+
 	// Compression level.
 	// Defaults to `6`.
 	int32_t compression_level;
@@ -1368,6 +1639,9 @@ typedef struct ufbxw_save_opts {
 
 	// How to format floating point numbers in ASCII files.
 	ufbxw_ascii_float_format ascii_float_format;
+
+	// If enabled, ufbx_write will buffer all output to memory before writing it to the stream.
+	bool buffer_writes;
 
 	// Do not compress binary data
 	bool disable_compression;
@@ -1414,10 +1688,12 @@ typedef struct ufbxw_save_stats {
 
 ufbxw_abi bool ufbxw_save_file(ufbxw_scene *scene, const char *path, const ufbxw_save_opts *opts, ufbxw_error *error);
 ufbxw_abi bool ufbxw_save_file_len(ufbxw_scene *scene, const char *path, size_t path_len, const ufbxw_save_opts *opts, ufbxw_error *error);
+ufbxw_abi bool ufbxw_save_memory(ufbxw_scene *scene, ufbxw_write_buffer *buffer, const ufbxw_save_opts *opts, ufbxw_error *error);
 ufbxw_abi bool ufbxw_save_stream(ufbxw_scene *scene, ufbxw_write_stream *stream, const ufbxw_save_opts *opts, ufbxw_error *error);
 
 ufbxw_abi bool ufbxw_save_file_ex(ufbxw_scene *scene, const char *path, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
 ufbxw_abi bool ufbxw_save_file_ex_len(ufbxw_scene *scene, const char *path, size_t path_len, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
+ufbxw_abi bool ufbxw_save_memory_ex(ufbxw_scene *scene, ufbxw_write_buffer *buffer, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
 ufbxw_abi bool ufbxw_save_stream_ex(ufbxw_scene *scene, ufbxw_write_stream *stream, const ufbxw_save_opts *opts, ufbxw_error *error, ufbxw_save_stats *stats);
 
 // -- Thread pool
@@ -1452,4 +1728,3 @@ ufbxw_abi ufbxw_string ufbxw_str(const char *str);
 #endif
 
 #endif
-
