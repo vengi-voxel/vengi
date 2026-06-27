@@ -326,6 +326,54 @@ A selection mode script can define the following functions:
 
 The `select()` function has access to the same global objects as generator scripts. Additionally, selection mode scripts have access to `g_selectioncontext` which provides cursor position, face direction, and other context about the selection action. For further details see [g_selectioncontext](lua/selectioncontext.md).
 
+### Volume selection helpers
+
+The [Volume](lua/volume.md) type provides helpers for implementing surface-based selection modes:
+
+| Method | Description |
+| ------ | ----------- |
+| `volume:lineDrapeSurface(ax, ay, az, bx, by, bz, face, width, callback)` | Mark voxels along a line draped over the visible surface between two endpoints. |
+| `volume:lineMarkSolid(ax, ay, az, bx, by, bz, width, callback)` | Mark solid voxels along a straight 3D line between two endpoints. |
+| `volume:findSurfaceNear(u, v, refW, tolerance, face)` | Find the exposed surface depth in a column; returns the depth or `nil`. |
+| `volume:visitSlopeSurface(x, y, z, face, maxDeviation, sampleDistance, callback)` | Visit surface voxels on a slope plane (used by `slope.lua`). |
+| `volume:lassoContains(path, pu, pv, uAxis, vAxis)` | Test whether a 2D point lies inside a polygon projected onto an axis plane. |
+
+Each callback receives `(x, y, z)` for every marked voxel. Typical usage:
+
+```lua
+volume:lineDrapeSurface(
+    startPos.x, startPos.y, startPos.z,
+    endPos.x, endPos.y, endPos.z,
+    face, width,
+    function(x, y, z)
+        volume:setSelected(x, y, z, true)
+    end
+)
+```
+
+### Selection utilities module
+
+A shared Lua module `selectionmodes/modules/selection.lua` provides helpers for face-axis math:
+
+```lua
+local sel = require("modules.selection")
+
+local wAxis = sel.faceToAxisIndex(face)
+local uAxis = (wAxis + 1) % 3
+local vAxis = (wAxis + 2) % 3
+local positive = sel.isPositiveFace(face)
+local u = sel.getAxis(pos, uAxis)
+sel.setAxis(pos, wAxis, depth)
+```
+
+Available functions:
+- `sel.faceToAxisIndex(face)` - map face string to axis index (0=X, 1=Y, 2=Z)
+- `sel.isPositiveFace(face)` - whether the face points in the positive axis direction
+- `sel.getAxis(pos, ax)` / `sel.setAxis(pos, ax, val)` - read/write a position component by axis index
+- `sel.containsPoint(rmin, rmax, x, y, z)` - point-in-AABB test
+- `sel.buildPlaneOffsets(uAxis, vAxis)` - four UV-plane neighbor offsets
+- `sel.forceAxis(x, y, z, wAxis, planeW)` - clamp a coordinate to a plane
+
 ### Selection mode script example
 
 ```lua

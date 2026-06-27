@@ -12,6 +12,7 @@
 | `fill(color, overwrite)` | Fill the entire volume with the specified color index. |
 | `fillHollow(color)` | Fill hollow areas in the volume with the specified voxel color. |
 | `fillPlane(image, searchVoxelColor, x, y, z, face)` | Fill a plane at the given position using colors from an image. |
+| `findSurfaceNear(u, v, refW, tolerance, face)` | Find the exposed surface voxel depth nearest to a reference depth in a column. |
 | `flags(x, y, z)` | Get the flags of the voxel at the specified coordinates. |
 | `hollow()` | Make the volume hollow by removing interior voxels. |
 | `importColoredHeightmap(image, underground)` | Import a colored heightmap image into the volume. |
@@ -23,6 +24,8 @@
 | `isSurface(x, y, z)` | Check if a voxel is a surface voxel (solid with at least one exposed air face). |
 | `isTouching(x, y, z, connectivity)` | Check if a position is touching (adjacent to) a solid voxel. |
 | `lassoContains(path, pu, pv, uAxis, vAxis)` | Test whether a 2D point lies inside a polygon defined by a path of 3D positions, projected onto the given axis plane. |
+| `lineDrapeSurface(ax, ay, az, bx, by, bz, face, width, callback)` | Mark voxels along a line draped over the visible surface between two endpoints. The callback is called with (x, y, z) for each selected voxel. |
+| `lineMarkSolid(ax, ay, az, bx, by, bz, width, callback)` | Mark solid voxels along a straight 3D line between two endpoints within the given width. The callback is called with (x, y, z) for each selected voxel. |
 | `merge(source)` | Merge another volume into this one. |
 | `mirrorAxis(axis)` | Mirror the volume along the specified axis. |
 | `move(x, y, z)` | Move the voxels within the volume by the specified offset. |
@@ -161,6 +164,26 @@ Fill a plane at the given position using colors from an image.
 | Type | Description |
 | ---- | ----------- |
 | `integer` | The number of voxels filled. |
+
+### findSurfaceNear
+
+Find the exposed surface voxel depth nearest to a reference depth in a column.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `u` | `integer` | U coordinate of the column. |
+| `v` | `integer` | V coordinate of the column. |
+| `refW` | `integer` | Reference depth along the face-normal axis. |
+| `tolerance` | `integer` | Maximum search distance from refW. |
+| `face` | `string` | The face direction (e.g. 'up', 'positivey'). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The surface depth, or nil if not found. |
 
 ### flags
 
@@ -334,6 +357,41 @@ Test whether a 2D point lies inside a polygon defined by a path of 3D positions,
 | Type | Description |
 | ---- | ----------- |
 | `boolean` | True if the point is inside the polygon. |
+
+### lineDrapeSurface
+
+Mark voxels along a line draped over the visible surface between two endpoints. The callback is called with (x, y, z) for each selected voxel.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `ax` | `integer` | Start x coordinate. |
+| `ay` | `integer` | Start y coordinate. |
+| `az` | `integer` | Start z coordinate. |
+| `bx` | `integer` | End x coordinate. |
+| `by` | `integer` | End y coordinate. |
+| `bz` | `integer` | End z coordinate. |
+| `face` | `string` | The face direction (e.g. 'up', 'positivey'). |
+| `width` | `integer` | Line thickness in voxels. |
+| `callback` | `function` | Called with (x, y, z) for each marked voxel. |
+
+### lineMarkSolid
+
+Mark solid voxels along a straight 3D line between two endpoints within the given width. The callback is called with (x, y, z) for each selected voxel.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `ax` | `integer` | Start x coordinate. |
+| `ay` | `integer` | Start y coordinate. |
+| `az` | `integer` | Start z coordinate. |
+| `bx` | `integer` | End x coordinate. |
+| `by` | `integer` | End y coordinate. |
+| `bz` | `integer` | End z coordinate. |
+| `width` | `integer` | Line thickness in voxels. |
+| `callback` | `function` | Called with (x, y, z) for each marked voxel. |
 
 ### merge
 
