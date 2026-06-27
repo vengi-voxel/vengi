@@ -785,6 +785,80 @@ static int luaVoxel_volumewrapper_lassocontains(lua_State *s) {
 	return 1;
 }
 
+static void luaVoxel_facePlaneAxes(voxel::FaceNames face, int &uAxis, int &vAxis, int &wAxis, bool &positiveNormal) {
+	const math::Axis axis = voxel::faceToAxis(face);
+	wAxis = math::getIndexForAxis(axis);
+	uAxis = (wAxis + 1) % 3;
+	vAxis = (wAxis + 2) % 3;
+	positiveNormal = voxel::isPositiveFace(face);
+}
+
+static int luaVoxel_volumewrapper_linedrapesurface(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3 a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
+	const glm::ivec3 b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
+	const voxel::FaceNames face = luaVoxel_getFace(s, 8);
+	const int width = (int)luaL_checkinteger(s, 9);
+	luaL_checktype(s, 10, LUA_TFUNCTION);
+	int uAxis;
+	int vAxis;
+	int wAxis;
+	bool positiveNormal;
+	luaVoxel_facePlaneAxes(face, uAxis, vAxis, wAxis, positiveNormal);
+	const voxel::Region &region = volume->region();
+	const voxel::RawVolumeWrapper &wrapper = static_cast<const voxel::RawVolumeWrapper &>(*volume);
+	voxelutil::lineDrapeSurface(wrapper, a, b, uAxis, vAxis, wAxis, positiveNormal, width, region,
+								[s](int vx, int vy, int vz, const voxel::Voxel &) {
+									lua_pushvalue(s, 10);
+									lua_pushinteger(s, vx);
+									lua_pushinteger(s, vy);
+									lua_pushinteger(s, vz);
+									lua_pcall(s, 3, 0, 0);
+								});
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_linemarksolid(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3 a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
+	const glm::ivec3 b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
+	const int width = (int)luaL_checkinteger(s, 8);
+	luaL_checktype(s, 9, LUA_TFUNCTION);
+	const voxel::Region &region = volume->region();
+	const voxel::RawVolumeWrapper &wrapper = static_cast<const voxel::RawVolumeWrapper &>(*volume);
+	voxelutil::lineMarkSolid(wrapper, a, b, width, region, [s](int vx, int vy, int vz, const voxel::Voxel &) {
+		lua_pushvalue(s, 9);
+		lua_pushinteger(s, vx);
+		lua_pushinteger(s, vy);
+		lua_pushinteger(s, vz);
+		lua_pcall(s, 3, 0, 0);
+	});
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_findsurfacenear(lua_State *s) {
+	const LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int u = (int)luaL_checkinteger(s, 2);
+	const int v = (int)luaL_checkinteger(s, 3);
+	const int refW = (int)luaL_checkinteger(s, 4);
+	const int tolerance = (int)luaL_checkinteger(s, 5);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 6);
+	int uAxis;
+	int vAxis;
+	int wAxis;
+	bool positiveNormal;
+	luaVoxel_facePlaneAxes(face, uAxis, vAxis, wAxis, positiveNormal);
+	const voxel::Region &region = volume->region();
+	const voxel::RawVolumeWrapper &wrapper = static_cast<const voxel::RawVolumeWrapper &>(*volume);
+	int outW = 0;
+	if (voxelutil::findSurfaceNear(wrapper, u, v, refW, tolerance, uAxis, vAxis, wAxis, positiveNormal, region, outW)) {
+		lua_pushinteger(s, outW);
+		return 1;
+	}
+	lua_pushnil(s);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_fill(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
@@ -3843,6 +3917,63 @@ static int luaVoxel_volumewrapper_lassocontains_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_linedrapesurface_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "lineDrapeSurface",
+		"summary": "Mark voxels along a line draped over the visible surface between two endpoints. The callback is called with (x, y, z) for each selected voxel.",
+		"parameters": [
+			{"name": "ax", "type": "integer", "description": "Start x coordinate."},
+			{"name": "ay", "type": "integer", "description": "Start y coordinate."},
+			{"name": "az", "type": "integer", "description": "Start z coordinate."},
+			{"name": "bx", "type": "integer", "description": "End x coordinate."},
+			{"name": "by", "type": "integer", "description": "End y coordinate."},
+			{"name": "bz", "type": "integer", "description": "End z coordinate."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'up', 'positivey')."},
+			{"name": "width", "type": "integer", "description": "Line thickness in voxels."},
+			{"name": "callback", "type": "function", "description": "Called with (x, y, z) for each marked voxel."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_linemarksolid_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "lineMarkSolid",
+		"summary": "Mark solid voxels along a straight 3D line between two endpoints within the given width. The callback is called with (x, y, z) for each selected voxel.",
+		"parameters": [
+			{"name": "ax", "type": "integer", "description": "Start x coordinate."},
+			{"name": "ay", "type": "integer", "description": "Start y coordinate."},
+			{"name": "az", "type": "integer", "description": "Start z coordinate."},
+			{"name": "bx", "type": "integer", "description": "End x coordinate."},
+			{"name": "by", "type": "integer", "description": "End y coordinate."},
+			{"name": "bz", "type": "integer", "description": "End z coordinate."},
+			{"name": "width", "type": "integer", "description": "Line thickness in voxels."},
+			{"name": "callback", "type": "function", "description": "Called with (x, y, z) for each marked voxel."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_findsurfacenear_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "findSurfaceNear",
+		"summary": "Find the exposed surface voxel depth nearest to a reference depth in a column.",
+		"parameters": [
+			{"name": "u", "type": "integer", "description": "U coordinate of the column."},
+			{"name": "v", "type": "integer", "description": "V coordinate of the column."},
+			{"name": "refW", "type": "integer", "description": "Reference depth along the face-normal axis."},
+			{"name": "tolerance", "type": "integer", "description": "Maximum search distance from refW."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'up', 'positivey')."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The surface depth, or nil if not found."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // Region jsonhelp functions
 
 static int luaVoxel_volumewrapper_fill_jsonhelp(lua_State* s) {
@@ -6504,6 +6635,9 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"setSelected", luaVoxel_volumewrapper_setselected, luaVoxel_volumewrapper_setselected_jsonhelp},
 		{"visitSlopeSurface", luaVoxel_volumewrapper_visitslopesurface, luaVoxel_volumewrapper_visitslopesurface_jsonhelp},
 		{"lassoContains", luaVoxel_volumewrapper_lassocontains, luaVoxel_volumewrapper_lassocontains_jsonhelp},
+		{"lineDrapeSurface", luaVoxel_volumewrapper_linedrapesurface, luaVoxel_volumewrapper_linedrapesurface_jsonhelp},
+		{"lineMarkSolid", luaVoxel_volumewrapper_linemarksolid, luaVoxel_volumewrapper_linemarksolid_jsonhelp},
+		{"findSurfaceNear", luaVoxel_volumewrapper_findsurfacenear, luaVoxel_volumewrapper_findsurfacenear_jsonhelp},
 		{"fill", luaVoxel_volumewrapper_fill, luaVoxel_volumewrapper_fill_jsonhelp},
 		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
 		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},

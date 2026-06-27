@@ -37,6 +37,7 @@ set(TEST_SRCS
 	tests/VolumeMoverTest.cpp
 	tests/VolumeCropperTest.cpp
 	tests/VolumeVisitorTest.cpp
+	tests/VolumeSelectTest.cpp
 	tests/VolumeSculptTest.cpp
 	tests/VoxelUtilTest.cpp
 )
