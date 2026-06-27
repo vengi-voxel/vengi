@@ -585,6 +585,14 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		static const glm::vec4 c(1.0f, 1.0f, 1.0f, 0.1f);
 		return c;
 	}
+	case style::ColorAddNodeFaceHighlight: {
+		static const glm::vec4 c = color::alpha(color::Green(), 0.45f);
+		return c;
+	}
+	case style::ColorAddNodePreview: {
+		static const glm::vec4 c = color::alpha(color::LightGreen(), 0.85f);
+		return c;
+	}
 	}
 	return color::White();
 }

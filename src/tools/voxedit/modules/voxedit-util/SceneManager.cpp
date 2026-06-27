@@ -3501,6 +3501,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
+		_sceneRenderer->setAddNodePreview(_addNodePreview);
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
 			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
@@ -3572,6 +3573,15 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditHideInactive);
 	const core::VarDef voxEditSceneMode(cfg::VoxEditSceneMode, false, N_("Scene mode"), N_("Start in scene mode"));
 	core::Var::registerVar(voxEditSceneMode);
+	const core::VarDef voxEditAddNode(cfg::VoxEditAddNode, false, N_("Add node by face"),
+									  N_("Place new nodes adjacent to the active node face in scene view"));
+	_addNodeMode = core::Var::registerVar(voxEditAddNode);
+	const core::VarDef voxEditAddNodeIgnoreOverlap(cfg::VoxEditAddNodeIgnoreOverlap, false, N_("Allow overlap"),
+												   N_("Allow placing adjacent nodes even if the region overlaps other nodes"));
+	_addNodeIgnoreOverlap = core::Var::registerVar(voxEditAddNodeIgnoreOverlap);
+	const core::VarDef voxEditAddNodeCloneVoxels(cfg::VoxEditAddNodeCloneVoxels, false, N_("Clone voxels"),
+												 N_("Copy voxels when adding a node by face"));
+	_addNodeCloneVoxels = core::Var::registerVar(voxEditAddNodeCloneVoxels);
 	const core::VarDef voxEditViewdistance(cfg::VoxEditViewdistance, 5000, 10, 5000, N_("View distance"), N_("Far plane for the camera"));
 	core::Var::registerVar(voxEditViewdistance);
 	const core::VarDef voxEditShowaxis(cfg::VoxEditShowaxis, true, N_("Show gizmo"), N_("Show the axis"));
@@ -3592,8 +3602,9 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditModelGizmo);
 	const core::VarDef voxEditBrushGizmo(cfg::VoxEditBrushGizmo, true, N_("Brush gizmo"), N_("Show the gizmo for brushes that support it"));
 	core::Var::registerVar(voxEditBrushGizmo);
-	const core::VarDef voxEditBrushHud(cfg::VoxEditBrushHud, true, N_("Brush HUD"), N_("Show brush status and hints in the viewport"));
-	core::Var::registerVar(voxEditBrushHud);
+	const core::VarDef voxEditViewportHud(cfg::VoxEditViewportHud, true, N_("Viewport HUD"),
+										  N_("Show status and hints in the viewport"));
+	core::Var::registerVar(voxEditViewportHud);
 	const core::VarDef voxEditLastPalette(cfg::VoxEditLastPalette, palette::Palette::builtIn[0], N_("Last palette"), N_("The last used palette"));
 	core::Var::registerVar(voxEditLastPalette);
 	const core::VarDef voxEditViewports(cfg::VoxEditViewports, 2, 1, cfg::MaxViewports, N_("Viewports"), N_("The amount of viewports (not in simple ui mode)"));
@@ -3860,14 +3871,22 @@ void SceneManager::construct() {
 	command::Command::registerActionButton("zoom_out", _zoomOut, "Zoom out");
 	command::Command::registerActionButton("camera_rotate", _rotate, "Rotate the camera");
 	command::Command::registerActionButton("camera_pan", _pan, "Pan the camera");
-	command::Command::registerCommand("mouse_node_select")
+	command::Command::registerCommand("mouse_scene")
 		.setHandler([&] (const command::CommandArgs&) {
-			const int nodeId = traceScene();
+			if (blocksSceneMouseInteraction()) {
+				return;
+			}
+			if (isAddNodeModeActive() && _addNodePreview.previewValid &&
+				_addNodePreview.hoverFace != voxel::FaceNames::Max) {
+				addModelAdjacent(_addNodePreview.sourceNodeId, _addNodePreview.hoverFace);
+				return;
+			}
+			const int nodeId = traceScene(!isAddNodeModeActive());
 			if (nodeId != InvalidNodeId) {
 				Log::debug("switch active node to hovered from scene graph mode: %i", nodeId);
 				nodeActivate(nodeId);
 			}
-		}).setHelp(_("Switch active node to hovered from scene graph mode"));
+		}).setHelp(_("Scene view interaction: add node by face or activate hovered node"));
 
 	command::Command::registerCommand("mouse_node_lock")
 		.setHandler([&] (const command::CommandArgs&) {
@@ -4073,8 +4092,12 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("abortaction")
 		.setHandler([&] (const command::CommandArgs& args) {
+			if (isAddNodeModeActive()) {
+				setAddNodeModeActive(false);
+				return;
+			}
 			_modifier.abort();
-		}).setHelp(_("Aborts the current modifier action"));
+		}).setHelp(_("Aborts the current modifier action or add-node mode"));
 
 	command::Command::registerCommand("brushapply")
 		.setHandler([&] (const command::CommandArgs& args) {
@@ -4547,6 +4570,24 @@ void SceneManager::construct() {
 			addModelChild(name, iw, ih, id);
 		}).setHelp(_("Add a new model node to the current active node (with a given name and width, height, depth)"));
 
+	command::Command::registerCommand("addnode_mode")
+		.addArg({"enabled", command::ArgType::Int, true, "", "0=off, 1=on"})
+		.setHandler([&] (const command::CommandArgs& args) {
+			if (args.has("enabled")) {
+				setAddNodeModeActive(args.intVal("enabled", 0) != 0);
+			} else {
+				toggleAddNodeMode();
+			}
+		}).setHelp(_("Toggle or set add-node-by-face mode in scene view"));
+
+	command::Command::registerCommand("modeladd_face")
+		.setHandler([&] (const command::CommandArgs& args) {
+			if (!_addNodePreview.previewValid || _addNodePreview.hoverFace == voxel::FaceNames::Max) {
+				return;
+			}
+			addModelAdjacent(_addNodePreview.sourceNodeId, _addNodePreview.hoverFace);
+		}).setHelp(_("Add a new model node adjacent to the hovered face of the active node"));
+
 	command::Command::registerCommand("nodebaketransform")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID"})
 		.setHandler([&] (const command::CommandArgs& args) {
@@ -4950,6 +4991,154 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 	}
 	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
 	return nodeId;
+}
+
+int SceneManager::addModelAdjacent(int sourceNodeId, voxel::FaceNames face) {
+	if (isLocked()) {
+		return InvalidNodeId;
+	}
+	if (face == voxel::FaceNames::Max) {
+		return InvalidNodeId;
+	}
+	scenegraph::SceneGraphNode *source = sceneGraphModelNode(sourceNodeId);
+	if (source == nullptr || !source->isAnyModelNode()) {
+		return InvalidNodeId;
+	}
+	const voxel::Region &sourceRegion = _sceneGraph.resolveRegion(*source);
+	if (!sourceRegion.isValid()) {
+		return InvalidNodeId;
+	}
+	const glm::ivec3 dims = sourceRegion.getDimensionsInVoxels();
+	const scenegraph::FrameTransform &frameTransform = _sceneGraph.transformForFrame(*source, _currentFrameIdx);
+	const math::OBBF sourceObb = scenegraph::toOBB(true, sourceRegion, source->pivot(), frameTransform);
+	const glm::vec3 newExtents = scenegraph::calculateExtents(glm::vec3(dims));
+	const math::OBBF adjacentObb = scenegraph::calcAdjacentObb(sourceObb, face, newExtents);
+	const voxel::Region targetWorld = scenegraph::toRegion(adjacentObb);
+	if (!targetWorld.isValid()) {
+		return InvalidNodeId;
+	}
+	if (!_addNodeIgnoreOverlap->boolVal()) {
+		for (auto entry : _sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
+			if (node.id() == sourceNodeId) {
+				continue;
+			}
+			const voxel::Region nodeWorld = _sceneGraph.sceneRegion(node, _currentFrameIdx);
+			if (nodeWorld.isValid() && voxel::intersects(nodeWorld, targetWorld)) {
+				Log::warn("Cannot add node - region overlaps with node %i", node.id());
+				return InvalidNodeId;
+			}
+		}
+	}
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	if (_addNodeCloneVoxels->boolVal()) {
+		newNode.setVolume(new voxel::RawVolume(source->volume()));
+	} else {
+		newNode.createVolume(sourceRegion);
+	}
+	newNode.setName(core::String::format("%s+", source->name().c_str()));
+	newNode.setPalette(source->palette());
+	newNode.setPivot(source->pivot());
+	newNode.setAllKeyFrames(source->allKeyFrames(), DEFAULT_ANIMATION);
+	const glm::vec3 delta = adjacentObb.origin() - sourceObb.origin();
+	scenegraph::offsetNodeWorldTransforms(newNode, delta);
+	int parentId = source->parent();
+	if (parentId == InvalidNodeId) {
+		parentId = _sceneGraph.root().id();
+	}
+	return moveNodeToSceneGraph(newNode, parentId);
+}
+
+bool SceneManager::isAddNodeModeActive() const {
+	return _addNodeMode->boolVal();
+}
+
+void SceneManager::setAddNodeModeActive(bool active) {
+	if (_addNodeMode->boolVal() == active) {
+		return;
+	}
+	_addNodeMode->setVal(active);
+	if (!active) {
+		_addNodePreview.reset();
+	} else {
+		_addNodePreview.active = true;
+		_addNodePreview.previewValid = false;
+		_sceneRenderer->markDirty();
+	}
+}
+
+void SceneManager::toggleAddNodeMode() {
+	setAddNodeModeActive(!isAddNodeModeActive());
+}
+
+void SceneManager::updateAddNodeHover(scenegraph::FrameIndex frameIdx) {
+	if (!isAddNodeModeActive() || _camera == nullptr) {
+		if (_addNodePreview.active) {
+			_addNodePreview.reset();
+			_sceneRenderer->markDirty();
+		}
+		return;
+	}
+	_addNodePreview.active = true;
+	_addNodePreview.previewValid = false;
+	_addNodePreview.hoverFace = voxel::FaceNames::Max;
+
+	const int sourceNodeId = activeNode();
+	scenegraph::SceneGraphNode *source = sceneGraphModelNode(sourceNodeId);
+	if (source == nullptr || !source->visible()) {
+		return;
+	}
+	const voxel::Region &sourceRegion = _sceneGraph.resolveRegion(*source);
+	if (!sourceRegion.isValid()) {
+		return;
+	}
+	const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*source, frameIdx);
+	const math::OBBF obb = scenegraph::toOBB(true, sourceRegion, source->pivot(), transform);
+	const math::Ray ray = _camera->mouseRay(_mouseCursor);
+	const scenegraph::ObbFaceHit hit = scenegraph::traceObbFace(obb, ray);
+	if (hit.face == voxel::FaceNames::Max) {
+		return;
+	}
+	const glm::ivec3 dims = sourceRegion.getDimensionsInVoxels();
+	const glm::vec3 newExtents = scenegraph::calculateExtents(glm::vec3(dims));
+	const math::OBBF adjacentObb = scenegraph::calcAdjacentObb(obb, hit.face, newExtents);
+	if (!scenegraph::toRegion(adjacentObb).isValid()) {
+		return;
+	}
+	_addNodePreview.sourceNodeId = sourceNodeId;
+	_addNodePreview.hoverFace = hit.face;
+	_addNodePreview.highlightObb = obb;
+	_addNodePreview.previewObb = adjacentObb;
+	_addNodePreview.previewRegion = scenegraph::toRegion(adjacentObb);
+	_addNodePreview.previewValid = true;
+}
+
+const AddNodePreview &SceneManager::addNodePreview() const {
+	return _addNodePreview;
+}
+
+bool SceneManager::blocksSceneMouseInteraction() const {
+	return _viewportGizmoActive || _viewportHudHovered;
+}
+
+void SceneManager::resetViewportMouseBlock() {
+	_viewportGizmoActive = false;
+	_viewportHudHovered = false;
+}
+
+void SceneManager::setViewportGizmoActive(bool active) {
+	if (active) {
+		_viewportGizmoActive = true;
+	}
+}
+
+void SceneManager::setViewportHudHovered(bool hovered) {
+	if (hovered) {
+		_viewportHudHovered = true;
+	}
 }
 
 void SceneManager::nodeGroupFlip(math::Axis axis) {
@@ -5757,7 +5946,7 @@ bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) 
 	return mouseRayTrace(force, invModel);
 }
 
-int SceneManager::traceScene() {
+int SceneManager::traceScene(bool skipActiveNode) {
 	const int previousNodeId = activeNode();
 	int nodeId = InvalidNodeId;
 	core_trace_scoped(EditorSceneOnProcessUpdateRay);
@@ -5765,7 +5954,7 @@ int SceneManager::traceScene() {
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	for (auto entry : _sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode& node = entry->second;
-		if (previousNodeId == node.id()) {
+		if (skipActiveNode && previousNodeId == node.id()) {
 			continue;
 		}
 		if (!node.isAnyModelNode()) {

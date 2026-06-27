@@ -111,7 +111,7 @@ private:
 	int _lastActiveCameraNodeId = InvalidNodeId;
 	core::VarPtr _clipping;
 	core::VarPtr _brushGizmo;
-	core::VarPtr _brushHud;
+	core::VarPtr _viewportHud;
 
 	bool wantGizmo() const;
 	/**

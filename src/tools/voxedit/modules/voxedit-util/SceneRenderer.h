@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/ISceneRenderer.h"
+#include "voxedit-util/AddNodePreview.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
 #include <cstdint>
@@ -50,7 +51,12 @@ private:
 		int32_t bone = -1;
 		/** @brief for visualizing the active slice region. */
 		int32_t sliceRegion = -1;
+		/** @brief for add-node mode face highlight and preview. */
+		int32_t addNodeFace = -1;
+		int32_t addNodePreview = -1;
 	} _indices;
+
+	AddNodePreview _addNodePreview;
 
 	struct Cache {
 		/** @brief Flag indicating if the AABB visualization mesh needs to be rebuilt. */
@@ -67,11 +73,13 @@ private:
 		bool lastHideInactive = false;
 		/** @brief Caches the gray inactive state to trigger AABB/Bone rebuilds when toggled. */
 		bool lastGrayInactive = false;
+		AddNodePreview lastAddNodePreview;
 	} _cache;
 
 	void doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void doUpdateSliceRegionMesh();
+	void doUpdateAddNodePreviewMesh();
 
 	void handleCommandBuffer();
 	void checkMainThread() const;
@@ -93,6 +101,7 @@ public:
 	const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) override;
 	const voxel::Region &sliceRegion() const override;
 	RendererStats rendererStats() const override;
+	void setAddNodePreview(const AddNodePreview &preview) override;
 };
 
 } // namespace voxedit

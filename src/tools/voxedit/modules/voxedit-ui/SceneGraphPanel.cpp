@@ -340,6 +340,10 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			_popupNewModelNode = true;
 		});
 
+		toolbar.button(ICON_LC_BOX, _("Toggle add node by face in scene view"), [this]() {
+			_sceneMgr->toggleAddNodeMode();
+		});
+
 		toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this]() {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 			node.setName("new group");

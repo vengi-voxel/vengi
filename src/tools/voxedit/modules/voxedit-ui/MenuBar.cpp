@@ -54,6 +54,9 @@ void MenuBar::viewportOptions() {
 	}
 	ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
 	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);
+	ImGui::Separator();
+	ImGui::IconCheckboxVar(ICON_LC_MESSAGE_SQUARE, cfg::VoxEditViewportHud);
+	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::VoxEditAddNode);
 }
 
 void MenuBar::init() {

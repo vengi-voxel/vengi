@@ -24,8 +24,10 @@
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/SessionRecorder.h"
 #include "voxedit-util/network/SessionPlayer.h"
+#include "voxedit-util/AddNodePreview.h"
 #include "sound/SoundManager.h"
 #include "voxel/ClipboardData.h"
+#include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/LSystem.h"
@@ -155,6 +157,13 @@ protected:
 
 	voxelutil::PickResult _result;
 
+	AddNodePreview _addNodePreview;
+	core::VarPtr _addNodeMode;
+	core::VarPtr _addNodeIgnoreOverlap;
+	core::VarPtr _addNodeCloneVoxels;
+	bool _viewportGizmoActive = false;
+	bool _viewportHudHovered = false;
+
 	mutable SceneGraphNodeValueCache<voxel::Region> _selectionRegionCache;
 
 	void autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region);
@@ -185,7 +194,7 @@ protected:
 	void updateDirtyRendererStates();
 	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
-	int traceScene();
+	int traceScene(bool skipActiveNode = true);
 	void stepLSystem();
 	int toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name = "nodeid") const;
 
@@ -411,8 +420,22 @@ public:
 	 * @brief Add a new model node as children to the current active node
 	 */
 	int addModelChild(const core::String &name, int width, int height, int depth, const core::UUID &uuid = core::UUID());
+	/**
+	 * @brief Add a new model node adjacent to the given node on the given face
+	 */
+	int addModelAdjacent(int sourceNodeId, voxel::FaceNames face);
 	int addPointChild(const core::String &name, const glm::ivec3 &position, const glm::quat &orientation,
 					  const core::UUID &uuid = core::UUID());
+
+	bool isAddNodeModeActive() const;
+	void setAddNodeModeActive(bool active);
+	void toggleAddNodeMode();
+	void updateAddNodeHover(scenegraph::FrameIndex frameIdx);
+	const AddNodePreview &addNodePreview() const;
+	bool blocksSceneMouseInteraction() const;
+	void resetViewportMouseBlock();
+	void setViewportGizmoActive(bool active);
+	void setViewportHudHovered(bool hovered);
 
 	/**
 	 * @brief Merge two nodes and extend the smaller one

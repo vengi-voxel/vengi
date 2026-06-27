@@ -32,6 +32,7 @@ set(TEST_SRCS
 	tests/SceneGraphTransformTest.cpp
 	tests/SceneGraphNodeValueCacheTest.cpp
 	tests/SceneGraphUtilTest.cpp
+	tests/SceneUtilTest.cpp
 	tests/TestHelper.h
 )
 

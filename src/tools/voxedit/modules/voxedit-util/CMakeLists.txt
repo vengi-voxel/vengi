@@ -115,6 +115,7 @@ set(SRCS
 	SceneRenderer.h SceneRenderer.cpp
 
 	ModelNodeSettings.h
+	AddNodePreview.h
 
 	VoxBoxApi.h VoxBoxApi.cpp
 )

@@ -2,11 +2,13 @@
  * @file
  */
 
-#include "BrushHud.h"
+#include "ViewportHud.h"
 #include "BrushPanelCommon.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
+#include "ui/IMGUIEx.h"
 #include "ui/Style.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -17,7 +19,7 @@
 #include "voxel/Face.h"
 
 namespace voxedit {
-namespace brushhud {
+namespace viewporthud {
 
 namespace {
 
@@ -121,9 +123,25 @@ static void appendHint(const SceneManagerPtr &sceneMgr, Modifier &modifier, Line
 	}
 }
 
-} // namespace
+static bool beginHudWindow(const ImVec2 &windowPos, const ImVec2 &contentSize, float headerSize) {
+	const float padding = ImGui::GetStyle().FramePadding.x;
+	const ImVec2 pos(windowPos.x + padding, windowPos.y + headerSize + contentSize.y - padding);
+	ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+	ImGui::SetNextWindowBgAlpha(0.9f);
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration |
+								   ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoSavedSettings |
+								   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove;
+	return ImGui::Begin("##viewporthud", nullptr, flags);
+}
 
-void render(const SceneManagerPtr &sceneMgr, const ImVec2 &windowPos, const ImVec2 &contentSize, float headerSize) {
+static void renderAddNodeHud() {
+	ImGui::TextUnformatted(_("Add node by face"));
+	ImGui::CheckboxVar(cfg::VoxEditAddNodeIgnoreOverlap);
+	ImGui::CheckboxVar(cfg::VoxEditAddNodeCloneVoxels);
+	ImGui::TextDisabled("%s", _("Click a face to place, Esc to cancel"));
+}
+
+static void renderBrushHud(const SceneManagerPtr &sceneMgr) {
 	Modifier &modifier = sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 	if (brushType == BrushType::None && !modifier.isMode(ModifierType::ColorPicker)) {
@@ -149,36 +167,54 @@ void render(const SceneManagerPtr &sceneMgr, const ImVec2 &windowPos, const ImVe
 
 	appendHint(sceneMgr, modifier, lines, lineCount, (int)lengthof(lines), secondaryColor, warningColor);
 
-	const float padding = ImGui::GetStyle().FramePadding.x;
-	const float lineHeight = ImGui::GetTextLineHeightWithSpacing();
-	float boxWidth = 0.0f;
-	float boxHeight = padding;
 	for (int i = 0; i < lineCount; ++i) {
-		const ImVec2 textSize = ImGui::CalcTextSize(lines[i].text);
-		if (textSize.x > boxWidth) {
-			boxWidth = textSize.x;
+		if (i == 0) {
+			ImGui::PushStyleColor(ImGuiCol_Text, lines[i].color);
+			ImGui::TextUnformatted(lines[i].text);
+			ImGui::PopStyleColor();
+		} else if (lines[i].color == warningColor) {
+			ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(lines[i].color), "%s", lines[i].text);
+		} else {
+			ImGui::TextDisabled("%s", lines[i].text);
 		}
-		boxHeight += lineHeight;
-	}
-	boxWidth += padding * 2.0f;
-	boxHeight += padding;
-
-	const ImVec2 boxMin(windowPos.x + padding, windowPos.y + headerSize + contentSize.y - boxHeight - padding);
-	const ImVec2 boxMax(boxMin.x + boxWidth, boxMin.y + boxHeight);
-
-	ImDrawList *drawList = ImGui::GetWindowDrawList();
-	const float rounding = ImGui::GetStyle().FrameRounding;
-	const ImU32 bgColor = imguiThemeColor(ImGuiCol_PopupBg);
-	const ImU32 borderColor = imguiThemeColor(ImGuiCol_Border);
-	drawList->AddRectFilled(boxMin, boxMax, bgColor, rounding);
-	drawList->AddRect(boxMin, boxMax, borderColor, rounding);
-
-	ImVec2 textPos(boxMin.x + padding, boxMin.y + padding);
-	for (int i = 0; i < lineCount; ++i) {
-		drawList->AddText(textPos, lines[i].color, lines[i].text);
-		textPos.y += lineHeight;
 	}
 }
 
-} // namespace brushhud
+} // namespace
+
+void render(const SceneManagerPtr &sceneMgr, bool sceneMode, const ImVec2 &windowPos, const ImVec2 &contentSize,
+			float headerSize) {
+	if (sceneMode) {
+		if (!sceneMgr->isAddNodeModeActive()) {
+			return;
+		}
+		if (!beginHudWindow(windowPos, contentSize, headerSize)) {
+			ImGui::End();
+			return;
+		}
+		renderAddNodeHud();
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
+			sceneMgr->setViewportHudHovered(true);
+		}
+		ImGui::End();
+		return;
+	}
+
+	Modifier &modifier = sceneMgr->modifier();
+	const BrushType brushType = modifier.brushType();
+	if (brushType == BrushType::None && !modifier.isMode(ModifierType::ColorPicker)) {
+		return;
+	}
+	if (!beginHudWindow(windowPos, contentSize, headerSize)) {
+		ImGui::End();
+		return;
+	}
+	renderBrushHud(sceneMgr);
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
+		sceneMgr->setViewportHudHovered(true);
+	}
+	ImGui::End();
+}
+
+} // namespace viewporthud
 } // namespace voxedit

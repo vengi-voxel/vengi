@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/SceneUtil.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "util/VarUtil.h"
 #include "voxel/RawVolume.h"
@@ -2644,6 +2645,116 @@ TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
 	// voxels should be present so editing within selection still works
 	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 3))
 		<< "Editing should work after undoing an edit that was done within a selection";
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentPositiveX) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
+	ASSERT_NE(nullptr, source);
+	const voxel::Region sourceWorld = _sceneMgr->sceneGraph().sceneRegion(*source, 0);
+	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
+	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+	ASSERT_NE(nullptr, newNode);
+	EXPECT_EQ(dims, newNode->region().getDimensionsInVoxels());
+	EXPECT_EQ(source->region(), newNode->region());
+	EXPECT_EQ(scenegraph::calcAdjacentRegion(sourceWorld, voxel::FaceNames::PositiveX, dims),
+			  _sceneMgr->sceneGraph().sceneRegion(*newNode, 0));
+	const math::AABB<float> sourceAabb = scenegraph::toAABB(sourceWorld);
+	const math::AABB<float> newNodeAabb = scenegraph::toAABB(_sceneMgr->sceneGraph().sceneRegion(*newNode, 0));
+	EXPECT_EQ(4, scenegraph::countSharedAabbCorners(sourceAabb, newNodeAabb));
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentAabbSharesFourCornersAllFaces) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(2, 4, 6, 9, 11, 14)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
+	ASSERT_NE(nullptr, source);
+	const voxel::Region sourceWorld = _sceneMgr->sceneGraph().sceneRegion(*source, 0);
+	const math::AABB<float> sourceAabb = scenegraph::toAABB(sourceWorld);
+	const voxel::FaceNames faces[] = {voxel::FaceNames::PositiveX, voxel::FaceNames::NegativeX,
+									  voxel::FaceNames::PositiveY, voxel::FaceNames::NegativeY,
+									  voxel::FaceNames::PositiveZ, voxel::FaceNames::NegativeZ};
+	for (voxel::FaceNames face : faces) {
+		const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, face);
+		ASSERT_NE(InvalidNodeId, newNodeId) << "face " << (int)face;
+		const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+		ASSERT_NE(nullptr, newNode);
+		const math::AABB<float> newNodeAabb = scenegraph::toAABB(_sceneMgr->sceneGraph().sceneRegion(*newNode, 0));
+		EXPECT_EQ(4, scenegraph::countSharedAabbCorners(sourceAabb, newNodeAabb)) << "face " << (int)face;
+		_sceneMgr->nodeRemove(newNodeId, false);
+	}
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentOverlapRejected) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentRotatedSource) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 1, 1, 1)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(sourceNodeId, rotMat, 0, false));
+	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
+	ASSERT_NE(nullptr, source);
+	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
+	const math::OBBF sourceObb = _sceneMgr->sceneGraph().sceneOBB(*source, 0);
+	const math::OBBF expectedObb =
+		scenegraph::calcAdjacentObb(sourceObb, voxel::FaceNames::PositiveX, scenegraph::calculateExtents(glm::vec3(dims)));
+	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+	ASSERT_NE(nullptr, newNode);
+	EXPECT_EQ(source->region(), newNode->region());
+	const math::OBBF newObb = _sceneMgr->sceneGraph().sceneOBB(*newNode, 0);
+	ASSERT_VEC_NEAR(expectedObb.origin(), newObb.origin(), 0.001f);
+	ASSERT_VEC_NEAR(expectedObb.extents(), newObb.extents(), 0.001f);
+	const glm::mat3 expectedRot(expectedObb.rotation());
+	const glm::mat3 newRot(newObb.rotation());
+	ASSERT_VEC_NEAR(expectedRot[0], newRot[0], 0.001f);
+	ASSERT_VEC_NEAR(expectedRot[1], newRot[1], 0.001f);
+	ASSERT_VEC_NEAR(expectedRot[2], newRot[2], 0.001f);
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentEmptyVolume) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 3, 3, 3)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const glm::ivec3 pos(1, 2, 3);
+	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
+	_sceneMgr->setAddNodeModeActive(true);
+	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+	ASSERT_NE(nullptr, newNode);
+	EXPECT_TRUE(voxel::isAir(newNode->volume()->voxel(pos).getMaterial()));
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentCloneVoxels) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 3, 3, 3)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const glm::ivec3 pos(1, 2, 3);
+	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
+	_sceneMgr->setAddNodeModeActive(true);
+	core::getVar(cfg::VoxEditAddNodeCloneVoxels)->setVal(true);
+	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+	ASSERT_NE(nullptr, newNode);
+	EXPECT_EQ(3, newNode->volume()->voxel(pos).getColor());
+}
+
+TEST_F(SceneManagerTest, testAddModelAdjacentIgnoreOverlap) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	core::getVar(cfg::VoxEditAddNodeIgnoreOverlap)->setVal(true);
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
 }
 
 } // namespace voxedit

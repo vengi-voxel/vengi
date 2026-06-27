@@ -466,4 +466,15 @@ double interpolate(InterpolationType interpolationType, double current, double s
 	return start + (end - start) * t;
 }
 
+void offsetNodeWorldTransforms(SceneGraphNode &node, const glm::vec3 &delta) {
+	const glm::mat4 offset = glm::translate(glm::mat4(1.0f), delta);
+	SceneGraphKeyFramesMap &keyFramesMap = node.allKeyFrames();
+	for (const auto &entry : keyFramesMap) {
+		for (SceneGraphKeyFrame &keyFrame : entry->value) {
+			SceneGraphTransform &transform = keyFrame.transform();
+			transform.setWorldMatrix(offset * transform.worldMatrix());
+		}
+	}
+}
+
 } // namespace voxel

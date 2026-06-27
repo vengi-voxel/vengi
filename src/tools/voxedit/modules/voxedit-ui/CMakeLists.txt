@@ -45,7 +45,7 @@ set(SRCS
 	brush/BrushPanelExtrude.h brush/BrushPanelExtrude.cpp
 	brush/BrushPanelTransform.h brush/BrushPanelTransform.cpp
 	brush/BrushPanelSculpt.h brush/BrushPanelSculpt.cpp
-	BrushHud.h BrushHud.cpp
+	ViewportHud.h ViewportHud.cpp
 	StatusBar.h StatusBar.cpp
 	TipOfTheDay.h
 	ToolsPanel.h ToolsPanel.cpp

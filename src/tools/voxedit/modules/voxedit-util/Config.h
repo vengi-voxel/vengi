@@ -48,7 +48,7 @@ constexpr const char *VoxEditGizmoAllowAxisFlip = "ve_gizmoallowaxisflip";
 constexpr const char *VoxEditGizmoSnap = "ve_gizmosnap";
 constexpr const char *VoxEditModelGizmo = "ve_modelgizmo";
 constexpr const char *VoxEditBrushGizmo = "ve_brushgizmo";
-constexpr const char *VoxEditBrushHud = "ve_brushhud";
+constexpr const char *VoxEditViewportHud = "ve_viewporthud";
 constexpr const char *VoxEditViewdistance = "ve_viewdistance";
 constexpr const char *VoxEditShowlockedaxis = "ve_showlockedaxis";
 constexpr const char *VoxEditRendershadow = "ve_rendershadow";
@@ -63,5 +63,8 @@ constexpr const char *VoxEditNetServerInterface = "ve_netserverinterface";
 constexpr const char *VoxEditNetServerMaxConnections = "ve_netservermaxconnections";
 constexpr const char *VoxEditAutoSelect = "ve_autoselect";
 constexpr const char *VoxEditSceneMode = "ve_scenemode";
+constexpr const char *VoxEditAddNode = "ve_addnode";
+constexpr const char *VoxEditAddNodeIgnoreOverlap = "ve_addnodeignoreoverlap";
+constexpr const char *VoxEditAddNodeCloneVoxels = "ve_addnodeclonevoxels";
 
 } // namespace cfg

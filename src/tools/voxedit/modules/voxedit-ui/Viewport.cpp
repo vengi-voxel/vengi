@@ -30,7 +30,7 @@
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/WindowedApp.h"
-#include "voxedit-ui/BrushHud.h"
+#include "voxedit-ui/ViewportHud.h"
 #include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-util/Config.h"
@@ -155,7 +155,7 @@ bool Viewport::init() {
 	_animationPlaying = core::getVar(cfg::VoxEditAnimationPlaying);
 	_clipping = core::getVar(cfg::GameModeClipping);
 	_brushGizmo = core::getVar(cfg::VoxEditBrushGizmo);
-	_brushHud = core::getVar(cfg::VoxEditBrushHud);
+	_viewportHud = core::getVar(cfg::VoxEditViewportHud);
 	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
 	// crisp rendering on HiDPI displays
 	if (!_renderContext.init(_app->frameBufferDimension())) {
@@ -221,6 +221,9 @@ void Viewport::updateViewportInput(float headerSize) {
 	_sceneMgr->setActiveCamera(&camera(), isFixedCamera());
 	const glm::mat4 &worldToModel = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
 	_sceneMgr->trace(_renderContext.isSceneMode(), false, worldToModel);
+	if (_renderContext.isSceneMode() && _sceneMgr->isAddNodeModeActive()) {
+		_sceneMgr->updateAddNodeHover(_renderContext.frame);
+	}
 }
 
 void Viewport::dragAndDrop(float headerSize) {
@@ -407,8 +410,8 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		if (!isSceneMode() && _brushHud->boolVal()) {
-			brushhud::render(_sceneMgr, ImGui::GetWindowPos(), contentSize, headerSize);
+		if (_viewportHud->boolVal()) {
+			viewporthud::render(_sceneMgr, isSceneMode(), ImGui::GetWindowPos(), contentSize, headerSize);
 		}
 
 		if (_sceneMgr->isLoading() || _sceneMgr->isCommandRunning()) {
@@ -1272,6 +1275,10 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	} else {
 		_sceneMgr->modifier().setBrushGizmoActive(false);
 	}
+
+	const bool gizmoActive = ImGuizmo::IsOver() || ImGuizmo::IsUsing() || ImGuizmo::IsUsingAny() ||
+							 ImGuizmo::IsViewManipulateHovered();
+	_sceneMgr->setViewportGizmoActive(gizmoActive);
 
 	return editModeModified || brushGizmoModified;
 }

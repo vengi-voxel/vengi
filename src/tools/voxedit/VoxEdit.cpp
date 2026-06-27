@@ -42,7 +42,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
 	_allowRelativeMouseMode = true;
 	_iniVersion = 12;
-	_keybindingsVersion = 4;
+	_keybindingsVersion = 5;
 	_wantCrashLogs = true;
 
 	// see KeyBindings enum
@@ -397,7 +397,8 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+v",               "paste",                        "editing");
 	_keybindingHandler.registerBinding("ctrl+x",               "cut",                          "editing");
 	_keybindingHandler.registerBinding("ctrl+shift+v",         "pastecursor",                  "editing");
-	_keybindingHandler.registerBinding("double_left_mouse",    "mouse_node_select",            "scene");
+	_keybindingHandler.registerBinding("left_mouse",           "mouse_scene",                  "scene");
+	_keybindingHandler.registerBinding("escape",               "abortaction",                  "scene");
 	_keybindingHandler.registerBinding("shift+double_left_mouse", "mouse_node_lock",           "editing");
 	_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
 	_keybindingHandler.registerBinding("ctrl+d",               "select none",                  "model");

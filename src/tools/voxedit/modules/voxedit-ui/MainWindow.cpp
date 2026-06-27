@@ -418,6 +418,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
 	ImGuizmo::BeginFrame();
+	_sceneMgr->resetViewportMouseBlock();
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		_viewports[i]->update(nowSeconds, &listener);
 	}

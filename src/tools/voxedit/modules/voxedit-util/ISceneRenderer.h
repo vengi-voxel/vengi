@@ -13,6 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelrender/RenderContext.h"
+#include "voxedit-util/AddNodePreview.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -165,6 +166,10 @@ public:
 		cmd.sliceRegion.regionMaxs[2] = region.getUpperZ();
 		core::ScopedLock lock(_commandBufferMutex);
 		_commandBuffer.push_back(cmd);
+	}
+
+	virtual void setAddNodePreview(const AddNodePreview &preview) {
+		(void)preview;
 	}
 };
 

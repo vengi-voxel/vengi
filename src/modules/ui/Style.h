@@ -28,6 +28,8 @@ enum StyleColor {
 	ColorWarningText,
 	ColorBrushGizmoLine,
 	ColorBrushGizmoPolygon,
+	ColorAddNodeFaceHighlight,
+	ColorAddNodePreview,
 };
 
 const glm::vec4 &color(StyleColor color);

@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneUtil.h"
 #include "ui/Style.h"
+#include "voxedit-util/AddNodePreview.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
@@ -96,6 +97,9 @@ void SceneRenderer::shutdown() {
 	_indices.sliceRegion = -1;
 	_indices.aabb = -1;
 	_indices.bone = -1;
+	_indices.addNodeFace = -1;
+	_indices.addNodePreview = -1;
+	_addNodePreview.reset();
 }
 
 /**
@@ -116,7 +120,7 @@ static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGr
 
 void SceneRenderer::doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 									 scenegraph::FrameIndex frameIdx) {
-	if (!sceneMode || !_showAABB->boolVal()) {
+	if (!sceneMode || (!_showAABB->boolVal() && !_addNodePreview.active)) {
 		return;
 	}
 	const int activeNodeId = sceneGraph.activeNode();
@@ -333,6 +337,59 @@ void SceneRenderer::doUpdateSliceRegionMesh() {
 	_shapeRenderer.createOrUpdate(_indices.sliceRegion, _shapeBuilder);
 }
 
+void SceneRenderer::setAddNodePreview(const AddNodePreview &preview) {
+	_addNodePreview = preview;
+}
+
+static void addObbFaceQuad(video::ShapeBuilder &shapeBuilder, const math::OBBF &obb, voxel::FaceNames face) {
+	glm::vec3 quad[4];
+	scenegraph::obbFaceQuad(obb, face, quad);
+	shapeBuilder.setPrimitive(video::Primitive::Triangles);
+	const uint32_t i0 = shapeBuilder.addVertex(quad[0]);
+	const uint32_t i1 = shapeBuilder.addVertex(quad[1]);
+	const uint32_t i2 = shapeBuilder.addVertex(quad[2]);
+	const uint32_t i3 = shapeBuilder.addVertex(quad[3]);
+	shapeBuilder.addIndex(i0, i1, i2);
+	shapeBuilder.addIndex(i2, i3, i0);
+}
+
+void SceneRenderer::doUpdateAddNodePreviewMesh() {
+	if (!_addNodePreview.active || !_addNodePreview.previewValid ||
+		_addNodePreview.hoverFace == voxel::FaceNames::Max) {
+		if (_indices.addNodeFace >= 0) {
+			_shapeRenderer.deleteMesh(_indices.addNodeFace);
+			_indices.addNodeFace = -1;
+		}
+		if (_indices.addNodePreview >= 0) {
+			_shapeRenderer.deleteMesh(_indices.addNodePreview);
+			_indices.addNodePreview = -1;
+		}
+		_cache.lastAddNodePreview.reset();
+		return;
+	}
+	if (_addNodePreview.active == _cache.lastAddNodePreview.active &&
+		_addNodePreview.previewValid == _cache.lastAddNodePreview.previewValid &&
+		_addNodePreview.sourceNodeId == _cache.lastAddNodePreview.sourceNodeId &&
+		_addNodePreview.hoverFace == _cache.lastAddNodePreview.hoverFace &&
+		_addNodePreview.previewObb.origin() == _cache.lastAddNodePreview.previewObb.origin() &&
+		_addNodePreview.previewObb.extents() == _cache.lastAddNodePreview.previewObb.extents()) {
+		return;
+	}
+	core_trace_scoped(UpdateAddNodePreviewMesh);
+
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(style::color(style::ColorAddNodeFaceHighlight));
+	addObbFaceQuad(_shapeBuilder, _addNodePreview.highlightObb, _addNodePreview.hoverFace);
+	_shapeRenderer.createOrUpdate(_indices.addNodeFace, _shapeBuilder);
+
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(style::color(style::ColorAddNodePreview));
+	_shapeBuilder.obb(_addNodePreview.previewObb);
+	_shapeRenderer.createOrUpdate(_indices.addNodePreview, _shapeBuilder);
+
+	_cache.lastAddNodePreview = _addNodePreview;
+}
+
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	checkMainThread();
@@ -368,13 +425,20 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 
 	// TODO: PERF: add dirty state checks here by comparing the old with the current value with values in struct Cache
 	doUpdateSliceRegionMesh();
+	doUpdateAddNodePreviewMesh();
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	video::ScopedState blend(video::State::Blend, true);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	if (renderContext.isSceneMode()) {
-		if (_showAABB->boolVal()) {
+		const bool showAabb = _showAABB->boolVal() || _addNodePreview.active;
+		if (showAabb) {
 			_shapeRenderer.render(_indices.aabb, camera);
+		}
+		if (_addNodePreview.active && _addNodePreview.previewValid) {
+			video::ScopedState depthDepthTest(video::State::DepthTest, false);
+			_shapeRenderer.render(_indices.addNodeFace, camera);
+			_shapeRenderer.render(_indices.addNodePreview, camera);
 		}
 		if (_showBones->boolVal()) {
 			video::ScopedState depthDepthTest(video::State::DepthTest, false);

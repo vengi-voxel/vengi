@@ -58,4 +58,9 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 
 double interpolate(InterpolationType interpolationType, double current, double start, double end);
 
+/**
+ * @brief Apply a world-space translation to all keyframe transforms of @c node
+ */
+void offsetNodeWorldTransforms(SceneGraphNode &node, const glm::vec3 &delta);
+
 } // namespace scenegraph
