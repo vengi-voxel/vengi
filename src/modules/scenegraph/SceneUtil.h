@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "math/Ray.h"
