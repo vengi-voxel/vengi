@@ -21,11 +21,14 @@ public:
 
 private:
 	void handleSelectBox3D(BrushPanelContext &ctx, int nodeId);
+	void handleSelectRectangle(BrushPanelContext &ctx, int nodeId);
+	void handleSelectLine(BrushPanelContext &ctx, int nodeId);
 	void handleSelectCircle(BrushPanelContext &ctx, int nodeId);
 	void handleSelectPaint(BrushPanelContext &ctx, int nodeId);
 	void handleSelectFuzzyColor(BrushPanelContext &ctx);
 	void handleSelectFlatSurface(BrushPanelContext &ctx);
 	void handleSelectLasso(command::CommandExecutionListener &listener);
+	void handleSelectPolygonLasso(BrushPanelContext &ctx);
 };
 
 } // namespace voxedit

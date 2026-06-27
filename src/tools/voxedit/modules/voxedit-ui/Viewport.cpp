@@ -1147,6 +1147,32 @@ bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
 		}
 	}
 
+	if (state.operations & BrushGizmo_WorldPolyline) {
+		if (state.worldPolyline != nullptr && state.worldPolyline->size() >= 2) {
+			const auto &points = *state.worldPolyline;
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			windowPos.y += headerSize;
+			const glm::vec2 scale = dpiScale();
+			ImDrawList *drawList = ImGui::GetWindowDrawList();
+			const ImU32 lineColor = ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoLine)));
+			const float lineThickness = 2.0f;
+			const int n = (int)points.size();
+			auto toScreen = [&](const glm::vec3 &world) {
+				const glm::ivec2 s = camera.worldToScreen(world);
+				return ImVec2(windowPos.x + (float)s.x / scale.x, windowPos.y + (float)s.y / scale.y);
+			};
+			for (int i = 0; i < n - 1; ++i) {
+				drawList->AddLine(toScreen(points[i]), toScreen(points[i + 1]), lineColor, lineThickness);
+			}
+			if (state.worldPolylineClosed && n >= 3) {
+				drawList->AddLine(toScreen(points[n - 1]), toScreen(points[0]), lineColor, lineThickness);
+			}
+			for (int i = 0; i < n; ++i) {
+				drawList->AddCircleFilled(toScreen(points[i]), 3.0f, lineColor);
+			}
+		}
+	}
+
 	if (state.operations & BrushGizmo_ScreenPolygon) {
 		if (state.screenPolygon != nullptr && state.screenPolygon->size() >= 2) {
 			const auto &points = *state.screenPolygon;

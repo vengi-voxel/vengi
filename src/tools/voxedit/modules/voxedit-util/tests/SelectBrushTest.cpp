@@ -213,6 +213,226 @@ TEST_F(SelectBrushTest, testSelectModeVisible) {
 	brush.shutdown();
 }
 
+TEST_F(SelectBrushTest, testSelectModeRectangleOutline) {
+	voxel::RawVolume volume({-5, 5});
+	// Solid 5x5x5 box from (-2,-2,-2) to (2,2,2)
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Rectangle);
+	brush.rectangle().setAngle(0);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.referencePos = glm::ivec3(-2, -2, -2);
+
+	// prepare() uses cursorFace=PositiveX, so the outline is drawn on the +X surface (x=2).
+	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// Only the 4 edges of the rectangle on the +X face are selected; the interior is not.
+	EXPECT_TRUE((volume.voxel(2, 2, 0).getFlags() & voxel::FlagOutline) != 0) << "Y=+2 edge should be selected";
+	EXPECT_TRUE((volume.voxel(2, -2, 0).getFlags() & voxel::FlagOutline) != 0) << "Y=-2 edge should be selected";
+	EXPECT_TRUE((volume.voxel(2, 0, 2).getFlags() & voxel::FlagOutline) != 0) << "Z=+2 edge should be selected";
+	EXPECT_TRUE((volume.voxel(2, 0, -2).getFlags() & voxel::FlagOutline) != 0) << "Z=-2 edge should be selected";
+	EXPECT_FALSE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "rectangle interior (center) must NOT be selected - outline only";
+	EXPECT_FALSE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "voxel behind the surface must NOT be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeRectangleOutlineRotated) {
+	voxel::RawVolume volume({0, 24});
+	// Flat top surface at y=10
+	for (int x = 0; x <= 20; ++x) {
+		for (int z = 0; z <= 20; ++z) {
+			for (int y = 0; y <= 10; ++y) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Rectangle);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.referencePos = glm::ivec3(4, 10, 4);
+
+	auto runRect = [&](int angle) {
+		for (int x = 0; x <= 20; ++x) {
+			for (int z = 0; z <= 20; ++z) {
+				voxel::Voxel v = volume.voxel(x, 10, z);
+				v.setFlags(0);
+				volume.setVoxel(x, 10, z, v);
+			}
+		}
+		brush.rectangle().setAngle(angle);
+		ctx.cursorFace = voxel::FaceNames::PositiveY;
+		ctx.cursorPosition = glm::ivec3(4, 10, 4);
+		EXPECT_TRUE(brush.beginBrush(ctx));
+		ctx.cursorPosition = glm::ivec3(16, 10, 16);
+		brush.step(ctx);
+		executeSelect(brush, node, ctx, ModifierType::Override);
+	};
+
+	// Rectangle (4,4)-(16,16) on the top, center (10,10). The outline runs through the corners.
+	runRect(0);
+	EXPECT_TRUE((volume.voxel(4, 10, 4).getFlags() & voxel::FlagOutline) != 0)
+		<< "axis-aligned corner is on the unrotated outline";
+	EXPECT_FALSE((volume.voxel(10, 10, 10).getFlags() & voxel::FlagOutline) != 0)
+		<< "center is inside the outline, not on it";
+
+	runRect(45);
+	EXPECT_FALSE((volume.voxel(4, 10, 4).getFlags() & voxel::FlagOutline) != 0)
+		<< "corner is no longer on the rotated (diamond) outline";
+	// The rotated rectangle's corner now points along +X: (10 + ~8.5, 10) -> around x=18.
+	EXPECT_TRUE((volume.voxel(18, 10, 10).getFlags() & voxel::FlagOutline) != 0)
+		<< "the diamond tip along +X should be on the rotated outline";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLine) {
+	voxel::RawVolume volume({-5, 5});
+	// Fill a solid 5x5x5 box from (-2,-2,-2) to (2,2,2)
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Line);
+	brush.line().setWidth(1);
+	brush.line().setPathMode(select::PathMode::Straight);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.referencePos = glm::ivec3(-2, -2, -2);
+
+	// Draw the main diagonal from (-2,-2,-2) to (2,2,2)
+	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// Every voxel on the diagonal is selected
+	for (int k = -2; k <= 2; ++k) {
+		EXPECT_TRUE((volume.voxel(k, k, k).getFlags() & voxel::FlagOutline) != 0)
+			<< "diagonal voxel (" << k << "," << k << "," << k << ") should be selected";
+	}
+	// A corner off the diagonal is not on the line
+	EXPECT_FALSE((volume.voxel(2, -2, -2).getFlags() & voxel::FlagOutline) != 0)
+		<< "off-diagonal corner at (2,-2,-2) should NOT be selected";
+	EXPECT_FALSE((volume.voxel(-2, 2, -2).getFlags() & voxel::FlagOutline) != 0)
+		<< "off-diagonal corner at (-2,2,-2) should NOT be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLineWidth) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Line);
+	brush.line().setWidth(3);
+	brush.line().setPathMode(select::PathMode::Straight);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.referencePos = glm::ivec3(-2, 0, 0);
+
+	// Straight line along X at y=0,z=0
+	prepare(brush, ctx, glm::ivec3(-2, 0, 0), glm::ivec3(2, 0, 0));
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// Centerline and the one-voxel shell around it are selected with width 3
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "centerline voxel should be selected";
+	EXPECT_TRUE((volume.voxel(0, 1, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "neighbour within width should be selected";
+	EXPECT_TRUE((volume.voxel(0, 0, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "neighbour within width should be selected";
+
+	brush.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLineFollowSurface) {
+	voxel::RawVolume volume({0, 19});
+	// Terraced top surface (PositiveY face): columns x in [0..10], z in [0..2].
+	// Top is y=10 for x<=5, then steps down to y=9 for x>=6 (a one-voxel step the
+	// width-1 follow tolerance can cross).
+	for (int x = 0; x <= 10; ++x) {
+		const int top = x <= 5 ? 10 : 9;
+		for (int z = 0; z <= 2; ++z) {
+			for (int y = 0; y <= top; ++y) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setSelectMode(SelectMode::Line);
+	brush.line().setWidth(1);
+	brush.line().setPathMode(select::PathMode::FollowSurface);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.referencePos = glm::ivec3(0, 10, 1);
+
+	// prepare() hardcodes cursorFace=PositiveX, so set the top face manually.
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.cursorPosition = glm::ivec3(0, 10, 1);
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	ctx.cursorPosition = glm::ivec3(10, 9, 1);
+	brush.step(ctx);
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	// The line tracks the surface: the top voxel of each column along the path is selected,
+	// including across the step where a straight chord would float in the air above plateau B.
+	EXPECT_TRUE((volume.voxel(5, 10, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "top of the upper plateau should be selected";
+	EXPECT_TRUE((volume.voxel(6, 9, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "top of the lower plateau (across the step) should be selected";
+	EXPECT_TRUE((volume.voxel(10, 9, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "top of the lower plateau end should be selected";
+	// Interior voxels below the surface are not selected at width 1
+	EXPECT_FALSE((volume.voxel(5, 5, 1).getFlags() & voxel::FlagOutline) != 0)
+		<< "interior voxel well below the surface should NOT be selected";
+
+	brush.shutdown();
+}
+
 TEST_F(SelectBrushTest, testSelectRemove) {
 	voxel::RawVolume volume({-5, 5});
 	// Fill volume with voxels, all selected

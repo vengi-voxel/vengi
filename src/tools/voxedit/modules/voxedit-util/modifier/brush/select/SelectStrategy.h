@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "app/I18NMarkers.h"
+#include "core/ArrayLength.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
@@ -21,6 +23,23 @@ struct BrushContext;
 class ModifierVolumeWrapper;
 
 namespace select {
+
+/**
+ * @brief How a line/edge tracks the volume between its endpoints.
+ *
+ * FollowSurface keeps the path straight in the face plane but snaps the depth to the
+ * surface, so the thickness always reaches it on stepped/sloped geometry. Straight draws a
+ * plain 3D chord between the endpoints and only selects solid voxels it actually passes
+ * through.
+ */
+enum class PathMode : uint8_t { FollowSurface, Straight, Max };
+
+// clang-format off
+static constexpr const char *PathModeStr[] = {
+	NC_("PathMode", "Follow surface"),
+	NC_("PathMode", "Straight")};
+// clang-format on
+static_assert(lengthof(PathModeStr) == (int)PathMode::Max, "PathModeStr size mismatch");
 
 /**
  * @brief AABB state passed from the brush to strategies that need it

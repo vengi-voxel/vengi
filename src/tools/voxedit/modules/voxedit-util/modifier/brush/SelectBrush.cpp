@@ -3,12 +3,15 @@
  */
 
 #include "SelectBrush.h"
+#include "voxedit-util/SceneManager.h"
+#include "scenegraph/SceneGraph.h"
 
 namespace voxedit {
 
 SelectBrush::SelectBrush(SceneManager *sceneManager)
 	: Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase),
-	  _sceneManager(sceneManager), _lassoStrategy(sceneManager), _scriptStrategy(sceneManager) {
+	  _sceneManager(sceneManager), _lassoStrategy(sceneManager), _polygonLassoStrategy(sceneManager),
+	  _rectangleStrategy(sceneManager), _lineStrategy(sceneManager), _scriptStrategy(sceneManager) {
 	setClampToVolume(true);
 	_strategies[(int)SelectMode::All] = &_selectAll;
 	_strategies[(int)SelectMode::Surface] = &_selectSurface;
@@ -17,8 +20,11 @@ SelectBrush::SelectBrush(SceneManager *sceneManager)
 	_strategies[(int)SelectMode::Connected] = &_selectConnected;
 	_strategies[(int)SelectMode::FlatSurface] = &_flatSurfaceStrategy;
 	_strategies[(int)SelectMode::Box3D] = &_box3DStrategy;
+	_strategies[(int)SelectMode::Rectangle] = &_rectangleStrategy;
+	_strategies[(int)SelectMode::Line] = &_lineStrategy;
 	_strategies[(int)SelectMode::Circle] = &_circleStrategy;
 	_strategies[(int)SelectMode::Lasso] = &_lassoStrategy;
+	_strategies[(int)SelectMode::PolygonLasso] = &_polygonLassoStrategy;
 	_strategies[(int)SelectMode::Paint] = &_paintStrategy;
 	_strategies[(int)SelectMode::Script] = &_scriptStrategy;
 }
@@ -66,6 +72,19 @@ bool SelectBrush::hasPendingChanges() const {
 	return Super::hasPendingChanges();
 }
 
+voxel::Region SelectBrush::revertChanges(voxel::RawVolume *volume) {
+	return Super::revertChanges(volume);
+}
+
+bool SelectBrush::onDeactivated() {
+	// Discard a mid-accumulation PolygonLasso when switching away. The polygon is only a
+	// viewport overlay (no volume marks), so this just clears the in-progress vertex list.
+	if (_selectMode == SelectMode::PolygonLasso && _polygonLassoStrategy.accumulating() && _sceneManager != nullptr) {
+		_sceneManager->selectionCancelLasso(_sceneManager->sceneGraph().activeNode());
+	}
+	return Super::onDeactivated();
+}
+
 void SelectBrush::endBrush(BrushContext &ctx) {
 	activeStrategy()->endBrush(ctx);
 	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
@@ -82,6 +101,30 @@ voxel::Region SelectBrush::consumePendingUndoRegion() {
 void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
 	activeStrategy()->update(ctx, nowSeconds);
+	// The polygon-lasso rubber band is now a viewport overlay (BrushGizmo_WorldPolyline)
+	// rebuilt in PolygonLasso::update(), so no per-frame volume flush is needed here.
+
+	// Feed the line gizmo its live endpoints while dragging. This is the preview for the Line
+	// mode (a cheap world-space line) instead of a preview volume that would vanish past the
+	// preview-size cap for long lines.
+	if (_selectMode == SelectMode::Line) {
+		if (Super::active()) {
+			const select::AABBBrushState state = buildState(ctx);
+			_lineStrategy.setPreview(state.aabbFirstPos, state.cursorPosition);
+		} else {
+			_lineStrategy.clearPreview();
+		}
+	}
+
+	// Rectangle previews its outline as a world-space polyline gizmo (no preview-size cap).
+	if (_selectMode == SelectMode::Rectangle) {
+		if (Super::active()) {
+			const select::AABBBrushState state = buildState(ctx);
+			_rectangleStrategy.setPreview(Super::calcRegion(ctx), state.aabbFace);
+		} else {
+			_rectangleStrategy.clearPreview();
+		}
+	}
 }
 
 void SelectBrush::setSelectMode(SelectMode mode) {
@@ -89,6 +132,13 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 		if (_selectMode == SelectMode::Paint) {
 			setBoxMode();
 			_sceneModifiedFlags = SceneModifiedFlags::All;
+		}
+		// Revert any in-progress polygon-lasso edge/rubber-band marks on the real
+		// volume before switching modes. Without this, FlagOutline on those voxels
+		// stays as an orphaned selection after the mode change.
+		if (_selectMode == SelectMode::PolygonLasso && _polygonLassoStrategy.accumulating() &&
+			_sceneManager != nullptr) {
+			_sceneManager->selectionCancelLasso(_sceneManager->sceneGraph().activeNode());
 		}
 		activeStrategy()->reset();
 		_circleStrategy.reset();

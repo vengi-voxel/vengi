@@ -14,7 +14,10 @@
 #include "select/FlatSurface.h"
 #include "select/FuzzyColor.h"
 #include "select/Lasso.h"
+#include "select/Line.h"
 #include "select/Paint.h"
+#include "select/PolygonLasso.h"
+#include "select/Rectangle.h"
 #include "select/SameColor.h"
 #include "select/Script.h"
 #include "select/Surface.h"
@@ -50,10 +53,16 @@ enum class SelectMode : uint8_t {
 	FlatSurface,
 	/** Replace the current selection with all solid voxels in the drawn 3D box region */
 	Box3D,
+	/** Select only the twelve wireframe edges of the drawn 3D box with a configurable edge width */
+	Rectangle,
+	/** Select the solid voxels along a straight 3D line between the two drag endpoints with a configurable width */
+	Line,
 	/** Select surface voxels within a circular radius from the clicked center point */
 	Circle,
-	/** Free-form polygon selection: click vertices to build a polygon, close it to select enclosed surface voxels */
+	/** Screen-space drag-fill lasso: hold and drag to define a free-form polygon, fills on release */
 	Lasso,
+	/** Voxel-space click-vertex polygon lasso: click vertices, close near start, surface flood-fill */
+	PolygonLasso,
 	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
 	 *  Uses single mode for continuous execution. Single undo entry on release. */
 	Paint,
@@ -66,9 +75,9 @@ enum class SelectMode : uint8_t {
 static constexpr const char *SelectModeStr[] = {
 	NC_("SelectMode", "All"),          NC_("SelectMode", "Surface"),      NC_("SelectMode", "Same Color"),
 	NC_("SelectMode", "Fuzzy Color"),  NC_("SelectMode", "Connected"),    NC_("SelectMode", "Flat Surface"),
-	NC_("SelectMode", "3D Box"),       NC_("SelectMode", "Circle"),
-	NC_("SelectMode", "Lasso"),        NC_("SelectMode", "Brush select"),
-	NC_("SelectMode", "Script")};
+	NC_("SelectMode", "3D Box"),       NC_("SelectMode", "2D Rectangle"), NC_("SelectMode", "Line"),
+	NC_("SelectMode", "Circle"),       NC_("SelectMode", "Lasso"),        NC_("SelectMode", "Polygon Lasso"),
+	NC_("SelectMode", "Brush select"), NC_("SelectMode", "Script")};
 static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "SelectModeStr size mismatch");
 
 static constexpr const char *SelectModeIcons[] = {
@@ -79,8 +88,11 @@ static constexpr const char *SelectModeIcons[] = {
 	ICON_LC_WAYPOINTS,           // Connected
 	ICON_LC_LAND_PLOT,           // FlatSurface
 	ICON_LC_BOX,                 // Box3D
+	ICON_LC_FRAME,               // Rectangle
+	ICON_LC_PEN_LINE,            // Line
 	ICON_LC_CIRCLE,              // Circle
 	ICON_LC_LASSO,               // Lasso
+	ICON_LC_PEN_TOOL,            // PolygonLasso
 	ICON_LC_PAINTBRUSH,          // Paint
 	ICON_LC_CODE,                // Script
 };
@@ -99,8 +111,11 @@ private:
 
 	select::Circle _circleStrategy;
 	select::Lasso _lassoStrategy;
+	select::PolygonLasso _polygonLassoStrategy;
 	select::Paint _paintStrategy;
 	select::Box3D _box3DStrategy;
+	select::Rectangle _rectangleStrategy;
+	select::Line _lineStrategy;
 	select::FuzzyColor _fuzzyColorStrategy;
 	select::FlatSurface _flatSurfaceStrategy;
 	select::Script _scriptStrategy;
@@ -123,6 +138,7 @@ public:
 	virtual ~SelectBrush() = default;
 
 	bool isSimplePreview() const override;
+	bool wantsVolumePreview() const override;
 
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	bool managesOwnSelection() const override;
@@ -143,7 +159,9 @@ public:
 	void endBrush(BrushContext &ctx) override;
 
 	bool hasPendingChanges() const override;
+	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	voxel::Region consumePendingUndoRegion() override;
+	bool onDeactivated() override;
 
 	void abort(BrushContext &ctx) override;
 
@@ -156,10 +174,16 @@ public:
 	const select::Circle &circle() const;
 	select::Lasso &lasso();
 	const select::Lasso &lasso() const;
+	select::PolygonLasso &polygonLasso();
+	const select::PolygonLasso &polygonLasso() const;
 	select::Paint &paint();
 	const select::Paint &paint() const;
 	select::Box3D &box3D();
 	const select::Box3D &box3D() const;
+	select::Rectangle &rectangle();
+	const select::Rectangle &rectangle() const;
+	select::Line &line();
+	const select::Line &line() const;
 	select::FuzzyColor &fuzzyColor();
 	const select::FuzzyColor &fuzzyColor() const;
 	select::FlatSurface &flatSurface();
@@ -170,6 +194,12 @@ public:
 
 inline bool SelectBrush::managesOwnSelection() const {
 	return true;
+}
+
+inline bool SelectBrush::wantsVolumePreview() const {
+	// Line and Rectangle preview themselves with a gizmo outline; skip the per-frame preview
+	// volume so large drags do not lag from reverting/marking voxels every frame.
+	return _selectMode != SelectMode::Line && _selectMode != SelectMode::Rectangle;
 }
 
 inline SelectMode SelectBrush::selectMode() const {
@@ -204,6 +234,14 @@ inline const select::Lasso &SelectBrush::lasso() const {
 	return _lassoStrategy;
 }
 
+inline select::PolygonLasso &SelectBrush::polygonLasso() {
+	return _polygonLassoStrategy;
+}
+
+inline const select::PolygonLasso &SelectBrush::polygonLasso() const {
+	return _polygonLassoStrategy;
+}
+
 inline select::Paint &SelectBrush::paint() {
 	return _paintStrategy;
 }
@@ -218,6 +256,22 @@ inline select::Box3D &SelectBrush::box3D() {
 
 inline const select::Box3D &SelectBrush::box3D() const {
 	return _box3DStrategy;
+}
+
+inline select::Rectangle &SelectBrush::rectangle() {
+	return _rectangleStrategy;
+}
+
+inline const select::Rectangle &SelectBrush::rectangle() const {
+	return _rectangleStrategy;
+}
+
+inline select::Line &SelectBrush::line() {
+	return _lineStrategy;
+}
+
+inline const select::Line &SelectBrush::line() const {
+	return _lineStrategy;
 }
 
 inline select::FuzzyColor &SelectBrush::fuzzyColor() {
