@@ -34,6 +34,7 @@ public:
 	~Toolbar();
 
 	bool button(const char *icon, const char *command, bool disable = false);
+	bool commandButton(const char *icon, const char *command, bool disable = false);
 
 	template<class FUNC>
 	bool button(const char *icon, const char *tooltip, FUNC func, bool disable = false) {

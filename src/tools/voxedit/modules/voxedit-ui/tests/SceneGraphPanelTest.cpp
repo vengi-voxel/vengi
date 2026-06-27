@@ -151,7 +151,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
 		const int before = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
-		ctx->ItemClick("toolbar/###button1");
+		ctx->ItemClick("toolbar/###button2");
+		ctx->Yield();
 		const int after = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
 		IM_CHECK(after == before + 1);
 	};
@@ -240,11 +241,11 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
-		// click show all and hide all toolbar buttons
-		ctx->ItemClick("toolbar/###button4"); // show all
+		// click show all and hide all toolbar buttons (stable command-based ids)
+		ctx->ItemClick("toolbar/###showall");
 		ctx->Yield();
 		IM_CHECK(sceneGraph.node(sceneGraph.activeNode()).visible());
-		ctx->ItemClick("toolbar/###button5"); // hide all
+		ctx->ItemClick("toolbar/###hideall");
 		ctx->Yield();
 		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).visible());
 	};

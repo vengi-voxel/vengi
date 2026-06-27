@@ -365,8 +365,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			}
 			ImGui::TooltipCommand("animate");
 		});
-		toolbar.button(ICON_LC_EYE, "showall");
-		toolbar.button(ICON_LC_EYE_OFF, "hideall");
+		toolbar.commandButton(ICON_LC_EYE, "showall");
+		toolbar.commandButton(ICON_LC_EYE_OFF, "hideall");
 		toolbar.end();
 
 		if (sceneGraph.nodes().size() > 10) {

@@ -70,4 +70,21 @@ bool Toolbar::button(const char *icon, const char *command, bool disable) {
 	return pressed;
 }
 
+bool Toolbar::commandButton(const char *icon, const char *command, bool disable) {
+	newline();
+	ui::ScopedStyle style;
+	applyIconStyle(style);
+	if (disable) {
+		applyDisabledStyle(style);
+	}
+	ImGui::PushID(_id.c_str());
+	char label[64];
+	core::String::formatBuf(label, sizeof(label), "%s###%s", icon, command);
+	bool pressed = ImGui::CommandButton(label, command, nullptr, _size, _listener);
+	ImGui::PopID();
+	next();
+
+	return pressed;
+}
+
 } // namespace ui
