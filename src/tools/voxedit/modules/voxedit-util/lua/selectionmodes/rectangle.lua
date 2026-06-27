@@ -141,7 +141,7 @@ local function rectangleCorners(edgeWidth, angle, surfaceTolerance, volume)
 end
 
 function gizmo(edgeWidth, angle, surfaceTolerance)
-	local corners, face = rectangleCorners(edgeWidth, angle, surfaceTolerance, nil)
+	local corners, _ = rectangleCorners(edgeWidth, angle, surfaceTolerance, nil)
 	if corners == nil then
 		return nil
 	end
