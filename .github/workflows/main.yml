@@ -50,7 +50,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
             mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
             cd ..
             rpmbuild -ba build/vengi.spec --build-in-place
