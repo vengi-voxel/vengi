@@ -19,11 +19,11 @@
 namespace voxedit {
 namespace select {
 
-bool Lasso::wantBrushGizmo(const BrushContext &ctx) const {
+bool Lasso::wantBrushGizmo(const BrushContext &ctx, const AABBBrushState &brushState) const {
 	return _screenDragging && _screenPoints.size() >= 2;
 }
 
-void Lasso::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+void Lasso::brushGizmoState(const BrushContext &ctx, const AABBBrushState &brushState, BrushGizmoState &state) const {
 	state.operations = BrushGizmo_ScreenPolygon;
 	state.screenPolygon = &_screenPoints;
 }

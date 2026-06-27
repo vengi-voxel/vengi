@@ -1,6 +1,7 @@
 set(SRCS
 	modifier/brush/AABBBrush.cpp modifier/brush/AABBBrush.h
 	modifier/brush/BrushGizmo.h
+	modifier/brush/BrushGizmoUtil.cpp modifier/brush/BrushGizmoUtil.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
 	modifier/brush/LUABrush.cpp modifier/brush/LUABrush.h
@@ -170,6 +171,8 @@ set(TEST_FILES
 )
 set(TEST_LUA_SRCS
 	selectionmodes/slope.lua
+	selectionmodes/line.lua
+	selectionmodes/rectangle.lua
 	selectionmodes/columnrim2d.lua
 	selectionmodes/holerim2d.lua
 	selectionmodes/holerim3d.lua

@@ -163,11 +163,11 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 }
 
 bool SelectBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return activeStrategy()->wantBrushGizmo(ctx);
+	return activeStrategy()->wantBrushGizmo(ctx, buildState(ctx));
 }
 
 void SelectBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	activeStrategy()->brushGizmoState(ctx, state);
+	activeStrategy()->brushGizmoState(ctx, buildState(ctx), state);
 }
 
 bool SelectBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,

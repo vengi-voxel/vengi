@@ -61,7 +61,7 @@ struct BrushGizmoState {
 	bool localMode = true;
 
 	/** Line positions for BrushGizmo_Line – drawn as a polyline from positions[0..numPositions-1] */
-	glm::vec3 positions[4] = {};
+	glm::vec3 positions[8] = {};
 	/** Number of valid entries in positions[] */
 	int numPositions = 0;
 

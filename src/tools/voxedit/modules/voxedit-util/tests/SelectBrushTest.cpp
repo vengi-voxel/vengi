@@ -4,6 +4,7 @@
 
 #include "../modifier/brush/SelectBrush.h"
 #include "../modifier/brush/LUASelectionMode.h"
+#include "../modifier/brush/BrushGizmo.h"
 #include "app/tests/AbstractTest.h"
 #include "io/Filesystem.h"
 #include "scenegraph/SceneGraph.h"
@@ -749,6 +750,171 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 		EXPECT_FALSE((volume.voxel(x, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 			<< "Disconnected voxel at (" << x << ",0,0) should not be selected";
 	}
+
+	brush.shutdown();
+	luaMode.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLuaLine_straight) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("line"));
+	luaMode.parameters()[0] = "1";
+	luaMode.parameters()[1] = "straight";
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setLuaSelectionMode(0, &luaMode);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	for (int k = -2; k <= 2; ++k) {
+		EXPECT_TRUE((volume.voxel(k, k, k).getFlags() & voxel::FlagOutline) != 0)
+			<< "diagonal voxel (" << k << "," << k << "," << k << ") should be selected";
+	}
+	EXPECT_FALSE((volume.voxel(2, -2, -2).getFlags() & voxel::FlagOutline) != 0);
+
+	brush.shutdown();
+	luaMode.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLuaLine_gizmo) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("line"));
+	ASSERT_TRUE(luaMode.hasGizmo());
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setLuaSelectionMode(0, &luaMode);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
+	EXPECT_FALSE(brush.wantBrushGizmo(ctx));
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	ctx.cursorPosition = glm::ivec3(2, 2, 2);
+	brush.step(ctx);
+
+	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	BrushGizmoState gizmoState;
+	brush.brushGizmoState(ctx, gizmoState);
+	EXPECT_NE(gizmoState.operations & BrushGizmo_Line, 0u);
+	EXPECT_EQ(gizmoState.numPositions, 2);
+	EXPECT_FLOAT_EQ(gizmoState.positions[0].x, -1.5f);
+	EXPECT_FLOAT_EQ(gizmoState.positions[1].x, 2.5f);
+
+	brush.shutdown();
+	luaMode.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLuaRectangle_outline) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("rectangle"));
+	luaMode.parameters()[0] = "1";
+	luaMode.parameters()[1] = "0";
+	luaMode.parameters()[2] = "64";
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setLuaSelectionMode(0, &luaMode);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	executeSelect(brush, node, ctx, ModifierType::Override);
+
+	EXPECT_TRUE((volume.voxel(2, 2, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((volume.voxel(2, -2, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((volume.voxel(2, 0, 2).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((volume.voxel(2, 0, -2).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+
+	brush.shutdown();
+	luaMode.shutdown();
+}
+
+TEST_F(SelectBrushTest, testSelectModeLuaRectangle_gizmo) {
+	voxel::RawVolume volume({-5, 5});
+	for (int z = -2; z <= 2; ++z) {
+		for (int y = -2; y <= 2; ++y) {
+			for (int x = -2; x <= 2; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+
+	LUASelectionMode luaMode(_testApp->filesystem());
+	ASSERT_TRUE(luaMode.init());
+	ASSERT_TRUE(luaMode.loadScript("rectangle"));
+	ASSERT_TRUE(luaMode.hasGizmo());
+	luaMode.parameters()[0] = "1";
+	luaMode.parameters()[1] = "0";
+	luaMode.parameters()[2] = "64";
+
+	SelectBrush brush(nullptr);
+	ASSERT_TRUE(brush.init());
+	brush.setLuaSelectionMode(0, &luaMode);
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = volume.region();
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
+	EXPECT_FALSE(brush.wantBrushGizmo(ctx));
+
+	EXPECT_TRUE(brush.beginBrush(ctx));
+	ctx.cursorPosition = glm::ivec3(2, 2, 2);
+	brush.step(ctx);
+
+	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	BrushGizmoState gizmoState;
+	brush.brushGizmoState(ctx, gizmoState);
+	EXPECT_NE(gizmoState.operations & BrushGizmo_Line, 0u);
+	EXPECT_EQ(gizmoState.numPositions, 5);
+	EXPECT_FLOAT_EQ(gizmoState.positions[0].x, 2.5f);
+	EXPECT_FLOAT_EQ(gizmoState.positions[4].x, gizmoState.positions[0].x);
 
 	brush.shutdown();
 	luaMode.shutdown();

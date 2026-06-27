@@ -14,6 +14,10 @@
 #include "voxelgenerator/LUAApi.h"
 #include <glm/vec3.hpp>
 
+namespace voxedit {
+struct BrushGizmoState;
+}
+
 namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
@@ -33,6 +37,7 @@ class ModifierVolumeWrapper;
  *
  * Each LUASelectionMode loads a single Lua script that defines selection behavior:
  * - @c select(node, region, ...) - perform the selection (required)
+ * - @c gizmo() - return viewport overlay state while dragging (optional)
  * - @c arguments() - declare parameters for the UI (optional)
  * - @c description() - return a human-readable description (optional)
  * - @c icon() - return a Lucide icon name (optional)
@@ -58,11 +63,13 @@ private:
 	core::String _description;
 	core::String _iconName;
 	bool _scriptLoaded = false;
+	bool _hasGizmo = false;
 
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _parameterDescription;
 	core::DynamicArray<core::String> _parameters;
 
 	bool initLuaState();
+	bool callGizmo(lua_State *s) const;
 
 public:
 	explicit LUASelectionMode(const io::FilesystemPtr &filesystem);
@@ -90,6 +97,13 @@ public:
 	 */
 	void execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				 const voxel::Region &region, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace);
+
+	bool hasGizmo() const;
+
+	bool wantBrushGizmo(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) const;
+
+	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+						 voxel::FaceNames aabbFace) const;
 
 	/**
 	 * @brief Get the short name of this selection mode for display
@@ -135,6 +149,10 @@ inline const core::DynamicArray<core::String> &LUASelectionMode::parameters() co
 
 inline bool LUASelectionMode::isLoaded() const {
 	return _scriptLoaded;
+}
+
+inline bool LUASelectionMode::hasGizmo() const {
+	return _hasGizmo;
 }
 
 } // namespace voxedit

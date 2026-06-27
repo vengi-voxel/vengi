@@ -54,7 +54,6 @@ private:
 	core::DynamicArray<core::String> _parameters;
 
 	bool initLuaState();
-	static uint32_t mapGizmoOperation(const char *name);
 
 	bool wantBox() const override;
 

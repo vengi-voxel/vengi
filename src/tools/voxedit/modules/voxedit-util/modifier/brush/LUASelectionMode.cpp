@@ -4,6 +4,8 @@
 
 #include "LUASelectionMode.h"
 #include "Brush.h"
+#include "BrushGizmo.h"
+#include "BrushGizmoUtil.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/Log.h"
@@ -11,6 +13,7 @@
 #include "io/Filesystem.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "palette/Palette.h"
 #include "voxelgenerator/LUAApi.h"
 
 #include "LUAIconMapping.h"
@@ -239,6 +242,7 @@ void LUASelectionMode::shutdown() {
 	_lua.resetState();
 	_noise.shutdown();
 	_scriptLoaded = false;
+	_hasGizmo = false;
 	_scriptSource.clear();
 	_parameterDescription.clear();
 	_parameters.clear();
@@ -370,6 +374,10 @@ bool LUASelectionMode::loadScript(const core::String &filename) {
 		lua_pop(_lua, 1);
 	}
 
+	lua_getglobal(_lua, "gizmo");
+	_hasGizmo = lua_isfunction(_lua, -1);
+	lua_pop(_lua, 1);
+
 	_scriptLoaded = true;
 	Log::debug("Loaded selection mode script: %s", filename.c_str());
 	return true;
@@ -445,6 +453,136 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 	// Force GC to collect the LuaRawVolumeWrapper now so that _dirtyRegions
 	// gets populated via the volume wrapper's GC callback.
 	lua_gc(s, LUA_GCCOLLECT, 0);
+}
+
+bool LUASelectionMode::callGizmo(lua_State *s) const {
+	lua_getglobal(s, "gizmo");
+	if (!lua_isfunction(s, -1)) {
+		lua_pop(s, 1);
+		return false;
+	}
+	int nargs = 0;
+	if (!_parameterDescription.empty()) {
+		static const palette::Palette defaultPalette;
+		if (!voxelgenerator::luaVoxel_pushargs(s, _parameters, _parameterDescription, defaultPalette)) {
+			lua_pop(s, 1);
+			return false;
+		}
+		nargs = (int)_parameterDescription.size();
+	}
+	if (lua_pcall(s, nargs, 1, 0) != LUA_OK) {
+		Log::warn("Error calling gizmo(): %s", lua_tostring(s, -1));
+		lua_pop(s, 1);
+		return false;
+	}
+	return lua_istable(s, -1);
+}
+
+bool LUASelectionMode::wantBrushGizmo(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos,
+									  voxel::FaceNames aabbFace) const {
+	if (!_hasGizmo || !_scriptLoaded) {
+		return false;
+	}
+
+	lua_State *s = _lua.state();
+	const int top = lua_gettop(s);
+	SelectionContext selCtx;
+	selCtx.brushCtx = &ctx;
+	selCtx.aabbFirstPos = &aabbFirstPos;
+	selCtx.aabbFace = aabbFace;
+	voxelgenerator::luaVoxel_setGlobalData(s, luaSelection_metaname(), &selCtx);
+
+	const bool hasGizmo = callGizmo(s);
+	lua_settop(s, top);
+	return hasGizmo;
+}
+
+void LUASelectionMode::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+									   voxel::FaceNames aabbFace) const {
+	if (!_hasGizmo || !_scriptLoaded) {
+		state.operations = BrushGizmo_None;
+		return;
+	}
+
+	lua_State *s = _lua.state();
+	const int top = lua_gettop(s);
+	SelectionContext selCtx;
+	selCtx.brushCtx = &ctx;
+	selCtx.aabbFirstPos = &aabbFirstPos;
+	selCtx.aabbFace = aabbFace;
+	voxelgenerator::luaVoxel_setGlobalData(s, luaSelection_metaname(), &selCtx);
+
+	if (!callGizmo(s)) {
+		lua_settop(s, top);
+		state.operations = BrushGizmo_None;
+		return;
+	}
+
+	lua_getfield(s, -1, "position");
+	if (lua_istable(s, -1)) {
+		lua_rawgeti(s, -1, 1);
+		lua_rawgeti(s, -2, 2);
+		lua_rawgeti(s, -3, 3);
+		const float px = (float)lua_tonumber(s, -3);
+		const float py = (float)lua_tonumber(s, -2);
+		const float pz = (float)lua_tonumber(s, -1);
+		lua_pop(s, 3);
+		state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(px, py, pz));
+	}
+	lua_pop(s, 1);
+
+	state.operations = BrushGizmo_None;
+	lua_getfield(s, -1, "operations");
+	if (lua_istable(s, -1)) {
+		const int len = (int)lua_rawlen(s, -1);
+		for (int i = 1; i <= len; ++i) {
+			lua_rawgeti(s, -1, i);
+			if (lua_isstring(s, -1)) {
+				state.operations |= mapBrushGizmoOperation(lua_tostring(s, -1));
+			}
+			lua_pop(s, 1);
+		}
+	}
+	lua_pop(s, 1);
+
+	lua_getfield(s, -1, "snap");
+	if (lua_isnumber(s, -1)) {
+		state.snap = (float)lua_tonumber(s, -1);
+	}
+	lua_pop(s, 1);
+
+	lua_getfield(s, -1, "localMode");
+	if (lua_isboolean(s, -1)) {
+		state.localMode = lua_toboolean(s, -1) != 0;
+	}
+	lua_pop(s, 1);
+
+	lua_getfield(s, -1, "positions");
+	if (lua_istable(s, -1)) {
+		state.numPositions = 0;
+		const int len = (int)lua_rawlen(s, -1);
+		const int maxPositions = (int)(sizeof(state.positions) / sizeof(state.positions[0]));
+		for (int i = 1; i <= len && state.numPositions < maxPositions; ++i) {
+			lua_rawgeti(s, -1, i);
+			if (lua_istable(s, -1)) {
+				lua_rawgeti(s, -1, 1);
+				lua_rawgeti(s, -2, 2);
+				lua_rawgeti(s, -3, 3);
+				const float px = (float)lua_tonumber(s, -3);
+				const float py = (float)lua_tonumber(s, -2);
+				const float pz = (float)lua_tonumber(s, -1);
+				lua_pop(s, 3);
+				state.positions[state.numPositions].x = px;
+				state.positions[state.numPositions].y = py;
+				state.positions[state.numPositions].z = pz;
+				++state.numPositions;
+			}
+			lua_pop(s, 1);
+		}
+	}
+	lua_pop(s, 1);
+
+	lua_settop(s, top);
 }
 
 core::String LUASelectionMode::scriptName() const {

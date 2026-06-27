@@ -322,9 +322,12 @@ A selection mode script can define the following functions:
 - `select(node, region, ...)` **(required)** - Called when the selection is applied. Use `volume:setSelected(x, y, z, true)` to select voxels.
 - `arguments()` - Returns parameter definitions (same format as generator scripts).
 - `description()` - Returns a brief description string.
-- `icon()` - Returns an icon name string for the combo entry (e.g. `"mountain"`, `"scan"`).
+- `icon()` - Returns an icon name string for the combo entry (e.g. `"mountain"`, `"scan"`, `"penline"`).
+- `gizmo(...)` - Returns a table describing a 3D gizmo to display in the viewport while dragging, or `nil` for no gizmo. Same table format as brush scripts (`operations`, `positions`, `position`, `snap`, `localMode`). Receives the same script parameters as `select()` (after `node` and `region`). Selection mode gizmos are display-only (there is no `applygizmo` callback).
 
-The `select()` function has access to the same global objects as generator scripts. Additionally, selection mode scripts have access to `g_selectioncontext` which provides cursor position, face direction, and other context about the selection action. For further details see [g_selectioncontext](lua/selectioncontext.md).
+The `select()` function has access to the same global objects as generator scripts. Additionally, selection mode scripts have access to `g_selectioncontext` which provides cursor position, face direction, drag start position, and other context about the selection action. For further details see [g_selectioncontext](lua/selectioncontext.md).
+
+For drag-based modes (line, rectangle, box, etc.) use `g_selectioncontext.aabbFirstPos()` and `g_selectioncontext.cursorPos()` to get the two corners of the drag. The `region` argument passed to `select()` is the full volume region, not the drag box. Use `g_selectioncontext.aabbFace()` for the face from the initial click and `g_selectioncontext.modifierType()` to distinguish select (`"override"`) from deselect (`"erase"`).
 
 ### Volume selection helpers
 
@@ -401,6 +404,12 @@ function select(node, region, deviation, sampleDistance)
     end)
 end
 ```
+
+See `selectionmodes/line.lua` and `selectionmodes/rectangle.lua` for complete implementations.
+
+### Gizmo support for selection modes
+
+Selection mode scripts can show a viewport gizmo while the user drags (for example a line between drag corners or a closed rectangle outline). Define an optional `gizmo(...)` function returning the same table format as brush scripts. It receives the same script parameters as `select()` (after `node` and `region`). Supported `operations` values are `"translate"`, `"translatex"`, `"translatey"`, `"translatez"`, `"rotate"`, `"scale"`, `"bounds"`, and `"line"`. Use the `positions` array for multi-point gizmos (line endpoints, rectangle corners with the first point repeated to close the outline). Unlike brush scripts, selection mode gizmos are display-only; there is no `applygizmo` callback. While dragging, `select()` is also called on the preview volume to show the outline selection.
 
 ## Available scripts
 

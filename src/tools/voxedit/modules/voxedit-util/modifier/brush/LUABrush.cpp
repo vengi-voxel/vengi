@@ -3,6 +3,7 @@
  */
 
 #include "LUABrush.h"
+#include "BrushGizmoUtil.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/Log.h"
@@ -782,35 +783,6 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	lua_gc(s, LUA_GCCOLLECT, 0);
 }
 
-uint32_t LUABrush::mapGizmoOperation(const char *name) {
-	if (SDL_strcmp(name, "translate") == 0) {
-		return BrushGizmo_Translate;
-	}
-	if (SDL_strcmp(name, "translatex") == 0) {
-		return BrushGizmo_TranslateX;
-	}
-	if (SDL_strcmp(name, "translatey") == 0) {
-		return BrushGizmo_TranslateY;
-	}
-	if (SDL_strcmp(name, "translatez") == 0) {
-		return BrushGizmo_TranslateZ;
-	}
-	if (SDL_strcmp(name, "rotate") == 0) {
-		return BrushGizmo_Rotate;
-	}
-	if (SDL_strcmp(name, "scale") == 0) {
-		return BrushGizmo_Scale;
-	}
-	if (SDL_strcmp(name, "bounds") == 0) {
-		return BrushGizmo_Bounds;
-	}
-	if (SDL_strcmp(name, "line") == 0) {
-		return BrushGizmo_Line;
-	}
-	Log::warn("Unknown gizmo operation: %s", name);
-	return BrushGizmo_None;
-}
-
 bool LUABrush::wantBrushGizmo(const BrushContext &ctx) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		return false;
@@ -887,7 +859,7 @@ void LUABrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) 
 		for (int i = 1; i <= len; ++i) {
 			lua_rawgeti(s, -1, i);
 			if (lua_isstring(s, -1)) {
-				state.operations |= mapGizmoOperation(lua_tostring(s, -1));
+				state.operations |= mapBrushGizmoOperation(lua_tostring(s, -1));
 			}
 			lua_pop(s, 1);
 		}

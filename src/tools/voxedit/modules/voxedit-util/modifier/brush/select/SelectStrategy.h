@@ -60,11 +60,11 @@ public:
 	virtual void update(const BrushContext &ctx, double nowSeconds);
 	virtual bool active() const;
 
-	virtual bool wantBrushGizmo(const BrushContext &ctx) const {
+	virtual bool wantBrushGizmo(const BrushContext &ctx, const AABBBrushState &state) const {
 		return false;
 	}
 
-	virtual void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+	virtual void brushGizmoState(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const {
 	}
 
 	virtual bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
