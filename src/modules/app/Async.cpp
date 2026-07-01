@@ -6,8 +6,27 @@
 #include "app/App.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/ThreadPool.h"
+#include "core/Log.h"
+#include <SDL3/SDL_init.h>
 
 namespace app {
+
+namespace {
+
+struct MainThreadCall {
+	core::Function<void()> fn;
+	bool destroyAfterCall = false;
+};
+
+static void SDLCALL runOnMainThreadCallback(void *userdata) {
+	MainThreadCall *call = static_cast<MainThreadCall *>(userdata);
+	call->fn();
+	if (call->destroyAfterCall) {
+		delete call;
+	}
+}
+
+} // namespace
 
 int for_parallel_size(int start, int end) {
 	if (start >= end) {
@@ -62,6 +81,33 @@ void for_parallel_impl(int start, int end, ForParallelFunc fn, void *ctx, bool w
 
 void schedule(core::Function<void()> &&f) {
 	app::App::getInstance()->schedule(core::forward<core::Function<void()>>(f));
+}
+
+bool runOnMainThread(core::Function<void()> &&f, bool waitComplete) {
+	if (SDL_IsMainThread()) {
+		f();
+		return true;
+	}
+
+	if (waitComplete) {
+		MainThreadCall call;
+		call.fn = core::forward<core::Function<void()>>(f);
+		if (!SDL_RunOnMainThread(runOnMainThreadCallback, &call, true)) {
+			Log::error("Failed to schedule callback on main thread: %s", SDL_GetError());
+			return false;
+		}
+		return true;
+	}
+
+	MainThreadCall *call = new MainThreadCall();
+	call->fn = core::forward<core::Function<void()>>(f);
+	call->destroyAfterCall = true;
+	if (!SDL_RunOnMainThread(runOnMainThreadCallback, call, false)) {
+		Log::error("Failed to schedule callback on main thread: %s", SDL_GetError());
+		delete call;
+		return false;
+	}
+	return true;
 }
 
 } // namespace app

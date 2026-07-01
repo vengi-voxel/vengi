@@ -20,6 +20,7 @@ auto async(F &&f) -> core::Future<core::invoke_result_t<F>> {
 
 // add new work item to the pool
 void schedule(core::Function<void()> &&f);
+bool runOnMainThread(core::Function<void()> &&f, bool waitComplete = true);
 
 /**
  * @note This sort is unstable

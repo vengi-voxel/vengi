@@ -188,4 +188,16 @@ TEST_F(AsyncTest, testSortAllSame) {
 	}
 }
 
+TEST_F(AsyncTest, testRunOnMainThreadImmediate) {
+	int value = 0;
+	ASSERT_TRUE(app::runOnMainThread([&value]() { value = 1; }, true));
+	EXPECT_EQ(1, value);
+}
+
+TEST_F(AsyncTest, testRunOnMainThreadImmediateNoWait) {
+	int value = 0;
+	ASSERT_TRUE(app::runOnMainThread([&value]() { value = 2; }, false));
+	EXPECT_EQ(2, value);
+}
+
 } // namespace app
