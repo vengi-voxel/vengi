@@ -11,7 +11,9 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/ScenePaletteCache.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxelcollection/CollectionManager.h"
+#include "core/Var.h"
 
 namespace voxedit {
 class MainWindow;
@@ -36,6 +38,13 @@ protected:
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
 	voxedit::ScenePaletteCache _paletteCache;
+	core::VarPtr _penPressureAffectsRadius;
+	core::VarPtr _penRadiusMin;
+	core::VarPtr _penRadiusMax;
+	core::VarPtr _penEraserSwitchesMode;
+	bool _penEraserActive = false;
+	ModifierType _penPrevModifierType = ModifierType::Place;
+	int _penBaseRadius = -1;
 
 	// 0 is the default binding
 	enum KeyBindings {
@@ -63,6 +72,9 @@ public:
 
 	void onDropFile(void *windowHandle, const core::String &file) override;
 	void onDropText(void *windowHandle, const core::String& text) override;
+	void onPenAxis(void *windowHandle, uint32_t pen, float x, float y, video::PenAxis axis, float value) override;
+	void onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) override;
+	void onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) override;
 	bool allowedToQuit() override;
 
 	app::AppState onConstruct() override;

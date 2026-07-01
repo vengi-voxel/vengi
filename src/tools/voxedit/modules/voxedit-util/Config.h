@@ -66,5 +66,9 @@ constexpr const char *VoxEditSceneMode = "ve_scenemode";
 constexpr const char *VoxEditAddNode = "ve_addnode";
 constexpr const char *VoxEditAddNodeIgnoreOverlap = "ve_addnodeignoreoverlap";
 constexpr const char *VoxEditAddNodeCloneVoxels = "ve_addnodeclonevoxels";
+constexpr const char *VoxEditPenPressureAffectsRadius = "ve_penpressureaffectsradius";
+constexpr const char *VoxEditPenRadiusMin = "ve_penradiusmin";
+constexpr const char *VoxEditPenRadiusMax = "ve_penradiusmax";
+constexpr const char *VoxEditPenEraserSwitchesMode = "ve_peneraserswitchesmode";
 
 } // namespace cfg

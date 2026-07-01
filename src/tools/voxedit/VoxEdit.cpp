@@ -26,6 +26,8 @@
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ScriptManager.h"
+#include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
@@ -108,6 +110,18 @@ void VoxEdit::toggleScene() {
 app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
+	_penPressureAffectsRadius = core::Var::registerVar(
+		core::VarDef(cfg::VoxEditPenPressureAffectsRadius, true, _("Pen pressure controls radius"),
+					 _("Map pen pressure to brush radius for radius-based brushes")));
+	_penRadiusMin = core::Var::registerVar(
+		core::VarDef(cfg::VoxEditPenRadiusMin, 1, 1, 64, _("Pen minimum radius"),
+					 _("Minimum brush radius when pressure mapping is active")));
+	_penRadiusMax = core::Var::registerVar(
+		core::VarDef(cfg::VoxEditPenRadiusMax, 12, 1, 64, _("Pen maximum radius"),
+					 _("Maximum brush radius when pressure mapping is active")));
+	_penEraserSwitchesMode = core::Var::registerVar(
+		core::VarDef(cfg::VoxEditPenEraserSwitchesMode, true, _("Pen eraser switches mode"),
+					 _("Temporarily switch to erase mode while pen eraser is active")));
 
 	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
@@ -368,6 +382,75 @@ app::AppState VoxEdit::onConstruct() {
 		}).setHelp(_("Uninstall a previously installed lua script by filename"));
 
 	return state;
+}
+
+void VoxEdit::onPenAxis(void *windowHandle, uint32_t pen, float x, float y, video::PenAxis axis, float value) {
+	Super::onPenAxis(windowHandle, pen, x, y, axis, value);
+	if (axis != video::PenAxis::Pressure || !_penPressureAffectsRadius || !_penPressureAffectsRadius->boolVal()) {
+		return;
+	}
+	voxedit::AABBBrush *brush = _sceneMgr->modifier().currentAABBBrush();
+	if (brush == nullptr) {
+		return;
+	}
+	if (_penBaseRadius < 0) {
+		_penBaseRadius = brush->radius();
+		if (_penBaseRadius < 1) {
+			_penBaseRadius = 1;
+		}
+	}
+
+	float pressure = value;
+	if (pressure < 0.0f) {
+		pressure = 0.0f;
+	} else if (pressure > 1.0f) {
+		pressure = 1.0f;
+	}
+
+	int minRadius = _penRadiusMin ? _penRadiusMin->intVal() : 1;
+	int maxRadius = _penRadiusMax ? _penRadiusMax->intVal() : 12;
+	if (maxRadius < minRadius) {
+		const int tmp = maxRadius;
+		maxRadius = minRadius;
+		minRadius = tmp;
+	}
+	int targetRadius = minRadius + (int)((maxRadius - minRadius) * pressure);
+	if (targetRadius < 1) {
+		targetRadius = 1;
+	}
+	if (brush->radius() != targetRadius) {
+		brush->setRadius(targetRadius);
+	}
+}
+
+void VoxEdit::onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	Super::onPenDown(windowHandle, pen, x, y, eraser);
+	if (_penPressureAffectsRadius && _penPressureAffectsRadius->boolVal()) {
+		_penBaseRadius = _sceneMgr->modifier().currentAABBBrush() ? _sceneMgr->modifier().currentAABBBrush()->radius() : -1;
+	}
+	if (!eraser || !_penEraserSwitchesMode || !_penEraserSwitchesMode->boolVal() || _penEraserActive) {
+		return;
+	}
+	voxedit::Modifier &modifier = _sceneMgr->modifier();
+	_penPrevModifierType = modifier.modifierType();
+	modifier.setModifierType(ModifierType::Erase);
+	_penEraserActive = true;
+}
+
+void VoxEdit::onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	Super::onPenUp(windowHandle, pen, x, y, eraser);
+	if (_penPressureAffectsRadius && _penPressureAffectsRadius->boolVal()) {
+		voxedit::AABBBrush *brush = _sceneMgr->modifier().currentAABBBrush();
+		if (brush != nullptr && _penBaseRadius > 0) {
+			brush->setRadius(_penBaseRadius);
+		}
+		_penBaseRadius = -1;
+	}
+	if (!eraser || !_penEraserActive) {
+		return;
+	}
+	_sceneMgr->modifier().setModifierType(_penPrevModifierType);
+	_penEraserActive = false;
 }
 
 void VoxEdit::importPalette(const core::String &file) {
