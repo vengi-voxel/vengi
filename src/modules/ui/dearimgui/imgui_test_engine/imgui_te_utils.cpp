@@ -243,7 +243,7 @@ ImGuiID ImHashDecoratedPath(const char* str, const char* str_end, ImGuiID seed)
 //    "//hello/world/child" --> "world/child"
 //    "world/child"         --> "child"
 // This is a helper for code needing to do some parsing of individual nodes in a path.
-// Note: we need the (unsigned char*) stuff in order to keep code similar to ImHashDecoratedPath(). They are not really necessary in this function tho.
+// Note: we use the (unsigned char*) stuff in order to keep code similar to ImHashDecoratedPath(). They are not really necessary in this function tho.
 const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end)
 {
     const unsigned char* current = (const unsigned char*)str;
@@ -256,9 +256,10 @@ const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end)
         if (str_end != nullptr && current == (const unsigned char*)str_end)
             break;
 
-        const unsigned char c = *current++;
+        const unsigned char c = *current;
         if (c == 0)
             break;
+        current++;
         if (c == '\\' && !inhibit_one)
         {
             inhibit_one = true;
@@ -271,7 +272,8 @@ const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end)
 
         inhibit_one = false;
     }
-    return nullptr;
+    IM_ASSERT((const char*)current == str_end || *current == 0);
+    return (const char*)current;
 }
 
 //-----------------------------------------------------------------------------
@@ -1319,19 +1321,45 @@ ImGuiID TableGetHeaderID(ImGuiTable* table, int column_n, int instance_no)
     return ImHashData(column_name, strlen(column_name), column_id);
 }
 
-// FIXME: Could be moved to core as an internal function?
-void TableDiscardInstanceAndSettings(ImGuiID table_id)
+void TableDiscardInstance(ImGuiID table_id)
+{
+    ImGuiContext& g = *GImGui;
+    IM_UNUSED(g); // Only used when IM_ASSERT enabled
+    if (ImGuiTable* table = ImGui::TableFindByID(table_id))
+    {
+        IM_ASSERT(g.CurrentTable != table);
+        //ImGui::TableSaveSettings(table);
+        ImGui::TableRemove(table);
+    }
+}
+
+void TableDiscardSettings(ImGuiID table_id)
 {
     ImGuiContext& g = *GImGui;
     IM_UNUSED(g); // Only used when IM_ASSERT enabled
     IM_ASSERT(g.CurrentTable == nullptr);
     if (ImGuiTableSettings* settings = ImGui::TableSettingsFindByID(table_id))
         settings->ID = 0;
-
     if (ImGuiTable* table = ImGui::TableFindByID(table_id))
-        ImGui::TableRemove(table);
+        table->SettingsOffset = -1;
     // FIXME-TABLE: We should be able to use TableResetSettings() instead of TableRemove()! Maybe less of a clean slate but would be good to check that it does the job
     //ImGui::TableResetSettings(table);
+}
+
+// FIXME: Could be moved to core as an internal function?
+void TableDiscardInstanceAndSettings(ImGuiID table_id)
+{
+    TableDiscardInstance(table_id); // In this order because TableDiscardInstance() does a setting save.
+    TableDiscardSettings(table_id);
+}
+
+void SaveIniSettingsToVector(ImVector<char>* out)
+{
+    size_t ini_size = 0;
+    const char* ini_main = ImGui::SaveIniSettingsToMemory(&ini_size);
+    out->resize((int)ini_size + 1);
+    memcpy(out->Data, ini_main, ini_size + 1);
+    out->resize((int)ini_size);
 }
 
 // Helper to verify ImDrawData integrity of buffer count (broke before e.g. #6716)

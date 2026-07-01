@@ -490,6 +490,7 @@ struct IMGUI_API ImGuiTestContext
     void                        TableSetColumnEnabled(ImGuiTestRef ref, int column_n, bool enabled);
     void                        TableSetColumnEnabled(ImGuiTestRef ref, const char* label, bool enabled);
     void                        TableResizeColumn(ImGuiTestRef ref, int column_n, float width);
+    void                        TableResizeColumn(ImGuiTestRef ref, const char* label, float width);
     const ImGuiTableSortSpecs*  TableGetSortSpecs(ImGuiTestRef ref);
 
     // Viewports

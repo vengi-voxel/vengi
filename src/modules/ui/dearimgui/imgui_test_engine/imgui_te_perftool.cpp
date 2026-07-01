@@ -783,6 +783,22 @@ void ImGuiPerfTool::_Rebuild()
                 _BaselineBatchIndex = _Batches.index_from_ptr(&batch);
     }
 
+    _BaselineTestIndex = -1;
+    if (!_Batches.empty())
+    {
+        const ImGuiPerfToolBatch& batch = _Batches[0];
+        for (int n = 0; n < batch.Entries.size(); n++)
+        {
+            ImGuiPerfToolEntry* entry = &batch.Entries.Data[n];
+
+            if (strcmp(_BaselineTestName, entry->TestName) == 0)
+            {
+                _BaselineTestIndex = n;
+                break;
+            }
+        }
+    }
+
     // When per-branch colors are enabled we aggregate sample counts and set them to all batches with identical build info.
     temp_set.Data.resize(0);    // build_id:TotalSamples
     if (_DisplayType == ImGuiPerfToolDisplayType_PerBranchColors)
@@ -1044,14 +1060,25 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
     return true;
 }
 
-void ImGuiPerfTool::_SetBaseline(int batch_index)
+void ImGuiPerfTool::_SetBaseline(int batch_index, int test_index)
 {
     IM_ASSERT(batch_index < _Batches.Size);
+    _BaselineTestIndex = -1;
+    _BaselineTestName[0] = '\0';
+    _BaselineTimestamp = 0;
+    _BaselineBuildId = 0;
+
     _BaselineBatchIndex = batch_index;
     if (batch_index >= 0)
     {
         _BaselineTimestamp = _Batches.Data[batch_index].Entries.Data[0].Timestamp;
         _BaselineBuildId = GetBuildID(&_Batches.Data[batch_index]);
+    }
+
+    if (test_index >= 0 && !_Batches.empty() && _Batches.Data[0].Entries.size())
+    {
+        _BaselineTestIndex = test_index;
+        ImStrncpy(_BaselineTestName, _Batches.Data[0].Entries.Data[test_index].TestName, IM_COUNTOF(_BaselineTestName));
     }
 }
 
@@ -1155,6 +1182,11 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     }
 
     ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetFrameHeight() * 5.0f);
+    ImGui::Combo("##report", (int*)&_ReportType, "Details\0Batches\0");
+    ImGui::SetItemTooltip("Details: Show tests and batches as rows, details in columns.\nBatches: Show test as rows, batches in columns.");
+
+    ImGui::SameLine();
     if (_ReportGenerating && ImGuiTestEngine_IsTestQueueEmpty(engine))
     {
         _ReportGenerating = false;
@@ -1180,9 +1212,14 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     if (ImGui::IsItemHovered())
     {
         ImGui::BeginTooltip();
+        ImGui::SeparatorText("Details");
         ImGui::BulletText("To change baseline build, double-click desired build in the legend.");
         ImGui::BulletText("Extra information is displayed when hovering bars of a particular perf test and holding SHIFT.");
         ImGui::BulletText("Double-click plot to fit plot into available area.");
+        ImGui::SeparatorText("Batches");
+        ImGui::BulletText("Click in header to set the baseline to specific build.");
+        ImGui::BulletText("Click in test name to set the baseline to specific test.");
+        ImGui::BulletText("Click in a cell set the baseline to specific cell.");
         ImGui::EndTooltip();
     }
 
@@ -1276,36 +1313,43 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     }
     else
     {
+        if (_ReportType == ImGuiPerfToolReportType_Batches)
+        {
+            _ShowEntriesTableBatches();
+        }
+        else
+        {
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
-        // Splitter between two following child windows is rendered first.
-        ImGuiStyle& style = ImGui::GetStyle();
-        float plot_height = 0.0f;
-        float& table_height = _InfoTableHeight;
-        ImGui::Splitter("splitter", &plot_height, &table_height, ImGuiAxis_Y, +1);
+            // Splitter between two following child windows is rendered first.
+            ImGuiStyle& style = ImGui::GetStyle();
+            float plot_height = 0.0f;
+            float& table_height = _InfoTableHeight;
+            ImGui::Splitter("splitter", &plot_height, &table_height, ImGuiAxis_Y, +1);
 
-        // Double-click to move splitter to bottom
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-        {
-            table_height = 0;
-            plot_height = ImGui::GetContentRegionAvail().y - style.ItemSpacing.y;
-            ImGui::ClearActiveID();
-        }
+            // Double-click to move splitter to bottom
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                table_height = 0;
+                plot_height = ImGui::GetContentRegionAvail().y - style.ItemSpacing.y;
+                ImGui::ClearActiveID();
+            }
 
-        // Render entries plot
-        if (ImGui::BeginChild(ImGui::GetID("plot"), ImVec2(0, plot_height)))
-            _ShowEntriesPlot();
-        ImGui::EndChild();
-
-        // Render entries tables
-        if (table_height > 0.0f)
-        {
-            if (ImGui::BeginChild(ImGui::GetID("info-table"), ImVec2(0, table_height)))
-                _ShowEntriesTable();
+            // Render entries plot
+            if (ImGui::BeginChild(ImGui::GetID("plot"), ImVec2(0, plot_height)))
+                _ShowEntriesPlot();
             ImGui::EndChild();
-        }
+
+            // Render entries tables
+            if (table_height > 0.0f)
+            {
+                if (ImGui::BeginChild(ImGui::GetID("info-table"), ImVec2(0, table_height)))
+                    _ShowEntriesTable();
+                ImGui::EndChild();
+            }
 #else
-        _ShowEntriesTable();
+            _ShowEntriesTable();
 #endif
+        }
     }
     ImGui::End();
 }
@@ -1713,6 +1757,293 @@ void ImGuiPerfTool::_ShowEntriesTable()
     ImGui::EndTable();
 }
 
+static void TextAlignedEx(const ImVec4& text_color, float align_x, float size_x, const char* text)
+{
+    // FIXME: Use ImGui::TextAligned() ?
+#if 0 // #if IMGUI_VERSION_NUM >= 19194
+    ImGui::PushStyleColor(ImGuiCol_Text, text_color);
+    ImGui::TextAligned(align_x, size_x, "%s", text);
+    ImGui::PopStyleColor();
+#else
+    ImGui::Dummy(ImVec2(size_x, ImGui::GetFrameHeight()));
+    ImVec2 p_min = ImGui::GetItemRectMin();
+    ImVec2 p_max = ImGui::GetItemRectMax();
+    ImVec2 text_size = ImGui::CalcTextSize(text);
+    ImVec2 text_pos = p_min;
+    ImVec2 padding = ImGui::GetStyle().FramePadding;
+    text_pos.x += padding.x + (ImMax(0.f, p_max.x - p_min.x - padding.x * 2.f) - text_size.x) * align_x;
+    text_pos.y += padding.y;
+
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), text_pos, ImGui::GetColorU32(text_color), text, NULL);
+#endif
+}
+
+// Shows table where each row is a test, and each column is a batch.
+// - Clicking on a header sets the baseline to a specific batch (check delta between builds)
+// - Clicking on a test name sets the baseline to a specific test (check delta between tests)
+// - Clicking on a cell sets the baseline to a specific test (check delta between runs)
+void ImGuiPerfTool::_ShowEntriesTableBatches()
+{
+    if (_Batches.empty())
+        return;
+
+    ImGuiTableFlags table_flags = ImGuiTableFlags_Hideable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
+
+    int visible_batch_count = 0;
+    for (ImGuiPerfToolBatch& batch : _Batches)
+        if (_IsVisibleBuild(&batch))
+            visible_batch_count++;
+
+    if (!ImGui::BeginTable("PerfInfoBatches", visible_batch_count + 1, table_flags))
+        return;
+
+    ImVec4 text_color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    ImVec4 text_color_dim = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    text_color_dim.w *= 0.75f;
+
+    // Setup columns
+    int row_count = -1;
+
+    // Test name
+    ImGui::TableSetupColumn(NULL, ImGuiTableColumnFlags_WidthStretch, 2.f);
+    // Batch per column
+    for (ImGuiPerfToolBatch& batch : _Batches)
+    {
+        if (!_IsVisibleBuild(&batch))
+            continue;
+        if (row_count < 0)
+            row_count = batch.Entries.size();
+        else
+            row_count = ImMin(row_count, batch.Entries.size());
+        ImGui::TableSetupColumn(NULL, ImGuiTableColumnFlags_WidthStretch);
+    }
+    ImGui::TableSetupScrollFreeze(0, 1);
+
+    // Header row
+    ImGui::TableNextRow();
+
+    // Test names
+    if (ImGui::TableNextColumn())
+        ImGui::TextUnformatted("Test");
+
+    // Batch headers
+    for (int i = 0; i < _Batches.size(); i++)
+    {
+        ImGuiPerfToolBatch& batch = _Batches[i];
+        if (!_IsVisibleBuild(&batch))
+            continue;
+
+        if (!ImGui::TableNextColumn())
+            continue;
+
+        // Create column name based on the first item in batch.
+        if (batch.Entries.size() > 0)
+        {
+            const ImGuiPerfToolEntry& entry = batch.Entries[0];
+
+            // Highlight baseline column
+            if (_BaselineBatchIndex == i)
+            {
+                ImU32 col = ImGui::GetColorU32(ImGuiCol_Header);
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, col);
+            }
+
+            ImGui::BeginGroup();
+
+            // Branch + build type.
+            ImGui::TextUnformatted(entry.GitBranchName);
+            ImGui::SameLine();
+            ImGui::TextUnformatted(entry.BuildType);
+
+            // Build details.
+            ImGui::PushStyleColor(ImGuiCol_Text, text_color_dim);
+            ImGui::Text("%s %s %s", entry.Compiler, entry.OS, entry.Cpu);
+            ImGui::PopStyleColor();
+
+            ImGui::EndGroup();
+
+            if (ImGui::BeginItemTooltip())
+            {
+                ImGui::TextUnformatted(entry.GitBranchName);
+                ImGui::TextUnformatted(entry.BuildType);
+                ImGui::TextUnformatted(entry.Compiler);
+                ImGui::TextUnformatted(entry.OS);
+                ImGui::TextUnformatted(entry.Cpu);
+                ImGui::EndTooltip();
+            }
+
+            // Toggle baseline column on click.
+            if (ImGui::TableGetHoveredRow() == ImGui::TableGetRowIndex() && ImGui::TableGetHoveredColumn() == ImGui::TableGetColumnIndex() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                if (_BaselineBatchIndex == i && _BaselineTestIndex == -1)
+                    _SetBaseline(-1); // Clear if already set.
+                else
+                    _SetBaseline(i);
+            }
+        }
+    }
+
+    const float item_width = ImGui::GetFrameHeight() * 4.f;
+    const float change_width = ImGui::GetFrameHeight() * 4.f;
+
+    // Test rows
+    for (int row_index = row_count - 1; row_index >= 0; row_index--)
+    {
+        ImGuiPerfToolEntry* first_entry = &_Batches[0].Entries.Data[row_index];
+        if (!_IsVisibleTest(first_entry->TestName))
+            continue;
+
+        ImGui::PushID(row_index);
+
+        ImGui::TableNextRow();
+
+        // Mouse hover highlight
+        if (ImGui::TableGetRowIndex() == ImGui::TableGetHoveredRow())
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImGui::GetColorU32(ImGuiCol_Text, 0.25f));
+
+        // Test name
+        if (ImGui::TableNextColumn())
+        {
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted(first_entry->TestName);
+
+            // Highlight baseline row.
+            if (row_index == _BaselineTestIndex)
+            {
+                ImU32 col = ImGui::GetColorU32(ImGuiCol_Header);
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, col);
+            }
+
+            // Toggle baseline row on click.
+            if (ImGui::TableGetHoveredRow() == ImGui::TableGetRowIndex() && ImGui::TableGetHoveredColumn() == ImGui::TableGetColumnIndex() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                if (_BaselineBatchIndex == -1 && _BaselineTestIndex == row_index)
+                    _SetBaseline(-1, -1); // Clear if already set.
+                else
+                    _SetBaseline(-1, row_index);
+            }
+        }
+
+        // Batches
+        for (int batch_index = 0; batch_index < _Batches.Size; batch_index++)
+        {
+            ImGuiPerfToolBatch& batch = _Batches[batch_index];
+            if (!_IsVisibleBuild(&batch))
+                continue;
+
+            if (!ImGui::TableNextColumn())
+                continue;
+
+            ImGuiPerfToolEntry* baseline_entry = NULL;
+            if (_BaselineBatchIndex >= 0)
+            {
+                if (_BaselineTestIndex >= 0)
+                    baseline_entry = &_Batches[_BaselineBatchIndex].Entries.Data[_BaselineTestIndex];   // Baseline cell
+                else
+                    baseline_entry = &_Batches[_BaselineBatchIndex].Entries.Data[row_index];            // Baseline column
+            }
+            else
+            {
+                if (_BaselineTestIndex >= 0)
+                    baseline_entry = &_Batches[batch_index].Entries.Data[_BaselineTestIndex];           // Baseline row
+            }
+
+            ImGuiPerfToolEntry* entry = &batch.Entries.Data[row_index];
+
+            // Avg ms
+            TextAlignedEx(text_color, 1.f, item_width, Str30f("%.3lfms", entry->DtDeltaMs).c_str());
+
+            if (ImGui::BeginItemTooltip())
+            {
+                ImGui::Text("Min: %.3lf ms", entry->DtDeltaMsMin);
+                ImGui::Text("Max: %.3lf ms", entry->DtDeltaMsMax);
+                ImGui::Text("Samples: %d", entry->NumSamples);
+                ImGui::EndTooltip();
+            }
+
+            if (baseline_entry && baseline_entry != entry)
+            {
+                // Show percentage diff against the selected baseline.
+                double percent_vs_first = entry->DtDeltaMs / baseline_entry->DtDeltaMs;
+                double change = -(1.0 - percent_vs_first);
+                if (change != INFINITY)
+                {
+                    ImU32 col = IM_COL32_BLACK_TRANS;
+                    if (change < 0.0f)
+                    {
+                        // Better, show green background
+                        ImGui::SameLine();
+                        TextAlignedEx(text_color_dim, 0.5f, change_width, Str30f("%+.2lf%%", change * 100.0).c_str());
+
+                        double a = ImClamp(-change, 0.0, 1.0);
+                        a = sqrt(a); // make lower change easier to see.
+                        col = IM_COL32(145, 200, 50, (int)(255 * a * 0.75));
+                    }
+                    else
+                    {
+                        // Worse, show red background.
+                        ImGui::SameLine();
+                        TextAlignedEx(text_color_dim, 0.5f, change_width, Str30f("%+.2lf%%", change * 100.0).c_str());
+
+                        double a = ImClamp(change, 0.0, 1.0);
+                        a = sqrt(a); // make lower change easier to see.
+                        col = IM_COL32(220, 60, 60, (int)(255 * a * 0.75));
+                    }
+
+                    if (ImGui::BeginItemTooltip())
+                    {
+                        ImGui::Text("Base: %.3lf ms", baseline_entry->DtDeltaMs);
+                        ImGui::Text("This: %.3lf ms", entry->DtDeltaMs);
+                        ImGui::Text("Delta: %+.3lf ms", entry->DtDeltaMs - baseline_entry->DtDeltaMs);
+                        ImGui::EndTooltip();
+                    }
+
+                    ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, col);
+                }
+            }
+
+            // Toggle baseline cell on click.
+            if (ImGui::TableGetHoveredRow() == ImGui::TableGetRowIndex() && ImGui::TableGetHoveredColumn() == ImGui::TableGetColumnIndex() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                if (_BaselineBatchIndex == batch_index && row_index == _BaselineTestIndex)
+                {
+                    // Clear if already set.
+                    _SetBaseline(-1, -1);
+                }
+                else
+                {
+                    _SetBaseline(batch_index, row_index);
+                }
+            }
+
+            // Hilight cell
+            if (_BaselineBatchIndex == batch_index)
+            {
+                if (_BaselineTestIndex == -1 || row_index == _BaselineTestIndex)
+                {
+                    // Column or cell
+                    ImU32 col = ImGui::GetColorU32(ImGuiCol_Header);
+                    ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, col);
+                }
+            }
+            else if (_BaselineBatchIndex == -1)
+            {
+                if (row_index == _BaselineTestIndex)
+                {
+                    // Row
+                    ImU32 col = ImGui::GetColorU32(ImGuiCol_Header);
+                    ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, col);
+                }
+            }
+        }
+
+        ImGui::PopID();
+    }
+
+    ImGui::EndTable();
+}
+
 //-------------------------------------------------------------------------
 // [SECTION] SETTINGS
 //-------------------------------------------------------------------------
@@ -1732,12 +2063,14 @@ static void PerflogSettingsHandler_ReadLine(ImGuiContext*, ImGuiSettingsHandler*
 {
     ImGuiPerfTool* perftool = (ImGuiPerfTool*)ini_handler->UserData;
     char buf[128];
-    int visible = -1, display_type = -1;
+    int visible = -1, display_type = -1, report_type = -1;
     /**/ if (sscanf(line, "DateFrom=%10s", perftool->_FilterDateFrom)) {}
     else if (sscanf(line, "DateTo=%10s", perftool->_FilterDateTo)) {}
     else if (sscanf(line, "DisplayType=%d", &display_type)) { perftool->_DisplayType = (ImGuiPerfToolDisplayType)display_type; }
+    else if (sscanf(line, "ReportType=%d", &report_type)) { perftool->_ReportType = (ImGuiPerfToolReportType)report_type; }
     else if (sscanf(line, "BaselineBuildId=%llu", &perftool->_BaselineBuildId)) {}
     else if (sscanf(line, "BaselineTimestamp=%llu", &perftool->_BaselineTimestamp)) {}
+    else if (sscanf(line, "BaselineTestName=%s", perftool->_BaselineTestName)) {}
     else if (sscanf(line, "TestVisibility=%[^,],%d", buf, &visible) == 2) { perftool->_Visibility.SetBool(ImHashStr(buf), !!visible); }
     else if (sscanf(line, "BuildVisibility=%[^,],%d", buf, &visible) == 2) { perftool->_Visibility.SetBool(ImHashStr(buf), !!visible); }
 }
@@ -1758,8 +2091,10 @@ static void PerflogSettingsHandler_WriteAll(ImGuiContext*, ImGuiSettingsHandler*
     buf->appendf("DateFrom=%s\n", perftool->_FilterDateFrom);
     buf->appendf("DateTo=%s\n", perftool->_FilterDateTo);
     buf->appendf("DisplayType=%d\n", perftool->_DisplayType);
+    buf->appendf("ReportType=%d\n", perftool->_ReportType);
     buf->appendf("BaselineBuildId=%llu\n", perftool->_BaselineBuildId);
     buf->appendf("BaselineTimestamp=%llu\n", perftool->_BaselineTimestamp);
+    buf->appendf("BaselineTestName=%s\n", perftool->_BaselineTestName);
     for (const char* label : perftool->_Labels)
         buf->appendf("TestVisibility=%s,%d\n", label, perftool->_Visibility.GetBool(ImHashStr(label), true));
 

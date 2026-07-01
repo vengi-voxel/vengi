@@ -900,18 +900,28 @@ ImGuiID ImGuiTestContext::ItemInfoHandleWildcardSearch(const char* wildcard_pref
         task->InPrefixId = RefID;
     task->OutItemId = 0;
 
-    // Advance pointer to point it to the last label
+    // Advance pointer to point it to the last label (after the last '/') and fill its depth (InSuffixDepth)
+    // Labels are separated by '/', except if this char is escaped by a `\\`.
     task->InSuffix = task->InSuffixLastItem = wildcard_suffix_start;
-    for (const char* c = task->InSuffix; *c; c++)
-        if (*c == '/')
-            task->InSuffixLastItem = c + 1;
-    task->InSuffixLastItemHash = ImHashStr(task->InSuffixLastItem, 0, 0);
-
-    // Count number of labels
     task->InSuffixDepth = 1;
-    for (const char* c = wildcard_suffix_start; *c; c++)
-        if (*c == '/')
+    bool inhibit_one = false;
+    for (const char* c = task->InSuffix; *c; c++)
+    {
+        if (*c == '\\' && !inhibit_one)
+        {
+            inhibit_one = true;
+            continue;
+        }
+        if (*c == '/' && !inhibit_one)
+        {
+            task->InSuffixLastItem = c + 1;
             task->InSuffixDepth++;
+        }
+        inhibit_one = false;
+    }
+
+    // Since every / is escaped in the string, we can use ImHashDecoratedPath() directly.
+    task->InSuffixLastItemHash = ImHashDecoratedPath(task->InSuffixLastItem, nullptr, 0);
 
     int retries = 0;
     while (retries < 2 && task->OutItemId == 0)
@@ -1060,20 +1070,35 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfoOpenFullPath(ImGuiTestRef ref, ImGui
     if (!can_open_full_path)
         return ItemInfoNull();
 
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("ItemInfoOpenFullPath: '%s'\n", ref.Path);
+
     // Tries to auto open intermediaries leading to final path.
     // Note that openables cannot be part of the **/ (else it means we would have to open everything).
     // - Openables can be before the wildcard    "Node2/Node3/**/Button"
     // - Openables can be after the wildcard     "**/Node2/Node3/Lv4/Button"
     int opened_parents = 0;
-    for (const char* parent_end = strstr(ref.Path, "/"); parent_end != nullptr; parent_end = strstr(parent_end + 1, "/"))
+
+    const char* path = ref.Path;
+
+    //for (const char* parent_end = strstr(ref.Path, "/"); parent_end != nullptr; parent_end = strstr(parent_end + 1, "/"))
+    for (const char* next_path = nullptr; path[0] != 0; path = next_path)
     {
+        const char* parent_end = ImFindNextDecoratedPartInPath(path);
+        if (parent_end[0] == 0)
+            break;
+
+        next_path = parent_end;
+        if (parent_end > path && parent_end[-1] == '/')
+            parent_end--;
+
         // Skip "**/* sections
         if (strncmp(ref.Path, "**/", parent_end - ref.Path) == 0)
             continue;
 
-        Str128 parent_id;
-        parent_id.set(ref.Path, parent_end);
-        ImGuiTestItemInfo parent_item = ItemInfo(parent_id.c_str(), ImGuiTestOpFlags_NoError);
+        Str128 parent_path;
+        parent_path.set(ref.Path, parent_end);
+        ImGuiTestItemInfo parent_item = ItemInfo(parent_path.c_str(), ImGuiTestOpFlags_NoError);
         if (parent_item.ID != 0)
         {
 #ifdef IMGUI_HAS_DOCK
@@ -1084,6 +1109,7 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfoOpenFullPath(ImGuiTestRef ref, ImGui
                 // Open intermediary item
                 if ((parent_item.ItemFlags & ImGuiItemFlags_Disabled) == 0) // FIXME: Report disabled state in log?
                 {
+                    LogDebug("ItemInfoOpenFullPath: open '%s' (0x%08X)\n", parent_path.c_str(), parent_item.ID);
                     ItemAction(ImGuiTestAction_Open, parent_item.ID, ImGuiTestOpFlags_NoAutoOpenFullPath);
                     opened_parents++;
                 }
@@ -1092,6 +1118,7 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfoOpenFullPath(ImGuiTestRef ref, ImGui
             else if (parent_window->ID == parent_item.ID && parent_window->DockIsActive && parent_window->DockTabIsVisible == false)
             {
                 // Make tab visible
+                LogDebug("ItemInfoOpenFullPath: select docking tab '%s'\n", parent_path.c_str());
                 ItemClick(parent_item.ID);
                 opened_parents++;
             }
@@ -1100,6 +1127,8 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfoOpenFullPath(ImGuiTestRef ref, ImGui
     }
     if (opened_parents > 0)
         item = ItemInfo(ref, (flags & ImGuiTestOpFlags_NoError));
+
+    LogDebug("ItemInfoOpenFullPath: opened %d parents, result item '%s' (0x%08X)\n", opened_parents, item.DebugLabel, item.ID);
 
     if (item.ID == 0)
         ItemInfoErrorLog(this, ref, 0, flags);
@@ -1170,9 +1199,9 @@ ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlag
             // Find next part of the path + create a zero-terminated copy for convenience
             const char* part_start = current;
             const char* part_end = ImFindNextDecoratedPartInPath(current);
-            if (part_end == nullptr)
+            if (part_end[0] == 0)
             {
-                current = part_end = part_start + strlen(part_start);
+                current = part_end;
             }
             else if (part_end > part_start)
             {
@@ -2788,7 +2817,7 @@ void    ImGuiTestContext::KeyChars(const char* chars)
         unsigned int c = 0;
         int bytes_count = ImTextCharFromUtf8(&c, chars, nullptr);
         chars += bytes_count;
-        if (c > 0 && c <= 0xFFFF)
+        if (c > 0 && c <= IM_UNICODE_CODEPOINT_MAX)
             Inputs->Queue.push_back(ImGuiTestInput::ForChar((ImWchar)c));
 
         if (EngineIO->ConfigRunSpeed != ImGuiTestRunSpeed_Fast)
@@ -3884,6 +3913,7 @@ void ImGuiTestContext::TableSetColumnEnabled(ImGuiTestRef ref, const char* label
     ImGuiTable* table = ImGui::TableFindByID(GetID(ref));
     IM_CHECK_SILENT(table != NULL);
     ImGuiTableColumn* column = HelperTableFindColumnByName(table, label);
+    IM_CHECK_SILENT(column != NULL);
     int column_n = column->IsEnabled ? table->Columns.index_from_ptr(column) : -1;
     TableOpenContextMenu(ref, column_n);
 
@@ -3908,12 +3938,38 @@ void ImGuiTestContext::TableResizeColumn(ImGuiTestRef ref, int column_n, float w
 
     ImGuiTable* table = ImGui::TableFindByID(GetID(ref));
     IM_CHECK_SILENT(table != nullptr);
+    IM_CHECK_SILENT(column_n >= 0 && column_n < table->ColumnsCount);
+    ImGuiTableColumn* column = &table->Columns[column_n];
+    IM_CHECK_SILENT(column->IsEnabled);
 
     ImGuiID resize_id = ImGui::TableGetColumnResizeID(table, column_n);
-    float old_width = table->Columns[column_n].WidthGiven;
+    float old_width = column->WidthGiven;
     ItemDragWithDelta(resize_id, ImVec2(width - old_width, 0));
 
-    IM_CHECK_EQ(table->Columns[column_n].WidthRequest, width);
+    IM_CHECK_EQ(column->WidthRequest, width);
+}
+
+void ImGuiTestContext::TableResizeColumn(ImGuiTestRef ref, const char* label, float width)
+{
+    if (IsError())
+        return;
+
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    ImGuiTestRefDesc desc(ref);
+    LogDebug("TableResizeColumn %s column '%s' width %.2f", desc.c_str(), label, width);
+
+    ImGuiTable* table = ImGui::TableFindByID(GetID(ref));
+    IM_CHECK_SILENT(table != nullptr);
+    ImGuiTableColumn* column = HelperTableFindColumnByName(table, label);
+    IM_CHECK_SILENT(column != NULL);
+    IM_CHECK(column->IsEnabled);
+
+    int column_n = table->Columns.index_from_ptr(column);
+    ImGuiID resize_id = ImGui::TableGetColumnResizeID(table, column_n);
+    float old_width = column->WidthGiven;
+    ItemDragWithDelta(resize_id, ImVec2(width - old_width, 0));
+
+    IM_CHECK_EQ(column->WidthRequest, width);
 }
 
 const ImGuiTableSortSpecs* ImGuiTestContext::TableGetSortSpecs(ImGuiTestRef ref)
@@ -4472,18 +4528,21 @@ void    ImGuiTestContext::UndockWindow(const char* window_name)
 // ImGuiTestContext - Performance Tools
 //-------------------------------------------------------------------------
 
-// Calculate the reference DeltaTime, averaged over PerfIterations/500 frames, with GuiFunc disabled.
+// Calculate the reference DeltaTime, averaged over 100 frames, with GuiFunc disabled.
 void    ImGuiTestContext::PerfCalcRef()
 {
     LogDebug("Measuring ref dt...");
     RunFlags |= ImGuiTestRunFlags_GuiFuncDisable;
 
     ImMovingAverage<double> delta_times;
-    delta_times.Init(PerfIterations);
-    for (int n = 0; n < PerfIterations && !Abort; n++)
+    delta_times.Init(100);
+    for (int n = 0; n < 100 && !Abort; n++)
     {
         Yield();
-        delta_times.AddSample(UiContext->IO.DeltaTime);
+
+        const double last_present_time_ms = Engine->PerfDtPreSwapToPostSwap.RawValueMs;
+        const double dt = (UiContext->IO.DeltaTime * 1000.0f) - last_present_time_ms;
+        delta_times.AddSample(dt);
     }
 
     PerfRefDt = delta_times.GetAverage();
@@ -4507,14 +4566,17 @@ void    ImGuiTestContext::PerfCapture(const char* category, const char* test_nam
     for (int n = 0; n < PerfIterations && !Abort; n++)
     {
         Yield();
-        delta_times.AddSample(UiContext->IO.DeltaTime);
+
+        const double last_present_time_ms = Engine->PerfDtPreSwapToPostSwap.RawValueMs;
+        const double dt = (UiContext->IO.DeltaTime * 1000.0f) - last_present_time_ms;
+        delta_times.AddSample(dt);
     }
     if (Abort)
         return;
 
     double dt_curr = delta_times.GetAverage();
-    double dt_ref_ms = PerfRefDt * 1000;
-    double dt_delta_ms = (dt_curr - PerfRefDt) * 1000;
+    double dt_ref_ms = PerfRefDt;
+    double dt_delta_ms = (dt_curr - PerfRefDt);
 
     const ImBuildInfo* build_info = ImBuildGetCompilationInfo();
 

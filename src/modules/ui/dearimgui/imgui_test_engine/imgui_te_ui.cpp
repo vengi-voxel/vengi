@@ -729,32 +729,75 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
             ImGui::SameLine(); ImGui::SetNextItemWidth(70 * dpi_scale);
             ImGui::SliderInt("##ms", &engine->ToolSlowDownMs, 0, 400, "%d ms");
 
-            // FIXME-TESTS: Need to be visualizing the samples/spikes.
-            double dt_1 = 1.0 / ImGui::GetIO().Framerate;
-            double fps_now = 1.0 / dt_1;
-            double dt_100 = engine->PerfDeltaTime100.GetAverage();
-            double dt_500 = engine->PerfDeltaTime500.GetAverage();
+            if (!engine->PreSwapCalled)
+                ImGui::TextColored(ImVec4(1,0,0,1), "ImGuiTestEngine_PreSwap() not called by application!");
+            if (!engine->PostSwapCalled)
+                ImGui::TextColored(ImVec4(1,0,0,1), "ImGuiTestEngine_PostSwapCalled() not called by application!");
 
-            //if (engine->PerfRefDeltaTime <= 0.0 && engine->PerfRefDeltaTime.IsFull())
-            //    engine->PerfRefDeltaTime = dt_2000;
+            const ImVec2 plot_size(0.0f, ImGui::GetFrameHeight() * 3);
 
-            ImGui::Checkbox("Unthrolled", &engine->IO.ConfigNoThrottle);
-            ImGui::SameLine();
-            if (ImGui::Button("Pick ref dt"))
-                engine->PerfRefDeltaTime = dt_500;
+            {
+                ImGuiTestEnginePerfRecord* r = &engine->PerfDtApp;
+                ImMovingAverage<double>* ma = &r->Average500;
+                double dt_1 = r->RawValueMs;
+                double avg_100 = r->Average100.GetAverage();
+                double avg_500 = r->Average500.GetAverage();
+                double fps_now = 1000.0 / dt_1;
 
-            double dt_ref = engine->PerfRefDeltaTime;
-            ImGui::Text("[ref dt]    %6.3f ms", engine->PerfRefDeltaTime * 1000);
-            ImGui::Text("[last 001] %6.3f ms (%.1f FPS) ++ %6.3f ms", dt_1 * 1000.0, 1.0 / dt_1, (dt_1 - dt_ref) * 1000);
-            ImGui::Text("[last 100] %6.3f ms (%.1f FPS) ++ %6.3f ms ~ converging in %.1f secs", dt_100 * 1000.0, 1.0 / dt_100, (dt_1 - dt_ref) * 1000, 100.0 / fps_now);
-            ImGui::Text("[last 500] %6.3f ms (%.1f FPS) ++ %6.3f ms ~ converging in %.1f secs", dt_500 * 1000.0, 1.0 / dt_500, (dt_1 - dt_ref) * 1000, 500.0 / fps_now);
+                ImGui::Checkbox("Unthrolled", &engine->IO.ConfigNoThrottle);
 
-            //ImGui::PlotLines("Last 100", &engine->PerfDeltaTime100.Samples.Data, engine->PerfDeltaTime100.Samples.Size, engine->PerfDeltaTime100.Idx, nullptr, 0.0f, dt_1000 * 1.10f, ImVec2(0.0f, ImGui::GetFontSize()));
-            ImVec2 plot_size(0.0f, ImGui::GetFrameHeight() * 3);
-            ImMovingAverage<double>* ma = &engine->PerfDeltaTime500;
-            ImGui::PlotLines("Last 500",
-                [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)(ma->Samples[n] * 1000); },
-                ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(dt_100, dt_500) * 1000.0 * 1.2f), plot_size);
+                ImGui::SeparatorText("io.DeltaTime");
+                ImGui::Text("[current] %6.3f ms (%.1f FPS)", dt_1, 1000.0 / dt_1);
+                ImGui::Text("[avg 100] %6.3f ms (%.1f FPS) ~ converging in %.1f secs", avg_100, 1000.0 / avg_100, 100.0 / fps_now);
+                ImGui::Text("[avg 500] %6.3f ms (%.1f FPS) ~ converging in %.1f secs", avg_500, 1000.0 / avg_500, 500.0 / fps_now);
+                ImGui::PlotLines("Last 500##0",
+                    [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)ma->Samples[n]; },
+                    ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(avg_100, avg_500) * 1.2f), plot_size);
+            }
+            {
+                ImGuiTestEnginePerfRecord* r = &engine->PerfDtPreNewFrameToPreRender;
+                ImMovingAverage<double>* ma = &r->Average500;
+                double avg_100 = r->Average100.GetAverage();
+                double avg_500 = r->Average500.GetAverage();
+                ImGui::SeparatorText("PreNewFrame -> PreRender");
+                ImGui::Text("[current] %6.3f ms, [avg 100] %6.3f ms, [avg 500] %6.3f ms", r->RawValueMs, avg_100, avg_500);
+                ImGui::PlotLines("Last 500##1",
+                    [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)ma->Samples[n]; },
+                    ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(avg_100, avg_500) * 1.2f), plot_size);
+            }
+            {
+                ImGuiTestEnginePerfRecord* r = &engine->PerfDtPreRenderToPreSwap;
+                ImMovingAverage<double>* ma = &r->Average500;
+                double avg_100 = r->Average100.GetAverage();
+                double avg_500 = r->Average500.GetAverage();
+                ImGui::SeparatorText("PreRender -> PreSwap");
+                ImGui::Text("[current] %6.3f ms, [avg 100] %6.3f ms, [avg 500] %6.3f ms", r->RawValueMs, avg_100, avg_500);
+                ImGui::PlotLines("Last 500##2",
+                    [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)ma->Samples[n]; },
+                    ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(avg_100, avg_500) * 1.2f), plot_size);
+            }
+            {
+                ImGuiTestEnginePerfRecord* r = &engine->PerfDtPreNewFrameToPreSwap;
+                ImMovingAverage<double>* ma = &r->Average500;
+                double avg_100 = r->Average100.GetAverage();
+                double avg_500 = r->Average500.GetAverage();
+                ImGui::SeparatorText("PreNewFrame -> PreRender -> PreSwap");
+                ImGui::Text("[current] %6.3f ms, [avg 100] %6.3f ms, [avg 500] %6.3f ms", r->RawValueMs, avg_100, avg_500);
+                ImGui::PlotLines("Last 500##3",
+                    [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)ma->Samples[n]; },
+                    ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(avg_100, avg_500) * 1.2f), plot_size);
+            }
+            {
+                ImGuiTestEnginePerfRecord* r = &engine->PerfDtPreSwapToPostSwap;
+                ImMovingAverage<double>* ma = &r->Average500;
+                double avg_100 = r->Average100.GetAverage();
+                double avg_500 = r->Average500.GetAverage();
+                ImGui::SeparatorText("PreSwap -> PostSwap");
+                ImGui::Text("[current] %6.3f ms, [avg 100] %6.3f ms, [avg 500] %6.3f ms", r->RawValueMs, avg_100, avg_500);
+                ImGui::PlotLines("Last 500##4",
+                    [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)ma->Samples[n]; },
+                    ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(avg_100, avg_500) * 1.2f), plot_size);
+            }
 
             ImGui::TreePop();
         }

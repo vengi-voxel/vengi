@@ -70,6 +70,12 @@ enum ImGuiPerfToolDisplayType : int
     ImGuiPerfToolDisplayType_CombineByBuildInfo,                // Entries with same build information will be averaged.
 };
 
+enum ImGuiPerfToolReportType : int
+{
+    ImGuiPerfToolReportType_Details,                            // Show tests and batches as rows, details in columns.
+    ImGuiPerfToolReportType_Batches,                            // Show test as rows, batches in columns.
+};
+
 //
 struct IMGUI_API ImGuiPerfTool
 {
@@ -81,9 +87,12 @@ struct IMGUI_API ImGuiPerfTool
     int                         _NumVisibleBuilds = 0;          // Cached number of visible builds.
     int                         _NumUniqueBuilds = 0;           // Cached number of unique builds.
     ImGuiPerfToolDisplayType    _DisplayType = ImGuiPerfToolDisplayType_CombineByBuildInfo;
+    ImGuiPerfToolReportType     _ReportType = ImGuiPerfToolReportType_Details;
     int                         _BaselineBatchIndex = 0;        // Index of baseline build.
+    int                         _BaselineTestIndex = -1;        // Index of baseline test.
     ImU64                       _BaselineTimestamp = 0;
     ImU64                       _BaselineBuildId = 0;
+    char                        _BaselineTestName[128] = {};
     char                        _Filter[128];                   // Context menu filtering substring.
     char                        _FilterDateFrom[11] = {};
     char                        _FilterDateTo[11] = {};
@@ -129,7 +138,8 @@ struct IMGUI_API ImGuiPerfTool
     void        _CalculateLegendAlignment();
     void        _ShowEntriesPlot();
     void        _ShowEntriesTable();
-    void        _SetBaseline(int batch_index);
+    void        _ShowEntriesTableBatches();
+    void        _SetBaseline(int batch_index, int test_index = -1);
     void        _AddSettingsHandler();
     void        _UnpackSortedKey(ImU64 key, int* batch_index, int* entry_index, int* monotonic_index = nullptr);
 };

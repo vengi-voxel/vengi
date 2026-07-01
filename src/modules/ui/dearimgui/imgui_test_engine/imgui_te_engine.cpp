@@ -120,9 +120,6 @@ static void  ImGuiTestEngine_SettingsWriteAll(ImGuiContext* imgui_ctx, ImGuiSett
 
 ImGuiTestEngine::ImGuiTestEngine()
 {
-    PerfRefDeltaTime = 0.0f;
-    PerfDeltaTime100.Init(100);
-    PerfDeltaTime500.Init(500);
     PerfTool = IM_NEW(ImGuiPerfTool);
     UiFilterTests = IM_NEW(Str256); // We bite the bullet of adding an extra alloc/indirection in order to avoid including Str.h in our header
     UiFilterPerfs = IM_NEW(Str256);
@@ -390,9 +387,24 @@ void    ImGuiTestEngine_RebootUiContext(ImGuiTestEngine* engine)
     ImGuiTestEngine_Start(engine, ctx);
 }
 
+void    ImGuiTestEngine_PreSwap(ImGuiTestEngine* engine)
+{
+    engine->PreSwapCalled = true;
+
+    // Time measurements
+    engine->PerfTimestampPreSwap = ImTimeGetInMicroseconds();
+    engine->PerfDtPreNewFrameToPreRender.UpdateValueForCurrentFrame((double)(engine->PerfTimestampPreRender - engine->PerfTimestampPreNewFrame) / 1000);
+    engine->PerfDtPreRenderToPreSwap.UpdateValueForCurrentFrame((double)(engine->PerfTimestampPreSwap - engine->PerfTimestampPreRender) / 1000);
+    engine->PerfDtPreNewFrameToPreSwap.UpdateValueForCurrentFrame((double)(engine->PerfTimestampPreSwap - engine->PerfTimestampPreNewFrame) / 1000);
+}
+
 void    ImGuiTestEngine_PostSwap(ImGuiTestEngine* engine)
 {
     engine->PostSwapCalled = true;
+
+    // Time measurements
+    engine->PerfTimestampPostSwap = ImTimeGetInMicroseconds();
+    engine->PerfDtPreSwapToPostSwap.UpdateValueForCurrentFrame((double)(engine->PerfTimestampPostSwap - engine->PerfTimestampPreSwap) / 1000);
 
     if (engine->IO.ConfigFixedDeltaTime != 0.0f)
         ImGuiTestEngine_SetDeltaTime(engine, engine->IO.ConfigFixedDeltaTime);
@@ -819,6 +831,10 @@ static void ImGuiTestEngine_PreNewFrame(ImGuiTestEngine* engine, ImGuiContext* u
     IM_ASSERT(ui_ctx == GImGui);
     ImGuiContext& g = *ui_ctx;
 
+    // Time measurements
+    engine->PerfDtApp.UpdateValueForCurrentFrame(g.IO.DeltaTime * 1000.0f);
+    engine->PerfTimestampPreNewFrame = ImTimeGetInMicroseconds();
+
     engine->CaptureContext.PreNewFrame();
 
     if (engine->ToolDebugRebootUiContext)
@@ -844,10 +860,11 @@ static void ImGuiTestEngine_PreNewFrame(ImGuiTestEngine* engine, ImGuiContext* u
         test_ctx->FrameCount++;
         test_ctx->RunningTime = t1;
         ImGuiTestEngine_UpdateWatchdog(engine, ui_ctx, t0, t1);
-    }
 
-    engine->PerfDeltaTime100.AddSample(g.IO.DeltaTime);
-    engine->PerfDeltaTime500.AddSample(g.IO.DeltaTime);
+        // Forcefully disable ItemPicker
+        if (g.DebugItemPickerActive && (test_ctx->RunFlags & ImGuiTestRunFlags_GuiFuncOnly) == 0)
+            g.DebugItemPickerActive = false;
+    }
 
     if (!ImGuiTestEngine_IsTestQueueEmpty(engine) && !engine->Abort)
     {
@@ -941,6 +958,9 @@ static void ImGuiTestEngine_PreRender(ImGuiTestEngine* engine, ImGuiContext* ui_
         return;
     IM_ASSERT(ui_ctx == GImGui);
 
+    // Time measurements
+    engine->PerfTimestampPreRender = ImTimeGetInMicroseconds();
+
     engine->CaptureContext.PreRender();
 }
 
@@ -956,7 +976,6 @@ static void ImGuiTestEngine_PostRender(ImGuiTestEngine* engine, ImGuiContext* ui
     ImGuiContext& g = *ui_ctx;
     if (!engine->IO.ConfigMouseDrawCursor && !g.IO.MouseDrawCursor && ImGuiTestEngine_IsUsingSimulatedInputs(engine))
         g.MouseCursor = ImGuiMouseCursor_Arrow;
-
 
     // Check ImDrawData integrity
     // This is currently a very cheap operation but may later become slower we if e.g. check idx boundaries.
@@ -1174,12 +1193,7 @@ static void ImGuiTestEngine_ProcessTestQueue(ImGuiTestEngine* engine)
 {
     // Avoid tracking scrolling in UI when running a single test
     const bool track_scrolling = (engine->TestsQueue.Size > 1) || (engine->TestsQueue.Size == 1 && (engine->TestsQueue[0].RunFlags & ImGuiTestRunFlags_RunFromCommandLine));
-
-    // Backup some state
-    ImGuiIO& io = ImGui::GetIO();
-    const char* backup_ini_filename = io.IniFilename;
     ImGuiWindow* backup_nav_window = engine->UiContextTarget->NavWindow;
-    io.IniFilename = nullptr;
 
     int ran_tests = 0;
     engine->BatchStartTime = ImTimeGetInMicroseconds();
@@ -1219,12 +1233,8 @@ static void ImGuiTestEngine_ProcessTestQueue(ImGuiTestEngine* engine)
     engine->TestsQueue.clear();
 
     // Restore UI state (done after all ImGuiTestEngine_RunTest() are done)
-    if (ran_tests)
-    {
-        if (engine->IO.ConfigRestoreFocusAfterTests)
-            ImGui::FocusWindow(backup_nav_window);
-    }
-    io.IniFilename = backup_ini_filename;
+    if (ran_tests && engine->IO.ConfigRestoreFocusAfterTests)
+        ImGui::FocusWindow(backup_nav_window);
 }
 
 bool ImGuiTestEngine_IsTestQueueEmpty(ImGuiTestEngine* engine)
@@ -1750,6 +1760,10 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
     else
         io.BackendFlags &= ~ImGuiBackendFlags_HasMouseHoveredViewport;
 #endif
+
+    // Setup IO: disable saving .ini to disk
+    if ((ctx->RunFlags & ImGuiTestRunFlags_GuiFuncOnly) == 0)
+        io.IniFilename = nullptr;
 
     // Setup IO: override clipboard
     if ((ctx->RunFlags & ImGuiTestRunFlags_GuiFuncOnly) == 0)

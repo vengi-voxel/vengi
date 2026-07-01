@@ -128,7 +128,12 @@ void        ImOsConsoleSetTextColor(ImOsConsoleStream stream, ImOsConsoleTextCol
 struct ImGuiTable;
 ImGuiID     TableGetHeaderID(ImGuiTable* table, const char* column, int instance_no = 0);
 ImGuiID     TableGetHeaderID(ImGuiTable* table, int column_n, int instance_no = 0);
+void        TableDiscardInstance(ImGuiID table_id);
+void        TableDiscardSettings(ImGuiID table_id);
 void        TableDiscardInstanceAndSettings(ImGuiID table_id);
+
+// Settings
+void        SaveIniSettingsToVector(ImVector<char>* out);
 
 // DrawData functions
 void        DrawDataVerifyMatchingBufferCount(ImDrawData* draw_data);
