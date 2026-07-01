@@ -878,6 +878,11 @@ bool App::validateArguments() {
 AppState App::onInit() {
 	Log::debug("Initialize sdl");
 
+	const core::String metadataIdentifier = core::String::format("com.github.%s.%s", _organisation.c_str(), _appname.c_str());
+	if (!SDL_SetAppMetadata(_appname.c_str(), PROJECT_VERSION, metadataIdentifier.c_str())) {
+		Log::debug("Failed to set SDL app metadata: %s", SDL_GetError());
+	}
+
 	uint32_t flags = SDL_INIT_EVENTS;
 	SDL_Init(flags);
 
