@@ -7,29 +7,13 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Lock.h"
-#include "io/FormatDescription.h"
 #include "io/system/System.h"
 #ifdef __EMSCRIPTEN__
 #include "system/emscripten_browser_file.h"
 #endif
-#include <SDL_version.h>
-#include <SDL_error.h>
-
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#include <SDL_iostream.h>
-#define SDL_RWclose SDL_CloseIO
-#define RW_SEEK_CUR SDL_IO_SEEK_CUR
-#define RW_SEEK_END SDL_IO_SEEK_END
-#define RW_SEEK_SET SDL_IO_SEEK_SET
-#define SDL_RWsize SDL_GetIOSize
-#define SDL_RWtell SDL_TellIO
-#define SDL_RWseek(ctx, pos, whence) SDL_SeekIO(ctx, pos, (SDL_IOWhence)whence)
-#define SDL_RWread(ctx, ptr, size, maxnum) SDL_ReadIO(ctx, ptr, maxnum)
-#define SDL_RWwrite(ctx, ptr, size, num) SDL_WriteIO(ctx, ptr, num)
-#define SDL_RWFromFile SDL_IOFromFile
-#else
-#include <SDL_rwops.h>
-#endif
+#include <SDL3/SDL_version.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_iostream.h>
 
 namespace io {
 
@@ -160,14 +144,14 @@ void File::error(const char *msg, ...) const {
 	Log::debug("path: '%s' (mode: %i): %s", _rawPath.c_str(), (int)_mode, _error.c_str());
 }
 
-void File::closeRWops(SDL_RWops *handle) const {
+void File::closeRWops(SDL_IOStream *handle) const {
 	if (handle != nullptr) {
-		SDL_RWclose(handle);
+		SDL_CloseIO(handle);
 		priv::untrackOpenedFile(_rawPath, _mode);
 	}
 }
 
-SDL_RWops* File::createRWops(FileMode mode) const {
+SDL_IOStream* File::createRWops(FileMode mode) const {
 	if (_rawPath.empty()) {
 		error("Can't open file - no path given");
 		return nullptr;
@@ -178,7 +162,7 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 	} else if (mode == FileMode::Append) {
 		fmode = "ab";
 	}
-	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
+	SDL_IOStream *rwops = SDL_IOFromFile(_rawPath.c_str(), fmode);
 	if (rwops == nullptr) {
 		error("%s", SDL_GetError());
 	} else {
@@ -203,7 +187,7 @@ long File::write(io::ReadStream &stream) const {
 		if (len == -1) {
 			return -1L;
 		}
-		const size_t written = SDL_RWwrite(_file, buf, 1, len);
+		const size_t written = SDL_WriteIO(_file, buf, len);
 		if (written == 0) {
 			error("Error writing file - failed to write buffer of length %i", (int)len);
 			return -1L;
@@ -229,7 +213,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 
 	int remaining = (int)len;
 	while (remaining > 0) {
-		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
+		const size_t written = SDL_WriteIO(_file, buf, remaining);
 		if (written == 0) {
 			Log::debug("Error writing file - can write buffer of length %i (remaining: %i) (path: %s)",
 					(int)len, remaining, _rawPath.c_str());
@@ -267,9 +251,9 @@ long File::length() const {
 	}
 
 	const long pos = tell();
-	seek(0, RW_SEEK_END);
+	seek(0, SDL_IO_SEEK_END);
 	const long end = tell();
-	seek(pos, RW_SEEK_SET);
+	seek(pos, SDL_IO_SEEK_SET);
 	return end;
 }
 
@@ -291,7 +275,7 @@ int File::read(void *buffer, int n) {
 	len = remaining = n;
 	buf = (uint8_t *) buffer;
 
-	seek(0, RW_SEEK_SET);
+	seek(0, SDL_IO_SEEK_SET);
 
 	while (remaining != 0u) {
 		size_t block = remaining;
@@ -303,7 +287,7 @@ int File::read(void *buffer, int n) {
 			Log::debug("File %s is not opened in read mode", _rawPath.c_str());
 			return -1;
 		}
-		const int readAmount = (int)SDL_RWread(_file, buf, 1, block);
+		const int readAmount = (int)SDL_ReadIO(_file, buf, block);
 		if (readAmount == 0) {
 			_state = IOSTATE_LOADED;
 			Log::trace("File %s: read successful", _rawPath.c_str());
@@ -375,14 +359,14 @@ bool File::open(FileMode mode) {
 
 long File::tell() const {
 	if (_file != nullptr) {
-		return SDL_RWtell(_file);
+		return SDL_TellIO(_file);
 	}
 	return -1L;
 }
 
 long File::seek(long offset, int seekType) const {
 	if (_file != nullptr) {
-		return SDL_RWseek(_file, offset, seekType);
+		return SDL_SeekIO(_file, offset, (SDL_IOWhence)seekType);
 	}
 	return -1L;
 }

@@ -647,11 +647,7 @@ void setupFeatures(GLVersion version) {
 	}
 
 	int mask = 0;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask)) {
-#else
-	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
-#endif
 		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
 			renderState().features[core::enumVal(Feature::TextureCompressionDXT)] = true;
 			renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
@@ -2525,11 +2521,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name)
 }
 
 void destroyContext(RendererContext &context) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_GL_DestroyContext((SDL_GLContext)context);
-#else
-	SDL_GL_DeleteContext((SDL_GLContext)context);
-#endif
 }
 
 RendererContext createContext(SDL_Window *window) {
@@ -2599,21 +2591,13 @@ void setup() {
 }
 
 static bool setVSync(int value) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	return SDL_GL_SetSwapInterval(value);
-#else
-	return SDL_GL_SetSwapInterval(value) != -1;
-#endif
 }
 
 static int getVSync() {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	int val = 0;
 	SDL_GL_GetSwapInterval(&val);
 	return val;
-#else
-	return SDL_GL_GetSwapInterval();
-#endif
 }
 
 static void handleVSync() {

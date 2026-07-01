@@ -19,16 +19,9 @@
 #include "command/CommandHandler.h"
 #include "command/CommandCompleter.h"
 #include "VarUtil.h"
-#include <SDL_log.h>
-#include <SDL_thread.h>
-#include <SDL_version.h>
-
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_LogSetPriority SDL_SetLogPriority
-#define SDL_LogGetPriority SDL_GetLogPriority
-#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
-#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
-#endif
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_thread.h>
+#include <SDL3/SDL_version.h>
 
 namespace util {
 

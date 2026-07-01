@@ -1,0 +1,134 @@
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+#include "SDL_internal.h"
+
+#include "SDL_windows.h"
+#include "SDL_gameinput.h"
+
+#ifdef HAVE_GAMEINPUT_H
+
+#ifndef SDL_GAMEINPUT_DYNAMIC
+#define USE_GAMEINPUT_LIB
+#ifdef _MSC_VER
+#pragma comment(lib, "gameinput.lib")
+#endif
+#endif // !SDL_GAMEINPUT_DYNAMIC
+
+static SDL_SharedObject *g_hGameInputDLL;
+static IGameInput *g_pGameInput;
+static int g_nGameInputRefCount;
+
+
+bool SDL_InitGameInput(IGameInput **ppGameInput)
+{
+    if (g_nGameInputRefCount == 0) {
+#ifdef USE_GAMEINPUT_LIB
+        // This is recommended, as Microsoft's GameInputCreate() is robust
+        // and better handles various GameInput installations
+        HRESULT hr = GameInputCreate(&g_pGameInput);
+        if (FAILED(hr)) {
+            return WIN_SetErrorFromHRESULT("GameInputCreate failed", hr);
+        }
+#elif GAMEINPUT_API_VERSION > 0
+        g_hGameInputDLL = SDL_LoadObject("gameinputredist.dll");
+        if (!g_hGameInputDLL) {
+            return false;
+        }
+
+        typedef HRESULT (WINAPI *pfnGameInputInitialize)(REFIID riid, void **ppvObject);
+        pfnGameInputInitialize pGameInputInitialize = (pfnGameInputInitialize)SDL_LoadFunction(g_hGameInputDLL, "GameInputInitialize");
+        if (!pGameInputInitialize) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return false;
+        }
+
+        HRESULT hr = pGameInputInitialize(IID_IGameInput, (void **)&g_pGameInput);
+        if (FAILED(hr)) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return WIN_SetErrorFromHRESULT("GameInputInitialize failed", hr);
+        }
+#else
+        g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
+        if (!g_hGameInputDLL) {
+            return false;
+        }
+
+        typedef HRESULT (WINAPI *pfnGameInputCreate)(IGameInput **gameInput);
+        pfnGameInputCreate pGameInputCreate = (pfnGameInputCreate)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
+        if (!pGameInputCreate) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return false;
+        }
+
+        HRESULT hr = pGameInputCreate(&g_pGameInput);
+        if (FAILED(hr)) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return WIN_SetErrorFromHRESULT("GameInputCreate failed", hr);
+        }
+#endif // USE_GAMEINPUT_LIB
+    }
+    ++g_nGameInputRefCount;
+
+    if (ppGameInput) {
+        *ppGameInput = g_pGameInput;
+    }
+    return true;
+}
+
+bool SDL_GameInputReady(void)
+{
+    return (g_pGameInput != NULL);
+}
+
+void SDL_QuitGameInput(void)
+{
+    SDL_assert(g_nGameInputRefCount > 0);
+
+    --g_nGameInputRefCount;
+    if (g_nGameInputRefCount == 0) {
+        if (g_pGameInput) {
+            g_pGameInput->Release();
+            g_pGameInput = NULL;
+        }
+        if (g_hGameInputDLL) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            g_hGameInputDLL = NULL;
+        }
+    }
+}
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT) &&
+        SDL_GameInputReady()) {
+        return true;
+    }
+    return false;
+}
+
+#else
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    return false;
+}
+
+#endif // HAVE_GAMEINPUT_H

@@ -314,9 +314,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install libfreetype-dev libjpeg-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache zip
 
-        - uses: mymindstorm/setup-emsdk@v13
+        - uses: emscripten-core/setup-emsdk@v15
           with:
-            version: 3.1.73
+            version: 6.0.2
 
         - name: Configure ccache
           run: |

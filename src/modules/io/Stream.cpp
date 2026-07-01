@@ -10,7 +10,7 @@
 #include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "core/Endian.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <stdio.h>
 
 namespace io {

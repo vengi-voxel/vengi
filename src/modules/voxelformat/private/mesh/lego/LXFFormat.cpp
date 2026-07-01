@@ -20,7 +20,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "tinyxml2.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <cmath>
 
 namespace voxelformat {

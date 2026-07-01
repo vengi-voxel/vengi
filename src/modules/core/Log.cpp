@@ -10,17 +10,11 @@
 #include "core/Assert.h"
 #include <string.h>
 #include <stdio.h>
-#include <SDL_log.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_version.h>
 #ifdef _WIN32
 #include <io.h>
 #include <windows.h>
-#endif
-
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_LogSetPriority SDL_SetLogPriority
-#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
-#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
 #endif
 
 namespace priv {

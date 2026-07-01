@@ -4,7 +4,7 @@
 
 #include "System.h"
 
-#include <SDL_cpuinfo.h>
+#include <SDL3/SDL_cpuinfo.h>
 
 #include <stdio.h>
 

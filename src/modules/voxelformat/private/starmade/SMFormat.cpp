@@ -20,7 +20,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <glm/gtc/quaternion.hpp>
 
 // https://starmadepedia.net/wiki/ID_list

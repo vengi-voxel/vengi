@@ -60,22 +60,10 @@
 #include "FontLucide.h"
 
 #include <glm/mat4x4.hpp>
-#include <SDL_events.h>
-#include <SDL_keyboard.h>
-#include <SDL_version.h>
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_MOUSEMOTION SDL_EVENT_MOUSE_MOTION
-#define SDL_MOUSEWHEEL SDL_EVENT_MOUSE_WHEEL
-#define SDL_MOUSEBUTTONUP SDL_EVENT_MOUSE_BUTTON_UP
-#define SDL_MOUSEBUTTONDOWN SDL_EVENT_MOUSE_BUTTON_DOWN
-#define SDL_TEXTINPUT SDL_EVENT_TEXT_INPUT
-#define SDL_KEYDOWN SDL_EVENT_KEY_DOWN
-#define SDL_KEYUP SDL_EVENT_KEY_UP
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_version.h>
 #include "dearimgui/backends/imgui_impl_sdl3.h"
-#else
-#include <SDL_syswm.h>
-#include "dearimgui/backends/imgui_impl_sdl2.h"
-#endif
 
 namespace ui {
 
@@ -88,11 +76,7 @@ IMGUIApp::~IMGUIApp() {
 }
 
 static inline void processEvent(SDL_Event &ev) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	ImGui_ImplSDL3_ProcessEvent(&ev);
-#else
-	ImGui_ImplSDL2_ProcessEvent(&ev);
-#endif
 }
 
 void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
@@ -111,11 +95,6 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseI
 	if (!Super::onMouseWheel(windowHandle, x, y, mouseId)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#elif SDL_VERSION_ATLEAST(2, 0, 18)
-		ev.wheel.preciseX = x;
-		ev.wheel.preciseY = y;
-#endif
 		ev.wheel.x = (int)x;
 		ev.wheel.y = (int)y;
 		ev.wheel.which = mouseId;
@@ -157,11 +136,7 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
 	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	ev.text.text = text.c_str();
-#else
-	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
-#endif
 	processEvent(ev);
 	return true;
 }
@@ -172,15 +147,9 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYDOWN;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
-#else
-		ev.key.keysym.scancode = SDL_GetScancodeFromKey(key);
-		ev.key.keysym.sym = (SDL_Keycode)key;
-		ev.key.keysym.mod = modifier;
-#endif
 		processEvent(ev);
 		_keys.insert(key);
 	}
@@ -192,15 +161,9 @@ bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYUP;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
-#else
-		ev.key.keysym.scancode = SDL_GetScancodeFromKey(key);
-		ev.key.keysym.sym = key;
-		ev.key.keysym.mod = modifier;
-#endif
 		processEvent(ev);
 		_keys.remove(key);
 	}
@@ -351,7 +314,7 @@ static void _imguiFree(void *mem, void *) {
 	core_free(mem);
 }
 
-static void ImGui_ImplSDL2_NoShowWindow(ImGuiViewport *) {
+static void ImGui_ImplSDL3_NoShowWindow(ImGuiViewport *) {
 }
 
 app::AppState IMGUIApp::onInit() {
@@ -431,20 +394,11 @@ app::AppState IMGUIApp::onInit() {
 	_uiFontSize->markClean();
 	_languageVar->markClean();
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 #ifdef USE_VK_RENDERER
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForVulkan(_window);
 #else
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
 	ImGui_ImplOpenGL3_Init(nullptr);
-#endif
-#else
-#ifdef USE_VK_RENDERER
-	_imguiBackendInitialized = ImGui_ImplSDL2_InitForVulkan(_window);
-#else
-	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
-	ImGui_ImplOpenGL3_Init(nullptr);
-#endif
 #endif
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
@@ -462,7 +416,7 @@ app::AppState IMGUIApp::onInit() {
 	// if we decide to hide the window, we don't want docking to show externalized windows
 	if (!_showWindow) {
 		ImGuiPlatformIO &platform_io = ImGui::GetPlatformIO();
-		platform_io.Platform_ShowWindow = ImGui_ImplSDL2_NoShowWindow;
+		platform_io.Platform_ShowWindow = ImGui_ImplSDL3_NoShowWindow;
 	}
 
 	return state;
@@ -501,11 +455,7 @@ void IMGUIApp::setColorTheme() {
 
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	const float mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
-#else
-	const float mainScale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
-#endif
 	style.ScaleAllSizes(mainScale);
 	style.FontScaleDpi = mainScale;
 }
@@ -899,11 +849,7 @@ app::AppState IMGUIApp::onRunning() {
 #else
 	ImGui_ImplVulkan_NewFrame();
 #endif
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	ImGui_ImplSDL3_NewFrame();
-#else
-	ImGui_ImplSDL2_NewFrame();
-#endif
 	ImGui::NewFrame();
 
 	const bool renderUI = _renderUI->boolVal();
@@ -1111,11 +1057,7 @@ app::AppState IMGUIApp::onCleanup() {
 #else
 		ImGui_ImplVulkan_Shutdown();
 #endif
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		ImGui_ImplSDL3_Shutdown();
-#else
-		ImGui_ImplSDL2_Shutdown();
-#endif
 		_imguiBackendInitialized = false;
 	}
 	if (ImGui::GetCurrentContext() != nullptr) {

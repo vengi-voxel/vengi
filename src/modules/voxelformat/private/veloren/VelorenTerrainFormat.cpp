@@ -1,6 +1,6 @@
 #include "VelorenTerrainFormat.h"
 
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include "color/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

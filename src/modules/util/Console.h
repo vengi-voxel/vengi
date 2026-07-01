@@ -10,7 +10,7 @@
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Thread.h"
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 
 namespace command {
 struct CommandExecutionListener;

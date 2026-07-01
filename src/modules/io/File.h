@@ -10,12 +10,7 @@
 #include "io/IOResource.h"
 #include "io/Stream.h"
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 struct SDL_IOStream;
-#define SDL_RWops SDL_IOStream
-#else
-struct SDL_RWops;
-#endif
 
 namespace io {
 
@@ -58,12 +53,12 @@ class File : public IOResource {
 	friend class Filesystem;
 	friend class core::SharedPtr<io::File>;
 protected:
-	SDL_RWops* _file;
+	SDL_IOStream* _file;
 	core::String _rawPath;
 	FileMode _mode;
 	mutable core::String _error;
 
-	void closeRWops(SDL_RWops *handle) const;
+	void closeRWops(SDL_IOStream *handle) const;
 
 	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
@@ -115,7 +110,7 @@ public:
 	 */
 	const core::String& name() const;
 
-	SDL_RWops* createRWops(FileMode mode) const;
+	SDL_IOStream* createRWops(FileMode mode) const;
 	long write(io::ReadStream &stream) const;
 	long write(const unsigned char *buf, size_t len) const;
 	/**

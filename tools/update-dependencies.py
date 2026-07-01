@@ -135,6 +135,8 @@ def copy_if_updated(src, dest):
     if os.path.isdir(src):
         copy_directory(src, dest)
     else:
+        if ('*' in src or '?' in src) and not os.path.isdir(dest):
+            os.makedirs(dest, exist_ok=True)
         copy_file(src, dest)
 
 def remove_files(file):
@@ -260,12 +262,10 @@ def update_dearimgui():
             (f"im*.cpp", "src/modules/ui/dearimgui"),
             (f"misc/cpp/*", "src/modules/ui/dearimgui"),
             (f"backends/imgui_impl_null.*", "src/modules/ui/dearimgui/backends"),
-            (f"backends/imgui_impl_sdl2.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_sdl3.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_opengl3*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_vulkan*", "src/modules/ui/dearimgui/backends"),
-            (f"examples/example_sdl2_opengl3/main.cpp", "src/modules/ui/dearimgui/backends/example_sdl2_opengl3.cpp"),
-            (f"examples/example_sdl2_vulkan/main.cpp", "src/modules/ui/dearimgui/backends/example_sdl2_vulkan.cpp"),
+            (f"examples/example_sdl3_opengl3/main.cpp", "src/modules/ui/dearimgui/backends/example_sdl3_opengl3.cpp"),
             (f"examples/example_sdl3_vulkan/main.cpp", "src/modules/ui/dearimgui/backends/example_sdl3_vulkan.cpp"),
             (f"misc/fonts/binary_to_compressed_c.cpp", "tools/binary_to_compressed_c"),
             (f"misc/freetype/*", "src/modules/ui/dearimgui/misc/freetype")
@@ -313,19 +313,19 @@ def update_gif_h():
         [(f"gif.h", "src/modules/image/external/gif.h"),]
     )
 
-def update_sdl2():
+def update_sdl3():
     update_target(
-        "sdl2",
+        "sdl3",
         "https://github.com/libsdl-org/SDL.git",
         [
-            (f"CMakeLists.txt", "contrib/libs/sdl2"),
-            (f"*.cmake.in", "contrib/libs/sdl2"),
-            (f"src/*", "contrib/libs/sdl2/src"),
-            (f"include/*", "contrib/libs/sdl2/include"),
-            (f"cmake/*", "contrib/libs/sdl2/cmake"),
-            (f"wayland-protocols/*", "contrib/libs/sdl2/wayland-protocols")
+            (f"CMakeLists.txt", "contrib/libs/sdl3"),
+            (f"*.cmake.in", "contrib/libs/sdl3"),
+            (f"src", "contrib/libs/sdl3/src"),
+            (f"include", "contrib/libs/sdl3/include"),
+            (f"cmake", "contrib/libs/sdl3/cmake"),
+            (f"wayland-protocols", "contrib/libs/sdl3/wayland-protocols")
         ],
-        branch="SDL2"
+        branch="main"
     )
 
 def update_tinyobjloader():
@@ -517,7 +517,7 @@ def main():
         update_dearimgui,
         update_dearimgui_testengine,
         update_glm,
-        update_sdl2,
+        update_sdl3,
         update_tinyobjloader,
         update_simplecpp,
         update_simplexnoise,

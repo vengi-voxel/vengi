@@ -8,8 +8,8 @@
 #include "core/String.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include <SDL_audio.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_audio.h>
+#include <SDL3/SDL_version.h>
 
 namespace sound {
 
@@ -31,10 +31,6 @@ using SoundHandle = void *;
 class SoundManager : public core::IComponent {
 private:
 	core::DynamicArray<SoundData *> _sounds;
-#if !SDL_VERSION_ATLEAST(3, 2, 0)
-	SDL_AudioDeviceID _device = 0;
-	SDL_AudioSpec _deviceSpec;
-#endif
 	bool _initialized = false;
 	core::VarPtr _volume;
 	core::VarPtr _enabled;

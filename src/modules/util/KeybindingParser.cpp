@@ -12,13 +12,14 @@
 #include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Log.h"
-#include <SDL_keyboard.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_version.h>
 
 namespace util {
 
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command, const core::String &context) {
-	int modifier = KMOD_NONE;
+	int modifier = SDL_KMOD_NONE;
 	core::BindingContext bindingContext = core::parseBindingContext(context);
 	if (key.size() > 1 && key.contains(COMMAND_PRESSED)) {
 		core::TokenizerConfig cfg;
@@ -28,29 +29,29 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			for (const core::String& token : line) {
 				const core::String& lower = token.toLower();
 				if (lower == "shift") {
-					modifier |= KMOD_SHIFT;
+					modifier |= SDL_KMOD_SHIFT;
 				} else if (lower == "left_shift") {
-					modifier |= KMOD_LSHIFT;
+					modifier |= SDL_KMOD_LSHIFT;
 				} else if (lower == "right_shift") {
-					modifier |= KMOD_RSHIFT;
+					modifier |= SDL_KMOD_RSHIFT;
 				} else if (lower == "alt") {
-					modifier |= KMOD_ALT;
+					modifier |= SDL_KMOD_ALT;
 				} else if (lower == "left_alt") {
-					modifier |= KMOD_LALT;
+					modifier |= SDL_KMOD_LALT;
 				} else if (lower == "right_alt") {
-					modifier |= KMOD_RALT;
+					modifier |= SDL_KMOD_RALT;
 				} else if (lower == "ctrl") {
-					modifier |= KMOD_CONTROL;
+					modifier |= SDL_KMOD_CTRL;
 				} else if (lower == "left_ctrl") {
-					modifier |= KMOD_LCONTROL;
+					modifier |= SDL_KMOD_LCTRL;
 				} else if (lower == "right_ctrl") {
-					modifier |= KMOD_RCONTROL;
+					modifier |= SDL_KMOD_RCTRL;
 				} else if (lower == "gui") {
-					modifier |= KMOD_GUI;
+					modifier |= SDL_KMOD_GUI;
 				} else if (lower == "left_gui") {
-					modifier |= KMOD_LGUI;
+					modifier |= SDL_KMOD_LGUI;
 				} else if (lower == "right_gui") {
-					modifier |= KMOD_RGUI;
+					modifier |= SDL_KMOD_RGUI;
 				} else {
 					key = token;
 					if (key.empty()) {
@@ -74,7 +75,6 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		core::string::replaceAllChars(key, '_', ' ');
 		keyCode = SDL_GetKeyFromName(key.c_str());
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		// https://github.com/libsdl-org/SDL/issues/12833
 		if (keyCode != SDLK_UNKNOWN && key.size() == 1) {
 			// Verify the name round-trips correctly - SDL3 may map characters like '+'
@@ -88,7 +88,6 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 				}
 			}
 		}
-#endif
 		if (keyCode == SDLK_UNKNOWN) {
 #if defined __APPLE__ || defined __EMSCRIPTEN__
 			// see Cocoa_InitKeyboard

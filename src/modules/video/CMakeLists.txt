@@ -62,10 +62,6 @@ endif()
 set(RENDERER ${VIDEO_RENDERER})
 list(APPEND SRCS ${${RENDERER}_SRCS})
 
-if (APPLE)
-	list(APPEND SRCS WindowedAppOSX.m)
-endif()
-
 set(LIB video)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image)
 if (RENDERER STREQUAL "GL")

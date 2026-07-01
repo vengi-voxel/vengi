@@ -56,7 +56,6 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	});
 #endif
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	const char *path = SDL_GetBasePath();
 	if (path == nullptr) {
 		_basePath = "";
@@ -64,16 +63,6 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		_basePath = path;
 		normalizePath(_basePath);
 	}
-#else
-	char *path = SDL_GetBasePath();
-	if (path == nullptr) {
-		_basePath = "";
-	} else {
-		_basePath = path;
-		normalizePath(_basePath);
-		SDL_free(path);
-	}
-#endif
 
 	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
 	if (prefPath != nullptr) {

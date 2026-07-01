@@ -25,7 +25,7 @@
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include "core/sdl/SDLSystem.h"
-#include <SDL_messagebox.h>
+#include <SDL3/SDL_messagebox.h>
 #include <stdio.h>
 #include <signal.h>
 #ifdef HAVE_SYS_RESOURCE_H
@@ -390,21 +390,12 @@ void App::onFrame() {
 				if (!crashLog.empty()) {
 					buttons[3].text = "Copy to clipboard";
 				}
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 				buttons[0].buttonID = 0;
 				buttons[1].buttonID = 1;
 				buttons[2].buttonID = 2;
 				if (!crashLog.empty()) {
 					buttons[3].buttonID = 3;
 				}
-#else
-				buttons[0].buttonid = 0;
-				buttons[1].buttonid = 1;
-				buttons[2].buttonid = 2;
-				if (!crashLog.empty()) {
-					buttons[3].buttonid = 3;
-				}
-#endif
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;
 				if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
@@ -563,7 +554,6 @@ AppState App::onConstruct() {
 			const core::String lang = getArgVal("--language");
 			SDL_SetHint(SDL_HINT_PREFERRED_LOCALES, lang.c_str());
 		}
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		int count = 0;
 		SDL_Locale **locales = SDL_GetPreferredLocales(&count);
 		for (int i = 0; i < count; ++i) {
@@ -578,21 +568,6 @@ AppState App::onConstruct() {
 			}
 		}
 		SDL_free((void*)locales);
-#elif SDL_VERSION_ATLEAST(2, 0, 14)
-		SDL_Locale *locales = SDL_GetPreferredLocales();
-		if (locales) {
-			SDL_Locale *locale = locales;
-			while (locale->language) {
-				Log::debug("Preferred locale: %s", locale->language);
-				_systemLanguage = Language::fromSpec(locale->language, locale->country);
-				if (_systemLanguage) {
-					break;
-				}
-				locale++;
-			}
-			SDL_free(locales);
-		}
-#endif
 	}
 	if (!_systemLanguage) {
 		_systemLanguage = Language::fromSpec("en", "GB");
@@ -904,9 +879,6 @@ AppState App::onInit() {
 	Log::debug("Initialize sdl");
 
 	uint32_t flags = SDL_INIT_EVENTS;
-#if !SDL_VERSION_ATLEAST(3, 2, 0)
-	flags |= SDL_INIT_TIMER;
-#endif
 	SDL_Init(flags);
 
 	Log::debug("Initialize the log system");

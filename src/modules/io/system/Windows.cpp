@@ -2,7 +2,7 @@
  * @file
  */
 
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include "core/collection/DynamicArray.h"
@@ -12,7 +12,7 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "io/Filesystem.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include "windirent.h"
 #include <initguid.h>

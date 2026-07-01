@@ -7,13 +7,8 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Var.h"
-#include <SDL_version.h>
-#include <SDL_log.h>
-
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
-#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
-#endif
+#include <SDL3/SDL_version.h>
+#include <SDL3/SDL_log.h>
 
 namespace util {
 

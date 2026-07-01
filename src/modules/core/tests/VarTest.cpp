@@ -4,12 +4,10 @@
 
 #include <gtest/gtest.h>
 #include "core/Var.h"
-#include <SDL_stdinc.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_version.h>
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 #define SDL_setenv SDL_setenv_unsafe
-#endif
 
 namespace core {
 

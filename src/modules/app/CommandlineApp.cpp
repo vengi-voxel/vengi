@@ -5,7 +5,7 @@
 #include "CommandlineApp.h"
 #include "core/Var.h"
 #include "core/Log.h"
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING

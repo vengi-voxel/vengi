@@ -27,7 +27,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include "voxel/Voxel.h"
 #include "voxel/external/stb_rect_pack.h"
 #include "voxelutil/VolumeRotator.h"

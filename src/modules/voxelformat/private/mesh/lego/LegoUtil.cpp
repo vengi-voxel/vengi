@@ -11,7 +11,7 @@
 #include "core/Var.h"
 #include "io/CompositeArchive.h"
 #include "io/FilesystemArchive.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 
 namespace voxelformat {
 

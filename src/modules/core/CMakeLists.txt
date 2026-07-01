@@ -93,16 +93,7 @@ endif()
 engine_source_optimize(Algorithm.cpp)
 
 set(LIB core)
-set(SDLLIB)
-if (USE_SDL_VERSION EQUAL 2)
-	set(SDLLIB sdl2)
-elseif (USE_SDL_VERSION EQUAL 3)
-	set(SDLLIB sdl3)
-else()
-	message(FATAL_ERROR "Invalid SDL version")
-endif()
-
-set(LIBS ${SDLLIB} glm ${CMAKE_DL_LIBS})
+set(LIBS sdl3 glm ${CMAKE_DL_LIBS})
 
 if (USE_STACKTRACES)
 	list(APPEND LIBS backward)

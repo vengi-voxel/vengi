@@ -16,7 +16,7 @@
 #include "io/Filesystem.h"
 #include "util/KeybindingParser.h"
 #include "util/CustomButtonNames.h"
-#include <SDL_keyboard.h>
+#include <SDL3/SDL_keyboard.h>
 
 namespace util {
 
@@ -47,17 +47,17 @@ static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, in
 }
 
 bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
-	if (commandModMask == KMOD_NONE && pressedModMask != KMOD_NONE) {
+	if (commandModMask == SDL_KMOD_NONE && pressedModMask != SDL_KMOD_NONE) {
 		return false;
 	}
-	if (commandModMask != KMOD_NONE) {
-		if (!checkModifierBitMask(KMOD_SHIFT, pressedModMask, commandModMask)) {
+	if (commandModMask != SDL_KMOD_NONE) {
+		if (!checkModifierBitMask(SDL_KMOD_SHIFT, pressedModMask, commandModMask)) {
 			return false;
 		}
-		if (!checkModifierBitMask(KMOD_ALT, pressedModMask, commandModMask)) {
+		if (!checkModifierBitMask(SDL_KMOD_ALT, pressedModMask, commandModMask)) {
 			return false;
 		}
-		if (!checkModifierBitMask(KMOD_CONTROL, pressedModMask, commandModMask)) {
+		if (!checkModifierBitMask(SDL_KMOD_CTRL, pressedModMask, commandModMask)) {
 			return false;
 		}
 	}
@@ -73,7 +73,7 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
  */
 static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, double nowSeconds, uint16_t count) {
 	auto range = bindings.equal_range(key);
-	const int16_t modifier = modMask & (KMOD_SHIFT | KMOD_CONTROL | KMOD_ALT);
+	const int16_t modifier = modMask & (SDL_KMOD_SHIFT | SDL_KMOD_CTRL | SDL_KMOD_ALT);
 	bool handled = false;
 	for (auto i = range.first; i != range.second; ++i) {
 		if (count > 0 && i->second.count != count) {
@@ -442,22 +442,22 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 	int16_t code = 0;
 	switch (key) {
 	case SDLK_LCTRL:
-		code = KMOD_LCTRL;
+		code = SDL_KMOD_LCTRL;
 		break;
 	case SDLK_RCTRL:
-		code = KMOD_RCTRL;
+		code = SDL_KMOD_RCTRL;
 		break;
 	case SDLK_LSHIFT:
-		code = KMOD_LSHIFT;
+		code = SDL_KMOD_LSHIFT;
 		break;
 	case SDLK_RSHIFT:
-		code = KMOD_RSHIFT;
+		code = SDL_KMOD_RSHIFT;
 		break;
 	case SDLK_LALT:
-		code = KMOD_LALT;
+		code = SDL_KMOD_LALT;
 		break;
 	case SDLK_RALT:
-		code = KMOD_RALT;
+		code = SDL_KMOD_RALT;
 		break;
 	}
 

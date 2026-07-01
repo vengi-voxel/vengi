@@ -7,7 +7,7 @@
 #include "app/I18N.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace sound {
 
@@ -18,9 +18,7 @@ struct SoundData {
 	SDL_AudioSpec spec;
 	uint8_t *buffer = nullptr;
 	uint32_t length = 0;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_AudioStream *stream = nullptr;
-#endif
 };
 
 SoundManager::~SoundManager() {
@@ -41,17 +39,12 @@ bool SoundManager::ensureDevice() {
 	if (!_enabled->boolVal()) {
 		return false;
 	}
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-#else
-	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-#endif
 		Log::warn("Failed to initialize SDL audio subsystem: %s", SDL_GetError());
 		return false;
 	}
 	_initialized = true;
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	// Recreate audio streams for any previously loaded sounds
 	for (SoundData *data : _sounds) {
 		if (data->stream == nullptr && data->buffer != nullptr) {
@@ -61,22 +54,11 @@ bool SoundManager::ensureDevice() {
 			}
 		}
 	}
-#else
-	// Reopen the audio device if we have loaded sounds
-	if (_device == 0 && !_sounds.empty()) {
-		SoundData *first = _sounds[0];
-		_device = SDL_OpenAudioDevice(nullptr, 0, &first->spec, &_deviceSpec, 0);
-		if (_device == 0) {
-			Log::warn("Failed to reopen audio device: %s", SDL_GetError());
-		}
-	}
-#endif
 
 	return true;
 }
 
 void SoundManager::closeDevice() {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	// Destroy all audio streams before tearing down the subsystem
 	for (SoundData *data : _sounds) {
 		if (data->stream != nullptr) {
@@ -84,12 +66,6 @@ void SoundManager::closeDevice() {
 			data->stream = nullptr;
 		}
 	}
-#else
-	if (_device != 0) {
-		SDL_CloseAudioDevice(_device);
-		_device = 0;
-	}
-#endif
 	if (_initialized) {
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		_initialized = false;
@@ -125,18 +101,12 @@ void SoundManager::update(double /*nowSeconds*/) {
 void SoundManager::shutdown() {
 	// Free all tracked sounds before closing the device
 	for (SoundData *data : _sounds) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		if (data->stream != nullptr) {
 			SDL_DestroyAudioStream(data->stream);
 		}
 		if (data->buffer != nullptr) {
 			SDL_free(data->buffer);
 		}
-#else
-		if (data->buffer != nullptr) {
-			SDL_FreeWAV(data->buffer);
-		}
-#endif
 		delete data;
 	}
 	_sounds.clear();
@@ -161,7 +131,6 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 		return nullptr;
 	}
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	data->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &data->spec, nullptr, nullptr);
 	if (data->stream == nullptr) {
 		Log::warn("Failed to open audio device stream: %s", SDL_GetError());
@@ -169,17 +138,6 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 		delete data;
 		return nullptr;
 	}
-#else
-	if (_device == 0) {
-		_device = SDL_OpenAudioDevice(nullptr, 0, &data->spec, &_deviceSpec, 0);
-		if (_device == 0) {
-			Log::warn("Failed to open audio device: %s", SDL_GetError());
-			SDL_FreeWAV(data->buffer);
-			delete data;
-			return nullptr;
-		}
-	}
-#endif
 
 	_sounds.push_back(data);
 	Log::debug("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
@@ -200,18 +158,12 @@ void SoundManager::freeSound(SoundHandle handle) {
 		}
 	}
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (data->stream != nullptr) {
 		SDL_DestroyAudioStream(data->stream);
 	}
 	if (data->buffer != nullptr) {
 		SDL_free(data->buffer);
 	}
-#else
-	if (data->buffer != nullptr) {
-		SDL_FreeWAV(data->buffer);
-	}
-#endif
 	delete data;
 }
 
@@ -228,7 +180,6 @@ void SoundManager::playSound(SoundHandle handle) {
 
 	SoundData *data = (SoundData *)handle;
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (data->stream == nullptr) {
 		return;
 	}
@@ -242,17 +193,6 @@ void SoundManager::playSound(SoundHandle handle) {
 		SDL_SetAudioStreamGain(data->stream, volume / 100.0f);
 	}
 	SDL_ResumeAudioStreamDevice(data->stream);
-#else
-	if (_device == 0) {
-		return;
-	}
-	SDL_ClearQueuedAudio(_device);
-	if (SDL_QueueAudio(_device, data->buffer, data->length) < 0) {
-		Log::warn("Failed to queue audio: %s", SDL_GetError());
-		return;
-	}
-	SDL_PauseAudioDevice(_device, 0);
-#endif
 }
 
 } // namespace sound

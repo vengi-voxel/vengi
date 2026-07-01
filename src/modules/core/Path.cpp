@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
 
 namespace core {
 

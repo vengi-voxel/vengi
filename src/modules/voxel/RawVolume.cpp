@@ -10,7 +10,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <glm/common.hpp>
 
 namespace voxel {

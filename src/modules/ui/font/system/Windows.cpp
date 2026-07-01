@@ -8,7 +8,7 @@
 
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <shlobj.h>
 #include <windows.h>
 

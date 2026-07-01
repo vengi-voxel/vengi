@@ -12,7 +12,7 @@
 #include "flextVk.h"
 #include "video/Renderer.h"
 #include "video/Types.h"
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 
 namespace video {
 namespace _priv {
@@ -57,13 +57,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	VkInstance instance;
 	{
 		unsigned int extensionCount;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		const char *const *extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
-#else
-		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
-		char **extensions = (char **)core_malloc(sizeof(char *) * extensionCount);
-		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, (const char **)extensions);
-#endif
 
 		for (unsigned int i = 0; i < extensionCount; ++i) {
 			Log::info("  [%u]: %s", i, extensions[i]);
@@ -80,10 +74,6 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		createInfo.ppEnabledExtensionNames = extensions;
 
 		vkCreateInstance(&createInfo, nullptr, &instance);
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#else
-		core_free((void *)extensions);
-#endif
 	}
 
 	uint32_t physicalDeviceCount;
@@ -140,11 +130,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer);
 
 	VkSurfaceKHR surface;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface);
-#else
-	SDL_Vulkan_CreateSurface(window, instance, &surface);
-#endif
 
 	if (useFeature(Feature::DirectStateAccess)) {
 		Log::debug("Use direct state access");

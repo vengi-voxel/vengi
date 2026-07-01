@@ -4,7 +4,7 @@
 
 #include "System.h"
 
-#include <SDL_cpuinfo.h>
+#include <SDL3/SDL_cpuinfo.h>
 #include "core/StandardLib.h"
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1

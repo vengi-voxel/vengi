@@ -2,7 +2,7 @@
  * @file
  */
 
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
 
 #if !defined(__linux__) && !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) && !defined(__EMSCRIPTEN__)
 #include "io/Filesystem.h"

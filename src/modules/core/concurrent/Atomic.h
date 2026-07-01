@@ -4,16 +4,11 @@
 
 #pragma once
 
-#include <SDL_atomic.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_version.h>
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 struct SDL_Condition;
 using core_atomic = SDL_AtomicInt;
-#else
-struct SDL_cond;
-using core_atomic = SDL_atomic_t;
-#endif
 
 namespace core {
 
@@ -60,47 +55,40 @@ public:
 	bool operator==(const AtomicInt& rhs) const;
 };
 
-
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_AtomicSetPtr SDL_SetAtomicPointer
-#define SDL_AtomicGetPtr SDL_GetAtomicPointer
-#define SDL_AtomicCASPtr SDL_CompareAndSwapAtomicPointer
-#endif
-
 template<class T>
 class AtomicPtr {
 private:
 	void* _ptr;
 public:
 	AtomicPtr(T* value = nullptr) {
-		SDL_AtomicSetPtr(&_ptr, (void*)value);
+		SDL_SetAtomicPointer(&_ptr, (void*)value);
 	}
 
 	operator T*() {
-		return (T*)SDL_AtomicGetPtr(&_ptr);
+		return (T*)SDL_GetAtomicPointer(&_ptr);
 	}
 
 	operator const T*() const {
-		return (const T*)SDL_AtomicGetPtr(const_cast<void**>(&_ptr));
+		return (const T*)SDL_GetAtomicPointer(const_cast<void**>(&_ptr));
 	}
 
 	T* exchange(T* value) {
-		return (T*)SDL_AtomicSetPtr(&_ptr, (void*)value);
+		return (T*)SDL_SetAtomicPointer(&_ptr, (void*)value);
 	}
 
 	T* compare_exchange(T* expectedPtr, T* newPtr) {
-		return (T*)SDL_AtomicCASPtr(&_ptr, (void*)expectedPtr, (void*)newPtr);
+		return (T*)SDL_CompareAndSwapAtomicPointer(&_ptr, (void*)expectedPtr, (void*)newPtr);
 	}
 
 	void operator=(T* value) {
-		SDL_AtomicSetPtr(&_ptr, (void*)value);
+		SDL_SetAtomicPointer(&_ptr, (void*)value);
 	}
 
 	void operator=(const AtomicPtr& value) {
 		if (&value == this) {
 			return;
 		}
-		SDL_AtomicSetPtr(&_ptr, value._ptr);
+		SDL_SetAtomicPointer(&_ptr, value._ptr);
 	}
 
 	bool operator==(T* value) const {

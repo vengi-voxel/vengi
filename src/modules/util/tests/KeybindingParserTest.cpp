@@ -6,7 +6,6 @@
 #include "app/tests/AbstractTest.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
-#include <SDL_keycode.h>
 
 namespace util {
 

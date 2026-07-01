@@ -9,7 +9,7 @@
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <dirent.h>
 #include <sys/stat.h>
 

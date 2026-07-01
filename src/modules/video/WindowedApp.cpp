@@ -10,10 +10,6 @@
 #include "core/Log.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
-#if !SDL_VERSION_ATLEAST(3, 2, 0)
-#include "core/Process.h"
-#include "io/BufferedReadWriteStream.h"
-#endif
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
@@ -22,30 +18,19 @@
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
 #include "video/Trace.h"
-#include <SDL_events.h>
-#include <SDL_hints.h>
-#include <SDL_mouse.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_mouse.h>
 #include <glm/common.hpp>
 #ifdef USE_VK_RENDERER
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 #endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
-#elif __APPLE__
-extern "C" bool isOSXDarkMode();
 #endif
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-#define SDL_GL_GetDrawableSize SDL_GetWindowSizeInPixels
-#define SDL_GetWindowDisplayIndex SDL_GetDisplayForWindow
-#define SDL_QUIT SDL_EVENT_QUIT
-#define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_HIGH_PIXEL_DENSITY
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, "UNKNOWN")
-#else
-#include <SDL.h>
-#define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
-#endif
 
 namespace video {
 
@@ -92,7 +77,6 @@ bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 	case SDL_QUIT:
 		// continue to handle any other following event
 		return true;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	case SDL_EVENT_WINDOW_RESIZED:
 		// fallthrough
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
@@ -116,34 +100,6 @@ bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 		SDL_RaiseWindow(window);
 		break;
 	}
-#else
-	case SDL_WINDOWEVENT: {
-		SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
-		// we must be the first to handle this - but others should get their chance, too
-		if (window == _window && (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
-			const int w = event.window.data1;
-			const int h = event.window.data2;
-			int frameBufferWidth, frameBufferHeight;
-#ifdef USE_GL_RENDERER
-			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-#elif defined(USE_VK_RENDERER)
-			SDL_Vulkan_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-#else
-#error "renderer not supported"
-#endif
-			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
-			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
-			_windowDimension = glm::ivec2(w, h);
-			const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
-			video::resize(w, h, scaleFactor);
-			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-		}
-		if (event.window.event == SDL_WINDOWEVENT_MOVED) {
-			SDL_RaiseWindow(window);
-		}
-	}
-	[[fallthrough]];
-#endif
 	default: {
 		core_trace_scoped(WindowedAppEventHandler);
 		const bool running = core::Singleton<video::EventHandler>::getInstance().handleEvent(event);
@@ -215,44 +171,8 @@ void WindowedApp::onWindowClose(void *windowHandle) {
 // https://stackoverflow.com/questions/25207077/how-to-detect-if-os-x-is-in-dark-mode
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	const SDL_SystemTheme theme = SDL_GetSystemTheme();
 	return theme == SDL_SYSTEM_THEME_DARK || theme == SDL_SYSTEM_THEME_UNKNOWN;
-#else
-#ifdef __APPLE__
-	return isOSXDarkMode();
-#elif __linux__
-	core::DynamicArray<core::String> arguments;
-	arguments.push_back("get");
-	arguments.push_back("org.gnome.desktop.interface");
-	arguments.push_back("gtk-theme");
-	io::BufferedReadWriteStream stream(4096);
-	const int exitCode = core::Process::exec("/usr/bin/gsettings", arguments, nullptr, &stream);
-	if (exitCode == 0) {
-		stream.seek(0);
-		core::String output;
-		stream.readString(stream.size(), output);
-		Log::debug("gsettings gtk-theme: '%s'", output.c_str());
-		return core::string::icontains(output, "dark");
-	} else {
-		Log::warn("Failed to execute gsettings: %i", exitCode);
-	}
-	return true;
-#elif defined(_WIN32) || defined(__CYGWIN__)
-	HKEY hkey;
-	if (RegOpenKey(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hkey) == ERROR_SUCCESS) {
-		DWORD value = 0;
-		DWORD size = sizeof(DWORD);
-		auto error = RegQueryValueEx(hkey, "AppsUseLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
-		if (error == ERROR_SUCCESS) {
-			return value != 0;
-		}
-	}
-	return true;
-#else
-	return true;
-#endif
-#endif
 }
 
 bool WindowedApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
@@ -351,7 +271,6 @@ core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 
 SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, uint32_t flags) {
 	const core::String windowName = fullAppname();
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_PropertiesID props = SDL_CreateProperties();
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, windowName.c_str());
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
@@ -360,9 +279,6 @@ SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, u
 	SDL_Window *window = SDL_CreateWindowWithProperties(props);
 	SDL_DestroyProperties(props);
 	return window;
-#else
-	return SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
-#endif
 }
 
 app::AppState WindowedApp::onInit() {
@@ -371,11 +287,7 @@ app::AppState WindowedApp::onInit() {
 		return state;
 	}
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
-#else
-	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-#endif
 		sdlCheckError();
 		return app::AppState::InitFailure;
 	}
@@ -390,29 +302,7 @@ app::AppState WindowedApp::onInit() {
 
 	core::Singleton<video::EventHandler>::getInstance().registerObserver(this);
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	const int displayIndex = 0;
-#else
-	Log::debug("CPU count: %d", SDL_GetCPUCount());
-	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	Log::debug("Altivec: %d", SDL_HasAltiVec());
-	Log::debug("MMX: %d", SDL_HasMMX());
-	Log::debug("SSE: %d", SDL_HasSSE());
-	Log::debug("SSE2: %d", SDL_HasSSE2());
-	Log::debug("SSE3: %d", SDL_HasSSE3());
-	Log::debug("SSE4.1: %d", SDL_HasSSE41());
-	Log::debug("SSE4.2: %d", SDL_HasSSE42());
-	Log::debug("AVX: %d", SDL_HasAVX());
-	Log::debug("AVX2: %d", SDL_HasAVX2());
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-	Log::debug("NEON: %d", SDL_HasNEON());
-#endif
-	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
-	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
-	const int displayIndex = glm::clamp(core::getVar(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
-	Log::debug("Try to use display %i", displayIndex);
-	Log::debug("found %i displays (use %i)", numDisplays, displayIndex);
-#endif
 
 	video::setup();
 
@@ -450,14 +340,9 @@ app::AppState WindowedApp::onInit() {
 	SDL_Rect displayBounds;
 	displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 	if (_fullScreenApplication) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 		SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
 		if (!SDL_GetDisplayUsableBounds(primaryDisplay, &displayBounds)) {
 			Log::error("Failed to query usable display bounds at %i: %s", primaryDisplay, SDL_GetError());
-#else
-		if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
-			Log::error("Failed to query usable display bounds at %i: %s", displayIndex, SDL_GetError());
-#endif
 			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 		}
 	}
@@ -500,12 +385,6 @@ app::AppState WindowedApp::onInit() {
 		SDL_MaximizeWindow(_window);
 	}
 
-#if !SDL_VERSION_ATLEAST(3, 2, 0)
-	int actualDisplayIndex = (int)SDL_GetWindowDisplayIndex(_window);
-	if (displayIndex != actualDisplayIndex) {
-		Log::error("Failed to create window at display %i (got %i)", displayIndex, actualDisplayIndex);
-	}
-#endif
 
 	_rendererContext = video::createContext(_window);
 	if (_rendererContext == nullptr) {
@@ -516,17 +395,7 @@ app::AppState WindowedApp::onInit() {
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
 	int frameBufferWidth, frameBufferHeight;
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_GetWindowSizeInPixels(_window, &frameBufferWidth, &frameBufferHeight);
-#else
-#ifdef USE_GL_RENDERER
-	SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-#elif defined(USE_VK_RENDERER)
-	SDL_Vulkan_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
-#else
-#error "renderer not supported"
-#endif
-#endif
 	_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 	_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 
@@ -635,15 +504,11 @@ void WindowedApp::openKeybindings() {
 }
 
 void WindowedApp::showCursor(bool show) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (show) {
 		SDL_ShowCursor();
 	} else {
 		SDL_HideCursor();
 	}
-#else
-	SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
-#endif
 }
 
 void WindowedApp::centerMousePosition() {
@@ -651,11 +516,7 @@ void WindowedApp::centerMousePosition() {
 }
 
 bool WindowedApp::isRelativeMouseMode() const {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	return SDL_GetWindowRelativeMouseMode(_window);
-#else
-	return SDL_GetRelativeMouseMode();
-#endif
 }
 
 bool WindowedApp::toggleRelativeMouseMode() {
@@ -667,11 +528,7 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 	if (mode && !_allowRelativeMouseMode) {
 		mode = false;
 	}
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_SetWindowRelativeMouseMode(_window, mode);
-#else
-	SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
-#endif
 	return mode;
 }
 

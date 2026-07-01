@@ -5,18 +5,14 @@
 #include "Thread.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include <SDL_thread.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_thread.h>
+#include <SDL3/SDL_version.h>
 #include <new>
 
 namespace core {
 
 ThreadId getCurrentThreadId() {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 	return SDL_GetCurrentThreadID();
-#else
-	return SDL_ThreadID();
-#endif
 }
 
 static int threadTrampoline(void *data) {

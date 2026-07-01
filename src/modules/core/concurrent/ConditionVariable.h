@@ -5,15 +5,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_version.h>
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
 struct SDL_Condition;
 using core_condition = SDL_Condition;
-#else
-struct SDL_cond;
-using core_condition = SDL_cond;
-#endif
 
 namespace core {
 

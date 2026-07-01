@@ -55,12 +55,7 @@ if (USE_VK_RENDERER)
 	list(APPEND SRCS dearimgui/backends/imgui_impl_vulkan.cpp dearimgui/backends/imgui_impl_vulkan.h)
 endif()
 
-if (USE_SDL_VERSION EQUAL 2)
-	list(APPEND SRCS dearimgui/backends/imgui_impl_sdl2.cpp dearimgui/backends/imgui_impl_sdl2.h)
-endif()
-if (USE_SDL_VERSION EQUAL 3)
-	list(APPEND SRCS dearimgui/backends/imgui_impl_sdl3.cpp dearimgui/backends/imgui_impl_sdl3.h)
-endif()
+list(APPEND SRCS dearimgui/backends/imgui_impl_sdl3.cpp dearimgui/backends/imgui_impl_sdl3.h)
 
 set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)
 set(LIBS)

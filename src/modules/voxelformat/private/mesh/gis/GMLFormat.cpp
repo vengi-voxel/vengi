@@ -18,7 +18,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "tinyxml2.h"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <float.h>
 
 namespace voxelformat {

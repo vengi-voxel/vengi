@@ -14,8 +14,8 @@
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "core/Log.h"
-#include <SDL_hints.h>
-#include <SDL_version.h>
+#include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_version.h>
 #include <glm/gtc/type_ptr.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
