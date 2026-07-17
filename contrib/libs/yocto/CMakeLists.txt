@@ -18,7 +18,7 @@ if(UNIX AND NOT APPLE)
 endif(UNIX AND NOT APPLE)
 
 # warning flags
-if(UNIX)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 	target_compile_options(yocto PUBLIC -Wall -Wno-conversion -Wno-parentheses -Wno-sign-conversion -Wno-sign-compare -Wno-implicit-float-conversion -Wno-unused-variable)
 endif()
 
