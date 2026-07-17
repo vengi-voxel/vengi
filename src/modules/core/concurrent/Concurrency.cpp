@@ -62,7 +62,8 @@ bool setThreadName(const char *name) {
 	if (kernel32 == nullptr) {
 		kernel32 = LoadLibraryW(L"kernel32.dll");
 		if (kernel32 != nullptr) {
-			pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernel32, "SetThreadDescription");
+			pSetThreadDescription =
+				(pfnSetThreadDescription)(void *)GetProcAddress(kernel32, "SetThreadDescription");
 		}
 	}
 
