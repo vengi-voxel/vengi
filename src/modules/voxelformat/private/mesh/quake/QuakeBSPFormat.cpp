@@ -131,8 +131,8 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		wrap(stream.readUInt32(texture.surfaceFlags)) // miptex index
 		wrap(stream.readUInt32(texture.value)) // 0 = solid, 1 = water
 		if (texture.surfaceFlags >= (uint32_t)miptex.size()) {
-			Log::warn("Invalid miptex index %u (max %zu) - skipping texinfo entry", texture.surfaceFlags,
-					  miptex.size());
+			Log::warn("Invalid miptex index %u (max %i) - skipping texinfo entry", texture.surfaceFlags,
+					  (int)miptex.size());
 			texture.name[0] = '\0';
 			continue;
 		}
@@ -152,7 +152,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		}
 
 		if (texture.surfaceFlags >= (uint32_t)miptex.size()) {
-			Log::warn("Invalid miptex index %u (max %zu) - skipping texture", texture.surfaceFlags, miptex.size());
+			Log::warn("Invalid miptex index %u (max %i) - skipping texture", texture.surfaceFlags, (int)miptex.size());
 			continue;
 		}
 
