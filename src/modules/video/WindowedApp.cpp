@@ -18,6 +18,7 @@
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
 #include "video/Trace.h"
+#include "core/sdl/SDLSystem.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_mouse.h>

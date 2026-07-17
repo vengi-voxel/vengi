@@ -139,22 +139,22 @@ TEST_F(KeybindingHandlerTest, testLeftShiftModifier) {
 }
 
 TEST_F(KeybindingHandlerTest, testAllValidModifier) {
-	execute(SDLK_W, SDL_KMOD_LSHIFT | SDL_KMOD_LCTRL | SDL_KMOD_LALT);
+	execute(SDLK_W, SDL_KMOD_LSHIFT | KMOD_LCONTROL | SDL_KMOD_LALT);
 	EXPECT_TRUE(_allmodscommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testAllValidModifier2) {
-	execute(SDLK_W, SDL_KMOD_RSHIFT | SDL_KMOD_LCTRL | SDL_KMOD_RALT);
+	execute(SDLK_W, SDL_KMOD_RSHIFT | KMOD_LCONTROL | SDL_KMOD_RALT);
 	EXPECT_TRUE(_allmodscommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlShiftModifier) {
-	execute(SDLK_W, SDL_KMOD_LSHIFT | SDL_KMOD_LCTRL);
+	execute(SDLK_W, SDL_KMOD_LSHIFT | KMOD_LCONTROL);
 	EXPECT_TRUE(_ctrlshiftmodcommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testLShiftRCtrlModifier) {
-	execute(SDLK_W, SDL_KMOD_LSHIFT | SDL_KMOD_RCTRL);
+	execute(SDLK_W, SDL_KMOD_LSHIFT | KMOD_RCONTROL);
 	EXPECT_TRUE(_ctrlshiftmodcommand) << "expected command wasn't executed";
 }
 
