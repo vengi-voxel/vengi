@@ -24,7 +24,8 @@ namespace voxel {
 class ConcurrentSparseVolume {
 private:
 	struct Chunk {
-		core::DynamicMap<uint32_t, voxel::Voxel, 1031> voxels;
+		// See SparseVolume: DynamicMap does not rehash; size for dense chunk fills.
+		core::DynamicMap<uint32_t, voxel::Voxel, 8191> voxels;
 		mutable core_trace_mutex(core::Lock, lock, "ConcurrentSparseVolumeChunk");
 	};
 

@@ -23,7 +23,10 @@ struct VoxelPosition;
 class SparseVolume {
 private:
 	struct Chunk {
-		core::DynamicMap<uint32_t, voxel::Voxel, 1031> voxels;
+		// Dense fills of a 256^3 chunk can hold hundreds of thousands of voxels.
+		// DynamicMap does not rehash; 8191 keeps chains short for dense SetVoxels
+		// while limiting empty-bucket overhead on small sparse edits.
+		core::DynamicMap<uint32_t, voxel::Voxel, 8191> voxels;
 	};
 
 	using ChunkPtr = core::SharedPtr<Chunk>;
