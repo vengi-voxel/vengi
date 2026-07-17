@@ -81,7 +81,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install python3-dateutil dh-cmake make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
+            sudo apt-get install python3-dateutil dh-cmake make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev
 
         - name: Configure ccache
           run: |
@@ -207,7 +207,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
+            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev
 
         - name: Configure ccache
           run: |
@@ -245,7 +245,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev
 
         - name: Configure ccache
           run: |
