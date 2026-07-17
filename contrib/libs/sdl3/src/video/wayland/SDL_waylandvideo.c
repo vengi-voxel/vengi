@@ -112,7 +112,9 @@
 #define SDL_WL_DATA_DEVICE_VERSION 3
 
 // wl_fixes was introduced in 1.24.0
-#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#if SDL_WAYLAND_CHECK_VERSION(1, 26, 0)
+#define SDL_WL_FIXES_VERSION 2
+#elif SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
 #define SDL_WL_FIXES_VERSION 1
 #endif
 
@@ -561,7 +563,11 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 
 static void wayland_preferred_check_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
-    // No need to do anything here.
+    SDL_WaylandPreferredData *d = (SDL_WaylandPreferredData *)data;
+
+    if (d->wl_fixes && wl_fixes_get_version(d->wl_fixes) >= WL_FIXES_ACK_GLOBAL_REMOVE_SINCE_VERSION) {
+        wl_fixes_ack_global_remove(d->wl_fixes, registry, id);
+    }
 }
 
 static const struct wl_registry_listener preferred_registry_listener = {
@@ -1472,7 +1478,7 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
         Wayland_DisplayInitPrimarySelectionDeviceManager(d);
     } else if (SDL_strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
-        d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
+        d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, SDL_min(2, version));
     } else if (SDL_strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
         d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
         Wayland_DisplayInitTabletManager(d);
@@ -1537,17 +1543,21 @@ static void handle_registry_remove_global(void *data, struct wl_registry *regist
             }
 
             d->output_count--;
-            return;
+            goto ack_remove;
         }
     }
 
     SDL_WaylandSeat *seat, *temp;
-    wl_list_for_each_safe (seat, temp, &d->seat_list, link)
-    {
+    wl_list_for_each_safe (seat, temp, &d->seat_list, link) {
         if (seat->registry_id == id) {
             Wayland_SeatDestroy(seat, false);
-            return;
+            goto ack_remove;
         }
+    }
+
+ack_remove:
+    if (d->wl_fixes && wl_fixes_get_version(d->wl_fixes) >= WL_FIXES_ACK_GLOBAL_REMOVE_SINCE_VERSION) {
+        wl_fixes_ack_global_remove(d->wl_fixes, registry, id);
     }
 }
 
@@ -1684,6 +1694,11 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
+    data->event_thread_context = Wayland_CreateEventThread(data, "SDL Event Thread Queue");
+    if (!data->event_thread_context) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Failed to create event thread context");
+    }
+
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
         return SDL_SetError("Failed to create XKB context");
@@ -1787,6 +1802,10 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     Wayland_FiniMouse(data);
+    Wayland_QuitKeyboard(_this);
+
+    Wayland_DestroyEventThread(data->event_thread_context);
+    data->event_thread_context = NULL;
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);
@@ -1812,8 +1831,6 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
         zwp_keyboard_shortcuts_inhibit_manager_v1_destroy(data->key_inhibitor_manager);
         data->key_inhibitor_manager = NULL;
     }
-
-    Wayland_QuitKeyboard(_this);
 
     if (data->text_input_manager) {
         zwp_text_input_manager_v3_destroy(data->text_input_manager);

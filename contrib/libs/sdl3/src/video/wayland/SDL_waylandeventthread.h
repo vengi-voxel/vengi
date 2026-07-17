@@ -18,20 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-#ifndef SDL_sve2_blit_N_h_
-#define SDL_sve2_blit_N_h_
+#ifndef SDL_waylandeventthread_h_
+#define SDL_waylandeventthread_h_
 
-#include "../../SDL_internal.h"
-#include "../SDL_blit.h"
+#include "../SDL_sysvideo.h"
 
-#ifdef SDL_SVE2_INTRINSICS
+typedef struct Wayland_EventThreadContext Wayland_EventThreadContext;
 
-void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info);
-void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info);
-void Blit2to2KeySVE2(SDL_BlitInfo *info);
-void Blit4to4KeySVE2(SDL_BlitInfo *info);
+extern Wayland_EventThreadContext *Wayland_CreateEventThread(SDL_VideoData *data, const char *queue_name);
+extern void Wayland_DestroyEventThread(Wayland_EventThreadContext *context);
+extern void *Wayland_CreateEventThreadProxyWrapper(Wayland_EventThreadContext *context, void *obj);
+extern void Wayland_LockEventThread(Wayland_EventThreadContext *context);
+extern void Wayland_UnlockEventThread(Wayland_EventThreadContext *context);
 
-#endif /* SDL_SVE2_INTRINSICS */
-
-#endif /* SDL_sve2_blitters_h_ */
+#endif // SDL_waylandeventthread_h_
