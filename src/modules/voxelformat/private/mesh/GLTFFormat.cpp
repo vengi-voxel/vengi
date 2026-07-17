@@ -1158,7 +1158,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			const palette::Palette &pal = graphNode.palette();
 			uint64_t palHash = pal.hash();
 			PaletteMaterialInfo pmi;
-			paletteMaterialMap.get(palHash, pmi);
+			if (!paletteMaterialMap.get(palHash, pmi)) {
+				Log::error("Missing palette material info for hash %llu", (unsigned long long)palHash);
+				return false;
+			}
 
 			for (int ci = 0; ci < (int)perColorIndices[mi].size(); ++ci) {
 				const PerColorIndexInfo &pci = perColorIndices[mi][ci];
