@@ -63,8 +63,8 @@ Console::~Console() {
 }
 
 void Console::registerOutputCallbacks() {
-	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
-	SDL_LogSetOutputFunction(logOutputFunction, this);
+	SDL_GetLogOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
+	SDL_SetLogOutputFunction(logOutputFunction, this);
 }
 
 void Console::construct() {
@@ -103,7 +103,7 @@ void Console::shutdown() {
 
 	command::Command::unregisterCommand("con_clear");
 	command::Command::unregisterCommand("con_history");
-	SDL_LogSetOutputFunction((SDL_LogOutputFunction)_logFunction, _logUserData);
+	SDL_SetLogOutputFunction((SDL_LogOutputFunction)_logFunction, _logUserData);
 }
 
 void Console::printHistory() {

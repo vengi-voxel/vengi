@@ -28,7 +28,7 @@ TEST_F(ConsoleTest, testAutoCompleteCvar) {
 	const core::String cvarComplete = cvar1 + cvar2;
 	core::Var::registerVar(core::VarDef(cvarComplete, 1, "", ""));
 	TestConsole c(cvar1);
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	ASSERT_EQ(cvar1, c.commandLine());
 	c.autoComplete();
 	ASSERT_EQ(cvarComplete + " ", c.commandLine());
@@ -41,7 +41,7 @@ TEST_F(ConsoleTest, testAutoCompleteCommand) {
 	command::Command::registerCommand(cmdComplete.c_str())
 		.setHandler([](const command::CommandArgs &args) {});
 	TestConsole c(cmd1);
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	ASSERT_EQ(cmd1, c.commandLine());
 	c.autoComplete();
 	ASSERT_EQ(cmdComplete + " ", c.commandLine());
@@ -55,7 +55,7 @@ TEST_F(ConsoleTest, testAutoCompleteEnumCvar) {
 	validValues.push_back("gamma");
 	core::Var::registerVar(core::VarDef(cvarName, "alpha", validValues, "", ""));
 	TestConsole c(cvarName + " ");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	// all three values should be offered - the command line should be updated with common prefix
 	// since no common prefix exists among alpha, beta, gamma, the command line stays as is
@@ -74,7 +74,7 @@ TEST_F(ConsoleTest, testAutoCompleteEnumCvarPartialMatch) {
 	validValues.push_back("option_three");
 	core::Var::registerVar(core::VarDef(cvarName, "option_one", validValues, "", ""));
 	TestConsole c(cvarName + " option_t");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	// "option_two" and "option_three" both match, common prefix is "option_t"
 	// so the command line should have the common prefix filled
@@ -86,7 +86,7 @@ TEST_F(ConsoleTest, testAutoCompleteBooleanCvar) {
 	const core::String cvarName = "zz_test_bool_console";
 	core::Var::registerVar(core::VarDef(cvarName, true, "", ""));
 	TestConsole c(cvarName + " t");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	ASSERT_EQ(cvarName + " true", c.commandLine());
 }
@@ -104,7 +104,7 @@ TEST_F(ConsoleTest, testAutoCompleteSetCvarName) {
 	const core::String cvarName = "zz_test_set_complete_console";
 	core::Var::registerVar(core::VarDef(cvarName, 1, "", ""));
 	TestConsole c("set zz_test_set_complete_c");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	ASSERT_EQ("set " + cvarName, c.commandLine());
 	command::Command::unregisterCommand("set");
@@ -127,7 +127,7 @@ TEST_F(ConsoleTest, testAutoCompleteSetEnumValue) {
 	validValues.push_back("blue");
 	core::Var::registerVar(core::VarDef(cvarName, "red", validValues, "", ""));
 	TestConsole c("set " + cvarName + " gr");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	ASSERT_EQ("set " + cvarName + " green", c.commandLine());
 	command::Command::unregisterCommand("set");
@@ -146,7 +146,7 @@ TEST_F(ConsoleTest, testAutoCompleteSetBoolValue) {
 	const core::String cvarName = "zz_test_set_bool_value_console";
 	core::Var::registerVar(core::VarDef(cvarName, true, "", ""));
 	TestConsole c("set " + cvarName + " f");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	ASSERT_EQ("set " + cvarName + " false", c.commandLine());
 	command::Command::unregisterCommand("set");
@@ -167,7 +167,7 @@ TEST_F(ConsoleTest, testAutoCompleteSetCvarNameMultipleMatches) {
 	core::Var::registerVar(core::VarDef(cvarName1, 1, "", ""));
 	core::Var::registerVar(core::VarDef(cvarName2, 2, "", ""));
 	TestConsole c("set zz_test_set_multi");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	// both match, common prefix is "zz_test_set_multi_"
 	const core::String expected = "set zz_test_set_multi_";
@@ -193,7 +193,7 @@ TEST_F(ConsoleTest, testAutoCompleteSetEnumValueNoPartial) {
 	core::Var::registerVar(core::VarDef(cvarName, "mcedit2", validValues, "", ""));
 	// space after cvar name, no partial value typed yet - should offer all values
 	TestConsole c("set " + cvarName + " m");
-	SDL_LogSetOutputFunction(nullptr, nullptr);
+	SDL_SetLogOutputFunction(nullptr, nullptr);
 	c.autoComplete();
 	// "mcedit2" matches the partial "m" - single match should complete fully
 	ASSERT_EQ("set " + cvarName + " mcedit2", c.commandLine());

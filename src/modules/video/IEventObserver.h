@@ -35,7 +35,7 @@ public:
 	}
 
 	/* This will get called if the user accepted whatever sent your app to the background.
-	 * If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
+	 * If the user got a phone call and canceled it, you'll instead get an SDL_EVENT_DID_ENTER_FOREGROUND event and restart your loops.
 	 * When you get this, you have 5 seconds to save all your state or the app will be terminated.
 	 * Your app is NOT active at this point. */
 	virtual void onBackground() {
@@ -91,7 +91,7 @@ public:
 	}
 
 	/**
-	 * @param[in] axis SDL_GameControllerAxis
+	 * @param[in] axis SDL_GamepadAxis
 	 * @param[in] value -32768 to 32767
 	 * @param[in] id game controller id
 	 */

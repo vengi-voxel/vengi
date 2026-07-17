@@ -164,7 +164,7 @@ void Log::init(const char *logfile) {
 		rawLogLevel = (int)Log::Level::Error;
 	}
 	priv::_logLevel = (Log::Level)rawLogLevel;
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)Log::Level::Trace);
+	SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)Log::Level::Trace);
 
 	if (priv::_logfile == nullptr && logfile != nullptr) {
 		priv::_logfile = fopen(logfile, "w");
@@ -179,8 +179,8 @@ void Log::init(const char *logfile) {
 #endif
 
 	if (priv::_logCallback == nullptr) {
-		SDL_LogGetOutputFunction(&priv::_logCallback, &priv::_logCallbackUserData);
-		SDL_LogSetOutputFunction(priv::logOutputFunction, nullptr);
+		SDL_GetLogOutputFunction(&priv::_logCallback, &priv::_logCallbackUserData);
+		SDL_SetLogOutputFunction(priv::logOutputFunction, nullptr);
 	}
 }
 
@@ -188,7 +188,7 @@ void Log::shutdown() {
 	// this is one of the last methods that is executed - so don't rely on anything
 	// still being available here - it won't
 	if (priv::_logCallback != nullptr) {
-		SDL_LogSetOutputFunction(priv::_logCallback, priv::_logCallbackUserData);
+		SDL_SetLogOutputFunction(priv::_logCallback, priv::_logCallbackUserData);
 		priv::_logCallback = nullptr;
 		priv::_logCallbackUserData = nullptr;
 	}

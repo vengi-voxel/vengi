@@ -83,7 +83,7 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 	Super::onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
 
 	SDL_Event ev{};
-	ev.type = SDL_MOUSEMOTION;
+	ev.type = SDL_EVENT_MOUSE_MOTION;
 	ev.motion.x = x;
 	ev.motion.y = y;
 	ev.motion.which = mouseId;
@@ -94,7 +94,7 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	if (!Super::onMouseWheel(windowHandle, x, y, mouseId)) {
 		SDL_Event ev{};
-		ev.type = SDL_MOUSEWHEEL;
+		ev.type = SDL_EVENT_MOUSE_WHEEL;
 		ev.wheel.x = (int)x;
 		ev.wheel.y = (int)y;
 		ev.wheel.which = mouseId;
@@ -107,7 +107,7 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseI
 void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
 	Super::onMouseButtonRelease(windowHandle, x, y, button, mouseId);
 	SDL_Event ev{};
-	ev.type = SDL_MOUSEBUTTONUP;
+	ev.type = SDL_EVENT_MOUSE_BUTTON_UP;
 	ev.button.button = button;
 	ev.button.x = x;
 	ev.button.y = y;
@@ -119,7 +119,7 @@ void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, ui
 void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
 	Super::onMouseButtonPress(windowHandle, x, y, button, clicks, mouseId);
 	SDL_Event ev{};
-	ev.type = SDL_MOUSEBUTTONDOWN;
+	ev.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
 	ev.button.button = button;
 	ev.button.clicks = clicks;
 	ev.button.x = x;
@@ -134,7 +134,7 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 		_fileDialog.onTextInput(windowHandle, text);
 	}
 	SDL_Event ev{};
-	ev.type = SDL_TEXTINPUT;
+	ev.type = SDL_EVENT_TEXT_INPUT;
 	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ev.text.text = text.c_str();
 	processEvent(ev);
@@ -145,7 +145,7 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	if (!Super::onKeyPress(windowHandle, key, modifier) ||
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};
-		ev.type = SDL_KEYDOWN;
+		ev.type = SDL_EVENT_KEY_DOWN;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
@@ -159,7 +159,7 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 	if (!Super::onKeyRelease(windowHandle, key, modifier) || _keys.has(key)) {
 		SDL_Event ev{};
-		ev.type = SDL_KEYUP;
+		ev.type = SDL_EVENT_KEY_UP;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
@@ -172,9 +172,9 @@ bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 
 bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 	const bool state = Super::handleSDLEvent(event);
-	if (event.type != SDL_MOUSEMOTION && event.type != SDL_MOUSEWHEEL && event.type != SDL_MOUSEBUTTONUP &&
-		event.type != SDL_MOUSEBUTTONDOWN && event.type != SDL_TEXTINPUT && event.type != SDL_KEYUP &&
-		event.type != SDL_KEYDOWN) {
+	if (event.type != SDL_EVENT_MOUSE_MOTION && event.type != SDL_EVENT_MOUSE_WHEEL && event.type != SDL_EVENT_MOUSE_BUTTON_UP &&
+		event.type != SDL_EVENT_MOUSE_BUTTON_DOWN && event.type != SDL_EVENT_TEXT_INPUT && event.type != SDL_EVENT_KEY_UP &&
+		event.type != SDL_EVENT_KEY_DOWN) {
 		processEvent(event);
 	}
 	return state;

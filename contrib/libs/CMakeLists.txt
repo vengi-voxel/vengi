@@ -82,4 +82,3 @@ set(SDL_PCH
 	<SDL3/SDL_atomic.h>
 )
 target_precompile_headers(sdl3 INTERFACE ${SDL_PCH})
-target_compile_definitions(sdl3 INTERFACE SDL_ENABLE_OLD_NAMES)

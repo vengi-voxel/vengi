@@ -179,7 +179,7 @@ bool TestCamera::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	}
 
 	video::Camera& c = _renderCamera[_targetCamera];
-	if (modifier & KMOD_SHIFT) {
+	if (modifier & SDL_KMOD_SHIFT) {
 		int delta = 0;
 		if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
 			delta = -1;

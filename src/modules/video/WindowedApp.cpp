@@ -74,7 +74,7 @@ void WindowedApp::onAfterRunning() {
 
 bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 	switch (event.type) {
-	case SDL_QUIT:
+	case SDL_EVENT_QUIT:
 		// continue to handle any other following event
 		return true;
 	case SDL_EVENT_WINDOW_RESIZED:
@@ -348,7 +348,7 @@ app::AppState WindowedApp::onInit() {
 	}
 	const core::VarPtr &highDPI = core::getVar(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
-		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+		flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		Log::debug("Enable high dpi support");
 	} else {
 		Log::debug("Disable high dpi support");

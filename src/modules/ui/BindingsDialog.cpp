@@ -230,41 +230,41 @@ static void highlightBindingKeys(int32_t sdlKey, int16_t modifier) {
 	}
 
 	// Highlight modifier keys
-	if (modifier & KMOD_LSHIFT) {
+	if (modifier & SDL_KMOD_LSHIFT) {
 		ImKeyboard::Highlight(ImGuiKey_LeftShift, true);
 	}
-	if (modifier & KMOD_RSHIFT) {
+	if (modifier & SDL_KMOD_RSHIFT) {
 		ImKeyboard::Highlight(ImGuiKey_RightShift, true);
 	}
-	if (modifier & KMOD_LCTRL) {
+	if (modifier & SDL_KMOD_LCTRL) {
 		ImKeyboard::Highlight(ImGuiKey_LeftCtrl, true);
 	}
-	if (modifier & KMOD_RCTRL) {
+	if (modifier & SDL_KMOD_RCTRL) {
 		ImKeyboard::Highlight(ImGuiKey_RightCtrl, true);
 	}
-	if (modifier & KMOD_LALT) {
+	if (modifier & SDL_KMOD_LALT) {
 		ImKeyboard::Highlight(ImGuiKey_LeftAlt, true);
 	}
-	if (modifier & KMOD_RALT) {
+	if (modifier & SDL_KMOD_RALT) {
 		ImKeyboard::Highlight(ImGuiKey_RightAlt, true);
 	}
-	if (modifier & KMOD_LGUI) {
+	if (modifier & SDL_KMOD_LGUI) {
 		ImKeyboard::Highlight(ImGuiKey_LeftSuper, true);
 	}
-	if (modifier & KMOD_RGUI) {
+	if (modifier & SDL_KMOD_RGUI) {
 		ImKeyboard::Highlight(ImGuiKey_RightSuper, true);
 	}
-	// Handle combined modifiers (e.g., KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT)
-	if ((modifier & KMOD_SHIFT) == KMOD_SHIFT) {
+	// Handle combined modifiers (e.g., SDL_KMOD_SHIFT = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT)
+	if ((modifier & SDL_KMOD_SHIFT) == SDL_KMOD_SHIFT) {
 		ImKeyboard::Highlight(ImGuiKey_LeftShift, true);
 	}
-	if ((modifier & KMOD_CTRL) == KMOD_CTRL) {
+	if ((modifier & SDL_KMOD_CTRL) == SDL_KMOD_CTRL) {
 		ImKeyboard::Highlight(ImGuiKey_LeftCtrl, true);
 	}
-	if ((modifier & KMOD_ALT) == KMOD_ALT) {
+	if ((modifier & SDL_KMOD_ALT) == SDL_KMOD_ALT) {
 		ImKeyboard::Highlight(ImGuiKey_LeftAlt, true);
 	}
-	if ((modifier & KMOD_GUI) == KMOD_GUI) {
+	if ((modifier & SDL_KMOD_GUI) == SDL_KMOD_GUI) {
 		ImKeyboard::Highlight(ImGuiKey_LeftSuper, true);
 	}
 }

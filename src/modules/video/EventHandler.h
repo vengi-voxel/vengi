@@ -54,7 +54,7 @@ public:
 	void controllerButtonPress(const core::String& button, uint32_t id);
 	void controllerButtonRelease(const core::String& button, uint32_t id);
 	/**
-	 * @param[in] axis SDL_GameControllerAxis
+	 * @param[in] axis SDL_GamepadAxis
 	 * @param[in] value -32768 to 32767
 	 * @param[in] id game controller id
 	 */

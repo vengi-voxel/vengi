@@ -75,15 +75,15 @@ TEST_F(KeybindingParserTest, testParsing) {
 		const CommandModifierPair &pair = i->second;
 		const core::String &command = pair.command;
 		const int16_t mod = pair.modifier;
-		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CONTROL)) {
+		if ((mod & SDL_KMOD_SHIFT) && (mod & SDL_KMOD_ALT) && (mod & KMOD_CONTROL)) {
 			EXPECT_EQ("allmodscommand", command) << "Expected command 'allmodscommand' but got " << command;
 			EXPECT_FALSE(allmodscommand) << "allmodscommand found twice! bindings: " << m;
 			allmodscommand = true;
-		} else if ((mod & KMOD_SHIFT) && (mod & KMOD_CONTROL)) {
+		} else if ((mod & SDL_KMOD_SHIFT) && (mod & KMOD_CONTROL)) {
 			EXPECT_EQ("ctrlshiftmodcommand", command) << "Expected command 'ctrlshiftmodcommand' but got " << command;
 			EXPECT_FALSE(ctrlshiftmodcommand) << "ctrlshiftmodcommand found twice! bindings: " << m;
 			ctrlshiftmodcommand = true;
-		} else if (mod & KMOD_SHIFT) {
+		} else if (mod & SDL_KMOD_SHIFT) {
 			EXPECT_EQ("+xyz", command) << "Expected command '+xyz' but got " << command;
 			EXPECT_FALSE(xyz) << "+xyz found twice! bindings: " << m;
 			xyz = true;
@@ -91,7 +91,7 @@ TEST_F(KeybindingParserTest, testParsing) {
 			EXPECT_EQ("+bar", command) << "Expected command '+bar' but got " << command;
 			EXPECT_FALSE(bar) << "+bar found twice! bindings: " << m;
 			bar = true;
-		} else if (mod & KMOD_ALT) {
+		} else if (mod & SDL_KMOD_ALT) {
 			EXPECT_EQ("somecommand +", command) << "Expected command 'somecommand +' but got " << command;
 			EXPECT_FALSE(somecommand) << "somecommand + found twice! bindings: " << m;
 			somecommand = true;
@@ -126,8 +126,8 @@ TEST_F(KeybindingParserTest, testParsing2) {
 		const int16_t mod = pair.modifier;
 		EXPECT_EQ("someothercommand +", command)
 			<< "Expected command 'someothercommand +' but got " << command << "! bindings: " << m;
-		EXPECT_TRUE(mod & KMOD_LALT) << "command " << command << " modifier wasn't parsed properly! bindings: " << m;
-		EXPECT_TRUE(!(mod & KMOD_RALT)) << "command " << command << " modifier wasn't parsed properly! bindings: " << m;
+		EXPECT_TRUE(mod & SDL_KMOD_LALT) << "command " << command << " modifier wasn't parsed properly! bindings: " << m;
+		EXPECT_TRUE(!(mod & SDL_KMOD_RALT)) << "command " << command << " modifier wasn't parsed properly! bindings: " << m;
 		++count;
 	}
 	EXPECT_EQ(1, count) << "expected 1 binding for key " << key << " but got " << count << "! bindings: " << m;
