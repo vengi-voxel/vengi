@@ -833,13 +833,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 	int totalMaterialCount = totalPerColorMaterials + nonPerColorTexturedCount;
 
-	// Per-color primitives need extra index buffer views and accessors
-	int extraIndexBVs = 0;
-	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
-		if (meshInfos[mi].perColorMaterials) {
-			extraIndexBVs += (int)perColorIndices[mi].size();
-		}
-	}
 	// Base: each mesh gets position BV+acc, [color BV+acc], [texcoord BV+acc], index BV+acc
 	// For perColorMaterials meshes, we still need the vertex BVs but replace the single index BV+acc
 	// with N per-color index BV+accs. The original index BV is not needed for those meshes.
