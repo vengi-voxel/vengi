@@ -25,6 +25,8 @@
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include "core/sdl/SDLSystem.h"
+#define SDL_MAIN_HANDLED
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_messagebox.h>
 #include <stdio.h>
 #include <signal.h>
@@ -884,6 +886,7 @@ AppState App::onInit() {
 	}
 
 	uint32_t flags = SDL_INIT_EVENTS;
+	SDL_SetMainReady();
 	SDL_Init(flags);
 
 	Log::debug("Initialize the log system");

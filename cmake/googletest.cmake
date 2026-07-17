@@ -102,6 +102,7 @@ function(gtest_suite_end name)
 		get_property(srcs GLOBAL PROPERTY ${name}_Sources)
 		get_property(deps GLOBAL PROPERTY ${name}_Deps)
 		target_sources(${name} PRIVATE ${srcs})
+		target_compile_definitions(${name} PRIVATE SDL_MAIN_HANDLED)
 		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${name}")
 		set_target_properties(${name} PROPERTIES
 			ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${name}"

@@ -253,6 +253,9 @@ void VoxConvertUI::onRenderUI() {
 	ui::popupAbout();
 }
 
+#undef SDL_MAIN_HANDLED
+#include <SDL3/SDL_main.h>
+
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();

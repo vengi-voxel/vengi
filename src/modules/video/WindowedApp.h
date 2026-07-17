@@ -10,7 +10,6 @@
 #include "video/Types.h"
 #include "video/KeyboardLayout.h"
 #include "video/FileDialogOptions.h"
-#include <SDL3/SDL_main.h>
 #include <glm/vec2.hpp>
 
 struct SDL_Window;

@@ -3,7 +3,11 @@
  */
 
 #pragma once
+
+// Entry-point only: allow SDL3's platform main wrapper (WinMain on Windows).
+#undef SDL_MAIN_HANDLED
 #include <SDL3/SDL_main.h>
+
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 

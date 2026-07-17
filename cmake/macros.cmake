@@ -84,6 +84,7 @@ function(engine_add_sharedlibrary)
 	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
 	add_library(${_LIB_TARGET} SHARED ${_LIB_SRCS})
+	target_compile_definitions(${_LIB_TARGET} PRIVATE SDL_MAIN_HANDLED)
 
 	set_target_properties(${_LIB_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_LIB_TARGET}")
 	set_target_properties(${_LIB_TARGET} PROPERTIES
@@ -168,6 +169,10 @@ function(engine_add_executable)
 			set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
 		endif()
 	endif()
+
+	# SDL3's SDL_main.h injects WinMain/main into every TU. Keep that disabled by
+	# default; entry-point sources that need it #undef SDL_MAIN_HANDLED first.
+	target_compile_definitions(${_EXE_TARGET} PRIVATE SDL_MAIN_HANDLED)
 
 	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
 	set_target_properties(${_EXE_TARGET} PROPERTIES
@@ -419,6 +424,8 @@ function(engine_add_module)
 	set(${_LIB_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_LIB_TARGET} module source directory")
 	if (_LIB_SRCS)
 		add_library(${_LIB_TARGET} ${_LIB_SRCS})
+		# Prevent SDL3 SDL_main.h from injecting WinMain/main into every library TU.
+		target_compile_definitions(${_LIB_TARGET} PRIVATE SDL_MAIN_HANDLED)
 	else()
 		add_library(${_LIB_TARGET} INTERFACE)
 	endif()
