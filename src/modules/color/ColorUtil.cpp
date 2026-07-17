@@ -235,19 +235,23 @@ static float getDistanceApprox(RGBA rgba, RGBA rgba2) {
 	return (float)(((512 + rmean) * r * r) >> 8) + 4.0f * g * g + (float)(((767 - rmean) * b * b) >> 8);
 }
 
+float getDistanceHSB(float hue1, float saturation1, float brightness1, float hue2, float saturation2,
+					 float brightness2) {
+	const float weightHue = 0.8f;
+	const float weightSaturation = 0.1f;
+	const float weightValue = 0.1f;
+	const float dH = hue1 - hue2;
+	const float dS = saturation1 - saturation2;
+	const float dV = brightness1 - brightness2;
+	return weightHue * dH * dH + weightValue * dV * dV + weightSaturation * dS * dS;
+}
+
 static float getDistanceHSB(const RGBA &rgba, float hue, float saturation, float brightness) {
 	float chue;
 	float csaturation;
 	float cbrightness;
 	getHSB(rgba, chue, csaturation, cbrightness);
-
-	const float weightHue = 0.8f;
-	const float weightSaturation = 0.1f;
-	const float weightValue = 0.1f;
-	const float dH = chue - hue;
-	const float dS = csaturation - saturation;
-	const float dV = cbrightness - brightness;
-	return weightHue * dH * dH + weightValue * dV * dV + weightSaturation * dS * dS;
+	return getDistanceHSB(chue, csaturation, cbrightness, hue, saturation, brightness);
 }
 
 static float getDistanceHSB(const RGBA &rgba, RGBA rgba2) {
