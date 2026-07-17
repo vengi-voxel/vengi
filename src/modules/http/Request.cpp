@@ -12,7 +12,7 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include "system/WinHttp.h"
-#elif EMSCRIPTEN
+#elif __EMSCRIPTEN__
 #include "system/Emscripten.h"
 #elif USE_CURL
 #include "system/Curl.h"
