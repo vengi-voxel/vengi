@@ -335,7 +335,9 @@ private:
 
 public:
 	Octree(const AABB<TYPE>& aabb, int maxDepth = 10) :
-			_root(aabb, maxDepth, 0, this) {
+			_root(aabb, maxDepth, 0, nullptr) {
+		// Avoid passing this in the initializer list (-Wmaybe-uninitialized on GCC/MinGW).
+		_root._octree = this;
 	}
 
 	inline int count() const {
