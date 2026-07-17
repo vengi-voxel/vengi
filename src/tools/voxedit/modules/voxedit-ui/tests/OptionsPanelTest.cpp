@@ -193,6 +193,8 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		_selectedCategory = OptionCategory::Editor;
 		ctx->Yield();
+		_selectedCategory = OptionCategory::Input;
+		ctx->Yield();
 		_selectedCategory = OptionCategory::Rendering;
 		ctx->Yield();
 		_selectedCategory = OptionCategory::Renderer;
@@ -218,6 +220,25 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK_EQ(animSpeed->intVal(), 200);
 		ctx->ItemInputValue("Model animation speed", 100);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "input settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		setVisible(true);
+		_filter = "";
+		_selectedCategory = OptionCategory::Input;
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->Yield();
+
+		ImGuiTestItemInfo info = ctx->WindowInfo("##optionscontent");
+		IM_CHECK(info.Window != nullptr);
+		ctx->SetRef(info.Window);
+
+		const core::VarPtr &penRadiusMax = core::getVar(cfg::VoxEditPenRadiusMax);
+		ctx->ItemInputValue("Pen maximum radius", 20);
+		ctx->Yield();
+		IM_CHECK_EQ(penRadiusMax->intVal(), 20);
+		ctx->ItemInputValue("Pen maximum radius", 12);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "renderer settings")->TestFunc = [=](ImGuiTestContext *ctx) {

@@ -12,6 +12,7 @@ namespace voxedit {
 enum class OptionCategory : uint8_t {
 	UserInterface,
 	Editor,
+	Input,
 	Metrics,
 	Layout,
 	Display,
@@ -51,6 +52,7 @@ private:
 
 	void renderUserInterface();
 	void renderEditor();
+	void renderInput();
 	void renderMetrics();
 	void renderLayout();
 	void renderDisplay();

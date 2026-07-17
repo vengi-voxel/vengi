@@ -54,6 +54,10 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::VoxEditAutoSaveSeconds) || matchesVarFilter(cfg::VoxEditViewports) ||
 			   matchesVarFilter(cfg::ClientCameraZoomSpeed) || matchesVarFilter(cfg::VoxEditViewdistance) ||
 			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode);
+	case OptionCategory::Input:
+		return matchesVarFilter(cfg::VoxEditPenPressureAffectsRadius) ||
+			   matchesVarFilter(cfg::VoxEditPenRadiusMin) || matchesVarFilter(cfg::VoxEditPenRadiusMax) ||
+			   matchesVarFilter(cfg::VoxEditPenEraserSwitchesMode);
 	case OptionCategory::Metrics:
 		return matchesVarFilter(cfg::MetricFlavor);
 	case OptionCategory::Layout:
@@ -135,6 +139,21 @@ void OptionsPanel::renderUserInterface() {
 	}
 	if (matchesVarFilter(cfg::VoxEditTipOftheDay)) {
 		ImGui::IconCheckboxVar(ICON_LC_LIGHTBULB, cfg::VoxEditTipOftheDay);
+	}
+}
+
+void OptionsPanel::renderInput() {
+	if (matchesVarFilter(cfg::VoxEditPenPressureAffectsRadius)) {
+		ImGui::IconCheckboxVar(ICON_LC_PEN, cfg::VoxEditPenPressureAffectsRadius);
+	}
+	if (matchesVarFilter(cfg::VoxEditPenRadiusMin)) {
+		ImGui::InputVarInt(cfg::VoxEditPenRadiusMin);
+	}
+	if (matchesVarFilter(cfg::VoxEditPenRadiusMax)) {
+		ImGui::InputVarInt(cfg::VoxEditPenRadiusMax);
+	}
+	if (matchesVarFilter(cfg::VoxEditPenEraserSwitchesMode)) {
+		ImGui::IconCheckboxVar(ICON_LC_ERASER, cfg::VoxEditPenEraserSwitchesMode);
 	}
 }
 
@@ -428,6 +447,9 @@ void OptionsPanel::renderContent() {
 	case OptionCategory::Editor:
 		renderEditor();
 		break;
+	case OptionCategory::Input:
+		renderInput();
+		break;
 	case OptionCategory::Metrics:
 		renderMetrics();
 		break;
@@ -477,6 +499,10 @@ void OptionsPanel::renderTree() {
 		  {OptionCategory::Metrics, _("Metrics")},
 		  {OptionCategory::Layout, _("Layout")}},
 		 4},
+		{ICON_LC_PEN, _("Input"),
+		 {{OptionCategory::Input, _("Pen")},
+		  {}, {}, {}},
+		 1},
 		{ICON_LC_MONITOR, _("Viewport"),
 		 {{OptionCategory::Display, _("Display")},
 		  {OptionCategory::Rendering, _("Rendering")},

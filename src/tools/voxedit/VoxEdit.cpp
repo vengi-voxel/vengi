@@ -111,17 +111,17 @@ app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 	_penPressureAffectsRadius = core::Var::registerVar(
-		core::VarDef(cfg::VoxEditPenPressureAffectsRadius, true, _("Pen pressure controls radius"),
-					 _("Map pen pressure to brush radius for radius-based brushes")));
+		core::VarDef(cfg::VoxEditPenPressureAffectsRadius, true, N_("Pen pressure controls radius"),
+					 N_("Map pen pressure to brush radius for radius-based brushes")));
 	_penRadiusMin = core::Var::registerVar(
-		core::VarDef(cfg::VoxEditPenRadiusMin, 1, 1, 64, _("Pen minimum radius"),
-					 _("Minimum brush radius when pressure mapping is active")));
+		core::VarDef(cfg::VoxEditPenRadiusMin, 1, 1, 64, N_("Pen minimum radius"),
+					 N_("Minimum brush radius when pressure mapping is active")));
 	_penRadiusMax = core::Var::registerVar(
-		core::VarDef(cfg::VoxEditPenRadiusMax, 12, 1, 64, _("Pen maximum radius"),
-					 _("Maximum brush radius when pressure mapping is active")));
+		core::VarDef(cfg::VoxEditPenRadiusMax, 12, 1, 64, N_("Pen maximum radius"),
+					 N_("Maximum brush radius when pressure mapping is active")));
 	_penEraserSwitchesMode = core::Var::registerVar(
-		core::VarDef(cfg::VoxEditPenEraserSwitchesMode, true, _("Pen eraser switches mode"),
-					 _("Temporarily switch to erase mode while pen eraser is active")));
+		core::VarDef(cfg::VoxEditPenEraserSwitchesMode, true, N_("Pen eraser switches mode"),
+					 N_("Temporarily switch to erase mode while pen eraser is active")));
 
 	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
