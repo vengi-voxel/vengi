@@ -18,10 +18,11 @@
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
 #include "video/Trace.h"
-#include "core/sdl/SDLSystem.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_init.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_video.h>
 #include <glm/common.hpp>
 #ifdef USE_VK_RENDERER
 #include <SDL3/SDL_vulkan.h>
