@@ -57,7 +57,7 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 		if (!checkModifierBitMask(SDL_KMOD_ALT, pressedModMask, commandModMask)) {
 			return false;
 		}
-		if (!checkModifierBitMask(SDL_KMOD_CTRL, pressedModMask, commandModMask)) {
+		if (!checkModifierBitMask(KMOD_CONTROL, pressedModMask, commandModMask)) {
 			return false;
 		}
 	}
@@ -73,7 +73,7 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
  */
 static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int16_t modMask, double nowSeconds, uint16_t count) {
 	auto range = bindings.equal_range(key);
-	const int16_t modifier = modMask & (SDL_KMOD_SHIFT | SDL_KMOD_CTRL | SDL_KMOD_ALT);
+	const int16_t modifier = modMask & (SDL_KMOD_SHIFT | KMOD_CONTROL | SDL_KMOD_ALT);
 	bool handled = false;
 	for (auto i = range.first; i != range.second; ++i) {
 		if (count > 0 && i->second.count != count) {

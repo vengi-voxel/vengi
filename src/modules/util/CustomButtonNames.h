@@ -75,17 +75,17 @@ static constexpr struct ModifierMapping {
 } MODIFIERMAPPING[] = {
 	{SDL_KMOD_LSHIFT, "left_shift"},
 	{SDL_KMOD_RSHIFT, "right_shift"},
-	{SDL_KMOD_LCTRL, "left_ctrl"},
-	{SDL_KMOD_RCTRL, "right_ctrl"},
+	{KMOD_LCONTROL, "left_ctrl"},
+	{KMOD_RCONTROL, "right_ctrl"},
 	{SDL_KMOD_LALT, "left_alt"},
 	{SDL_KMOD_RALT, "right_alt"},
 	{SDL_KMOD_ALT, "alt"},
 	{SDL_KMOD_SHIFT, "shift"},
-	{SDL_KMOD_CTRL, "ctrl"},
+	{KMOD_CONTROL, "ctrl"},
 	{SDL_KMOD_ALT | SDL_KMOD_SHIFT, "alt+shift"},
-	{SDL_KMOD_CTRL | SDL_KMOD_SHIFT, "ctrl+shift"},
-	{SDL_KMOD_ALT | SDL_KMOD_CTRL, "alt+ctrl"},
-	{SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_SHIFT, "ctrl+alt+shift"},
+	{KMOD_CONTROL | SDL_KMOD_SHIFT, "ctrl+shift"},
+	{SDL_KMOD_ALT | KMOD_CONTROL, "alt+ctrl"},
+	{KMOD_CONTROL | SDL_KMOD_ALT | SDL_KMOD_SHIFT, "ctrl+alt+shift"},
 	{0, nullptr}
 };
 

@@ -41,11 +41,11 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 				} else if (lower == "right_alt") {
 					modifier |= SDL_KMOD_RALT;
 				} else if (lower == "ctrl") {
-					modifier |= SDL_KMOD_CTRL;
+					modifier |= KMOD_CONTROL;
 				} else if (lower == "left_ctrl") {
-					modifier |= SDL_KMOD_LCTRL;
+					modifier |= KMOD_LCONTROL;
 				} else if (lower == "right_ctrl") {
-					modifier |= SDL_KMOD_RCTRL;
+					modifier |= KMOD_RCONTROL;
 				} else if (lower == "gui") {
 					modifier |= SDL_KMOD_GUI;
 				} else if (lower == "left_gui") {
