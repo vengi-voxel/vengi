@@ -131,7 +131,7 @@ TEST_F(VolumeRotatorTest, testRotateXYZByAngle) {
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	int voxelCount = voxelutil::countVoxels(*rotated);
-	EXPECT_EQ(lengthof(originalPositions), (size_t)voxelCount)
+	EXPECT_EQ(lengthof(originalPositions), voxelCount)
 		<< "Expected the same number of voxels after rotation\n"
 		<< *rotated << "\nvs\n"
 		<< smallVolume;
