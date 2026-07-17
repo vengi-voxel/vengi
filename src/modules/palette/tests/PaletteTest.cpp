@@ -233,6 +233,25 @@ TEST_F(PaletteTest, testGetClosestMatch) {
 	}
 }
 
+TEST_F(PaletteTest, testGetClosestMatchHSB) {
+	Palette pal;
+	pal.nippon();
+	ASSERT_GT(pal.colorCount(), 1);
+	for (int i = 0; i < pal.colorCount(); ++i) {
+		const color::RGBA c = pal.color(i);
+		if (c.a == 0) {
+			continue;
+		}
+		const int match = pal.getClosestMatch(c, -1, color::Distance::HSB);
+		EXPECT_EQ(i, match) << "HSB exact match failed for palette index " << i;
+	}
+	const color::RGBA nearRed(250, 10, 10);
+	const int approx = pal.getClosestMatch(nearRed, -1, color::Distance::Approximation);
+	const int hsb = pal.getClosestMatch(nearRed, -1, color::Distance::HSB);
+	EXPECT_NE(PaletteColorNotFound, approx);
+	EXPECT_NE(PaletteColorNotFound, hsb);
+}
+
 TEST_F(PaletteTest, testAddColorsNoDup) {
 	Palette pal;
 	const uint32_t colors[] = {
