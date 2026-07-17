@@ -3,6 +3,7 @@
  */
 
 #include "VoxelModificationHandler.h"
+#include "core/ScopedPtr.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraphNode.h"

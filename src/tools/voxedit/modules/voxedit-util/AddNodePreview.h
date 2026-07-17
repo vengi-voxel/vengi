@@ -5,7 +5,7 @@
 #pragma once
 
 #include "math/OBB.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include <glm/mat3x3.hpp>

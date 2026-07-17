@@ -8,7 +8,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <stdint.h>

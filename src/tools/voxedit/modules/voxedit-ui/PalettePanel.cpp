@@ -3,6 +3,7 @@
  */
 
 #include "PalettePanel.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "color/Color.h"
 #include "color/ColorUtil.h"
 #include "core/StringUtil.h"

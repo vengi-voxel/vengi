@@ -9,14 +9,12 @@
 #include "SceneJob.h"
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
+#include "core/SharedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/concurrent/Future.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
-#include "memento/MementoHandler.h"
-#include "modifier/IModifierRenderer.h"
-#include "modifier/Modifier.h"
 #include "modifier/SceneModifiedFlags.h"
 #include "scenegraph/SceneGraphNodeValueCache.h"
 #include "scenegraph/SceneGraph.h"
@@ -24,23 +22,57 @@
 #include "voxedit-util/network/Server.h"
 #include "voxedit-util/network/SessionRecorder.h"
 #include "voxedit-util/network/SessionPlayer.h"
-#include "voxedit-util/AddNodePreview.h"
-#include "sound/SoundManager.h"
 #include "voxel/ClipboardData.h"
-#include "voxel/Face.h"
+#include "voxel/Connectivity.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelgenerator/LSystem.h"
-#include "voxelgenerator/LUAApi.h"
-#include "voxelrender/CameraMovement.h"
-#include "voxelutil/Picking.h"
 #include "core/Function.h"
+#include "image/ImageFwd.h"
 
 namespace command {
 class CommandArgs;
 }
 
+namespace voxel {
+enum class FaceNames : uint8_t;
+}
+
+namespace voxelgenerator {
+class LUAApi;
+namespace lsystem {
+struct LSystemConfig;
+}
+}
+
+namespace video {
+class Camera;
+}
+
+namespace voxelrender {
+class CameraMovement;
+}
+
+namespace sound {
+class SoundManager;
+using SoundHandle = void *;
+}
+
+namespace memento {
+class MementoHandler;
+struct MementoState;
+}
+
+namespace voxelutil {
+struct PickResult;
+}
+
 namespace voxedit {
+
+class IModifierRenderer;
+class Modifier;
+struct LSystemRuntime;
+struct AddNodePreview;
+using ModifierRendererPtr = core::SharedPtr<IModifierRenderer>;
 
 /**
  * @brief Move directions for the cursor
@@ -95,8 +127,8 @@ class SceneManager : public core::DeltaFrameSeconds {
 
 protected:
 	scenegraph::SceneGraph _sceneGraph;
-	voxelrender::CameraMovement _camMovement;
-	memento::MementoHandler _mementoHandler;
+	voxelrender::CameraMovement *_camMovement = nullptr;
+	memento::MementoHandler *_mementoHandler = nullptr;
 	voxel::ClipboardData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
 	core::Future<SceneJobResult> _sceneJobFuture;
@@ -107,15 +139,15 @@ protected:
 	bool _sceneJobCancelRequested = false;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
-	Modifier _modifier;
-	voxelgenerator::LUAApi _luaApi;
+	Modifier *_modifier = nullptr;
+	voxelgenerator::LUAApi *_luaApi = nullptr;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
 	Server _server;
 	Client _client;
 	SessionRecorder _recorder;
 	SessionPlayer _player;
-	sound::SoundManager _soundManager;
+	sound::SoundManager *_soundManager = nullptr;
 	sound::SoundHandle _chatSound = nullptr;
 
 	/**
@@ -137,12 +169,8 @@ protected:
 
 	bool _traceViaMouse = true;
 
-	voxelgenerator::lsystem::LSystemConfig _lsystemConfig;
-	voxelgenerator::lsystem::LSystemState _lsystemState;
-	voxelgenerator::lsystem::LSystemExecutionState _lsystemExecState;
+	LSystemRuntime *_lsystem = nullptr;
 	bool _lsystemRunning = false;
-	int _lsystemNodeId = InvalidNodeId;
-	voxel::Voxel _lsystemVoxel;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
@@ -163,7 +191,7 @@ protected:
 	glm::ivec2 _mouseCursor{0};
 	glm::ivec2 _mouseCursorDelta{0};
 	bool _mouseLookActive = false;
-	video::CameraRotationType _preMouselookRotationType = video::CameraRotationType::Target;
+	uint8_t _preMouselookRotationType = 0; // video::CameraRotationType::Target
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 	command::ActionButton _rotate;
@@ -173,9 +201,9 @@ protected:
 	command::ActionButton _toggleNodeAdd; // add-node-by-face mode (shift in scene)
 	CreateReferenceButton _createReference;
 
-	voxelutil::PickResult _result;
+	voxelutil::PickResult *_result = nullptr;
 
-	AddNodePreview _addNodePreview;
+	AddNodePreview *_addNodePreview = nullptr;
 	core::VarPtr _addNodeMode;
 	core::VarPtr _addNodeIgnoreOverlap;
 	core::VarPtr _addNodeCloneVoxels;
@@ -791,14 +819,6 @@ public:
 	void nodeForeachGroup(const core::Function<void(int)> &f);
 };
 
-inline const voxelrender::CameraMovement &SceneManager::cameraMovement() const {
-	return _camMovement;
-}
-
-inline voxelrender::CameraMovement &SceneManager::cameraMovement() {
-	return _camMovement;
-}
-
 inline Server &SceneManager::server() {
 	return _server;
 }
@@ -813,10 +833,6 @@ inline SessionRecorder &SceneManager::recorder() {
 
 inline SessionPlayer &SceneManager::player() {
 	return _player;
-}
-
-inline sound::SoundManager &SceneManager::soundManager() {
-	return _soundManager;
 }
 
 inline sound::SoundHandle SceneManager::chatSound() const {
@@ -839,44 +855,12 @@ inline video::Camera *SceneManager::activeCamera() const {
 	return _camera;
 }
 
-inline const memento::MementoHandler &SceneManager::mementoHandler() const {
-	return _mementoHandler;
-}
-
-inline memento::MementoHandler &SceneManager::mementoHandler() {
-	return _mementoHandler;
-}
-
 inline bool SceneManager::dirty() const {
 	return _dirty;
 }
 
 inline void SceneManager::clearDirty() {
 	_dirty = false;
-}
-
-inline const voxel::Voxel &SceneManager::hitCursorVoxel() const {
-	return _modifier.hitCursorVoxel();
-}
-
-inline const glm::ivec3 &SceneManager::cursorPosition() const {
-	return _modifier.cursorPosition();
-}
-
-inline const glm::ivec3 &SceneManager::referencePosition() const {
-	return _modifier.referencePosition();
-}
-
-inline const Modifier &SceneManager::modifier() const {
-	return _modifier;
-}
-
-inline Modifier &SceneManager::modifier() {
-	return _modifier;
-}
-
-inline voxelgenerator::LUAApi &SceneManager::luaApi() {
-	return _luaApi;
 }
 
 inline bool SceneManager::lsystemRunning() const {

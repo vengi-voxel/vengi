@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
+#include "voxelutil/Picking.h"
 
 namespace voxedit {
 
@@ -41,7 +42,7 @@ public:
 	}
 
 	const voxelutil::PickResult &getPickResult() const {
-		return _result;
+		return *_result;
 	}
 
 	bool testMouseRayTrace(bool force, const glm::mat4 &invModel) {

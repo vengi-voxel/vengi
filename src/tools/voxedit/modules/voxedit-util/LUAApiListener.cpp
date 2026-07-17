@@ -3,6 +3,7 @@
  */
 
 #include "LUAApiListener.h"
+#include "memento/MementoHandler.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {

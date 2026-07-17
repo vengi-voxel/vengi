@@ -5,6 +5,7 @@
 #include "VoxEditServer.h"
 #include "app/App.h"
 #include "core/Var.h"
+#include "engine-config.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"

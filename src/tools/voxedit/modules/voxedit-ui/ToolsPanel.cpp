@@ -3,6 +3,7 @@
  */
 
 #include "ToolsPanel.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"

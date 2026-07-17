@@ -3,6 +3,7 @@
  */
 
 #include "VoxEdit.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"

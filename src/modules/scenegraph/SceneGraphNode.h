@@ -10,6 +10,7 @@
 #include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNodeType.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
@@ -37,8 +38,6 @@ struct ColorHistogramEntry {
 };
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
-
-#define InvalidNodeId (-1)
 
 /**
  * @brief Struct that holds the metadata and the volume

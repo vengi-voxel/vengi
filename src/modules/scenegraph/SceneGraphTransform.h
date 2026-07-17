@@ -6,7 +6,7 @@
 
 #include "SceneGraphAnimation.h"
 #include "math/Axis.h"
-#include <glm/ext/quaternion_float.hpp>
+#include <glm/ext/quaternion_float.hpp> // glm::quat pulls mat4 via type_quat.hpp (needed for matrix members)
 
 namespace scenegraph {
 

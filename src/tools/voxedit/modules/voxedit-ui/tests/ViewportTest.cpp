@@ -3,6 +3,7 @@
  */
 
 #include "../Viewport.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "../WindowTitles.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"

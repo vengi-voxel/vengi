@@ -3,6 +3,7 @@
  */
 
 #include "TextureBrush.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "image/Image.h"

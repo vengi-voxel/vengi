@@ -5,21 +5,32 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/SharedPtr.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
-#include "math/Axis.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "video/Camera.h"
-#include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxelrender/RenderContext.h"
-#include "voxedit-util/AddNodePreview.h"
 
 namespace scenegraph {
 class SceneGraph;
+class SceneGraphNode;
+}
+
+namespace video {
+class Camera;
+}
+
+namespace voxel {
+class RawVolume;
+}
+
+namespace voxelrender {
+struct RenderContext;
 }
 
 namespace voxedit {
+
+struct AddNodePreview;
 
 /**
  * @brief Interface for the scene render component
@@ -91,9 +102,7 @@ public:
 	 * @brief Return the volume of a node that is registered in the renderer - this could theoretically differ from the
 	 * node's own volume if only parts of the full volume is rendered (like e.g. 2d slices)
 	 */
-	virtual const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) {
-		return node.volume();
-	}
+	virtual const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node);
 
 	virtual const voxel::Region &sliceRegion() const {
 		return voxel::Region::InvalidRegion;

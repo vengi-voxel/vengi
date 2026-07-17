@@ -13,6 +13,7 @@
 #include "core/Trace.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeType.h"
+#include "voxel/RawVolume.h"
 #include "ui/IMGUIEx.h"
 #include "ui/Style.h"
 #include "ui/IconsLucide.h"

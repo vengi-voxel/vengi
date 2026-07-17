@@ -3,6 +3,7 @@
  */
 
 #include "SceneDebugPanel.h"
+#include "voxelrender/CameraMovement.h"
 #include "app/I18N.h"
 #include "core/collection/RingBuffer.h"
 #include "scenegraph/Physics.h"

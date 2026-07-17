@@ -112,7 +112,7 @@ set(SRCS
 
 	LUAApiListener.h LUAApiListener.cpp
 
-	ISceneRenderer.h
+	ISceneRenderer.h ISceneRenderer.cpp
 	SceneRenderer.h SceneRenderer.cpp
 
 	ModelNodeSettings.h

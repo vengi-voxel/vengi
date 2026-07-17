@@ -3,6 +3,7 @@
  */
 
 #include "NetworkPanel.h"
+#include "sound/SoundManager.h"
 #include "IconsLucide.h"
 #include "command/Command.h"
 #include "core/ConfigVar.h"

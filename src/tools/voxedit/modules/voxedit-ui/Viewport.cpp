@@ -3,6 +3,9 @@
  */
 
 #include "Viewport.h"
+#include "memento/MementoHandler.h"
+#include "voxelrender/CameraMovement.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "DragAndDropPayload.h"
 #include "Gizmo.h"
 #include "ViewMode.h"

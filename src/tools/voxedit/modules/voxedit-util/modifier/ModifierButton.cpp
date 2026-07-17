@@ -3,6 +3,7 @@
  */
 
 #include "ModifierButton.h"
+#include "Modifier.h"
 #include "../SceneManager.h"
 #include "brush/Brush.h"
 #include "core/BindingContext.h"

@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "ImGuizmo.h"
 #include "ViewMode.h"
 #include "Viewport.h"

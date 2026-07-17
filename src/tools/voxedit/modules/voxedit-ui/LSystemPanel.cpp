@@ -3,6 +3,7 @@
  */
 
 #include "LSystemPanel.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include <glm/trigonometric.hpp>

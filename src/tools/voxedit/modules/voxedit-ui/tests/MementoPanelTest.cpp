@@ -3,6 +3,7 @@
  */
 
 #include "../MementoPanel.h"
+#include "memento/MementoHandler.h"
 #include "TestUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"

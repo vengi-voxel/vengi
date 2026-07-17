@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelgenerator/LUAApi.h"
 #include "ScriptApiTool.h"
 #include "io/BufferedReadWriteStream.h"
 #include "voxedit-util/SceneManager.h"

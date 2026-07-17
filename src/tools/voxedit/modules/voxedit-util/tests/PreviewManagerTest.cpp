@@ -3,6 +3,7 @@
  */
 
 #include "ModifierEx.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "../modifier/PreviewManager.h"
 #include "app/tests/AbstractTest.h"
 #include "command/Command.h"

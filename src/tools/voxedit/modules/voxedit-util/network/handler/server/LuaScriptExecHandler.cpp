@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelgenerator/LUAApi.h"
 #include "LuaScriptExecHandler.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"

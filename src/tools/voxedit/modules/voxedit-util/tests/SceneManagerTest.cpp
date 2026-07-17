@@ -3,6 +3,8 @@
  */
 
 #include "voxedit-util/SceneManager.h"
+#include "memento/MementoHandler.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/Config.h"
 #include "AbstractSceneManagerTest.h"
 #include "command/CommandHandler.h"
@@ -17,11 +19,16 @@
 #include "scenegraph/SceneUtil.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "util/VarUtil.h"
+#include "video/Camera.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/transform.hpp>
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/VolumeVisitor.h"

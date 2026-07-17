@@ -3,6 +3,7 @@
  */
 
 #include "../ToolsPanel.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"

@@ -3,6 +3,7 @@
  */
 
 #include "NormalPalettePanel.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "app/I18N.h"
 #include "color/Color.h"
 #include "command/CommandHandler.h"
