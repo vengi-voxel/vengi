@@ -33,7 +33,9 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 	}
 
 	SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)argv.data());
+#if !defined(SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING)
 	char *oldWorkingDirectory = nullptr;
+#endif
 	// SDL 3.4.0
 #if !defined(SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING)
 	bool restoreWorkingDirectory = false;
