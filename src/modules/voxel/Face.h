@@ -144,6 +144,64 @@ static FaceBits visibleFaces(const Sampler &sampler, bool skipEmpty = true) {
 	return vis;
 }
 
+/**
+ * @brief True if at least one face borders air (or outside). Early-outs on first hit.
+ */
+template<class Sampler>
+static bool hasVisibleFace(const Sampler &sampler, bool skipEmpty = true) {
+	if (skipEmpty && voxel::isAir(sampler.voxel().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel1px0py0pz().getMaterial())) {
+		return true;
+	}
+	if (voxel::isAir(sampler.peekVoxel1nx0py0pz().getMaterial())) {
+		return true;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px1py0pz().getMaterial())) {
+		return true;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px1ny0pz().getMaterial())) {
+		return true;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px0py1pz().getMaterial())) {
+		return true;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px0py1nz().getMaterial())) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @brief True if the voxel is solid and fully enclosed by solid neighbors.
+ */
+template<class Sampler>
+static bool isEnclosed(const Sampler &sampler) {
+	if (voxel::isAir(sampler.voxel().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel1px0py0pz().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel1nx0py0pz().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px1py0pz().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px1ny0pz().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px0py1pz().getMaterial())) {
+		return false;
+	}
+	if (voxel::isAir(sampler.peekVoxel0px0py1nz().getMaterial())) {
+		return false;
+	}
+	return true;
+}
+
 template<class Volume>
 static FaceBits visibleFaces(const Volume &v, int x, int y, int z, bool skipEmpty = true) {
 	typename Volume::Sampler sampler(v);

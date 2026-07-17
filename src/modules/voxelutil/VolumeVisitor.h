@@ -124,10 +124,7 @@ struct VisitSolidOutline : public VisitSolidFlag {
 struct VisitInvisible {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
-		if (isAir(sampler.voxel().getMaterial())) {
-			return false;
-		}
-		return visibleFaces(sampler) == voxel::FaceBits::None;
+		return voxel::isEnclosed(sampler);
 	}
 };
 
@@ -137,10 +134,7 @@ struct VisitInvisible {
 struct VisitVisible {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
-		if (isAir(sampler.voxel().getMaterial())) {
-			return false;
-		}
-		return visibleFaces(sampler) != voxel::FaceBits::None;
+		return voxel::hasVisibleFace(sampler);
 	}
 };
 
