@@ -22,7 +22,7 @@ jobs:
         runs-on: ubuntu-latest
         if: startsWith(github.ref, 'refs/tags/')
         container:
-          image: rockylinux/rockylinux:9
+          image: rockylinux/rockylinux:10
 
         steps:
         - uses: actions/checkout@v5
@@ -31,7 +31,7 @@ jobs:
           run: |
             dnf install -y epel-release
             dnf config-manager --set-enabled crb
-            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build zip ccache
+            dnf install -y SDL3-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build zip ccache
 
         - name: Configure ccache
           run: |
@@ -81,7 +81,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build zip
+            sudo apt-get install python3-dateutil dh-cmake make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
 
         - name: Configure ccache
           run: |
@@ -207,7 +207,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev xvfb
+            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
 
         - name: Configure ccache
           run: |
@@ -245,7 +245,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
 
         - name: Configure ccache
           run: |
@@ -312,7 +312,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install libfreetype-dev libjpeg-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache zip
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip xvfb build-essential git make pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
 
         - uses: emscripten-core/setup-emsdk@v15
           with:
@@ -498,7 +498,7 @@ jobs:
               mingw-w64-x86_64-ninja
               mingw-w64-x86_64-ccache
               mingw-w64-x86_64-pkg-config
-              mingw-w64-x86_64-SDL2
+              mingw-w64-x86_64-sdl3
               mingw-w64-x86_64-freetype
               mingw-w64-x86_64-libjpeg-turbo
               mingw-w64-x86_64-libpng
