@@ -24,9 +24,11 @@ bool Circle::insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int 
 	if (radiusU <= 0 || radiusV <= 0) {
 		return false;
 	}
-	const double du = (double)(pos[uAxis] - center[uAxis]);
-	const double dv = (double)(pos[vAxis] - center[vAxis]);
-	return (du * du) / ((double)radiusU * radiusU) + (dv * dv) / ((double)radiusV * radiusV) <= 1.0;
+	const long long du = (long long)(pos[uAxis] - center[uAxis]);
+	const long long dv = (long long)(pos[vAxis] - center[vAxis]);
+	const long long rU2 = (long long)radiusU * (long long)radiusU;
+	const long long rV2 = (long long)radiusV * (long long)radiusV;
+	return du * du * rV2 + dv * dv * rU2 <= rU2 * rV2;
 }
 
 bool Circle::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int depth,
@@ -39,12 +41,13 @@ bool Circle::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, in
 		return false;
 	}
 	if (is3D && depth > 0) {
-		const double du = (double)(pos[uAxis] - center[uAxis]);
-		const double dv = (double)(pos[vAxis] - center[vAxis]);
-		const double ddd = (double)dd;
-		return (du * du) / ((double)radiusU * radiusU) + (dv * dv) / ((double)radiusV * radiusV) +
-				   (ddd * ddd) / ((double)depth * depth) <=
-			   1.0;
+		const long long du = (long long)(pos[uAxis] - center[uAxis]);
+		const long long dv = (long long)(pos[vAxis] - center[vAxis]);
+		const long long ddd = (long long)dd;
+		const long long rU2 = (long long)radiusU * (long long)radiusU;
+		const long long rV2 = (long long)radiusV * (long long)radiusV;
+		const long long d2 = (long long)depth * (long long)depth;
+		return du * du * rV2 * d2 + dv * dv * rU2 * d2 + ddd * ddd * rU2 * rV2 <= rU2 * rV2 * d2;
 	}
 	if (!insideEllipse(pos, center, radiusU, radiusV, uAxis, vAxis)) {
 		return false;
@@ -121,6 +124,7 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 		return insideSelection(pos, center, radiusU, radiusV, depth, is3D, uAxis, vAxis, faceAxisIdx, positiveNormal);
 	};
 	_ellipseHistory.clear();
+	_ellipseHistory.reserve(region.voxels());
 	auto circleFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
 		if (inBounds(x, y, z)) {
 			if (wrapper.modifierType() == ModifierType::Erase) {
