@@ -657,6 +657,18 @@ namespace IMGUIZMO_NAMESPACE
       Colors[TEXT_SHADOW]           = ImVec4(0.000f, 0.000f, 0.000f, 1.000f);
    }
 
+   // Per-id state of a ViewManipulate widget, so several view cubes (one per viewport)
+   // can be manipulated independently through the PushID/PopID mechanism.
+   struct ViewManipulateState
+   {
+      ImGuiID mID = (ImGuiID)-1;
+      bool mIsDragging = false;
+      bool mIsClicking = false;
+      int mInterpolationFrames = 0;
+      vec_t mInterpolationUp;
+      vec_t mInterpolationDir;
+   };
+
    struct Context
    {
       Context() : mbUsing(false), mbUsingViewManipulate(false), mbEnable(true), mIsViewManipulatorHovered(false), mbUsingBounds(false)
@@ -755,11 +767,17 @@ namespace IMGUIZMO_NAMESPACE
       bool mIsOrthographic = false;
       // check to not have multiple gizmo highlighted at the same time
       bool mbOverGizmoHotspot = false;
+      // snapshot of mbOverGizmoHotspot from the previous complete frame, so IsOver()
+      // reports hovering over any gizmo regardless of when it is called
+      bool mbOverGizmoHotspotLastFrame = false;
 
       ImGuiWindow* mAlternativeWindow = nullptr;
       ImVector<ImGuiID> mIDStack;
       ImGuiID mEditingID = -1;
       OPERATION mOperation = OPERATION(0);
+
+      // per-id ViewManipulate widget states (see ViewManipulateState)
+      ImVector<ViewManipulateState> mViewManipulateStates;
 
       bool mAllowAxisFlip = true;
       float mGizmoSizeClipSpace = 0.1f;
@@ -771,6 +789,23 @@ namespace IMGUIZMO_NAMESPACE
             mIDStack.push_back(-1);
          }
          return mIDStack.back();
+      }
+
+      // Retrieve (creating if needed) the ViewManipulate state bound to the current id.
+      inline ViewManipulateState& GetViewManipulateState()
+      {
+         const ImGuiID id = GetCurrentID();
+         for (int i = 0; i < mViewManipulateStates.Size; i++)
+         {
+            if (mViewManipulateStates[i].mID == id)
+            {
+               return mViewManipulateStates[i];
+            }
+         }
+         ViewManipulateState state;
+         state.mID = id;
+         mViewManipulateStates.push_back(state);
+         return mViewManipulateStates.back();
       }
    };
 
@@ -1009,7 +1044,11 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mDrawList = ImGui::GetWindowDrawList();
       // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
       gContext.mWindow = ImGui::GetCurrentWindow();
+      gContext.mbOverGizmoHotspotLastFrame = gContext.mbOverGizmoHotspot;
       gContext.mbOverGizmoHotspot = false;
+      // view manipulate flags accumulate across every ViewManipulate call of the frame
+      gContext.mbUsingViewManipulate = false;
+      gContext.mIsViewManipulatorHovered = false;
       ImGui::End();
       ImGui::PopStyleVar();
       ImGui::PopStyleColor(2);
@@ -1037,9 +1076,11 @@ namespace IMGUIZMO_NAMESPACE
 
    bool IsOver()
    {
-      return (Intersects(gContext.mOperation, TRANSLATE) && GetMoveType(gContext.mOperation, NULL) != MT_NONE) ||
-         (Intersects(gContext.mOperation, ROTATE) && GetRotateType(gContext.mOperation) != MT_NONE) ||
-         (Intersects(gContext.mOperation, SCALE) && GetScaleType(gContext.mOperation) != MT_NONE) || IsUsing();
+      // mbOverGizmoHotspotLastFrame is accumulated across every Manipulate call of the
+      // previous frame, so this reports hovering over any gizmo instead of only the last one.
+      // IsUsingAny() (not IsUsing()) is used so an active drag is detected even when IsOver()
+      // is queried outside the PushID scope of the gizmo being manipulated.
+      return gContext.mbOverGizmoHotspotLastFrame || IsUsingAny();
    }
 
    bool IsOver(OPERATION op)
@@ -1048,7 +1089,7 @@ namespace IMGUIZMO_NAMESPACE
       {
          return true;
       }
-      if(Intersects(op, SCALE) && GetScaleType(op) != MT_NONE)
+      if(Intersects(op, SCALE | SCALEU) && GetScaleType(op) != MT_NONE)
       {
          return true;
       }
@@ -1092,10 +1133,16 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mbEnable = enable;
       if (!enable)
       {
-         gContext.mbUsing = false;
-         gContext.mbUsingBounds = false;
-         gContext.mCurrentHandleType = MT_NONE;
-         gContext.mHoveredHandleType = MT_NONE;
+         // Only cancel an ongoing interaction when the gizmo being disabled is the one
+         // currently edited. Otherwise disabling one gizmo would wipe the shared using
+         // state and break another gizmo that is still enabled/being manipulated.
+         if (!gContext.mbUsing || gContext.GetCurrentID() == gContext.mEditingID)
+         {
+            gContext.mbUsing = false;
+            gContext.mbUsingBounds = false;
+            gContext.mCurrentHandleType = MT_NONE;
+            gContext.mHoveredHandleType = MT_NONE;
+         }
       }
    }
 
@@ -3217,18 +3264,25 @@ namespace IMGUIZMO_NAMESPACE
 
    void ViewManipulate(float* view, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor)
    {
-      static bool isDraging = false;
-      static bool isClicking = false;
-      static vec_t interpolationUp;
-      static vec_t interpolationDir;
-      static int interpolationFrames = 0;
+      // State is bound to the current id (PushID/PopID) so multiple view cubes are independent.
+      ViewManipulateState& vms = gContext.GetViewManipulateState();
+      bool& isDraging = vms.mIsDragging;
+      bool& isClicking = vms.mIsClicking;
+      vec_t& interpolationUp = vms.mInterpolationUp;
+      vec_t& interpolationDir = vms.mInterpolationDir;
+      int& interpolationFrames = vms.mInterpolationFrames;
       const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
+
+      // Recompute hovering for this widget's own window instead of relying on the last
+      // Manipulate() call, otherwise only the most recently drawn view would react.
+      gContext.mbMouseOver = IsHoveringWindow();
 
       matrix_t svgView, svgProjection;
       svgView = gContext.mViewMat;
       svgProjection = gContext.mProjectionMat;
 
       ImGuiIO& io = ImGui::GetIO();
+      const bool viewManipulateHovered = gContext.mbMouseOver && ImRect(position, position + size).Contains(io.MousePos);
       gContext.mDrawList->AddRectFilled(position, position + size, backgroundColor);
       matrix_t viewInverse;
       viewInverse.Inverse(*(matrix_t*)view);
@@ -3332,7 +3386,7 @@ namespace IMGUIZMO_NAMESPACE
                if (iPass)
                {
                   ImU32 directionColor = GetColorU32(DIRECTION_X + normalIndex);
-                  gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, (directionColor | IM_COL32(0x80, 0x80, 0x80, 0x80)) | (gContext.mIsViewManipulatorHovered ? IM_COL32(0x08, 0x08, 0x08, 0) : 0));
+                  gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, (directionColor | IM_COL32(0x80, 0x80, 0x80, 0x80)) | (viewManipulateHovered ? IM_COL32(0x08, 0x08, 0x08, 0) : 0));
                   if (boxes[boxCoordInt])
                   {
                      ImU32 selectionColor = GetColorU32(SELECTION);
@@ -3362,7 +3416,7 @@ namespace IMGUIZMO_NAMESPACE
          vec_t newEye = camTarget + newDir * length;
          LookAt(&newEye.x, &camTarget.x, &newUp.x, view, rightHanded);
       }
-      gContext.mIsViewManipulatorHovered = gContext.mbMouseOver && ImRect(position, position + size).Contains(io.MousePos);
+      gContext.mIsViewManipulatorHovered |= viewManipulateHovered;
 
       if (io.MouseDown[0] && (fabsf(io.MouseDelta[0]) || fabsf(io.MouseDelta[1])) && isClicking)
       {
@@ -3435,8 +3489,9 @@ namespace IMGUIZMO_NAMESPACE
          LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view, rightHanded);
       }
 
-      gContext.mbUsingViewManipulate = (interpolationFrames != 0) || isDraging;
-      if (isClicking || gContext.mbUsingViewManipulate || gContext.mIsViewManipulatorHovered) {
+      const bool thisUsingViewManipulate = (interpolationFrames != 0) || isDraging;
+      gContext.mbUsingViewManipulate |= thisUsingViewManipulate;
+      if (isClicking || thisUsingViewManipulate || viewManipulateHovered) {
 #if IMGUI_VERSION_NUM >= 18723
          ImGui::SetNextFrameWantCaptureMouse(true);
 #else

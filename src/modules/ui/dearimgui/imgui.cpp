@@ -402,6 +402,8 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                             you may use GetMainViewport()->Pos to offset hard-coded positions, e.g. SetNextWindowPos(GetMainViewport()->Pos)
                           - likewise io.MousePos and GetMousePos() will use OS coordinates.
                             If you query mouse positions to interact with non-imgui coordinates you will need to offset them, e.g. subtract GetWindowViewport()->Pos.
+ - 2026/07/08 (1.92.9) - Drag and Drop: commented out legacy name `ImGuiDragDropFlags_SourceAutoExpirePayload` which obsoleted in 1.90.9 (July 2024). Use `ImGuiDragDropFlags_PayloadAutoExpire`.
+ - 2026/07/06 (1.92.9) - ColorEdit: obsoleted SetColorEditOptions() function added in 1.51 (June 2017) in favor of directly poking to io.ConfigColorEditFlags. More consistent and easier to discover.
  - 2026/06/02 (1.92.9) - TreeNode: commented out legacy name ImGuiTreeNodeFlags_SpanTextWidth which was obsoleted in 1.90.7 (May 2024). Use ImGuiTreeNodeFlags_SpanLabelWidth instead.
  - 2026/05/07 (1.92.8) - DrawList: swapped the last two arguments of AddRect(), AddPolyline(), PathStroke().
                          - Before: void ImDrawList::AddRect(ImVec2 p_min, ImVec2 p_max, ImU32 col, float rounding = 0.0f, ImDrawFlags flags = 0, float thickness = 1.0f);
@@ -1257,6 +1259,12 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
 // System includes
 #include <stdio.h>      // vsnprintf, sscanf, printf
 #include <stdint.h>     // intptr_t
+#ifndef IMGUI_DISABLE_TIME_FUNCTIONS
+#include <time.h>       // time(), localtime_r()/localtime_s()
+#if defined(_WIN32)
+static tm* localtime_r(const time_t* timep, tm* result) { return localtime_s(result, timep) == 0 ? result : NULL; }
+#endif
+#endif
 
 // [Windows] On non-Visual Studio compilers, we default to IMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS unless explicitly enabled
 #if defined(_WIN32) && !defined(_MSC_VER) && !defined(IMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS) && !defined(IMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS)
@@ -1376,6 +1384,7 @@ static void             AddWindowToSortBuffer(ImVector<ImGuiWindow*>* out_sorted
 
 // Settings
 static void             WindowSettingsHandler_ClearAll(ImGuiContext*, ImGuiSettingsHandler*);
+static void             WindowSettingsHandler_Cleanup(ImGuiContext*, ImGuiSettingsHandler*, ImGuiSettingsCleanupArgs* args);
 static void*            WindowSettingsHandler_ReadOpen(ImGuiContext*, ImGuiSettingsHandler*, const char* name);
 static void             WindowSettingsHandler_ReadLine(ImGuiContext*, ImGuiSettingsHandler*, void* entry, const char* line);
 static void             WindowSettingsHandler_ApplyAll(ImGuiContext*, ImGuiSettingsHandler*);
@@ -1547,7 +1556,7 @@ ImGuiStyle::ImGuiStyle()
     GrabRounding                = 0.0f;             // Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
     LogSliderDeadzone           = 4.0f;             // The size in pixels of the dead-zone around zero on logarithmic sliders that cross zero.
     ImageRounding               = 0.0f;             // Rounding of Image() calls.
-    ImageBorderSize             = 0.0f;             // Thickness of border around tabs.
+    ImageBorderSize             = 0.0f;             // Thickness of border around Image() calls.
     TabRounding                 = 5.0f;             // Radius of upper corners of a tab. Set to 0.0f to have rectangular tabs.
     TabBorderSize               = 0.0f;             // Thickness of border around tabs.
     TabMinWidthBase             = 1.0f;             // Minimum tab width, to make tabs larger than their contents. TabBar buttons are not affected.
@@ -1707,8 +1716,7 @@ ImGuiIO::ImGuiIO()
     ConfigViewportsNoDefaultParent = true;
     ConfigViewportsPlatformFocusSetsImGuiFocus = true;
 
-    // Miscellaneous options
-    MouseDrawCursor = false;
+    // Widget options
 #ifdef __APPLE__
     ConfigMacOSXBehaviors = true;  // Set Mac OS X style defaults based on __APPLE__ compile time flag
 #else
@@ -1718,11 +1726,21 @@ ImGuiIO::ImGuiIO()
     ConfigInputTextCursorBlink = true;
     ConfigInputTextEnterKeepActive = false;
     ConfigDragClickToInputText = false;
+    ConfigColorEditFlags = ImGuiColorEditFlags_DefaultOptions_; // Current settings for ColorEdit/ColorPicker widgets. May be further edited by users, unless you also set ImGuiColorEditFlags_NoOptions.
     ConfigWindowsResizeFromEdges = true;
     ConfigWindowsMoveFromTitleBarOnly = false;
     ConfigWindowsCopyContentsWithCtrlC = false;
     ConfigScrollbarScrollByPage = true;
+
+    // Ini Settings options
+    ConfigIniSettingsSaveLastUsedDate = true;
+    ConfigIniSettingsAutoDiscardMonths = 0;
+    ConfigDebugIniSettings = false;
+
+    // Miscellaneous options
+    MouseDrawCursor = false;
     ConfigMemoryCompactTimer = 60.0f;
+
     ConfigDebugIsDebuggerPresent = false;
     ConfigDebugHighlightIdConflicts = true;
     ConfigDebugHighlightIdConflictsShowItemPicker = true;
@@ -1737,6 +1755,7 @@ ImGuiIO::ImGuiIO()
     // Inputs Behaviors
     MouseDoubleClickTime = 0.30f;
     MouseDoubleClickMaxDist = 6.0f;
+    MouseSingleClickDelay = 0.50f;
     MouseDragThreshold = 6.0f;
     KeyRepeatDelay = 0.275f;
     KeyRepeatRate = 0.050f;
@@ -4308,10 +4327,12 @@ ImGuiContext::ImGuiContext(ImFontAtlas* shared_font_atlas)
     HoveredIdIsDisabled = false;
     HoveredIdTimer = HoveredIdNotActiveTimer = 0.0f;
     ItemUnclipByLog = false;
+    AnyIdHasBeenEditedThisFrame = false;
     ActiveId = 0;
     ActiveIdIsAlive = 0;
     ActiveIdTimer = 0.0f;
     ActiveIdIsJustActivated = false;
+    ActiveIdWasSelected = ActiveIdWasSoleSelected = false;
     ActiveIdAllowOverlap = false;
     ActiveIdNoClearOnFocusLoss = false;
     ActiveIdHasBeenPressedBefore = false;
@@ -4328,6 +4349,7 @@ ImGuiContext::ImGuiContext(ImFontAtlas* shared_font_atlas)
     memset(&ActiveIdValueOnActivation, 0, sizeof(ActiveIdValueOnActivation));
     LastActiveId = 0;
     LastActiveIdTimer = 0.0f;
+    LastActiveIdWasSelected = LastActiveIdWasSoleSelected = false;
 
     LastKeyboardKeyPressTime = LastKeyModsChangeTime = LastKeyModsChangeFromNoneTime = -1.0;
 
@@ -4428,7 +4450,6 @@ ImGuiContext::ImGuiContext(ImFontAtlas* shared_font_atlas)
     TempInputId = 0;
     memset(&DataTypeZeroValue, 0, sizeof(DataTypeZeroValue));
     BeginMenuDepth = BeginComboDepth = 0;
-    ColorEditOptions = ImGuiColorEditFlags_DefaultOptions_;
     ColorEditCurrentID = ColorEditSavedID = 0;
     ColorEditSavedHue = ColorEditSavedSat = 0.0f;
     ColorEditSavedColor = 0;
@@ -4519,6 +4540,7 @@ void ImGui::Initialize()
         ini_handler.TypeName = "Window";
         ini_handler.TypeHash = ImHashStr("Window");
         ini_handler.ClearAllFn = WindowSettingsHandler_ClearAll;
+        ini_handler.CleanupFn =  WindowSettingsHandler_Cleanup;
         ini_handler.ReadOpenFn = WindowSettingsHandler_ReadOpen;
         ini_handler.ReadLineFn = WindowSettingsHandler_ReadLine;
         ini_handler.ApplyAllFn = WindowSettingsHandler_ApplyAll;
@@ -4535,6 +4557,14 @@ void ImGui::Initialize()
     g.PlatformIO.Platform_SetClipboardTextFn = Platform_SetClipboardTextFn_DefaultImpl;
     g.PlatformIO.Platform_OpenInShellFn = Platform_OpenInShellFn_DefaultImpl;
     g.PlatformIO.Platform_SetImeDataFn = Platform_SetImeDataFn_DefaultImpl;
+
+    // Setup session starting date
+#ifndef IMGUI_DISABLE_TIME_FUNCTIONS
+    const time_t session_time = time(NULL);
+    struct tm session_datetime = {};
+    if (localtime_r(&session_time, &session_datetime))
+        g.PlatformIO.Platform_SessionDate = (session_datetime.tm_year + 1900) * 10000 + (session_datetime.tm_mon + 1) * 100 + session_datetime.tm_mday;
+#endif
 
     // Create default viewport
     ImGuiViewportP* viewport = IM_NEW(ImGuiViewportP)();
@@ -4591,10 +4621,14 @@ void ImGui::Shutdown()
     for (ImFontAtlas* atlas : g.FontAtlases)
     {
         UnregisterFontAtlas(atlas);
-        if (atlas->RefCount == 0 && atlas->OwnerContext == &g)
+        if (atlas->OwnerContext == &g)
         {
-            atlas->Locked = false;
-            IM_DELETE(atlas);
+            IM_ASSERT(atlas->RefCount == 0 && "Destroying context owning a ImFontAtlas which is still used elsewhere!");
+            if (atlas->RefCount == 0)
+            {
+                atlas->Locked = false;
+                IM_DELETE(atlas);
+            }
         }
     }
     g.DrawListSharedData.TempBuffer.clear();
@@ -4907,6 +4941,7 @@ void ImGui::MarkItemEdited(ImGuiID id)
     // ActiveId might have been released by the time we call this (as in the typical press/release button behavior) but still need to fill the data.
     ImGuiContext& g = *GImGui;
 
+    //IM_ASSERT(g.LastItemData.ID == id); // Failing cases include: "widgets_inputtext_scrolling", "widgets_inputtext_multiline_status", "widgets_selectable_input" = case of e.g TempInputText() overlayed manually with different ID (#2718)
     g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_EditedInternal;
     if (g.LastItemData.ItemFlags & ImGuiItemFlags_NoMarkEdited)
         return;
@@ -4915,16 +4950,15 @@ void ImGui::MarkItemEdited(ImGuiID id)
     if (g.ActiveId == id || g.ActiveId == 0)
     {
         // FIXME: Can't we fully rely on LastItemData yet?
-        g.ActiveIdHasBeenEditedThisFrame = true;
-        g.ActiveIdHasBeenEditedBefore = true;
-        if (g.DeactivatedItemData.ID == id)
-            g.DeactivatedItemData.HasBeenEditedBefore = true;
+        g.AnyIdHasBeenEditedThisFrame = g.ActiveIdHasBeenEditedThisFrame = g.ActiveIdHasBeenEditedBefore = true;
     }
+    if (g.DeactivatedItemData.ID == id)
+        g.DeactivatedItemData.HasBeenEditedBefore = true;
 
     // We accept a MarkItemEdited() on drag and drop targets (see https://github.com/ocornut/imgui/issues/1875#issuecomment-978243343)
     // We accept 'ActiveIdPreviousFrame == id' for InputText() returning an edit after it has been taken ActiveId away (#4714)
     // FIXME: This assert is getting a bit meaningless over time. It helped detect some unusual use cases but eventually it is becoming an unnecessary restriction.
-    IM_ASSERT(g.DragDropActive || g.ActiveId == id || g.ActiveId == 0 || g.ActiveIdPreviousFrame == id || g.NavJustMovedToId || (g.CurrentMultiSelect != NULL && g.BoxSelectState.IsActive));
+    IM_ASSERT(g.DragDropActive || g.ActiveId == id || g.ActiveId == 0 || g.DeactivatedItemData.ID == id || g.ActiveIdPreviousFrame == id || g.NavJustMovedToId || (g.CurrentMultiSelect != NULL && g.BoxSelectState.IsActive));
 }
 
 bool ImGui::IsWindowContentHoverable(ImGuiWindow* window, ImGuiHoveredFlags flags)
@@ -5752,6 +5786,7 @@ void ImGui::NewFrame()
 
     g.Time += g.IO.DeltaTime;
     g.FrameCount += 1;
+    g.SessionDate = ImGuiPackedDate(g.PlatformIO.Platform_SessionDate);
     g.TooltipOverrideCount = 0;
     g.WindowsActiveCount = 0;
     g.MenusIdSubmittedThisFrame.resize(0);
@@ -5823,9 +5858,15 @@ void ImGui::NewFrame()
     // Update ActiveId data (clear reference to active widget if the widget isn't alive anymore)
     if (g.ActiveId)
         g.ActiveIdTimer += g.IO.DeltaTime;
+    if (g.ActiveId && g.ActiveId == g.LastActiveId)
+    {
+        g.LastActiveIdWasSelected = g.ActiveIdWasSelected;
+        g.LastActiveIdWasSoleSelected = g.ActiveIdWasSoleSelected;
+    }
     g.LastActiveIdTimer += g.IO.DeltaTime;
     g.ActiveIdPreviousFrame = g.ActiveId;
     g.ActiveIdIsAlive = 0;
+    g.AnyIdHasBeenEditedThisFrame = false;
     g.ActiveIdHasBeenEditedThisFrame = false;
     g.ActiveIdIsJustActivated = false;
     if (g.TempInputId != 0 && g.ActiveId != g.TempInputId)
@@ -5840,6 +5881,8 @@ void ImGui::NewFrame()
     if (g.DeactivatedItemData.ElapseFrame < g.FrameCount)
         g.DeactivatedItemData.ID = 0;
     g.DeactivatedItemData.IsAlive = false;
+    if (g.InputTextDeactivatedState.ElapseFrame < g.FrameCount)
+        g.InputTextDeactivatedState.ID = 0;
 
     // Record when we have been stationary as this state is preserved while over same item.
     // FIXME: The way this is expressed means user cannot alter HoverStationaryDelay during the frame to use varying values.
@@ -6581,6 +6624,7 @@ bool ImGui::IsItemDeactivated()
     return g.DeactivatedItemData.ID == g.LastItemData.ID && g.LastItemData.ID != 0 && g.DeactivatedItemData.ElapseFrame >= g.FrameCount;
 }
 
+// Since 1.92.9: consider using NoLiveEdit flags if all you need to that values are not written bo backing variable while typing.
 bool ImGui::IsItemDeactivatedAfterEdit()
 {
     ImGuiContext& g = *GImGui;
@@ -6668,7 +6712,7 @@ bool ImGui::IsItemEdited()
 void ImGui::SetNextItemAllowOverlap()
 {
     ImGuiContext& g = *GImGui;
-    g.NextItemData.ItemFlags |= ImGuiItemFlags_AllowOverlap;
+    g.NextItemData.ItemFlagsSet |= ImGuiItemFlags_AllowOverlap;
 }
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -6947,38 +6991,28 @@ ImGuiWindow* ImGui::FindWindowByName(const char* name)
 
 static void ApplyWindowSettings(ImGuiWindow* window, ImGuiWindowSettings* settings)
 {
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    window->ViewportPos = main_viewport->Pos;
-    if (settings->ViewportId)
-    {
-        window->ViewportId = settings->ViewportId;
-        window->ViewportPos = ImVec2(settings->ViewportPos.x, settings->ViewportPos.y);
-    }
-    window->Pos = ImTrunc(ImVec2(settings->Pos.x + window->ViewportPos.x, settings->Pos.y + window->ViewportPos.y));
-    if (settings->Size.x > 0 && settings->Size.y > 0)
-        window->Size = window->SizeFull = ImTrunc(ImVec2(settings->Size.x, settings->Size.y));
-    window->Collapsed = settings->Collapsed;
-    window->DockId = settings->DockId;
-    window->DockOrder = settings->DockOrder;
-}
-
-static void InitOrLoadWindowSettings(ImGuiWindow* window, ImGuiWindowSettings* settings)
-{
-    // Initial window state with e.g. default/arbitrary window position
-    // Use SetNextWindowPos() with the appropriate condition flag to change the initial position of a window.
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    window->Pos = main_viewport->Pos + ImVec2(60, 60);
-    window->Size = window->SizeFull = ImVec2(0, 0);
-    window->ViewportPos = main_viewport->Pos;
-    window->SetWindowPosAllowFlags = window->SetWindowSizeAllowFlags = window->SetWindowCollapsedAllowFlags = window->SetWindowDockAllowFlags = ImGuiCond_Always | ImGuiCond_Once | ImGuiCond_FirstUseEver | ImGuiCond_Appearing;
-
     if (settings != NULL)
     {
+        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+        window->ViewportPos = main_viewport->Pos;
+        if (settings->ViewportId)
+        {
+            window->ViewportId = settings->ViewportId;
+            window->ViewportPos = ImVec2(settings->ViewportPos.x, settings->ViewportPos.y);
+        }
+        window->Pos = ImTrunc(ImVec2(settings->Pos.x + window->ViewportPos.x, settings->Pos.y + window->ViewportPos.y));
+        if (settings->Size.x > 0 && settings->Size.y > 0)
+        {
+            window->Size = window->SizeFull = ImTrunc(ImVec2(settings->Size.x, settings->Size.y));
+            window->AutoFitFramesX = window->AutoFitFramesY = 0;
+        }
+        window->Collapsed = settings->Collapsed;
+        window->DockId = settings->DockId;
+        window->DockOrder = settings->DockOrder;
         SetWindowConditionAllowFlags(window, ImGuiCond_FirstUseEver, false);
-        ApplyWindowSettings(window, settings);
     }
-    window->DC.CursorStartPos = window->DC.CursorMaxPos = window->DC.IdealMaxPos = window->Pos; // So first call to CalcWindowContentSizes() doesn't return crazy values
 
+    window->DC.CursorStartPos = window->DC.CursorMaxPos = window->DC.IdealMaxPos = window->Pos; // So first call to CalcWindowContentSizes() doesn't return crazy values
     if ((window->Flags & ImGuiWindowFlags_AlwaysAutoResize) != 0)
     {
         window->AutoFitFramesX = window->AutoFitFramesY = 2;
@@ -6986,12 +7020,27 @@ static void InitOrLoadWindowSettings(ImGuiWindow* window, ImGuiWindowSettings* s
     }
     else
     {
-        if (window->Size.x <= 0.0f)
-            window->AutoFitFramesX = 2;
-        if (window->Size.y <= 0.0f)
-            window->AutoFitFramesY = 2;
+        window->AutoFitFramesX = (window->Size.x <= 0.0f) ? 2 : 0;
+        window->AutoFitFramesY = (window->Size.y <= 0.0f) ? 2 : 0;
         window->AutoFitOnlyGrows = (window->AutoFitFramesX > 0) || (window->AutoFitFramesY > 0);
     }
+}
+
+// Note that 'settings' may be NULL.
+// Sets _Once, _Appearing, _FirstUseEver. _FirstUseEver will be cleared again if there are settings.
+static void InitOrLoadWindowSettings(ImGuiWindow* window, ImGuiWindowSettings* settings)
+{
+    // Initial window state with e.g. default/arbitrary window position
+    // Use SetNextWindowPos() with the appropriate condition flag to change the initial position of a window.
+    ImGuiContext& g = *GImGui;
+    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    window->Pos = main_viewport->Pos + ImVec2(60, 60);
+    window->Size = window->SizeFull = ImVec2(0, 0);
+    window->ViewportPos = main_viewport->Pos;
+    window->SetWindowPosAllowFlags = window->SetWindowSizeAllowFlags = window->SetWindowCollapsedAllowFlags = window->SetWindowDockAllowFlags = ImGuiCond_Always | ImGuiCond_Once | ImGuiCond_FirstUseEver | ImGuiCond_Appearing;
+    ApplyWindowSettings(window, settings);
+    if (settings != NULL)
+        settings->LastUsedDate = g.SessionDate;
 }
 
 static ImGuiWindow* CreateNewWindow(const char* name, ImGuiWindowFlags flags)
@@ -10040,6 +10089,7 @@ IM_MSVC_RUNTIME_CHECKS_RESTORE
 // - IsMouseReleased()
 // - IsMouseDoubleClicked()
 // - GetMouseClickedCount()
+// - GetItemClickedCountWithSingleClickDelay()
 // - IsMouseHoveringRect() [Internal]
 // - IsMouseDragPastThreshold() [Internal]
 // - IsMouseDragging()
@@ -10619,6 +10669,8 @@ bool ImGui::IsMouseReleased(ImGuiMouseButton button, ImGuiID owner_id)
     return g.IO.MouseReleased[button] && TestKeyOwner(MouseButtonToKey(button), owner_id); // Should be same as IsKeyReleased(MouseButtonToKey(button), owner_id)
 }
 
+
+// Prefer higher-level helper GetItemClickedCountWithSingleClickDelay()
 // Use if you absolutely need to distinguish single-click from double-click by introducing a delay.
 // Generally use with 'delay >= io.MouseDoubleClickTime' + combined with a 'io.MouseClickedLastCount == 1' test.
 // This is a very rarely used UI idiom, but some apps use this: e.g. MS Explorer single click on an icon to rename.
@@ -10626,8 +10678,12 @@ bool ImGui::IsMouseReleasedWithDelay(ImGuiMouseButton button, float delay)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_COUNTOF(g.IO.MouseDown));
+    if (IsMouseDown(button))
+        return false;
+    if (delay < 0.0f)
+        delay = g.IO.MouseSingleClickDelay;
     const float time_since_release = (float)(g.Time - g.IO.MouseReleasedTime[button]);
-    return !IsMouseDown(button) && (time_since_release - g.IO.DeltaTime < delay) && (time_since_release >= delay);
+    return (time_since_release - g.IO.DeltaTime < delay) && (time_since_release >= delay);
 }
 
 bool ImGui::IsMouseDoubleClicked(ImGuiMouseButton button)
@@ -10649,6 +10705,62 @@ int ImGui::GetMouseClickedCount(ImGuiMouseButton button)
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_COUNTOF(g.IO.MouseDown));
     return g.IO.MouseClickedCount[button];
+}
+
+// FIXME: This is close to what BeginDragDropSource() is doing, maybe rework.
+static ImGuiID LastItemOverlayButtonForNullId(ImGuiMouseButton mouse_button)
+{
+    ImGuiContext& g = *GImGui;
+    IM_ASSERT(g.LastItemData.ID == 0);
+    ImGuiWindow* window = g.CurrentWindow;
+    ImGuiID id = window->GetIDFromRectangle(g.LastItemData.Rect);
+    if (g.IO.MouseClicked[mouse_button] && ImGui::ItemHoverable(g.LastItemData.Rect, id, g.LastItemData.ItemFlags))
+    {
+        ImGui::SetActiveID(id, window);
+        ImGui::FocusWindow(window);
+    }
+    else if (g.ActiveId == id)
+    {
+        ImGui::KeepAliveID(id);
+        if (!g.IO.MouseDown[mouse_button])
+            ImGui::ClearActiveID();
+    }
+    return id;
+}
+
+// [BETA] Building block for disambiguation between single-click and double-click.
+// - Returns 1 on single-click but delayed by io.MouseSingleClickDelay (which is always > io.MouseDoubleClickTime) after mouse release.
+// - Returns 2+ on double-click and subsequent repeated clicks.
+// In order use that to replicate Windows Explorer's "click on label to rename after a delay",
+// When the function returns 1 for a delayed single click, you can add with further tests:
+// - If you want to test that the mouse position AT THE TIME of the click (before the delay): you can use the 'io.MouseClickedPos[mouse_button]' position.
+// - If you want to test that the mouse position is still over the item at the end of delay: you can use '&& IsItemHovered()'.
+// - If you want to test that the item was selected or the sole selection AT THE TIME of the click (before the delay): you can test for 'g.LastActiveIdWasSelected' or 'g.LastActiveIdWasSoleSelected'.
+// e.g.
+//   int click_count = ImGui::GetItemClickedCountWithSingleClickDelay(mouse_button);
+//   if (click_count == 1 && ImGui::GetCurrentContext()->LastActiveIdWasSoleSelected)
+//       StartRename();
+//   if (click_count == 2)
+//       Launch();
+int ImGui::GetItemClickedCountWithSingleClickDelay(ImGuiMouseButton mouse_button, float delay)
+{
+    // Action: double-click and subsequent clicks
+    ImGuiContext& g = *GImGui;
+    if (g.IO.MouseClickedCount[mouse_button] >= 2 && IsItemClicked(mouse_button))
+        return g.IO.MouseClickedCount[mouse_button];
+
+    // Action: second click, delayed
+    ImGuiID id = g.LastItemData.ID;
+    if (id == 0)
+        id = LastItemOverlayButtonForNullId(mouse_button);
+    if (g.LastActiveId == id)
+    {
+        if (delay >= 0.0f)
+            delay = ImMax(delay, g.IO.MouseDoubleClickTime + 0.01f);
+        if (IsMouseReleasedWithDelay(mouse_button, delay) && g.IO.MouseClickedLastCount[mouse_button] == 1)
+            return 1;
+    }
+    return 0;
 }
 
 // Test if mouse cursor is hovering given rectangle
@@ -11607,7 +11719,13 @@ static void ImGui::ErrorCheckNewFrameSanityChecks()
     IM_ASSERT(g.Style.WindowBorderHoverPadding > 0.0f                   && "Invalid style setting!"); // Required otherwise cannot resize from borders.
     IM_ASSERT(g.Style.WindowMenuButtonPosition == ImGuiDir_None || g.Style.WindowMenuButtonPosition == ImGuiDir_Left || g.Style.WindowMenuButtonPosition == ImGuiDir_Right);
     IM_ASSERT(g.Style.ColorButtonPosition == ImGuiDir_Left || g.Style.ColorButtonPosition == ImGuiDir_Right);
+    IM_ASSERT(ImIsPowerOfTwo(g.IO.ConfigColorEditFlags & ImGuiColorEditFlags_DisplayMask_));  // Check only 1 option is selected
+    IM_ASSERT(ImIsPowerOfTwo(g.IO.ConfigColorEditFlags & ImGuiColorEditFlags_DataTypeMask_)); // "
+    IM_ASSERT(ImIsPowerOfTwo(g.IO.ConfigColorEditFlags & ImGuiColorEditFlags_PickerMask_));   // "
+    IM_ASSERT(ImIsPowerOfTwo(g.IO.ConfigColorEditFlags & ImGuiColorEditFlags_InputMask_));    // "
+
     IM_ASSERT(g.Style.TreeLinesFlags == ImGuiTreeNodeFlags_DrawLinesNone || g.Style.TreeLinesFlags == ImGuiTreeNodeFlags_DrawLinesFull || g.Style.TreeLinesFlags == ImGuiTreeNodeFlags_DrawLinesToNodes);
+    IM_ASSERT(g.IO.MouseSingleClickDelay > g.IO.MouseDoubleClickTime);
 
     // Error handling: we do not accept 100% silent recovery! Please contact me if you feel this is getting in your way.
     if (g.IO.ConfigErrorRecovery)
@@ -12007,7 +12125,7 @@ bool ImGui::ItemAdd(const ImRect& bb, ImGuiID id, const ImRect* nav_bb_arg, ImGu
     g.LastItemData.ID = id;
     g.LastItemData.Rect = bb;
     g.LastItemData.NavRect = nav_bb_arg ? *nav_bb_arg : bb;
-    g.LastItemData.ItemFlags = g.CurrentItemFlags | g.NextItemData.ItemFlags | extra_flags;
+    g.LastItemData.ItemFlags = g.CurrentItemFlags | g.NextItemData.ItemFlagsSet | extra_flags;
     g.LastItemData.StatusFlags = ImGuiItemStatusFlags_None;
     // Note: we don't copy 'g.NextItemData.SelectionUserData' to an hypothetical g.LastItemData.SelectionUserData: since the former is not cleared.
 
@@ -12041,7 +12159,7 @@ bool ImGui::ItemAdd(const ImRect& bb, ImGuiID id, const ImRect* nav_bb_arg, ImGu
 
     // Lightweight clear of SetNextItemXXX data.
     g.NextItemData.HasFlags = ImGuiNextItemDataFlags_None;
-    g.NextItemData.ItemFlags = ImGuiItemFlags_None;
+    g.NextItemData.ItemFlagsSet = ImGuiItemFlags_None;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
     if (id != 0)
@@ -12451,7 +12569,7 @@ void ImGui::BeginGroup()
     group_data.BackupActiveIdIsAlive = g.ActiveIdIsAlive;
     group_data.BackupHoveredIdIsAlive = g.HoveredId != 0;
     group_data.BackupIsSameLine = window->DC.IsSameLine;
-    group_data.BackupActiveIdHasBeenEditedThisFrame = g.ActiveIdHasBeenEditedThisFrame;
+    group_data.BackupAnyIdHasBeenEditedThisFrame = g.AnyIdHasBeenEditedThisFrame;
     group_data.BackupDeactivatedIdIsAlive = g.DeactivatedItemData.IsAlive;
     group_data.EmitItem = true;
 
@@ -12516,7 +12634,7 @@ void ImGui::EndGroup()
         g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_HoveredWindow;
 
     // Forward Edited flag
-    if (g.ActiveIdHasBeenEditedThisFrame && !group_data.BackupActiveIdHasBeenEditedThisFrame)
+    if (g.AnyIdHasBeenEditedThisFrame && !group_data.BackupAnyIdHasBeenEditedThisFrame)
         g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_Edited;
 
     // Forward Deactivated flag
@@ -16322,6 +16440,26 @@ void ImGui::ClearIniSettings()
             handler.ClearAllFn(&g, &handler);
 }
 
+void ImGui::CleanupIniSettings(ImGuiSettingsCleanupArgs* args)
+{
+    ImGuiContext& g = *GImGui;
+    if (args->DiscardAll)
+        for (ImGuiSettingsHandler& handler : g.SettingsHandlers)
+            if (args->TypeHashFilter == 0 || handler.TypeHash == args->TypeHashFilter)
+                if (handler.ClearAllFn != NULL)
+                    handler.ClearAllFn(&g, &handler);
+    if (g.PlatformIO.Platform_SessionDate != 0 && args->DiscardOlderThanMonths != 0)
+    {
+        ImGuiPackedDate discard_older_than_date_p = g.PlatformIO.Platform_SessionDate;
+        discard_older_than_date_p.SubtractMonths(args->DiscardOlderThanMonths);
+        args->_DiscardOlderThanDate = discard_older_than_date_p.Unpack();
+    }
+    for (ImGuiSettingsHandler& handler : g.SettingsHandlers)
+        if (args->TypeHashFilter == 0 || handler.TypeHash == args->TypeHashFilter)
+            if (handler.CleanupFn != NULL)
+                handler.CleanupFn(&g, &handler, args);
+}
+
 void ImGui::LoadIniSettingsFromDisk(const char* ini_filename)
 {
     size_t file_data_size = 0;
@@ -16400,6 +16538,12 @@ void ImGui::LoadIniSettingsFromMemory(const char* ini_data, size_t ini_size)
     memcpy(buf, ini_data, ini_size);
 
     // Call post-read handlers
+    ImGuiSettingsCleanupArgs cleanup_args;
+    if (g.IO.ConfigIniSettingsAutoDiscardMonths > 0)
+    {
+        cleanup_args.DiscardOlderThanMonths = g.IO.ConfigIniSettingsAutoDiscardMonths;
+        CleanupIniSettings(&cleanup_args);
+    }
     for (ImGuiSettingsHandler& handler : g.SettingsHandlers)
         if (handler.ApplyAllFn != NULL)
             handler.ApplyAllFn(&g, &handler);
@@ -16499,6 +16643,19 @@ static void WindowSettingsHandler_ClearAll(ImGuiContext* ctx, ImGuiSettingsHandl
     g.SettingsWindows.clear();
 }
 
+static void WindowSettingsHandler_Cleanup(ImGuiContext* ctx, ImGuiSettingsHandler*, ImGuiSettingsCleanupArgs* args)
+{
+    ImGuiContext& g = *ctx;
+    for (ImGuiWindowSettings* settings = g.SettingsWindows.begin(); settings != NULL; settings = g.SettingsWindows.next_chunk(settings))
+    {
+        const bool is_valid = settings->LastUsedDate.IsValid();
+        if ((args->_DiscardOlderThanDate != 0 && settings->LastUsedDate.Unpack() < args->_DiscardOlderThanDate) || (args->DiscardWhenMissingDate && !is_valid))
+            settings->WantDelete = true;
+        if (args->SetCurrentSessionDateToAll || (args->SetCurrentSessionDateWhenMissingDate && !is_valid))
+            settings->LastUsedDate = g.SessionDate;
+    }
+}
+
 static void* WindowSettingsHandler_ReadOpen(ImGuiContext*, ImGuiSettingsHandler*, const char* name)
 {
     ImGuiID id = ImHashStr(name);
@@ -16524,6 +16681,7 @@ static void WindowSettingsHandler_ReadLine(ImGuiContext*, ImGuiSettingsHandler*,
     else if (sscanf(line, "ViewportPos=%i,%i", &x, &y) == 2){ settings->ViewportPos = ImVec2ih((short)x, (short)y); }
     else if (sscanf(line, "Collapsed=%d", &i) == 1)         { settings->Collapsed = (i != 0); }
     else if (sscanf(line, "IsChild=%d", &i) == 1)           { settings->IsChild = (i != 0); }
+    else if (sscanf(line, "LastUsed=%d", &i) == 1)          { settings->LastUsedDate = i; }
     else if (sscanf(line, "DockId=0x%X,%d", &u1, &i) == 2)  { settings->DockId = u1; settings->DockOrder = (short)i; }
     else if (sscanf(line, "DockId=0x%X", &u1) == 1)         { settings->DockId = u1; settings->DockOrder = -1; }
     else if (sscanf(line, "ClassId=0x%X", &u1) == 1)        { settings->ClassId = u1; }
@@ -16556,6 +16714,7 @@ static void WindowSettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandl
         if (!settings)
         {
             settings = ImGui::CreateNewWindowSettings(window->Name);
+            settings->LastUsedDate = g.SessionDate;
             window->SettingsOffset = g.SettingsWindows.offset_from_ptr(settings);
         }
         IM_ASSERT(settings->ID == window->ID);
@@ -16570,6 +16729,7 @@ static void WindowSettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandl
         settings->Collapsed = window->Collapsed;
         settings->IsChild = (window->RootWindow != window); // Cannot rely on ImGuiWindowFlags_ChildWindow here as docked windows have this set.
         settings->WantDelete = false;
+        settings->LastUsedDate = g.SessionDate;
     }
 
     // Write to text buffer
@@ -16579,7 +16739,7 @@ static void WindowSettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandl
         if (settings->WantDelete)
             continue;
         const char* settings_name = settings->GetName();
-        buf->appendf("[%s][%s]\n", handler->TypeName, settings_name);
+        buf->appendf("[%s][%s]\n", handler->TypeName, settings_name); // [Window][name]
         if (settings->IsChild)
         {
             buf->appendf("IsChild=1\n");
@@ -16608,6 +16768,9 @@ static void WindowSettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandl
                     buf->appendf("ClassId=0x%08X\n", settings->ClassId);
             }
         }
+        if (g.IO.ConfigIniSettingsSaveLastUsedDate)
+            if (int last_used_date = settings->LastUsedDate.Unpack())
+                buf->appendf("LastUsed=%08d\n", last_used_date);
         buf->append("\n");
     }
 }
@@ -20882,8 +21045,8 @@ void ImGui::DockBuilderRemoveNodeChildNodes(ImGuiID root_id)
         return;
     bool has_central_node = false;
 
-    ImGuiDataAuthority backup_root_node_authority_for_pos = root_node ? root_node->AuthorityForPos : ImGuiDataAuthority_Auto;
-    ImGuiDataAuthority backup_root_node_authority_for_size = root_node ? root_node->AuthorityForSize : ImGuiDataAuthority_Auto;
+    ImGuiDataAuthority backup_root_node_authority_for_pos = root_node ? (ImGuiDataAuthority_)root_node->AuthorityForPos : ImGuiDataAuthority_Auto;
+    ImGuiDataAuthority backup_root_node_authority_for_size = root_node ? (ImGuiDataAuthority_)root_node->AuthorityForSize : ImGuiDataAuthority_Auto;
 
     // Process active windows
     ImVector<ImGuiDockNode*> nodes_to_remove;
@@ -20910,8 +21073,8 @@ void ImGui::DockBuilderRemoveNodeChildNodes(ImGuiID root_id)
     // Make sure we don't lose our current pos/size. (FIXME-DOCK: Consider tidying up that code in DockNodeAddWindow instead)
     if (root_node)
     {
-        root_node->AuthorityForPos = backup_root_node_authority_for_pos;
-        root_node->AuthorityForSize = backup_root_node_authority_for_size;
+        root_node->AuthorityForPos = (ImU8)backup_root_node_authority_for_pos;
+        root_node->AuthorityForSize = (ImU8)backup_root_node_authority_for_size;
     }
 
     // Apply to settings
@@ -22393,6 +22556,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
 {
     ImGuiContext& g = *GImGui;
     ImGuiIO& io = g.IO;
+    ImGuiPlatformIO& platform_io = g.PlatformIO;
     ImGuiMetricsConfig* cfg = &g.DebugMetricsConfig;
     if (cfg->ShowDebugLog)
         ShowDebugLogWindow(&cfg->ShowDebugLog);
@@ -22780,8 +22944,36 @@ void ImGui::ShowMetricsWindow(bool* p_open)
             Text("\"%s\"", g.IO.IniFilename);
         else
             TextUnformatted("<NULL>");
-        Checkbox("io.ConfigDebugIniSettings", &io.ConfigDebugIniSettings);
         Text("SettingsDirtyTimer %.2f", g.SettingsDirtyTimer);
+
+        int highlight_older_than_date = 0;
+        Text("SessionDate: %d", platform_io.Platform_SessionDate);
+        BeginDisabled(platform_io.Platform_SessionDate == 0);
+        Checkbox("Highlight Entries Older Than", &cfg->SettingsHighlightOldEntries);
+        SetNextItemWidth(GetFontSize() * 8);
+        SameLine();
+        SliderInt("Months", &cfg->SettingsDiscardMonths, 1, 24);
+        if (cfg->SettingsHighlightOldEntries && cfg->SettingsDiscardMonths > 0)
+        {
+            ImGuiPackedDate cutoff_date = platform_io.Platform_SessionDate;
+            cutoff_date.SubtractMonths(cfg->SettingsDiscardMonths);
+            highlight_older_than_date = cutoff_date.Unpack();
+            SameLine();
+            ImGuiSettingsCleanupArgs cleanup_args;
+            cleanup_args.DiscardOlderThanMonths = cfg->SettingsDiscardMonths;
+            if (Button("Discard"))
+                CleanupIniSettings(&cleanup_args);
+        }
+        EndDisabled();
+        Checkbox("io.ConfigDebugIniSettings", &io.ConfigDebugIniSettings);
+
+        struct ScopedHighlightOlderThan
+        {
+            bool Highlight;
+            ScopedHighlightOlderThan(int cutoff_date, ImGuiPackedDate in_date)  { Highlight = cutoff_date != 0 && in_date.Unpack() < cutoff_date; if (Highlight) PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); }
+            ~ScopedHighlightOlderThan()                                         { if (Highlight) PopStyleColor(); }
+        };
+
         if (TreeNode("SettingsHandlers", "Settings handlers: (%d)", g.SettingsHandlers.Size))
         {
             for (ImGuiSettingsHandler& handler : g.SettingsHandlers)
@@ -22791,14 +22983,20 @@ void ImGui::ShowMetricsWindow(bool* p_open)
         if (TreeNode("SettingsWindows", "Settings packed data: Windows: %d bytes", g.SettingsWindows.size()))
         {
             for (ImGuiWindowSettings* settings = g.SettingsWindows.begin(); settings != NULL; settings = g.SettingsWindows.next_chunk(settings))
+            {
+                ScopedHighlightOlderThan scoped_highlight(highlight_older_than_date, settings->LastUsedDate);
                 DebugNodeWindowSettings(settings);
+            }
             TreePop();
         }
 
         if (TreeNode("SettingsTables", "Settings packed data: Tables: %d bytes", g.SettingsTables.size()))
         {
             for (ImGuiTableSettings* settings = g.SettingsTables.begin(); settings != NULL; settings = g.SettingsTables.next_chunk(settings))
+            {
+                ScopedHighlightOlderThan scoped_highlight(highlight_older_than_date, settings->LastUsedDate);
                 DebugNodeTableSettings(settings, NULL);
+            }
             TreePop();
         }
 
@@ -23769,7 +23967,7 @@ void ImGui::DebugNodeWindowSettings(ImGuiWindowSettings* settings)
 {
     if (settings->WantDelete)
         BeginDisabled();
-    Text("0x%08X \"%s\" Pos (%d,%d) Size (%d,%d) Collapsed=%d",
+    BulletText("0x%08X \"%s\" Pos (%d,%d) Size (%d,%d) Collapsed=%d",
         settings->ID, settings->GetName(), settings->Pos.x, settings->Pos.y, settings->Size.x, settings->Size.y, settings->Collapsed);
     if (settings->WantDelete)
         EndDisabled();

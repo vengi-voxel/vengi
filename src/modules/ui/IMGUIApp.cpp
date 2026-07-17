@@ -401,7 +401,7 @@ app::AppState IMGUIApp::onInit() {
 	ImGui_ImplOpenGL3_Init(nullptr);
 #endif
 
-	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
+	ImGui::GetIO().ConfigColorEditFlags = ImGuiColorEditFlags_Float;
 
 	_console.init();
 
