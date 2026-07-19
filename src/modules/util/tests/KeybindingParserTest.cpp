@@ -4,6 +4,7 @@
 
 #include "util/KeybindingParser.h"
 #include "app/tests/AbstractTest.h"
+#include "core/BindingContext.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 
@@ -50,7 +51,14 @@ protected:
 			return false;
 		}
 		core::registerBindingContext("all", core::BindingContext::All);
+		core::registerBindingContext("foo", core::BindingContext::Context1);
+		core::registerBindingContext("bar", core::BindingContext::Context2);
 		return true;
+	}
+
+	void onCleanupApp() override {
+		core::resetBindingContexts();
+		Super::onCleanupApp();
 	}
 };
 
@@ -215,6 +223,31 @@ TEST_F(KeybindingParserTest, testBareShiftStillWorksAsModifier) {
 	ASSERT_TRUE(range.first != range.second);
 	EXPECT_EQ("brushpaint", range.first->second.command);
 	EXPECT_TRUE(range.first->second.modifier & SDL_KMOD_SHIFT);
+}
+
+TEST_F(KeybindingParserTest, testExclusiveContextRoundtrip) {
+	// voxedit uses !scene for +addnode_mode so it does not overlap +sprint in game
+	KeybindingParser p("left_shift +addnode_mode !foo\nleft_shift +sprint bar\n");
+	const BindMap &m = p.getBindings();
+	ASSERT_EQ(0, p.invalidBindings()) << p.lastError();
+	ASSERT_EQ(2u, m.size()) << m;
+
+	int addNode = 0;
+	int sprint = 0;
+	for (const auto &binding : m) {
+		EXPECT_EQ((int32_t)SDLK_LSHIFT, binding.first);
+		if (binding.second.command == "+addnode_mode") {
+			EXPECT_EQ(core::BindingContext::Context1 | core::BindingContext::ContextExclusive, binding.second.context);
+			EXPECT_EQ("!foo", core::bindingContextString(binding.second.context));
+			++addNode;
+		} else if (binding.second.command == "+sprint") {
+			EXPECT_EQ(core::BindingContext::Context2, binding.second.context);
+			EXPECT_EQ("bar", core::bindingContextString(binding.second.context));
+			++sprint;
+		}
+	}
+	EXPECT_EQ(1, addNode);
+	EXPECT_EQ(1, sprint);
 }
 
 } // namespace util
