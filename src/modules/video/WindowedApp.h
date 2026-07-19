@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/App.h"
+#include "image/ImageFwd.h"
 #include "video/IEventObserver.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
@@ -81,6 +82,13 @@ protected:
 	void showCursor(bool show);
 
 	virtual SDL_Window *createWindow(int width, int height, int displayIndex, uint32_t flags);
+
+	/**
+	 * @brief Fallback window icon via SDL_SetWindowIcon from {appname}-icon.png
+	 * On Linux, the desktop file + StartupWMClass is preferred; this covers X11 and
+	 * compositors that support xdg-toplevel-icon, and running without an installed desktop entry.
+	 */
+	void setWindowIcon();
 
 	void centerMousePosition();
 
@@ -179,6 +187,12 @@ public:
 		return getInstance()->_fps;
 	}
 	static WindowedApp* getInstance();
+
+	/**
+	 * @brief Apply a loaded RGBA image as the window icon
+	 * @return @c true if the icon was set
+	 */
+	static bool setWindowIcon(SDL_Window *window, const image::ImagePtr &icon);
 };
 
 inline const util::KeyBindingHandler &WindowedApp::keybindingHandler() const {

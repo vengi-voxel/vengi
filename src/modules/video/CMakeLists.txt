@@ -103,6 +103,7 @@ set(TEST_SRCS
 	tests/ShapeBuilderTest.cpp
 	tests/CameraTest.cpp
 	tests/RendererTest.cpp
+	tests/WindowedAppTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

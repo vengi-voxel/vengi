@@ -12,6 +12,7 @@
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
+#include "image/Image.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "util/CustomButtonNames.h"
@@ -22,6 +23,7 @@
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 #include <glm/common.hpp>
 #ifdef USE_VK_RENDERER
@@ -283,6 +285,36 @@ SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, u
 	return window;
 }
 
+bool WindowedApp::setWindowIcon(SDL_Window *window, const image::ImagePtr &icon) {
+	if (window == nullptr || !icon || !icon->isLoaded()) {
+		return false;
+	}
+	if (icon->components() != 4) {
+		Log::debug("Window icon '%s' must be RGBA", icon->name().c_str());
+		return false;
+	}
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(icon->width(), icon->height(), SDL_PIXELFORMAT_RGBA32,
+												 (void *)icon->data(), icon->width() * 4);
+	if (surface == nullptr) {
+		Log::debug("Failed to create window icon surface: %s", SDL_GetError());
+		return false;
+	}
+	const bool ok = SDL_SetWindowIcon(window, surface);
+	if (!ok) {
+		Log::debug("Failed to set window icon: %s", SDL_GetError());
+	}
+	SDL_DestroySurface(surface);
+	return ok;
+}
+
+void WindowedApp::setWindowIcon() {
+	const core::String iconName = _appname + "-icon.png";
+	const image::ImagePtr &icon = image::loadImage(iconName);
+	if (!setWindowIcon(_window, icon)) {
+		Log::debug("No window icon applied for '%s'", iconName.c_str());
+	}
+}
+
 app::AppState WindowedApp::onInit() {
 	app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -387,6 +419,7 @@ app::AppState WindowedApp::onInit() {
 		SDL_MaximizeWindow(_window);
 	}
 
+	setWindowIcon();
 
 	_rendererContext = video::createContext(_window);
 	if (_rendererContext == nullptr) {
