@@ -5,6 +5,7 @@
 #include "voxedit-util/SceneRenderer.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxedit-util/Config.h"
+#include "voxel/Region.h"
 
 namespace voxedit {
 
@@ -61,6 +62,23 @@ protected:
 
 TEST_F(SceneRendererTest, testInit) {
 	// empty to test init and shutdown
+}
+
+TEST_F(SceneRendererTest, testRemoveNodeCancelsPendingRegionExtraction) {
+	const int nodeId = 42;
+	const voxel::Region region(0, 0, 0, 7, 7, 7);
+	// Queue an extraction, then remove the node before the command buffer is flushed.
+	_sceneRenderer.updateNodeRegion(nodeId, region);
+	_sceneRenderer.removeNode(nodeId);
+	_sceneRenderer.update();
+}
+
+TEST_F(SceneRendererTest, testClearCancelsPendingRegionExtractions) {
+	const voxel::Region region(0, 0, 0, 7, 7, 7);
+	_sceneRenderer.updateNodeRegion(1, region);
+	_sceneRenderer.updateNodeRegion(2, region);
+	_sceneRenderer.clear();
+	_sceneRenderer.update();
 }
 
 } // namespace voxedit
