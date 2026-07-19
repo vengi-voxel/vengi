@@ -604,7 +604,13 @@ msgstr ""
 msgid "Size all columns to default###SizeAll"
 msgstr ""
 
+msgid "Reset###Reset"
+msgstr ""
+
 msgid "Reset order###ResetOrder"
+msgstr ""
+
+msgid "Reset visibility###ResetVisibility"
 msgstr ""
 
 msgid "(Main menu bar)"
@@ -1687,6 +1693,30 @@ msgstr ""
 msgid "The speed of camera zoom for the client"
 msgstr ""
 
+msgid "Pen pressure controls radius"
+msgstr ""
+
+msgid "Map pen pressure to brush radius for radius-based brushes"
+msgstr ""
+
+msgid "Pen minimum radius"
+msgstr ""
+
+msgid "Minimum brush radius when pressure mapping is active"
+msgstr ""
+
+msgid "Pen maximum radius"
+msgstr ""
+
+msgid "Maximum brush radius when pressure mapping is active"
+msgstr ""
+
+msgid "Pen eraser switches mode"
+msgstr ""
+
+msgid "Temporarily switch to erase mode while pen eraser is active"
+msgstr ""
+
 msgid "Save the current viewport as screenshot"
 msgstr ""
 
@@ -1810,40 +1840,7 @@ msgstr ""
 msgid "Delete %i keyframes"
 msgstr ""
 
-msgid "Color picker"
-msgstr ""
-
-msgid "Place"
-msgstr ""
-
-msgid "Erase"
-msgstr ""
-
-msgid "Override"
-msgstr ""
-
-msgid "Paint"
-msgstr ""
-
-msgid "Normal paint"
-msgstr ""
-
-msgid "No brush"
-msgstr ""
-
 msgid "Click on a voxel to pick the color"
-msgstr ""
-
-msgid "Click a voxel face to set extrusion direction"
-msgstr ""
-
-msgid "Select voxels first (Select brush)"
-msgstr ""
-
-msgid "Select voxels, then switch to Sculpt"
-msgstr ""
-
-msgid "Click a voxel face to set direction"
 msgstr ""
 
 msgid "Brushes"
@@ -1878,6 +1875,10 @@ msgstr ""
 
 msgctxt "Reskin Follow"
 msgid "Voxel"
+msgstr ""
+
+msgctxt "Reskin Follow"
+msgid "Corner Average"
 msgstr ""
 
 msgctxt "Reskin Anchor"
@@ -1946,6 +1947,18 @@ msgstr ""
 
 msgctxt "Scale Sampling"
 msgid "Cubic"
+msgstr ""
+
+msgctxt "Smooth Wall Interp"
+msgid "Linear"
+msgstr ""
+
+msgctxt "Smooth Wall Interp"
+msgid "Inverse Distance"
+msgstr ""
+
+msgctxt "Smooth Wall Interp"
+msgid "Edge Aware"
 msgstr ""
 
 msgid "Add new camera"
@@ -2728,6 +2741,9 @@ msgstr ""
 msgid "Layout"
 msgstr ""
 
+msgid "Pen"
+msgstr ""
+
 msgid "Viewport"
 msgstr ""
 
@@ -3164,6 +3180,9 @@ msgstr ""
 msgid "Add a new model node"
 msgstr ""
 
+msgid "Toggle add node by face in scene view"
+msgstr ""
+
 msgid "Add a new group"
 msgstr ""
 
@@ -3490,9 +3509,6 @@ msgstr ""
 msgid "Show gizmo for brushes that support it"
 msgstr ""
 
-msgid "Show brush status and hints in the viewport"
-msgstr ""
-
 msgid "Simple"
 msgstr ""
 
@@ -3598,6 +3614,45 @@ msgid "SceneMode"
 msgstr ""
 
 msgid "Create a reference node"
+msgstr ""
+
+msgid "Color picker"
+msgstr ""
+
+msgid "Place"
+msgstr ""
+
+msgid "Erase"
+msgstr ""
+
+msgid "Override"
+msgstr ""
+
+msgid "Paint"
+msgstr ""
+
+msgid "Normal paint"
+msgstr ""
+
+msgid "No brush"
+msgstr ""
+
+msgid "Click a voxel face to set extrusion direction"
+msgstr ""
+
+msgid "Select voxels first (Select brush)"
+msgstr ""
+
+msgid "Select voxels, then switch to Sculpt"
+msgstr ""
+
+msgid "Click a voxel face to set direction"
+msgstr ""
+
+msgid "Add node by face"
+msgstr ""
+
+msgid "Click a face to place, Esc to cancel"
 msgstr ""
 
 msgid "VoxBox username"
@@ -3875,18 +3930,22 @@ msgstr ""
 msgid "Sigma"
 msgstr ""
 
+msgid "Fill holes"
+msgstr ""
+
+msgid "Fill enclosed empty areas with interpolated heights"
+msgstr ""
+
+msgid "Clear depth"
+msgstr ""
+
+msgid "How many voxels above the smoothed surface to clear (0 = none)"
+msgstr ""
+
 msgid "Copy voxels to clipboard or load a skin file"
 msgstr ""
 
 msgid "Load skin"
-msgstr ""
-
-msgid "Skin up axis"
-msgstr ""
-
-msgid ""
-"Which axis of the skin points outward from the surface. Set to Y if your "
-"skin was built with the pattern facing up."
 msgstr ""
 
 msgid "Reskin mode"
@@ -3896,12 +3955,6 @@ msgid "Follow surface"
 msgstr ""
 
 msgid "Tile"
-msgstr ""
-
-msgid "Mirror U"
-msgstr ""
-
-msgid "Mirror V"
 msgstr ""
 
 msgid "Offset U"
@@ -3926,6 +3979,17 @@ msgid "Brush radius"
 msgstr ""
 
 msgid "Extend only"
+msgstr ""
+
+msgid "Only place voxels adjacent to existing solid voxels"
+msgstr ""
+
+msgid "Remove only"
+msgstr ""
+
+msgid ""
+"Do not place any voxels - only carve away the voxels above the plane (set "
+"the Remove above depth)"
 msgstr ""
 
 msgid "Remove above"
@@ -4262,6 +4326,21 @@ msgstr ""
 msgid "Start in scene mode"
 msgstr ""
 
+msgid "Place new nodes adjacent to the active node face in scene view"
+msgstr ""
+
+msgid "Allow overlap"
+msgstr ""
+
+msgid "Allow placing adjacent nodes even if the region overlaps other nodes"
+msgstr ""
+
+msgid "Clone voxels"
+msgstr ""
+
+msgid "Copy voxels when adding a node by face"
+msgstr ""
+
 msgid "Far plane for the camera"
 msgstr ""
 
@@ -4321,7 +4400,10 @@ msgstr ""
 msgid "Show the gizmo for brushes that support it"
 msgstr ""
 
-msgid "Brush HUD"
+msgid "Viewport HUD"
+msgstr ""
+
+msgid "Show status and hints in the viewport"
 msgstr ""
 
 msgid "Last palette"
@@ -4401,6 +4483,12 @@ msgstr ""
 msgid "Move the cursor by keys, not by viewport mouse trace"
 msgstr ""
 
+msgid "Hold to toggle add-node-by-face mode in scene view"
+msgstr ""
+
+msgid "Hold shift over the scene gizmo and click to create a reference node"
+msgstr ""
+
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr ""
 
@@ -4437,7 +4525,7 @@ msgstr ""
 msgid "Remove normal information from the palette"
 msgstr ""
 
-msgid "Switch active node to hovered from scene graph mode"
+msgid "Scene view interaction: add node by face or activate hovered node"
 msgstr ""
 
 msgid "Toggle lock on the hovered node"
@@ -4479,7 +4567,7 @@ msgid ""
 "comma-separated list of indices into a new node"
 msgstr ""
 
-msgid "Aborts the current modifier action"
+msgid "Aborts the current modifier action or add-node mode"
 msgstr ""
 
 msgid "Apply pending brush changes without switching brushes"
@@ -4666,6 +4754,9 @@ msgstr ""
 msgid ""
 "Add a new model node to the current active node (with a given name and "
 "width, height, depth)"
+msgstr ""
+
+msgid "Add a new model node adjacent to the hovered face of the active node"
 msgstr ""
 
 msgid ""
@@ -4941,11 +5032,15 @@ msgid "Bridge Gap"
 msgstr ""
 
 msgctxt "Sculpt Modes"
-msgid "Squash to Plane"
+msgid "Smooth Wall"
 msgstr ""
 
 msgctxt "Sculpt Modes"
 msgid "Extend Plane"
+msgstr ""
+
+msgctxt "Sculpt Modes"
+msgid "Squash to Plane"
 msgstr ""
 
 msgctxt "Sculpt Modes"
