@@ -119,7 +119,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _imageAssetPanel(app, _sceneMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr),
-	  _optionsPanel(app), _scriptBrowserPanel(app), _voxBoxBrowserPanel(app, _sceneMgr, texturePool), _menuBar(app, _sceneMgr, &_optionsPanel, &_scriptBrowserPanel, &_voxBoxBrowserPanel),
+	  _optionsPanel(app), _scriptBrowserPanel(app), _voxBoxBrowserPanel(app, _sceneMgr, texturePool),
+	  _menuBar(app, _sceneMgr, &_optionsPanel, &_sceneDebugPanel, &_scriptBrowserPanel, &_voxBoxBrowserPanel),
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr, &_scriptBrowserPanel), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr), _cameraPanel(app, _sceneMgr),
@@ -464,7 +465,6 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_GAMEMODE, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENE_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_SCENEDEBUGPANEL, dockId);
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {

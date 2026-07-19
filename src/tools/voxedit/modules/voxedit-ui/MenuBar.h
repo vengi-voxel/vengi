@@ -15,20 +15,24 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class OptionsPanel;
+class SceneDebugPanel;
 
 class MenuBar : public ui::Panel {
 private:
 	using Super = ui ::Panel;
 	SceneManagerPtr _sceneMgr;
 	OptionsPanel *_optionsPanel;
+	SceneDebugPanel *_sceneDebugPanel;
 	voxelui::ScriptBrowserPanel *_scriptBrowserPanel;
 	VoxBoxBrowserPanel *_voxBoxBrowserPanel;
 
 public:
 	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, OptionsPanel *optionsPanel,
-			voxelui::ScriptBrowserPanel *scriptBrowserPanel, VoxBoxBrowserPanel *voxBoxBrowserPanel)
+			SceneDebugPanel *sceneDebugPanel, voxelui::ScriptBrowserPanel *scriptBrowserPanel,
+			VoxBoxBrowserPanel *voxBoxBrowserPanel)
 		: Super(app, "menubar"), _sceneMgr(sceneMgr), _optionsPanel(optionsPanel),
-		  _scriptBrowserPanel(scriptBrowserPanel), _voxBoxBrowserPanel(voxBoxBrowserPanel) {
+		  _sceneDebugPanel(sceneDebugPanel), _scriptBrowserPanel(scriptBrowserPanel),
+		  _voxBoxBrowserPanel(voxBoxBrowserPanel) {
 	}
 
 	static void viewportOptions();

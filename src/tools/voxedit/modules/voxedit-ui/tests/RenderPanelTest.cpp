@@ -17,11 +17,11 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		ctx->MenuAction(ImGuiTestAction_Open, "Settings");
 		const int oldResolution = params.resolution;
-		ctx->ItemInputValue("Dimensions", oldResolution + 128);
+		ctx->ItemInputValue("//$FOCUSED/Dimensions", oldResolution + 128);
 		IM_CHECK(params.resolution == oldResolution + 128);
 
 		const int oldSamples = params.samples;
-		ctx->ItemInputValue("Samples", oldSamples + 16);
+		ctx->ItemInputValue("//$FOCUSED/Samples", oldSamples + 16);
 		IM_CHECK(params.samples == oldSamples + 16);
 	};
 

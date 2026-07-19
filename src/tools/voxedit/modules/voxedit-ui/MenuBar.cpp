@@ -4,6 +4,7 @@
 
 #include "MenuBar.h"
 #include "OptionsPanel.h"
+#include "SceneDebugPanel.h"
 #include "ViewMode.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
@@ -185,10 +186,15 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
-				if (ImGui::Button(_("Textures"))) {
+				if (ImGui::IconMenuItem(ICON_LC_BUG, _("Scene insights"))) {
+					if (_sceneDebugPanel) {
+						_sceneDebugPanel->setVisible(true);
+					}
+				}
+				if (ImGui::IconMenuItem(ICON_LC_IMAGE, _("Textures"))) {
 					app->showTexturesDialog();
 				}
-				if (ImGui::Button(_("UI"))) {
+				if (ImGui::IconMenuItem(ICON_LC_APP_WINDOW, _("UI"))) {
 					core::getVar(cfg::UIShowMetrics)->setVal(true);
 				}
 				ImGui::EndMenu();

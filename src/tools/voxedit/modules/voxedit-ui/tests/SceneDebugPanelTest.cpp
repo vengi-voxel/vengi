@@ -12,10 +12,14 @@ namespace voxedit {
 
 void SceneDebugPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "stats display")->TestFunc = [=](ImGuiTestContext *ctx) {
+		setVisible(true);
+		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cull checkboxes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		setVisible(true);
+		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
 		core::VarPtr cullNodes = core::getVar(cfg::RenderCullNodes);
 		const bool beforeNodes = cullNodes->boolVal();
