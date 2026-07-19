@@ -48,6 +48,12 @@ struct ActionButton {
 	bool execute(double nowSeconds, double delayBetweenExecutions, const core::Function<void()>& executionCallback);
 
 	/**
+	 * @brief Invokes the callback on press and on release edges only (not while held).
+	 * @return @c true if the callback was invoked
+	 */
+	bool executeToggle(const core::Function<void()> &executionCallback);
+
+	/**
 	 * @return @c true if the action button was initially triggered
 	 */
 	virtual bool handleDown(int32_t key, double pressedSeconds);
@@ -56,6 +62,9 @@ struct ActionButton {
 	 * @return @c true if the action button was completely released
 	 */
 	virtual bool handleUp(int32_t key, double releasedSeconds);
+
+private:
+	bool _held = false;
 };
 
 inline bool ActionButton::pressed() const {

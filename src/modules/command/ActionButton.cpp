@@ -21,6 +21,16 @@ bool ActionButton::execute(double nowSeconds, double delayBetweenExecutions, con
 	return true;
 }
 
+bool ActionButton::executeToggle(const core::Function<void()> &executionCallback) {
+	const bool down = pressed();
+	if (down == _held) {
+		return false;
+	}
+	_held = down;
+	executionCallback();
+	return true;
+}
+
 bool ActionButton::handleDown(int32_t key, double pressedDownSeconds) {
 	for (int pressedKey : pressedKeys) {
 		if (key == pressedKey) {

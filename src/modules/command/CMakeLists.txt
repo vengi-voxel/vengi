@@ -8,6 +8,7 @@ set(LIB command)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io)
 
 set(TEST_SRCS
+	tests/ActionButtonTest.cpp
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/TestHelper.h
