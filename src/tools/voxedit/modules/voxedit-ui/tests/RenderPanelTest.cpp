@@ -15,11 +15,12 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 
-		ctx->MenuAction(ImGuiTestAction_Open, "Settings");
+		ctx->MenuAction(ImGuiTestAction_Open, "Settings/Output");
 		const int oldResolution = params.resolution;
 		ctx->ItemInputValue("//$FOCUSED/Dimensions", oldResolution + 128);
 		IM_CHECK(params.resolution == oldResolution + 128);
 
+		ctx->MenuAction(ImGuiTestAction_Open, "Settings/Quality");
 		const int oldSamples = params.samples;
 		ctx->ItemInputValue("//$FOCUSED/Samples", oldSamples + 16);
 		IM_CHECK(params.samples == oldSamples + 16);
@@ -30,16 +31,16 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 
-		ctx->MenuClick("Settings/High quality");
+		ctx->MenuClick("Settings/Presets/High quality");
 		ctx->Yield();
 		IM_CHECK_EQ(params.samples, 1024);
 		IM_CHECK_EQ(params.bounces, 64);
 
-		ctx->MenuClick("Settings/Geometry preview");
+		ctx->MenuClick("Settings/Presets/Geometry preview");
 		ctx->Yield();
 		IM_CHECK_EQ(params.samples, 16);
 
-		ctx->MenuClick("Settings/Reset all");
+		ctx->MenuClick("Settings/Presets/Reset all");
 		ctx->Yield();
 		yocto::trace_params defaults;
 		IM_CHECK_EQ(params.samples, defaults.samples);

@@ -25,64 +25,102 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	voxelpathtracer::PathTracerState &state = _pathTracer.state();
 	yocto::trace_params &params = state.params;
 	int changed = 0;
-	changed += ImGui::InputInt(_("Dimensions"), &params.resolution);
-	changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
-	changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
-	ImGui::TooltipTextUnformatted(_("The number of per-pixel samples used while rendering and is the only "
-									"parameter used to control the tradeoff between noise and speed."));
-	changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
-	ImGui::TooltipTextUnformatted(_("The maximum number of bounces and should be high for scenes with glass and "
-									"volumes, but otherwise a low number would suffice."));
-	changed += ImGui::SliderFloat(_("Clamp"), &params.clamp, 10, 1000);
-	ImGui::TooltipTextUnformatted(_("Remove high-energy fireflies"));
-	changed += ImGui::SliderInt(_("Preview ratio"), &params.pratio, 1, 64);
-	changed += ImGui::SliderInt(_("Batch"), &params.batch, 1, 16);
 
-	changed += ImGui::Checkbox(_("No caustics"), &params.nocaustics);
-	ImGui::TooltipTextUnformatted(_("Removes certain path that cause caustics"));
-	changed += ImGui::Checkbox(_("Hide environment"), &params.envhidden);
-	ImGui::TooltipTextUnformatted(_("Removes the environment map from the camera rays."));
-	changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
-	ImGui::TooltipTextUnformatted(_("Apply a linear filter to the image pixels"));
-	changed += ImGui::Checkbox(_("High Quality BVH"), &params.highqualitybvh);
-	ImGui::TooltipTextUnformatted(_("High quality bounding volume hierarchy"));
-	changed += ImGui::Checkbox(_("Denoise"), &params.denoise);
+	const float itemWidth = ImGui::GetFontSize() * 10.0f;
 
-	changed += ImGui::SliderFloat(_("Aperture"), &state.aperture, 0.0f, 0.5f);
-	ImGui::TooltipTextUnformatted(_("Lens aperture for depth of field. 0 means pinhole (no DOF)."));
-	changed += ImGui::SliderFloat(_("Sun intensity"), &state.sunIntensity, 0.0f, 10.0f);
-	changed += ImGui::SliderFloat(_("Sun area"), &state.sunArea, 0.0f, 5.0f);
-	ImGui::TooltipTextUnformatted(_("Sun disk size. 1.0 is about 43.5 degrees."));
-	changed += ImGui::SliderAngle(_("Sun elevation"), &state.sunElevation, 0.0f, 90.0f);
-	changed += ImGui::SliderAngle(_("Sun azimuth"), &state.sunAzimuth, 0.0f, 360.0f);
-	changed += ImGui::Checkbox(_("Sun disk"), &state.sunDisk);
-	ImGui::TooltipTextUnformatted(_("Show visible sun disk in the sky."));
-	ImGui::SliderFloat(_("Exposure"), &state.exposure, -5.0f, 5.0f);
-	ImGui::TooltipTextUnformatted(_("Exposure compensation in stops for tonemapping."));
-	ImGui::Checkbox(_("Filmic"), &state.filmic);
-	ImGui::TooltipTextUnformatted(_("Use filmic tonemapping for softer highlight rolloff."));
-
-	if (ImGui::Button(_("Reset all"))) {
-		params = yocto::trace_params();
-		++changed;
-	}
-	if (ImGui::Button(_("High quality"))) {
-		params = yocto::trace_params();
-		params.sampler = yocto::trace_sampler_type::path; // path tracing
-		params.samples = 1024;							  // high-sample count
-		params.bounces = 64;							  // high max bounces
-		++changed;
-	}
-	if (ImGui::Button(_("Geometry preview"))) {
-		params = yocto::trace_params();
-		params.sampler = yocto::trace_sampler_type::eyelight; // geometry preview
-		params.samples = 16;								  // low-sample count
-		++changed;
+	if (ImGui::BeginIconMenu(ICON_LC_SPARKLES, _("Presets"))) {
+		if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Reset all"))) {
+			params = yocto::trace_params();
+			++changed;
+		}
+		ImGui::TooltipTextUnformatted(_("Restore default path tracer settings"));
+		if (ImGui::IconMenuItem(ICON_LC_SPARKLES, _("High quality"))) {
+			params = yocto::trace_params();
+			params.sampler = yocto::trace_sampler_type::path;
+			params.samples = 1024;
+			params.bounces = 64;
+			++changed;
+		}
+		ImGui::TooltipTextUnformatted(_("Path tracing with high sample and bounce counts"));
+		if (ImGui::IconMenuItem(ICON_LC_BOX, _("Geometry preview"))) {
+			params = yocto::trace_params();
+			params.sampler = yocto::trace_sampler_type::eyelight;
+			params.samples = 16;
+			++changed;
+		}
+		ImGui::TooltipTextUnformatted(_("Fast eyelight preview for checking geometry"));
+		ImGui::EndMenu();
 	}
 
-	if (!state.scene.camera_names.empty()) {
-		changed += ImGui::ComboItems(_("Camera"), &params.camera, state.scene.camera_names);
+	if (ImGui::BeginIconMenu(ICON_LC_GAUGE, _("Quality"))) {
+		ImGui::PushItemWidth(itemWidth);
+		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
+		changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
+		ImGui::TooltipTextUnformatted(_("Per-pixel samples. Higher values reduce noise but take longer."));
+		changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
+		ImGui::TooltipTextUnformatted(_("Maximum light bounces. Increase for glass and volumes."));
+		changed += ImGui::SliderFloat(_("Clamp"), &params.clamp, 10, 1000);
+		ImGui::TooltipTextUnformatted(_("Remove high-energy fireflies"));
+		ImGui::Separator();
+		changed += ImGui::SliderInt(_("Preview ratio"), &params.pratio, 1, 64);
+		ImGui::TooltipTextUnformatted(_("Lower resolution ratio used while samples accumulate"));
+		changed += ImGui::SliderInt(_("Batch"), &params.batch, 1, 16);
+		ImGui::TooltipTextUnformatted(_("Samples computed per update step"));
+		ImGui::PopItemWidth();
+		ImGui::EndMenu();
 	}
+
+	if (ImGui::BeginIconMenu(ICON_LC_IMAGE, _("Output"))) {
+		ImGui::PushItemWidth(itemWidth);
+		changed += ImGui::InputInt(_("Dimensions"), &params.resolution);
+		ImGui::TooltipTextUnformatted(_("Output image size in pixels (square)"));
+		changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
+		ImGui::TooltipTextUnformatted(_("Apply a linear filter to the image pixels"));
+		changed += ImGui::Checkbox(_("Denoise"), &params.denoise);
+		ImGui::Separator();
+		ImGui::SliderFloat(_("Exposure"), &state.exposure, -5.0f, 5.0f);
+		ImGui::TooltipTextUnformatted(_("Exposure compensation in stops for tonemapping."));
+		ImGui::Checkbox(_("Filmic"), &state.filmic);
+		ImGui::TooltipTextUnformatted(_("Use filmic tonemapping for softer highlight rolloff."));
+		ImGui::PopItemWidth();
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginIconMenu(ICON_LC_CAMERA, _("Camera"))) {
+		ImGui::PushItemWidth(itemWidth);
+		if (!state.scene.camera_names.empty()) {
+			changed += ImGui::ComboItems(_("Camera"), &params.camera, state.scene.camera_names);
+		}
+		changed += ImGui::SliderFloat(_("Aperture"), &state.aperture, 0.0f, 0.5f);
+		ImGui::TooltipTextUnformatted(_("Lens aperture for depth of field. 0 means pinhole (no DOF)."));
+		ImGui::PopItemWidth();
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Lighting"))) {
+		ImGui::PushItemWidth(itemWidth);
+		changed += ImGui::SliderFloat(_("Sun intensity"), &state.sunIntensity, 0.0f, 10.0f);
+		changed += ImGui::SliderFloat(_("Sun area"), &state.sunArea, 0.0f, 5.0f);
+		ImGui::TooltipTextUnformatted(_("Sun disk size. 1.0 is about 43.5 degrees."));
+		changed += ImGui::SliderAngle(_("Sun elevation"), &state.sunElevation, 0.0f, 90.0f);
+		changed += ImGui::SliderAngle(_("Sun azimuth"), &state.sunAzimuth, 0.0f, 360.0f);
+		changed += ImGui::Checkbox(_("Sun disk"), &state.sunDisk);
+		ImGui::TooltipTextUnformatted(_("Show visible sun disk in the sky."));
+		ImGui::Separator();
+		changed += ImGui::Checkbox(_("Hide environment"), &params.envhidden);
+		ImGui::TooltipTextUnformatted(_("Removes the environment map from the camera rays."));
+		ImGui::PopItemWidth();
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginIconMenu(ICON_LC_WRENCH, _("Advanced"))) {
+		changed += ImGui::Checkbox(_("No caustics"), &params.nocaustics);
+		ImGui::TooltipTextUnformatted(_("Removes certain paths that cause caustics"));
+		changed += ImGui::Checkbox(_("High Quality BVH"), &params.highqualitybvh);
+		ImGui::TooltipTextUnformatted(_("High quality bounding volume hierarchy"));
+		ImGui::EndMenu();
+	}
+
 	if (changed > 0) {
 		_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
 	}
