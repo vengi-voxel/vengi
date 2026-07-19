@@ -154,6 +154,7 @@ protected:
 	command::ActionButton _pan;
 	command::ActionButton _zoomIn;
 	command::ActionButton _zoomOut;
+	command::ActionButton _toggleNodeAdd; // scene modifier (add-node mode + create reference)
 
 	voxelutil::PickResult _result;
 

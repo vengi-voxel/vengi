@@ -58,6 +58,7 @@ protected:
 	};
 
 	void loadKeymap(int keymap) override;
+	void validateKeyBindings() override;
 	void importPalette(const core::String &file);
 
 protected:

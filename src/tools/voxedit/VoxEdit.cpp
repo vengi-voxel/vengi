@@ -44,7 +44,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
 	_allowRelativeMouseMode = true;
 	_iniVersion = 12;
-	_keybindingsVersion = 5;
+	_keybindingsVersion = 6;
 	_wantCrashLogs = true;
 
 	// see KeyBindings enum
@@ -528,6 +528,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
+	_keybindingHandler.registerBinding("shift",                "+addnode_mode",                "!scene");
 
 	if (keymap != KeyBindings::Qubicle) {
 		if (keymap != KeyBindings::_3dsMax) {
@@ -536,16 +537,22 @@ void VoxEdit::loadKeymap(int keymap) {
 		if (_keyboardLayout == video::KeyboardLayout::AZERTY) {
 			_keybindingHandler.registerBinding("z",                  "+move_forward",              "editing");
 			_keybindingHandler.registerBinding("q",                  "+move_left",                 "editing");
+			_keybindingHandler.registerBinding("a",                  "+move_up",                   "editing");
 		} else {
 			_keybindingHandler.registerBinding("w",                  "+move_forward",              "editing");
 			_keybindingHandler.registerBinding("a",                  "+move_left",                 "editing");
+			_keybindingHandler.registerBinding("q",                  "+move_up",                   "editing");
 		}
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
 		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
-		_keybindingHandler.registerBinding("q",                      "+move_up",                   "editing");
-		_keybindingHandler.registerBinding("e",                      "+move_down",                 "editing");
+		// Vengi binds e to +actionexecute; use r for move_down there instead
+		if (keymap == KeyBindings::Vengi) {
+			_keybindingHandler.registerBinding("r",                  "+move_down",                 "editing");
+		} else {
+			_keybindingHandler.registerBinding("e",                  "+move_down",                 "editing");
+		}
 		_keybindingHandler.registerBinding("space",                  "+jump",                      "game");
-		_keybindingHandler.registerBinding("left_shift",             "+sprint",                    "editing");
+		_keybindingHandler.registerBinding("left_shift",             "+sprint",                    "game");
 	}
 
 	if (keymap == KeyBindings::_3dsMax) {
@@ -615,6 +622,79 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("right_alt",              "+camera_pan",                "editing");
 	}
+
+	validateKeyBindings();
+}
+
+void VoxEdit::validateKeyBindings() {
+	Super::validateKeyBindings();
+
+	// Context meanings are app-specific:
+	// Context1 = scene, Context2 = model, Context3 = game
+	// editing = scene|model|game; runtime may also be game|scene or game|model
+	auto isSuitableForRuntime = [](core::BindingContext bindingCtx, core::BindingContext runtimeCtx) {
+		if (bindingCtx == core::BindingContext::All) {
+			return true;
+		}
+		if ((bindingCtx & core::BindingContext::ContextExclusive) != 0) {
+			return runtimeCtx == (core::BindingContext)(bindingCtx & ~core::BindingContext::ContextExclusive);
+		}
+		return (runtimeCtx & bindingCtx) != 0;
+	};
+	auto contextsOverlap = [&](core::BindingContext contextA, core::BindingContext contextB) {
+		if (contextA == contextB) {
+			return false; // same-context duplicates are handled by the base validator
+		}
+		static const core::BindingContext runtimes[] = {
+			core::BindingContext::UI,
+			core::BindingContext::Context1,
+			core::BindingContext::Context2,
+			core::BindingContext::Context3,
+			(core::BindingContext)(core::BindingContext::Context1 | core::BindingContext::Context3),
+			(core::BindingContext)(core::BindingContext::Context2 | core::BindingContext::Context3)};
+		for (const core::BindingContext runtime : runtimes) {
+			if (isSuitableForRuntime(contextA, runtime) && isSuitableForRuntime(contextB, runtime)) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	struct BindingEntry {
+		int32_t key;
+		util::CommandModifierPair pair;
+	};
+	core::DynamicArray<BindingEntry> entries;
+	const util::BindMap bindings = _keybindingHandler.bindings();
+	entries.reserve(bindings.size());
+	for (const auto &binding : bindings) {
+		entries.push_back(BindingEntry{binding.first, binding.second});
+	}
+
+	int conflicts = 0;
+	for (size_t i = 0; i < entries.size(); ++i) {
+		for (size_t j = i + 1; j < entries.size(); ++j) {
+			const BindingEntry &a = entries[i];
+			const BindingEntry &b = entries[j];
+			if (a.key != b.key || a.pair.count != b.pair.count) {
+				continue;
+			}
+			if (!contextsOverlap(a.pair.context, b.pair.context)) {
+				continue;
+			}
+			if (!util::modifiersConflict(a.pair.modifier, b.pair.modifier)) {
+				continue;
+			}
+			const core::String &desc = util::KeyBindingHandler::toString(a.key, a.pair.modifier, a.pair.count);
+			Log::error("Overlapping key bindings for %s: '%s' (%s) vs '%s' (%s)", desc.c_str(), a.pair.command.c_str(),
+					   core::bindingContextString(a.pair.context).c_str(), b.pair.command.c_str(),
+					   core::bindingContextString(b.pair.context).c_str());
+			++conflicts;
+		}
+	}
+	if (conflicts > 0) {
+		Log::warn("Found %i overlapping key binding pair(s) across contexts", conflicts);
+	}
 }
 
 app::AppState VoxEdit::onInit() {
@@ -639,6 +719,8 @@ app::AppState VoxEdit::onInit() {
 
 	if (_keybindingHandler.bindings().empty()) {
 		loadKeymap(_uiKeyMap->intVal());
+	} else {
+		validateKeyBindings();
 	}
 
 	if (!_sceneMgr->init()) {

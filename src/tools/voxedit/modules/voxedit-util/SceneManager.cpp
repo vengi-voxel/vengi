@@ -3689,6 +3689,8 @@ void SceneManager::construct() {
 				core::String::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i], _("Move the cursor by keys, not by viewport mouse trace"));
 	}
+	command::Command::registerActionButton("addnode_mode", _toggleNodeAdd,
+										   _("Hold to toggle add-node-by-face mode and to create reference nodes on the gizmo"));
 	command::Command::registerCommand("palette_changeintensity")
 		.addArg({"value", command::ArgType::Float, false, "", "Intensity scale value"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to apply the intensity change to"})
@@ -4569,16 +4571,6 @@ void SceneManager::construct() {
 			const int id = args.intVal("depth", ih);
 			addModelChild(name, iw, ih, id);
 		}).setHelp(_("Add a new model node to the current active node (with a given name and width, height, depth)"));
-
-	command::Command::registerCommand("addnode_mode")
-		.addArg({"enabled", command::ArgType::Int, true, "", "0=off, 1=on"})
-		.setHandler([&] (const command::CommandArgs& args) {
-			if (args.has("enabled")) {
-				setAddNodeModeActive(args.intVal("enabled", 0) != 0);
-			} else {
-				toggleAddNodeMode();
-			}
-		}).setHelp(_("Toggle or set add-node-by-face mode in scene view"));
 
 	command::Command::registerCommand("modeladd_face")
 		.setHandler([&] (const command::CommandArgs& args) {
@@ -5740,6 +5732,9 @@ bool SceneManager::update(double nowSeconds) {
 			moveCursor(dir.x, dir.y, dir.z);
 		});
 	}
+	_toggleNodeAdd.executeToggle([&]() {
+		toggleAddNodeMode();
+	});
 	if (_zoomIn.pressed()) {
 		_zoomIn.execute(nowSeconds, 0.02, [&] () {
 			if (_camera != nullptr) {
@@ -5808,6 +5803,7 @@ void SceneManager::shutdown() {
 	command::Command::unregisterActionButton("zoom_out");
 	command::Command::unregisterActionButton("camera_rotate");
 	command::Command::unregisterActionButton("camera_pan");
+	command::Command::unregisterActionButton("addnode_mode");
 }
 
 void SceneManager::lsystemAbort() {
