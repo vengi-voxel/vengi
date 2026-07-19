@@ -389,6 +389,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 			*index = _colorCount;
 		}
 		_colors[_colorCount++] = rgba;
+		markDirty();
 		return true;
 	}
 
@@ -398,6 +399,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 				*index = i;
 			}
 			_colors[i] = rgba;
+			markDirty();
 			return true;
 		}
 	}
@@ -414,6 +416,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 					*index = bestIndex;
 				}
 				_colors[bestIndex] = rgba;
+				markDirty();
 				return true;
 			}
 		}
