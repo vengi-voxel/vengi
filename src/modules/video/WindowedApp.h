@@ -93,6 +93,7 @@ protected:
 
 	void resetKeybindings();
 	void openKeybindings();
+	virtual void validateKeyBindings();
 
 public:
 	bool isRelativeMouseMode() const;

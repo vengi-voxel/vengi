@@ -15,6 +15,11 @@ namespace util {
 bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 
 /**
+ * @brief @c true if there is a pressed-modifier mask that satisfies both bindings
+ */
+bool modifiersConflict(int16_t modifierA, int16_t modifierB);
+
+/**
  * @brief Component that executes commands for key/modifier combinations.
  */
 class KeyBindingHandler {
@@ -80,6 +85,13 @@ public:
 	bool loadBindings(const core::String &bindings);
 	void setBindings(const BindMap& bindings);
 	const BindMap bindings() const;
+
+	/**
+	 * @brief Check for duplicate key/modifier bindings within the same binding context.
+	 * Cross-context overlaps are application-specific and must be validated by the app.
+	 * @return The number of conflicting binding pairs found (also logged)
+	 */
+	int validateBindings() const;
 
 	bool isPressed(int32_t key) const;
 

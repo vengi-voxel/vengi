@@ -227,4 +227,55 @@ TEST_F(KeybindingHandlerTest, testModifierMasksInvalidModifiers) {
 	EXPECT_FALSE(isValidForBinding(SDL_KMOD_RALT | SDL_KMOD_NUM, SDL_KMOD_LALT)) << "ralt pressed - lalt bound";
 }
 
+TEST_F(KeybindingHandlerTest, testModifiersConflict) {
+	EXPECT_TRUE(modifiersConflict(SDL_KMOD_SHIFT, SDL_KMOD_LSHIFT));
+	EXPECT_FALSE(modifiersConflict(SDL_KMOD_LSHIFT, SDL_KMOD_RSHIFT));
+	EXPECT_FALSE(modifiersConflict(SDL_KMOD_NONE, SDL_KMOD_SHIFT));
+	EXPECT_TRUE(modifiersConflict(SDL_KMOD_NONE, SDL_KMOD_NONE));
+}
+
+TEST_F(KeybindingHandlerTest, testValidateBindingsDetectsSameContextConflict) {
+	KeyBindingHandler handler;
+	ASSERT_TRUE(handler.registerBinding("w", "+foo", "foo"));
+	ASSERT_FALSE(handler.registerBinding("w", "+bar", "foo"));
+	BindMap map;
+	map.insert(std::make_pair((int32_t)SDLK_W, CommandModifierPair("+foo", 0, 1u, core::BindingContext::Context1)));
+	map.insert(std::make_pair((int32_t)SDLK_W, CommandModifierPair("+bar", 0, 1u, core::BindingContext::Context1)));
+	handler.setBindings(map);
+	EXPECT_EQ(1, handler.validateBindings());
+}
+
+TEST_F(KeybindingHandlerTest, testValidateBindingsIgnoresDifferentContexts) {
+	KeyBindingHandler handler;
+	ASSERT_TRUE(handler.registerBinding("w", "+foo", "foo"));
+	ASSERT_TRUE(handler.registerBinding("w", "+bar", "bar"));
+	EXPECT_EQ(0, handler.validateBindings());
+}
+
+TEST_F(KeybindingHandlerTest, testBareShiftKeyAndShiftCombo) {
+	bool addNodeMode = false;
+	bool brushPaint = false;
+	command::Command::registerCommand("+addnode_mode").setHandler([&](const command::CommandArgs &) { addNodeMode = true; });
+	command::Command::registerCommand("-addnode_mode").setHandler([&](const command::CommandArgs &) { addNodeMode = false; });
+	command::Command::registerCommand("brushpaint").setHandler([&](const command::CommandArgs &) { brushPaint = true; });
+
+	KeyBindingHandler handler;
+	ASSERT_TRUE(handler.registerBinding("shift", "+addnode_mode", "foo"));
+	ASSERT_TRUE(handler.registerBinding("shift+c", "brushpaint", "foo"));
+
+	// bare shift (with its own modifier bit set, as SDL reports on key down) starts the hold command
+	EXPECT_TRUE(handler.execute(SDLK_LSHIFT, SDL_KMOD_LSHIFT, true, 0.0));
+	EXPECT_TRUE(addNodeMode);
+	EXPECT_FALSE(brushPaint);
+
+	// pressing c while shift is held prefers the more specific combo
+	brushPaint = false;
+	EXPECT_TRUE(handler.execute(SDLK_C, SDL_KMOD_LSHIFT, true, 0.0));
+	EXPECT_TRUE(brushPaint);
+
+	handler.execute(SDLK_C, SDL_KMOD_LSHIFT, false, 0.0);
+	EXPECT_TRUE(handler.execute(SDLK_LSHIFT, SDL_KMOD_NONE, false, 0.0));
+	EXPECT_FALSE(addNodeMode);
+}
+
 }

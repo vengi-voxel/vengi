@@ -36,6 +36,13 @@ You can also negate a context by prefixing it with `!`. For example `!scene` mea
 
 ### Modifiers
 
+Modifiers can be used in two ways:
+
+- As part of a combo: `shift+c` runs when `c` is pressed while shift is held.
+- As a key on their own: `shift` runs when left or right shift is pressed (without needing another key).
+
+If the same modifier is bound both alone and in a combo (e.g. `shift` and `shift+c`), pressing the modifier alone runs the bare binding. Pressing another key while it is held prefers the more specific combo (`shift+c`).
+
 | Modifier      | Description                                      |
 | :------------ | :----------------------------------------------- |
 | `shift`       | Left or right shift                              |

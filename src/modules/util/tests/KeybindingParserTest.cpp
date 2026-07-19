@@ -186,4 +186,35 @@ TEST_F(KeybindingParserTest, testParsing4) {
 	EXPECT_EQ(1, count) << "expected 1 binding for key " << key << " but got " << count;
 }
 
+TEST_F(KeybindingParserTest, testBareModifierKeys) {
+	KeybindingParser p("shift +addnode_mode all\nalt +camera_pan all\nctrl +sprint all\n");
+	const BindMap &m = p.getBindings();
+	ASSERT_EQ(0, p.invalidBindings()) << p.lastError();
+	ASSERT_EQ(6u, m.size()) << "each generic modifier should expand to left+right keycodes. bindings: " << m;
+
+	auto expectBare = [&](int32_t key, const char *command) {
+		auto range = m.equal_range(key);
+		ASSERT_TRUE(range.first != range.second) << "missing binding for key " << key << "! bindings: " << m;
+		EXPECT_EQ(command, range.first->second.command);
+		EXPECT_EQ(0, range.first->second.modifier);
+	};
+	expectBare(SDLK_LSHIFT, "+addnode_mode");
+	expectBare(SDLK_RSHIFT, "+addnode_mode");
+	expectBare(SDLK_LALT, "+camera_pan");
+	expectBare(SDLK_RALT, "+camera_pan");
+	expectBare(SDLK_LCTRL, "+sprint");
+	expectBare(SDLK_RCTRL, "+sprint");
+}
+
+TEST_F(KeybindingParserTest, testBareShiftStillWorksAsModifier) {
+	KeybindingParser p("shift+c brushpaint all");
+	const BindMap &m = p.getBindings();
+	ASSERT_EQ(0, p.invalidBindings()) << p.lastError();
+	ASSERT_EQ(1u, m.size());
+	auto range = m.equal_range(SDLK_C);
+	ASSERT_TRUE(range.first != range.second);
+	EXPECT_EQ("brushpaint", range.first->second.command);
+	EXPECT_TRUE(range.first->second.modifier & SDL_KMOD_SHIFT);
+}
+
 } // namespace util

@@ -18,6 +18,36 @@
 
 namespace util {
 
+/**
+ * @brief Resolve generic modifier names that SDL_GetKeyFromName does not understand
+ * (e.g. "shift" vs "Left Shift") when used as a standalone key binding.
+ * @return @c true if @p key was a known bare modifier name
+ */
+static bool resolveBareModifierKeys(const core::String &key, core::DynamicArray<SDL_Keycode> &keyCodes) {
+	const core::String &lower = key.toLower();
+	if (lower == "shift") {
+		keyCodes.push_back(SDLK_LSHIFT);
+		keyCodes.push_back(SDLK_RSHIFT);
+		return true;
+	}
+	if (lower == "alt") {
+		keyCodes.push_back(SDLK_LALT);
+		keyCodes.push_back(SDLK_RALT);
+		return true;
+	}
+	if (lower == "ctrl") {
+		keyCodes.push_back(SDLK_LCTRL);
+		keyCodes.push_back(SDLK_RCTRL);
+		return true;
+	}
+	if (lower == "gui") {
+		keyCodes.push_back(SDLK_LGUI);
+		keyCodes.push_back(SDLK_RGUI);
+		return true;
+	}
+	return false;
+}
+
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command, const core::String &context) {
 	int modifier = SDL_KMOD_NONE;
 	core::BindingContext bindingContext = core::parseBindingContext(context);
@@ -62,57 +92,62 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		}
 	}
 
-	SDL_Keycode keyCode = SDLK_UNKNOWN;
+	core::DynamicArray<SDL_Keycode> keyCodes;
 	uint16_t count = 1u;
 	for (int i = 0; i < lengthof(button::CUSTOMBUTTONMAPPING); ++i) {
 		if (button::CUSTOMBUTTONMAPPING[i].name == key) {
-			keyCode = button::CUSTOMBUTTONMAPPING[i].key;
+			keyCodes.push_back(button::CUSTOMBUTTONMAPPING[i].key);
 			count = button::CUSTOMBUTTONMAPPING[i].count;
 			break;
 		}
 	}
-	if (keyCode == SDLK_UNKNOWN) {
-		core::string::replaceAllChars(key, '_', ' ');
-		keyCode = SDL_GetKeyFromName(key.c_str());
+	if (keyCodes.empty()) {
+		if (!resolveBareModifierKeys(key, keyCodes)) {
+			core::string::replaceAllChars(key, '_', ' ');
+			SDL_Keycode keyCode = SDL_GetKeyFromName(key.c_str());
 
-		// https://github.com/libsdl-org/SDL/issues/12833
-		if (keyCode != SDLK_UNKNOWN && key.size() == 1) {
-			// Verify the name round-trips correctly - SDL3 may map characters like '+'
-			// to the physical key that produces them (e.g., '=' key)
-			const char *verify = SDL_GetKeyName(keyCode);
-			if (verify != nullptr && key[0] != verify[0]) {
-				SDL_Keycode directCode = (SDL_Keycode)(unsigned char)key[0];
-				const char *directName = SDL_GetKeyName(directCode);
-				if (directName != nullptr && key[0] == directName[0]) {
-					keyCode = directCode;
+			// https://github.com/libsdl-org/SDL/issues/12833
+			if (keyCode != SDLK_UNKNOWN && key.size() == 1) {
+				// Verify the name round-trips correctly - SDL3 may map characters like '+'
+				// to the physical key that produces them (e.g., '=' key)
+				const char *verify = SDL_GetKeyName(keyCode);
+				if (verify != nullptr && key[0] != verify[0]) {
+					SDL_Keycode directCode = (SDL_Keycode)(unsigned char)key[0];
+					const char *directName = SDL_GetKeyName(directCode);
+					if (directName != nullptr && key[0] == directName[0]) {
+						keyCode = directCode;
+					}
 				}
 			}
-		}
-		if (keyCode == SDLK_UNKNOWN) {
+			if (keyCode == SDLK_UNKNOWN) {
 #if defined __APPLE__ || defined __EMSCRIPTEN__
-			// see Cocoa_InitKeyboard
-			key = core::string::replaceAll(key, "alt", "option");
-			key = core::string::replaceAll(key, "gui", "command");
-			keyCode = SDL_GetKeyFromName(key.c_str());
-			if (keyCode == SDLK_UNKNOWN)
+				// see Cocoa_InitKeyboard
+				key = core::string::replaceAll(key, "alt", "option");
+				key = core::string::replaceAll(key, "gui", "command");
+				keyCode = SDL_GetKeyFromName(key.c_str());
+				if (keyCode == SDLK_UNKNOWN)
 #elif defined _WIN32
-			// see WIN_InitKeyboard
-			key = core::string::replaceAll(key, "gui", "windows");
-			keyCode = SDL_GetKeyFromName(key.c_str());
-			if (keyCode == SDLK_UNKNOWN)
+				// see WIN_InitKeyboard
+				key = core::string::replaceAll(key, "gui", "windows");
+				keyCode = SDL_GetKeyFromName(key.c_str());
+				if (keyCode == SDLK_UNKNOWN)
 #endif
-			// TODO: Application -> Menu for linux and windows
-			{
-				_lastError = core::String::format("could not get a valid key code for %s (skip binding for %s): %s",
-												  key.c_str(), command.c_str(), SDL_GetError());
-				Log::warn("%s", _lastError.c_str());
+				// TODO: Application -> Menu for linux and windows
+				{
+					_lastError = core::String::format("could not get a valid key code for %s (skip binding for %s): %s",
+													  key.c_str(), command.c_str(), SDL_GetError());
+					Log::warn("%s", _lastError.c_str());
 
-				++_invalidBindings;
-				return;
+					++_invalidBindings;
+					return;
+				}
 			}
+			keyCodes.push_back(keyCode);
 		}
 	}
-	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count, bindingContext)));
+	for (const SDL_Keycode keyCode : keyCodes) {
+		_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count, bindingContext)));
+	}
 }
 
 KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding, const core::String &context) :

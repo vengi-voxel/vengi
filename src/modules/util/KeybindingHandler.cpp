@@ -11,6 +11,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "core/collection/DynamicArray.h"
 #include "app/I18N.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
@@ -62,6 +63,24 @@ bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask) {
 		}
 	}
 	return true;
+}
+
+bool modifiersConflict(int16_t modifierA, int16_t modifierB) {
+	static const int16_t bits[] = {SDL_KMOD_LSHIFT, SDL_KMOD_RSHIFT, KMOD_LCONTROL, KMOD_RCONTROL, SDL_KMOD_LALT,
+								   SDL_KMOD_RALT};
+	const int n = lengthof(bits);
+	for (int mask = 0; mask < (1 << n); ++mask) {
+		int16_t pressed = 0;
+		for (int i = 0; i < n; ++i) {
+			if ((mask & (1 << i)) != 0) {
+				pressed = (int16_t)(pressed | bits[i]);
+			}
+		}
+		if (isValidForBinding(pressed, modifierA) && isValidForBinding(pressed, modifierB)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
@@ -211,6 +230,9 @@ void KeyBindingHandler::saveKeybindings(int version) {
 # * shift, right_shift, left_shift
 # * ctrl, right_ctrl, left_ctrl
 #
+# modifiers can also be used as keys on their own (e.g. "shift" for a hold command).
+# generic names (shift/alt/ctrl/gui) bind both left and right keys.
+#
 # valid contexts are
 # * all
 # * model (only available in model mode)
@@ -306,39 +328,93 @@ bool KeyBindingHandler::load(int version) {
 bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, core::BindingContext context) {
 	KeybindingParser p(keys, command, "");
 	const BindMap &bindings = p.getBindings();
-	if (!bindings.empty()) {
-		const auto &entry = *bindings.begin();
-		return registerBinding(command, entry.first, entry.second.modifier, context, entry.second.count);
+	if (bindings.empty()) {
+		return false;
 	}
-	return false;
+	bool ok = true;
+	for (const auto &entry : bindings) {
+		// generic modifier names like "shift" expand to left+right keycodes
+		ok &= registerBinding(command, entry.first, entry.second.modifier, context, entry.second.count);
+	}
+	return ok;
 }
 
 bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, const core::String &context) {
 	KeybindingParser p(keys, command, context);
 	const BindMap &bindings = p.getBindings();
-	if (!bindings.empty()) {
-		const auto &entry = *bindings.begin();
-		return registerBinding(command, entry.first, entry.second.modifier, entry.second.context, entry.second.count);
+	if (bindings.empty()) {
+		return false;
 	}
-	return false;
+	bool ok = true;
+	for (const auto &entry : bindings) {
+		// generic modifier names like "shift" expand to left+right keycodes
+		ok &= registerBinding(command, entry.first, entry.second.modifier, entry.second.context, entry.second.count);
+	}
+	return ok;
 }
 
 bool KeyBindingHandler::registerBinding(const core::String &command, int32_t key, int16_t modifier,
 										core::BindingContext context, uint16_t count) {
-	auto i = _bindings.find(key);
-	if (i != _bindings.end()) {
-		if (i->second.command == command && i->second.modifier == modifier && i->second.count == count && i->second.context == context) {
+	auto range = _bindings.equal_range(key);
+	for (auto i = range.first; i != range.second; ++i) {
+		if (i->second.command == command && i->second.modifier == modifier && i->second.count == count &&
+			i->second.context == context) {
 			// don't add the same binding more than once
 			return true;
 		}
-		if (i->second.modifier == modifier && (i->second.context & context) != 0) {
-			const core::String &desc = toString(key, modifier, count);
-			Log::error("There is already a binding for %s: %s", desc.c_str(), i->second.command.c_str());
-			return false;
+		if (i->second.context != context || i->second.count != count) {
+			continue;
 		}
+		if (!modifiersConflict(i->second.modifier, modifier)) {
+			continue;
+		}
+		const core::String &desc = toString(key, modifier, count);
+		Log::error("There is already a binding for %s in context %s: %s conflicts with %s", desc.c_str(),
+				   core::bindingContextString(context).c_str(), i->second.command.c_str(), command.c_str());
+		return false;
 	}
 	_bindings.insert(std::make_pair(key, CommandModifierPair{command, modifier, count, context}));
 	return true;
+}
+
+int KeyBindingHandler::validateBindings() const {
+	struct BindingEntry {
+		int32_t key;
+		CommandModifierPair pair;
+	};
+	core::DynamicArray<BindingEntry> entries;
+	entries.reserve(_bindings.size());
+	for (const auto &binding : _bindings) {
+		entries.push_back(BindingEntry{binding.first, binding.second});
+	}
+
+	int conflicts = 0;
+	for (size_t i = 0; i < entries.size(); ++i) {
+		for (size_t j = i + 1; j < entries.size(); ++j) {
+			const BindingEntry &a = entries[i];
+			const BindingEntry &b = entries[j];
+			if (a.key != b.key || a.pair.count != b.pair.count || a.pair.context != b.pair.context) {
+				continue;
+			}
+			if (a.pair.command == b.pair.command && a.pair.modifier == b.pair.modifier) {
+				continue;
+			}
+			if (!modifiersConflict(a.pair.modifier, b.pair.modifier)) {
+				continue;
+			}
+			const core::String &desc = toString(a.key, a.pair.modifier, a.pair.count);
+			Log::error("Duplicate key binding for %s in context %s: '%s' vs '%s'", desc.c_str(),
+					   core::bindingContextString(a.pair.context).c_str(), a.pair.command.c_str(),
+					   b.pair.command.c_str());
+			++conflicts;
+		}
+	}
+	if (conflicts > 0) {
+		Log::warn("Found %i duplicate key binding pair(s) within the same context", conflicts);
+	} else {
+		Log::debug("Key binding validation passed (%u bindings)", (unsigned int)entries.size());
+	}
+	return conflicts;
 }
 
 bool KeyBindingHandler::loadBindings(const core::String &bindings) {

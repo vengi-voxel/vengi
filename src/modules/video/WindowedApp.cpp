@@ -505,6 +505,10 @@ void WindowedApp::openKeybindings() {
 	_keybindingHandler.openKeybindings(_keybindingsVersion);
 }
 
+void WindowedApp::validateKeyBindings() {
+	_keybindingHandler.validateBindings();
+}
+
 void WindowedApp::showCursor(bool show) {
 	if (show) {
 		SDL_ShowCursor();
