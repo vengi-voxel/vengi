@@ -251,6 +251,30 @@ TEST_F(MeshStateTest, testSingleChunkVolume) {
 	(void)meshState.shutdown();
 }
 
+// scheduleRegionExtraction must not touch a volume after it was cleared
+// (SceneGraph may free the RawVolume once MeshState no longer holds the pointer).
+TEST_F(MeshStateTest, testScheduleAfterVolumeCleared) {
+	voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	MeshState meshState;
+	meshState.construct();
+	meshState.init();
+	bool deleted = false;
+	palette::Palette pal;
+	pal.nippon();
+	(void)meshState.setVolume(0, v, &pal, nullptr, true, deleted);
+	ASSERT_NE(nullptr, meshState.volume(0));
+
+	meshState.scheduleRegionExtraction(0, v->region());
+	(void)meshState.setVolume(0, nullptr, nullptr, nullptr, true, deleted);
+	delete v;
+
+	// Must not use-after-free
+	EXPECT_FALSE(meshState.scheduleRegionExtraction(0, voxel::Region(0, 0, 0, 7, 7, 7)));
+	(void)meshState.shutdown();
+}
+
 // Verify that the cubic mesher through MeshState does not produce
 // overlapping geometry for a solid block that spans multiple chunks.
 TEST_F(MeshStateTest, testCubicNoOverlappingFaces) {
