@@ -527,12 +527,24 @@ static int luaVoxel_volumewrapper_resize_jsonhelp(lua_State* s) {
 	return 1;
 }
 
-static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor = 1) {
-	const int color = (int)luaL_optinteger(s, index, defaultColor);
-	if (color == -1) {
+static voxel::Voxel luaVoxel_createVoxel(const LuaRawVolumeWrapper *volume, int color, int normalIdx = NO_NORMAL) {
+	if (color < 0) {
 		return voxel::createVoxel(voxel::VoxelType::Air, 0);
 	}
-	return voxel::createVoxel(voxel::VoxelType::Generic, color);
+	if (volume != nullptr && volume->node() != nullptr) {
+		return voxel::createVoxel(volume->node()->palette(), (uint8_t)color, (uint8_t)normalIdx);
+	}
+	return voxel::createVoxel(voxel::VoxelType::Generic, (uint8_t)color, (uint8_t)normalIdx);
+}
+
+static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor = 1) {
+	const int color = (int)luaL_optinteger(s, index, defaultColor);
+	return luaVoxel_createVoxel(nullptr, color);
+}
+
+static voxel::Voxel luaVoxel_getVoxel(LuaRawVolumeWrapper *volume, lua_State *s, int index, int defaultColor = 1) {
+	const int color = (int)luaL_optinteger(s, index, defaultColor);
+	return luaVoxel_createVoxel(volume, color);
 }
 
 static math::Axis luaVoxel_getAxis(lua_State *s, int index) {
@@ -665,12 +677,7 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	const int z = (int)luaL_checkinteger(s, 4);
 	const int color = (int)luaL_optinteger(s, 5, 1);
 	const int normalIdx = (int)luaL_optinteger(s, 6, NO_NORMAL);
-	voxel::Voxel voxel;
-	if (color == -1) {
-		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-	} else {
-		voxel = voxel::createVoxel(voxel::VoxelType::Generic, color, normalIdx);
-	}
+	const voxel::Voxel voxel = luaVoxel_createVoxel(volume, color, normalIdx);
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
 	return 1;
