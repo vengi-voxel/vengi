@@ -1853,111 +1853,111 @@ msgstr ""
 msgid "Brush settings"
 msgstr ""
 
-msgctxt "Reskin Modes"
-msgid "Blend"
-msgstr ""
-
-msgctxt "Reskin Modes"
+msgctxt "Sculpt reskin apply mode"
 msgid "Replace"
 msgstr ""
 
-msgctxt "Reskin Modes"
+msgctxt "Sculpt reskin apply mode"
+msgid "Blend"
+msgstr ""
+
+msgctxt "Sculpt reskin apply mode"
 msgid "Negate"
 msgstr ""
 
-msgctxt "Reskin Follow"
-msgid "Median"
-msgstr ""
-
-msgctxt "Reskin Follow"
+msgctxt "Sculpt reskin surface follow"
 msgid "None"
 msgstr ""
 
-msgctxt "Reskin Follow"
+msgctxt "Sculpt reskin surface follow"
+msgid "Median"
+msgstr ""
+
+msgctxt "Sculpt reskin surface follow"
 msgid "Voxel"
 msgstr ""
 
-msgctxt "Reskin Follow"
+msgctxt "Sculpt reskin surface follow"
 msgid "Corner Average"
 msgstr ""
 
-msgctxt "Reskin Anchor"
+msgctxt "Sculpt reskin UV anchor"
 msgid "Min/Max"
 msgstr ""
 
-msgctxt "Reskin Anchor"
+msgctxt "Sculpt reskin UV anchor"
 msgid "Min/Min"
 msgstr ""
 
-msgctxt "Reskin Anchor"
+msgctxt "Sculpt reskin UV anchor"
 msgid "Max/Max"
 msgstr ""
 
-msgctxt "Reskin Anchor"
+msgctxt "Sculpt reskin UV anchor"
 msgid "Max/Min"
 msgstr ""
 
-msgctxt "Reskin Rotation"
+msgctxt "Sculpt reskin rotation degrees"
 msgid "0"
 msgstr ""
 
-msgctxt "Reskin Rotation"
+msgctxt "Sculpt reskin rotation degrees"
 msgid "90"
 msgstr ""
 
-msgctxt "Reskin Rotation"
+msgctxt "Sculpt reskin rotation degrees"
 msgid "180"
 msgstr ""
 
-msgctxt "Reskin Rotation"
+msgctxt "Sculpt reskin rotation degrees"
 msgid "270"
 msgstr ""
 
-msgctxt "Reskin Tile"
+msgctxt "Sculpt reskin tiling"
 msgid "Once"
 msgstr ""
 
-msgctxt "Reskin Tile"
+msgctxt "Sculpt reskin tiling"
 msgid "Repeat"
 msgstr ""
 
-msgctxt "Reskin Tile"
+msgctxt "Sculpt reskin tiling"
 msgid "Stretch"
 msgstr ""
 
-msgctxt "Reskin Skin Axis"
+msgctxt "Sculpt reskin skin axis"
 msgid "X"
 msgstr ""
 
-msgctxt "Reskin Skin Axis"
+msgctxt "Sculpt reskin skin axis"
 msgid "Y"
 msgstr ""
 
-msgctxt "Reskin Skin Axis"
+msgctxt "Sculpt reskin skin axis"
 msgid "Z"
 msgstr ""
 
-msgctxt "Scale Sampling"
+msgctxt "Voxel scale sampling"
 msgid "Linear"
 msgstr ""
 
-msgctxt "Scale Sampling"
+msgctxt "Voxel scale sampling"
 msgid "Nearest"
 msgstr ""
 
-msgctxt "Scale Sampling"
+msgctxt "Voxel scale sampling"
 msgid "Cubic"
 msgstr ""
 
-msgctxt "Smooth Wall Interp"
+msgctxt "Sculpt smooth wall interpolation"
 msgid "Linear"
 msgstr ""
 
-msgctxt "Smooth Wall Interp"
+msgctxt "Sculpt smooth wall interpolation"
 msgid "Inverse Distance"
 msgstr ""
 
-msgctxt "Smooth Wall Interp"
+msgctxt "Sculpt smooth wall interpolation"
 msgid "Edge Aware"
 msgstr ""
 
@@ -2019,12 +2019,15 @@ msgstr ""
 msgid "Enable"
 msgstr ""
 
+msgctxt "Game mode preset"
 msgid "Minecraft"
 msgstr ""
 
+msgctxt "Game mode preset"
 msgid "Ace Of Spades"
 msgstr ""
 
+msgctxt "Game mode preset"
 msgid "Teardown"
 msgstr ""
 
@@ -3339,8 +3342,8 @@ msgid "You can reset the camera simply by pressing <cmd:camera_reset>."
 msgstr ""
 
 msgid ""
-"You can animation a camera and then move around in the scene when hitting "
-"the play button in the animation timeline."
+"You can animate a camera and then move around in the scene when hitting the "
+"play button in the animation timeline."
 msgstr ""
 
 msgid ""
@@ -3351,7 +3354,7 @@ msgstr ""
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
 "to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
-"<cmd:cam_rotation>."
+"<cmd:camera_rotation>."
 msgstr ""
 
 msgid ""
@@ -3440,8 +3443,8 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Use you can <cmd:camera_rotation> to switch between different camera "
-"rotation modes such as 'Orbit' and 'First person'."
+"You can use <cmd:camera_rotation> to switch between different camera "
+"rotation modes such as 'Target' and 'Eye'."
 msgstr ""
 
 msgid ""
@@ -3513,6 +3516,9 @@ msgid "Simple"
 msgstr ""
 
 msgid "Minecraft Skin"
+msgstr ""
+
+msgid "Ace Of Spades"
 msgstr ""
 
 msgid "Default"
@@ -4219,6 +4225,7 @@ msgctxt "SceneJob"
 msgid "Splat merging"
 msgstr ""
 
+msgctxt "Temporary merged scene graph node name"
 msgid "merged_temp"
 msgstr ""
 
@@ -5003,47 +5010,47 @@ msgstr ""
 msgid "Toggle measuring from the reference position"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Erode"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Grow"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Flatten"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Smooth Additive"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Smooth Erode"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Smooth Gaussian"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Bridge Gap"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Smooth Wall"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Extend Plane"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Squash to Plane"
 msgstr ""
 
-msgctxt "Sculpt Modes"
+msgctxt "Sculpt brush mode"
 msgid "Reskin"
 msgstr ""
 
