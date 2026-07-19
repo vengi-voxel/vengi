@@ -79,6 +79,23 @@ analysebuild:
 	$(Q)$(CLANGBUILDANALYZER) --stop $(BUILDDIR)/analyse $(BUILDDIR)/analyse/capture_file
 	$(Q)$(CLANGBUILDANALYZER) --analyze $(BUILDDIR)/analyse/capture_file
 
+# Preprocessed header/TU line counts - see cmake/LineCount.cmake
+#   make linecount
+#   make linecount-cpp
+#   make linecount-cpp-voxedit-util
+#   make linecount-why-voxedit-util-SceneManager
+.PHONY: linecount linecount-cpp
+linecount linecount-cpp: $(BUILDDIR)/CMakeCache.txt
+	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target $@
+
+linecount-%: $(BUILDDIR)/CMakeCache.txt
+	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target $@
+
+# List CMake/Ninja build targets (e.g. linecount-why-*).
+.PHONY: help
+help: $(BUILDDIR)/CMakeCache.txt
+	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target help
+
 %.png: data/voxedit/%.vengi
 	$(Q)$(call EXEC_PATH,thumbnailer) -s 128 --use-scene-camera --input $< --output data/voxedit/$@
 	$(Q)pngquant -f --ext .png data/voxedit/$@

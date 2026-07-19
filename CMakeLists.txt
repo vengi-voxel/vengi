@@ -158,6 +158,9 @@ include(${SCRIPTS_CMAKE_DIR}/debug.cmake)
 include(${SCRIPTS_CMAKE_DIR}/googletest.cmake)
 include(${SCRIPTS_CMAKE_DIR}/lua.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
+# Only register targets created under src/ (skip contrib/ third-party libs).
+set(LINECOUNT_DIR_REGEX "/src/")
+include(${SCRIPTS_CMAKE_DIR}/LineCount.cmake)
 include(${SCRIPTS_CMAKE_DIR}/pack.cmake)
 include(CPack)
 
@@ -213,3 +216,12 @@ if (DOXYGEN_FOUND)
 		DEPENDS engine_codegen
 	)
 endif(DOXYGEN_FOUND)
+
+# Preprocessed header / TU line counts (compile-time optimization helper).
+# Drop-in module: cmake/LineCount.cmake
+#   make linecount / linecount-cpp / linecount-why-voxedit-util-SceneManager
+set(LINECOUNT_STRIP_PREFIX "src/modules/")
+set(LINECOUNT_SKIP_TARGET_REGEX "^(tests-|benchmarks-)")
+set(LINECOUNT_SKIP_PATH_REGEX "/(tests|benchmarks)/")
+linecount_finalize()
+
