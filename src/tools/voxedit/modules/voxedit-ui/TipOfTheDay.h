@@ -11,9 +11,9 @@ static const char *tips[]{
 	N_("Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."),
 	N_("Drag a model from the assets panel to the stamp brush to use it."),
 	N_("You can reset the camera simply by pressing <cmd:camera_reset>."),
-	N_("You can animation a camera and then move around in the scene when hitting the play button in the animation timeline."),
+	N_("You can animate a camera and then move around in the scene when hitting the play button in the animation timeline."),
 	N_("The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."),
-	N_("You can switch the camera scene movement by switching the 'Camera movement' to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:cam_rotation>."),
+	N_("You can switch the camera scene movement by switching the 'Camera movement' to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:camera_rotation>."),
 	N_("In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."),
 	N_("When importing meshes, you can switch between different voxelization methods in the options menu."),
 	N_("Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."),
@@ -33,7 +33,7 @@ static const char *tips[]{
 	N_("Imported scenes are placed centered around the reference position."),
 	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features."),
 	N_("You can use the 'View' menu in the viewport to enable/disable various visual features such as the grid, axis, ..."),
-	N_("Use you can <cmd:camera_rotation> to switch between different camera rotation modes such as 'Orbit' and 'First person'."),
+	N_("You can use <cmd:camera_rotation> to switch between different camera rotation modes such as 'Target' and 'Eye'."),
 	N_("Open the bindings dialog in the options menu to change the default key bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style and also check which commands are available."),
 	N_("You can download and install community scripts for brushes, generators and selection modes from the Help menu.")
 	// clang-format on

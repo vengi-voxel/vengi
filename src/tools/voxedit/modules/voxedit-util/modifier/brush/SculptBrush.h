@@ -48,12 +48,12 @@ enum class SculptMode : uint8_t {
 
 // clang-format off
 static constexpr const char *SculptModeStr[] = {
-	NC_("Sculpt Modes", "Erode"),         NC_("Sculpt Modes", "Grow"),
-	NC_("Sculpt Modes", "Flatten"),       NC_("Sculpt Modes", "Smooth Additive"),
-	NC_("Sculpt Modes", "Smooth Erode"),  NC_("Sculpt Modes", "Smooth Gaussian"),
-	NC_("Sculpt Modes", "Smooth Wall"),   NC_("Sculpt Modes", "Bridge Gap"),
-	NC_("Sculpt Modes", "Squash to Plane"), NC_("Sculpt Modes", "Extend Plane"),
-	NC_("Sculpt Modes", "Reskin")};
+	NC_("Sculpt brush mode", "Erode"),         NC_("Sculpt brush mode", "Grow"),
+	NC_("Sculpt brush mode", "Flatten"),       NC_("Sculpt brush mode", "Smooth Additive"),
+	NC_("Sculpt brush mode", "Smooth Erode"),  NC_("Sculpt brush mode", "Smooth Gaussian"),
+	NC_("Sculpt brush mode", "Smooth Wall"),   NC_("Sculpt brush mode", "Bridge Gap"),
+	NC_("Sculpt brush mode", "Squash to Plane"), NC_("Sculpt brush mode", "Extend Plane"),
+	NC_("Sculpt brush mode", "Reskin")};
 static_assert(lengthof(SculptModeStr) == (int)SculptMode::Max, "SculptModeStr size mismatch");
 
 static constexpr const char *SculptModeIcons[] = {ICON_LC_ERASER,    ICON_LC_SPROUT,     ICON_LC_LAND_PLOT,

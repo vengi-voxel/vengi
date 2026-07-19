@@ -57,15 +57,15 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		ImGui::InputVarFloat(_friction, 0.001f, 1.0f);
 		ImGui::InputVarFloat(_bodySize, 0.2f, 0.4998f);
 
-		if (ImGui::Button(_("Minecraft"))) {
+		if (ImGui::Button(C_("Game mode preset", "Minecraft"))) {
 			_bodyHeight->setVal(1.8f);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("Ace Of Spades"))) {
+		if (ImGui::Button(C_("Game mode preset", "Ace Of Spades"))) {
 			_bodyHeight->setVal(2.8f);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("Teardown"))) {
+		if (ImGui::Button(C_("Game mode preset", "Teardown"))) {
 			_bodyHeight->setVal(18.8f);
 		}
 		ImGui::EndDisabled();

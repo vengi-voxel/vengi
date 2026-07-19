@@ -2666,7 +2666,7 @@ int SceneManager::mergeVisibleToTemp() {
 	newNode.setVolume(merged.volume());
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
-	newNode.setName(_("merged_temp"));
+	newNode.setName(C_("Temporary merged scene graph node name", "merged_temp"));
 	newNode.setVisible(true);
 
 	const int newNodeId = moveNodeToSceneGraph(newNode);
