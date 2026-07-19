@@ -3,12 +3,161 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "core/StringUtil.h"
+#include "core/TimeProvider.h"
+#include "core/Var.h"
+#include "image/Image.h"
+#include "json/JSON.h"
+#include "voxel/RawVolume.h"
+#include "voxedit-mcp/ScreenshotTool.h"
+#include "voxedit-util/Config.h"
+#include "voxedit-util/ISceneRenderer.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/IModifierRenderer.h"
 
 namespace voxedit {
 
-class ToolsTest : public app::AbstractTest {};
+namespace {
 
-TEST_F(ToolsTest, scriptToolExecWithArgsString) {
+struct ImageResultCapture {
+	core::String pngBase64;
+	core::String mimeType;
+	core::String text;
+	bool called = false;
+	bool isError = false;
+
+	static bool capture(const json::Json &, const core::String &pngBase64, const core::String &mimeType,
+						const core::String &text, bool isError) {
+		ImageResultCapture *self = _instance;
+		self->called = true;
+		self->pngBase64 = pngBase64;
+		self->mimeType = mimeType;
+		self->text = text;
+		self->isError = isError;
+		return !isError;
+	}
+
+	static bool textFallback(const json::Json &, const core::String &text, bool isError) {
+		ImageResultCapture *self = _instance;
+		self->called = true;
+		self->text = text;
+		self->isError = isError;
+		return !isError;
+	}
+
+	static ImageResultCapture *_instance;
+};
+
+ImageResultCapture *ImageResultCapture::_instance = nullptr;
+
+} // namespace
+
+class ToolsTest : public app::AbstractTest {
+private:
+	using Super = app::AbstractTest;
+
+protected:
+	SceneManagerPtr _sceneMgr;
+
+	void TearDown() override {
+		if (_sceneMgr) {
+			_sceneMgr->shutdown();
+			_sceneMgr.release();
+		}
+		Super::TearDown();
+	}
+
+	void SetUp() override {
+		Super::SetUp();
+		const auto timeProvider = core::make_shared<core::TimeProvider>();
+		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
+		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
+		_sceneMgr =
+			core::make_shared<SceneManager>(timeProvider, _testApp->filesystem(), sceneRenderer, modifierRenderer);
+		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", "Last Directory",
+										   "The last directory used in the UI", core::CV_NOPERSIST);
+		core::Var::registerVar(uILastDirectory);
+		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, "Mouse Rotation Speed",
+													"The speed at which the camera rotates with the mouse",
+													core::CV_NONE);
+		core::Var::registerVar(clientMouseRotationSpeed);
+		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "Camera Zoom Speed",
+												 "The speed at which the camera zooms", core::CV_NONE);
+		core::Var::registerVar(clientCameraZoomSpeed);
+		_sceneMgr->construct();
+		ASSERT_TRUE(_sceneMgr->init());
+		ASSERT_TRUE(_sceneMgr->newScene(true, "screenshot-test", voxel::Region{0, 7}));
+	}
+};
+
+TEST_F(ToolsTest, screenshotToolOrthographicAndIsometric) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	voxel::RawVolume *volume = node->volume();
+	ASSERT_NE(nullptr, volume);
+	ASSERT_TRUE(volume->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(volume->setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+	ASSERT_TRUE(volume->setVoxel(2, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, 3)));
+
+	ScreenshotTool tool;
+	ImageResultCapture capture;
+	ImageResultCapture::_instance = &capture;
+
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = ImageResultCapture::textFallback;
+	ctx.resultImage = ImageResultCapture::capture;
+
+	json::Json args = json::Json::object();
+	args.set("nodeUUID", node->uuid().str().c_str());
+	args.set("face", "front");
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_EQ("image/png", capture.mimeType);
+	EXPECT_FALSE(capture.pngBase64.empty());
+	EXPECT_TRUE(core::string::startsWith(capture.pngBase64, "iVBORw0KGgo"));
+	EXPECT_TRUE(capture.text.contains("orthographic"));
+
+	capture = ImageResultCapture{};
+	ImageResultCapture::_instance = &capture;
+	args.set("isometric", true);
+	ASSERT_TRUE(tool.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_EQ("image/png", capture.mimeType);
+	EXPECT_FALSE(capture.pngBase64.empty());
+	EXPECT_TRUE(core::string::startsWith(capture.pngBase64, "iVBORw0KGgo"));
+	EXPECT_TRUE(capture.text.contains("isometric"));
+
+	ImageResultCapture::_instance = nullptr;
+}
+
+TEST_F(ToolsTest, screenshotToolMergedScene) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	ASSERT_TRUE(node->volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ScreenshotTool tool;
+	ImageResultCapture capture;
+	ImageResultCapture::_instance = &capture;
+
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = ImageResultCapture::textFallback;
+	ctx.resultImage = ImageResultCapture::capture;
+
+	json::Json args = json::Json::object();
+	args.set("face", "left");
+	args.set("width", 32);
+	args.set("height", 32);
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_TRUE(capture.text.contains("merged scene"));
+	EXPECT_TRUE(core::string::startsWith(capture.pngBase64, "iVBORw0KGgo"));
+
+	ImageResultCapture::_instance = nullptr;
 }
 
 } // namespace voxedit

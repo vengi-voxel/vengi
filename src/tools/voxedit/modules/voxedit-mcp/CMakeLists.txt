@@ -30,6 +30,7 @@ set(SRCS
 	ScriptApiTool.h ScriptApiTool.cpp
 	ScriptCreateTool.h ScriptCreateTool.cpp
 	ScriptTool.h ScriptTool.cpp
+	ScreenshotTool.h ScreenshotTool.cpp
 	CommandTool.h CommandTool.cpp
 	ToolRegistry.h ToolRegistry.cpp
 )

@@ -18,3 +18,16 @@ If you are modifying the settings like the port, the rcon password or anything e
   }
 }
 ```
+
+## Screenshots
+
+`voxedit_screenshot` renders a node (or the merged visible scene) to a PNG without a GL context via `voxelutil::renderToImage` / `voxelutil::renderIsometricImage`.
+
+Useful arguments:
+
+* `nodeUUID` (optional) - model node to render; omit to merge the whole scene
+* `face` - `front`, `back`, `left`, `right`, `up`, `down` (default `front`)
+* `isometric` - `true` for an isometric view
+* `width` / `height` - optional output size in pixels
+* `depthFactor` - optional depth shading for orthographic renders
+* `bgR` / `bgG` / `bgB` / `bgA` - background color

@@ -19,7 +19,12 @@ class SceneManager;
 
 struct ToolContext {
 	SceneManager *sceneMgr = nullptr;
-	bool (*result)(const json::Json &id, const core::String &text, bool isError);
+	bool (*result)(const json::Json &id, const core::String &text, bool isError) = nullptr;
+	/**
+	 * @brief Optional callback for MCP image content (PNG base64). Falls back to text with data URI if unset.
+	 */
+	bool (*resultImage)(const json::Json &id, const core::String &pngBase64, const core::String &mimeType,
+						const core::String &text, bool isError) = nullptr;
 };
 
 class Tool {

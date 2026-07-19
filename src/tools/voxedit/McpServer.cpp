@@ -38,6 +38,7 @@
 #include "voxedit-mcp/ScriptApiTool.h"
 #include "voxedit-mcp/ScriptCreateTool.h"
 #include "voxedit-mcp/ScriptTool.h"
+#include "voxedit-mcp/ScreenshotTool.h"
 #include "voxedit-mcp/SculptBrushTool.h"
 #include "voxedit-mcp/SelectBrushTool.h"
 #include "voxedit-mcp/ShapeBrushTool.h"
@@ -115,6 +116,7 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::GetSceneStateTool());
 	_toolRegistry.registerTool(new voxedit::GetVoxelsTool());
 	_toolRegistry.registerTool(new voxedit::HistogramTool());
+	_toolRegistry.registerTool(new voxedit::ScreenshotTool());
 	_toolRegistry.registerTool(new voxedit::MementoCanRedoTool());
 	_toolRegistry.registerTool(new voxedit::MementoCanUndoTool());
 	_toolRegistry.registerTool(new voxedit::MementoRedoTool());
@@ -377,6 +379,7 @@ void McpServer::handleToolsCall(const json::Json &request) {
 	voxedit::ToolContext ctx;
 	ctx.sceneMgr = _sceneMgr.get();
 	ctx.result = sendToolResult;
+	ctx.resultImage = sendToolImageResult;
 	if (!_toolRegistry.call(toolName, id, args, ctx)) {
 		sendError(id, INVALID_PARAMS, "Unknown tool");
 	}
@@ -392,6 +395,37 @@ bool McpServer::sendToolResult(const json::Json &id, const core::String &text, b
 	content.set("type", "text");
 	content.set("text", text.c_str());
 	contentArr.push(content);
+	result.set("content", contentArr);
+	if (isError) {
+		result.set("isError", true);
+	}
+
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", id);
+	response.set("result", result);
+	sendResponse(response);
+	return !isError;
+}
+
+bool McpServer::sendToolImageResult(const json::Json &id, const core::String &pngBase64, const core::String &mimeType,
+									const core::String &text, bool isError) {
+	if (isError) {
+		Log::warn("Tool image result error: %s", text.c_str());
+	}
+	json::Json result = json::Json::object();
+	json::Json contentArr = json::Json::array();
+	if (!text.empty()) {
+		json::Json textContent = json::Json::object();
+		textContent.set("type", "text");
+		textContent.set("text", text.c_str());
+		contentArr.push(textContent);
+	}
+	json::Json imageContent = json::Json::object();
+	imageContent.set("type", "image");
+	imageContent.set("data", pngBase64.c_str());
+	imageContent.set("mimeType", mimeType.c_str());
+	contentArr.push(imageContent);
 	result.set("content", contentArr);
 	if (isError) {
 		result.set("isError", true);

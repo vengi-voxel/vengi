@@ -73,6 +73,8 @@ private:
 	static void sendResponse(const json::Json &response);
 	static void sendError(const json::Json &id, int code, const core::String &message);
 	static bool sendToolResult(const json::Json &id, const core::String &text, bool isError = false);
+	static bool sendToolImageResult(const json::Json &id, const core::String &pngBase64, const core::String &mimeType,
+									const core::String &text, bool isError = false);
 
 public:
 	McpServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);
