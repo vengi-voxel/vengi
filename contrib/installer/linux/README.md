@@ -16,6 +16,19 @@ https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
 
 https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
 
+On Wayland, window icons come from matching the app id to a `.desktop` file in the
+XDG data dirs. `SDL_SetWindowIcon` only works if the compositor supports
+`xdg-toplevel-icon-v1`. For a from-source build without `make install`, register the
+desktop file and icon for your user:
+
+```
+make voxedit-install-desktop
+```
+
+That writes `~/.local/share/applications/com.github.vengi.<app>.desktop` (with an
+absolute `Exec=` to your build binary) and the icon under
+`~/.local/share/icons/hicolor/`.
+
 ## Systemd service specs:
 
 https://www.freedesktop.org/software/systemd/man/systemd.service.html

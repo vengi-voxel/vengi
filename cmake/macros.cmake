@@ -392,6 +392,21 @@ function(engine_add_executable)
 			install(FILES ${ICON_PNG_PATH} DESTINATION ${INSTALL_DATA_DIR} COMPONENT ${_EXE_TARGET})
 		endif()
 	endif()
+	# Wayland needs a desktop file in XDG paths; system install is not required for that
+	if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND _EXE_WINDOWED AND DEFINED DESKTOP_FILENAME)
+		add_custom_target(${_EXE_TARGET}-install-desktop
+			COMMAND ${CMAKE_COMMAND}
+				-DBINARY=$<TARGET_FILE:${_EXE_TARGET}>
+				-DDESKTOP_SRC=${PROJECT_BINARY_DIR}/${DESKTOP_FILENAME}
+				-DAPP_ID=${APP_ID}
+				-DAPPICON=${APPICON}
+				-DICON_PNG=${CMAKE_BINARY_DIR}/${_EXE_TARGET}/${APPICON}.png
+				-P ${ROOT_DIR}/cmake/install-desktop-user.cmake
+			COMMENT "Install ${DESKTOP_FILENAME} + icon into ~/.local for Wayland/XDG"
+			DEPENDS ${_EXE_TARGET}
+			VERBATIM
+		)
+	endif()
 	if (INSTALL_DATA)
 		install(TARGETS ${_EXE_TARGET} DESTINATION ${INSTALL_BIN_DIR} COMPONENT ${_EXE_TARGET})
 	endif()
