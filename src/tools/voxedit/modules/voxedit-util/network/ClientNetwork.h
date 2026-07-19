@@ -53,6 +53,15 @@ protected:
 	ChatMessageHandler _chatMessageHandler;
 	ClientListHandler _clientListHandler;
 	network::MessageStream in;
+	/** Queued outbound bytes; flushed non-blocking in update()/sendMessage() */
+	network::MessageStream _out;
+
+	/**
+	 * @brief Flush as many queued outbound bytes as the socket accepts
+	 * @return @c false on hard socket errors (caller should disconnect)
+	 * @note @c EAGAIN leaves remaining bytes in @_out and returns @c true
+	 */
+	bool flushOutgoing();
 
 public:
 	ClientNetwork(SceneManager *sceneMgr);
@@ -74,7 +83,16 @@ public:
 	void shutdown() override;
 	void update(double nowSeconds);
 
+	/**
+	 * @brief Queue a message and best-effort flush without blocking
+	 * @return @c false if not connected or a hard send error occurred
+	 */
 	bool sendMessage(const network::ProtocolMessage &msg);
+
+	/** Remaining queued outbound bytes (for tests) */
+	int64_t pendingOutgoingBytes() const {
+		return _out.size();
+	}
 };
 
 } // namespace voxedit

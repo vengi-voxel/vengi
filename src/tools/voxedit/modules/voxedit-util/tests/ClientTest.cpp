@@ -2,24 +2,22 @@
  * @file
  */
 
-#include "voxedit-util/network/Client.h"
-#include "app/tests/AbstractTest.h"
+#include "AbstractSceneManagerTest.h"
 #include "core/String.h"
-#include "core/tests/TestHelper.h"
-#include "voxedit-util/SceneManager.h"
 #include "network/ProtocolHandler.h"
-#include "voxedit-util/network/protocol/PingMessage.h"
+#include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/ClientNetwork.h"
+#include "voxedit-util/network/ProtocolIds.h"
+#include "voxedit-util/network/protocol/PingMessage.h"
 
 namespace voxedit {
 
-class ClientTest : public app::AbstractTest {
+class ClientTest : public AbstractSceneManagerTest {
+private:
+	using Super = AbstractSceneManagerTest;
+
 protected:
-	SceneManagerPtr _sceneMgr;
-	SceneManager *sceneMgr() {
-		return _sceneMgr.get();
-	}
-	core::SharedPtr<Client> _client;
+	static constexpr uint16_t TestPort = 19099;
 
 	class PingTestHandler : public network::ProtocolTypeHandler<PingMessage> {
 	public:
@@ -30,49 +28,70 @@ protected:
 	};
 	PingTestHandler _pingHandler;
 
-public:
+	bool onInitApp() override {
+		app::AbstractTest::onInitApp();
+		_testApp->filesystem()->registerPath("brushes/");
+		return _testApp->filesystem()->registerPath("selectionmodes/");
+	}
+
 	void SetUp() override {
-		app::AbstractTest::SetUp();
-		const auto timeProvider = core::make_shared<core::TimeProvider>();
-		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
-		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
-		_sceneMgr = core::make_shared<SceneManager>(timeProvider, _testApp->filesystem(), sceneRenderer,
-													modifierRenderer);
-
-		_client = core::make_shared<Client>(_sceneMgr.get());
-		EXPECT_TRUE(_client->init());
-		const core::String hostname = "localhost";
-		const uint16_t port = 10001;
-
-		// Try to connect to the local voxedit server
-		const bool connected =
-			_client->connect(hostname, port); // Skip the test if we can't connect - the server is not running
-		if (!connected) {
-			GTEST_SKIP() << "Could not connect to voxedit server at " << hostname.c_str() << ":" << port
-						 << " - server not running";
-		}
-		_client->network().protocolRegistry().registerHandler(PROTO_PING, &_pingHandler);
+		Super::SetUp();
+		_sceneMgr->startLocalServer(TestPort, "127.0.0.1");
+		ASSERT_TRUE(_sceneMgr->client().isConnected());
+		_sceneMgr->client().network().protocolRegistry().registerHandler(PROTO_PING, &_pingHandler);
 	}
 
 	void TearDown() override {
-		_client->shutdown();
-		app::AbstractTest::TearDown();
+		_sceneMgr->stopLocalServer();
+		Super::TearDown();
+	}
+
+	void pumpNetwork(double maxSeconds = 2.0) {
+		const double startSeconds = _testApp->timeProvider()->tickSeconds();
+		while (_testApp->timeProvider()->tickSeconds() - startSeconds < maxSeconds) {
+			_testApp->timeProvider()->updateTickTime();
+			_sceneMgr->update(_testApp->timeProvider()->tickSeconds());
+		}
 	}
 };
 
-TEST_F(ClientTest, testConnectionToLocalhost) {
-	EXPECT_TRUE(_client->isConnected());
-	double startSeconds = _testApp->timeProvider()->tickSeconds();
-	_client->update(startSeconds);
-	while (_pingHandler._cnt == 0) {
+TEST_F(ClientTest, testSendMessageWhenDisconnected) {
+	_sceneMgr->client().disconnect();
+	EXPECT_FALSE(_sceneMgr->client().isConnected());
+	PingMessage ping;
+	EXPECT_FALSE(_sceneMgr->client().network().sendMessage(ping));
+	EXPECT_EQ(0, _sceneMgr->client().network().pendingOutgoingBytes());
+}
+
+TEST_F(ClientTest, testSendMessageDoesNotBlock) {
+	ClientNetwork &network = _sceneMgr->client().network();
+	ASSERT_TRUE(_sceneMgr->client().isConnected());
+
+	// Flood the outbound path with small messages. Previously a blocking send()
+	// could hang forever if the peer stopped draining; queued non-blocking sends
+	// must return promptly even if some bytes remain pending.
+	for (int i = 0; i < 256; ++i) {
+		PingMessage ping;
+		ASSERT_TRUE(network.sendMessage(ping)) << "send failed at iteration " << i;
+	}
+
+	const double startSeconds = _testApp->timeProvider()->tickSeconds();
+	while (network.pendingOutgoingBytes() > 0) {
 		_testApp->timeProvider()->updateTickTime();
 		const double nowSeconds = _testApp->timeProvider()->tickSeconds();
-		_client->update(nowSeconds);
-		double waitSeconds = nowSeconds - startSeconds;
-		ASSERT_LT(waitSeconds, 6.0);
+		_sceneMgr->update(nowSeconds);
+		ASSERT_LT(nowSeconds - startSeconds, 6.0) << "outgoing queue did not drain";
 	}
-	_client->disconnect();
-	EXPECT_FALSE(_client->isConnected());
+}
+
+TEST_F(ClientTest, testLocalServerReceivesClientTraffic) {
+	ClientNetwork &network = _sceneMgr->client().network();
+	ASSERT_TRUE(_sceneMgr->client().isConnected());
+
+	PingMessage ping;
+	ASSERT_TRUE(network.sendMessage(ping));
+	pumpNetwork();
+	EXPECT_EQ(0, network.pendingOutgoingBytes());
 }
 
 } // namespace voxedit

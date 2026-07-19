@@ -15,6 +15,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/network/protocol/AckMessage.h"
 #include "voxedit-util/network/protocol/LogMessage.h"
+#include <errno.h>
 
 namespace voxedit {
 
@@ -50,6 +51,8 @@ void ClientNetwork::disconnect() {
 	}
 	FD_ZERO(&_impl->readFDSet);
 	FD_ZERO(&_impl->writeFDSet);
+	_out.reset();
+	in.reset();
 }
 
 bool ClientNetwork::isConnected() const {
@@ -95,14 +98,29 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 
 	// Set non-blocking mode on the connected socket
 #ifdef O_NONBLOCK
-	fcntl(_impl->socketFD, F_SETFL, O_NONBLOCK);
+	const int flags = fcntl(_impl->socketFD, F_GETFL, 0);
+	if (flags == -1 || fcntl(_impl->socketFD, F_SETFL, flags | O_NONBLOCK) == -1) {
+		Log::error("Failed to set non-blocking mode: %s", network::getNetworkErrorString());
+		closesocket(_impl->socketFD);
+		_impl->socketFD = network::InvalidSocketId;
+		freeaddrinfo(res);
+		return false;
+	}
 #endif
 #ifdef _WIN32
 	unsigned long mode = 1;
-	ioctlsocket(_impl->socketFD, FIONBIO, &mode);
+	if (ioctlsocket(_impl->socketFD, FIONBIO, &mode) != 0) {
+		Log::error("Failed to set non-blocking mode: %s", network::getNetworkErrorString());
+		closesocket(_impl->socketFD);
+		_impl->socketFD = network::InvalidSocketId;
+		freeaddrinfo(res);
+		return false;
+	}
 #endif
 
 	freeaddrinfo(res);
+	_out.reset();
+	in.reset();
 	FD_SET(_impl->socketFD, &_impl->readFDSet);
 	return true;
 }
@@ -144,22 +162,70 @@ bool ClientNetwork::init() {
 	return true;
 }
 
+bool ClientNetwork::flushOutgoing() {
+	if (_impl->socketFD == network::InvalidSocketId) {
+		return false;
+	}
+
+	const int64_t total = _out.size();
+	if (total <= 0) {
+		FD_CLR(_impl->socketFD, &_impl->writeFDSet);
+		return true;
+	}
+
+	size_t sentTotal = 0;
+	while (sentTotal < (size_t)total) {
+		const size_t toSend = (size_t)total - sentTotal;
+		const network_return sent = send(_impl->socketFD, (const char *)_out.getBuffer() + sentTotal, toSend, 0);
+		if (sent < 0) {
+			_out.seek((int64_t)sentTotal);
+			_out.trim();
+#ifdef _WIN32
+			const int error = WSAGetLastError();
+			if (error == WSAEWOULDBLOCK || error == WSAEINPROGRESS) {
+				FD_SET(_impl->socketFD, &_impl->writeFDSet);
+				return true;
+			}
+#else
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				FD_SET(_impl->socketFD, &_impl->writeFDSet);
+				return true;
+			}
+#endif
+			Log::error("Client send error: %s", network::getNetworkErrorString());
+			return false;
+		}
+		if (sent == 0) {
+			Log::error("Server socket closed during send");
+			return false;
+		}
+		sentTotal += (size_t)sent;
+	}
+
+	_out.seek((int64_t)sentTotal);
+	_out.trim();
+	FD_CLR(_impl->socketFD, &_impl->writeFDSet);
+	return true;
+}
+
 bool ClientNetwork::sendMessage(const network::ProtocolMessage &msg) {
 	if (_impl->socketFD == network::InvalidSocketId) {
 		return false;
 	}
 
 	const size_t total = msg.size();
-	Log::debug("Send message of type %d with size %u to server", msg.getId(), (uint32_t)total);
-	size_t sentTotal = 0;
-	while (sentTotal < total) {
-		const size_t toSend = total - sentTotal;
-		const network_return sent = send(_impl->socketFD, (const char *)msg.getBuffer() + sentTotal, toSend, 0);
-		if (sent < 0) {
-			Log::warn("Failed to send message: %s", network::getNetworkErrorString());
-			return false;
-		}
-		sentTotal += sent;
+	Log::debug("Queue message of type %d with size %u to server", msg.getId(), (uint32_t)total);
+	_out.seek(0, SEEK_END);
+	if (_out.write(msg.getBuffer(), total) == -1) {
+		Log::error("Failed to queue outgoing message");
+		return false;
+	}
+	FD_SET(_impl->socketFD, &_impl->writeFDSet);
+
+	// Best-effort non-blocking flush; remaining bytes stay queued for update()
+	if (!flushOutgoing()) {
+		disconnect();
+		return false;
 	}
 	return true;
 }
@@ -190,12 +256,17 @@ void ClientNetwork::update(double nowSeconds) {
 	}
 
 	if (ready == 0) {
-		// No sockets ready, nothing to process
 		return;
 	}
 
+	if (FD_ISSET(_impl->socketFD, &writeFDsOut)) {
+		if (!flushOutgoing()) {
+			disconnect();
+			return;
+		}
+	}
+
 	if (!FD_ISSET(_impl->socketFD, &readFDsOut)) {
-		// Socket is not ready for reading
 		return;
 	}
 	core::Array<uint8_t, 16384> buf;
