@@ -114,10 +114,6 @@ private:
 	core::VarPtr _viewportHud;
 
 	bool wantGizmo() const;
-	/**
-	 * @brief Create a reference of the given mode node by holding shift and clicking on the gizmo
-	 */
-	bool createReference(const scenegraph::SceneGraphNode &node) const;
 	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
 	void updateBounds(const scenegraph::SceneGraphNode &node);
 	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);

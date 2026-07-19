@@ -16,7 +16,7 @@ You can also manually edit the `keybindings-x.cfg` file in your user settings di
 You can also change the bindings in the console by using the `bind` command.
 
 > Usage of the bind command: `bind <modifier+key> <command> <context>`.
-> `context` is one of `all`, `model`, `scene`, `game`, `editing` (`editing` is both `scene` and `model`)
+> `context` is one of `all`, `model`, `scene`, `game`, `editing`, `scenegizmo`, `editgizmo` (`editing` is scene+model+game; `scenegizmo`/`editgizmo` are active while the gizmo is hovered)
 
 To get a list of bindable commands, type the `cmdlist` command to the console and hit enter.
 
@@ -24,15 +24,17 @@ To get a list of bindable commands, type the `cmdlist` command to the console an
 
 ### Contexts
 
-| Context   | Description                             |
-| --------- | --------------------------------------- |
-| `all`     | Available in all modes                  |
-| `model`   | Only available in model mode            |
-| `scene`   | Only available in scene mode            |
-| `game`    | Only available in game mode             |
-| `editing` | Available in model, scene and game mode |
+| Context      | Description                                              |
+| ------------ | -------------------------------------------------------- |
+| `all`        | Available in all modes                                   |
+| `model`      | Only available in model mode                             |
+| `scene`      | Only available in scene mode                             |
+| `game`       | Only available in game mode                              |
+| `editing`    | Available in model, scene and game mode                  |
+| `scenegizmo` | Scene mode while the transform gizmo is hovered          |
+| `editgizmo`  | Model mode while the transform/brush gizmo is hovered    |
 
-You can also negate a context by prefixing it with `!`. For example `!scene` means available in all modes except scene mode.
+You can also negate a context by prefixing it with `!`. For example `!scene` means available only when the current context is exactly scene (and not a combination). Use `!scenegizmo` for bindings that must match scene+gizmo exactly.
 
 ### Modifiers
 

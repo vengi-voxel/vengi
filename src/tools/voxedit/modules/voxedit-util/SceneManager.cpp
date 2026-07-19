@@ -47,6 +47,7 @@
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "scenegraph/SceneUtil.h"
+#include "util/CustomButtonNames.h"
 #include "video/Camera.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -95,12 +96,23 @@
 
 namespace voxedit {
 
+CreateReferenceButton::CreateReferenceButton(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
+}
+
+bool CreateReferenceButton::handleDown(int32_t key, double pressedSeconds) {
+	const bool initialDown = Super::handleDown(key, pressedSeconds);
+	if (initialDown && key == util::button::CUSTOM_SDLK_MOUSE_LEFT) {
+		_sceneMgr->createReferenceFromGizmo();
+	}
+	return initialDown;
+}
+
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifier(this, modifierRenderer), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
-	  _server(&_luaApi, this), _client(this), _recorder(this), _player(this) {
+	  _server(&_luaApi, this), _client(this), _recorder(this), _player(this), _createReference(this) {
 	server().setState(&_sceneGraph);
 }
 
@@ -3690,7 +3702,9 @@ void SceneManager::construct() {
 				_move[i], _("Move the cursor by keys, not by viewport mouse trace"));
 	}
 	command::Command::registerActionButton("addnode_mode", _toggleNodeAdd,
-										   _("Hold to toggle add-node-by-face mode and to create reference nodes on the gizmo"));
+										   _("Hold to toggle add-node-by-face mode in scene view"));
+	command::Command::registerActionButton("createreference", _createReference,
+										   _("Hold shift over the scene gizmo and click to create a reference node"));
 	command::Command::registerCommand("palette_changeintensity")
 		.addArg({"value", command::ArgType::Float, false, "", "Intensity scale value"})
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to apply the intensity change to"})
@@ -5066,6 +5080,24 @@ void SceneManager::toggleAddNodeMode() {
 	setAddNodeModeActive(!isAddNodeModeActive());
 }
 
+bool SceneManager::isCreateReferencePressed() const {
+	return _createReference.pressed();
+}
+
+void SceneManager::createReferenceFromGizmo() {
+	const int nodeId = activeNode();
+	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr || !node->isModelNode()) {
+		return;
+	}
+	// gizmo interaction may have locked memento while transforming
+	memento::ScopedMementoHandlerUnlock scopedUnlock(_mementoHandler);
+	const int newNodeId = nodeReference(nodeId);
+	if (newNodeId != InvalidNodeId) {
+		nodeActivate(newNodeId);
+	}
+}
+
 void SceneManager::updateAddNodeHover(scenegraph::FrameIndex frameIdx) {
 	if (!isAddNodeModeActive() || _camera == nullptr) {
 		if (_addNodePreview.active) {
@@ -5119,6 +5151,10 @@ bool SceneManager::blocksSceneMouseInteraction() const {
 void SceneManager::resetViewportMouseBlock() {
 	_viewportGizmoActive = false;
 	_viewportHudHovered = false;
+}
+
+bool SceneManager::isViewportGizmoActive() const {
+	return _viewportGizmoActive;
 }
 
 void SceneManager::setViewportGizmoActive(bool active) {
@@ -5804,6 +5840,7 @@ void SceneManager::shutdown() {
 	command::Command::unregisterActionButton("camera_rotate");
 	command::Command::unregisterActionButton("camera_pan");
 	command::Command::unregisterActionButton("addnode_mode");
+	command::Command::unregisterActionButton("createreference");
 }
 
 void SceneManager::lsystemAbort() {

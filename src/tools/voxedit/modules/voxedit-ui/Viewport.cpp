@@ -863,30 +863,10 @@ bool Viewport::wantGizmo() const {
 	return false;
 }
 
-bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
-	if (!isSceneMode()) {
-		return false;
-	}
-	if (!node.isModelNode()) {
-		return false;
-	}
-	if (!ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
-		return false;
-	}
-	if (!ImGuizmo::IsOver()) {
-		return false;
-	}
-	if (!ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
-		ImGui::TooltipTextUnformatted(_("Create a reference node"));
-		return false;
-	}
-	return true;
-}
-
 uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const {
 	if (isSceneMode() && !_pivotMode->boolVal()) {
 		// create reference mode - only allow translation
-		if (node.isModelNode() && ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
+		if (node.isModelNode() && _sceneMgr->isCreateReferencePressed()) {
 			return ImGuizmo::TRANSLATE;
 		}
 
@@ -1053,17 +1033,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	const uint32_t operation = gizmoOperation(node);
 	const bool manipulated = gizmoManipulate(camera, boundsPtr, worldMatrix, deltaMatrix, operation);
 	updateGizmoValues(node, keyFrameIdx, worldMatrix);
-	// check to create a reference before we update the node transform
-	// otherwise the new reference node will not get the correct transform
-	if (createReference(node)) {
-		// we have to record the creating of the new nodes here - thus we have to unlock the memento state
-		memento::ScopedMementoHandlerUnlock scopedUnlock(_sceneMgr->mementoHandler());
-		const int newNode = _sceneMgr->nodeReference(node.id());
-		// we need to activate the node - otherwise we end up in
-		// endlessly creating new reference nodes
-		if (_sceneMgr->nodeActivate(newNode)) {
-			activeNode = newNode;
-		}
+	if (_sceneMgr->isCreateReferencePressed() && node.isModelNode()) {
+		ImGui::TooltipTextUnformatted(_("Create a reference node"));
 	}
 	if (!manipulated) {
 		return false;

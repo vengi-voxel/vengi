@@ -42,6 +42,9 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("model", core::BindingContext::Context2);
 	core::registerBindingContext("game", core::BindingContext::Context3);
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
+	// gizmo-hovered contexts (Context4 = gizmo); exclusive match via !scenegizmo / !editgizmo in bindings
+	core::registerBindingContext("scenegizmo", core::BindingContext::Context1 | core::BindingContext::Context4);
+	core::registerBindingContext("editgizmo", core::BindingContext::Context2 | core::BindingContext::Context4);
 	_allowRelativeMouseMode = true;
 	_iniVersion = 12;
 	_keybindingsVersion = 6;
@@ -529,6 +532,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
 	_keybindingHandler.registerBinding("shift",                "+addnode_mode",                "!scene");
+	_keybindingHandler.registerBinding("shift+left_mouse",     "+createreference",             "!scenegizmo");
 
 	if (keymap != KeyBindings::Qubicle) {
 		if (keymap != KeyBindings::_3dsMax) {
@@ -630,8 +634,9 @@ void VoxEdit::validateKeyBindings() {
 	Super::validateKeyBindings();
 
 	// Context meanings are app-specific:
-	// Context1 = scene, Context2 = model, Context3 = game
-	// editing = scene|model|game; runtime may also be game|scene or game|model
+	// Context1 = scene, Context2 = model, Context3 = game, Context4 = gizmo hovered
+	// editing = scene|model|game; scenegizmo = scene|gizmo; editgizmo = model|gizmo
+	// runtime may also be game|scene or game|model (with optional gizmo bit)
 	auto isSuitableForRuntime = [](core::BindingContext bindingCtx, core::BindingContext runtimeCtx) {
 		if (bindingCtx == core::BindingContext::All) {
 			return true;
@@ -651,7 +656,13 @@ void VoxEdit::validateKeyBindings() {
 			core::BindingContext::Context2,
 			core::BindingContext::Context3,
 			(core::BindingContext)(core::BindingContext::Context1 | core::BindingContext::Context3),
-			(core::BindingContext)(core::BindingContext::Context2 | core::BindingContext::Context3)};
+			(core::BindingContext)(core::BindingContext::Context2 | core::BindingContext::Context3),
+			(core::BindingContext)(core::BindingContext::Context1 | core::BindingContext::Context4),
+			(core::BindingContext)(core::BindingContext::Context2 | core::BindingContext::Context4),
+			(core::BindingContext)(core::BindingContext::Context1 | core::BindingContext::Context3 |
+								  core::BindingContext::Context4),
+			(core::BindingContext)(core::BindingContext::Context2 | core::BindingContext::Context3 |
+								  core::BindingContext::Context4)};
 		for (const core::BindingContext runtime : runtimes) {
 			if (isSuitableForRuntime(contextA, runtime) && isSuitableForRuntime(contextB, runtime)) {
 				return true;
@@ -813,17 +824,19 @@ app::AppState VoxEdit::onRunning() {
 	_collectionMgr->update(_nowSeconds);
 	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
 	if (viewport) {
+		int ctx = 0;
 		if (viewport->isGameMode()) {
-			if (viewport->isSceneMode()) {
-				core::setBindingContext(core::BindingContext::Context3 | core::BindingContext::Context1);
-			} else {
-				core::setBindingContext(core::BindingContext::Context3 | core::BindingContext::Context2);
-			}
-		} else if (viewport->isSceneMode()) {
-			core::setBindingContext(core::BindingContext::Context1);
-		} else {
-			core::setBindingContext(core::BindingContext::Context2);
+			ctx |= (int)core::BindingContext::Context3;
 		}
+		if (viewport->isSceneMode()) {
+			ctx |= (int)core::BindingContext::Context1;
+		} else {
+			ctx |= (int)core::BindingContext::Context2;
+		}
+		if (_sceneMgr->isViewportGizmoActive()) {
+			ctx |= (int)core::BindingContext::Context4;
+		}
+		core::setBindingContext(ctx);
 	} else {
 		core::setBindingContext(core::BindingContext::UI);
 	}

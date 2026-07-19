@@ -63,6 +63,21 @@ enum class NodeMergeFlags {
 };
 CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
+class SceneManager;
+
+/**
+ * @brief Hold shift over the scene gizmo for create-reference mode; shift+click creates the node.
+ */
+class CreateReferenceButton : public command::ActionButton {
+private:
+	using Super = command::ActionButton;
+	SceneManager *_sceneMgr;
+
+public:
+	CreateReferenceButton(SceneManager *sceneMgr);
+	bool handleDown(int32_t key, double pressedSeconds) override;
+};
+
 /**
  * @brief Owns and coordinates the editable voxel scene.
  *
@@ -76,6 +91,7 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
  */
 class SceneManager : public core::DeltaFrameSeconds {
 	friend class LUAApiListener;
+	friend class CreateReferenceButton;
 
 protected:
 	scenegraph::SceneGraph _sceneGraph;
@@ -154,7 +170,8 @@ protected:
 	command::ActionButton _pan;
 	command::ActionButton _zoomIn;
 	command::ActionButton _zoomOut;
-	command::ActionButton _toggleNodeAdd; // scene modifier (add-node mode + create reference)
+	command::ActionButton _toggleNodeAdd; // add-node-by-face mode (shift in scene)
+	CreateReferenceButton _createReference;
 
 	voxelutil::PickResult _result;
 
@@ -169,6 +186,10 @@ protected:
 
 	void autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region);
 	bool loadGlobalClipboard(voxel::ClipboardData &clipData);
+	/**
+	 * @brief Create a reference of the active model node (used by CreateReferenceButton)
+	 */
+	void createReferenceFromGizmo();
 
 	/**
 	 * @note This might return @c nullptr in the case where the active node is no model node
@@ -431,10 +452,15 @@ public:
 	bool isAddNodeModeActive() const;
 	void setAddNodeModeActive(bool active);
 	void toggleAddNodeMode();
+	/**
+	 * @return @c true while the key bound to @c +createreference is held
+	 */
+	bool isCreateReferencePressed() const;
 	void updateAddNodeHover(scenegraph::FrameIndex frameIdx);
 	const AddNodePreview &addNodePreview() const;
 	bool blocksSceneMouseInteraction() const;
 	void resetViewportMouseBlock();
+	bool isViewportGizmoActive() const;
 	void setViewportGizmoActive(bool active);
 	void setViewportHudHovered(bool hovered);
 
