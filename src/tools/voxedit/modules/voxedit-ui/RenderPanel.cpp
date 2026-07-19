@@ -133,7 +133,7 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 			ImGui::EndMenu();
 		}
 		if (_image && _image->isLoaded()) {
-			if (ImGui::Button(_("Save image"))) {
+			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save image"))) {
 				_app->saveDialog(
 					[=](const core::String &file, const io::FormatDescription *desc) {
 						const io::FilePtr &filePtr = _app->filesystem()->open(file, io::FileMode::SysWrite);
@@ -143,24 +143,24 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 					{}, io::format::images(), "render.png");
 			}
 		}
-		ImGui::Dummy(ImVec2(20, 0));
 		if (_pathTracer.started()) {
-			if (ImGui::Button(_("Sync camera"))) {
+			if (ImGui::IconMenuItem(ICON_LC_REFRESH_CW, _("Sync camera"))) {
 				_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
 			}
-			if (ImGui::Button(_("Stop path tracer"))) {
+			ImGui::TooltipTextUnformatted(_("Restart with the current viewport camera"));
+			if (ImGui::IconMenuItem(ICON_LC_CIRCLE_STOP, _("Stop path tracer"))) {
 				_pathTracer.stop();
 			}
 			const voxelpathtracer::PathTracerState &state = _pathTracer.state();
 			const yocto::trace_params &params = state.params;
-			ImGui::TooltipText(_("Sample %i / %i"), _currentSample, params.samples);
+			ImGui::Text(_("Sample %i / %i"), _currentSample, params.samples);
 			_pathTracer.update(&_currentSample);
 			_image = _pathTracer.image();
 			if (_image->isLoaded()) {
 				_texture->upload(_image);
 			}
 		} else {
-			if (ImGui::Button(_("Start path tracer"))) {
+			if (ImGui::IconMenuItem(ICON_LC_PLAY, _("Start path tracer"))) {
 				_pathTracer.start(sceneGraph, _sceneMgr->activeCamera());
 			}
 		}
