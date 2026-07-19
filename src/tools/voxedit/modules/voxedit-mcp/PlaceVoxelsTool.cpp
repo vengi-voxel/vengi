@@ -13,8 +13,7 @@ namespace voxedit {
 PlaceVoxelsTool::PlaceVoxelsTool() : Tool("voxedit_place_voxels") {
 	_tool.set("description", "Place voxels at specified positions in a node.");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("voxels");
 	_requiredArr.push("nodeUUID");

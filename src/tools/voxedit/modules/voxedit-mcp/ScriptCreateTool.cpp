@@ -18,8 +18,7 @@ ScriptCreateTool::ScriptCreateTool() : Tool("voxedit_script_create") {
 		"Try to use arguments to make the scripts re-usable. Custom argument handling: function arguments() return { "
 		"{ name = 'padding', desc = 'padding between nodes', type = 'int', default = '2' } } end");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("name");
 	_requiredArr.push("code");

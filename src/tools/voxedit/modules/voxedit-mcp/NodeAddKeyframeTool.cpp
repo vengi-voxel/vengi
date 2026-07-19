@@ -21,8 +21,7 @@ NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 		"translations and rotations for leg, arm, and torso nodes. "
 		"Fetch the scene state (with animations included) to see the current keyframes and node UUIDs.");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	_requiredArr.push("frameIdx");
@@ -35,8 +34,7 @@ NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 	inputSchema.get("properties").get("frameIdx").set("minimum", 0);
 
 	// Optional transform properties
-	json::Json translationProp = json::Json::object();
-	translationProp.set("type", "object");
+	json::Json translationProp = objectSchema();
 	translationProp.set("description", "World-space translation of the node at this keyframe. "
 									 "Y is up. Units are in voxels.");
 	translationProp.get("properties").set("x", propTypeDescription("number", "X translation"));
@@ -47,8 +45,7 @@ NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 	translationProp.get("properties").get("z").set("default", 0.0);
 	inputSchema.get("properties").set("translation", core::move(translationProp));
 
-	json::Json rotationProp = json::Json::object();
-	rotationProp.set("type", "object");
+	json::Json rotationProp = objectSchema();
 	rotationProp.set("description", "Euler rotation angles in degrees for the node at this keyframe. "
 								  "Applied as XYZ rotation.");
 	rotationProp.get("properties").set("x", propTypeDescription("number", "Rotation around X axis in degrees (pitch)"));
@@ -59,8 +56,7 @@ NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 	rotationProp.get("properties").get("z").set("default", 0.0);
 	inputSchema.get("properties").set("rotation", core::move(rotationProp));
 
-	json::Json scaleProp = json::Json::object();
-	scaleProp.set("type", "object");
+	json::Json scaleProp = objectSchema();
 	scaleProp.set("description", "Scale of the node at this keyframe.");
 	scaleProp.get("properties").set("x", propTypeDescription("number", "X scale"));
 	scaleProp.get("properties").get("x").set("default", 1.0);

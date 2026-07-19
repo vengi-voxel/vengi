@@ -9,7 +9,37 @@
 #include "image/Image.h"
 #include "json/JSON.h"
 #include "voxel/RawVolume.h"
+#include "voxedit-mcp/AnimationAddTool.h"
+#include "voxedit-mcp/AnimationSetTool.h"
+#include "voxedit-mcp/CommandTool.h"
+#include "voxedit-mcp/ExtrudeBrushTool.h"
+#include "voxedit-mcp/FindColorTool.h"
+#include "voxedit-mcp/GetPaletteTool.h"
+#include "voxedit-mcp/GetSceneStateTool.h"
+#include "voxedit-mcp/GetVoxelsTool.h"
+#include "voxedit-mcp/HistogramTool.h"
+#include "voxedit-mcp/LineBrushTool.h"
+#include "voxedit-mcp/MementoCanRedoTool.h"
+#include "voxedit-mcp/MementoCanUndoTool.h"
+#include "voxedit-mcp/MementoRedoTool.h"
+#include "voxedit-mcp/MementoUndoTool.h"
+#include "voxedit-mcp/NodeAddKeyframeTool.h"
+#include "voxedit-mcp/NodeAddModelTool.h"
+#include "voxedit-mcp/NodeMoveTool.h"
+#include "voxedit-mcp/NodeRemoveTool.h"
+#include "voxedit-mcp/NodeRenameTool.h"
+#include "voxedit-mcp/NodeSetPropertiesTool.h"
+#include "voxedit-mcp/PaintBrushTool.h"
+#include "voxedit-mcp/PlaceVoxelsTool.h"
+#include "voxedit-mcp/PlaneBrushTool.h"
+#include "voxedit-mcp/ScriptApiTool.h"
+#include "voxedit-mcp/ScriptCreateTool.h"
 #include "voxedit-mcp/ScreenshotTool.h"
+#include "voxedit-mcp/SculptBrushTool.h"
+#include "voxedit-mcp/SelectBrushTool.h"
+#include "voxedit-mcp/ShapeBrushTool.h"
+#include "voxedit-mcp/ToolRegistry.h"
+#include "voxedit-mcp/TransformBrushTool.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
@@ -158,6 +188,69 @@ TEST_F(ToolsTest, screenshotToolMergedScene) {
 	EXPECT_TRUE(core::string::startsWith(capture.pngBase64, "iVBORw0KGgo"));
 
 	ImageResultCapture::_instance = nullptr;
+}
+
+static void assertValidMcpToolSchema(const json::Json &tool) {
+	ASSERT_TRUE(tool.isObject()) << tool.dump();
+	ASSERT_TRUE(tool.contains("name")) << tool.dump();
+	ASSERT_TRUE(tool.get("name").isString()) << tool.dump();
+	ASSERT_TRUE(tool.contains("description")) << tool.dump();
+	ASSERT_TRUE(tool.contains("inputSchema")) << tool.get("name").str().c_str() << " missing inputSchema";
+	const json::Json schema = tool.get("inputSchema");
+	ASSERT_TRUE(schema.isObject()) << tool.get("name").str().c_str();
+	ASSERT_EQ("object", schema.strVal("type", "")) << tool.get("name").str().c_str();
+	ASSERT_TRUE(schema.contains("properties")) << tool.get("name").str().c_str() << " missing properties";
+	ASSERT_TRUE(schema.get("properties").isObject()) << tool.get("name").str().c_str();
+	if (schema.contains("required")) {
+		ASSERT_TRUE(schema.get("required").isArray()) << tool.get("name").str().c_str();
+		for (const auto &req : schema.get("required")) {
+			ASSERT_TRUE(req.isString()) << tool.get("name").str().c_str();
+			ASSERT_TRUE(schema.get("properties").contains(req.cStr()))
+				<< tool.get("name").str().c_str() << " required '" << req.cStr() << "' missing from properties";
+		}
+	}
+}
+
+TEST_F(ToolsTest, registeredToolsHaveValidMcpInputSchemas) {
+	ToolRegistry registry;
+	registry.registerTool(new AnimationAddTool());
+	registry.registerTool(new AnimationSetTool());
+	registry.registerTool(new FindColorTool());
+	registry.registerTool(new GetPaletteTool());
+	registry.registerTool(new GetSceneStateTool());
+	registry.registerTool(new GetVoxelsTool());
+	registry.registerTool(new HistogramTool());
+	registry.registerTool(new ScreenshotTool());
+	registry.registerTool(new MementoCanRedoTool());
+	registry.registerTool(new MementoCanUndoTool());
+	registry.registerTool(new MementoRedoTool());
+	registry.registerTool(new MementoUndoTool());
+	registry.registerTool(new NodeAddKeyframeTool());
+	registry.registerTool(new NodeAddModelTool());
+	registry.registerTool(new NodeMoveTool());
+	registry.registerTool(new NodeRemoveTool());
+	registry.registerTool(new NodeRenameTool());
+	registry.registerTool(new NodeSetPropertiesTool());
+	registry.registerTool(new PlaceVoxelsTool());
+	registry.registerTool(new ScriptApiTool());
+	registry.registerTool(new ScriptCreateTool());
+	registry.registerTool(new ShapeBrushTool());
+	registry.registerTool(new PaintBrushTool());
+	registry.registerTool(new LineBrushTool());
+	registry.registerTool(new SelectBrushTool());
+	registry.registerTool(new PlaneBrushTool());
+	registry.registerTool(new SculptBrushTool());
+	registry.registerTool(new TransformBrushTool());
+	registry.registerTool(new ExtrudeBrushTool());
+	registry.registerTool(new CommandTool());
+	registry.registerTool(new CommandListTool());
+
+	json::Json tools = json::Json::array();
+	registry.addRegisteredTools(tools);
+	ASSERT_GT(tools.size(), 0);
+	for (const auto &tool : tools) {
+		assertValidMcpToolSchema(tool);
+	}
 }
 
 } // namespace voxedit

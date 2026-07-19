@@ -15,8 +15,7 @@ GetVoxelsTool::GetVoxelsTool() : Tool("voxedit_get_voxels") {
 	_tool.set("description", "Get voxel data from a model node. Returns compact binary data (base64) "
 						   "in either SPARSE or RLE format, whichever is smaller.");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	inputSchema.set("required", _requiredArr);

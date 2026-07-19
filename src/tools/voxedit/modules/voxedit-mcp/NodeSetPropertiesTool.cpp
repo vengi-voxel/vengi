@@ -11,8 +11,7 @@ namespace voxedit {
 NodeSetPropertiesTool::NodeSetPropertiesTool() : Tool("voxedit_node_set_properties") {
 	_tool.set("description", "Set arbitrary node properties. Provide nodeUUID and a properties object");
 
-	json::Json inps = json::Json::object();
-	inps.set("type", "object");
+	json::Json inps = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	_requiredArr.push("properties");

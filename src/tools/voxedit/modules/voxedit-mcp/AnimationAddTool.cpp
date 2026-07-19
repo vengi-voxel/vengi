@@ -13,8 +13,7 @@ AnimationAddTool::AnimationAddTool() : Tool("voxedit_animation_add") {
 		"voxedit_node_add_keyframe to add keyframes for each node. Fetch the scene state to see existing "
 		"animations and their keyframes.");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("name");
 	inputSchema.set("required", _requiredArr);

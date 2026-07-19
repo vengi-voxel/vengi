@@ -107,6 +107,13 @@ json::Json Tool::propTypeDescription(const core::String &type, const core::Strin
 	return nameProp;
 }
 
+json::Json Tool::objectSchema() {
+	json::Json schema = json::Json::object();
+	schema.set("type", "object");
+	schema.set("properties", json::Json::object());
+	return schema;
+}
+
 const core::String &Tool::rconPassword() const {
 	return core::getVar(cfg::VoxEditNetRconPassword)->strVal();
 }

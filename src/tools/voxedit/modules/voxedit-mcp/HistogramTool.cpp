@@ -11,8 +11,7 @@ namespace voxedit {
 HistogramTool::HistogramTool() : Tool("voxedit_histogram") {
 	_tool.set("description", "Get a color histogram for a model node. Returns the count and percentage of voxels for "
 						   "each used palette color index, along with the RGBA color values.");
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	inputSchema.set("required", _requiredArr);

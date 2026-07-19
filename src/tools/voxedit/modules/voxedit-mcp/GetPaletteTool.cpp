@@ -10,8 +10,7 @@ namespace voxedit {
 
 GetPaletteTool::GetPaletteTool() : Tool("voxedit_get_palette") {
 	_tool.set("description", "Get the color palette of a specific node.");
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	inputSchema.set("required", _requiredArr);

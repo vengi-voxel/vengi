@@ -11,7 +11,7 @@ namespace voxedit {
 ScriptApiTool::ScriptApiTool() : Tool("voxedit_script_api") {
 	_tool.set("description", "Lua API documentation as JSON. Describes all Lua functions and "
 						   "parameters for writing scripts.");
-	_tool.get("inputSchema").set("type", "object");
+	_tool.set("inputSchema", objectSchema());
 }
 
 bool ScriptApiTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {

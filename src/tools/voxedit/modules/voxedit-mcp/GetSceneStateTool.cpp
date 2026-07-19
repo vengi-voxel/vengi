@@ -20,8 +20,7 @@ GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
 		"Get the current scene graph state. This should be your first action after connecting to the MCP server to get "
 		"the UUIDs of the existing nodes and their structure. Do this call from time to time to get an updated state. "
 		"If a node uuid is specified, only a single node is returned.");
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	inputSchema.get("properties").set("nodeUUID", propUUID());
 	inputSchema.get("properties").set("skipinfo",
 		propTypeDescription("string", "Comma separated list things to omit from the json output: " VALID_SKIPINFO_VALUES

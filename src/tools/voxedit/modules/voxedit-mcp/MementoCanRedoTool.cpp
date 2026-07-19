@@ -9,7 +9,7 @@ namespace voxedit {
 
 MementoCanRedoTool::MementoCanRedoTool() : Tool("voxedit_memento_can_redo") {
 	_tool.set("description", "Returns whether a redo operation is available");
-	_tool.get("inputSchema").set("type", "object");
+	_tool.set("inputSchema", objectSchema());
 }
 
 bool MementoCanRedoTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {

@@ -13,8 +13,7 @@ AnimationSetTool::AnimationSetTool() : Tool("voxedit_animation_set") {
 		"After switching, use voxedit_node_add_keyframe to create keyframes for nodes in this animation. "
 		"Fetch the scene state to see the list of available animations.");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("name");
 	inputSchema.set("required", _requiredArr);

@@ -13,8 +13,7 @@ MementoRedoTool::MementoRedoTool() : Tool("voxedit_memento_redo") {
 	json::Json nprop = propTypeDescription("integer", "Number of redo steps");
 	nprop.set("default", 1);
 
-	json::Json in = json::Json::object();
-	in.set("type", "object");
+	json::Json in = objectSchema();
 	in.get("properties").set("n", core::move(nprop));
 	_tool.set("inputSchema", core::move(in));
 }

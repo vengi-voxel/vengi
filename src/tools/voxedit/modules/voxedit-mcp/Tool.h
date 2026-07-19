@@ -46,6 +46,12 @@ protected:
 	static json::Json propParentUUID();
 	static json::Json propReferenceUUID();
 	static json::Json propTypeDescription(const core::String &type, const core::String &description);
+	/**
+	 * @brief Create an MCP JSON Schema object: {"type":"object","properties":{}}.
+	 * Always use this before inputSchema.get("properties").set(...) - get() on a missing
+	 * key returns an invalid Json and set() is a no-op, which breaks Cursor tool discovery.
+	 */
+	static json::Json objectSchema();
 
 public:
 	/**

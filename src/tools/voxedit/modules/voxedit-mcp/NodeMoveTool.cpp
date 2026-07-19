@@ -10,8 +10,7 @@ namespace voxedit {
 NodeMoveTool::NodeMoveTool() : Tool("voxedit_node_move") {
 	_tool.set("description", "Move a node to a new parent (and optional reference)");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	_requiredArr.push("parentUUID");

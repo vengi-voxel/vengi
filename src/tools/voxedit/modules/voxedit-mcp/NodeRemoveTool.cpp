@@ -10,8 +10,7 @@ namespace voxedit {
 NodeRemoveTool::NodeRemoveTool() : Tool("voxedit_node_remove") {
 	_tool.set("description", "Remove a scene node by UUID");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("nodeUUID");
 	inputSchema.set("required", _requiredArr);

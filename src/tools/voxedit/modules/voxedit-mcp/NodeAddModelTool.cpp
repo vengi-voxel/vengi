@@ -14,8 +14,7 @@ namespace voxedit {
 NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
 	_tool.set("description", "Create a new model node. Provide parent UUID from the scene graph state, name and optinally the size");
 
-	json::Json inputSchema = json::Json::object();
-	inputSchema.set("type", "object");
+	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
 	_requiredArr.push("parentUUID");
 	_requiredArr.push("name");

@@ -13,8 +13,7 @@ MementoUndoTool::MementoUndoTool() : Tool("voxedit_memento_undo") {
 	json::Json nprop = propTypeDescription("integer", "Number of undo steps");
 	nprop.set("default", 1);
 
-	json::Json in = json::Json::object();
-	in.set("type", "object");
+	json::Json in = objectSchema();
 	in.get("properties").set("n", core::move(nprop));
 	_tool.set("inputSchema", core::move(in));
 }

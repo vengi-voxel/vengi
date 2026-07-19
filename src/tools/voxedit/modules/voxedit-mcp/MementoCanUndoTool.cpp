@@ -9,7 +9,7 @@ namespace voxedit {
 
 MementoCanUndoTool::MementoCanUndoTool() : Tool("voxedit_memento_can_undo") {
 	_tool.set("description", "Returns whether an undo operation is available");
-	_tool.get("inputSchema").set("type", "object");
+	_tool.set("inputSchema", objectSchema());
 }
 
 bool MementoCanUndoTool::execute(const json::Json &id, const json::Json &args, ToolContext &ctx) {
