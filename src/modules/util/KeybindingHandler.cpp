@@ -237,7 +237,10 @@ void KeyBindingHandler::saveKeybindings(int version) {
 # * all
 # * model (only available in model mode)
 # * scene (only available in scene mode)
-# * editing (both model and scene)
+# * game (only available in game mode)
+# * editing (model, scene and game)
+# * scenegizmo / editgizmo (while the gizmo is hovered)
+# * prefix with ! for exclusive match (e.g. !scene is only pure scene, not scene+game)
 #
 # mouse related buttons
 # * left_mouse
