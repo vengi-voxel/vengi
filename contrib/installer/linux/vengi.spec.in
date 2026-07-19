@@ -84,7 +84,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/vengi-voxedit.*
 /usr/share/man/man1/vengi-voxeditserver.*
 /usr/share/man/man1/vengi-voxeditmcp.*
-/usr/share/applications/vengi-voxedit.desktop
+/usr/share/applications/@APP_ID_VOXEDIT@.desktop
 /usr/share/vengi-voxedit/*
 /usr/share/icons/hicolor/128x128/apps/voxedit-icon.png
 /usr/share/metainfo/io.github.vengi_voxel.vengi.voxedit.metainfo.xml
@@ -94,7 +94,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/vengi-voxconvertui
 /usr/share/man/man1/vengi-voxconvert.*
 /usr/share/man/man1/vengi-voxconvertui.*
-/usr/share/applications/vengi-voxconvertui.desktop
+/usr/share/applications/@APP_ID_VOXCONVERTUI@.desktop
 /usr/share/vengi-voxconvert/*
 
 %files thumbnailer

@@ -85,7 +85,7 @@ protected:
 
 	/**
 	 * @brief Fallback window icon via SDL_SetWindowIcon from {appname}-icon.png
-	 * On Linux, the desktop file + StartupWMClass is preferred; this covers X11 and
+	 * On Linux, the matching .desktop file (APP_ID) is preferred; this covers X11 and
 	 * compositors that support xdg-toplevel-icon, and running without an installed desktop entry.
 	 */
 	void setWindowIcon();

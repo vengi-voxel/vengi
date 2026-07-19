@@ -204,6 +204,8 @@ configure_file(src/engine-git.h.in engine-git.h @ONLY)
 configure_file(src/engine-config.h.in engine-config.h @ONLY)
 message(STATUS "Generate engine-config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 
+engine_app_id(APP_ID_VOXEDIT voxedit)
+engine_app_id(APP_ID_VOXCONVERTUI voxconvertui)
 configure_file(${ROOT_DIR}/contrib/installer/linux/vengi.spec.in ${PROJECT_BINARY_DIR}/vengi.spec)
 
 find_package(Doxygen)
