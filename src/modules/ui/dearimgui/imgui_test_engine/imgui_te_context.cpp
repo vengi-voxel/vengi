@@ -2846,7 +2846,11 @@ void    ImGuiTestContext::KeyCharsAppendEnter(const char* chars)
     LogDebug("KeyCharsAppendEnter('%s')", chars);
     KeyPress(ImGuiKey_End);
     KeyChars(chars);
+#if IMGUI_VERSION_NUM >= 19263
+    KeyPress(ImGuiMod_Shift | ImGuiKey_Enter); // verify if Shift+Enter will work in earlier version.
+#else
     KeyPress(ImGuiKey_Enter);
+#endif
 }
 
 void    ImGuiTestContext::KeyCharsReplace(const char* chars)
@@ -2883,7 +2887,11 @@ void    ImGuiTestContext::KeyCharsReplaceEnter(const char* chars)
         KeyChars(chars);
     else
         KeyPress(ImGuiKey_Delete);
+#if IMGUI_VERSION_NUM >= 19263
+    KeyPress(ImGuiMod_Shift | ImGuiKey_Enter); // verify if Shift+Enter will work in earlier version.
+#else
     KeyPress(ImGuiKey_Enter);
+#endif
 }
 
 // depth = 1 -> immediate child of 'parent' in ID Stack
