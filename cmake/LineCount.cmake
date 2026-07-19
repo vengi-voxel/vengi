@@ -1,5 +1,8 @@
 # LineCount.cmake - drop-in include-bloat analyser for any CMake project.
 #
+# Disabled by default (option LINECOUNT=OFF) so a normal build is unaffected.
+# Enable with: cmake -DLINECOUNT=ON ...   or  make linecount (Makefile enables it)
+#
 # Preprocess-only (no link). Uses each target's INCLUDE_DIRECTORIES /
 # COMPILE_DEFINITIONS. Creates:
 #   linecount                 headers alone (path:lines, sorted)
@@ -13,18 +16,15 @@
 #
 #   set(LINECOUNT_DIR_REGEX "${CMAKE_SOURCE_DIR}/src")  # optional
 #   include(cmake/LineCount.cmake)
+#   # cmake -DLINECOUNT=ON ...   # required to generate targets
 #   add_library(mylib ...)
 #   linecount_finalize()
 #
 #   cmake --build build --target linecount
 #   cmake --build build --target linecount-cpp
-#   cmake --build build --target linecount-why-mylib-Foo_cpp
-#
-# Why is Foo.cpp huge?
-#   1) linecount-cpp          -> see Foo.cpp:N
-#   2) linecount-why-...-Foo  -> see which headers contribute N lines
+#   cmake --build build --target linecount-why-mylib-Foo
 # -----------------------------------------------------------------------------
-# Also used as cmake -P with LINECOUNT_MODE=one|report|why.
+# Also used as cmake -P with LINECOUNT_MODE=one|report|why|show.
 
 cmake_minimum_required(VERSION 3.15)
 
@@ -329,6 +329,17 @@ endif()
 # ---- configure-time API ----------------------------------------------------
 
 set(LINECOUNT_MODULE_FILE "${CMAKE_CURRENT_LIST_FILE}" CACHE INTERNAL "Path to LineCount.cmake")
+
+option(LINECOUNT "Generate linecount analysis targets (headers/TUs/why)" OFF)
+
+if (NOT LINECOUNT)
+	# Keep call sites safe when the feature is disabled.
+	function(linecount_register)
+	endfunction()
+	function(linecount_finalize)
+	endfunction()
+	return()
+endif()
 
 if (NOT DEFINED LINECOUNT_AUTO_FINALIZE)
 	set(LINECOUNT_AUTO_FINALIZE ON)

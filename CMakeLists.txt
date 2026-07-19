@@ -217,11 +217,12 @@ if (DOXYGEN_FOUND)
 	)
 endif(DOXYGEN_FOUND)
 
-# Preprocessed header / TU line counts (compile-time optimization helper).
-# Drop-in module: cmake/LineCount.cmake
-#   make linecount / linecount-cpp / linecount-why-voxedit-util-SceneManager
-set(LINECOUNT_STRIP_PREFIX "src/modules/")
-set(LINECOUNT_SKIP_TARGET_REGEX "^(tests-|benchmarks-)")
-set(LINECOUNT_SKIP_PATH_REGEX "/(tests|benchmarks)/")
-linecount_finalize()
+# Linecount analysis (opt-in: cmake -DLINECOUNT=ON, or make linecount*).
+# See cmake/LineCount.cmake
+if (LINECOUNT)
+	set(LINECOUNT_STRIP_PREFIX "src/modules/")
+	set(LINECOUNT_SKIP_TARGET_REGEX "^(tests-|benchmarks-)")
+	set(LINECOUNT_SKIP_PATH_REGEX "/(tests|benchmarks)/")
+	linecount_finalize()
+endif()
 

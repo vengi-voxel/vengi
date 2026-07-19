@@ -80,18 +80,22 @@ analysebuild:
 	$(Q)$(CLANGBUILDANALYZER) --analyze $(BUILDDIR)/analyse/capture_file
 
 # Preprocessed header/TU line counts - see cmake/LineCount.cmake
+# Opt-in: enables -DLINECOUNT=ON then builds the requested target.
 #   make linecount
 #   make linecount-cpp
-#   make linecount-cpp-voxedit-util
 #   make linecount-why-voxedit-util-SceneManager
-.PHONY: linecount linecount-cpp
-linecount linecount-cpp: $(BUILDDIR)/CMakeCache.txt
+.PHONY: linecount-enable linecount linecount-cpp
+linecount-enable: $(BUILDDIR)/CMakeCache.txt
+	$(Q)grep -q '^LINECOUNT:BOOL=ON$$' $(BUILDDIR)/CMakeCache.txt 2>/dev/null || \
+		$(CMAKE) -DLINECOUNT=ON $(BUILDDIR)
+
+linecount linecount-cpp: linecount-enable
 	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target $@
 
-linecount-%: $(BUILDDIR)/CMakeCache.txt
+linecount-%: linecount-enable
 	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target $@
 
-# List CMake/Ninja build targets (e.g. linecount-why-*).
+# List CMake/Ninja build targets (e.g. linecount-why-* when LINECOUNT=ON).
 .PHONY: help
 help: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --config $(BUILDTYPE) --target help
