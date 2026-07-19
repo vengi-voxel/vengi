@@ -94,6 +94,16 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(c()._filename == "Features.md");
 		IM_CHECK(canGoForward());
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "markdown with images")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		// Palette.md embeds a paletted PNG; regression for GL_UNPACK_ROW_LENGTH leftover from ImGui
+		// texture updates causing heap-buffer-overflow on upload.
+		setMarkdownFile("usage/Palette.md");
+		ctx->Yield(5);
+		IM_CHECK(c()._filename == "Palette.md");
+		IM_CHECK(!_markdown.empty());
+	};
 }
 
 } // namespace voxedit

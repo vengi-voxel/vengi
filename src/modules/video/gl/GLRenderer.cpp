@@ -2072,6 +2072,10 @@ void setupTexture(Id texture, const TextureConfig &config) {
 		core_assert(glPixelStorei != nullptr);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 	}
+	// Ensure tightly packed rows; leftover GL_UNPACK_ROW_LENGTH from other uploaders (e.g. ImGui)
+	// would otherwise make glTexImage*/glTextureSubImage* read past the pixel buffer.
+	core_assert(glPixelStorei != nullptr);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 	checkError();
 }
 
