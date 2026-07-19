@@ -375,13 +375,13 @@ void BindingsDialog::render(bool &show, util::KeyBindingHandler &keybindingHandl
 					if (!newBinding.empty()) {
 						// Unbind old key if it exists
 						if (!_recordingOldBinding.empty()) {
-							command::executeCommands(core::String::format("unbind \"%s\" %s",
+							command::executeCommands(core::String::format("unbind \"%s\" \"%s\"",
 																		  _recordingOldBinding.c_str(),
 																		  _recordingContext.c_str()),
 													 &lastExecutedCommand);
 						}
-						// Bind new key
-						command::executeCommands(core::String::format("bind \"%s\" \"%s\" %s", newBinding.c_str(),
+						// Bind new key (quote context so exclusive names like !scene parse correctly)
+						command::executeCommands(core::String::format("bind \"%s\" \"%s\" \"%s\"", newBinding.c_str(),
 																	  _recordingCommand.c_str(),
 																	  _recordingContext.c_str()),
 												 &lastExecutedCommand);
@@ -495,7 +495,7 @@ void BindingsDialog::render(bool &show, util::KeyBindingHandler &keybindingHandl
 				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "###del-key-%i", n);
 				ImGui::SetNextItemAllowOverlap();
 				if (ImGui::Button(deleteButton.c_str())) {
-					command::executeCommands(core::String::format("unbind \"%s\" %s", keyBinding.c_str(),
+					command::executeCommands(core::String::format("unbind \"%s\" \"%s\"", keyBinding.c_str(),
 																  core::bindingContextString(pair.context).c_str()),
 											 &lastExecutedCommand);
 					if (_selectedBindingIndex == currentIndex) {
