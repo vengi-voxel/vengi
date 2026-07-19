@@ -173,7 +173,9 @@ void KeyBindingHandler::construct() {
 				auto range = _bindings.equal_range(keyCode);
 				bool found = false;
 				for (auto it = range.first; it != range.second; ++it) {
-					if (it->second.modifier == pair.modifier) {
+					// same key+modifier+context: replace command (do not touch other contexts)
+					if (it->second.modifier == pair.modifier && it->second.count == pair.count &&
+						it->second.context == pair.context) {
 						it->second.command = pair.command;
 						found = true;
 						Log::info("Updated binding for key %s", key.c_str());
@@ -205,7 +207,8 @@ void KeyBindingHandler::construct() {
 				auto range = _bindings.equal_range(keyCode);
 				bool found = false;
 				for (auto it = range.first; it != range.second; ++it) {
-					if (it->second.modifier == pair.modifier && (it->second.context == pair.context || (it->second.context & pair.context) != 0u)) {
+					if (it->second.modifier == pair.modifier && it->second.count == pair.count &&
+						it->second.context == pair.context) {
 						_bindings.erase(it);
 						found = true;
 						Log::info("Removed binding for key '%s' in context '%s'", key.c_str(), context.c_str());

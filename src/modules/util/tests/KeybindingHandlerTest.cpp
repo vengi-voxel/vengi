@@ -7,6 +7,7 @@
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "command/Command.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include <SDL3/SDL_keycode.h>
 
@@ -276,6 +277,33 @@ TEST_F(KeybindingHandlerTest, testBareShiftKeyAndShiftCombo) {
 	handler.execute(SDLK_C, SDL_KMOD_LSHIFT, false, 0.0);
 	EXPECT_TRUE(handler.execute(SDLK_LSHIFT, SDL_KMOD_NONE, false, 0.0));
 	EXPECT_FALSE(addNodeMode);
+}
+
+TEST_F(KeybindingHandlerTest, testBindDoesNotOverwriteOtherContext) {
+	_handler.construct(); // re-register bind after Command::shutdown() in onInitApp
+	_handler.clear();
+	ASSERT_TRUE(_handler.registerBinding("left_shift", "+sprint", "bar"));
+	ASSERT_TRUE(_handler.registerBinding("left_shift", "+addnode_mode", "foo"));
+
+	// rebinding the same key in foo must not replace the bar-context sprint binding
+	EXPECT_EQ(1, command::executeCommands("bind \"left_shift\" \"+addnode_mode\" foo"));
+
+	int sprintBindings = 0;
+	int addNodeBindings = 0;
+	for (const auto &binding : _handler.bindings()) {
+		if (binding.first != (int32_t)SDLK_LSHIFT) {
+			continue;
+		}
+		if (binding.second.command == "+sprint") {
+			EXPECT_EQ(core::BindingContext::Context2, binding.second.context);
+			++sprintBindings;
+		} else if (binding.second.command == "+addnode_mode") {
+			EXPECT_EQ(core::BindingContext::Context1, binding.second.context);
+			++addNodeBindings;
+		}
+	}
+	EXPECT_EQ(1, sprintBindings);
+	EXPECT_EQ(1, addNodeBindings);
 }
 
 }
