@@ -51,6 +51,8 @@ private:
 	voxedit::ToolRegistry _toolRegistry;
 
 	bool _initialized = false;
+	/** @brief From MCP initialize clientInfo.name; used as VoxEdit network username */
+	core::String _mcpClientName = "mcp-client";
 
 	uint64_t _lastConnectionAttemptMillis = 0;
 

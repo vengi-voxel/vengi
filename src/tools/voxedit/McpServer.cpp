@@ -188,7 +188,7 @@ bool McpServer::connectToVoxEdit() {
 	const core::String host = core::getVar(cfg::VoxEditNetHostname)->strVal();
 	const int port = core::getVar(cfg::VoxEditNetPort)->intVal();
 
-	core::getVar(cfg::AppUserName)->setVal("mcp-client");
+	core::getVar(cfg::AppUserName)->setVal(_mcpClientName);
 	core::getVar(cfg::AppVersion)->setVal(PROJECT_VERSION);
 
 	if (!_sceneMgr->connectToServer(host, port)) {
@@ -320,9 +320,14 @@ void McpServer::handleInitialize(const json::Json &request) {
 	Log::info("Received initialize request");
 	if (request.contains("params") && request.get("params").contains("clientInfo")) {
 		const json::Json clientInfo = request.get("params").get("clientInfo");
-		const core::String clientName = clientInfo.strVal("name", "unknown");
+		const core::String clientName = clientInfo.strVal("name", "");
 		const core::String clientVersion = clientInfo.strVal("version", "unknown");
-		Log::info("Client: %s (version %s)", clientName.c_str(), clientVersion.c_str());
+		if (!clientName.empty()) {
+			_mcpClientName = clientName;
+		}
+		Log::info("Client: %s (version %s) - network username '%s'",
+				  clientName.empty() ? "unknown" : clientName.c_str(), clientVersion.c_str(),
+				  _mcpClientName.c_str());
 	}
 	_initialized = true;
 
