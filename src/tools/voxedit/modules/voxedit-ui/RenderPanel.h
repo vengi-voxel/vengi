@@ -26,12 +26,12 @@ private:
 	SceneManagerPtr _sceneMgr;
 	int _currentSample = 0;
 
+	void renderSettings(const scenegraph::SceneGraph &sceneGraph);
 	void renderMenuBar(const scenegraph::SceneGraph &sceneGraph);
 
 public:
 	RenderPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "render"), _sceneMgr(sceneMgr) {
 	}
-	void updateSettings(const char *id, const scenegraph::SceneGraph &sceneGraph);
 	void update(const char *id, const scenegraph::SceneGraph &sceneGraph);
 	bool init();
 	void shutdown();

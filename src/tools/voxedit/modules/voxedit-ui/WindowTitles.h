@@ -22,7 +22,6 @@
 #define TITLE_GAMEMODE "###gamemodepanel"
 #define TITLE_SCENEGRAPH "###scenegraph"
 #define TITLE_RENDER "###renderpanel"
-#define TITLE_RENDERSETTINGS "###rendersettingspanel"
 #define TITLE_BRUSH_TOOLBAR "###brushtoolbar"
 #define TITLE_BRUSH_SETTINGS "###brushsettingspanel"
 #define TITLE_BRUSHPANEL TITLE_BRUSH_SETTINGS

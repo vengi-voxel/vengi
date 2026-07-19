@@ -11,10 +11,11 @@ namespace voxedit {
 
 void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "settings inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, TITLE_RENDERSETTINGS));
+		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 
+		ctx->MenuAction(ImGuiTestAction_Open, "Settings");
 		const int oldResolution = params.resolution;
 		ctx->ItemInputValue("Dimensions", oldResolution + 128);
 		IM_CHECK(params.resolution == oldResolution + 128);
@@ -25,20 +26,20 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "presets")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, TITLE_RENDERSETTINGS));
+		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 
-		ctx->ItemClick("High quality");
+		ctx->MenuClick("Settings/High quality");
 		ctx->Yield();
 		IM_CHECK_EQ(params.samples, 1024);
 		IM_CHECK_EQ(params.bounces, 64);
 
-		ctx->ItemClick("Geometry preview");
+		ctx->MenuClick("Settings/Geometry preview");
 		ctx->Yield();
 		IM_CHECK_EQ(params.samples, 16);
 
-		ctx->ItemClick("Reset all");
+		ctx->MenuClick("Settings/Reset all");
 		ctx->Yield();
 		yocto::trace_params defaults;
 		IM_CHECK_EQ(params.samples, defaults.samples);

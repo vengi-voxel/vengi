@@ -470,9 +470,6 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
-#if ENABLE_RENDER_PANEL
-	ImGui::DockBuilderDockWindow(TITLE_RENDERSETTINGS, dockId);
-#endif
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT, dockId);
 }
 
@@ -497,11 +494,6 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
-#if ENABLE_RENDER_PANEL
-	if (viewModeRenderPanel(_viewMode->intVal())) {
-		_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
-	}
-#endif
 	if (viewModeLSystemPanel(_viewMode->intVal())) {
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	}
