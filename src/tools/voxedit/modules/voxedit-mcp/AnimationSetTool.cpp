@@ -11,7 +11,7 @@ AnimationSetTool::AnimationSetTool() : Tool("voxedit_animation_set") {
 	_tool.set("description",
 		"Switch the active animation by name. This must be called before adding keyframes to a specific animation. "
 		"After switching, use voxedit_node_add_keyframe to create keyframes for nodes in this animation. "
-		"Fetch the scene state to see the list of available animations.");
+		"Fetch the scene state with detail='structure' to see the list of available animations.");
 
 	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
@@ -38,7 +38,7 @@ bool AnimationSetTool::execute(const json::Json &id, const json::Json &args, Too
 	}
 	return ctx.result(id,
 					  core::String::format("Failed to switch to animation '%s' - it may not exist. "
-										   "Fetch the scene state to see available animations.",
+										   "Fetch the scene state with detail='structure' to see available animations.",
 										   name.c_str()),
 					  true);
 }

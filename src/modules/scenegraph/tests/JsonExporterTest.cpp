@@ -84,4 +84,15 @@ TEST_F(JsonExporterFlagsTest, testChildrenWithSkipNodedetails) {
 	EXPECT_NE(json.find("child"), std::string::npos);
 }
 
+TEST_F(JsonExporterFlagsTest, testAnimationsFlag) {
+	uint32_t withAnims = JSONEXPORTER_NODEDETAILS | JSONEXPORTER_CHILDREN | JSONEXPORTER_ANIMATIONS;
+	uint32_t withoutAnims = JSONEXPORTER_NODEDETAILS | JSONEXPORTER_CHILDREN;
+	std::string withFlag = exportJson(withAnims);
+	std::string withoutFlag = exportJson(withoutAnims);
+	EXPECT_NE(withFlag.find("\"animations\""), std::string::npos);
+	EXPECT_NE(withFlag.find("\"keyframes\""), std::string::npos);
+	EXPECT_EQ(withoutFlag.find("\"animations\""), std::string::npos);
+	EXPECT_NE(withoutFlag.find("\"volume\""), std::string::npos);
+}
+
 } // namespace scenegraph

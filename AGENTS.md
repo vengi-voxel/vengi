@@ -35,7 +35,7 @@
 
 # Scenegraph
 
-- to get scenegraph details you can use `vengi-voxconvert --json all --input thefile.ext` - `all, palette, meshdetails, nodedetails, children, palettematerials` are all valid `--json` parameters. Use `vengi-voxconvert --help` to get more details.
+- to get scenegraph details you can use `vengi-voxconvert --json all --input thefile.ext` - `all, palette, meshdetails, nodedetails, children, palettematerials, animations` are all valid `--json` parameters. Use `vengi-voxconvert --help` to get more details.
 
 # Colors
 

@@ -13,19 +13,50 @@
 namespace voxedit {
 
 // map to JsonExporterFlags
-#define VALID_SKIPINFO_VALUES "palette, meshdetails, nodedetails, children, palettematerials"
+#define VALID_SKIPINFO_VALUES "palette, meshdetails, nodedetails, children, palettematerials, animations"
+#define VALID_DETAIL_VALUES "summary, structure, full"
+
+static uint32_t flagsForDetail(const core::String &detail) {
+	if (detail == "summary") {
+		// nodes, hierarchy, volume region and voxel counts - no palette/mesh/keyframes
+		return scenegraph::JSONEXPORTER_CHILDREN | scenegraph::JSONEXPORTER_NODEDETAILS;
+	}
+	if (detail == "structure") {
+		// summary plus keyframes and transforms
+		return scenegraph::JSONEXPORTER_CHILDREN | scenegraph::JSONEXPORTER_NODEDETAILS |
+			   scenegraph::JSONEXPORTER_ANIMATIONS;
+	}
+	if (detail == "full") {
+		return scenegraph::JSONEXPORTER_ALL;
+	}
+	return 0u;
+}
 
 GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
 	_tool.set("description",
-		"Get the current scene graph state. This should be your first action after connecting to the MCP server to get "
-		"the UUIDs of the existing nodes and their structure. Do this call from time to time to get an updated state. "
-		"If a node uuid is specified, only a single node is returned.");
+			  "Get the current scene graph state. Call this first after connecting to get node UUIDs and structure. "
+			  "Default detail is 'summary' (lean: nodes, sizes, voxel counts). Use 'structure' for keyframes/transforms, "
+			  "'full' for palettes and mesh details. Prefer voxedit_screenshot for visuals and "
+			  "voxedit_histogram/voxedit_get_palette for colors. If a node uuid is specified, only that node is returned.");
 	json::Json inputSchema = objectSchema();
 	inputSchema.get("properties").set("nodeUUID", propUUID());
-	inputSchema.get("properties").set("skipinfo",
-		propTypeDescription("string", "Comma separated list things to omit from the json output: " VALID_SKIPINFO_VALUES
-									  ". Useful to reduce the output size if you only need a "
-									  "subset of the information. By default, all details are included."));
+
+	json::Json detailProp = propTypeDescription(
+		"string", "Detail preset controlling output size. Default: summary. Valid: " VALID_DETAIL_VALUES
+				  ". summary = nodes/sizes/voxel counts; structure = summary + keyframes/transforms; "
+				  "full = everything including palettes and mesh details.");
+	json::Json detailEnum = json::Json::array();
+	detailEnum.push("summary");
+	detailEnum.push("structure");
+	detailEnum.push("full");
+	detailProp.set("enum", core::move(detailEnum));
+	detailProp.set("default", "summary");
+	inputSchema.get("properties").set("detail", core::move(detailProp));
+
+	inputSchema.get("properties").set(
+		"skipinfo",
+		propTypeDescription("string", "Comma separated list of things to omit from the json output on top of the "
+									  "detail preset: " VALID_SKIPINFO_VALUES ". Useful to further reduce output size."));
 	_tool.set("inputSchema", core::move(inputSchema));
 }
 
@@ -35,13 +66,21 @@ bool GetSceneStateTool::execute(const json::Json &id, const json::Json &args, To
 		return ctx.result(id, "Scene graph is empty - not connected or no scene loaded", true);
 	}
 
-	io::BufferedReadWriteStream stream;
-	uint32_t flags = scenegraph::JSONEXPORTER_ALL;
+	const core::String detail = args.strVal("detail", "summary");
+	uint32_t flags = flagsForDetail(detail);
+	if (flags == 0u) {
+		return ctx.result(id, "Invalid detail - valid are: " VALID_DETAIL_VALUES, true);
+	}
+
 	if (args.contains("skipinfo")) {
-		const core::String &skipInfoStr = args.strVal("skipinfo", "").c_str();
+		const core::String &skipInfoStr = args.strVal("skipinfo", "");
 		core::DynamicArray<core::String> skipInfo;
 		core::string::splitString(skipInfoStr, skipInfo, ",");
-		for (const core::String &skip : skipInfo) {
+		for (const core::String &skipRaw : skipInfo) {
+			const core::String skip = core::string::trim(skipRaw);
+			if (skip.empty()) {
+				continue;
+			}
 			if (skip == "palette") {
 				flags &= ~scenegraph::JSONEXPORTER_PALETTE;
 			} else if (skip == "meshdetails") {
@@ -52,12 +91,15 @@ bool GetSceneStateTool::execute(const json::Json &id, const json::Json &args, To
 				flags &= ~scenegraph::JSONEXPORTER_CHILDREN;
 			} else if (skip == "palettematerials") {
 				flags &= ~scenegraph::JSONEXPORTER_PALETTEMATERIALS;
+			} else if (skip == "animations") {
+				flags &= ~scenegraph::JSONEXPORTER_ANIMATIONS;
 			} else {
 				return ctx.result(id, "Invalid skipinfo valid are: " VALID_SKIPINFO_VALUES, true);
 			}
 		}
 	}
 
+	io::BufferedReadWriteStream stream;
 	core::UUID nodeUUID = argsUUID(args);
 	if (nodeUUID.isValid()) {
 		if (const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(nodeUUID)) {

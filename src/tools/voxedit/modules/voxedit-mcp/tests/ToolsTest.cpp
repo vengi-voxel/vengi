@@ -190,6 +190,95 @@ TEST_F(ToolsTest, screenshotToolMergedScene) {
 	ImageResultCapture::_instance = nullptr;
 }
 
+namespace {
+
+struct TextResultCapture {
+	core::String text;
+	bool called = false;
+	bool isError = false;
+
+	static bool capture(const json::Json &, const core::String &text, bool isError) {
+		TextResultCapture *self = _instance;
+		self->called = true;
+		self->text = text;
+		self->isError = isError;
+		return !isError;
+	}
+
+	static TextResultCapture *_instance;
+};
+
+TextResultCapture *TextResultCapture::_instance = nullptr;
+
+} // namespace
+
+TEST_F(ToolsTest, getSceneStateToolDetailPresets) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	ASSERT_TRUE(node->volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	GetSceneStateTool tool;
+	TextResultCapture capture;
+	TextResultCapture::_instance = &capture;
+
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = TextResultCapture::capture;
+
+	json::Json args = json::Json::object();
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_NE(capture.text.find("\"volume\""), core::String::npos);
+	EXPECT_NE(capture.text.find("\"voxel_count\""), core::String::npos);
+	EXPECT_EQ(capture.text.find("\"palette\""), core::String::npos);
+	EXPECT_EQ(capture.text.find("\"animations\""), core::String::npos);
+	EXPECT_EQ(capture.text.find("\"mesh\""), core::String::npos);
+	const size_t summarySize = capture.text.size();
+
+	capture = TextResultCapture{};
+	TextResultCapture::_instance = &capture;
+	args.set("detail", "structure");
+	ASSERT_TRUE(tool.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_NE(capture.text.find("\"volume\""), core::String::npos);
+	EXPECT_NE(capture.text.find("\"animations\""), core::String::npos);
+	EXPECT_NE(capture.text.find("\"keyframes\""), core::String::npos);
+	EXPECT_EQ(capture.text.find("\"palette\""), core::String::npos);
+	EXPECT_GT(capture.text.size(), summarySize);
+
+	capture = TextResultCapture{};
+	TextResultCapture::_instance = &capture;
+	args.set("detail", "full");
+	ASSERT_TRUE(tool.execute(json::Json::parse("3"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_NE(capture.text.find("\"palette\""), core::String::npos);
+	EXPECT_NE(capture.text.find("\"animations\""), core::String::npos);
+	EXPECT_GT(capture.text.size(), summarySize);
+
+	capture = TextResultCapture{};
+	TextResultCapture::_instance = &capture;
+	args.set("detail", "structure");
+	args.set("skipinfo", "animations");
+	ASSERT_TRUE(tool.execute(json::Json::parse("4"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_EQ(capture.text.find("\"animations\""), core::String::npos);
+	EXPECT_NE(capture.text.find("\"volume\""), core::String::npos);
+
+	capture = TextResultCapture{};
+	TextResultCapture::_instance = &capture;
+	args = json::Json::object();
+	args.set("detail", "bogus");
+	ASSERT_FALSE(tool.execute(json::Json::parse("5"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_TRUE(capture.isError);
+
+	TextResultCapture::_instance = nullptr;
+}
+
 static void assertValidMcpToolSchema(const json::Json &tool) {
 	ASSERT_TRUE(tool.isObject()) << tool.dump();
 	ASSERT_TRUE(tool.contains("name")) << tool.dump();

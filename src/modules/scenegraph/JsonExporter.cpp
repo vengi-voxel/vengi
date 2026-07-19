@@ -126,6 +126,30 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			}
 			stream.writeStringFormat(false, "}");
 		}
+
+		if ((flags & JSONEXPORTER_MESHDETAILS) && node.isModelNode()) {
+			const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
+			const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
+			const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
+			const voxel::SurfaceExtractionType meshType =
+				(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
+			voxel::ChunkMesh mesh;
+			voxel::SurfaceExtractionContext ctx =
+				voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0},
+									 mergeQuads, reuseVertices, ambientOcclusion);
+
+			voxel::extractSurface(ctx);
+			const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
+			const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();
+			stream.writeStringFormat(false, ",\"mesh\":{");
+			stream.writeStringFormat(false, "\"vertices\":%i,", (int)vertices);
+			stream.writeStringFormat(false, "\"indices\":%i", (int)indices);
+			stream.writeStringFormat(false, "}");
+			stats.vertices += (int)vertices;
+			stats.indices += (int)indices;
+		}
+	}
+	if (flags & JSONEXPORTER_ANIMATIONS) {
 		stream.writeStringFormat(false, ",\"animations\":[");
 		for (size_t a = 0; a < sceneGraph.animations().size(); ++a) {
 			stream.writeStringFormat(false, "{");
@@ -204,28 +228,6 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			}
 		}
 		stream.writeStringFormat(false, "]"); // animations
-
-		if ((flags & JSONEXPORTER_MESHDETAILS) && node.isModelNode()) {
-			const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
-			const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
-			const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
-			const voxel::SurfaceExtractionType meshType =
-				(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
-			voxel::ChunkMesh mesh;
-			voxel::SurfaceExtractionContext ctx =
-				voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0},
-									 mergeQuads, reuseVertices, ambientOcclusion);
-
-			voxel::extractSurface(ctx);
-			const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
-			const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();
-			stream.writeStringFormat(false, ",\"mesh\":{");
-			stream.writeStringFormat(false, "\"vertices\":%i,", (int)vertices);
-			stream.writeStringFormat(false, "\"indices\":%i", (int)indices);
-			stream.writeStringFormat(false, "}");
-			stats.vertices += (int)vertices;
-			stats.indices += (int)indices;
-		}
 	}
 	if ((flags & JSONEXPORTER_CHILDREN) && !node.children().empty()) {
 		stream.writeStringFormat(false, ",\"children\":[");

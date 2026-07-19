@@ -19,7 +19,7 @@ NodeAddKeyframeTool::NodeAddKeyframeTool() : Tool("voxedit_node_add_keyframe") {
 		"for the node at that frame. The transform angles are in degrees (Euler angles). "
 		"To create a walking animation, add keyframes at different frame indices with appropriate "
 		"translations and rotations for leg, arm, and torso nodes. "
-		"Fetch the scene state (with animations included) to see the current keyframes and node UUIDs.");
+		"Fetch the scene state with detail='structure' to see the current keyframes and node UUIDs.");
 
 	json::Json inputSchema = objectSchema();
 	json::Json _requiredArr = json::Json::array();
@@ -179,7 +179,7 @@ bool NodeAddKeyframeTool::execute(const json::Json &id, const json::Json &args, 
 
 	return ctx.result(id,
 					  core::String::format("Added keyframe at frame %i for node %s with keyframe index %i. "
-										   "Fetch the scene state to see the updated animation.",
+										   "Fetch the scene state with detail='structure' to see the updated animation.",
 										   (int)frameIdx, nodeUUID.str().c_str(), (int)keyFrameIdx),
 					  false);
 }

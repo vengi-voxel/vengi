@@ -68,7 +68,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--json")
 		.setDescription("Print the scene graph of the input file as json. Comma separated values to control the detail "
-						"level: default, all, palette, meshdetails, nodedetails, children, palettematerials")
+						"level: default, all, palette, meshdetails, nodedetails, children, palettematerials, animations")
 		.setDefaultValue("default");
 	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used").addFlag(ARGUMENT_FLAG_BOOL);
@@ -606,13 +606,18 @@ app::AppState VoxConvert::onInit() {
 			} else if (flag == "meshdetails") {
 				jsonFlags |= scenegraph::JSONEXPORTER_MESHDETAILS;
 			} else if (flag == "nodedetails") {
-				jsonFlags |= scenegraph::JSONEXPORTER_NODEDETAILS;
+				// keep animations with nodedetails for backward compatibility
+				jsonFlags |= scenegraph::JSONEXPORTER_NODEDETAILS | scenegraph::JSONEXPORTER_ANIMATIONS;
 			} else if (flag == "children") {
 				jsonFlags |= scenegraph::JSONEXPORTER_CHILDREN;
 			} else if (flag == "palettematerials") {
 				jsonFlags |= scenegraph::JSONEXPORTER_PALETTEMATERIALS;
+			} else if (flag == "animations") {
+				jsonFlags |= scenegraph::JSONEXPORTER_ANIMATIONS;
 			} else {
-				Log::warn("Unknown json flag '%s' (use default, all, palette, meshdetails, nodedetails, children, palettematerials)", flag.c_str());
+				Log::warn("Unknown json flag '%s' (use default, all, palette, meshdetails, nodedetails, children, "
+						  "palettematerials, animations)",
+						  flag.c_str());
 			}
 			jsonFlagsVal = jsonFlagsVal.substr(pos + 1);
 		}
