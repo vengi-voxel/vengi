@@ -27,6 +27,8 @@ If you are modifying the settings like the port, the rcon password or anything e
 
 `voxedit_screenshot` renders a node (or the merged visible scene) to a PNG without a GL context via `voxelutil::renderToImage` / `voxelutil::renderIsometricImage`.
 
+Large `width`/`height` values upscale the face projection and produce large MCP image payloads. Prefer omitting them (native voxel resolution) unless you need a specific size.
+
 Useful arguments:
 
 * `nodeUUID` (optional) - model node to render; omit to merge the whole scene

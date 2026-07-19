@@ -50,12 +50,26 @@
 #include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
 
+#include <stdio.h>
+#include <string.h>
+
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#else
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 // JSON-RPC error codes
 static constexpr int PARSE_ERROR = -32700;
 static constexpr int INVALID_REQUEST = -32600;
 static constexpr int METHOD_NOT_FOUND = -32601;
 static constexpr int INVALID_PARAMS = -32602;
 static constexpr int INIT_FAILED = -32000;
+
+McpServer *McpServer::s_instance = nullptr;
 
 void LuaScriptsListHandler::execute(const network::ClientId &clientId, voxedit::LuaScriptsListMessage *message) {
 	_server->updateScriptTools(message->scripts());
@@ -66,6 +80,7 @@ McpServer::McpServer(const io::FilesystemPtr &filesystem, const core::TimeProvid
 	  _modifierRenderer(core::make_shared<voxedit::IModifierRenderer>()),
 	  _sceneMgr(core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, _sceneRenderer, _modifierRenderer)),
 	  _luaScriptsListHandler(this) {
+	s_instance = this;
 	Log::setConsoleColors(false);
 	init(ORGANISATION, "mcpserver");
 }
@@ -172,9 +187,13 @@ app::AppState McpServer::onInit() {
 }
 
 app::AppState McpServer::onCleanup() {
+	flushStdout();
 	disconnectFromVoxEdit();
 	_sceneMgr->shutdown();
 	_toolRegistry.shutdown();
+	if (s_instance == this) {
+		s_instance = nullptr;
+	}
 	return Super::onCleanup();
 }
 
@@ -213,6 +232,10 @@ app::AppState McpServer::onRunning() {
 	const double nowSeconds = _timeProvider->tickSeconds();
 	voxedit::Client &client = _sceneMgr->client();
 
+	// Drain any pending MCP stdout before doing other work so large tool
+	// responses (e.g. screenshots) cannot stall forever on a full pipe.
+	flushStdout();
+
 	// Check if disconnected and reconnect with 5-second delay between attempts
 	if (_initialized && !client.isConnected()) {
 		const uint64_t now = _timeProvider->tickNow();
@@ -230,6 +253,7 @@ app::AppState McpServer::onRunning() {
 	}
 
 	client.update(nowSeconds);
+	flushStdout();
 	if (!handleStdin()) {
 		Log::info("Standard input closed, shutting down MCP server");
 		requestQuit();
@@ -238,6 +262,22 @@ app::AppState McpServer::onRunning() {
 }
 
 bool McpServer::handleStdin() {
+#ifndef _WIN32
+	// While stdout still has queued MCP responses, do not block up to 100ms on
+	// stdin - keep returning to onRunning so flushStdout can make progress.
+	if (!_stdoutPending.empty()) {
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		FD_SET(STDIN_FILENO, &readfds);
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 0;
+		const int ready = select(STDIN_FILENO + 1, &readfds, nullptr, nullptr, &tv);
+		if (ready <= 0 || !FD_ISSET(STDIN_FILENO, &readfds)) {
+			return true;
+		}
+	}
+#endif
 	io::BufferedReadWriteStream stream;
 	if (!readInputLine(stream)) {
 		return false;
@@ -444,10 +484,73 @@ bool McpServer::sendToolImageResult(const json::Json &id, const core::String &pn
 	return !isError;
 }
 
+void McpServer::ensureStdoutNonBlocking() {
+	if (_stdoutNonBlocking) {
+		return;
+	}
+#ifndef _WIN32
+	const int fd = fileno(stdout);
+	if (fd >= 0) {
+		const int flags = fcntl(fd, F_GETFL, 0);
+		if (flags != -1) {
+			if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0) {
+				// Unbuffered so pending bytes are owned by _stdoutPending only
+				setvbuf(stdout, nullptr, _IONBF, 0);
+				_stdoutNonBlocking = true;
+			} else {
+				Log::warn("Failed to set stdout non-blocking: %s", strerror(errno));
+			}
+		}
+	}
+#else
+	_stdoutNonBlocking = true;
+#endif
+}
+
+bool McpServer::flushStdout() {
+	if (_stdoutPending.empty()) {
+		return true;
+	}
+	ensureStdoutNonBlocking();
+#ifndef _WIN32
+	while (!_stdoutPending.empty()) {
+		const ssize_t n = ::write(STDOUT_FILENO, _stdoutPending.c_str(), _stdoutPending.size());
+		if (n < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				return true;
+			}
+			Log::error("Failed to write MCP response to stdout: %s", strerror(errno));
+			_stdoutPending = "";
+			return false;
+		}
+		if (n == 0) {
+			return true;
+		}
+		_stdoutPending.erase(0, (size_t)n);
+	}
+#else
+	fprintf(stdout, "%s", _stdoutPending.c_str());
+	fflush(stdout);
+	_stdoutPending = "";
+#endif
+	return true;
+}
+
+void McpServer::enqueueStdout(const core::String &line) {
+	_stdoutPending.append(line);
+	_stdoutPending.append("\n", 1);
+	flushStdout();
+}
+
 void McpServer::sendResponse(const json::Json &response) {
 	const core::String out = response.dump();
-	Log::debug("Sending MCP response: %s", out.c_str());
+	// Never log the body - screenshot responses can be multi-megabyte base64
+	Log::debug("Sending MCP response (%u bytes)", (uint32_t)out.size());
 	core_assert(out.find("\n") == core::String::npos);
+	if (s_instance != nullptr) {
+		s_instance->enqueueStdout(out);
+		return;
+	}
 	fprintf(stdout, "%s\n", out.c_str());
 	fflush(stdout);
 }

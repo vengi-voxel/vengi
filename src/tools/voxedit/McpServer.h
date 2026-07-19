@@ -53,8 +53,13 @@ private:
 	bool _initialized = false;
 	/** @brief From MCP initialize clientInfo.name; used as VoxEdit network username */
 	core::String _mcpClientName = "mcp-client";
+	/** @brief Queued stdout bytes for non-blocking MCP JSON-RPC writes */
+	core::String _stdoutPending;
+	bool _stdoutNonBlocking = false;
 
 	uint64_t _lastConnectionAttemptMillis = 0;
+
+	static McpServer *s_instance;
 
 	void printUsageHeader() const override;
 	void usage() const override;
@@ -64,6 +69,10 @@ private:
 
 	bool connectToVoxEdit();
 	void disconnectFromVoxEdit();
+
+	void ensureStdoutNonBlocking();
+	bool flushStdout();
+	void enqueueStdout(const core::String &line);
 
 	/** @brief Read JSON-RPC from stdin - only line at a time */
 	bool handleStdin();

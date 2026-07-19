@@ -163,6 +163,43 @@ TEST_F(ToolsTest, screenshotToolOrthographicAndIsometric) {
 	ImageResultCapture::_instance = nullptr;
 }
 
+TEST_F(ToolsTest, screenshotToolLargeUpscale) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	voxel::RawVolume *volume = node->volume();
+	ASSERT_NE(nullptr, volume);
+	ASSERT_TRUE(volume->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ScreenshotTool tool;
+	ImageResultCapture capture;
+	ImageResultCapture::_instance = &capture;
+
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = ImageResultCapture::textFallback;
+	ctx.resultImage = ImageResultCapture::capture;
+
+	json::Json args = json::Json::object();
+	args.set("nodeUUID", node->uuid().str().c_str());
+	args.set("face", "front");
+	args.set("width", 1000);
+	args.set("height", 560);
+	args.set("depthFactor", 0.2);
+	args.set("bgR", 230);
+	args.set("bgG", 230);
+	args.set("bgB", 230);
+	args.set("bgA", 255);
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_FALSE(capture.pngBase64.empty());
+	EXPECT_TRUE(capture.text.contains("1000x560"));
+	// Upscaled flat-ish PNG should stay well under a few MB of base64
+	EXPECT_LT(capture.pngBase64.size(), 4u * 1024u * 1024u);
+
+	ImageResultCapture::_instance = nullptr;
+}
+
 TEST_F(ToolsTest, screenshotToolMergedScene) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 	ASSERT_NE(nullptr, node);

@@ -3,6 +3,7 @@
  */
 
 #include "ScreenshotTool.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
@@ -141,6 +142,9 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 	if (pngBase64.empty()) {
 		return ctx.result(id, "Failed to encode screenshot as PNG", true);
 	}
+
+	Log::info("Screenshot encoded %ix%i (%u base64 bytes)", image->width(), image->height(),
+			  (uint32_t)pngBase64.size());
 
 	const core::String text = core::String::format(
 		"Screenshot of %s (%s, face=%s, %ix%i)", sourceLabel.c_str(), isometric ? "isometric" : "orthographic",
