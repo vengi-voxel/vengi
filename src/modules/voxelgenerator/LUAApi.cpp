@@ -542,11 +542,6 @@ static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor 
 	return luaVoxel_createVoxel(nullptr, color);
 }
 
-static voxel::Voxel luaVoxel_getVoxel(LuaRawVolumeWrapper *volume, lua_State *s, int index, int defaultColor = 1) {
-	const int color = (int)luaL_optinteger(s, index, defaultColor);
-	return luaVoxel_createVoxel(volume, color);
-}
-
 static math::Axis luaVoxel_getAxis(lua_State *s, int index) {
 	const char* axis = luaL_optstring(s, index, "y");
 	return math::toAxis(axis);

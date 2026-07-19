@@ -779,6 +779,26 @@ TEST_F(LUAApiTest, testScriptHouse) {
 	runFile(sceneGraph, "house.lua", {"6", "6", "1", "3", "gable", "0", "1", "1", "2", "1", "2", "false", "1", "#C8B496", "#8B2500", "#8B7355", "#6B4226", "#87CEEB", "#8B8682", "#DEB887", "42"});
 }
 
+TEST_F(LUAApiTest, testSetVoxelUsesTransparentTypeForAlpha) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local r = g_region.new(0, 0, 0, 3, 3, 3)
+			local n = g_scenegraph.new("AlphaTest", r)
+			local pal = n:palette()
+			local _, idx = pal:tryAdd(100, 180, 220, 120, false)
+			pal:setColor(idx, 100, 180, 220, 120)
+			n:volume():setVoxel(1, 1, 1, idx)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+	scenegraph::SceneGraphNode *n = sceneGraph.findNodeByName("AlphaTest");
+	ASSERT_NE(nullptr, n);
+	const voxel::Voxel &v = n->volume()->voxel(1, 1, 1);
+	EXPECT_TRUE(voxel::isTransparent(v.getMaterial()));
+	EXPECT_TRUE(n->palette().hasAlpha(v.getColor()));
+}
+
 TEST_F(LUAApiTest, testScriptPaletteBrighten) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "palette-brighten.lua");
