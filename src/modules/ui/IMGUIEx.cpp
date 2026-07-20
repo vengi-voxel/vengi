@@ -854,7 +854,18 @@ bool CommandRadioButton(const char *label, const core::String &command, bool ena
 
 bool CommandIconMenuItem(const char *icon, const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
-	if (ImGui::MenuItemEx(label, icon, keybinding.c_str(), false, enabled)) {
+	const char *menuLabel = label;
+	const char *menuIcon = icon;
+	core::String labelWithIcon;
+	// MenuItemEx does not draw the icon parameter in a horizontal menubar; fold it into the label.
+	ImGuiWindow *window = GetCurrentWindow();
+	if (icon != nullptr && icon[0] != '\0' && window != nullptr &&
+		window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
+		labelWithIcon = _priv::getId(icon, label);
+		menuLabel = labelWithIcon.c_str();
+		menuIcon = nullptr;
+	}
+	if (ImGui::MenuItemEx(menuLabel, menuIcon, keybinding.c_str(), false, enabled)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return true;
 		}
