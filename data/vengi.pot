@@ -2390,6 +2390,9 @@ msgstr ""
 msgid "Grow Selection"
 msgstr ""
 
+msgid "Scene insights"
+msgstr ""
+
 msgid "UI"
 msgstr ""
 
@@ -2908,29 +2911,28 @@ msgstr ""
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr ""
 
-msgid "Save image"
+msgid "Presets"
 msgstr ""
 
-msgid "Sync camera"
+msgid "Reset all"
 msgstr ""
 
-msgid "Stop path tracer"
+msgid "Restore default path tracer settings"
 msgstr ""
 
-#, c-format
-msgid "Sample %i / %i"
+msgid "High quality"
 msgstr ""
 
-msgid "Start path tracer"
+msgid "Path tracing with high sample and bounce counts"
 msgstr ""
 
-msgid "Render"
+msgid "Geometry preview"
 msgstr ""
 
-msgid "Render Settings"
+msgid "Fast eyelight preview for checking geometry"
 msgstr ""
 
-msgid "Dimensions"
+msgid "Quality"
 msgstr ""
 
 msgid "Tracer"
@@ -2939,17 +2941,13 @@ msgstr ""
 msgid "Samples"
 msgstr ""
 
-msgid ""
-"The number of per-pixel samples used while rendering and is the only "
-"parameter used to control the tradeoff between noise and speed."
+msgid "Per-pixel samples. Higher values reduce noise but take longer."
 msgstr ""
 
 msgid "Bounces"
 msgstr ""
 
-msgid ""
-"The maximum number of bounces and should be high for scenes with glass and "
-"volumes, but otherwise a low number would suffice."
+msgid "Maximum light bounces. Increase for glass and volumes."
 msgstr ""
 
 msgid "Clamp"
@@ -2961,37 +2959,46 @@ msgstr ""
 msgid "Preview ratio"
 msgstr ""
 
+msgid "Lower resolution ratio used while samples accumulate"
+msgstr ""
+
 msgid "Batch"
 msgstr ""
 
-msgid "No caustics"
+msgid "Samples computed per update step"
 msgstr ""
 
-msgid "Removes certain path that cause caustics"
+msgid "Dimensions"
 msgstr ""
 
-msgid "Hide environment"
-msgstr ""
-
-msgid "Removes the environment map from the camera rays."
+msgid "Output image size in pixels (square)"
 msgstr ""
 
 msgid "Apply a linear filter to the image pixels"
 msgstr ""
 
-msgid "High Quality BVH"
-msgstr ""
-
-msgid "High quality bounding volume hierarchy"
-msgstr ""
-
 msgid "Denoise"
+msgstr ""
+
+msgid "Exposure"
+msgstr ""
+
+msgid "Exposure compensation in stops for tonemapping."
+msgstr ""
+
+msgid "Filmic"
+msgstr ""
+
+msgid "Use filmic tonemapping for softer highlight rolloff."
 msgstr ""
 
 msgid "Aperture"
 msgstr ""
 
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
+msgstr ""
+
+msgid "Lighting"
 msgstr ""
 
 msgid "Sun intensity"
@@ -3015,28 +3022,47 @@ msgstr ""
 msgid "Show visible sun disk in the sky."
 msgstr ""
 
-msgid "Exposure"
+msgid "Hide environment"
 msgstr ""
 
-msgid "Exposure compensation in stops for tonemapping."
+msgid "Removes the environment map from the camera rays."
 msgstr ""
 
-msgid "Filmic"
+msgid "No caustics"
 msgstr ""
 
-msgid "Use filmic tonemapping for softer highlight rolloff."
+msgid "Removes certain paths that cause caustics"
 msgstr ""
 
-msgid "Reset all"
+msgid "High Quality BVH"
 msgstr ""
 
-msgid "High quality"
+msgid "High quality bounding volume hierarchy"
 msgstr ""
 
-msgid "Geometry preview"
+msgid "Settings"
 msgstr ""
 
-msgid "Scene insights"
+msgid "Save image"
+msgstr ""
+
+msgid "Sync camera"
+msgstr ""
+
+msgid "Restart with the current viewport camera"
+msgstr ""
+
+msgid "Stop path tracer"
+msgstr ""
+
+#, c-format
+msgid "Sample %i / %i"
+msgstr ""
+
+msgid "Start path tracer"
+msgstr ""
+
+msgid "Render"
 msgstr ""
 
 #, c-format
