@@ -83,7 +83,10 @@ void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &p
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
 
 // this also allows you to skip some material properties, because a format might not support it.
-void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {});
-void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {});
+// ignoreType skips MagicaVoxel MaterialType (not expressible in stock glTF).
+void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
+						const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {}, bool ignoreType = false);
+void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2,
+						const core::Buffer<palette::MaterialProperty> &ignoredMaterials = {}, bool ignoreType = false);
 
 }

@@ -369,8 +369,9 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 	}
 }
 
-static bool materialEquals(const palette::Material &a, const palette::Material &b, const core::Buffer<palette::MaterialProperty> &ignoredMaterials) {
-	if (ignoredMaterials.empty()) {
+static bool materialEquals(const palette::Material &a, const palette::Material &b,
+						   const core::Buffer<palette::MaterialProperty> &ignoredMaterials, bool ignoreType) {
+	if (ignoredMaterials.empty() && !ignoreType) {
 		return a == b;
 	}
 	uint32_t ignoreMask = 0;
@@ -380,21 +381,23 @@ static bool materialEquals(const palette::Material &a, const palette::Material &
 	if ((a.mask & ~ignoreMask) != (b.mask & ~ignoreMask)) {
 		return false;
 	}
-	if (a.type != b.type) {
+	if (!ignoreType && a.type != b.type) {
 		return false;
 	}
 	for (int i = 0; i < (int)palette::MaterialMax - 1; ++i) {
 		if (ignoreMask & (1 << (i + 1))) {
 			continue;
 		}
-		if (!glm::epsilonEqual(a.value((palette::MaterialProperty)(i + 1)), b.value((palette::MaterialProperty)(i + 1)), glm::epsilon<float>())) {
+		if (!glm::epsilonEqual(a.value((palette::MaterialProperty)(i + 1)), b.value((palette::MaterialProperty)(i + 1)),
+							   glm::epsilon<float>())) {
 			return false;
 		}
 	}
 	return true;
 }
 
-void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials) {
+void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2,
+						const core::Buffer<palette::MaterialProperty> &ignoredMaterials, bool ignoreType) {
 	for (int i = 0; i < pal2.colorCount(); ++i) {
 		int foundColorMatch = -1;
 		int foundMaterialMatch = -1;
@@ -406,7 +409,7 @@ void materialComparator(const palette::Palette &pal1, const palette::Palette &pa
 			}
 			foundColorMatch = j;
 			const palette::Material &pal1Mat = pal1.material(j);
-			if (materialEquals(pal1Mat, pal2Mat, ignoredMaterials)) {
+			if (materialEquals(pal1Mat, pal2Mat, ignoredMaterials, ignoreType)) {
 				foundMaterialMatch = j;
 				break;
 			}
@@ -423,13 +426,14 @@ void materialComparator(const palette::Palette &pal1, const palette::Palette &pa
 	}
 }
 
-void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, const core::Buffer<palette::MaterialProperty> &ignoredMaterials) {
+void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
+						const core::Buffer<palette::MaterialProperty> &ignoredMaterials, bool ignoreType) {
 	for (auto iter = graph1.beginModel(), iter2 = graph2.beginModel(); iter != graph1.end(); ++iter, ++iter2) {
 		const scenegraph::SceneGraphNode &graph1Node = *iter;
 		const scenegraph::SceneGraphNode &graph2Node = *iter2;
 		const palette::Palette &graph1Pal = graph1Node.palette();
 		const palette::Palette &graph2Pal = graph2Node.palette();
-		materialComparator(graph1Pal, graph2Pal, ignoredMaterials);
+		materialComparator(graph1Pal, graph2Pal, ignoredMaterials, ignoreType);
 		if (testing::Test::HasFatalFailure()) {
 			ADD_FAILURE() << "Material comparison failed for node " << graph1Node.name() << " in graph1 and node "
 						  << graph2Node.name() << " in graph2";

@@ -172,11 +172,12 @@ bool FormatConfig::init() {
 											   core::CV_NOPERSIST);
 	core::registerVar(voxformatPointCloudSize);
 	const core::VarDef voxformatGLTF_KHR_materials_pbrSpecularGlossiness(
-		cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, true, N_("KHR_materials_pbrSpecularGlossiness"),
-		N_("Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"), core::CV_NOPERSIST);
+		cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, false, N_("KHR_materials_pbrSpecularGlossiness"),
+		N_("Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format (prefer KHR_materials_specular)"),
+		core::CV_NOPERSIST);
 	core::registerVar(voxformatGLTF_KHR_materials_pbrSpecularGlossiness);
 	const core::VarDef voxformatGLTF_KHR_materials_specular(
-		cfg::VoxformatGLTF_KHR_materials_specular, false, N_("KHR_materials_specular"),
+		cfg::VoxformatGLTF_KHR_materials_specular, true, N_("KHR_materials_specular"),
 		N_("Apply KHR_materials_specular when saving into the glTF format"), core::CV_NOPERSIST);
 	core::registerVar(voxformatGLTF_KHR_materials_specular);
 	const core::VarDef voxformatWithMaterials(cfg::VoxformatWithMaterials, true, N_("Export materials"),

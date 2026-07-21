@@ -169,7 +169,8 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	voxel::sceneGraphComparator(sceneGraphsave1, sceneGraphLoad, flags, 0.001f);
 }
 
-void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const core::Buffer<palette::MaterialProperty> &ignoredMaterials) {
+void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+									  const core::Buffer<palette::MaterialProperty> &ignoredMaterials, bool ignoreType) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	ASSERT_TRUE(archive->exists("test_material.vox"));
 	ASSERT_NE(filename, "test_material.vox")
@@ -191,7 +192,7 @@ void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const 
 		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx));
 		EXPECT_EQ(12u, sceneGraph.size());
 	}
-	voxel::materialComparator(voxSceneGraph, sceneGraph, ignoredMaterials);
+	voxel::materialComparator(voxSceneGraph, sceneGraph, ignoredMaterials, ignoreType);
 }
 
 void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,

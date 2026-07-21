@@ -170,12 +170,15 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 
 TEST_F(GLTFFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
+	// Stock glTF has no MagicaVoxel MaterialType, flux, density, media, phase, sp, or ldr.
 	core::Buffer<palette::MaterialProperty> ignoredMaterials;
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSp);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
-	testMaterial(sceneGraph, "test_material.gltf", ignoredMaterials);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialDensity);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialPhase);
+	testMaterial(sceneGraph, "test_material.gltf", ignoredMaterials, true);
 }
 
 class VoxelizeLantern : public AbstractFormatTest, public ::testing::WithParamInterface<bool> {};

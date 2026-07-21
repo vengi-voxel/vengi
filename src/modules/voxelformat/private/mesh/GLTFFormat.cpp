@@ -4,6 +4,7 @@
 
 #include "GLTFFormat.h"
 #include "color/ColorUtil.h"
+#include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -232,27 +233,29 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		}
 	}
 
-	if (mat->has_pbr_specular_glossiness) {
-		const cgltf_pbr_specular_glossiness &sg = mat->pbr_specular_glossiness;
-		palMat.setValue(palette::MaterialProperty::MaterialDensity, sg.diffuse_factor[0]);
-		palMat.setValue(palette::MaterialProperty::MaterialPhase, sg.glossiness_factor);
-		palMat.setValue(palette::MaterialProperty::MaterialSpecular,
-						sg.specular_factor[0] * sg.specular_factor[1] * sg.specular_factor[2]);
-	}
-
 	if (mat->has_ior) {
 		palMat.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, mat->ior.ior);
 	}
 
+	// Prefer KHR_materials_specular; fall back to deprecated pbrSpecularGlossiness specularFactor only.
 	if (mat->has_specular) {
 		palMat.setValue(palette::MaterialProperty::MaterialSpecular, mat->specular.specular_factor);
+	} else if (mat->has_pbr_specular_glossiness) {
+		const cgltf_pbr_specular_glossiness &sg = mat->pbr_specular_glossiness;
+		const float spec =
+			(sg.specular_factor[0] + sg.specular_factor[1] + sg.specular_factor[2]) / 3.0f;
+		if (spec > 0.0f) {
+			palMat.setValue(palette::MaterialProperty::MaterialSpecular, spec);
+		}
 	}
 
-	if (mat->has_volume) {
+	if (mat->has_volume && mat->volume.attenuation_distance > 0.0f &&
+		mat->volume.attenuation_distance < FLT_MAX) {
 		palMat.setValue(palette::MaterialProperty::MaterialAttenuation,
-						mat->volume.attenuation_distance > 0.0f ? 1.0f / mat->volume.attenuation_distance : 0.0f);
+						1.0f / mat->volume.attenuation_distance);
 	}
 
+	// emissiveFactor is the MagicaVoxel emit channel; emissive_strength scales HDR (>1) values.
 	float emit = 0.0f;
 	if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
 		emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
@@ -261,7 +264,7 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 		emit *= mat->emissive_strength.emissive_strength;
 	}
 	if (emit > 0.0f) {
-		palMat.setValue(palette::MaterialProperty::MaterialEmit, emit);
+		palMat.setValue(palette::MaterialProperty::MaterialEmit, core_min(emit, 1.0f));
 	}
 
 	meshMat->emitColor =
@@ -1045,79 +1048,54 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			mat.alpha_mode = (rgba.a < 255) ? cgltf_alpha_mode_blend : cgltf_alpha_mode_opaque;
 
-			// Emissive
+			// Core emissiveFactor only (0..1). Do not also write emissive_strength - that would
+			// multiply on reload and break round-trips for emit < 1.
 			if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
-				float emit = palMat.value(palette::MaterialProperty::MaterialEmit);
+				const float emit = palMat.value(palette::MaterialProperty::MaterialEmit);
 				mat.emissive_factor[0] = emit;
 				mat.emissive_factor[1] = emit;
 				mat.emissive_factor[2] = emit;
 			}
 
-			// KHR_materials_pbrSpecularGlossiness (takes priority over other extensions)
-			bool hasPbrSG = false;
-			if (usePbrSG) {
-				if (palMat.has(palette::MaterialProperty::MaterialDensity)) {
-					float density = palMat.value(palette::MaterialProperty::MaterialDensity);
-					mat.pbr_specular_glossiness.diffuse_factor[0] = fcolor.r * density;
-					mat.pbr_specular_glossiness.diffuse_factor[1] = fcolor.g * density;
-					mat.pbr_specular_glossiness.diffuse_factor[2] = fcolor.b * density;
-					mat.pbr_specular_glossiness.diffuse_factor[3] = fcolor.a;
-					hasPbrSG = true;
-				}
-				if (palMat.has(palette::MaterialProperty::MaterialSpecular)) {
-					float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
-					mat.pbr_specular_glossiness.specular_factor[0] = spec;
-					mat.pbr_specular_glossiness.specular_factor[1] = spec;
-					mat.pbr_specular_glossiness.specular_factor[2] = spec;
-					hasPbrSG = true;
-				}
-				if (palMat.has(palette::MaterialProperty::MaterialPhase)) {
-					mat.pbr_specular_glossiness.glossiness_factor =
-						palMat.value(palette::MaterialProperty::MaterialPhase);
-					hasPbrSG = true;
-				}
-				if (hasPbrSG && !palMat.has(palette::MaterialProperty::MaterialDensity)) {
-					// Default diffuse to white so base color texture shows through
-					mat.pbr_specular_glossiness.diffuse_factor[0] = 1.0f;
-					mat.pbr_specular_glossiness.diffuse_factor[1] = 1.0f;
-					mat.pbr_specular_glossiness.diffuse_factor[2] = 1.0f;
-					mat.pbr_specular_glossiness.diffuse_factor[3] = 1.0f;
-				}
-				mat.has_pbr_specular_glossiness = hasPbrSG;
+			// KHR_materials_ior
+			if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+				mat.has_ior = true;
+				mat.ior.ior = palMat.value(palette::MaterialProperty::MaterialIndexOfRefraction);
 			}
 
-			// When pbrSpecularGlossiness is set, skip other extensions (matching old behavior)
-			if (!hasPbrSG) {
-				// KHR_materials_ior
-				if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
-					mat.has_ior = true;
-					mat.ior.ior = palMat.value(palette::MaterialProperty::MaterialIndexOfRefraction);
-				}
-
-				// KHR_materials_specular
-				if (palMat.has(palette::MaterialProperty::MaterialSpecular) && useKhrSpec) {
-					float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
-					mat.has_specular = true;
-					mat.specular.specular_factor = spec;
-					mat.specular.specular_color_factor[0] = 1.0f;
-					mat.specular.specular_color_factor[1] = 1.0f;
-					mat.specular.specular_color_factor[2] = 1.0f;
-				}
-
-				// KHR_materials_volume
-				if (palMat.has(palette::MaterialProperty::MaterialAttenuation)) {
-					float atten = palMat.value(palette::MaterialProperty::MaterialAttenuation);
-					mat.has_volume = true;
-					mat.volume.attenuation_color[0] = fcolor.r * atten;
-					mat.volume.attenuation_color[1] = fcolor.g * atten;
-					mat.volume.attenuation_color[2] = fcolor.b * atten;
-				}
+			// KHR_materials_specular (preferred over deprecated pbrSpecularGlossiness)
+			if (palMat.has(palette::MaterialProperty::MaterialSpecular) && useKhrSpec) {
+				const float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
+				mat.has_specular = true;
+				mat.specular.specular_factor = spec;
+				mat.specular.specular_color_factor[0] = 1.0f;
+				mat.specular.specular_color_factor[1] = 1.0f;
+				mat.specular.specular_color_factor[2] = 1.0f;
+			} else if (palMat.has(palette::MaterialProperty::MaterialSpecular) && usePbrSG) {
+				const float spec = palMat.value(palette::MaterialProperty::MaterialSpecular);
+				mat.has_pbr_specular_glossiness = true;
+				mat.pbr_specular_glossiness.diffuse_factor[0] = 1.0f;
+				mat.pbr_specular_glossiness.diffuse_factor[1] = 1.0f;
+				mat.pbr_specular_glossiness.diffuse_factor[2] = 1.0f;
+				mat.pbr_specular_glossiness.diffuse_factor[3] = 1.0f;
+				mat.pbr_specular_glossiness.specular_factor[0] = spec;
+				mat.pbr_specular_glossiness.specular_factor[1] = spec;
+				mat.pbr_specular_glossiness.specular_factor[2] = spec;
+				const float roughness = palMat.has(palette::MaterialProperty::MaterialRoughness)
+											? palMat.value(palette::MaterialProperty::MaterialRoughness)
+											: 1.0f;
+				mat.pbr_specular_glossiness.glossiness_factor = 1.0f - roughness;
 			}
 
-			// KHR_materials_emissive_strength
-			if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
-				mat.has_emissive_strength = true;
-				mat.emissive_strength.emissive_strength = palMat.value(palette::MaterialProperty::MaterialEmit);
+			// KHR_materials_volume: attenuationDistance = 1 / MagicaVoxel attenuation
+			if (palMat.has(palette::MaterialProperty::MaterialAttenuation)) {
+				const float atten = palMat.value(palette::MaterialProperty::MaterialAttenuation);
+				mat.has_volume = true;
+				mat.volume.thickness_factor = 1.0f;
+				mat.volume.attenuation_distance = 1.0f / atten;
+				mat.volume.attenuation_color[0] = fcolor.r;
+				mat.volume.attenuation_color[1] = fcolor.g;
+				mat.volume.attenuation_color[2] = fcolor.b;
 			}
 		}
 	}
