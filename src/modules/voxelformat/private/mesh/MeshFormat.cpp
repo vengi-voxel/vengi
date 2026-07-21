@@ -91,7 +91,7 @@ glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &
 	return getScale();
 }
 
-bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth) {
+bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int depth) {
 	// Keep in sync with MeshTri::subdivideTriCount() depth cap.
 	static const int MaxSubdivideDepth = 16;
 	// 4^12 ~= 16M is already pathological; refuse to expand further once we hit this many tris.
@@ -130,8 +130,7 @@ bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollec
 		voxelformat::MeshTri out[4];
 		subdivide(meshTri, out);
 		for (int i = 0; i < lengthof(out); ++i) {
-			int d = depth + 1;
-			subdivideTri(out[i], tinyTris, d);
+			subdivideTri(out[i], tinyTris, depth + 1);
 		}
 		return true;
 	}
@@ -731,8 +730,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			const size_t maxTotalReserve = (size_t)(end - start) * maxPerTriangle;
 			subdivided.reserve(glm::min(estimateReserve, maxTotalReserve));
 			for (int i = start; i < end; ++i) {
-				int depth = 0;
-				subdivideTri(tris[i], subdivided, depth);
+				subdivideTri(tris[i], subdivided, 0);
 			}
 		});
 		Log::debug("Subdivision done");

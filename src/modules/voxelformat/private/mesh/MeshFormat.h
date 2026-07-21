@@ -44,7 +44,7 @@ public:
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static bool subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth);
+	static bool subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int depth);
 	static bool calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static glm::vec3 getScale();
 	/**

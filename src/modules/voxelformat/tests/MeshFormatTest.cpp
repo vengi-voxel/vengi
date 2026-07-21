@@ -32,21 +32,18 @@ TEST_F(MeshFormatTest, testSubdivide) {
 	meshTri.setVertices(glm::vec3(-8.77272797, -11.43335, -0.154544264),
 						glm::vec3(-8.77272701, 11.1000004, -0.154543981),
 						glm::vec3(8.77272701, 11.1000004, -0.154543981));
-	int depth = 0;
-	MeshFormat::subdivideTri(meshTri, tinyTris, depth);
+	MeshFormat::subdivideTri(meshTri, tinyTris, 0);
 	EXPECT_EQ(1024u, tinyTris.size());
 }
 
-TEST_F(MeshFormatTest, testSubdivideDepthIncrements) {
-	// Without incrementing depth the MaxSubdivideDepth guard never fires and non-finite /
-	// huge triangles can recurse until memory or stack is exhausted.
+TEST_F(MeshFormatTest, testSubdivideRejectsTooLarge) {
+	// Triangles whose AABB exceeds 2^(MaxSubdivideDepth - depth) cannot reach size <= 1
+	// within the depth budget; early-out instead of exploding toward 4^depth leaves.
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
 	meshTri.setVertices(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0e6f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0e6f, 0.0f));
-	int depth = 0;
-	MeshFormat::subdivideTri(meshTri, tinyTris, depth);
+	MeshFormat::subdivideTri(meshTri, tinyTris, 0);
 	EXPECT_FALSE(tinyTris.empty());
-	// Must terminate quickly - a full 4^16 expansion would be billions of tris.
 	EXPECT_LT(tinyTris.size(), 16u);
 }
 
@@ -55,8 +52,7 @@ TEST_F(MeshFormatTest, testSubdivideSkipsNonFinite) {
 	voxelformat::MeshTri meshTri;
 	const float inf = std::numeric_limits<float>::infinity();
 	meshTri.setVertices(glm::vec3(inf, 0.0f, 0.0f), glm::vec3(0.0f, inf, 0.0f), glm::vec3(0.0f, 0.0f, inf));
-	int depth = 0;
-	EXPECT_FALSE(MeshFormat::subdivideTri(meshTri, tinyTris, depth));
+	EXPECT_FALSE(MeshFormat::subdivideTri(meshTri, tinyTris, 0));
 	EXPECT_TRUE(tinyTris.empty());
 }
 
