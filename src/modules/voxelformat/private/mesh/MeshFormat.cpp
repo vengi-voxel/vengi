@@ -286,6 +286,9 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 						}
 						const glm::vec3 surfacePoint(x + 0.5f, y + 0.5f, z + 0.5f);
 						glm::vec2 uv;
+						// Do not fall back to centerUV() here: for textured faces the
+						// triangle center color would pollute voxels that belong to a
+						// different UV region (e.g. greedy texture atlas export).
 						if (!meshTri.calcUVs(surfacePoint, uv)) {
 							continue;
 						}
@@ -566,6 +569,11 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	}
 
 	const bool axisAligned = isVoxelMesh(tris);
+	const int voxelizeMode = core::getVar(cfg::VoxformatVoxelizeMode)->intVal();
+	// Fast mode must win over the axis-aligned shortcut: transformTrisAxisAligned rejects
+	// voxel centers via strict barycentric UV tests, which leaves holes/cracks in large
+	// scaled quads (e.g. Crocotile). voxelizeTriangle uses AABB intersection instead.
+	const bool useAxisAligned = axisAligned && voxelizeMode != VoxelizeMode::Fast;
 
 	glm::vec3 trisMins{0};
 	glm::vec3 trisMaxs{0};
@@ -576,7 +584,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	trisMins = glm::floor(trisMins);
 	trisMaxs = glm::ceil(trisMaxs);
 
-	if (!axisAligned) {
+	if (!useAxisAligned) {
 		convertToVoxelGrid(trisMins);
 		convertToVoxelGrid(trisMaxs);
 	}
@@ -587,7 +595,6 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		return InvalidNodeId;
 	}
 
-	const int voxelizeMode = core::getVar(cfg::VoxformatVoxelizeMode)->intVal();
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
@@ -628,7 +635,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 
 	const bool fillHollow = core::getVar(cfg::VoxformatFillHollow)->boolVal();
 	const int64_t maxVoxels = (int64_t)vdim.x * vdim.y * vdim.z;
-	if (axisAligned) {
+	if (useAxisAligned) {
 		// estimate capacity from triangle bounding volumes (each axis-aligned tri covers a 2D area)
 		int64_t estimatedVoxels = 0;
 		for (const voxelformat::MeshTri &tri : tris) {
