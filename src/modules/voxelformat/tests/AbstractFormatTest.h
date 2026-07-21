@@ -78,7 +78,8 @@ protected:
 				  voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testSaveMesh(const core::String &inputFile, const core::String &filename, Format *format,
-					  voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
+					  voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f,
+					  bool allMeshModes = false);
 
 	void testSaveLoadPointCloud(const core::String &filename, Format *format, float maxColorDelta = 0.02f);
 

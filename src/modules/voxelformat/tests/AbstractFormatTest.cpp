@@ -82,7 +82,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 }
 
 void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core::String &filename, Format *format,
-												   voxel::ValidateFlags flags, float maxDelta) {
+									  voxel::ValidateFlags flags, float maxDelta, bool allMeshModes) {
 	io::FileDescription fileDesc;
 	fileDesc.set(inputFile);
 	const io::ArchivePtr &archive = helper_filesystemarchive();
@@ -90,7 +90,12 @@ void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core:
 	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
 		<< "Failed to load " << fileDesc.c_str();
 
-	for (int i = 0; i < (int)voxel::SurfaceExtractionType::Max; ++i) {
+	// Default mesh mode only - iterating every SurfaceExtractionType (incl. GreedyTexture)
+	// makes large models like cc.vxl take several minutes under Debug/ASAN. Dedicated mesher
+	// tests already cover the other extractors.
+	const int modeBegin = allMeshModes ? 0 : (int)voxel::SurfaceExtractionType::Binary;
+	const int modeEnd = allMeshModes ? (int)voxel::SurfaceExtractionType::Max : modeBegin + 1;
+	for (int i = modeBegin; i < modeEnd; ++i) {
 		SCOPED_TRACE(core::String::format("Mesh extraction type: %i", i));
 		util::ScopedVarChange scoped(cfg::VoxformatMeshMode, core::string::toString(i));
 		const core::String modeFilename = core::String::format("%i_%s", i, filename.c_str());
