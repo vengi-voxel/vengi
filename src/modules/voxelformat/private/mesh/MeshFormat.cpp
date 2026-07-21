@@ -40,6 +40,10 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/compatibility.hpp>
 
 namespace voxelformat {
 
@@ -88,11 +92,22 @@ glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &
 }
 
 bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth) {
-	if (depth > 16) {
+	// Keep in sync with MeshTri::subdivideTriCount() depth cap.
+	static const int MaxSubdivideDepth = 16;
+	// 4^12 ~= 16M is already pathological; refuse to expand further once we hit this many tris.
+	static const size_t MaxSubdivideTris = 1u << 20;
+
+	if (!glm::all(glm::isfinite(meshTri.vertex0())) || !glm::all(glm::isfinite(meshTri.vertex1())) ||
+		!glm::all(glm::isfinite(meshTri.vertex2()))) {
+		Log::warn("Skipping triangle with non-finite vertices during subdivision");
+		return false;
+	}
+	if (depth > MaxSubdivideDepth || tinyTris.size() >= MaxSubdivideTris) {
 		const glm::vec3 &mins = meshTri.mins();
 		const glm::vec3 &maxs = meshTri.maxs();
 		const glm::vec3 size = maxs - mins;
-		Log::warn("Max subdivision depth reached for tri with size %f:%f:%f", size.x, size.y, size.z);
+		Log::warn("Max subdivision depth/budget reached for tri with size %f:%f:%f (depth %i, tris %i)", size.x,
+				  size.y, size.z, depth, (int)tinyTris.size());
 
 		tinyTris.push_back(meshTri);
 		return false;
@@ -104,10 +119,18 @@ bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollec
 	const glm::vec3 &maxs = meshTri.maxs();
 	const glm::vec3 size = maxs - mins;
 	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
+		// Remaining depth cannot shrink AABB below 1 - avoid a 4^depth explosion.
+		const float maxResolvable = (float)(1u << (MaxSubdivideDepth - depth));
+		if (glm::any(glm::greaterThan(size, glm::vec3(maxResolvable)))) {
+			Log::warn("Triangle too large to subdivide within depth budget (size %f:%f:%f, depth %i)", size.x, size.y,
+					  size.z, depth);
+			tinyTris.push_back(meshTri);
+			return false;
+		}
 		voxelformat::MeshTri out[4];
 		subdivide(meshTri, out);
 		for (int i = 0; i < lengthof(out); ++i) {
-			int d = depth;
+			int d = depth + 1;
 			subdivideTri(out[i], tinyTris, d);
 		}
 		return true;

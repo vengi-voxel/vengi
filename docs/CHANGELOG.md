@@ -28,6 +28,7 @@ General:
    - Replaced `tinygltf` with `cgltf` for loading and writing `gltf` and `glb` files
    - Fixed `gltf` animation export to use TRS instead of matrix (spec-compliant)
    - Improved `gltf` animation import (group transforms, STEP/CUBICSPLINE, empty joint nodes)
+   - Fixed mesh triangle subdivision depth limit never applying (could explode on huge/non-finite tris)
    - Fixed greedy texture atlas packing giving up too early and spamming warnings
    - Added support for Luanti WorldEdit `we` files
    - Added support for BrickLink Studio `io` lego archives
