@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "core/ScopedPtr.h"
 #include "io/Stream.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraph.h"
@@ -64,6 +65,84 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 	EXPECT_TRUE(sceneGraph.setAnimation(sceneGraph.animations().back()));
 	ASSERT_FALSE(node.keyFrames()->empty());
 	ASSERT_GE(node.keyFrames()->size(), 2u);
+}
+
+TEST_F(GLTFFormatTest, testAnimationRoundTrip) {
+	GLTFFormat f;
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	scenegraph::SceneGraph srcGraph;
+	ASSERT_TRUE(f.load("chr_oldman.gltf", archive, srcGraph, testLoadCtx));
+	ASSERT_EQ(srcGraph.size(scenegraph::SceneGraphNodeType::AllModels), 10u);
+	ASSERT_GE(srcGraph.animations().size(), 1u);
+
+	const core::String outFile = "chr_oldman-roundtrip.gltf";
+	ASSERT_TRUE(f.save(srcGraph, outFile, archive, testSaveCtx));
+
+	scenegraph::SceneGraph dstGraph;
+	ASSERT_TRUE(f.load(outFile, archive, dstGraph, testLoadCtx));
+
+	const auto &srcAnims = srcGraph.animations();
+	const auto &dstAnims = dstGraph.animations();
+	ASSERT_EQ(srcAnims.size(), dstAnims.size()) << "Animation count mismatch";
+	for (const core::String &anim : srcAnims) {
+		bool found = false;
+		for (const core::String &dstAnim : dstAnims) {
+			if (dstAnim == anim) {
+				found = true;
+				break;
+			}
+		}
+		EXPECT_TRUE(found) << "Animation '" << anim.c_str() << "' not found after round-trip";
+	}
+
+	int srcAnimatedNodes = 0;
+	int dstAnimatedNodes = 0;
+	for (const auto &srcEntry : srcGraph.nodes()) {
+		const scenegraph::SceneGraphNode &srcNode = srcEntry->second;
+		if (!srcNode.isModelNode() && !srcNode.isGroupNode()) {
+			continue;
+		}
+		for (const core::String &anim : srcAnims) {
+			if (!srcNode.allKeyFrames().hasKey(anim)) {
+				continue;
+			}
+			const auto &srcKfs = srcNode.keyFrames(anim);
+			if (srcKfs.size() <= 1) {
+				continue;
+			}
+			++srcAnimatedNodes;
+			for (const auto &dstEntry : dstGraph.nodes()) {
+				const scenegraph::SceneGraphNode &dstNode = dstEntry->second;
+				if (dstNode.name() != srcNode.name()) {
+					continue;
+				}
+				if (dstNode.allKeyFrames().hasKey(anim) && dstNode.keyFrames(anim).size() > 1) {
+					++dstAnimatedNodes;
+				}
+				break;
+			}
+			break;
+		}
+	}
+	EXPECT_GT(srcAnimatedNodes, 0) << "Source should have animated nodes";
+	EXPECT_EQ(srcAnimatedNodes, dstAnimatedNodes) << "Animated nodes lost keyframes during round-trip";
+
+	// Exported glTF must use TRS (not matrix) on animated nodes - matrix + animation is invalid.
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(outFile));
+	ASSERT_TRUE(stream);
+	const int64_t size = stream->size();
+	core::String json;
+	json.reserve((size_t)size);
+	for (;;) {
+		char chunk[4096];
+		const int n = stream->read(chunk, sizeof(chunk));
+		if (n <= 0) {
+			break;
+		}
+		json.append(chunk, n);
+	}
+	EXPECT_EQ(core::String::npos, json.find("\"matrix\""))
+		<< "Animated glTF export must not write node matrices";
 }
 
 TEST_F(GLTFFormatTest, testVoxelizeCube) {

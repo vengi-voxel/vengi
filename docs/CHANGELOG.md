@@ -26,6 +26,8 @@ General:
    - Fixed UTF8 issues with the tokenizer (visible in the file dialog bread crump menu)
    - Heavily reduced memory consumption for mesh format loading (voxelization)
    - Replaced `tinygltf` with `cgltf` for loading and writing `gltf` and `glb` files
+   - Fixed `gltf` animation export to use TRS instead of matrix (spec-compliant)
+   - Improved `gltf` animation import (group transforms, STEP/CUBICSPLINE, empty joint nodes)
    - Added support for Luanti WorldEdit `we` files
    - Added support for BrickLink Studio `io` lego archives
    - Added support for Digital designer lego files (`lxf`, `lxfml`)

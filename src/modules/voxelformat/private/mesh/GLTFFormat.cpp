@@ -103,6 +103,75 @@ static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &
 
 static const float GLTF_FPS = 24.0f;
 
+static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGraphNode &sgNode) {
+	scenegraph::SceneGraphTransform transform;
+	if (node->has_matrix) {
+		transform.setLocalMatrix(glm::make_mat4(node->matrix));
+	} else {
+		if (node->has_translation) {
+			transform.setLocalTranslation(
+				glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
+		}
+		if (node->has_rotation) {
+			transform.setLocalOrientation(
+				glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
+		}
+		if (node->has_scale) {
+			transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
+		}
+	}
+	sgNode.setTransform(0, transform);
+}
+
+// Prefer TRS over matrix so animation channels remain valid per the glTF 2.0 spec:
+// animated nodes must not use the matrix property.
+static void setGltfNodeTRS(cgltf_node &node, const scenegraph::SceneGraphTransform &transform) {
+	const glm::vec3 &t = transform.localTranslation();
+	const glm::quat &r = transform.localOrientation();
+	const glm::vec3 &s = transform.localScale();
+	if (t != glm::vec3(0.0f)) {
+		node.has_translation = true;
+		node.translation[0] = t.x;
+		node.translation[1] = t.y;
+		node.translation[2] = t.z;
+	}
+	if (r.x != 0.0f || r.y != 0.0f || r.z != 0.0f || r.w != 1.0f) {
+		node.has_rotation = true;
+		node.rotation[0] = r.x;
+		node.rotation[1] = r.y;
+		node.rotation[2] = r.z;
+		node.rotation[3] = r.w;
+	}
+	if (s != glm::vec3(1.0f)) {
+		node.has_scale = true;
+		node.scale[0] = s.x;
+		node.scale[1] = s.y;
+		node.scale[2] = s.z;
+	}
+}
+
+static scenegraph::InterpolationType gltfInterpolationToSceneGraph(cgltf_interpolation_type type) {
+	if (type == cgltf_interpolation_type_step) {
+		return scenegraph::InterpolationType::Instant;
+	}
+	if (type == cgltf_interpolation_type_cubic_spline) {
+		return scenegraph::InterpolationType::CatmullRom;
+	}
+	return scenegraph::InterpolationType::Linear;
+}
+
+static cgltf_interpolation_type sceneGraphInterpolationToGltf(const scenegraph::SceneGraphKeyFrames &kfs) {
+	if (kfs.empty()) {
+		return cgltf_interpolation_type_linear;
+	}
+	for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
+		if (kf.interpolation != scenegraph::InterpolationType::Instant) {
+			return cgltf_interpolation_type_linear;
+		}
+	}
+	return cgltf_interpolation_type_step;
+}
+
 MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_material *mat,
 										 const core::String &filename, const io::ArchivePtr &archive) const {
 	core::String name = mat->name ? mat->name : "default";
@@ -324,28 +393,16 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			}
 			nodeId = voxelizeMesh(meshName, sceneGraph, core::move(mesh), parent, false);
 			if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
-				scenegraph::SceneGraphNode &sgNode = sceneGraph.node(nodeId);
-				scenegraph::SceneGraphTransform transform;
-				if (node->has_matrix) {
-					transform.setLocalMatrix(glm::make_mat4(node->matrix));
-				} else {
-					if (node->has_translation) {
-						transform.setLocalTranslation(
-							glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
-					}
-					if (node->has_rotation) {
-						transform.setLocalOrientation(
-							glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
-					}
-					if (node->has_scale) {
-						transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
-					}
-				}
-				sgNode.setTransform(0, transform);
+				applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
+			} else {
+				nodeId = parent;
 			}
 		}
-	} else if (node->children_count > 0) {
-		// Non-mesh node with children - create a group node to preserve hierarchy
+	}
+
+	// Non-mesh nodes (and mesh nodes that produced no volume) become groups so hierarchy
+	// and animation targets are preserved - including transform-only leaf joints.
+	if (nodeId == parent) {
 		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 		if (node->name) {
 			groupNode.setName(node->name);
@@ -353,15 +410,9 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 		nodeId = sceneGraph.emplace(core::move(groupNode), parent);
 		if (nodeId == InvalidNodeId) {
 			nodeId = parent;
+		} else {
+			applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
 		}
-		for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
-			addNode_r(data, node->children[ci], filename, archive, sceneGraph, nodeId, nodeMap);
-		}
-		nodeMap.put(node, nodeId);
-		return nodeId;
-	} else {
-		nodeMap.put(node, parent);
-		return parent;
 	}
 
 	for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
@@ -404,6 +455,10 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 				continue;
 			}
 
+			const scenegraph::InterpolationType interpType =
+				gltfInterpolationToSceneGraph(sampler->interpolation);
+			const bool cubicSpline = sampler->interpolation == cgltf_interpolation_type_cubic_spline;
+
 			for (cgltf_size ki = 0; ki < input->count; ++ki) {
 				float time = 0.0f;
 				if (!cgltf_accessor_read_float(input, ki, &time, 1)) {
@@ -418,25 +473,28 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 					}
 				}
 				scenegraph::SceneGraphKeyFrame &kf = sgNode.keyFrame(kfIdx);
-				kf.interpolation = scenegraph::InterpolationType::Linear;
+				kf.interpolation = interpType;
 				scenegraph::SceneGraphTransform &transform = kf.transform();
+
+				// CUBICSPLINE stores in-tangent, value, out-tangent per keyframe
+				const cgltf_size valueIndex = cubicSpline ? (ki * 3 + 1) : ki;
 
 				switch (channel.target_path) {
 				case cgltf_animation_path_type_translation: {
 					float v[3] = {0};
-					cgltf_accessor_read_float(output, ki, v, 3);
+					cgltf_accessor_read_float(output, valueIndex, v, 3);
 					transform.setLocalTranslation(glm::vec3(v[0], v[1], v[2]));
 					break;
 				}
 				case cgltf_animation_path_type_rotation: {
 					float v[4] = {0, 0, 0, 1};
-					cgltf_accessor_read_float(output, ki, v, 4);
+					cgltf_accessor_read_float(output, valueIndex, v, 4);
 					transform.setLocalOrientation(glm::quat(v[3], v[0], v[1], v[2]));
 					break;
 				}
 				case cgltf_animation_path_type_scale: {
 					float v[3] = {1, 1, 1};
-					cgltf_accessor_read_float(output, ki, v, 3);
+					cgltf_accessor_read_float(output, valueIndex, v, 3);
 					transform.setLocalScale(glm::vec3(v[0], v[1], v[2]));
 					break;
 				}
@@ -1351,15 +1409,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		nodes[mi].name = (char *)meshes[info.meshExtIdx].name.c_str();
 		{
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshes[info.meshExtIdx].nodeId);
-			const scenegraph::SceneGraphTransform &transform = graphNode.transform(0);
-			glm::mat4x4 nodeLocalMatrix = transform.localMatrix();
-			if (nodeLocalMatrix != glm::mat4(1.0f)) {
-				nodes[mi].has_matrix = true;
-				const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
-				for (int k = 0; k < 16; ++k) {
-					nodes[mi].matrix[k] = pSource[k];
-				}
-			}
+			setGltfNodeTRS(nodes[mi], graphNode.transform(0));
 		}
 	}
 
@@ -1368,15 +1418,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int gltfIdx = totalMeshes + gi;
 		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(groupNodeIds[gi]);
 		nodes[gltfIdx].name = (char *)sgNode.name().c_str();
-		const scenegraph::SceneGraphTransform &transform = sgNode.transform(0);
-		glm::mat4x4 localMatrix = transform.localMatrix();
-		if (localMatrix != glm::mat4(1.0f)) {
-			nodes[gltfIdx].has_matrix = true;
-			const float *pSource = (const float *)glm::value_ptr(localMatrix);
-			for (int k = 0; k < 16; ++k) {
-				nodes[gltfIdx].matrix[k] = pSource[k];
-			}
-		}
+		setGltfNodeTRS(nodes[gltfIdx], sgNode.transform(0));
 	}
 
 	// Build children arrays
@@ -1625,6 +1667,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(ani.sgNodeId);
 					const scenegraph::SceneGraphKeyFrames &kfs = sgNode.keyFrames(animName);
 					int n = (int)kfs.size();
+					const cgltf_interpolation_type sampInterp = sceneGraphInterpolationToGltf(kfs);
 
 					// Write time values
 					size_t timeOffset = bufOffset;
@@ -1723,17 +1766,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					// Samplers (T, R, S)
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[transAcc];
-					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
+					gltfSamplers[sampI].interpolation = sampInterp;
 					int transSamp = sampI;
 					++sampI;
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[rotAcc];
-					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
+					gltfSamplers[sampI].interpolation = sampInterp;
 					int rotSamp = sampI;
 					++sampI;
 					gltfSamplers[sampI].input = &animAccessors[timeAcc];
 					gltfSamplers[sampI].output = &animAccessors[scaleAcc];
-					gltfSamplers[sampI].interpolation = cgltf_interpolation_type_linear;
+					gltfSamplers[sampI].interpolation = sampInterp;
 					int scaleSamp = sampI;
 					++sampI;
 
