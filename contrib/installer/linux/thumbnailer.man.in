@@ -102,7 +102,7 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_fillhollow\fP: Fill the hollows when voxelizing a mesh format
 .PP
-\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format
+\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format (prefer KHR_materials_specular)
 .PP
 \fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular when saving into the glTF format
 .PP
@@ -135,6 +135,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 \fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when applying mesh optimization (0 = disable simplification)
 .PP
 \fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
+.PP
+\fBvoxformat_mvapplytransform\fP: Bake MagicaVoxel transforms into voxels
 .PP
 \fBvoxformat_optimize\fP: Apply mesh optimization steps to meshes
 .PP

@@ -295,7 +295,7 @@ const jsonData = {
         }
       ],
       "mimetype": "application/x-magicavoxel",
-      "animation": false,
+      "animation": true,
       "load": true,
       "save": true
     },

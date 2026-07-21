@@ -723,6 +723,42 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Teardown bin</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-teardown-bin</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bin</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Luanti World Edit</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-luanti-world-edit</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>we</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Wavefront Object</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -771,6 +807,62 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>stl</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>LDraw Model</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>text/plain</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>ldr</string>
+          <string>mpd</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>LEGO Digital Designer</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/xml</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>lxf</string>
+          <string>lxfml</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>BrickLink Studio</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-bricklink-studio</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>io</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
