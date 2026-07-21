@@ -18,7 +18,14 @@ struct MVModelToNode;
 /**
  * @brief MagicaVoxel vox format load and save functions
  *
- * z is pointing upwards
+ * MagicaVoxel keeps axis-aligned models and places them with nTRN transform nodes
+ * (signed-permutation rotation + translation around floor(size/2)).
+ *
+ * By default (@c cfg::VoxformatMVApplyTransform = true) transforms are baked into voxels
+ * (pivot 0, translation = AABB lower corner) for compatibility with other formats.
+ * Disable the cvar to keep shared ModelReference nodes and node TRS instead.
+ *
+ * z is pointing upwards in MagicaVoxel; volumes are converted to vengi Y-up on load.
  *
  * @li https://github.com/ephtracy/voxel-model.git
  * @li https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
@@ -30,9 +37,14 @@ class VoxFormat : public PaletteFormat {
 protected:
 	glm::ivec3 maxSize() const override;
 	int emptyPaletteIndex() const override;
+	bool supportsReferences() const override {
+		return true;
+	}
+
 private:
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
-					 uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
+					  uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
+	uint32_t saveModel(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 					  int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette);
@@ -47,14 +59,18 @@ private:
 				  uint32_t parentGroupIdx, uint32_t layerIdx);
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+
 public:
 	VoxFormat();
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{
-			"MagicaVoxel", "", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"MagicaVoxel",
+									   "",
+									   {"vox"},
+									   {"VOX "},
+									   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

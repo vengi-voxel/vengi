@@ -5,7 +5,6 @@
 #pragma once
 
 #include "color/RGBA.h"
-#include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -13,8 +12,6 @@
 #include <glm/mat4x4.hpp>
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/external/ogt_vox.h"
-
-#define MAGICAVOXEL_USE_REFERENCES 0
 
 namespace palette {
 class Palette;
@@ -36,12 +33,9 @@ struct MVSceneContext {
 	core::Buffer<ogt_vox_model> models;
 	core::Buffer<ogt_vox_layer> layers;
 	core::Buffer<ogt_vox_instance> instances;
-	int transformKeyFrameIdx = 0;
-	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
-	int modelKeyFrameIdx = 0;
-	core::Array<ogt_vox_keyframe_model, 4096> keyframeModels;
+	core::Buffer<ogt_vox_keyframe_transform> keyframeTransforms;
+	core::Buffer<ogt_vox_keyframe_model> keyframeModels;
 	core::Buffer<ogt_vox_cam> cameras;
-	bool paletteErrorPrinted = false;
 	core::Map<int, uint32_t> nodeToModel;
 };
 
@@ -54,29 +48,41 @@ static const ogt_vox_transform ogt_identity_transform{
 };
 // clang-format on
 
-/**
- * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
- *
- * @param mat The world space model matrix (rotation and translation) for the chunk
- * @param pos The position inside the untransformed chunk (local position)
- * @return glm::vec4 The transformed world position
- */
-inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
-	// magicavoxel is doing this in the shader - we have to do it on the cpu as the matrix which is linear
-	// can't get expressed by this non-linear floor operation - or at least I don't know how. We could try
-	// to floor the translation part of the matrix - as the rotations should be 90 degree aligned. But this
-	// would just be an approximation and not the correct way to do it. So we have to do it the hard way and
-	// apply the transformation to the local position and floor the result.
-	return glm::floor(mat * glm::vec4(pos, 1.0f));
-}
-
 void *_ogt_alloc(size_t size);
 void _ogt_free(void *mem);
 
-bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-				   const ogt_vox_instance &ogtInstance, const ogt_vox_scene *scene);
-glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameIdx, const ogt_vox_scene *scene,
-							const ogt_vox_model *ogtModel);
+glm::mat4 ogtToMat(const ogt_vox_transform &t);
+ogt_vox_transform matToOgt(const glm::mat4 &mat);
+
+/**
+ * @brief MagicaVoxel model-space pivot floor(size/2) mapped into the vengi volume layout used by
+ * loadModels (MagicaVoxel (x,y,z) -> vengi (sx-1-x, z, y)), as a normalized [0,1] pivot.
+ */
+glm::vec3 ogtNormalizedPivot(const ogt_vox_model *model);
+glm::vec3 ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ);
+
+/**
+ * @brief Convert a MagicaVoxel-space transform matrix into vengi coordinate space for node TRS.
+ */
+glm::mat4 ogtMatToVengi(const glm::mat4 &ogtMat);
+
+/**
+ * @brief Convert a vengi-space transform matrix back into MagicaVoxel coordinate space for saving.
+ */
+glm::mat4 vengiMatToOgt(const glm::mat4 &vengiMat);
+
+bool loadInstanceKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_instance &ogtInstance,
+						   const ogt_vox_scene *scene);
+bool loadGroupKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_anim_transform &transformAnim);
+
+/**
+ * @brief Write MagicaVoxel keyframes from a node's local transforms into @p ctx.keyframeTransforms.
+ * @return Pointer to the first written keyframe (owned by ctx) and keyframe count via @p numKeyframes
+ */
+const ogt_vox_keyframe_transform *saveKeyFrames(const scenegraph::SceneGraph &sceneGraph,
+												const scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
+												uint32_t &numKeyframes);
+
 void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette);
 bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, palette::Palette &palette);
 void printDetails(const ogt_vox_scene *scene);
@@ -91,14 +97,31 @@ inline glm::vec3 ogtVolumeSize(const ogt_vox_model *model) {
 	return glm::vec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
 }
 
-/**
- * @note The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
- * note that the @c w component must be @c 0.0
- */
 inline glm::vec4 ogtVolumePivot(const ogt_vox_model *model) {
 	return glm::vec4((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
 					 0.0f);
 }
+
+/**
+ * @brief MagicaVoxel applies floor(M * pos) per voxel. Useful for tests comparing world placement.
+ */
+inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
+	return glm::floor(mat * glm::vec4(pos, 1.0f));
+}
+
+/**
+ * @brief MagicaVoxel bake matrix: global nTRN * translate(0.5) * translate(-floor(size/2)).
+ * Used with @c calcTransform for per-voxel placement when @c cfg::VoxformatMVApplyTransform is on.
+ */
+glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
+								const ogt_vox_model *model);
+
+/**
+ * @brief Bake an ogt model through @p bakeMat into a vengi volume (region mins at 0).
+ * @p outShift is the world translation that places the volume (former region lower corner).
+ */
+voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat, const palette::Palette &palette,
+							   glm::ivec3 &outShift);
 
 struct MVModelToNode {
 	MVModelToNode();

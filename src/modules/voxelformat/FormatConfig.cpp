@@ -144,6 +144,12 @@ bool FormatConfig::init() {
 			"Import animation frames as nodes"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatVOXAnimAsNodes);
+	const core::VarDef voxformatMVApplyTransform(
+		cfg::VoxformatMVApplyTransform, true, N_("Apply transforms"),
+		NC_("Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to keep shared models and node TRS",
+			"Bake MagicaVoxel transforms into voxels"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatMVApplyTransform);
 	const core::VarDef voxformatQBSaveLeftHanded(cfg::VoxformatQBSaveLeftHanded, true, N_("Left handed"),
 												 N_("Toggle between left and right handed"), core::CV_NOPERSIST);
 	core::registerVar(voxformatQBSaveLeftHanded);

@@ -124,10 +124,14 @@ void AbstractFormatTest::testTransform(scenegraph::SceneGraph &sceneGraph, const
 	EXPECT_EQ(node->region().getUpperCorner(), glm::ivec3(39, 29, 39));
 	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(0, 0, 0).getMaterial())) << *node->volume();
 	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(0, 20, 0).getMaterial())) << *node->volume();
-	const scenegraph::SceneGraphTransform &transform = node->transform();
-	EXPECT_EQ(23.0f, transform.worldTranslation().x);
-	EXPECT_EQ(-2.0f, transform.worldTranslation().y);
-	EXPECT_EQ(23.0f, transform.worldTranslation().z);
+	sceneGraph.updateTransforms();
+	// World position of the volume's lower corner (works for baked pivot=0 and MagicaVoxel pivot+TRS).
+	const glm::mat4 worldMat = sceneGraph.worldMatrix(*node, 0);
+	const glm::vec3 lowerWorld = glm::vec3(worldMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	// MagicaVoxel floor(M*(p+0.5-pivot)) can leave a half-voxel residual vs continuous node TRS.
+	EXPECT_NEAR(23.0f, lowerWorld.x, 1.0f);
+	EXPECT_NEAR(-2.0f, lowerWorld.y, 1.0f);
+	EXPECT_NEAR(23.0f, lowerWorld.z, 1.0f);
 }
 
 void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &srcFilename,

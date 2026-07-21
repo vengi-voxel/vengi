@@ -413,6 +413,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::VoxFormat::format()) {
 		ImGui::CheckboxVar(cfg::VoxformatVOXAnimAsNodes);
+		ImGui::CheckboxVar(cfg::VoxformatMVApplyTransform);
 	}
 
 	if (*desc == voxelformat::LDrawFormat::format() || *desc == voxelformat::StudioIOFormat::format() || *desc == voxelformat::LXFFormat::format()) {

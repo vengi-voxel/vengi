@@ -1109,28 +1109,33 @@
             uint32_t packed_rotation_bits = atoi(rotation_string);
             uint32_t row0_vec_index = (packed_rotation_bits >> 0) & 3;
             uint32_t row1_vec_index = (packed_rotation_bits >> 2) & 3;
-            uint32_t row2_vec_index = k_row2_index[(1 << row0_vec_index) | (1 << row1_vec_index)];    // process of elimination to determine row 2 index based on row0/row1 being one of {0,1,2} choose 2.
-            ogt_assert(row2_vec_index != UINT32_MAX, "invalid packed rotation bits");
+            // Invalid packs (duplicate/missing axes) used to index k_vectors with UINT32_MAX and crash.
+            if (row0_vec_index > 2 || row1_vec_index > 2 || row0_vec_index == row1_vec_index) {
+                ogt_assert_warn(0, "invalid packed rotation bits - using identity rotation");
+            } else {
+                uint32_t row2_vec_index = k_row2_index[(1 << row0_vec_index) | (1 << row1_vec_index)];    // process of elimination to determine row 2 index based on row0/row1 being one of {0,1,2} choose 2.
+                ogt_assert(row2_vec_index != UINT32_MAX, "invalid packed rotation bits");
 
-            // unpack rotation bits for vector signs
-            //  bits  : meaning
-            //  4     : the sign in the first row  (0 : positive; 1 : negative)
-            //  5     : the sign in the second row (0 : positive; 1 : negative)
-            //  6     : the sign in the third row  (0 : positive; 1 : negative)
-            vec3 row0 = k_vectors[row0_vec_index];
-            vec3 row1 = k_vectors[row1_vec_index];
-            vec3 row2 = k_vectors[row2_vec_index];
-            if (packed_rotation_bits & (1 << 4))
-                row0 = vec3_negate(row0);
-            if (packed_rotation_bits & (1 << 5))
-                row1 = vec3_negate(row1);
-            if (packed_rotation_bits & (1 << 6))
-                row2 = vec3_negate(row2);
+                // unpack rotation bits for vector signs
+                //  bits  : meaning
+                //  4     : the sign in the first row  (0 : positive; 1 : negative)
+                //  5     : the sign in the second row (0 : positive; 1 : negative)
+                //  6     : the sign in the third row  (0 : positive; 1 : negative)
+                vec3 row0 = k_vectors[row0_vec_index];
+                vec3 row1 = k_vectors[row1_vec_index];
+                vec3 row2 = k_vectors[row2_vec_index];
+                if (packed_rotation_bits & (1 << 4))
+                    row0 = vec3_negate(row0);
+                if (packed_rotation_bits & (1 << 5))
+                    row1 = vec3_negate(row1);
+                if (packed_rotation_bits & (1 << 6))
+                    row2 = vec3_negate(row2);
 
-            // magicavoxel stores rows, we need columns, so we do the swizzle here into columns
-            transform.m00 = row0.x; transform.m01 = row1.x; transform.m02 = row2.x;
-            transform.m10 = row0.y; transform.m11 = row1.y; transform.m12 = row2.y;
-            transform.m20 = row0.z; transform.m21 = row1.z; transform.m22 = row2.z;
+                // magicavoxel stores rows, we need columns, so we do the swizzle here into columns
+                transform.m00 = row0.x; transform.m01 = row1.x; transform.m02 = row2.x;
+                transform.m10 = row0.y; transform.m11 = row1.y; transform.m12 = row2.y;
+                transform.m20 = row0.z; transform.m21 = row1.z; transform.m22 = row2.z;
+            }
         }
 
         if (translation_string != NULL) {
@@ -2552,7 +2557,13 @@
         bool row0_negative = _vox_get_vec3_rotation_bits(row0, row0_index);
         bool row1_negative = _vox_get_vec3_rotation_bits(row1, row1_index);
         bool row2_negative = _vox_get_vec3_rotation_bits(row2, row2_index);
-        ogt_assert_warn(((1 << row0_index) | (1 << row1_index) | (1 << row2_index)) == 7, "non orthogonal rows found in transform"); // check that rows are orthogonal. There must be a non-zero entry in column 0, 1 and 2 across these 3 rows.
+        // MagicaVoxel requires a permutation of the three axes. Fall back to identity instead of
+        // writing an unreadable packed rotation (e.g. both row indices 3 -> "_r" = 15).
+        if (row0_index > 2 || row1_index > 2 || row2_index > 2 ||
+            ((1u << row0_index) | (1u << row1_index) | (1u << row2_index)) != 7u) {
+            ogt_assert_warn(0, "non orthogonal rows found in transform");
+            return (0) | (1 << 2); // identity rotation
+        }
         return (row0_index) | (row1_index << 2) | (row0_negative ? 1 << 4 : 0) | (row1_negative ? 1 << 5 : 0) | (row2_negative ? 1 << 6 : 0);
     }
 

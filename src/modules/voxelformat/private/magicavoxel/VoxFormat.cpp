@@ -3,7 +3,6 @@
  */
 
 #include "VoxFormat.h"
-#include "app/Async.h"
 #include "color/ColorUtil.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -14,10 +13,10 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <climits>
 #include <glm/gtc/quaternion.hpp>
 #include "MagicaVoxel.h"
 #include "palette/Palette.h"
@@ -56,22 +55,8 @@ size_t VoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	return palette.colorCount();
 }
 
-bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
-	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
-	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-	const glm::mat4 &ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
-#if MAGICAVOXEL_USE_REFERENCES
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	scenegraph::SceneGraphTransform transform;
-	transform.setWorldMatrix(math::convertCoordinateSystem(math::CoordinateSystem::MagicaVoxel, ogtMat));
-	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
-	if (models[ogtInstance.model_index].nodeId != InvalidNodeId) {
-		type = scenegraph::SceneGraphNodeType::ModelReference;
-	}
-	scenegraph::SceneGraphNode node(type);
-	node.setTransform(keyFrameIdx, transform);
-	// loadKeyFrames(sceneGraph, node, ogtInstance, scene);
+static void applyInstanceMetadata(scenegraph::SceneGraphNode &node, const ogt_vox_scene *scene,
+								  const ogt_vox_instance &ogtInstance) {
 	node.setColor(instanceColor(scene, ogtInstance));
 	if (ogtInstance.layer_index < scene->num_layers) {
 		const ogt_vox_layer &ogtLayer = scene->layers[ogtInstance.layer_index];
@@ -82,24 +67,22 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	node.setProperty("layerId", core::string::toString(ogtInstance.layer_index));
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
-	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-		node.setReference(models[ogtInstance.model_index].nodeId);
-	} else {
-		node.setVolume(models[ogtInstance.model_index].volume);
-		models[ogtInstance.model_index].volume = nullptr;
+}
+
+bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
+							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
+	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
+	if (ogtInstance.model_index >= scene->num_models) {
+		Log::error("Invalid model index %u for instance %u", ogtInstance.model_index, ogt_instanceIdx);
+		return false;
 	}
-	// TODO: VOXELFORMAT: set correct pivot
-	glm::vec3 ogtPivot = ogtVolumePivot(ogtModel);
-	ogtPivot /= (ogtVolumeSize(ogtModel) + 1.0f);
-	node.setPivot({ogtPivot.x, ogtPivot.z, ogtPivot.y});
-	node.setPalette(palette);
-	const int nodeId = sceneGraph.emplace(core::move(node), parent);
-	if (nodeId != InvalidNodeId) {
-		models[ogtInstance.model_index].nodeId = nodeId;
+	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
+	if (ogtModel == nullptr) {
+		Log::warn("Skipping instance %u with null model", ogt_instanceIdx);
 		return true;
 	}
-	return false;
-#else
+
+	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
 	if (animAsNodes && ogtInstance.model_anim.num_keyframes > 0) {
 		const char *name = instanceName(scene, ogtInstance);
@@ -110,6 +93,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 		groupNode.setName(name);
 		groupNode.setVisible(!hidden);
 		groupNode.setColor(color);
+		if (!applyTransform) {
+			loadInstanceKeyFrames(groupNode, ogtInstance, scene);
+		}
 		const int groupId = sceneGraph.emplace(core::move(groupNode), parent);
 		if (groupId == InvalidNodeId) {
 			return false;
@@ -124,135 +110,103 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 			if (frameModel == nullptr) {
 				continue;
 			}
-			const glm::mat4 &frameMat = ogtTransformToMat(ogtInstance, kfModel.frame_index, scene, frameModel);
-			const glm::vec3 fVolSize = ogtVolumeSize(frameModel);
-			const glm::vec3 fCorners[8] = {
-				glm::vec3(0),
-				glm::vec3(fVolSize.x, 0, 0),
-				glm::vec3(0, fVolSize.y, 0),
-				glm::vec3(fVolSize.x, fVolSize.y, 0),
-				glm::vec3(0, 0, fVolSize.z),
-				glm::vec3(fVolSize.x, 0, fVolSize.z),
-				glm::vec3(0, fVolSize.y, fVolSize.z),
-				fVolSize};
-			glm::ivec3 fMins(INT_MAX);
-			glm::ivec3 fMaxs(INT_MIN);
-			for (int c = 0; c < 8; ++c) {
-				const glm::ivec3 ogtCorner = calcTransform(frameMat, fCorners[c]);
-				const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
-				fMins = glm::min(fMins, pos);
-				fMaxs = glm::max(fMaxs, pos);
-			}
-			voxel::Region fRegion(fMins, fMaxs);
-			const glm::ivec3 fShift = fRegion.getLowerCorner();
-			fRegion.shift(-fShift);
-			voxel::RawVolume *fv = new voxel::RawVolume(fRegion);
 
-			auto fn = [frameModel, fv, &palette, frameMat, fShift](int start, int end) {
-				const uint8_t *ogtVoxel = frameModel->voxel_data + start * frameModel->size_x * frameModel->size_y;
-				for (int z = start; z < end; ++z) {
-					for (uint32_t y = 0; y < frameModel->size_y; ++y) {
-						for (uint32_t x = 0; x < frameModel->size_x; ++x, ++ogtVoxel) {
-							if (ogtVoxel[0] == 0) {
-								continue;
-							}
-							const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-							const glm::ivec3 &ogtPos = calcTransform(frameMat, glm::vec3(x, y, z));
-							const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
-							fv->setVoxel(pos - fShift, voxel);
-						}
-					}
+			if (applyTransform) {
+				const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, kfModel.frame_index, scene, frameModel);
+				glm::ivec3 shift(0);
+				voxel::RawVolume *fv = bakeOgtModel(frameModel, bakeMat, palette, shift);
+				cropOnLoad(fv);
+				scenegraph::SceneGraphNode frameNode(scenegraph::SceneGraphNodeType::Model);
+				scenegraph::SceneGraphTransform fTransform;
+				fTransform.setWorldTranslation(glm::vec3(shift));
+				frameNode.setTransform(0, fTransform);
+				frameNode.setPivot(glm::vec3(0.0f));
+				frameNode.setName(core::String::format("%s_frame_%u", name, kfModel.frame_index));
+				frameNode.setVisible(!hidden);
+				frameNode.setColor(color);
+				frameNode.setVolume(fv);
+				frameNode.setPalette(palette);
+				if (sceneGraph.emplace(core::move(frameNode), groupId) == InvalidNodeId) {
+					return false;
 				}
-			};
-			app::for_parallel(0, frameModel->size_z, fn);
-			cropOnLoad(fv);
+				continue;
+			}
 
-			scenegraph::SceneGraphNode frameNode(scenegraph::SceneGraphNodeType::Model);
-			scenegraph::SceneGraphTransform fTransform;
-			fTransform.setWorldTranslation(fShift);
-			frameNode.setTransform(0, fTransform);
+			MVModelToNode &modelEntry = models[kfModel.model_index];
+			scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
+			if (modelEntry.nodeId != InvalidNodeId) {
+				type = scenegraph::SceneGraphNodeType::ModelReference;
+			} else if (modelEntry.volume == nullptr) {
+				continue;
+			}
+			scenegraph::SceneGraphNode frameNode(type);
 			frameNode.setName(core::String::format("%s_frame_%u", name, kfModel.frame_index));
 			frameNode.setVisible(!hidden);
 			frameNode.setColor(color);
-			frameNode.setVolume(fv);
 			frameNode.setPalette(palette);
-			if (sceneGraph.emplace(core::move(frameNode), groupId) == InvalidNodeId) {
+			frameNode.setPivot(ogtNormalizedPivot(frameModel));
+			if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+				frameNode.setReference(modelEntry.nodeId);
+			} else {
+				frameNode.setVolume(modelEntry.volume);
+				modelEntry.volume = nullptr;
+			}
+			const int nodeId = sceneGraph.emplace(core::move(frameNode), groupId);
+			if (nodeId == InvalidNodeId) {
 				return false;
+			}
+			if (type == scenegraph::SceneGraphNodeType::Model) {
+				modelEntry.nodeId = nodeId;
 			}
 		}
 		return true;
 	}
 
-	const glm::vec3 volSize = ogtVolumeSize(ogtModel);
-	const glm::vec3 corners[8] = {
-		glm::vec3(0),
-		glm::vec3(volSize.x, 0, 0),
-		glm::vec3(0, volSize.y, 0),
-		glm::vec3(volSize.x, volSize.y, 0),
-		glm::vec3(0, 0, volSize.z),
-		glm::vec3(volSize.x, 0, volSize.z),
-		glm::vec3(0, volSize.y, volSize.z),
-		volSize
-	};
-	glm::ivec3 mins(INT_MAX);
-	glm::ivec3 maxs(INT_MIN);
-	for (int c = 0; c < 8; ++c) {
-		const glm::ivec3 ogtCorner = calcTransform(ogtMat, corners[c]);
-		const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
-		mins = glm::min(mins, pos);
-		maxs = glm::max(maxs, pos);
+	if (applyTransform) {
+		const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
+		glm::ivec3 shift(0);
+		voxel::RawVolume *v = bakeOgtModel(ogtModel, bakeMat, palette, shift);
+		cropOnLoad(v);
+
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(shift));
+		node.setTransform(0, transform);
+		node.setPivot(glm::vec3(0.0f));
+		applyInstanceMetadata(node, scene, ogtInstance);
+		node.setVolume(v);
+		node.setPalette(palette);
+		return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 	}
-	voxel::Region region(mins, maxs);
-	const glm::ivec3 shift = region.getLowerCorner();
-	region.shift(-shift);
-	voxel::RawVolume *v = new voxel::RawVolume(region);
-	scenegraph::SceneGraphTransform transform;
-	transform.setWorldTranslation(shift);
 
-	auto fn = [ogtModel, v, &palette, ogtMat, shift](int start, int end) {
-		const uint8_t *ogtVoxel = ogtModel->voxel_data + start * ogtModel->size_x * ogtModel->size_y;
-		for (int k = start; k < end; ++k) {
-			for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
-				for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
-					if (ogtVoxel[0] == 0) {
-						continue;
-					}
-					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					const glm::ivec3 &ogtPos = calcTransform(ogtMat, glm::vec3(i, j, k));
-					const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
-					v->setVoxel(pos - shift, voxel);
-				}
-			}
-		}
-	};
-	app::for_parallel(0, ogtModel->size_z, fn);
-
-	cropOnLoad(v);
-
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
-	// TODO: VOXELFORMAT: we are overriding the keyframe data here
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-	node.setColor(instanceColor(scene, ogtInstance));
-	if (ogtInstance.layer_index < scene->num_layers) {
-		const ogt_vox_layer &ogtLayer = scene->layers[ogtInstance.layer_index];
-		if (ogtLayer.name != nullptr) {
-			node.setProperty("layer", ogtLayer.name);
-		}
+	MVModelToNode &modelEntry = models[ogtInstance.model_index];
+	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
+	if (modelEntry.nodeId != InvalidNodeId) {
+		type = scenegraph::SceneGraphNodeType::ModelReference;
+	} else if (modelEntry.volume == nullptr) {
+		Log::warn("No volume for model index %u", ogtInstance.model_index);
+		return true;
 	}
-	node.setProperty("layerId", core::string::toString(ogtInstance.layer_index));
-	node.setName(instanceName(scene, ogtInstance));
-	node.setVisible(!instanceHidden(scene, ogtInstance));
-	node.setVolume(v);
-	// TODO: VOXELFORMAT: use already loaded models and create a model reference if needed
-	// TODO: VOXELFORMAT: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume));
-	// TODO: VOXELFORMAT: set correct pivot
-	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
-	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
+
+	scenegraph::SceneGraphNode node(type);
+	loadInstanceKeyFrames(node, ogtInstance, scene);
+	applyInstanceMetadata(node, scene, ogtInstance);
+	node.setPivot(ogtNormalizedPivot(ogtModel));
 	node.setPalette(palette);
-	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
-#endif
+	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+		node.setReference(modelEntry.nodeId);
+	} else {
+		node.setVolume(modelEntry.volume);
+		modelEntry.volume = nullptr;
+	}
+	const int nodeId = sceneGraph.emplace(core::move(node), parent);
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	if (type == scenegraph::SceneGraphNodeType::Model) {
+		modelEntry.nodeId = nodeId;
+	}
+	return true;
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
@@ -269,12 +223,36 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (layer.name != nullptr) {
 			node.setProperty("layer", layer.name);
 		}
+		node.setProperty("layerId", core::string::toString(layerIdx));
 		const color::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 		node.setColor(color);
 	}
 	node.setName(name);
 	node.setVisible(!hidden);
-	const int groupId = parent == InvalidNodeId ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
+	loadGroupKeyFrames(node, ogt_group.transform_anim);
+
+	int groupId;
+	if (parent == InvalidNodeId) {
+		// MagicaVoxel root group maps onto the existing scenegraph root.
+		groupId = sceneGraph.root().id();
+		scenegraph::SceneGraphNode &root = sceneGraph.node(groupId);
+		if (ogt_group.name != nullptr) {
+			root.setName(name);
+		}
+		root.setVisible(!hidden);
+		root.setColor(node.color());
+		const core::String layerName = node.property("layer");
+		if (!layerName.empty()) {
+			root.setProperty("layer", layerName);
+		}
+		const core::String layerId = node.property("layerId");
+		if (!layerId.empty()) {
+			root.setProperty("layerId", layerId);
+		}
+		loadGroupKeyFrames(root, ogt_group.transform_anim);
+	} else {
+		groupId = sceneGraph.emplace(core::move(node), parent);
+	}
 	if (groupId == InvalidNodeId) {
 		Log::error("Failed to add group node to the scene graph");
 		return false;
@@ -309,11 +287,12 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 }
 
 bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+								  const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
-		return 0;
+		return false;
 	}
 	const size_t size = stream->size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
@@ -352,24 +331,19 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
 						  const palette::Palette &palette) {
-	// When MAGICAVOXEL_USE_REFERENCES is disabled, loadInstance() reads voxel data
-	// directly from ogt_vox_model and creates its own volumes. The volumes created
-	// by loadModels() are only needed as a fallback when num_instances == 0.
-	// Skipping loadModels() for scenes with instances avoids duplicating all volumes.
-#if MAGICAVOXEL_USE_REFERENCES
-	core::DynamicArray<MVModelToNode> models = loadModels(scene, palette);
-#else
+	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	core::DynamicArray<MVModelToNode> models;
-	if (scene->num_instances == 0) {
+	// Shared model volumes are only needed when transforms stay on nodes (references).
+	// Bake path reads voxels from ogt models per instance. Still load when there are no
+	// instances so orphan models can be imported.
+	if (!applyTransform || scene->num_instances == 0) {
 		models = loadModels(scene, palette);
 	} else {
 		models.resize(scene->num_models);
 	}
-#endif
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
-		// find the main group nodes
 		if (group.parent_group_index != k_invalid_group_index) {
 			continue;
 		}
@@ -377,20 +351,21 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette)) {
 			return false;
 		}
-		break;
 	}
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
 		if (addedInstances.has(n)) {
 			continue;
 		}
-		Log::warn("Instance %i is not part of a group", n);
-		// TODO: VOXELFORMAT: the parent is wrong
+		Log::debug("Instance %u is not part of a group - attaching under root", n);
 		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
 			return false;
 		}
 	}
 	if (scene->num_instances == 0 && scene->num_models > 0) {
 		for (MVModelToNode &m : models) {
+			if (m.volume == nullptr) {
+				continue;
+			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(m.volume);
 			node.setPalette(palette);
@@ -406,59 +381,43 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 
 void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx) {
-	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
 	ctx.nodeToModel.put(node.id(), modelIdx);
-	{
-		ogt_vox_instance ogt_instance;
-		core_memset(&ogt_instance, 0, sizeof(ogt_instance));
-		ogt_instance.group_index = parentGroupIdx;
-		ogt_instance.model_index = modelIdx;
-		ogt_instance.layer_index = layerIdx;
-		ogt_instance.name = node.name().c_str();
-		ogt_instance.hidden = !node.visible();
-		ogt_instance.transform_anim.num_keyframes = (uint32_t)keyFrames.size();
-		// set this to the start pointer of the ctx.keyframeTransforms array - the array is filled below
-		ogt_instance.transform_anim.keyframes =
-			ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
-		ctx.instances.push_back(ogt_instance);
-	}
+	ogt_vox_instance ogt_instance;
+	core_memset(&ogt_instance, 0, sizeof(ogt_instance));
+	ogt_instance.group_index = parentGroupIdx;
+	ogt_instance.model_index = modelIdx;
+	ogt_instance.layer_index = layerIdx;
+	ogt_instance.name = node.name().c_str();
+	ogt_instance.hidden = !node.visible();
+	uint32_t numKeyframes = 0;
+	ogt_instance.transform_anim.keyframes = saveKeyFrames(sceneGraph, node, ctx, numKeyframes);
+	ogt_instance.transform_anim.num_keyframes = numKeyframes;
+	ctx.instances.push_back(ogt_instance);
+}
 
+uint32_t VoxFormat::saveModel(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+							  MVSceneContext &ctx) {
 	const voxel::Region region = sceneGraph.resolveRegion(node);
-	const glm::vec3 width(region.getDimensionsInVoxels());
-	const glm::vec3 mins(region.getLowerCornerf());
-	for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-		ogt_vox_keyframe_transform ogt_keyframe;
-		core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
-		ogt_keyframe.frame_index = kf.frameIdx;
-		ogt_keyframe.transform = ogt_identity_transform;
-		// y and z are flipped here
-		// Account for pivot: the worldTranslation is relative to the pivot point within the volume,
-		// but VOX expects the transform to point to the center of the model.
-		// pivot * width gives the offset from lower corner to the origin, so we subtract it
-		// and add width/2 to get to the center.
-		const glm::vec3 kftransform = mins + kf.transform().worldTranslation() - node.pivot() * width + width / 2.0f;
-		ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
-		ogt_keyframe.transform.m31 = kftransform.z;
-		ogt_keyframe.transform.m32 = kftransform.y;
-		checkRotation(ogt_keyframe.transform);
-		// TODO: VOXELFORMAT: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
-		ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
-	}
+	ogt_vox_model ogt_model;
+	core_memset(&ogt_model, 0, sizeof(ogt_model));
+	ogt_model.size_x = region.getWidthInVoxels();
+	ogt_model.size_y = region.getDepthInVoxels();
+	ogt_model.size_z = region.getHeightInVoxels();
+	const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
+	uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
+	ogt_model.voxel_data = dataptr;
+	auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
+	voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+	ctx.models.push_back(ogt_model);
+	return (uint32_t)(ctx.models.size() - 1);
 }
 
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.isRootNode() || node.isGroupNode()) {
-		if (node.isRootNode()) {
-			Log::debug("Add root node");
-		} else {
-			Log::debug("Add group node");
-		}
-
 		const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
 		if (animAsNodes && node.isGroupNode() && !node.children().empty()) {
-			// check if all children are model nodes - if so, save as model_anim
 			bool allModels = true;
 			for (int childId : node.children()) {
 				if (!sceneGraph.node(childId).isModelNode()) {
@@ -467,30 +426,18 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				}
 			}
 			if (allModels) {
-				const int modelKeyFrameStart = ctx.modelKeyFrameIdx;
+				const uint32_t modelKeyFrameStart = (uint32_t)ctx.keyframeModels.size();
 				uint32_t firstModelIdx = 0;
+				bool first = true;
 				for (int childId : node.children()) {
 					scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-					const voxel::Region region = child.region();
-					ogt_vox_model ogt_model;
-					core_memset(&ogt_model, 0, sizeof(ogt_model));
-					ogt_model.size_x = region.getWidthInVoxels();
-					ogt_model.size_y = region.getDepthInVoxels();
-					ogt_model.size_z = region.getHeightInVoxels();
-					const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
-					uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
-					ogt_model.voxel_data = dataptr;
-					auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
-					voxelutil::visitVolume(*sceneGraph.resolveVolume(child), func, voxelutil::VisitAll(),
-										   voxelutil::VisitorOrder::YZmX);
-					ctx.models.push_back(ogt_model);
-					const uint32_t modelIdx = (uint32_t)(ctx.models.size() - 1);
-					if (ctx.modelKeyFrameIdx == modelKeyFrameStart) {
+					const uint32_t modelIdx = saveModel(sceneGraph, child, ctx);
+					if (first) {
 						firstModelIdx = modelIdx;
+						first = false;
 					}
 
-					// extract frame index from name pattern "<name>_frame_<N>"
-					uint32_t frameIndex = (uint32_t)(ctx.modelKeyFrameIdx - modelKeyFrameStart);
+					uint32_t frameIndex = (uint32_t)(ctx.keyframeModels.size() - modelKeyFrameStart);
 					const core::String &childName = child.name();
 					const size_t framePos = childName.rfind("_frame_");
 					if (framePos != core::String::npos) {
@@ -500,12 +447,11 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 					ogt_vox_keyframe_model kfModel;
 					kfModel.model_index = modelIdx;
 					kfModel.frame_index = frameIndex;
-					ctx.keyframeModels[ctx.modelKeyFrameIdx++] = kfModel;
+					ctx.keyframeModels.push_back(kfModel);
 				}
 
-				const uint32_t numModelKeyframes = (uint32_t)(ctx.modelKeyFrameIdx - modelKeyFrameStart);
+				const uint32_t numModelKeyframes = (uint32_t)(ctx.keyframeModels.size() - modelKeyFrameStart);
 
-				// create a single instance with model_anim
 				ogt_vox_instance ogt_instance;
 				core_memset(&ogt_instance, 0, sizeof(ogt_instance));
 				ogt_instance.group_index = parentGroupIdx;
@@ -516,25 +462,17 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				ogt_instance.model_anim.num_keyframes = numModelKeyframes;
 				ogt_instance.model_anim.keyframes = &ctx.keyframeModels[modelKeyFrameStart];
 
-				// add a single transform keyframe
-				ogt_instance.transform_anim.num_keyframes = 1;
-				ogt_instance.transform_anim.keyframes = &ctx.keyframeTransforms[ctx.transformKeyFrameIdx];
-				ogt_vox_keyframe_transform ogt_keyframe;
-				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
-				ogt_keyframe.frame_index = 0;
-				ogt_keyframe.transform = ogt_identity_transform;
-				checkRotation(ogt_keyframe.transform);
-				ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
-
+				uint32_t numKeyframes = 0;
+				ogt_instance.transform_anim.keyframes = saveKeyFrames(sceneGraph, node, ctx, numKeyframes);
+				ogt_instance.transform_anim.num_keyframes = numKeyframes;
 				ctx.instances.push_back(ogt_instance);
 				return;
 			}
 		}
 
 		const bool addLayers = core::getVar(cfg::VoxformatVOXCreateLayers)->boolVal();
+		uint32_t ownLayerId = layerIdx;
 		if (node.isRootNode() || addLayers) {
-			// TODO: VOXELFORMAT: only add the layer if there are models in this group?
-			// https://github.com/vengi-voxel/vengi/issues/186
 			ogt_vox_layer ogt_layer;
 			core_memset(&ogt_layer, 0, sizeof(ogt_layer));
 			ogt_layer.name = node.name().c_str();
@@ -545,9 +483,16 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_layer.color.b = layerRGBA.b;
 			ogt_layer.color.a = layerRGBA.a;
 			ctx.layers.push_back(ogt_layer);
+			ownLayerId = (uint32_t)(ctx.layers.size() - 1);
+		} else {
+			const core::String layerIdProp = node.property("layerId");
+			if (!layerIdProp.empty()) {
+				ownLayerId = (uint32_t)core::string::toInt(layerIdProp);
+			}
 		}
-		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
+
 		const bool addGroups = core::getVar(cfg::VoxformatVOXCreateGroups)->boolVal();
+		uint32_t ownGroupId = parentGroupIdx;
 		if (node.isRootNode() || addGroups) {
 			ogt_vox_group ogt_group;
 			core_memset(&ogt_group, 0, sizeof(ogt_group));
@@ -555,11 +500,15 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_group.name = node.name().c_str();
 			ogt_group.layer_index = ownLayerId;
 			ogt_group.parent_group_index = parentGroupIdx;
+			// Groups stay identity on load (instance transforms are globals). Writing a converted
+			// identity through vengiMatToOgt injects a bogus translation and breaks round-trips.
 			ogt_group.transform = ogt_identity_transform;
+			ogt_group.transform_anim.num_keyframes = 0;
+			ogt_group.transform_anim.keyframes = nullptr;
 			checkRotation(ogt_group.transform);
 			ctx.groups.push_back(ogt_group);
+			ownGroupId = (uint32_t)(ctx.groups.size() - 1);
 		}
-		const uint32_t ownGroupId = (int)ctx.groups.size() - 1;
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId);
 		}
@@ -582,7 +531,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
 			ogt_cam.radius = (int)camera.farPlane();
 			ogt_cam.fov = camera.fieldOfView();
-			ogt_cam.frustum = camera.propertyf(scenegraph::PropCamFrustum); // TODO: VOXELFORMAT:
+			ogt_cam.frustum = camera.propertyf(scenegraph::PropCamFrustum);
 			ctx.cameras.push_back(ogt_cam);
 		}
 		for (int childId : node.children()) {
@@ -590,24 +539,8 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		}
 	} else if (node.isModelNode()) {
 		Log::debug("Add model node");
-		const voxel::Region region = node.region();
-		{
-			ogt_vox_model ogt_model;
-			core_memset(&ogt_model, 0, sizeof(ogt_model));
-			// flip y and z here
-			ogt_model.size_x = region.getWidthInVoxels();
-			ogt_model.size_y = region.getDepthInVoxels();
-			ogt_model.size_z = region.getHeightInVoxels();
-			const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
-			uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
-			ogt_model.voxel_data = dataptr;
-			auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
-			voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(),
-								   voxelutil::VisitorOrder::YZmX);
-
-			ctx.models.push_back(ogt_model);
-		}
-		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, (uint32_t)(ctx.models.size() - 1));
+		const uint32_t modelIdx = saveModel(sceneGraph, node, ctx);
+		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, modelIdx);
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
@@ -634,6 +567,25 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	MVSceneContext ctx;
+	// Instances/groups keep pointers into these buffers - reserve so push_back never reallocates.
+	size_t transformKeyFrames = 0;
+	size_t modelKeyFrames = 0;
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		transformKeyFrames += node.keyFrames(sceneGraph.activeAnimation()).size();
+		if (node.isModelNode()) {
+			++modelKeyFrames;
+		}
+	}
+	ctx.keyframeTransforms.reserve(transformKeyFrames + 1);
+	ctx.keyframeModels.reserve(modelKeyFrames + 1);
+	ctx.instances.reserve(sceneGraph.nodes().size());
+	ctx.groups.reserve(sceneGraph.nodes().size());
+	ctx.models.reserve(modelKeyFrames + 1);
+
+	// worldMatrix() is required for flattened instance transforms on save.
+	const_cast<scenegraph::SceneGraph &>(sceneGraph).updateTransforms();
+
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
 
@@ -785,6 +737,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	if (stream->write(buffer, buffersize) == -1) {
 		Log::error("Failed to write to the stream");
+		ogt_vox_free(buffer);
 		return false;
 	}
 	ogt_vox_free(buffer);

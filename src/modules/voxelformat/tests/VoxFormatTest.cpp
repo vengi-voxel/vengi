@@ -3,22 +3,33 @@
  */
 
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/magicavoxel/MagicaVoxel.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
+#include "util/VarUtil.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelutil/VoxelUtil.h"
 #include "vox_glasses.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
 class VoxFormatTest : public AbstractFormatTest {};
 
-// TODO: VOXELFORMAT: add a test to check the group handling scene graph layout in general.
+static voxel::ValidateFlags voxIgnoreFlags() {
+	// MagicaVoxel pivot is floor(size/2). Transform round-trip can differ by up to one voxel from
+	// floor(M*(p+0.5)) vs continuous node TRS; skip full animation/matrix equality.
+	return voxel::ValidateFlags::All &
+		   ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Translation | voxel::ValidateFlags::Animations);
+}
 
 TEST_F(VoxFormatTest, testTransform) {
 	testTransform("test-transform.vox");
@@ -67,6 +78,16 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 	}
 }
 
+static void compareWorldVolume(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+							   const voxel::RawVolume &golden, float maxDelta) {
+	sceneGraph.updateTransforms();
+	const glm::mat4 worldMat = sceneGraph.worldMatrix(node, 0);
+	core::ScopedPtr<voxel::RawVolume> worldVolume(
+		voxelutil::applyTransformToVolume(*sceneGraph.resolveVolume(node), worldMat, node.pivot()));
+	ASSERT_NE(nullptr, (voxel::RawVolume *)worldVolume);
+	volumeComparator(golden, voxel::getPalette(), *worldVolume, node.palette(), voxel::ValidateFlags::Color, maxDelta);
+}
+
 // only compile these tests in debug mode as they are quite big and lto is not a fan of that in terms of run times
 #ifdef DEBUG
 #include "vox_character.h"
@@ -77,14 +98,13 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 		character_8::create(),	character_9::create(),	character_10::create(), character_11::create(),
 		character_12::create(), character_13::create(), character_14::create(), character_15::create()};
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "vox_character.vox", lengthof(volumes));
-	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	auto iter = sceneGraph.beginModel();
+	io::FileDescription fileDesc;
+	fileDesc.set("vox_character.vox");
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, helper_filesystemarchive(), sceneGraph, testLoadCtx));
+	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels);
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
-		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *(*iter).volume();
-		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.01f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
+		compareWorldVolume(sceneGraph, *iter, *volumes[i].get(), 0.01f);
 	}
 }
 
@@ -111,14 +131,13 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 		eightontop_68::create(), eightontop_69::create(), eightontop_70::create(), eightontop_71::create(),
 	};
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "8ontop.vox", lengthof(volumes));
-	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	auto iter = sceneGraph.beginModel();
+	io::FileDescription fileDesc;
+	fileDesc.set("8ontop.vox");
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, helper_filesystemarchive(), sceneGraph, testLoadCtx));
+	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels);
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
-		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *(*iter).volume();
-		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.02f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
+		compareWorldVolume(sceneGraph, *iter, *volumes[i].get(), 0.02f);
 	}
 }
 #endif
@@ -127,13 +146,10 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "vox_glasses.vox", lengthof(volumes));
-	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	auto iter = sceneGraph.beginModel();
+	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels);
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
-		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *(*iter).volume();
-		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.011f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
+		compareWorldVolume(sceneGraph, *iter, *volumes[i].get(), 0.011f);
 	}
 }
 
@@ -151,14 +167,14 @@ TEST_F(VoxFormatTest, testLoadRGBSmallSaveLoad) {
 
 TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 	VoxFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::SceneGraphModelsParent);
+	const voxel::ValidateFlags flags =
+		voxIgnoreFlags() & ~(voxel::ValidateFlags::SceneGraphModelsParent);
 	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f, 0, 1, flags);
 }
 
 TEST_F(VoxFormatTest, testSaveMultipleModels) {
 	VoxFormat f;
-	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f,
-						   voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
+	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f, voxIgnoreFlags() & ~voxel::ValidateFlags::Palette);
 }
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {
@@ -186,7 +202,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	testConvert("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxel::ValidateFlags::All);
+	testConvert("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxIgnoreFlags());
 }
 
 TEST_F(VoxFormatTest, testAnimAsNodes) {
@@ -197,7 +213,6 @@ TEST_F(VoxFormatTest, testAnimAsNodes) {
 }
 
 TEST_F(VoxFormatTest, testAnimAsNodesSaveLoad) {
-	// Build a scene graph with a group containing model children (anim frame pattern)
 	scenegraph::SceneGraph saveGraph;
 	{
 		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
@@ -221,24 +236,72 @@ TEST_F(VoxFormatTest, testAnimAsNodesSaveLoad) {
 
 	scenegraph::SceneGraph loadGraph;
 	testLoad(loadGraph, filename, 3);
-	// When loaded with anim-as-nodes, the single instance with 3 model_anim keyframes
-	// should produce a group with 3 model children
 	EXPECT_EQ(3u, loadGraph.size(scenegraph::SceneGraphNodeType::AllModels));
 	core::getVar(cfg::VoxformatVOXAnimAsNodes)->setVal("false");
 }
 
+TEST_F(VoxFormatTest, testReferencesShareVolume) {
+	util::ScopedVarChange apply(cfg::VoxformatMVApplyTransform, "false");
+	scenegraph::SceneGraph sceneGraph;
+	io::FileDescription fileDesc;
+	fileDesc.set("test-transform.vox");
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, helper_filesystemarchive(), sceneGraph, testLoadCtx));
+	int models = 0;
+	int refs = 0;
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		if (node.isReferenceNode()) {
+			++refs;
+			EXPECT_NE(InvalidNodeId, node.reference());
+			EXPECT_NE(nullptr, sceneGraph.resolveVolume(node));
+		} else if (node.isModelNode()) {
+			++models;
+			EXPECT_NE(nullptr, node.volume());
+		}
+	}
+	EXPECT_GT(models, 0);
+	EXPECT_GT(refs, 0);
+	EXPECT_EQ(20u, sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	EXPECT_EQ((size_t)models, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
+}
+
+TEST_F(VoxFormatTest, testApplyTransformBakesVoxels) {
+	util::ScopedVarChange apply(cfg::VoxformatMVApplyTransform, "true");
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "test-transform.vox", 20u);
+
+	int refs = 0;
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+		if ((*iter).isReferenceNode()) {
+			++refs;
+		}
+	}
+	EXPECT_EQ(0, refs);
+
+	scenegraph::SceneGraphNode *node = nullptr;
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Model); iter != sceneGraph.end(); ++iter) {
+		if ((*iter).name() == "original") {
+			node = &(*iter);
+			break;
+		}
+	}
+	ASSERT_NE(nullptr, node);
+	ASSERT_NE(nullptr, node->volume());
+	EXPECT_EQ(glm::ivec3(0), node->region().getLowerCorner());
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(node->pivot(), glm::vec3(0.0f), 0.001f)));
+	const scenegraph::SceneGraphTransform &transform = node->transform(0);
+	EXPECT_NEAR(23.0f, transform.worldTranslation().x, 0.01f);
+	EXPECT_NEAR(-2.0f, transform.worldTranslation().y, 0.01f);
+	EXPECT_NEAR(23.0f, transform.worldTranslation().z, 0.01f);
+	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(0, 20, 0).getMaterial())) << *node->volume();
+}
+
 TEST_F(VoxFormatTest, testPaletteRemapPreservesSemiTransparentColors) {
-	// Regression test: palettesRemap shift loop reads from index (uint8_t)-1 == 255
-	// when emptyIndex is 0, corrupting slot 0. This can cause semi-transparent colors
-	// to be lost during the closest-match remap on subsequent save/load cycles.
 	VoxFormat f;
 	palette::Palette pal;
-	// Fill all 255 slots with colors that have alpha > 0 at index 0
-	// so the shift path is triggered
 	for (int i = 0; i < 255; ++i) {
 		pal.setColor(i, color::RGBA((uint8_t)(i + 1), (uint8_t)(i * 2), (uint8_t)(i + 50), 255));
 	}
-	// Put a semi-transparent color at index 189 (the one that fails in practice)
 	const color::RGBA semiTransparent(0x2e, 0x5c, 0x6e, 0x7e);
 	pal.setColor(189, semiTransparent);
 
@@ -260,12 +323,11 @@ TEST_F(VoxFormatTest, testPaletteRemapPreservesSemiTransparentColors) {
 	ASSERT_TRUE(f.load(filename, archive, loadGraph, testLoadCtx));
 
 	const palette::Palette &loadedPal = loadGraph.firstPalette();
-	// The semi-transparent color must be present in the loaded palette
 	bool found = false;
 	for (int i = 0; i < loadedPal.colorCount(); ++i) {
 		const color::RGBA c = loadedPal.color(i);
-		if (c.r == semiTransparent.r && c.g == semiTransparent.g &&
-			c.b == semiTransparent.b && c.a == semiTransparent.a) {
+		if (c.r == semiTransparent.r && c.g == semiTransparent.g && c.b == semiTransparent.b &&
+			c.a == semiTransparent.a) {
 			found = true;
 			break;
 		}
@@ -274,4 +336,30 @@ TEST_F(VoxFormatTest, testPaletteRemapPreservesSemiTransparentColors) {
 					   << " was lost during VOX save/load palette remap";
 }
 
-} // namespace voxel
+TEST_F(VoxFormatTest, testOgtPivotConversion) {
+	// MagicaVoxel size 40x40x30 -> vengi region 40x30x40, pivot floor(size/2) with X flip.
+	const glm::vec3 pivot = ogtNormalizedPivot(40, 40, 30);
+	EXPECT_NEAR(19.0f / 40.0f, pivot.x, 0.0001f);
+	EXPECT_NEAR(15.0f / 30.0f, pivot.y, 0.0001f);
+	EXPECT_NEAR(20.0f / 40.0f, pivot.z, 0.0001f);
+}
+
+TEST_F(VoxFormatTest, testMatToOgtSnapsNonCardinalRotation) {
+	// 45-degree bases used to snap two columns onto the same axis and produce invalid _r packs.
+	const glm::quat q(glm::radians(glm::vec3(45.0f, 0.0f, 0.0f)));
+	const glm::mat4 mat = glm::mat4_cast(q);
+	const ogt_vox_transform t = matToOgt(mat);
+	checkRotation(t);
+	EXPECT_NE(glm::ivec3((int)t.m00, (int)t.m10, (int)t.m20), glm::ivec3(0));
+	EXPECT_NE(glm::ivec3((int)t.m01, (int)t.m11, (int)t.m21), glm::ivec3(0));
+	EXPECT_NE(glm::ivec3((int)t.m02, (int)t.m12, (int)t.m22), glm::ivec3(0));
+	// Columns must be distinct axes.
+	const int ax = (t.m00 != 0.0f) ? 0 : ((t.m01 != 0.0f) ? 1 : 2);
+	const int ay = (t.m10 != 0.0f) ? 0 : ((t.m11 != 0.0f) ? 1 : 2);
+	const int az = (t.m20 != 0.0f) ? 0 : ((t.m21 != 0.0f) ? 1 : 2);
+	EXPECT_NE(ax, ay);
+	EXPECT_NE(ax, az);
+	EXPECT_NE(ay, az);
+}
+
+} // namespace voxelformat
