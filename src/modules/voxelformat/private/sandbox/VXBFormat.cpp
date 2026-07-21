@@ -41,7 +41,7 @@ namespace voxelformat {
 namespace priv {
 static const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
-// TODO: VOXELFORMAT: document why this right/left flip is needed
+// VXB stores right before left in its face enumeration; swap when saving to match that order.
 static const voxel::FaceNames faceNamesSave[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
 
