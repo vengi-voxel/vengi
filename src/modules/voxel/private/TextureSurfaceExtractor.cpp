@@ -300,11 +300,33 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		return;
 	}
 
-	// Batch pack all rectangles at once for better packing quality
-	core::Buffer<stbrp_node> nodes(texSize);
-	stbrp_context stbCtx;
-	stbrp_init_target(&stbCtx, texSize, texSize, nodes.data(), texSize);
-	stbrp_pack_rects(&stbCtx, packRects.data(), (int)packRects.size());
+	// Batch pack all rectangles; grow the atlas if packing fails (padding makes the
+	// surface-area estimate optimistic and can leave many quads unpacked).
+	int unpacked = 0;
+	for (;;) {
+		core::Buffer<stbrp_node> nodes(texSize);
+		stbrp_context stbCtx;
+		stbrp_init_target(&stbCtx, texSize, texSize, nodes.data(), texSize);
+		// Reset packing state - stbrp_pack_rects overwrites x/y/was_packed
+		for (size_t i = 0; i < packRects.size(); ++i) {
+			packRects[i].was_packed = 0;
+			packRects[i].x = 0;
+			packRects[i].y = 0;
+		}
+		stbrp_pack_rects(&stbCtx, packRects.data(), (int)packRects.size());
+
+		unpacked = 0;
+		for (size_t i = 0; i < packRects.size(); ++i) {
+			if (!packRects[i].was_packed) {
+				++unpacked;
+			}
+		}
+		if (unpacked == 0 || texSize >= 4096) {
+			break;
+		}
+		texSize *= 2;
+		Log::debug("Texture atlas pack incomplete (%i unpacked) - retrying at %i", unpacked, texSize);
+	}
 
 	// Determine final texture bounds
 	int boundX = 0, boundY = 0;
@@ -350,12 +372,13 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	indices.reserve(quadCount * 6);
 	normals.reserve(quadCount * 4);
 
+	int stillUnpacked = 0;
 	for (size_t i = 0; i < quadCount; ++i) {
 		const stbrp_rect &r = packRects[i];
 		const PendingQuad &q = quads[i];
 
 		if (!r.was_packed) {
-			Log::warn("Texture atlas full!");
+			++stillUnpacked;
 			continue;
 		}
 
@@ -428,6 +451,10 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		normals.emplace_back(q.normal);
 		normals.emplace_back(q.normal);
 		normals.emplace_back(q.normal);
+	}
+	if (stillUnpacked > 0) {
+		Log::warn("Texture atlas full: dropped %i of %i quads (atlas %ix%i)", stillUnpacked, (int)quadCount,
+				  ctx.textureWidth, ctx.textureHeight);
 	}
 }
 
