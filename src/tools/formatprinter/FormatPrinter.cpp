@@ -746,7 +746,27 @@ void FormatPrinter::printMimeInfo() {
 			if (useString) {
 				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"");
 				for (int i = 0; i < e.size(); ++i) {
-					Log::printf("%c", (char)e.data.u8[i]);
+					const char c = (char)e.data.u8[i];
+					switch (c) {
+					case '&':
+						Log::printf("&amp;");
+						break;
+					case '<':
+						Log::printf("&lt;");
+						break;
+					case '>':
+						Log::printf("&gt;");
+						break;
+					case '"':
+						Log::printf("&quot;");
+						break;
+					case '\'':
+						Log::printf("&apos;");
+						break;
+					default:
+						Log::printf("%c", c);
+						break;
+					}
 				}
 				Log::printf("\"/>\n");
 			} else {
