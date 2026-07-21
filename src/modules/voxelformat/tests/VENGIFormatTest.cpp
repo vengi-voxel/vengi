@@ -208,4 +208,46 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 	EXPECT_FLOAT_EQ(0.75f, loadedIK->swingLimits[0].radius);
 }
 
+TEST_F(VENGIFormatTest, testSaveLoadBoneIndices) {
+	VENGIFormat f;
+	palette::Palette pal;
+	pal.magicaVoxel();
+	const voxel::Region &region = voxel::Region::fromSize(2);
+	voxel::RawVolume original(region);
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 1, 0u, 0u, 3u)));
+	ASSERT_TRUE(original.setVoxel(1, 0, 0, voxel::createVoxel(pal, 2, 0u, 0u, 7u)));
+	ASSERT_TRUE(original.setVoxel(0, 1, 0, voxel::createVoxel(pal, 3, 0u, 0u, 255u)));
+
+	scenegraph::SceneGraph sceneGraphSave;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&original);
+		node.setPalette(pal);
+		node.setName("bones");
+		ASSERT_NE(InvalidNodeId, sceneGraphSave.emplace(core::move(node)));
+	}
+
+	const io::ArchivePtr &archive = helper_archive();
+	ASSERT_TRUE(f.saveGroups(sceneGraphSave, "testBones.vengi", archive, testSaveCtx));
+
+	scenegraph::SceneGraph sceneGraphLoad;
+	ASSERT_TRUE(f.loadGroups("testBones.vengi", archive, sceneGraphLoad, testLoadCtx));
+	const scenegraph::SceneGraphNode *loaded = sceneGraphLoad.firstModelNode();
+	ASSERT_NE(nullptr, loaded);
+	const voxel::RawVolume *loadedVolume = loaded->volume();
+	ASSERT_NE(nullptr, loadedVolume);
+
+	const voxel::Voxel &v0 = loadedVolume->voxel(0, 0, 0);
+	EXPECT_EQ(1u, v0.getColor());
+	EXPECT_EQ(3u, v0.getBoneIdx());
+
+	const voxel::Voxel &v1 = loadedVolume->voxel(1, 0, 0);
+	EXPECT_EQ(2u, v1.getColor());
+	EXPECT_EQ(7u, v1.getBoneIdx());
+
+	const voxel::Voxel &v2 = loadedVolume->voxel(0, 1, 0);
+	EXPECT_EQ(3u, v2.getColor());
+	EXPECT_EQ(255u, v2.getBoneIdx());
+}
+
 } // namespace voxelformat

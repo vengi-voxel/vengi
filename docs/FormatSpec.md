@@ -12,7 +12,7 @@ A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
 2. **Zip data**: zlib header (0x78, 0xDA)
-    * **Version**: A 4-byte version number. The current supported version is `7`.
+    * **Version**: A 4-byte version number. The current supported version is `8`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
 ## Node Structure
@@ -96,6 +96,7 @@ Voxel data is stored in the `DATA` chunk.
     * **Air**: 1-byte boolean (true if air, false if solid)
     * **Color**: 1-byte unsigned integer (only if not air) (Color palette index)
     * **Normal**: 1-byte unsigned integer (only if not air) (Normal palette index)
+    * **Bone Index**: 1-byte unsigned integer (only if not air, since version 8)
 
 The voxel data is stored like this:
 

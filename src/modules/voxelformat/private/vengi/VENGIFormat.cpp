@@ -103,7 +103,8 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 		replacement = node.palette().findReplacement(replaceIndex);
 		Log::debug("Looking for a similar color in the palette: %d", replacement);
 	}
-	const int64_t bufSize = region.getHeightInVoxels() * region.getDepthInVoxels() * sizeof(uint8_t) * 3;
+	// solid voxel: color + normal + bone index
+	const int64_t bufSize = region.getHeightInVoxels() * region.getDepthInVoxels() * sizeof(uint8_t) * 4;
 	core::DynamicArray<io::BufferedReadWriteStream> streamBuffers;
 	streamBuffers.reserve(region.getWidthInVoxels());
 	for (int n = 0; n < region.getWidthInVoxels(); ++n) {
@@ -120,8 +121,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 				streamBuf.writeUInt8(voxel.getColor());
 			}
 			streamBuf.writeUInt8(voxel.getNormal());
-			// TODO: bone indices are not supported yet
-			// streamBuf.writeUInt8(voxel.getBoneIdx());
+			streamBuf.writeUInt8(voxel.getBoneIdx());
 		}
 	};
 	voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
@@ -330,7 +330,11 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 					Data data;
 					data.normal = NO_NORMAL;
 					stream.readUInt16(data.data);
-					sampler3.setVoxel(voxel::createVoxel(palette, data.color, data.normal));
+					uint8_t boneIdx = 0;
+					if (version >= 8u) {
+						wrap(stream.readUInt8(boneIdx))
+					}
+					sampler3.setVoxel(voxel::createVoxel(palette, data.color, data.normal, 0u, boneIdx));
 					sampler3.movePositiveZ();
 				}
 				sampler2.movePositiveY();
@@ -625,7 +629,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(7))
+	wrapBool(zipStream.writeUInt32(8))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -648,7 +652,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 7) {
+	if (version > 8) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
