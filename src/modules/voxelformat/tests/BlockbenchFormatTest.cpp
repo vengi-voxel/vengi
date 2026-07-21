@@ -3,14 +3,19 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/Unicode.h"
+#include "core/collection/Buffer.h"
+#include "io/BufferedReadWriteStream.h"
 #include "palette/Palette.h"
-#include "voxelformat/private/mesh/BlockbenchFormat.h"
-#include "voxelformat/tests/TestHelper.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/private/mesh/BlockbenchFormat.h"
+#include "voxelformat/private/mesh/LZUTF8.h"
+#include "voxelformat/tests/TestHelper.h"
+#include <SDL3/SDL_stdinc.h>
 
 namespace voxelformat {
 
@@ -94,6 +99,40 @@ protected:
 	}
 };
 
+TEST_F(BlockbenchFormatTest, testLZUTF8RoundTrip) {
+	const char *json =
+		"{\"meta\":{\"format_version\":\"5.0\",\"model_format\":\"free\"},\"elements\":[],\"outliner\":[],\"textures\":[]}";
+	const size_t len = SDL_strlen(json);
+	core::Buffer<uint16_t> encoded;
+	ASSERT_TRUE(lzutf8::encodeStorageBinaryString((const uint8_t *)json, len, encoded));
+	core::Buffer<uint8_t> decoded;
+	ASSERT_TRUE(lzutf8::decodeStorageBinaryString(encoded.data(), encoded.size(), decoded));
+	ASSERT_EQ(decoded.size(), len);
+	EXPECT_EQ(core::String((const char *)decoded.data(), decoded.size()), core::String(json));
+
+	core::Buffer<uint8_t> decompressed;
+	ASSERT_TRUE(lzutf8::decompress(decoded.data(), decoded.size(), decompressed));
+	EXPECT_EQ(core::String((const char *)decompressed.data(), decompressed.size()), core::String(json));
+
+	core::String compressedFile = "<lz>";
+	for (size_t i = 0; i < encoded.size(); ++i) {
+		char utf8[8];
+		const int n = core::unicode::toUtf8(encoded[i], utf8, sizeof(utf8));
+		ASSERT_GT(n, 0);
+		compressedFile.append(utf8, n);
+	}
+	const core::String restored = lzutf8::decodeBBModelText(compressedFile);
+	EXPECT_EQ(restored, core::String(json));
+}
+
+TEST_F(BlockbenchFormatTest, testStripJsonComments) {
+	const core::String input = "{\n // comment\n \"a\": 1 /* block */, \"b\": \"keep // inside\"\n}";
+	const core::String stripped = lzutf8::stripJsonComments(input);
+	EXPECT_NE(stripped.find("\"a\""), core::String::npos);
+	EXPECT_EQ(stripped.find("// comment"), core::String::npos);
+	EXPECT_NE(stripped.find("keep // inside"), core::String::npos);
+}
+
 // the model comes from https://github.com/SL0ANE/Loy-s-Goodies/tree/main/models and was licensed under CC0
 // version 4.5 - includes animations and a full scene with a hierarchy of nodes
 TEST_F(BlockbenchFormatTest, testLoad_4_5) {
@@ -147,8 +186,7 @@ TEST_F(BlockbenchFormatTest, testLoadMeshTypes) {
 
 TEST_F(BlockbenchFormatTest, testSaveLoadVoxel) {
 	BlockbenchFormat f;
-	testSaveLoadVoxel("testSaveLoadVoxel.bbmodel", &f, 0, 1,
-					  voxel::ValidateFlags::Region);
+	testSaveLoadVoxel("testSaveLoadVoxel.bbmodel", &f, 0, 1, voxel::ValidateFlags::Region);
 }
 
 TEST_F(BlockbenchFormatTest, testSave) {

@@ -108,6 +108,7 @@ set(SRCS
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
 	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
 	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp
+	private/mesh/LZUTF8.h                    private/mesh/LZUTF8.cpp
 	private/mesh/GodotSceneFormat.h          private/mesh/GodotSceneFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
 	private/mesh/MeshMaterial.h              private/mesh/MeshMaterial.cpp

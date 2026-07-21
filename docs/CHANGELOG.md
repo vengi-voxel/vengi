@@ -16,6 +16,7 @@ General:
    - Added support for `ldr` and `mpd` lego files
    - Improved `fbx` animation support and added write support
    - Improved `bbmodel` support and added animation import as well as write support
+   - Expanded `bbmodel` compatibility (format 5.0 export, `<lz>` compression, migrations, texture UUID refs)
    - Fixed blip/cubzh `3zh` file transform issues
    - Improved StarMade `sment` and `smtpl` support
    - Import magicavoxel `vox` animation frames as single nodes

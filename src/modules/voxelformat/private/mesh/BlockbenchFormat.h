@@ -159,11 +159,13 @@ namespace voxelformat {
  * @par Version Compatibility
  * Notes about older Blockbench format versions and compatibility fixes.
  * @li Pre-3.2: Z-axis rotation was inverted (handled in processCompatibility)
- * @li Pre-4.10: Texture paths had different handling
+ * @li Pre-4.5 + box_uv: element shade=false maps to mirror_uv
+ * @li Pre-4.10: Texture relative_path normalization
  * @li Pre-5.0: Animation data_points used inverted molang expressions for X/Y
+ * @li Format 5.0+: flat groups[] + slim outliner; writer targets format_version 5.0
  *
  * @sa https://www.blockbench.net/wiki/docs/bbmodel
- * @sa https://github.com/JannisX11/blockbench/blob/master/js/io/formats/bbmodel.js
+ * @sa https://github.com/JannisX11/blockbench/blob/master/js/formats/bbmodel.js
  *
  * @ingroup Formats
  */
@@ -199,7 +201,20 @@ public:
 		core::DynamicArray<core::UUID> referenced;
 	};
 
-	enum class BBElementType { Cube, Mesh, Locator, NullObject, Camera, Max };
+	enum class BBElementType {
+		Cube,
+		Mesh,
+		Locator,
+		NullObject,
+		Camera,
+		Billboard,
+		Spline,
+		TextureMesh,
+		BoundingBox,
+		Armature,
+		ArmatureBone,
+		Max
+	};
 
 	struct BBElement {
 		core::UUID uuid;
@@ -212,7 +227,9 @@ public:
 		bool locked = false;
 		bool visible = true;
 		bool box_uv = false;
+		bool mirror_uv = false;
 		float inflate = 0.0f;
+		glm::vec3 stretch{1.0f};
 		int color = 0;
 		BBCube cube;
 		Mesh mesh;
@@ -223,6 +240,7 @@ public:
 		// 1654934558
 		uint64_t creationTimestamp = 0;
 		bool box_uv = false;
+		bool backup = false;
 		util::Version version{0, 0};
 		// model_format: free bedrock bedrock_old java_block animated_entity_model skin
 		core::String modelFormat;
@@ -232,6 +250,8 @@ public:
 		glm::ivec2 resolution;
 		// Per-texture UV dimensions (may differ from pixel dimensions)
 		core::DynamicArray<glm::ivec2> textureUVDimensions;
+		// Texture UUIDs in textures[] order for index/uuid remapping
+		core::DynamicArray<core::String> textureUUIDs;
 	};
 
 	// map via uuid
