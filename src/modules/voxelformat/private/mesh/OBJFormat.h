@@ -6,6 +6,7 @@
 
 #include "MeshFormat.h"
 #include "io/Stream.h"
+#include "palette/Palette.h"
 
 namespace tinyobj {
 struct mesh_t;
@@ -26,7 +27,14 @@ namespace voxelformat {
  */
 class OBJFormat : public MeshFormat {
 private:
-	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
+	/**
+	 * @param mapKd Optional diffuse texture filename. Empty skips map_Kd.
+	 * @param colorIndex If >= 0, write Ka/Kd and material properties from the palette entry.
+	 */
+	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd,
+					  const palette::Palette *palette = nullptr, int colorIndex = -1) const;
+	bool writePaletteMaterials(io::SeekableWriteStream &stream, const palette::Palette &palette,
+							   const core::String &paletteId, const core::String &mapKd) const;
 
 protected:
 	void loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &tinyShape, PointCloud &pointCloud);

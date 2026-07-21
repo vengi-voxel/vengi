@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "palette/Material.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
@@ -52,10 +53,17 @@ TEST_F(OBJFormatTest, testVoxelizeUVSphereObj) {
 	ASSERT_EQ(cntVoxels, 24);
 }
 
-// TODO: MATERIAL: materials are not yet written for obj
-TEST_F(OBJFormatTest, DISABLED_testMaterial) {
+TEST_F(OBJFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
-	testMaterial(sceneGraph, "test_material.obj");
+	// MagicaVoxel-only properties are not representable in MTL.
+	core::Buffer<palette::MaterialProperty> ignoredMaterials;
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSp);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialDensity);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialPhase);
+	testMaterial(sceneGraph, "test_material.obj", ignoredMaterials, true);
 }
 
 } // namespace voxelformat

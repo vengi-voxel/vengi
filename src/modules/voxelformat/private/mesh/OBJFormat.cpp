@@ -5,14 +5,17 @@
 #include "color/ColorUtil.h"
 #include "OBJFormat.h"
 #include "color/Color.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/StdStreamBuf.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -37,64 +40,85 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-// TODO: MATERIAL: one material entry per palette color
 // https://paulbourke.net/dataformats/mtl/
-bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId,
-							 const core::String &mapKd) const {
+bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd,
+							 const palette::Palette *palette, int colorIndex) const {
 	if (!stream.writeStringFormat(false, "\nnewmtl %s\n", mtlId.c_str())) {
 		Log::error("Failed to write obj newmtl");
 		return false;
 	}
-	// TODO: MATERIAL: Ka is ambient
-	wrapBool(stream.writeString("Ka 1.000000 1.000000 1.000000\n", false))
-	// TODO: MATERIAL: Kd is diffuse
-	wrapBool(stream.writeString("Kd 1.000000 1.000000 1.000000\n", false))
-	// TODO: MATERIAL: Ks is specular
-	wrapBool(stream.writeString("Ks 0.000000 0.000000 0.000000\n", false))
-	//  0 Color on and Ambient off
-	//  1 Color on and Ambient on
-	//  2 Highlight on
-	//  3 Reflection on and Ray trace on
-	//  4 Transparency: Glass on
-	//    Reflection: Ray trace on
-	//  5 Reflection: Fresnel on and Ray trace on
-	//  6 Transparency: Refraction on
-	//    Reflection: Fresnel off and Ray trace on
-	//  7 Transparency: Refraction on
-	//    Reflection: Fresnel on and Ray trace on
-	//  8 Reflection on and Ray trace off
-	//  9 Transparency: Glass on
-	//    Reflection: Ray trace off
-	// 10 Casts shadows onto invisible surfaces
-	wrapBool(stream.writeString("illum 1\n", false))
-	// TODO: MATERIAL: Ns is shininess
-	// glm::pow(2, 10.0f * m->shininess + 1) (3ds)
-	wrapBool(stream.writeString("Ns 0.000000\n", false))
-	// TODO: MATERIAL: d is dissolve (don't define both d and Tr)
-	// factor of 1.0 is fully opaque - 0.0 is fully dissolved (completely transparent)
-	// 1.0 - transparency (3ds)
-	// wrapBool(stream.writeString("d 1.000000\n", false))
-	// TODO: MATERIAL: Tr is transparency (don't define both d and Tr)
-	// wrapBool(stream.writeString("Tr 0.000000\n", false))
-	// TODO: MATERIAL: Ni is ior
-	// wrapBool(stream.writeString("Ni 0.000000\n", false))
-	// TODO: MATERIAL: Ke is emissive
-	// wrapBool(stream.writeString("Ke 0.000000\n", false))
-	// TODO: MATERIAL: Kt or Tf is transmission filter
-	// wrapBool(stream.writeString("Kt 0.000000\n", false))
-	// wrapBool(stream.writeString("Tf 0.000000\n", false))
-	// TODO: MATERIAL: Pr is roughness
-	// wrapBool(stream.writeString("Pr 0.000000\n", false))
-	// TODO: MATERIAL: Pm is metallic
-	// wrapBool(stream.writeString("Pm 0.000000\n", false))
 
-	// map_KS is specular map
-	// map_d is opacity map
-	// map_bump is bump map
-	// refl is reflection map
-	if (!stream.writeStringFormat(false, "map_Kd %s\n", mapKd.c_str())) {
-		Log::error("Failed to write obj map_Kd");
-		return false;
+	glm::vec4 diffuse(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 specular(0.0f);
+	float shininess = 0.0f;
+	float dissolve = 1.0f;
+	float ior = 1.0f;
+	float roughness = 0.0f;
+	float metallic = 0.0f;
+	float emit = 0.0f;
+	int illum = 1;
+
+	if (palette != nullptr && colorIndex >= 0 && colorIndex < palette->colorCount()) {
+		const color::RGBA rgba = palette->color(colorIndex);
+		diffuse = color::fromRGBA(rgba);
+		dissolve = (float)rgba.a / 255.0f;
+		const palette::Material &material = palette->material(colorIndex);
+		if (material.has(palette::MaterialProperty::MaterialRoughness)) {
+			roughness = material.value(palette::MaterialProperty::MaterialRoughness);
+			// Map roughness to a phong exponent for classic MTL readers.
+			shininess = glm::clamp((1.0f - roughness) * 1000.0f, 0.0f, 1000.0f);
+		}
+		if (material.has(palette::MaterialProperty::MaterialMetal)) {
+			metallic = material.value(palette::MaterialProperty::MaterialMetal);
+		}
+		if (material.has(palette::MaterialProperty::MaterialSpecular)) {
+			const float spec = material.value(palette::MaterialProperty::MaterialSpecular);
+			specular = glm::vec3(spec);
+			illum = 2;
+		}
+		if (material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+			ior = material.value(palette::MaterialProperty::MaterialIndexOfRefraction);
+		}
+		if (material.has(palette::MaterialProperty::MaterialEmit)) {
+			emit = material.value(palette::MaterialProperty::MaterialEmit);
+		}
+	}
+
+	wrapBool(stream.writeStringFormat(false, "Ka %.6f %.6f %.6f\n", diffuse.r, diffuse.g, diffuse.b))
+	wrapBool(stream.writeStringFormat(false, "Kd %.6f %.6f %.6f\n", diffuse.r, diffuse.g, diffuse.b))
+	wrapBool(stream.writeStringFormat(false, "Ks %.6f %.6f %.6f\n", specular.r, specular.g, specular.b))
+	wrapBool(stream.writeStringFormat(false, "illum %i\n", illum))
+	wrapBool(stream.writeStringFormat(false, "Ns %.6f\n", shininess))
+	// When a diffuse texture is present, alpha comes from the texture - don't also
+	// scale it via dissolve or voxelization applies transparency twice.
+	if (mapKd.empty()) {
+		wrapBool(stream.writeStringFormat(false, "d %.6f\n", dissolve))
+	} else {
+		wrapBool(stream.writeString("d 1.000000\n", false))
+	}
+	wrapBool(stream.writeStringFormat(false, "Ni %.6f\n", ior))
+	if (emit > 0.0f) {
+		wrapBool(stream.writeStringFormat(false, "Ke %.6f %.6f %.6f\n", emit, emit, emit))
+	}
+	wrapBool(stream.writeStringFormat(false, "Pr %.6f\n", roughness))
+	wrapBool(stream.writeStringFormat(false, "Pm %.6f\n", metallic))
+
+	if (!mapKd.empty()) {
+		if (!stream.writeStringFormat(false, "map_Kd %s\n", mapKd.c_str())) {
+			Log::error("Failed to write obj map_Kd");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool OBJFormat::writePaletteMaterials(io::SeekableWriteStream &stream, const palette::Palette &palette,
+									  const core::String &paletteId, const core::String &mapKd) const {
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::String mtlId = core::String::format("%s_%i", paletteId.c_str(), i);
+		if (!writeMtlFile(stream, mtlId, mapKd, &palette, i)) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -122,6 +146,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
 	core::StringMap<int> writtenTextures((int)sceneGraph.size());
+	const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
 
 	int idxOffset = 0;
 	int texcoordOffset = 0;
@@ -151,6 +176,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const voxel::UVArray &uvs = mesh->getUVVector();
 
 			const bool useTexture = meshExt.texture && meshExt.texture->isLoaded() && !uvs.empty();
+			const bool perColorMaterials = withMaterials && !useTexture;
 			const bool withNormals = !normals.empty();
 			const char *objectName = meshExt.name.c_str();
 			if (objectName[0] == '\0') {
@@ -184,6 +210,20 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 						Log::warn("Failed to open stream for texture %s", texPath.c_str());
 					}
 				}
+			} else if (perColorMaterials) {
+				if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
+					core::String palettename = core::string::stripExtension(filename);
+					palettename.append(hashId);
+					palettename.append(".png");
+					paletteMaterialIndices.put(palette.hash(), 1);
+					const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
+					if (!writePaletteMaterials(*matlstream, palette, hashId, mapKd)) {
+						return false;
+					}
+					if (!palette.save(palettename.c_str())) {
+						return false;
+					}
+				}
 			} else {
 				if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
 					core::String palettename = core::string::stripExtension(filename);
@@ -200,9 +240,11 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				}
 			}
 
-			if (!stream->writeStringFormat(false, "usemtl %s\n", matName.c_str())) {
-				Log::error("Failed to write obj usemtl %s\n", matName.c_str());
-				return false;
+			if (!perColorMaterials) {
+				if (!stream->writeStringFormat(false, "usemtl %s\n", matName.c_str())) {
+					Log::error("Failed to write obj usemtl %s\n", matName.c_str());
+					return false;
+				}
 			}
 
 			for (int j = 0; j < nv; ++j) {
@@ -229,6 +271,18 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				}
 			}
 
+			auto writeUseMtlForColor = [&](uint8_t colorIndex) -> bool {
+				if (!perColorMaterials) {
+					return true;
+				}
+				const core::String colorMatName = core::String::format("%s_%u", hashId.c_str(), colorIndex);
+				if (!stream->writeStringFormat(false, "usemtl %s\n", colorMatName.c_str())) {
+					Log::error("Failed to write obj usemtl %s\n", colorMatName.c_str());
+					return false;
+				}
+				return true;
+			};
+
 			if (quad) {
 				if (withTexCoords) {
 					if (useTexture) {
@@ -248,7 +302,15 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				}
 
 				int uvi = texcoordOffset;
+				int lastColor = -1;
 				for (int j = 0; j < ni - 5; j += 6) {
+					const uint8_t colorIndex = vertices[indices[j]].colorIndex;
+					if ((int)colorIndex != lastColor) {
+						if (!writeUseMtlForColor(colorIndex)) {
+							return false;
+						}
+						lastColor = colorIndex;
+					}
 					const uint32_t one = idxOffset + indices[j + 0] + 1;
 					const uint32_t two = idxOffset + indices[j + 1] + 1;
 					const uint32_t three = idxOffset + indices[j + 2] + 1;
@@ -312,7 +374,15 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					}
 				}
 
+				int lastColor = -1;
 				for (int j = 0; j < ni; j += 3) {
+					const uint8_t colorIndex = vertices[indices[j]].colorIndex;
+					if ((int)colorIndex != lastColor) {
+						if (!writeUseMtlForColor(colorIndex)) {
+							return false;
+						}
+						lastColor = colorIndex;
+					}
 					const uint32_t one = idxOffset + indices[j + 0] + 1;
 					const uint32_t two = idxOffset + indices[j + 1] + 1;
 					const uint32_t three = idxOffset + indices[j + 2] + 1;
@@ -577,15 +647,37 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 		MeshMaterialPtr meshMaterial = createMaterial(materialName);
 		palette::Material &paletteMaterial = meshMaterial->material;
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, tinyMaterial.ior);
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness, tinyMaterial.roughness);
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, tinyMaterial.metallic);
-		// TODO: MATERIAL: should be average these values?
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, tinyMaterial.emission[0]);
-		// TODO: MATERIAL: is this maybe shininess? (Ns) material specular exponent is multiplied by the texture value
-		// see https://www.fileformat.info/format/material/
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, tinyMaterial.specular[0]);
+		// tinyobj defaults: ior=1, roughness=0, metallic=0, emission=0, dissolve=1, shininess=1
+		// Only apply values that were actually present (or deviate from those defaults).
+		if (tinyMaterial.ior != 1.0f) {
+			paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, tinyMaterial.ior);
+		}
+		if (tinyMaterial.roughness > 0.0f) {
+			paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness, tinyMaterial.roughness);
+		}
+		if (tinyMaterial.metallic > 0.0f) {
+			paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, tinyMaterial.metallic);
+		}
+		const float emit =
+			(tinyMaterial.emission[0] + tinyMaterial.emission[1] + tinyMaterial.emission[2]) / 3.0f;
+		if (emit > 0.0f) {
+			paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, emit);
+		}
+		const float specular =
+			(tinyMaterial.specular[0] + tinyMaterial.specular[1] + tinyMaterial.specular[2]) / 3.0f;
+		if (specular > 0.0f) {
+			paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, specular);
+		}
 		meshMaterial->transparency = 1.0f - tinyMaterial.dissolve;
+		meshMaterial->baseColor = color::getRGBA(glm::vec4(tinyMaterial.diffuse[0], tinyMaterial.diffuse[1],
+														   tinyMaterial.diffuse[2], tinyMaterial.dissolve));
+		// Without a diffuse texture, use Kd as the solid base color.
+		if (tinyMaterial.diffuse_texname.empty()) {
+			meshMaterial->baseColorFactor = 1.0f;
+		} else {
+			// Alpha is already in the texture; ignore dissolve scaling.
+			meshMaterial->transparency = 0.0f;
+		}
 
 		if (!tinyMaterial.diffuse_texname.empty()) {
 			const core::String &diffuseTextureName =
