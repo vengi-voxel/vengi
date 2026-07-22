@@ -34,6 +34,7 @@ General:
    - Improved `gltf` animation import (group transforms, STEP/CUBICSPLINE, empty joint nodes)
    - Fixed mesh triangle subdivision depth limit never applying (could explode on huge/non-finite tris)
    - Fixed greedy texture atlas packing giving up too early and spamming warnings
+   - Greedy texture mesher can reuse identical atlas patches (`voxel_texture_dedupe`)
    - Fixed `gltf` import re-reading shared vertex buffers once per primitive (massive slowdown)
    - Added support for Luanti WorldEdit `we` files
    - Added support for BrickLink Studio `io` lego archives

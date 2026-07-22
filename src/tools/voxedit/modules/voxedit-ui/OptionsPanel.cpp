@@ -77,10 +77,10 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::ClientVSync);
 	case OptionCategory::MeshExport:
 		return matchesVarFilter(cfg::VoxformatMergequads) || matchesVarFilter(cfg::VoxformatReusevertices) ||
-			   matchesVarFilter(cfg::VoxformatAmbientocclusion) || matchesVarFilter(cfg::VoxformatQuads) ||
-			   matchesVarFilter(cfg::VoxformatWithColor) || matchesVarFilter(cfg::VoxformatWithNormals) ||
-			   matchesVarFilter(cfg::VoxformatWithtexcoords) || matchesVarFilter(cfg::VoxformatTransform) ||
-			   matchesVarFilter(cfg::VoxformatOptimize);
+			   matchesVarFilter(cfg::VoxelTextureDedupe) || matchesVarFilter(cfg::VoxformatAmbientocclusion) ||
+			   matchesVarFilter(cfg::VoxformatQuads) || matchesVarFilter(cfg::VoxformatWithColor) ||
+			   matchesVarFilter(cfg::VoxformatWithNormals) || matchesVarFilter(cfg::VoxformatWithtexcoords) ||
+			   matchesVarFilter(cfg::VoxformatTransform) || matchesVarFilter(cfg::VoxformatOptimize);
 	case OptionCategory::VoxelImportExport:
 		return matchesVarFilter(cfg::VoxelCreatePalette) || matchesVarFilter(cfg::VoxformatRGBFlattenFactor) ||
 			   matchesVarFilter(cfg::VoxformatRGBWeightedAverage) || matchesVarFilter(cfg::VoxformatSaveVisibleOnly) ||
@@ -302,6 +302,9 @@ void OptionsPanel::renderMeshExport() {
 	}
 	if (matchesVarFilter(cfg::VoxformatReusevertices)) {
 		ImGui::CheckboxVar(cfg::VoxformatReusevertices);
+	}
+	if (matchesVarFilter(cfg::VoxelTextureDedupe)) {
+		ImGui::CheckboxVar(cfg::VoxelTextureDedupe);
 	}
 	if (matchesVarFilter(cfg::VoxformatAmbientocclusion)) {
 		ImGui::CheckboxVar(cfg::VoxformatAmbientocclusion);

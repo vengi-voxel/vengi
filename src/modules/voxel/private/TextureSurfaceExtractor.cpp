@@ -4,8 +4,11 @@
 
 #include "TextureSurfaceExtractor.h"
 #include "core/Common.h"
+#include "core/Hash.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicMap.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Face.h"
@@ -28,9 +31,11 @@ struct PendingQuad {
 	int axesX, axesY, axesZ;
 	glm::vec3 normal;
 	bool flip;
-	int colorOffset;
+	int packIndex;
 	int colorW, colorH;
 };
+
+using DedupeMap = core::DynamicMap<uint32_t, int, 1021>;
 
 static inline VoxelVertex makeV(const glm::vec3 &p) {
 	VoxelVertex v;
@@ -45,7 +50,8 @@ static inline VoxelVertex makeV(const glm::vec3 &p) {
 // Extract greedy rectangles from mask, save per-rect colors, record quads and pack rects
 static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, const glm::ivec3 &axes,
 						  const glm::vec3 &normal, bool flip, core::Buffer<PendingQuad> &quads,
-						  core::Buffer<color::RGBA> &allColors, core::Buffer<stbrp_rect> &packRects) {
+						  core::Buffer<color::RGBA> &allColors, core::Buffer<stbrp_rect> &packRects,
+						  core::Buffer<int> &packColorOffsets, DedupeMap *dedupeMap) {
 	for (int u = 0; u < uDim; ++u) {
 		int v = 0;
 		while (v < vDim) {
@@ -91,6 +97,29 @@ static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, co
 				}
 			}
 
+			int packIndex = (int)packRects.size();
+			bool reused = false;
+			if (dedupeMap != nullptr) {
+				const uint32_t seed = ((uint32_t)w << 16) ^ (uint32_t)h;
+				const uint32_t colorHash =
+					core::hash(dst, w * h * (int)sizeof(color::RGBA), seed);
+				int existing = -1;
+				if (dedupeMap->get(colorHash, existing)) {
+					const stbrp_rect &existingRect = packRects[existing];
+					if (existingRect.w == w + PADDING && existingRect.h == h + PADDING) {
+						const color::RGBA *existingColors = &allColors[packColorOffsets[existing]];
+						if (core_memcmp(existingColors, dst, (size_t)w * h * sizeof(color::RGBA)) == 0) {
+							packIndex = existing;
+							allColors.resize(colorOffset);
+							reused = true;
+						}
+					}
+				}
+				if (!reused) {
+					dedupeMap->putIfAbsent(colorHash, packIndex);
+				}
+			}
+
 			PendingQuad q;
 			q.u1 = u;
 			q.v1 = v;
@@ -102,19 +131,22 @@ static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, co
 			q.axesZ = axes.z;
 			q.normal = normal;
 			q.flip = flip;
-			q.colorOffset = colorOffset;
+			q.packIndex = packIndex;
 			q.colorW = w;
 			q.colorH = h;
 			quads.push_back(q);
 
-			stbrp_rect r;
-			r.id = (int)packRects.size();
-			r.w = w + PADDING;
-			r.h = h + PADDING;
-			r.was_packed = 0;
-			r.x = 0;
-			r.y = 0;
-			packRects.push_back(r);
+			if (!reused) {
+				stbrp_rect r;
+				r.id = packIndex;
+				r.w = w + PADDING;
+				r.h = h + PADDING;
+				r.was_packed = 0;
+				r.x = 0;
+				r.y = 0;
+				packRects.push_back(r);
+				packColorOffsets.push_back(colorOffset);
+			}
 
 			// Clear mask region
 			for (int cx = u; cx < u + w; ++cx) {
@@ -132,7 +164,8 @@ static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, co
 // Process a pair of opposite faces (positive + negative) sharing the same axis in a single pass
 static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQuad> &quads,
 							core::Buffer<color::RGBA> &allColors, core::Buffer<stbrp_rect> &packRects,
-							FaceNames posFace, FaceNames negFace, color::RGBA *maskPos, color::RGBA *maskNeg) {
+							core::Buffer<int> &packColorOffsets, DedupeMap *dedupeMap, FaceNames posFace,
+							FaceNames negFace, color::RGBA *maskPos, color::RGBA *maskNeg) {
 	const Region &region = ctx.region;
 	const RawVolume *volume = ctx.volume;
 
@@ -249,10 +282,12 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 		}
 
 		if (maskCountPos > 0) {
-			greedyExtract(maskPos, uDim, vDim, s + 1, axes, nPos, flipPos, quads, allColors, packRects);
+			greedyExtract(maskPos, uDim, vDim, s + 1, axes, nPos, flipPos, quads, allColors, packRects,
+						  packColorOffsets, dedupeMap);
 		}
 		if (maskCountNeg > 0) {
-			greedyExtract(maskNeg, uDim, vDim, s, axes, nNeg, flipNeg, quads, allColors, packRects);
+			greedyExtract(maskNeg, uDim, vDim, s, axes, nNeg, flipNeg, quads, allColors, packRects,
+						  packColorOffsets, dedupeMap);
 		}
 	}
 }
@@ -282,22 +317,35 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	core::Buffer<PendingQuad> quads;
 	core::Buffer<color::RGBA> allColors;
 	core::Buffer<stbrp_rect> packRects;
+	core::Buffer<int> packColorOffsets;
 	quads.reserve(256);
 	allColors.reserve(maxExposed);
 	packRects.reserve(256);
+	packColorOffsets.reserve(256);
+
+	DedupeMap dedupeMapStorage;
+	DedupeMap *dedupeMap = nullptr;
+	if (ctx.textureDedupe) {
+		dedupeMap = &dedupeMapStorage;
+	}
 
 	// Process face pairs - each pair reads the volume once for both faces
-	collectFacePair(ctx, quads, allColors, packRects, FaceNames::Right, FaceNames::Left, maskPos.data(),
-					maskNeg.data());
-	collectFacePair(ctx, quads, allColors, packRects, FaceNames::Up, FaceNames::Down, maskPos.data(), maskNeg.data());
-	collectFacePair(ctx, quads, allColors, packRects, FaceNames::Back, FaceNames::Front, maskPos.data(),
-					maskNeg.data());
+	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Right,
+					FaceNames::Left, maskPos.data(), maskNeg.data());
+	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Up, FaceNames::Down,
+					maskPos.data(), maskNeg.data());
+	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Back,
+					FaceNames::Front, maskPos.data(), maskNeg.data());
 
 	if (quads.empty()) {
 		ctx.textureWidth = 1;
 		ctx.textureHeight = 1;
 		ctx.textureData.resize(4);
 		return;
+	}
+
+	if (dedupeMap != nullptr && packRects.size() < quads.size()) {
+		Log::debug("Texture atlas dedupe: %i unique of %i quads", (int)packRects.size(), (int)quads.size());
 	}
 
 	// Batch pack all rectangles; grow the atlas if packing fails (padding makes the
@@ -328,14 +376,13 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		Log::debug("Texture atlas pack incomplete (%i unpacked) - retrying at %i", unpacked, texSize);
 	}
 
-	// Determine final texture bounds
+	// Determine final texture bounds from unique packed rects
 	int boundX = 0, boundY = 0;
 	for (size_t i = 0; i < packRects.size(); ++i) {
 		const stbrp_rect &r = packRects[i];
 		if (r.was_packed) {
-			const PendingQuad &q = quads[i];
-			const int ex = r.x + q.colorW;
-			const int ey = r.y + q.colorH;
+			const int ex = r.x + (r.w - PADDING);
+			const int ey = r.y + (r.h - PADDING);
 			if (ex > boundX) {
 				boundX = ex;
 			}
@@ -372,10 +419,25 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	indices.reserve(quadCount * 6);
 	normals.reserve(quadCount * 4);
 
+	// Copy each unique packed patch once
+	for (size_t i = 0; i < packRects.size(); ++i) {
+		const stbrp_rect &r = packRects[i];
+		if (!r.was_packed) {
+			continue;
+		}
+		const int w = r.w - PADDING;
+		const int h = r.h - PADDING;
+		const color::RGBA *src = &allColors[packColorOffsets[i]];
+		for (int row = 0; row < h; ++row) {
+			const int dstOffset = ((r.y + row) * ctx.textureWidth + r.x) * 4;
+			core_memcpy(&ctx.textureData[dstOffset], &src[row * w], (size_t)w * 4);
+		}
+	}
+
 	int stillUnpacked = 0;
 	for (size_t i = 0; i < quadCount; ++i) {
-		const stbrp_rect &r = packRects[i];
 		const PendingQuad &q = quads[i];
+		const stbrp_rect &r = packRects[q.packIndex];
 
 		if (!r.was_packed) {
 			++stillUnpacked;
@@ -386,13 +448,6 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		const int py = r.y;
 		const int w = q.colorW;
 		const int h = q.colorH;
-		const color::RGBA *src = &allColors[q.colorOffset];
-
-		// Copy colors to texture - RGBA layout matches uint8_t[4] so memcpy per row
-		for (int row = 0; row < h; ++row) {
-			const int dstOffset = ((py + row) * ctx.textureWidth + px) * 4;
-			core_memcpy(&ctx.textureData[dstOffset], &src[row * w], (size_t)w * 4);
-		}
 
 		// Compute UVs directly in final texture space (no rescaling pass needed)
 		const float tu1 = (float)px * invTexW;

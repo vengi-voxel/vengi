@@ -3,7 +3,9 @@
  */
 
 #include "SurfaceExtractor.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/Var.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
@@ -32,8 +34,9 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 
 SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize) {
+	const bool textureDedupe = core::getVar(cfg::VoxelTextureDedupe)->boolVal();
 	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::GreedyTexture,
-									false, false, false, optimize);
+									false, false, false, optimize, textureDedupe);
 }
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,

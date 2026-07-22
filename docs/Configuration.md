@@ -104,6 +104,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `palformat_maxsize`           | The maximum size of an image in x and y direction to quantize to a palette               | 512          |
 | `palformat_rgb6bit`           | Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files               | true/false   |
 | `voxformat_meshmode`          | Export mesh mode: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture   | 0/1/2/3      |
+| `voxel_texture_dedupe`        | Reuse identical color patches in the greedy texture atlas                                | true/false   |
 | `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    | true/false   |
 | `voxformat_binvoxversion`     | Save in version 1, 2 or the unofficial version 3                                         | 1/2/3        |
 | `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    | true/false   |

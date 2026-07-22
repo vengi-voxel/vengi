@@ -66,6 +66,8 @@ constexpr const char *VoxelMeshMode = "voxel_meshmode";
 constexpr const char *VoxelMeshAlloc = "voxel_meshalloc";
 // Crop volumes to tight bounds on load (saves memory but limits editing)
 constexpr const char *VoxelCropOnLoad = "voxel_croponload";
+// Reuse identical color patches in the greedy texture atlas
+constexpr const char *VoxelTextureDedupe = "voxel_texture_dedupe";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";

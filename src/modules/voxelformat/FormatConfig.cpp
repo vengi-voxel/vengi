@@ -130,6 +130,10 @@ bool FormatConfig::init() {
 		cfg::VoxelCropOnLoad, false, N_("Crop on load"),
 		N_("Crop volumes to tight bounds on load to save memory"), core::CV_NOPERSIST);
 	core::registerVar(voxelCropOnLoad);
+	const core::VarDef voxelTextureDedupe(
+		cfg::VoxelTextureDedupe, true, N_("Dedupe texture atlas"),
+		N_("Reuse identical color patches in the greedy texture atlas to pack more faces"), core::CV_NOPERSIST);
+	core::registerVar(voxelTextureDedupe);
 	const core::VarDef voxformatVOXCreateGroups(
 		cfg::VoxformatVOXCreateGroups, true, N_("Create groups"),
 		NC_("Create groups when saving MagicaVoxel vox files", "Create groups for vox file"), core::CV_NOPERSIST);

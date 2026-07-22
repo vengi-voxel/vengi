@@ -21,12 +21,14 @@ enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
 							 ChunkMesh &_mesh, const glm::ivec3 &_translate, SurfaceExtractionType _type,
-							 bool _mergeQuads, bool _reuseVertices, bool _ambientOcclusion, bool _optimize)
+							 bool _mergeQuads, bool _reuseVertices, bool _ambientOcclusion, bool _optimize,
+							 bool _textureDedupe = true)
 		: volume(_volume), palette(_palette), region(_region), mesh(_mesh), translate(_translate), type(_type),
-		  mergeQuads(_mergeQuads), reuseVertices(_reuseVertices), ambientOcclusion(_ambientOcclusion), optimize(_optimize) {
+		  mergeQuads(_mergeQuads), reuseVertices(_reuseVertices), ambientOcclusion(_ambientOcclusion),
+		  optimize(_optimize), textureDedupe(_textureDedupe) {
 	}
 	const RawVolume *volume;
-	const palette::Palette &palette; // used only for MarchingCubes
+	const palette::Palette &palette; // used only for MarchingCubes and GreedyTexture
 	const Region &region;
 	ChunkMesh &mesh;
 	const glm::ivec3 translate;
@@ -35,6 +37,7 @@ struct SurfaceExtractionContext {
 	const bool reuseVertices;	 // used only for Cubic
 	const bool ambientOcclusion; // used only for Cubic and Binary
 	const bool optimize;
+	const bool textureDedupe;	 // used only for GreedyTexture
 
 	// used only for GreedyTexture
 	int textureWidth = 0;

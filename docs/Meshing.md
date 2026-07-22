@@ -56,6 +56,8 @@ Creates a mesh with texture coordinates, packing all visible voxel faces into a 
 
 > **Note:** This mesh mode is only available when exporting/saving mesh formats. It is not supported for in-editor rendering as the renderer does not support textures.
 
+With `voxel_texture_dedupe` enabled (default), identical color patches (same size and pixels) share one atlas region so more faces fit into the texture.
+
 ### Visual Characteristics
 
 - Blocky appearance (like cubic mesher)

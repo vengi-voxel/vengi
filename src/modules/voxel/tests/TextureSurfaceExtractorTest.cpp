@@ -3,18 +3,27 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "core/ConfigVar.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
 #include "palette/Palette.h"
+#include "util/VarUtil.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelformat/FormatConfig.h"
 #include <glm/geometric.hpp>
 
 namespace voxel {
 
-class TextureSurfaceExtractorTest : public app::AbstractTest {};
+class TextureSurfaceExtractorTest : public app::AbstractTest {
+protected:
+	bool onInitApp() override {
+		voxelformat::FormatConfig::init();
+		return true;
+	}
+};
 
 TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {
 	voxel::Region region(0, 0, 0, 31, 31, 31);
@@ -109,6 +118,42 @@ TEST_F(TextureSurfaceExtractorTest, testWindingOrder) {
 							 << "calculated=" << calculatedNormal.x << "," << calculatedNormal.y << ","
 							 << calculatedNormal.z;
 	}
+}
+
+TEST_F(TextureSurfaceExtractorTest, testTextureDedupeSolidVoxel) {
+	voxel::Region region(0, 0, 0, 1, 1, 1);
+	voxel::RawVolume volume(region);
+
+	palette::Palette palette;
+	palette.nippon();
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(palette, 1));
+
+	int areaWithDedupe = 0;
+	int areaWithoutDedupe = 0;
+
+	{
+		util::ScopedVarChange dedupe(cfg::VoxelTextureDedupe, "true");
+		voxel::ChunkMesh mesh;
+		voxel::SurfaceExtractionContext ctx = voxel::createContext(
+			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+		voxel::extractSurface(ctx);
+		EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 24u);
+		areaWithDedupe = ctx.textureWidth * ctx.textureHeight;
+		// Six identical 1x1 faces share one atlas texel
+		EXPECT_LE(areaWithDedupe, 4);
+	}
+
+	{
+		util::ScopedVarChange dedupe(cfg::VoxelTextureDedupe, "false");
+		voxel::ChunkMesh mesh;
+		voxel::SurfaceExtractionContext ctx = voxel::createContext(
+			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+		voxel::extractSurface(ctx);
+		EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 24u);
+		areaWithoutDedupe = ctx.textureWidth * ctx.textureHeight;
+	}
+
+	EXPECT_LT(areaWithDedupe, areaWithoutDedupe);
 }
 
 } // namespace voxel
