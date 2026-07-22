@@ -79,5 +79,5 @@ if (USE_BENCHMARKS)
 		benchmarks/VolumeSamplerBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
-	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB} voxelformat)
 endif()
