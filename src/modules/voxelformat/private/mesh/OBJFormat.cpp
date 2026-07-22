@@ -36,7 +36,7 @@ namespace voxelformat {
 
 #define wrapBool(read)                                                                                                 \
 	if ((read) == false) {                                                                                             \
-		Log::error("Failed to write obj " CORE_STRINGIFY(read));                                                       \
+		Log::error("Failed to write obj %s", CORE_STRINGIFY(read));                                                     \
 		return false;                                                                                                  \
 	}
 
