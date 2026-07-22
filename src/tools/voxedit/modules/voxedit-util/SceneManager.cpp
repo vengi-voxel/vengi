@@ -99,8 +99,8 @@ namespace voxedit {
 CreateReferenceButton::CreateReferenceButton(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-bool CreateReferenceButton::handleDown(int32_t key, double pressedSeconds) {
-	const bool initialDown = Super::handleDown(key, pressedSeconds);
+bool CreateReferenceButton::handleDown(int32_t key, double pressedDownSeconds) {
+	const bool initialDown = Super::handleDown(key, pressedDownSeconds);
 	if (initialDown && key == util::button::CUSTOM_SDLK_MOUSE_LEFT) {
 		_sceneMgr->createReferenceFromGizmo();
 	}
