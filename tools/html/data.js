@@ -455,6 +455,18 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Crocotile 3D",
+      "extensions": [
+        "crocotile"
+      ],
+      "magics": [],
+      "mimetype": "application/x-crocotile-3d",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Sandbox VoxEdit Hierarchy",
       "extensions": [
         "vxr"

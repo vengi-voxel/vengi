@@ -63,6 +63,7 @@
 | Autodesk 3D Studio         | 3ds       | X       |           |            |
 | Blockbench                 | bbmodel   | X       | X         | X          |
 | BrickLink Studio           | io        | X       |           |            |
+| Crocotile 3D               | crocotile | X       |           |            |
 | FBX                        | fbx       | X       | X         |            |
 | Geography Markup Language  | gml       | X       |           |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |

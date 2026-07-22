@@ -108,6 +108,7 @@ set(SRCS
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
 	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
 	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp
+	private/mesh/CrocotileFormat.h           private/mesh/CrocotileFormat.cpp
 	private/mesh/LZUTF8.h                    private/mesh/LZUTF8.cpp
 	private/mesh/GodotSceneFormat.h          private/mesh/GodotSceneFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
@@ -192,6 +193,7 @@ set(TEST_SRCS
 	tests/BinVoxFormatTest.cpp
 	tests/BlockbenchFormatTest.cpp
 	tests/ConvertTest.cpp
+	tests/CrocotileFormatTest.cpp
 	tests/FormatPaletteTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp

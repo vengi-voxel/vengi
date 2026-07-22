@@ -41,6 +41,7 @@
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
 #include "voxelformat/private/mesh/Autodesk3DSFormat.h"
 #include "voxelformat/private/mesh/BlockbenchFormat.h"
+#include "voxelformat/private/mesh/CrocotileFormat.h"
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/GodotSceneFormat.h"
@@ -104,6 +105,7 @@ const io::FormatDescription *voxelFormats() {
 												 VXMFormat::format(),
 												 VXBFormat::format(),
 												 BlockbenchFormat::format(),
+												 CrocotileFormat::format(),
 												 VXRFormat::format(),
 												 BinVoxFormat::format(),
 												 GodotSceneFormat::format(),
@@ -244,6 +246,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<VMaxFormat>();
 		} else if (io::isA(BlockbenchFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BlockbenchFormat>();
+		} else if (io::isA(CrocotileFormat::format(), desc, ext, magic)) {
+			return core::make_shared<CrocotileFormat>();
 		} else if (io::isA(VXCFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXCFormat>();
 		} else if (io::isA(VXTFormat::format(), desc, ext, magic)) {

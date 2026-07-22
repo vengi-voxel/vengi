@@ -266,6 +266,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Crocotile 3D</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-crocotile-3d</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>crocotile</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Sandbox VoxEdit Hierarchy</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

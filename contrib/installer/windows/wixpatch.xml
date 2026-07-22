@@ -58,6 +58,9 @@
 		<RegistryKey Root="HKCR" Key=".bbmodel">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".crocotile">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vxr">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -405,6 +408,15 @@
 		<RegistryValue Root="HKCR" Key=".bbmodel\OpenWithProgids" Name="vengi-voxedit.bbmodel" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.bbmodel" Description="Blockbench" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="bbmodel" ContentType="application/x-blockbench">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".crocotile" Value="vengi-voxedit.crocotile" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".crocotile" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".crocotile\OpenWithProgids" Name="vengi-voxedit.crocotile" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.crocotile" Description="Crocotile 3D" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="crocotile" ContentType="application/x-crocotile-3d">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

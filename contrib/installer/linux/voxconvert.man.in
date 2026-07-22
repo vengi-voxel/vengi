@@ -385,6 +385,8 @@ Build engine (*.kvx)
 .TP
 Chronovox (*.csm)
 .TP
+Crocotile 3D (*.crocotile)
+.TP
 CubeWorld (*.cub)
 .TP
 Cubzh (*.3zh)

@@ -105,6 +105,10 @@
 		<comment>Blockbench</comment>
 		<glob pattern="*.bbmodel"/>
 	</mime-type>
+	<mime-type type="application/x-crocotile-3d">
+		<comment>Crocotile 3D</comment>
+		<glob pattern="*.crocotile"/>
+	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-hierarchy">
 		<comment>Sandbox VoxEdit Hierarchy</comment>
 		<glob pattern="*.vxr"/>
