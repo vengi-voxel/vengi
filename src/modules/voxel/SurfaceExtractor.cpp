@@ -75,7 +75,10 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	if (ctx.optimize) {
 		ctx.mesh.optimize();
 	}
-	ctx.mesh.removeUnusedVertices();
+	// Cubic mergeQuads can leave unreferenced vertices; other extractors emit only used verts.
+	if (ctx.type == voxel::SurfaceExtractionType::Cubic) {
+		ctx.mesh.removeUnusedVertices();
+	}
 	ctx.mesh.compressIndices();
 }
 
