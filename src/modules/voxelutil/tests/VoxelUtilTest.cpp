@@ -325,4 +325,83 @@ TEST_F(VoxelUtilTest, applyTransformToVolumeWithNonUniformScale) {
 	EXPECT_EQ(dims.z, 2);
 }
 
+TEST_F(VoxelUtilTest, testFillHollowClosedShell) {
+	// Hollow shell: solid outer faces, air inside - fillHollow must fill the cavity.
+	voxel::Region region(0, 4);
+	voxel::RawVolume v(region);
+	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	for (int z = 0; z <= 4; ++z) {
+		for (int y = 0; y <= 4; ++y) {
+			for (int x = 0; x <= 4; ++x) {
+				const bool onBorder = x == 0 || x == 4 || y == 0 || y == 4 || z == 0 || z == 4;
+				if (onBorder) {
+					v.setVoxel(x, y, z, borderVoxel);
+				}
+			}
+		}
+	}
+	EXPECT_TRUE(voxel::isAir(v.voxel(2, 2, 2).getMaterial()));
+	voxelutil::fillHollow(v, fillVoxel);
+	EXPECT_EQ(fillVoxel.getColor(), v.voxel(2, 2, 2).getColor());
+	EXPECT_EQ(borderVoxel.getColor(), v.voxel(0, 2, 2).getColor()) << "Outer shell must stay";
+	EXPECT_EQ(borderVoxel.getColor(), v.voxel(4, 2, 2).getColor());
+}
+
+TEST_F(VoxelUtilTest, testFillHollowOpenOnSideFace) {
+	// Cavity open on the +X face must not fill (air connected to border via side face).
+	voxel::Region region(0, 4);
+	voxel::RawVolume v(region);
+	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	for (int z = 0; z <= 4; ++z) {
+		for (int y = 0; y <= 4; ++y) {
+			for (int x = 0; x <= 4; ++x) {
+				const bool onBorder = x == 0 || x == 4 || y == 0 || y == 4 || z == 0 || z == 4;
+				if (onBorder) {
+					v.setVoxel(x, y, z, borderVoxel);
+				}
+			}
+		}
+	}
+	v.setVoxel(4, 2, 2, voxel::Voxel()); // open the +X face
+	voxelutil::fillHollow(v, fillVoxel);
+	EXPECT_TRUE(voxel::isAir(v.voxel(2, 2, 2).getMaterial())) << "Open cavity must not fill";
+}
+
+TEST_F(VoxelUtilTest, testDiffVolumesIdentical) {
+	voxel::RawVolume a(voxel::Region(0, 3));
+	voxel::RawVolume b(voxel::Region(0, 3));
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	a.setVoxel(1, 1, 1, solid);
+	b.setVoxel(1, 1, 1, solid);
+	core::ScopedPtr<voxel::RawVolume> diff(voxelutil::diffVolumes(&a, &b));
+	EXPECT_EQ(nullptr, diff) << "Identical volumes must yield no diff volume";
+}
+
+TEST_F(VoxelUtilTest, testDiffVolumesDetectsChange) {
+	voxel::RawVolume a(voxel::Region(0, 3));
+	voxel::RawVolume b(voxel::Region(0, 3));
+	const voxel::Voxel solidA = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel solidB = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	a.setVoxel(1, 1, 1, solidA);
+	b.setVoxel(1, 1, 1, solidB);
+	b.setVoxel(2, 2, 2, solidB);
+	core::ScopedPtr<voxel::RawVolume> diff(voxelutil::diffVolumes(&a, &b));
+	ASSERT_NE(nullptr, diff);
+	EXPECT_EQ(solidB.getColor(), diff->voxel(1, 1, 1).getColor());
+	EXPECT_EQ(solidB.getColor(), diff->voxel(2, 2, 2).getColor());
+	EXPECT_TRUE(voxel::isAir(diff->voxel(0, 0, 0).getMaterial()));
+}
+
+TEST_F(VoxelUtilTest, testDiffVolumesAirBecomesPlaceholder) {
+	voxel::RawVolume a(voxel::Region(0, 2));
+	voxel::RawVolume b(voxel::Region(0, 2));
+	a.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	// b leaves (1,1,1) as air -> diff must mark that cell as a non-air placeholder
+	core::ScopedPtr<voxel::RawVolume> diff(voxelutil::diffVolumes(&a, &b));
+	ASSERT_NE(nullptr, diff);
+	EXPECT_TRUE(voxel::isBlocked(diff->voxel(1, 1, 1).getMaterial()));
+}
+
 } // namespace voxelutil

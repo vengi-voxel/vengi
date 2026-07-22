@@ -40,6 +40,7 @@ set(TEST_SRCS
 	tests/VolumeSelectTest.cpp
 	tests/VolumeSculptTest.cpp
 	tests/VoxelUtilTest.cpp
+	tests/ShadowTest.cpp
 )
 
 set(TEST_FILES
