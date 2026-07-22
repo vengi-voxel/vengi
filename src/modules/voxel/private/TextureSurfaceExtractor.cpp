@@ -300,8 +300,9 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	const int rh = region.getHeightInVoxels();
 	const int rd = region.getDepthInVoxels();
 
-	// Texture atlas sizing
-	const int maxExposed = 2 * (rw * rh + rh * rd + rw * rd);
+	// Upper bound: every voxel can expose all 6 faces (checkerboard / sparse
+	// volumes). Surface-area estimates under-count heavily and cause realloc churn.
+	const int maxExposed = rw * rh * rd * 6;
 	const int needed = maxExposed + maxExposed / 2;
 	int texSize = 64;
 	while (texSize * texSize < needed && texSize < 2048) {
@@ -318,10 +319,10 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	core::Buffer<color::RGBA> allColors;
 	core::Buffer<stbrp_rect> packRects;
 	core::Buffer<int> packColorOffsets;
-	quads.reserve(256);
+	quads.reserve(maxExposed);
 	allColors.reserve(maxExposed);
-	packRects.reserve(256);
-	packColorOffsets.reserve(256);
+	packRects.reserve(maxExposed);
+	packColorOffsets.reserve(maxExposed);
 
 	DedupeMap dedupeMapStorage;
 	DedupeMap *dedupeMap = nullptr;
