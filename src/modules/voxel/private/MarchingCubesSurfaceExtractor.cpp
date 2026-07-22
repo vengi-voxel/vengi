@@ -39,6 +39,9 @@ static inline Voxel blendMaterials(const palette::Palette &palette, const Voxel 
 	if (isAir(v2.getMaterial())) {
 		return v1;
 	}
+	if (v1.getColor() == v2.getColor()) {
+		return v1;
+	}
 	const color::RGBA c1 = palette.color(v1.getColor());
 	const color::RGBA c2 = palette.color(v2.getColor());
 	const color::RGBA blended = color::RGBA::mix(c1, c2, val);
