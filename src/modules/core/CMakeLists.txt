@@ -30,6 +30,7 @@ set(SRCS
 	concurrent/Concurrency.h concurrent/Concurrency.cpp
 	concurrent/ConditionVariable.h concurrent/ConditionVariable.cpp
 	concurrent/Lock.cpp concurrent/Lock.h
+	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 	concurrent/Thread.cpp concurrent/Thread.h
 	concurrent/Future.h
@@ -68,6 +69,7 @@ set(SRCS
 	Singleton.h
 	StandardLib.h
 	String.cpp String.h
+	StringCache.cpp StringCache.h
 	StringCacheHash.cpp StringCacheHash.h
 	StringUtil.cpp StringUtil.h
 	TimeProvider.h TimeProvider.cpp
@@ -144,6 +146,7 @@ set(TEST_SRCS
 	tests/RingBufferTest.cpp
 	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
+	tests/StringCacheTest.cpp
 	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
