@@ -1088,6 +1088,7 @@ size_t SceneGraph::size(SceneGraphNodeType type) const {
 }
 
 void SceneGraph::clear() {
+	invalidateFrameTransformCache(InvalidNodeId);
 	for (const auto &entry : _nodes) {
 		entry->value.release();
 	}
