@@ -90,6 +90,33 @@ TEST_F(VolumeRescalerTest, testScaleDown) {
 	ASSERT_GT(thinVoxelCount, 0) << "Thin 1-voxel wall should survive the downscale";
 }
 
+TEST_F(VolumeRescalerTest, testScaleDownUniformColorPreserved) {
+	// A solid cube of a single palette index should keep that index after downscale
+	// (same-color fast path must not remap via getClosestMatch).
+	voxel::RawVolume volume({0, 7});
+	const uint8_t colorIdx = 42u;
+	for (int z = 0; z <= 7; ++z) {
+		for (int y = 0; y <= 7; ++y) {
+			for (int x = 0; x <= 7; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIdx));
+			}
+		}
+	}
+	palette::Palette pal;
+	pal.nippon();
+	const voxel::Region &srcRegion = volume.region();
+	const glm::ivec3 targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDims);
+	voxel::RawVolume destVolume(destRegion);
+	voxelutil::scaleDown(volume, pal, destVolume);
+	ASSERT_GT(voxelutil::countVoxels(destVolume), 0);
+	voxelutil::visitVolumeParallel(destVolume, [&](int, int, int, const voxel::Voxel &voxel) {
+		if (!voxel::isAir(voxel.getMaterial())) {
+			EXPECT_EQ(voxel.getColor(), colorIdx);
+		}
+	});
+}
+
 TEST_F(VolumeRescalerTest, testScaleVolumeDoubleSize) {
 	voxel::RawVolume volume({0, 3});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
