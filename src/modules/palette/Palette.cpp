@@ -1148,6 +1148,16 @@ bool Palette::hasEmit(uint8_t paletteColorIdx) const {
 	return _materials[paletteColorIdx].has(MaterialEmit);
 }
 
+bool Palette::hasAnyEmit() const {
+	constexpr uint32_t emitBit = 1u << MaterialEmit;
+	for (int i = 0; i < _colorCount; ++i) {
+		if (_materials[i].mask & emitBit) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Palette::setMaterialValue(uint8_t paletteColorIdx, MaterialProperty property, float factor) {
 	_materials[paletteColorIdx].setValue(property, factor);
 	markDirty();

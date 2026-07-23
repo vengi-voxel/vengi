@@ -74,6 +74,8 @@ public:
 	void toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const;
 	bool hasAlpha(uint8_t paletteColorIdx) const;
 	bool hasEmit(uint8_t paletteColorIdx) const;
+	/** @return true if any used palette entry has MaterialEmit set. */
+	bool hasAnyEmit() const;
 	void setMaterialType(uint8_t paletteColorIdx, MaterialType type);
 	bool setMaterialProperty(uint8_t paletteColorIdx, const core::String &name, float value);
 	float materialProperty(uint8_t paletteColorIdx, const core::String &name) const;

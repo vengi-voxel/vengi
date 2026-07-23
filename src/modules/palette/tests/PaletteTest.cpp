@@ -339,6 +339,15 @@ TEST_F(PaletteTest, testPixeloramaPalette) {
 	EXPECT_EQ(56, pal.colorCount());
 }
 
+TEST_F(PaletteTest, testHasAnyEmit) {
+	palette::Palette pal;
+	pal.nippon();
+	EXPECT_FALSE(pal.hasAnyEmit());
+	pal.setEmit(0, 0.5f);
+	EXPECT_TRUE(pal.hasAnyEmit());
+	EXPECT_TRUE(pal.hasEmit(0));
+}
+
 TEST_F(PaletteTest, testHasEmit) {
 	Palette pal;
 	pal.setColor(0, color::RGBA{255, 0, 0, 255});
