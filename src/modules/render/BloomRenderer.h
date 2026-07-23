@@ -8,6 +8,7 @@
 #include "ConvolutionShader.h"
 #include "Combine2Shader.h"
 #include "TextureShader.h"
+#include "core/Var.h"
 #include "video/Buffer.h"
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
@@ -33,13 +34,19 @@ private:
 	int _bufferIndex = -1;
 	int _texBufferIndex = -1;
 	bool _yFlipped = false;
+	bool _uvBufferReady = false;
+	int _lastBlurWidth = -1;
+	int _lastBlurHorizontal = -1;
 	video::FrameBuffer _bloom[2];
 	video::FrameBuffer _frameBuffers0[DOWNSAMPLE_PASSES];
 	video::FrameBuffer _frameBuffers1[DOWNSAMPLE_PASSES];
 	video::FrameBuffer _frameBuffers2[DOWNSAMPLE_PASSES];
 	video::TexturePtr _black;
+	core::VarPtr _bloomPasses;
 
-	void apply(video::FrameBuffer *sources, video::FrameBuffer *dests);
+	void ensureUvBuffer();
+	int activePasses() const;
+	void apply(video::FrameBuffer *sources, video::FrameBuffer *dests, int passCount);
 	void blur(const video::TexturePtr &source, video::FrameBuffer &dest, bool horizontal);
 
 public:

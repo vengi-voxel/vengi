@@ -19,6 +19,7 @@ constexpr const char *ClientWindowHighDPI = "cl_highdpi";
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
 constexpr const char *ClientBloom = "cl_bloom";
+constexpr const char *ClientBloomPasses = "cl_bloom_passes";
 constexpr const char *ClientCameraMinZoom = "cl_camminzoom";
 constexpr const char *ClientCameraMaxZoom = "cl_cammaxzoom";
 constexpr const char *ClientCameraZoomSpeed = "cl_camzoomspeed";

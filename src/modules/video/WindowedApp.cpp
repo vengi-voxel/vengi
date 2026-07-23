@@ -469,6 +469,10 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(renderCullNodes);
 	const core::VarDef clientBloom(cfg::ClientBloom, true, N_("Bloom"), _("Activate bloom post processing"));
 	core::Var::registerVar(clientBloom);
+	// Must stay in sync with render::BloomRenderer::passes() / DOWNSAMPLE_PASSES (allocated FBO count).
+	const core::VarDef clientBloomPasses(cfg::ClientBloomPasses, 3, 1, 5, N_("Bloom passes"),
+										 _("Number of bloom downsample/upsample passes. Does not reallocate FBOs."));
+	core::Var::registerVar(clientBloomPasses);
 	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, N_("Debug shadows"), _("Activate shadow debug rendering"));
 	core::Var::registerVar(clientDebugShadow);
 	const core::VarDef clientShadowMapSize(cfg::ClientShadowMapSize, 4096, N_("Shadow map size"), _("The size of the shadow map"));
