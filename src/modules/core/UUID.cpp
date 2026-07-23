@@ -151,9 +151,10 @@ bool UUID::isValid() const {
 // https://www.ietf.org/rfc/rfc4122.txt
 UUID UUID::generate() {
 	UUID u;
-	std::random_device rd;
-	std::mt19937_64 gen(rd());
-	std::uniform_int_distribution<uint64_t> dis;
+	// Reuse a per-thread generator; constructing mt19937_64 from random_device
+	// on every call dominated SceneGraphNode / SceneGraph construction.
+	static thread_local std::mt19937_64 gen{std::random_device{}()};
+	static thread_local std::uniform_int_distribution<uint64_t> dis;
 	uint64_t a = dis(gen);
 	uint64_t b = dis(gen);
 	// set version to 4 (bits 12-15 of time_hi_and_version)
