@@ -178,12 +178,22 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 	}
 	{ // column 3
 		ImGui::TableNextColumn();
-		color::RGBA color = node.color();
-		glm::vec4 colvec = color::fromRGBA(color);
+		const color::RGBA color = node.color();
+		const ImVec4 colvec((float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f,
+							(float)color.a / 255.0f);
 		idbuf[l - 1] = 'c';
-		if (ImGui::ColorEdit4(idbuf, glm::value_ptr(colvec),
-							  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
-			node.setColor(color::getRGBA(colvec));
+		char popupId[64];
+		core::String::formatBuf(popupId, sizeof(popupId), "##nodecolor%i", nodeId);
+		if (ImGui::ColorButton(idbuf, colvec, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop)) {
+			ImGui::OpenPopup(popupId);
+		}
+		if (ImGui::BeginPopup(popupId)) {
+			glm::vec4 editCol = color::fromRGBA(color);
+			if (ImGui::ColorPicker4("##picker", glm::value_ptr(editCol),
+									ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview)) {
+				node.setColor(color::getRGBA(editCol));
+			}
+			ImGui::EndPopup();
 		}
 	}
 	{ // column 4
