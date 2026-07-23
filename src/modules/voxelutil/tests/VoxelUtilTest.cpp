@@ -200,6 +200,25 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 	EXPECT_EQ(9, voxelutil::countVoxels(v));
 }
 
+TEST_F(VoxelUtilTest, testExtrudePlaneLargeGround) {
+	// Large plane flood-fill: recursive walkPlane used to risk deep stacks and slow Set growth.
+	voxel::Region region(0, 0, 0, 31, 7, 31);
+	voxel::RawVolume v(region);
+	const voxel::Voxel ground = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel extruded = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	for (int x = 0; x <= 31; ++x) {
+		for (int z = 0; z <= 31; ++z) {
+			v.setVoxel(x, 0, z, ground);
+		}
+	}
+	voxel::RawVolumeWrapper wrapper(&v);
+	const int n = voxelutil::extrudePlane(wrapper, glm::ivec3(16, 1, 16), voxel::FaceNames::PositiveY, ground,
+										 extruded, 3);
+	EXPECT_EQ(32 * 32 * 3, n);
+	EXPECT_EQ(extruded.getColor(), v.voxel(16, 3, 16).getColor());
+	EXPECT_TRUE(voxel::isAir(v.voxel(16, 4, 16).getMaterial()));
+}
+
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	palette::Palette pal;
 	pal.nippon();

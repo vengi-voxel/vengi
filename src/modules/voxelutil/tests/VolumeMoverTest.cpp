@@ -28,4 +28,4 @@ TEST_F(VolumeMoverTest, testMove) {
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(2, 1, 0).getMaterial())) << "Expected to find a voxel at (2, 1, 0)\n";
 }
 
-}
+} // namespace voxelutil
