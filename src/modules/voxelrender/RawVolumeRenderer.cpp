@@ -968,24 +968,36 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		video::disable(video::State::PolygonOffsetFill);
 	}
 	if (bloom && _bloom->boolVal()) {
-		// If multisampling is enabled, resolve the multisampled framebuffer to regular textures first
-		if (renderContext.enableMultisampling) {
-			const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
-			// Resolve color attachments
-			video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
-								 video::ClearFlag::Color, fbDim.x, fbDim.y);
+		bool sceneHasGlow = false;
+		for (int idx : activeForRender) {
+			if (!isVisible(meshState, idx)) {
+				continue;
+			}
+			if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
+				sceneHasGlow = true;
+				break;
+			}
+		}
+		if (sceneHasGlow) {
+			// If multisampling is enabled, resolve the multisampled framebuffer to regular textures first
+			if (renderContext.enableMultisampling) {
+				const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
+				// Resolve color attachments
+				video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
+									 video::ClearFlag::Color, fbDim.x, fbDim.y);
 
-			// Use resolved textures for bloom
-			video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
-			const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-			const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-			renderContext.bloomRenderer.render(color0, color1);
-		} else {
-			// Use regular framebuffer textures directly
-			video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-			const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-			const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-			renderContext.bloomRenderer.render(color0, color1);
+				// Use resolved textures for bloom
+				video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
+				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+				renderContext.bloomRenderer.render(color0, color1);
+			} else {
+				// Use regular framebuffer textures directly
+				video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
+				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+				renderContext.bloomRenderer.render(color0, color1);
+			}
 		}
 	}
 	if (normals) {

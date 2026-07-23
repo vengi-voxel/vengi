@@ -29,6 +29,8 @@ struct RenderContext : public core::NonCopyable {
 	bool hideInactive = false;
 	bool grayInactive = false;
 	bool onlyModels = false;
+	// When false, RawVolumeRenderer skips the bloom post-process (FBOs stay allocated).
+	bool enableBloom = true;
 	// render the built-in normals
 	bool renderNormals = false;
 	bool applyTransformsInEditMode = true;
