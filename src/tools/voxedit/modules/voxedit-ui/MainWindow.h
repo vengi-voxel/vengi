@@ -78,6 +78,8 @@ private:
 	uint32_t _currentTip = 0;
 
 	core::String _currentNodeName;
+	core::String _imguiWindowTitle;
+	core::String _cachedLastOpenedForTitle;
 
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;

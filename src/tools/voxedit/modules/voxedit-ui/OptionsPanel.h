@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "core/String.h"
+#include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "ui/Panel.h"
 #include <stdint.h>
 
@@ -41,6 +44,13 @@ private:
 	bool _visible = false;
 	bool _requestFocus = false;
 	OptionCategory _selectedCategory = OptionCategory::UserInterface;
+
+	core::DynamicArray<core::Var *> _sortedVars;
+	core::DynamicArray<core::Var *> _filteredVars;
+	size_t _cachedVarCount = 0;
+
+	void ensureSortedVars();
+	const core::DynamicArray<core::Var *> &filteredVars();
 
 	bool matchesFilter(const char *text) const;
 	bool matchesVarFilter(const char *varName) const;

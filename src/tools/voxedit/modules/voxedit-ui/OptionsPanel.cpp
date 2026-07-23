@@ -358,6 +358,39 @@ void OptionsPanel::renderVoxelImportExport() {
 	}
 }
 
+void OptionsPanel::ensureSortedVars() {
+	const size_t varCount = core::Var::size();
+	if (_cachedVarCount == varCount && !_sortedVars.empty()) {
+		return;
+	}
+	_sortedVars.clear();
+	_sortedVars.reserve(varCount);
+	core::Var::visit([&](const core::VarPtr &var) { _sortedVars.push_back(var.get()); });
+	_sortedVars.sort([](const core::Var *a, const core::Var *b) { return a->name() > b->name(); });
+	_cachedVarCount = varCount;
+	_filteredVars.clear();
+}
+
+const core::DynamicArray<core::Var *> &OptionsPanel::filteredVars() {
+	ensureSortedVars();
+	if (!hasFilter()) {
+		return _sortedVars;
+	}
+	// Value matches can change while typing into vars, so re-filter every frame.
+	_filteredVars.clear();
+	_filteredVars.reserve(_sortedVars.size());
+	for (core::Var *var : _sortedVars) {
+		const bool matchName = core::string::icontains(var->name(), _filter);
+		const bool matchValue = core::string::icontains(var->strVal(), _filter);
+		const bool matchTitle = core::string::icontains(_(var->title().c_str()), _filter);
+		const bool matchDescription = core::string::icontains(_(var->description().c_str()), _filter);
+		if (matchName || matchValue || matchTitle || matchDescription) {
+			_filteredVars.push_back(var);
+		}
+	}
+	return _filteredVars;
+}
+
 void OptionsPanel::renderAllVariables() {
 	static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 									   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
@@ -371,42 +404,18 @@ void OptionsPanel::renderAllVariables() {
 		ImGui::TableSetupScrollFreeze(0, 1);
 		ImGui::TableHeadersRow();
 
-		core::DynamicArray<core::Var *> vars;
-		vars.reserve(core::Var::size());
-		core::Var::visit([&](const core::VarPtr &var) {
-			vars.push_back(var.get());
-		});
-
-		core::DynamicArray<core::Var *> filteredVars;
-		if (hasFilter()) {
-			for (core::Var *var : vars) {
-				const bool matchName = core::string::icontains(var->name(), _filter);
-				const bool matchValue = core::string::icontains(var->strVal(), _filter);
-				const bool matchTitle = core::string::icontains(_(var->title().c_str()), _filter);
-				const bool matchDescription = core::string::icontains(_(var->description().c_str()), _filter);
-				if (matchName || matchValue || matchTitle || matchDescription) {
-					filteredVars.push_back(var);
-				}
-			}
-		} else {
-			filteredVars = vars;
-		}
-
-		filteredVars.sort([](const core::Var *a, const core::Var *b) {
-			return a->name() > b->name();
-		});
+		const core::DynamicArray<core::Var *> &vars = filteredVars();
 
 		ImGuiListClipper clipper;
-		clipper.Begin((int)filteredVars.size());
+		clipper.Begin((int)vars.size());
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-				core::Var *var = filteredVars[i];
+				core::Var *var = vars[i];
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->name().c_str());
 				ImGui::TableNextColumn();
 				const bool readOnly = (var->getFlags() & core::CV_READONLY) != 0;
 				ImGui::BeginDisabled(readOnly);
-				const core::String type = "##" + var->name();
 				if (var->type() == core::VarType::Boolean) {
 					ImGui::CheckboxVar(var->name().c_str());
 				} else if (var->type() == core::VarType::Enum && !var->validValues().empty()) {

@@ -62,8 +62,9 @@ private:
 	void handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 						   command::CommandExecutionListener &listener, palette::Palette &palette);
 	void handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);
-	void addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge,
-				  uint8_t paletteColorIdx, uint8_t palettePanelIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
+	void addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge, uint8_t paletteColorIdx,
+				  uint8_t palettePanelIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
+				  palette::Palette &palette, uint8_t sceneColorIdx, uint8_t selectedColorIdx,
 				  command::CommandExecutionListener &listener);
 	bool showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 						 command::CommandExecutionListener &listener);

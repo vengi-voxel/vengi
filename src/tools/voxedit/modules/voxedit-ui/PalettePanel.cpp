@@ -209,10 +209,10 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 }
 
 void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge,
-							uint8_t paletteColorIdx, uint8_t palettePanelIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
-							command::CommandExecutionListener &listener) {
+							uint8_t paletteColorIdx, uint8_t palettePanelIdx, float colorButtonSize,
+							scenegraph::SceneGraphNode &node, palette::Palette &palette, uint8_t sceneColorIdx,
+							uint8_t selectedColorIdx, command::CommandExecutionListener &listener) {
 	core_trace_scoped(AddColor);
-	palette::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
@@ -220,8 +220,8 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 	const ImVec2 v1(cursorPos.x + borderWidth, cursorPos.y + borderWidth);
 	const ImVec2 v2(cursorPos.x + colorButtonSize, cursorPos.y + colorButtonSize);
 
-	const color::RGBA color = palette.color(paletteColorIdx);
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
+	const color::RGBA color = existingColor ? palette.color(paletteColorIdx) : color::RGBA(0, 0, 0, 0);
 
 	if (existingColor) {
 		if (color.a != 255) {
@@ -237,7 +237,7 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
 
-	const bool usableColor = color.a > 0;
+	const bool usableColor = existingColor && color.a > 0;
 	const ImGuiID id = ImGui::GetID((int)paletteColorIdx);
 	const ImRect bb(cursorPos, ImVec2(cursorPos.x + colorButtonSize, cursorPos.y + colorButtonSize));
 
@@ -290,15 +290,15 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 					static_assert(sizeof(paletteColorIdx) == sizeof(uint8_t), "Unexpected palette index size");
 					ImGui::EndDragDropSource();
 				}
-			} else {
-				if (hovered) {
-					ImGui::TooltipTextUnformatted(_("Empty color slot"));
-				}
+			} else if (hovered) {
+				ImGui::TooltipTextUnformatted(_("Empty color slot"));
 			}
 
 			handleDragAndDrop(paletteColorIdx, node, palette);
 
-			handleContextMenu(paletteColorIdx, node, listener, palette);
+			if (existingColor) {
+				handleContextMenu(paletteColorIdx, node, listener, palette);
+			}
 		}
 	}
 
@@ -314,17 +314,17 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 			}
 		}
-	} else if (paletteColorIdx == currentSceneColor()) {
+	} else if (existingColor && paletteColorIdx == sceneColorIdx) {
 		if (color.a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 2.0f);
 		}
-	} else if (paletteColorIdx == currentPaletteColorIndex()) {
+	} else if (existingColor && paletteColorIdx == selectedColorIdx) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 4.0f);
-	} else if (_selectedIndices.has(paletteColorIdx)) {
+	} else if (existingColor && _selectedIndices.has(paletteColorIdx)) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 2.0f);
 	}
 
-	if (!palette.colorName(paletteColorIdx).empty()) {
+	if (existingColor && !palette.colorName(paletteColorIdx).empty()) {
 		const int size = colorButtonSize / 3;
 		const ImVec2 t1(v2.x - borderWidth, v1.y + borderWidth);
 		const ImVec2 t2(t1.x - size, t1.y);
@@ -504,10 +504,12 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
-		if (node.isModelNode()) {
+			if (node.isModelNode()) {
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
-			const palette::Palette &palette = node.palette();
+			palette::Palette &palette = node.palette();
+			const uint8_t sceneColorIdx = (uint8_t)sceneHoveredPaletteColorIdx;
+			const uint8_t selectedColorIdx = (uint8_t)selectedPaletteColorIdx;
 
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImDrawListFlags backupFlags = drawList->Flags;
@@ -532,7 +534,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 						}
 						const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
 						addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, (uint8_t)palettePanelIdx,
-								 frameHeight, node, listener);
+								 frameHeight, node, palette, sceneColorIdx, selectedColorIdx, listener);
 					}
 				}
 			}

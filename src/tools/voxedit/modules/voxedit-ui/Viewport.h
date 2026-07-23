@@ -113,6 +113,11 @@ private:
 	core::VarPtr _brushGizmo;
 	core::VarPtr _viewportHud;
 
+	core::String _windowTitle;
+	core::String _screenshotCommand;
+	bool _cachedTitleSceneMode = false;
+	voxelrender::SceneCameraMode _cachedTitleCamMode = voxelrender::SceneCameraMode::Max;
+
 	bool wantGizmo() const;
 	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
 	void updateBounds(const scenegraph::SceneGraphNode &node);

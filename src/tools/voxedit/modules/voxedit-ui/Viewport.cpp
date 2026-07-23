@@ -518,8 +518,10 @@ void Viewport::menuBarCaptureOptions() {
 }
 
 void Viewport::menuBarScreenshotOptions(command::CommandExecutionListener *listener) {
-	const core::String command = core::String::format("screenshot %i", _id);
-	ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
+	if (_screenshotCommand.empty()) {
+		_screenshotCommand = core::String::format("screenshot %i", _id);
+	}
+	ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), _screenshotCommand.c_str(), listener);
 }
 
 void Viewport::menuBarView(command::CommandExecutionListener *listener) {
@@ -600,8 +602,9 @@ void Viewport::menuBarRecentColors() {
 
 	for (size_t i = 0; i < count; ++i) {
 		const color::RGBA color = _recentColors[i];
-		const core::String id = core::String::format("##recentcol%i", (int)i);
-		if (ImGui::ColorButton(id.c_str(), ImColor(color.rgba), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(height, height))) {
+		char id[32];
+		core::String::formatBuf(id, sizeof(id), "##recentcol%i", (int)i);
+		if (ImGui::ColorButton(id, ImColor(color.rgba), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(height, height))) {
 			const int palIdx = palette.getClosestMatch(color);
 			if (palIdx != palette::PaletteColorNotFound) {
 				_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, palIdx));
@@ -663,18 +666,22 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
 								 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
-	const char *modeStr = isSceneMode() ? _("SceneMode") : _("EditMode");
 
 	_renderContext.renderNormals = _renderNormals->boolVal();
 
-	core::String name;
-	if (_detailedTitle) {
-		name =
-			core::String::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr, _uiId.c_str());
-	} else {
-		name = core::String::format("%s%s", modeStr, _uiId.c_str());
+	const bool sceneMode = isSceneMode();
+	if (_windowTitle.empty() || _cachedTitleSceneMode != sceneMode || _cachedTitleCamMode != _camMode) {
+		_cachedTitleSceneMode = sceneMode;
+		_cachedTitleCamMode = _camMode;
+		const char *modeStr = sceneMode ? _("SceneMode") : _("EditMode");
+		if (_detailedTitle) {
+			_windowTitle = core::String::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr,
+												_uiId.c_str());
+		} else {
+			_windowTitle = core::String::format("%s%s", modeStr, _uiId.c_str());
+		}
 	}
-	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
+	if (ImGui::Begin(_windowTitle.c_str(), nullptr, sceneWindowFlags)) {
 		_pos = ImGui::GetWindowPos();
 		_size = ImGui::GetWindowSize();
 		_visible = true;

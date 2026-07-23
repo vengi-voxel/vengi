@@ -1189,10 +1189,14 @@ void MainWindow::update(double nowSeconds) {
 			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 		}
 
-		core::String windowTitle = _app->windowTitle();
-		windowTitle.append("###app");
+		const core::String &lastOpened = core::getVar(cfg::UIFileDialogLastFile)->strVal();
+		if (_imguiWindowTitle.empty() || _cachedLastOpenedForTitle != lastOpened) {
+			_cachedLastOpenedForTitle = lastOpened;
+			_imguiWindowTitle = _app->windowTitle();
+			_imguiWindowTitle.append("###app");
+		}
 		static bool keepRunning = true;
-		if (!ImGui::Begin(windowTitle.c_str(), &keepRunning, windowFlags)) {
+		if (!ImGui::Begin(_imguiWindowTitle.c_str(), &keepRunning, windowFlags)) {
 			ImGui::SetWindowCollapsed(ImGui::GetCurrentWindow(), false);
 			ImGui::End();
 			_app->minimize();
