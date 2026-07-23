@@ -55,13 +55,11 @@ static int InputTextCallback(ImGuiInputTextCallbackData *data) {
 	return 0;
 }
 
-static core::String getId(const char *icon, const char *label) {
-	core::String id(icon);
-	id += ' ';
-	id += label;
-	id += "###";
-	id += label;
-	return id;
+static const char *getId(const char *icon, const char *label, char *buf, size_t buflen) {
+	core_assert(icon != nullptr);
+	core_assert(label != nullptr);
+	core::String::formatBuf(buf, buflen, "%s %s###%s", icon, label, label);
+	return buf;
 }
 
 static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
@@ -538,9 +536,10 @@ bool InputVarInt(const char *varName, int step, int step_fast, ImGuiInputTextFla
 
 bool IconCheckboxVar(const char *icon, const core::VarPtr &var) {
 	const core::String label = _priv::varLabel(var);
-	const core::String labelWithIcon(_priv::getId(icon, label.c_str()));
+	char labelWithIcon[256];
+	_priv::getId(icon, label.c_str(), labelWithIcon, sizeof(labelWithIcon));
 	bool val = var->boolVal();
-	if (Checkbox(labelWithIcon.c_str(), &val)) {
+	if (Checkbox(labelWithIcon, &val)) {
 		if (var->setVal(val)) {
 			return true;
 		}
@@ -570,20 +569,23 @@ bool CheckboxVar(const char *varName) {
 }
 
 bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return CheckboxFlags(labelWithIcon.c_str(), flags, flags_value);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return CheckboxFlags(labelWithIcon, flags, flags_value);
 }
 
 bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return CollapsingHeader(labelWithIcon.c_str(), flags);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return CollapsingHeader(labelWithIcon, flags);
 }
 
 bool IconSliderVarInt(const char *icon, const core::VarPtr &var,
 					  const char *format, ImGuiSliderFlags flags) {
 	const core::String label = _priv::varLabel(var);
-	const core::String labelWithIcon(_priv::getId(icon, label.c_str()));
-	return _priv::SliderVarInt(labelWithIcon.c_str(), var, format, flags);
+	char labelWithIcon[256];
+	_priv::getId(icon, label.c_str(), labelWithIcon, sizeof(labelWithIcon));
+	return _priv::SliderVarInt(labelWithIcon, var, format, flags);
 }
 
 bool IconSliderVarInt(const char *icon, const char* varName,
@@ -835,8 +837,9 @@ bool CommandButton(const char *label, const char *command, const char *tooltip, 
 }
 
 bool CommandIconButton(const char *icon, const char *label, const char *command, command::CommandExecutionListener &listener) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return CommandButton(labelWithIcon.c_str(), command, listener);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return CommandButton(labelWithIcon, command, listener);
 }
 
 bool CommandButton(const char *label, const char *command, command::CommandExecutionListener &listener) {
@@ -856,13 +859,13 @@ bool CommandIconMenuItem(const char *icon, const char *label, const char *comman
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
 	const char *menuLabel = label;
 	const char *menuIcon = icon;
-	core::String labelWithIcon;
+	char labelWithIcon[256];
 	// MenuItemEx does not draw the icon parameter in a horizontal menubar; fold it into the label.
 	ImGuiWindow *window = GetCurrentWindow();
 	if (icon != nullptr && icon[0] != '\0' && window != nullptr &&
 		window->DC.LayoutType == ImGuiLayoutType_Horizontal) {
-		labelWithIcon = _priv::getId(icon, label);
-		menuLabel = labelWithIcon.c_str();
+		_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+		menuLabel = labelWithIcon;
 		menuIcon = nullptr;
 	}
 	if (ImGui::MenuItemEx(menuLabel, menuIcon, keybinding.c_str(), false, enabled)) {
@@ -895,13 +898,15 @@ bool NoButton(const ImVec2 &size) {
 }
 
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return Selectable(labelWithIcon.c_str(), selected, flags, size);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return Selectable(labelWithIcon, selected, flags, size);
 }
 
 bool URLIconButton(const char *icon, const char *label, const char *url) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return URLButton(labelWithIcon.c_str(), url);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return URLButton(labelWithIcon, url);
 }
 
 bool URLButton(const char *label, const char *url) {
@@ -914,8 +919,9 @@ bool URLButton(const char *label, const char *url) {
 }
 
 void URLIconItem(const char *icon, const char *label, const char *url, float width) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	URLItem(labelWithIcon.c_str(), url, width);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	URLItem(labelWithIcon, url, width);
 }
 
 void URLItem(const char *label, const char *url, float width) {
@@ -1061,13 +1067,15 @@ void IconDialog(const char *icon, const char *text, bool wrap) {
 }
 
 bool IconCheckbox(const char *icon, const char *label, bool *v) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return ImGui::Checkbox(labelWithIcon.c_str(), v);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return ImGui::Checkbox(labelWithIcon, v);
 }
 
 bool BeginIconCombo(const char *icon, const char *label, const char *preview_value, ImGuiComboFlags flags) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return ImGui::BeginCombo(labelWithIcon.c_str(), preview_value, flags);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return ImGui::BeginCombo(labelWithIcon, preview_value, flags);
 }
 
 bool BeginIconMenu(const char *icon, const char *label, bool enabled) {
@@ -1079,13 +1087,15 @@ bool IconMenuItem(const char *icon, const char *label, const char *shortcut, boo
 }
 
 bool IconButton(const char *icon, const char *label, const ImVec2 &size) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return Button(labelWithIcon.c_str(), size);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return Button(labelWithIcon, size);
 }
 
 bool DisabledIconButton(const char *icon, const char *label, bool disabled, const ImVec2 &size) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return DisabledButton(labelWithIcon.c_str(), disabled, size);
+	char labelWithIcon[256];
+	_priv::getId(icon, label, labelWithIcon, sizeof(labelWithIcon));
+	return DisabledButton(labelWithIcon, disabled, size);
 }
 
 } // namespace ImGui
