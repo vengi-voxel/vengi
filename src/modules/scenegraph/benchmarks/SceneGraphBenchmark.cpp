@@ -85,10 +85,69 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery)(benchmark:
 	}
 }
 
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, GetCollisionNodes256)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	const int nodeCount = 256;
+	for (int i = 0; i < nodeCount; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
+		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)(i % 16) * 10.0f, 0.0f, (float)(i / 16) * 10.0f));
+		modelNode.setTransform(0, transform);
+		sceneGraph.emplace(core::move(modelNode));
+	}
+	sceneGraph.updateTransforms();
+
+	const math::AABB<float> queryAABB(glm::vec3(-5.0f, -5.0f, -5.0f), glm::vec3(165.0f, 10.0f, 165.0f));
+	for (auto _ : state) {
+		scenegraph::CollisionNodes nodes;
+		sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
+		benchmark::DoNotOptimize(nodes);
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, UpdateTransformsMany)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < 64; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)i, 0.0f, 0.0f));
+		modelNode.setTransform(0, transform);
+		sceneGraph.emplace(core::move(modelNode));
+	}
+	for (auto _ : state) {
+		sceneGraph.updateTransforms();
+		benchmark::ClobberMemory();
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameCached)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+	modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldTranslation(glm::vec3(5.0f, 1.0f, 2.0f));
+	modelNode.setTransform(0, transform);
+	const int nodeId = sceneGraph.emplace(core::move(modelNode));
+	sceneGraph.updateTransforms();
+	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+	// Warm cache
+	sceneGraph.transformForFrame(node, 0);
+	for (auto _ : state) {
+		scenegraph::FrameTransform ft = sceneGraph.transformForFrame(node, 0);
+		benchmark::DoNotOptimize(ft);
+	}
+}
+
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, Init);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SceneGraphNode);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SizeModel);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesMany);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodes256);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, UpdateTransformsMany);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameCached);
 
 BENCHMARK_MAIN();
