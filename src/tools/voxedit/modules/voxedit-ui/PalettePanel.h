@@ -51,6 +51,7 @@ private:
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
 	core::String _lospecID;
+	core::String _windowTitle;
 	palette::PaletteCache &_paletteCache;
 	SceneManagerPtr _sceneMgr;
 

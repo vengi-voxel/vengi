@@ -49,9 +49,14 @@ private:
 	};
 	core::DynamicArray<DisplayNode> _displayNodes;
 	core::Set<int> _collapsedNodes;
+	size_t _cachedNodeCount = 0;
+	bool _displayListDirty = true;
+	core::String _windowTitle;
 
 	core::String _filterName;
+	core::String _cachedFilterName;
 	scenegraph::SceneGraphNodeType _filterType = scenegraph::SceneGraphNodeType::All;
+	scenegraph::SceneGraphNodeType _cachedFilterType = scenegraph::SceneGraphNodeType::All;
 	bool isFiltered(const scenegraph::SceneGraphNode &node) const;
 
 	void registerPopups();
@@ -60,6 +65,7 @@ private:
 							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
 							  int referencedNodeId);
 	void rebuildDisplayList(const scenegraph::SceneGraph &sceneGraph, int nodeId, int depth);
+	void ensureDisplayList(const scenegraph::SceneGraph &sceneGraph);
 
 	// remove nodes from collapsed list to ensure visibility of the given node
 	void makeVisible(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);

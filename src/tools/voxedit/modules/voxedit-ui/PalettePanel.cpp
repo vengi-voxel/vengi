@@ -497,8 +497,10 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	const int selectedPaletteColorIdx = currentPaletteColorIndex();
 	_hasFocus = false;
 	_importPalette.clear();
-	const core::String title = makeTitle(ICON_LC_PALETTE, _("Palette"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
+	if (_windowTitle.empty()) {
+		_windowTitle = makeTitle(ICON_LC_PALETTE, _("Palette"), id);
+	}
+	if (ImGui::Begin(_windowTitle.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
@@ -511,17 +513,31 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			const ImDrawListFlags backupFlags = drawList->Flags;
 			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
 
-			ImVec2 cursorPos = pos;
 			const float windowPosX = ImGui::GetWindowPos().x;
 			const float contentRegionRightEdge = windowPosX + ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x;
+			const float rowWidth = core_max(frameHeight, contentRegionRightEdge - pos.x);
+			const int colorsPerRow = core_max(1, (int)(rowWidth / frameHeight));
+			const int totalRows = (palette::PaletteMaxColors + colorsPerRow - 1) / colorsPerRow;
 
-			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
-				// handle potential sorting by swapping the ui index
-				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-				addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, palettePanelIdx, frameHeight, node, listener);
+			ImGuiListClipper clipper;
+			clipper.Begin(totalRows, frameHeight);
+			while (clipper.Step()) {
+				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
+					ImVec2 cursorPos(pos.x, pos.y + (float)row * frameHeight);
+					const int rowStart = row * colorsPerRow;
+					for (int col = 0; col < colorsPerRow; ++col) {
+						const int palettePanelIdx = rowStart + col;
+						if (palettePanelIdx >= palette::PaletteMaxColors) {
+							break;
+						}
+						const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
+						addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, (uint8_t)palettePanelIdx,
+								 frameHeight, node, listener);
+					}
+				}
 			}
 
-			ImGui::SetCursorScreenPos(cursorPos);
+			ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + (float)totalRows * frameHeight));
 
 			drawList->Flags = backupFlags;
 

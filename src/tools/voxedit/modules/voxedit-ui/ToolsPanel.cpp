@@ -154,8 +154,9 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, minStep);
 		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, minStep);
 
-		const core::String &moveCmd = core::String::format("move %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_BOXES, _("Move"), moveCmd.c_str(), listener);
+		char moveCmd[64];
+		core::String::formatBuf(moveCmd, sizeof(moveCmd), "move %i %i %i", translate.x, translate.y, translate.z);
+		ImGui::CommandIconButton(ICON_LC_BOXES, _("Move"), moveCmd, listener);
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -167,9 +168,11 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		}
 		ImGui::TooltipCommand("lockx");
 		ImGui::SameLine();
-		const int step = core::getVar(cfg::VoxEditGridsize)->intVal();
+		const int step = _gridSize->intVal();
 		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
-			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			char commandLine[64];
+			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
+									cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
@@ -179,7 +182,9 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("locky");
 		ImGui::SameLine();
 		if (ImGui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
-			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			char commandLine[64];
+			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
+									cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
@@ -189,7 +194,9 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("lockz");
 		ImGui::SameLine();
 		if (ImGui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
-			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			char commandLine[64];
+			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
+									cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
@@ -204,8 +211,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ToolsPanel);
-	const core::String title = makeTitle(ICON_LC_WRENCH, _("Tools"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (_windowTitle.empty()) {
+		_windowTitle = makeTitle(ICON_LC_WRENCH, _("Tools"), id);
+	}
+	if (ImGui::Begin(_windowTitle.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {
