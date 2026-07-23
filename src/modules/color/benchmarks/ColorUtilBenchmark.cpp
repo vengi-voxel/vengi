@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "app/benchmark/AbstractBenchmark.h"
 #include "benchmark/benchmark.h"
 #include "color/ColorUtil.h"
@@ -48,10 +52,45 @@ BENCHMARK_DEFINE_F(ColorUtilBenchmark, fromHSB)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(ColorUtilBenchmark, getDistanceApprox)(benchmark::State &state) {
+	const color::RGBA a(13, 39, 26, 255);
+	const color::RGBA b(200, 10, 90, 255);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(color::getDistance(a, b, color::Distance::Approximation));
+	}
+}
+
+BENCHMARK_DEFINE_F(ColorUtilBenchmark, getDistanceHSB)(benchmark::State &state) {
+	const color::RGBA a(13, 39, 26, 255);
+	const color::RGBA b(200, 10, 90, 255);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(color::getDistance(a, b, color::Distance::HSB));
+	}
+}
+
+BENCHMARK_DEFINE_F(ColorUtilBenchmark, rgbaMix)(benchmark::State &state) {
+	const color::RGBA a(13, 39, 26, 255);
+	const color::RGBA b(200, 10, 90, 128);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(color::RGBA::mix(a, b, 0.35f));
+	}
+}
+
+BENCHMARK_DEFINE_F(ColorUtilBenchmark, rgbaBrightness)(benchmark::State &state) {
+	const color::RGBA a(13, 39, 26, 255);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(a.brightness());
+	}
+}
+
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, fromRGBA);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, fromRGBA2);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getRGBA4);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getRGBA3);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getHSB);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, fromHSB);
+BENCHMARK_REGISTER_F(ColorUtilBenchmark, getDistanceApprox);
+BENCHMARK_REGISTER_F(ColorUtilBenchmark, getDistanceHSB);
+BENCHMARK_REGISTER_F(ColorUtilBenchmark, rgbaMix);
+BENCHMARK_REGISTER_F(ColorUtilBenchmark, rgbaBrightness);
 BENCHMARK_MAIN();
