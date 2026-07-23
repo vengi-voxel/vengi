@@ -251,6 +251,34 @@ TEST_F(VolumeRescalerTest, testScaleVolumePreservesVoxelCount) {
 	EXPECT_GE(scaledCount, originalCount);
 }
 
+TEST_F(VolumeRescalerTest, testScaleVolumeSparseInLargeEmptyVolume) {
+	// Scattered solids in a large empty region must still appear after scale-up.
+	// Exercises the solid-influence dest scan used for sparse volumes.
+	voxel::RawVolume volume({0, 31});
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	volume.setVoxel(15, 8, 4, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	volume.setVoxel(30, 30, 30, voxel::createVoxel(voxel::VoxelType::Generic, 3));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f)));
+	ASSERT_TRUE(scaled);
+	EXPECT_GT(voxelutil::countVoxels(*scaled), 0);
+	EXPECT_FALSE(voxel::isAir(scaled->voxel(0, 0, 0).getMaterial()));
+	// Gap-fill nearest may shift by a cell; require a solid near the mapped centers.
+	auto hasSolidNear = [&](int x, int y, int z) {
+		for (int dz = -1; dz <= 1; ++dz) {
+			for (int dy = -1; dy <= 1; ++dy) {
+				for (int dx = -1; dx <= 1; ++dx) {
+					if (!voxel::isAir(scaled->voxel(x + dx, y + dy, z + dz).getMaterial())) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	};
+	EXPECT_TRUE(hasSolidNear(30, 16, 8));
+	EXPECT_TRUE(hasSolidNear(60, 60, 60));
+}
+
 TEST_F(VolumeRescalerTest, testScaleVolumeNoGaps3x) {
 	// A solid 4x4x4 cube scaled up 3x should have no gaps inside.
 	// This verifies sampleNearest doesn't create checkerboard holes.
