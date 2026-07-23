@@ -43,9 +43,9 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 
 					float colorContributors = 0.0f;
 					float solidVoxels = 0.0f;
-					float avgColorRed = 0.0f;
-					float avgColorGreen = 0.0f;
-					float avgColorBlue = 0.0f;
+					uint32_t sumR = 0u;
+					uint32_t sumG = 0u;
+					uint32_t sumB = 0u;
 					voxel::Voxel colorGuardVoxel;
 
 					typename SourceVolume::Sampler srcSampler1(sourceVolume);
@@ -68,10 +68,10 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 										srcSampler3.movePositiveX();
 										continue;
 									}
-									const glm::vec4 &color = color::fromRGBA(palette.color(child.getColor()));
-									avgColorRed += color.r;
-									avgColorGreen += color.g;
-									avgColorBlue += color.b;
+									const color::RGBA color = palette.color(child.getColor());
+									sumR += color.r;
+									sumG += color.g;
+									sumB += color.b;
 									++colorContributors;
 								}
 								srcSampler3.movePositiveX();
@@ -87,15 +87,14 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 					const float threshold = 7.0f - exposureRatio * 6.0f;
 					if (solidVoxels >= threshold && solidVoxels > 0.0f) {
 						if (colorContributors <= 0.0f) {
-							const glm::vec4 &color = color::fromRGBA(palette.color(colorGuardVoxel.getColor()));
-							avgColorRed += color.r;
-							avgColorGreen += color.g;
-							avgColorBlue += color.b;
+							const color::RGBA color = palette.color(colorGuardVoxel.getColor());
+							sumR += color.r;
+							sumG += color.g;
+							sumB += color.b;
 							++colorContributors;
 						}
-						const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors,
-												avgColorBlue / colorContributors, 1.0f);
-						color::RGBA avgRGBA = color::getRGBA(avgColor);
+						const uint32_t n = (uint32_t)colorContributors;
+						const color::RGBA avgRGBA((uint8_t)(sumR / n), (uint8_t)(sumG / n), (uint8_t)(sumB / n), 255u);
 						const int index = palette.getClosestMatch(avgRGBA);
 						voxel::Voxel voxel = voxel::createVoxel(palette, index);
 						destVolume.setVoxel(dstPos, voxel);
@@ -182,10 +181,10 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 									++exposedFaces;
 								}
 
-								const glm::vec4 &color = color::fromRGBA(palette.color(child.getColor()));
-								totalRed += color.r * exposedFaces;
-								totalGreen += color.g * exposedFaces;
-								totalBlue += color.b * exposedFaces;
+								const color::RGBA color = palette.color(child.getColor());
+								totalRed += (float)color.r * exposedFaces;
+								totalGreen += (float)color.g * exposedFaces;
+								totalBlue += (float)color.b * exposedFaces;
 
 								totalExposedFaces += exposedFaces;
 								srcSampler3.movePositiveX();
@@ -200,9 +199,9 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 						++totalExposedFaces;
 					}
 
-					const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces,
-											totalBlue / totalExposedFaces, 1.0f);
-					color::RGBA avgRGBA = color::getRGBA(avgColor);
+					const color::RGBA avgRGBA((uint8_t)(totalRed / totalExposedFaces),
+											 (uint8_t)(totalGreen / totalExposedFaces),
+											 (uint8_t)(totalBlue / totalExposedFaces), 255u);
 					const int index = palette.getClosestMatch(avgRGBA);
 					const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 					dstSampler3.setVoxel(voxel);
