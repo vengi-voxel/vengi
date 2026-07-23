@@ -117,6 +117,41 @@ TEST_F(VolumeRescalerTest, testScaleDownUniformColorPreserved) {
 	});
 }
 
+TEST_F(VolumeRescalerTest, testScaleDownSurfaceColorFromNeighborhood) {
+	// Thin shell of a second color must still influence boundary colors in pass 2.
+	voxel::RawVolume volume({0, 7});
+	const uint8_t coreColor = 10u;
+	const uint8_t shellColor = 200u;
+	for (int z = 1; z <= 6; ++z) {
+		for (int y = 1; y <= 6; ++y) {
+			for (int x = 1; x <= 6; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, coreColor));
+			}
+		}
+	}
+	for (int z = 0; z <= 7; ++z) {
+		for (int y = 0; y <= 7; ++y) {
+			volume.setVoxel(0, y, z, voxel::createVoxel(voxel::VoxelType::Generic, shellColor));
+			volume.setVoxel(7, y, z, voxel::createVoxel(voxel::VoxelType::Generic, shellColor));
+		}
+	}
+	palette::Palette pal;
+	pal.nippon();
+	const voxel::Region &srcRegion = volume.region();
+	const glm::ivec3 targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDims);
+	voxel::RawVolume destVolume(destRegion);
+	voxelutil::scaleDown(volume, pal, destVolume);
+	ASSERT_GT(voxelutil::countVoxels(destVolume), 0);
+	bool sawShellish = false;
+	voxelutil::visitVolume(destVolume, [&](int, int, int, const voxel::Voxel &voxel) {
+		if (!voxel::isAir(voxel.getMaterial()) && voxel.getColor() != coreColor) {
+			sawShellish = true;
+		}
+	});
+	EXPECT_TRUE(sawShellish) << "Pass-2 neighborhood recolor should preserve shell tint on the boundary";
+}
+
 TEST_F(VolumeRescalerTest, testScaleVolumeDoubleSize) {
 	voxel::RawVolume volume({0, 3});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
