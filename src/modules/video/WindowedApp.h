@@ -129,7 +129,7 @@ public:
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
-	core::String getKeyBindingsString(const char *cmd) const;
+	const core::String &getKeyBindingsString(const char *cmd) const;
 
 	/**
 	 * @brief Opens a file dialog

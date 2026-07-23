@@ -6,8 +6,10 @@
 
 #include "core/BindingContext.h"
 #include "core/IComponent.h"
-#include "KeybindingParser.h"
+#include "core/String.h"
 #include "core/collection/Set.h"
+#include "core/collection/StringMap.h"
+#include "KeybindingParser.h"
 #include <stdint.h>
 
 namespace util {
@@ -27,16 +29,19 @@ private:
 	uint32_t _pressedModifierMask = 0u;
 	core::Set<int32_t> _keys;
 	BindMap _bindings;
+	mutable core::StringMap<core::String> _keyBindingStrings;
+
+	void invalidateKeyBindingStrings();
 
 	/**
 	 * @brief Reverse lookup of key bindings - by command name
 	 * @param[out] modifier The modifier mask that the command is bound to
 	 * @param[out] key The key that the command is bound to
 	 * @return @c false if no binding for the given command was found
-	 * @note Only use the values of the given input pointers, if the
+	 * @note Only use the values of the given output pointers, if the
 	 * method returned @c true
 	 */
-	bool resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key, uint16_t *count) const;
+	bool resolveKeyBindings(const char *cmd, int16_t *modifier, int32_t *key, uint16_t *count) const;
 
 	/**
 	 * @brief Tries to identify commands with several modifier masks.
@@ -44,7 +49,8 @@ private:
 	bool executeCommands(int32_t key, int16_t modifier, double nowSeconds, uint16_t count);
 	void saveKeybindings(int version);
 	static core::String getKeyName(int32_t key, uint16_t count = 1u);
-	static const char* getModifierName(int16_t modifier);
+	static const char *getModifierName(int16_t modifier);
+
 public:
 	void construct();
 	void shutdown(int version);
@@ -54,15 +60,12 @@ public:
 	void openKeybindings(int version);
 	void removeApplicationKeyBindings(int version);
 
-	bool registerBinding(const core::String &command, int32_t key, int16_t modifier,
-						 core::BindingContext context, uint16_t count);
+	bool registerBinding(const core::String &command, int32_t key, int16_t modifier, core::BindingContext context,
+						 uint16_t count);
 
-	bool registerBinding(const core::String &keys, const core::String &command,
-						 core::BindingContext context);
+	bool registerBinding(const core::String &keys, const core::String &command, core::BindingContext context);
 
-	bool registerBinding(const core::String &keys, const core::String &command,
-						 const core::String &context);
-
+	bool registerBinding(const core::String &keys, const core::String &command, const core::String &context);
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination
@@ -71,9 +74,10 @@ public:
 	/**
 	 * @brief Resolve the bindings for a given command string
 	 * @return Empty string if the given command doesn't have a binding, or the value
-	 * of @c toString(key, modifier) if a binding was found.
+	 * of @c toString(key, modifier) if a binding was found. The returned reference is
+	 * stable until bindings change.
 	 */
-	core::String getKeyBindingsString(const char *cmd) const;
+	const core::String &getKeyBindingsString(const char *cmd) const;
 
 	/**
 	 * @brief Loads a keybindings file
@@ -83,7 +87,7 @@ public:
 	 * @brief Loads a keybindings string
 	 */
 	bool loadBindings(const core::String &bindings);
-	void setBindings(const BindMap& bindings);
+	void setBindings(const BindMap &bindings);
 	const BindMap bindings() const;
 
 	/**
@@ -109,4 +113,4 @@ inline const BindMap KeyBindingHandler::bindings() const {
 	return _bindings;
 }
 
-}
+} // namespace util

@@ -7,8 +7,10 @@
 #include "CustomButtonNames.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
+#include "core/Assert.h"
 #include "core/BindingContext.h"
 #include "core/String.h"
+#include "core/StringCacheHash.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
@@ -187,6 +189,7 @@ void KeyBindingHandler::construct() {
 					Log::info("Added binding for key %s", key.c_str());
 				}
 			}
+			invalidateKeyBindingStrings();
 		}).setHelp(_("Bind a command to a key"));
 
 	command::Command::registerCommand("unbind")
@@ -210,6 +213,7 @@ void KeyBindingHandler::construct() {
 					if (it->second.modifier == pair.modifier && it->second.count == pair.count &&
 						it->second.context == pair.context) {
 						_bindings.erase(it);
+						invalidateKeyBindingStrings();
 						found = true;
 						Log::info("Removed binding for key '%s' in context '%s'", key.c_str(), context.c_str());
 						break;
@@ -305,8 +309,13 @@ void KeyBindingHandler::openKeybindings(int version) {
 	app::App::openURL(fileurl);
 }
 
+void KeyBindingHandler::invalidateKeyBindingStrings() {
+	_keyBindingStrings.clear();
+}
+
 void KeyBindingHandler::clear() {
 	_bindings.clear();
+	invalidateKeyBindingStrings();
 }
 
 bool KeyBindingHandler::init() {
@@ -380,6 +389,7 @@ bool KeyBindingHandler::registerBinding(const core::String &command, int32_t key
 		return false;
 	}
 	_bindings.insert(std::make_pair(key, CommandModifierPair{command, modifier, count, context}));
+	invalidateKeyBindingStrings();
 	return true;
 }
 
@@ -432,8 +442,9 @@ bool KeyBindingHandler::loadBindings(const core::String &bindings) {
 	return !_bindings.empty();
 }
 
-void KeyBindingHandler::setBindings(const BindMap& bindings) {
+void KeyBindingHandler::setBindings(const BindMap &bindings) {
 	_bindings = bindings;
+	invalidateKeyBindingStrings();
 }
 
 core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t count) {
@@ -449,14 +460,27 @@ core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t
 	return str;
 }
 
-core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
+const core::String &KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
+	if (cmd == nullptr || cmd[0] == '\0') {
+		return core::String::Empty;
+	}
+	const core::StringCacheHash cacheKey(cmd);
+	auto i = _keyBindingStrings.find(cacheKey);
+	if (i != _keyBindingStrings.end()) {
+		return i->value;
+	}
+
 	int16_t modifier;
 	int32_t key;
 	uint16_t count;
-	if (!resolveKeyBindings(cmd, &modifier, &key, &count)) {
-		return core::String::Empty;
+	core::String label;
+	if (resolveKeyBindings(cmd, &modifier, &key, &count)) {
+		label = toString(key, modifier, count);
 	}
-	return toString(key, modifier, count);
+	_keyBindingStrings.put(cacheKey, label);
+	i = _keyBindingStrings.find(cacheKey);
+	core_assert(i != _keyBindingStrings.end());
+	return i->value;
 }
 
 bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key, uint16_t *count) const {

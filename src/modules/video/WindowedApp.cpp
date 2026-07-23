@@ -269,7 +269,7 @@ bool WindowedApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) 
 	return handleKeyPress(key, modifier);
 }
 
-core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
+const core::String &WindowedApp::getKeyBindingsString(const char *cmd) const {
 	return _keybindingHandler.getKeyBindingsString(cmd);
 }
 
