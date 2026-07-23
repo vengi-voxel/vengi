@@ -114,4 +114,38 @@ TEST_F(VolumeSamplerTest, testSampleCubicSamplerMatchesVolume) {
 	EXPECT_EQ(sampleCubic(sampler, pos).getColor(), sampleCubic(sampler, pos).getColor());
 }
 
+TEST_F(VolumeSamplerTest, testSampleNearestExactHit) {
+	voxel::RawVolume v({0, 4});
+	v.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 7));
+	voxel::VolumeSampler sampler(&v);
+	EXPECT_EQ(7, sampleNearest(sampler, {2.0f, 2.0f, 2.0f}).getColor());
+	EXPECT_EQ(7, sampleNearest(sampler, {2.4f, 1.6f, 2.1f}).getColor());
+}
+
+TEST_F(VolumeSamplerTest, testSampleNearestFillsGapFromNeighbor) {
+	// Rounding lands on air next to a solid; nearest must pull the solid in.
+	voxel::RawVolume v({0, 4});
+	v.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 9));
+	voxel::VolumeSampler sampler(&v);
+	const voxel::Voxel result = sampleNearest(sampler, {2.6f, 2.0f, 2.0f});
+	EXPECT_EQ(9, result.getColor());
+}
+
+TEST_F(VolumeSamplerTest, testSampleNearestPicksCloserNeighbor) {
+	voxel::RawVolume v({0, 5});
+	v.setVoxel(1, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(3, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	voxel::VolumeSampler sampler(&v);
+	// round(1.6)=2 (air); neighbor at x=1 is closer than x=3
+	EXPECT_EQ(1, sampleNearest(sampler, {1.6f, 2.0f, 2.0f}).getColor());
+	// round(2.4)=2 (air); neighbor at x=3 is closer than x=1
+	EXPECT_EQ(2, sampleNearest(sampler, {2.4f, 2.0f, 2.0f}).getColor());
+}
+
+TEST_F(VolumeSamplerTest, testSampleNearestEmptyIsAir) {
+	voxel::RawVolume v({0, 3});
+	voxel::VolumeSampler sampler(&v);
+	EXPECT_TRUE(voxel::isAir(sampleNearest(sampler, {1.5f, 1.5f, 1.5f}).getMaterial()));
+}
+
 } // namespace voxel
