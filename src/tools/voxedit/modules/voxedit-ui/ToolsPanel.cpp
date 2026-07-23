@@ -94,8 +94,9 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 }
 
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
+	const bool jobRunning = _sceneMgr->isSceneJobRunning();
 	if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (_sceneMgr->isSceneJobRunning()) {
+		if (jobRunning) {
 			ImGui::TextUnformatted(_sceneMgr->sceneJobText().c_str());
 			ImGui::SameLine();
 			if (ImGui::Button(_("Cancel"))) {
@@ -106,19 +107,20 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		style.pushFontSize(imguiApp()->bigFontSize());
 		ui::Toolbar toolbar("toolbar", &listener);
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		toolbar.button(ICON_LC_CROP, "crop", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_SCALING, "resizetoselection", _sceneMgr->isSceneJobRunning() || !_sceneMgr->hasSelection(nodeId));
-		toolbar.button(ICON_LC_SPLIT, "splitobjects", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_EXPAND, "modelsize", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_UNGROUP, "colortomodel", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_SQUARE_CHEVRON_DOWN, "scaledown", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_SQUARE_CHEVRON_UP, "scaleup", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_ERASER, "hollow", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_X, "clear", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_TRASH, "deleteselected", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_PAINT_BUCKET, "fill", _sceneMgr->isSceneJobRunning());
-		toolbar.button(ICON_LC_MERGE, "splatmerge", _sceneMgr->isSceneJobRunning());
+		const bool noSelection = jobRunning || !_sceneMgr->hasSelection(nodeId);
+		toolbar.button(ICON_LC_CROP, "crop", jobRunning);
+		toolbar.button(ICON_LC_SCALING, "resizetoselection", noSelection);
+		toolbar.button(ICON_LC_SPLIT, "splitobjects", jobRunning);
+		toolbar.button(ICON_LC_EXPAND, "modelsize", jobRunning);
+		toolbar.button(ICON_LC_UNGROUP, "colortomodel", jobRunning);
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_DOWN, "scaledown", jobRunning);
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_UP, "scaleup", jobRunning);
+		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow", jobRunning);
+		toolbar.button(ICON_LC_ERASER, "hollow", jobRunning);
+		toolbar.button(ICON_LC_X, "clear", jobRunning);
+		toolbar.button(ICON_LC_TRASH, "deleteselected", jobRunning);
+		toolbar.button(ICON_LC_PAINT_BUCKET, "fill", jobRunning);
+		toolbar.button(ICON_LC_MERGE, "splatmerge", jobRunning);
 	}
 
 	const float buttonWidth = ImGui::GetFontSize() * 4;
