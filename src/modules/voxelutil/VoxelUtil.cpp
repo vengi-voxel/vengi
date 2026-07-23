@@ -133,19 +133,7 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Co
 }
 
 bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
-	voxel::RawVolume::Sampler sampler(v);
-	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += 1) {
-			sampler.setPosition(x, y, region.getLowerZ());
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += 1) {
-				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-					return false;
-				}
-				sampler.movePositiveZ();
-			}
-		}
-	}
-	return true;
+	return v.isEmpty(region);
 }
 
 void fill(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, bool overwrite) {
