@@ -194,6 +194,7 @@ public:
 
 	bool isHovered() const;
 	bool isVisible() const;
+	void setEnableBloom(bool enable);
 	/**
 	 * Update the ui
 	 */
@@ -227,6 +228,10 @@ inline int Viewport::id() const {
 
 inline bool Viewport::isHovered() const {
 	return _hovered && !_cameraManipulated && !_viewportUIElementHovered;
+}
+
+inline void Viewport::setEnableBloom(bool enable) {
+	_renderContext.enableBloom = enable;
 }
 
 inline bool Viewport::isVisible() const {

@@ -71,6 +71,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 		return matchesVarFilter(cfg::RenderOutline) || matchesVarFilter(cfg::RenderSelectionTint) ||
 			   matchesVarFilter(cfg::RenderNormals) || matchesVarFilter(cfg::RenderCheckerBoard) ||
 			   matchesVarFilter(cfg::VoxEditShadingMode) || matchesVarFilter(cfg::ClientBloom) ||
+			   matchesVarFilter(cfg::ClientBloomPasses) ||
 			   matchesVarFilter(cfg::RenderToneMapping);
 	case OptionCategory::Renderer:
 		return matchesVarFilter(cfg::ClientShadowMapSize) || matchesVarFilter(cfg::ClientGamma) ||
@@ -278,6 +279,9 @@ void OptionsPanel::renderRendering() {
 	}
 	if (matchesVarFilter(cfg::ClientBloom)) {
 		ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
+	}
+	if (matchesVarFilter(cfg::ClientBloomPasses)) {
+		ImGui::SliderVarInt(cfg::ClientBloomPasses);
 	}
 	if (matchesVarFilter(cfg::RenderToneMapping)) {
 		ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);

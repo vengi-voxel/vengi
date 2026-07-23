@@ -706,7 +706,10 @@ void Viewport::shutdown() {
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
+	const bool prevBloom = _renderContext.enableBloom;
+	_renderContext.enableBloom = true;
 	_sceneMgr->render(_renderContext, _modifierRenderContext, camera(), SceneManager::RenderScene);
+	_renderContext.enableBloom = prevBloom;
 
 	// If multisampling is enabled, resolve first, then get image from resolve framebuffer
 	if (_renderContext.enableMultisampling) {

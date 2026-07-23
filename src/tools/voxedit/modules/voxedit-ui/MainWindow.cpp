@@ -417,10 +417,14 @@ void MainWindow::mainWidget(double nowSeconds) {
 	if (viewport != nullptr) {
 		_lastHoveredViewport = viewport;
 	}
+	Viewport *bloomViewport = activeViewport();
 	command::CommandExecutionListener &listener = _app->commandListener();
 	ImGuizmo::BeginFrame();
 	_sceneMgr->resetViewportMouseBlock();
 	for (size_t i = 0; i < _viewports.size(); ++i) {
+		// Bloom FBO resize is expensive; keep FBOs allocated and only run the post-process on the
+		// active viewport (or all of them when there is just one).
+		_viewports[i]->setEnableBloom(_viewports.size() == 1 || _viewports[i] == bloomViewport);
 		_viewports[i]->update(nowSeconds, &listener);
 	}
 #if ENABLE_RENDER_PANEL
