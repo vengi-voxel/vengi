@@ -798,8 +798,10 @@ void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
 	if (!_acceptInput) {
 		return;
 	}
-	// don't scroll the file list when an input text field is active (e.g. filename entry)
-	if (ImGui::GetIO().WantTextInput) {
+	// Don't jump when an InputText widget has focus (e.g. filename entry in Save mode).
+	// Do not use io.WantTextInput here: hovering the entities panel also sets
+	// PlatformImeData.WantTextInput so SDL emits text events for this feature.
+	if (ImGui::GetInputTextState(ImGui::GetActiveID()) != nullptr) {
 		return;
 	}
 
