@@ -56,7 +56,7 @@ bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeC
 
 void NodePropertiesPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
-	const core::String title = makeTitle(ICON_LC_LOCATE, _("Node Properties"), id);
+	const core::String &title = makeTitle(ICON_LC_LOCATE, _("Node Properties"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());

@@ -53,13 +53,15 @@ public:
 	 * @param[in] icon Can be null
 	 * @param[in] title Translated title
 	 * @param[in] id The imgui id @c ###someid
+	 * @return Interned title string (short-lived local use only; do not store as a member)
 	 */
-	 static core::String makeTitle(const char *icon, const char *title, const char *id);
-	 /**
-	  * @param[in] title Translated title
-	  * @param[in] id The imgui id @c ###someid
-	  */
-	 static core::String makeTitle(const char *title, const char *id);
+	static const core::String &makeTitle(const char *icon, const char *title, const char *id);
+	/**
+	 * @param[in] title Translated title
+	 * @param[in] id The imgui id @c ###someid
+	 * @return Interned title string (short-lived local use only; do not store as a member)
+	 */
+	static const core::String &makeTitle(const char *title, const char *id);
 };
 
 #define PANEL_CLASS(name)                                                                                         \

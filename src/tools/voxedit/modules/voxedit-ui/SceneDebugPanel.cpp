@@ -37,7 +37,7 @@ void SceneDebugPanel::update(const char *id) {
 		return;
 	}
 	core_trace_scoped(SceneDebugPanel);
-	const core::String title = makeTitle(ICON_LC_BUG, _("Scene insights"), id);
+	const core::String &title = makeTitle(ICON_LC_BUG, _("Scene insights"), id);
 	if (_requestFocus) {
 		ImGui::SetNextWindowFocus();
 		_requestFocus = false;

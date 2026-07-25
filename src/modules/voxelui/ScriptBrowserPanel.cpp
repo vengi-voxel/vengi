@@ -69,7 +69,7 @@ void ScriptBrowserPanel::update(const char *id, command::CommandExecutionListene
 		return;
 	}
 
-	const core::String title = makeTitle(ICON_LC_DOWNLOAD, _("Script Browser"), id);
+	const core::String &title = makeTitle(ICON_LC_DOWNLOAD, _("Script Browser"), id);
 	if (_requestFocus) {
 		ImGui::SetNextWindowFocus();
 		_requestFocus = false;

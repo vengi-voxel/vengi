@@ -411,7 +411,7 @@ void VoxBoxBrowserPanel::update(const char *id, command::CommandExecutionListene
 		return;
 	}
 
-	const core::String title = makeTitle(ICON_LC_CLOUD_DOWNLOAD, _("VoxBox Browser"), id);
+	const core::String &title = makeTitle(ICON_LC_CLOUD_DOWNLOAD, _("VoxBox Browser"), id);
 	if (_requestFocus) {
 		ImGui::SetNextWindowFocus();
 		_requestFocus = false;

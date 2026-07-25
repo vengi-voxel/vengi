@@ -600,7 +600,7 @@ void OptionsPanel::update(const char *id) {
 		return;
 	}
 	core_trace_scoped(OptionsPanel);
-	const core::String title = makeTitle(ICON_LC_SETTINGS, _("Options"), id);
+	const core::String &title = makeTitle(ICON_LC_SETTINGS, _("Options"), id);
 	if (_requestFocus) {
 		ImGui::SetNextWindowFocus();
 		_requestFocus = false;

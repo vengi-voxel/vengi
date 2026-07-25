@@ -276,7 +276,7 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 			}
 		}
 	}
-	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
+	const core::String &title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	if (ImGui::Begin(title.c_str())) {
 		header(currentFrame, maxFrame);
 		sequencer(currentFrame);

@@ -817,7 +817,7 @@ void NodeInspectorPanel::updateModelRegionSizes() {
 
 void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
-	const core::String title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
+	const core::String &title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
 
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (sceneMode) {

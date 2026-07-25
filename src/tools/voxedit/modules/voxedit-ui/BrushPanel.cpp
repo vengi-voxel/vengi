@@ -170,7 +170,7 @@ void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandE
 		minHeight += ImGui::GetTextLineHeightWithSpacing() * 3.0f;
 	}
 	ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, minHeight), ImVec2(FLT_MAX, minHeight));
-	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brushes"), id);
+	const core::String &title = makeTitle(ICON_LC_BRUSH, _("Brushes"), id);
 	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar;
 	if (ImGui::Begin(title.c_str(), nullptr, flags)) {
 		if (sceneMode) {
@@ -185,7 +185,7 @@ void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandE
 
 void BrushPanel::updateSettings(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(BrushPanelSettings);
-	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brush settings"), id);
+	const core::String &title = makeTitle(ICON_LC_BRUSH, _("Brush settings"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			ImGui::TextWrappedUnformatted(

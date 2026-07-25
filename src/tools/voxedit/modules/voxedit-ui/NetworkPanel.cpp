@@ -160,7 +160,7 @@ void NetworkPanel::handleMentionAutocomplete() {
 
 void NetworkPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
-	const core::String title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
+	const core::String &title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
 	Client &networkClient = _sceneMgr->client();
 
 	// Register chat callback for notification sounds (once)

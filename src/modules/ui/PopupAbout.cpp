@@ -29,7 +29,7 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 	int popupWidth = ImGui::Size(60);
 	int popupHeight = ImGui::Height(20);
 	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);
-	const core::String title = Panel::makeTitle(_("About"), POPUP_TITLE_ABOUT);
+	const core::String &title = Panel::makeTitle(_("About"), POPUP_TITLE_ABOUT);
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		popupWidth = ImGui::GetWindowWidth();
 		popupHeight = ImGui::GetWindowHeight();

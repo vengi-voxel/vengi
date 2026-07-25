@@ -51,7 +51,6 @@ private:
 	core::Set<int> _collapsedNodes;
 	size_t _cachedNodeCount = 0;
 	bool _displayListDirty = true;
-	core::String _windowTitle;
 
 	core::String _filterName;
 	core::String _cachedFilterName;

@@ -211,10 +211,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ToolsPanel);
-	if (_windowTitle.empty()) {
-		_windowTitle = makeTitle(ICON_LC_WRENCH, _("Tools"), id);
-	}
-	if (ImGui::Begin(_windowTitle.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(makeTitle(ICON_LC_WRENCH, _("Tools"), id).c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {

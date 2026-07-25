@@ -41,7 +41,7 @@ bool ImageAssetPanel::init() {
 }
 
 void ImageAssetPanel::update(const char *id) {
-	const core::String title = makeTitle(ICON_LC_LIST, _("Images"), id);
+	const core::String &title = makeTitle(ICON_LC_LIST, _("Images"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(ImageAssetPanel);
 		image::ImagePtr loadImage;

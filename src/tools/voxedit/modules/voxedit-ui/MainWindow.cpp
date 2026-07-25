@@ -543,7 +543,7 @@ void MainWindow::newSceneTemplates() {
 
 void MainWindow::popupTipOfTheDay() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
-	const core::String title = makeTitle(_("Tip of the day"), POPUP_TITLE_TIPOFTHEDAY);
+	const core::String &title = makeTitle(_("Tip of the day"), POPUP_TITLE_TIPOFTHEDAY);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		const char *tip = getTip();
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip, true);
@@ -567,7 +567,7 @@ void MainWindow::popupTipOfTheDay() {
 
 void MainWindow::popupMinecraftMapping() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
-	const core::String title = makeTitle(_("Minecraft mapping"), POPUP_TITLE_MINECRAFTMAPPING);
+	const core::String &title = makeTitle(_("Minecraft mapping"), POPUP_TITLE_MINECRAFTMAPPING);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK,
 						  _("The voxel editor uses a different mapping than Minecraft.\n\nHere you can see which block "
@@ -604,7 +604,7 @@ void MainWindow::popupMinecraftMapping() {
 
 void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
-	const core::String title = makeTitle(_("Welcome"), POPUP_TITLE_WELCOME);
+	const core::String &title = makeTitle(_("Welcome"), POPUP_TITLE_WELCOME);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, _("Welcome to VoxEdit!"));
 		ImGui::TextWrappedUnformatted(_("The mission: Create a free, open-source and multi-platform voxel "
@@ -638,7 +638,7 @@ void MainWindow::popupWelcome() {
 }
 void MainWindow::popupModelUnreference() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
-	const core::String title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
+	const core::String &title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
 		if (ImGui::YesButton()) {
@@ -655,7 +655,7 @@ void MainWindow::popupModelUnreference() {
 }
 
 void MainWindow::popupNewScene() {
-	const core::String title = makeTitle(_("New Scene"), POPUP_TITLE_NEW_SCENE);
+	const core::String &title = makeTitle(_("New Scene"), POPUP_TITLE_NEW_SCENE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::CollapsingHeader(_("Templates"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			newSceneTemplates();
@@ -704,7 +704,7 @@ void MainWindow::popupNewScene() {
 
 void MainWindow::popupFailedSave() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
-	const core::String title = makeTitle(_("Failed to save"), POPUP_TITLE_FAILED_TO_SAVE);
+	const core::String &title = makeTitle(_("Failed to save"), POPUP_TITLE_FAILED_TO_SAVE);
 	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("Failed to save the model!"));
 		if (ImGui::OkButton()) {
@@ -716,7 +716,7 @@ void MainWindow::popupFailedSave() {
 }
 
 void MainWindow::popupUnsavedChanges() {
-	const core::String title = makeTitle(_("Unsaved Changes"), POPUP_TITLE_UNSAVED_SCENE);
+	const core::String &title = makeTitle(_("Unsaved Changes"), POPUP_TITLE_UNSAVED_SCENE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("Unsaved changes - are you sure to quit?"));
 		if (ImGui::OkButton()) {
@@ -734,7 +734,7 @@ void MainWindow::popupUnsavedChanges() {
 }
 
 void MainWindow::popupUnsavedDiscard() {
-	const core::String title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
+	const core::String &title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("There are unsaved modifications.\nDo you wish to discard them?"));
 		if (ImGui::YesButton()) {
@@ -758,7 +758,7 @@ void MainWindow::popupUnsavedDiscard() {
 
 void MainWindow::popupVolumeSplit() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 50, 0));
-	const core::String title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
+	const core::String &title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"), true);
@@ -776,7 +776,7 @@ void MainWindow::popupVolumeSplit() {
 }
 
 void MainWindow::popupModelNodeSettings() {
-	const core::String title = makeTitle(_("Model settings"), POPUP_TITLE_MODEL_NODE_SETTINGS);
+	const core::String &title = makeTitle(_("Model settings"), POPUP_TITLE_MODEL_NODE_SETTINGS);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::TextUnformatted(_("Name"));
 		ImGui::Separator();
@@ -899,7 +899,7 @@ void MainWindow::registerPopups() {
 }
 
 void MainWindow::popupNodeResize() {
-	const core::String title = makeTitle(_("Resize node"), POPUP_TITLE_RESIZE_NODE);
+	const core::String &title = makeTitle(_("Resize node"), POPUP_TITLE_RESIZE_NODE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		glm::ivec3 &mins = _sceneGraphPanel._resizeMins;
@@ -940,7 +940,7 @@ void MainWindow::popupNodeResize() {
 }
 
 void MainWindow::popupNodeRescale() {
-	const core::String title = makeTitle(_("Rescale content"), POPUP_TITLE_RESCALE_NODE);
+	const core::String &title = makeTitle(_("Rescale content"), POPUP_TITLE_RESCALE_NODE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		const int nodeId = _sceneGraphPanel._rescaleNodeId;
@@ -1032,7 +1032,7 @@ void MainWindow::popupNodeRescale() {
 }
 
 void MainWindow::popupNodeRename() {
-	const core::String title = makeTitle(_("Rename node"), POPUP_TITLE_RENAME_NODE);
+	const core::String &title = makeTitle(_("Rename node"), POPUP_TITLE_RENAME_NODE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::IsWindowAppearing()) {

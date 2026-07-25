@@ -294,7 +294,7 @@ video::TexturePtr ModelAssetPanel::thumbnailLookup(const voxelcollection::VoxelF
 void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ModelAssetPanel);
 	(void)listener;
-	const core::String title = makeTitle(ICON_LC_LIST, _("Models"), id);
+	const core::String &title = makeTitle(ICON_LC_LIST, _("Models"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
 		updateFilters();

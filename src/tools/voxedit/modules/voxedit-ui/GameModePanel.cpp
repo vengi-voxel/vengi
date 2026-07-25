@@ -26,7 +26,7 @@ void GameModePanel::init() {
 
 void GameModePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
-	const core::String title = makeTitle(ICON_LC_GAMEPAD, _("Game mode"), id);
+	const core::String &title = makeTitle(ICON_LC_GAMEPAD, _("Game mode"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const char *text = _("Activating the game mode will enable clipping and switch the eye mode camera that is "
 							 "controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:+move_backward>, "

@@ -642,7 +642,7 @@ void FileDialog::resetState() {
 }
 
 void FileDialog::popupNotWriteable() {
-	const core::String title = makeTitle(_("Not writeable"), FILE_NOT_WRITEABLE_POPUP);
+	const core::String &title = makeTitle(_("Not writeable"), FILE_NOT_WRITEABLE_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("The selected file or directory is not writeable"));
 		if (ImGui::OkButton()) {
@@ -657,7 +657,7 @@ void FileDialog::popupNewFolder() {
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	const core::String title = makeTitle(_("Create folder"), NEW_FOLDER_POPUP);
+	const core::String &title = makeTitle(_("Create folder"), NEW_FOLDER_POPUP);
 
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(_("Enter a name for the new folder"));
@@ -689,7 +689,7 @@ void FileDialog::popupNewFolder() {
 
 bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, core::String &entityPath,
 							  video::OpenFileMode type, const io::FormatDescription **formatDesc) {
-	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
+	const core::String &title = makeTitle(_("Options"), OPTIONS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		const core::String &path = assemblePath(_currentPath, _selectedEntry);
 		if (!fileDialogOptions_f || !fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry) ||
@@ -712,7 +712,7 @@ bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, cor
 }
 
 bool FileDialog::popupAlreadyExists() {
-	const core::String title = makeTitle(_("File already exists"), FILE_ALREADY_EXISTS_POPUP);
+	const core::String &title = makeTitle(_("File already exists"), FILE_ALREADY_EXISTS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(nullptr, imguiApp()->bigFontSize());

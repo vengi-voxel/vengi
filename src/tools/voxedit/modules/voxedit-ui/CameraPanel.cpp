@@ -106,7 +106,7 @@ void CameraPanel::cameraProjectionCombo(video::Camera &camera) {
 
 void CameraPanel::update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener) {
 	core_trace_scoped(CameraPanel);
-	const core::String title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
+	const core::String &title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addToolbar(listener, camera);
 		cameraProjectionCombo(camera);

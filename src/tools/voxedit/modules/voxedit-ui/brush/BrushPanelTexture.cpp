@@ -129,7 +129,7 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 }
 
 void BrushPanelTexture::createPopups(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
-	const core::String title = ui::Panel::makeTitle(_("UV editor"), POPUP_TITLE_UV_EDITOR);
+	const core::String &title = ui::Panel::makeTitle(_("UV editor"), POPUP_TITLE_UV_EDITOR);
 	bool showUVEditor = true;
 	if (ImGui::BeginPopupModal(title.c_str(), &showUVEditor, ImGuiWindowFlags_AlwaysAutoResize)) {
 		{

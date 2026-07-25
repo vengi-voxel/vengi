@@ -28,7 +28,7 @@ void AnimationPanel::registerPopups() {
 }
 
 void AnimationPanel::popupCreateAnimation() {
-	const core::String title = makeTitle(_("Create animation"), POPUP_TITLE_CREATE_ANIMATION);
+	const core::String &title = makeTitle(_("Create animation"), POPUP_TITLE_CREATE_ANIMATION);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::IsWindowAppearing()) {
@@ -98,7 +98,7 @@ void AnimationPanel::popupCreateAnimation() {
 void AnimationPanel::update(const char *id, command::CommandExecutionListener &listener,
 							AnimationTimeline *animationTimeline) {
 	core_trace_scoped(AnimationPanel);
-	const core::String title = makeTitle(ICON_LC_LAYOUT_LIST, _("Animation"), id);
+	const core::String &title = makeTitle(ICON_LC_LAYOUT_LIST, _("Animation"), id);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {

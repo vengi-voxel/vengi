@@ -339,14 +339,11 @@ void SceneGraphPanel::makeVisible(const scenegraph::SceneGraph &sceneGraph, cons
 
 void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
 	core_trace_scoped(SceneGraphPanel);
-	if (_windowTitle.empty()) {
-		_windowTitle = makeTitle(ICON_LC_WORKFLOW, _("Scene"), id);
-	}
 	_hasFocus = false;
 
 	// TODO handle dragdrop::ModelPayload with the correct parent node
 
-	if (ImGui::Begin(_windowTitle.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(makeTitle(ICON_LC_WORKFLOW, _("Scene"), id).c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;

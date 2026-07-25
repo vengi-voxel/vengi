@@ -37,7 +37,7 @@ static int LSystemInputValidator(ImGuiInputTextCallbackData *data) {
 
 void LSystemPanel::update(const char *id) {
 	core_trace_scoped(LSystemPanel);
-	const core::String title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
+	const core::String &title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(_("Edit"))) {

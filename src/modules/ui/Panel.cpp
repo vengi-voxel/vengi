@@ -5,6 +5,7 @@
 #include "Panel.h"
 #include "IMGUIApp.h"
 #include "core/Log.h"
+#include "core/StringCache.h"
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 #include "FileDialog.h"
 #include "core/Assert.h"
@@ -24,22 +25,17 @@ Panel::~Panel() {
 	_app->removePanel(this);
 }
 
-core::String Panel::makeTitle(const char *icon, const char *title, const char *id) {
-	core::String str;
-	if (icon != nullptr) {
-		str.append(icon);
-		str.append(" ");
+const core::String &Panel::makeTitle(const char *icon, const char *title, const char *id) {
+	static core::StringCache cache(256);
+	const char *safeTitle = title != nullptr ? title : "";
+	const char *safeId = id != nullptr ? id : "";
+	if (icon != nullptr && icon[0] != '\0') {
+		return cache.getFormat("%s %s%s", icon, safeTitle, safeId);
 	}
-	if (title != nullptr) {
-		str.append(title);
-	}
-	if (id != nullptr) {
-		str.append(id);
-	}
-	return str;
+	return cache.getFormat("%s%s", safeTitle, safeId);
 }
 
-core::String Panel::makeTitle(const char *title, const char *id) {
+const core::String &Panel::makeTitle(const char *title, const char *id) {
 	return makeTitle(nullptr, title, id);
 }
 
