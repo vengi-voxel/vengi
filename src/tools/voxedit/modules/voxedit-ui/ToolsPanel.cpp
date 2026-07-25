@@ -11,11 +11,16 @@
 #include "ui/IconsLucide.h"
 #include "ui/ScopedID.h"
 #include "ui/ScopedPanel.h"
+#include "ui/ScopedStyle.h"
+#include "ui/Style.h"
 #include "ui/Toolbar.h"
 #include "voxedit-ui/Gizmo.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/brush/Brush.h"
+
+#include <glm/common.hpp>
 
 namespace voxedit {
 
@@ -152,10 +157,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Move voxels"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedID id("##movevoxels");
 		static glm::ivec3 translate{0};
-		const int minStep = _gridSize->intVal();
-		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, minStep);
-		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, minStep);
-		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, minStep);
+		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, gridRes.x);
+		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, gridRes.y);
+		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, gridRes.z);
 
 		char moveCmd[64];
 		core::String::formatBuf(moveCmd, sizeof(moveCmd), "move %i %i %i", translate.x, translate.y, translate.z);
@@ -171,8 +176,8 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		}
 		ImGui::TooltipCommand("lockx");
 		ImGui::SameLine();
-		const int step = _gridSize->intVal();
-		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
+		const glm::ivec3 cursorGridRes = parseGridResolution(_gridSize->strVal());
+		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, cursorGridRes.x)) {
 			char commandLine[64];
 			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
 									cursorPosition.y, cursorPosition.z);
@@ -184,7 +189,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		}
 		ImGui::TooltipCommand("locky");
 		ImGui::SameLine();
-		if (ImGui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
+		if (ImGui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, cursorGridRes.y)) {
 			char commandLine[64];
 			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
 									cursorPosition.y, cursorPosition.z);
@@ -196,7 +201,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		}
 		ImGui::TooltipCommand("lockz");
 		ImGui::SameLine();
-		if (ImGui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
+		if (ImGui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, cursorGridRes.z)) {
 			char commandLine[64];
 			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
 									cursorPosition.y, cursorPosition.z);
@@ -209,6 +214,69 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 										   ? cursorDetails[cursorDetailValue]
 										   : _("Unknown");
 		ImGui::SliderVarInt(_cursorDetails, cursorDetailName);
+	}
+
+	if (ImGui::IconCollapsingHeader(ICON_LC_GRID_3X3, _("Grid size"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ui::ScopedID gridSizeId("##gridsize");
+		glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		bool gridChanged = false;
+		const auto syncAxis = [&](int src) {
+			gridRes[(src + 1) % 3] = gridRes[src];
+			gridRes[(src + 2) % 3] = gridRes[src];
+			gridChanged = true;
+		};
+		const auto drawSyncButton = [](math::Axis axis, const char *buttonId) {
+			const bool clicked = ImGui::SmallButton(buttonId);
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+				const glm::vec4 &axisColor = style::color(axis == math::Axis::X   ? style::ColorAxisX
+														  : axis == math::Axis::Y ? style::ColorAxisY
+																				  : style::ColorAxisZ);
+				ImGui::BeginTooltip();
+				ImGui::TextColored(ImVec4(axisColor.r, axisColor.g, axisColor.b, axisColor.a), "%s",
+								   _("Apply this axis size to the other axes"));
+				ImGui::EndTooltip();
+			}
+			return clicked;
+		};
+		const auto drawAxisLabel = [](math::Axis axis, const char *label) {
+			ui::ScopedStyle style;
+			ImGui::AxisStyleText(style, axis);
+			ImGui::AlignTextToFramePadding();
+			ImGui::TextUnformatted(label);
+		};
+
+		if (drawSyncButton(math::Axis::X, ICON_LC_REFRESH_CW "###syncx")) {
+			syncAxis(0);
+		}
+		ImGui::SameLine();
+		drawAxisLabel(math::Axis::X, _("X"));
+		ImGui::SameLine();
+		gridChanged |= ImGui::InputAxisInt(math::Axis::X, "##gridsizex", &gridRes.x, 1);
+
+		if (drawSyncButton(math::Axis::Y, ICON_LC_REFRESH_CW "###syncy")) {
+			syncAxis(1);
+		}
+		ImGui::SameLine();
+		drawAxisLabel(math::Axis::Y, _("Y"));
+		ImGui::SameLine();
+		gridChanged |= ImGui::InputAxisInt(math::Axis::Y, "##gridsizey", &gridRes.y, 1);
+
+		if (drawSyncButton(math::Axis::Z, ICON_LC_REFRESH_CW "###syncz")) {
+			syncAxis(2);
+		}
+		ImGui::SameLine();
+		drawAxisLabel(math::Axis::Z, _("Z"));
+		ImGui::SameLine();
+		gridChanged |= ImGui::InputAxisInt(math::Axis::Z, "##gridsizez", &gridRes.z, 1);
+
+		if (gridChanged) {
+			gridRes = glm::clamp(gridRes, glm::ivec3(1), glm::ivec3(64));
+			if (gridRes.x == gridRes.y && gridRes.y == gridRes.z) {
+				_gridSize->setVal(core::String::format("%i", gridRes.x));
+			} else {
+				_gridSize->setVal(core::String::format("%i %i %i", gridRes.x, gridRes.y, gridRes.z));
+			}
+		}
 	}
 }
 

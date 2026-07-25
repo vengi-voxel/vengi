@@ -31,6 +31,15 @@ namespace voxedit {
 class ModifierVolumeWrapper;
 
 /**
+ * @brief Parse ve_gridsize style values into a per-axis resolution
+ *
+ * Accepts a single number ("3" -> (3,3,3)) or three components
+ * separated by space, colon, or comma ("1 2 3" / "1:2:3").
+ * Each component is clamped to 1..64.
+ */
+glm::ivec3 parseGridResolution(const core::String &str);
+
+/**
  * @brief Context information passed to brush operations containing all necessary state
  *
  * This structure contains all the information a brush needs to perform its operation,
@@ -61,8 +70,8 @@ struct BrushContext {
 	bool fixedOrthoSideView = false;
 	bool normalPaint = false;
 	uint8_t normalIndex = NO_NORMAL;
-	/** Grid resolution for snapping operations - voxels are placed at multiples of this value */
-	int gridResolution = 1;
+	/** Grid resolution for snapping operations - voxels are placed at multiples of this value per axis */
+	glm::ivec3 gridResolution{1};
 
 	/** Used for clamping the brush region to stay within the target volume boundaries */
 	voxel::Region targetVolumeRegion;

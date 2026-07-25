@@ -32,7 +32,7 @@ protected:
 		core::Var::registerVar(voxEditShowlockedaxis);
 		const core::VarDef voxEditRendershadow(cfg::VoxEditRendershadow, true, "", "");
 		core::Var::registerVar(voxEditRendershadow);
-		const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, 1, "", "");
+		const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, "1", "", "");
 		core::Var::registerVar(voxEditGridsize);
 		const core::VarDef voxEditPlaneSize(cfg::VoxEditPlaneSize, 0, "", "");
 		core::Var::registerVar(voxEditPlaneSize);

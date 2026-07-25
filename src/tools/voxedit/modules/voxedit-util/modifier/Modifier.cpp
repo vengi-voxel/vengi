@@ -221,7 +221,7 @@ void Modifier::onSceneChange() {
 }
 
 void Modifier::reset() {
-	_brushContext.gridResolution = 1;
+	_brushContext.gridResolution = glm::ivec3(1);
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
 	_brushContext.brushGizmoActive = false;
@@ -600,8 +600,12 @@ BrushType Modifier::setBrushType(BrushType type) {
 	return _brushType;
 }
 
+void Modifier::setGridResolution(const glm::ivec3 &gridSize) {
+	_brushContext.gridResolution = glm::max(glm::ivec3(1), gridSize);
+}
+
 void Modifier::setGridResolution(int gridSize) {
-	_brushContext.gridResolution = core_max(1, gridSize);
+	setGridResolution(glm::ivec3(core_max(1, gridSize)));
 }
 
 ModifierType Modifier::setModifierType(ModifierType type) {

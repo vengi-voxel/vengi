@@ -747,6 +747,7 @@ public:
 	float playbackSpeed() const;
 	void setPlaybackSpeed(float speed);
 
+	bool setGridResolution(const glm::ivec3 &resolution);
 	bool setGridResolution(int resolution);
 
 	int activeNode() const;

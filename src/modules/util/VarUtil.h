@@ -29,20 +29,29 @@ private:
 	core::VarPtr _var;
 
 public:
-	ScopedVarChange(const core::String &name, const core::String &value) {
-		_var = core::getVar(name);
+	ScopedVarChange(const core::VarPtr &var, const core::String &value) {
+		_var = var;
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}
-	ScopedVarChange(const core::String &name, int value) {
-		_var = core::getVar(name);
+	ScopedVarChange(const core::VarPtr &var, int value) {
+		_var = var;
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}
-	ScopedVarChange(const core::String &name, float value) {
-		_var = core::getVar(name);
+	ScopedVarChange(const core::VarPtr &var, float value) {
+		_var = var;
 		_oldValue = _var->strVal();
 		_var->setVal(value);
+	}
+	ScopedVarChange(const core::String &name, const core::String &value)
+		: ScopedVarChange(core::getVar(name), value) {
+	}
+	ScopedVarChange(const core::String &name, int value)
+		: ScopedVarChange(core::getVar(name), value) {
+	}
+	ScopedVarChange(const core::String &name, float value)
+		: ScopedVarChange(core::getVar(name), value) {
 	}
 
 	~ScopedVarChange() {

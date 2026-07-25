@@ -28,8 +28,8 @@ bool GridRenderer::init() {
 	return true;
 }
 
-bool GridRenderer::setGridResolution(int resolution) {
-	if (resolution < 1) {
+bool GridRenderer::setGridResolution(const glm::ivec3 &resolution) {
+	if (resolution.x < 1 || resolution.y < 1 || resolution.z < 1) {
 		return false;
 	}
 	if (_resolution == resolution) {
@@ -41,7 +41,11 @@ bool GridRenderer::setGridResolution(int resolution) {
 	return true;
 }
 
-int GridRenderer::gridResolution() const {
+bool GridRenderer::setGridResolution(int resolution) {
+	return setGridResolution(glm::ivec3(resolution));
+}
+
+const glm::ivec3 &GridRenderer::gridResolution() const {
 	return _resolution;
 }
 
@@ -98,7 +102,7 @@ void GridRenderer::update(const math::AABB<float> &aabb) {
 	if (!_dirty && _aabb == aabb) {
 		return;
 	}
-	if (_resolution <= 0) {
+	if (_resolution.x <= 0 || _resolution.y <= 0 || _resolution.z <= 0) {
 		return;
 	}
 	const float thickness = 1.0f;
@@ -108,27 +112,27 @@ void GridRenderer::update(const math::AABB<float> &aabb) {
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution.x, (float)_resolution.y, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution.x, (float)_resolution.z, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution.y, (float)_resolution.z, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution.x, (float)_resolution.y, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution.x, (float)_resolution.z, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution, thickness);
+	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution.y, (float)_resolution.z, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
 
 	createForwardArrow(aabb);

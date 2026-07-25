@@ -62,16 +62,16 @@ void AABBBrush::reset() {
 	_aabbSecondPos = glm::ivec3(0);
 }
 
-glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, int resolution) const {
+glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const {
 	glm::ivec3 pos = inPos;
-	if (pos.x % resolution != 0) {
-		pos.x = (pos.x / resolution) * resolution;
+	if (resolution.x > 0 && pos.x % resolution.x != 0) {
+		pos.x = (pos.x / resolution.x) * resolution.x;
 	}
-	if (pos.y % resolution != 0) {
-		pos.y = (pos.y / resolution) * resolution;
+	if (resolution.y > 0 && pos.y % resolution.y != 0) {
+		pos.y = (pos.y / resolution.y) * resolution.y;
 	}
-	if (pos.z % resolution != 0) {
-		pos.z = (pos.z / resolution) * resolution;
+	if (resolution.z > 0 && pos.z % resolution.z != 0) {
+		pos.z = (pos.z / resolution.z) * resolution.z;
 	}
 	return pos;
 }
@@ -85,9 +85,9 @@ bool AABBBrush::needsAdditionalAction(const BrushContext &ctx) const {
 	int greater = 0;
 	int equal = 0;
 	for (int i = 0; i < 3; ++i) {
-		if (delta[i] > ctx.gridResolution) {
+		if (delta[i] > ctx.gridResolution[i]) {
 			++greater;
-		} else if (delta[i] == ctx.gridResolution) {
+		} else if (delta[i] == ctx.gridResolution[i]) {
 			++equal;
 		}
 	}
@@ -260,7 +260,7 @@ voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
 		return voxel::Region(first - rad, first + rad);
 	}
 
-	const int size = ctx.gridResolution;
+	const glm::ivec3 &size = ctx.gridResolution;
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
 	return voxel::Region(mins, maxs);

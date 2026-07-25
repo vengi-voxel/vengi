@@ -46,7 +46,7 @@ struct ModifierRendererContext {
 	voxel::Voxel voxelAtCursor;
 	voxel::FaceNames cursorFace = voxel::FaceNames::Max;
 	glm::ivec3 cursorPosition{0};
-	int gridResolution = 1;
+	glm::ivec3 gridResolution{1};
 
 	// Reference point
 	glm::ivec3 referencePosition{0};

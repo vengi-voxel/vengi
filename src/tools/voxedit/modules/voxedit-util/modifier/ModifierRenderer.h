@@ -43,7 +43,7 @@ private:
 
 	// Cursor state for rendering
 	glm::ivec3 _cursorPosition{0};
-	int _gridResolution = 1;
+	glm::ivec3 _gridResolution{1};
 	voxel::Region _activeRegion;
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;

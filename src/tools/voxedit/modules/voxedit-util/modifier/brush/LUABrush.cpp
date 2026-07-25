@@ -148,8 +148,10 @@ static int luaBrush_gridresolution(lua_State *s) {
 	if (ctx == nullptr) {
 		return clua_error(s, "No brush context available");
 	}
-	lua_pushinteger(s, ctx->gridResolution);
-	return 1;
+	lua_pushinteger(s, ctx->gridResolution.x);
+	lua_pushinteger(s, ctx->gridResolution.y);
+	lua_pushinteger(s, ctx->gridResolution.z);
+	return 3;
 }
 
 static int luaBrush_targetvolumeregion(lua_State *s) {
@@ -325,10 +327,12 @@ static int luaBrush_normalindex_jsonhelp(lua_State *s) {
 static int luaBrush_gridresolution_jsonhelp(lua_State *s) {
 	const char *json = R"({
 		"name": "gridResolution",
-		"summary": "Get the grid resolution for snapping.",
+		"summary": "Get the grid resolution for snapping per axis.",
 		"parameters": [],
 		"returns": [
-			{"type": "integer", "description": "Grid resolution - voxels are placed at multiples of this value."}
+			{"type": "integer", "description": "Grid resolution on the X axis."},
+			{"type": "integer", "description": "Grid resolution on the Y axis."},
+			{"type": "integer", "description": "Grid resolution on the Z axis."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -866,10 +870,25 @@ void LUABrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) 
 	}
 	lua_pop(s, 1); // pop operations
 
-	// Parse snap
+	// Parse snap (number applies to all axes, or table with 3 values)
 	lua_getfield(s, -1, "snap");
 	if (lua_isnumber(s, -1)) {
-		state.snap = (float)lua_tonumber(s, -1);
+		const float snap = (float)lua_tonumber(s, -1);
+		state.snap[0] = state.snap[1] = state.snap[2] = snap;
+	} else if (lua_istable(s, -1)) {
+		lua_rawgeti(s, -1, 1);
+		lua_rawgeti(s, -2, 2);
+		lua_rawgeti(s, -3, 3);
+		if (lua_isnumber(s, -3)) {
+			state.snap[0] = (float)lua_tonumber(s, -3);
+		}
+		if (lua_isnumber(s, -2)) {
+			state.snap[1] = (float)lua_tonumber(s, -2);
+		}
+		if (lua_isnumber(s, -1)) {
+			state.snap[2] = (float)lua_tonumber(s, -1);
+		}
+		lua_pop(s, 3);
 	}
 	lua_pop(s, 1);
 

@@ -24,6 +24,7 @@ set(TEST_SRCS
 	tests/KeybindingParserTest.cpp
 	tests/KeybindingHandlerTest.cpp
 	tests/TextProcessorTest.cpp
+	tests/VarUtilTest.cpp
 	tests/VersionCheckTest.cpp
 	tests/VersionTest.cpp
 )

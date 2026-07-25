@@ -10,7 +10,9 @@
 #include "Style.h"
 #include "app/App.h"
 #include "color/ColorUtil.h"
+#include "core/Common.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "dearimgui/imgui_internal.h"
@@ -23,6 +25,7 @@
 #ifdef USE_VK_RENDERER
 #include "dearimgui/backends/imgui_impl_vulkan.h"
 #endif
+#include <glm/common.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -635,6 +638,38 @@ bool InputVec3Var(const char *varName) {
 	}
 	_priv::varTooltip(var);
 	return false;
+}
+
+bool InputIVec3Var(const core::VarPtr &var, int minVal, int maxVal) {
+	glm::ivec3 vec(1);
+	const core::String label = _priv::varLabel(var);
+	// Accept single or three-component values; reuse parse helpers from voxedit when available
+	// via space/colon/comma split matching ve_gridsize style.
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(var->strVal(), tokens, " :,\t");
+	if (tokens.size() == 1) {
+		const int n = tokens[0].toInt();
+		vec = glm::ivec3(n);
+	} else {
+		for (size_t i = 0; i < core_min(tokens.size(), (size_t)3); ++i) {
+			vec[(int)i] = tokens[i].toInt();
+		}
+	}
+	if (InputInt3(label.c_str(), glm::value_ptr(vec))) {
+		vec = glm::clamp(vec, glm::ivec3(minVal), glm::ivec3(maxVal));
+		if (vec.x == vec.y && vec.y == vec.z) {
+			var->setVal(core::String::format("%i", vec.x));
+		} else {
+			var->setVal(core::String::format("%i %i %i", vec.x, vec.y, vec.z));
+		}
+		return true;
+	}
+	_priv::varTooltip(var);
+	return false;
+}
+
+bool InputIVec3Var(const char *varName, int minVal, int maxVal) {
+	return InputIVec3Var(core::getVar(varName), minVal, maxVal);
 }
 
 bool ColorEdit3Var(const char *varName) {

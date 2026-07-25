@@ -6,10 +6,32 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxel/Region.h"
+#include <glm/common.hpp>
 
 namespace voxedit {
+
+glm::ivec3 parseGridResolution(const core::String &str) {
+	core::DynamicArray<core::String> tokens;
+	tokens.reserve(3);
+	core::string::splitString(str, tokens, " :,\t");
+	if (tokens.empty()) {
+		return glm::ivec3(1);
+	}
+	if (tokens.size() == 1) {
+		const int n = glm::clamp(tokens[0].toInt(), 1, 64);
+		return glm::ivec3(n);
+	}
+	glm::ivec3 out(1);
+	const size_t n = core_min(tokens.size(), (size_t)3);
+	for (size_t i = 0; i < n; ++i) {
+		out[(int)i] = glm::clamp(tokens[i].toInt(), 1, 64);
+	}
+	return out;
+}
 
 SceneModifiedFlags Brush::sceneModifiedFlags() const {
 	return _sceneModifiedFlags;

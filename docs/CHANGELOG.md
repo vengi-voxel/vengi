@@ -42,6 +42,7 @@ General:
 
 VoxEdit:
 
+   - Allow non-uniform voxel cursor / grid size via `ve_gridsize` (e.g. `1 2 3`)
    - Fixed massive performance issue with multiple viewports
    - Added the last recently used 10 colors to the viewport
    - Fixed animation timeline node selection scrolling and keyframe selection

@@ -414,7 +414,9 @@ bool TransformBrush::wantBrushGizmo(const BrushContext &ctx) const {
 }
 
 void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	state.snap = (float)ctx.gridResolution;
+	state.snap[0] = (float)ctx.gridResolution.x;
+	state.snap[1] = (float)ctx.gridResolution.y;
+	state.snap[2] = (float)ctx.gridResolution.z;
 	state.localMode = true;
 
 	const glm::vec3 center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
@@ -429,13 +431,13 @@ void TransformBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &s
 		const glm::vec3 radians = glm::radians(_rotationDegrees);
 		const glm::mat4 rot = glm::eulerAngleYXZ(radians.y, radians.x, radians.z);
 		state.matrix = glm::translate(glm::mat4(1.0f), center) * rot;
-		state.snap = 15.0f; // 15 degree snap for rotation
+		state.snap[0] = state.snap[1] = state.snap[2] = 15.0f; // 15 degree snap for rotation
 		break;
 	}
 	case TransformMode::Scale:
 		state.operations = BrushGizmo_Scale;
 		state.matrix = glm::translate(glm::mat4(1.0f), center) * glm::scale(glm::mat4(1.0f), _scale);
-		state.snap = 0.1f;
+		state.snap[0] = state.snap[1] = state.snap[2] = 0.1f;
 		break;
 	case TransformMode::Shear:
 		state.operations = BrushGizmo_Translate;

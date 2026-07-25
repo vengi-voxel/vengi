@@ -62,7 +62,7 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 	brushContext.cursorPosition = glm::ivec3(10, 0, 0);
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	brush.setBezier(true);
 	EXPECT_TRUE(brush.wantBrushGizmo(brushContext));
@@ -120,7 +120,7 @@ TEST_F(LineBrushTest, testBezierNoFlushOnCursorMove) {
 	brushContext.cursorPosition = glm::ivec3(5, 0, 0);
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	brush.setBezier(true);
 

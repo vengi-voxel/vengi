@@ -547,7 +547,22 @@ void LUASelectionMode::brushGizmoState(const BrushContext &ctx, BrushGizmoState 
 
 	lua_getfield(s, -1, "snap");
 	if (lua_isnumber(s, -1)) {
-		state.snap = (float)lua_tonumber(s, -1);
+		const float snap = (float)lua_tonumber(s, -1);
+		state.snap[0] = state.snap[1] = state.snap[2] = snap;
+	} else if (lua_istable(s, -1)) {
+		lua_rawgeti(s, -1, 1);
+		lua_rawgeti(s, -2, 2);
+		lua_rawgeti(s, -3, 3);
+		if (lua_isnumber(s, -3)) {
+			state.snap[0] = (float)lua_tonumber(s, -3);
+		}
+		if (lua_isnumber(s, -2)) {
+			state.snap[1] = (float)lua_tonumber(s, -2);
+		}
+		if (lua_isnumber(s, -1)) {
+			state.snap[2] = (float)lua_tonumber(s, -1);
+		}
+		lua_pop(s, 3);
 	}
 	lua_pop(s, 1);
 

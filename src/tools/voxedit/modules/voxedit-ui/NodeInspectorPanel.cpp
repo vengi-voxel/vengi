@@ -81,7 +81,8 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		ImGui::TableHeadersRow();
 
 		glm::ivec3 position = region.getLowerCorner();
-		const int minStep = _gridSize->intVal();
+		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		const int minStep = core_min(gridRes.x, core_min(gridRes.y, gridRes.z));
 		const int maxStep = 10;
 		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		if (posChange || ImGui::IsItemDeactivatedAfterEdit()) {
@@ -428,7 +429,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
 		}
-		const float minStep = _gridSize->floatVal();
+		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		const float minStep = (float)core_min(gridRes.x, core_min(gridRes.y, gridRes.z));
 		const float maxStep = 10.0f;
 		change |= ImGui::InputXYZ(_("Translation"), matrixTranslation, nullptr, ImGuiInputTextFlags_EnterReturnsTrue, minStep, maxStep);
 		change |= ImGui::IsItemDeactivatedAfterEdit();

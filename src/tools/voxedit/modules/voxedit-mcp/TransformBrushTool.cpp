@@ -130,7 +130,7 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 	brushContext.referencePos = brushContext.cursorPosition;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
 	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);

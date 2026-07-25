@@ -341,7 +341,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
 		const int initialKeyMap = uiKeyMap->intVal();
-		util::ScopedVarChange restoreKeyMap(cfg::UIKeyMap, initialKeyMap);
+		util::ScopedVarChange restoreKeyMap(uiKeyMap, initialKeyMap);
 
 		// change to a different keymap via the combo
 		// the keymaps are: 0=Magicavoxel, 1=Blender, 2=Vengi, 3=Qubicle, 4=Goxel, 5=3dsMax
@@ -365,7 +365,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
 		const int initialKeyMap = uiKeyMap->intVal();
-		util::ScopedVarChange restoreKeyMap(cfg::UIKeyMap, initialKeyMap);
+		util::ScopedVarChange restoreKeyMap(uiKeyMap, initialKeyMap);
 
 		ctx->ComboClick("Keymap/3dsMax");
 		ctx->Yield();

@@ -8,8 +8,10 @@
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "TestUtil.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -287,6 +289,39 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		changeSlider(ctx, "##cursor/Cursor details", false);
 		ctx->Yield();
 		IM_CHECK(_cursorDetails->intVal() != before || _cursorDetails->intVal() == _cursorDetails->intMaxValue());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "grid size input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportEditMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemOpen("**/Grid size");
+		ctx->Yield();
+
+		core::VarPtr gridSize = core::getVar(cfg::VoxEditGridsize);
+		util::ScopedVarChange restoreGrid(gridSize, "1");
+		ctx->Yield();
+
+		ctx->ItemInputValue("##gridsize/##gridsizex", 2);
+		ctx->ItemInputValue("##gridsize/##gridsizey", 3);
+		ctx->ItemInputValue("##gridsize/##gridsizez", 4);
+		ctx->Yield(3);
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2, 3, 4));
+
+		// Sync X to Y and Z
+		ctx->ItemClick("##gridsize/###syncx");
+		ctx->Yield(3);
+		IM_CHECK_EQ(gridSize->strVal(), "2");
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2));
+
+		ctx->ItemInputValue("##gridsize/##gridsizey", 5);
+		ctx->Yield(3);
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2, 5, 2));
+
+		// Sync Y to X and Z
+		ctx->ItemClick("##gridsize/###syncy");
+		ctx->Yield(3);
+		IM_CHECK_EQ(gridSize->strVal(), "5");
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(5));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "resize to selection")->TestFunc = [=](ImGuiTestContext *ctx) {

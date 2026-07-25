@@ -86,7 +86,7 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 	brushContext.cursorPosition = end;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
 	ModifierVolumeWrapper wrapper(*node, modifierType);

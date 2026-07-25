@@ -79,6 +79,8 @@ IMGUI_API bool SliderVarFloat(const char *varName,
 IMGUI_API bool ColorEdit3Var(const char *varName);
 IMGUI_API bool ColorEdit4Var(const char *varName);
 IMGUI_API bool InputVec3Var(const char *varName);
+IMGUI_API bool InputIVec3Var(const char *varName, int minVal = 1, int maxVal = 64);
+IMGUI_API bool InputIVec3Var(const core::VarPtr &var, int minVal = 1, int maxVal = 64);
 IMGUI_API bool InputFileVar(const char *varName, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
 IMGUI_API bool InputFileVar(const core::VarPtr &var, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
 

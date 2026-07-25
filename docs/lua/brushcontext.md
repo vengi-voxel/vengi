@@ -11,7 +11,7 @@ Global: `g_brushcontext`
 | `cursorFace()` | Get the face direction where the raycast hit. |
 | `cursorPos()` | Get the current cursor position. |
 | `fixedOrthoSideView()` | Check whether the view is an orthographic side view. |
-| `gridResolution()` | Get the grid resolution for snapping. |
+| `gridResolution()` | Get the grid resolution for snapping per axis (returns x, y, z). |
 | `hitCursorColor()` | Get the palette color index of the voxel hit by raycast (before the hit face). |
 | `lockedAxis()` | Get the axis lock constraint for 2D operations. |
 | `modifierType()` | Get the current modifier operation type. |
@@ -76,13 +76,15 @@ Check whether the view is an orthographic side view.
 
 ### gridResolution
 
-Get the grid resolution for snapping.
+Get the grid resolution for snapping per axis.
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `integer` | Grid resolution - voxels are placed at multiples of this value. |
+| `integer` | Grid resolution on the X axis. |
+| `integer` | Grid resolution on the Y axis. |
+| `integer` | Grid resolution on the Z axis. |
 
 ### hitCursorColor
 

@@ -252,7 +252,9 @@ void LineBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state)
 	const glm::ivec3 cp = controlPoint(ctx);
 	state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(cp));
 	state.operations = BrushGizmo_BezierControl | BrushGizmo_Line;
-	state.snap = (float)ctx.gridResolution;
+	state.snap[0] = (float)ctx.gridResolution.x;
+	state.snap[1] = (float)ctx.gridResolution.y;
+	state.snap[2] = (float)ctx.gridResolution.z;
 	state.localMode = false;
 
 	glm::ivec3 start, end;

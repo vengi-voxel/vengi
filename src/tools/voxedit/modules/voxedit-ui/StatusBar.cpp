@@ -27,10 +27,6 @@ void StatusBar::update(const char *id, float height, const core::String &lastExe
 		ImGui::SameLine();
 		ImGui::CheckboxVar(cfg::VoxEditHideInactive);
 		ImGui::SameLine();
-
-		ImGui::SetNextItemWidth(ImGui::Size(14.0f));
-		ImGui::InputVarInt(cfg::VoxEditGridsize);
-		ImGui::SameLine();
 		if (lastExecutedCommand.empty()) {
 			ImGui::Text(_("Command: %s"), "-");
 		} else {

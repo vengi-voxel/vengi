@@ -274,8 +274,9 @@ public:
 
 	voxel::FaceNames cursorFace() const;
 
+	void setGridResolution(const glm::ivec3 &gridSize);
 	void setGridResolution(int gridSize);
-	int gridResolution() const;
+	const glm::ivec3 &gridResolution() const;
 
 	// TODO: only used internally or for tests
 	bool autoSelect() const;
@@ -361,7 +362,7 @@ inline RulerBrush &Modifier::rulerBrush() {
 	return _rulerBrush;
 }
 
-inline int Modifier::gridResolution() const {
+inline const glm::ivec3 &Modifier::gridResolution() const {
 	return _brushContext.gridResolution;
 }
 

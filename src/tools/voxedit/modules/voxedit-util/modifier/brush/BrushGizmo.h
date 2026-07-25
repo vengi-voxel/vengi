@@ -54,8 +54,8 @@ struct BrushGizmoState {
 	/** Whether the bounds array is valid and BrushGizmo_Bounds should use them */
 	bool hasBounds = false;
 
-	/** Snap increment (0 = no snapping, typically grid resolution) */
-	float snap = 1.0f;
+	/** Snap increment per axis (0 = no snapping, typically grid resolution) */
+	float snap[3] = {1.0f, 1.0f, 1.0f};
 
 	/** Whether to use LOCAL or WORLD mode for the gizmo */
 	bool localMode = true;

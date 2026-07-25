@@ -945,7 +945,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click the top face (+Y) of a rim voxel at (2,0,4) - left edge of hole
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	ctx.cursorPosition = glm::ivec3(2, 0, 4);
@@ -1005,7 +1005,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click left wall at (3,4,4) using +X face (pointing into the hollow)
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(3, 4, 4);
@@ -1052,7 +1052,7 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	// Click a voxel bordering the open notch
 	ctx.cursorPosition = glm::ivec3(2, 0, 2);
@@ -1103,7 +1103,7 @@ TEST_F(SelectBrushTest, testLassoScreenSpaceStateManagement) {
 	brush.setSelectMode(SelectMode::Lasso);
 
 	BrushContext ctx;
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 
 	// beginBrush starts the screen-space drag
@@ -1151,7 +1151,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click the top face (+Y) of the center pillar voxel
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	ctx.cursorPosition = glm::ivec3(4, 4, 4);
@@ -1202,7 +1202,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click the top face (+Y) of a center floor voxel
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	ctx.cursorPosition = glm::ivec3(4, 0, 4);
@@ -1245,7 +1245,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click the +X side face of the column at mid-height
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(5, 4, 4);
@@ -1290,7 +1290,7 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	ctx.cursorPosition = glm::ivec3(4, 4, 4);
 
@@ -1329,7 +1329,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click +Y face of a cardinal rim voxel adjacent to the hole
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	ctx.cursorPosition = glm::ivec3(3, 0, 4);
@@ -1383,7 +1383,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click inner +X face of left wall at (3,4,4)
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(3, 4, 4);
@@ -1436,7 +1436,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click +X face of center voxel (4,4,4): air seed at (5,4,4) is inside the solid block
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(4, 4, 4);
@@ -1498,7 +1498,7 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = 1;
+	ctx.gridResolution = glm::ivec3(1);
 	// Click +Z face of a rim voxel at Z=5, air seed at (2,2,5) inside air column
 	ctx.cursorFace = voxel::FaceNames::PositiveZ;
 	ctx.cursorPosition = glm::ivec3(2, 1, 5);

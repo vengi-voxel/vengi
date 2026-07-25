@@ -154,6 +154,7 @@ set(TEST_SRCS
 	tests/SelectBrushTest.cpp
 	tests/SelectStrategyTest.cpp
 	tests/ShapeBrushTest.cpp
+	tests/GridResolutionTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp
 	tests/TextureBrushTest.cpp

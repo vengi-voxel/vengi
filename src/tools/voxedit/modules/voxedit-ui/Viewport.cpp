@@ -943,8 +943,8 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 	const ImGuizmo::MODE mode = (ImGuizmo::MODE)gizmoMode();
 	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
 	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
-	const float step = _gridSize->floatVal();
-	const float snap[]{step, step, step};
+	const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+	const float snap[]{(float)gridRes.x, (float)gridRes.y, (float)gridRes.z};
 	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
 	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
 }
@@ -1157,8 +1157,7 @@ bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
 	}
 
 	const ImGuizmo::MODE mode = state.localMode ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
-	const float snap[] = {state.snap, state.snap, state.snap};
-	const float *snapPtr = state.snap > 0.0f ? snap : nullptr;
+	const float *snapPtr = (state.snap[0] > 0.0f || state.snap[1] > 0.0f || state.snap[2] > 0.0f) ? state.snap : nullptr;
 	const float *boundsPtr = state.hasBounds ? state.bounds : nullptr;
 	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 

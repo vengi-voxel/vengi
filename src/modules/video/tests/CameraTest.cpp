@@ -188,7 +188,7 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 }
 
 TEST_F(CameraTest, testOrthoZoom) {
-	util::ScopedVarChange zoomSpeedChange(_zoomSpeed->name(), 0.9f);
+	util::ScopedVarChange zoomSpeedChange(_zoomSpeed, 0.9f);
 	Camera camera;
 	camera.setMode(CameraMode::Perspective);
 	camera.setSize(glm::ivec2(1024, 768));

@@ -128,7 +128,7 @@ bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	brushContext.referencePos = position;
 	brushContext.cursorFace = face;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = thickness;
+	brushContext.gridResolution = glm::ivec3(thickness);
 
 	// Create the modifier wrapper
 	ModifierVolumeWrapper wrapper(*node, modifierType);

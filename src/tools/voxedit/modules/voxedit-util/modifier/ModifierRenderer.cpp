@@ -335,7 +335,7 @@ void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const v
 		_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
 
 		const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
-		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
+		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3(_gridResolution));
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
 	}
 

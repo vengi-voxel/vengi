@@ -124,10 +124,10 @@ protected:
 	/**
 	 * @brief Snap a position to the grid resolution
 	 * @param[in] inPos Input position in voxel coordinates
-	 * @param[in] resolution Grid resolution (1 = no snapping)
+	 * @param[in] resolution Grid resolution per axis (1 = no snapping on that axis)
 	 * @return Position snapped to nearest grid point
 	 */
-	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
+	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const;
 
 	/**
 	 * @brief Extend the brush region to span the entire volume in orthographic view

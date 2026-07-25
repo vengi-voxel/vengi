@@ -40,20 +40,24 @@ void ShapeBuilder::setPrimitive(Primitive primitive) {
 }
 
 void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
+	aabbGridXY(aabb, near, stepWidth, stepWidth, thickness);
+}
+
+void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepX, float stepY, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
-	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
+	const int n = (int)(width.x / stepX) + (int)(width.y / stepY) + 2;
 	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
-	for (float x = 0.0f; x <= width.x; x += stepWidth, ++i) {
+	for (float x = 0.0f; x <= width.x; x += stepX, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(x, 0.0f, wz) + mins, glm::vec3(x, width.y, wz) + mins, thickness);
 	}
 	i = 0;
-	for (float y = 0.0f; y <= width.y; y += stepWidth, ++i) {
+	for (float y = 0.0f; y <= width.y; y += stepY, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(0.0f, y, wz) + mins, glm::vec3(width.x, y, wz) + mins, thickness);
 	}
@@ -61,20 +65,24 @@ void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float st
 }
 
 void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
+	aabbGridYZ(aabb, near, stepWidth, stepWidth, thickness);
+}
+
+void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepY, float stepZ, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
-	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
+	const int n = (int)(width.y / stepY) + (int)(width.z / stepZ) + 2;
 	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
-	for (float y = 0.0f; y <= width.y; y += stepWidth, ++i) {
+	for (float y = 0.0f; y <= width.y; y += stepY, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(wx, y, 0.0f) + mins, glm::vec3(wx, y, width.z) + mins, thickness);
 	}
 	i = 0;
-	for (float z = 0.0f; z <= width.z; z += stepWidth, ++i) {
+	for (float z = 0.0f; z <= width.z; z += stepZ, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(wx, 0.0f, z) + mins, glm::vec3(wx, width.y, z) + mins, thickness);
 	}
@@ -82,20 +90,24 @@ void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float st
 }
 
 void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
+	aabbGridXZ(aabb, near, stepWidth, stepWidth, thickness);
+}
+
+void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepX, float stepZ, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
-	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
+	const int n = (int)(width.x / stepX) + (int)(width.z / stepZ) + 2;
 	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
-	for (float x = 0.0f; x <= width.x; x += stepWidth, ++i) {
+	for (float x = 0.0f; x <= width.x; x += stepX, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(x, wy, 0.0f) + mins, glm::vec3(x, wy, width.z) + mins, thickness);
 	}
 	i = 0;
-	for (float z = 0.0f; z <= width.z; z += stepWidth, ++i) {
+	for (float z = 0.0f; z <= width.z; z += stepZ, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
 		line(glm::vec3(0.0f, wy, z) + mins, glm::vec3(width.x, wy, z) + mins, thickness);
 	}

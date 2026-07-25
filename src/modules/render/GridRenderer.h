@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Log.h"
+#include "core/GLM.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "math/AABB.h"
@@ -40,7 +41,7 @@ protected:
 	void createForwardArrow(const math::AABB<float> &aabb);
 	void createPlane();
 	int _planeGridSize = -1;
-	int _resolution = -1;
+	glm::ivec3 _resolution{-1};
 	bool _renderAABB;
 	bool _renderGrid;
 	bool _renderPlane;
@@ -49,8 +50,9 @@ protected:
 public:
 	GridRenderer(bool renderAABB = false, bool renderGrid = true, bool renderPlane = false);
 
+	bool setGridResolution(const glm::ivec3 &resolution);
 	bool setGridResolution(int resolution);
-	int gridResolution() const;
+	const glm::ivec3 &gridResolution() const;
 
 	/**
 	 * @param aabb The region to do the plane culling with

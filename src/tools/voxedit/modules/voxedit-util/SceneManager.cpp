@@ -3595,7 +3595,7 @@ void SceneManager::nodeGroupShift(int x, int y, int z) {
 	});
 }
 
-bool SceneManager::setGridResolution(int resolution) {
+bool SceneManager::setGridResolution(const glm::ivec3 &resolution) {
 	if (isLocked()) {
 		return false;
 	}
@@ -3605,6 +3605,10 @@ bool SceneManager::setGridResolution(int resolution) {
 	_modifier->setGridResolution(resolution);
 	setCursorPosition(cursorPosition(), _modifier->cursorFace(), true);
 	return true;
+}
+
+bool SceneManager::setGridResolution(int resolution) {
+	return setGridResolution(glm::ivec3(resolution));
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender::RenderContext &modifierRenderContext, const video::Camera& camera, uint8_t renderMask) {
@@ -3695,7 +3699,7 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditAnimationSpeed);
 	const core::VarDef voxEditAutoNormalMode(cfg::VoxEditAutoNormalMode, 0, 0, 2, N_("Auto normal mode"), "Flat, Smooth, Smoother", core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditAutoNormalMode);
-	const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, 1, 1, 64, N_("Grid size"), N_("The size of the voxel grid"));
+	const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, "1", N_("Grid size"), N_("The size of the voxel grid per axis (e.g. 1 or 1 2 3)"));
 	core::Var::registerVar(voxEditGridsize);
 	const core::VarDef voxEditPlaneSize(cfg::VoxEditPlaneSize, 100, 1, 1000, N_("Plane size"), N_("The size of the plane"));
 	core::Var::registerVar(voxEditPlaneSize);
@@ -5936,7 +5940,7 @@ bool SceneManager::update(double nowSeconds) {
 	_modifier->flushPendingBrushChanges();
 
 	_sceneRenderer->update();
-	setGridResolution(_gridSize->intVal());
+	setGridResolution(parseGridResolution(_gridSize->strVal()));
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
@@ -6081,10 +6085,10 @@ void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 
 void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
-	const int res = _modifier->gridResolution();
-	p.x += x * res;
-	p.y += y * res;
-	p.z += z * res;
+	const glm::ivec3 &res = _modifier->gridResolution();
+	p.x += x * res.x;
+	p.y += y * res.y;
+	p.z += z * res.z;
 	setCursorPosition(p, _modifier->cursorFace(), true);
 	_traceViaMouse = false;
 	if (const voxel::RawVolume *v = activeVolume()) {
@@ -6099,18 +6103,18 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 		return;
 	}
 
-	const int res = _modifier->gridResolution();
+	const glm::ivec3 &res = _modifier->gridResolution();
 	const voxel::Region& region = v->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3 delta = pos - mins;
-	if (delta.x % res != 0) {
-		pos.x = mins.x + (delta.x / res) * res;
+	if (res.x > 0 && delta.x % res.x != 0) {
+		pos.x = mins.x + (delta.x / res.x) * res.x;
 	}
-	if (delta.y % res != 0) {
-		pos.y = mins.y + (delta.y / res) * res;
+	if (res.y > 0 && delta.y % res.y != 0) {
+		pos.y = mins.y + (delta.y / res.y) * res.y;
 	}
-	if (delta.z % res != 0) {
-		pos.z = mins.z + (delta.z / res) * res;
+	if (res.z > 0 && delta.z % res.z != 0) {
+		pos.z = mins.z + (delta.z / res.z) * res.z;
 	}
 
 	const math::Axis lockedAxis = _modifier->lockedAxis();

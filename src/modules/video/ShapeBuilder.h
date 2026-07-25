@@ -115,8 +115,11 @@ public:
 		}
 	}
 	void aabbGridXY(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabbGridXY(const math::AABB<float>& aabb, bool near, float stepX, float stepY, float thickness);
 	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepY, float stepZ, float thickness);
 	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepX, float stepZ, float thickness);
 
 	void arrow(const glm::vec3 &point1, const glm::vec3 &point2, const glm::vec3 &point3, float thickness = 1.0f);
 

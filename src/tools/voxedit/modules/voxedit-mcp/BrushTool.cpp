@@ -142,7 +142,7 @@ bool BrushTool::executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, Brush
 	brushContext.referencePos = mins;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
 	ModifierVolumeWrapper wrapper(*node, modifierType);

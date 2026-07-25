@@ -151,7 +151,7 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	brushContext.referencePos = brushContext.cursorPosition;
 	brushContext.cursorFace = face;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = 1;
+	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
 	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);

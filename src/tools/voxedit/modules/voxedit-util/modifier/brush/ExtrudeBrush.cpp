@@ -478,7 +478,7 @@ void ExtrudeBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &sta
 		return;
 	}
 
-	state.snap = 1.0f;
+	state.snap[0] = state.snap[1] = state.snap[2] = 1.0f;
 	state.localMode = false;
 }
 
