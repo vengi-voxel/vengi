@@ -1622,9 +1622,10 @@ bool App::hasArg(const core::String &arg) const {
 		}
 	}
 	for (const Argument &a : _arguments) {
-		if (a.longArg() == arg || a.shortArg() == arg) {
+		// Unset shortArg is empty; must not match an empty argv token (e.g. -set var "").
+		if (a.longArg() == arg || (!a.shortArg().empty() && a.shortArg() == arg)) {
 			for (int i = 1; i < _argc; ++i) {
-				if (a.longArg() == _argv[i] || a.shortArg() == _argv[i]) {
+				if (a.longArg() == _argv[i] || (!a.shortArg().empty() && a.shortArg() == _argv[i])) {
 					return true;
 				}
 			}
@@ -1648,11 +1649,11 @@ core::String App::getArgVal(const core::String &arg, const core::String &default
 		}
 	}
 	for (const Argument &a : _arguments) {
-		if (a.longArg() != arg && a.shortArg() != arg) {
+		if (a.longArg() != arg && (a.shortArg().empty() || a.shortArg() != arg)) {
 			continue;
 		}
 		for (int i = start; i < _argc; ++i) {
-			if (a.longArg() != _argv[i] && a.shortArg() != _argv[i]) {
+			if (a.longArg() != _argv[i] && (a.shortArg().empty() || a.shortArg() != _argv[i])) {
 				continue;
 			}
 			if (i + 1 < _argc) {

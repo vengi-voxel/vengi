@@ -157,4 +157,24 @@ TEST(AppTest, testArgumentDefaultValue) {
 	EXPECT_EQ("defaultval", app.getArgVal("--test"));
 }
 
+// Empty argv (e.g. -set ve_netpassword "") must not make bool flags without a short
+// option look present via matching an unset/empty shortArg.
+TEST(AppTest, testEmptyArgvDoesNotMatchUnsetShortArg) {
+	const char *args[] = {"testbinary", "-set", "ve_netpassword", ""};
+	TestApp app(lengthof(args), args);
+	app.registerArg("--jsonconfig").setDescription("Print the cvars in json format").addFlag(App::ARGUMENT_FLAG_BOOL);
+	app.registerArg("--version").setShort("-v").setDescription("Print the version and quit").addFlag(App::ARGUMENT_FLAG_BOOL);
+	EXPECT_FALSE(app.hasArg("--jsonconfig"));
+	EXPECT_FALSE(app.hasArg("--version"));
+	EXPECT_FALSE(app.hasArg("-v"));
+	EXPECT_EQ("", app.getArgVal("--jsonconfig"));
+}
+
+TEST(AppTest, testEmptyArgvStillAllowsExplicitFlag) {
+	const char *args[] = {"testbinary", "--jsonconfig", "-set", "ve_netpassword", ""};
+	TestApp app(lengthof(args), args);
+	app.registerArg("--jsonconfig").setDescription("Print the cvars in json format").addFlag(App::ARGUMENT_FLAG_BOOL);
+	EXPECT_TRUE(app.hasArg("--jsonconfig"));
+}
+
 } // namespace app
