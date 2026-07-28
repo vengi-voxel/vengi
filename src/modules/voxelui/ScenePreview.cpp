@@ -266,7 +266,8 @@ void ScenePreview::renderForFileDialog(const io::FilesystemEntry &entry, video::
 									   const io::FormatDescription *desc) {
 	(void)desc;
 	const float size = 20.0f * ImGui::GetTextLineHeightWithSpacing();
-	ImGui::BeginChild("##filedialog_scenepreview", ImVec2(size, size), ImGuiChildFlags_Borders);
+	ImGui::BeginChild("##filedialog_scenepreview", ImVec2(size, size), ImGuiChildFlags_Borders,
+					  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	if (mode == video::OpenFileMode::Directory || entry.name.empty() || entry.isDirectory()) {
 		ImGui::TextWrapped("%s", _("Select a model"));
 		ImGui::EndChild();
@@ -296,8 +297,9 @@ void ScenePreview::renderForFileDialog(const io::FilesystemEntry &entry, video::
 		}
 	}
 
+	const ImVec2 avail = ImGui::GetContentRegionAvail();
 	const double delta = app::App::getInstance()->deltaFrameSeconds();
-	updateAndRender(delta, glm::vec2(size - 8.0f, size - 8.0f), true);
+	updateAndRender(delta, glm::vec2(avail.x, avail.y), true);
 	ImGui::EndChild();
 }
 
