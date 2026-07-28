@@ -252,6 +252,12 @@ void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshSt
 		if (!node.isReferenceNode()) {
 			continue;
 		}
+		const int refId = node.reference();
+		if (!sceneGraph.hasNode(refId) || !sceneGraph.node(refId).isModelNode()) {
+			Log::error("Skip ModelReference node %i ('%s'): invalid reference %i", node.id(), node.name().c_str(),
+					   refId);
+			continue;
+		}
 
 		const int idx = getOrAssignVolumeIdx(node.id());
 		_volumeRenderer.ensureSize(idx);
@@ -259,7 +265,7 @@ void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshSt
 		if (meshState->hidden(idx)) {
 			continue;
 		}
-		const int referencedIdx = getVolumeIdx(node.reference());
+		const int referencedIdx = getVolumeIdx(refId);
 		meshState->setReference(idx, referencedIdx);
 		prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx);
 	}

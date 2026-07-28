@@ -442,7 +442,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	}
 	if (format->supportsReferences()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::ModelReference);
-		node.setReference(modelNodeId);
+		ASSERT_TRUE(node.setReference(sceneGraphsave.node(modelNodeId)));
 		node.setPalette(pal);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		scenegraph::SceneGraphTransform transform;
@@ -614,7 +614,7 @@ void AbstractFormatTest::testSaveLoadVolumes(const core::String &filename, const
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::ModelReference);
 			node.setName("reference node");
 			node.setPalette(pal);
-			node.setReference(nodeId);
+			ASSERT_TRUE(node.setReference(sceneGraph.node(nodeId)));
 			sceneGraph.emplace(core::move(node));
 		}
 	}

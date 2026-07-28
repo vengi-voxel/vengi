@@ -1687,7 +1687,10 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		if (node->type() == scenegraph::SceneGraphNodeType::Model && s.nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
-				node->setReference(referenceNode->id(), true);
+				if (!node->setReference(*referenceNode, true)) {
+					const core::String &refUUIDStr = s.referenceUUID.str();
+					Log::warn("Failed to handle memento state - reference node %s is not a Model", refUUIDStr.c_str());
+				}
 			} else {
 				const core::String &refUUIDStr = s.referenceUUID.str();
 				Log::warn("Failed to handle memento state - reference node id %s not found", refUUIDStr.c_str());
@@ -1727,7 +1730,10 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	newNode.setPalette(s.palette);
 	if (newNode.isReferenceNode()) {
 		if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
-			newNode.setReference(referenceNode->id());
+			if (!newNode.setReference(*referenceNode)) {
+				const core::String &refUUIDStr = s.referenceUUID.str();
+				Log::warn("Failed to handle memento state - reference node %s is not a Model", refUUIDStr.c_str());
+			}
 		} else {
 			const core::String &refUUIDStr = s.referenceUUID.str();
 			Log::warn("Failed to handle memento state - reference node id %s not found", refUUIDStr.c_str());

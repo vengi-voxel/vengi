@@ -146,7 +146,11 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 			frameNode.setPalette(palette);
 			frameNode.setPivot(ogtNormalizedPivot(frameModel));
 			if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-				frameNode.setReference(modelEntry.nodeId);
+				if (!sceneGraph.hasNode(modelEntry.nodeId) ||
+					!frameNode.setReference(sceneGraph.node(modelEntry.nodeId))) {
+					Log::error("Failed to reference model node %i for frame instance", modelEntry.nodeId);
+					return false;
+				}
 			} else {
 				frameNode.setVolume(modelEntry.volume);
 				modelEntry.volume = nullptr;
@@ -194,7 +198,10 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	node.setPivot(ogtNormalizedPivot(ogtModel));
 	node.setPalette(palette);
 	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-		node.setReference(modelEntry.nodeId);
+		if (!sceneGraph.hasNode(modelEntry.nodeId) || !node.setReference(sceneGraph.node(modelEntry.nodeId))) {
+			Log::error("Failed to reference model node %i for instance", modelEntry.nodeId);
+			return false;
+		}
 	} else {
 		node.setVolume(modelEntry.volume);
 		modelEntry.volume = nullptr;

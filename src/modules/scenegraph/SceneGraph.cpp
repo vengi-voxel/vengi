@@ -744,12 +744,29 @@ void SceneGraph::fixErrors() {
 
 bool SceneGraph::validate() const {
 	bool valid = true;
-	_nodes.for_parallel([&] (const SceneGraphNodes::key_type &key, const SceneGraphNode &value) {
+	for (const auto &entry : _nodes) {
+		const SceneGraphNode &value = entry->value;
 		if (!value.validate()) {
 			valid = false;
 		}
-	});
-	return true;
+		if (!value.isReferenceNode()) {
+			continue;
+		}
+		const int refId = value.reference();
+		if (!hasNode(refId)) {
+			Log::error("ModelReference node %s (%i) points to missing node %i", value.name().c_str(), value.id(),
+					   refId);
+			valid = false;
+			continue;
+		}
+		const SceneGraphNode &ref = node(refId);
+		if (!ref.isModelNode()) {
+			Log::error("ModelReference node %s (%i) points to non-model node %i (type %i)", value.name().c_str(),
+					   value.id(), refId, (int)ref.type());
+			valid = false;
+		}
+	}
+	return valid;
 }
 
 SceneGraphNode *SceneGraph::findNodeByPropertyValue(const core::String &key, const core::String &value) const {
@@ -1212,9 +1229,29 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 	return palette;
 }
 
+static bool resolveModelReferenceTarget(const SceneGraph &sceneGraph, const SceneGraphNode &n, int &outRefId) {
+	const int refId = n.reference();
+	if (!sceneGraph.hasNode(refId)) {
+		Log::error("ModelReference node %i ('%s') points to missing node %i", n.id(), n.name().c_str(), refId);
+		return false;
+	}
+	const SceneGraphNode &ref = sceneGraph.node(refId);
+	if (!ref.isModelNode() && !ref.isReferenceNode()) {
+		Log::error("ModelReference node %i ('%s') points to non-model node %i (type %i)", n.id(), n.name().c_str(),
+				   refId, (int)ref.type());
+		return false;
+	}
+	outRefId = refId;
+	return true;
+}
+
 const palette::Palette &SceneGraph::resolvePalette(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
-		return resolvePalette(node(n.reference()));
+		int refId = InvalidNodeId;
+		if (!resolveModelReferenceTarget(*this, n, refId)) {
+			return n.palette();
+		}
+		return resolvePalette(node(refId));
 	}
 	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve palette for node of type %i", (int)n.type());
 	return n.palette();
@@ -1222,7 +1259,11 @@ const palette::Palette &SceneGraph::resolvePalette(const SceneGraphNode &n) cons
 
 voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
-		return resolveRegion(node(n.reference()));
+		int refId = InvalidNodeId;
+		if (!resolveModelReferenceTarget(*this, n, refId)) {
+			return voxel::Region::InvalidRegion;
+		}
+		return resolveRegion(node(refId));
 	}
 	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve region for node of type %i", (int)n.type());
 	return n.region();
@@ -1230,15 +1271,23 @@ voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 
 const voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
-		return resolveVolume(node(n.reference()));
+		int refId = InvalidNodeId;
+		if (!resolveModelReferenceTarget(*this, n, refId)) {
+			return nullptr;
+		}
+		return resolveVolume(node(refId));
 	}
-	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve region for node of type %i", (int)n.type());
+	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve volume for node of type %i", (int)n.type());
 	return n.volume();
 }
 
 voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
-		return resolveVolume(node(n.reference()));
+		int refId = InvalidNodeId;
+		if (!resolveModelReferenceTarget(*this, n, refId)) {
+			return nullptr;
+		}
+		return resolveVolume(node(refId));
 	}
 	return n.volume();
 }

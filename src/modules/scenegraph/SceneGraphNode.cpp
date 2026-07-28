@@ -438,7 +438,16 @@ int SceneGraphNode::reference() const {
 	return _referenceId;
 }
 
-bool SceneGraphNode::setReference(int nodeId, bool forceChangeNodeType) {
+bool SceneGraphNode::setReference(const SceneGraphNode &modelNode, bool forceChangeNodeType) {
+	if (!modelNode.isModelNode()) {
+		Log::error("Can't reference node %i ('%s') of type %i - only Model nodes are allowed", modelNode.id(),
+				   modelNode.name().c_str(), (int)modelNode.type());
+		return false;
+	}
+	if (modelNode.id() == InvalidNodeId) {
+		Log::error("Can't reference invalid node id");
+		return false;
+	}
 	if (_type != SceneGraphNodeType::ModelReference) {
 		if (forceChangeNodeType) {
 			setUnownedVolume(nullptr);
@@ -447,8 +456,12 @@ bool SceneGraphNode::setReference(int nodeId, bool forceChangeNodeType) {
 			return false;
 		}
 	}
-	_referenceId = nodeId;
+	_referenceId = modelNode.id();
 	return true;
+}
+
+void SceneGraphNode::setReferenceId(int nodeId) {
+	_referenceId = nodeId;
 }
 
 bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {

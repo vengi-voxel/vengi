@@ -8,7 +8,7 @@
 | `children()` | Get the child node IDs. |
 | `clearSelection()` | Clear all selection flags from the node's volume. |
 | `clone()` | Create a copy of the node. |
-| `createReference(parentId)` | Create a ModelReference node that instances this model (or resolves through an existing reference). |
+| `createReference(parentId)` | Create a ModelReference node that instances this model. Only Model nodes are referenceable. |
 | `hasKeyFrameForFrame(frame)` | Check if a keyframe exists at the specified frame. |
 | `hasNormalPalette()` | Check if the node has a normal palette. |
 | `hide()` | Hide the node. |
@@ -88,7 +88,7 @@ Create a copy of the node.
 
 ### createReference
 
-Create a ModelReference node that instances this model (or resolves through an existing reference).
+Create a ModelReference node that instances this model. Only Model nodes are referenceable.
 
 **Parameters:**
 

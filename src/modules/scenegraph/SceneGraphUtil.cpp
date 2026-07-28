@@ -39,8 +39,8 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	target.setPivot(node.pivot());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
-	// SCENEGRAPH: the reference node id is copied as is - the caller is responsible for fixing this if needed
-	target.setReference(node.reference());
+	// SCENEGRAPH: the reference node id is copied as is - the caller is responsible for remapping/validating
+	target.setReferenceId(node.reference());
 	if (node.hasPalette()) {
 		target.setPalette(node.palette());
 	}
@@ -62,7 +62,9 @@ int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	}
 
 	SceneGraphNode newNode(SceneGraphNodeType::ModelReference);
-	newNode.setReference(node.id());
+	if (!newNode.setReference(node)) {
+		return InvalidNodeId;
+	}
 	newNode.setName(node.name() + " reference");
 	newNode.setColor(node.color());
 	newNode.setPivot(node.pivot());
@@ -142,21 +144,47 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 	return newNodeId;
 }
 
-static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent, const core::Function<void(int)> &onNodeAdded) {
-	const int newNodeId = moveNodeToSceneGraph(target, sourceNode, parent);
+static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent,
+							   const core::Function<void(int)> &onNodeAdded, core::DynamicMap<int, int> &nodeMap) {
+	const int sourceNodeId = sourceNode.id();
+	const int newNodeId = moveNodeToSceneGraph(target, sourceNode, parent, onNodeAdded);
 	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;
 	}
+	nodeMap.put(sourceNodeId, newNodeId);
 
 	int nodesAdded = sourceNode.type() == SceneGraphNodeType::Model ? 1 : 0;
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId, onNodeAdded);
+		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId, onNodeAdded, nodeMap);
 	}
 
 	return nodesAdded;
+}
+
+static void remapModelReferences(SceneGraph &target, const core::DynamicMap<int, int> &nodeMap) {
+	for (auto entry : nodeMap) {
+		SceneGraphNode &node = target.node(entry->second);
+		if (node.type() != SceneGraphNodeType::ModelReference) {
+			continue;
+		}
+		const int oldRefId = node.reference();
+		auto iter = nodeMap.find(oldRefId);
+		if (iter == nodeMap.end()) {
+			Log::error("Failed to remap ModelReference node %i ('%s'): old reference %i is not in the imported node map",
+					   node.id(), node.name().c_str(), oldRefId);
+			node.setReferenceId(InvalidNodeId);
+			continue;
+		}
+		const int newRefId = iter->second;
+		if (!target.hasNode(newRefId) || !node.setReference(target.node(newRefId))) {
+			Log::error("Failed to remap ModelReference node %i ('%s'): remapped id %i is not a Model", node.id(),
+					   node.name().c_str(), newRefId);
+			node.setReferenceId(InvalidNodeId);
+		}
+	}
 }
 
 int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const core::Function<void(int)> &onNodeAdded) {
@@ -168,9 +196,12 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 		target.addAnimation(animation);
 	}
 
+	core::DynamicMap<int, int> nodeMap;
 	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent, onNodeAdded);
+		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent, onNodeAdded, nodeMap);
 	}
+	// moveNodeToSceneGraph copies reference ids as-is; remap them to the new target ids
+	remapModelReferences(target, nodeMap);
 	return nodesAdded;
 }
 
@@ -217,22 +248,7 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent, nodeMap, copyVolumes));
 	}
 
-	for (auto entry : nodeMap) {
-		int newNodeId = entry->second;
-		SceneGraphNode &node = target.node(newNodeId);
-		if (node.type() == SceneGraphNodeType::ModelReference) {
-			int oldRefId = node.reference();
-			auto iter = nodeMap.find(oldRefId);
-			if (iter != nodeMap.end()) {
-				node.setReference(iter->second);
-			} else {
-				// this is not enough of course - the id might have already existed in the target scene graph
-				if (!target.hasNode(oldRefId)) {
-					Log::warn("Reference node %i is not in the scene graph", oldRefId);
-				}
-			}
-		}
-	}
+	remapModelReferences(target, nodeMap);
 
 	return nodesAdded;
 }
@@ -404,11 +420,17 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 		if (mapIter != splitMap.end()) {
 			const core::Buffer<int> &newTargets = mapIter->value;
 			if (!newTargets.empty()) {
-				refNode.setReference(newTargets[0]);
+				if (!refNode.setReference(destSceneGraph.node(newTargets[0]))) {
+					Log::error("Failed to retarget ModelReference %i after split", refNodeId);
+					continue;
+				}
 				for (size_t i = 1; i < newTargets.size(); ++i) {
 					SceneGraphNode newRefNode(SceneGraphNodeType::ModelReference);
 					copy(refNode, newRefNode, true);
-					newRefNode.setReference(newTargets[i]);
+					if (!newRefNode.setReference(destSceneGraph.node(newTargets[i]))) {
+						Log::error("Failed to create split ModelReference for target %i", newTargets[i]);
+						continue;
+					}
 					addToGraph(destSceneGraph, core::move(newRefNode), refNode.parent());
 				}
 			}

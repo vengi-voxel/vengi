@@ -118,7 +118,16 @@ public:
 	int id() const;
 	int parent() const;
 	int reference() const;
-	bool setReference(int nodeId, bool forceChangeNodeType = false);
+	/**
+	 * @brief Point this ModelReference at @p modelNode.
+	 * Only @c SceneGraphNodeType::Model targets are allowed.
+	 */
+	bool setReference(const SceneGraphNode &modelNode, bool forceChangeNodeType = false);
+	/**
+	 * @brief Assign a raw reference id without validating the target type.
+	 * For load/copy remapping only; follow up with @c setReference(modelNode) or @c SceneGraph::validate().
+	 */
+	void setReferenceId(int nodeId);
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
 	bool hasPalette() const;

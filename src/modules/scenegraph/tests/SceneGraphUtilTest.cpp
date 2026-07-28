@@ -48,7 +48,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphWithReferences) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::ModelReference);
 		node.setName("reference");
-		node.setReference(modelNodeId);
+		ASSERT_TRUE(node.setReference(source.node(modelNodeId)));
 		int refNodeId = source.emplace(core::move(node));
 		ASSERT_NE(InvalidNodeId, refNodeId);
 	}
@@ -78,6 +78,92 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphWithReferences) {
 	EXPECT_EQ(targetModelId, targetRefNode.reference());
 }
 
+TEST_F(SceneGraphUtilTest, testAddSceneGraphNodesWithReferences) {
+	SceneGraph source;
+	int modelNodeId = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.createVolume(voxel::Region(0, 0));
+		modelNodeId = source.emplace(core::move(node));
+	}
+	ASSERT_NE(InvalidNodeId, modelNodeId);
+	{
+		SceneGraphNode node(SceneGraphNodeType::ModelReference);
+		node.setName("reference");
+		ASSERT_TRUE(node.setReference(source.node(modelNodeId)));
+		ASSERT_NE(InvalidNodeId, source.emplace(core::move(node)));
+	}
+
+	// Pre-populate the target so imported node ids differ from the source ids.
+	SceneGraph target;
+	{
+		SceneGraphNode existing(SceneGraphNodeType::Group);
+		existing.setName("existing-group");
+		ASSERT_NE(InvalidNodeId, target.emplace(core::move(existing)));
+	}
+	{
+		SceneGraphNode existing(SceneGraphNodeType::Model);
+		existing.setName("existing-model");
+		existing.createVolume(voxel::Region(0, 0));
+		ASSERT_NE(InvalidNodeId, target.emplace(core::move(existing)));
+	}
+
+	EXPECT_EQ(1, addSceneGraphNodes(target, source, target.root().id()));
+
+	int targetModelId = InvalidNodeId;
+	int targetRefId = InvalidNodeId;
+	for (auto iter = target.begin(SceneGraphNodeType::Model); iter != target.end(); ++iter) {
+		if ((*iter).name() == "model") {
+			targetModelId = (*iter).id();
+		}
+	}
+	for (auto iter = target.begin(SceneGraphNodeType::ModelReference); iter != target.end(); ++iter) {
+		if ((*iter).name() == "reference") {
+			targetRefId = (*iter).id();
+		}
+	}
+	ASSERT_NE(InvalidNodeId, targetModelId);
+	ASSERT_NE(InvalidNodeId, targetRefId);
+	EXPECT_NE(modelNodeId, targetModelId);
+	EXPECT_EQ(targetModelId, target.node(targetRefId).reference());
+	EXPECT_TRUE(target.node(target.node(targetRefId).reference()).isModelNode());
+	EXPECT_TRUE(target.resolveRegion(target.node(targetRefId)).isValid());
+}
+
+TEST_F(SceneGraphUtilTest, testSetReferenceRejectsNonModel) {
+	SceneGraph sceneGraph;
+	int groupId = InvalidNodeId;
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode group(SceneGraphNodeType::Group);
+		group.setName("group");
+		groupId = sceneGraph.emplace(core::move(group));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setName("model");
+		model.createVolume(voxel::Region(0, 0));
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+
+	SceneGraphNode reference(SceneGraphNodeType::ModelReference);
+	EXPECT_FALSE(reference.setReference(sceneGraph.node(groupId)));
+	EXPECT_EQ(InvalidNodeId, reference.reference());
+	ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
+	EXPECT_EQ(modelId, reference.reference());
+
+	const int refNodeId = sceneGraph.emplace(core::move(reference));
+	ASSERT_NE(InvalidNodeId, refNodeId);
+	EXPECT_TRUE(sceneGraph.validate());
+
+	// Simulate a corrupt reference id and ensure validate() catches it.
+	sceneGraph.node(refNodeId).setReferenceId(groupId);
+	EXPECT_FALSE(sceneGraph.validate());
+}
+
 TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	SceneGraph source;
 	int modelNodeId = -1;
@@ -93,7 +179,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::ModelReference);
 		node.setName("reference");
-		node.setReference(modelNodeId);
+		ASSERT_TRUE(node.setReference(source.node(modelNodeId)));
 		source.emplace(core::move(node));
 	}
 
@@ -266,7 +352,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesPreservesNodeTypes) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::ModelReference);
 		node.setName("reference");
-		node.setReference(modelId);
+		ASSERT_TRUE(node.setReference(source.node(modelId)));
 		source.emplace(core::move(node), groupId);
 	}
 
@@ -337,7 +423,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphResolveReferencesNoVolumeCopy) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::ModelReference);
 		node.setName("reference");
-		node.setReference(modelNodeId);
+		ASSERT_TRUE(node.setReference(source.node(modelNodeId)));
 		source.emplace(core::move(node));
 	}
 

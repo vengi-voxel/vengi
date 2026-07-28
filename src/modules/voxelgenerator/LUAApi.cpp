@@ -3211,6 +3211,10 @@ static int luaVoxel_scenegraphnode_createreference(lua_State *s) {
 	LuaSceneGraphNode *node = luaVoxel_toscenegraphnode(s, 1);
 	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	int parentId = (int)luaL_optinteger(s, 2, -1);
+	if (!node->node->isModelNode()) {
+		return clua_error(s, "Node %d is not a Model - only Model nodes can be referenced (got type %s)",
+						  node->node->id(), scenegraph::SceneGraphNodeTypeStr[(int)node->node->type()]);
+	}
 	if (!node->node->isReferenceable()) {
 		return clua_error(s, "Node %d is not referenceable", node->node->id());
 	}
@@ -5920,7 +5924,7 @@ static int luaVoxel_scenegraphnode_clone_jsonhelp(lua_State* s) {
 static int luaVoxel_scenegraphnode_createreference_jsonhelp(lua_State *s) {
 	const char *json = R"({
 		"name": "createReference",
-		"summary": "Create a ModelReference node that instances this model (or resolves through an existing reference).",
+		"summary": "Create a ModelReference node that instances this model. Only Model nodes are referenceable.",
 		"parameters": [
 			{"name": "parentId", "type": "integer", "description": "Optional parent node id (-1 = same parent as the source)."}
 		],

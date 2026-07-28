@@ -967,7 +967,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 		}
 		{
 			scenegraph::SceneGraphNode reference(scenegraph::SceneGraphNodeType::ModelReference);
-			reference.setReference(modelNodeId);
+			ASSERT_TRUE(reference.setReference(sceneGraph.node(modelNodeId)));
 			referenceNodeId = sceneGraph.emplace(core::move(reference));
 			ASSERT_NE(referenceNodeId, InvalidNodeId);
 		}

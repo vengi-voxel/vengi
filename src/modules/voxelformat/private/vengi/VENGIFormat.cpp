@@ -560,7 +560,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		int referenceNodeId;
 		wrap(stream.readInt32(referenceNodeId))
 		// will get fixed up later once we know all node ids
-		node.setReference(referenceNodeId);
+		node.setReferenceId(referenceNodeId);
 		nodeMapping.put(fileNodeId, nodeId);
 	}
 	node.setVisible(stream.readBool());
@@ -672,7 +672,11 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 				return false;
 			}
 			Log::debug("Update node reference for node %i to: %i", node.id(), nodeId);
-			node.setReference(nodeId);
+			if (!sceneGraph.hasNode(nodeId) || !node.setReference(sceneGraph.node(nodeId))) {
+				Log::error("Failed to set ModelReference %i to mapped node %i - target must be a Model", node.id(),
+						   nodeId);
+				return false;
+			}
 		}
 		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::All); iter != sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
