@@ -37,6 +37,7 @@ constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
 
 // filedialog
 constexpr const char *UIFileDialogShowHidden = "ui_filedialogshowhidden";
+constexpr const char *UIFileDialogModelPreview = "ui_filedialogmodelpreview";
 constexpr const char *UIFileDialogLastFile = "ui_filedialoglastfile";
 constexpr const char *UIFileDialogLastFiles = "ui_filedialoglastfiles";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";

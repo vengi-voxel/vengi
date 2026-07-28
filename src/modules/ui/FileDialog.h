@@ -53,6 +53,7 @@ private:
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 
 	core::VarPtr _showHidden;
+	core::VarPtr _showModelPreview;
 	core::VarPtr _bookmarks;
 	core::VarPtr _lastDirVar;
 	core::VarPtr _lastFilterSave;
@@ -90,8 +91,9 @@ private:
 	void filter(video::OpenFileMode type);
 	/**
 	 * @return @c true if a file was double clicked
+	 * @param reservedRight Width reserved to the right for an optional SameLine panel (e.g. model preview)
 	 */
-	bool entitiesPanel(video::OpenFileMode type, int height);
+	bool entitiesPanel(video::OpenFileMode type, int height, float reservedRight = 0.0f);
 	void showError(const TimedString &error) const;
 
 #ifdef __EMSCRIPTEN__

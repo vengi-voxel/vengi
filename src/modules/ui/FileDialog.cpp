@@ -444,8 +444,9 @@ static const char *iconForType(io::FilesystemEntry::Type type) {
 	return "";
 }
 
-bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
-	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
+bool FileDialog::entitiesPanel(video::OpenFileMode type, int height, float reservedRight) {
+	const float spacing = reservedRight > 0.0f ? ImGui::GetStyle().ItemSpacing.x : 0.0f;
+	ImVec2 childSize(ImGui::GetContentRegionAvail().x - reservedRight - spacing, height);
 	ImGui::BeginChild("files", childSize, ImGuiChildFlags_Borders, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClickedFile = false;
@@ -621,6 +622,8 @@ void FileDialog::construct() {
 	_bookmarks = core::Var::registerVar(uIBookmarks);
 	const core::VarDef uIFileDialogShowHidden(cfg::UIFileDialogShowHidden, false, N_("Show hidden"), N_("Show hidden file system entities"));
 	_showHidden = core::Var::registerVar(uIFileDialogShowHidden);
+	const core::VarDef uIFileDialogModelPreview(cfg::UIFileDialogModelPreview, false, N_("Show model preview"), N_("Show model preview in file dialog"));
+	_showModelPreview = core::Var::registerVar(uIFileDialogModelPreview);
 	const core::VarDef uILastDirectory(cfg::UILastDirectory, _app->filesystem()->homePath().c_str(), N_("Last directory"), N_("The last opened directory in the file dialog"));
 	_lastDirVar = core::Var::registerVar(uILastDirectory);
 	const core::VarDef uILastFilterSave(cfg::UILastFilterSave, 0, N_("Last filter (save)"), N_("The last selected file type filter in the file dialog"));
@@ -833,7 +836,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 	}
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
-	const bool hasPreview = (bool)options.preview;
+	const bool hasPreview = (bool)options.preview && _showModelPreview->boolVal();
 	if (hasPreview) {
 		width = core_min(width + 22.0f * itemHeight, ImGui::GetMainViewport()->Size.x * 0.95f);
 	}
@@ -883,10 +886,11 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		bool openSelectedEntry = false;
 		currentPathPanel(type);
+		const float previewSize = hasPreview ? 20.0f * itemHeight : 0.0f;
 		openSelectedEntry |= quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
 		ImGui::SameLine();
-		openSelectedEntry |= entitiesPanel(type, 20 * itemHeight);
-		if (options.preview) {
+		openSelectedEntry |= entitiesPanel(type, 20 * itemHeight, previewSize);
+		if (hasPreview) {
 			ImGui::SameLine();
 			options.preview(_selectedEntry, type, _currentFilterFormat);
 		}
@@ -906,6 +910,10 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		if (ImGui::CheckboxVar(_showHidden)) {
 			applyFilter(type);
+		}
+		if (options.preview) {
+			ImGui::SameLine();
+			ImGui::CheckboxVar(_showModelPreview);
 		}
 		popupNewFolder();
 		popupNotWriteable();
