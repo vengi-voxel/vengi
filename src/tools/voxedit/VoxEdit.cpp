@@ -5,6 +5,7 @@
 #include "VoxEdit.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/BindingContext.h"
@@ -25,10 +26,12 @@
 
 #include "engine-git.h"
 #include "voxedit-ui/MainWindow.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ScriptManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
+#include "voxedit-util/network/McpConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
@@ -115,6 +118,9 @@ void VoxEdit::toggleScene() {
 
 app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
+	registerArg("--mcpjson")
+		.setDescription(_("Print mcp.json for MCP clients using the current network settings and quit"))
+		.addFlag(ARGUMENT_FLAG_BOOL);
 	_framesPerSecondsCap->setVal(60.0f);
 	_penPressureAffectsRadius = core::Var::registerVar(
 		core::VarDef(cfg::VoxEditPenPressureAffectsRadius, true, N_("Pen pressure controls radius"),
@@ -142,6 +148,13 @@ app::AppState VoxEdit::onConstruct() {
 	_sceneMgr->construct();
 	_collectionMgr->construct();
 	_texturePool->construct();
+
+	if (hasArg("--mcpjson")) {
+		const int port = core::getVar(cfg::VoxEditNetPort)->intVal();
+		const core::String iface = core::getVar(cfg::VoxEditNetServerInterface)->strVal();
+		voxedit::printMcpConfig(port, iface);
+		return app::AppState::Destroy;
+	}
 
 	command::Command::registerCommand("screenshot")
 		.addArg({"viewport", command::ArgType::String, true, "", "Viewport ID"})

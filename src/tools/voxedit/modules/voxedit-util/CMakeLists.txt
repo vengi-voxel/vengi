@@ -48,6 +48,7 @@ set(SRCS
 	network/Server.h network/Server.cpp
 	network/ClientNetwork.h network/ClientNetwork.cpp
 	network/ServerNetwork.h network/ServerNetwork.cpp
+	network/McpConfig.h network/McpConfig.cpp
 	network/ProtocolIds.h
 	network/ProtocolMessageFactory.h network/ProtocolMessageFactory.cpp
 	network/SessionRecorder.h network/SessionRecorder.cpp

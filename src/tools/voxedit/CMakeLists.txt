@@ -40,6 +40,7 @@ set(DOCS
 	voxedit/usage/Palette.md
 	voxedit/Index.md
 	voxedit/Animation.md
+	voxedit/MCP.md
 	Configuration.md
 	FAQ.md
 	Formats.md
