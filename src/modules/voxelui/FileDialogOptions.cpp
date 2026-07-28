@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogOptions.h"
+#include "ScenePreview.h"
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "app/App.h"
@@ -95,9 +96,17 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 	return hasOptions;
 }
 
-video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &paletteCache, bool palette) {
-	FileDialogOptions options(paletteCache, palette);
-	return options;
+video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &paletteCache, bool palette,
+												  ScenePreview *preview) {
+	video::FileDialogOptions result;
+	result.options = FileDialogOptions(paletteCache, palette);
+	if (preview != nullptr && !palette) {
+		result.preview = [preview](const io::FilesystemEntry &entry, video::OpenFileMode mode,
+								   const io::FormatDescription *desc) {
+			preview->renderForFileDialog(entry, mode, desc);
+		};
+	}
+	return result;
 }
 
 bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc) {

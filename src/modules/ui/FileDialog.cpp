@@ -833,6 +833,10 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 	}
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
+	const bool hasPreview = (bool)options.preview;
+	if (hasPreview) {
+		width = core_min(width + 22.0f * itemHeight, ImGui::GetMainViewport()->Size.x * 0.95f);
+	}
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
@@ -882,6 +886,10 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		openSelectedEntry |= quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
 		ImGui::SameLine();
 		openSelectedEntry |= entitiesPanel(type, 20 * itemHeight);
+		if (options.preview) {
+			ImGui::SameLine();
+			options.preview(_selectedEntry, type, _currentFilterFormat);
+		}
 		if (type != video::OpenFileMode::Open) {
 			if (ImGui::Button(_("New folder"))) {
 				ImGui::OpenPopup(NEW_FOLDER_POPUP);

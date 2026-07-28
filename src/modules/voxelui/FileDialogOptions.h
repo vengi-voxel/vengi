@@ -12,6 +12,8 @@ class PaletteCache;
 
 namespace voxelui {
 
+class ScenePreview;
+
 /**
  * @brief Adds the options (dependent on the mode) for the given @c io::FormatDescription instances to the file dialog
  */
@@ -23,7 +25,12 @@ private:
 public:
 	FileDialogOptions(palette::PaletteCache &paletteCache, bool palette);
 	bool operator()(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry);
-	static video::FileDialogOptions build(palette::PaletteCache &paletteCache, bool palette);
+	/**
+	 * @param preview Optional long-lived @c ScenePreview used as a side panel in the file dialog
+	 *                (voxel open/save dialogs only; ignored for palette mode).
+	 */
+	static video::FileDialogOptions build(palette::PaletteCache &paletteCache, bool palette,
+										  ScenePreview *preview = nullptr);
 };
 
 // palette options

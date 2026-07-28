@@ -13,6 +13,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxelcollection/CollectionManager.h"
+#include "voxelui/ScenePreview.h"
 #include "core/Var.h"
 
 namespace voxedit {
@@ -38,6 +39,7 @@ protected:
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
 	voxedit::ScenePaletteCache _paletteCache;
+	voxelui::ScenePreview _fileDialogPreview;
 	core::VarPtr _penPressureAffectsRadius;
 	core::VarPtr _penRadiusMin;
 	core::VarPtr _penRadiusMax;
