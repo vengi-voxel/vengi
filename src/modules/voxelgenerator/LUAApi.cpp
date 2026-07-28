@@ -3207,6 +3207,20 @@ static int luaVoxel_scenegraphnode_clone(lua_State* s) {
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(nodeId));
 }
 
+static int luaVoxel_scenegraphnode_createreference(lua_State *s) {
+	LuaSceneGraphNode *node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
+	int parentId = (int)luaL_optinteger(s, 2, -1);
+	if (!node->node->isReferenceable()) {
+		return clua_error(s, "Node %d is not referenceable", node->node->id());
+	}
+	const int refId = scenegraph::createNodeReference(*sceneGraph, *node->node, parentId);
+	if (refId == InvalidNodeId) {
+		return clua_error(s, "Failed to create reference for node %d", node->node->id());
+	}
+	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(refId));
+}
+
 static int luaVoxel_scenegraphnode_uuid(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const core::String &uuidStr = node->node->uuid().str();
@@ -5903,6 +5917,20 @@ static int luaVoxel_scenegraphnode_clone_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_createreference_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "createReference",
+		"summary": "Create a ModelReference node that instances this model (or resolves through an existing reference).",
+		"parameters": [
+			{"name": "parentId", "type": "integer", "description": "Optional parent node id (-1 = same parent as the source)."}
+		],
+		"returns": [
+			{"type": "node", "description": "The new ModelReference node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_parent_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "parent",
@@ -6756,6 +6784,7 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"id", luaVoxel_scenegraphnode_id, luaVoxel_scenegraphnode_id_jsonhelp},
 		{"uuid", luaVoxel_scenegraphnode_uuid, luaVoxel_scenegraphnode_uuid_jsonhelp},
 		{"clone", luaVoxel_scenegraphnode_clone, luaVoxel_scenegraphnode_clone_jsonhelp},
+		{"createReference", luaVoxel_scenegraphnode_createreference, luaVoxel_scenegraphnode_createreference_jsonhelp},
 		{"parent", luaVoxel_scenegraphnode_parent, luaVoxel_scenegraphnode_parent_jsonhelp},
 		{"volume", luaVoxel_scenegraphnode_volume, luaVoxel_scenegraphnode_volume_jsonhelp},
 		{"isModel", luaVoxel_scenegraphnode_is_model, luaVoxel_scenegraphnode_is_model_jsonhelp},
