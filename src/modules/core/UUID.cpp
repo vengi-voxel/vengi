@@ -7,36 +7,8 @@
 
 namespace core {
 
-UUID::UUID() {
-	_data[0] = 0;
-	_data[1] = 0;
-}
-
-UUID::UUID(uint64_t id0, uint64_t id1) {
-	_data[0] = id0;
-	_data[1] = id1;
-}
-
-UUID::UUID(uint32_t id) {
-	_data[0] = id;
-	_data[1] = 0;
-}
-
 UUID::UUID(const String &uuid) {
 	*this = uuid;
-}
-
-UUID::UUID(const UUID &other) {
-	_data[0] = other._data[0];
-	_data[1] = other._data[1];
-}
-
-UUID::UUID(UUID &&other) noexcept {
-	_data[0] = other._data[0];
-	_data[1] = other._data[1];
-}
-
-UUID::~UUID() {
 }
 
 UUID &UUID::operator=(const String &uuid) {
@@ -88,32 +60,6 @@ UUID &UUID::operator=(const String &uuid) {
 	return *this;
 }
 
-UUID &UUID::operator=(const UUID &other) {
-	if (this == &other) {
-		return *this;
-	}
-	_data[0] = other._data[0];
-	_data[1] = other._data[1];
-	return *this;
-}
-
-UUID &UUID::operator=(UUID &&other) noexcept {
-	if (this == &other) {
-		return *this;
-	}
-	_data[0] = other._data[0];
-	_data[1] = other._data[1];
-	return *this;
-}
-
-bool UUID::operator==(const UUID &other) const {
-	return _data[0] == other._data[0] && _data[1] == other._data[1];
-}
-
-bool UUID::operator!=(const UUID &other) const {
-	return !(*this == other);
-}
-
 String UUID::str() const {
 	if (!isValid()) {
 		return "";
@@ -142,10 +88,6 @@ String UUID::str() const {
 	}
 	buf[p] = '\0';
 	return buf;
-}
-
-bool UUID::isValid() const {
-	return _data[0] != 0 || _data[1] != 0;
 }
 
 // https://www.ietf.org/rfc/rfc4122.txt

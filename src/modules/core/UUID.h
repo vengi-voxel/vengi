@@ -14,13 +14,12 @@ private:
 	uint64_t _data[2] = {0, 0};
 
 public:
-	UUID();
+	UUID() = default;
 	explicit UUID(const String &uuid);
-	explicit UUID(uint64_t id0, uint64_t id1);
-	explicit UUID(uint32_t id);
-	UUID(const UUID &other);
-	UUID(UUID &&other) noexcept;
-	~UUID();
+	explicit UUID(uint64_t id0, uint64_t id1) : _data{id0, id1} {
+	}
+	explicit UUID(uint32_t id) : _data{id, 0} {
+	}
 
 	uint64_t data0() const {
 		return _data[0];
@@ -30,14 +29,18 @@ public:
 	}
 
 	UUID &operator=(const String &uuid);
-	UUID &operator=(const UUID &other);
-	UUID &operator=(UUID &&other) noexcept;
 
-	bool operator==(const UUID &other) const;
-	bool operator!=(const UUID &other) const;
+	bool operator==(const UUID &other) const {
+		return _data[0] == other._data[0] && _data[1] == other._data[1];
+	}
+	bool operator!=(const UUID &other) const {
+		return !(*this == other);
+	}
 
 	String str() const;
-	bool isValid() const;
+	bool isValid() const {
+		return _data[0] != 0 || _data[1] != 0;
+	}
 
 	static UUID generate();
 };
