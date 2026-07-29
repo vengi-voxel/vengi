@@ -16,29 +16,29 @@ private:
 public:
 	UUID() = default;
 	explicit UUID(const String &uuid);
-	explicit UUID(uint64_t id0, uint64_t id1) : _data{id0, id1} {
+	explicit CORE_FORCE_INLINE UUID(uint64_t id0, uint64_t id1) : _data{id0, id1} {
 	}
-	explicit UUID(uint32_t id) : _data{id, 0} {
+	explicit CORE_FORCE_INLINE UUID(uint32_t id) : _data{id, 0} {
 	}
 
-	uint64_t data0() const {
+	CORE_FORCE_INLINE uint64_t data0() const {
 		return _data[0];
 	}
-	uint64_t data1() const {
+	CORE_FORCE_INLINE uint64_t data1() const {
 		return _data[1];
 	}
 
 	UUID &operator=(const String &uuid);
 
-	bool operator==(const UUID &other) const {
+	CORE_FORCE_INLINE bool operator==(const UUID &other) const {
 		return _data[0] == other._data[0] && _data[1] == other._data[1];
 	}
-	bool operator!=(const UUID &other) const {
+	CORE_FORCE_INLINE bool operator!=(const UUID &other) const {
 		return !(*this == other);
 	}
 
 	String str() const;
-	bool isValid() const {
+	CORE_FORCE_INLINE bool isValid() const {
 		return _data[0] != 0 || _data[1] != 0;
 	}
 
@@ -46,7 +46,7 @@ public:
 };
 
 struct UUIDHash {
-	size_t operator()(const core::UUID &p) const {
+	CORE_FORCE_INLINE size_t operator()(const core::UUID &p) const {
 		uint64_t v1 = p.data0();
 		uint64_t v2 = p.data1();
 		// mix the two 64-bit parts into a size_t using a variant of boost::hash_combine
