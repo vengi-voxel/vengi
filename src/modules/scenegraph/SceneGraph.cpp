@@ -981,7 +981,7 @@ bool SceneGraph::isReferenced(int nodeId) const {
 			continue;
 		}
 		if (n.reference() == nodeId) {
-			return false;
+			return true;
 		}
 	}
 	return false;

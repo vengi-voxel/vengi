@@ -68,6 +68,33 @@ TEST_F(SceneGraphTest, testHasNode) {
 	EXPECT_FALSE(sceneGraph.hasNode(2));
 }
 
+TEST_F(SceneGraphTest, testIsReferenced) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	EXPECT_FALSE(sceneGraph.isReferenced(modelId));
+	int refId = InvalidNodeId;
+	{
+		SceneGraphNode reference(SceneGraphNodeType::ModelReference);
+		ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
+		refId = sceneGraph.emplace(core::move(reference));
+		ASSERT_NE(InvalidNodeId, refId);
+	}
+	EXPECT_TRUE(sceneGraph.isReferenced(modelId));
+	EXPECT_FALSE(sceneGraph.isReferenced(refId));
+	EXPECT_FALSE(sceneGraph.removeNode(modelId, false));
+	EXPECT_TRUE(sceneGraph.hasNode(modelId));
+	EXPECT_TRUE(sceneGraph.removeNode(refId, false));
+	EXPECT_FALSE(sceneGraph.isReferenced(modelId));
+	EXPECT_TRUE(sceneGraph.removeNode(modelId, false));
+}
+
 TEST_F(SceneGraphTest, testNodeRoot) {
 	SceneGraph sceneGraph;
 	const SceneGraphNode &root = sceneGraph.node(0);
