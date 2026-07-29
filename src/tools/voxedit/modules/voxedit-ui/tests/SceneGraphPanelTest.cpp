@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeType.h"
+#include "voxel/RawVolume.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"

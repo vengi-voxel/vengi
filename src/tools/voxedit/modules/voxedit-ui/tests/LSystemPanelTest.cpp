@@ -7,6 +7,7 @@
 #include "TestUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "image/Image.h"
 #include "ui/Panel.h"
 #include "video/Texture.h"
 #include "voxelpathtracer/PathTracer.h"
