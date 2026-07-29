@@ -22,7 +22,7 @@ public:
 private:
 	void handleSelectBox3D(BrushPanelContext &ctx, int nodeId);
 	void handleSelectCircle(BrushPanelContext &ctx, int nodeId);
-	void handleSelectPaint(BrushPanelContext &ctx, int nodeId);
+	void handleSelectPaint(BrushPanelContext &ctx);
 	void handleSelectFuzzyColor(BrushPanelContext &ctx);
 	void handleSelectFlatSurface(BrushPanelContext &ctx);
 	void handleSelectLasso(command::CommandExecutionListener &listener);

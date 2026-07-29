@@ -172,7 +172,7 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 	}
 }
 
-void BrushPanelSelect::handleSelectPaint(BrushPanelContext &ctx, int nodeId) {
+void BrushPanelSelect::handleSelectPaint(BrushPanelContext &ctx) {
 	SelectBrush &brush = ctx.sceneMgr->modifier().selectBrush();
 	ImGui::SeparatorText(_("Brush selection"));
 	static constexpr int MaxPaintRadius = 32;
@@ -281,7 +281,6 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 		}
 	}
 
-	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
 	ImGui::SeparatorText(_("Selection actions"));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select by color"), "selectonlycolor", listener);
 	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Paint selection"), "colorselected", listener);
@@ -302,9 +301,10 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 	}
 
 	if (brush.selectMode() == SelectMode::Paint) {
-		handleSelectPaint(ctx, nodeId);
+		handleSelectPaint(ctx);
 	}
 
+	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
 	if (brush.selectMode() == SelectMode::Circle && brush.circle().valid() &&
 		ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID())) {
 		handleSelectCircle(ctx, nodeId);
