@@ -67,22 +67,20 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 void ModifierButton::execute(bool single) {
 	Modifier &modifier = _sceneMgr->modifier();
 	int nodes = 0;
-	auto func = [&](int nodeId) {
-		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
-			if (!node->visible()) {
-				return;
-			}
-			Log::debug("Execute modifier action for node %i", nodeId);
-			voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
-			if (v == nullptr) {
-				return;
-			}
-			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				_sceneMgr->modified(node->uuid(), region, flags);
-			};
-			modifier.execute(_sceneMgr->sceneGraph(), *node, modifierFunc);
-			++nodes;
+	auto func = [&](scenegraph::SceneGraphNode &node) {
+		if (!node.visible()) {
+			return;
 		}
+		Log::debug("Execute modifier action for node %i", node.id());
+		voxel::RawVolume *v = _sceneMgr->volume(node.uuid());
+		if (v == nullptr) {
+			return;
+		}
+		auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+			_sceneMgr->modified(node.uuid(), region, flags);
+		};
+		modifier.execute(_sceneMgr->sceneGraph(), node, modifierFunc);
+		++nodes;
 	};
 	_sceneMgr->nodeForeachGroup(func);
 	if (_oldType != ModifierType::None) {
@@ -96,8 +94,8 @@ void ModifierButton::execute(bool single) {
 		if (brush) {
 			voxel::Region pendingRegion = brush->consumePendingUndoRegion();
 			if (pendingRegion.isValid()) {
-				auto undoFunc = [&](int nodeId) {
-					_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), pendingRegion, SceneModifiedFlags::MarkUndo);
+				auto undoFunc = [&](const core::UUID &nodeUUID) {
+					_sceneMgr->modified(nodeUUID, pendingRegion, SceneModifiedFlags::MarkUndo);
 				};
 				_sceneMgr->nodeForeachGroup(undoFunc);
 			}

@@ -26,8 +26,8 @@
 #include "voxel/Connectivity.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "core/Function.h"
 #include "image/ImageFwd.h"
+#include "memento/MementoHandler.h"
 
 namespace command {
 class CommandArgs;
@@ -58,7 +58,6 @@ using SoundHandle = void *;
 }
 
 namespace memento {
-class MementoHandler;
 struct MementoState;
 }
 
@@ -889,8 +888,14 @@ public:
 	void nodeRemoveUnusedColors(const core::UUID &nodeUUID, bool reindexPalette = false);
 	/**
 	 * @note This is not related to the group node type
+	 * @note Visitor may accept @c int, @c core::UUID, or @c scenegraph::SceneGraphNode&
+	 *       (see scenegraph::SceneGraph::foreachGroup).
 	 */
-	void nodeForeachGroup(const core::Function<void(int)> &f);
+	template<class FUNC>
+	void nodeForeachGroup(FUNC &&f) {
+		memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "group");
+		_sceneGraph.foreachGroup(core::forward<FUNC>(f));
+	}
 };
 
 inline Server &SceneManager::server() {

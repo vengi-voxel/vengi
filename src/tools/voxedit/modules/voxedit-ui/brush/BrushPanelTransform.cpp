@@ -22,16 +22,14 @@ void BrushPanelTransform::executeTransformBrush(BrushPanelContext &ctx) {
 	if (!modifier.beginBrushFromPanel()) {
 		return;
 	}
-	auto func = [&](int nodeId) {
-		if (scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNode(nodeId)) {
-			if (!node->visible()) {
-				return;
-			}
-			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				ctx.sceneMgr->modified(ctx.sceneMgr->sceneGraph().uuid(nodeId), region, flags);
-			};
-			modifier.execute(ctx.sceneMgr->sceneGraph(), *node, callback);
+	auto func = [&](scenegraph::SceneGraphNode &node) {
+		if (!node.visible()) {
+			return;
 		}
+		auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+			ctx.sceneMgr->modified(node.uuid(), region, flags);
+		};
+		modifier.execute(ctx.sceneMgr->sceneGraph(), node, callback);
 	};
 	ctx.sceneMgr->nodeForeachGroup(func);
 	modifier.endBrush();

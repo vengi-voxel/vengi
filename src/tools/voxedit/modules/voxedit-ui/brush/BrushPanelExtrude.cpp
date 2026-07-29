@@ -18,16 +18,14 @@ void BrushPanelExtrude::executeExtrudeBrush(BrushPanelContext &ctx) {
 	if (!modifier.beginBrushFromPanel()) {
 		return;
 	}
-	ctx.sceneMgr->nodeForeachGroup([&](int nodeId) {
-		if (scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNode(nodeId)) {
-			if (!node->visible()) {
-				return;
-			}
-			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				ctx.sceneMgr->modified(ctx.sceneMgr->sceneGraph().uuid(nodeId), region, flags);
-			};
-			modifier.execute(ctx.sceneMgr->sceneGraph(), *node, callback);
+	ctx.sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.visible()) {
+			return;
 		}
+		auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+			ctx.sceneMgr->modified(node.uuid(), region, flags);
+		};
+		modifier.execute(ctx.sceneMgr->sceneGraph(), node, callback);
 	});
 	modifier.endBrush();
 	modifier.extrudeBrush().markDirty();

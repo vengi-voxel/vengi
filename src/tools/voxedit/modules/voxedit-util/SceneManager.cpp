@@ -217,8 +217,8 @@ void SceneManager::nodeGroupCalulateNormals(voxel::Connectivity connectivity, bo
 	if (isLocked()) {
 		return;
 	}
-	nodeForeachGroup([&] (int groupNodeId) {
-		nodeCalculateNormals(groupNodeId, connectivity, recalcAll, fillAndHollow);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeCalculateNormals(nodeUUID, connectivity, recalcAll, fillAndHollow);
 	});
 }
 
@@ -319,64 +319,60 @@ bool SceneManager::nodeSave(int nodeId, const core::String& file) {
 }
 
 void SceneManager::nodeGroupFillHollow() {
-	nodeForeachGroup([&] (int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 		voxelutil::fillHollow(wrapper, _modifier->cursorVoxel());
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::nodeGroupFill() {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 		voxelutil::fill(wrapper, _modifier->cursorVoxel(), _modifier->isMode(ModifierType::Override));
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::nodeGroupClear() {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 		voxelutil::clear(wrapper);
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::nodeGroupDeleteSelected() {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
@@ -384,41 +380,39 @@ void SceneManager::nodeGroupDeleteSelected() {
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxel::Voxel());
 		}, voxelutil::VisitSolidOutline());
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::nodeGroupColorSelected(uint8_t colorIndex) {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 		voxelutil::recolorSelected(wrapper, *v, selRegion, colorIndex);
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMatching) {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
@@ -430,7 +424,7 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolidOutline());
-		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
+		modified(node.uuid(), selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
 
@@ -443,16 +437,15 @@ void SceneManager::nodeGroupSelectOnlyColor(uint8_t colorIndex) {
 }
 
 void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
@@ -478,7 +471,7 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolidOutline());
-		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
+		modified(node.uuid(), selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
 
@@ -505,16 +498,15 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 		{1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0}
 	};
 
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
@@ -544,21 +536,20 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 				v->setVoxel(x, y, z, updated);
 			}
 		}, voxelutil::VisitSolidOutline());
-		modified(groupNodeId, selRegion, SceneModifiedFlags::NoUndo);
+		modified(node.uuid(), selRegion, SceneModifiedFlags::NoUndo);
 	});
 }
 
 void SceneManager::nodeGroupSelectionGrow() {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
-		const voxel::Region selRegion = selectionCalculateRegion(*node);
+		const voxel::Region selRegion = selectionCalculateRegion(node);
 		if (!selRegion.isValid()) {
 			return;
 		}
@@ -610,23 +601,22 @@ void SceneManager::nodeGroupSelectionGrow() {
 			dirtyRegion.accumulate(pos);
 		}
 
-		modified(groupNodeId, dirtyRegion);
+		modified(node.uuid(), dirtyRegion);
 	});
 }
 
 void SceneManager::nodeGroupHollow() {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr) {
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
 			return;
 		}
-		voxel::RawVolume *v = node->volume();
+		voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 		voxelutil::hollow(wrapper);
-		modified(groupNodeId, wrapper.dirtyRegion());
+		modified(node.uuid(), wrapper.dirtyRegion());
 	});
 }
 
@@ -1502,8 +1492,8 @@ void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) 
 }
 
 void SceneManager::nodeGroupResize(const glm::ivec3& size) {
-	nodeForeachGroup([&] (int groupNodeId) {
-		nodeResize(groupNodeId, size);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeResize(nodeUUID, size);
 	});
 }
 
@@ -3427,12 +3417,8 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 }
 
 void SceneManager::nodeGroupRotate(math::Axis axis) {
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId);
-		if (node == nullptr) {
-			return;
-		}
-		const voxel::RawVolume *v = node->volume();
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		const voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			return;
 		}
@@ -3440,12 +3426,12 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 		if (newVolume == nullptr) {
 			return;
 		}
-		glm::vec3 pivot = node->pivot();
+		glm::vec3 pivot = node.pivot();
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
-		setSceneGraphNodeVolume(*node, newVolume);
-		modified(groupNodeId, r);
-		for (auto *kfAnim : node->allKeyFrames()) {
+		setSceneGraphNodeVolume(node, newVolume);
+		modified(node.uuid(), r);
+		for (auto *kfAnim : node.allKeyFrames()) {
 			for (auto &kf : kfAnim->value) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
 				transform.rotate(axis);
@@ -3455,8 +3441,8 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 		const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
 		const int idx2 = (idx1 + 1) % 3;
 		core::exchange(pivot[idx1], pivot[idx2]);
-		node->setPivot(pivot);
-		_mementoHandler->markKeyFramesChange(_sceneGraph, *node);
+		node.setPivot(pivot);
+		_mementoHandler->markKeyFramesChange(_sceneGraph, node);
 	});
 }
 
@@ -3576,8 +3562,8 @@ void SceneManager::nodeGroupMoveVoxels(int x, int y, int z) {
 		return;
 	}
 	const glm::ivec3 v(x, y, z);
-	nodeForeachGroup([&] (int groupNodeId) {
-		nodeMoveVoxels(groupNodeId, v);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeMoveVoxels(nodeUUID, v);
 	});
 }
 
@@ -3604,8 +3590,8 @@ void SceneManager::nodeGroupShift(int x, int y, int z) {
 		return;
 	}
 	const glm::ivec3 v(x, y, z);
-	nodeForeachGroup([&] (int groupNodeId) {
-		nodeShift(groupNodeId, v);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeShift(nodeUUID, v);
 	});
 }
 
@@ -4420,28 +4406,28 @@ void SceneManager::construct() {
 	command::Command::registerCommand("center_referenceposition")
 		.setHandler([&] (const command::CommandArgs& args) {
 			const glm::ivec3& refPos = referencePosition();
-			nodeForeachGroup([&](int groupNodeId) {
-				const voxel::RawVolume *v = volume(groupNodeId);
+			nodeForeachGroup([&](const core::UUID &nodeUUID) {
+				const voxel::RawVolume *v = volume(nodeUUID);
 				if (v == nullptr) {
 					return;
 				}
 				const voxel::Region& region = v->region();
 				const glm::ivec3& center = region.getCenter();
 				const glm::ivec3& delta = refPos - center;
-				nodeShift(groupNodeId, delta);
+				nodeShift(nodeUUID, delta);
 			});
 		}).setHelp(_("Center the current active nodes at the reference position"));
 
 	command::Command::registerCommand("center_origin")
 		.setHandler([&](const command::CommandArgs &args) {
-			nodeForeachGroup([&](int groupNodeId) {
-				const voxel::RawVolume *v = volume(groupNodeId);
+			nodeForeachGroup([&](const core::UUID &nodeUUID) {
+				const voxel::RawVolume *v = volume(nodeUUID);
 				if (v == nullptr) {
 					return;
 				}
 				const voxel::Region& region = v->region();
 				const glm::ivec3& delta = -region.getCenter();
-				nodeShift(groupNodeId, delta);
+				nodeShift(nodeUUID, delta);
 			});
 			setReferencePosition(glm::zero<glm::ivec3>());
 		}).setHelp(_("Center the current active nodes at the origin"));
@@ -4735,9 +4721,9 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, InvalidNodeId);
 			if (nodeId == InvalidNodeId) {
-				nodeForeachGroup([&] (int groupNodeId) {
-					nodeBakeTransform(groupNodeId);
-				});
+				nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeBakeTransform(nodeUUID);
+	});
 			} else {
 				nodeBakeTransform(nodeId);
 			}
@@ -5306,19 +5292,19 @@ void SceneManager::setViewportHudHovered(bool hovered) {
 }
 
 void SceneManager::nodeGroupFlip(math::Axis axis) {
-	nodeForeachGroup([&](int groupNodeId) {
-		voxel::RawVolume *v = volume(groupNodeId);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		voxel::RawVolume *v = volume(nodeUUID);
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolume* newVolume = voxelutil::mirrorAxis(v, axis);
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
-		if (!setNewVolume(groupNodeId, newVolume)) {
+		if (!setNewVolume(nodeUUID, newVolume)) {
 			delete newVolume;
 			return;
 		}
-		modified(groupNodeId, r);
+		modified(nodeUUID, r);
 	});
 }
 
@@ -5732,14 +5718,13 @@ bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
 
 bool SceneManager::queueSceneJobForGroup(SceneJobType type) {
 	bool queued = false;
-	_sceneGraph.foreachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
-		if (node == nullptr || node->volume() == nullptr) {
+	_sceneGraph.foreachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode() || node.volume() == nullptr) {
 			return;
 		}
 		SceneJobRequest request;
 		request.type = type;
-		request.nodeUUID = node->uuid();
+		request.nodeUUID = node.uuid();
 		request.voxel = _modifier->cursorVoxel();
 		request.overrideVoxels = _modifier->isMode(ModifierType::Override);
 		queued |= startSceneJob(core::move(request));
@@ -6326,10 +6311,8 @@ bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
 	if (isLocked()) {
 		return false;
 	}
-	nodeForeachGroup([&] (int groupNodeId) {
-		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
-			nodeUpdatePivot(*node, pivot);
-		}
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		nodeUpdatePivot(node, pivot);
 	});
 	return true;
 }
@@ -6411,12 +6394,10 @@ bool SceneManager::nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::
 	if (isLocked()) {
 		return false;
 	}
-	nodeForeachGroup([&] (int groupNodeId) {
-		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
-			const scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(frameIdx);
-			if (keyFrameIdx != InvalidKeyFrame) {
-				nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
-			}
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
+		if (keyFrameIdx != InvalidKeyFrame) {
+			nodeUpdateTransform(node, angles, scale, translation, keyFrameIdx, local);
 		}
 	});
 	return true;
@@ -6458,10 +6439,8 @@ void SceneManager::nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx
 	if (isLocked()) {
 		return;
 	}
-	nodeForeachGroup([&] (int groupNodeId) {
-		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
-			nodeResetTransform(*node, keyFrameIdx);
-		}
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		nodeResetTransform(node, keyFrameIdx);
 	});
 }
 
@@ -6514,8 +6493,7 @@ void SceneManager::nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx) {
 	if (isLocked()) {
 		return;
 	}
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
 		nodeAddKeyframe(node, frameIdx);
 	});
 }
@@ -6547,8 +6525,7 @@ void SceneManager::nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx) {
 	if (isLocked()) {
 		return;
 	}
-	nodeForeachGroup([&](int groupNodeId) {
-		scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
 		nodeRemoveKeyFrame(node, frameIdx);
 	});
 }
@@ -7385,17 +7362,12 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &c
 	return false;
 }
 
-void SceneManager::nodeForeachGroup(const core::Function<void(int)>& f) {
-	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "group");
-	_sceneGraph.foreachGroup(f);
-}
-
 void SceneManager::nodeGroupRemoveNormals() {
 	if (isLocked()) {
 		return;
 	}
-	nodeForeachGroup([&] (int groupNodeId) {
-		nodeRemoveNormals(groupNodeId);
+	nodeForeachGroup([&](const core::UUID &nodeUUID) {
+		nodeRemoveNormals(nodeUUID);
 	});
 }
 

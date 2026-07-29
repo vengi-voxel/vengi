@@ -25,6 +25,8 @@
 #include "scenegraph/FrameTransformCache.h"
 #include "scenegraph/SceneGraphListener.h"
 
+#include <type_traits>
+
 namespace voxel {
 class RawVolume;
 class SparseVolume;
@@ -443,20 +445,43 @@ public:
 	}
 
 	/**
-	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
+	 * @brief Loops over the locked/groups (model) nodes with the given visitor
 	 * @note This is not related to the group node types.
+	 * @note The visitor may accept @c int, @c core::UUID / @c const core::UUID&, or @c SceneGraphNode&.
+	 *       Preference order is node reference, then UUID, then int (constexpr dispatch).
 	 */
 	template<class FUNC>
-	void foreachGroup(FUNC&& f) {
-		int nodeId = activeNode();
+	void foreachGroup(FUNC &&f) {
+		auto invoke = [&](SceneGraphNode &node) {
+			if constexpr (std::is_invocable_v<FUNC, SceneGraphNode &>) {
+				f(node);
+			} else if constexpr (std::is_invocable_v<FUNC, const core::UUID &> ||
+								std::is_invocable_v<FUNC, core::UUID>) {
+				f(node.uuid());
+			} else if constexpr (std::is_invocable_v<FUNC, int>) {
+				f(node.id());
+			} else {
+				static_assert(!sizeof(FUNC *),
+							  "foreachGroup visitor must accept int, UUID, or SceneGraphNode&");
+			}
+		};
+		const int nodeId = activeNode();
 		if (node(nodeId).locked()) {
+			// Snapshot ids first so visitors may remove nodes without invalidating the walk.
+			core::Buffer<int> lockedNodeIds;
 			for (auto entry : _nodes) {
 				if (entry->value.locked()) {
-					f(entry->value.id());
+					lockedNodeIds.push_back(entry->value.id());
 				}
 			}
+			for (const int lockedNodeId : lockedNodeIds) {
+				if (!hasNode(lockedNodeId)) {
+					continue;
+				}
+				invoke(node(lockedNodeId));
+			}
 		} else {
-			f(nodeId);
+			invoke(node(nodeId));
 		}
 	}
 

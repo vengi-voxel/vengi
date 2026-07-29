@@ -524,18 +524,17 @@ void Modifier::abort() {
 		return;
 	}
 	if (brush->hasPendingChanges()) {
-		_sceneMgr->nodeForeachGroup([&](int nodeId) {
-			scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
-			if (node == nullptr || !node->visible()) {
+		_sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+			if (!node.visible()) {
 				return;
 			}
-			voxel::RawVolume *volume = node->volume();
+			voxel::RawVolume *volume = node.volume();
 			if (volume == nullptr) {
 				return;
 			}
 			const voxel::Region dirtyRegion = brush->revertChanges(volume);
 			if (dirtyRegion.isValid()) {
-				_sceneMgr->modified(node->uuid(), dirtyRegion, SceneModifiedFlags::NoUndo);
+				_sceneMgr->modified(node.uuid(), dirtyRegion, SceneModifiedFlags::NoUndo);
 			}
 		});
 		brush->reset();
@@ -555,16 +554,14 @@ void Modifier::commit() {
 		return;
 	}
 	if (beginBrushFromPanel()) {
-		_sceneMgr->nodeForeachGroup([&](int nodeId) {
-			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
-				if (!node->visible()) {
-					return;
-				}
-				auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
-					_sceneMgr->modified(node->uuid(), region, flags);
-				};
-				execute(_sceneMgr->sceneGraph(), *node, callback);
+		_sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+			if (!node.visible()) {
+				return;
 			}
+			auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
+				_sceneMgr->modified(node.uuid(), region, flags);
+			};
+			execute(_sceneMgr->sceneGraph(), node, callback);
 		});
 		endBrush();
 	}

@@ -173,6 +173,93 @@ TEST_F(SceneGraphTest, testNodeByUUID) {
 	EXPECT_EQ(0, sceneGraph.node(core::UUID()).id());
 }
 
+TEST_F(SceneGraphTest, testForeachGroupVisitorSignatures) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int modelId = InvalidNodeId;
+	int lockedId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		model.setLocked(true);
+		lockedId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, lockedId);
+	}
+	ASSERT_TRUE(sceneGraph.setActiveNode(modelId));
+
+	int intVisits = 0;
+	sceneGraph.foreachGroup([&](int nodeId) {
+		EXPECT_EQ(modelId, nodeId);
+		++intVisits;
+	});
+	EXPECT_EQ(1, intVisits);
+
+	int uuidVisits = 0;
+	const core::UUID modelUUID = sceneGraph.node(modelId).uuid();
+	sceneGraph.foreachGroup([&](const core::UUID &nodeUUID) {
+		EXPECT_EQ(modelUUID, nodeUUID);
+		++uuidVisits;
+	});
+	EXPECT_EQ(1, uuidVisits);
+
+	int refVisits = 0;
+	sceneGraph.foreachGroup([&](SceneGraphNode &node) {
+		EXPECT_EQ(modelId, node.id());
+		++refVisits;
+	});
+	EXPECT_EQ(1, refVisits);
+
+	ASSERT_TRUE(sceneGraph.setActiveNode(lockedId));
+	int lockedVisits = 0;
+	sceneGraph.foreachGroup([&](SceneGraphNode &node) {
+		EXPECT_TRUE(node.locked());
+		++lockedVisits;
+	});
+	EXPECT_EQ(1, lockedVisits);
+}
+
+TEST_F(SceneGraphTest, testForeachGroupRemoveLockedNode) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	core::Buffer<int> lockedIds;
+	for (int i = 0; i < 4; ++i) {
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		model.setLocked(true);
+		const int nodeId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, nodeId);
+		lockedIds.push_back(nodeId);
+	}
+	ASSERT_TRUE(sceneGraph.setActiveNode(lockedIds[0]));
+
+	const int removeId = lockedIds[1];
+	int visits = 0;
+	int removed = 0;
+	sceneGraph.foreachGroup([&](SceneGraphNode &node) {
+		++visits;
+		EXPECT_TRUE(node.locked());
+		if (node.id() == removeId) {
+			ASSERT_TRUE(sceneGraph.removeNode(node.id(), false));
+			++removed;
+		}
+	});
+	EXPECT_EQ(4, visits);
+	EXPECT_EQ(1, removed);
+	EXPECT_FALSE(sceneGraph.hasNode(removeId));
+	for (const int nodeId : lockedIds) {
+		if (nodeId == removeId) {
+			continue;
+		}
+		EXPECT_TRUE(sceneGraph.hasNode(nodeId));
+	}
+}
+
 TEST_F(SceneGraphTest, testSetRootUUIDUpdatesIndex) {
 	voxel::RawVolume volume(voxel::Region(0, 0));
 	SceneGraph sceneGraph;
