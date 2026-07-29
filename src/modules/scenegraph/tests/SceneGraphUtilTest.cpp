@@ -75,7 +75,7 @@ TEST_F(SceneGraphUtilTest, testCopySceneGraphWithReferences) {
 	ASSERT_NE(-1, targetRefId);
 
 	const SceneGraphNode &targetRefNode = target.node(targetRefId);
-	EXPECT_EQ(targetModelId, targetRefNode.reference());
+	EXPECT_EQ(target.node(targetModelId).uuid(), targetRefNode.referenceUUID());
 }
 
 TEST_F(SceneGraphUtilTest, testAddSceneGraphNodesWithReferences) {
@@ -126,8 +126,9 @@ TEST_F(SceneGraphUtilTest, testAddSceneGraphNodesWithReferences) {
 	ASSERT_NE(InvalidNodeId, targetModelId);
 	ASSERT_NE(InvalidNodeId, targetRefId);
 	EXPECT_NE(modelNodeId, targetModelId);
-	EXPECT_EQ(targetModelId, target.node(targetRefId).reference());
-	EXPECT_TRUE(target.node(target.node(targetRefId).reference()).isModelNode());
+	EXPECT_EQ(target.node(targetModelId).uuid(), target.node(targetRefId).referenceUUID());
+	ASSERT_NE(nullptr, target.findNodeByUUID(target.node(targetRefId).referenceUUID()));
+	EXPECT_TRUE(target.findNodeByUUID(target.node(targetRefId).referenceUUID())->isModelNode());
 	EXPECT_TRUE(target.resolveRegion(target.node(targetRefId)).isValid());
 }
 
@@ -151,16 +152,16 @@ TEST_F(SceneGraphUtilTest, testSetReferenceRejectsNonModel) {
 
 	SceneGraphNode reference(SceneGraphNodeType::ModelReference);
 	EXPECT_FALSE(reference.setReference(sceneGraph.node(groupId)));
-	EXPECT_EQ(InvalidNodeId, reference.reference());
+	EXPECT_FALSE(reference.hasReference());
 	ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
-	EXPECT_EQ(modelId, reference.reference());
+	EXPECT_EQ(sceneGraph.node(modelId).uuid(), reference.referenceUUID());
 
 	const int refNodeId = sceneGraph.emplace(core::move(reference));
 	ASSERT_NE(InvalidNodeId, refNodeId);
 	EXPECT_TRUE(sceneGraph.validate());
 
-	// Simulate a corrupt reference id and ensure validate() catches it.
-	sceneGraph.node(refNodeId).setReferenceId(groupId);
+	// Simulate a corrupt reference UUID and ensure validate() catches it.
+	sceneGraph.node(refNodeId).setReferenceUUID(sceneGraph.node(groupId).uuid());
 	EXPECT_FALSE(sceneGraph.validate());
 }
 
@@ -194,15 +195,15 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	EXPECT_EQ(2, modelCount);
 
 	int refCount = 0;
-	core::DynamicArray<int> referencedIds;
+	core::DynamicArray<core::UUID> referencedUUIDs;
 	for (auto iter = target.begin(SceneGraphNodeType::ModelReference); iter != target.end(); ++iter) {
 		refCount++;
-		referencedIds.push_back((*iter).reference());
+		referencedUUIDs.push_back((*iter).referenceUUID());
 	}
 	EXPECT_EQ(2, refCount);
-	EXPECT_EQ(2u, referencedIds.size());
-	if (referencedIds.size() == 2) {
-		EXPECT_NE(referencedIds[0], referencedIds[1]);
+	EXPECT_EQ(2u, referencedUUIDs.size());
+	if (referencedUUIDs.size() == 2) {
+		EXPECT_NE(referencedUUIDs[0], referencedUUIDs[1]);
 	}
 }
 
@@ -272,7 +273,7 @@ TEST_F(SceneGraphUtilTest, testCreateNodeReference) {
 	ASSERT_NE(InvalidNodeId, refNodeId);
 	EXPECT_TRUE(sceneGraph.hasNode(refNodeId));
 	EXPECT_EQ(SceneGraphNodeType::ModelReference, sceneGraph.node(refNodeId).type());
-	EXPECT_EQ(modelNodeId, sceneGraph.node(refNodeId).reference());
+	EXPECT_EQ(sceneGraph.node(modelNodeId).uuid(), sceneGraph.node(refNodeId).referenceUUID());
 }
 
 TEST_F(SceneGraphUtilTest, testInterpolate) {

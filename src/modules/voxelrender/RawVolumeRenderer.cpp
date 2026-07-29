@@ -138,10 +138,7 @@ void RawVolumeRenderer::ensureRenderState(int idx) {
 }
 
 void RawVolumeRenderer::ensureSize(int idx) {
-	if (idx < (int)_state.size()) {
-		return;
-	}
-	_state.resize(idx + 1);
+	ensureRenderState(idx);
 }
 
 bool RawVolumeRenderer::init(bool normals) {
@@ -1017,6 +1014,9 @@ void RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx,
 
 voxel::RawVolume *RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::RawVolume *volume, palette::Palette *palette,
 											   palette::NormalPalette *normalPalette, bool meshDelete) {
+	if (idx >= 0) {
+		ensureRenderState(idx);
+	}
 	bool meshDeleted = false;
 	if (!meshState->sameNormalPalette(idx, normalPalette)) {
 		if (idx >= 0) {
@@ -1045,6 +1045,9 @@ void RawVolumeRenderer::deleteMeshes(int idx) {
 void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
 	core_trace_scoped(DeleteMesh);
 	RenderState &state = _state[idx];
+	if (state._vertexBufferIndex[meshType] == -1) {
+		return;
+	}
 	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
 	Log::debug("clear vertexbuffer: %i", idx);
 

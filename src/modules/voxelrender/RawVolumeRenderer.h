@@ -95,7 +95,6 @@ protected:
 	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
 	void updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera);
-	void ensureRenderState(int idx);
 
 	bool initStateBuffers(bool normals);
 	void initStateBuffer(int idx);
@@ -117,6 +116,7 @@ public:
 
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
 				bool shadow, bool bloom);
+	void ensureRenderState(int idx);
 	void ensureSize(int idx);
 	void clear(const voxel::MeshStatePtr &meshState);
 	/**

@@ -859,7 +859,7 @@ bool MementoHandler::removeLast() {
 bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion) {
 	const core::UUID &parentId = sceneGraph.uuid(node.parent());
-	const core::UUID &referenceId = sceneGraph.uuid(node.reference());
+	const core::UUID &referenceId = node.referenceUUID();
 	Log::debug("New memento state for node %s with name '%s'", node.uuid().str().c_str(), node.name().c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);

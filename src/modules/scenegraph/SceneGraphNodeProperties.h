@@ -27,7 +27,6 @@ static constexpr const char *PropCamFov = "cam_fov";
 static constexpr const char *PropCamFrustum = "frustum";
 static constexpr const char *PropParent = "parent";
 static constexpr const char *PropParentUUID = "parent-uuid";
-static constexpr const char *PropReferenceUUID = "reference-uuid";
 static constexpr const char *PropSunIntensity = "sun_intensity";
 static constexpr const char *PropSunArea = "sun_area";
 static constexpr const char *PropSunElevation = "sun_elevation";

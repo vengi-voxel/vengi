@@ -552,9 +552,11 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
 	} else if (node.isReferenceNode()) {
-		auto iter = ctx.nodeToModel.find(node.reference());
+		const scenegraph::SceneGraphNode *referencedNode = sceneGraph.findNodeByUUID(node.referenceUUID());
+		auto iter = referencedNode != nullptr ? ctx.nodeToModel.find(referencedNode->id()) : ctx.nodeToModel.end();
 		if (iter == ctx.nodeToModel.end()) {
-			Log::error("Could not find model reference for node %i (references: %i)", node.id(), node.reference());
+			Log::error("Could not find model reference for node %i (references: %s)", node.id(),
+					   node.referenceUUID().str().c_str());
 		} else {
 			saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, iter->second);
 		}

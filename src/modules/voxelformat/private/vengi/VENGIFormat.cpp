@@ -251,7 +251,9 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
 	wrapBool(stream.writeUUID(node.uuid()))
 	wrapBool(stream.writeInt32(node.id()))
-	wrapBool(stream.writeInt32(node.reference()))
+	const scenegraph::SceneGraphNode *referencedNode =
+		node.hasReference() ? sceneGraph.findNodeByUUID(node.referenceUUID()) : nullptr;
+	wrapBool(stream.writeInt32(referencedNode != nullptr ? referencedNode->id() : InvalidNodeId))
 	wrapBool(stream.writeBool(node.visible()))
 	wrapBool(stream.writeBool(node.locked()))
 	wrapBool(stream.writeUInt32(node.color().rgba))
@@ -519,7 +521,7 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 }
 
 bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
-						   NodeMapping &nodeMapping) {
+						   NodeMapping &nodeMapping, PendingReferences &pendingReferences) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	core::String type;
@@ -559,9 +561,10 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		wrap(stream.readInt32(fileNodeId))
 		int referenceNodeId;
 		wrap(stream.readInt32(referenceNodeId))
-		// will get fixed up later once we know all node ids
-		node.setReferenceId(referenceNodeId);
 		nodeMapping.put(fileNodeId, nodeId);
+		if (referenceNodeId != InvalidNodeId) {
+			pendingReferences.push_back({nodeId, referenceNodeId});
+		}
 	}
 	node.setVisible(stream.readBool());
 	node.setLocked(stream.readBool());
@@ -607,7 +610,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 				return false;
 			}
 		} else if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
-			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping)) {
+			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping, pendingReferences)) {
 				return false;
 			}
 		} else if (chunkMagic == FourCC('E', 'N', 'D', 'N')) {
@@ -659,22 +662,22 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	uint32_t chunkMagic;
 	wrap(zipStream.readUInt32(chunkMagic))
 	NodeMapping nodeMapping;
+	PendingReferences pendingReferences;
 	if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
-		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping)) {
+		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping, pendingReferences)) {
 			return false;
 		}
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end();
-			 ++iter) {
-			scenegraph::SceneGraphNode &node = *iter;
-			int nodeId;
-			if (!nodeMapping.get(node.reference(), nodeId)) {
+		for (const PendingReference &pendingReference : pendingReferences) {
+			int mappedReferenceId;
+			if (!nodeMapping.get(pendingReference.fileReferenceId, mappedReferenceId)) {
 				Log::error("Failed to perform node id mapping for references");
 				return false;
 			}
-			Log::debug("Update node reference for node %i to: %i", node.id(), nodeId);
-			if (!sceneGraph.hasNode(nodeId) || !node.setReference(sceneGraph.node(nodeId))) {
+			scenegraph::SceneGraphNode &node = sceneGraph.node(pendingReference.nodeId);
+			Log::debug("Update node reference for node %i to: %i", node.id(), mappedReferenceId);
+			if (!sceneGraph.hasNode(mappedReferenceId) || !node.setReference(sceneGraph.node(mappedReferenceId))) {
 				Log::error("Failed to set ModelReference %i to mapped node %i - target must be a Model", node.id(),
-						   nodeId);
+						   mappedReferenceId);
 				return false;
 			}
 		}

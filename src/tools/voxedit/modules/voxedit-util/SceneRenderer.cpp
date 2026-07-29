@@ -105,12 +105,13 @@ void SceneRenderer::shutdown() {
 /**
  * @brief Return the real model node, not the reference
  */
-static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
+static const scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
 	if (sceneGraph.hasNode(nodeId)) {
-		scenegraph::SceneGraphNode *n = &sceneGraph.node(nodeId);
-		if (n->reference() != InvalidNodeId) {
-			if (sceneGraph.hasNode(n->reference())) {
-				n = &sceneGraph.node(n->reference());
+		const scenegraph::SceneGraphNode *n = &sceneGraph.node(nodeId);
+		if (n->hasReference()) {
+			const scenegraph::SceneGraphNode *referencedNode = sceneGraph.findNodeByUUID(n->referenceUUID());
+			if (referencedNode != nullptr) {
+				n = referencedNode;
 			}
 		}
 		return n;
@@ -248,9 +249,9 @@ const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGrap
 	return v;
 }
 
-bool SceneRenderer::isVisible(int nodeId, bool hideEmpty) const {
+bool SceneRenderer::isVisible(const core::UUID &uuid, bool hideEmpty) const {
 	checkMainThread();
-	return _sceneGraphRenderer.isVisible(_meshState, nodeId, hideEmpty);
+	return _sceneGraphRenderer.isVisible(_meshState, uuid, hideEmpty);
 }
 
 void SceneRenderer::checkMainThread() const {
@@ -267,10 +268,11 @@ void SceneRenderer::handleCommandBuffer() {
 	for (const CommandEvent &cmd : cmds) {
 		switch (cmd.type) {
 		case CommandType::NodeRegion: {
+			const core::UUID uuid(cmd.nodeRegion.uuid[0], cmd.nodeRegion.uuid[1]);
 			const voxel::Region region(
 				glm::ivec3(cmd.nodeRegion.regionMins[0], cmd.nodeRegion.regionMins[1], cmd.nodeRegion.regionMins[2]),
 				glm::ivec3(cmd.nodeRegion.regionMaxs[0], cmd.nodeRegion.regionMaxs[1], cmd.nodeRegion.regionMaxs[2]));
-			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, cmd.nodeRegion.nodeId, region);
+			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, uuid, region);
 			_cache.aabbDirty = true;
 			_cache.boneDirty = true;
 			break;
@@ -284,13 +286,15 @@ void SceneRenderer::handleCommandBuffer() {
 			break;
 		}
 		case CommandType::RemoveNode: {
-			_sceneGraphRenderer.nodeRemove(_meshState, cmd.node.nodeId);
+			const core::UUID uuid(cmd.node.uuid[0], cmd.node.uuid[1]);
+			_sceneGraphRenderer.nodeRemove(_meshState, uuid);
 			_cache.aabbDirty = true;
 			_cache.boneDirty = true;
 			break;
 		}
 		case CommandType::UnhideNode: {
-			const int idx = _sceneGraphRenderer.getVolumeIdx(cmd.node.nodeId);
+			const core::UUID uuid(cmd.node.uuid[0], cmd.node.uuid[1]);
+			const int idx = _sceneGraphRenderer.getVolumeIdx(uuid);
 			if (idx >= 0) {
 				_meshState->hide(idx, false);
 			}
@@ -455,7 +459,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeRenderer.render(_indices.sliceRegion, camera);
 		}
 	} else {
-		scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
+		const scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
 		if (n == nullptr) {
 			return;
 		}

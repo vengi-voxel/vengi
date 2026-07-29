@@ -24,43 +24,32 @@ SceneGraphRenderer::SceneGraphRenderer(const core::TimeProviderPtr &timeProvider
 	: _volumeRenderer(timeProvider) {
 }
 
-int SceneGraphRenderer::allocateVolumeIdx(int nodeId) {
-	if (nodeId >= (int)_nodeIdToVolumeIdx.size()) {
-		const int oldSize = (int)_nodeIdToVolumeIdx.size();
-		// TODO: reserve not just 1 slot but a few more to avoid too many resizes
-		_nodeIdToVolumeIdx.resize(nodeId + 1);
-		for (int i = oldSize; i <= nodeId; ++i) {
-			_nodeIdToVolumeIdx[i] = -1;
-		}
-	}
+int SceneGraphRenderer::allocateVolumeIdx(const core::UUID &uuid) {
 	int idx;
 	if (!_freeVolumeIndices.empty()) {
 		idx = _freeVolumeIndices.pop();
 	} else {
 		idx = _nextVolumeIdx++;
 	}
-	_nodeIdToVolumeIdx[nodeId] = idx;
+	_uuidToVolumeIdx.put(uuid, idx);
 	return idx;
 }
 
-void SceneGraphRenderer::freeVolumeIdx(int nodeId) {
-	if (nodeId < 0 || nodeId >= (int)_nodeIdToVolumeIdx.size()) {
+void SceneGraphRenderer::freeVolumeIdx(const core::UUID &uuid) {
+	int idx;
+	if (!_uuidToVolumeIdx.get(uuid, idx)) {
 		return;
 	}
-	const int idx = _nodeIdToVolumeIdx[nodeId];
-	if (idx < 0) {
-		return;
-	}
-	_nodeIdToVolumeIdx[nodeId] = -1;
+	_uuidToVolumeIdx.remove(uuid);
 	_freeVolumeIndices.push(idx);
 }
 
-int SceneGraphRenderer::getOrAssignVolumeIdx(int nodeId) {
-	const int existing = getVolumeIdx(nodeId);
+int SceneGraphRenderer::getOrAssignVolumeIdx(const core::UUID &uuid) {
+	const int existing = getVolumeIdx(uuid);
 	if (existing >= 0) {
 		return existing;
 	}
-	return allocateVolumeIdx(nodeId);
+	return allocateVolumeIdx(uuid);
 }
 
 void SceneGraphRenderer::construct() {
@@ -79,9 +68,11 @@ void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
 	_volumeRenderer.update(meshState);
 }
 
-void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int nodeId, const voxel::Region &region) {
-	const int idx = getOrAssignVolumeIdx(nodeId);
-	if (sliceViewActiveForNode(nodeId)) {
+void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState,
+												  const core::UUID &uuid,
+												  const voxel::Region &region) {
+	const int idx = getOrAssignVolumeIdx(uuid);
+	if (sliceViewActiveForNode(uuid)) {
 		_sliceVolumeDirty = true;
 		return;
 	}
@@ -108,9 +99,7 @@ void SceneGraphRenderer::shutdown() {
 void SceneGraphRenderer::clear(const voxel::MeshStatePtr &meshState) {
 	_volumeRenderer.clear(meshState);
 	_sliceRegion = voxel::Region::InvalidRegion;
-	for (int i = 0; i < (int)_nodeIdToVolumeIdx.size(); ++i) {
-		_nodeIdToVolumeIdx[i] = -1;
-	}
+	_uuidToVolumeIdx.clear();
 	_freeVolumeIndices.clear();
 	_nextVolumeIdx = 0;
 }
@@ -130,18 +119,18 @@ bool SceneGraphRenderer::isSliceModeActive() const {
 	return _sliceRegion.isValid();
 }
 
-void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId) {
-	const int idx = getVolumeIdx(nodeId);
+void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, const core::UUID &uuid) {
+	const int idx = getVolumeIdx(uuid);
 	if (idx < 0) {
 		return;
 	}
 	// ignore the return value because the volume is owned by the node
 	(void)_volumeRenderer.resetVolume(meshState, idx);
-	freeVolumeIdx(nodeId);
+	freeVolumeIdx(uuid);
 }
 
-bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty) const {
-	const int idx = getVolumeIdx(nodeId);
+bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, const core::UUID &uuid, bool hideEmpty) const {
+	const int idx = getVolumeIdx(uuid);
 	if (idx < 0) {
 		return false;
 	}
@@ -171,11 +160,11 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
 }
 
-bool SceneGraphRenderer::sliceViewActiveForNode(int nodeId) const {
+bool SceneGraphRenderer::sliceViewActiveForNode(const core::UUID &uuid) const {
 	if (!sliceViewActive()) {
 		return false;
 	}
-	return _sliceVolumeNodeId == nodeId;
+	return _sliceVolumeNodeUUID == uuid;
 }
 
 bool SceneGraphRenderer::sliceViewActive() const {
@@ -188,12 +177,13 @@ void SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, s
 	// * a new activated node
 	// * the region changed
 	// * we don't yet have a sliced volume view but requested one
-	const int idx = getOrAssignVolumeIdx(node.id());
+	const int idx = getOrAssignVolumeIdx(node);
 	if (idx < 0) {
 		return;
 	}
 
-	if (_sliceVolumeDirty || _sliceVolumeNodeId != node.id() || !_sliceVolume || _sliceVolume->region() != _sliceRegion) {
+	if (_sliceVolumeDirty || _sliceVolumeNodeUUID != node.uuid() || !_sliceVolume ||
+		_sliceVolume->region() != _sliceRegion) {
 		const voxel::RawVolume *nodeVolume = node.volume();
 		// this enforces the lock on the volume renderer if the volume is currently extracted
 		core::SharedPtr<voxel::RawVolume> newVolume(core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion));
@@ -204,7 +194,7 @@ void SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, s
 			_volumeRenderer.scheduleRegionExtraction(meshState, idx, newVolume->region());
 		}
 		_sliceVolume = newVolume;
-		_sliceVolumeNodeId = node.id();
+		_sliceVolumeNodeUUID = node.uuid();
 
 		const voxel::Region &region = _sliceVolume->region();
 		meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
@@ -252,20 +242,20 @@ void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshSt
 		if (!node.isReferenceNode()) {
 			continue;
 		}
-		const int refId = node.reference();
-		if (!sceneGraph.hasNode(refId) || !sceneGraph.node(refId).isModelNode()) {
-			Log::error("Skip ModelReference node %i ('%s'): invalid reference %i", node.id(), node.name().c_str(),
-					   refId);
+		const scenegraph::SceneGraphNode *referencedNode = sceneGraph.findNodeByUUID(node.referenceUUID());
+		if (referencedNode == nullptr || !referencedNode->isModelNode()) {
+			Log::error("Skip ModelReference node %i ('%s'): invalid reference %s", node.id(), node.name().c_str(),
+					   node.referenceUUID().str().c_str());
 			continue;
 		}
 
-		const int idx = getOrAssignVolumeIdx(node.id());
-		_volumeRenderer.ensureSize(idx);
+		const int idx = getOrAssignVolumeIdx(node);
+		_volumeRenderer.ensureRenderState(idx);
 		updateNodeState(meshState, renderContext, activeNode, node, idx);
 		if (meshState->hidden(idx)) {
 			continue;
 		}
-		const int referencedIdx = getVolumeIdx(refId);
+		const int referencedIdx = getVolumeIdx(*referencedNode);
 		meshState->setReference(idx, referencedIdx);
 		prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx);
 	}
@@ -315,7 +305,7 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 	} else {
 		_sliceVolume = nullptr;
 		_sliceVolumeDirty = false;
-		_sliceVolumeNodeId = -1;
+		_sliceVolumeNodeUUID = core::UUID();
 	}
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
 
@@ -332,7 +322,7 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 			continue;
 		}
 		const int nodeId = entry->key;
-		const int idx = getOrAssignVolumeIdx(nodeId);
+		const int idx = getOrAssignVolumeIdx(node);
 		if (idx < 0) {
 			continue;
 		}
@@ -364,12 +354,12 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 			continue;
 		}
 
-		const int idx = getOrAssignVolumeIdx(node.id());
+		const int idx = getOrAssignVolumeIdx(node);
 		if (idx < 0 || meshState->hidden(idx)) {
 			continue;
 		}
 
-		if (sliceViewActiveForNode(node.id())) {
+		if (sliceViewActiveForNode(node.uuid())) {
 			continue;
 		}
 		const voxel::RawVolume *v = meshState->volume(idx);

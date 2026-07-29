@@ -96,7 +96,7 @@ TEST_F(SceneGraphTest, testIsReferenced) {
 	EXPECT_TRUE(sceneGraph.removeNode(modelId, false));
 }
 
-TEST_F(SceneGraphTest, testFixupModelReferences) {
+TEST_F(SceneGraphTest, testReferenceSurvivesModelRecreationWithSameUUID) {
 	voxel::RawVolume volume(voxel::Region(0, 0));
 	SceneGraph sceneGraph;
 	int modelId = InvalidNodeId;
@@ -107,17 +107,10 @@ TEST_F(SceneGraphTest, testFixupModelReferences) {
 		ASSERT_NE(InvalidNodeId, modelId);
 	}
 	const core::UUID modelUUID = sceneGraph.node(modelId).uuid();
-	int refId = InvalidNodeId;
-	{
-		SceneGraphNode reference(SceneGraphNodeType::ModelReference);
-		ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
-		refId = sceneGraph.emplace(core::move(reference));
-		ASSERT_NE(InvalidNodeId, refId);
-	}
-	EXPECT_EQ(modelUUID.str(), sceneGraph.node(refId).property(PropReferenceUUID));
+	SceneGraphNode reference(SceneGraphNodeType::ModelReference);
+	ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
+	EXPECT_EQ(modelUUID, reference.referenceUUID());
 
-	// Simulate undo recreating the model under a new integer id while the reference keeps the old id.
-	EXPECT_TRUE(sceneGraph.removeNode(refId, false));
 	EXPECT_TRUE(sceneGraph.removeNode(modelId, false));
 	int newModelId = InvalidNodeId;
 	{
@@ -126,17 +119,11 @@ TEST_F(SceneGraphTest, testFixupModelReferences) {
 		newModelId = sceneGraph.emplace(core::move(model));
 		ASSERT_NE(InvalidNodeId, newModelId);
 	}
-	int staleRefId = InvalidNodeId;
-	{
-		SceneGraphNode reference(SceneGraphNodeType::ModelReference);
-		reference.setProperty(PropReferenceUUID, modelUUID.str());
-		reference.setReferenceId(modelId); // stale id from before removal
-		staleRefId = sceneGraph.emplace(core::move(reference));
-		ASSERT_NE(InvalidNodeId, staleRefId);
-	}
-	EXPECT_FALSE(sceneGraph.hasNode(sceneGraph.node(staleRefId).reference()));
-	sceneGraph.fixupModelReferences();
-	EXPECT_EQ(newModelId, sceneGraph.node(staleRefId).reference());
+	EXPECT_NE(modelId, newModelId);
+	EXPECT_EQ(modelUUID, reference.referenceUUID());
+	EXPECT_EQ(&sceneGraph.node(newModelId), sceneGraph.findNodeByUUID(reference.referenceUUID()));
+	const int refId = sceneGraph.emplace(core::move(reference));
+	ASSERT_NE(InvalidNodeId, refId);
 	EXPECT_TRUE(sceneGraph.validate());
 }
 

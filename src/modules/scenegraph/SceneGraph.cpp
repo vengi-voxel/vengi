@@ -752,17 +752,16 @@ bool SceneGraph::validate() const {
 		if (!value.isReferenceNode()) {
 			continue;
 		}
-		const int refId = value.reference();
-		if (!hasNode(refId)) {
-			Log::error("ModelReference node %s (%i) points to missing node %i", value.name().c_str(), value.id(),
-					   refId);
+		const SceneGraphNode *ref = findNodeByUUID(value.referenceUUID());
+		if (ref == nullptr) {
+			Log::error("ModelReference node %s (%i) points to missing UUID %s", value.name().c_str(), value.id(),
+					   value.referenceUUID().str().c_str());
 			valid = false;
 			continue;
 		}
-		const SceneGraphNode &ref = node(refId);
-		if (!ref.isModelNode()) {
+		if (!ref->isModelNode()) {
 			Log::error("ModelReference node %s (%i) points to non-model node %i (type %i)", value.name().c_str(),
-					   value.id(), refId, (int)ref.type());
+					   value.id(), ref->id(), (int)ref->type());
 			valid = false;
 		}
 	}
@@ -975,51 +974,26 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 }
 
 bool SceneGraph::isReferenced(int nodeId) const {
+	if (!hasNode(nodeId)) {
+		return false;
+	}
+	return isReferenced(node(nodeId).uuid());
+}
+
+bool SceneGraph::isReferenced(const core::UUID &nodeUUID) const {
+	if (!nodeUUID.isValid()) {
+		return false;
+	}
 	for (const auto &entry : _nodes) {
 		const SceneGraphNode &n = entry->second;
 		if (!n.isReferenceNode()) {
 			continue;
 		}
-		if (n.reference() == nodeId) {
+		if (n.referenceUUID() == nodeUUID) {
 			return true;
 		}
 	}
 	return false;
-}
-
-void SceneGraph::fixupModelReferences() {
-	core::DynamicArray<int> refNodeIds;
-	for (const auto &entry : _nodes) {
-		if (entry->second.isReferenceNode()) {
-			refNodeIds.push_back(entry->second.id());
-		}
-	}
-	for (int refNodeId : refNodeIds) {
-		if (!hasNode(refNodeId)) {
-			continue;
-		}
-		SceneGraphNode &n = node(refNodeId);
-		if (hasNode(n.reference()) && node(n.reference()).isModelNode()) {
-			continue;
-		}
-		const core::String &uuidStr = n.property(PropReferenceUUID);
-		if (uuidStr.empty()) {
-			Log::error("ModelReference node %i ('%s') has invalid reference %i and no %s property", n.id(),
-					   n.name().c_str(), n.reference(), PropReferenceUUID);
-			continue;
-		}
-		const core::UUID targetUUID(uuidStr);
-		SceneGraphNode *target = findNodeByUUID(targetUUID);
-		if (target == nullptr || !target->isModelNode()) {
-			Log::error("ModelReference node %i ('%s') could not resolve %s '%s'", n.id(), n.name().c_str(),
-					   PropReferenceUUID, uuidStr.c_str());
-			continue;
-		}
-		if (!n.setReference(*target)) {
-			Log::error("ModelReference node %i ('%s') failed to retarget to node %i", n.id(), n.name().c_str(),
-					   target->id());
-		}
-	}
 }
 
 bool SceneGraph::isEffector(int nodeId) const {
@@ -1265,18 +1239,18 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 }
 
 static bool resolveModelReferenceTarget(const SceneGraph &sceneGraph, const SceneGraphNode &n, int &outRefId) {
-	const int refId = n.reference();
-	if (!sceneGraph.hasNode(refId)) {
-		Log::error("ModelReference node %i ('%s') points to missing node %i", n.id(), n.name().c_str(), refId);
+	const SceneGraphNode *ref = sceneGraph.findNodeByUUID(n.referenceUUID());
+	if (ref == nullptr) {
+		Log::error("ModelReference node %i ('%s') points to missing UUID %s", n.id(), n.name().c_str(),
+				   n.referenceUUID().str().c_str());
 		return false;
 	}
-	const SceneGraphNode &ref = sceneGraph.node(refId);
-	if (!ref.isModelNode() && !ref.isReferenceNode()) {
+	if (!ref->isModelNode() && !ref->isReferenceNode()) {
 		Log::error("ModelReference node %i ('%s') points to non-model node %i (type %i)", n.id(), n.name().c_str(),
-				   refId, (int)ref.type());
+				   ref->id(), (int)ref->type());
 		return false;
 	}
-	outRefId = refId;
+	outRefId = ref->id();
 	return true;
 }
 

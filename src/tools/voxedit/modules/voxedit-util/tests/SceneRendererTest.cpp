@@ -65,18 +65,18 @@ TEST_F(SceneRendererTest, testInit) {
 }
 
 TEST_F(SceneRendererTest, testRemoveNodeCancelsPendingRegionExtraction) {
-	const int nodeId = 42;
+	const core::UUID nodeUUID = core::UUID::generate();
 	const voxel::Region region(0, 0, 0, 7, 7, 7);
 	// Queue an extraction, then remove the node before the command buffer is flushed.
-	_sceneRenderer.updateNodeRegion(nodeId, region);
-	_sceneRenderer.removeNode(nodeId);
+	_sceneRenderer.updateNodeRegion(nodeUUID, region);
+	_sceneRenderer.removeNode(nodeUUID);
 	_sceneRenderer.update();
 }
 
 TEST_F(SceneRendererTest, testClearCancelsPendingRegionExtractions) {
 	const voxel::Region region(0, 0, 0, 7, 7, 7);
-	_sceneRenderer.updateNodeRegion(1, region);
-	_sceneRenderer.updateNodeRegion(2, region);
+	_sceneRenderer.updateNodeRegion(core::UUID::generate(), region);
+	_sceneRenderer.updateNodeRegion(core::UUID::generate(), region);
 	_sceneRenderer.clear();
 	_sceneRenderer.update();
 }

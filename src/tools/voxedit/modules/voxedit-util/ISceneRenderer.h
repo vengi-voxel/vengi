@@ -7,6 +7,7 @@
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "core/Trace.h"
+#include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "voxel/Region.h"
@@ -47,7 +48,7 @@ protected:
 		CommandType type;
 		union {
 			struct {
-				int nodeId;
+				uint64_t uuid[2];
 				int32_t regionMins[3];
 				int32_t regionMaxs[3];
 			} nodeRegion;
@@ -58,7 +59,7 @@ protected:
 			} sliceRegion;
 
 			struct {
-				int nodeId;
+				uint64_t uuid[2];
 			} node;
 		};
 	};
@@ -88,7 +89,7 @@ public:
 	void shutdown() override {
 	}
 
-	virtual bool isVisible(int nodeId, bool hideEmpty = true) const {
+	virtual bool isVisible(const core::UUID &uuid, bool hideEmpty = true) const {
 		return true;
 	}
 
@@ -116,10 +117,11 @@ public:
 		return {};
 	}
 
-	virtual void updateNodeRegion(int nodeId, const voxel::Region &region) {
+	virtual void updateNodeRegion(const core::UUID &uuid, const voxel::Region &region) {
 		CommandEvent cmd;
 		cmd.type = CommandType::NodeRegion;
-		cmd.nodeRegion.nodeId = nodeId;
+		cmd.nodeRegion.uuid[0] = uuid.data0();
+		cmd.nodeRegion.uuid[1] = uuid.data1();
 		cmd.nodeRegion.regionMins[0] = region.getLowerX();
 		cmd.nodeRegion.regionMins[1] = region.getLowerY();
 		cmd.nodeRegion.regionMins[2] = region.getLowerZ();
@@ -130,10 +132,11 @@ public:
 		_commandBuffer.push_back(cmd);
 	}
 
-	virtual void removeNode(int nodeId) {
+	virtual void removeNode(const core::UUID &uuid) {
 		CommandEvent cmd;
 		cmd.type = CommandType::RemoveNode;
-		cmd.node.nodeId = nodeId;
+		cmd.node.uuid[0] = uuid.data0();
+		cmd.node.uuid[1] = uuid.data1();
 		core::ScopedLock lock(_commandBufferMutex);
 		_commandBuffer.push_back(cmd);
 	}
@@ -149,10 +152,11 @@ public:
 		_commandBuffer.push_back(cmd);
 	}
 
-	virtual void unhideNode(int nodeId) {
+	virtual void unhideNode(const core::UUID &uuid) {
 		CommandEvent cmd;
 		cmd.type = CommandType::UnhideNode;
-		cmd.node.nodeId = nodeId;
+		cmd.node.uuid[0] = uuid.data0();
+		cmd.node.uuid[1] = uuid.data1();
 		core::ScopedLock lock(_commandBufferMutex);
 		_commandBuffer.push_back(cmd);
 	}

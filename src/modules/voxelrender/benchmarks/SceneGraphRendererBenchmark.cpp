@@ -74,7 +74,7 @@ public:
 			int nodeId = _sceneGraph.emplace(core::move(node), 0);
 			_nodeIds.push_back(nodeId);
 
-			int idx = _renderer.getOrAssignVolumeIdx(nodeId);
+			int idx = _renderer.getOrAssignVolumeIdx(_sceneGraph.node(nodeId));
 			bool meshDeleted = false;
 			(void)_meshState->setVolume(idx, vol, nullptr, nullptr, false, meshDeleted);
 		}
@@ -88,7 +88,7 @@ BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransform)(bench
 		for (int i = 0; i < NumNodes; ++i) {
 			const int nodeId = _nodeIds[i];
 			const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-			const int idx = _renderer.getVolumeIdx(nodeId);
+			const int idx = _renderer.getVolumeIdx(node);
 			_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
 		}
 	}
@@ -98,7 +98,7 @@ BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransformSingle)
 	const scenegraph::FrameIndex frame = 0;
 	const int nodeId = _nodeIds[0];
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	const int idx = _renderer.getVolumeIdx(nodeId);
+	const int idx = _renderer.getVolumeIdx(node);
 	for (auto _ : state) {
 		_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
 	}

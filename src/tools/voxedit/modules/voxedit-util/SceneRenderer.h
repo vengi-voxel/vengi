@@ -95,7 +95,7 @@ public:
 
 	// ISceneRenderer
 	void update() override;
-	bool isVisible(int nodeId, bool hideEmpty = true) const override;
+	bool isVisible(const core::UUID &uuid, bool hideEmpty = true) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) override;

@@ -6,7 +6,9 @@
 
 #include "RawVolumeRenderer.h"
 #include "core/SharedPtr.h"
+#include "core/UUID.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicStack.h"
 #include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -29,7 +31,7 @@ protected:
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
 								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx) const;
 	void handleSliceView(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node);
-	bool sliceViewActiveForNode(int nodeId) const;
+	bool sliceViewActiveForNode(const core::UUID &uuid) const;
 	bool sliceViewActive() const;
 	void updateNodeState(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
 						 const scenegraph::SceneGraphNode &activeNode, const scenegraph::SceneGraphNode &node,
@@ -45,17 +47,17 @@ protected:
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
 	voxel::Region _sliceRegion = voxel::Region::InvalidRegion;
 	bool _sliceVolumeDirty = false;
-	int _sliceVolumeNodeId = -1;
+	core::UUID _sliceVolumeNodeUUID;
 
-	/** @brief Sparse table indexed by nodeId, value is the compact volume index (-1 = unmapped) */
-	core::Buffer<int> _nodeIdToVolumeIdx;
+	/** @brief Maps stable node UUIDs to compact volume indices. */
+	core::DynamicMap<core::UUID, int, 251, core::UUIDHash> _uuidToVolumeIdx;
 	/** @brief Free-list of recycled compact volume indices */
 	core::DynamicStack<int> _freeVolumeIndices;
 	/** @brief High-water mark for next new volume index allocation */
 	int _nextVolumeIdx = 0;
 
-	int allocateVolumeIdx(int nodeId);
-	void freeVolumeIdx(int nodeId);
+	int allocateVolumeIdx(const core::UUID &uuid);
+	void freeVolumeIdx(const core::UUID &uuid);
 
 public:
 	SceneGraphRenderer(const core::TimeProviderPtr &timeProvider);
@@ -68,16 +70,17 @@ public:
 	void setDiffuseColor(const glm::vec3 &color);
 	void setSunAngle(const glm::vec3 &angle);
 
-	void nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId);
+	void nodeRemove(const voxel::MeshStatePtr &meshState, const core::UUID &uuid);
 	/**
 	 * @brief Checks whether the given model node is visible
 	 * @param[in] nodeId The node id
 	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
 	 * @return @c true if the node is visible, @c false otherwise
 	 */
-	bool isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty = true) const;
+	bool isVisible(const voxel::MeshStatePtr &meshState, const core::UUID &uuid, bool hideEmpty = true) const;
 
-	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int nodeId, const voxel::Region &region);
+	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, const core::UUID &uuid,
+								  const voxel::Region &region);
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
 	 * false, you have to call @c update() manually!
@@ -106,18 +109,20 @@ public:
 		return _nextVolumeIdx - (int)_freeVolumeIndices.size();
 	}
 
-	inline int getVolumeIdx(int nodeId) const {
-		if (nodeId < 0 || nodeId >= (int)_nodeIdToVolumeIdx.size()) {
-			return -1;
-		}
-		return _nodeIdToVolumeIdx[nodeId];
+	inline int getVolumeIdx(const core::UUID &uuid) const {
+		int idx = -1;
+		_uuidToVolumeIdx.get(uuid, idx);
+		return idx;
 	}
 
 	inline int getVolumeIdx(const scenegraph::SceneGraphNode &node) const {
-		return getVolumeIdx(node.id());
+		return getVolumeIdx(node.uuid());
 	}
 
-	int getOrAssignVolumeIdx(int nodeId);
+	int getOrAssignVolumeIdx(const core::UUID &uuid);
+	inline int getOrAssignVolumeIdx(const scenegraph::SceneGraphNode &node) {
+		return getOrAssignVolumeIdx(node.uuid());
+	}
 };
 
 } // namespace voxelrender

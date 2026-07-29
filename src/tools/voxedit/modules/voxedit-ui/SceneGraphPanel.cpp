@@ -146,7 +146,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const int activeNode = sceneGraph.activeNode();
-	const bool referenceNode = node.reference() == activeNode;
+	const bool referenceNode = node.referenceUUID() == sceneGraph.node(activeNode).uuid();
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
@@ -448,7 +448,10 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			int referencedNode = InvalidNodeId;
 			const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 			if (activeNode.type() == scenegraph::SceneGraphNodeType::ModelReference) {
-				referencedNode = activeNode.reference();
+				const scenegraph::SceneGraphNode *referenced = sceneGraph.findNodeByUUID(activeNode.referenceUUID());
+				if (referenced != nullptr) {
+					referencedNode = referenced->id();
+				}
 			}
 
 			if (_lastActivedNodeId != sceneGraph.activeNode()) {

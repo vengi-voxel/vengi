@@ -252,7 +252,8 @@ TEST_F(VoxFormatTest, testReferencesShareVolume) {
 		scenegraph::SceneGraphNode &node = *iter;
 		if (node.isReferenceNode()) {
 			++refs;
-			EXPECT_NE(InvalidNodeId, node.reference());
+			EXPECT_TRUE(node.hasReference());
+			EXPECT_NE(nullptr, sceneGraph.findNodeByUUID(node.referenceUUID()));
 			EXPECT_NE(nullptr, sceneGraph.resolveVolume(node));
 		} else if (node.isModelNode()) {
 			++models;

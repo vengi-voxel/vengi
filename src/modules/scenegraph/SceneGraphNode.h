@@ -63,7 +63,6 @@ protected:
 	// local or internal ids - if you need to identify a node e.g. across the network, or in the memento state, use the uuid instead
 	int _id = InvalidNodeId;
 	int _parent = 0;
-	int _referenceId = InvalidNodeId;
 
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
@@ -71,6 +70,8 @@ protected:
 	glm::vec3 _pivot {0.0f};
 
 	core::UUID _uuid;
+	/** Target Model UUID when @c type is ModelReference (stable across undo/re-add). */
+	core::UUID _referenceUUID;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFramesMap _keyFramesMap;
@@ -117,17 +118,22 @@ public:
 
 	int id() const;
 	int parent() const;
-	int reference() const;
+	/**
+	 * @brief UUID of the referenced Model (only meaningful for ModelReference nodes).
+	 */
+	const core::UUID &referenceUUID() const;
+	bool hasReference() const;
 	/**
 	 * @brief Point this ModelReference at @p modelNode.
 	 * Only @c SceneGraphNodeType::Model targets are allowed.
 	 */
 	bool setReference(const SceneGraphNode &modelNode, bool forceChangeNodeType = false);
 	/**
-	 * @brief Assign a raw reference id without validating the target type.
+	 * @brief Assign a raw reference UUID without validating the target.
 	 * For load/copy remapping only; follow up with @c setReference(modelNode) or @c SceneGraph::validate().
 	 */
-	void setReferenceId(int nodeId);
+	void setReferenceUUID(const core::UUID &uuid);
+	void clearReference();
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
 	bool hasPalette() const;

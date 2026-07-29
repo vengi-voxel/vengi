@@ -32,8 +32,8 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_id = move._id;
 	move._id = InvalidNodeId;
 	_uuid = move._uuid;
-	_referenceId = move._referenceId;
-	move._referenceId = InvalidNodeId;
+	_referenceUUID = move._referenceUUID;
+	move._referenceUUID = core::UUID();
 	_palette = core::move(move._palette);
 	_normalPalette = core::move(move._normalPalette);
 	_ikConstraint = core::move(move._ikConstraint);
@@ -70,8 +70,8 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_id = move._id;
 	move._id = InvalidNodeId;
 	_uuid = move._uuid;
-	_referenceId = move._referenceId;
-	move._referenceId = InvalidNodeId;
+	_referenceUUID = move._referenceUUID;
+	move._referenceUUID = core::UUID();
 	_palette = core::move(move._palette);
 	_normalPalette = core::move(move._normalPalette);
 	_ikConstraint = core::move(move._ikConstraint);
@@ -288,7 +288,7 @@ bool SceneGraphNode::validate() const {
 		}
 	}
 	if (_type == SceneGraphNodeType::ModelReference) {
-		if (_referenceId == InvalidNodeId) {
+		if (!_referenceUUID.isValid()) {
 			Log::error("Model reference node %s (%i) has no reference", _name.c_str(), _id);
 			return false;
 		}
@@ -434,8 +434,12 @@ bool SceneGraphNode::isReferenceable() const {
 	return _type == SceneGraphNodeType::Model;
 }
 
-int SceneGraphNode::reference() const {
-	return _referenceId;
+const core::UUID &SceneGraphNode::referenceUUID() const {
+	return _referenceUUID;
+}
+
+bool SceneGraphNode::hasReference() const {
+	return _referenceUUID.isValid();
 }
 
 bool SceneGraphNode::setReference(const SceneGraphNode &modelNode, bool forceChangeNodeType) {
@@ -444,8 +448,8 @@ bool SceneGraphNode::setReference(const SceneGraphNode &modelNode, bool forceCha
 				   modelNode.name().c_str(), (int)modelNode.type());
 		return false;
 	}
-	if (modelNode.id() == InvalidNodeId) {
-		Log::error("Can't reference invalid node id");
+	if (!modelNode.uuid().isValid()) {
+		Log::error("Can't reference node %i ('%s') - invalid UUID", modelNode.id(), modelNode.name().c_str());
 		return false;
 	}
 	if (_type != SceneGraphNodeType::ModelReference) {
@@ -456,13 +460,16 @@ bool SceneGraphNode::setReference(const SceneGraphNode &modelNode, bool forceCha
 			return false;
 		}
 	}
-	_referenceId = modelNode.id();
-	setProperty(PropReferenceUUID, modelNode.uuid().str());
+	_referenceUUID = modelNode.uuid();
 	return true;
 }
 
-void SceneGraphNode::setReferenceId(int nodeId) {
-	_referenceId = nodeId;
+void SceneGraphNode::setReferenceUUID(const core::UUID &uuid) {
+	_referenceUUID = uuid;
+}
+
+void SceneGraphNode::clearReference() {
+	_referenceUUID = core::UUID();
 }
 
 bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {
@@ -470,17 +477,18 @@ bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {
 		Log::error("Failed to unreference - %i is no reference node", _id);
 		return false;
 	}
-	core_assert(_referenceId != InvalidNodeId);
+	core_assert(_referenceUUID.isValid());
 	if (node.type() != SceneGraphNodeType::Model) {
 		Log::error("Failed to unreference - node %i is no model node", node.id());
 		return false;
 	}
-	if (node.id() != _referenceId) {
-		Log::error("This node wasn't referenced - can't unreference from %i, expected %i", node.id(), reference());
+	if (node.uuid() != _referenceUUID) {
+		Log::error("This node wasn't referenced - can't unreference from %s, expected %s", node.uuid().str().c_str(),
+				   _referenceUUID.str().c_str());
 		return false;
 	}
 	_type = SceneGraphNodeType::Model;
-	_referenceId = InvalidNodeId;
+	_referenceUUID = core::UUID();
 	setVolume(new voxel::RawVolume(node.volume()));
 	setPalette(node.palette());
 	return true;

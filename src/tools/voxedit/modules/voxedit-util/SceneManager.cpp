@@ -888,7 +888,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	const bool updateRegion = (flags & SceneModifiedFlags::UpdateRendererRegion) == SceneModifiedFlags::UpdateRendererRegion;
 	if (updateRegion && modifiedRegion.isValid()) {
 		Log::debug("Modify region for nodeid %i", nodeId);
-		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion);
+		_sceneRenderer->updateNodeRegion(_sceneGraph.node(nodeId).uuid(), modifiedRegion);
 		_modifier->setHighlightRegion(modifiedRegion, renderRegionMillis);
 	}
 	const bool invalidateNodeCache = (flags & SceneModifiedFlags::InvalidateNodeCache) == SceneModifiedFlags::InvalidateNodeCache;
@@ -1697,7 +1697,10 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 			}
 		} else {
 			if (node->type() == scenegraph::SceneGraphNodeType::ModelReference && s.nodeType == scenegraph::SceneGraphNodeType::Model) {
-				node->unreferenceModelNode(_sceneGraph.node(node->reference()));
+				scenegraph::SceneGraphNode *referencedNode = _sceneGraph.findNodeByUUID(node->referenceUUID());
+				if (referencedNode == nullptr || !node->unreferenceModelNode(*referencedNode)) {
+					Log::warn("Failed to unreference model node %s", uuidStr.c_str());
+				}
 			}
 			if (node->region() != s.volumeRegion()) {
 				voxel::RawVolume *v = new voxel::RawVolume(s.volumeRegion());
@@ -1743,7 +1746,7 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	newNode.addProperties(s.properties);
 	newNode.setPivot(s.pivot);
 	newNode.setName(s.name);
-	// Bind reference after properties so setReference can store PropReferenceUUID last.
+	// Bind the reference after restoring the remaining node state.
 	if (newNode.isReferenceNode()) {
 		if (scenegraph::SceneGraphNode *referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
 			if (!newNode.setReference(*referenceNode)) {
@@ -1909,7 +1912,7 @@ bool SceneManager::doUndo() {
 			_sceneGraph.changeParent(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::None);
 		}
 	}
-	// Models may come back under new integer ids; re-bind ModelReferences from UUID metadata.
+	// Models may come back under new integer ids; references already retain their target UUID.
 	for (const memento::MementoState &s : group.states) {
 		if (s.nodeType != scenegraph::SceneGraphNodeType::ModelReference || !s.referenceUUID.isValid()) {
 			continue;
@@ -1920,7 +1923,6 @@ bool SceneManager::doUndo() {
 			refNode->setReference(*target);
 		}
 	}
-	_sceneGraph.fixupModelReferences();
 	return true;
 }
 
@@ -1938,7 +1940,6 @@ bool SceneManager::doRedo() {
 			return false;
 		}
 	}
-	_sceneGraph.fixupModelReferences();
 	return true;
 }
 
@@ -2651,7 +2652,7 @@ bool SceneManager::mergeActiveToBackground() {
 		scenegraph::SceneGraphNode &node = *iter;
 		if (node.id() != sourceNodeId && !node.visible()) {
 			nodeSetVisible(node.id(), true);
-			_sceneRenderer->unhideNode(node.id());
+			_sceneRenderer->unhideNode(node.uuid());
 		}
 	}
 
@@ -3052,8 +3053,9 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 		}
 	}
 	for (int nodeId : removeOrder) {
+		const core::UUID uuid = _sceneGraph.node(nodeId).uuid();
 		if (_sceneGraph.removeNode(nodeId, false)) {
-			_sceneRenderer->removeNode(nodeId);
+			_sceneRenderer->removeNode(uuid);
 		} else {
 			Log::error("Failed to remove node %i during merge", nodeId);
 		}
@@ -3169,7 +3171,7 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 		if (type == scenegraph::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node->region();
 			// update the whole volume
-			_sceneRenderer->updateNodeRegion(newNodeId, region);
+			_sceneRenderer->updateNodeRegion(node->uuid(), region);
 
 			*_result = voxelutil::PickResult();
 			if (!isChildren) {
@@ -3337,7 +3339,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	node.setVolume(volume);
 	// the old volume pointer might no longer be used
-	_sceneRenderer->removeNode(node.id());
+	_sceneRenderer->removeNode(node.uuid());
 
 	const voxel::Region& region = volume->region();
 
@@ -6087,7 +6089,7 @@ int SceneManager::traceScene(bool skipActiveNode) {
 		if (!node.visible()) {
 			continue;
 		}
-		if (!_sceneRenderer->isVisible(node.id(), false)) {
+		if (!_sceneRenderer->isVisible(node.uuid(), false)) {
 			continue;
 		}
 		float distance = 0.0f;
@@ -6645,7 +6647,8 @@ int SceneManager::nodeReference(int nodeId) {
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->isReferenceNode()) {
-			return nodeReference(node->reference());
+			const scenegraph::SceneGraphNode *referencedNode = _sceneGraph.findNodeByUUID(node->referenceUUID());
+			return referencedNode != nullptr ? nodeReference(*referencedNode) : InvalidNodeId;
 		}
 		return nodeReference(*node);
 	}
@@ -6837,11 +6840,12 @@ void SceneManager::markDirty() {
 
 bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
+	const core::UUID nodeUUID = node.uuid();
 	core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
 	core::Buffer<int> removeReferenceNodes;
 	for (auto iter = _sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != _sceneGraph.end(); ++iter) {
-		if ((*iter).reference() == nodeId) {
+		if ((*iter).referenceUUID() == nodeUUID) {
 			removeReferenceNodes.push_back((*iter).id());
 		}
 	}
@@ -6864,7 +6868,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		Log::error("Failed to remove node with id %i", nodeId);
 		return false;
 	}
-	_sceneRenderer->removeNode(nodeId);
+	_sceneRenderer->removeNode(nodeUUID);
 	if (_sceneGraph.empty()) {
 		const voxel::Region &region = voxel::Region::fromSize(32);
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
@@ -6902,7 +6906,7 @@ bool SceneManager::isValidReferenceNode(const scenegraph::SceneGraphNode &node) 
 		Log::error("Node %i is not a reference model", node.id());
 		return false;
 	}
-	if (!_sceneGraph.hasNode(node.reference())) {
+	if (_sceneGraph.findNodeByUUID(node.referenceUUID()) == nullptr) {
 		Log::error("Node %i is not valid anymore - referenced node doesn't exist", node.id());
 		return false;
 	}
@@ -6913,7 +6917,7 @@ bool SceneManager::nodeUnreference(scenegraph::SceneGraphNode &node) {
 	if (!isValidReferenceNode(node)) {
 		return false;
 	}
-	if (scenegraph::SceneGraphNode* referencedNode = sceneGraphNode(node.reference())) {
+	if (scenegraph::SceneGraphNode *referencedNode = _sceneGraph.findNodeByUUID(node.referenceUUID())) {
 		if (referencedNode->type() != scenegraph::SceneGraphNodeType::Model) {
 			Log::error("Referenced node is no model node - failed to unreference");
 			return false;

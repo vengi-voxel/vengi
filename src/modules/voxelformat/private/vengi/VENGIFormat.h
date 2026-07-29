@@ -22,6 +22,11 @@ namespace voxelformat {
 class VENGIFormat : public Format {
 private:
 	using NodeMapping = core::DynamicMap<int, int>;
+	struct PendingReference {
+		int nodeId;
+		int fileReferenceId;
+	};
+	using PendingReferences = core::DynamicArray<PendingReference>;
 
 	bool saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							io::WriteStream &stream);
@@ -56,7 +61,7 @@ private:
 	bool loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 						  io::ReadStream &stream);
 	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
-				  NodeMapping &nodeMapping);
+				  NodeMapping &nodeMapping, PendingReferences &pendingReferences);
 
 public:
 	bool supportsReferences() const override {
