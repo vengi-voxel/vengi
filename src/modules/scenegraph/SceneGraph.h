@@ -230,6 +230,11 @@ public:
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
 	bool isReferenced(int nodeId) const;
+	/**
+	 * Re-bind ModelReference nodes whose integer reference id is stale (e.g. after undo
+	 * restored the target Model under a new id) using the @c PropReferenceUUID property.
+	 */
+	void fixupModelReferences();
 	bool isEffector(int nodeId) const;
 	bool removeNode(int nodeId, bool recursive);
 	bool changeParent(int nodeId, int newParentId, NodeMoveFlag flag = NodeMoveFlag::UpdateTransform);

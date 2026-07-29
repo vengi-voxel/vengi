@@ -1720,6 +1720,16 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 
 bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	core_assert(s.nodeType != scenegraph::SceneGraphNodeType::Max);
+	if (scenegraph::SceneGraphNode *existing = sceneGraphNodeByUUID(s.nodeUUID)) {
+		// Idempotent restore: node survived (e.g. merge failed to delete a ModelReference).
+		// Still re-bind references so integer ids match freshly restored Models.
+		if (existing->isReferenceNode() && s.referenceUUID.isValid()) {
+			if (scenegraph::SceneGraphNode *referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
+				existing->setReference(*referenceNode);
+			}
+		}
+		return true;
+	}
 	scenegraph::SceneGraphNode newNode(s.nodeType, s.nodeUUID);
 	if (newNode.isModelNode()) {
 		newNode.createVolume(s.volumeRegion());
@@ -1728,8 +1738,14 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 		}
 	}
 	newNode.setPalette(s.palette);
+	_sceneGraph.setAllKeyFramesForNode(newNode, s.keyFrames);
+	newNode.properties().clear();
+	newNode.addProperties(s.properties);
+	newNode.setPivot(s.pivot);
+	newNode.setName(s.name);
+	// Bind reference after properties so setReference can store PropReferenceUUID last.
 	if (newNode.isReferenceNode()) {
-		if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
+		if (scenegraph::SceneGraphNode *referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
 			if (!newNode.setReference(*referenceNode)) {
 				const core::String &refUUIDStr = s.referenceUUID.str();
 				Log::warn("Failed to handle memento state - reference node %s is not a Model", refUUIDStr.c_str());
@@ -1739,11 +1755,6 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 			Log::warn("Failed to handle memento state - reference node id %s not found", refUUIDStr.c_str());
 		}
 	}
-	_sceneGraph.setAllKeyFramesForNode(newNode, s.keyFrames);
-	newNode.properties().clear();
-	newNode.addProperties(s.properties);
-	newNode.setPivot(s.pivot);
-	newNode.setName(s.name);
 	int parentNodeId = 0;
 	if (scenegraph::SceneGraphNode* parentNode = sceneGraphNodeByUUID(s.parentUUID)) {
 		parentNodeId = parentNode->id();
@@ -1805,8 +1816,9 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 				return nodeRemove(*node, false);
 			}
-			Log::warn("Failed to handle redo memento remove state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
-			return false;
+			// Idempotent: cascade deletes from earlier Model removals may already have dropped this node.
+			Log::debug("Memento: node %s (%s) already removed", uuidStr.c_str(), s.name.c_str());
+			return true;
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
 			const core::String &parentUUIDStr = s.parentUUID.str();
@@ -1897,6 +1909,18 @@ bool SceneManager::doUndo() {
 			_sceneGraph.changeParent(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::None);
 		}
 	}
+	// Models may come back under new integer ids; re-bind ModelReferences from UUID metadata.
+	for (const memento::MementoState &s : group.states) {
+		if (s.nodeType != scenegraph::SceneGraphNodeType::ModelReference || !s.referenceUUID.isValid()) {
+			continue;
+		}
+		scenegraph::SceneGraphNode *refNode = sceneGraphNodeByUUID(s.nodeUUID);
+		scenegraph::SceneGraphNode *target = sceneGraphNodeByUUID(s.referenceUUID);
+		if (refNode != nullptr && target != nullptr && refNode->isReferenceNode()) {
+			refNode->setReference(*target);
+		}
+	}
+	_sceneGraph.fixupModelReferences();
 	return true;
 }
 
@@ -1914,6 +1938,7 @@ bool SceneManager::doRedo() {
 			return false;
 		}
 	}
+	_sceneGraph.fixupModelReferences();
 	return true;
 }
 
@@ -2966,14 +2991,19 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
 		const glm::mat4 relativeMatrix = invParentWorldMatrix * transform.worldMatrix();
 		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
+		if (srcVolume == nullptr) {
+			Log::error("Skip merge for node %i ('%s'): could not resolve volume", nodeId, node->name().c_str());
+			continue;
+		}
 		voxel::RawVolume *bakedVolume =
-		voxelutil::applyTransformToVolume(*srcVolume, relativeMatrix, node->pivot());
+			voxelutil::applyTransformToVolume(*srcVolume, relativeMatrix, node->pivot());
 		if (bakedVolume == nullptr) {
 			continue;
 		}
 		scenegraph::SceneGraphNode copiedNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(*node, copiedNode, false, false);
 		copiedNode.setVolume(bakedVolume);
+		copiedNode.setPalette(_sceneGraph.resolvePalette(*node));
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
 	const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
@@ -2998,14 +3028,34 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	if (newNodeId == InvalidNodeId) {
 		return newNodeId;
 	}
+	// Drop ModelReferences before the Models they point at so removeNode does not refuse
+	// deletion of still-referenced sources (and so we never leave dangling refs in the scene).
+	core::Buffer<int> removeOrder;
+	removeOrder.reserve(nodeIds.size());
 	for (int nodeId : nodeIds) {
+		if (const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			if (node->isReferenceNode()) {
+				removeOrder.push_back(nodeId);
+			}
+		}
+	}
+	for (int nodeId : nodeIds) {
+		if (const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			if (node->isModelNode()) {
+				removeOrder.push_back(nodeId);
+			}
+		}
+	}
+	for (int nodeId : removeOrder) {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			_mementoHandler->markNodeRemove(_sceneGraph, *node);
 		}
 	}
-	for (int nodeId : nodeIds) {
+	for (int nodeId : removeOrder) {
 		if (_sceneGraph.removeNode(nodeId, false)) {
 			_sceneRenderer->removeNode(nodeId);
+		} else {
+			Log::error("Failed to remove node %i during merge", nodeId);
 		}
 	}
 	return newNodeId;
@@ -3016,8 +3066,10 @@ int SceneManager::mergeNodes(NodeMergeFlags flags) {
 		return InvalidNodeId;
 	}
 	core::Buffer<int> nodeIds;
-	nodeIds.reserve(_sceneGraph.size());
-	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+	nodeIds.reserve(_sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
+	// Include ModelReferences so their transforms are baked and they are removed with the merge.
+	// beginModel() alone would delete source Models and leave dangling references (crash on AABB).
+	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		if (!shouldGetMerged(node, flags)) {
 			continue;

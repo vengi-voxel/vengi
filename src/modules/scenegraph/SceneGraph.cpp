@@ -987,6 +987,41 @@ bool SceneGraph::isReferenced(int nodeId) const {
 	return false;
 }
 
+void SceneGraph::fixupModelReferences() {
+	core::DynamicArray<int> refNodeIds;
+	for (const auto &entry : _nodes) {
+		if (entry->second.isReferenceNode()) {
+			refNodeIds.push_back(entry->second.id());
+		}
+	}
+	for (int refNodeId : refNodeIds) {
+		if (!hasNode(refNodeId)) {
+			continue;
+		}
+		SceneGraphNode &n = node(refNodeId);
+		if (hasNode(n.reference()) && node(n.reference()).isModelNode()) {
+			continue;
+		}
+		const core::String &uuidStr = n.property(PropReferenceUUID);
+		if (uuidStr.empty()) {
+			Log::error("ModelReference node %i ('%s') has invalid reference %i and no %s property", n.id(),
+					   n.name().c_str(), n.reference(), PropReferenceUUID);
+			continue;
+		}
+		const core::UUID targetUUID(uuidStr);
+		SceneGraphNode *target = findNodeByUUID(targetUUID);
+		if (target == nullptr || !target->isModelNode()) {
+			Log::error("ModelReference node %i ('%s') could not resolve %s '%s'", n.id(), n.name().c_str(),
+					   PropReferenceUUID, uuidStr.c_str());
+			continue;
+		}
+		if (!n.setReference(*target)) {
+			Log::error("ModelReference node %i ('%s') failed to retarget to node %i", n.id(), n.name().c_str(),
+					   target->id());
+		}
+	}
+}
+
 bool SceneGraph::isEffector(int nodeId) const {
 	for (const auto &entry : _nodes) {
 		const SceneGraphNode &n = entry->second;

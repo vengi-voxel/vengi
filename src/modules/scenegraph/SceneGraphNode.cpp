@@ -457,6 +457,7 @@ bool SceneGraphNode::setReference(const SceneGraphNode &modelNode, bool forceCha
 		}
 	}
 	_referenceId = modelNode.id();
+	setProperty(PropReferenceUUID, modelNode.uuid().str());
 	return true;
 }
 

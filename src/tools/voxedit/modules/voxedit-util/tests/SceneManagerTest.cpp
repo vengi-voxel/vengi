@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "scenegraph/SceneUtil.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "util/VarUtil.h"
@@ -859,6 +860,55 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	// merged nodes are gone
 	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(secondNodeId));
 	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(thirdNodeId));
+}
+
+TEST_F(SceneManagerTest, testMergeAllWithModelReferences) {
+	Modifier &modifier = _sceneMgr->modifier();
+	const int modelId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, modelId);
+	EXPECT_TRUE(_sceneMgr->nodeActivate(modelId));
+	testSetVoxel(glm::ivec3(0, 0, 0), modifier.cursorVoxel().getColor());
+
+	scenegraph::SceneGraphNode &model = _sceneMgr->sceneGraph().node(modelId);
+	const int refId = scenegraph::createNodeReference(_sceneMgr->sceneGraph(), model);
+	ASSERT_NE(InvalidNodeId, refId);
+	scenegraph::SceneGraphTransform refTransform;
+	refTransform.setWorldTranslation(glm::vec3(4.0f, 0.0f, 0.0f));
+	_sceneMgr->sceneGraph().node(refId).setTransform(0, refTransform);
+	_sceneMgr->sceneGraph().updateTransforms();
+
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
+	ASSERT_TRUE(_sceneMgr->sceneGraph().isReferenced(modelId));
+
+	const int mergedId = _sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_NE(InvalidNodeId, mergedId);
+	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(modelId));
+	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(refId));
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
+	EXPECT_TRUE(_sceneMgr->sceneGraph().validate());
+
+	const voxel::RawVolume *v = _sceneMgr->volume(mergedId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(2, voxelutil::countVoxels(*v));
+	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(0, 0, 0)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(4, 0, 0)).getMaterial()));
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(_sceneMgr->sceneGraph().validate()) << _sceneMgr->sceneGraph();
+	EXPECT_EQ(2u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::ModelReference));
+
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_TRUE(_sceneMgr->sceneGraph().validate()) << _sceneMgr->sceneGraph();
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
+	EXPECT_EQ(0u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::ModelReference));
+
+	// Second undo/redo cycle (catches stale reference-id remapping).
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(_sceneMgr->sceneGraph().validate()) << _sceneMgr->sceneGraph();
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_TRUE(_sceneMgr->sceneGraph().validate()) << _sceneMgr->sceneGraph();
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
 }
 
 TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
