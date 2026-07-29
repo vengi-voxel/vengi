@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include <yocto_scene.h>
 #include <yocto_trace.h>
 

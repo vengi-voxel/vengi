@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxel/Connectivity.h"
 #include "voxel/Voxel.h"
 #include <glm/geometric.hpp>

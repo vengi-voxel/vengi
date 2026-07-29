@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "palette/PaletteCache.h"
 #include "voxedit-util/SceneManager.h"
 

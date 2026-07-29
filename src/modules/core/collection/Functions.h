@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Common.h"
 #include <limits>
 

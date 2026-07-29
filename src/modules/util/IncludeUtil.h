@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Pair.h"
 #include "core/String.h"
 #include "core/collection/List.h"

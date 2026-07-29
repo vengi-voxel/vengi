@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "io/Archive.h"
 #include "io/Stream.h"
 

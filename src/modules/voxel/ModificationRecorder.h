@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 

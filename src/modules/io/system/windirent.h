@@ -6,6 +6,9 @@
  * under the MIT license.  For all details and documentation, see
  * https://github.com/tronkko/dirent
  */
+
+#pragma once
+
 #ifndef DIRENT_H
 #define DIRENT_H
 

@@ -12,3 +12,6 @@
  *
  * @ref setup
  */
+
+#pragma once
+

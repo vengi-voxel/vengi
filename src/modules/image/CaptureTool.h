@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/collection/ConcurrentQueue.h"
 #include "core/concurrent/Atomic.h"
 #include "image/AVI.h"

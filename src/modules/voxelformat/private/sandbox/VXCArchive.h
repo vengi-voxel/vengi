@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
 #include "io/Archive.h"

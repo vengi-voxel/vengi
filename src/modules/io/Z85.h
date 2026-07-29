@@ -6,6 +6,8 @@
  * This implements the ZeroMQ variant that is called Z85
  */
 
+#pragma once
+
 #include "io/Stream.h"
 
 namespace io {

@@ -1,3 +1,9 @@
+/**
+ * @file
+ */
+
+#pragma once
+
 #include "app/ForParallel.h"
 #include "color/ColorUtil.h"
 #include "core/Log.h"
