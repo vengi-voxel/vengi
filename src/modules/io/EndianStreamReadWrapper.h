@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "io/Stream.h"
 
 namespace io {

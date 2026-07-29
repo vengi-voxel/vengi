@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "Stream.h"
 #include "core/collection/Buffer.h"
 

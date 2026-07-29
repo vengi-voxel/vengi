@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "io/Base64Stream.h"
 #include "io/Stream.h"
 
