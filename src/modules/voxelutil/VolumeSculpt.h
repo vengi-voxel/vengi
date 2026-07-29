@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/collection/DynamicArray.h"
-#include "math/Axis.h"
 #include "voxel/BitVolume.h"
 #include "voxel/Face.h"
 #include "voxel/SparseVolume.h"

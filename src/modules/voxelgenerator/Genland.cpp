@@ -19,19 +19,17 @@
  */
 
 #include "Genland.h"
-#include "app/Async.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "glm/ext/scalar_integer.hpp"
 #include "math/Random.h"
-#include "noise/Noise.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include <glm/ext/scalar_constants.hpp>
 #include "voxel/Region.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Voxel.h"
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/ext/scalar_integer.hpp>
 
 namespace voxelgenerator {
 

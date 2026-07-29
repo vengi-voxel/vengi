@@ -6,7 +6,6 @@
 
 #include "core/String.h"
 #include "voxelformat/FormatThumbnail.h"
-#include "io/Stream.h"
 
 namespace scenegraph {
 class SceneGraph;

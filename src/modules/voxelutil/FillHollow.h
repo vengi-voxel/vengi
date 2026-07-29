@@ -8,7 +8,6 @@
 #include "core/collection/Array3DView.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 

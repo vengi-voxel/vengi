@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/NonCopyable.h"
-#include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/TimeProvider.h"
 #include "scenegraph/SceneGraph.h"

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "app/ForParallel.h"
-#include "color/ColorUtil.h"
 #include "core/Trace.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"
