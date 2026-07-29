@@ -115,9 +115,7 @@ bool NodeAddKeyframeTool::execute(const json::Json &id, const json::Json &args, 
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);
 	}
-	const int nodeId = node->id();
-
-	if (!ctx.sceneMgr->nodeAddKeyFrame(nodeId, frameIdx)) {
+	if (!ctx.sceneMgr->nodeAddKeyFrame(nodeUUID, frameIdx)) {
 		return ctx.result(id,
 						  core::String::format("Failed to add keyframe at frame %i for node %s. "
 											   "A keyframe may already exist at that frame.",
@@ -141,7 +139,7 @@ bool NodeAddKeyframeTool::execute(const json::Json &id, const json::Json &args, 
 	if (args.contains("interpolation") && args.get("interpolation").isString()) {
 		const core::String interpStr = args.get("interpolation").str().c_str();
 		const scenegraph::InterpolationType interpType = parseInterpolationType(interpStr);
-		ctx.sceneMgr->nodeUpdateKeyFrameInterpolation(nodeId, keyFrameIdx, interpType);
+		ctx.sceneMgr->nodeUpdateKeyFrameInterpolation(nodeUUID, keyFrameIdx, interpType);
 	}
 
 	// Apply transform if any transform properties are specified
@@ -174,7 +172,7 @@ bool NodeAddKeyframeTool::execute(const json::Json &id, const json::Json &args, 
 		}
 
 		// Use local=false for world-space transforms
-		ctx.sceneMgr->nodeUpdateTransform(nodeId, angles, scale, translation, keyFrameIdx, false);
+		ctx.sceneMgr->nodeUpdateTransform(nodeUUID, angles, scale, translation, keyFrameIdx, false);
 	}
 
 	return ctx.result(id,

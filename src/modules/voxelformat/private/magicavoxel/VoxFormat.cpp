@@ -426,8 +426,9 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
 		if (animAsNodes && node.isGroupNode() && !node.children().empty()) {
 			bool allModels = true;
-			for (int childId : node.children()) {
-				if (!sceneGraph.node(childId).isModelNode()) {
+			for (const core::UUID &childUUID : node.children()) {
+				const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+				if (child == nullptr || !child->isModelNode()) {
 					allModels = false;
 					break;
 				}
@@ -436,16 +437,19 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				const uint32_t modelKeyFrameStart = (uint32_t)ctx.keyframeModels.size();
 				uint32_t firstModelIdx = 0;
 				bool first = true;
-				for (int childId : node.children()) {
-					scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-					const uint32_t modelIdx = saveModel(sceneGraph, child, ctx);
+				for (const core::UUID &childUUID : node.children()) {
+					scenegraph::SceneGraphNode *child = const_cast<scenegraph::SceneGraphNode *>(sceneGraph.findNodeByUUID(childUUID));
+					if (child == nullptr) {
+						continue;
+					}
+					const uint32_t modelIdx = saveModel(sceneGraph, *child, ctx);
 					if (first) {
 						firstModelIdx = modelIdx;
 						first = false;
 					}
 
 					uint32_t frameIndex = (uint32_t)(ctx.keyframeModels.size() - modelKeyFrameStart);
-					const core::String &childName = child.name();
+					const core::String &childName = child->name();
 					const size_t framePos = childName.rfind("_frame_");
 					if (framePos != core::String::npos) {
 						frameIndex = core::string::toInt(childName.substr(framePos + 7));
@@ -516,8 +520,11 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ctx.groups.push_back(ogt_group);
 			ownGroupId = (uint32_t)(ctx.groups.size() - 1);
 		}
-		for (int childId : node.children()) {
-			saveNode(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId);
+		for (const core::UUID &childUUID : node.children()) {
+			scenegraph::SceneGraphNode *child = const_cast<scenegraph::SceneGraphNode *>(sceneGraph.findNodeByUUID(childUUID));
+			if (child != nullptr) {
+				saveNode(sceneGraph, *child, ctx, ownGroupId, ownLayerId);
+			}
 		}
 	} else if (node.isCameraNode()) {
 		Log::debug("Add camera node");
@@ -541,15 +548,21 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_cam.frustum = camera.propertyf(scenegraph::PropCamFrustum);
 			ctx.cameras.push_back(ogt_cam);
 		}
-		for (int childId : node.children()) {
-			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+		for (const core::UUID &childUUID : node.children()) {
+			scenegraph::SceneGraphNode *child = const_cast<scenegraph::SceneGraphNode *>(sceneGraph.findNodeByUUID(childUUID));
+			if (child != nullptr) {
+				saveNode(sceneGraph, *child, ctx, parentGroupIdx, layerIdx);
+			}
 		}
 	} else if (node.isModelNode()) {
 		Log::debug("Add model node");
 		const uint32_t modelIdx = saveModel(sceneGraph, node, ctx);
 		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, modelIdx);
-		for (int childId : node.children()) {
-			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+		for (const core::UUID &childUUID : node.children()) {
+			scenegraph::SceneGraphNode *child = const_cast<scenegraph::SceneGraphNode *>(sceneGraph.findNodeByUUID(childUUID));
+			if (child != nullptr) {
+				saveNode(sceneGraph, *child, ctx, parentGroupIdx, layerIdx);
+			}
 		}
 	} else if (node.isReferenceNode()) {
 		const scenegraph::SceneGraphNode *referencedNode = sceneGraph.findNodeByUUID(node.referenceUUID());
@@ -560,8 +573,11 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		} else {
 			saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, iter->second);
 		}
-		for (int childId : node.children()) {
-			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+		for (const core::UUID &childUUID : node.children()) {
+			scenegraph::SceneGraphNode *child = const_cast<scenegraph::SceneGraphNode *>(sceneGraph.findNodeByUUID(childUUID));
+			if (child != nullptr) {
+				saveNode(sceneGraph, *child, ctx, parentGroupIdx, layerIdx);
+			}
 		}
 	} else {
 		Log::error("Unhandled node type %i", (int)node.type());

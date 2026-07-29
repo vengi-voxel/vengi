@@ -116,7 +116,7 @@ TEST_F(LUAApiTest, testExecute) {
 	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
 	ASSERT_EQ(InitialSceneGraphModelSize, sceneGraph.size());
-	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
+	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNodeUUID()).volume();
 	EXPECT_EQ(42u, volume->voxel(0, 0, 0).getColor());
 	EXPECT_NE(0u, volume->voxel(1, 0, 0).getColor());
 }
@@ -255,7 +255,7 @@ TEST_F(LUAApiTest, testShapeBezierHelpers) {
 
 	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
-	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
+	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNodeUUID()).volume();
 	ASSERT_NE(nullptr, volume);
 	EXPECT_EQ(42u, volume->voxel(3, 6, 7).getColor());
 	EXPECT_EQ(42u, volume->voxel(5, 6, 7).getColor());
@@ -346,6 +346,9 @@ TEST_F(LUAApiTest, testNodeChildren) {
 			local children = node:children()
 			-- belt node has head as child (see test setup)
 			if #children ~= 1 then error('expected 1 child, got ' .. #children) end
+			local child = g_scenegraph.getByUUID(children[1])
+			if child == nil then error('child UUID did not resolve') end
+			if node:uuid() ~= child:parent() then error('parent UUID mismatch') end
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;

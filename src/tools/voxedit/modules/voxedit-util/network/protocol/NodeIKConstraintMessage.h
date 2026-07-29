@@ -81,8 +81,7 @@ private:
 			Log::error("Failed to read effector node UUID");
 			return false;
 		}
-		// effectorNodeId will be resolved by the handler using the UUID
-		ik.effectorNodeId = InvalidNodeId;
+		ik.effectorUUID = effectorUUID;
 		if (in.readFloat(ik.rollMin) == -1) {
 			Log::error("Failed to read roll min");
 			return false;
@@ -120,10 +119,7 @@ public:
 		}
 		core::UUID effectorUUID;
 		if (state.ikConstraint.hasValue()) {
-			const int effectorId = state.ikConstraint.value()->effectorNodeId;
-			if (effectorId != InvalidNodeId && sceneGraph.hasNode(effectorId)) {
-				effectorUUID = sceneGraph.node(effectorId).uuid();
-			}
+			effectorUUID = state.ikConstraint.value()->effectorUUID;
 		}
 		if (!serializeIKConstraint(state.ikConstraint, effectorUUID)) {
 			Log::error("Failed to serialize IK constraint in NodeIKConstraintMessage ctor");

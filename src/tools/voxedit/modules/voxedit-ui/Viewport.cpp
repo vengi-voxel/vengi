@@ -252,7 +252,7 @@ void Viewport::dragAndDrop(float headerSize) {
 						if (type == ModifierType::ColorPicker) {
 							return;
 						}
-						_sceneMgr->modified(nodeId, region, flags);
+						_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region, flags);
 					};
 					modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
 					modifier.endBrush();
@@ -305,8 +305,7 @@ void Viewport::renderCursorDetails() const {
 		return;
 	}
 
-	const int activeNode = _sceneMgr->sceneGraph().activeNode();
-	const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
+	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 	if (v == nullptr) {
 		return;
 	}
@@ -354,10 +353,9 @@ void Viewport::renderCursor() {
 
 bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const int activeNode = sceneGraph.activeNode();
 	const int axis = math::getIndexForAxis(_sliceAxis);
 	bool changed = false;
-	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID())) {
 		bool sliceActive = _sceneMgr->isSliceModeActive();
 		const ImVec2 cursorStart = ImGui::GetCursorScreenPos();
 		if (ImGui::Checkbox("##sliceactive", &sliceActive)) {
@@ -749,15 +747,16 @@ void Viewport::resetCamera() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	voxel::Region region;
 
-	const int activeNode = sceneGraph.activeNode();
+	const core::UUID &activeNodeUUID = sceneGraph.activeNodeUUID();
 	if (_renderContext.applyTransforms()) {
-		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
-			scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
-			region = sceneGraph.sceneRegion(*node, keyFrameIndex);
+		if (sceneGraph.hasNode(activeNodeUUID)) {
+			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNodeUUID);
+			scenegraph::KeyFrameIndex keyFrameIndex = node.keyFrameForFrame(_sceneMgr->currentFrame());
+			region = sceneGraph.sceneRegion(node, keyFrameIndex);
 		} else {
 			region = sceneGraph.sceneRegion(_sceneMgr->currentFrame(), true);
 		}
-	} else if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
+	} else if (const voxel::RawVolume *v = _sceneMgr->volume(activeNodeUUID)) {
 		// active node has a volume - use that region
 		region = v->region();
 	} else {
@@ -860,7 +859,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 		const voxel::Region newRegion(region.getLowerCorner(),
 									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
-			_sceneMgr->nodeResize(node.id(), newRegion);
+			_sceneMgr->nodeResize(node.uuid(), newRegion);
 			updateBounds(node);
 		}
 	}
@@ -952,17 +951,16 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 
 static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								   scenegraph::KeyFrameIndex keyFrameIdx) {
-	const int parentId = node.parent();
-	if (parentId == InvalidNodeId || keyFrameIdx == InvalidKeyFrame) {
+	const scenegraph::SceneGraphNode *parentNode = sceneGraph.parentNode(node);
+	if (parentNode == nullptr || keyFrameIdx == InvalidKeyFrame) {
 		return glm::mat4(1.0f);
 	}
 	if (const scenegraph::SceneGraphKeyFrame *keyFrame = node.keyFrame(keyFrameIdx)) {
-		const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
-		const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode.keyFrameForFrame(keyFrame->frameIdx);
+		const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode->keyFrameForFrame(keyFrame->frameIdx);
 		if (parentKeyFrameIdx == InvalidKeyFrame) {
 			return glm::mat4(1.0f);
 		}
-		return parentNode.transform(parentKeyFrameIdx).worldMatrix();
+		return parentNode->transform(parentKeyFrameIdx).worldMatrix();
 	}
 	return glm::mat4(1.0f);
 }
@@ -980,7 +978,7 @@ void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4
 	const glm::mat3 rotation(worldMat);
 	const glm::vec3 localDelta = glm::inverse(rotation) * worldDelta;
 	const glm::vec3 pivot = localDelta / size;
-	_sceneMgr->nodeUpdatePivot(node.id(), node.pivot() + pivot);
+	_sceneMgr->nodeUpdatePivot(node.uuid(), node.pivot() + pivot);
 }
 
 void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
@@ -989,7 +987,7 @@ void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 	// check if a new keyframe should get generated automatically
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 	if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-		if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
+		if (_sceneMgr->nodeAddKeyFrame(node.uuid(), frameIdx)) {
 			const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 			core_assert(newKeyFrameIdx != keyFrameIdx);
 			core_assert(newKeyFrameIdx != InvalidKeyFrame);
@@ -1013,12 +1011,12 @@ void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 		newLocalMatrix = glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
 	}
 
-	_sceneMgr->nodeUpdateTransform(node.id(), newLocalMatrix, keyFrameIdx, true);
+	_sceneMgr->nodeUpdateTransform(node.uuid(), newLocalMatrix, keyFrameIdx, true);
 }
 
 void Viewport::manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const glm::mat4 &worldMatrix) {
 	const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
-	_sceneMgr->nodeShift(node.id(), shift);
+	_sceneMgr->nodeShift(node.uuid(), shift);
 }
 
 bool Viewport::runGizmo(const video::Camera &camera) {

@@ -59,10 +59,10 @@ void ToolsPanel::shutdown() {
 
 void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const int activeNode = sceneGraph.activeNode();
 
-	if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
-		const scenegraph::SceneGraphNodeType nodeType = node->type();
+	if (sceneGraph.hasNode(sceneGraph.activeNodeUUID())) {
+		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNodeUUID());
+		const scenegraph::SceneGraphNodeType nodeType = node.type();
 		if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ui::ScopedStyle style;
 			style.pushFontSize(imguiApp()->bigFontSize());
@@ -107,8 +107,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::ScopedStyle style;
 		style.pushFontSize(imguiApp()->bigFontSize());
 		ui::Toolbar toolbar("toolbar", &listener);
-		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		const bool noSelection = jobRunning || !_sceneMgr->hasSelection(nodeId);
+		const bool noSelection = jobRunning || !_sceneMgr->hasSelection(_sceneMgr->activeNodeUUID());
 		toolbar.button(ICON_LC_CROP, "crop", jobRunning);
 		toolbar.button(ICON_LC_SCALING, "resizetoselection", noSelection);
 		toolbar.button(ICON_LC_SPLIT, "splitobjects", jobRunning);
@@ -219,9 +218,8 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			updateSceneMode(listener);
 		} else {
 			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-			const int activeNode = sceneGraph.activeNode();
-			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
-				ReferenceNodeCommandInterceptor wrapper(node, listener);
+			if (sceneGraph.hasNode(sceneGraph.activeNodeUUID())) {
+				ReferenceNodeCommandInterceptor wrapper(&sceneGraph.node(sceneGraph.activeNodeUUID()), listener);
 				updateEditMode(wrapper);
 			}
 		}

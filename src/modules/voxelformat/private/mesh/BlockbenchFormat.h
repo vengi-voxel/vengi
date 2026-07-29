@@ -198,7 +198,7 @@ public:
 		// group nodes
 		core::DynamicArray<BBNode> children;
 		// elements (volumes) by uuid
-		core::DynamicArray<core::UUID> referenced;
+		core::Buffer<core::UUID> referenced;
 	};
 
 	enum class BBElementType {

@@ -886,15 +886,15 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, const 
 
 bool CubzhFormat::savePointNodes(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								 io::SeekableWriteStream &ws) const {
-	for (auto childId : node.children()) {
-		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		if (child.type() != scenegraph::SceneGraphNodeType::Point) {
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr || child->type() != scenegraph::SceneGraphNodeType::Point) {
 			continue;
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_V6, ws);
-			core::String name = child.name();
-			glm::vec3 pos = child.transform(0).localTranslation();
+			core::String name = child->name();
+			glm::vec3 pos = child->transform(0).localTranslation();
 			wrapBool(sub.writePascalStringUInt8(name))
 			wrapBool(sub.writeFloat(pos.x))
 			wrapBool(sub.writeFloat(pos.y))
@@ -922,9 +922,9 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_ID_V6, ws);
 		wrapBool(sub.writeUInt16(node.id()))
 	}
-	if (node.parent() != sceneGraph.root().id()) {
+	if (sceneGraph.parentId(node) != sceneGraph.root().id()) {
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PARENT_ID_V6, ws);
-		wrapBool(sub.writeUInt16(node.parent()))
+		wrapBool(sub.writeUInt16(sceneGraph.parentId(node)))
 	}
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_TRANSFORM_V6, ws);

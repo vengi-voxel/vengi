@@ -122,7 +122,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = sceneGraph.activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		const core::String uiNodeId = core::String::format("##nodelist/%s##%i", node->name().c_str(), nodeId);
+		const core::String uiNodeId = core::String::format("##nodelist/%s##%s", node->name().c_str(), node->uuid().str().c_str());
 		ctx->MouseMove(uiNodeId.c_str());
 		ctx->MouseClick(ImGuiMouseButton_Right);
 		ctx->MenuClick("//$FOCUSED/Resize");
@@ -152,7 +152,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = sceneGraph.activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		const core::String uiNodeId = core::String::format("##nodelist/%s##%i", node->name().c_str(), nodeId);
+		const core::String uiNodeId = core::String::format("##nodelist/%s##%s", node->name().c_str(), node->uuid().str().c_str());
 		ctx->MouseMove(uiNodeId.c_str());
 		ctx->MouseClick(ImGuiMouseButton_Right);
 		ctx->MenuClick("//$FOCUSED/Rescale content");
@@ -190,8 +190,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(saveFile(ctx, "recording.vrec"));
 		IM_CHECK(_sceneMgr->isRecording());
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
@@ -212,8 +211,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->Yield();
 		}
 		IM_CHECK(!_sceneMgr->isPlaying());
-		const int activeNode2 = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model2 = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model2 = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model2 != nullptr);
 		IM_CHECK(model2->volume()->voxel(glm::ivec3(1, 1, 1)).getColor() == 1);
 		IM_CHECK(model2->volume()->voxel(glm::ivec3(2, 2, 2)).getColor() == 2);
@@ -460,7 +458,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			}
 		}
 		IM_CHECK(refNodeId != InvalidNodeId);
-		_sceneMgr->nodeActivate(refNodeId);
+		_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(refNodeId));
 		ctx->Yield();
 
 		// trigger the unreference popup

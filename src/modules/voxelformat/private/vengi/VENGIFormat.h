@@ -27,6 +27,11 @@ private:
 		int fileReferenceId;
 	};
 	using PendingReferences = core::DynamicArray<PendingReference>;
+	struct PendingIKEffector {
+		int nodeId;
+		int fileEffectorId;
+	};
+	using PendingIKEffectors = core::DynamicArray<PendingIKEffector>;
 
 	bool saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							io::WriteStream &stream);
@@ -40,7 +45,8 @@ private:
 								   io::WriteStream &stream);
 	bool saveNodePaletteNormals(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								io::WriteStream &stream);
-	bool saveIKConstraint(const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
+	bool saveIKConstraint(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+						  io::WriteStream &stream);
 	bool saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream,
 				  const scenegraph::SceneGraphNode &node);
 
@@ -59,9 +65,10 @@ private:
 	bool loadNodePaletteNormals(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 								io::ReadStream &stream);
 	bool loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
-						  io::ReadStream &stream);
+						  io::ReadStream &stream, PendingIKEffectors &pendingIKEffectors);
 	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
-				  NodeMapping &nodeMapping, PendingReferences &pendingReferences);
+				  NodeMapping &nodeMapping, PendingReferences &pendingReferences,
+				  PendingIKEffectors &pendingIKEffectors);
 
 public:
 	bool supportsReferences() const override {

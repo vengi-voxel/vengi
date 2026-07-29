@@ -127,6 +127,125 @@ TEST_F(SceneGraphTest, testReferenceSurvivesModelRecreationWithSameUUID) {
 	EXPECT_TRUE(sceneGraph.validate());
 }
 
+TEST_F(SceneGraphTest, testActiveNodeUUID) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	ASSERT_TRUE(sceneGraph.setActiveNode(modelId));
+	const core::UUID modelUUID = sceneGraph.node(modelId).uuid();
+	EXPECT_EQ(modelUUID, sceneGraph.activeNodeUUID());
+
+	int otherId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		otherId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, otherId);
+	}
+	const core::UUID otherUUID = sceneGraph.node(otherId).uuid();
+	ASSERT_TRUE(sceneGraph.setActiveNode(otherUUID));
+	EXPECT_EQ(otherId, sceneGraph.activeNode());
+	EXPECT_EQ(otherUUID, sceneGraph.activeNodeUUID());
+	EXPECT_FALSE(sceneGraph.setActiveNode(core::UUID()));
+	EXPECT_EQ(otherId, sceneGraph.activeNode());
+}
+
+TEST_F(SceneGraphTest, testNodeByUUID) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setName("by-uuid");
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	const core::UUID modelUUID = sceneGraph.node(modelId).uuid();
+	EXPECT_EQ(modelId, sceneGraph.node(modelUUID).id());
+	EXPECT_EQ("by-uuid", sceneGraph.node(modelUUID).name());
+	EXPECT_EQ(0, sceneGraph.node(core::UUID()).id());
+}
+
+TEST_F(SceneGraphTest, testSetRootUUIDUpdatesIndex) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	const core::UUID oldRootUUID = sceneGraph.root().uuid();
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	EXPECT_EQ(oldRootUUID, sceneGraph.node(modelId).parentUUID());
+	ASSERT_NE(nullptr, sceneGraph.parentNode(sceneGraph.node(modelId)));
+
+	const core::UUID newRootUUID = core::UUID::generate();
+	sceneGraph.setRootUUID(newRootUUID);
+	EXPECT_EQ(newRootUUID, sceneGraph.root().uuid());
+	EXPECT_EQ(&sceneGraph.root(), sceneGraph.findNodeByUUID(newRootUUID));
+	EXPECT_EQ(nullptr, sceneGraph.findNodeByUUID(oldRootUUID));
+
+	// Children still point at the previous root UUID until remapped; parent walk must work for
+	// nodes parented after the root UUID change (VENGI load order).
+	int model2Id = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		model2Id = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, model2Id);
+	}
+	EXPECT_EQ(newRootUUID, sceneGraph.node(model2Id).parentUUID());
+	ASSERT_NE(nullptr, sceneGraph.parentNode(sceneGraph.node(model2Id)));
+	sceneGraph.updateTransforms();
+}
+
+TEST_F(SceneGraphTest, testRemoveAndChangeParentByUUID) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int groupId = InvalidNodeId;
+	{
+		SceneGraphNode group(SceneGraphNodeType::Group);
+		group.setName("group");
+		groupId = sceneGraph.emplace(core::move(group));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	const core::UUID groupUUID = sceneGraph.node(groupId).uuid();
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model), groupUUID);
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	EXPECT_EQ(sceneGraph.node(groupId).uuid(), sceneGraph.node(modelId).parentUUID());
+	EXPECT_TRUE(sceneGraph.hasNode(groupUUID));
+
+	int siblingId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		siblingId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, siblingId);
+	}
+	const core::UUID modelUUID = sceneGraph.node(modelId).uuid();
+	const core::UUID siblingUUID = sceneGraph.node(siblingId).uuid();
+	ASSERT_TRUE(sceneGraph.canChangeParent(sceneGraph.node(modelId), siblingUUID));
+	ASSERT_TRUE(sceneGraph.changeParent(modelUUID, siblingUUID));
+	EXPECT_EQ(sceneGraph.node(siblingId).uuid(), sceneGraph.node(modelId).parentUUID());
+
+	ASSERT_TRUE(sceneGraph.removeNode(modelUUID, false));
+	EXPECT_FALSE(sceneGraph.hasNode(modelUUID));
+	EXPECT_TRUE(sceneGraph.hasNode(siblingUUID));
+}
+
 TEST_F(SceneGraphTest, testNodeRoot) {
 	SceneGraph sceneGraph;
 	const SceneGraphNode &root = sceneGraph.node(0);
@@ -358,19 +477,19 @@ TEST_F(SceneGraphTest, testChildren) {
 		node.setName("model");
 		EXPECT_EQ(4, sceneGraph.emplace(core::move(node), 1));
 	}
-	EXPECT_EQ(1, sceneGraph.root().children()[0]);
+	EXPECT_EQ(sceneGraph.node(1).uuid(), sceneGraph.root().children()[0]);
 	ASSERT_TRUE(sceneGraph.hasNode(1));
 	const SceneGraphNode &modelNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
 	EXPECT_EQ(1, modelNode.id());
 	EXPECT_EQ("model", modelNode.name());
 	ASSERT_EQ(2u, modelNode.children().size());
-	EXPECT_EQ(2, modelNode.children()[0]) << "First child should be the node with the id 2";
+	EXPECT_EQ(sceneGraph.node(2).uuid(), modelNode.children()[0]) << "First child should be the node with the id 2";
 	ASSERT_TRUE(sceneGraph.hasNode(2));
-	EXPECT_EQ(modelNode.id(), sceneGraph.node(2).parent());
-	EXPECT_EQ(4, modelNode.children()[1]) << "Second child should be the node with the id 4";
+	EXPECT_EQ(modelNode.uuid(), sceneGraph.node(2).parentUUID());
+	EXPECT_EQ(sceneGraph.node(4).uuid(), modelNode.children()[1]) << "Second child should be the node with the id 4";
 	ASSERT_TRUE(sceneGraph.hasNode(4));
-	EXPECT_EQ(modelNode.id(), sceneGraph.node(4).parent());
+	EXPECT_EQ(modelNode.uuid(), sceneGraph.node(4).parentUUID());
 	EXPECT_EQ(3u, sceneGraph.size(SceneGraphNodeType::Model));
 	ASSERT_EQ(1u, sceneGraph.root().children().size());
 }
@@ -705,10 +824,10 @@ TEST_F(SceneGraphTest, testMove) {
 	}
 	ASSERT_TRUE(sceneGraph.changeParent(originalParentNodeId, originalChildNodeId));
 	ASSERT_EQ(1u, sceneGraph.root().children().size()) << "Expected to have one child after the move";
-	ASSERT_EQ(originalChildNodeId, sceneGraph.root().children().front());
+	ASSERT_EQ(sceneGraph.node(originalChildNodeId).uuid(), sceneGraph.root().children().front());
 	const SceneGraphNode &newParentNode = sceneGraph.node(originalChildNodeId);
 	ASSERT_EQ(1u, newParentNode.children().size());
-	ASSERT_EQ(originalParentNodeId, newParentNode.children().front());
+	ASSERT_EQ(sceneGraph.node(originalParentNodeId).uuid(), newParentNode.children().front());
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const SceneGraphNode &node = *iter;
 		EXPECT_FALSE(node.transform(0).dirty())

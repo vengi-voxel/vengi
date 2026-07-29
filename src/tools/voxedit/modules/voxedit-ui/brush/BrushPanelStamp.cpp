@@ -12,6 +12,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "core/UUID.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
@@ -23,7 +24,7 @@ namespace voxedit {
 void BrushPanelStamp::stampBrushUseSelection(BrushPanelContext &ctx, scenegraph::SceneGraphNode &node,
 											 palette::Palette &palette, command::CommandExecutionListener &listener) {
 	ui::ScopedStyle selectionStyle;
-	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(node.id()));
+	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(node.uuid()));
 	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
 	ImGui::EndDisabled();
 }
@@ -44,8 +45,8 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 			}
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
-			int nodeId = *(int *)payload->Data;
-			if (const scenegraph::SceneGraphNode *model = ctx.sceneMgr->sceneGraphModelNode(nodeId)) {
+			const core::UUID nodeUUID = *(const core::UUID *)payload->Data;
+			if (const scenegraph::SceneGraphNode *model = ctx.sceneMgr->sceneGraphModelNodeByUUID(nodeUUID)) {
 				brush.setVolume(*model->volume(), model->palette());
 			}
 		}

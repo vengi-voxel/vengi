@@ -110,7 +110,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 		if (!node->isAnyModelNode()) {
 			return ctx.result(id, "Node is not a model node", true);
 		}
-		volume = ctx.sceneMgr->volume(node->id());
+		volume = ctx.sceneMgr->volume(node->uuid());
 		if (volume == nullptr) {
 			return ctx.result(id, "Node has no volume", true);
 		}

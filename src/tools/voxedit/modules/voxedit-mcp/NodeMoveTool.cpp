@@ -37,7 +37,7 @@ bool NodeMoveTool::execute(const json::Json &id, const json::Json &args, ToolCon
 	if (parentNode == nullptr) {
 		return ctx.result(id, "Parent node not found in scene graph - fetch the scene state first", true);
 	}
-	if (!ctx.sceneMgr->nodeMove(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::UpdateTransform)) {
+	if (!ctx.sceneMgr->nodeMove(node->uuid(), parentNode->uuid(), scenegraph::NodeMoveFlag::UpdateTransform)) {
 		return ctx.result(id, "Failed to move node in scene graph - fetch the scene state first", true);
 	}
 	return ctx.result(id, "Node moved successfully", false);

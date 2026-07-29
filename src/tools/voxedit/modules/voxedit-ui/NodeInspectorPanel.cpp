@@ -56,7 +56,7 @@ void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listene
 			toolbar.button([&](const ImVec2 &) {
 				if (ImGui::Button(title.c_str())) {
 					voxel::Region newRegion(glm::ivec3(0), maxs - 1);
-					_sceneMgr->nodeResize(node.id(), newRegion);
+					_sceneMgr->nodeResize(node.uuid(), newRegion);
 				}
 			}, false);
 		}
@@ -87,14 +87,14 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		if (posChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			const glm::ivec3 &f = position - region.getLowerCorner();
-			_sceneMgr->nodeShift(node.id(), f);
+			_sceneMgr->nodeShift(node.uuid(), f);
 		}
 
 		glm::ivec3 dimensions = region.getDimensionsInVoxels();
 		const bool sizeChange = ImGui::InputXYZ(_("Size"), dimensions, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		if (sizeChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + dimensions - 1);
-			_sceneMgr->nodeResize(node.id(), newRegion);
+			_sceneMgr->nodeResize(node.uuid(), newRegion);
 		}
 		ImGui::EndTable();
 	}
@@ -255,8 +255,8 @@ void NodeInspectorPanel::modelViewMenuBar(scenegraph::SceneGraphNode &node) {
 			const glm::ivec3 &mins = region.getLowerCorner();
 			ImGui::BeginDisabled(!region.isValid() || (mins.x == 0 && mins.y == 0 && mins.z == 0));
 			if (ImGui::IconButton(ICON_LC_MOVE_3D, _("To transform"))) {
-				_sceneMgr->nodeShiftAllKeyframes(node.id(), mins);
-				_sceneMgr->nodeShift(node.id(), -mins);
+				_sceneMgr->nodeShiftAllKeyframes(node.uuid(), mins);
+				_sceneMgr->nodeShift(node.uuid(), -mins);
 			}
 			ImGui::TooltipTextUnformatted(_("Convert the region offset into the keyframe transforms"));
 			ImGui::EndDisabled();
@@ -317,7 +317,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 		for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
 			const bool isSelected = (currentInterpolation == n);
 			if (ImGui::Selectable(_(scenegraph::InterpolationTypeStr[n]), isSelected)) {
-				_sceneMgr->nodeUpdateKeyFrameInterpolation(node.id(), keyFrameIdx, (scenegraph::InterpolationType)n);
+				_sceneMgr->nodeUpdateKeyFrameInterpolation(node.uuid(), keyFrameIdx, (scenegraph::InterpolationType)n);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();
@@ -513,7 +513,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 		const bool autoKeyFrame = core::getVar(cfg::VoxEditAutoKeyFrame)->boolVal();
 		// check if a new keyframe should get generated automatically
 		if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-			if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
+			if (_sceneMgr->nodeAddKeyFrame(node.uuid(), frameIdx)) {
 				const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 				core_assert(newKeyFrameIdx != keyFrameIdx);
 				core_assert(newKeyFrameIdx != InvalidKeyFrame);
@@ -521,9 +521,9 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			}
 		}
 		if (pivotChanged) {
-			_sceneMgr->nodeUpdatePivot(node.id(), pivot);
+			_sceneMgr->nodeUpdatePivot(node.uuid(), pivot);
 		} else {
-			_sceneMgr->nodeUpdateTransform(node.id(), matrixRotation, matrixScale, matrixTranslation, keyFrameIdx,
+			_sceneMgr->nodeUpdateTransform(node.uuid(), matrixRotation, matrixScale, matrixTranslation, keyFrameIdx,
 										   _localSpace->boolVal());
 		}
 	} else if (changeMultiple) {
@@ -550,9 +550,9 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 	bool enabled = hasConstraint;
 	if (ImGui::Checkbox(_("Enable IK"), &enabled)) {
 		if (enabled && !hasConstraint) {
-			_sceneMgr->nodeSetIKConstraint(node.id(), constraint);
+			_sceneMgr->nodeSetIKConstraint(node.uuid(), constraint);
 		} else if (!enabled && hasConstraint) {
-			_sceneMgr->nodeRemoveIKConstraint(node.id());
+			_sceneMgr->nodeRemoveIKConstraint(node.uuid());
 		}
 		return;
 	}
@@ -574,24 +574,28 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 
 	// Effector node selection
 	const char *effectorName = _("None");
-	if (constraint.effectorNodeId != InvalidNodeId && sceneGraph.hasNode(constraint.effectorNodeId)) {
-		effectorName = sceneGraph.node(constraint.effectorNodeId).name().c_str();
+	const scenegraph::SceneGraphNode *effectorNode = nullptr;
+	if (constraint.hasEffector()) {
+		effectorNode = sceneGraph.findNodeByUUID(constraint.effectorUUID);
+		if (effectorNode != nullptr) {
+			effectorName = effectorNode->name().c_str();
+		}
 	}
 	if (ImGui::BeginCombo(_("Effector"), effectorName)) {
 		// Option to clear the effector
-		if (ImGui::Selectable(_("None"), constraint.effectorNodeId == InvalidNodeId)) {
-			constraint.effectorNodeId = InvalidNodeId;
+		if (ImGui::Selectable(_("None"), !constraint.hasEffector())) {
+			constraint.effectorUUID = core::UUID();
 			changed = true;
 		}
 		// List all nodes that could be effectors
 		for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &candidate = *iter;
-			if (candidate.id() == node.id()) {
+			if (candidate.uuid() == node.uuid()) {
 				continue;
 			}
-			const bool isSelected = (constraint.effectorNodeId == candidate.id());
+			const bool isSelected = (constraint.effectorUUID == candidate.uuid());
 			if (ImGui::Selectable(candidate.name().c_str(), isSelected)) {
-				constraint.effectorNodeId = candidate.id();
+				constraint.effectorUUID = candidate.uuid();
 				changed = true;
 			}
 			if (isSelected) {
@@ -678,7 +682,7 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 	}
 
 	if (changed) {
-		_sceneMgr->nodeSetIKConstraint(node.id(), constraint);
+		_sceneMgr->nodeSetIKConstraint(node.uuid(), constraint);
 	}
 }
 
@@ -718,24 +722,24 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 				}
 
 				if (!propertyAlreadyHandled) {
-					const core::String &id = core::String::format("##%i-%s", node.id(), entry->key.c_str());
+					const core::String &id = core::String::format("##%s-%s", node.uuid().str().c_str(), entry->key.c_str());
 					if (entry->value == "true" || entry->value == "false") {
 						bool value = core::string::toBool(entry->value);
 						if (ImGui::Checkbox(id.c_str(), &value)) {
-							_sceneMgr->nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
+							_sceneMgr->nodeSetProperty(node.uuid(), entry->key, value ? "true" : "false");
 						}
 					} else {
 						core::String value = entry->value;
 						if (ImGui::InputText(id.c_str(), &value,
 											 ImGuiInputTextFlags_EnterReturnsTrue |
 												 ImGuiInputTextFlags_AutoSelectAll)) {
-							_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
+							_sceneMgr->nodeSetProperty(node.uuid(), entry->key, value);
 						}
 					}
 				}
 				ImGui::TableNextColumn();
 				const core::String &deleteId =
-					core::String::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+					core::String::format(ICON_LC_TRASH "##%s-%s-delete", node.uuid().str().c_str(), entry->key.c_str());
 				if (ImGui::Button(deleteId.c_str())) {
 					deleteKey = entry->key;
 				}
@@ -750,7 +754,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::InputText("##newpropertyvalue", &_propertyValue);
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_LC_PLUS "###nodepropertyadd")) {
-			_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
+			_sceneMgr->nodeSetProperty(node.uuid(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
 		ImGui::TooltipTextUnformatted(_("Add a new node property"));
@@ -759,13 +763,13 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 	}
 
 	if (!deleteKey.empty()) {
-		_sceneMgr->nodeRemoveProperty(node.id(), deleteKey);
+		_sceneMgr->nodeRemoveProperty(node.uuid(), deleteKey);
 	}
 }
 
 bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key,
 											  const core::String &value) {
-	const core::String &id = core::String::format("##%i-%s", node.id(), key.c_str());
+	const core::String &id = core::String::format("##%s-%s", node.uuid().str().c_str(), key.c_str());
 	if (key == scenegraph::PropCamMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
@@ -773,7 +777,7 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 			for (int n = 0; n < lengthof(scenegraph::SceneGraphNodeCamera::Modes); n++) {
 				const bool isSelected = (currentMode == n);
 				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
-					_sceneMgr->nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
+					_sceneMgr->nodeSetProperty(node.uuid(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();
@@ -784,12 +788,12 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 	} else if (scenegraph::SceneGraphNodeCamera::isFloatProperty(key)) {
 		float fvalue = core::string::toFloat(value);
 		if (ImGui::InputFloat(id.c_str(), &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(fvalue));
+			_sceneMgr->nodeSetProperty(node.uuid(), key, core::string::toString(fvalue));
 		}
 	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
 		int ivalue = core::string::toInt(value);
 		if (ImGui::InputInt(id.c_str(), &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(ivalue));
+			_sceneMgr->nodeSetProperty(node.uuid(), key, core::string::toString(ivalue));
 		}
 	} else {
 		return false;
@@ -822,10 +826,9 @@ void NodeInspectorPanel::update(const char *id, bool sceneMode, command::Command
 
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (sceneMode) {
-			const int activeNode = _sceneMgr->sceneGraph().activeNode();
-			if (activeNode != InvalidNodeId) {
-				scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(activeNode);
-				sceneView(listener, node);
+			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+			if (sceneGraph.hasNode(sceneGraph.activeNodeUUID())) {
+				sceneView(listener, sceneGraph.node(sceneGraph.activeNodeUUID()));
 			}
 		} else {
 			modelView(listener);

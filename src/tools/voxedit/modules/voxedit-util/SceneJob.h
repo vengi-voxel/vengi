@@ -6,6 +6,7 @@
 
 #include "core/collection/Buffer.h"
 #include "core/String.h"
+#include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -45,7 +46,7 @@ const char *sceneJobText(SceneJobType type);
  * without touching the live scene graph.
  */
 struct SceneJobSplatTarget {
-	int nodeId = InvalidNodeId;
+	core::UUID nodeUUID;
 	voxel::RawVolume *volume = nullptr;
 	palette::Palette palette;
 	voxel::Region worldRegion = voxel::Region::InvalidRegion;
@@ -67,7 +68,7 @@ struct SceneJobSplatTarget {
  */
 struct SceneJobRequest {
 	SceneJobType type = SceneJobType::None;
-	int nodeId = InvalidNodeId;
+	core::UUID nodeUUID;
 	core::String text;
 	voxel::Region region = voxel::Region::InvalidRegion;
 	glm::ivec3 size{0};
@@ -84,7 +85,7 @@ struct SceneJobRequest {
  * like splat merge.
  */
 struct SceneJobVolumeResult {
-	int nodeId = InvalidNodeId;
+	core::UUID nodeUUID;
 	voxel::RawVolume *volume = nullptr;
 	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 
@@ -105,8 +106,8 @@ struct SceneJobVolumeResult {
  * them in scene graph nodes and attaches them safely.
  */
 struct SceneJobNewNode {
-	int sourceNodeId = InvalidNodeId;
-	int parentNodeId = InvalidNodeId;
+	core::UUID sourceNodeUUID;
+	core::UUID parentNodeUUID;
 	core::String name;
 	palette::Palette palette;
 	voxel::RawVolume *volume = nullptr;
@@ -130,7 +131,7 @@ struct SceneJobNewNode {
  */
 struct SceneJobResult {
 	SceneJobType type = SceneJobType::None;
-	int nodeId = InvalidNodeId;
+	core::UUID nodeUUID;
 	voxel::RawVolume *volume = nullptr;
 	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	core::DynamicArray<SceneJobVolumeResult> volumes;
@@ -150,7 +151,7 @@ struct SceneJobResult {
 };
 
 voxel::Region sceneJobModifiedRegionForResize(const voxel::Region &oldRegion, const voxel::Region &newRegion);
-SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, int nodeId, voxel::RawVolume *snapshot,
+SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::UUID &nodeUUID, voxel::RawVolume *snapshot,
 												 const voxel::Region &selectionRegion, const voxel::Voxel &voxel,
 												 bool overrideVoxels);
 

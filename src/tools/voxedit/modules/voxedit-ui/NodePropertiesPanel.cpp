@@ -30,7 +30,7 @@ bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeC
 			for (int n = 0; n < lengthof(scenegraph::SceneGraphNodeCamera::Modes); n++) {
 				const bool isSelected = (currentMode == n);
 				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
-					_sceneMgr->nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
+					_sceneMgr->nodeSetProperty(node.uuid(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();
@@ -41,12 +41,12 @@ bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeC
 	} else if (scenegraph::SceneGraphNodeCamera::isFloatProperty(key)) {
 		float fvalue = core::string::toFloat(value);
 		if (ImGui::InputFloat("##val", &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(fvalue));
+			_sceneMgr->nodeSetProperty(node.uuid(), key, core::string::toString(fvalue));
 		}
 	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
 		int ivalue = core::string::toInt(value);
 		if (ImGui::InputInt("##val", &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(ivalue));
+			_sceneMgr->nodeSetProperty(node.uuid(), key, core::string::toString(ivalue));
 		}
 	} else {
 		return false;
@@ -59,7 +59,7 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 	const core::String &title = makeTitle(ICON_LC_LOCATE, _("Node Properties"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNodeUUID());
 
 		core::String deleteKey;
 		static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
@@ -119,14 +119,14 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 						if (entry->value == "true" || entry->value == "false") {
 							bool value = core::string::toBool(entry->value);
 							if (ImGui::Checkbox("##val", &value)) {
-								_sceneMgr->nodeSetProperty(node.id(), entry->key, core::string::toString(value));
+								_sceneMgr->nodeSetProperty(node.uuid(), entry->key, core::string::toString(value));
 							}
 						} else {
 							core::String value = entry->value;
 							if (ImGui::InputText("##val", &value,
 												 ImGuiInputTextFlags_EnterReturnsTrue |
 													 ImGuiInputTextFlags_AutoSelectAll)) {
-								_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
+								_sceneMgr->nodeSetProperty(node.uuid(), entry->key, value);
 							}
 						}
 					}
@@ -147,7 +147,7 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 			ImGui::InputText("##newpropertyvalue", &_propertyValue);
 			ImGui::TableNextColumn();
 			if (ImGui::Button(ICON_LC_PLUS "###nodepropertyadd")) {
-				_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
+				_sceneMgr->nodeSetProperty(node.uuid(), _propertyKey, _propertyValue);
 				_propertyKey = _propertyValue = "";
 			}
 			ImGui::TooltipTextUnformatted(_("Add a new node property"));
@@ -156,7 +156,7 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 		}
 
 		if (!deleteKey.empty()) {
-			_sceneMgr->nodeRemoveProperty(node.id(), deleteKey);
+			_sceneMgr->nodeRemoveProperty(node.uuid(), deleteKey);
 		}
 	}
 	ImGui::End();

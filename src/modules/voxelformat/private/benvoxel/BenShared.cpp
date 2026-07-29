@@ -84,9 +84,9 @@ bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, 
 
 Metadata createMetadata(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	Metadata metadata;
-	for (int child : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
-		if (cnode.isPointNode()) {
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr && child->isPointNode()) {
 			const core::String &name = node.name();
 			const glm::vec3 &pointPos = node.transform(0).localTranslation();
 			metadata.points.emplace_back(name, glm::ivec3{pointPos.x, pointPos.y, pointPos.z});

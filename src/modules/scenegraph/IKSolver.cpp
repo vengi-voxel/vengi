@@ -190,12 +190,13 @@ bool IKSolver::solve(SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex fr
 		return false;
 	}
 
-	const int effectorNodeId = constraint->effectorNodeId;
-	if (effectorNodeId == InvalidNodeId) {
+	const core::UUID &effectorUUID = constraint->effectorUUID;
+	if (!effectorUUID.isValid()) {
 		return false;
 	}
 
-	if (!sceneGraph.hasNode(effectorNodeId)) {
+	const SceneGraphNode *effectorPtr = sceneGraph.findNodeByUUID(effectorUUID);
+	if (effectorPtr == nullptr) {
 		return false;
 	}
 
@@ -203,14 +204,13 @@ bool IKSolver::solve(SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex fr
 	core::DynamicArray<int> chain;
 	chain.push_back(node.id());
 
-	int current = node.parent();
-	while (current != InvalidNodeId && sceneGraph.hasNode(current)) {
-		SceneGraphNode &currentNode = sceneGraph.node(current);
-		chain.push_back(current);
-		if (currentNode.isIKAnchor() || currentNode.isRootNode()) {
+	const SceneGraphNode *current = sceneGraph.parentNode(node);
+	while (current != nullptr) {
+		chain.push_back(current->id());
+		if (current->isIKAnchor() || current->isRootNode()) {
 			break;
 		}
-		current = currentNode.parent();
+		current = sceneGraph.parentNode(*current);
 	}
 
 	if (chain.size() < 2) {
@@ -218,7 +218,7 @@ bool IKSolver::solve(SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex fr
 	}
 
 	// The target position is the world position of the effector node
-	const SceneGraphNode &effectorNode = sceneGraph.node(effectorNodeId);
+	const SceneGraphNode &effectorNode = *effectorPtr;
 	const KeyFrameIndex effectorKeyFrameIdx = effectorNode.keyFrameForFrame(frameIdx);
 	const glm::vec3 targetPos = effectorNode.transform(effectorKeyFrameIdx).worldTranslation();
 
@@ -284,10 +284,9 @@ bool IKSolver::solve(SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex fr
 
 			// Convert to local space
 			glm::quat newLocalOrientation;
-			if (jointNode.parent() != InvalidNodeId && sceneGraph.hasNode(jointNode.parent())) {
-				const SceneGraphNode &parentNode = sceneGraph.node(jointNode.parent());
-				const KeyFrameIndex parentKfIdx = parentNode.keyFrameForFrame(frameIdx);
-				const glm::quat parentWorldOrientation = parentNode.transform(parentKfIdx).worldOrientation();
+			if (const SceneGraphNode *parentNode = sceneGraph.parentNode(jointNode)) {
+				const KeyFrameIndex parentKfIdx = parentNode->keyFrameForFrame(frameIdx);
+				const glm::quat parentWorldOrientation = parentNode->transform(parentKfIdx).worldOrientation();
 				newLocalOrientation = glm::conjugate(parentWorldOrientation) * newWorldOrientation;
 			} else {
 				newLocalOrientation = newWorldOrientation;

@@ -12,6 +12,8 @@
 #include "core/Common.h"
 #include "core/DirtyState.h"
 #include "core/Trace.h"
+#include "core/UUID.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicParallelMap.h"
 #include "core/concurrent/Lock.h"
 #include "math/AABB.h"
@@ -51,6 +53,8 @@ enum class NodeMoveFlag : uint8_t {
 class SceneGraph : public core::DirtyState {
 protected:
 	SceneGraphNodes _nodes;
+	/** O(1) identity lookup; dense @c _nodes keys remain the runtime handles. */
+	core::DynamicMap<core::UUID, int, 251, core::UUIDHash> _uuidToNodeId;
 	int _nextNodeId = 0;
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
@@ -80,7 +84,12 @@ public:
 	void align(int padding = 2);
 
 	int activeNode() const;
+	/**
+	 * @brief UUID of the active node, or an empty UUID if none is active
+	 */
+	const core::UUID &activeNodeUUID() const;
 	bool setActiveNode(int nodeId);
+	bool setActiveNode(const core::UUID &uuid);
 
 	scenegraph::SceneGraphNodeCamera *activeCameraNode() const;
 
@@ -203,10 +212,22 @@ public:
 	 * @note If an error happened, the node is released.
 	 */
 	int emplace(SceneGraphNode &&node, int parent = 0);
+	int emplace(SceneGraphNode &&node, const core::UUID &parentUUID);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
 	SceneGraphNode* findNodeByUUID(const core::UUID& uuid);
 	const SceneGraphNode* findNodeByUUID(const core::UUID& uuid) const;
+	/**
+	 * @brief Resolve the parent of @p node via @c parentUUID().
+	 * @return @c nullptr if the node has no parent or the parent UUID is missing from the graph.
+	 */
+	SceneGraphNode *parentNode(const SceneGraphNode &node);
+	const SceneGraphNode *parentNode(const SceneGraphNode &node) const;
+	/**
+	 * @brief Dense runtime parent handle, or @c InvalidNodeId if none.
+	 * Prefer @c parentUUID() / @c parentNode() for identity across undo.
+	 */
+	int parentId(const SceneGraphNode &node) const;
 	const SceneGraphNode* findNodeByName(const core::String& name) const;
 	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();
@@ -228,14 +249,28 @@ public:
 	 * @return @c SceneGraphNode reference. Undefined if no node was found for the given id!
 	 */
 	SceneGraphNode& node(int nodeId) const;
+	/**
+	 * @brief Get the scene graph node by UUID
+	 * @note It's important to check whether the node exists before calling this method!
+	 * @sa hasNode()
+	 * @sa findNodeByUUID()
+	 * @return @c SceneGraphNode reference. Falls back to the root node if no node was found for the given UUID!
+	 */
+	SceneGraphNode &node(const core::UUID &nodeUUID) const;
 	bool hasNode(int nodeId) const;
+	bool hasNode(const core::UUID &nodeUUID) const;
 	bool isReferenced(int nodeId) const;
 	bool isReferenced(const core::UUID &nodeUUID) const;
 	bool isEffector(int nodeId) const;
+	bool isEffector(const core::UUID &nodeUUID) const;
 	bool removeNode(int nodeId, bool recursive);
+	bool removeNode(const core::UUID &nodeUUID, bool recursive);
 	bool changeParent(int nodeId, int newParentId, NodeMoveFlag flag = NodeMoveFlag::UpdateTransform);
+	bool changeParent(const core::UUID &nodeUUID, const core::UUID &newParentUUID,
+					  NodeMoveFlag flag = NodeMoveFlag::UpdateTransform);
 	bool nodeHasChildren(const SceneGraphNode &node, int childId) const;
 	bool canChangeParent(const SceneGraphNode &node, int newParentId) const;
+	bool canChangeParent(const SceneGraphNode &node, const core::UUID &newParentUUID) const;
 
 	/**
 	 * @brief Pre-allocated memory in the graph without adding the nodes
@@ -434,11 +469,12 @@ public:
 			return;
 		}
 		const SceneGraphNodeChildren childrenCopy = node(nodeId).children();
-		for (int childNodeId : childrenCopy) {
-			if (hasNode(childNodeId)) {
-				f(node(childNodeId));
+		for (const core::UUID &childUUID : childrenCopy) {
+			SceneGraphNode *child = findNodeByUUID(childUUID);
+			if (child != nullptr) {
+				f(*child);
 				if (recursive) {
-					visitChildren(childNodeId, recursive, f);
+					visitChildren(child->id(), recursive, f);
 				}
 			}
 		}
@@ -450,11 +486,14 @@ public:
 			return;
 		}
 		const SceneGraphNode &own = node(nodeId);
-		for (int childNodeId : own.children()) {
-			const SceneGraphNode &n = node(childNodeId);
-			f(n);
+		for (const core::UUID &childUUID : own.children()) {
+			const SceneGraphNode *child = findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			f(*child);
 			if (recursive) {
-				visitChildren(childNodeId, recursive, f);
+				visitChildren(child->id(), recursive, f);
 			}
 		}
 	}
@@ -462,6 +501,13 @@ public:
 
 inline int SceneGraph::activeNode() const {
 	return _activeNodeId;
+}
+
+inline const core::UUID &SceneGraph::activeNodeUUID() const {
+	if (_activeNodeId == InvalidNodeId || !hasNode(_activeNodeId)) {
+		return _emptyUUID;
+	}
+	return node(_activeNodeId).uuid();
 }
 
 } // namespace voxel

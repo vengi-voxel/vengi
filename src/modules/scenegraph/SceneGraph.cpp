@@ -66,13 +66,14 @@ SceneGraph::~SceneGraph() {
 		entry->value.release();
 	}
 	_nodes.clear();
+	_uuidToNodeId.clear();
 	_listeners.clear();
 }
 
 SceneGraph::SceneGraph(SceneGraph &&other) noexcept
-	: _nodes(core::move(other._nodes)), _nextNodeId(other._nextNodeId), _activeNodeId(other._activeNodeId),
-	  _animations(core::move(other._animations)), _activeAnimation(core::move(other._activeAnimation)),
-	  _cachedMaxFrame(other._cachedMaxFrame) {
+	: _nodes(core::move(other._nodes)), _uuidToNodeId(core::move(other._uuidToNodeId)), _nextNodeId(other._nextNodeId),
+	  _activeNodeId(other._activeNodeId), _animations(core::move(other._animations)),
+	  _activeAnimation(core::move(other._activeAnimation)), _cachedMaxFrame(other._cachedMaxFrame) {
 	other._nextNodeId = 0;
 	other._activeNodeId = InvalidNodeId;
 	_dirty = other.dirty();
@@ -81,6 +82,7 @@ SceneGraph::SceneGraph(SceneGraph &&other) noexcept
 SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 	if (this != &other) {
 		_nodes = core::move(other._nodes);
+		_uuidToNodeId = core::move(other._uuidToNodeId);
 		_nextNodeId = other._nextNodeId;
 		other._nextNodeId = 0;
 		_activeNodeId = other._activeNodeId;
@@ -270,6 +272,18 @@ bool SceneGraph::setActiveNode(int nodeId) {
 	return true;
 }
 
+bool SceneGraph::setActiveNode(const core::UUID &uuid) {
+	if (!uuid.isValid()) {
+		return false;
+	}
+	const SceneGraphNode *n = findNodeByUUID(uuid);
+	if (n == nullptr) {
+		return false;
+	}
+	_activeNodeId = n->id();
+	return true;
+}
+
 SceneGraphNode *SceneGraph::firstModelNode() const {
 	auto iter = begin(SceneGraphNodeType::Model);
 	if (iter != end()) {
@@ -303,11 +317,24 @@ SceneGraphNode &SceneGraph::node(int nodeId) const {
 	return iter->value;
 }
 
+SceneGraphNode &SceneGraph::node(const core::UUID &nodeUUID) const {
+	const SceneGraphNode *n = findNodeByUUID(nodeUUID);
+	if (n == nullptr) {
+		Log::error("No node for uuid %s found in the scene graph - returning root node", nodeUUID.str().c_str());
+		return _nodes.find(0)->value;
+	}
+	return node(n->id());
+}
+
 bool SceneGraph::hasNode(int nodeId) const {
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
 	return _nodes.hasKey(nodeId);
+}
+
+bool SceneGraph::hasNode(const core::UUID &nodeUUID) const {
+	return findNodeByUUID(nodeUUID) != nullptr;
 }
 
 const SceneGraphNode &SceneGraph::root() const {
@@ -320,26 +347,29 @@ int SceneGraph::prevModelNode(int nodeId) const {
 		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
-	if (ownNode.parent() == InvalidNodeId) {
+	const SceneGraphNode *parent = this->parentNode(ownNode);
+	if (parent == nullptr) {
 		return InvalidNodeId;
 	}
 	int lastChild = InvalidNodeId;
-	const SceneGraphNode &parentNode = node(ownNode.parent());
-	const auto &children = parentNode.children();
-	for (int child : children) {
-		if (child == nodeId) {
+	const auto &children = parent->children();
+	for (const core::UUID &childUUID : children) {
+		const SceneGraphNode *child = findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		if (child->id() == nodeId) {
 			if (lastChild == InvalidNodeId) {
 				break;
 			}
 			return lastChild;
 		}
-		if (node(child).isAnyModelNode()) {
-			lastChild = child;
-			continue;
+		if (child->isAnyModelNode()) {
+			lastChild = child->id();
 		}
 	}
-	if (parentNode.isAnyModelNode()) {
-		return parentNode.id();
+	if (parent->isAnyModelNode()) {
+		return parent->id();
 	}
 	return InvalidNodeId;
 }
@@ -350,19 +380,24 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
-	if (ownNode.parent() == InvalidNodeId) {
+	const SceneGraphNode *parent = this->parentNode(ownNode);
+	if (parent == nullptr) {
 		return InvalidNodeId;
 	}
 	bool foundOwnChild = false;
-	const auto &children = node(ownNode.parent()).children();
-	for (int child : children) {
-		if (child == nodeId) {
+	const auto &children = parent->children();
+	for (const core::UUID &childUUID : children) {
+		const SceneGraphNode *child = findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		if (child->id() == nodeId) {
 			foundOwnChild = true;
 			continue;
 		}
 		if (foundOwnChild) {
-			if (node(child).isAnyModelNode()) {
-				return child;
+			if (child->isAnyModelNode()) {
+				return child->id();
 			}
 		}
 	}
@@ -403,9 +438,12 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 		aabb = math::AABB<float>(transform.worldTranslation(), transform.worldTranslation() + 1.0f);
 	}
 
-	for (int child : node.children()) {
-		const SceneGraphNode &cnode = this->node(child);
-		const math::AABB<float> &caabb = calculateGroupAABB(cnode, frameIdx);
+	for (const core::UUID &childUUID : node.children()) {
+		const SceneGraphNode *cnode = findNodeByUUID(childUUID);
+		if (cnode == nullptr) {
+			continue;
+		}
+		const math::AABB<float> &caabb = calculateGroupAABB(*cnode, frameIdx);
 		if (caabb.isValid()) {
 			if (aabb.isValid()) {
 				aabb.accumulate(caabb);
@@ -538,10 +576,10 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
 	// https://github.com/vengi-voxel/vengi/issues/420
 	FrameTransform parentTransform;
-	if (node.parent() == InvalidNodeId) {
-		parentTransform.setWorldMatrix(glm::mat4(1.0f));
+	if (const SceneGraphNode *parent = parentNode(node)) {
+		parentTransform = transformForFrame(*parent, frameIdx);
 	} else {
-		parentTransform = transformForFrame(this->node(node.parent()), frameIdx);
+		parentTransform.setWorldMatrix(glm::mat4(1.0f));
 	}
 
 	FrameTransform transform;
@@ -594,8 +632,10 @@ bool SceneGraph::updateTransforms_r(SceneGraphNode &n, bool updateChildren) {
 			changed = true;
 		}
 	}
-	for (int childrenId : n.children()) {
-		changed |= updateTransforms_r(node(childrenId), updateChildren);
+	for (const core::UUID &childUUID : n.children()) {
+		if (SceneGraphNode *child = findNodeByUUID(childUUID)) {
+			changed |= updateTransforms_r(*child, updateChildren);
+		}
 	}
 	return changed;
 }
@@ -608,7 +648,7 @@ bool SceneGraph::solveIK() {
 			continue;
 		}
 		const IKConstraint *constraint = node.ikConstraint();
-		if (constraint->effectorNodeId == InvalidNodeId) {
+		if (!constraint->hasEffector()) {
 			continue;
 		}
 		const SceneGraphKeyFrames *kfs = node.keyFrames();
@@ -788,25 +828,46 @@ SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) {
 }
 
 SceneGraphNode *SceneGraph::findNodeByUUID(const core::UUID &uuid) {
-	for (const auto &entry : _nodes) {
-		const core::String &uuidStr = entry->value.uuid().str();
-		Log::trace("node uuid: %s", uuidStr.c_str());
-		if (entry->value.uuid() == uuid) {
-			return &entry->value;
-		}
+	if (!uuid.isValid()) {
+		return nullptr;
 	}
-	return nullptr;
+	auto iter = _uuidToNodeId.find(uuid);
+	if (iter == _uuidToNodeId.end()) {
+		return nullptr;
+	}
+	auto nodeIter = _nodes.find(iter->value);
+	if (nodeIter == _nodes.end()) {
+		return nullptr;
+	}
+	return &nodeIter->value;
 }
 
 const SceneGraphNode *SceneGraph::findNodeByUUID(const core::UUID &uuid) const {
-	for (const auto &entry : _nodes) {
-		const core::String &uuidStr = entry->value.uuid().str();
-		Log::trace("node uuid: %s", uuidStr.c_str());
-		if (entry->value.uuid() == uuid) {
-			return &entry->value;
-		}
+	if (!uuid.isValid()) {
+		return nullptr;
 	}
-	return nullptr;
+	auto iter = _uuidToNodeId.find(uuid);
+	if (iter == _uuidToNodeId.end()) {
+		return nullptr;
+	}
+	auto nodeIter = _nodes.find(iter->value);
+	if (nodeIter == _nodes.end()) {
+		return nullptr;
+	}
+	return &nodeIter->value;
+}
+
+SceneGraphNode *SceneGraph::parentNode(const SceneGraphNode &node) {
+	return findNodeByUUID(node.parentUUID());
+}
+
+const SceneGraphNode *SceneGraph::parentNode(const SceneGraphNode &node) const {
+	return findNodeByUUID(node.parentUUID());
+}
+
+int SceneGraph::parentId(const SceneGraphNode &node) const {
+	const SceneGraphNode *parent = parentNode(node);
+	return parent != nullptr ? parent->id() : InvalidNodeId;
 }
 
 const SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) const {
@@ -834,7 +895,15 @@ void SceneGraph::setRootUUID(const core::UUID &uuid) {
 	if (iter == _nodes.end()) {
 		return;
 	}
+	const core::UUID oldUUID = iter->value.uuid();
+	if (oldUUID == uuid) {
+		return;
+	}
 	iter->value._uuid = uuid;
+	if (oldUUID.isValid()) {
+		_uuidToNodeId.remove(oldUUID);
+	}
+	_uuidToNodeId.put(uuid, 0);
 }
 
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
@@ -879,7 +948,10 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 			return InvalidNodeId;
 		}
 		Log::debug("Add child %i to node %i", nodeId, parent);
-		parentIter->value.addChild(nodeId);
+		parentIter->value.addChild(node.uuid());
+		node.setParent(parentIter->value.uuid());
+	} else {
+		node.setParent(core::UUID());
 	}
 	++_nextNodeId;
 	node.setId(nodeId);
@@ -892,10 +964,11 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 			_activeNodeId = nodeId;
 		}
 	}
-	node.setParent(parent);
 	node.setAnimation(_activeAnimation);
-	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)type, node.id(), node.parent());
+	Log::debug("Adding scene graph node of type %i with id %i", (int)type, node.id());
+	const core::UUID nodeUUID = node.uuid();
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
+	_uuidToNodeId.put(nodeUUID, nodeId);
 	if (type == SceneGraphNodeType::Model) {
 		_regionDirty = true;
 	}
@@ -906,14 +979,29 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	return nodeId;
 }
 
+int SceneGraph::emplace(SceneGraphNode &&node, const core::UUID &parentUUID) {
+	const SceneGraphNode *parent = findNodeByUUID(parentUUID);
+	if (parent == nullptr) {
+		Log::error("Could not find parent node with UUID %s", parentUUID.str().c_str());
+		node.release();
+		return InvalidNodeId;
+	}
+	return emplace(core::move(node), parent->id());
+}
+
 bool SceneGraph::nodeHasChildren(const SceneGraphNode &n, int childId) const {
-	for (int c : n.children()) {
-		if (c == childId) {
+	if (!hasNode(childId)) {
+		return false;
+	}
+	const core::UUID &childUUID = node(childId).uuid();
+	for (const core::UUID &c : n.children()) {
+		if (c == childUUID) {
 			return true;
 		}
 	}
-	for (int c : n.children()) {
-		if (nodeHasChildren(node(c), childId)) {
+	for (const core::UUID &c : n.children()) {
+		const SceneGraphNode *child = findNodeByUUID(c);
+		if (child != nullptr && nodeHasChildren(*child, childId)) {
 			return true;
 		}
 	}
@@ -930,6 +1018,14 @@ bool SceneGraph::canChangeParent(const SceneGraphNode &node, int newParentId) co
 	return !nodeHasChildren(node, newParentId);
 }
 
+bool SceneGraph::canChangeParent(const SceneGraphNode &node, const core::UUID &newParentUUID) const {
+	const SceneGraphNode *parent = findNodeByUUID(newParentUUID);
+	if (parent == nullptr) {
+		return false;
+	}
+	return canChangeParent(node, parent->id());
+}
+
 bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 	if (!hasNode(nodeId)) {
 		return false;
@@ -939,15 +1035,19 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 		return false;
 	}
 
-	const int oldParentId = n.parent();
-	if (!node(oldParentId).removeChild(nodeId)) {
+	SceneGraphNode *oldParent = parentNode(n);
+	if (oldParent == nullptr) {
 		return false;
 	}
-	if (!node(newParentId).addChild(nodeId)) {
-		node(oldParentId).addChild(nodeId);
+	if (!oldParent->removeChild(n.uuid())) {
 		return false;
 	}
-	n.setParent(newParentId);
+	SceneGraphNode &newParent = node(newParentId);
+	if (!newParent.addChild(n.uuid())) {
+		oldParent->addChild(n.uuid());
+		return false;
+	}
+	n.setParent(newParent.uuid());
 	if (flag == NodeMoveFlag::UpdateTransform) {
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
@@ -971,6 +1071,15 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 	}
 
 	return true;
+}
+
+bool SceneGraph::changeParent(const core::UUID &nodeUUID, const core::UUID &newParentUUID, NodeMoveFlag flag) {
+	const SceneGraphNode *n = findNodeByUUID(nodeUUID);
+	const SceneGraphNode *parent = findNodeByUUID(newParentUUID);
+	if (n == nullptr || parent == nullptr) {
+		return false;
+	}
+	return changeParent(n->id(), parent->id(), flag);
 }
 
 bool SceneGraph::isReferenced(int nodeId) const {
@@ -997,9 +1106,19 @@ bool SceneGraph::isReferenced(const core::UUID &nodeUUID) const {
 }
 
 bool SceneGraph::isEffector(int nodeId) const {
+	if (!hasNode(nodeId)) {
+		return false;
+	}
+	return isEffector(node(nodeId).uuid());
+}
+
+bool SceneGraph::isEffector(const core::UUID &nodeUUID) const {
+	if (!nodeUUID.isValid()) {
+		return false;
+	}
 	for (const auto &entry : _nodes) {
 		const SceneGraphNode &n = entry->second;
-		if (n.hasIKConstraint() && n.ikConstraint()->effectorNodeId == nodeId) {
+		if (n.hasIKConstraint() && n.ikConstraint()->effectorUUID == nodeUUID) {
 			return true;
 		}
 	}
@@ -1029,33 +1148,41 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		}
 
 		IKConstraint *ikConstraint = n.ikConstraint();
-		if (ikConstraint->effectorNodeId == nodeId) {
-			ikConstraint->effectorNodeId = InvalidNodeId;
+		if (ikConstraint->effectorUUID == iter->value.uuid()) {
+			ikConstraint->effectorUUID = core::UUID();
 		}
 	}
 	bool state = true;
-	const int parent = iter->value.parent();
-	core_assert(parent != InvalidNodeId);
-	SceneGraphNode &parentNode = node(parent);
-	core_assert_always(parentNode.removeChild(nodeId));
+	SceneGraphNode *parent = parentNode(iter->value);
+	core_assert(parent != nullptr);
+	const core::UUID removedUUID = iter->value.uuid();
+	core_assert_always(parent->removeChild(removedUUID));
 
+	const SceneGraphNodeChildren childrenCopy = iter->value.children();
 	if (recursive) {
-		state = iter->value.children().empty();
-		for (int childId : iter->value.children()) {
-			state |= removeNode(childId, recursive);
+		state = childrenCopy.empty();
+		for (const core::UUID &childUUID : childrenCopy) {
+			const SceneGraphNode *child = findNodeByUUID(childUUID);
+			if (child != nullptr) {
+				state |= removeNode(child->id(), recursive);
+			}
 		}
 	} else {
 		// reparent any children
-		for (int childId : iter->value.children()) {
-			SceneGraphNode &cnode = node(childId);
-			core_assert(cnode.parent() == nodeId);
-			cnode.setParent(parent);
-			core_assert_always(parentNode.addChild(childId));
+		for (const core::UUID &childUUID : childrenCopy) {
+			SceneGraphNode *cnode = findNodeByUUID(childUUID);
+			if (cnode == nullptr) {
+				continue;
+			}
+			core_assert(cnode->parentUUID() == removedUUID);
+			cnode->setParent(parent->uuid());
+			core_assert_always(parent->addChild(childUUID));
 		}
 	}
 	for (SceneGraphListener *listener : _listeners) {
 		listener->onNodeRemove(nodeId);
 	}
+	_uuidToNodeId.remove(removedUUID);
 	_nodes.erase(iter);
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
@@ -1070,6 +1197,14 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	}
 	markKeyFramesDirty(InvalidNodeId);
 	return state;
+}
+
+bool SceneGraph::removeNode(const core::UUID &nodeUUID, bool recursive) {
+	const SceneGraphNode *n = findNodeByUUID(nodeUUID);
+	if (n == nullptr) {
+		return false;
+	}
+	return removeNode(n->id(), recursive);
 }
 
 void SceneGraph::setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKeyFramesMap &keyFrames) {
@@ -1119,6 +1254,7 @@ void SceneGraph::clear() {
 		entry->value.release();
 	}
 	_nodes.clear();
+	_uuidToNodeId.clear();
 	_animations.clear();
 	addAnimation(DEFAULT_ANIMATION);
 	setAnimation(DEFAULT_ANIMATION);
@@ -1127,8 +1263,10 @@ void SceneGraph::clear() {
 	SceneGraphNode node(SceneGraphNodeType::Root);
 	node.setName("root");
 	node.setId(0);
-	node.setParent(InvalidNodeId);
+	node.setParent(core::UUID());
+	const core::UUID rootUUID = node.uuid();
 	_nodes.emplace(0, core::move(node));
+	_uuidToNodeId.put(rootUUID, 0);
 	_region = voxel::Region::InvalidRegion;
 }
 

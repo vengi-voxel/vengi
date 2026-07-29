@@ -17,8 +17,7 @@ void ImageAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			return;
 		}
 		IM_CHECK(resetScene(ctx, _sceneMgr));
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
+		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 		IM_CHECK(volume != nullptr);
 
 		const int viewportId = viewportEditMode(ctx, _app);

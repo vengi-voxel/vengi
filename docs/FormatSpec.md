@@ -172,7 +172,7 @@ Inverse kinematics constraints are stored in the `IKCO` chunk (since version 7):
 > Note: This chunk is only present if the node has an IK constraint.
 
 * **FourCC**: `IKCO`
-* **Effector Node ID**: 4-byte signed integer (node id of the IK end-effector target, `-1` if none)
+* **Effector Node ID**: 4-byte signed integer (file-local node id of the IK end-effector target, `-1` if none; remapped to the target node's UUID on load)
 * **Roll Min**: 4-byte float (minimum roll angle in radians)
 * **Roll Max**: 4-byte float (maximum roll angle in radians)
 * **Visible**: 1-byte boolean

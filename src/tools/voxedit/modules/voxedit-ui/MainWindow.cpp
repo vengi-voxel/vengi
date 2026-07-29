@@ -881,7 +881,7 @@ void MainWindow::registerPopups() {
 	if (_popupRenameNode->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		_currentNodeName = sceneGraph.node(sceneGraph.activeNode()).name();
+		_currentNodeName = sceneGraph.node(sceneGraph.activeNodeUUID()).name();
 		_popupRenameNode->setVal("false");
 	}
 
@@ -933,7 +933,7 @@ void MainWindow::popupNodeResize() {
 		if (ImGui::OkButton()) {
 			const int nodeId = _sceneGraphPanel._resizeNodeId;
 			voxel::Region newRegion(mins, maxs);
-			_sceneMgr->nodeResize(nodeId, newRegion);
+			_sceneMgr->nodeResize(_sceneMgr->sceneGraph().uuid(nodeId), newRegion);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -1025,7 +1025,7 @@ void MainWindow::popupNodeRescale() {
 		ImGui::NewLine();
 
 		if (ImGui::OkButton()) {
-			_sceneMgr->nodeRescaleContent(nodeId, targetSize);
+			_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), targetSize);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -1050,7 +1050,7 @@ void MainWindow::popupNodeRename() {
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Apply")) || renamed) {
 			const int nodeId = _sceneMgr->sceneGraph().activeNode();
-			_sceneMgr->nodeRename(nodeId, _currentNodeName);
+			_sceneMgr->nodeRename(_sceneMgr->sceneGraph().uuid(nodeId), _currentNodeName);
 			_currentNodeName = "";
 			ImGui::CloseCurrentPopup();
 		}

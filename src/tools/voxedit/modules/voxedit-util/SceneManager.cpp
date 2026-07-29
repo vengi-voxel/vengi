@@ -894,12 +894,19 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	const bool invalidateNodeCache = (flags & SceneModifiedFlags::InvalidateNodeCache) == SceneModifiedFlags::InvalidateNodeCache;
 	if (invalidateNodeCache) {
 		// TODO: SELECTION: TODO: PERF this invalidates the cache too often - if nothing regarding selection was changed, we should keep the cache.
-		_selectionRegionCache.invalidate(nodeId);
+		_selectionRegionCache.invalidate(_sceneGraph.node(nodeId).uuid());
 	}
 	markDirty();
 	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
 	if (resetTrace) {
 		resetLastTrace();
+	}
+}
+
+void SceneManager::modified(const core::UUID &nodeUUID, const voxel::Region &modifiedRegion, SceneModifiedFlags flags,
+							uint64_t renderRegionMillis) {
+	if (const scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		modified(node->id(), modifiedRegion, flags, renderRegionMillis);
 	}
 }
 
@@ -927,7 +934,7 @@ int SceneManager::nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) 
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume);
 	newNode.setName(core::String::format("color: %i", (int)voxelColor.getColor()));
-	return moveNodeToSceneGraph(newNode, node.parent());
+	return moveNodeToSceneGraph(newNode, _sceneGraph.parentId(node));
 }
 
 int SceneManager::nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
@@ -971,7 +978,7 @@ int SceneManager::nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &pa
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume);
 	newNode.setName(core::String::format("colors: %s", nameSuffix.c_str()));
-	return moveNodeToSceneGraph(newNode, node.parent());
+	return moveNodeToSceneGraph(newNode, _sceneGraph.parentId(node));
 }
 
 void SceneManager::nodeScaleUp(int nodeId) {
@@ -1046,17 +1053,17 @@ void SceneManager::nodeCrop(int nodeId) {
 	modified(nodeId, newVolume->region());
 }
 
-bool SceneManager::startCropSceneJob(int nodeId, const core::String &text) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+bool SceneManager::startCropSceneJob(const core::UUID &nodeUUID, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr || node->volume() == nullptr) {
 		return false;
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeId, snapshot]() {
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot]() {
 		SceneJobResult result;
 		result.type = SceneJobType::CropVolume;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		voxel::RawVolume *newVolume = voxelutil::cropVolume(snapshot);
 		delete snapshot;
@@ -1072,43 +1079,17 @@ bool SceneManager::startCropSceneJob(int nodeId, const core::String &text) {
 	return startActiveSceneJob(SceneJobType::CropVolume, text, core::move(future));
 }
 
-bool SceneManager::nodeResizeAsync(int nodeId, const voxel::Region &region) {
-	SceneJobRequest request;
-	request.type = SceneJobType::ResizeVolume;
-	request.nodeId = nodeId;
-	request.region = region;
-	return startSceneJob(core::move(request));
-}
-
-bool SceneManager::nodeResizeAsync(int nodeId, const glm::ivec3 &size) {
-	voxel::RawVolume *v = volume(nodeId);
-	if (v == nullptr) {
-		return false;
-	}
-	voxel::Region region = v->region();
-	region.shiftUpperCorner(size);
-	return nodeResizeAsync(nodeId, region);
-}
-
-bool SceneManager::nodeColorToNewNodeAsync(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
-	SceneJobRequest request;
-	request.type = SceneJobType::ColorToModel;
-	request.nodeId = nodeId;
-	request.paletteIndices = paletteIndices;
-	return startSceneJob(core::move(request));
-}
-
-bool SceneManager::startScaleUpSceneJob(int nodeId, const core::String &text) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+bool SceneManager::startScaleUpSceneJob(const core::UUID &nodeUUID, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr || node->volume() == nullptr) {
 		return false;
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeId, snapshot]() {
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleUpVolume;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		voxel::RawVolume *newVolume = voxelutil::scaleUp(*snapshot);
 		delete snapshot;
@@ -1124,8 +1105,8 @@ bool SceneManager::startScaleUpSceneJob(int nodeId, const core::String &text) {
 	return startActiveSceneJob(SceneJobType::ScaleUpVolume, text, core::move(future));
 }
 
-bool SceneManager::startScaleDownSceneJob(int nodeId, const core::String &text) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+bool SceneManager::startScaleDownSceneJob(const core::UUID &nodeUUID, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr || node->volume() == nullptr) {
 		return false;
 	}
@@ -1138,10 +1119,10 @@ bool SceneManager::startScaleDownSceneJob(int nodeId, const core::String &text) 
 	}
 	const palette::Palette palette = node->palette();
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeId, snapshot, srcRegion, targetDimensionsHalf, palette]() {
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, srcRegion, targetDimensionsHalf, palette]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleDownVolume;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		voxel::RawVolume *newVolume = new voxel::RawVolume(destRegion);
@@ -1156,7 +1137,7 @@ bool SceneManager::startScaleDownSceneJob(int nodeId, const core::String &text) 
 }
 
 bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(request.nodeUUID);
 	if (node == nullptr || node->volume() == nullptr || !request.region.isValid()) {
 		return false;
 	}
@@ -1164,10 +1145,10 @@ bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
 	const voxel::Region oldRegion = node->volume()->region();
 	const voxel::Region newRegion = request.region;
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeId = request.nodeId, snapshot, oldRegion, newRegion]() {
+	core::Future<SceneJobResult> future = app::async([nodeUUID = request.nodeUUID, snapshot, oldRegion, newRegion]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ResizeVolume;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		voxel::RawVolume *newVolume = voxelutil::resize(snapshot, newRegion);
 		delete snapshot;
@@ -1184,7 +1165,7 @@ bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
 }
 
 bool SceneManager::startVolumeOperationSceneJob(const SceneJobRequest &request) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(request.nodeUUID);
 	if (node == nullptr || node->volume() == nullptr) {
 		return false;
 	}
@@ -1198,26 +1179,26 @@ bool SceneManager::startVolumeOperationSceneJob(const SceneJobRequest &request) 
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::Future<SceneJobResult> future = app::async([request, snapshot, selectionRegion]() {
-		return makeVolumeOperationSceneJobResult(request.type, request.nodeId, snapshot, selectionRegion,
+		return makeVolumeOperationSceneJobResult(request.type, request.nodeUUID, snapshot, selectionRegion,
 												 request.voxel, request.overrideVoxels);
 	});
 	return startActiveSceneJob(request.type, request.text, core::move(future));
 }
 
-bool SceneManager::startSplitObjectsSceneJob(int nodeId, const core::String &text) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+bool SceneManager::startSplitObjectsSceneJob(const core::UUID &nodeUUID, const core::String &text) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr || node->volume() == nullptr) {
 		return false;
 	}
 
-	const int parentNodeId = node->id();
+	const core::UUID parentNodeUUID = node->uuid();
 	const core::String name = node->name();
 	const palette::Palette palette = node->palette();
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeId, parentNodeId, name, palette, snapshot]() {
+	core::Future<SceneJobResult> future = app::async([nodeUUID, parentNodeUUID, name, palette, snapshot]() {
 		SceneJobResult result;
 		result.type = SceneJobType::SplitObjects;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(snapshot);
 		delete snapshot;
@@ -1227,8 +1208,8 @@ bool SceneManager::startSplitObjectsSceneJob(int nodeId, const core::String &tex
 		}
 		for (voxel::RawVolume *volume : volumes) {
 			SceneJobNewNode newNode;
-			newNode.sourceNodeId = nodeId;
-			newNode.parentNodeId = parentNodeId;
+			newNode.sourceNodeUUID = nodeUUID;
+			newNode.parentNodeUUID = parentNodeUUID;
 			newNode.name = name;
 			newNode.palette = palette;
 			newNode.volume = volume;
@@ -1241,12 +1222,15 @@ bool SceneManager::startSplitObjectsSceneJob(int nodeId, const core::String &tex
 }
 
 bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(request.nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(request.nodeUUID);
 	if (node == nullptr || node->volume() == nullptr || request.paletteIndices.empty()) {
 		return false;
 	}
 
-	const int parentNodeId = node->parent();
+	core::UUID parentNodeUUID;
+	if (scenegraph::SceneGraphNode *parentNode = sceneGraphNode(_sceneGraph.parentId(*node))) {
+		parentNodeUUID = parentNode->uuid();
+	}
 	const palette::Palette palette = node->palette();
 	core::String nameSuffix;
 	for (uint8_t idx : request.paletteIndices) {
@@ -1261,10 +1245,10 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([request, parentNodeId, palette, nameSuffix, wanted, snapshot]() {
+	core::Future<SceneJobResult> future = app::async([request, parentNodeUUID, palette, nameSuffix, wanted, snapshot]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ColorToModel;
-		result.nodeId = request.nodeId;
+		result.nodeUUID = request.nodeUUID;
 
 		const voxel::Region region = snapshot->region();
 		voxel::RawVolume *newVolume = new voxel::RawVolume(region);
@@ -1291,8 +1275,8 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 		result.volume = snapshot;
 		result.modifiedRegion = wrapper.dirtyRegion();
 		SceneJobNewNode newNode;
-		newNode.sourceNodeId = request.nodeId;
-		newNode.parentNodeId = parentNodeId;
+		newNode.sourceNodeUUID = request.nodeUUID;
+		newNode.parentNodeUUID = parentNodeUUID;
 		newNode.name = core::String::format("colors: %s", nameSuffix.c_str());
 		newNode.palette = palette;
 		newNode.volume = newVolume;
@@ -1303,8 +1287,8 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 	return startActiveSceneJob(SceneJobType::ColorToModel, request.text, core::move(future));
 }
 
-bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text) {
-	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(nodeId);
+bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const core::String &text) {
+	scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNodeByUUID(nodeUUID);
 	if (sourceNode == nullptr) {
 		Log::warn("splatmerge: no valid source node");
 		return false;
@@ -1325,7 +1309,7 @@ bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text)
 	core::DynamicArray<SceneJobSplatTarget> targets;
 	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &targetNode = *iter;
-		if (targetNode.id() == nodeId || !targetNode.isModelNode() || targetNode.volume() == nullptr) {
+		if (targetNode.uuid() == nodeUUID || !targetNode.isModelNode() || targetNode.volume() == nullptr) {
 			continue;
 		}
 		const voxel::Region targetWorldRegion = _sceneGraph.sceneRegion(targetNode, _currentFrameIdx);
@@ -1333,7 +1317,7 @@ bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text)
 			continue;
 		}
 		SceneJobSplatTarget target;
-		target.nodeId = targetNode.id();
+		target.nodeUUID = targetNode.uuid();
 		target.volume = new voxel::RawVolume(*targetNode.volume());
 		target.palette = targetNode.palette();
 		target.worldRegion = targetWorldRegion;
@@ -1344,11 +1328,11 @@ bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text)
 		return false;
 	}
 
-	core::Future<SceneJobResult> future = app::async([nodeId, sourceSnapshot, sourcePalette, sourceWorldMatrix, sourcePivot,
+	core::Future<SceneJobResult> future = app::async([nodeUUID, sourceSnapshot, sourcePalette, sourceWorldMatrix, sourcePivot,
 													 transformSource, targets = core::move(targets)]() mutable {
 		SceneJobResult result;
 		result.type = SceneJobType::SplatMerge;
-		result.nodeId = nodeId;
+		result.nodeUUID = nodeUUID;
 
 		core::ScopedPtr<voxel::RawVolume> bakedSource;
 		const voxel::RawVolume *worldSource = sourceSnapshot;
@@ -1379,7 +1363,7 @@ bool SceneManager::startSplatMergeSceneJob(int nodeId, const core::String &text)
 				continue;
 			}
 			SceneJobVolumeResult volumeResult;
-			volumeResult.nodeId = target.nodeId;
+			volumeResult.nodeUUID = target.nodeUUID;
 			volumeResult.volume = target.volume;
 			volumeResult.modifiedRegion = targetLocalOverlap;
 			target.volume = nullptr;
@@ -1533,6 +1517,13 @@ voxel::RawVolume* SceneManager::volume(int nodeId) {
 	return nullptr;
 }
 
+voxel::RawVolume *SceneManager::volume(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return volume(node->id());
+	}
+	return nullptr;
+}
+
 const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 	const scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
@@ -1542,8 +1533,20 @@ const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 	return _sceneGraph.resolveVolume(*node);
 }
 
+const voxel::RawVolume *SceneManager::volume(const core::UUID &nodeUUID) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr) {
+		return nullptr;
+	}
+	return _sceneGraph.resolveVolume(*node);
+}
+
 int SceneManager::activeNode() const {
 	return _sceneGraph.activeNode();
+}
+
+const core::UUID &SceneManager::activeNodeUUID() const {
+	return _sceneGraph.activeNodeUUID();
 }
 
 scenegraph::SceneGraphNodeCamera *SceneManager::activeCameraNode() {
@@ -1908,7 +1911,7 @@ bool SceneManager::doUndo() {
 	for (const memento::MementoState* state : parentFixupStates) {
 		scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(state->nodeUUID);
 		scenegraph::SceneGraphNode *parentNode = sceneGraphNodeByUUID(state->parentUUID);
-		if (node && parentNode && node->parent() != parentNode->id()) {
+		if (node && parentNode && node->parentUUID() != parentNode->uuid()) {
 			_sceneGraph.changeParent(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::None);
 		}
 	}
@@ -2040,7 +2043,7 @@ bool SceneManager::nodePasteAsNewNode(int nodeId) {
 	scenegraph::copyNode(*node, newNode, false);
 	newNode.setVolume(new voxel::RawVolume(*_copy.volume));
 	newNode.setPalette(*_copy.palette);
-	return moveNodeToSceneGraph(newNode, node->parent()) != InvalidNodeId;
+	return moveNodeToSceneGraph(newNode, _sceneGraph.parentId(*node)) != InvalidNodeId;
 }
 
 void SceneManager::autoSelectSolidVoxels(scenegraph::SceneGraphNode *node, const voxel::Region &region) {
@@ -2134,7 +2137,7 @@ bool SceneManager::nodeCut(int nodeId) {
 	if (isLocked()) {
 		return false;
 	}
-	voxel::Region selectionRegion = selectionCalculateRegion(nodeId);
+	voxel::Region selectionRegion = selectionCalculateRegion(_sceneGraph.uuid(nodeId));
 	if (!selectionRegion.isValid()) {
 		Log::debug("Cut failed: no selected voxels found");
 		return false;
@@ -2445,7 +2448,7 @@ bool SceneManager::mergeActiveToBackground() {
 		// Grid offset: lower corner modulo chunkSize (handle negative coords)
 		const glm::ivec3 &lc = wr.getLowerCorner();
 		gridOffset = ((lc % chunkSize) + glm::ivec3(chunkSize)) % glm::ivec3(chunkSize);
-		backgroundParentId = node.parent();
+		backgroundParentId = _sceneGraph.parentId(node);
 		break;
 	}
 
@@ -2748,11 +2751,11 @@ int SceneManager::mergeVisibleToTemp() {
 	return newNodeId;
 }
 
-void SceneManager::selectionInvert(int nodeId) {
+void SceneManager::selectionInvert(const core::UUID &nodeUUID) {
 	if (isLocked()) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return;
 	}
@@ -2760,14 +2763,14 @@ void SceneManager::selectionInvert(int nodeId) {
 	// for inverting a box3d region. Maybe we should switch from box3d to another selection mode once invert was triggered in box3d mode?
 	node->invertSelection();
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
-	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+	modified(nodeUUID, node->region(), SceneModifiedFlags::NoUndo);
 }
 
-void SceneManager::selectionUnselect(int nodeId) {
+void SceneManager::selectionUnselect(const core::UUID &nodeUUID) {
 	if (isLocked()) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return;
 	}
@@ -2775,14 +2778,14 @@ void SceneManager::selectionUnselect(int nodeId) {
 	const voxel::Region dirtyRegion = selectionCalculateRegion(*node);
 	node->clearSelection();
 	_modifier->selectBrush().box3D().setSelectionRegion(voxel::Region::InvalidRegion);
-	modified(nodeId, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
+	modified(nodeUUID, dirtyRegion.isValid() ? dirtyRegion : node->region(), SceneModifiedFlags::NoUndo);
 }
 
-void SceneManager::selectionSelectAll(int nodeId) {
+void SceneManager::selectionSelectAll(const core::UUID &nodeUUID) {
 	if (isLocked()) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return;
 	}
@@ -2795,16 +2798,16 @@ void SceneManager::selectionSelectAll(int nodeId) {
 		_modifier->selectBrush().box3D().setSelectionRegion(volume->region());
 	}
 	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
-	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+	modified(nodeUUID, node->region(), SceneModifiedFlags::NoUndo);
 }
 
-bool SceneManager::hasSelection(int nodeId) const {
-	return selectionCalculateRegion(nodeId).isValid();
+bool SceneManager::hasSelection(const core::UUID &nodeUUID) const {
+	return selectionCalculateRegion(nodeUUID).isValid();
 }
 
-bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
-	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-	if (node == nullptr || !node->isModelNode()) {
+bool SceneManager::isSelected(const core::UUID &nodeUUID, const glm::ivec3 &pos) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
+	if (node == nullptr) {
 		return false;
 	}
 	const voxel::RawVolume *volume = node->volume();
@@ -2816,31 +2819,31 @@ bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
 }
 
 voxel::Region SceneManager::selectionCalculateRegion(const scenegraph::SceneGraphNode &node) const {
-	if (_selectionRegionCache.valid(node.id())) {
-		return *_selectionRegionCache.value(node.id());
+	if (_selectionRegionCache.valid(node.uuid())) {
+		return *_selectionRegionCache.value(node.uuid());
 	}
 	const voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
 	const voxel::Region &region = volume->regionForFlag(voxel::FlagOutline);
-	_selectionRegionCache.set(node.id(), region);
+	_selectionRegionCache.set(node.uuid(), region);
 	return region;
 }
 
-voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
-	const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+voxel::Region SceneManager::selectionCalculateRegion(const core::UUID &nodeUUID) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
 	return selectionCalculateRegion(*node);
 }
 
-void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
+void SceneManager::selectionSetBounds(const core::UUID &nodeUUID, const voxel::Region &region) {
 	if (isLocked()) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return;
 	}
@@ -2864,14 +2867,14 @@ void SceneManager::selectionSetBounds(int nodeId, const voxel::Region &region) {
 	if (selectBrush.selectMode() == SelectMode::Box3D) {
 		selectBrush.box3D().setSelectionRegion(clamped);
 	}
-	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+	modified(nodeUUID, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
 
-void SceneManager::selectionSetEllipse(int nodeId) {
+void SceneManager::selectionSetEllipse(const core::UUID &nodeUUID) {
 	if (isLocked()) {
 		return;
 	}
-	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return;
 	}
@@ -2941,7 +2944,7 @@ void SceneManager::selectionSetEllipse(int nodeId) {
 		voxelutil::visitSurfaceVolume(*volume, selectFunc);
 	}
 
-	modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+	modified(nodeUUID, dirtyRegion, SceneModifiedFlags::NoUndo);
 }
 
 void SceneManager::resetLastTrace() {
@@ -2969,7 +2972,7 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	int parent = 0;
 	const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front());
 	if (firstNode) {
-		parent = firstNode->parent();
+		parent = _sceneGraph.parentId(*firstNode);
 	}
 
 	// compute the target parent's world transform so we can bake transforms
@@ -3161,8 +3164,11 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 
 		_mementoHandler->markNodeAdded(_sceneGraph, *node);
 
-		for (int childId : node->children()) {
-			onNewNodeAdded(childId, true);
+		for (const core::UUID &childUUID : node->children()) {
+			scenegraph::SceneGraphNode *child = _sceneGraph.findNodeByUUID(childUUID);
+			if (child != nullptr) {
+				onNewNodeAdded(child->id(), true);
+			}
 		}
 
 		markDirty();
@@ -3263,6 +3269,26 @@ scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
 
 scenegraph::SceneGraphNode *SceneManager::sceneGraphNodeByUUID(const core::UUID &uuid) {
 	return _sceneGraph.findNodeByUUID(uuid);
+}
+
+const scenegraph::SceneGraphNode *SceneManager::sceneGraphNodeByUUID(const core::UUID &uuid) const {
+	return _sceneGraph.findNodeByUUID(uuid);
+}
+
+scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNodeByUUID(const core::UUID &uuid) {
+	scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(uuid);
+	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		return nullptr;
+	}
+	return node;
+}
+
+const scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNodeByUUID(const core::UUID &uuid) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(uuid);
+	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		return nullptr;
+	}
+	return node;
 }
 
 const scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const {
@@ -3510,7 +3536,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	if (v == nullptr) {
 		return;
 	}
-	if (hasSelection(nodeId)) {
+	if (hasSelection(_sceneGraph.uuid(nodeId))) {
 		// Move only the selected voxels (those with FlagOutline set)
 		const voxel::Region &region = v->region();
 		const glm::ivec3 &mins = region.getLowerCorner();
@@ -3639,6 +3665,23 @@ int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, con
 	return args.intVal(name, defaultVal);
 }
 
+core::UUID SceneManager::toNodeUUID(const command::CommandArgs &args, const core::UUID &defaultVal,
+									const core::String &name) const {
+	if (!args.has(name)) {
+		return defaultVal;
+	}
+	const core::String &nodeId = args.str(name);
+	core::UUID uuid(nodeId);
+	if (uuid.isValid() && _sceneGraph.findNodeByUUID(uuid) != nullptr) {
+		return uuid;
+	}
+	const int id = args.intVal(name, InvalidNodeId);
+	if (id != InvalidNodeId && _sceneGraph.hasNode(id)) {
+		return _sceneGraph.node(id).uuid();
+	}
+	return defaultVal;
+}
+
 void SceneManager::construct() {
 	const core::VarDef voxEditColorWheel(cfg::VoxEditColorWheel, false, N_("Color wheel"), N_("Use the color wheel in the palette color editing"));
 	core::Var::registerVar(voxEditColorWheel);
@@ -3755,13 +3798,13 @@ void SceneManager::construct() {
 	command::Command::registerCommand("resizetoselection")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to resize"})
 		.setHandler([&](const command::CommandArgs &args) {
-			const int activeNodeId = toNodeId(args, activeNode());
-			scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNodeId);
+			const core::UUID nodeUUID = toNodeUUID(args, activeNodeUUID());
+			scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 			if (node == nullptr) {
 				return;
 			}
 			const voxel::Region &region = selectionCalculateRegion(*node);
-			nodeResizeAsync(activeNodeId, region);
+			nodeResizeAsync(nodeUUID, region);
 		}).setHelp(_("Resize the volume to the current selection"));
 
 	command::Command::registerCommand("xs")
@@ -4065,11 +4108,11 @@ void SceneManager::construct() {
 			const int nodeId = toNodeId(args, activeNode());
 			const core::String &type = args.str("type");
 			if (type == "none") {
-				selectionUnselect(nodeId);
+				selectionUnselect(_sceneGraph.uuid(nodeId));
 			} else if (type == "all") {
-				selectionSelectAll(nodeId);
+				selectionSelectAll(_sceneGraph.uuid(nodeId));
 			} else if (type == "invert") {
-				selectionInvert(nodeId);
+				selectionInvert(_sceneGraph.uuid(nodeId));
 			}
 		}).setHelp(_("Select all, nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
@@ -4190,12 +4233,12 @@ void SceneManager::construct() {
 					Log::warn("No valid palette index given for colortomodel");
 					return;
 				}
-				nodeColorToNewNodeAsync(nodeId, indices);
+				nodeColorToNewNodeAsync(_sceneGraph.uuid(nodeId), indices);
 			} else {
 				const voxel::Voxel voxel = _modifier->cursorVoxel();
 				core::Buffer<uint8_t> indices;
 				indices.push_back(voxel.getColor());
-				nodeColorToNewNodeAsync(nodeId, indices);
+				nodeColorToNewNodeAsync(_sceneGraph.uuid(nodeId), indices);
 			}
 		}).setHelp(_("Move the voxels of the current selected palette index, the given index or a comma-separated list of indices into a new node"));
 
@@ -4347,7 +4390,7 @@ void SceneManager::construct() {
 			const int y = args.intVal("y", x);
 			const int z = args.intVal("z", y);
 			const int nodeId = toNodeId(args, activeNode());
-			nodeResizeAsync(nodeId, glm::ivec3(x, y, z));
+			nodeResizeAsync(_sceneGraph.uuid(nodeId), glm::ivec3(x, y, z));
 		}).setHelp(_("Resize your current model node by the specified size"));
 
 	command::Command::registerCommand("rescalecontent")
@@ -4423,7 +4466,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("paste")
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = activeNode();
-			const voxel::Region &region = selectionCalculateRegion(nodeId);
+			const voxel::Region &region = selectionCalculateRegion(_sceneGraph.uuid(nodeId));
 			if (region.isValid()) {
 				paste(region.getLowerCorner());
 			} else {
@@ -4734,7 +4777,7 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to activate"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			if (!args.has("nodeid")) {
-				Log::info("Active node: %i", activeNode());
+				Log::info("Active node: %i (%s)", activeNode(), activeNodeUUID().str().c_str());
 				return;
 			}
 			const int nodeId = toNodeId(args, activeNode());
@@ -5144,7 +5187,7 @@ int SceneManager::addModelAdjacent(int sourceNodeId, voxel::FaceNames face) {
 	newNode.setAllKeyFrames(source->allKeyFrames(), DEFAULT_ANIMATION);
 	const glm::vec3 delta = adjacentObb.origin() - sourceObb.origin();
 	scenegraph::offsetNodeWorldTransforms(newNode, delta);
-	int parentId = source->parent();
+	int parentId = _sceneGraph.parentId(*source);
 	if (parentId == InvalidNodeId) {
 		parentId = _sceneGraph.root().id();
 	}
@@ -5496,10 +5539,11 @@ const core::String &SceneManager::pendingSceneJobText(int index) const {
 }
 
 bool SceneManager::startSceneJob(SceneJobType type, int nodeId) {
-	SceneJobRequest request;
-	request.type = type;
-	request.nodeId = nodeId;
-	return startSceneJob(core::move(request));
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return false;
+	}
+	return startSceneJob(type, node->uuid());
 }
 
 bool SceneManager::startSceneJob(SceneJobRequest &&request) {
@@ -5515,11 +5559,11 @@ bool SceneManager::startSceneJob(SceneJobRequest &&request) {
 
 	switch (request.type) {
 	case SceneJobType::CropVolume:
-		return startCropSceneJob(request.nodeId, request.text);
+		return startCropSceneJob(request.nodeUUID, request.text);
 	case SceneJobType::ScaleUpVolume:
-		return startScaleUpSceneJob(request.nodeId, request.text);
+		return startScaleUpSceneJob(request.nodeUUID, request.text);
 	case SceneJobType::ScaleDownVolume:
-		return startScaleDownSceneJob(request.nodeId, request.text);
+		return startScaleDownSceneJob(request.nodeUUID, request.text);
 	case SceneJobType::ResizeVolume:
 		return startResizeSceneJob(request);
 	// These jobs all snapshot one volume and select the concrete edit by request.type.
@@ -5530,11 +5574,11 @@ bool SceneManager::startSceneJob(SceneJobRequest &&request) {
 	case SceneJobType::FillHollowVolume:
 		return startVolumeOperationSceneJob(request);
 	case SceneJobType::SplitObjects:
-		return startSplitObjectsSceneJob(request.nodeId, request.text);
+		return startSplitObjectsSceneJob(request.nodeUUID, request.text);
 	case SceneJobType::ColorToModel:
 		return startColorToModelSceneJob(request);
 	case SceneJobType::SplatMerge:
-		return startSplatMergeSceneJob(request.nodeId, request.text);
+		return startSplatMergeSceneJob(request.nodeUUID, request.text);
 	case SceneJobType::None:
 	case SceneJobType::Max:
 		break;
@@ -5580,28 +5624,28 @@ bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
 	case SceneJobType::DeleteSelectedVolume:
 	case SceneJobType::HollowVolume:
 	case SceneJobType::FillHollowVolume: {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(result.nodeUUID);
 		if (node == nullptr) {
-			Log::warn("Can't apply background scene job result - node %i no longer exists", result.nodeId);
+			Log::warn("Can't apply background scene job result - node %s no longer exists", result.nodeUUID.str().c_str());
 			return false;
 		}
 		voxel::RawVolume *newVolume = result.releaseVolume();
-		if (!setNewVolume(result.nodeId, newVolume, true)) {
+		if (!setNewVolume(node->id(), newVolume, true)) {
 			delete newVolume;
 			return false;
 		}
-		modified(result.nodeId, result.modifiedRegion);
+		modified(result.nodeUUID, result.modifiedRegion);
 		return true;
 	}
 	case SceneJobType::ResizeVolume: {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(result.nodeUUID);
 		if (node == nullptr) {
-			Log::warn("Can't apply background scene job result - node %i no longer exists", result.nodeId);
+			Log::warn("Can't apply background scene job result - node %s no longer exists", result.nodeUUID.str().c_str());
 			return false;
 		}
 		const voxel::Region oldRegion = node->region();
 		voxel::RawVolume *newVolume = result.releaseVolume();
-		if (!setNewVolume(result.nodeId, newVolume, false)) {
+		if (!setNewVolume(node->id(), newVolume, false)) {
 			delete newVolume;
 			return false;
 		}
@@ -5611,11 +5655,11 @@ bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
 		const glm::ivec3 mins = newRegion.getLowerCorner();
 		const glm::ivec3 maxs = newRegion.getUpperCorner();
 		if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
-			modified(result.nodeId, result.modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
+			modified(result.nodeUUID, result.modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
 		} else {
-			modified(result.nodeId, result.modifiedRegion);
+			modified(result.nodeUUID, result.modifiedRegion);
 		}
-		if (activeNode() == result.nodeId) {
+		if (activeNode() == node->id()) {
 			const glm::ivec3 &refPos = referencePosition();
 			if (!newRegion.containsPoint(refPos)) {
 				setReferencePosition(newRegion.getCenter());
@@ -5627,45 +5671,55 @@ bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
 	case SceneJobType::ColorToModel: {
 		memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "scenejob");
 		if (result.volume != nullptr) {
-			scenegraph::SceneGraphNode *node = sceneGraphModelNode(result.nodeId);
+			scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(result.nodeUUID);
 			if (node == nullptr) {
+				Log::warn("Can't apply background scene job result - node %s no longer exists", result.nodeUUID.str().c_str());
 				return false;
 			}
 			voxel::RawVolume *newVolume = result.releaseVolume();
-			if (!setNewVolume(result.nodeId, newVolume, true)) {
+			if (!setNewVolume(node->id(), newVolume, true)) {
 				delete newVolume;
 				return false;
 			}
-			modified(result.nodeId, result.modifiedRegion);
+			modified(result.nodeUUID, result.modifiedRegion);
 		}
 		for (SceneJobNewNode &newNodeResult : result.newNodes) {
-			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-			if (scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNode(newNodeResult.sourceNodeId)) {
-				scenegraph::copyNode(*sourceNode, newNode, false, true);
+			scenegraph::SceneGraphNode *sourceNode = sceneGraphModelNodeByUUID(newNodeResult.sourceNodeUUID);
+			scenegraph::SceneGraphNode *parentNode = sceneGraphNodeByUUID(newNodeResult.parentNodeUUID);
+			if (sourceNode == nullptr || parentNode == nullptr) {
+				Log::warn("Can't apply background scene job result - source or parent node no longer exists");
+				return false;
 			}
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+			scenegraph::copyNode(*sourceNode, newNode, false, true);
 			newNode.setName(newNodeResult.name);
 			newNode.setPalette(newNodeResult.palette);
 			newNode.setVolume(newNodeResult.releaseVolume());
-			moveNodeToSceneGraph(newNode, newNodeResult.parentNodeId);
+			moveNodeToSceneGraph(newNode, parentNode->id());
 		}
 		return true;
 	}
 	case SceneJobType::SplatMerge: {
 		memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "splatmerge");
 		for (SceneJobVolumeResult &volumeResult : result.volumes) {
-			scenegraph::SceneGraphNode *node = sceneGraphModelNode(volumeResult.nodeId);
+			scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(volumeResult.nodeUUID);
 			if (node == nullptr) {
+				Log::warn("Can't apply background scene job result - target node %s no longer exists",
+						  volumeResult.nodeUUID.str().c_str());
 				continue;
 			}
 			voxel::RawVolume *newVolume = volumeResult.releaseVolume();
-			if (!setNewVolume(volumeResult.nodeId, newVolume, true)) {
+			if (!setNewVolume(node->id(), newVolume, true)) {
 				delete newVolume;
 				continue;
 			}
-			modified(volumeResult.nodeId, volumeResult.modifiedRegion, SceneModifiedFlags::All);
+			modified(volumeResult.nodeUUID, volumeResult.modifiedRegion, SceneModifiedFlags::All);
 		}
 		if (result.removeSourceNode) {
-			nodeRemove(result.nodeId, false);
+			if (!nodeRemove(result.nodeUUID, false)) {
+				Log::warn("Can't remove background scene job source node %s - it no longer exists",
+						  result.nodeUUID.str().c_str());
+			}
 		}
 		return !result.volumes.empty();
 	}
@@ -5685,7 +5739,7 @@ bool SceneManager::queueSceneJobForGroup(SceneJobType type) {
 		}
 		SceneJobRequest request;
 		request.type = type;
-		request.nodeId = groupNodeId;
+		request.nodeUUID = node->uuid();
 		request.voxel = _modifier->cursorVoxel();
 		request.overrideVoxels = _modifier->isMode(ModifierType::Override);
 		queued |= startSceneJob(core::move(request));
@@ -6655,6 +6709,13 @@ int SceneManager::nodeReference(int nodeId) {
 	return InvalidNodeId;
 }
 
+int SceneManager::nodeReference(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeReference(node->id());
+	}
+	return InvalidNodeId;
+}
+
 bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
 	if (isLocked()) {
 		return false;
@@ -6667,6 +6728,21 @@ bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
 		return true;
 	}
 	return false;
+}
+
+bool SceneManager::nodeDuplicate(const core::UUID &nodeUUID, core::UUID *newNodeUUID) {
+	scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr) {
+		return false;
+	}
+	int newNodeId = InvalidNodeId;
+	if (!nodeDuplicate(node->id(), &newNodeId)) {
+		return false;
+	}
+	if (newNodeUUID != nullptr && newNodeId != InvalidNodeId) {
+		*newNodeUUID = _sceneGraph.node(newNodeId).uuid();
+	}
+	return true;
 }
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags) {
@@ -6683,6 +6759,23 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId, scenegraph::Node
 	return false;
 }
 
+bool SceneManager::nodeMove(const core::UUID &sourceNodeUUID, const core::UUID &targetNodeUUID,
+							 scenegraph::NodeMoveFlag flags) {
+	if (isLocked()) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *source = sceneGraphNodeByUUID(sourceNodeUUID);
+	if (source == nullptr) {
+		return false;
+	}
+	if (!_sceneGraph.changeParent(sourceNodeUUID, targetNodeUUID, flags)) {
+		return false;
+	}
+	_mementoHandler->markNodeMoved(_sceneGraph, *source);
+	markDirty();
+	return true;
+}
+
 bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
 	if (isLocked()) {
 		return false;
@@ -6692,6 +6785,13 @@ bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const co
 			_mementoHandler->markNodePropertyChange(_sceneGraph, *node);
 			return true;
 		}
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetProperty(const core::UUID &nodeUUID, const core::String &key, const core::String &value) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetProperty(node->id(), key, value);
 	}
 	return false;
 }
@@ -6709,6 +6809,13 @@ bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 	return false;
 }
 
+bool SceneManager::nodeRemoveProperty(const core::UUID &nodeUUID, const core::String &key) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveProperty(node->id(), key);
+	}
+	return false;
+}
+
 bool SceneManager::nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint) {
 	if (isLocked()) {
 		return false;
@@ -6718,6 +6825,13 @@ bool SceneManager::nodeSetIKConstraint(int nodeId, const scenegraph::IKConstrain
 		_mementoHandler->markIKConstraintChange(_sceneGraph, *node);
 		markDirty();
 		return true;
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetIKConstraint(const core::UUID &nodeUUID, const scenegraph::IKConstraint &constraint) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetIKConstraint(node->id(), constraint);
 	}
 	return false;
 }
@@ -6738,6 +6852,13 @@ bool SceneManager::nodeRemoveIKConstraint(int nodeId) {
 	return false;
 }
 
+bool SceneManager::nodeRemoveIKConstraint(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveIKConstraint(node->id());
+	}
+	return false;
+}
+
 bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 	if (isLocked()) {
 		return false;
@@ -6748,12 +6869,19 @@ bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 	return false;
 }
 
+bool SceneManager::nodeRename(const core::UUID &nodeUUID, const core::String &name) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRename(node->id(), name);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type) {
 	core::Buffer<int> removeChildren;
-	for (int childId : node.children()) {
-		const scenegraph::SceneGraphNode &childNode = _sceneGraph.node(childId);
-		if (childNode.type() == type) {
-			removeChildren.push_back(childId);
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = _sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr && child->type() == type) {
+			removeChildren.push_back(child->id());
 		}
 	}
 	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "noderemovebytype");
@@ -6793,6 +6921,13 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 	return false;
 }
 
+bool SceneManager::nodeSetVisible(const core::UUID &nodeUUID, bool visible) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetVisible(node->id(), visible);
+	}
+	return false;
+}
+
 bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 	if (isLocked()) {
 		return false;
@@ -6805,12 +6940,26 @@ bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 	return false;
 }
 
+bool SceneManager::nodeSetLocked(const core::UUID &nodeUUID, bool locked) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetLocked(node->id(), locked);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 	if (isLocked()) {
 		return false;
 	}
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 		return nodeRemove(*node, recursive);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemove(const core::UUID &nodeUUID, bool recursive) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemove(node->id(), recursive);
 	}
 	return false;
 }
@@ -6856,9 +7005,13 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	if (recursive) {
 		// create a copy to prevent concurrent modification errors
 		scenegraph::SceneGraphNodeChildren childrenCopy = node.children();
-		for (int child : childrenCopy) {
-			if (!nodeRemove(child, recursive)) {
-				Log::error("Failed to remove child node %i", child);
+		for (const core::UUID &childUUID : childrenCopy) {
+			scenegraph::SceneGraphNode *child = _sceneGraph.findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			if (!nodeRemove(child->id(), recursive)) {
+				Log::error("Failed to remove child node %i", child->id());
 				return false;
 			}
 		}
@@ -6887,7 +7040,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 
 void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId) {
 	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "nodeduplicate");
-	const int nodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
+	const int nodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, _sceneGraph.parentId(node), true);
 	onNewNodeAdded(nodeId, false);
 	if (newNodeId) {
 		*newNodeId = nodeId;
@@ -6938,6 +7091,13 @@ bool SceneManager::nodeUnreference(int nodeId) {
 	}
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 		return nodeUnreference(*node);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUnreference(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeUnreference(node->id());
 	}
 	return false;
 }
@@ -7310,6 +7470,168 @@ bool SceneManager::nodeActivate(int nodeId) {
 	return true;
 }
 
+bool SceneManager::nodeActivate(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeActivate(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodeAddKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeAddKeyFrame(node->id(), frameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveKeyFrame(node->id(), frameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveKeyFrameByIndex(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveKeyFrameByIndex(node->id(), keyFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const glm::vec3 &angles, const glm::vec3 &scale,
+										const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeUpdateTransform(node->id(), angles, scale, translation, keyFrameIdx, local);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const glm::mat4 &matrix,
+										scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeUpdateTransform(node->id(), matrix, keyFrameIdx, local);
+	}
+	return false;
+}
+
+bool SceneManager::nodeResetTransform(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeResetTransform(node->id(), keyFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeTransformMirror(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeTransformMirror(node->id(), keyFrameIdx, axis);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
+													scenegraph::InterpolationType interpolation) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeUpdateKeyFrameInterpolation(node->id(), keyFrameIdx, interpolation);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUpdatePivot(const core::UUID &nodeUUID, const glm::vec3 &pivot) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeUpdatePivot(node->id(), pivot);
+	}
+	return false;
+}
+
+bool SceneManager::nodeShiftAllKeyframes(const core::UUID &nodeUUID, const glm::vec3 &shift) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeShiftAllKeyframes(node->id(), shift);
+	}
+	return false;
+}
+
+bool SceneManager::nodeCalculateNormals(const core::UUID &nodeUUID, voxel::Connectivity connectivity, bool recalcAll,
+										bool fillAndHollow) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeCalculateNormals(node->id(), connectivity, recalcAll, fillAndHollow);
+	}
+	return false;
+}
+
+bool SceneManager::nodePasteAsNewNode(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodePasteAsNewNode(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodeCut(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeCut(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveNormals(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveNormals(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodeDuplicateColor(const core::UUID &nodeUUID, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeDuplicateColor(node->id(), palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveColor(const core::UUID &nodeUUID, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveColor(node->id(), palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetMaterial(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialProperty material,
+								   float value) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetMaterial(node->id(), palIdx, material, value);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetColor(const core::UUID &nodeUUID, uint8_t palIdx, const color::RGBA &color) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetColor(node->id(), palIdx, color);
+	}
+	return false;
+}
+
+void SceneManager::nodeResize(const core::UUID &nodeUUID, const voxel::Region &region) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeResize(node->id(), region);
+	}
+}
+
+void SceneManager::nodeResize(const core::UUID &nodeUUID, const glm::ivec3 &size) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeResize(node->id(), size);
+	}
+}
+
+void SceneManager::nodeRescaleContent(const core::UUID &nodeUUID, const glm::ivec3 &targetSize) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeRescaleContent(node->id(), targetSize);
+	}
+}
+
+void SceneManager::nodeBakeTransform(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeBakeTransform(node->id());
+	}
+}
+
 bool SceneManager::empty() const {
 	return _sceneGraph.empty();
 }
@@ -7402,6 +7724,205 @@ const memento::MementoHandler &SceneManager::mementoHandler() const {
 
 memento::MementoHandler &SceneManager::mementoHandler() {
 	return *_mementoHandler;
+}
+
+bool SceneManager::setNewVolume(const core::UUID &nodeUUID, voxel::RawVolume *volume, bool deleteMesh) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return setNewVolume(node->id(), volume, deleteMesh);
+	}
+	return false;
+}
+
+bool SceneManager::startSceneJob(SceneJobType type, const core::UUID &nodeUUID) {
+	if (sceneGraphModelNodeByUUID(nodeUUID) == nullptr) {
+		return false;
+	}
+	SceneJobRequest request;
+	request.type = type;
+	request.nodeUUID = nodeUUID;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::nodeSave(const core::UUID &nodeUUID, const core::String &file) {
+	if (const scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSave(node->id(), file);
+	}
+	return false;
+}
+
+int SceneManager::nodeColorToNewNode(const core::UUID &nodeUUID, const voxel::Voxel voxelColor) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeColorToNewNode(node->id(), voxelColor);
+	}
+	return InvalidNodeId;
+}
+
+int SceneManager::nodeColorToNewNode(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeColorToNewNode(node->id(), paletteIndices);
+	}
+	return InvalidNodeId;
+}
+
+void SceneManager::nodeCrop(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeCrop(node->id());
+	}
+}
+
+void SceneManager::nodeSplitObjects(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeSplitObjects(node->id());
+	}
+}
+
+void SceneManager::nodeScaleDown(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeScaleDown(node->id());
+	}
+}
+
+void SceneManager::nodeScaleUp(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeScaleUp(node->id());
+	}
+}
+
+bool SceneManager::nodeResizeAsync(const core::UUID &nodeUUID, const voxel::Region &region) {
+	if (sceneGraphNodeByUUID(nodeUUID) == nullptr) {
+		return false;
+	}
+	SceneJobRequest request;
+	request.type = SceneJobType::ResizeVolume;
+	request.nodeUUID = nodeUUID;
+	request.region = region;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::nodeResizeAsync(const core::UUID &nodeUUID, const glm::ivec3 &size) {
+	voxel::RawVolume *v = volume(nodeUUID);
+	if (v == nullptr) {
+		return false;
+	}
+	voxel::Region region = v->region();
+	region.shiftUpperCorner(size);
+	return nodeResizeAsync(nodeUUID, region);
+}
+
+bool SceneManager::nodeColorToNewNodeAsync(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices) {
+	if (sceneGraphNodeByUUID(nodeUUID) == nullptr) {
+		return false;
+	}
+	SceneJobRequest request;
+	request.type = SceneJobType::ColorToModel;
+	request.nodeUUID = nodeUUID;
+	request.paletteIndices = paletteIndices;
+	return startSceneJob(core::move(request));
+}
+
+bool SceneManager::nodeCopy(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeCopy(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodePaste(const core::UUID &nodeUUID, const glm::ivec3 &pos) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodePaste(node->id(), pos);
+	}
+	return false;
+}
+
+bool SceneManager::nodeGlobalCopy(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeGlobalCopy(node->id());
+	}
+	return false;
+}
+
+bool SceneManager::nodeGlobalPaste(const core::UUID &nodeUUID, const glm::ivec3 &pos) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeGlobalPaste(node->id(), pos);
+	}
+	return false;
+}
+
+int SceneManager::mergeNodes(const core::UUID &nodeUUID1, const core::UUID &nodeUUID2) {
+	const scenegraph::SceneGraphNode *node1 = sceneGraphNodeByUUID(nodeUUID1);
+	const scenegraph::SceneGraphNode *node2 = sceneGraphNodeByUUID(nodeUUID2);
+	if (node1 == nullptr || node2 == nullptr) {
+		return InvalidNodeId;
+	}
+	return mergeNodes(node1->id(), node2->id());
+}
+
+bool SceneManager::splatMerge(const core::UUID &sourceNodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(sourceNodeUUID)) {
+		return splatMerge(node->id());
+	}
+	return false;
+}
+
+int SceneManager::addModelAdjacent(const core::UUID &sourceNodeUUID, voxel::FaceNames face) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(sourceNodeUUID)) {
+		return addModelAdjacent(node->id(), face);
+	}
+	return InvalidNodeId;
+}
+
+void SceneManager::nodeUpdateVoxelType(const core::UUID &nodeUUID, uint8_t palIdx, voxel::VoxelType newType) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeUpdateVoxelType(node->id(), palIdx, newType);
+	}
+}
+
+void SceneManager::nodeMoveVoxels(const core::UUID &nodeUUID, const glm::ivec3 &m) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeMoveVoxels(node->id(), m);
+	}
+}
+
+void SceneManager::nodeShift(const core::UUID &nodeUUID, const glm::ivec3 &m) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeShift(node->id(), m);
+	}
+}
+
+void SceneManager::nodeRemoveUnusedColors(const core::UUID &nodeUUID, bool reindexPalette) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		nodeRemoveUnusedColors(node->id(), reindexPalette);
+	}
+}
+
+bool SceneManager::nodeReduceColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &srcPalIdx,
+									uint8_t targetPalIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeReduceColors(*node, srcPalIdx, targetPalIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeQuantizeColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &selectedIndices,
+									  int targetColorCount) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeQuantizeColors(*node, selectedIndices, targetColorCount);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveAlpha(const core::UUID &nodeUUID, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeRemoveAlpha(*node, palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeResetMaterial(const core::UUID &nodeUUID, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeResetMaterial(*node, palIdx);
+	}
+	return false;
 }
 
 }

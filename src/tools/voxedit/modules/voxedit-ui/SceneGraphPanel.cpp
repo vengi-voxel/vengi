@@ -145,14 +145,15 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		return;
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+	const core::String nodeUUIDStr = node.uuid().str();
 	const int activeNode = sceneGraph.activeNode();
-	const bool referenceNode = node.referenceUUID() == sceneGraph.node(activeNode).uuid();
+	const bool referenceNode = node.referenceUUID() == sceneGraph.activeNodeUUID();
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
 	ImGui::TableNextRow();
-	char idbuf[64];
-	int l = core::String::formatBuf(idbuf, sizeof(idbuf), "##%ic", nodeId);
+	char idbuf[80];
+	int l = core::String::formatBuf(idbuf, sizeof(idbuf), "##%sX", nodeUUIDStr.c_str());
 	{ // column 1
 		ImGui::TableNextColumn();
 		bool visible = node.visible();
@@ -161,7 +162,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			ImGui::BeginDisabled(_hideInactive->boolVal());
 			idbuf[l - 1] = 'v';
 			if (ImGui::Checkbox(idbuf, &visible)) {
-				command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
+				command::executeCommands("nodetogglevisible " + nodeUUIDStr, &listener);
 			}
 			ImGui::EndDisabled();
 		}
@@ -174,7 +175,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		bool locked = node.locked();
 		idbuf[l - 1] = 'l';
 		if (ImGui::Checkbox(idbuf, &locked)) {
-			command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
+			command::executeCommands("nodetogglelock " + nodeUUIDStr, &listener);
 		}
 	}
 	{ // column 3
@@ -183,8 +184,8 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		const ImVec4 colvec((float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f,
 							(float)color.a / 255.0f);
 		idbuf[l - 1] = 'c';
-		char popupId[64];
-		core::String::formatBuf(popupId, sizeof(popupId), "##nodecolor%i", nodeId);
+		char popupId[80];
+		core::String::formatBuf(popupId, sizeof(popupId), "##nodecolor%s", nodeUUIDStr.c_str());
 		if (ImGui::ColorButton(idbuf, colvec, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop)) {
 			ImGui::OpenPopup(popupId);
 		}
@@ -202,7 +203,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 
 		const char *icon = nodeIcon(node.type());
 		char name[256];
-		core::String::formatBuf(name, sizeof(name), "%s##%i", node.name().c_str(), nodeId);
+		core::String::formatBuf(name, sizeof(name), "%s##%s", node.name().c_str(), nodeUUIDStr.c_str());
 		const bool selected = nodeId == activeNode;
 		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 		if (node.isLeaf()) {
@@ -219,7 +220,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			ImGui::Indent(indent);
 		}
 
-		bool isOpen = !_collapsedNodes.has(nodeId);
+		bool isOpen = !_collapsedNodes.has(node.uuid());
 		ImGui::SetNextItemOpen(isOpen);
 
 		{
@@ -234,9 +235,9 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			if (!node.isLeaf()) {
 				if (visible != isOpen) {
 					if (visible)
-						_collapsedNodes.remove(nodeId);
+						_collapsedNodes.remove(node.uuid());
 					else
-						_collapsedNodes.insert(nodeId);
+						_collapsedNodes.insert(node.uuid());
 					_displayListDirty = true;
 				}
 			}
@@ -253,24 +254,24 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 		if (nodeId != sceneGraph.root().id()) {
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::TextUnformatted(name);
-				const int sourceNodeId = nodeId;
-				ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeId, sizeof(int),
+				const core::UUID sourceNodeUUID = node.uuid();
+				ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeUUID, sizeof(core::UUID),
 										  ImGuiCond_Always);
 				ImGui::EndDragDropSource();
 			}
 		}
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
-				_dragDropSourceNodeId = *(int *)payload->Data;
-				_dragDropTargetNodeId = nodeId;
+				_dragDropSourceNodeUUID = *(const core::UUID *)payload->Data;
+				_dragDropTargetNodeUUID = node.uuid();
 				_popupDragAndDrop = true;
 			}
 			ImGui::EndDragDropTarget();
 		}
 		contextMenu(camera, sceneGraph, node, listener);
 		if (ImGui::IsItemActivated()) {
-			_sceneMgr->nodeActivate(nodeId);
-			_lastActivedNodeId = nodeId;
+			_sceneMgr->nodeActivate(node.uuid());
+			_lastActivedNodeUUID = node.uuid();
 		}
 		if (referenceNode) {
 			ImGui::TooltipTextUnformatted(_("Reference Node"));
@@ -280,9 +281,9 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 	}
 	{ // column 5
 		ImGui::TableNextColumn();
-		core::String::formatBuf(idbuf, sizeof(idbuf), ICON_LC_TRASH"##delete-node-%i", nodeId);
+		core::String::formatBuf(idbuf, sizeof(idbuf), ICON_LC_TRASH"##delete-node-%s", nodeUUIDStr.c_str());
 		if (ImGui::Button(idbuf)) {
-			_sceneMgr->nodeRemove(nodeId, false);
+			_sceneMgr->nodeRemove(node.uuid(), false);
 		}
 		ImGui::TooltipTextUnformatted(_("Delete this model"));
 	}
@@ -292,7 +293,7 @@ bool SceneGraphPanel::init() {
 	_animationSpeedVar = core::getVar(cfg::VoxEditAnimationSpeed);
 	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	_lastActivedNodeId = sceneGraph.activeNode();
+	_lastActivedNodeUUID = sceneGraph.activeNodeUUID();
 	return true;
 }
 
@@ -300,15 +301,18 @@ void SceneGraphPanel::rebuildDisplayList(const scenegraph::SceneGraph &sceneGrap
 	core_trace_scoped(RebuildDisplayList);
 	const auto &node = sceneGraph.node(nodeId);
 	bool filtered = isFiltered(node);
-	bool expanded = !_collapsedNodes.has(nodeId);
+	bool expanded = !_collapsedNodes.has(node.uuid());
 
 	if (!filtered) {
 		_displayNodes.emplace_back(nodeId, depth, !node.isLeaf());
 	}
 
 	if ((!filtered && expanded) || filtered) {
-		for (int childId : node.children()) {
-			rebuildDisplayList(sceneGraph, childId, depth + 1);
+		for (const core::UUID &childUUID : node.children()) {
+			const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child != nullptr) {
+				rebuildDisplayList(sceneGraph, child->id(), depth + 1);
+			}
 		}
 	}
 }
@@ -329,11 +333,10 @@ void SceneGraphPanel::ensureDisplayList(const scenegraph::SceneGraph &sceneGraph
 }
 
 void SceneGraphPanel::makeVisible(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
-	int parentId = node.parent();
-	while (parentId != InvalidNodeId) {
-		_collapsedNodes.remove(parentId);
-		const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
-		parentId = parentNode.parent();
+	const scenegraph::SceneGraphNode *parent = sceneGraph.parentNode(node);
+	while (parent != nullptr) {
+		_collapsedNodes.remove(parent->uuid());
+		parent = sceneGraph.parentNode(*parent);
 	}
 	_displayListDirty = true;
 }
@@ -379,7 +382,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 		});
 
 		toolbar.button(ICON_LC_TRASH, _("Remove the active node with all its children"), [&sceneGraph, this]() {
-			_sceneMgr->nodeRemove(sceneGraph.activeNode(), true);
+			_sceneMgr->nodeRemove(sceneGraph.activeNodeUUID(), true);
 		});
 
 		toolbar.button([onlyOneModel, &listener, this](const ImVec2 &buttonSize) {
@@ -446,7 +449,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			ImGui::TableHeadersRow();
 
 			int referencedNode = InvalidNodeId;
-			const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
+			const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNodeUUID());
 			if (activeNode.type() == scenegraph::SceneGraphNodeType::ModelReference) {
 				const scenegraph::SceneGraphNode *referenced = sceneGraph.findNodeByUUID(activeNode.referenceUUID());
 				if (referenced != nullptr) {
@@ -454,8 +457,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 				}
 			}
 
-			if (_lastActivedNodeId != sceneGraph.activeNode()) {
-				_lastActivedNodeId = sceneGraph.activeNode();
+			if (_lastActivedNodeUUID != sceneGraph.activeNodeUUID()) {
+				_lastActivedNodeUUID = sceneGraph.activeNodeUUID();
 				_scrollToActiveNode = true;
 				makeVisible(sceneGraph, activeNode);
 			}
@@ -496,14 +499,16 @@ void SceneGraphPanel::registerPopups() {
 	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP, popupFlags)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		const scenegraph::SceneGraphNode *sourceNode = _sceneMgr->sceneGraphNode(_dragDropSourceNodeId);
-		const scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphNode(_dragDropTargetNodeId);
+		const scenegraph::SceneGraphNode *sourceNode = _sceneMgr->sceneGraphNodeByUUID(_dragDropSourceNodeUUID);
+		const scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphNodeByUUID(_dragDropTargetNodeUUID);
 
-		const bool canChangeParent = sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId);
+		const bool canChangeParent =
+			sourceNode != nullptr && targetNode != nullptr &&
+			sceneGraph.canChangeParent(*sourceNode, targetNode->id());
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
 				if (ImGui::IconButton(ICON_LC_LINK, _("Merge onto"))) {
-					_sceneMgr->mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
+					_sceneMgr->mergeNodes(targetNode->uuid(), sourceNode->uuid());
 					_displayListDirty = true;
 					ImGui::CloseCurrentPopup();
 				}
@@ -519,7 +524,7 @@ void SceneGraphPanel::registerPopups() {
 				flags = scenegraph::NodeMoveFlag::KeepWorldTransform;
 			}
 			if (flags != scenegraph::NodeMoveFlag::None) {
-				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId, flags)) {
+				if (!_sceneMgr->nodeMove(_dragDropSourceNodeUUID, _dragDropTargetNodeUUID, flags)) {
 					Log::error("Failed to move node");
 				}
 				_displayListDirty = true;

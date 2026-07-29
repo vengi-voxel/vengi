@@ -25,8 +25,7 @@
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
 		const int propsBefore = (int)node.properties().size();
 
 		// add a new property
@@ -51,8 +50,7 @@
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
 
 		// add a boolean property
 		ctx->ItemInputValue("##nodeproperties/##newpropertykey", "BoolProp");
@@ -73,8 +71,7 @@
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
 
 		// add a text property
 		ctx->ItemInputValue("##nodeproperties/##newpropertykey", "EditMe");

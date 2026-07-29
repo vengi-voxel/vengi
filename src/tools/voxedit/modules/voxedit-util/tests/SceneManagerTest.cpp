@@ -81,7 +81,7 @@ protected:
 			return false;
 		}
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+		voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		if (v == nullptr) {
 			return false;
 		}
@@ -91,7 +91,7 @@ protected:
 		int executed = 0;
 		auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 			executed++;
-			_sceneMgr->modified(nodeId, region);
+			_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region);
 		};
 		if (!modifier.execute(sceneGraph, node, callback)) {
 			return false;
@@ -123,7 +123,7 @@ protected:
 		int executed = 0;
 		auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 			executed++;
-			_sceneMgr->modified(nodeId, region);
+			_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region);
 		};
 		if (!modifier.execute(sceneGraph, *node, callback)) {
 			return false;
@@ -140,7 +140,7 @@ protected:
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier.executeAdditionalAction();
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(sceneGraph.activeNode());
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID());
 		ASSERT_NE(nullptr, node);
 		EXPECT_TRUE(
 			modifier.execute(sceneGraph, *node, [&](const voxel::Region &, ModifierType, SceneModifiedFlags) {}));
@@ -149,7 +149,7 @@ protected:
 
 	voxel::RawVolume *testVolume() {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+		voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		return v;
 	}
 
@@ -446,7 +446,7 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 TEST_F(SceneManagerTest, testRenameUndoRedo) {
 	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	EXPECT_EQ(1u, mementoHandler.stateSize());
-	EXPECT_TRUE(_sceneMgr->nodeRename(_sceneMgr->sceneGraph().activeNode(), "newname"));
+	EXPECT_TRUE(_sceneMgr->nodeRename(_sceneMgr->sceneGraph().activeNodeUUID(), "newname"));
 	EXPECT_EQ(2u, mementoHandler.stateSize());
 
 	for (int i = 0; i < 3; ++i) {
@@ -464,10 +464,10 @@ TEST_F(SceneManagerTest, testRenameUndoRedo) {
 TEST_F(SceneManagerTest, testCopyPaste) {
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, node);
-	EXPECT_TRUE(_sceneMgr->hasSelection(node->id()));
-	EXPECT_TRUE(_sceneMgr->nodeCopy(node->id()));
+	EXPECT_TRUE(_sceneMgr->hasSelection(node->uuid()));
+	EXPECT_TRUE(_sceneMgr->nodeCopy(node->uuid()));
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
 	EXPECT_TRUE(_sceneMgr->paste(testMins()));
@@ -497,7 +497,7 @@ TEST_F(SceneManagerTest, testMergeVengiFile) {
 
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+	const voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(16, voxelutil::countVoxels(*v));
 	const voxel::Region region(-2, 0, 0, 3, 1, 1);
@@ -520,7 +520,7 @@ TEST_F(SceneManagerTest, testMerge2VengiFile) {
 
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+	const voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(132, voxelutil::countVoxels(*v));
 	const voxel::Region region(0, 0, -1, 3, 9, 5);
@@ -543,10 +543,10 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Foot_Right");
 		ASSERT_NE(nullptr, node);
 		ASSERT_TRUE(node->isModelNode());
-		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		const voxel::Region originalRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 3, 5, 3));
-		_sceneMgr->nodeBakeTransform(node->id());
-		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		_sceneMgr->nodeBakeTransform(node->uuid());
+		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(0, 0, -1, 3, 5, 2));
 		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
@@ -555,10 +555,10 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Toe_Right");
 		ASSERT_NE(nullptr, node);
 		ASSERT_TRUE(node->isModelNode());
-		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		const voxel::Region originalRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 3, 2, 2));
-		_sceneMgr->nodeBakeTransform(node->id());
-		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		_sceneMgr->nodeBakeTransform(node->uuid());
+		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(0, 0, 3, 3, 2, 5));
 		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
@@ -567,10 +567,10 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Leg_Right_l");
 		ASSERT_NE(nullptr, node);
 		ASSERT_TRUE(node->isModelNode());
-		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		const voxel::Region originalRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 1, 5, 1));
-		_sceneMgr->nodeBakeTransform(node->id());
-		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		_sceneMgr->nodeBakeTransform(node->uuid());
+		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(1, 4, 0, 2, 9, 1));
 		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
@@ -587,10 +587,10 @@ TEST_F(SceneManagerTest, testChrKnightBakeTransform) {
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Waist");
 		ASSERT_NE(nullptr, node);
 		ASSERT_TRUE(node->isModelNode());
-		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		const voxel::Region originalRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 8, 3, 6));
-		_sceneMgr->nodeBakeTransform(node->id());
-		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		_sceneMgr->nodeBakeTransform(node->uuid());
+		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(-3, 14, -3, 5, 17, 3));
 		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
@@ -605,7 +605,7 @@ TEST_F(SceneManagerTest, testChrKnightMerge) {
 	{
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
 		ASSERT_NE(nullptr, node);
-		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+		const voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
 		ASSERT_NE(nullptr, v);
 	}
 
@@ -615,7 +615,7 @@ TEST_F(SceneManagerTest, testChrKnightMerge) {
 	{
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
 		ASSERT_NE(nullptr, node);
-		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+		const voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
 		ASSERT_NE(nullptr, v);
 		EXPECT_EQ(2612, voxelutil::countVoxels(*v));
 	}
@@ -630,8 +630,9 @@ TEST_F(SceneManagerTest, testChrKnightMergeUndo) {
 		ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
 		const scenegraph::SceneGraphNode *chestBefore = _sceneMgr->sceneGraph().findNodeByName("K_Chest");
 		ASSERT_NE(nullptr, chestBefore);
-		const scenegraph::SceneGraphNode &coreBefore = _sceneMgr->sceneGraph().node(chestBefore->parent());
-		ASSERT_EQ(coreBefore.name(), "K_Core");
+		const scenegraph::SceneGraphNode *coreBefore = _sceneMgr->sceneGraph().parentNode(*chestBefore);
+		ASSERT_NE(nullptr, coreBefore);
+		ASSERT_EQ(coreBefore->name(), "K_Core");
 	}
 
 	_sceneMgr->mergeNodes(NodeMergeFlags::All);
@@ -642,9 +643,10 @@ TEST_F(SceneManagerTest, testChrKnightMergeUndo) {
 		ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
 		const scenegraph::SceneGraphNode *chestAfter = _sceneMgr->sceneGraph().findNodeByName("K_Chest");
 		ASSERT_NE(nullptr, chestAfter) << "Chest node should be back after undo";
-		ASSERT_NE(chestAfter->parent(), 0) << "Parent should not be the root node, but K_Core";
-		const scenegraph::SceneGraphNode &coreAfter = _sceneMgr->sceneGraph().node(chestAfter->parent());
-		ASSERT_EQ(coreAfter.name(), "K_Core") << "Parent should be K_Core after undo";
+		const scenegraph::SceneGraphNode *coreAfter = _sceneMgr->sceneGraph().parentNode(*chestAfter);
+		ASSERT_NE(nullptr, coreAfter) << "Parent should not be the root node, but K_Core";
+		ASSERT_NE(coreAfter->id(), 0) << "Parent should not be the root node, but K_Core";
+		ASSERT_EQ(coreAfter->name(), "K_Core") << "Parent should be K_Core after undo";
 	}
 
 	EXPECT_TRUE(_sceneMgr->redo());
@@ -668,24 +670,24 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	const scenegraph::SceneGraphNode *head = _sceneMgr->sceneGraph().findNodeByName("K_Head");
 	ASSERT_NE(nullptr, head);
 
-	const voxel::RawVolume *headVolume = _sceneMgr->volume(head->id());
+	const voxel::RawVolume *headVolume = _sceneMgr->volume(head->uuid());
 	ASSERT_NE(nullptr, headVolume);
 	const voxel::Region headRegion = headVolume->region();
 	EXPECT_EQ(781, voxelutil::countVoxels(*headVolume));
 
 	const scenegraph::SceneGraphNode *cover = _sceneMgr->sceneGraph().findNodeByName("K_Cover");
 	ASSERT_NE(nullptr, cover);
-	const voxel::RawVolume *coverVolume = _sceneMgr->volume(cover->id());
+	const voxel::RawVolume *coverVolume = _sceneMgr->volume(cover->uuid());
 	ASSERT_NE(nullptr, coverVolume);
 	const voxel::Region coverRegion = coverVolume->region();
 	EXPECT_EQ(95, voxelutil::countVoxels(*coverVolume));
 
-	_sceneMgr->mergeNodes(head->id(), cover->id());
+	_sceneMgr->mergeNodes(head->uuid(), cover->uuid());
 	ASSERT_EQ(18u, _sceneMgr->sceneGraph().size());
 
 	const scenegraph::SceneGraphNode *mergedHead = _sceneMgr->sceneGraph().findNodeByName("K_Head");
 	ASSERT_NE(nullptr, mergedHead);
-	const voxel::RawVolume *mergedHeadVolume = _sceneMgr->volume(mergedHead->id());
+	const voxel::RawVolume *mergedHeadVolume = _sceneMgr->volume(mergedHead->uuid());
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
 
@@ -714,7 +716,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeWithRootRotation) {
 
 	const scenegraph::SceneGraphNode *mergedNode = _sceneMgr->sceneGraph().firstModelNode();
 	ASSERT_NE(nullptr, mergedNode);
-	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->id());
+	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->uuid());
 	ASSERT_NE(nullptr, mergedVolume);
 	const int mergedVoxels = voxelutil::countVoxels(*mergedVolume);
 	const voxel::Region mergedRegion = mergedVolume->region();
@@ -733,7 +735,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeWithRootRotation) {
 
 	const scenegraph::SceneGraphNode *mergedNodeNoRot = _sceneMgr->sceneGraph().firstModelNode();
 	ASSERT_NE(nullptr, mergedNodeNoRot);
-	const voxel::RawVolume *mergedVolumeNoRot = _sceneMgr->volume(mergedNodeNoRot->id());
+	const voxel::RawVolume *mergedVolumeNoRot = _sceneMgr->volume(mergedNodeNoRot->uuid());
 	ASSERT_NE(nullptr, mergedVolumeNoRot);
 	const int mergedVoxelsNoRot = voxelutil::countVoxels(*mergedVolumeNoRot);
 	const voxel::Region mergedRegionNoRot = mergedVolumeNoRot->region();
@@ -758,7 +760,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 
 	// Hide all nodes, then show only the left leg subtree
 	for (auto iter = _sceneMgr->sceneGraph().beginModel(); iter != _sceneMgr->sceneGraph().end(); ++iter) {
-		_sceneMgr->nodeSetVisible((*iter).id(), false);
+		_sceneMgr->nodeSetVisible((*iter).uuid(), false);
 	}
 
 	const char *leftLegNodes[] = {"K_Leg_Left_u", "K_Knee_Left", "K_Leg_Left_l", "K_Foot_Left", "K_Toe_Left"};
@@ -766,8 +768,8 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 	for (const char *name : leftLegNodes) {
 		const scenegraph::SceneGraphNode *n = _sceneMgr->sceneGraph().findNodeByName(name);
 		ASSERT_NE(nullptr, n) << "Node " << name << " not found";
-		_sceneMgr->nodeSetVisible(n->id(), true);
-		const voxel::RawVolume *v = _sceneMgr->volume(n->id());
+		_sceneMgr->nodeSetVisible(n->uuid(), true);
+		const voxel::RawVolume *v = _sceneMgr->volume(n->uuid());
 		ASSERT_NE(nullptr, v);
 		totalVoxelsBefore += voxelutil::countVoxels(*v);
 	}
@@ -779,7 +781,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 	for (const char *name : leftLegNodes) {
 		const scenegraph::SceneGraphNode *n = _sceneMgr->sceneGraph().findNodeByName(name);
 		const glm::mat4 wm = _sceneMgr->sceneGraph().worldMatrix(*n);
-		const voxel::RawVolume *v = _sceneMgr->volume(n->id());
+		const voxel::RawVolume *v = _sceneMgr->volume(n->uuid());
 		voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel::isAir(voxel.getMaterial())) {
 				return;
@@ -803,7 +805,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 	}
 	ASSERT_NE(nullptr, mergedNode) << "No visible merged node found";
 
-	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->id());
+	const voxel::RawVolume *mergedVolume = _sceneMgr->volume(mergedNode->uuid());
 	ASSERT_NE(nullptr, mergedVolume);
 
 	// All voxels should be preserved (no overlaps in the leg)
@@ -840,18 +842,19 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	ASSERT_NE(-1, thirdNodeId);
 
 	// set voxel into second node
-	EXPECT_TRUE(_sceneMgr->nodeActivate(secondNodeId));
+	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(secondNodeId)));
 	testSetVoxel(glm::ivec3(1, 1, 1), modifier.cursorVoxel().getColor());
-	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(secondNodeId), modifier.cursorVoxel()));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(_sceneMgr->sceneGraph().uuid(secondNodeId)), modifier.cursorVoxel()));
 
 	// set voxel into third node
-	EXPECT_TRUE(_sceneMgr->nodeActivate(thirdNodeId));
+	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(thirdNodeId)));
 	testSetVoxel(glm::ivec3(2, 2, 2), modifier.cursorVoxel().getColor());
-	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(thirdNodeId), modifier.cursorVoxel()));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(_sceneMgr->sceneGraph().uuid(thirdNodeId)), modifier.cursorVoxel()));
 
 	// merge and validate
-	int newNodeId = _sceneMgr->mergeNodes(secondNodeId, thirdNodeId);
-	const voxel::RawVolume *v = _sceneMgr->volume(newNodeId);
+	int newNodeId = _sceneMgr->mergeNodes(_sceneMgr->sceneGraph().uuid(secondNodeId),
+										_sceneMgr->sceneGraph().uuid(thirdNodeId));
+	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(newNodeId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(2, voxelutil::countVoxels(*v));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
@@ -892,7 +895,7 @@ TEST_F(SceneManagerTest, testMergeAllWithModelReferences) {
 	Modifier &modifier = _sceneMgr->modifier();
 	const int modelId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_NE(InvalidNodeId, modelId);
-	EXPECT_TRUE(_sceneMgr->nodeActivate(modelId));
+	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(modelId)));
 	testSetVoxel(glm::ivec3(0, 0, 0), modifier.cursorVoxel().getColor());
 
 	scenegraph::SceneGraphNode &model = _sceneMgr->sceneGraph().node(modelId);
@@ -914,7 +917,7 @@ TEST_F(SceneManagerTest, testMergeAllWithModelReferences) {
 	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::AllModels));
 	EXPECT_TRUE(_sceneMgr->sceneGraph().validate());
 
-	const voxel::RawVolume *v = _sceneMgr->volume(mergedId);
+	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(mergedId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(2, voxelutil::countVoxels(*v));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(0, 0, 0)).getMaterial()));
@@ -940,7 +943,7 @@ TEST_F(SceneManagerTest, testMergeAllWithMultipleModelReferences) {
 	Modifier &modifier = _sceneMgr->modifier();
 	const int modelId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_NE(InvalidNodeId, modelId);
-	EXPECT_TRUE(_sceneMgr->nodeActivate(modelId));
+	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(modelId)));
 	testSetVoxel(glm::ivec3(0, 0, 0), modifier.cursorVoxel().getColor());
 
 	scenegraph::SceneGraphNode &model = _sceneMgr->sceneGraph().node(modelId);
@@ -965,7 +968,7 @@ TEST_F(SceneManagerTest, testMergeAllWithMultipleModelReferences) {
 	EXPECT_EQ(0u, _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::ModelReference));
 	EXPECT_TRUE(_sceneMgr->sceneGraph().validate());
 
-	const voxel::RawVolume *v = _sceneMgr->volume(mergedId);
+	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(mergedId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(1 + refCount, voxelutil::countVoxels(*v));
 
@@ -981,24 +984,42 @@ TEST_F(SceneManagerTest, testMergeAllWithMultipleModelReferences) {
 	assertRestoredReferencesResolve(_sceneMgr->sceneGraph(), modelUUID, refCount);
 }
 
+TEST_F(SceneManagerTest, testNodeActivateByUUIDSurvivesRecreate) {
+	const int modelId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_NE(InvalidNodeId, modelId);
+	const core::UUID modelUUID = _sceneMgr->sceneGraph().node(modelId).uuid();
+	ASSERT_TRUE(_sceneMgr->nodeActivate(modelUUID));
+	EXPECT_EQ(modelUUID, _sceneMgr->activeNodeUUID());
+
+	ASSERT_TRUE(_sceneMgr->nodeRemove(modelUUID, false));
+	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNodeByUUID(modelUUID));
+
+	const int newModelId = _sceneMgr->addModelChild("recreated", 1, 1, 1, modelUUID);
+	ASSERT_NE(InvalidNodeId, newModelId);
+	EXPECT_EQ(modelUUID, _sceneMgr->sceneGraph().node(newModelId).uuid());
+	ASSERT_TRUE(_sceneMgr->nodeActivate(modelUUID));
+	EXPECT_EQ(newModelId, _sceneMgr->activeNode());
+	EXPECT_EQ(modelUUID, _sceneMgr->activeNodeUUID());
+}
+
 TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(glm::vec3(100.0f, 0.0, 0.0f));
 
-	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(1, 1));
-	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(1, 10));
-	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(1, 20));
+	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 1));
+	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 10));
+	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 20));
 
 	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(1);
 	node.keyFrame(2).setTransform(transform);
 	_sceneMgr->sceneGraph().updateTransforms();
 
-	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(1, 15))
+	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 15))
 		<< "Expected to insert a new key frame at index 3 (sorting by frameIdx)";
 	EXPECT_FLOAT_EQ(100.0f, node.keyFrame(3).transform().worldTranslation().x)
 		<< "Expected to get the transform of key frame 2";
 
-	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(1, 30));
+	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 30));
 	EXPECT_FLOAT_EQ(0.0f, node.keyFrame(5).transform().worldTranslation().x);
 }
 
@@ -1009,7 +1030,7 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	EXPECT_TRUE(testSetVoxel(testMins(), 1));
 	const palette::Palette &palette = node->palette();
 	EXPECT_EQ(palette::PaletteMaxColors, (int)palette.size());
-	_sceneMgr->nodeRemoveUnusedColors(nodeId, true);
+	_sceneMgr->nodeRemoveUnusedColors(_sceneMgr->sceneGraph().uuid(nodeId), true);
 	EXPECT_EQ(1u, palette.size()) << palette;
 }
 
@@ -1020,15 +1041,15 @@ TEST_F(SceneManagerTest, testDuplicateAndRemove) {
 	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
-	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
+	const int crnodeId = _sceneMgr->nodeReference(_sceneMgr->sceneGraph().uuid(cnodeId));
 	ASSERT_NE(crnodeId, InvalidNodeId);
 	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 
-	int newNodeId = InvalidNodeId;
-	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
-	ASSERT_NE(newNodeId, InvalidNodeId);
+	core::UUID newNodeUUID;
+	ASSERT_TRUE(_sceneMgr->nodeDuplicate(_sceneMgr->sceneGraph().uuid(nodeId), &newNodeUUID));
+	ASSERT_TRUE(newNodeUUID.isValid());
 	ASSERT_EQ(7u, _sceneMgr->sceneGraph().nodeSize());
-	ASSERT_TRUE(_sceneMgr->nodeRemove(newNodeId, true));
+	ASSERT_TRUE(_sceneMgr->nodeRemove(newNodeUUID, true));
 	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 }
 
@@ -1038,34 +1059,34 @@ TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
 	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
-	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
+	const int crnodeId = _sceneMgr->nodeReference(_sceneMgr->sceneGraph().uuid(cnodeId));
 	ASSERT_NE(crnodeId, InvalidNodeId);
-	_sceneMgr->nodeReference(cnodeId);
+	_sceneMgr->nodeReference(_sceneMgr->sceneGraph().uuid(cnodeId));
 	ASSERT_EQ(5u, _sceneMgr->sceneGraph().nodeSize());
 
-	int newNodeId = InvalidNodeId;
-	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
-	ASSERT_NE(newNodeId, InvalidNodeId);
+	core::UUID newNodeUUID;
+	ASSERT_TRUE(_sceneMgr->nodeDuplicate(_sceneMgr->sceneGraph().uuid(nodeId), &newNodeUUID));
+	ASSERT_TRUE(newNodeUUID.isValid());
 	ASSERT_EQ(9u, _sceneMgr->sceneGraph().nodeSize());
-	ASSERT_TRUE(_sceneMgr->nodeRemove(cnodeId, true));
+	ASSERT_TRUE(_sceneMgr->nodeRemove(_sceneMgr->sceneGraph().uuid(cnodeId), true));
 	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 }
 
 // https://github.com/vengi-voxel/vengi/issues/425
 TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	const voxel::RawVolume *v1 = _sceneMgr->volume(nodeId);
-	const int rnodeId = _sceneMgr->nodeReference(nodeId);
+	const voxel::RawVolume *v1 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
+	const int rnodeId = _sceneMgr->nodeReference(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(rnodeId, InvalidNodeId);
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
-	EXPECT_TRUE(_sceneMgr->nodeUnreference(rnodeId));
+	EXPECT_TRUE(_sceneMgr->nodeUnreference(_sceneMgr->sceneGraph().uuid(rnodeId)));
 	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
-	ASSERT_NE(v1, _sceneMgr->volume(rnodeId));
+	ASSERT_NE(v1, _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(rnodeId)));
 	EXPECT_TRUE(_sceneMgr->undo());
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
-	ASSERT_EQ(v1, _sceneMgr->volume(rnodeId));
+	ASSERT_EQ(v1, _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(rnodeId)));
 	EXPECT_TRUE(_sceneMgr->redo());
 }
 
@@ -1097,7 +1118,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 
 	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
-	EXPECT_TRUE(_sceneMgr->nodeUnreference(referenceNodeId));
+	EXPECT_TRUE(_sceneMgr->nodeUnreference(_sceneMgr->sceneGraph().uuid(referenceNodeId)));
 	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->undo());
@@ -1122,11 +1143,11 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
 
-		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, keyFrameIndex, false));
+		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(cnodeId), ctranslationMat, keyFrameIndex, false));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), ctransform.localTranslation(), 0.0001f)
 			<< "local and world should match at this point";
-		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(1.0f, 1.0f, 1.0f)));
+		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), glm::vec3(1.0f, 1.0f, 1.0f)));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
 	}
@@ -1157,7 +1178,7 @@ TEST_F(SceneManagerTest, testChangePivotOfRotatedNode) {
 	// Apply a 90-degree rotation around Y axis
 	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
 	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(nodeId, rotMat, keyFrameIndex, false));
+	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(nodeId), rotMat, keyFrameIndex, false));
 
 	// Record the world position of voxel (0,0,0) before pivot change
 	const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
@@ -1165,7 +1186,7 @@ TEST_F(SceneManagerTest, testChangePivotOfRotatedNode) {
 	const glm::vec3 worldPosBefore = transform.apply(glm::vec3(0.0f), pivotVoxelSpace);
 
 	// Change pivot to center (0.5, 0.5, 0.5)
-	ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(0.5f, 0.5f, 0.5f)));
+	ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), glm::vec3(0.5f, 0.5f, 0.5f)));
 
 	// The world position of voxel (0,0,0) should remain the same after pivot change
 	const scenegraph::SceneGraphTransform &transformAfter = node->transform(keyFrameIndex);
@@ -1208,7 +1229,7 @@ TEST_F(SceneManagerTest, testReduceColors) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	core::Buffer<uint8_t> srcBuf;
 	voxel::Voxel targetVoxel = modifier.cursorVoxel();
 	for (int i = 0; i < 4; ++i) {
@@ -1219,7 +1240,7 @@ TEST_F(SceneManagerTest, testReduceColors) {
 		}
 	}
 	EXPECT_EQ(2, voxelutil::countVoxelsByColor(*v, targetVoxel));
-	EXPECT_TRUE(_sceneMgr->nodeReduceColors(nodeId, srcBuf, targetVoxel.getColor()));
+	EXPECT_TRUE(_sceneMgr->nodeReduceColors(_sceneMgr->sceneGraph().node(nodeId).uuid(), srcBuf, targetVoxel.getColor()));
 	EXPECT_EQ(7, voxelutil::countVoxelsByColor(*v, targetVoxel));
 }
 
@@ -1228,11 +1249,11 @@ TEST_F(SceneManagerTest, testRemoveColors) {
 	const voxel::Region region{0, 0};
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	voxel::Voxel targetVoxel = modifier.cursorVoxel();
 	v->setVoxel(0, 0, 0, targetVoxel);
 	EXPECT_EQ(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
-	EXPECT_TRUE(_sceneMgr->nodeRemoveColor(nodeId, targetVoxel.getColor()));
+	EXPECT_TRUE(_sceneMgr->nodeRemoveColor(_sceneMgr->sceneGraph().uuid(nodeId), targetVoxel.getColor()));
 	EXPECT_NE(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
 }
@@ -1315,15 +1336,15 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	for (int i = 0; i < 4; ++i) {
 		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
 	}
 	voxel::Voxel targetVoxel(voxel::VoxelType::Generic, 1);
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, targetVoxel));
-	const int newNodeId = sceneMgr()->nodeColorToNewNode(nodeId, targetVoxel);
+	const int newNodeId = sceneMgr()->nodeColorToNewNode(sceneMgr()->sceneGraph().uuid(nodeId), targetVoxel);
 	EXPECT_NE(InvalidNodeId, newNodeId);
-	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
+	voxel::RawVolume *newV = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(newNodeId));
 	ASSERT_NE(nullptr, newV);
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*newV, targetVoxel));
 	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, targetVoxel));
@@ -1334,7 +1355,7 @@ TEST_F(SceneManagerTest, testColorToNewNodeMultipleIndices) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
 
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	for (int i = 0; i < 4; ++i) {
 		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
 	}
@@ -1348,9 +1369,9 @@ TEST_F(SceneManagerTest, testColorToNewNodeMultipleIndices) {
 	core::Buffer<uint8_t> indices;
 	indices.push_back(1);
 	indices.push_back(3);
-	const int newNodeId = sceneMgr()->nodeColorToNewNode(nodeId, indices);
+	const int newNodeId = sceneMgr()->nodeColorToNewNode(sceneMgr()->sceneGraph().uuid(nodeId), indices);
 	EXPECT_NE(InvalidNodeId, newNodeId);
-	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
+	voxel::RawVolume *newV = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(newNodeId));
 	ASSERT_NE(nullptr, newV);
 	// indices 1 and 3 moved to new node
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*newV, voxel1));
@@ -1367,7 +1388,7 @@ TEST_F(SceneManagerTest, testColorToNewNodeEmptyIndices) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const core::Buffer<uint8_t> indices;
-	EXPECT_EQ(InvalidNodeId, sceneMgr()->nodeColorToNewNode(nodeId, indices));
+	EXPECT_EQ(InvalidNodeId, sceneMgr()->nodeColorToNewNode(sceneMgr()->sceneGraph().uuid(nodeId), indices));
 }
 
 TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
@@ -1382,7 +1403,7 @@ TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 
 	// perform action
 	const glm::vec3 shift(5.0f, 5.0f, 5.0f);
-	EXPECT_TRUE(_sceneMgr->nodeShiftAllKeyframes(nodeId, shift));
+	EXPECT_TRUE(_sceneMgr->nodeShiftAllKeyframes(_sceneMgr->sceneGraph().uuid(nodeId), shift));
 
 	// validate shifted state
 	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
@@ -1409,7 +1430,7 @@ TEST_F(SceneManagerTest, testNodeTransformMirror) {
 	EXPECT_VEC_NEAR(ft0.worldTranslation(), glm::vec3(10.0f, 20.0f, 30.0f), 0.001f);
 
 	// perform action X
-	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(nodeId, 0, math::Axis::X));
+	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(_sceneMgr->sceneGraph().uuid(nodeId), 0, math::Axis::X));
 
 	// validate mirrored state X
 	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
@@ -1419,7 +1440,7 @@ TEST_F(SceneManagerTest, testNodeTransformMirror) {
 	// Current state: (-10, 20, 30)
 	// Mirror XZ: X -> -X, Z -> -Z
 	// Expected: (10, 20, -30)
-	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(nodeId, 0, math::Axis::X | math::Axis::Z));
+	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(_sceneMgr->sceneGraph().uuid(nodeId), 0, math::Axis::X | math::Axis::Z));
 
 	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
 	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(10.0f, 20.0f, -30.0f), 0.001f);
@@ -1449,7 +1470,7 @@ TEST_F(SceneManagerTest, testCalculateNormals) {
 	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 2, 2), 1));
 	ASSERT_TRUE(testSetVoxel(glm::ivec3(3, 2, 2), 1));
 	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 3, 2), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	// check that no normal is set yet
 	for (int x = 0; x <= 5; ++x) {
@@ -1460,7 +1481,7 @@ TEST_F(SceneManagerTest, testCalculateNormals) {
 			}
 		}
 	}
-	EXPECT_TRUE(_sceneMgr->nodeCalculateNormals(nodeId, voxel::SixConnected));
+	EXPECT_TRUE(_sceneMgr->nodeCalculateNormals(_sceneMgr->sceneGraph().uuid(nodeId), voxel::SixConnected));
 	// check that normals are set for the voxels we placed
 	EXPECT_NE(v->voxel(glm::ivec3(2, 2, 2)).getNormal(), NO_NORMAL);
 	EXPECT_NE(v->voxel(glm::ivec3(3, 2, 2)).getNormal(), NO_NORMAL);
@@ -1482,7 +1503,7 @@ TEST_F(SceneManagerTest, testFillHollow) {
 	// create a hollow cube shell
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	for (int x = 0; x <= 5; ++x) {
 		for (int y = 0; y <= 5; ++y) {
@@ -1504,7 +1525,7 @@ TEST_F(SceneManagerTest, testFill) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "fill_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	EXPECT_EQ(0, voxelutil::countVoxels(*v));
@@ -1520,7 +1541,7 @@ TEST_F(SceneManagerTest, testFill) {
 TEST_F(SceneManagerTest, testClear) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_GT(voxelutil::countVoxels(*v), 0);
 
@@ -1532,7 +1553,7 @@ TEST_F(SceneManagerTest, testDeleteSelected) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "deleteselected_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// Fill the entire volume
@@ -1551,7 +1572,7 @@ TEST_F(SceneManagerTest, testDeleteSelected) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(selRegion);
-	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	sceneMgr()->testDeleteSelected();
 
@@ -1564,7 +1585,7 @@ TEST_F(SceneManagerTest, testDeleteSelected) {
 TEST_F(SceneManagerTest, testDeleteSelectedNoSelection) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	const int voxelsBefore = voxelutil::countVoxels(*v);
 	EXPECT_GT(voxelsBefore, 0);
@@ -1580,7 +1601,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "selectonlyedges_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// Fill the entire volume
@@ -1596,7 +1617,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(region);
-	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	sceneMgr()->testSelectOnlyEdges();
 
@@ -1604,7 +1625,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 	// Face-center voxels (interior of a face, e.g. (0,2,2)) have air on only 1 axis -> deselected.
 	// Edge voxels (e.g. (0,0,2)) have air on 2 axes -> remain selected.
 	// Corner voxels (e.g. (0,0,0)) have air on 3 axes -> remain selected.
-	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	// A corner voxel should still be selected
 	const voxel::Voxel &corner = v->voxel(0, 0, 0);
@@ -1626,7 +1647,7 @@ TEST_F(SceneManagerTest, testSelectOnlyEdges) {
 TEST_F(SceneManagerTest, testSelectOnlyEdgesNoSelection) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// No selection - should be a no-op
@@ -1640,7 +1661,7 @@ TEST_F(SceneManagerTest, testSelectOnlyCorners) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "selectonlycorners_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	for (int x = 0; x <= 5; ++x) {
@@ -1676,7 +1697,7 @@ TEST_F(SceneManagerTest, testSelectOnlyCorners) {
 TEST_F(SceneManagerTest, testSelectOnlyCornersNoSelection) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	sceneMgr()->testSelectOnlyCorners();
@@ -1689,7 +1710,7 @@ TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXZ) {
 	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 0, 5}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xz_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	for (int x = 0; x <= 5; ++x) {
@@ -1731,7 +1752,7 @@ TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXY) {
 	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 5, 0}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xy_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	for (int x = 0; x <= 5; ++x) {
@@ -1772,7 +1793,7 @@ TEST_F(SceneManagerTest, testSelectOnlyWallEdgesYZ) {
 	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{0, 5, 5}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_yz_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	for (int y = 0; y <= 5; ++y) {
@@ -1814,7 +1835,7 @@ TEST_F(SceneManagerTest, testSelectionGrow) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "selectiongrow_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	for (int x = 0; x <= 5; ++x) {
@@ -1856,7 +1877,7 @@ TEST_F(SceneManagerTest, testSelectionGrow) {
 TEST_F(SceneManagerTest, testSelectionGrowNoSelection) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	sceneMgr()->testSelectionGrow();
@@ -1867,7 +1888,7 @@ TEST_F(SceneManagerTest, testHollow) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "hollow_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// fill the entire volume with voxels (solid cube)
@@ -1889,7 +1910,7 @@ TEST_F(SceneManagerTest, testFillPlane) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "fillplane_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// place a seed voxel that fillPlane will start from
@@ -1910,13 +1931,13 @@ TEST_F(SceneManagerTest, testFillPlane) {
 TEST_F(SceneManagerTest, testNodeUpdateVoxelType) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	const voxel::Voxel &before = v->voxel(testMins());
 	EXPECT_EQ(voxel::VoxelType::Generic, before.getMaterial());
 
-	_sceneMgr->nodeUpdateVoxelType(nodeId, 1, voxel::VoxelType::Transparent);
+	_sceneMgr->nodeUpdateVoxelType(_sceneMgr->sceneGraph().uuid(nodeId), 1, voxel::VoxelType::Transparent);
 	const voxel::Voxel &after = v->voxel(testMins());
 	EXPECT_EQ(voxel::VoxelType::Transparent, after.getMaterial());
 }
@@ -1938,7 +1959,7 @@ TEST_F(SceneManagerTest, testSplitNodes) {
 	const voxel::Region region{0, 9};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "split_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// place two disconnected voxel groups
@@ -1955,7 +1976,7 @@ TEST_F(SceneManagerTest, testFlip) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "flip_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// place a voxel at one corner with a specific color
@@ -1965,7 +1986,7 @@ TEST_F(SceneManagerTest, testFlip) {
 	sceneMgr()->testFlip(math::Axis::X);
 
 	// after flip on X axis, get the new volume (flip replaces the volume)
-	v = _sceneMgr->volume(nodeId);
+	v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	const int voxelCount = voxelutil::countVoxels(*v);
 	EXPECT_EQ(1, voxelCount) << "Flip should preserve the voxel count";
@@ -1975,7 +1996,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	const voxel::Region region{0, 0, 0, 3, 3, 6};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "rotate_all_multi_test", region));
 	const int firstNodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v1 = _sceneMgr->volume(firstNodeId);
+	voxel::RawVolume *v1 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(firstNodeId));
 	ASSERT_NE(nullptr, v1);
 	v1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
@@ -1985,7 +2006,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 
 	const int secondNodeId = _sceneMgr->addModelChild("second node", 4, 8, 4);
 	ASSERT_NE(InvalidNodeId, secondNodeId);
-	voxel::RawVolume *v2 = _sceneMgr->volume(secondNodeId);
+	voxel::RawVolume *v2 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(secondNodeId));
 	ASSERT_NE(nullptr, v2);
 	v2->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
@@ -2001,7 +2022,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	// rotateAxis mapping: (x, y, z) -> (srcMaxs.z - z, y, x)
 
 	// First node: region {0,0,0, 3,3,6} (4x4x7) -> {0,0,0, 6,3,3} (7x4x4)
-	v1 = _sceneMgr->volume(firstNodeId);
+	v1 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(firstNodeId));
 	ASSERT_NE(nullptr, v1);
 	EXPECT_EQ(1, voxelutil::countVoxels(*v1)) << "First node should preserve voxel count after rotation";
 	EXPECT_EQ(v1->region(), (voxel::Region{0, 0, 0, 6, 3, 3})) << "First node region should have X and Z swapped";
@@ -2012,7 +2033,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 		<< "Original position (0,0,0) should be empty after rotation";
 
 	// Second node: region {0,0,0, 3,7,3} (4x8x4) -> {0,0,0, 3,7,3} (4x8x4, same since X==Z)
-	v2 = _sceneMgr->volume(secondNodeId);
+	v2 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(secondNodeId));
 	ASSERT_NE(nullptr, v2);
 	EXPECT_EQ(1, voxelutil::countVoxels(*v2)) << "Second node should preserve voxel count after rotation";
 	EXPECT_EQ(v2->region(), (voxel::Region{0, 0, 0, 3, 7, 3}))
@@ -2051,21 +2072,21 @@ TEST_F(SceneManagerTest, testNodeResizeEnlargeUndoRedo) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "resize_enlarge_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// Place a voxel to have something to verify after undo/redo
 	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(nodeId, v->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), v->region());
 
 	const voxel::Region oldRegion = v->region();
 	EXPECT_EQ(oldRegion, (voxel::Region{0, 3}));
 
 	// Enlarge the volume
 	const voxel::Region newRegion{0, 7};
-	_sceneMgr->nodeResize(nodeId, newRegion);
+	_sceneMgr->nodeResize(_sceneMgr->sceneGraph().uuid(nodeId), newRegion);
 
-	v = _sceneMgr->volume(nodeId);
+	v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(v->region(), newRegion) << "Volume should be resized to new region";
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial())) << "Original voxel should be preserved";
@@ -2076,7 +2097,7 @@ TEST_F(SceneManagerTest, testNodeResizeEnlargeUndoRedo) {
 		// Undo the resize
 		ASSERT_TRUE(mementoHandler.canUndo());
 		EXPECT_TRUE(_sceneMgr->undo());
-		v = _sceneMgr->volume(nodeId);
+		v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		ASSERT_NE(nullptr, v);
 		EXPECT_EQ(v->region(), oldRegion) << "Undo should restore original region (cycle " << i << ")";
 		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
@@ -2085,7 +2106,7 @@ TEST_F(SceneManagerTest, testNodeResizeEnlargeUndoRedo) {
 		// Redo the resize
 		ASSERT_TRUE(mementoHandler.canRedo());
 		EXPECT_TRUE(_sceneMgr->redo());
-		v = _sceneMgr->volume(nodeId);
+		v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		ASSERT_NE(nullptr, v);
 		EXPECT_EQ(v->region(), newRegion) << "Redo should restore enlarged region (cycle " << i << ")";
 		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
@@ -2097,22 +2118,22 @@ TEST_F(SceneManagerTest, testNodeResizeShrinkUndoRedo) {
 	const voxel::Region region{0, 7};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "resize_shrink_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// Place voxels: one inside the new region, one outside
 	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	v->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(nodeId, v->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), v->region());
 
 	const voxel::Region oldRegion = v->region();
 	EXPECT_EQ(oldRegion, (voxel::Region{0, 7}));
 
 	// Shrink the volume - the voxel at (5,5,5) should be lost
 	const voxel::Region newRegion{0, 3};
-	_sceneMgr->nodeResize(nodeId, newRegion);
+	_sceneMgr->nodeResize(_sceneMgr->sceneGraph().uuid(nodeId), newRegion);
 
-	v = _sceneMgr->volume(nodeId);
+	v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(v->region(), newRegion) << "Volume should be resized to new region";
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial())) << "Inner voxel should be preserved after shrink";
@@ -2123,7 +2144,7 @@ TEST_F(SceneManagerTest, testNodeResizeShrinkUndoRedo) {
 		// Undo the shrink - should restore both voxels
 		ASSERT_TRUE(mementoHandler.canUndo());
 		EXPECT_TRUE(_sceneMgr->undo());
-		v = _sceneMgr->volume(nodeId);
+		v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		ASSERT_NE(nullptr, v);
 		EXPECT_EQ(v->region(), oldRegion) << "Undo should restore original region (cycle " << i << ")";
 		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
@@ -2134,7 +2155,7 @@ TEST_F(SceneManagerTest, testNodeResizeShrinkUndoRedo) {
 		// Redo the shrink
 		ASSERT_TRUE(mementoHandler.canRedo());
 		EXPECT_TRUE(_sceneMgr->redo());
-		v = _sceneMgr->volume(nodeId);
+		v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 		ASSERT_NE(nullptr, v);
 		EXPECT_EQ(v->region(), newRegion) << "Redo should restore shrunk region (cycle " << i << ")";
 		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
@@ -2166,7 +2187,7 @@ TEST_F(SceneManagerTest, testNodeQuantizeColors) {
 	selectedIndices.push_back(1);
 	selectedIndices.push_back(2);
 	selectedIndices.push_back(3);
-	EXPECT_TRUE(_sceneMgr->nodeQuantizeColors(nodeId, selectedIndices, 2));
+	EXPECT_TRUE(_sceneMgr->nodeQuantizeColors(_sceneMgr->sceneGraph().uuid(nodeId), selectedIndices, 2));
 
 	// count how many palette slots are still active (alpha > 0)
 	int activeColors = 0;
@@ -2178,7 +2199,7 @@ TEST_F(SceneManagerTest, testNodeQuantizeColors) {
 	EXPECT_EQ(activeColors, 2) << "After quantizing 4 colors to 2, exactly 2 should remain active";
 
 	// verify voxels are still present and use only active colors
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	for (int x = 0; x < 4; ++x) {
 		const voxel::Voxel &voxel = v->voxel(x, 0, 0);
@@ -2231,10 +2252,10 @@ TEST_F(SceneManagerTest, testSplatMerge) {
 
 	// Target node (first model node from newScene)
 	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(targetNodeId));
 	ASSERT_NE(nullptr, targetVol);
 	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(targetNodeId, targetVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(targetNodeId), targetVol->region());
 
 	// Create source as sibling (parent = root) so transforms are independent
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
@@ -2243,13 +2264,13 @@ TEST_F(SceneManagerTest, testSplatMerge) {
 	sourceNode.setName("source");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
-	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_NE(nullptr, sourceVol);
 	sourceVol->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	sourceVol->setVoxel(6, 6, 6, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(sourceNodeId), sourceVol->region());
 
-	ASSERT_TRUE(_sceneMgr->splatMerge(sourceNodeId));
+	ASSERT_TRUE(_sceneMgr->splatMerge(_sceneMgr->sceneGraph().uuid(sourceNodeId)));
 
 	// Source node should be removed
 	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
@@ -2266,10 +2287,10 @@ TEST_F(SceneManagerTest, testSplatMergeNoOverlap) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "splatmerge_nooverlap", region));
 
 	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(targetNodeId));
 	ASSERT_NE(nullptr, targetVol);
 	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(targetNodeId, targetVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(targetNodeId), targetVol->region());
 
 	// Create source at a non-overlapping region
 	const voxel::Region farRegion{100, 104};
@@ -2279,13 +2300,13 @@ TEST_F(SceneManagerTest, testSplatMergeNoOverlap) {
 	sourceNode.setName("source_far");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
-	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_NE(nullptr, sourceVol);
 	sourceVol->setVoxel(100, 100, 100, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(sourceNodeId), sourceVol->region());
 
 	// splatMerge should fail - no overlapping nodes
-	EXPECT_FALSE(_sceneMgr->splatMerge(sourceNodeId));
+	EXPECT_FALSE(_sceneMgr->splatMerge(_sceneMgr->sceneGraph().uuid(sourceNodeId)));
 
 	// Source node should still exist since merge failed
 	EXPECT_NE(nullptr, _sceneMgr->sceneGraphNode(sourceNodeId));
@@ -2297,11 +2318,11 @@ TEST_F(SceneManagerTest, testMergeActiveToBackground) {
 
 	// Target node: place a voxel at (0,0,0) and (5,5,5)
 	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(targetNodeId));
 	ASSERT_NE(nullptr, targetVol);
 	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	targetVol->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(targetNodeId, targetVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(targetNodeId), targetVol->region());
 
 	// Create source node as sibling with a voxel at (0,0,0) but air at (5,5,5)
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
@@ -2310,14 +2331,14 @@ TEST_F(SceneManagerTest, testMergeActiveToBackground) {
 	sourceNode.setName("source");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
-	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_NE(nullptr, sourceVol);
 	sourceVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	// (5,5,5) is intentionally air in source
-	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(sourceNodeId), sourceVol->region());
 
 	// Make source active and run mergeActiveToBackground
-	_sceneMgr->nodeActivate(sourceNodeId);
+	_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
 
 	// Source node should be removed
@@ -2336,10 +2357,10 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundPaletteTransfer) {
 	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
 	scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphModelNode(targetNodeId);
 	ASSERT_NE(nullptr, targetNode);
-	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(targetNodeId));
 	ASSERT_NE(nullptr, targetVol);
 	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-	_sceneMgr->modified(targetNodeId, targetVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(targetNodeId), targetVol->region());
 
 	// Create source node with a unique color not in target palette
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
@@ -2350,13 +2371,13 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundPaletteTransfer) {
 	sourceNode.palette().tryAdd(uniqueColor, false);
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
-	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_NE(nullptr, sourceVol);
 	sourceVol->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(sourceNodeId), sourceVol->region());
 
 	// Merge
-	_sceneMgr->nodeActivate(sourceNodeId);
+	_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
 
 	// Target palette should now contain the unique color from source
@@ -2371,10 +2392,10 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "expand_test", targetRegion));
 
 	const int targetNodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *targetVol = _sceneMgr->volume(targetNodeId);
+	voxel::RawVolume *targetVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(targetNodeId));
 	ASSERT_NE(nullptr, targetVol);
 	targetVol->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(targetNodeId, targetVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(targetNodeId), targetVol->region());
 
 	// Create source that extends beyond the target region
 	const voxel::Region sourceRegion(0, 0, 0, 9, 9, 9);
@@ -2384,12 +2405,12 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
 	sourceNode.setName("source_expand");
 	const int sourceNodeId = _sceneMgr->moveNodeToSceneGraph(sourceNode, rootNodeId);
 	ASSERT_NE(InvalidNodeId, sourceNodeId);
-	voxel::RawVolume *sourceVol = _sceneMgr->volume(sourceNodeId);
+	voxel::RawVolume *sourceVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_NE(nullptr, sourceVol);
 	sourceVol->setVoxel(8, 8, 8, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(sourceNodeId, sourceVol->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(sourceNodeId), sourceVol->region());
 
-	_sceneMgr->nodeActivate(sourceNodeId);
+	_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(sourceNodeId));
 	ASSERT_TRUE(_sceneMgr->mergeActiveToBackground());
 
 	// The target node should have been expanded to include (8,8,8)
@@ -2406,10 +2427,10 @@ TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "mergevisible_test", region));
 
 	const int node1Id = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *vol1 = _sceneMgr->volume(node1Id);
+	voxel::RawVolume *vol1 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(node1Id));
 	ASSERT_NE(nullptr, vol1);
 	vol1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(node1Id, vol1->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(node1Id), vol1->region());
 
 	// Create second visible sibling
 	const int rootNodeId = _sceneMgr->sceneGraph().root().id();
@@ -2418,10 +2439,10 @@ TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	node2.setName("node2");
 	const int node2Id = _sceneMgr->moveNodeToSceneGraph(node2, rootNodeId);
 	ASSERT_NE(InvalidNodeId, node2Id);
-	voxel::RawVolume *vol2 = _sceneMgr->volume(node2Id);
+	voxel::RawVolume *vol2 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(node2Id));
 	ASSERT_NE(nullptr, vol2);
 	vol2->setVoxel(9, 9, 9, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(node2Id, vol2->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(node2Id), vol2->region());
 
 	const int mergedNodeId = _sceneMgr->mergeVisibleToTemp();
 	ASSERT_NE(InvalidNodeId, mergedNodeId);
@@ -2435,7 +2456,7 @@ TEST_F(SceneManagerTest, testMergeVisibleToTemp) {
 	EXPECT_TRUE(_sceneMgr->sceneGraphNode(mergedNodeId)->visible());
 
 	// Merged node should contain both voxels
-	const voxel::RawVolume *mergedVol = _sceneMgr->volume(mergedNodeId);
+	const voxel::RawVolume *mergedVol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(mergedNodeId));
 	ASSERT_NE(nullptr, mergedVol);
 	EXPECT_EQ(2, voxelutil::countVoxels(*mergedVol));
 }
@@ -2446,19 +2467,19 @@ TEST_F(SceneManagerTest, testGlobalCopyVisibleAndPasteNode) {
 
 	// Fill first node
 	const int node1Id = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v1 = _sceneMgr->volume(node1Id);
+	voxel::RawVolume *v1 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(node1Id));
 	ASSERT_NE(nullptr, v1);
 	v1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	_sceneMgr->modified(node1Id, v1->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(node1Id), v1->region());
 
 	// Create and fill second visible node
 	const int node2Id = _sceneMgr->addModelChild("visible", 5, 5, 5);
 	ASSERT_NE(-1, node2Id);
-	ASSERT_TRUE(_sceneMgr->nodeActivate(node2Id));
-	voxel::RawVolume *v2 = _sceneMgr->volume(node2Id);
+	ASSERT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(node2Id)));
+	voxel::RawVolume *v2 = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(node2Id));
 	ASSERT_NE(nullptr, v2);
 	v2->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	_sceneMgr->modified(node2Id, v2->region());
+	_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(node2Id), v2->region());
 
 	// Global copy visible should succeed
 	ASSERT_TRUE(_sceneMgr->globalCopyVisible());
@@ -2480,17 +2501,17 @@ TEST_F(SceneManagerTest, testAutoSelectOnPaste) {
 
 	// Set a voxel and select it for copy
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
 	node->select(voxel::Region{glm::ivec3(0), glm::ivec3(1, 0, 0)});
-	ASSERT_TRUE(_sceneMgr->hasSelection(node->id()));
+	ASSERT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	// Copy and then paste
-	ASSERT_TRUE(_sceneMgr->nodeCopy(nodeId));
+	ASSERT_TRUE(_sceneMgr->nodeCopy(_sceneMgr->sceneGraph().uuid(nodeId)));
 	ASSERT_TRUE(_sceneMgr->paste(glm::ivec3(2, 0, 0)));
 
 	// The pasted voxels should have FlagOutline set
@@ -2531,7 +2552,7 @@ TEST_F(SceneManagerTest, testColorSelected) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "colorselected_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	const uint8_t originalColor = 1;
@@ -2563,7 +2584,7 @@ TEST_F(SceneManagerTest, testColorSelected) {
 TEST_F(SceneManagerTest, testColorSelectedNoSelection) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	const uint8_t colorBefore = v->voxel(testMins()).getColor();
 
@@ -2575,7 +2596,7 @@ TEST_F(SceneManagerTest, testDeselectColor) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "deselectcolor_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	// Place voxels with two different colors
@@ -2604,7 +2625,7 @@ TEST_F(SceneManagerTest, testSelectOnlyColor) {
 	const voxel::Region region{0, 3};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "selectonlycolor_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 
 	const uint8_t colorA = 1;
@@ -2628,14 +2649,13 @@ TEST_F(SceneManagerTest, testSelectOnlyColor) {
 }
 
 TEST_F(SceneManagerTest, testNodeToggleLocked) {
-	const int activeNodeId = _sceneMgr->sceneGraph().activeNode();
-	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(activeNodeId);
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
 	EXPECT_FALSE(node.locked());
 
-	_sceneMgr->nodeSetLocked(activeNodeId, true);
+	_sceneMgr->nodeSetLocked(node.uuid(), true);
 	EXPECT_TRUE(node.locked());
 
-	_sceneMgr->nodeSetLocked(activeNodeId, false);
+	_sceneMgr->nodeSetLocked(node.uuid(), false);
 	EXPECT_FALSE(node.locked());
 }
 
@@ -2661,7 +2681,7 @@ TEST_F(SceneManagerTest, testNodeLockAllAndUnlockAll) {
 TEST_F(SceneManagerTest, testRescaleContent) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 9)));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *vol = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *vol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, vol);
 
 	// Fill some voxels
@@ -2676,9 +2696,9 @@ TEST_F(SceneManagerTest, testRescaleContent) {
 	EXPECT_EQ(originalSize, glm::ivec3(10, 10, 10));
 
 	// Rescale to double size
-	_sceneMgr->nodeRescaleContent(nodeId, glm::ivec3(20, 20, 20));
+	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), glm::ivec3(20, 20, 20));
 
-	voxel::RawVolume *rescaled = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *rescaled = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, rescaled);
 	const glm::ivec3 newSize = rescaled->region().getDimensionsInVoxels();
 	EXPECT_EQ(newSize, glm::ivec3(20, 20, 20));
@@ -2690,14 +2710,14 @@ TEST_F(SceneManagerTest, testRescaleContent) {
 TEST_F(SceneManagerTest, testRescaleContentInvalidSize) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 9)));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *vol = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *vol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, vol);
 	const glm::ivec3 originalSize = vol->region().getDimensionsInVoxels();
 
 	// Try rescale with invalid size - should be a no-op
-	_sceneMgr->nodeRescaleContent(nodeId, glm::ivec3(0, 10, 10));
+	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), glm::ivec3(0, 10, 10));
 
-	voxel::RawVolume *after = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *after = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, after);
 	EXPECT_EQ(after->region().getDimensionsInVoxels(), originalSize);
 }
@@ -2759,7 +2779,7 @@ TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	EXPECT_TRUE(_sceneMgr->hasSelection(node->id()));
+	EXPECT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	// Edit within the selection
 	ASSERT_TRUE(testSetVoxelOnRealNode(testMins(), 2));
@@ -2781,7 +2801,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentPositiveX) {
 	ASSERT_NE(nullptr, source);
 	const voxel::Region sourceWorld = _sceneMgr->sceneGraph().sceneRegion(*source, 0);
 	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
-	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
 	ASSERT_NE(nullptr, newNode);
@@ -2805,35 +2825,35 @@ TEST_F(SceneManagerTest, testAddModelAdjacentAabbSharesFourCornersAllFaces) {
 									  voxel::FaceNames::PositiveY, voxel::FaceNames::NegativeY,
 									  voxel::FaceNames::PositiveZ, voxel::FaceNames::NegativeZ};
 	for (voxel::FaceNames face : faces) {
-		const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, face);
+		const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), face);
 		ASSERT_NE(InvalidNodeId, newNodeId) << "face " << (int)face;
 		const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
 		ASSERT_NE(nullptr, newNode);
 		const math::AABB<float> newNodeAabb = scenegraph::toAABB(_sceneMgr->sceneGraph().sceneRegion(*newNode, 0));
 		EXPECT_EQ(4, scenegraph::countSharedAabbCorners(sourceAabb, newNodeAabb)) << "face " << (int)face;
-		_sceneMgr->nodeRemove(newNodeId, false);
+		_sceneMgr->nodeRemove(_sceneMgr->sceneGraph().uuid(newNodeId), false);
 	}
 }
 
 TEST_F(SceneManagerTest, testAddModelAdjacentOverlapRejected) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
-	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
+	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
 }
 
 TEST_F(SceneManagerTest, testAddModelAdjacentRotatedSource) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 1, 1, 1)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
 	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(sourceNodeId, rotMat, 0, false));
+	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(sourceNodeId), rotMat, 0, false));
 	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
 	ASSERT_NE(nullptr, source);
 	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
 	const math::OBBF sourceObb = _sceneMgr->sceneGraph().sceneOBB(*source, 0);
 	const math::OBBF expectedObb =
 		scenegraph::calcAdjacentObb(sourceObb, voxel::FaceNames::PositiveX, scenegraph::calculateExtents(glm::vec3(dims)));
-	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
 	ASSERT_NE(nullptr, newNode);
@@ -2854,7 +2874,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentEmptyVolume) {
 	const glm::ivec3 pos(1, 2, 3);
 	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
 	_sceneMgr->setAddNodeModeActive(true);
-	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
 	ASSERT_NE(nullptr, newNode);
@@ -2868,7 +2888,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentCloneVoxels) {
 	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
 	_sceneMgr->setAddNodeModeActive(true);
 	core::getVar(cfg::VoxEditAddNodeCloneVoxels)->setVal(true);
-	const int newNodeId = _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX);
+	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
 	ASSERT_NE(nullptr, newNode);
@@ -2878,10 +2898,10 @@ TEST_F(SceneManagerTest, testAddModelAdjacentCloneVoxels) {
 TEST_F(SceneManagerTest, testAddModelAdjacentIgnoreOverlap) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
-	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	ASSERT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
+	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
 	core::getVar(cfg::VoxEditAddNodeIgnoreOverlap)->setVal(true);
-	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(sourceNodeId, voxel::FaceNames::PositiveX));
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
 }
 
 } // namespace voxedit

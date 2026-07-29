@@ -19,8 +19,7 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(initialSize > 0);
 
 		// modify the scene to create undo states
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
@@ -43,8 +42,7 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// create some undo states
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
@@ -74,8 +72,7 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "click history entry")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));

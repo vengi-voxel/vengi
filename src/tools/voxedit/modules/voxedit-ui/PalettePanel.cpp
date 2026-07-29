@@ -75,10 +75,10 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "changematerial");
 					if (isCurrentInSelection) {
 						for (const auto &e : _selectedIndices) {
-							_sceneMgr->nodeSetMaterial(node.id(), e->key, prop, value);
+							_sceneMgr->nodeSetMaterial(node.uuid(), e->key, prop, value);
 						}
 					} else {
-						_sceneMgr->nodeSetMaterial(node.id(), paletteColorIdx, prop, value);
+						_sceneMgr->nodeSetMaterial(node.uuid(), paletteColorIdx, prop, value);
 					}
 				}
 			}
@@ -88,10 +88,10 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
 					if (isCurrentInSelection) {
 						for (const auto &e : _selectedIndices) {
-							_sceneMgr->nodeRemoveAlpha(node.id(), e->first);
+							_sceneMgr->nodeRemoveAlpha(node.uuid(), e->first);
 						}
 					} else {
-						_sceneMgr->nodeRemoveAlpha(node.id(), paletteColorIdx);
+						_sceneMgr->nodeRemoveAlpha(node.uuid(), paletteColorIdx);
 					}
 				}
 			}
@@ -99,10 +99,10 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 				memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "resetmaterial");
 				if (isCurrentInSelection) {
 					for (const auto &e : _selectedIndices) {
-						_sceneMgr->nodeResetMaterial(node.id(), e->key);
+						_sceneMgr->nodeResetMaterial(node.uuid(), e->key);
 					}
 				} else {
-					_sceneMgr->nodeResetMaterial(node.id(), paletteColorIdx);
+					_sceneMgr->nodeResetMaterial(node.uuid(), paletteColorIdx);
 				}
 			}
 			if (isCurrentInSelection) {
@@ -125,11 +125,11 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			if (singleSelection) {
 				if (palette.hasFreeSlot()) {
 					if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
-						_sceneMgr->nodeDuplicateColor(node.id(), paletteColorIdx);
+						_sceneMgr->nodeDuplicateColor(node.uuid(), paletteColorIdx);
 					}
 				}
 				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove color"))) {
-					_sceneMgr->nodeRemoveColor(node.id(), paletteColorIdx);
+					_sceneMgr->nodeRemoveColor(node.uuid(), paletteColorIdx);
 					_selectedIndices.remove(paletteColorIdx);
 					_selectedIndicesLast = -1;
 				}
@@ -143,7 +143,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 						}
 						srcIndiced.push_back(e->key);
 					}
-					_sceneMgr->nodeReduceColors(node.id(), srcIndiced, paletteColorIdx);
+					_sceneMgr->nodeReduceColors(node.uuid(), srcIndiced, paletteColorIdx);
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SHUFFLE, _("Randomize selected colors"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
@@ -151,7 +151,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					for (const auto &e : _selectedIndices) {
 						const uint8_t idx = e->key;
 						const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
-						_sceneMgr->nodeSetColor(node.id(), idx, color::getRGBA(randomColor));
+						_sceneMgr->nodeSetColor(node.uuid(), idx, color::getRGBA(randomColor));
 					}
 				}
 				if (ImGui::BeginIconMenu(ICON_LC_MINIMIZE_2, _("Quantize selected colors"))) {
@@ -166,7 +166,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 						for (const auto &e : _selectedIndices) {
 							indices.push_back(e->key);
 						}
-						_sceneMgr->nodeQuantizeColors(node.id(), indices, _quantizeTargetCount);
+						_sceneMgr->nodeQuantizeColors(node.uuid(), indices, _quantizeTargetCount);
 					}
 					ImGui::EndMenu();
 				}
@@ -198,7 +198,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			_sceneMgr->nodeSetColor(node.id(), paletteColorIdx, color::getRGBA(color));
+			_sceneMgr->nodeSetColor(node.uuid(), paletteColorIdx, color::getRGBA(color));
 		}
 
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
@@ -590,9 +590,9 @@ bool PalettePanel::showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGra
 		palette.setColor(paletteColorIdx, color::getRGBA(color));
 		if (existingColor) {
 			if (hasAlpha && palette.color(paletteColorIdx).a == 255) {
-				_sceneMgr->nodeUpdateVoxelType(node.id(), paletteColorIdx, voxel::VoxelType::Generic);
+				_sceneMgr->nodeUpdateVoxelType(node.uuid(), paletteColorIdx, voxel::VoxelType::Generic);
 			} else if (!hasAlpha && palette.color(paletteColorIdx).a != 255) {
-				_sceneMgr->nodeUpdateVoxelType(node.id(), paletteColorIdx, voxel::VoxelType::Transparent);
+				_sceneMgr->nodeUpdateVoxelType(node.uuid(), paletteColorIdx, voxel::VoxelType::Transparent);
 			}
 			_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, paletteColorIdx));
 		}

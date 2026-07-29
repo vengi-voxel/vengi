@@ -78,21 +78,24 @@ int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	if (node.hasNormalPalette()) {
 		newNode.setNormalPalette(node.normalPalette());
 	}
-	const int mainNodeId = addToGraph(sceneGraph, core::move(newNode), parent < 0 ? node.parent() : parent);
+	const int mainNodeId = addToGraph(sceneGraph, core::move(newNode), parent < 0 ? sceneGraph.parentId(node) : parent);
 	if (mainNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
 		return InvalidNodeId;
 	}
-	for (int child : node.children()) {
-		const SceneGraphNode &childNode = sceneGraph.node(child);
-		if (childNode.isReferenceable()) {
-			createNodeReference(sceneGraph, childNode, mainNodeId);
+	for (const core::UUID &childUUID : node.children()) {
+		const SceneGraphNode *childNode = sceneGraph.findNodeByUUID(childUUID);
+		if (childNode == nullptr) {
+			continue;
+		}
+		if (childNode->isReferenceable()) {
+			createNodeReference(sceneGraph, *childNode, mainNodeId);
 		} else {
 #if 1
-			Log::warn("Don't add node %i - it is not referenceable", child);
+			Log::warn("Don't add node %i - it is not referenceable", childNode->id());
 #else
-			SceneGraphNode newNode(childNode.type());
-			copy(childNode, newNode);
+			SceneGraphNode newNode(childNode->type());
+			copy(*childNode, newNode);
 			addToGraph(sceneGraph, core::move(newNode), mainNodeId);
 #endif
 		}
@@ -118,9 +121,12 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 	}
 	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
 	if (recursive) {
-		for (int childId : node.children()) {
-			const SceneGraphNode &cnode = sceneGraph.node(childId);
-			copyNodeToSceneGraph(sceneGraph, cnode, nodeId, recursive);
+		for (const core::UUID &childUUID : node.children()) {
+			const SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			copyNodeToSceneGraph(sceneGraph, *child, nodeId, recursive);
 		}
 	}
 	return nodeId;
@@ -161,10 +167,12 @@ static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, Sce
 	uuidMap.put(sourceUUID, target.node(newNodeId).uuid());
 
 	int nodesAdded = sourceNode.type() == SceneGraphNodeType::Model ? 1 : 0;
-	for (int sourceNodeIdx : sourceNode.children()) {
-		core_assert(source.hasNode(sourceNodeIdx));
-		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId, onNodeAdded, nodeMap, uuidMap);
+	for (const core::UUID &childUUID : sourceNode.children()) {
+		SceneGraphNode *sourceChildNode = const_cast<SceneGraphNode *>(source.findNodeByUUID(childUUID));
+		if (sourceChildNode == nullptr) {
+			continue;
+		}
+		nodesAdded += addSceneGraphNode_r(target, source, *sourceChildNode, newNodeId, onNodeAdded, nodeMap, uuidMap);
 	}
 
 	return nodesAdded;
@@ -221,8 +229,12 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 
 	core::DynamicMap<int, int> nodeMap;
 	UUIDRemap uuidMap;
-	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent, onNodeAdded, nodeMap, uuidMap);
+	for (const core::UUID &childUUID : sourceRoot.children()) {
+		SceneGraphNode *sourceNode = source.findNodeByUUID(childUUID);
+		if (sourceNode == nullptr) {
+			continue;
+		}
+		nodesAdded += addSceneGraphNode_r(target, source, *sourceNode, parent, onNodeAdded, nodeMap, uuidMap);
 	}
 	// moveNodeToSceneGraph copies reference UUIDs as-is; remap them if model UUIDs changed
 	remapModelReferences(target, uuidMap);
@@ -251,10 +263,12 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	nodeMap.put(sourceNode.id(), newNodeId);
 	uuidMap.put(sourceNode.uuid(), target.node(newNodeId).uuid());
 
-	for (int sourceNodeIdx : sourceNode.children()) {
-		core_assert(source.hasNode(sourceNodeIdx));
-		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId, nodeMap, uuidMap, copyVolumes);
+	for (const core::UUID &childUUID : sourceNode.children()) {
+		const SceneGraphNode *sourceChildNode = source.findNodeByUUID(childUUID);
+		if (sourceChildNode == nullptr) {
+			continue;
+		}
+		copySceneGraphNode_r(target, source, *sourceChildNode, newNodeId, nodeMap, uuidMap, copyVolumes);
 	}
 
 	return newNodeId;
@@ -271,9 +285,12 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 	}
 
 	target.node(parent).addProperties(sourceRoot.properties());
-	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded.push_back(
-			copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent, nodeMap, uuidMap, copyVolumes));
+	for (const core::UUID &childUUID : sourceRoot.children()) {
+		const SceneGraphNode *sourceNode = source.findNodeByUUID(childUUID);
+		if (sourceNode == nullptr) {
+			continue;
+		}
+		nodesAdded.push_back(copySceneGraphNode_r(target, source, *sourceNode, parent, nodeMap, uuidMap, copyVolumes));
 	}
 
 	remapModelReferences(target, uuidMap);
@@ -305,10 +322,12 @@ static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &
 		return InvalidNodeId;
 	}
 
-	for (int sourceNodeIdx : sourceNode.children()) {
-		core_assert(source.hasNode(sourceNodeIdx));
-		const SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		copySceneGraphNodeResolveRef_r(target, source, sourceChildNode, newNodeId, copyVolumes);
+	for (const core::UUID &childUUID : sourceNode.children()) {
+		const SceneGraphNode *sourceChildNode = source.findNodeByUUID(childUUID);
+		if (sourceChildNode == nullptr) {
+			continue;
+		}
+		copySceneGraphNodeResolveRef_r(target, source, *sourceChildNode, newNodeId, copyVolumes);
 	}
 
 	return newNodeId;
@@ -322,8 +341,12 @@ void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &sourc
 	}
 
 	target.node(parent).addProperties(sourceRoot.properties());
-	for (int sourceNodeId : sourceRoot.children()) {
-		copySceneGraphNodeResolveRef_r(target, source, source.node(sourceNodeId), parent, copyVolumes);
+	for (const core::UUID &childUUID : sourceRoot.children()) {
+		const SceneGraphNode *sourceNode = source.findNodeByUUID(childUUID);
+		if (sourceNode == nullptr) {
+			continue;
+		}
+		copySceneGraphNodeResolveRef_r(target, source, *sourceNode, parent, copyVolumes);
 	}
 }
 
@@ -358,8 +381,12 @@ static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeI
 				} else {
 					iter->value.push_back(newNodeId);
 				}
-				for (int childId : node.children()) {
-					splitVolumes_r(src, dest, childId, newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
+				for (const core::UUID &childUUID : node.children()) {
+					const SceneGraphNode *child = src.findNodeByUUID(childUUID);
+					if (child == nullptr) {
+						continue;
+					}
+					splitVolumes_r(src, dest, child->id(), newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
 				}
 			}
 		} else {
@@ -396,8 +423,12 @@ static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeI
 				}
 			}
 			if (firstPartId != InvalidNodeId) {
-				for (int childId : node.children()) {
-					splitVolumes_r(src, dest, childId, firstPartId, splitMap, crop, createEmpty, skipHidden, maxSize);
+				for (const core::UUID &childUUID : node.children()) {
+					const SceneGraphNode *child = src.findNodeByUUID(childUUID);
+					if (child == nullptr) {
+						continue;
+					}
+					splitVolumes_r(src, dest, child->id(), firstPartId, splitMap, crop, createEmpty, skipHidden, maxSize);
 				}
 			}
 		}
@@ -414,8 +445,12 @@ static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeI
 			} else {
 				iter->value.push_back(newNodeId);
 			}
-			for (int childId : node.children()) {
-				splitVolumes_r(src, dest, childId, newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
+			for (const core::UUID &childUUID : node.children()) {
+				const SceneGraphNode *child = src.findNodeByUUID(childUUID);
+				if (child == nullptr) {
+					continue;
+				}
+				splitVolumes_r(src, dest, child->id(), newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
 			}
 		}
 	}
@@ -427,8 +462,12 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	destSceneGraph.reserve(srcSceneGraph.size());
 	core::DynamicMap<int, core::Buffer<int>> splitMap;
 
-	for (int childId : srcSceneGraph.root().children()) {
-		splitVolumes_r(srcSceneGraph, destSceneGraph, childId, destSceneGraph.root().id(), splitMap, crop, createEmpty, skipHidden, maxSize);
+	for (const core::UUID &childUUID : srcSceneGraph.root().children()) {
+		const SceneGraphNode *child = srcSceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		splitVolumes_r(srcSceneGraph, destSceneGraph, child->id(), destSceneGraph.root().id(), splitMap, crop, createEmpty, skipHidden, maxSize);
 	}
 
 	// Fix references
@@ -463,7 +502,7 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 						Log::error("Failed to create split ModelReference for target %i", newTargets[i]);
 						continue;
 					}
-					addToGraph(destSceneGraph, core::move(newRefNode), refNode.parent());
+					addToGraph(destSceneGraph, core::move(newRefNode), destSceneGraph.parentId(refNode));
 				}
 			}
 		}

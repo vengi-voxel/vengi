@@ -24,7 +24,7 @@ bool NodeRemoveTool::execute(const json::Json &id, const json::Json &args, ToolC
 		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 	if (const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID)) {
-		if (!ctx.sceneMgr->nodeRemove(node->id(), false)) {
+		if (!ctx.sceneMgr->nodeRemove(node->uuid(), false)) {
 			return ctx.result(id, "Failed to remove node from scene graph - fetch the scene state first", true);
 		}
 		return ctx.result(id, "Node removed successfully", false);

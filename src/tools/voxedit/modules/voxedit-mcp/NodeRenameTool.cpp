@@ -31,8 +31,7 @@ bool NodeRenameTool::execute(const json::Json &id, const json::Json &args, ToolC
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);
 	}
-	const int nodeId = node->id();
-	if (ctx.sceneMgr->nodeRename(nodeId, newName)) {
+	if (ctx.sceneMgr->nodeRename(nodeUUID, newName)) {
 		return ctx.result(id, core::String::format("Renamed node %s to %s", nodeUUID.str().c_str(), newName.c_str()),
 						  false);
 	}

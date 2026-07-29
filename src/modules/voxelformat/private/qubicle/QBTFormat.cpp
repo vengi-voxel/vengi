@@ -226,9 +226,12 @@ bool QBTFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::
 							 const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	wrapSave(saveMatrix(stream, sceneGraph, node, colorMap))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
-	for (int nodeId : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-		wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapSave(saveNode(stream, sceneGraph, *child, colorMap))
 	}
 	return true;
 }
@@ -253,18 +256,24 @@ bool QBTFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::Scen
 bool QBTFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						  const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	if (node.children().size() == 1) {
-		for (int nodeId : node.children()) {
-			const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-			wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
+		for (const core::UUID &childUUID : node.children()) {
+			const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			wrapSave(saveNode(stream, sceneGraph, *child, colorMap))
 		}
 		return true;
 	}
 	qbt::ScopedQBTHeader scoped(stream, node.type());
 	const int children = (int)node.children().size();
 	wrapSave(stream.writeUInt32(children));
-	for (int nodeId : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-		wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapSave(saveNode(stream, sceneGraph, *child, colorMap))
 	}
 	return scoped.success();
 }

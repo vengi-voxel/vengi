@@ -58,7 +58,7 @@ void Script::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 		if (dirtyNodeId == InvalidNodeId || !dirtyRegion.isValid()) {
 			continue;
 		}
-		_sceneManager->modified(dirtyNodeId, dirtyRegion);
+		_sceneManager->modified(_sceneManager->sceneGraph().uuid(dirtyNodeId), dirtyRegion);
 	}
 }
 

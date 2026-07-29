@@ -19,7 +19,7 @@ namespace voxedit {
 static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext *ctx, int nodeId, const char *uiId) {
 	scenegraph::SceneGraphNode *modelNode = sceneMgr->sceneGraphModelNode(nodeId);
 	IM_CHECK(modelNode != nullptr);
-	const core::String uiNodeId = core::String::format("##nodelist/%s##%i", modelNode->name().c_str(), modelNode->id());
+	const core::String uiNodeId = core::String::format("##nodelist/%s##%s", modelNode->name().c_str(), modelNode->uuid().str().c_str());
 	// move to the node and open the context menu
 	ctx->MouseMove(uiNodeId.c_str());
 	ctx->MouseClick(ImGuiMouseButton_Right);
@@ -197,12 +197,12 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// lock all
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Lock all");
 		ctx->Yield();
-		IM_CHECK(sceneGraph.node(sceneGraph.activeNode()).locked());
+		IM_CHECK(sceneGraph.node(sceneGraph.activeNodeUUID()).locked());
 
 		// unlock all
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Unlock all");
 		ctx->Yield();
-		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).locked());
+		IM_CHECK(!sceneGraph.node(sceneGraph.activeNodeUUID()).locked());
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu center origin")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -215,7 +215,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center origin");
 		ctx->Yield();
 		{
-			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode());
+			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 			IM_CHECK(v != nullptr);
 			const glm::ivec3 center = v->region().getCenter();
 			IM_CHECK_EQ(center.x, 0);
@@ -227,7 +227,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center reference");
 		ctx->Yield();
 		{
-			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode());
+			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 			IM_CHECK(v != nullptr);
 			const glm::ivec3 center = v->region().getCenter();
 			IM_CHECK_EQ(center.x, 0);
@@ -245,10 +245,10 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// click show all and hide all toolbar buttons (stable command-based ids)
 		ctx->ItemClick("toolbar/###showall");
 		ctx->Yield();
-		IM_CHECK(sceneGraph.node(sceneGraph.activeNode()).visible());
+		IM_CHECK(sceneGraph.node(sceneGraph.activeNodeUUID()).visible());
 		ctx->ItemClick("toolbar/###hideall");
 		ctx->Yield();
-		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).visible());
+		IM_CHECK(!sceneGraph.node(sceneGraph.activeNodeUUID()).visible());
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node visible toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -264,7 +264,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 
 		const bool before = sceneGraph.node(nodeId).visible();
-		const core::String checkboxId = core::String::format("##nodelist/##%iv", nodeId);
+		const core::String checkboxId =
+			core::String::format("##nodelist/##%sv", sceneGraph.node(nodeId).uuid().str().c_str());
 		ctx->ItemClick(checkboxId.c_str());
 		ctx->Yield();
 		IM_CHECK(sceneGraph.node(nodeId).visible() != before);
@@ -281,7 +282,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = sceneGraph.activeNode();
 
 		const bool before = sceneGraph.node(nodeId).locked();
-		const core::String checkboxId = core::String::format("##nodelist/##%il", nodeId);
+		const core::String checkboxId =
+			core::String::format("##nodelist/##%sl", sceneGraph.node(nodeId).uuid().str().c_str());
 		ctx->ItemClick(checkboxId.c_str());
 		ctx->Yield();
 		IM_CHECK(sceneGraph.node(nodeId).locked() != before);
@@ -353,8 +355,10 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(firstNode != nullptr);
 		IM_CHECK(secondNode != nullptr);
 
-		const core::String firstLabel = core::String::format("##nodelist/%s##%i", firstNode->name().c_str(), firstNodeId);
-		const core::String secondLabel = core::String::format("##nodelist/%s##%i", secondNode->name().c_str(), secondNodeId);
+		const core::String firstLabel =
+			core::String::format("##nodelist/%s##%s", firstNode->name().c_str(), firstNode->uuid().str().c_str());
+		const core::String secondLabel =
+			core::String::format("##nodelist/%s##%s", secondNode->name().c_str(), secondNode->uuid().str().c_str());
 
 		// use ItemDragAndDrop to drag the second node onto the first
 		ctx->ItemDragAndDrop(secondLabel.c_str(), firstLabel.c_str());
@@ -377,7 +381,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = sceneGraph.activeNode();
 
 		// click the color editor button
-		const core::String colorId = core::String::format("##nodelist/##%ic", nodeId);
+		const core::String colorId =
+			core::String::format("##nodelist/##%sc", sceneGraph.node(nodeId).uuid().str().c_str());
 		const ImGuiTestItemInfo colorInfo = ctx->ItemInfo(colorId.c_str(), ImGuiTestOpFlags_NoError);
 		if (colorInfo.ID != 0) {
 			ctx->ItemClick(colorId.c_str());

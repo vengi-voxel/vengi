@@ -56,7 +56,7 @@ MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sc
 	if (!sceneGraph.hasNode(nodeId)) {
 		return nullptr;
 	}
-	const int parent = sceneGraph.node(nodeId).parent();
+	const int parent = sceneGraph.parentId(sceneGraph.node(nodeId));
 	for (ChunkMeshExt &me : meshes) {
 		if (me.nodeId == parent) {
 			return &me;

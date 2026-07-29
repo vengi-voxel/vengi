@@ -17,7 +17,12 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 			if (!node.isAnyModelNode()) {
 				continue;
 			}
-			matches.push_back(core::string::toString(node.id()));
+			const core::String uuidStr = node.uuid().str();
+			const core::String idStr = core::string::toString(node.id());
+			if (str.empty() || core::string::startsWith(uuidStr, str) || core::string::startsWith(idStr, str)) {
+				matches.push_back(uuidStr);
+				++i;
+			}
 		}
 		return i;
 	};

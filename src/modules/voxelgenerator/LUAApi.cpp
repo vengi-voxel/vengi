@@ -3200,7 +3200,7 @@ static int luaVoxel_scenegraphnode_id(lua_State* s) {
 static int luaVoxel_scenegraphnode_clone(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
-	const int nodeId = scenegraph::copyNodeToSceneGraph(*sceneGraph, *node->node, node->node->parent(), false);
+	const int nodeId = scenegraph::copyNodeToSceneGraph(*sceneGraph, *node->node, sceneGraph->parentId(*node->node), false);
 	if (nodeId == InvalidNodeId) {
 		return clua_error(s, "Failed to clone node %d", node->node->id());
 	}
@@ -3234,7 +3234,8 @@ static int luaVoxel_scenegraphnode_uuid(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_parent(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushinteger(s, node->node->parent());
+	const core::String &parentUUID = node->node->parentUUID().str();
+	lua_pushstring(s, parentUUID.c_str());
 	return 1;
 }
 
@@ -3585,9 +3586,13 @@ static int luaVoxel_scenegraphnode_children(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const auto &children = node->node->children();
 	lua_newtable(s);
+	int outIdx = 1;
 	for (size_t i = 0; i < children.size(); ++i) {
-		lua_pushinteger(s, children[i]);
-		lua_rawseti(s, -2, (int)i + 1);
+		if (!children[i].isValid()) {
+			continue;
+		}
+		lua_pushstring(s, children[i].str().c_str());
+		lua_rawseti(s, -2, outIdx++);
 	}
 	return 1;
 }
@@ -5938,10 +5943,10 @@ static int luaVoxel_scenegraphnode_createreference_jsonhelp(lua_State *s) {
 static int luaVoxel_scenegraphnode_parent_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "parent",
-		"summary": "Get the parent node ID.",
+		"summary": "Get the parent node UUID.",
 		"parameters": [],
 		"returns": [
-			{"type": "integer", "description": "The parent node ID."}
+			{"type": "string", "description": "The parent node UUID, or empty if the node has no parent."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -6096,10 +6101,10 @@ static int luaVoxel_scenegraphnode_numkeyframes_jsonhelp(lua_State* s) {
 static int luaVoxel_scenegraphnode_children_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "children",
-		"summary": "Get the child node IDs.",
+		"summary": "Get the child node UUIDs.",
 		"parameters": [],
 		"returns": [
-			{"type": "table", "description": "A table of child node IDs."}
+			{"type": "table", "description": "A table of child node UUID strings."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;

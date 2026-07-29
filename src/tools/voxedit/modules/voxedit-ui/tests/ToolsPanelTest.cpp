@@ -298,7 +298,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield(3);
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		IM_CHECK(_sceneMgr->hasSelection(nodeId));
+		IM_CHECK(_sceneMgr->hasSelection(_sceneMgr->sceneGraph().node(nodeId).uuid()));
 
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button1"); // resizetoselection

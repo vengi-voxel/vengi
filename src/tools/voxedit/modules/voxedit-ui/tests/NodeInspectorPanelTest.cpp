@@ -42,8 +42,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemClick("toolbar/2x2x2##regionsize");
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		const voxel::Region &region = model->region();
 		IM_CHECK_EQ(2, region.getDimensionsInVoxels().x);
@@ -128,8 +127,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->ItemOpen("**/IK Constraints");
 		ctx->Yield();
 
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		IM_CHECK(!node->hasIKConstraint());
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/vec2.hpp>
 
@@ -21,10 +22,10 @@ namespace scenegraph {
 struct IKConstraint {
 	IKConstraint();
 	/**
-	 * @brief The node id of the IK end-effector target. This is the node the IK chain tries
-	 * to reach and can be any node in the scene graph or @c InvalidNodeId if no effector is assigned.
+	 * @brief UUID of the IK end-effector target. This is the node the IK chain tries to reach
+	 * and can be any node in the scene graph, or an empty UUID if no effector is assigned.
 	 */
-	int effectorNodeId = 0;
+	core::UUID effectorUUID;
 	/** @brief Minimum roll angle in radians */
 	float rollMin = 0.0f;
 	/** @brief Maximum roll angle in radians */
@@ -45,6 +46,10 @@ struct IKConstraint {
 	};
 	/** @brief Array of swing constraints that limit the angular range of the joint */
 	core::DynamicArray<RadiusConstraint> swingLimits;
+
+	bool hasEffector() const {
+		return effectorUUID.isValid();
+	}
 };
 
-} // namespace scengraph
+} // namespace scenegraph

@@ -24,7 +24,7 @@ void BrushPanelExtrude::executeExtrudeBrush(BrushPanelContext &ctx) {
 				return;
 			}
 			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				ctx.sceneMgr->modified(nodeId, region, flags);
+				ctx.sceneMgr->modified(ctx.sceneMgr->sceneGraph().uuid(nodeId), region, flags);
 			};
 			modifier.execute(ctx.sceneMgr->sceneGraph(), *node, callback);
 		}
@@ -60,7 +60,7 @@ void BrushPanelExtrude::update(BrushPanelContext &ctx, command::CommandExecution
 	ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
 
 	int depth = brush.depth();
-	if (depth == 0 && !ctx.sceneMgr->hasSelection(nodeId)) {
+	if (depth == 0 && !ctx.sceneMgr->hasSelection(node->uuid())) {
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
 	// All depth/offset changes are preview-only. The preview system creates a fresh

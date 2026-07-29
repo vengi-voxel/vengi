@@ -25,12 +25,12 @@ public:
 		return loadSceneGraph(core::move(sceneGraph));
 	}
 
-	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
-		return SceneManager::nodeColorToNewNode(nodeId, voxelColor);
+	int nodeColorToNewNode(const core::UUID &nodeUUID, const voxel::Voxel voxelColor) {
+		return SceneManager::nodeColorToNewNode(nodeUUID, voxelColor);
 	}
 
-	int nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices) {
-		return SceneManager::nodeColorToNewNode(nodeId, paletteIndices);
+	int nodeColorToNewNode(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices) {
+		return SceneManager::nodeColorToNewNode(nodeUUID, paletteIndices);
 	}
 
 	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {

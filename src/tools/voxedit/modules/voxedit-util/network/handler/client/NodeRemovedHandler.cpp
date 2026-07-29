@@ -23,7 +23,7 @@ void NodeRemovedHandler::execute(const network::ClientId &, NodeRemovedMessage *
 	Client &client = _sceneMgr->client();
 	client.lockListener();
 
-	_sceneMgr->nodeRemove(node->id(), true);
+	_sceneMgr->nodeRemove(node->uuid(), true);
 
 	client.unlockListener();
 }

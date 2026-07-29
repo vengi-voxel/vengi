@@ -6,6 +6,7 @@
 
 #include "ui/Panel.h"
 #include "command/CommandHandler.h"
+#include "core/UUID.h"
 #include "core/Var.h"
 #include "core/collection/Set.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -34,9 +35,9 @@ private:
 	bool _hasFocus = false;
 	bool _popupDragAndDrop = false;
 	bool _scrollToActiveNode = false;
-	int _dragDropSourceNodeId = InvalidNodeId;
-	int _dragDropTargetNodeId = InvalidNodeId;
-	int _lastActivedNodeId = InvalidNodeId;
+	core::UUID _dragDropSourceNodeUUID;
+	core::UUID _dragDropTargetNodeUUID;
+	core::UUID _lastActivedNodeUUID;
 	SceneManagerPtr _sceneMgr;
 
 	struct DisplayNode {
@@ -48,7 +49,7 @@ private:
 		bool hasChildren;
 	};
 	core::DynamicArray<DisplayNode> _displayNodes;
-	core::Set<int> _collapsedNodes;
+	core::Set<core::UUID, 11, core::UUIDHash> _collapsedNodes;
 	size_t _cachedNodeCount = 0;
 	bool _displayListDirty = true;
 

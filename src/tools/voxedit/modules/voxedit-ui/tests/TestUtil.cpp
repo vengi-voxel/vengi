@@ -73,8 +73,12 @@ bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, in
 }
 
 int voxelCount(const SceneManagerPtr &sceneMgr, int node) {
-	const int activeNode = node == InvalidNodeId ? sceneMgr->sceneGraph().activeNode() : node;
-	scenegraph::SceneGraphNode *model = sceneMgr->sceneGraphModelNode(activeNode);
+	scenegraph::SceneGraphNode *model = nullptr;
+	if (node == InvalidNodeId) {
+		model = sceneMgr->sceneGraphModelNodeByUUID(sceneMgr->activeNodeUUID());
+	} else {
+		model = sceneMgr->sceneGraphModelNode(node);
+	}
 	IM_CHECK_RETV(model != nullptr, -1);
 	const int cnt = voxelutil::countVoxels(*model->volume());
 	IM_CHECK_RETV(cnt == 0, -1);
@@ -184,7 +188,7 @@ bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node,
 	IM_CHECK_RETV(volume != nullptr, false);
 	IM_CHECK_RETV(volume->region().containsPoint(pos), false);
 	IM_CHECK_RETV(volume->setVoxel(pos, voxel), false);
-	sceneMgr->modified(node->id(), voxel::Region(pos, pos));
+	sceneMgr->modified(node->uuid(), voxel::Region(pos, pos));
 	return true;
 }
 

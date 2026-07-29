@@ -29,8 +29,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		resetCamera();
 		ctx->Yield();
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 		const int cnt = voxelutil::countVoxels(*model->volume());
 		IM_CHECK(cnt == 0);
@@ -269,8 +268,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		ctx->ItemClick(window->ID);
 		ctx->Yield();
 
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
 
 		Modifier &modifier = _sceneMgr->modifier();
@@ -323,11 +321,11 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		ctx->Yield();
 
 		// activate each node
-		_sceneMgr->nodeActivate(firstNode);
+		_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(firstNode));
 		ctx->Yield();
 		IM_CHECK_EQ(sceneGraph.activeNode(), firstNode);
 
-		_sceneMgr->nodeActivate(secondNode);
+		_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(secondNode));
 		ctx->Yield();
 		IM_CHECK_EQ(sceneGraph.activeNode(), secondNode);
 	};
@@ -464,7 +462,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		camRef.setTransform(kfIdx, transform10);
 
 		// activate the camera node so activeCameraNode() returns it
-		_sceneMgr->nodeActivate(camNodeId);
+		_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(camNodeId));
 		ctx->Yield(2);
 		IM_CHECK(sceneGraph.activeNode() == camNodeId);
 		IM_CHECK(_sceneMgr->activeCameraNode() != nullptr);

@@ -52,8 +52,11 @@ static void addNodeToHashStream_r(const scenegraph::SceneGraph &sceneGraph, cons
 	stream.writeString(node.name(), false);
 	const core::String &childHex = core::string::toHex((int32_t)node.children().size()).toUpper();
 	stream.writeString(childHex, false);
-	for (int child : node.children()) {
-		addNodeToHashStream_r(sceneGraph, sceneGraph.node(child), stream);
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr) {
+			addNodeToHashStream_r(sceneGraph, *child, stream);
+		}
 	}
 }
 
@@ -63,14 +66,17 @@ static void calculateHash(const scenegraph::SceneGraph &sceneGraph, uint64_t has
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 
 	const int childCount = (int)children.size();
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
+	const scenegraph::SceneGraphNode *firstChild = childCount == 1 ? sceneGraph.findNodeByUUID(children[0]) : nullptr;
+	if (childCount != 1 || firstChild == nullptr || firstChild->name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXRFormat)
 		stream.writeString(SANDBOX_CONTROLLER_NODE, false);
 		stream.writeString(core::string::toHex(childCount).toUpper(), false);
 	}
-	for (int child : children) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		addNodeToHashStream_r(sceneGraph, node, stream);
+	for (const core::UUID &childUUID : children) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr) {
+			addNodeToHashStream_r(sceneGraph, *child, stream);
+		}
 	}
 	uint8_t digest[16];
 	core::md5sum(stream.getBuffer(), (uint32_t)stream.size(), digest);
@@ -258,9 +264,12 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 				   (int)node.children().size(), node.name().c_str(), version);
 		return false;
 	}
-	for (const int nodeId : node.children()) {
-		scenegraph::SceneGraphNode &childNode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNodeSince3(filename, stream, sceneGraph, childNode, animId, version))
+	for (const core::UUID &childUUID : node.children()) {
+		scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(recursiveImportNodeSince3(filename, stream, sceneGraph, *child, animId, version))
 	}
 	return true;
 }
@@ -317,22 +326,27 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 		return false;
 	}
 	for (int32_t i = 0; i < children; ++i) {
-		const int nodeId = node.children()[i];
-		scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
+		scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(node.children()[i]);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, *child, animId, version))
 	}
 
 	return true;
 }
 
 void VXAFormat::applyPivotFixV1(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node) {
-	for (int childId : node.children()) {
-		scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+	for (const core::UUID &childUUID : node.children()) {
+		scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
 		// the parent node must have a model volume for pivot correction
 		if (node.isAnyModelNode() && node.volume() != nullptr) {
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
 			const glm::vec3 pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
-			scenegraph::SceneGraphKeyFrames *kfs = child.keyFrames();
+			scenegraph::SceneGraphKeyFrames *kfs = child->keyFrames();
 			if (kfs != nullptr) {
 				for (scenegraph::SceneGraphKeyFrame &kf : *kfs) {
 					scenegraph::SceneGraphTransform &transform = kf.transform();
@@ -340,7 +354,7 @@ void VXAFormat::applyPivotFixV1(scenegraph::SceneGraph &sceneGraph, scenegraph::
 				}
 			}
 		}
-		applyPivotFixV1(sceneGraph, child);
+		applyPivotFixV1(sceneGraph, *child);
 	}
 }
 
@@ -415,15 +429,17 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	for (int32_t i = 0; i < rootChildren; ++i) {
-		const int nodeId = sceneGraph.root().children()[i];
-		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(sceneGraph.root().children()[i]);
+		if (node == nullptr) {
+			continue;
+		}
 		if (version <= 2) {
-			if (!recursiveImportNodeBefore3(filename, *stream, sceneGraph, node, animId, version)) {
+			if (!recursiveImportNodeBefore3(filename, *stream, sceneGraph, *node, animId, version)) {
 				Log::error("VXA: failed to import children for version %i", version);
 				return false;
 			}
 		} else {
-			if (!recursiveImportNodeSince3(filename, *stream, sceneGraph, node, animId, version)) {
+			if (!recursiveImportNodeSince3(filename, *stream, sceneGraph, *node, animId, version)) {
 				Log::error("VXA: failed to import children for version %i", version);
 				return false;
 			}
@@ -468,9 +484,12 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	}
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
-	for (int child : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, cnode, animation, filename, stream))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(saveRecursiveNode(sceneGraph, *child, animation, filename, stream))
 	}
 	return true;
 }
@@ -506,14 +525,18 @@ bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeString(animationId.c_str(), true))
 	Log::debug("Save animation %s", animationId.c_str());
 	wrapBool(stream->writeInt32(1)) // root node has one child
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
+	const scenegraph::SceneGraphNode *firstChild = childCount == 1 ? sceneGraph.findNodeByUUID(children[0]) : nullptr;
+	if (childCount != 1 || firstChild == nullptr || firstChild->name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXRFormat)
 		wrapBool(stream->writeInt32(0)) // no key frames for controller node
 		wrapBool(stream->writeInt32(childCount))
 	}
-	for (int child : children) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, animationId, filename, *stream))
+	for (const core::UUID &childUUID : children) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(saveRecursiveNode(sceneGraph, *child, animationId, filename, *stream))
 	}
 	Log::debug("Save vxa to %s", filename.c_str());
 	return true;

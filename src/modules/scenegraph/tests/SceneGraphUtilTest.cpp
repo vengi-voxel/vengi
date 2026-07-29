@@ -32,7 +32,7 @@ TEST_F(SceneGraphUtilTest, testAddSceneGraphNodes) {
 	EXPECT_EQ(SceneGraphNodeType::Group, target.node(1).type());
 	ASSERT_TRUE(target.hasNode(2));
 	EXPECT_EQ(SceneGraphNodeType::Model, target.node(2).type());
-	ASSERT_EQ(1, target.node(2).parent());
+	ASSERT_EQ(target.node(1).uuid(), target.node(2).parentUUID());
 }
 
 TEST_F(SceneGraphUtilTest, testCopySceneGraphWithReferences) {
@@ -195,7 +195,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	EXPECT_EQ(2, modelCount);
 
 	int refCount = 0;
-	core::DynamicArray<core::UUID> referencedUUIDs;
+	core::Buffer<core::UUID> referencedUUIDs;
 	for (auto iter = target.begin(SceneGraphNodeType::ModelReference); iter != target.end(); ++iter) {
 		refCount++;
 		referencedUUIDs.push_back((*iter).referenceUUID());
@@ -321,7 +321,9 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {
 	EXPECT_EQ(1u, target.size()); // Root + Visible
 	EXPECT_EQ(1u, target.root().children().size());
 	if (target.root().children().size() > 0) {
-		EXPECT_EQ("visible", target.node(target.root().children()[0]).name());
+		const SceneGraphNode *visibleNode = target.findNodeByUUID(target.root().children()[0]);
+		ASSERT_NE(nullptr, visibleNode);
+		EXPECT_EQ("visible", visibleNode->name());
 	}
 }
 

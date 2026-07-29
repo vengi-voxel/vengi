@@ -6,6 +6,7 @@
 
 #include "app/App.h"
 #include "core/SharedPtr.h"
+#include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -33,10 +34,10 @@ private:
 	double _fps = 22.0;
 	int32_t _startFrame = 0;
 	int32_t _endFrame = -1;
-	int _lastActivedNodeId = InvalidNodeId;
+	core::UUID _lastActivedNodeUUID;
 	struct Selection {
 		scenegraph::FrameIndex frameIdx;
-		int nodeId;
+		core::UUID nodeUUID;
 	};
 	core::Buffer<Selection> _selectionBuffer;
 	SceneManagerPtr _sceneMgr;

@@ -65,7 +65,7 @@ TEST_F(IKSolverTest, testSolveInvalidEffector) {
 	voxel::Region region(0, 0, 0, 1, 1, 1);
 	node.createVolume(region);
 	IKConstraint constraint;
-	constraint.effectorNodeId = 999; // Non-existent
+	constraint.effectorUUID = core::UUID(999); // Non-existent
 	node.setIkConstraint(constraint);
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	EXPECT_GE(nodeId, 0);
@@ -109,7 +109,7 @@ TEST_F(IKSolverTest, testSolveSimpleChain) {
 	// Set up the IK constraint on the end-effector
 	SceneGraphNode &endEffectorNode = sceneGraph.node(endEffectorId);
 	IKConstraint constraint;
-	constraint.effectorNodeId = targetId;
+	constraint.effectorUUID = sceneGraph.node(targetId).uuid();
 	endEffectorNode.setIkConstraint(constraint);
 
 	// Set up translations to create a chain

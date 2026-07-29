@@ -535,7 +535,7 @@ void Modifier::abort() {
 			}
 			const voxel::Region dirtyRegion = brush->revertChanges(volume);
 			if (dirtyRegion.isValid()) {
-				_sceneMgr->modified(nodeId, dirtyRegion, SceneModifiedFlags::NoUndo);
+				_sceneMgr->modified(node->uuid(), dirtyRegion, SceneModifiedFlags::NoUndo);
 			}
 		});
 		brush->reset();
@@ -561,7 +561,7 @@ void Modifier::commit() {
 					return;
 				}
 				auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
-					_sceneMgr->modified(nodeId, region, flags);
+					_sceneMgr->modified(node->uuid(), region, flags);
 				};
 				execute(_sceneMgr->sceneGraph(), *node, callback);
 			}
@@ -629,8 +629,7 @@ void Modifier::flushPendingBrushChanges() {
 		return;
 	}
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const int activeNodeId = sceneGraph.activeNode();
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId);
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID());
 	if (!node) {
 		return;
 	}
@@ -639,8 +638,8 @@ void Modifier::flushPendingBrushChanges() {
 	voxel::RawVolume *activeVolume = node->volume();
 	preExecuteBrush(activeVolume);
 	executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
-		[this, activeNodeId](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
-			_sceneMgr->modified(activeNodeId, region, flags);
+		[this, &sceneGraph](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
+			_sceneMgr->modified(sceneGraph.activeNodeUUID(), region, flags);
 		});
 }
 
@@ -657,7 +656,6 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 	}
 
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const int activeNodeId = sceneGraph.activeNode();
 	Brush *brush = currentBrush();
 
 	// Build the context for the renderer
@@ -676,7 +674,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 		ctx.mirrorAxis = brush->mirrorAxis();
 		ctx.mirrorPos = brush->mirrorPos();
 	}
-	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID())) {
 		ctx.activeRegion = node->region();
 	}
 
@@ -700,7 +698,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 				_previewManager.scheduleUpdate(_nowSeconds);
 			}
 		}
-		voxel::RawVolume *activeVolume = _sceneMgr->volume(activeNodeId);
+		voxel::RawVolume *activeVolume = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 		_previewManager.checkPendingUpdate(_nowSeconds, *this, activePalette, activeVolume, sceneGraph);
 		// Copy cached preview state to renderer context
 		ctx.previewVolume = _previewManager.previewVolume();

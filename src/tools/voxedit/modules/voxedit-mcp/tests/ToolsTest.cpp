@@ -121,7 +121,7 @@ protected:
 };
 
 TEST_F(ToolsTest, screenshotToolOrthographicAndIsometric) {
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, node);
 	voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(nullptr, volume);
@@ -164,7 +164,7 @@ TEST_F(ToolsTest, screenshotToolOrthographicAndIsometric) {
 }
 
 TEST_F(ToolsTest, screenshotToolLargeUpscale) {
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, node);
 	voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(nullptr, volume);
@@ -201,7 +201,7 @@ TEST_F(ToolsTest, screenshotToolLargeUpscale) {
 }
 
 TEST_F(ToolsTest, screenshotToolMergedScene) {
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, node);
 	ASSERT_TRUE(node->volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
@@ -250,7 +250,7 @@ TextResultCapture *TextResultCapture::_instance = nullptr;
 } // namespace
 
 TEST_F(ToolsTest, getSceneStateToolDetailPresets) {
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, node);
 	ASSERT_TRUE(node->volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 

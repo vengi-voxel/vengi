@@ -25,7 +25,7 @@ void NodeRenamedHandler::execute(const network::ClientId &, NodeRenamedMessage *
 	Client &client = _sceneMgr->client();
 	client.lockListener();
 
-	_sceneMgr->nodeRename(node->id(), newName);
+	_sceneMgr->nodeRename(node->uuid(), newName);
 
 	client.unlockListener();
 }

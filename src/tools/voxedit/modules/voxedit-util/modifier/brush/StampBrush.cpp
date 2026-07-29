@@ -52,9 +52,8 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushuseselection")
 		.setHandler([this](const command::CommandArgs &) {
-			const int nodeId = _sceneMgr->sceneGraph().activeNode();
 			// Copy only selected voxels to the stamp volume using Clipboard::copy
-			if (!_sceneMgr->nodeCopy(nodeId)) {
+			if (!_sceneMgr->nodeCopy(_sceneMgr->activeNodeUUID())) {
 				Log::warn("Failed to copy selection to stamp. Make sure the selection contains voxels and is not empty.");
 				return;
 			}
@@ -71,8 +70,7 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushusenode")
 		.setHandler([this](const command::CommandArgs &) {
-			const int activeNode = _sceneMgr->sceneGraph().activeNode();
-			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 			if (node == nullptr) {
 				Log::warn("No active model node to use as stamp");
 				return;

@@ -122,8 +122,7 @@ void TextureBrush::construct() {
 
 	command::Command::registerCommand("texturebrushfromface")
 		.setHandler([this](const command::CommandArgs &args) {
-			const int activeNode = _sceneMgr->sceneGraph().activeNode();
-			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 			if (node == nullptr) {
 				Log::warn("No active model node available");
 				return;

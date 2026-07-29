@@ -167,8 +167,7 @@ TEST_F(PreviewManagerTest, testPreviewPaintNeedsExistingVoxels) {
 	ASSERT_TRUE(mgr.init());
 	mgr.newScene(true, "test", voxel::Region(-10, 10));
 
-	const int activeNodeId = mgr.sceneGraph().activeNode();
-	voxel::RawVolume *volume = mgr.volume(activeNodeId);
+	voxel::RawVolume *volume = mgr.volume(mgr.sceneGraph().activeNodeUUID());
 	ASSERT_NE(volume, nullptr);
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {

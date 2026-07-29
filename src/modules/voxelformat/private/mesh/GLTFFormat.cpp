@@ -953,11 +953,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core::DynamicMap<int, int> groupSgNodeToGltfIdx;
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
-		int parentId = sceneGraph.node(sgNodeId).parent();
+		int parentId = sceneGraph.parentId(sceneGraph.node(sgNodeId));
 		while (parentId != 0 && !sgNodeToGltfIdx.hasKey(parentId) && !groupSgNodeToGltfIdx.hasKey(parentId)) {
 			groupNodeIds.push_back(parentId);
 			groupSgNodeToGltfIdx.put(parentId, totalMeshes + (int)groupNodeIds.size() - 1);
-			parentId = sceneGraph.node(parentId).parent();
+			parentId = sceneGraph.parentId(sceneGraph.node(parentId));
 		}
 	}
 
@@ -1438,7 +1438,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		} else {
 			sgNodeId = groupNodeIds[ni - totalMeshes];
 		}
-		int parentSgId = sceneGraph.node(sgNodeId).parent();
+		int parentSgId = sceneGraph.parentId(sceneGraph.node(sgNodeId));
 		int parentGltfIdx = (parentSgId == 0) ? -1 : getGltfIdx(parentSgId);
 		if (parentGltfIdx >= 0) {
 			++childCounts[parentGltfIdx];
@@ -1460,8 +1460,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	// First, handle root's children
 	int rootIdx = 0;
 	const scenegraph::SceneGraphNode &rootNode = sceneGraph.node(0);
-	for (int childSgId : rootNode.children()) {
-		int gltfIdx = getGltfIdx(childSgId);
+	for (const core::UUID &childUUID : rootNode.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		int gltfIdx = getGltfIdx(child->id());
 		if (gltfIdx >= 0) {
 			sceneNodes[rootIdx++] = &nodes[gltfIdx];
 		}
@@ -1479,8 +1483,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			continue;
 		}
 		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(sgNodeId);
-		for (int childSgId : sgNode.children()) {
-			int childGltfIdx = getGltfIdx(childSgId);
+		for (const core::UUID &childUUID : sgNode.children()) {
+			const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			int childGltfIdx = getGltfIdx(child->id());
 			if (childGltfIdx >= 0) {
 				nodes[ni].children[nodes[ni].children_count++] = &nodes[childGltfIdx];
 			}

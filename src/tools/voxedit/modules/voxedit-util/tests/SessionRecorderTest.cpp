@@ -75,7 +75,7 @@ TEST_F(SessionRecorderTest, testRecordAndPlaybackRoundtrip) {
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
@@ -83,7 +83,7 @@ TEST_F(SessionRecorderTest, testRecordAndPlaybackRoundtrip) {
 	int executed = 0;
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 		executed++;
-		_sceneMgr->modified(nodeId, region);
+		_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region);
 	};
 	ASSERT_TRUE(modifier.execute(tmpSceneGraph, tmpNode, callback));
 
@@ -182,13 +182,13 @@ TEST_F(SessionRecorderTest, testPlaybackPausesOnDirtyScene) {
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
 	tmpNode.setUnownedVolume(v);
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
-		_sceneMgr->modified(nodeId, region);
+		_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region);
 	};
 	ASSERT_TRUE(modifier.execute(tmpSceneGraph, tmpNode, callback));
 
@@ -231,13 +231,13 @@ TEST_F(SessionRecorderTest, testRecordingDuringNetworkMode) {
 	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	scenegraph::SceneGraph tmpSceneGraph;
 	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
 	tmpNode.setUnownedVolume(v);
 	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
-		_sceneMgr->modified(nodeId, region);
+		_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), region);
 	};
 	ASSERT_TRUE(modifier.execute(tmpSceneGraph, tmpNode, callback));
 

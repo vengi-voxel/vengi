@@ -83,7 +83,7 @@ static void appendHint(const SceneManagerPtr &sceneMgr, Modifier &modifier, Line
 		return;
 	}
 	const BrushType brushType = modifier.brushType();
-	const int nodeId = sceneMgr->sceneGraph().activeNode();
+	const core::UUID &nodeUUID = sceneMgr->activeNodeUUID();
 
 	if (modifier.isMode(ModifierType::ColorPicker)) {
 		lines[lineCount++] = {_("Click on a voxel to pick the color"), hintColor};
@@ -100,20 +100,20 @@ static void appendHint(const SceneManagerPtr &sceneMgr, Modifier &modifier, Line
 		const ExtrudeBrush &extrude = modifier.extrudeBrush();
 		if (extrude.face() == voxel::FaceNames::Max) {
 			lines[lineCount++] = {_("Click a voxel face to set extrusion direction"), warningColor};
-		} else if (extrude.depth() == 0 && !sceneMgr->hasSelection(nodeId)) {
+		} else if (extrude.depth() == 0 && !sceneMgr->hasSelection(nodeUUID)) {
 			lines[lineCount++] = {_("Select voxels first (Select brush)"), warningColor};
 		}
 		return;
 	}
 
-	if (brushType == BrushType::Transform && !sceneMgr->hasSelection(nodeId)) {
+	if (brushType == BrushType::Transform && !sceneMgr->hasSelection(nodeUUID)) {
 		lines[lineCount++] = {_("Select voxels first (Select brush)"), warningColor};
 		return;
 	}
 
 	if (brushType == BrushType::Sculpt) {
 		const SculptBrush &sculpt = modifier.sculptBrush();
-		if (!sculpt.hasSnapshot() && !sceneMgr->hasSelection(nodeId)) {
+		if (!sculpt.hasSnapshot() && !sceneMgr->hasSelection(nodeUUID)) {
 			lines[lineCount++] = {_("Select voxels, then switch to Sculpt"), warningColor};
 			return;
 		}

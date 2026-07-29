@@ -66,7 +66,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const scenegraph::SceneGraphNodeType type = node.type();
 
-	os << os.iword(indent) << "Node: " << nodeId << "(parent " << node.parent() << ")" << "\n";
+	os << os.iword(indent) << "Node: " << nodeId << "(parent " << sceneGraph.parentId(node) << ")" << "\n";
 	os << os.iword(indent) << "  |- name: " << node.name().c_str() << "\n";
 	os << os.iword(indent) << "  |- type: " << scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)] << "\n";
 	const glm::vec3 &pivot = node.pivot();
@@ -119,8 +119,11 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 		os << os.iword(indent) << "      |- local scale " << lsc.x << ":" << lsc.y << ":" << lsc.z << "\n";
 	}
 	os << os.iword(indent) << "  |- children: " << node.children().size() << "\n";
-	for (int children : node.children()) {
-		dumpNode_r(os, sceneGraph, children, indent + 2);
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr) {
+			dumpNode_r(os, sceneGraph, child->id(), indent + 2);
+		}
 	}
 }
 
@@ -481,10 +484,12 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		}
 
 		if ((flags & ValidateFlags::SceneGraphModelsParent) == ValidateFlags::SceneGraphModelsParent) {
-			const scenegraph::SceneGraphNode &parent1 = graph1.node(node1.parent());
-			const scenegraph::SceneGraphNode &parent2 = graph2.node(node2.parent());
-			ASSERT_EQ(parent1.name(), parent2.name()) << "Parent name differs for node " << node1.name() << " and node " << node2.name();
-			ASSERT_EQ(parent1.type(), parent2.type()) << "Parent type differs for node " << node1.name() << " and node " << node2.name();
+			const scenegraph::SceneGraphNode *parent1 = graph1.parentNode(node1);
+			const scenegraph::SceneGraphNode *parent2 = graph2.parentNode(node2);
+			ASSERT_NE(nullptr, parent1) << "Missing parent for node " << node1.name();
+			ASSERT_NE(nullptr, parent2) << "Missing parent for node " << node2.name();
+			ASSERT_EQ(parent1->name(), parent2->name()) << "Parent name differs for node " << node1.name() << " and node " << node2.name();
+			ASSERT_EQ(parent1->type(), parent2->type()) << "Parent type differs for node " << node1.name() << " and node " << node2.name();
 		}
 		// it's intended that includingRegion is false here!
 		// Use resolveVolume to handle ModelReference nodes that don't have their own volume

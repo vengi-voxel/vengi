@@ -70,7 +70,7 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
-	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->id());
+	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->uuid());
 	if (volume == nullptr) {
 		return ctx.result(id, "Volume not found - this is no model node", true);
 	}
@@ -116,7 +116,7 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->id(), dirtyRegion);
+		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id, "Line drawn successfully", false);
 	}
 

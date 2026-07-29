@@ -37,7 +37,7 @@ struct ColorHistogramEntry {
 	float percentage = 0.0f;
 };
 
-using SceneGraphNodeChildren = const core::Buffer<int, 32>;
+using SceneGraphNodeChildren = const core::Buffer<core::UUID, 32>;
 
 /**
  * @brief Struct that holds the metadata and the volume
@@ -62,7 +62,8 @@ protected:
 
 	// local or internal ids - if you need to identify a node e.g. across the network, or in the memento state, use the uuid instead
 	int _id = InvalidNodeId;
-	int _parent = 0;
+	/** Parent identity (stable across undo/re-add). Empty UUID means no parent (root). */
+	core::UUID _parent;
 
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
@@ -76,16 +77,16 @@ protected:
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFramesMap _keyFramesMap;
 	SceneGraphKeyFrames *_keyFrames = nullptr;
-	core::Buffer<int, 32> _children;
+	core::Buffer<core::UUID, 32> _children;
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
 	core::Optional<IKConstraint> _ikConstraint;
 
 	/**
-	 * @brief Called in emplace() if a parent id is given
+	 * @brief Called in emplace() if a parent is given
 	 */
-	void setParent(int id);
+	void setParent(const core::UUID &uuid);
 	void setId(int id);
 	void sortKeyFrames();
 
@@ -117,7 +118,7 @@ public:
 	void setColor(color::RGBA color);
 
 	int id() const;
-	int parent() const;
+	const core::UUID &parentUUID() const;
 	/**
 	 * @brief UUID of the referenced Model (only meaningful for ModelReference nodes).
 	 */
@@ -179,15 +180,15 @@ public:
 	 */
 	bool isLeaf() const;
 	/**
-	 * @param[in] id The node id to add to the child relation
+	 * @param[in] uuid The child node UUID to add to the child relation
 	 * @note This doesn't add the node itself to the graph
 	 */
-	bool addChild(int id);
+	bool addChild(const core::UUID &uuid);
 	/**
-	 * @param[in] id The node id to remove from the child relation
+	 * @param[in] uuid The child node UUID to remove from the child relation
 	 * @note This doesn't remove the node itself from the graph
 	 */
-	bool removeChild(int id);
+	bool removeChild(const core::UUID &uuid);
 
 	/**
 	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return @c
@@ -363,12 +364,12 @@ inline void SceneGraphNode::setId(int id) {
 	_id = id;
 }
 
-inline int SceneGraphNode::parent() const {
+inline const core::UUID &SceneGraphNode::parentUUID() const {
 	return _parent;
 }
 
-inline void SceneGraphNode::setParent(int id) {
-	_parent = id;
+inline void SceneGraphNode::setParent(const core::UUID &uuid) {
+	_parent = uuid;
 }
 
 inline SceneGraphNodeType SceneGraphNode::type() const {

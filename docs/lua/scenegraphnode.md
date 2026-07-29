@@ -5,7 +5,7 @@
 | Method | Description |
 | ------ | ----------- |
 | `addKeyFrame(frame, interpolation)` | Add a new keyframe at the specified frame. |
-| `children()` | Get the child node IDs. |
+| `children()` | Get the child node UUIDs. |
 | `clearSelection()` | Clear all selection flags from the node's volume. |
 | `clone()` | Create a copy of the node. |
 | `createReference(parentId)` | Create a ModelReference node that instances this model. Only Model nodes are referenceable. |
@@ -27,7 +27,7 @@
 | `normalPalette()` | Get the normal palette of the node. |
 | `numKeyFrames()` | Get the number of keyframes for the current animation. |
 | `palette()` | Get the palette of the node. |
-| `parent()` | Get the parent node ID. |
+| `parent()` | Get the parent node UUID. |
 | `pivot()` | Get the normalized pivot point of the node. |
 | `property(key)` | Get a custom property from the node. |
 | `region()` | Get the region of the model node. |
@@ -64,13 +64,13 @@ Add a new keyframe at the specified frame.
 
 ### children
 
-Get the child node IDs.
+Get the child node UUIDs.
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `table` | A table of child node IDs. |
+| `table` | A table of child node UUID strings. |
 
 ### clearSelection
 
@@ -290,13 +290,13 @@ Get the palette of the node.
 
 ### parent
 
-Get the parent node ID.
+Get the parent node UUID.
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `integer` | The parent node ID. |
+| `string` | The parent node UUID, or empty if the node has no parent. |
 
 ### pivot
 

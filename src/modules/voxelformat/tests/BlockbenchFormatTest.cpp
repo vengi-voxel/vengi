@@ -31,18 +31,21 @@ protected:
 		ASSERT_GE(hand_right->children().size(), 3u);
 
 		// Verify children of hand_right
-		scenegraph::SceneGraphNode &firstCube = sceneGraph.node(hand_right->children()[0]);
-		EXPECT_EQ(firstCube.name(), "cube");
-		scenegraph::SceneGraphNode &secondCube = sceneGraph.node(hand_right->children()[1]);
-		EXPECT_EQ(secondCube.name(), "cube");
-		scenegraph::SceneGraphNode &fingers_right = sceneGraph.node(hand_right->children()[2]);
-		EXPECT_EQ(fingers_right.name(), "fingers_right");
-		EXPECT_EQ(fingers_right.type(), scenegraph::SceneGraphNodeType::Group);
+		scenegraph::SceneGraphNode *firstCube = sceneGraph.findNodeByUUID(hand_right->children()[0]);
+		ASSERT_NE(nullptr, firstCube);
+		EXPECT_EQ(firstCube->name(), "cube");
+		scenegraph::SceneGraphNode *secondCube = sceneGraph.findNodeByUUID(hand_right->children()[1]);
+		ASSERT_NE(nullptr, secondCube);
+		EXPECT_EQ(secondCube->name(), "cube");
+		scenegraph::SceneGraphNode *fingers_right = sceneGraph.findNodeByUUID(hand_right->children()[2]);
+		ASSERT_NE(nullptr, fingers_right);
+		EXPECT_EQ(fingers_right->name(), "fingers_right");
+		EXPECT_EQ(fingers_right->type(), scenegraph::SceneGraphNodeType::Group);
 
 		// Test first cube dimensions
 		// In bbmodel: from=[12, 20.9, -1], to=[13, 22.9, 1], origin=[8, 21.9, 0]
-		EXPECT_EQ(firstCube.type(), scenegraph::SceneGraphNodeType::Model);
-		const voxel::Region &firstRegion = firstCube.region();
+		EXPECT_EQ(firstCube->type(), scenegraph::SceneGraphNodeType::Model);
+		const voxel::Region &firstRegion = firstCube->region();
 		const glm::ivec3 &firstDim = firstRegion.getDimensionsInVoxels();
 		EXPECT_EQ(firstDim.x, 1);
 		EXPECT_EQ(firstDim.y, 2);
@@ -52,20 +55,20 @@ protected:
 		// Currently: pivot = (origin - from) / (to - from) = ([8,21.9,0] - [12,20.9,-1]) / [1,2,2] = [-4, 0.5, 0.5]
 		// This is expected given the current implementation
 		// TODO: VOXELFORMAT: Review if element origin should be used differently
-		const glm::vec3 &firstPivot = firstCube.pivot();
+		const glm::vec3 &firstPivot = firstCube->pivot();
 		const glm::vec3 expectedFirstPivot(-4.0f, 0.5f, 0.5f);
 		EXPECT_VEC_NEAR(firstPivot, expectedFirstPivot, 0.0001f);
 
 		// Test second cube dimensions
 		// In bbmodel: from=[13, 21.9, -1], to=[14, 22.9, 1]
-		ASSERT_EQ(secondCube.type(), scenegraph::SceneGraphNodeType::Model);
-		const voxel::Region &secondRegion = secondCube.region();
+		ASSERT_EQ(secondCube->type(), scenegraph::SceneGraphNodeType::Model);
+		const voxel::Region &secondRegion = secondCube->region();
 		const glm::ivec3 &secondDim = secondRegion.getDimensionsInVoxels();
 		EXPECT_EQ(secondDim.x, 1);
 		EXPECT_EQ(secondDim.y, 1);
 		EXPECT_EQ(secondDim.z, 2); // Test group node
-		ASSERT_EQ(fingers_right.type(), scenegraph::SceneGraphNodeType::Group);
-		EXPECT_GT(fingers_right.children().size(), 0u);
+		ASSERT_EQ(fingers_right->type(), scenegraph::SceneGraphNodeType::Group);
+		EXPECT_GT(fingers_right->children().size(), 0u);
 
 		// Test animations
 		ASSERT_EQ(sceneGraph.animations().size(), 6u);
@@ -90,11 +93,12 @@ protected:
 		EXPECT_VEC_NEAR(glm::vec3(3.0f, 27.4f, -3.91f), eyeglossRightTransform.worldTranslation(), 0.00001f);
 		ASSERT_EQ(1u, eyeglossRight->children().size());
 
-		const scenegraph::SceneGraphNode &eyeglossRightCube = sceneGraph.node(eyeglossRight->children()[0]);
-		EXPECT_EQ(eyeglossRightCube.type(), scenegraph::SceneGraphNodeType::Model);
-		const scenegraph::SceneGraphTransform &eyeglossRightCubeTransform = eyeglossRightCube.transform(0);
+		const scenegraph::SceneGraphNode *eyeglossRightCube = sceneGraph.findNodeByUUID(eyeglossRight->children()[0]);
+		ASSERT_NE(nullptr, eyeglossRightCube);
+		EXPECT_EQ(eyeglossRightCube->type(), scenegraph::SceneGraphNodeType::Model);
+		const scenegraph::SceneGraphTransform &eyeglossRightCubeTransform = eyeglossRightCube->transform(0);
 		EXPECT_VEC_NEAR(glm::vec3(2.5f, 27.15f, -3.991f), eyeglossRightCubeTransform.worldTranslation(), 0.00001f);
-		EXPECT_VEC_NEAR(glm::vec3(-0.25f, 23.9f, 0.0f), eyeglossRightCube.worldPivot(), 0.00001f);
+		EXPECT_VEC_NEAR(glm::vec3(-0.25f, 23.9f, 0.0f), eyeglossRightCube->worldPivot(), 0.00001f);
 #endif
 	}
 };

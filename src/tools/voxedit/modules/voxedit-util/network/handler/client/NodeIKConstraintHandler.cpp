@@ -3,7 +3,7 @@
  */
 
 #include "NodeIKConstraintHandler.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "core/Log.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -22,18 +22,10 @@ void NodeIKConstraintHandler::execute(const network::ClientId &, NodeIKConstrain
 	const core::Optional<scenegraph::IKConstraint> &ikConstraint = message->ikConstraint();
 	if (ikConstraint.hasValue()) {
 		scenegraph::IKConstraint ik = *ikConstraint.value();
-		// Resolve the effector UUID back to a local node ID
+		// Prefer the dedicated wire-format effector UUID when present.
 		const core::UUID &effectorUUID = message->effectorUUID();
 		if (effectorUUID.isValid()) {
-			const scenegraph::SceneGraphNode *effectorNode = _sceneMgr->sceneGraph().findNodeByUUID(effectorUUID);
-			if (effectorNode != nullptr) {
-				ik.effectorNodeId = effectorNode->id();
-			} else {
-				Log::warn("Effector node UUID %s not found", effectorUUID.str().c_str());
-				ik.effectorNodeId = InvalidNodeId;
-			}
-		} else {
-			ik.effectorNodeId = InvalidNodeId;
+			ik.effectorUUID = effectorUUID;
 		}
 		node->setIkConstraint(ik);
 	} else {

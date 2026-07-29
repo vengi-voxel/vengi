@@ -36,11 +36,11 @@ static core::String createTransform(const scenegraph::SceneGraph &sceneGraph, co
 }
 
 static core::String resolveParent(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
-	if (node.parent() == sceneGraph.root().id() || node.parent() == InvalidNodeId) {
+	const int parentId = sceneGraph.parentId(node);
+	if (parentId == sceneGraph.root().id() || parentId == InvalidNodeId) {
 		return ".";
 	}
-	const scenegraph::SceneGraphNode &parent = sceneGraph.node(node.parent());
-	return parent.name();
+	return sceneGraph.node(parentId).name();
 }
 
 // https://docs.godotengine.org/de/4.x/classes/class_color.html
@@ -213,13 +213,16 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 	}
 	wrapBool(stream.writeString("\n", false))
 
-	for (int child : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
-		if (cnode.isRootNode()) {
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		if (child->isRootNode()) {
 			return false;
 		}
-		if (!saveNode(meshIdxNodeMap, sceneGraph, cnode, stream, meshes, subResourceId, stage)) {
-			Log::error("Failed to save node %s", cnode.name().c_str());
+		if (!saveNode(meshIdxNodeMap, sceneGraph, *child, stream, meshes, subResourceId, stage)) {
+			Log::error("Failed to save node %s", child->name().c_str());
 			return false;
 		}
 	}

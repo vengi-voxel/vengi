@@ -133,13 +133,21 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	return true;
 }
 
-bool VENGIFormat::saveIKConstraint(const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+bool VENGIFormat::saveIKConstraint(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								   io::WriteStream &stream) {
 	if (!node.hasIKConstraint()) {
 		return true;
 	}
 	const scenegraph::IKConstraint *ik = node.ikConstraint();
 	wrapBool(stream.writeUInt32(FourCC('I', 'K', 'C', 'O')))
-	wrapBool(stream.writeInt32(ik->effectorNodeId))
+	int effectorFileId = InvalidNodeId;
+	if (ik->hasEffector()) {
+		const scenegraph::SceneGraphNode *effector = sceneGraph.findNodeByUUID(ik->effectorUUID);
+		if (effector != nullptr) {
+			effectorFileId = effector->id();
+		}
+	}
+	wrapBool(stream.writeInt32(effectorFileId))
 	wrapBool(stream.writeFloat(ik->rollMin))
 	wrapBool(stream.writeFloat(ik->rollMax))
 	wrapBool(stream.writeBool(ik->visible))
@@ -154,9 +162,11 @@ bool VENGIFormat::saveIKConstraint(const scenegraph::SceneGraphNode &node, io::W
 }
 
 bool VENGIFormat::loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-								   uint32_t version, io::ReadStream &stream) {
+								   uint32_t version, io::ReadStream &stream,
+								   PendingIKEffectors &pendingIKEffectors) {
 	scenegraph::IKConstraint ik;
-	wrap(stream.readInt32(ik.effectorNodeId))
+	int fileEffectorId = InvalidNodeId;
+	wrap(stream.readInt32(fileEffectorId))
 	wrap(stream.readFloat(ik.rollMin))
 	wrap(stream.readFloat(ik.rollMax))
 	ik.visible = stream.readBool();
@@ -170,6 +180,9 @@ bool VENGIFormat::loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegrap
 		wrap(stream.readFloat(ik.swingLimits[i].radius))
 	}
 	node.setIkConstraint(ik);
+	if (fileEffectorId != InvalidNodeId) {
+		pendingIKEffectors.push_back({node.id(), fileEffectorId});
+	}
 	Log::debug("Loaded IK constraint with %u swing limits", swingCount);
 	return true;
 }
@@ -268,12 +281,16 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	}
 	wrapBool(saveNodePaletteNormals(sceneGraph, node, stream))
 	wrapBool(saveNodeData(sceneGraph, node, stream))
-	wrapBool(saveIKConstraint(node, stream))
+	wrapBool(saveIKConstraint(sceneGraph, node, stream))
 	for (const core::String &animation : sceneGraph.animations()) {
 		wrapBool(saveAnimation(node, animation, stream))
 	}
-	for (int childId : node.children()) {
-		wrapBool(saveNode(sceneGraph, stream, sceneGraph.node(childId)))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(saveNode(sceneGraph, stream, *child))
 	}
 	wrapBool(stream.writeUInt32(FourCC('E', 'N', 'D', 'N')))
 	return true;
@@ -521,7 +538,8 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 }
 
 bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
-						   NodeMapping &nodeMapping, PendingReferences &pendingReferences) {
+						   NodeMapping &nodeMapping, PendingReferences &pendingReferences,
+						   PendingIKEffectors &pendingIKEffectors) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	core::String type;
@@ -606,11 +624,11 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 				return false;
 			}
 		} else if (chunkMagic == FourCC('I', 'K', 'C', 'O')) {
-			if (!loadIKConstraint(sceneGraph, node, version, stream)) {
+			if (!loadIKConstraint(sceneGraph, node, version, stream, pendingIKEffectors)) {
 				return false;
 			}
 		} else if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
-			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping, pendingReferences)) {
+			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping, pendingReferences, pendingIKEffectors)) {
 				return false;
 			}
 		} else if (chunkMagic == FourCC('E', 'N', 'D', 'N')) {
@@ -663,8 +681,10 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	wrap(zipStream.readUInt32(chunkMagic))
 	NodeMapping nodeMapping;
 	PendingReferences pendingReferences;
+	PendingIKEffectors pendingIKEffectors;
 	if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
-		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping, pendingReferences)) {
+		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping, pendingReferences,
+					  pendingIKEffectors)) {
 			return false;
 		}
 		for (const PendingReference &pendingReference : pendingReferences) {
@@ -681,23 +701,23 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 				return false;
 			}
 		}
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::All); iter != sceneGraph.end(); ++iter) {
-			scenegraph::SceneGraphNode &node = *iter;
+		for (const PendingIKEffector &pendingIK : pendingIKEffectors) {
+			int mappedEffectorId;
+			if (!nodeMapping.get(pendingIK.fileEffectorId, mappedEffectorId)) {
+				Log::warn("Failed to perform node id mapping for IK effector node %i", pendingIK.fileEffectorId);
+				continue;
+			}
+			if (!sceneGraph.hasNode(mappedEffectorId) || !sceneGraph.hasNode(pendingIK.nodeId)) {
+				Log::warn("Failed to resolve IK effector mapping for node %i", pendingIK.nodeId);
+				continue;
+			}
+			scenegraph::SceneGraphNode &node = sceneGraph.node(pendingIK.nodeId);
 			if (!node.hasIKConstraint()) {
 				continue;
 			}
 			scenegraph::IKConstraint *ik = node.ikConstraint();
-			if (ik->effectorNodeId == InvalidNodeId) {
-				continue;
-			}
-			int nodeId;
-			if (!nodeMapping.get(ik->effectorNodeId, nodeId)) {
-				Log::warn("Failed to perform node id mapping for IK effector node %i", ik->effectorNodeId);
-				ik->effectorNodeId = InvalidNodeId;
-			} else {
-				Log::debug("Update IK effector node for node %i to: %i", node.id(), nodeId);
-				ik->effectorNodeId = nodeId;
-			}
+			ik->effectorUUID = sceneGraph.node(mappedEffectorId).uuid();
+			Log::debug("Update IK effector node for node %i to UUID %s", node.id(), ik->effectorUUID.str().c_str());
 		}
 		sceneGraph.updateTransforms();
 		return true;

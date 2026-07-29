@@ -250,14 +250,20 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 			}
 		}
 
-		for (int childId : sgNode.children()) {
-			self(self, sceneGraph.node(childId), wNode);
+		for (const core::UUID &childUUID : sgNode.children()) {
+			const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child != nullptr) {
+				self(self, *child, wNode);
+			}
 		}
 	};
 
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
-	for (int childId : root.children()) {
-		createNodes(createNodes, sceneGraph.node(childId), ufbxw_null_node);
+	for (const core::UUID &childUUID : root.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr) {
+			createNodes(createNodes, *child, ufbxw_null_node);
+		}
 	}
 
 	ufbxw_prepare_opts prepOpts = ufbxw_default_prepare_opts;

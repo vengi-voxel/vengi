@@ -75,9 +75,9 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 									  scenegraph::SceneGraphNode &node) {
 	const char *icon = nodeIcon(node.type());
-	const core::String &label = core::String::format("%s %s###node-%i", icon, node.name().c_str(), node.id());
+	const core::String &label = core::String::format("%s %s###node-%s", icon, node.name().c_str(), node.uuid().str().c_str());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const int activeNode = sceneGraph.activeNode();
+	const core::UUID activeNode = sceneGraph.activeNodeUUID();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		bool keyFrameChanged = false;
 		for (scenegraph::SceneGraphKeyFrame &kf : *node.keyFrames()) {
@@ -112,13 +112,13 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			}
 			sceneGraph.markKeyFramesDirty(node.id());
 		}
-		if (activeNode != _lastActivedNodeId && node.id() == activeNode) {
-			_lastActivedNodeId = activeNode;
+		if (activeNode != _lastActivedNodeUUID && node.uuid() == activeNode) {
+			_lastActivedNodeUUID = activeNode;
 		}
 		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-			_sceneMgr->nodeActivate(node.id());
-			_lastActivedNodeId = node.id();
-		} else if (activeNode == node.id()) {
+			_sceneMgr->nodeActivate(node.uuid());
+			_lastActivedNodeUUID = node.uuid();
+		} else if (activeNode == node.uuid()) {
 			ImGui::SetSelectedTimeline(label.c_str());
 		}
 		uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
@@ -127,7 +127,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			selectedFrames.resize(selectionCount);
 			ImGui::GetNeoKeyframeSelection(selectedFrames.data());
 			for (uint32_t i = 0; i < selectionCount; ++i) {
-				selectionBuffer.push_back(Selection{selectedFrames[i], node.id()});
+				selectionBuffer.push_back(Selection{selectedFrames[i], node.uuid()});
 			}
 		}
 		ImGui::EndNeoTimeLine();
@@ -136,7 +136,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 
 bool AnimationTimeline::init() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	_lastActivedNodeId = sceneGraph.activeNode();
+	_lastActivedNodeUUID = sceneGraph.activeNodeUUID();
 	_animationPlaying = core::getVar(cfg::VoxEditAnimationPlaying);
 	return true;
 }
@@ -145,8 +145,11 @@ static void fillDisplayNodes_r(const scenegraph::SceneGraph &sceneGraph, const s
 	if (!node.isRootNode()) {
 		displayNodes.push_back(node.id());
 	}
-	for (int childId : node.children()) {
-		fillDisplayNodes_r(sceneGraph, sceneGraph.node(childId), displayNodes);
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr) {
+			fillDisplayNodes_r(sceneGraph, *child, displayNodes);
+		}
 	}
 }
 
@@ -168,7 +171,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		core::DynamicArray<int> displayNodes;
 		fillDisplayNodes_r(sceneGraph, sceneGraph.root(), displayNodes);
-		const int activeNode = sceneGraph.activeNode();
+		const core::UUID activeNode = sceneGraph.activeNodeUUID();
 		ImGuiListClipper clipper;
 		clipper.Begin((int)displayNodes.size());
 		while (clipper.Step()) {
@@ -177,14 +180,14 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);
 			}
 		}
-		if (activeNode != _lastActivedNodeId) {
+		if (activeNode != _lastActivedNodeUUID) {
 			for (int i = 0; i < (int)displayNodes.size(); i++) {
-				if (displayNodes[i] == activeNode) {
+				if (sceneGraph.node(displayNodes[i]).uuid() == activeNode) {
 					const float savedY = ImGui::GetCurrentWindow()->DC.CursorPos.y;
 					clipper.SeekCursorForItem(i);
 					ImGui::SetScrollHereY();
 					ImGui::GetCurrentWindow()->DC.CursorPos.y = savedY;
-					_lastActivedNodeId = activeNode;
+					_lastActivedNodeUUID = activeNode;
 					break;
 				}
 			}
@@ -222,7 +225,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				if (ImGui::IconSelectable(ICON_LC_COPY, _("Duplicate keyframe"))) {
 					memento::ScopedMementoGroup mementoGroup(_sceneMgr->mementoHandler(), "duplicate_keyframes");
 					for (const Selection &sel : _selectionBuffer) {
-						_sceneMgr->nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
+						_sceneMgr->nodeAddKeyFrame(sel.nodeUUID, sel.frameIdx + 1);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
@@ -230,7 +233,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				if (ImGui::IconSelectable(ICON_LC_TRASH, _("Delete keyframes"))) {
 					memento::ScopedMementoGroup mementoGroup(_sceneMgr->mementoHandler(), "delete_keyframes");
 					for (const Selection &sel : _selectionBuffer) {
-						_sceneMgr->nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
+						_sceneMgr->nodeRemoveKeyFrame(sel.nodeUUID, sel.frameIdx);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();

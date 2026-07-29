@@ -1581,14 +1581,17 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 			entry.set("uuid", node.uuid().str());
 			entry.set("isOpen", true);
 			json::Json children = json::Json::array();
-			for (int childId : node.children()) {
-				const scenegraph::SceneGraphNode &child = sg.node(childId);
-				if ((child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Point) &&
-					child.children().empty()) {
-					children.push(child.uuid().str());
-				} else if (child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Group ||
-						   child.type() == scenegraph::SceneGraphNodeType::Point) {
-					children.push(buildOutlinerNode(child));
+			for (const core::UUID &childUUID : node.children()) {
+				const scenegraph::SceneGraphNode *child = sg.findNodeByUUID(childUUID);
+				if (child == nullptr) {
+					continue;
+				}
+				if ((child->isAnyModelNode() || child->type() == scenegraph::SceneGraphNodeType::Point) &&
+					child->children().empty()) {
+					children.push(child->uuid().str());
+				} else if (child->isAnyModelNode() || child->type() == scenegraph::SceneGraphNodeType::Group ||
+						   child->type() == scenegraph::SceneGraphNodeType::Point) {
+					children.push(buildOutlinerNode(*child));
 				}
 			}
 			entry.set("children", children);
@@ -1598,14 +1601,17 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 
 	HierarchyBuilder builder{sceneGraph, groups, vec3Array};
 	const scenegraph::SceneGraphNode &rootSGNode = sceneGraph.node(sceneGraph.root().id());
-	for (int childId : rootSGNode.children()) {
-		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		if ((child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Point) &&
-			child.children().empty()) {
-			outliner.push(child.uuid().str());
-		} else if (child.isAnyModelNode() || child.type() == scenegraph::SceneGraphNodeType::Group ||
-				   child.type() == scenegraph::SceneGraphNodeType::Point) {
-			outliner.push(builder.buildOutlinerNode(child));
+	for (const core::UUID &childUUID : rootSGNode.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		if ((child->isAnyModelNode() || child->type() == scenegraph::SceneGraphNodeType::Point) &&
+			child->children().empty()) {
+			outliner.push(child->uuid().str());
+		} else if (child->isAnyModelNode() || child->type() == scenegraph::SceneGraphNodeType::Group ||
+				   child->type() == scenegraph::SceneGraphNodeType::Point) {
+			outliner.push(builder.buildOutlinerNode(*child));
 		}
 	}
 	root.set("groups", groups);

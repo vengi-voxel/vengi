@@ -36,8 +36,8 @@ void NodeMovedHandler::execute(const network::ClientId &, NodeMovedMessage *mess
 	Client &client = _sceneMgr->client();
 	client.lockListener();
 
-	const int newParentId = newParent ? newParent->id() : 0;
-	_sceneMgr->nodeMove(node->id(), newParentId, scenegraph::NodeMoveFlag::None);
+	const core::UUID &newParentUUID = newParent ? newParent->uuid() : _sceneMgr->sceneGraph().root().uuid();
+	_sceneMgr->nodeMove(node->uuid(), newParentUUID, scenegraph::NodeMoveFlag::None);
 	const core::String animation = _sceneMgr->sceneGraph().activeAnimation();
 	node->setAllKeyFrames(keyFrames, animation);
 	client.unlockListener();

@@ -41,8 +41,7 @@ bool PlaceVoxelsTool::execute(const json::Json &id, const json::Json &args, Tool
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
-	const int nodeId = node->id();
-	voxel::RawVolume *v = ctx.sceneMgr->volume(nodeId);
+	voxel::RawVolume *v = ctx.sceneMgr->volume(nodeUUID);
 	if (v == nullptr) {
 		return ctx.result(id, "Volume not found - fetch the scene state first, this is no model node", true);
 	}
@@ -60,7 +59,7 @@ bool PlaceVoxelsTool::execute(const json::Json &id, const json::Json &args, Tool
 
 	const voxel::Region &region = wrapper.dirtyRegion();
 	if (region.isValid()) {
-		ctx.sceneMgr->modified(nodeId, region);
+		ctx.sceneMgr->modified(nodeUUID, region);
 		return ctx.result(id, "Voxels placed successfully", false);
 	}
 	return ctx.result(id, "No voxels were placed", true);

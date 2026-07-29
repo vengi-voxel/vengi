@@ -105,9 +105,10 @@ void SceneRenderer::shutdown() {
 /**
  * @brief Return the real model node, not the reference
  */
-static const scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
-	if (sceneGraph.hasNode(nodeId)) {
-		const scenegraph::SceneGraphNode *n = &sceneGraph.node(nodeId);
+static const scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGraph &sceneGraph,
+															const core::UUID &nodeUUID) {
+	const scenegraph::SceneGraphNode *n = sceneGraph.findNodeByUUID(nodeUUID);
+	if (n != nullptr) {
 		if (n->hasReference()) {
 			const scenegraph::SceneGraphNode *referencedNode = sceneGraph.findNodeByUUID(n->referenceUUID());
 			if (referencedNode != nullptr) {
@@ -124,13 +125,17 @@ void SceneRenderer::doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGrap
 	if (!sceneMode || (!_showAABB->boolVal() && !_addNodePreview.active)) {
 		return;
 	}
-	const int activeNodeId = sceneGraph.activeNode();
+	const core::UUID &activeNodeUUID = sceneGraph.activeNodeUUID();
+	if (!sceneGraph.hasNode(activeNodeUUID)) {
+		return;
+	}
+	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeUUID);
+	const int activeNodeId = activeNode.id();
 	if (!_cache.aabbDirty && frameIdx == _cache.lastAABBFrame && activeNodeId == _cache.lastAABBActiveNode) {
 		return;
 	}
 	core_trace_scoped(UpdateAABBMesh);
 	_shapeBuilder.clear();
-	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 	const bool activeNodeLocked = activeNode.locked();
 	int modelNodes = 0;
 	for (auto entry : sceneGraph.nodes()) {
@@ -141,7 +146,7 @@ void SceneRenderer::doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGrap
 		if (!node.visible()) {
 			continue;
 		}
-		if (node.id() == sceneGraph.activeNode()) {
+		if (node.uuid() == activeNodeUUID) {
 			continue;
 		} else if (activeNodeLocked && node.locked()) {
 			_shapeBuilder.setColor(style::color(style::ColorLockedNode));
@@ -202,7 +207,7 @@ void SceneRenderer::doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGrap
 	_shapeBuilder.setColor(style::color(style::ColorBone));
 
 	const bool hideInactive = _hideInactive->boolVal();
-	const int activeNodeId = sceneGraph.activeNode();
+	const core::UUID &activeNodeUUID = sceneGraph.activeNodeUUID();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
 		if (!node.isAnyModelNode()) {
@@ -211,24 +216,21 @@ void SceneRenderer::doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGrap
 		if (!node.visible()) {
 			continue;
 		}
-		if (node.parent() == InvalidNodeId) {
+		const scenegraph::SceneGraphNode *pnode = sceneGraph.parentNode(node);
+		if (pnode == nullptr || !pnode->isAnyModelNode()) {
 			continue;
 		}
-		const bool isActiveNode = node.id() == activeNodeId;
+		if (!pnode->visible()) {
+			continue;
+		}
+
+		const bool isActiveNode = node.uuid() == activeNodeUUID;
 		if (hideInactive && !isActiveNode) {
 			continue;
 		}
 
-		const scenegraph::SceneGraphNode &pnode = sceneGraph.node(node.parent());
-		if (!pnode.isAnyModelNode()) {
-			continue;
-		}
-		if (!pnode.visible()) {
-			continue;
-		}
-
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
-		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(pnode, frameIdx);
+		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(*pnode, frameIdx);
 		const glm::vec3 &ptranslation = ptransform.worldTranslation();
 		const glm::vec3 &translation = transform.worldTranslation();
 
@@ -459,7 +461,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeRenderer.render(_indices.sliceRegion, camera);
 		}
 	} else {
-		const scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
+		const scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNodeUUID());
 		if (n == nullptr) {
 			return;
 		}

@@ -239,6 +239,64 @@ protected:
 	 * @param[in] deleteMesh TODO: handle deleteMesh somehow
 	 */
 	bool setNewVolume(int nodeId, voxel::RawVolume *volume, bool deleteMesh = true);
+	bool setNewVolume(const core::UUID &nodeUUID, voxel::RawVolume *volume, bool deleteMesh = true);
+	void modified(int nodeId, const voxel::Region &modifiedRegion, SceneModifiedFlags flags = SceneModifiedFlags::All,
+				  uint64_t renderRegionMillis = 0);
+	voxel::RawVolume *volume(int nodeId);
+	const voxel::RawVolume *volume(int nodeId) const;
+	int addModelAdjacent(int sourceNodeId, voxel::FaceNames face);
+	int mergeNodes(int nodeId1, int nodeId2);
+	bool nodeCopy(int nodeId);
+	bool nodePaste(int nodeId, const glm::ivec3 &pos);
+	bool nodeGlobalCopy(int nodeId);
+	bool nodeGlobalPaste(int nodeId, const glm::ivec3 &pos);
+	bool splatMerge(int sourceNodeId);
+	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
+							  bool fillAndHollow = false);
+	bool nodePasteAsNewNode(int nodeId);
+	bool nodeCut(int nodeId);
+	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale,
+							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
+	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
+										 scenegraph::InterpolationType interpolation);
+	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
+	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
+	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
+	int nodeReference(int nodeId);
+	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
+	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
+	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
+	bool nodeRemoveProperty(int nodeId, const core::String &key);
+	bool nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint);
+	bool nodeRemoveIKConstraint(int nodeId);
+	bool nodeRename(int nodeId, const core::String &name);
+	bool nodeRemove(int nodeId, bool recursive);
+	bool nodeSetVisible(int nodeId, bool visible);
+	bool nodeSetLocked(int nodeId, bool locked);
+	bool nodeActivate(int nodeId);
+	bool nodeUnreference(int nodeId);
+	bool nodeRemoveNormals(int nodeId);
+	bool nodeDuplicateColor(int nodeId, uint8_t palIdx);
+	bool nodeRemoveColor(int nodeId, uint8_t palIdx);
+	bool nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
+	bool nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount);
+	bool nodeRemoveAlpha(int nodeId, uint8_t palIdx);
+	bool nodeResetMaterial(int nodeId, uint8_t palIdx);
+	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
+	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
+	void nodeResize(int nodeId, const voxel::Region &region);
+	void nodeResize(int nodeId, const glm::ivec3 &size);
+	void nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize);
+	void nodeBakeTransform(int nodeId);
+	void nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
+	void nodeShift(int nodeId, const glm::ivec3 &m);
+	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
+	void nodeRemoveUnusedColors(int nodeId, bool reindexPalette = false);
 	void autosave();
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateDirtyRendererStates();
@@ -247,20 +305,22 @@ protected:
 	int traceScene(bool skipActiveNode = true);
 	void stepLSystem();
 	int toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name = "nodeid") const;
+	core::UUID toNodeUUID(const command::CommandArgs &args, const core::UUID &defaultVal,
+						  const core::String &name = "nodeid") const;
 
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
-	int activeNode() const;
 	bool startSceneJob(SceneJobRequest &&request);
 	bool startSceneJob(SceneJobType type, int nodeId);
+	bool startSceneJob(SceneJobType type, const core::UUID &nodeUUID);
 	bool startActiveSceneJob(SceneJobType type, const core::String &text, core::Future<SceneJobResult> &&future);
 	bool startVolumeOperationSceneJob(const SceneJobRequest &request);
-	bool startCropSceneJob(int nodeId, const core::String &text);
-	bool startScaleUpSceneJob(int nodeId, const core::String &text);
-	bool startScaleDownSceneJob(int nodeId, const core::String &text);
+	bool startCropSceneJob(const core::UUID &nodeUUID, const core::String &text);
+	bool startScaleUpSceneJob(const core::UUID &nodeUUID, const core::String &text);
+	bool startScaleDownSceneJob(const core::UUID &nodeUUID, const core::String &text);
 	bool startResizeSceneJob(const SceneJobRequest &request);
-	bool startSplitObjectsSceneJob(int nodeId, const core::String &text);
+	bool startSplitObjectsSceneJob(const core::UUID &nodeUUID, const core::String &text);
 	bool startColorToModelSceneJob(const SceneJobRequest &request);
-	bool startSplatMergeSceneJob(int nodeId, const core::String &text);
+	bool startSplatMergeSceneJob(const core::UUID &nodeUUID, const core::String &text);
 	void startNextQueuedSceneJob();
 	void updateSceneJob();
 	bool applySceneJobResult(SceneJobResult &&result);
@@ -291,13 +351,20 @@ protected:
 	void nodeGroupResize(const glm::ivec3 &size);
 
 	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor);
+	int nodeColorToNewNode(const core::UUID &nodeUUID, const voxel::Voxel voxelColor);
 	int nodeColorToNewNode(const voxel::Voxel voxelColor);
 	int nodeColorToNewNode(int nodeId, const core::Buffer<uint8_t> &paletteIndices);
+	int nodeColorToNewNode(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices);
 	void nodeCrop(int nodeId);
+	void nodeCrop(const core::UUID &nodeUUID);
 	void nodeSplitObjects(int nodeId);
+	void nodeSplitObjects(const core::UUID &nodeUUID);
 	void nodeScaleDown(int nodeId);
+	void nodeScaleDown(const core::UUID &nodeUUID);
 	void nodeScaleUp(int nodeId);
+	void nodeScaleUp(const core::UUID &nodeUUID);
 	bool nodeSave(int nodeId, const core::String &file);
+	bool nodeSave(const core::UUID &nodeUUID, const core::String &file);
 	void nodeRotateAll(math::Axis axis);
 
 	bool doUndo();
@@ -446,10 +513,10 @@ public:
 	 */
 	const glm::ivec3 &referencePosition() const;
 
-	void modified(int nodeId, const voxel::Region &modifiedRegion, SceneModifiedFlags flags = SceneModifiedFlags::All,
-				  uint64_t renderRegionMillis = 0);
-	voxel::RawVolume *volume(int nodeId);
-	const voxel::RawVolume *volume(int nodeId) const;
+	void modified(const core::UUID &nodeUUID, const voxel::Region &modifiedRegion,
+				  SceneModifiedFlags flags = SceneModifiedFlags::All, uint64_t renderRegionMillis = 0);
+	voxel::RawVolume *volume(const core::UUID &nodeUUID);
+	const voxel::RawVolume *volume(const core::UUID &nodeUUID) const;
 	palette::Palette &activePalette() const;
 
 	bool setActivePalette(const palette::Palette &palette, bool searchBestColors = false);
@@ -473,7 +540,7 @@ public:
 	/**
 	 * @brief Add a new model node adjacent to the given node on the given face
 	 */
-	int addModelAdjacent(int sourceNodeId, voxel::FaceNames face);
+	int addModelAdjacent(const core::UUID &sourceNodeUUID, voxel::FaceNames face);
 	int addPointChild(const core::String &name, const glm::ivec3 &position, const glm::quat &orientation,
 					  const core::UUID &uuid = core::UUID());
 
@@ -495,7 +562,7 @@ public:
 	/**
 	 * @brief Merge two nodes and extend the smaller one
 	 */
-	int mergeNodes(int nodeId1, int nodeId2);
+	int mergeNodes(const core::UUID &nodeUUID1, const core::UUID &nodeUUID2);
 	int mergeNodes(NodeMergeFlags flags);
 
 	/**
@@ -503,10 +570,10 @@ public:
 	 */
 	bool splitVolumes();
 
-	bool nodeCopy(int nodeId);
-	bool nodePaste(int nodeId, const glm::ivec3& pos);
-	bool nodeGlobalCopy(int nodeId);
-	bool nodeGlobalPaste(int nodeId, const glm::ivec3 &pos);
+	bool nodeCopy(const core::UUID &nodeUUID);
+	bool nodePaste(const core::UUID &nodeUUID, const glm::ivec3& pos);
+	bool nodeGlobalCopy(const core::UUID &nodeUUID);
+	bool nodeGlobalPaste(const core::UUID &nodeUUID, const glm::ivec3 &pos);
 
 	bool paste(const glm::ivec3 &pos);
 	bool globalPaste(const glm::ivec3 &pos);
@@ -523,7 +590,7 @@ public:
 	 * @param sourceNodeId The ID of the node to merge into the scene.
 	 * @return @c true if the merge was successful, @c false otherwise.
 	 */
-	bool splatMerge(int sourceNodeId);
+	bool splatMerge(const core::UUID &sourceNodeUUID);
 
 	/**
 	 * @brief Merges the currently active node into the background structure.
@@ -545,14 +612,14 @@ public:
 	 */
 	int mergeVisibleToTemp();
 
-	void selectionInvert(int nodeId);
-	void selectionUnselect(int nodeId);
-	void selectionSelectAll(int nodeId);
-	void selectionSetBounds(int nodeId, const voxel::Region &region);
-	void selectionSetEllipse(int nodeId);
-	bool hasSelection(int nodeId) const;
-	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
-	voxel::Region selectionCalculateRegion(int nodeId) const;
+	void selectionInvert(const core::UUID &nodeUUID);
+	void selectionUnselect(const core::UUID &nodeUUID);
+	void selectionSelectAll(const core::UUID &nodeUUID);
+	void selectionSetBounds(const core::UUID &nodeUUID, const voxel::Region &region);
+	void selectionSetEllipse(const core::UUID &nodeUUID);
+	bool hasSelection(const core::UUID &nodeUUID) const;
+	bool isSelected(const core::UUID &nodeUUID, const glm::ivec3 &pos) const;
+	voxel::Region selectionCalculateRegion(const core::UUID &nodeUUID) const;
 
 	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
 	void lsystemAbort();
@@ -596,9 +663,9 @@ public:
 	int pendingSceneJobs() const;
 	const core::String &pendingSceneJobText(int index) const;
 
-	bool nodeResizeAsync(int nodeId, const voxel::Region &region);
-	bool nodeResizeAsync(int nodeId, const glm::ivec3 &size);
-	bool nodeColorToNewNodeAsync(int nodeId, const core::Buffer<uint8_t> &paletteIndices);
+	bool nodeResizeAsync(const core::UUID &nodeUUID, const voxel::Region &region);
+	bool nodeResizeAsync(const core::UUID &nodeUUID, const glm::ivec3 &size);
+	bool nodeColorToNewNodeAsync(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices);
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);
@@ -683,11 +750,17 @@ public:
 
 	bool setGridResolution(int resolution);
 
+	int activeNode() const;
+	const core::UUID &activeNodeUUID() const;
+
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 	const scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::UUID &uuid);
+	const scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::UUID &uuid) const;
+	scenegraph::SceneGraphNode *sceneGraphModelNodeByUUID(const core::UUID &uuid);
+	const scenegraph::SceneGraphNode *sceneGraphModelNodeByUUID(const core::UUID &uuid) const;
 
 	const voxel::ClipboardData &clipboardData() const;
 
@@ -724,95 +797,96 @@ public:
 	void nodeGroupMoveVoxels(int x, int y, int z);
 
 	void nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow);
-	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
-						  bool fillAndHollow = false);
+	bool nodeCalculateNormals(const core::UUID &nodeUUID, voxel::Connectivity connectivity, bool recalcAll = false,
+							  bool fillAndHollow = false);
 
-	bool nodePasteAsNewNode(int nodeId);
-	bool nodeCut(int nodeId);
+	bool nodePasteAsNewNode(const core::UUID &nodeUUID);
+	bool nodeCut(const core::UUID &nodeUUID);
 
 	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
-	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
-							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
-	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
-	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
+	bool nodeUpdateTransform(const core::UUID &nodeUUID, const glm::vec3 &angles, const glm::vec3 &scale,
+							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(const core::UUID &nodeUUID, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx,
+							 bool local);
+	bool nodeResetTransform(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeTransformMirror(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
+	bool nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
-	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
-	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
-	int nodeReference(int nodeId);
-	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
-	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
-	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeUpdatePivot(const core::UUID &nodeUUID, const glm::vec3 &pivot);
+	bool nodeShiftAllKeyframes(const core::UUID &nodeUUID, const glm::vec3 &shift);
+	bool nodeRemoveKeyFrameByIndex(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx);
+	int nodeReference(const core::UUID &nodeUUID);
+	bool nodeDuplicate(const core::UUID &nodeUUID, core::UUID *newNodeUUID = nullptr);
+	bool nodeRemoveKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx);
+	bool nodeAddKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
-	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
-	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
-	bool nodeRemoveProperty(int nodeId, const core::String &key);
-	bool nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint);
-	bool nodeRemoveIKConstraint(int nodeId);
-	bool nodeRename(int nodeId, const core::String &name);
-	bool nodeRemove(int nodeId, bool recursive);
-	bool nodeSetVisible(int nodeId, bool visible);
-	bool nodeSetLocked(int nodeId, bool locked);
-	bool nodeActivate(int nodeId);
-	bool nodeUnreference(int nodeId);
+	bool nodeMove(const core::UUID &sourceNodeUUID, const core::UUID &targetNodeUUID, scenegraph::NodeMoveFlag flags);
+	bool nodeSetProperty(const core::UUID &nodeUUID, const core::String &key, const core::String &value);
+	bool nodeRemoveProperty(const core::UUID &nodeUUID, const core::String &key);
+	bool nodeSetIKConstraint(const core::UUID &nodeUUID, const scenegraph::IKConstraint &constraint);
+	bool nodeRemoveIKConstraint(const core::UUID &nodeUUID);
+	bool nodeRename(const core::UUID &nodeUUID, const core::String &name);
+	bool nodeRemove(const core::UUID &nodeUUID, bool recursive);
+	bool nodeSetVisible(const core::UUID &nodeUUID, bool visible);
+	bool nodeSetLocked(const core::UUID &nodeUUID, bool locked);
+	bool nodeActivate(const core::UUID &nodeUUID);
+	bool nodeUnreference(const core::UUID &nodeUUID);
 	void nodeGroupRemoveNormals();
-	bool nodeRemoveNormals(int nodeId);
+	bool nodeRemoveNormals(const core::UUID &nodeUUID);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeDuplicateColor(int nodeId, uint8_t palIdx);
+	bool nodeDuplicateColor(const core::UUID &nodeUUID, uint8_t palIdx);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeRemoveColor(int nodeId, uint8_t palIdx);
+	bool nodeRemoveColor(const core::UUID &nodeUUID, uint8_t palIdx);
 	/**
 	 * @param[in] srcPalIdx The palette color indices to replace with the target palette index
 	 * @param[in] targetPalIdx The target palette index
 	 */
-	bool nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
-	bool nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount);
+	bool nodeReduceColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
+	bool nodeQuantizeColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeRemoveAlpha(int nodeId, uint8_t palIdx);
-	bool nodeResetMaterial(int nodeId, uint8_t palIdx);
+	bool nodeRemoveAlpha(const core::UUID &nodeUUID, uint8_t palIdx);
+	bool nodeResetMaterial(const core::UUID &nodeUUID, uint8_t palIdx);
 
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
-	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
-	void nodeResize(int nodeId, const voxel::Region &region);
-	void nodeResize(int nodeId, const glm::ivec3 &size);
-	void nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize);
-	void nodeBakeTransform(int nodeId);
+	bool nodeSetMaterial(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialProperty material, float value);
+	bool nodeSetColor(const core::UUID &nodeUUID, uint8_t palIdx, const color::RGBA &color);
+	void nodeResize(const core::UUID &nodeUUID, const voxel::Region &region);
+	void nodeResize(const core::UUID &nodeUUID, const glm::ivec3 &size);
+	void nodeRescaleContent(const core::UUID &nodeUUID, const glm::ivec3 &targetSize);
+	void nodeBakeTransform(const core::UUID &nodeUUID);
 	/**
 	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels
 	 * in the volume that are using this color. This is because we separate the color and the alpha voxels
 	 * during mesh generation.
 	 */
-	void nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
+	void nodeUpdateVoxelType(const core::UUID &nodeUUID, uint8_t palIdx, voxel::VoxelType newType);
 	/**
 	 * @brief Shift the whole volume by the given world coordinates
 	 */
-	void nodeShift(int nodeId, const glm::ivec3 &m);
+	void nodeShift(const core::UUID &nodeUUID, const glm::ivec3 &m);
 	/**
 	 * @brief Move the voxels inside the volume regions
 	 */
-	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
+	void nodeMoveVoxels(const core::UUID &nodeUUID, const glm::ivec3 &m);
 	/**
 	 * @brief Remove unused colors from the palette of the given node
 	 *
 	 * @param[in] reindexPalette If @c true the palette will be reindexed after removing the unused colors to remove
 	 * gaps. This will also update the voxels.
 	 */
-	void nodeRemoveUnusedColors(int nodeId, bool reindexPalette = false);
+	void nodeRemoveUnusedColors(const core::UUID &nodeUUID, bool reindexPalette = false);
 	/**
 	 * @note This is not related to the group node type
 	 */

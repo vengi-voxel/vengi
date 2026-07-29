@@ -61,9 +61,8 @@ void Paint::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 	const int rad = state.radius;
 	const int radSq = rad * rad;
 	if (!_dirtyRegion.isValid() && !_hadSelection) {
-		const int activeNodeId = sceneGraph.activeNode();
-		if (sceneGraph.hasNode(activeNodeId)) {
-			_hadSelection = sceneGraph.node(activeNodeId).hasSelection();
+		if (sceneGraph.hasNode(sceneGraph.activeNodeUUID())) {
+			_hadSelection = sceneGraph.node(sceneGraph.activeNodeUUID()).hasSelection();
 		}
 	}
 	const bool growOnly =

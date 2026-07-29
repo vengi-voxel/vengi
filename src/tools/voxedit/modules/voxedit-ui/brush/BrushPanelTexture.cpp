@@ -45,8 +45,7 @@ void BrushPanelTexture::update(BrushPanelContext &ctx, command::CommandExecution
 			{}, io::format::images());
 	}
 
-	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
-	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(nodeId));
+	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID()));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Use selection"), "texturebrushfromface", listener);
 	ImGui::EndDisabled();
 

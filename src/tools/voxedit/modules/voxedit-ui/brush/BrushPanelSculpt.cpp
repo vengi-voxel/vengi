@@ -32,7 +32,7 @@ void BrushPanelSculpt::executeSculptBrush(BrushPanelContext &ctx) {
 				return;
 			}
 			auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				ctx.sceneMgr->modified(nodeId, region, flags);
+				ctx.sceneMgr->modified(ctx.sceneMgr->sceneGraph().uuid(nodeId), region, flags);
 			};
 			modifier.execute(ctx.sceneMgr->sceneGraph(), *node, callback);
 		}
@@ -70,8 +70,7 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	SculptBrush &brush = modifier.sculptBrush();
 
-	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
-	if (!brush.hasSnapshot() && !ctx.sceneMgr->hasSelection(nodeId)) {
+	if (!brush.hasSnapshot() && !ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID())) {
 		ImGui::TextWrappedUnformatted(_("Select voxels first, then switch to sculpt"));
 		return;
 	}

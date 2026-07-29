@@ -164,7 +164,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 
 	select(*node, modifier, glm::ivec3(1), glm::ivec3(2));
 
-	EXPECT_TRUE(mgr.hasSelection(nodeId)) << "Node should have selection after select()";
+	EXPECT_TRUE(mgr.hasSelection(node->uuid())) << "Node should have selection after select()";
 	// Voxel at (2,1,1) should be selected
 	EXPECT_TRUE((volume->voxel(2, 1, 1).getFlags() & voxel::FlagOutline) != 0)
 		<< "Voxel at (2,1,1) should be selected";
@@ -457,7 +457,7 @@ TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_TRUE(mgr.hasSelection(nodeId)) << "Placed voxels should be auto-selected";
+	EXPECT_TRUE(mgr.hasSelection(node->uuid())) << "Placed voxels should be auto-selected";
 	EXPECT_TRUE((node->volume()->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should have FlagOutline set";
 	modifier.shutdown();
@@ -481,7 +481,7 @@ TEST_F(ModifierTest, testAutoSelectDisabledNoSelection) {
 	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
 	EXPECT_TRUE(callbackFired) << "Shape placement should succeed";
-	EXPECT_FALSE(mgr.hasSelection(nodeId)) << "Placed voxels should not be selected when auto-select is off";
+	EXPECT_FALSE(mgr.hasSelection(node->uuid())) << "Placed voxels should not be selected when auto-select is off";
 	EXPECT_FALSE((node->volume()->voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0)
 		<< "Placed voxel should not have FlagOutline when auto-select is off";
 	modifier.shutdown();
@@ -506,7 +506,7 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 	// Select the whole volume so visual masking allows placement everywhere
 	volume.setFlags(volume.region(), voxel::FlagOutline);
 
-	ASSERT_TRUE(mgr.hasSelection(nodeId)) << "Pre-condition: node should have selection";
+	ASSERT_TRUE(mgr.hasSelection(node->uuid())) << "Pre-condition: node should have selection";
 
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	modifier.execute(mgr.sceneGraph(), *node);

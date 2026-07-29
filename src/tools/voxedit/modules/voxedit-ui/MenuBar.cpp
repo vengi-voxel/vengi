@@ -85,10 +85,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	if (ImGui::BeginMenuBar()) {
 		ImGui::Dummy({});
 
-		int activeNodeId = _sceneMgr->sceneGraph().activeNode();
+		const core::UUID &activeNodeUUID = _sceneMgr->activeNodeUUID();
 
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
-			const bool hasSelection = _sceneMgr->hasSelection(activeNodeId);
+			const bool hasSelection = _sceneMgr->hasSelection(activeNodeUUID);
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, _("Load"), "load", true, &listener);
 			_app->lastOpenedMenu();
@@ -135,7 +135,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
-			const bool hasSelection = _sceneMgr->hasSelection(activeNodeId);
+			const bool hasSelection = _sceneMgr->hasSelection(activeNodeUUID);
 			const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 			ImGui::CommandIconMenuItem(ICON_LC_UNDO, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_REDO, _("Redo"), "redo", mementoHandler.canRedo(), &listener);

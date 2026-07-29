@@ -76,23 +76,26 @@ TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
 		return;
 	}
 	ASSERT_EQ(sceneGraph.root().children().size(), 1u);
-	const scenegraph::SceneGraphNode &groupNode = sceneGraph.node(sceneGraph.root().children()[0]);
-	EXPECT_TRUE(groupNode.isGroupNode());
-	EXPECT_EQ(groupNode.name(), "lxf-two-parts");
-	ASSERT_EQ(groupNode.children().size(), 2u);
+	const scenegraph::SceneGraphNode *groupNode = sceneGraph.findNodeByUUID(sceneGraph.root().children()[0]);
+	ASSERT_NE(nullptr, groupNode);
+	EXPECT_TRUE(groupNode->isGroupNode());
+	EXPECT_EQ(groupNode->name(), "lxf-two-parts");
+	ASSERT_EQ(groupNode->children().size(), 2u);
 
-	const scenegraph::SceneGraphNode &firstPart = sceneGraph.node(groupNode.children()[0]);
-	const scenegraph::SceneGraphNode &secondPart = sceneGraph.node(groupNode.children()[1]);
-	EXPECT_TRUE(firstPart.isModelNode());
-	EXPECT_TRUE(secondPart.isModelNode());
-	EXPECT_EQ(firstPart.parent(), groupNode.id());
-	EXPECT_EQ(secondPart.parent(), groupNode.id());
-	EXPECT_EQ(firstPart.region().getLowerCorner(), glm::ivec3(0));
-	EXPECT_EQ(secondPart.region().getLowerCorner(), glm::ivec3(0));
+	const scenegraph::SceneGraphNode *firstPart = sceneGraph.findNodeByUUID(groupNode->children()[0]);
+	const scenegraph::SceneGraphNode *secondPart = sceneGraph.findNodeByUUID(groupNode->children()[1]);
+	ASSERT_NE(nullptr, firstPart);
+	ASSERT_NE(nullptr, secondPart);
+	EXPECT_TRUE(firstPart->isModelNode());
+	EXPECT_TRUE(secondPart->isModelNode());
+	EXPECT_EQ(firstPart->parentUUID(), groupNode->uuid());
+	EXPECT_EQ(secondPart->parentUUID(), groupNode->uuid());
+	EXPECT_EQ(firstPart->region().getLowerCorner(), glm::ivec3(0));
+	EXPECT_EQ(secondPart->region().getLowerCorner(), glm::ivec3(0));
 
 	sceneGraph.updateTransforms();
-	const scenegraph::FrameTransform firstTransform = sceneGraph.transformForFrame(firstPart, 0);
-	const scenegraph::FrameTransform secondTransform = sceneGraph.transformForFrame(secondPart, 0);
+	const scenegraph::FrameTransform firstTransform = sceneGraph.transformForFrame(*firstPart, 0);
+	const scenegraph::FrameTransform secondTransform = sceneGraph.transformForFrame(*secondPart, 0);
 	EXPECT_NEAR(secondTransform.worldTranslation().x - firstTransform.worldTranslation().x, 10.0f, 0.001f);
 	EXPECT_NEAR(secondTransform.worldTranslation().y - firstTransform.worldTranslation().y, 0.0f, 0.001f);
 	EXPECT_NEAR(secondTransform.worldTranslation().z - firstTransform.worldTranslation().z, 0.0f, 0.001f);
@@ -106,13 +109,16 @@ TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 		return;
 	}
 	ASSERT_EQ(sceneGraph.root().children().size(), 1u);
-	const scenegraph::SceneGraphNode &groupNode = sceneGraph.node(sceneGraph.root().children()[0]);
-	ASSERT_EQ(groupNode.children().size(), 2u);
+	const scenegraph::SceneGraphNode *groupNode = sceneGraph.findNodeByUUID(sceneGraph.root().children()[0]);
+	ASSERT_NE(nullptr, groupNode);
+	ASSERT_EQ(groupNode->children().size(), 2u);
 
-	const scenegraph::SceneGraphNode &rotated = sceneGraph.node(groupNode.children()[0]);
-	const scenegraph::SceneGraphNode &reference = sceneGraph.node(groupNode.children()[1]);
-	const glm::ivec3 rotatedSize = rotated.region().getDimensionsInCells();
-	const glm::ivec3 referenceSize = reference.region().getDimensionsInCells();
+	const scenegraph::SceneGraphNode *rotated = sceneGraph.findNodeByUUID(groupNode->children()[0]);
+	const scenegraph::SceneGraphNode *reference = sceneGraph.findNodeByUUID(groupNode->children()[1]);
+	ASSERT_NE(nullptr, rotated);
+	ASSERT_NE(nullptr, reference);
+	const glm::ivec3 rotatedSize = rotated->region().getDimensionsInCells();
+	const glm::ivec3 referenceSize = reference->region().getDimensionsInCells();
 	// 3001 is longer along Z at identity; 90 degree Y rotation swaps X/Z extents (vengi Y-up)
 	EXPECT_GT(rotatedSize.z, rotatedSize.x);
 	EXPECT_GT(referenceSize.x, referenceSize.z);
@@ -128,10 +134,10 @@ TEST_F(LXFFormatTest, testLoadLXFMLLight1Fixture) {
 		return;
 	}
 	const scenegraph::SceneGraphNode *groupNode = nullptr;
-	for (int childId : sceneGraph.root().children()) {
-		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		if (child.isGroupNode()) {
-			groupNode = &child;
+	for (const core::UUID &childUUID : sceneGraph.root().children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child != nullptr && child->isGroupNode()) {
+			groupNode = child;
 			break;
 		}
 	}
@@ -139,10 +145,11 @@ TEST_F(LXFFormatTest, testLoadLXFMLLight1Fixture) {
 	EXPECT_EQ(groupNode->name(), "Light1");
 	EXPECT_EQ(groupNode->children().size(), 3u);
 	int voxelCount = 0;
-	for (int childId : groupNode->children()) {
-		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		ASSERT_TRUE(child.isModelNode());
-		const voxel::RawVolume *volume = child.volume();
+	for (const core::UUID &childUUID : groupNode->children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		ASSERT_NE(nullptr, child);
+		ASSERT_TRUE(child->isModelNode());
+		const voxel::RawVolume *volume = child->volume();
 		ASSERT_NE(volume, nullptr);
 		voxelCount += voxelutil::countVoxels(*volume);
 	}

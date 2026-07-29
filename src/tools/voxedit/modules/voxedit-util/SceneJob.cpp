@@ -53,7 +53,7 @@ SceneJobSplatTarget::SceneJobSplatTarget(const SceneJobSplatTarget &other) {
 SceneJobSplatTarget &SceneJobSplatTarget::operator=(const SceneJobSplatTarget &other) {
 	if (this != &other) {
 		delete volume;
-		nodeId = other.nodeId;
+		nodeUUID = other.nodeUUID;
 		volume = other.volume != nullptr ? new voxel::RawVolume(*other.volume) : nullptr;
 		palette = other.palette;
 		worldRegion = other.worldRegion;
@@ -68,11 +68,11 @@ SceneJobSplatTarget::SceneJobSplatTarget(SceneJobSplatTarget &&other) noexcept {
 SceneJobSplatTarget &SceneJobSplatTarget::operator=(SceneJobSplatTarget &&other) noexcept {
 	if (this != &other) {
 		delete volume;
-		nodeId = other.nodeId;
+		nodeUUID = other.nodeUUID;
 		volume = other.volume;
 		palette = other.palette;
 		worldRegion = other.worldRegion;
-		other.nodeId = InvalidNodeId;
+		other.nodeUUID = core::UUID();
 		other.volume = nullptr;
 		other.worldRegion = voxel::Region::InvalidRegion;
 	}
@@ -91,7 +91,7 @@ SceneJobVolumeResult::SceneJobVolumeResult(const SceneJobVolumeResult &other) {
 SceneJobVolumeResult &SceneJobVolumeResult::operator=(const SceneJobVolumeResult &other) {
 	if (this != &other) {
 		delete volume;
-		nodeId = other.nodeId;
+		nodeUUID = other.nodeUUID;
 		volume = other.volume != nullptr ? new voxel::RawVolume(*other.volume) : nullptr;
 		modifiedRegion = other.modifiedRegion;
 	}
@@ -105,11 +105,11 @@ SceneJobVolumeResult::SceneJobVolumeResult(SceneJobVolumeResult &&other) noexcep
 SceneJobVolumeResult &SceneJobVolumeResult::operator=(SceneJobVolumeResult &&other) noexcept {
 	if (this != &other) {
 		delete volume;
-		nodeId = other.nodeId;
+		nodeUUID = other.nodeUUID;
 		volume = other.volume;
 		modifiedRegion = other.modifiedRegion;
 
-		other.nodeId = InvalidNodeId;
+		other.nodeUUID = core::UUID();
 		other.volume = nullptr;
 		other.modifiedRegion = voxel::Region::InvalidRegion;
 	}
@@ -134,8 +134,8 @@ SceneJobNewNode::SceneJobNewNode(const SceneJobNewNode &other) {
 SceneJobNewNode &SceneJobNewNode::operator=(const SceneJobNewNode &other) {
 	if (this != &other) {
 		delete volume;
-		sourceNodeId = other.sourceNodeId;
-		parentNodeId = other.parentNodeId;
+		sourceNodeUUID = other.sourceNodeUUID;
+		parentNodeUUID = other.parentNodeUUID;
 		name = other.name;
 		palette = other.palette;
 		volume = other.volume != nullptr ? new voxel::RawVolume(*other.volume) : nullptr;
@@ -150,14 +150,14 @@ SceneJobNewNode::SceneJobNewNode(SceneJobNewNode &&other) noexcept {
 SceneJobNewNode &SceneJobNewNode::operator=(SceneJobNewNode &&other) noexcept {
 	if (this != &other) {
 		delete volume;
-		sourceNodeId = other.sourceNodeId;
-		parentNodeId = other.parentNodeId;
+		sourceNodeUUID = other.sourceNodeUUID;
+		parentNodeUUID = other.parentNodeUUID;
 		name = core::move(other.name);
 		palette = other.palette;
 		volume = other.volume;
 
-		other.sourceNodeId = InvalidNodeId;
-		other.parentNodeId = InvalidNodeId;
+		other.sourceNodeUUID = core::UUID();
+		other.parentNodeUUID = core::UUID();
 		other.volume = nullptr;
 	}
 	return *this;
@@ -182,7 +182,7 @@ SceneJobResult &SceneJobResult::operator=(SceneJobResult &&other) noexcept {
 	if (this != &other) {
 		delete volume;
 		type = other.type;
-		nodeId = other.nodeId;
+		nodeUUID = other.nodeUUID;
 		volume = other.volume;
 		modifiedRegion = other.modifiedRegion;
 		volumes = core::move(other.volumes);
@@ -192,7 +192,7 @@ SceneJobResult &SceneJobResult::operator=(SceneJobResult &&other) noexcept {
 		error = core::move(other.error);
 
 		other.type = SceneJobType::None;
-		other.nodeId = InvalidNodeId;
+		other.nodeUUID = core::UUID();
 		other.volume = nullptr;
 		other.modifiedRegion = voxel::Region::InvalidRegion;
 		other.removeSourceNode = false;
@@ -212,12 +212,12 @@ voxel::Region sceneJobModifiedRegionForResize(const voxel::Region &oldRegion, co
 						 glm::max(oldRegion.getUpperCorner(), newRegion.getUpperCorner()));
 }
 
-SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, int nodeId, voxel::RawVolume *snapshot,
+SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::UUID &nodeUUID, voxel::RawVolume *snapshot,
 												 const voxel::Region &selectionRegion, const voxel::Voxel &voxel,
 												 bool overrideVoxels) {
 	SceneJobResult result;
 	result.type = type;
-	result.nodeId = nodeId;
+	result.nodeUUID = nodeUUID;
 
 	voxel::RawVolumeWrapper wrapper(snapshot);
 	switch (type) {

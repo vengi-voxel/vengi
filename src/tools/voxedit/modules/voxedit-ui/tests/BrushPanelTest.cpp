@@ -113,7 +113,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		ctx->Yield(3);
 
 		command::executeCommands("select none");
-		const scenegraph::SceneGraphNode *nodeBeforeSelect = _ctx.sceneMgr->sceneGraphModelNode(_ctx.sceneMgr->sceneGraph().activeNode());
+		const scenegraph::SceneGraphNode *nodeBeforeSelect = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(nodeBeforeSelect != nullptr);
 		IM_CHECK(!nodeBeforeSelect->hasSelection());
 
@@ -122,7 +122,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		// The AABB brush requires a second action to complete the 3D selection when the
 		// drag only spans 2 dimensions (needsAdditionalAction returns true)
 		executeViewportClick();
-		const scenegraph::SceneGraphNode *nodeAfterSelect = _ctx.sceneMgr->sceneGraphModelNode(_ctx.sceneMgr->sceneGraph().activeNode());
+		const scenegraph::SceneGraphNode *nodeAfterSelect = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(nodeAfterSelect != nullptr);
 		IM_CHECK(nodeAfterSelect->hasSelection());
 
@@ -132,8 +132,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	IM_REGISTER_TEST(engine, testCategory(), "select color actions")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
-		const int activeNode = _ctx.sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -243,8 +242,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		ctx->Yield(3);
 
 		// verify all voxels have NO_NORMAL after filling
-		const int activeNode = _ctx.sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
+		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		bool allNoNormal = true;
 		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
@@ -264,7 +262,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		executeViewportClick();
 
 		// find any voxel that had its normal changed to the expected value
-		node = _ctx.sceneMgr->sceneGraphModelNode(activeNode);
+		node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		bool foundPaintedNormal = false;
 		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {

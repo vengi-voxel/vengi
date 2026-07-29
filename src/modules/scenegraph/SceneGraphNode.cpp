@@ -39,7 +39,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_ikConstraint = core::move(move._ikConstraint);
 	_color = move._color;
 	_parent = move._parent;
-	move._parent = InvalidNodeId;
+	move._parent = core::UUID();
 	_pivot = move._pivot;
 	_keyFrames = move._keyFrames;
 	move._keyFrames = nullptr;
@@ -77,7 +77,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_ikConstraint = core::move(move._ikConstraint);
 	_color = move._color;
 	_parent = move._parent;
-	move._parent = InvalidNodeId;
+	move._parent = core::UUID();
 	_pivot = move._pivot;
 	_keyFrames = move._keyFrames;
 	move._keyFrames = nullptr;
@@ -554,20 +554,23 @@ bool SceneGraphNode::isLeaf() const {
 	return _children.empty();
 }
 
-bool SceneGraphNode::addChild(int id) {
-	for (const int childId : _children) {
-		if (childId == id) {
+bool SceneGraphNode::addChild(const core::UUID &uuid) {
+	if (!uuid.isValid()) {
+		return false;
+	}
+	for (const core::UUID &childUUID : _children) {
+		if (childUUID == uuid) {
 			return false;
 		}
 	}
-	_children.push_back(id);
+	_children.push_back(uuid);
 	return true;
 }
 
-bool SceneGraphNode::removeChild(int id) {
+bool SceneGraphNode::removeChild(const core::UUID &uuid) {
 	const int n = (int)_children.size();
 	for (int i = 0; i < n; ++i) {
-		if (_children[i] == id) {
+		if (_children[i] == uuid) {
 			_children.erase(i);
 			return true;
 		}

@@ -234,9 +234,12 @@ bool QBCLFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph:
 							  const scenegraph::SceneGraphNode &node) const {
 	wrapSave(saveMatrix(stream, sceneGraph, node))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
-	for (int nodeId : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-		wrapSave(saveNode(stream, sceneGraph, cnode))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapSave(saveNode(stream, sceneGraph, *child))
 	}
 	return true;
 }
@@ -258,9 +261,12 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sc
 	}
 	wrapSave(stream.writeUInt32(children));
 
-	for (int nodeId : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
-		wrapSave(saveNode(stream, sceneGraph, cnode))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapSave(saveNode(stream, sceneGraph, *child))
 	}
 
 	return true;

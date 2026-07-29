@@ -162,7 +162,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 		node.setName("ik-node");
 
 		scenegraph::IKConstraint ik;
-		ik.effectorNodeId = effectorNodeId;
+		ik.effectorUUID = sceneGraphSave.node(effectorNodeId).uuid();
 		ik.rollMin = -1.5f;
 		ik.rollMax = 2.0f;
 		ik.visible = false;
@@ -197,7 +197,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 	ASSERT_TRUE(loadedIKNode->hasIKConstraint());
 	const scenegraph::IKConstraint *loadedIK = loadedIKNode->ikConstraint();
 	ASSERT_NE(nullptr, loadedIK);
-	EXPECT_EQ(loadedEffectorNode->id(), loadedIK->effectorNodeId);
+	EXPECT_EQ(loadedEffectorNode->uuid(), loadedIK->effectorUUID);
 	EXPECT_FLOAT_EQ(-1.5f, loadedIK->rollMin);
 	EXPECT_FLOAT_EQ(2.0f, loadedIK->rollMax);
 	EXPECT_FALSE(loadedIK->visible);

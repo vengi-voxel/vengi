@@ -126,7 +126,7 @@ bool BrushTool::executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, Brush
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
-	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->id());
+	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->uuid());
 	if (volume == nullptr) {
 		return ctx.result(id, "Volume not found - this is no model node", true);
 	}
@@ -183,7 +183,7 @@ bool BrushTool::executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, Brush
 
 	const voxel::Region &region = wrapper.dirtyRegion();
 	if (region.isValid()) {
-		ctx.sceneMgr->modified(node->id(), region);
+		ctx.sceneMgr->modified(node->uuid(), region);
 		return ctx.result(id, "Brush executed successfully", false);
 	}
 

@@ -71,9 +71,12 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
-	for (int child : node.children()) {
-		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, archive, stream, ctx))
+	for (const core::UUID &childUUID : node.children()) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(saveRecursiveNode(sceneGraph, *child, filename, archive, stream, ctx))
 	}
 	return true;
 }
@@ -153,7 +156,8 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeInt32(1))
 	wrapBool(stream->writeString(stringProperty(&root, "basetemplate"), true))
 	wrapBool(stream->writeBool(boolProperty(&root, "static", false)))
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
+	const scenegraph::SceneGraphNode *firstChild = childCount == 1 ? sceneGraph.findNodeByUUID(children[0]) : nullptr;
+	if (childCount != 1 || firstChild == nullptr || firstChild->name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXAFormat)
 		wrapBool(stream->writeString(SANDBOX_CONTROLLER_NODE, true))
 		wrapBool(stream->writeString("", true))
@@ -162,9 +166,12 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::debug("add controller node with %i children", childCount);
 		wrapBool(stream->writeInt32(childCount))
 	}
-	for (int child : children) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, filename, archive, *stream, ctx))
+	for (const core::UUID &childUUID : children) {
+		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(saveRecursiveNode(sceneGraph, *child, filename, archive, *stream, ctx))
 	}
 	const core::String &basePath = core::string::extractDir(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
@@ -211,7 +218,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 		src.releaseOwnership();
 		child.setVolume(src.volume());
 		// TODO: VOXELFORMAT: the node instance is not yet added to the scene graph - and thus doesn't have a parent yet
-		sceneGraph.emplace(core::move(child), node.parent());
+		sceneGraph.emplace(core::move(child), sceneGraph.parentId(node));
 	}
 #endif
 
@@ -357,7 +364,7 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 				// TODO: VOXELFORMAT: the effector node might not exist yet - we resolve after the full scene graph is loaded
 				scenegraph::SceneGraphNode *effectorNode = sceneGraph.findNodeByName(effectorId);
 				if (effectorNode != nullptr) {
-					ikConstraint.effectorNodeId = effectorNode->id();
+					ikConstraint.effectorUUID = effectorNode->uuid();
 				} else {
 					Log::warn("Could not find effector node with name '%s' for node '%s'", effectorId, id);
 				}
@@ -451,9 +458,12 @@ bool VXRFormat::handleVersion8ExtraData(io::SeekableReadStream &stream, scenegra
 										scenegraph::SceneGraphNode &node) {
 	node.setProperty("collidable", stream.readBool());
 	node.setProperty("decorative", stream.readBool());
-	for (int childId : node.children()) {
-		scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
-		wrapBool(handleVersion8ExtraData(stream, sceneGraph, child))
+	for (const core::UUID &childUUID : node.children()) {
+		scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+		if (child == nullptr) {
+			continue;
+		}
+		wrapBool(handleVersion8ExtraData(stream, sceneGraph, *child))
 	}
 	return true;
 }
@@ -531,9 +541,12 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 
 	// VXR8 has an extra recursive pass for collideable/decorative data after children
 	if (version == 8 && stream.remaining() > 0) {
-		for (int nodeId : rootNode.children()) {
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			wrapBool(handleVersion8ExtraData(stream, sceneGraph, node))
+		for (const core::UUID &childUUID : rootNode.children()) {
+			scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			if (child == nullptr) {
+				continue;
+			}
+			wrapBool(handleVersion8ExtraData(stream, sceneGraph, *child))
 		}
 	}
 

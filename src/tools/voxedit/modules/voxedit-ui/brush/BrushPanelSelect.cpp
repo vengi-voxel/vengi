@@ -18,12 +18,12 @@
 namespace voxedit {
 
 void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
-	voxel::Region sel = ctx.sceneMgr->selectionCalculateRegion(nodeId);
-	if (!sel.isValid()) {
-		return;
-	}
 	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNode(nodeId);
 	if (node == nullptr) {
+		return;
+	}
+	voxel::Region sel = ctx.sceneMgr->selectionCalculateRegion(node->uuid());
+	if (!sel.isValid()) {
 		return;
 	}
 	ImGui::SeparatorText(_("Selection bounds"));
@@ -89,7 +89,7 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 		// ensure min <= max after independent dragging
 		const glm::ivec3 newMins = glm::min(mins, maxs);
 		const glm::ivec3 newMaxs = glm::max(mins, maxs);
-		ctx.sceneMgr->selectionSetBounds(node->id(), voxel::Region(newMins, newMaxs));
+		ctx.sceneMgr->selectionSetBounds(node->uuid(), voxel::Region(newMins, newMaxs));
 	}
 
 	const glm::ivec3 size = sel.getDimensionsInVoxels();
@@ -168,7 +168,7 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 		circle.setRadiusU(radiusU);
 		circle.setRadiusV(radiusV);
 		circle.setDepth(depth);
-		ctx.sceneMgr->selectionSetEllipse(nodeId);
+		ctx.sceneMgr->selectionSetEllipse(node->uuid());
 	}
 }
 
@@ -285,7 +285,7 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 	ImGui::SeparatorText(_("Selection actions"));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Select by color"), "selectonlycolor", listener);
 	ImGui::CommandIconButton(ICON_LC_PAINTBRUSH, _("Paint selection"), "colorselected", listener);
-	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(nodeId));
+	ImGui::BeginDisabled(!ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID()));
 	ImGui::CommandIconButton(ICON_LC_SCAN, _("Deselect by color"), "deselectcolor", listener);
 	ImGui::EndDisabled();
 
@@ -305,7 +305,8 @@ void BrushPanelSelect::update(BrushPanelContext &ctx, command::CommandExecutionL
 		handleSelectPaint(ctx, nodeId);
 	}
 
-	if (brush.selectMode() == SelectMode::Circle && brush.circle().valid() && ctx.sceneMgr->hasSelection(nodeId)) {
+	if (brush.selectMode() == SelectMode::Circle && brush.circle().valid() &&
+		ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID())) {
 		handleSelectCircle(ctx, nodeId);
 	}
 

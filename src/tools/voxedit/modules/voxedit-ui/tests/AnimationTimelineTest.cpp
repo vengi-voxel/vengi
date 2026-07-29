@@ -228,6 +228,9 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int firstNodeId = sceneGraph.activeNode();
+		const scenegraph::SceneGraphNode *firstNode = _sceneMgr->sceneGraphNode(firstNodeId);
+		IM_CHECK(firstNode != nullptr);
+		const core::UUID firstNodeUUID = firstNode->uuid();
 
 		// add a second model node
 		const int secondNodeId = _sceneMgr->addModelChild("second node", 32, 32, 32);
@@ -235,7 +238,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		ctx->Yield(2);
 
 		// ensure the first node is the active one
-		_sceneMgr->nodeActivate(firstNodeId);
+		_sceneMgr->nodeActivate(firstNodeUUID);
 		ctx->Yield();
 		IM_CHECK(sceneGraph.activeNode() == firstNodeId);
 
@@ -244,12 +247,16 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
 		ctx->SetRef(wrapperId);
 
+		firstNode = _sceneMgr->sceneGraphNode(firstNodeId);
 		const scenegraph::SceneGraphNode *secondNode = _sceneMgr->sceneGraphNode(secondNodeId);
+		IM_CHECK(firstNode != nullptr);
 		IM_CHECK(secondNode != nullptr);
 
 		// find the first node's timeline entry to use as an anchor for positioning
-		const core::String firstLabel = core::String::format("sequencer/###node-%i", firstNodeId);
-		const core::String secondLabel = core::String::format("sequencer/###node-%i", secondNodeId);
+		const core::String firstLabel =
+			core::String::format("sequencer/###node-%s", firstNode->uuid().str().c_str());
+		const core::String secondLabel =
+			core::String::format("sequencer/###node-%s", secondNode->uuid().str().c_str());
 		const ImGuiTestItemInfo firstEntry = ctx->ItemInfo(firstLabel.c_str());
 		// click at the position of the second node's timeline entry (just below the first one)
 		ImVec2 clickPos = firstEntry.RectFull.GetCenter();
@@ -288,7 +295,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 
 		// populate the selection buffer and open the context menu programmatically
 		_selectionBuffer.clear();
-		_selectionBuffer.push_back({targetFrame, nodeId});
+		_selectionBuffer.push_back({targetFrame, node->uuid()});
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(wrapperId);
 		ImGui::OpenPopup("keyframe-context-menu");
@@ -305,7 +312,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 
 		// open context menu again and test delete
 		_selectionBuffer.clear();
-		_selectionBuffer.push_back({targetFrame, nodeId});
+		_selectionBuffer.push_back({targetFrame, node->uuid()});
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(wrapperId);
 		ImGui::OpenPopup("keyframe-context-menu");

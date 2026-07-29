@@ -209,7 +209,7 @@ void SceneGraphRenderer::updateNodeState(const voxel::MeshStatePtr &meshState, c
 	bool hideNode = false;
 	if (renderContext.hideInactive) {
 		if (activeNode.isGroupNode() || activeNode.isRootNode()) {
-			if (node.parent() != activeNode.id()) {
+			if (node.parentUUID() != activeNode.uuid()) {
 				hideNode = true;
 			}
 		} else {

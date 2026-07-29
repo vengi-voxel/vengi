@@ -688,7 +688,8 @@ TEST_F(MementoHandlerTest, testSceneNodeIKConstraint) {
 
 	// Set IK constraint on the node
 	scenegraph::IKConstraint ik;
-	ik.effectorNodeId = 42;
+	const core::UUID effectorUUID = core::UUID(42);
+	ik.effectorUUID = effectorUUID;
 	ik.rollMin = -1.0f;
 	ik.rollMax = 1.0f;
 	ik.visible = false;
@@ -708,7 +709,7 @@ TEST_F(MementoHandlerTest, testSceneNodeIKConstraint) {
 	MementoState stateRedo = firstState(_mementoHandler.redo());
 	EXPECT_EQ(MementoType::SceneNodeIKConstraint, stateRedo.type);
 	ASSERT_TRUE(stateRedo.ikConstraint.hasValue());
-	EXPECT_EQ(42, stateRedo.ikConstraint.value()->effectorNodeId);
+	EXPECT_EQ(effectorUUID, stateRedo.ikConstraint.value()->effectorUUID);
 	EXPECT_FLOAT_EQ(-1.0f, stateRedo.ikConstraint.value()->rollMin);
 	EXPECT_FLOAT_EQ(1.0f, stateRedo.ikConstraint.value()->rollMax);
 	EXPECT_FALSE(stateRedo.ikConstraint.value()->visible);
@@ -754,7 +755,7 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const core::UUID oldParent = _sceneGraph.uuid(node->parent());
+	const core::UUID oldParent = node->parentUUID();
 	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
 	const auto *parentNode = _sceneGraph.findNodeByUUID(_mementoHandler.stateGroup().states[0].parentUUID);
 	ASSERT_TRUE(parentNode != nullptr);

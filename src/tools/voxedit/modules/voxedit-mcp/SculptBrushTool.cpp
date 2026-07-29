@@ -138,7 +138,7 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
-	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->id());
+	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->uuid());
 	if (volume == nullptr) {
 		return ctx.result(id, "Volume not found - this is no model node", true);
 	}
@@ -198,7 +198,7 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->id(), dirtyRegion);
+		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Sculpt '%s' executed successfully (strength=%.2f, iterations=%d)",
 											   sculptModeStr.c_str(), strength, iterations),

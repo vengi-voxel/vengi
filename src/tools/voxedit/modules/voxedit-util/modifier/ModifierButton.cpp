@@ -73,12 +73,12 @@ void ModifierButton::execute(bool single) {
 				return;
 			}
 			Log::debug("Execute modifier action for node %i", nodeId);
-			voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+			voxel::RawVolume *v = _sceneMgr->volume(node->uuid());
 			if (v == nullptr) {
 				return;
 			}
 			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				_sceneMgr->modified(nodeId, region, flags);
+				_sceneMgr->modified(node->uuid(), region, flags);
 			};
 			modifier.execute(_sceneMgr->sceneGraph(), *node, modifierFunc);
 			++nodes;
@@ -97,7 +97,7 @@ void ModifierButton::execute(bool single) {
 			voxel::Region pendingRegion = brush->consumePendingUndoRegion();
 			if (pendingRegion.isValid()) {
 				auto undoFunc = [&](int nodeId) {
-					_sceneMgr->modified(nodeId, pendingRegion, SceneModifiedFlags::MarkUndo);
+					_sceneMgr->modified(_sceneMgr->sceneGraph().uuid(nodeId), pendingRegion, SceneModifiedFlags::MarkUndo);
 				};
 				_sceneMgr->nodeForeachGroup(undoFunc);
 			}

@@ -49,7 +49,7 @@ void VoxelModificationHandler::execute(const network::ClientId &, VoxelModificat
 	const voxel::Region &volumeRegion = message->volumeRegion();
 	voxel::RawVolume *currentVolume = node->volume();
 	if (currentVolume != nullptr && volumeRegion.isValid() && currentVolume->region() != volumeRegion) {
-		_sceneMgr->nodeResize(node->id(), volumeRegion);
+		_sceneMgr->nodeResize(node->uuid(), volumeRegion);
 	}
 	_sceneMgr->nodeUpdatePartialVolume(*node, *v);
 	client.unlockListener();

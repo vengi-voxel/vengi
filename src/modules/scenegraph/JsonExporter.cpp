@@ -39,7 +39,7 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 	stream.writeStringFormat(false, "{");
 	stream.writeStringFormat(false, "\"id\":%i,", nodeId);
 	stream.writeStringFormat(false, "\"uuid\":\"%s\",", node.uuid().str().c_str());
-	stream.writeStringFormat(false, "\"parent\":%i,", node.parent());
+	stream.writeStringFormat(false, "\"parent\":\"%s\",", node.parentUUID().str().c_str());
 	stream.writeStringFormat(false, "\"name\":\"%s\",", node.name().c_str());
 	stream.writeStringFormat(false, "\"type\":\"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	const glm::vec3 &pivot = node.pivot();
@@ -231,12 +231,17 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 	}
 	if ((flags & JSONEXPORTER_CHILDREN) && !node.children().empty()) {
 		stream.writeStringFormat(false, ",\"children\":[");
+		bool firstChild = true;
 		for (size_t i = 0; i < node.children().size(); ++i) {
-			const int childId = node.children()[i];
-			stats += sceneGraphNodeJson(sceneGraph, childId, stream, flags);
-			if (i + 1 < node.children().size()) {
+			const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(node.children()[i]);
+			if (child == nullptr) {
+				continue;
+			}
+			if (!firstChild) {
 				stream.writeStringFormat(false, ",");
 			}
+			firstChild = false;
+			stats += sceneGraphNodeJson(sceneGraph, child->id(), stream, flags);
 		}
 		stream.writeStringFormat(false, "]");
 	}

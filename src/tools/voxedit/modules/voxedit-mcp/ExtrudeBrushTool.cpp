@@ -111,7 +111,7 @@ bool ExtrudeBrushTool::execute(const json::Json &id, const json::Json &args, Too
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
-	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->id());
+	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->uuid());
 	if (volume == nullptr) {
 		return ctx.result(id, "Volume not found - this is no model node", true);
 	}
@@ -164,7 +164,7 @@ bool ExtrudeBrushTool::execute(const json::Json &id, const json::Json &args, Too
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->id(), dirtyRegion);
+		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Extrude executed successfully (face=%s, depth=%d)",
 											   faceStr.c_str(), depth),

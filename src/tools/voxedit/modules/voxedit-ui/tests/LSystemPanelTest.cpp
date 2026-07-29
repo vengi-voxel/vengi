@@ -19,8 +19,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		}
 		IM_CHECK(focusWindow(ctx, id));
 		IM_CHECK(resetScene(ctx, _sceneMgr));
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
+		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 		IM_CHECK(volume != nullptr);
 
 		ctx->ItemInputValue("Iterations", 1);

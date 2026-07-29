@@ -117,7 +117,7 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
-	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->id());
+	voxel::RawVolume *volume = ctx.sceneMgr->volume(node->uuid());
 	if (volume == nullptr) {
 		return ctx.result(id, "Volume not found - this is no model node", true);
 	}
@@ -202,7 +202,7 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->id(), dirtyRegion);
+		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Transform '%s' executed successfully", transformModeStr.c_str()),
 						  false);
