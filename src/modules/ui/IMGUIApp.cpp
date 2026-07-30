@@ -455,6 +455,11 @@ void IMGUIApp::setColorTheme() {
 
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
+
+	style.FrameRounding = 2.0f;
+	style.ChildRounding = 4.0f;
+	style.WindowRounding = 6.0f;
+
 	const float mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
 	style.ScaleAllSizes(mainScale);
 	style.FontScaleDpi = mainScale;
