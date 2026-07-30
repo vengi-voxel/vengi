@@ -18,6 +18,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
@@ -486,6 +487,11 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 
 void PalettePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(PalettePanel);
+	_hasFocus = false;
+	static ui::ScopedPanel panel(cfg::VoxEditShowPalette);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -496,70 +502,73 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int sceneHoveredPaletteColorIdx = currentSceneColor();
 	const int selectedPaletteColorIdx = currentPaletteColorIndex();
-	_hasFocus = false;
 	_importPalette.clear();
-	if (ImGui::Begin(makeTitle(ICON_LC_PALETTE, _("Palette"), id).c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
-		_hasFocus = ImGui::IsWindowHovered();
-		_colorHovered = false;
+	{
+		ui::ScopedPanel::Scope scope =
+			panel.begin(makeTitle(ICON_LC_PALETTE, _("Palette"), id).c_str(), ImGuiWindowFlags_MenuBar);
+		if (scope) {
+			_hasFocus = ImGui::IsWindowHovered();
+			_colorHovered = false;
 
 			if (node.isModelNode()) {
-			paletteMenuBar(node, listener);
-			const ImVec2 &pos = ImGui::GetCursorScreenPos();
-			palette::Palette &palette = node.palette();
-			const uint8_t sceneColorIdx = (uint8_t)sceneHoveredPaletteColorIdx;
-			const uint8_t selectedColorIdx = (uint8_t)selectedPaletteColorIdx;
+				paletteMenuBar(node, listener);
+				const ImVec2 &pos = ImGui::GetCursorScreenPos();
+				palette::Palette &palette = node.palette();
+				const uint8_t sceneColorIdx = (uint8_t)sceneHoveredPaletteColorIdx;
+				const uint8_t selectedColorIdx = (uint8_t)selectedPaletteColorIdx;
 
-			ImDrawList *drawList = ImGui::GetWindowDrawList();
-			const ImDrawListFlags backupFlags = drawList->Flags;
-			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
+				ImDrawList *drawList = ImGui::GetWindowDrawList();
+				const ImDrawListFlags backupFlags = drawList->Flags;
+				drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
 
-			const float windowPosX = ImGui::GetWindowPos().x;
-			const float contentRegionRightEdge = windowPosX + ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x;
-			const float rowWidth = core_max(frameHeight, contentRegionRightEdge - pos.x);
-			const int colorsPerRow = core_max(1, (int)(rowWidth / frameHeight));
-			const int totalRows = (palette::PaletteMaxColors + colorsPerRow - 1) / colorsPerRow;
+				const float windowPosX = ImGui::GetWindowPos().x;
+				const float contentRegionRightEdge =
+					windowPosX + ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x;
+				const float rowWidth = core_max(frameHeight, contentRegionRightEdge - pos.x);
+				const int colorsPerRow = core_max(1, (int)(rowWidth / frameHeight));
+				const int totalRows = (palette::PaletteMaxColors + colorsPerRow - 1) / colorsPerRow;
 
-			ImGuiListClipper clipper;
-			clipper.Begin(totalRows, frameHeight);
-			while (clipper.Step()) {
-				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
-					ImVec2 cursorPos(pos.x, pos.y + (float)row * frameHeight);
-					const int rowStart = row * colorsPerRow;
-					for (int col = 0; col < colorsPerRow; ++col) {
-						const int palettePanelIdx = rowStart + col;
-						if (palettePanelIdx >= palette::PaletteMaxColors) {
-							break;
+				ImGuiListClipper clipper;
+				clipper.Begin(totalRows, frameHeight);
+				while (clipper.Step()) {
+					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
+						ImVec2 cursorPos(pos.x, pos.y + (float)row * frameHeight);
+						const int rowStart = row * colorsPerRow;
+						for (int col = 0; col < colorsPerRow; ++col) {
+							const int palettePanelIdx = rowStart + col;
+							if (palettePanelIdx >= palette::PaletteMaxColors) {
+								break;
+							}
+							const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
+							addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx,
+									 (uint8_t)palettePanelIdx, frameHeight, node, palette, sceneColorIdx,
+									 selectedColorIdx, listener);
 						}
-						const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-						addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, (uint8_t)palettePanelIdx,
-								 frameHeight, node, palette, sceneColorIdx, selectedColorIdx, listener);
 					}
 				}
+
+				ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + (float)totalRows * frameHeight));
+
+				drawList->Flags = backupFlags;
+
+				ImGui::Dummy(ImVec2(0, frameHeight));
+				ImGui::Text(_("Palette index: %i (scene voxel index %i)"), selectedPaletteColorIdx,
+							sceneHoveredPaletteColorIdx);
+
+				createPopups(node);
+				closestColor(node, listener);
 			}
+		}
 
-			ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + (float)totalRows * frameHeight));
-
-			drawList->Flags = backupFlags;
-
-			ImGui::Dummy(ImVec2(0, frameHeight));
-			ImGui::Text(_("Palette index: %i (scene voxel index %i)"), selectedPaletteColorIdx,
-						sceneHoveredPaletteColorIdx);
-
-			createPopups(node);
-			closestColor(node, listener);
+		if (core::getVar(cfg::VoxEditShowColorPicker)->boolVal()) {
+			if (showColorPicker(selectedPaletteColorIdx, node, listener)) {
+				_colorPickerChange = true;
+			} else if (_colorPickerChange) {
+				_colorPickerChange = false;
+				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+			}
 		}
 	}
-
-	if (core::getVar(cfg::VoxEditShowColorPicker)->boolVal()) {
-		if (showColorPicker(selectedPaletteColorIdx, node, listener)) {
-			_colorPickerChange = true;
-		} else if (_colorPickerChange) {
-			_colorPickerChange = false;
-			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
-		}
-	}
-
-	ImGui::End();
 
 	if (!_importPalette.empty()) {
 		if (_sceneMgr->importPalette(_importPalette, true, true)) {

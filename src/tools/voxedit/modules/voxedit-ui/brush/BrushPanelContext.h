@@ -29,7 +29,6 @@ struct BrushPanelContext {
 	SceneManagerPtr sceneMgr;
 	video::TexturePoolPtr texturePool;
 	core::VarPtr renderNormals;
-	core::VarPtr viewMode;
 };
 
 } // namespace voxedit

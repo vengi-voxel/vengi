@@ -4,7 +4,6 @@
 
 #include "NodeInspectorPanel.h"
 #include "voxedit-util/modifier/Modifier.h"
-#include "ViewMode.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/String.h"
@@ -16,6 +15,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
 #include "ui/dearimgui/implot.h"
@@ -38,7 +38,6 @@ bool NodeInspectorPanel::init() {
 	_regionSizes = core::getVar(cfg::VoxEditRegionSizes);
 	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
-	_viewMode = core::getVar(cfg::VoxEditViewMode);
 	return true;
 }
 
@@ -505,7 +504,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 
 	keyFrameInterpolationSettings(node, keyFrameIdx);
 
-	if (viewModeAnimations(_viewMode->intVal())) {
+	if (core::getVar(cfg::VoxEditShowAnimationSettings)->boolVal()) {
 		ikConstraintSettings(node);
 	}
 
@@ -822,9 +821,14 @@ void NodeInspectorPanel::updateModelRegionSizes() {
 
 void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowNodeInspector);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
 
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
+	if (ui::ScopedPanel::Scope scope =
+			panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (sceneMode) {
 			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 			if (sceneGraph.hasNode(sceneGraph.activeNodeUUID())) {
@@ -834,7 +838,6 @@ void NodeInspectorPanel::update(const char *id, bool sceneMode, command::Command
 			modelView(listener);
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

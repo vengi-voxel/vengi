@@ -111,7 +111,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem,
 					   palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer)
 	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	  _renderPanel(app, _sceneMgr),
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool),
@@ -210,7 +210,7 @@ bool MainWindow::init() {
 		_popupWelcome->setVal("true");
 	}
 
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	_renderPanel.init();
 #endif
 	_sceneSettingsPanel.init();
@@ -260,7 +260,7 @@ void MainWindow::shutdown() {
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		_viewports[i]->shutdown();
 	}
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	_renderPanel.shutdown();
 #endif
 	_lsystemPanel.shutdown();
@@ -373,9 +373,7 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 void MainWindow::leftWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	if (viewModeNormalPalette(_viewMode->intVal())) {
-		_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
-	}
+	_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
 	_brushPanel.updateToolbar(TITLE_BRUSH_TOOLBAR, _lastSceneMode, listener);
 	_brushPanel.updateSettings(TITLE_BRUSH_SETTINGS, _lastSceneMode, listener);
 	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
@@ -387,7 +385,7 @@ void MainWindow::leftWidget() {
 // main space
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
 #endif
 	for (int i = 0; i < cfg::MaxViewports; ++i) {
@@ -428,10 +426,8 @@ void MainWindow::mainWidget(double nowSeconds) {
 		_viewports[i]->setEnableBloom(_viewports.size() == 1 || _viewports[i] == bloomViewport);
 		_viewports[i]->update(nowSeconds, &listener);
 	}
-#if ENABLE_RENDER_PANEL
-	if (viewModeRenderPanel(_viewMode->intVal())) {
-		_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
-	}
+#if USE_YOCTO
+	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
 #endif
 	_optionsPanel.update(TITLE_OPTIONS);
 	_scriptBrowserPanel.update(TITLE_SCRIPT_BROWSER, &listener);
@@ -440,11 +436,9 @@ void MainWindow::mainWidget(double nowSeconds) {
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
 	_helpPanel.update(TITLE_HELP);
-	if (viewModeAssetPanel(_viewMode->intVal())) {
-		_modelAssetPanel.update(TITLE_ASSET_MODELS, listener);
-		_imageAssetPanel.update(TITLE_ASSET_IMAGES);
-	}
-	if (viewModeAnimations(_viewMode->intVal()) && isSceneMode()) {
+	_modelAssetPanel.update(TITLE_ASSET_MODELS, listener);
+	_imageAssetPanel.update(TITLE_ASSET_IMAGES);
+	if (isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
 }
@@ -485,13 +479,9 @@ void MainWindow::rightWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
-	if (viewModeAnimations(_viewMode->intVal())) {
-		_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
-	}
-	if (viewModeMementoPanel(_viewMode->intVal())) {
-		_mementoPanel.update(TITLE_MEMENTO, listener);
-	}
-	if (viewModeCameraPanel(_viewMode->intVal()) && _lastHoveredViewport != nullptr) {
+	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
+	_mementoPanel.update(TITLE_MEMENTO, listener);
+	if (_lastHoveredViewport != nullptr) {
 		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 	}
 	_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
@@ -499,18 +489,10 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
-	if (viewModeLSystemPanel(_viewMode->intVal())) {
-		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
-	}
-	if (viewModeScriptPanel(_viewMode->intVal())) {
-		_scriptPanel.update(TITLE_SCRIPT, listener);
-	}
-	if (viewModeNetworkPanel(_viewMode->intVal())) {
-		_networkPanel.update(TITLE_NETWORK, listener);
-	}
-	if (viewModeGameModePanel(_viewMode->intVal())) {
-		_gameModePanel.update(TITLE_GAMEMODE, listener);
-	}
+	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+	_scriptPanel.update(TITLE_SCRIPT, listener);
+	_networkPanel.update(TITLE_NETWORK, listener);
+	_gameModePanel.update(TITLE_GAMEMODE, listener);
 }
 
 // end of right side
@@ -1161,16 +1143,21 @@ void MainWindow::updateViewMode() {
 		core::getVar(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[1]);
 	}
 
-	if (!viewModeNormalPalette(_viewMode->intVal()) && _sceneMgr->modifier().brushType() == BrushType::Normal) {
+	if (!core::getVar(cfg::VoxEditShowNormalPalette)->boolVal() &&
+		_sceneMgr->modifier().brushType() == BrushType::Normal) {
 		_sceneMgr->modifier().setBrushType(BrushType::Shape);
 	}
 }
 
 void MainWindow::update(double nowSeconds) {
 	core_trace_scoped(MainWindow);
-	if (_viewMode->isDirty() || _numViewports->isDirty()) {
+	const bool viewModeDirty = _viewMode->isDirty();
+	if (viewModeDirty || _numViewports->isDirty()) {
 		if (!initViewports()) {
 			Log::error("Failed to update scenes");
+		}
+		if (viewModeDirty) {
+			applyViewModePanelCvars((ViewMode)_viewMode->intVal());
 		}
 		updateViewMode();
 	}
@@ -1216,6 +1203,7 @@ void MainWindow::update(double nowSeconds) {
 
 	command::CommandExecutionListener &listener = _app->commandListener();
 	if (_menuBar.update(_app, listener)) {
+		applyViewModePanelCvars((ViewMode)_viewMode->intVal());
 		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
 

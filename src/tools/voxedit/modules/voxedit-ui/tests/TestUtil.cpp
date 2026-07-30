@@ -10,6 +10,7 @@
 #include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -39,19 +40,8 @@ bool newTemplateScene(ImGuiTestContext *ctx, const core::String &templateName) {
 }
 
 bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode) {
-	ImGuiWindow* window = ImGui::FindWindowByName("###app");
-	if (window == nullptr) {
-		ctx->LogError("Error: could not find ###app window");
-		IM_CHECK_SILENT_RETV(window != nullptr, false);
-	}
-	ctx->SetRef(window);
-	ctx->MenuClick("Help/Welcome screen");
-	ctx->Yield();
-	ctx->SetRef(POPUP_TITLE_WELCOME);
-	const char *viewModeStr = getViewModeString(viewMode);
-	const core::String &viewModeStrPath = core::String::format("View mode/%s", viewModeStr);
-	ctx->ComboClick(viewModeStrPath.c_str());
-	ctx->ItemClick("###Close");
+	core::getVar(cfg::VoxEditViewMode)->setVal((int)viewMode);
+	ctx->Yield(3);
 	return true;
 }
 

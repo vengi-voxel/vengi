@@ -8,6 +8,8 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/DragAndDropPayload.h"
@@ -294,8 +296,12 @@ video::TexturePtr ModelAssetPanel::thumbnailLookup(const voxelcollection::VoxelF
 void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ModelAssetPanel);
 	(void)listener;
+	static ui::ScopedPanel panel(cfg::VoxEditShowAssets);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LIST, _("Models"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
 		updateFilters();
 
@@ -367,7 +373,6 @@ void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &
 			ImGui::EndTable();
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

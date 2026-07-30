@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
 #include "voxel/RawVolume.h"
@@ -86,7 +87,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
-		const bool normalPaletteMode = viewModeNormalPalette(_ctx.viewMode->intVal());
+		const bool normalPaletteMode = core::getVar(cfg::VoxEditShowNormalPalette)->boolVal();
 
 		IM_CHECK(focusWindow(ctx, toolbarId));
 

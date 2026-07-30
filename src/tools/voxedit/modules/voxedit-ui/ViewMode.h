@@ -32,64 +32,20 @@ inline bool viewModeAllViewports(T viewMode) {
 }
 
 template<typename T>
-inline bool viewModeNormalPalette(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_NORMALPALETTE) != 0u;
-}
-
-template<typename T>
-inline bool viewModeMementoPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_MEMENTOPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeCameraPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_CAMERAPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeLSystemPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_LSYSTEMPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeScriptPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_SCRIPTPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeNetworkPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_NETWORKPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeGameModePanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_GAMEMODEPANEL) != 0u;
-}
-
-template<typename T>
 inline bool viewModePaletteFormat6Bit(T viewMode) {
 	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_PALFORMAT6BIT) != 0u;
-}
-
-template<typename T>
-inline bool viewModeAssetPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_ASSETPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeRenderPanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_RENDERPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeAnimations(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_ANIMATIONS) != 0u;
 }
 
 template<typename T>
 inline bool viewModeNoSplit(T viewMode) {
 	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_NOSPLIT) != 0u;
 }
+
+/**
+ * @brief Apply the panel visibility preset for the given view mode to the ve_show* cvars.
+ * Called when the view mode changes or when the layout is reset.
+ */
+void applyViewModePanelCvars(ViewMode viewMode);
 
 const char *getViewModeString(ViewMode viewMode);
 

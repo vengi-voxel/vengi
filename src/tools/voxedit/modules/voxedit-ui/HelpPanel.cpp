@@ -9,7 +9,9 @@
 #include "io/Filesystem.h"
 #include "ui/IMGUIEx.h"
 #include "ui/Markdown.h"
+#include "ui/ScopedPanel.h"
 #include "voxedit-ui/MainWindow.h"
+#include "voxedit-util/Config.h"
 
 namespace voxedit {
 
@@ -185,16 +187,19 @@ void HelpPanel::update(const char *id) {
 		return;
 	}
 	core_trace_scoped(HelpPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowHelp);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LAMP, _("Help"), id);
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	if (ImGui::Begin(title.c_str(), nullptr, windowFlags)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), windowFlags)) {
 		navigation();
 		if (ImGui::BeginChild("HelpContent", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar)) {
 			ImGui::Markdown(_markdown, linkCallback, imageCallback, this);
 		}
 		ImGui::EndChild();
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

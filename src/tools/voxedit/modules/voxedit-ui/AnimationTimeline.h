@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/SharedPtr.h"
 #include "core/UUID.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"

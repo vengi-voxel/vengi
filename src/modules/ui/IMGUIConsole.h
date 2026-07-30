@@ -23,6 +23,7 @@ private:
 	ImGui::ImGuiToasts _notifications;
 	void addLogLine(int category, Log::Level priority, const char *message) override;
 	void drawString(const Message& msg);
+	void drawContent(command::CommandExecutionListener &listener);
 
 public:
 	bool render(command::CommandExecutionListener &listener);

@@ -7,8 +7,10 @@
 #include "command/CommandHandler.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "util/TextProcessor.h"
 #include "voxedit-ui/Viewport.h"
+#include "voxedit-util/Config.h"
 
 namespace voxedit {
 
@@ -26,8 +28,12 @@ void GameModePanel::init() {
 
 void GameModePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowGameMode);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_GAMEPAD, _("Game mode"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const char *text = _("Activating the game mode will enable clipping and switch the eye mode camera that is "
 							 "controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:+move_backward>, "
 							 "<cmd:+move_right>, <cmd:+jump> for jumping and <cmd:+sprint> for sprinting");
@@ -70,7 +76,6 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		}
 		ImGui::EndDisabled();
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

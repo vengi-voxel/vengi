@@ -11,7 +11,9 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "video/Texture.h"
+#include "voxedit-util/Config.h"
 #include "voxelui/DragAndDropPayload.h"
 
 namespace voxedit {
@@ -41,8 +43,12 @@ bool ImageAssetPanel::init() {
 }
 
 void ImageAssetPanel::update(const char *id) {
+	static ui::ScopedPanel panel(cfg::VoxEditShowAssets);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LIST, _("Images"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(ImageAssetPanel);
 		image::ImagePtr loadImage;
 		while (_images.pop(loadImage)) {
@@ -76,7 +82,6 @@ void ImageAssetPanel::update(const char *id) {
 			++n;
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

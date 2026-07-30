@@ -11,6 +11,7 @@
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
 #include "core/collection/Array.h"
+#include "engine-config.h"
 #include "imgui.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -32,7 +33,7 @@ void MenuBar::viewportOptions() {
 
 	ImGui::BeginDisabled(core::getVar(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
-	if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+	if (core::getVar(cfg::VoxEditShowNormalPalette)->boolVal()) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderNormals);
 	}
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, cfg::RenderCheckerBoard);
@@ -182,6 +183,37 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 			ImGui::CommandIconMenuItem(ICON_LC_EXPAND, _("Grow Selection"), "selectiongrow", true, &listener);
 			ImGui::CheckboxVar(cfg::VoxEditAutoSelect);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginIconMenu(ICON_LC_EYE, _("View"))) {
+			viewModeOption();
+			ImGui::Separator();
+			ImGui::CheckboxVar(cfg::VoxEditShowScene);
+			ImGui::CheckboxVar(cfg::VoxEditShowTools);
+			ImGui::CheckboxVar(cfg::VoxEditShowBrushes);
+			ImGui::CheckboxVar(cfg::VoxEditShowPalette);
+			ImGui::CheckboxVar(cfg::VoxEditShowNormalPalette);
+			ImGui::CheckboxVar(cfg::VoxEditShowNodeInspector);
+			ImGui::CheckboxVar(cfg::VoxEditShowNodeProperties);
+			ImGui::CheckboxVar(cfg::VoxEditShowSceneSettings);
+			ImGui::CheckboxVar(cfg::VoxEditShowAnimationSettings);
+			ImGui::CheckboxVar(cfg::VoxEditShowAnimationTimeline);
+			ImGui::CheckboxVar(cfg::VoxEditShowScript);
+			ImGui::CheckboxVar(cfg::VoxEditShowMemento);
+			ImGui::CheckboxVar(cfg::VoxEditShowCamera);
+			ImGui::CheckboxVar(cfg::VoxEditShowLSystem);
+			ImGui::CheckboxVar(cfg::VoxEditShowNetwork);
+			ImGui::CheckboxVar(cfg::VoxEditShowGameMode);
+			ImGui::CheckboxVar(cfg::VoxEditShowAssets);
+#if USE_YOCTO
+			ImGui::CheckboxVar(cfg::VoxEditShowRender);
+#endif
+			ImGui::CheckboxVar(cfg::UIShowConsole);
+			ImGui::CheckboxVar(cfg::VoxEditShowHelp);
+			ImGui::Separator();
+			if (ImGui::IconMenuItem(ICON_LC_LAYOUT_DASHBOARD, _("Reset layout"))) {
+				resetDockLayout = true;
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {

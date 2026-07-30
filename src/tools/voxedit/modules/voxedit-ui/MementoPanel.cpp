@@ -8,6 +8,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -71,8 +73,12 @@ static void stateTooltip(const memento::MementoState &state) {
 
 void MementoPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(MementoPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowMemento);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_BOOK_OPEN, _("History"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		const int currentStatePos = mementoHandler.statePosition();
 		ImGui::Text(_("Current state: %i / %i"), currentStatePos, (int)mementoHandler.stateSize());
@@ -123,7 +129,6 @@ void MementoPanel::update(const char *id, command::CommandExecutionListener &lis
 			}
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

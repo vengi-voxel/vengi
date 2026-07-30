@@ -6,6 +6,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedID.h"
+#include "ui/ScopedPanel.h"
 #include "ui/ScopedStyle.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -101,8 +102,12 @@ void SceneSettingsPanel::sceneShadowAndSun(ShadingMode shadingMode) {
 }
 
 void SceneSettingsPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	static ui::ScopedPanel panel(cfg::VoxEditShowSceneSettings);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_SPOTLIGHT, _("Scene settings"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::TextUnformatted(_("Scene settings"));
 		ImGui::Separator();
 
@@ -137,7 +142,6 @@ void SceneSettingsPanel::update(const char *id, command::CommandExecutionListene
 		sceneColors(shadingMode);
 		sceneShadowAndSun(shadingMode);
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

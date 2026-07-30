@@ -3,7 +3,6 @@
  */
 
 #include "../LSystemPanel.h"
-#include "../ViewMode.h"
 #include "TestUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -14,7 +13,7 @@ namespace voxedit {
 
 void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "default rule")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -30,7 +29,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "template selection")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -47,7 +46,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -64,7 +63,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add delete rule")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -77,7 +76,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "adopt dimensions")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -88,7 +87,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cancel generation")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
@@ -106,7 +105,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste rules")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (!viewModeLSystemPanel(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));

@@ -7,7 +7,6 @@
 #include "core/Common.h"
 #include "voxedit-util/SceneManager.h"
 #include "MenuBar.h"
-#include "ViewMode.h"
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -247,7 +246,7 @@ void OptionsPanel::renderRendering() {
 		ImGui::ColorEdit4Var(cfg::RenderSelectionTint);
 	}
 	if (matchesVarFilter(cfg::RenderNormals)) {
-		if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {
+		if (core::getVar(cfg::VoxEditShowNormalPalette)->boolVal()) {
 			ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderNormals);
 		}
 	}

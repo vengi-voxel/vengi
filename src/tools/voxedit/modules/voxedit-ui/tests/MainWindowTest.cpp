@@ -33,7 +33,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
 	_optionsPanel.registerUITests(engine, TITLE_OPTIONS);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
 #endif
 	_voxBoxBrowserPanel.registerUITests(engine, TITLE_VOXBOX_BROWSER);
@@ -519,6 +519,34 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->Yield();
 		}
 		IM_CHECK(!_popupMinecraftMapping->boolVal());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "view menu panel visibility")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		core::getVar(cfg::VoxEditShowPalette)->setVal(true);
+		core::getVar(cfg::VoxEditShowScene)->setVal(true);
+		core::getVar(cfg::VoxEditShowBrushes)->setVal(true);
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, TITLE_PALETTE));
+		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_TOOLBAR));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
+
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(toggleMenuCheckbox(ctx, "View/Palette", cfg::VoxEditShowPalette));
+		IM_CHECK(core::getVar(cfg::VoxEditShowPalette)->boolVal());
+		IM_CHECK(focusWindow(ctx, TITLE_PALETTE));
+
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(toggleMenuCheckbox(ctx, "View/Scene", cfg::VoxEditShowScene));
+		IM_CHECK(core::getVar(cfg::VoxEditShowScene)->boolVal());
+		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
+
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(toggleMenuCheckbox(ctx, "View/Brushes", cfg::VoxEditShowBrushes));
+		IM_CHECK(core::getVar(cfg::VoxEditShowBrushes)->boolVal());
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_TOOLBAR));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 	};
 }
 

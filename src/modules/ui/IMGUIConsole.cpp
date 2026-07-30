@@ -6,10 +6,13 @@
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "IconsLucide.h"
+#include "ScopedPanel.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
 #include "core/BindingContext.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/Var.h"
 #include "imgui.h"
 #include "util/Console.h"
 
@@ -87,59 +90,67 @@ void IMGUIConsole::drawString(const Message &msg) {
 	ImGui::TextUnformatted(msg.message.c_str());
 }
 
-bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
-		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
-				ImGui::CommandIconMenuItem(ICON_LC_LIST_X, _("Clear"), "con_clear", true, &listener);
-				ImGui::Separator();
-				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY, _("Copy"))) {
-					ImGui::LogToClipboard();
-					for (const Message &msg : _messages) {
-						ImGui::TextUnformatted(msg.message.c_str());
-					}
-					ImGui::LogFinish();
-					ImGui::CloseCurrentPopup();
+void IMGUIConsole::drawContent(command::CommandExecutionListener &listener) {
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+			ImGui::CommandIconMenuItem(ICON_LC_LIST_X, _("Clear"), "con_clear", true, &listener);
+			ImGui::Separator();
+			if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY, _("Copy"))) {
+				ImGui::LogToClipboard();
+				for (const Message &msg : _messages) {
+					ImGui::TextUnformatted(msg.message.c_str());
 				}
-				ImGui::EndMenu();
+				ImGui::LogFinish();
+				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
-				bool debug = (Log::Level)core::getVar(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
-				if (ImGui::Checkbox(_("Debug"), &debug)) {
-					core::getVar(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
-				}
-				ImGui::TooltipTextUnformatted(_("Enable debug logging for the console"));
-				ImGui::IconCheckbox(ICON_LC_LOCK, _("Auto scrolling"), &_autoScrollEnabled);
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
+			ImGui::EndMenu();
 		}
-		const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar);
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
+			bool debug = (Log::Level)core::getVar(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
+			if (ImGui::Checkbox(_("Debug"), &debug)) {
+				core::getVar(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
+			}
+			ImGui::TooltipTextUnformatted(_("Enable debug logging for the console"));
+			ImGui::IconCheckbox(ICON_LC_LOCK, _("Auto scrolling"), &_autoScrollEnabled);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+	const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+	ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImGuiListClipper clipper;
-		clipper.Begin(_messages.size(), ImGui::GetTextLineHeightWithSpacing());
-		while (clipper.Step()) {
-			for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
-				const Message &msg = _messages[line_no];
-				drawString(msg);
-			}
-		}
-		if (_autoScrollEnabled && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-			ImGui::SetScrollHereY(1.0f);
-		}
-
-		ImGui::EndChild();
-		if (ImGui::InputText(_("Command"), &_commandLine,
-		ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
-								 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
-							 _priv::ConsoleInputTextCallback, this)) {
-			core::ScopedBindingContext context(core::BindingContext::All);
-			executeCommandLine(&listener);
-			ImGui::SetKeyboardFocusHere(-1);
+	ImGuiListClipper clipper;
+	clipper.Begin(_messages.size(), ImGui::GetTextLineHeightWithSpacing());
+	while (clipper.Step()) {
+		for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
+			const Message &msg = _messages[line_no];
+			drawString(msg);
 		}
 	}
-	ImGui::End();
+	if (_autoScrollEnabled && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+		ImGui::SetScrollHereY(1.0f);
+	}
+
+	ImGui::EndChild();
+	if (ImGui::InputText(_("Command"), &_commandLine,
+	ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
+							 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
+						 _priv::ConsoleInputTextCallback, this)) {
+		core::ScopedBindingContext context(core::BindingContext::All);
+		executeCommandLine(&listener);
+		ImGui::SetKeyboardFocusHere(-1);
+	}
+}
+
+bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar;
+	static ScopedPanel panel(cfg::UIShowConsole);
+	if (!panel.isOpen()) {
+		return false;
+	}
+	if (ScopedPanel::Scope scope = panel.begin(UI_CONSOLE_WINDOW_TITLE, flags)) {
+		drawContent(listener);
+	}
 	return true;
 }
 

@@ -197,6 +197,8 @@ app::AppState IMGUIApp::onConstruct() {
 	core::Var::registerVar(uINotifyDismissMillis);
 	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, N_("Multi monitor"), N_("Allow multi monitor setups - requires a restart"));
 	core::Var::registerVar(uIMultiMonitor);
+	const core::VarDef uIShowConsole(cfg::UIShowConsole, true, N_("Console"), N_("Show the console panel"));
+	core::Var::registerVar(uIShowConsole);
 	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, N_("Render UI"), N_("Render the ui"));
 	_renderUI = core::Var::registerVar(clientRenderUI);
 #ifdef IMGUI_ENABLE_TEST_ENGINE

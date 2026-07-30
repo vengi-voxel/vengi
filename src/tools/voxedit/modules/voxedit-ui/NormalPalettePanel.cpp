@@ -14,6 +14,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "video/Camera.h"
 #include "voxedit-util/Config.h"
@@ -172,6 +173,10 @@ uint8_t NormalPalettePanel::currentSceneNormal() const {
 
 void NormalPalettePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NormalPalettePanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowNormalPalette);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -180,7 +185,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const core::String &title = makeTitle(ICON_LC_PALETTE, _("Normals"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_MenuBar)) {
 		if (node.isModelNode()) {
 			_selectedIndex = _sceneMgr->modifier().normalColorIndex();
 			paletteMenuBar(node, listener);
@@ -253,8 +258,6 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			ImGui::PopID();
 		}
 	}
-
-	ImGui::End();
 }
 
 void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &normalPalette) {

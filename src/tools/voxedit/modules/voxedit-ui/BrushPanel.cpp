@@ -15,7 +15,7 @@
 #include "core/Trace.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
-#include "voxedit-ui/ViewMode.h"
+#include "ui/ScopedPanel.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -28,7 +28,6 @@ namespace voxedit {
 
 void BrushPanel::init() {
 	_ctx.renderNormals = core::getVar(cfg::RenderNormals);
-	_ctx.viewMode = core::getVar(cfg::VoxEditViewMode);
 }
 
 float BrushPanel::toolbarDockHeight() const {
@@ -92,7 +91,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 
 	voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
-	const bool normalPaletteMode = viewModeNormalPalette(_ctx.viewMode->intVal());
+	const bool normalPaletteMode = core::getVar(cfg::VoxEditShowNormalPalette)->boolVal();
 
 	ui::Toolbar toolbarBrush("brushes", &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
@@ -165,6 +164,10 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 
 void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(BrushPanelToolbar);
+	static ui::ScopedPanel panel(cfg::VoxEditShowBrushes);
+	if (!panel.isOpen()) {
+		return;
+	}
 	float minHeight = toolbarDockHeight();
 	if (sceneMode) {
 		minHeight += ImGui::GetTextLineHeightWithSpacing() * 3.0f;
@@ -172,7 +175,7 @@ void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandE
 	ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, minHeight), ImVec2(FLT_MAX, minHeight));
 	const core::String &title = makeTitle(ICON_LC_BRUSH, _("Brushes"), id);
 	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar;
-	if (ImGui::Begin(title.c_str(), nullptr, flags)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), flags)) {
 		if (sceneMode) {
 			ImGui::TextWrappedUnformatted(
 				_("Brushes are only available in edit mode - you are currently in scene mode"));
@@ -180,13 +183,16 @@ void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandE
 			addModifiers(listener);
 		}
 	}
-	ImGui::End();
 }
 
 void BrushPanel::updateSettings(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(BrushPanelSettings);
+	static ui::ScopedPanel panel(cfg::VoxEditShowBrushes);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_BRUSH, _("Brush settings"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			ImGui::TextWrappedUnformatted(
 				_("Brushes are only available in edit mode - you are currently in scene mode"));
@@ -195,7 +201,6 @@ void BrushPanel::updateSettings(const char *id, bool sceneMode, command::Command
 			createPopups(listener);
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

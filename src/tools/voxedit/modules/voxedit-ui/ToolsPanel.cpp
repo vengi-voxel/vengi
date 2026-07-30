@@ -10,6 +10,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedID.h"
+#include "ui/ScopedPanel.h"
 #include "ui/Toolbar.h"
 #include "voxedit-ui/Gizmo.h"
 #include "voxedit-ui/MainWindow.h"
@@ -213,7 +214,12 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ToolsPanel);
-	if (ImGui::Begin(makeTitle(ICON_LC_WRENCH, _("Tools"), id).c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	static ui::ScopedPanel panel(cfg::VoxEditShowTools);
+	if (!panel.isOpen()) {
+		return;
+	}
+	if (ui::ScopedPanel::Scope scope =
+			panel.begin(makeTitle(ICON_LC_WRENCH, _("Tools"), id).c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {
@@ -263,7 +269,6 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			ImGui::TooltipTextUnformatted(_("Show gizmo for brushes that support it"));
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

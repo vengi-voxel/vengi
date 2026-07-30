@@ -9,6 +9,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-ui/SceneGraphUtil.h"
@@ -247,6 +248,10 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 
 bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 	core_trace_scoped(AnimationTimeline);
+	static ui::ScopedPanel panel(cfg::VoxEditShowAnimationTimeline);
+	if (!panel.isOpen()) {
+		return false;
+	}
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
@@ -280,11 +285,10 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 		}
 	}
 	const core::String &title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
-	if (ImGui::Begin(title.c_str())) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str())) {
 		header(currentFrame, maxFrame);
 		sequencer(currentFrame);
 	}
-	ImGui::End();
 	return true;
 }
 

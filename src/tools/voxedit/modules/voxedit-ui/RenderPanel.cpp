@@ -9,7 +9,9 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "video/Texture.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracer.h"
 #include "voxelpathtracer/PathTracerState.h"
@@ -170,18 +172,24 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(RenderPanel);
+#if USE_YOCTO
+	static ui::ScopedPanel panel(cfg::VoxEditShowRender);
 	const core::String &title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
-	if (ImGui::Begin(title.c_str(), nullptr,
-					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
-		renderMenuBar(sceneGraph);
-		// TODO: allow to change the current scene camera like in the scene view in the Viewport class
-		if (_texture->isLoaded()) {
-			ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
-		}
-	} else {
+	ui::ScopedPanel::Scope scope =
+		panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar);
+	if (!scope) {
 		_pathTracer.stop();
+		return;
 	}
-	ImGui::End();
+	renderMenuBar(sceneGraph);
+	// TODO: allow to change the current scene camera like in the scene view in the Viewport class
+	if (_texture->isLoaded()) {
+		ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
+	}
+#else
+	(void)id;
+	(void)sceneGraph;
+#endif
 }
 
 void RenderPanel::shutdown() {

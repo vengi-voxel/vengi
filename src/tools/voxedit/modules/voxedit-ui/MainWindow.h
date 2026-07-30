@@ -38,10 +38,10 @@
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
-#include "engine-config.h" // USE_YOCTO
+#include "engine-config.h"
+#include "voxedit-util/Config.h"
 
-#define ENABLE_RENDER_PANEL USE_YOCTO
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 #include "voxedit-ui/RenderPanel.h"
 #endif
 #include "voxelrender/RenderUtil.h"
@@ -86,7 +86,7 @@ private:
 	video::TexturePoolPtr _texturePool;
 	SceneManagerPtr _sceneMgr;
 
-#if ENABLE_RENDER_PANEL
+#if USE_YOCTO
 	RenderPanel _renderPanel;
 #endif
 	LSystemPanel _lsystemPanel;

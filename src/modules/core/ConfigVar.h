@@ -27,6 +27,7 @@ constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *UIShowMetrics = "ui_showmetrics";
+constexpr const char *UIShowConsole = "ui_showconsole";
 constexpr const char *UIFontSize = "ui_fontsize";
 constexpr const char *UIKeyMap = "ui_keymap";
 constexpr const char *UILastDirectory = "ui_lastdirectory";

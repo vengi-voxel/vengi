@@ -9,7 +9,9 @@
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "ui/ScopedStyle.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -56,8 +58,12 @@ bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeC
 
 void NodePropertiesPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowNodeProperties);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LOCATE, _("Node Properties"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNodeUUID());
 
@@ -159,7 +165,6 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 			_sceneMgr->nodeRemoveProperty(node.uuid(), deleteKey);
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

@@ -10,6 +10,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelgenerator/LSystem.h"
 
@@ -38,8 +40,13 @@ static int LSystemInputValidator(ImGuiInputTextCallbackData *data) {
 
 void LSystemPanel::update(const char *id) {
 	core_trace_scoped(LSystemPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowLSystem);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
+	if (ui::ScopedPanel::Scope scope =
+			panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(_("Edit"))) {
 				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY,_("Copy"))) {
@@ -204,7 +211,6 @@ void LSystemPanel::update(const char *id) {
 			ImGui::EndTable();
 		}
 	}
-	ImGui::End();
 }
 
 void LSystemPanel::shutdown() {

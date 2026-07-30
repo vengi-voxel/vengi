@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "engine-config.h"
+
 namespace cfg {
 
 const int MaxViewports = 4;
@@ -22,6 +24,27 @@ constexpr const char *VoxEditShowColorPicker = "ve_showcolorpicker";
 constexpr const char *VoxEditDiffuseColor = "ve_diffusecolor";
 constexpr const char *VoxEditLastPalette = "ve_lastpalette";
 constexpr const char *VoxEditViewMode = "ve_viewmode";
+constexpr const char *VoxEditShowPalette = "ve_showpalette";
+constexpr const char *VoxEditShowNormalPalette = "ve_shownormalpalette";
+constexpr const char *VoxEditShowMemento = "ve_showmemento";
+constexpr const char *VoxEditShowCamera = "ve_showcamera";
+constexpr const char *VoxEditShowLSystem = "ve_showlsystem";
+constexpr const char *VoxEditShowScript = "ve_showscript";
+constexpr const char *VoxEditShowNetwork = "ve_shownetwork";
+constexpr const char *VoxEditShowGameMode = "ve_showgamemode";
+constexpr const char *VoxEditShowAssets = "ve_showassets";
+#if USE_YOCTO
+constexpr const char *VoxEditShowRender = "ve_showrender";
+#endif
+constexpr const char *VoxEditShowAnimationSettings = "ve_showanimationsettings";
+constexpr const char *VoxEditShowAnimationTimeline = "ve_showanimationtimeline";
+constexpr const char *VoxEditShowScene = "ve_showscene";
+constexpr const char *VoxEditShowTools = "ve_showtools";
+constexpr const char *VoxEditShowSceneSettings = "ve_showscenesettings";
+constexpr const char *VoxEditShowHelp = "ve_showhelp";
+constexpr const char *VoxEditShowNodeProperties = "ve_shownodeproperties";
+constexpr const char *VoxEditShowNodeInspector = "ve_shownodeinspector";
+constexpr const char *VoxEditShowBrushes = "ve_showbrushes";
 constexpr const char *VoxEditViewports = "ve_viewports";
 constexpr const char *VoxEditMaxSuggestedVolumeSize = "ve_maxsuggestedvolumesize";
 constexpr const char *VoxEditMaxSuggestedVolumeSizePreview = "ve_maxsuggestedvolumesizepreview";

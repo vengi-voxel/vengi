@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
+#include "core/Var.h"
 #include "ui/Panel.h"
 #include "ui/dearimgui/imgui.h"
 #include "voxel/Voxel.h"

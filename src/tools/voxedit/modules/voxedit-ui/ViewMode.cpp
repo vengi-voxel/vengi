@@ -5,6 +5,10 @@
 #include "ViewMode.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
+#include "engine-config.h"
+#include "voxedit-util/Config.h"
 
 namespace voxedit {
 
@@ -36,6 +40,33 @@ uint64_t viewModeFlags(ViewMode viewMode) {
 		return 0u;
 	}
 	return s_viewModeFlags[(int)viewMode];
+}
+
+void applyViewModePanelCvars(ViewMode viewMode) {
+	const uint64_t flags = viewModeFlags(viewMode);
+	core::getVar(cfg::VoxEditShowPalette)->setVal(true);
+	core::getVar(cfg::VoxEditShowNormalPalette)->setVal((flags & VIEWMODE_FLAG_NORMALPALETTE) != 0u);
+	core::getVar(cfg::VoxEditShowMemento)->setVal((flags & VIEWMODE_FLAG_MEMENTOPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowCamera)->setVal((flags & VIEWMODE_FLAG_CAMERAPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowLSystem)->setVal((flags & VIEWMODE_FLAG_LSYSTEMPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowScript)->setVal((flags & VIEWMODE_FLAG_SCRIPTPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowNetwork)->setVal((flags & VIEWMODE_FLAG_NETWORKPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowGameMode)->setVal((flags & VIEWMODE_FLAG_GAMEMODEPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowAssets)->setVal((flags & VIEWMODE_FLAG_ASSETPANEL) != 0u);
+#if USE_YOCTO
+	core::getVar(cfg::VoxEditShowRender)->setVal((flags & VIEWMODE_FLAG_RENDERPANEL) != 0u);
+#endif
+	const bool animations = (flags & VIEWMODE_FLAG_ANIMATIONS) != 0u;
+	core::getVar(cfg::VoxEditShowAnimationSettings)->setVal(animations);
+	core::getVar(cfg::VoxEditShowAnimationTimeline)->setVal(animations);
+	core::getVar(cfg::VoxEditShowScene)->setVal(true);
+	core::getVar(cfg::VoxEditShowTools)->setVal(true);
+	core::getVar(cfg::VoxEditShowSceneSettings)->setVal(true);
+	core::getVar(cfg::UIShowConsole)->setVal(true);
+	core::getVar(cfg::VoxEditShowHelp)->setVal(true);
+	core::getVar(cfg::VoxEditShowNodeProperties)->setVal(true);
+	core::getVar(cfg::VoxEditShowNodeInspector)->setVal(true);
+	core::getVar(cfg::VoxEditShowBrushes)->setVal(true);
 }
 
 const char *getViewModeString(ViewMode viewMode) {

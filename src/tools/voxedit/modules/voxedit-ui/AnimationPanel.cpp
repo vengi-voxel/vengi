@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
@@ -98,10 +99,14 @@ void AnimationPanel::popupCreateAnimation() {
 void AnimationPanel::update(const char *id, command::CommandExecutionListener &listener,
 							AnimationTimeline *animationTimeline) {
 	core_trace_scoped(AnimationPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowAnimationSettings);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_LAYOUT_LIST, _("Animation"), id);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add new animation"))) {
 			_selectedAnimation = _sceneMgr->sceneGraph().activeAnimation();
 			command::executeCommands("toggle ve_popupcreateanimation", &listener);
@@ -131,7 +136,6 @@ void AnimationPanel::update(const char *id, command::CommandExecutionListener &l
 			animationTimeline->resetFrames();
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

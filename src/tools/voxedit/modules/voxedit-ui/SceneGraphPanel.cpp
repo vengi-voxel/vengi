@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraphNodeType.h"
 #include "voxel/RawVolume.h"
 #include "ui/IMGUIEx.h"
+#include "ui/ScopedPanel.h"
 #include "ui/Style.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
@@ -347,36 +348,39 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 
 	// TODO handle dragdrop::ModelPayload with the correct parent node
 
-	if (ImGui::Begin(makeTitle(ICON_LC_WORKFLOW, _("Scene"), id).c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		_hasFocus = ImGui::IsWindowHovered();
-		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-		const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
-		ui::Toolbar toolbar("toolbar");
+	static ui::ScopedPanel panel(cfg::VoxEditShowScene);
+	if (panel.isOpen()) {
+		if (ui::ScopedPanel::Scope scope =
+				panel.begin(makeTitle(ICON_LC_WORKFLOW, _("Scene"), id).c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
+			_hasFocus = ImGui::IsWindowHovered();
+			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+			const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
+			ui::Toolbar toolbar("toolbar");
 
-		toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings]() {
-			const int nodeId = sceneGraph.activeNode();
-			modelNodeSettings->palette.setValue(nullptr);
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			if (node.isModelNode()) {
-				const voxel::RawVolume *v = node.volume();
-				const voxel::Region &region = v->region();
-				modelNodeSettings->position = region.getLowerCorner();
-				modelNodeSettings->size = region.getDimensionsInVoxels();
-				modelNodeSettings->palette.setValue(node.palette());
-			}
-			if (modelNodeSettings->name.empty()) {
-				modelNodeSettings->name = node.name();
-			}
-			modelNodeSettings->parent = nodeId;
-			_popupNewModelNode = true;
-		});
+			toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings]() {
+				const int nodeId = sceneGraph.activeNode();
+				modelNodeSettings->palette.setValue(nullptr);
+				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+				if (node.isModelNode()) {
+					const voxel::RawVolume *v = node.volume();
+					const voxel::Region &region = v->region();
+					modelNodeSettings->position = region.getLowerCorner();
+					modelNodeSettings->size = region.getDimensionsInVoxels();
+					modelNodeSettings->palette.setValue(node.palette());
+				}
+				if (modelNodeSettings->name.empty()) {
+					modelNodeSettings->name = node.name();
+				}
+				modelNodeSettings->parent = nodeId;
+				_popupNewModelNode = true;
+			});
 
-		toolbar.button(ICON_LC_BOX, _("Toggle add node by face in scene view"), [this]() {
-			_sceneMgr->toggleAddNodeMode();
-		});
+			toolbar.button(ICON_LC_BOX, _("Toggle add node by face in scene view"), [this]() {
+				_sceneMgr->toggleAddNodeMode();
+			});
 
-		toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this]() {
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+			toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this]() {
+				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 			node.setName("new group");
 			_sceneMgr->moveNodeToSceneGraph(node, sceneGraph.activeNode());
 		});
@@ -484,12 +488,12 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			}
 			ImGui::EndTable();
 		}
-	}
-	ImGui::End();
+		}
 
-	if (_popupDragAndDrop) {
-		ImGui::OpenPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP);
-		_popupDragAndDrop = false;
+		if (_popupDragAndDrop) {
+			ImGui::OpenPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP);
+			_popupDragAndDrop = false;
+		}
 	}
 
 	registerPopups();

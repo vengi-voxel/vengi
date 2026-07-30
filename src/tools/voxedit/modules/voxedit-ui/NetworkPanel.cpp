@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "network/NetworkAdapters.h"
 #include "ui/IMGUIEx.h"
+#include "ui/ScopedPanel.h"
 #include "ui/Style.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -161,6 +162,10 @@ void NetworkPanel::handleMentionAutocomplete() {
 
 void NetworkPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowNetwork);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
 	Client &networkClient = _sceneMgr->client();
 
@@ -180,7 +185,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 		_chatCallbackRegistered = true;
 	}
 
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (ImGui::BeginTabBar("##networktabbar")) {
 			if (ImGui::BeginTabItem(_("Client"))) {
 				if (!_sceneMgr->client().isConnected()) {
@@ -283,7 +288,6 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 		}
 		ImGui::EndTabBar();
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit

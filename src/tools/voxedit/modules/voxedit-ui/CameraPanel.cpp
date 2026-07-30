@@ -8,7 +8,9 @@
 #include "command/CommandHandler.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedPanel.h"
 #include "video/Camera.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -106,8 +108,12 @@ void CameraPanel::cameraProjectionCombo(video::Camera &camera) {
 
 void CameraPanel::update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener) {
 	core_trace_scoped(CameraPanel);
+	static ui::ScopedPanel panel(cfg::VoxEditShowCamera);
+	if (!panel.isOpen()) {
+		return;
+	}
 	const core::String &title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addToolbar(listener, camera);
 		cameraProjectionCombo(camera);
 		if (ImGui::BeginTable("##camera_props", 2, ImGuiTableFlags_SizingStretchProp)) {
@@ -157,7 +163,6 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 			ImGui::EndTable();
 		}
 	}
-	ImGui::End();
 }
 
 } // namespace voxedit
