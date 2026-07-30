@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9 WIP
+// dear imgui, v1.92.9
 // (main code and documentation)
 
 // Help:
@@ -32,7 +32,7 @@
 // See LICENSE.txt for copyright and licensing details (standard MIT License).
 // This library is free but needs your support to sustain development and maintenance.
 // Businesses: you can support continued development via B2B invoiced technical support, maintenance and sponsoring contracts.
-// PLEASE reach out at omar AT dearimgui DOT com. See https://github.com/ocornut/imgui/wiki/Funding
+// PLEASE reach out at omar AT discohello DOT com. See https://github.com/ocornut/imgui/wiki/Funding
 // Businesses: you can also purchase licenses for the Dear ImGui Automation/Test Engine.
 
 // It is recommended that you don't modify imgui.cpp! It will become difficult for you to update the library.
@@ -402,6 +402,14 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                             you may use GetMainViewport()->Pos to offset hard-coded positions, e.g. SetNextWindowPos(GetMainViewport()->Pos)
                           - likewise io.MousePos and GetMousePos() will use OS coordinates.
                             If you query mouse positions to interact with non-imgui coordinates you will need to offset them, e.g. subtract GetWindowViewport()->Pos.
+ - 2026/07/20 (1.92.9) - DragXXX, SliderXXX, InputScalar: with `ImGuiItemFlags_LiveEditOnInputScalar` now defaulting to being disabled:
+                         inputting a value with the keyboard doesn't write intermediate values to backing variable. (#9476)
+                         - Before: DragFloat() with user typing "123" --> write back 1, then 12, then 123.
+                         - After:  DragFloat() with user typing "123" --> write back 123 when validated/unfocused.
+                         You can enable the flag back for a given scope if needed by specific widget/behavior.
+ - 2026/07/20 (1.92.9) - ImDrawData: marked ImDrawData::CmdListsCount as obsolete (technically was obsoleted in 1.89.8).
+                         - Before: draw_data->CmdListsCount
+                         - After:  draw_data->CmdLists.Size
  - 2026/07/08 (1.92.9) - Drag and Drop: commented out legacy name `ImGuiDragDropFlags_SourceAutoExpirePayload` which obsoleted in 1.90.9 (July 2024). Use `ImGuiDragDropFlags_PayloadAutoExpire`.
  - 2026/07/06 (1.92.9) - ColorEdit: obsoleted SetColorEditOptions() function added in 1.51 (June 2017) in favor of directly poking to io.ConfigColorEditFlags. More consistent and easier to discover.
  - 2026/06/02 (1.92.9) - TreeNode: commented out legacy name ImGuiTreeNodeFlags_SpanTextWidth which was obsoleted in 1.90.7 (May 2024). Use ImGuiTreeNodeFlags_SpanLabelWidth instead.
@@ -745,7 +753,9 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                            - ImDrawCornerFlags_XXX          -> use ImDrawFlags_RoundCornersXXX flags. Read 1.82 Changelog for details + grep commented names in sources.
                        - commented out runtime support for hardcoded ~0 or 0x01..0x0F rounding flags values for AddRect()/AddRectFilled()/PathRect()/AddImageRounded() -> use ImDrawFlags_RoundCornersXXX flags. Read 1.82 Changelog for details
  - 2023/08/25 (1.89.9) - clipper: Renamed IncludeRangeByIndices() (also called ForceDisplayRangeByIndices() before 1.89.6) to IncludeItemsByIndex(). Kept inline redirection function. Sorry!
- - 2023/07/12 (1.89.8) - ImDrawData: CmdLists now owned, changed from ImDrawList** to ImVector<ImDrawList*>. Majority of users shouldn't be affected, but you cannot compare to NULL nor reassign manually anymore. Instead use AddDrawList(). (#6406, #4879, #1878)
+ - 2023/07/12 (1.89.8) - ImDrawData: CmdLists now owned, changed from ImDrawList** to ImVector<ImDrawList*>. Majority of users shouldn't be affected, but you cannot compare to NULL nor reassign manually anymore. (#6406, #4879, #1878)
+                            - use `draw_data->CmdLists.Size` instead of `draw_list->CmdListsCount`.
+                            - use `draw_data->AddDrawList()` to add to a ImDrawData.
  - 2023/06/28 (1.89.7) - overlapping items: obsoleted 'SetItemAllowOverlap()' (called after item) in favor of calling 'SetNextItemAllowOverlap()' (called before item). 'SetItemAllowOverlap()' didn't and couldn't work reliably since 1.89 (2022-11-15).
  - 2023/06/28 (1.89.7) - overlapping items: renamed 'ImGuiTreeNodeFlags_AllowItemOverlap' to 'ImGuiTreeNodeFlags_AllowOverlap', 'ImGuiSelectableFlags_AllowItemOverlap' to 'ImGuiSelectableFlags_AllowOverlap'. Kept redirecting enums (will obsolete).
  - 2023/06/28 (1.89.7) - overlapping items: IsItemHovered() now by default return false when querying an item using AllowOverlap mode which is being overlapped. Use ImGuiHoveredFlags_AllowWhenOverlappedByItem to revert to old behavior.
@@ -1202,6 +1212,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
  Q: How can I use my own math types instead of ImVec2?
  Q: How can I interact with standard C++ types (such as std::string and std::vector)?
  Q: How can I display custom shapes? (using low-level ImDrawList API)
+ Q: About Multi-Threading
  >> See https://www.dearimgui.com/faq
 
  Q&A: Fonts, Text
@@ -1227,7 +1238,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
  ==============
 
  Q: How can I help?
- A: - Businesses: please reach out to "omar AT dearimgui DOT com" if you work in a place using Dear ImGui!
+ A: - Businesses: please reach out to "omar AT discohello DOT com" if you work in a place using Dear ImGui!
       We can discuss ways for your company to fund development via invoiced technical support, maintenance or sponsoring contacts.
       This is among the most useful thing you can do for Dear ImGui. With increased funding, we sustain and grow work on this project.
       >>> See https://github.com/ocornut/imgui/wiki/Funding
@@ -6145,7 +6156,7 @@ static void FlattenDrawDataIntoSingleLayer(ImDrawDataBuilder* builder)
 
 static void InitViewportDrawData(ImGuiViewportP* viewport)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiContext& g = *GImGui;
     ImDrawData* draw_data = &viewport->DrawDataP;
 
     viewport->DrawData = draw_data; // Make publicly accessible
@@ -6162,13 +6173,16 @@ static void InitViewportDrawData(ImGuiViewportP* viewport)
     const bool is_minimized = (viewport->Flags & ImGuiViewportFlags_IsMinimized) != 0;
 
     draw_data->Valid = true;
-    draw_data->CmdListsCount = 0;
+    draw_data->FrameCount = g.FrameCount;
     draw_data->TotalVtxCount = draw_data->TotalIdxCount = 0;
     draw_data->DisplayPos = viewport->Pos;
     draw_data->DisplaySize = is_minimized ? ImVec2(0.0f, 0.0f) : viewport->Size;
-    draw_data->FramebufferScale = (viewport->FramebufferScale.x != 0.0f) ? viewport->FramebufferScale : io.DisplayFramebufferScale;
+    draw_data->FramebufferScale = (viewport->FramebufferScale.x != 0.0f) ? viewport->FramebufferScale : g.IO.DisplayFramebufferScale;
     draw_data->OwnerViewport = viewport;
-    draw_data->Textures = &ImGui::GetPlatformIO().Textures;
+    draw_data->Textures = &g.PlatformIO.Textures;
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    draw_data->CmdListsCount = 0;
+#endif
 }
 
 // Push a clipping rectangle for both ImGui logic (hit-testing etc.) and low-level ImDrawList rendering.
@@ -6481,10 +6495,11 @@ void ImGui::Render()
 
         // We call _PopUnusedDrawCmd() last thing, as RenderDimmedBackgrounds() rely on a valid command being there (especially in docking branch).
         ImDrawData* draw_data = &viewport->DrawDataP;
-        IM_ASSERT(draw_data->CmdLists.Size == draw_data->CmdListsCount);
         for (ImDrawList* draw_list : draw_data->CmdLists)
             draw_list->_PopUnusedDrawCmd();
-
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+        draw_data->CmdListsCount = draw_data->CmdLists.Size;
+#endif
         g.IO.MetricsRenderVertices += draw_data->TotalVtxCount;
         g.IO.MetricsRenderIndices += draw_data->TotalIdxCount;
     }
@@ -12198,7 +12213,7 @@ bool ImGui::ItemAdd(const ImRect& bb, ImGuiID id, const ImRect* nav_bb_arg, ImGu
                 *p_highlight = g.FrameCount;
             *p_alive = g.FrameCount;
             if (*p_highlight >= g.FrameCount - 1)
-                window->DrawList->AddRect(bb.Min - ImVec2(1, 1), bb.Max + ImVec2(1, 1), IM_COL32(255, 0, 0, 255), 0.0f, ImDrawFlags_None, 2.0f);
+                window->DrawList->AddRect(bb.Min - ImVec2(1, 1), bb.Max + ImVec2(1, 1), IM_COL32(255, 0, 0, 255), 0.0f, 2.0f);
         }
 #endif
     }
@@ -13096,24 +13111,26 @@ ImGuiWindow* ImGui::FindBlockingModal(ImGuiWindow* window)
     return NULL;
 }
 
-void ImGui::OpenPopup(const char* str_id, ImGuiPopupFlags popup_flags)
+bool ImGui::OpenPopup(const char* str_id, ImGuiPopupFlags popup_flags)
 {
     ImGuiContext& g = *GImGui;
     ImGuiID id = g.CurrentWindow->GetID(str_id);
     IMGUI_DEBUG_LOG_POPUP("[popup] OpenPopup(\"%s\" -> 0x%08X)\n", str_id, id);
-    OpenPopupEx(id, popup_flags);
+    return OpenPopupEx(id, popup_flags);
 }
 
-void ImGui::OpenPopup(ImGuiID id, ImGuiPopupFlags popup_flags)
+bool ImGui::OpenPopup(ImGuiID id, ImGuiPopupFlags popup_flags)
 {
-    OpenPopupEx(id, popup_flags);
+    return OpenPopupEx(id, popup_flags);
 }
 
 // Mark popup as open (toggle toward open state).
-// Popups are closed when user click outside, or activate a pressable item, or CloseCurrentPopup() is called within a BeginPopup()/EndPopup() block.
-// Popup identifiers are relative to the current ID-stack (so OpenPopup and BeginPopup needs to be at the same level).
-// One open popup per level of the popup hierarchy (NB: when assigning we reset the Window member of ImGuiPopupRef to NULL)
-void ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
+// - Return true when the popup is toggled open, which allows you to capture local state if needed.
+//   You may also call IsWindowAppearing() inside the later BeginPopup() scope if you need to prepare/compute data for the popup.
+// - Popups are closed when user click outside, or activate a pressable item, or CloseCurrentPopup() is called within a BeginPopup()/EndPopup() block.
+// - Popup identifiers are relative to the current ID-stack (so OpenPopup and BeginPopup needs to be at the same level).
+// - One open popup per level of the popup hierarchy (NB: when assigning we reset the Window member of ImGuiPopupRef to NULL).
+bool ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* parent_window = g.CurrentWindow;
@@ -13121,7 +13138,7 @@ void ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
 
     if (popup_flags & ImGuiPopupFlags_NoOpenOverExistingPopup)
         if (IsPopupOpen((ImGuiID)0, ImGuiPopupFlags_AnyPopupId))
-            return;
+            return false;
 
     ImGuiPopupData popup_ref; // Tagged as new ref as Window will be set back to NULL if we write this into OpenPopupStack.
     popup_ref.PopupId = id;
@@ -13136,6 +13153,7 @@ void ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
     if (g.OpenPopupStack.Size < current_stack_size + 1)
     {
         g.OpenPopupStack.push_back(popup_ref);
+        return true;
     }
     else
     {
@@ -13163,6 +13181,8 @@ void ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
         // This is equivalent to what ClosePopupToLevel() does.
         //if (g.OpenPopupStack[current_stack_size].PopupId == id)
         //    FocusWindow(parent_window);
+
+        return !keep_existing;
     }
 }
 
@@ -13448,16 +13468,17 @@ bool ImGui::IsPopupOpenRequestForWindow(ImGuiPopupFlags popup_flags)
 
 // Helper to open a popup if mouse button is released over the item
 // - This is essentially the same as BeginPopupContextItem() but without the trailing BeginPopup()
-void ImGui::OpenPopupOnItemClick(const char* str_id, ImGuiPopupFlags popup_flags)
+bool ImGui::OpenPopupOnItemClick(const char* str_id, ImGuiPopupFlags popup_flags)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
     if (IsPopupOpenRequestForItem(popup_flags, g.LastItemData.ID))
     {
+        ImGuiWindow* window = g.CurrentWindow;
         ImGuiID id = str_id ? window->GetID(str_id) : g.LastItemData.ID; // If user hasn't passed an ID, we can use the LastItemID. Using LastItemID as a Popup ID won't conflict!
         IM_ASSERT(id != 0);                                              // You cannot pass a NULL str_id if the last item has no identifier (e.g. a Text() item)
-        OpenPopupEx(id, popup_flags);
+        return OpenPopupEx(id, popup_flags);
     }
+    return false;
 }
 
 // This is a helper to handle the simplest case of associating one named popup to one given widget.
@@ -20318,24 +20339,26 @@ static void ImGui::DockNodePreviewDockRender(ImGuiWindow* host_window, ImGuiDock
     }
 
     // Display drop boxes
-    const float overlay_rounding = ImMax(3.0f, g.Style.FrameRounding);
+    const float scale = g.Style._MainScale; // FIXME-DPI
+    const float overlay_rounding = ImMax((float)(int)(3.0f * scale), g.Style.FrameRounding);
     for (int dir = ImGuiDir_None; dir < ImGuiDir_COUNT; dir++)
     {
         if (!data->DropRectsDraw[dir + 1].IsInverted())
         {
             ImRect draw_r = data->DropRectsDraw[dir + 1];
             ImRect draw_r_in = draw_r;
-            draw_r_in.Expand(-2.0f);
+            draw_r_in.Expand((float)(int)(-2.0f * scale));
             ImU32 overlay_col = (data->SplitDir == (ImGuiDir)dir && data->IsSplitDirExplicit) ? overlay_col_drop_hovered : overlay_col_drop;
+            float thickness = (float)(int)(1.0f * scale);
             for (int overlay_n = 0; overlay_n < overlay_draw_lists_count; overlay_n++)
             {
                 ImVec2 center = ImFloor(draw_r_in.GetCenter());
                 overlay_draw_lists[overlay_n]->AddRectFilled(draw_r.Min, draw_r.Max, overlay_col, overlay_rounding);
-                overlay_draw_lists[overlay_n]->AddRect(draw_r_in.Min, draw_r_in.Max, overlay_col_lines, overlay_rounding);
+                overlay_draw_lists[overlay_n]->AddRect(draw_r_in.Min, draw_r_in.Max, overlay_col_lines, overlay_rounding, thickness);
                 if (dir == ImGuiDir_Left || dir == ImGuiDir_Right)
-                    overlay_draw_lists[overlay_n]->AddLine(ImVec2(center.x, draw_r_in.Min.y), ImVec2(center.x, draw_r_in.Max.y), overlay_col_lines);
+                    overlay_draw_lists[overlay_n]->AddLineV(center.x, draw_r_in.Min.y, draw_r_in.Max.y, overlay_col_lines, thickness);
                 if (dir == ImGuiDir_Up || dir == ImGuiDir_Down)
-                    overlay_draw_lists[overlay_n]->AddLine(ImVec2(draw_r_in.Min.x, center.y), ImVec2(draw_r_in.Max.x, center.y), overlay_col_lines);
+                    overlay_draw_lists[overlay_n]->AddLineH(draw_r_in.Min.x, draw_r_in.Max.x, center.y, overlay_col_lines, thickness);
             }
         }
 
