@@ -12,7 +12,18 @@
 namespace ui {
 
 void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
-	IM_REGISTER_TEST(engine, testCategory(), "bookmarks")->TestFunc = [=](ImGuiTestContext *ctx) {
+	auto closeFileDialog = [](ImGuiTestContext *ctx) {
+		// Escape closes the modal and clears IMGUIApp::_showFileDialog via showFileDialog()'s
+		// reference parameter. Without this, a failed test leaves the modal open and blocks
+		// every later MenuClick/hover (e.g. main/bindings dialog tests).
+		if (ImGui::GetTopMostPopupModal() != nullptr) {
+			ctx->KeyPress(ImGuiKey_Escape);
+			ctx->Yield(2);
+		}
+	};
+
+	ImGuiTest *t = IM_REGISTER_TEST(engine, testCategory(), "bookmarks");
+	t->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, "###app"));
 		ctx->MenuClick("File/Load");
 
@@ -31,8 +42,10 @@ void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, popupTitle(type)));
 		ctx->ItemClick("###Cancel");
 	};
+	t->TeardownFunc = closeFileDialog;
 
-	IM_REGISTER_TEST(engine, testCategory(), "jump to entity on key")->TestFunc = [=](ImGuiTestContext *ctx) {
+	t = IM_REGISTER_TEST(engine, testCategory(), "jump to entity on key");
+	t->TestFunc = [=](ImGuiTestContext *ctx) {
 		const core::String testDir = app()->filesystem()->homeWritePath("filedialog_jump_test");
 		const core::String dirA = core::string::path(testDir, "aaa_jumptest");
 		const core::String dirZ = core::string::path(testDir, "zzz_jumptest");
@@ -54,10 +67,9 @@ void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		ImGuiTestItemInfo filesInfo = ctx->WindowInfo("files");
 		IM_CHECK(filesInfo.Window != nullptr);
-		ctx->SetRef(filesInfo.ID);
 
-		// Ensure a non-z entry is selected first.
-		ctx->ItemClick("aaa_jumptest");
+		// Selectables live in the table ScrollY child under "files", so look them up with **/
+		ctx->ItemClick("**/aaa_jumptest");
 		ctx->Yield();
 
 		// Hover the file list so PlatformImeData.WantTextInput is set (same as real typing).
@@ -84,6 +96,7 @@ void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		io::Filesystem::sysRemoveDir(dirZ);
 		io::Filesystem::sysRemoveDir(testDir);
 	};
+	t->TeardownFunc = closeFileDialog;
 }
 
 } // namespace ui
