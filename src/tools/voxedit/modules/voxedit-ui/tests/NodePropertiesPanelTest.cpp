@@ -2,25 +2,42 @@
  * @file
  */
 
- #include "../NodePropertiesPanel.h"
- #include "scenegraph/SceneGraph.h"
- #include "scenegraph/SceneGraphNode.h"
- #include "ui/IconsLucide.h"
- #include "voxedit-util/SceneManager.h"
- #include "TestUtil.h"
+#include "../NodePropertiesPanel.h"
+#include "../ViewMode.h"
+#include "TestUtil.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "ui/IconsLucide.h"
+#include "voxedit-util/SceneManager.h"
 
- namespace voxedit {
+namespace voxedit {
 
- void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
-	 IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
+void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "check existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+		IM_CHECK(window->Active);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "no existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+		IM_CHECK(!window->Active);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("##nodeproperties/##newpropertykey", "Key");
 		ctx->ItemInputValue("##nodeproperties/##newpropertyvalue", "Value");
 		ctx->ItemClick("##nodeproperties/###nodepropertyadd");
-	 };
+	};
 
-	 IM_REGISTER_TEST(engine, testCategory(), "add and remove property")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "add and remove property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
@@ -43,9 +60,10 @@
 		ctx->Yield();
 
 		IM_CHECK_EQ((int)node.properties().size(), propsBefore);
-	 };
+	};
 
-	 IM_REGISTER_TEST(engine, testCategory(), "boolean property")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "boolean property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
@@ -64,9 +82,10 @@
 		ctx->ItemClick("##nodeproperties/BoolProp/##val");
 		ctx->Yield();
 		IM_CHECK(node.property("BoolProp") == "true");
-	 };
+	};
 
-	 IM_REGISTER_TEST(engine, testCategory(), "edit existing property")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "edit existing property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
@@ -84,7 +103,7 @@
 		ctx->ItemInputValue("##nodeproperties/EditMe/##val", "modified");
 		ctx->Yield();
 		IM_CHECK(node.property("EditMe") == "modified");
-	 };
- }
+	};
+}
 
- } // namespace voxedit
+} // namespace voxedit

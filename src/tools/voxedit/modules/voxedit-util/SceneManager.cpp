@@ -3781,7 +3781,7 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditShowSceneSettings);
 	const core::VarDef voxEditShowHelp(cfg::VoxEditShowHelp, true, N_("Help"), N_("Show the help panel"));
 	core::Var::registerVar(voxEditShowHelp);
-	const core::VarDef voxEditShowNodeProperties(cfg::VoxEditShowNodeProperties, true, N_("Node properties"), N_("Show the node properties panel"));
+	const core::VarDef voxEditShowNodeProperties(cfg::VoxEditShowNodeProperties, false, N_("Node properties"), N_("Show the node properties panel"));
 	core::Var::registerVar(voxEditShowNodeProperties);
 	const core::VarDef voxEditShowNodeInspector(cfg::VoxEditShowNodeInspector, true, N_("Volume inspector"), N_("Show the volume/node inspector panel"));
 	core::Var::registerVar(voxEditShowNodeInspector);

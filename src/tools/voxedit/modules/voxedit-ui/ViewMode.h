@@ -10,19 +10,20 @@ namespace voxedit {
 
 enum class ViewMode : uint8_t { Default, Simple, All, TiberianSun, RedAlert2, MinecraftSkin, AceOfSpades, Max };
 
-#define VIEWMODE_FLAG_PALFORMAT6BIT (1 << 0)
-#define VIEWMODE_FLAG_ALL_VIEWPORTS (1 << 1)
-#define VIEWMODE_FLAG_NORMALPALETTE (1 << 2)
-#define VIEWMODE_FLAG_MEMENTOPANEL  (1 << 3)
-#define VIEWMODE_FLAG_CAMERAPANEL   (1 << 4)
-#define VIEWMODE_FLAG_LSYSTEMPANEL  (1 << 6)
-#define VIEWMODE_FLAG_SCRIPTPANEL   (1 << 7)
-#define VIEWMODE_FLAG_ASSETPANEL    (1 << 8)
-#define VIEWMODE_FLAG_RENDERPANEL   (1 << 9)
-#define VIEWMODE_FLAG_ANIMATIONS    (1 << 10)
-#define VIEWMODE_FLAG_NOSPLIT       (1 << 11)
-#define VIEWMODE_FLAG_NETWORKPANEL  (1 << 12)
-#define VIEWMODE_FLAG_GAMEMODEPANEL (1 << 13)
+#define VIEWMODE_FLAG_PALFORMAT6BIT       (1 << 0)
+#define VIEWMODE_FLAG_ALL_VIEWPORTS       (1 << 1)
+#define VIEWMODE_FLAG_NORMALPALETTE       (1 << 2)
+#define VIEWMODE_FLAG_MEMENTOPANEL        (1 << 3)
+#define VIEWMODE_FLAG_CAMERAPANEL         (1 << 4)
+#define VIEWMODE_FLAG_LSYSTEMPANEL        (1 << 6)
+#define VIEWMODE_FLAG_SCRIPTPANEL         (1 << 7)
+#define VIEWMODE_FLAG_ASSETPANEL          (1 << 8)
+#define VIEWMODE_FLAG_RENDERPANEL         (1 << 9)
+#define VIEWMODE_FLAG_ANIMATIONS          (1 << 10)
+#define VIEWMODE_FLAG_NOSPLIT             (1 << 11)
+#define VIEWMODE_FLAG_NETWORKPANEL        (1 << 12)
+#define VIEWMODE_FLAG_GAMEMODEPANEL       (1 << 13)
+#define VIEWMODE_FLAG_NODEPROPERTIESPANEL (1 << 14)
 
 uint64_t viewModeFlags(ViewMode viewMode);
 
