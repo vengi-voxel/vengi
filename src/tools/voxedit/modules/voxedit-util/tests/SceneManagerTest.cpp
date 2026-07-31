@@ -1072,6 +1072,45 @@ TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
 	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 }
 
+TEST_F(SceneManagerTest, testHideOthersKeepsReferencesInGroup) {
+	const voxel::Region region{0, 1};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "hideothers_refs", region));
+
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const int modelId = sceneGraph.activeNode();
+	ASSERT_NE(InvalidNodeId, modelId);
+
+	// Create the group after the model so the group id is higher than the model id; then
+	// create the reference last so its id is higher than the group. That was the failing
+	// order for nodehideothers (group shown, then later reference re-hidden).
+	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+	groupNode.setName("group");
+	const int groupId = _sceneMgr->moveNodeToSceneGraph(groupNode, sceneGraph.root().id());
+	ASSERT_NE(InvalidNodeId, groupId);
+	ASSERT_GT(groupId, modelId);
+
+	ASSERT_TRUE(_sceneMgr->nodeMove(sceneGraph.uuid(modelId), sceneGraph.uuid(groupId),
+									scenegraph::NodeMoveFlag::None));
+
+	const int refId = _sceneMgr->nodeReference(sceneGraph.uuid(modelId));
+	ASSERT_NE(InvalidNodeId, refId);
+	ASSERT_GT(refId, groupId);
+	EXPECT_EQ(sceneGraph.node(groupId).uuid(), sceneGraph.node(refId).parentUUID());
+
+	// Sibling outside the group must be hidden
+	ASSERT_TRUE(_sceneMgr->nodeActivate(sceneGraph.root().uuid()));
+	const int outsideId = _sceneMgr->addModelChild("outside", 1, 1, 1);
+	ASSERT_NE(InvalidNodeId, outsideId);
+	EXPECT_EQ(sceneGraph.root().uuid(), sceneGraph.node(outsideId).parentUUID());
+
+	ASSERT_EQ(1, command::executeCommands(core::String::format("nodehideothers %i", groupId)));
+
+	EXPECT_TRUE(sceneGraph.node(groupId).visible());
+	EXPECT_TRUE(sceneGraph.node(modelId).visible());
+	EXPECT_TRUE(sceneGraph.node(refId).visible()) << "Reference nodes in the group must stay visible";
+	EXPECT_FALSE(sceneGraph.node(outsideId).visible());
+}
+
 // https://github.com/vengi-voxel/vengi/issues/425
 TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();

@@ -4863,15 +4863,21 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to keep visible"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
-			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
-				scenegraph::SceneGraphNode &node = *iter;
-				if (node.id() == nodeId) {
-					nodeSetVisible(node.id(), true);
-					continue;
-				}
-				nodeSetVisible(node.id(), false);
+			if (!_sceneGraph.hasNode(nodeId)) {
+				return;
 			}
-		}).setHelp(_("Hide all model nodes except the active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
+			// Hide everything first, then reveal the target subtree. Doing this in a single
+			// id-ordered pass would re-hide children (e.g. ModelReferences) that were made
+			// visible via nodeSetVisible() on a group parent with a lower node id.
+			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
+				(*iter).setVisible(false);
+			}
+			_sceneGraph.node(nodeId).setVisible(true);
+			_sceneGraph.visitChildren(nodeId, true, [](scenegraph::SceneGraphNode &child) {
+				child.setVisible(true);
+			});
+			markDirty();
+		}).setHelp(_("Hide all nodes except the given one and its children")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modellockall")
 		.setHandler([&](const command::CommandArgs &args) {
