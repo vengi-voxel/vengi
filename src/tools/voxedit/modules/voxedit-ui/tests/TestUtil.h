@@ -31,6 +31,19 @@ bool activateViewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
 bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
 /**
+ * Switches view mode for a UI test, then restores ViewMode::Default on destruction so later
+ * tests are not left in RedAlert2/All/etc. Inter-test warmup frames apply panel cvars.
+ */
+class ScopedViewMode {
+public:
+	ScopedViewMode(ImGuiTestContext *ctx, ViewMode mode);
+	~ScopedViewMode();
+
+	ScopedViewMode(const ScopedViewMode &) = delete;
+	ScopedViewMode &operator=(const ScopedViewMode &) = delete;
+};
+
+/**
  * @brief Sets up a scene with a filled volume and returns the edit-mode viewport ID.
  *
  * Creates a new scene, fills it with voxels, activates edit mode, and centers

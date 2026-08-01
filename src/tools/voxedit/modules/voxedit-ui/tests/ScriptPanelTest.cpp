@@ -3,13 +3,18 @@
  */
 
 #include "../ScriptPanel.h"
+#include "TestUtil.h"
 #include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	// Default view mode enables ve_showscript; ScopedViewMode restores Default after other modes.
 	IM_REGISTER_TEST(engine, testCategory(), "create and save")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedViewMode viewMode(ctx, ViewMode::Default);
+		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -23,6 +28,8 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "execute script")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedViewMode viewMode(ctx, ViewMode::Default);
+		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -33,6 +40,8 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "reload scripts")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedViewMode viewMode(ctx, ViewMode::Default);
+		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(focusWindow(ctx, id));
 		// create a script first so reload has something to work with
 		ctx->MenuClick("File/New");
@@ -52,6 +61,8 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "script editor edit menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedViewMode viewMode(ctx, ViewMode::Default);
+		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(focusWindow(ctx, id));
 		// create a script and open the editor
 		ctx->MenuClick("File/New");

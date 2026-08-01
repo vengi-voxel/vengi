@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "io/Filesystem.h"
 #include "ui/IMGUIApp.h"
+#include "util/VarUtil.h"
 
 namespace ui {
 
@@ -56,7 +57,7 @@ void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(!absTestDir.empty());
 
 		// Open the dialog already in the prepared directory.
-		core::getVar(cfg::UILastDirectory)->setVal(absTestDir);
+		util::ScopedVarChange lastDir(cfg::UILastDirectory, absTestDir);
 
 		IM_CHECK(focusWindow(ctx, "###app"));
 		ctx->MenuClick("File/Load");

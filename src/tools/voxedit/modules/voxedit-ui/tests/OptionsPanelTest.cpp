@@ -6,6 +6,7 @@
 #include "TestUtil.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxel/SurfaceExtractor.h"
 
@@ -133,7 +134,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->SetRef(info.Window);
 
 		// Set mesh mode to Cubic first so rendering checkboxes are not disabled
-		core::getVar(cfg::VoxelMeshMode)->setVal((int)voxel::SurfaceExtractionType::Cubic);
+		util::ScopedVarChange meshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Cubic);
 		ctx->Yield();
 
 		const core::VarPtr &outline = core::getVar(cfg::RenderOutline);

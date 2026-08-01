@@ -3,6 +3,7 @@
  */
 
 #include "../StatusBar.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -28,6 +29,7 @@ void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "grid size input")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		core::VarPtr gridSize = core::getVar(cfg::VoxEditGridsize);
+		util::ScopedVarChange restoreGrid(cfg::VoxEditGridsize, gridSize->intVal());
 		ctx->ItemInputValue("Grid size", 4);
 		IM_CHECK_EQ(gridSize->intVal(), 4);
 		ctx->ItemInputValue("Grid size", 1);

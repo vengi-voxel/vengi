@@ -5,6 +5,7 @@
 #include "../SceneGraphPanel.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
+#include "util/VarUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeType.h"
@@ -259,8 +260,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = sceneGraph.activeNode();
 
 		// ensure hide-inactive is off so the checkbox is enabled
-		core::VarPtr hideInactive = core::getVar(cfg::VoxEditHideInactive);
-		hideInactive->setVal(false);
+		util::ScopedVarChange hideInactive(cfg::VoxEditHideInactive, false);
 		ctx->Yield();
 
 		const bool before = sceneGraph.node(nodeId).visible();

@@ -79,9 +79,8 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
 		IM_CHECK(node != nullptr);
 
-		// enable auto keyframe
-		core::VarPtr autoKf = core::getVar(cfg::VoxEditAutoKeyFrame);
-		autoKf->setVal(true);
+		// enable auto keyframe for this test only
+		util::ScopedVarChange autoKf(cfg::VoxEditAutoKeyFrame, true);
 
 		// move to a frame that has no keyframe yet
 		_sceneMgr->setCurrentFrame(10);
@@ -93,9 +92,6 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->Yield(3);
 
 		IM_CHECK(node->keyFrames().size() > keyframesBefore);
-
-		// restore
-		autoKf->setVal(true);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "transform tools with verification")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -119,7 +115,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ik constraints")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
+		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));

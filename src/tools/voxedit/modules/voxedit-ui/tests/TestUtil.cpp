@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "TestUtil.h"
 #include "imgui_te_context.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "command/CommandHandler.h"
@@ -43,6 +44,14 @@ bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode) {
 	core::getVar(cfg::VoxEditViewMode)->setVal((int)viewMode);
 	ctx->Yield(3);
 	return true;
+}
+
+ScopedViewMode::ScopedViewMode(ImGuiTestContext *ctx, ViewMode mode) {
+	changeViewMode(ctx, mode);
+}
+
+ScopedViewMode::~ScopedViewMode() {
+	core::getVar(cfg::VoxEditViewMode)->setVal((int)ViewMode::Default);
 }
 
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset) {

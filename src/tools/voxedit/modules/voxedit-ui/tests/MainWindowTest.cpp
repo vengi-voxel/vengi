@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 #include "ui/PopupAbout.h"
 #include "util/KeybindingHandler.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 
@@ -340,6 +341,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
 		const int initialKeyMap = uiKeyMap->intVal();
+		util::ScopedVarChange restoreKeyMap(cfg::UIKeyMap, initialKeyMap);
 
 		// change to a different keymap via the combo
 		// the keymaps are: 0=Magicavoxel, 1=Blender, 2=Vengi, 3=Qubicle, 4=Goxel, 5=3dsMax
@@ -350,14 +352,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 
 		IM_CHECK_EQ(uiKeyMap->intVal(), targetKeyMap);
-
-		// restore the original keymap
-		const char *originalName = (initialKeyMap == 0) ? "Magicavoxel" : ((initialKeyMap == 1) ? "Blender" : ((initialKeyMap == 2) ? "Vengi" : "Qubicle"));
-		const core::String restorePath = core::String::format("Keymap/%s", originalName);
-		ctx->ComboClick(restorePath.c_str());
-		ctx->Yield();
-
-		IM_CHECK_EQ(uiKeyMap->intVal(), initialKeyMap);
 
 		// close the dialog by clicking the window close button
 		ctx->WindowClose("");
@@ -371,6 +365,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const core::VarPtr uiKeyMap = core::Var::getVar(cfg::UIKeyMap);
 		const int initialKeyMap = uiKeyMap->intVal();
+		util::ScopedVarChange restoreKeyMap(cfg::UIKeyMap, initialKeyMap);
 
 		ctx->ComboClick("Keymap/3dsMax");
 		ctx->Yield();
@@ -398,17 +393,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(middlePan);
 		IM_CHECK(!rightMouseRotate);
 		IM_CHECK(!leftAltPan);
-
-		const char *originalName = (initialKeyMap == 0) ? "Magicavoxel" :
-			((initialKeyMap == 1) ? "Blender" :
-			((initialKeyMap == 2) ? "Vengi" :
-			((initialKeyMap == 3) ? "Qubicle" :
-			((initialKeyMap == 4) ? "Goxel" : "3dsMax"))));
-		const core::String restorePath = core::String::format("Keymap/%s", originalName);
-		ctx->ComboClick(restorePath.c_str());
-		ctx->Yield();
-
-		IM_CHECK_EQ(uiKeyMap->intVal(), initialKeyMap);
 
 		ctx->WindowClose("");
 	};
