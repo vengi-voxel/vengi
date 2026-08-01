@@ -18,12 +18,22 @@ int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::
 int complete(const core::String& match, core::DynamicArray<core::String>& matches, const char* const* values, size_t valueCount);
 int completeDir(const io::FilesystemPtr& filesystem, core::String dir, const core::String& match, core::DynamicArray<core::String>& matches);
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::String& lastDirectory, const char* pattern = "*") {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		return complete(filesystem, lastDirectory, str, matches, pattern);
 	};
 }
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 template<size_t N>
 inline auto valueCompleter(const char *const (&values)[N]) {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
@@ -31,12 +41,22 @@ inline auto valueCompleter(const char *const (&values)[N]) {
 	};
 }
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr& lastDirectory, const char* pattern = "*") {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		return complete(filesystem, lastDirectory->strVal(), str, matches, pattern);
 	};
 }
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr& lastDirectory, const io::FormatDescription* format) {
 	const core::String &pattern = io::convertToAllFilePattern(format);
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
@@ -44,6 +64,11 @@ inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::VarPt
 	};
 }
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 inline auto dirCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr& lastDirectory) {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		return completeDir(filesystem, lastDirectory->strVal(), str, matches);
@@ -52,6 +77,8 @@ inline auto dirCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr
 
 /**
  * @brief Completer that offers cvar names as completion matches
+ *
+ * @sa command::Command
  */
 inline auto cvarCompleter() {
 	return [=] (const core::String& str, const core::Tokens &, core::DynamicArray<core::String>& matches) -> int {
@@ -72,6 +99,8 @@ inline auto cvarCompleter() {
  * @param cvarName The name of the cvar to look up valid values for
  * @param str The current partial input to match against
  * @param matches Output array for completion matches
+ *
+ * @sa command::Command
  * @return Number of matches found
  */
 inline int completeCvarValue(const core::String &cvarName, const core::String &str, core::DynamicArray<core::String>& matches) {
@@ -104,6 +133,8 @@ inline int completeCvarValue(const core::String &cvarName, const core::String &s
 /**
  * @brief Completer that offers valid values for a cvar based on the previously entered cvar name.
  * The cvar name is expected to be at tokens[1] (the first argument after the command name).
+ *
+ * @sa command::Command
  */
 inline auto cvarValueCompleter() {
 	return [=] (const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches) -> int {
