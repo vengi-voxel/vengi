@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/String.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h" // InvalidNodeId
 #include "ui/IMGUIApp.h"
 #include "voxedit-ui/ViewMode.h"
@@ -41,6 +43,24 @@ public:
 
 	ScopedViewMode(const ScopedViewMode &) = delete;
 	ScopedViewMode &operator=(const ScopedViewMode &) = delete;
+};
+
+/**
+ * Saves the active palette (and ve_lastpalette) for a UI test, then restores both on
+ * destruction so later tests are not left with a swapped/loaded palette.
+ */
+class ScopedPalette {
+public:
+	explicit ScopedPalette(const SceneManagerPtr &sceneMgr);
+	~ScopedPalette();
+
+	ScopedPalette(const ScopedPalette &) = delete;
+	ScopedPalette &operator=(const ScopedPalette &) = delete;
+
+private:
+	SceneManagerPtr _sceneMgr;
+	palette::Palette _palette;
+	core::String _lastPalette;
 };
 
 /**

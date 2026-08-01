@@ -34,6 +34,7 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		for (int i = lengthof(palette::Palette::builtIn) - 1; i >= 0; --i) {
 			ctx->SetRef(id);
@@ -52,6 +53,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "lospec")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->MenuClick("File/Lospec/ID");
@@ -66,6 +68,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -89,6 +92,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color ctrl")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -167,6 +171,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// set color name via context menu
 	IM_REGISTER_TEST(engine, testCategory(), "set color name")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -195,6 +200,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// test palette tools menu features
 	IM_REGISTER_TEST(engine, testCategory(), "tools menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -278,6 +284,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu duplicate remove")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -308,6 +315,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "load palette popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->MenuClick("File/Switch");
@@ -333,6 +341,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu remove color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -368,6 +377,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// test palette modify sub-menu
 	IM_REGISTER_TEST(engine, testCategory(), "tools modify")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -420,6 +430,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "randomize selected colors")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -488,6 +499,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();

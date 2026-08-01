@@ -54,6 +54,16 @@ ScopedViewMode::~ScopedViewMode() {
 	core::getVar(cfg::VoxEditViewMode)->setVal((int)ViewMode::Default);
 }
 
+ScopedPalette::ScopedPalette(const SceneManagerPtr &sceneMgr) : _sceneMgr(sceneMgr) {
+	_palette = sceneMgr->activePalette();
+	_lastPalette = core::getVar(cfg::VoxEditLastPalette)->strVal();
+}
+
+ScopedPalette::~ScopedPalette() {
+	_sceneMgr->setActivePalette(_palette);
+	core::getVar(cfg::VoxEditLastPalette)->setVal(_lastPalette);
+}
+
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset) {
 	IM_CHECK_RETV(viewportId != -1, false);
 	ImGuiWindow *window = ImGui::FindWindowByName(Viewport::viewportId(viewportId).c_str());
