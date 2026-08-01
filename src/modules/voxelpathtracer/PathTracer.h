@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/GLM.h"
 #include "core/SharedPtr.h"
 
 namespace video {

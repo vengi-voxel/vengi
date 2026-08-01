@@ -7,7 +7,6 @@
 #include "core/DirtyState.h"
 #include "color/RGBA.h"
 #include "core/String.h"
-#include "core/collection/Buffer.h"
 #include "image/ImageFwd.h"
 #include <glm/fwd.hpp>
 

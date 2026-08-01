@@ -4,7 +4,6 @@
 
 #include "color/ColorUtil.h"
 #include "PathTracer.h"
-#include "color/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"

@@ -3,9 +3,6 @@
  */
 
 #include "color/ColorUtil.h"
-#include "app/App.h"
-#include "color/Color.h"
-#include "core/ScopedPtr.h"
 #include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"
 #include "math/Axis.h"

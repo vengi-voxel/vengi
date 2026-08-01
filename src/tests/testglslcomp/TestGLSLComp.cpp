@@ -3,7 +3,6 @@
  */
 #include "TestGLSLComp.h"
 #include "testcore/TestAppMain.h"
-#include "color/Color.h"
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
 #include "core/Log.h"

@@ -5,7 +5,6 @@
 #include "color/ColorUtil.h"
 #include "palette/Palette.h"
 #include "app/tests/AbstractTest.h"
-#include "color/Color.h"
 #include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
 #include "core/Enum.h"
@@ -14,7 +13,7 @@
 #include "palette/PaletteLookup.h"
 #include "palette/PaletteUtil.h"
 #include "util/VarUtil.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace palette {
 

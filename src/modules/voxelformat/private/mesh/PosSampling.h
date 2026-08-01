@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "color/ColorUtil.h"
 #include "MeshMaterial.h"
 #include "color/RGBA.h"
 #include "core/collection/Array.h"

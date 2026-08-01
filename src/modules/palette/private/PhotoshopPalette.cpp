@@ -6,7 +6,6 @@
 #include "PhotoshopPalette.h"
 #include "AdobeColorSpace.h"
 #include "color/CMYK.h"
-#include "color/Color.h"
 #include "core/Log.h"
 
 namespace palette {

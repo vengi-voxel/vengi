@@ -5,7 +5,6 @@
 #pragma once
 
 #include <SDL3/SDL_atomic.h>
-#include <SDL3/SDL_version.h>
 
 struct SDL_Condition;
 using core_atomic = SDL_AtomicInt;

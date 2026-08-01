@@ -6,7 +6,6 @@
 #include "ModifierRenderer.h"
 #include "../AxisUtil.h"
 #include "../Config.h"
-#include "color/Color.h"
 #include "core/Log.h"
 #include "core/TimeProvider.h"
 #include "math/Axis.h"

@@ -35,7 +35,7 @@
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #define WRITE_TO_FILE 1
 

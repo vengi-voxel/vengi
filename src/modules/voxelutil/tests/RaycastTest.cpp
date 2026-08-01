@@ -7,7 +7,7 @@
 #include "core/GLMConst.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace voxelutil {
 

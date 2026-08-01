@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "color/Color.h"
+#include "color/RGBA.h"
 #include "core/Common.h"
 #include "render/ShapeRenderer.h"
 #include "video/Camera.h"

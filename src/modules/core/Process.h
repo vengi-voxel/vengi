@@ -6,7 +6,6 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "io/Stream.h"
 
 namespace io {
 class WriteStream;

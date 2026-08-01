@@ -4,8 +4,6 @@
 #include "TestShapeBuilder.h"
 #include "IMGUIEx.h"
 #include "core/ArrayLength.h"
-#include "color/Color.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "math/AABB.h"
 #include "testcore/TestAppMain.h"

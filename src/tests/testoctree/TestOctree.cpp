@@ -3,12 +3,10 @@
  */
 #include "TestOctree.h"
 #include "ui/IMGUIEx.h"
-#include "color/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
-#include "core/sdl/SDLSystem.h"
 #include <glm/gtc/type_ptr.hpp>
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :

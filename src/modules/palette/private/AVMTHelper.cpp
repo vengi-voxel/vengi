@@ -3,7 +3,6 @@
  */
 
 #include "AVMTHelper.h"
-#include "color/Color.h"
 #include "color/ColorUtil.h"
 
 namespace palette {

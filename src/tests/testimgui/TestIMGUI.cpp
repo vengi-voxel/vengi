@@ -2,7 +2,6 @@
  * @file
  */
 #include "TestIMGUI.h"
-#include "color/Color.h"
 #include "core/Log.h"
 #include "testcore/TestAppMain.h"
 #include "ui/IMGUIEx.h"

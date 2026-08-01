@@ -3,7 +3,6 @@
  */
 #include "TestGLSLGeom.h"
 #include "testcore/TestAppMain.h"
-#include "color/Color.h"
 #include "video/Camera.h"
 #include "core/Log.h"
 

@@ -9,7 +9,6 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/BindingContext.h"
-#include "color/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"

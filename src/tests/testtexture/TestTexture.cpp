@@ -4,7 +4,6 @@
 #include "TestTexture.h"
 #include "testcore/TestAppMain.h"
 #include "video/ScopedViewPort.h"
-#include "color/Color.h"
 #include "core/Log.h"
 
 TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :

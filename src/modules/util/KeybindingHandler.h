@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/BindingContext.h"
-#include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/Set.h"
 #include "core/collection/StringMap.h"

@@ -4,7 +4,6 @@
 
 #include "color/ColorUtil.h"
 #include "PaintBrush.h"
-#include "color/Color.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"

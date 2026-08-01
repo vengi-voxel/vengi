@@ -6,7 +6,7 @@
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "util/VarUtil.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace voxelformat {
 

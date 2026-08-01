@@ -3,7 +3,6 @@
  */
 
 #include "PaletteLookup.h"
-#include "color/Color.h"
 #include "color/ColorUtil.h"
 #include "palette/Palette.h"
 #if defined(_MSC_VER)

@@ -9,7 +9,6 @@
 #ifdef TRACY_ENABLE
 #include "core/tracy/public/tracy/Tracy.hpp"
 #endif
-#include <SDL3/SDL_version.h>
 
 struct SDL_Mutex;
 using core_mutex = SDL_Mutex;

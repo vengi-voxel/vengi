@@ -5,7 +5,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <SDL3/SDL_version.h>
 
 struct SDL_Condition;
 using core_condition = SDL_Condition;

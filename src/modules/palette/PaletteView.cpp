@@ -5,8 +5,6 @@
 #include "color/ColorUtil.h"
 #include "PaletteView.h"
 #include "app/Async.h"
-#include "color/Color.h"
-#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "palette/Palette.h"
 #include <glm/vec3.hpp>

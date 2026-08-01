@@ -2,7 +2,6 @@
  * @file
  */
 #include "TestGridRenderer.h"
-#include "color/Color.h"
 #include "testcore/TestAppMain.h"
 
 TestGridRenderer::TestGridRenderer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
