@@ -24,6 +24,7 @@ static const uint64_t COMMANDANDCONQUER_FLAGS =
 static const uint64_t MINECRAFTSKIN_FLAGS =
 	SIMLPE_FLAGS & ~(VIEWMODE_FLAG_GAMEMODEPANEL | VIEWMODE_FLAG_ASSETPANEL | VIEWMODE_FLAG_ANIMATIONS | VIEWMODE_FLAG_RENDERPANEL);
 static const uint64_t ACEOFSPADES_FLAGS = (DEFAULT_FLAGS & ~(VIEWMODE_FLAG_ANIMATIONS)) | VIEWMODE_FLAG_NOSPLIT;
+static const uint64_t MINIMAL_FLAGS = VIEWMODE_FLAG_BRUSHES;
 
 static const uint64_t s_viewModeFlags[] = {
 	DEFAULT_FLAGS,			 // Default
@@ -32,7 +33,8 @@ static const uint64_t s_viewModeFlags[] = {
 	COMMANDANDCONQUER_FLAGS, // TiberianSun
 	COMMANDANDCONQUER_FLAGS, // RedAlert2
 	MINECRAFTSKIN_FLAGS,	 // MinecraftSkin
-	ACEOFSPADES_FLAGS		 // AceOfSpades
+	ACEOFSPADES_FLAGS,		 // AceOfSpades
+	MINIMAL_FLAGS			 // Minimal
 };
 static_assert(lengthof(s_viewModeFlags) == (int)ViewMode::Max, "Viewmode flags don't match existing viewmodes");
 
@@ -45,7 +47,7 @@ uint64_t viewModeFlags(ViewMode viewMode) {
 
 void applyViewModePanelCvars(ViewMode viewMode) {
 	const uint64_t flags = viewModeFlags(viewMode);
-	core::getVar(cfg::VoxEditShowPalette)->setVal(true);
+	core::getVar(cfg::VoxEditShowPalette)->setVal((flags & VIEWMODE_FLAG_PALETTEPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowNormalPalette)->setVal((flags & VIEWMODE_FLAG_NORMALPALETTE) != 0u);
 	core::getVar(cfg::VoxEditShowMemento)->setVal((flags & VIEWMODE_FLAG_MEMENTOPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowCamera)->setVal((flags & VIEWMODE_FLAG_CAMERAPANEL) != 0u);
@@ -60,14 +62,14 @@ void applyViewModePanelCvars(ViewMode viewMode) {
 	const bool animations = (flags & VIEWMODE_FLAG_ANIMATIONS) != 0u;
 	core::getVar(cfg::VoxEditShowAnimationSettings)->setVal(animations);
 	core::getVar(cfg::VoxEditShowAnimationTimeline)->setVal(animations);
-	core::getVar(cfg::VoxEditShowScene)->setVal(true);
-	core::getVar(cfg::VoxEditShowTools)->setVal(true);
-	core::getVar(cfg::VoxEditShowSceneSettings)->setVal(true);
-	core::getVar(cfg::UIShowConsole)->setVal(true);
-	core::getVar(cfg::VoxEditShowHelp)->setVal(true);
+	core::getVar(cfg::VoxEditShowScene)->setVal((flags & VIEWMODE_FLAG_SCENEPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowTools)->setVal((flags & VIEWMODE_FLAG_TOOLSPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowSceneSettings)->setVal((flags & VIEWMODE_FLAG_SCENESETTINGSPANEL) != 0u);
+	core::getVar(cfg::UIShowConsole)->setVal((flags & VIEWMODE_FLAG_CONSOLE) != 0u);
+	core::getVar(cfg::VoxEditShowHelp)->setVal((flags & VIEWMODE_FLAG_HELPPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowNodeProperties)->setVal((flags & VIEWMODE_FLAG_NODEPROPERTIESPANEL) != 0u);
-	core::getVar(cfg::VoxEditShowNodeInspector)->setVal(true);
-	core::getVar(cfg::VoxEditShowBrushes)->setVal(true);
+	core::getVar(cfg::VoxEditShowNodeInspector)->setVal((flags & VIEWMODE_FLAG_NODEINSPECTORPANEL) != 0u);
+	core::getVar(cfg::VoxEditShowBrushes)->setVal((flags & VIEWMODE_FLAG_BRUSHES) != 0u);
 }
 
 const char *getViewModeString(ViewMode viewMode) {
@@ -84,6 +86,8 @@ const char *getViewModeString(ViewMode viewMode) {
 		return _("Minecraft Skin");
 	case ViewMode::AceOfSpades:
 		return _("Ace Of Spades");
+	case ViewMode::Minimal:
+		return _("Minimal");
 	case ViewMode::Max:
 	case ViewMode::Default:
 		break;

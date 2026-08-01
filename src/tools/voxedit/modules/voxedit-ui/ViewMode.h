@@ -8,7 +8,7 @@
 
 namespace voxedit {
 
-enum class ViewMode : uint8_t { Default, Simple, All, TiberianSun, RedAlert2, MinecraftSkin, AceOfSpades, Max };
+enum class ViewMode : uint8_t { Default, Simple, All, TiberianSun, RedAlert2, MinecraftSkin, AceOfSpades, Minimal, Max };
 
 #define VIEWMODE_FLAG_PALFORMAT6BIT       (1 << 0)
 #define VIEWMODE_FLAG_ALL_VIEWPORTS       (1 << 1)
@@ -24,6 +24,14 @@ enum class ViewMode : uint8_t { Default, Simple, All, TiberianSun, RedAlert2, Mi
 #define VIEWMODE_FLAG_NETWORKPANEL        (1 << 12)
 #define VIEWMODE_FLAG_GAMEMODEPANEL       (1 << 13)
 #define VIEWMODE_FLAG_NODEPROPERTIESPANEL (1 << 14)
+#define VIEWMODE_FLAG_PALETTEPANEL        (1 << 15)
+#define VIEWMODE_FLAG_SCENEPANEL          (1 << 16)
+#define VIEWMODE_FLAG_TOOLSPANEL          (1 << 17)
+#define VIEWMODE_FLAG_SCENESETTINGSPANEL  (1 << 18)
+#define VIEWMODE_FLAG_CONSOLE             (1 << 19)
+#define VIEWMODE_FLAG_HELPPANEL           (1 << 20)
+#define VIEWMODE_FLAG_NODEINSPECTORPANEL  (1 << 21)
+#define VIEWMODE_FLAG_BRUSHES             (1 << 22)
 
 uint64_t viewModeFlags(ViewMode viewMode);
 
