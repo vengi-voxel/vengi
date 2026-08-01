@@ -25,7 +25,6 @@
 #include "voxel/ClipboardData.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Region.h"
-#include "voxel/Voxel.h"
 #include "image/ImageFwd.h"
 #include "memento/MementoHandler.h"
 
@@ -55,10 +54,6 @@ class CameraMovement;
 namespace sound {
 class SoundManager;
 using SoundHandle = void *;
-}
-
-namespace memento {
-struct MementoState;
 }
 
 namespace voxelutil {

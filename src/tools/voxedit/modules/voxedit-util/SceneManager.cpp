@@ -7,19 +7,17 @@
 #include "voxedit-util/AddNodePreview.h"
 #include "sound/SoundManager.h"
 #include "voxelrender/CameraMovement.h"
-#include "voxel/Face.h"
 
 #include "app/Async.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
-#include "app/I18N.h"
+#include "app/I18NMarkers.h"
 #include "color/ColorUtil.h"
 #include "color/Quantize.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -27,12 +25,10 @@
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
-#include "io/File.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "io/MemoryArchive.h"
-#include "io/Stream.h"
 #include "math/Axis.h"
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
@@ -54,19 +50,18 @@
 #include "scenegraph/SceneUtil.h"
 #include "util/CustomButtonNames.h"
 #include "video/Camera.h"
+#include "video/RendererInterface.h"
+#include "video/Types.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
-#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxedit-util/network/ServerNetwork.h"
 #include "voxel/ClipboardData.h"
 #include "voxel/Connectivity.h"
-#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelNormalUtil.h"
-#include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
@@ -74,11 +69,10 @@
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelrender/ImageGenerator.h"
-#include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/RenderContext.h"
 #include "voxelrender/RenderUtil.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/Hollow.h"
-#include "voxelutil/ImageUtils.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
@@ -92,12 +86,6 @@
 
 #include "Config.h"
 #include "CommandCompleter.h"
-
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/transform.hpp>
 
 namespace voxedit {
 
