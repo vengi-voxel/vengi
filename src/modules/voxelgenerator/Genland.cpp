@@ -16,18 +16,23 @@
  *    2005-12-24: Released GENLAND.EXE with Ken's GROUDRAW demos.
  *    2006-03-10: Released GENLAND.CPP source code
  *    2025-05: included in the voxelgenerator module and adapt to work with vengi
+ *    2026-08: ported goxel improvements (base height/amplitude, multi-river,
+ *             river phase/meander, grass bias, lighting factors, int heights)
  */
 
 #include "Genland.h"
+#include "app/ForParallel.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/collection/Buffer.h"
 #include "math/Random.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Voxel.h"
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/ext/scalar_integer.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/ext/scalar_integer.hpp>
 
@@ -152,18 +157,21 @@ private:
 public:
 	color::RGBA *buf; // 2d heightmap colors for writing out the voxels or the heightmap image
 	color::RGBA *amb; // ambient
-	float *hgt;		 // height values
+	float *hgt;		 // height values for shadow rays
+	int *heights;	 // clipped column heights for voxel fill
 	uint8_t *sh;	 // shadows
 	TempBuffer(int size) : _bufSize(size * size) {
 		buf = new color::RGBA[_bufSize];
 		amb = new color::RGBA[_bufSize];
 		hgt = new float[_bufSize];
+		heights = new int[_bufSize];
 		sh = new uint8_t[_bufSize];
 	}
 	~TempBuffer() {
 		delete[] buf;
 		delete[] amb;
 		delete[] hgt;
+		delete[] heights;
 		delete[] sh;
 	}
 	void clearShadow() {
@@ -182,8 +190,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		return nullptr;
 	}
 
-	if (settings.height >= 256) {
-		Log::error("Height must be less than 256, got %d", settings.height);
+	if (settings.height < 1) {
+		Log::error("Height must be at least 1, got %d", settings.height);
 		return nullptr;
 	}
 
@@ -209,11 +217,10 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 
 	noiseinit(rand);
 
-	// Tom's algorithm from 12/04/2005
+	// Tom's algorithm from 12/04/2005 (more or less)
 	Log::debug("Generating landscape with seed %d, height %d, octaves %d", settings.seed, settings.height,
 			   settings.octaves);
-	double d;
-	d = settings.amplitude;
+	double d = 1.0;
 	for (int i = 0; i < settings.octaves; i++) {
 		amplut[i] = d;
 		d *= settings.persistence;
@@ -221,6 +228,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	}
 
 	const double freq = (1.0 / 64.0);
+	const double twoPi = 2.0 * glm::pi<double>();
+	const bool wantRivers = settings.river && settings.numRivers >= 1 && settings.riverWidth != 0.0;
 	// TODO: PERF: FOR_PARALLEL
 	for (int z = 0; z < settings.size; z++) {
 		for (int x = 0; x < settings.size; x++) {
@@ -238,10 +247,13 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 					dx *= 2.0;
 					dy *= 2.0;
 				}
-				samp[i] = temp1 * -20.0 + 28.0;
-				if (settings.river) {
-					temp1 = sin((settings.offset[0] + x) * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
-						(0.5 - settings.riverWidth);
+				samp[i] = (temp1 * -settings.amplitude) + settings.baseHeight;
+				if (wantRivers) {
+					temp1 = sin((settings.offset[0] + x) * ((twoPi * (double)settings.numRivers) / (double)settings.size) +
+								river * settings.riverMeander +
+								(((1.0 - settings.riverPhase) * twoPi) + (1.5 * glm::pi<double>()))) *
+								(0.5 + settings.riverWidth) +
+							(0.5 - settings.riverWidth);
 					if (temp1 > 1.0) {
 						temp1 = 1.0;
 					}
@@ -272,7 +284,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			double gb = settings.ground.b;
 			// blend factor
 			double g = core_min(core_max(core_max(-nz, 0.0) * 1.4 - csamp[0] / 32.0 +
-											 noise3d((settings.offset[0] + x) * freq, (settings.offset[1] + z) * freq, 0.3, 15) * 0.3,
+											 noise3d((settings.offset[0] + x) * freq, (settings.offset[1] + z) * freq, 0.3, 15) * 0.3 +
+											 settings.grassBias,
 										 0),
 								1);
 			// Grass
@@ -294,15 +307,18 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			gb += (settings.water.b * g - gb) * g2;
 
 			const int k = z * settings.size + x;
-			tempBuffer.amb[k].r = (uint8_t)core_min(core_max(gr * 0.3, 0), 255);
-			tempBuffer.amb[k].g = (uint8_t)core_min(core_max(gg * 0.3, 0), 255);
-			tempBuffer.amb[k].b = (uint8_t)core_min(core_max(gb * 0.3, 0), 255);
+			const double ambScale = settings.ambience ? settings.ambienceFactor : 0.0;
+			tempBuffer.amb[k].r = (uint8_t)core_min(core_max(gr * ambScale, 0), 255);
+			tempBuffer.amb[k].g = (uint8_t)core_min(core_max(gg * ambScale, 0), 255);
+			tempBuffer.amb[k].b = (uint8_t)core_min(core_max(gb * ambScale, 0), 255);
 			const uint8_t maxa = core_max(core_max(tempBuffer.amb[k].r, tempBuffer.amb[k].g), tempBuffer.amb[k].b);
 
 			// lighting
 			double temp3 = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
 			temp3 *= 1.2;
-			tempBuffer.buf[k].a = (uint8_t)samp[0];
+			// Clip to volume height; never wrap via uint8 storage.
+			tempBuffer.heights[k] = glm::clamp((int)samp[0], 0, settings.height);
+			tempBuffer.buf[k].a = 255;
 			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * temp3, 0), 255 - maxa);
 			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * temp3, 0), 255 - maxa);
 			tempBuffer.buf[k].b = (uint8_t)core_min(core_max(gb * temp3, 0), 255 - maxa);
@@ -315,7 +331,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	tempBuffer.clearShadow();
 	if (settings.shadow) {
 		Log::debug("Applying shadows");
-		const int VSHL = glm::log2((float)settings.size);
+		const int shadowStrength = glm::clamp(settings.shadowFactor, 0, 255);
+		const int VSHL = glm::findMSB(settings.size);
 		for (int z = 0; z < settings.size; z++) {
 			for (int x = 0; x < settings.size; x++) {
 				const int k = z * settings.size + x;
@@ -326,7 +343,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 					const int heightx = ((x - i) & (settings.size - 1));
 					const int heightidx = (heightz << VSHL) + heightx;
 					if (tempBuffer.hgt[heightidx] > f) {
-						tempBuffer.sh[k] = 32;
+						tempBuffer.sh[k] = (uint8_t)shadowStrength;
 						break;
 					}
 				}
@@ -346,14 +363,14 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		}
 	}
 
-	if (settings.ambience) {
+	if (settings.ambience || settings.shadow) {
 		for (int y = 0; y < settings.size; y++) {
 			for (int x = 0; x < settings.size; x++) {
 				const int k = y * settings.size + x;
 				const int i = 256 - (tempBuffer.sh[k] << 2);
-				tempBuffer.buf[k].r = ((tempBuffer.buf[k].r * i) >> 8) + tempBuffer.amb[k].r;
-				tempBuffer.buf[k].g = ((tempBuffer.buf[k].g * i) >> 8) + tempBuffer.amb[k].g;
-				tempBuffer.buf[k].b = ((tempBuffer.buf[k].b * i) >> 8) + tempBuffer.amb[k].b;
+				tempBuffer.buf[k].r = (uint8_t)core_min(core_max(((tempBuffer.buf[k].r * i) >> 8) + tempBuffer.amb[k].r, 0), 255);
+				tempBuffer.buf[k].g = (uint8_t)core_min(core_max(((tempBuffer.buf[k].g * i) >> 8) + tempBuffer.amb[k].g, 0), 255);
+				tempBuffer.buf[k].b = (uint8_t)core_min(core_max(((tempBuffer.buf[k].b * i) >> 8) + tempBuffer.amb[k].b, 0), 255);
 			}
 		}
 	}
@@ -366,23 +383,23 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	palette::PaletteLookup paletteLookup(palette);
 	app::for_parallel(0, settings.size, [&paletteLookup, &tempBuffer, &settings, volume] (int start, int end) {
 		const color::RGBA *heightmap = tempBuffer.buf + start * settings.size;
-		// TODO: PERF: use volume sampler
+		const int *heights = tempBuffer.heights + start * settings.size;
+		voxel::RawVolume::Sampler sampler(*volume);
 		for (int vz = start; vz < end; ++vz) {
-			for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
-				const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);
-				if (maxsy == 0) {
-					const color::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
-					const int palIdx = paletteLookup.findClosestIndex(color);
-					volume->setVoxel(vx, 0, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-					continue;
-				} else if (maxsy < 0) {
+			for (int vx = 0; vx < settings.size; ++vx, ++heightmap, ++heights) {
+				const int maxsy = glm::clamp(*heights, 0, settings.height);
+				if (maxsy < 0) {
 					continue;
 				}
 				const color::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
 				const int palIdx = paletteLookup.findClosestIndex(color);
-				core::Array<voxel::Voxel, 256> voxels;
-				voxels.fill(voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-				voxel::setVoxels(*volume, vx, vz, voxels.data(), maxsy);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIdx);
+				const int amount = maxsy == 0 ? 1 : maxsy;
+				sampler.setPosition(vx, 0, vz);
+				for (int y = 0; y < amount; ++y) {
+					sampler.setVoxel(voxel);
+					sampler.movePositiveY();
+				}
 			}
 		}
 	});

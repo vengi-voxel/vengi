@@ -2500,16 +2500,23 @@ static int luaVoxel_genland(lua_State *s) {
 	settings.height = (int)luaL_optinteger(s, 3, 64);
 	settings.octaves = (int)luaL_optinteger(s, 4, 10);
 	settings.smoothing = (int)luaL_optnumber(s, 5, 1);
-	settings.persistence = (float)luaL_optnumber(s, 6, 0.4f);
-	settings.amplitude = (float)luaL_optnumber(s, 7, 0.4f);
-	settings.riverWidth = (float)luaL_optnumber(s, 8, 0.02f);
-	settings.freqGround = (float)luaL_optnumber(s, 9, 9.5f);
-	settings.freqRiver = (float)luaL_optnumber(s, 10, 13.2f);
-	settings.offset[0] = (int)luaL_optinteger(s, 11, 0);
-	settings.offset[1] = (int)luaL_optinteger(s, 12, 0);
-	settings.shadow = clua_optboolean(s, 13, true);
-	settings.river = clua_optboolean(s, 14, true);
-	settings.ambience = clua_optboolean(s, 15, true);
+	settings.persistence = (double)luaL_optnumber(s, 6, 0.4);
+	settings.amplitude = (double)luaL_optnumber(s, 7, 20.0);
+	settings.baseHeight = (double)luaL_optnumber(s, 8, 28.0);
+	settings.riverWidth = (double)luaL_optnumber(s, 9, 0.02);
+	settings.numRivers = (int)luaL_optinteger(s, 10, 1);
+	settings.riverPhase = (double)luaL_optnumber(s, 11, 0.75);
+	settings.riverMeander = (double)luaL_optnumber(s, 12, 4.0);
+	settings.freqGround = (double)luaL_optnumber(s, 13, 9.5);
+	settings.freqRiver = (double)luaL_optnumber(s, 14, 13.2);
+	settings.grassBias = (double)luaL_optnumber(s, 15, 0.0);
+	settings.offset[0] = (int)luaL_optinteger(s, 16, 0);
+	settings.offset[1] = (int)luaL_optinteger(s, 17, 0);
+	settings.shadow = clua_optboolean(s, 18, true);
+	settings.shadowFactor = (int)luaL_optinteger(s, 19, 32);
+	settings.river = clua_optboolean(s, 20, true);
+	settings.ambience = clua_optboolean(s, 21, true);
+	settings.ambienceFactor = (double)luaL_optnumber(s, 22, 0.3);
 
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	lua_getglobal(s, luaVoxel_globalnodeid());
@@ -2518,18 +2525,18 @@ static int luaVoxel_genland(lua_State *s) {
 	const scenegraph::SceneGraphNode &currentNode = sceneGraph->node(currentNodeId);
 
 	const palette::Palette &palette = currentNode.palette();
-	if (lua_gettop(s) >= 16) {
-		if (lua_isnumber(s, 16)) {
-			settings.ground = palette.color((int)luaL_checkinteger(s, 16));
+	if (lua_gettop(s) >= 23) {
+		if (lua_isnumber(s, 23)) {
+			settings.ground = palette.color((int)luaL_checkinteger(s, 23));
 		}
-		if (lua_isnumber(s, 17)) {
-			settings.grass = palette.color((int)luaL_checkinteger(s, 17));
+		if (lua_isnumber(s, 24)) {
+			settings.grass = palette.color((int)luaL_checkinteger(s, 24));
 		}
-		if (lua_isnumber(s, 18)) {
-			settings.grass2 = palette.color((int)luaL_checkinteger(s, 18));
+		if (lua_isnumber(s, 25)) {
+			settings.grass2 = palette.color((int)luaL_checkinteger(s, 25));
 		}
-		if (lua_isnumber(s, 19)) {
-			settings.water = palette.color((int)luaL_checkinteger(s, 19));
+		if (lua_isnumber(s, 26)) {
+			settings.water = palette.color((int)luaL_checkinteger(s, 26));
 		}
 	}
 
@@ -6612,19 +6619,26 @@ static int luaVoxel_genland_jsonhelp(lua_State* s) {
 		"parameters": [
 			{"name": "seed", "type": "integer", "description": "Random seed (optional, default 0)."},
 			{"name": "size", "type": "integer", "description": "Terrain size (optional, default 256)."},
-			{"name": "height", "type": "integer", "description": "Max height (optional, default 64)."},
+			{"name": "height", "type": "integer", "description": "Volume height clip (optional, default 64)."},
 			{"name": "octaves", "type": "integer", "description": "Noise octaves (optional, default 10)."},
-			{"name": "smoothing", "type": "number", "description": "Smoothing factor (optional, default 1)."},
-			{"name": "persistence", "type": "number", "description": "Noise persistence (optional, default 0.4)."},
-			{"name": "amplitude", "type": "number", "description": "Noise amplitude (optional, default 0.4)."},
+			{"name": "smoothing", "type": "number", "description": "Shadow smoothing iterations (optional, default 1)."},
+			{"name": "persistence", "type": "number", "description": "Octave amplitude falloff (optional, default 0.4)."},
+			{"name": "amplitude", "type": "number", "description": "Height noise strength from baseHeight (optional, default 20)."},
+			{"name": "baseHeight", "type": "number", "description": "Average column height before noise (optional, default 28)."},
 			{"name": "riverWidth", "type": "number", "description": "River width (optional, default 0.02)."},
+			{"name": "numRivers", "type": "integer", "description": "Number of rivers across the map (optional, default 1)."},
+			{"name": "riverPhase", "type": "number", "description": "Horizontal river start position 0-1 (optional, default 0.75)."},
+			{"name": "riverMeander", "type": "number", "description": "River path winding strength (optional, default 4)."},
 			{"name": "freqGround", "type": "number", "description": "Ground frequency (optional, default 9.5)."},
 			{"name": "freqRiver", "type": "number", "description": "River frequency (optional, default 13.2)."},
+			{"name": "grassBias", "type": "number", "description": "Grass tint bias, positive = more grass (optional, default 0)."},
 			{"name": "offsetX", "type": "integer", "description": "X offset (optional, default 0)."},
 			{"name": "offsetZ", "type": "integer", "description": "Z offset (optional, default 0)."},
 			{"name": "shadow", "type": "boolean", "description": "Add shadows (optional, default true)."},
+			{"name": "shadowFactor", "type": "integer", "description": "Shadow strength 0-255 (optional, default 32)."},
 			{"name": "river", "type": "boolean", "description": "Add rivers (optional, default true)."},
-			{"name": "ambience", "type": "boolean", "description": "Add ambient effects (optional, default true)."},
+			{"name": "ambience", "type": "boolean", "description": "Add ambient lighting (optional, default true)."},
+			{"name": "ambienceFactor", "type": "number", "description": "Ambient color scale (optional, default 0.3)."},
 			{"name": "groundColor", "type": "integer", "description": "Ground color palette index (optional)."},
 			{"name": "grassColor", "type": "integer", "description": "Grass color palette index (optional)."},
 			{"name": "grass2Color", "type": "integer", "description": "Secondary grass color palette index (optional)."},

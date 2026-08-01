@@ -96,6 +96,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil voxelfont voxelformat noise commonlua scenegraph)
 
 set(TEST_SRCS
+	tests/GenlandTest.cpp
 	tests/LSystemTest.cpp
 	tests/LUAApiTest.cpp
 	tests/ShapeGeneratorTest.cpp
