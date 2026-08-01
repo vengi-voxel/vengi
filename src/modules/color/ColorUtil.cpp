@@ -3,9 +3,8 @@
  */
 
 #include "ColorUtil.h"
-#include "Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
-#include "core/GLM.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/ext/scalar_integer.hpp>
@@ -25,6 +24,10 @@ namespace color {
 
 glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::aligned_vec4(r, g, b, a) / color::magnitudef;
+}
+
+glm::vec4 fromRGBA(const RGBA rgba) {
+	return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 }
 
 RGBA fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {

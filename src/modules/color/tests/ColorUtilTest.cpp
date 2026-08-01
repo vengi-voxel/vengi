@@ -7,7 +7,7 @@
 #include "color/Color.h"
 #include "color/RGBA.h"
 #include "core/Endian.h"
-#include "core/collection/BufferView.h"
+#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
 
 namespace color {

@@ -7,8 +7,7 @@
 #include "color/Distance.h"
 #include "color/RGBA.h"
 #include "core/String.h"
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/fwd.hpp>
 
 namespace color {
 
@@ -74,9 +73,7 @@ glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 /**
  * @brief Converts RGBA struct to a vec4.
  */
-inline glm::vec4 fromRGBA(const RGBA rgba) {
-	return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
-}
+glm::vec4 fromRGBA(const RGBA rgba);
 
 /**
  * @brief Creates a color from HSB values.
