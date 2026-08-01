@@ -9,6 +9,11 @@
 
 namespace voxedit {
 
+/**
+ * @brief Command completer
+ *
+ * @sa command::Command
+ */
 inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 	return [&](const core::String &str, core::DynamicArray<core::String> &matches) -> int {
 		int i = 0;
