@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/collection/Map.h"
 #include "core/concurrent/Atomic.h"
 #include "image/Image.h"
 #include "image/ImageType.h"
@@ -31,6 +32,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
+
+// GrandyB fork camera_mode_t values (src/camera.h)
+enum GoxCameraMode : int32_t {
+	GoxCamOrbit = 0,
+	GoxCamFpv = 1,
+	GoxCamPlayer = 2
+};
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -192,11 +200,16 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 									   const palette::Palette &palette) {
 	typedef float (*SdfFunc)(const glm::vec3 &, const glm::vec3 &);
 	SdfFunc sdf = nullptr;
-	if (shapeName == "sphere") {
+	core::String resolvedShape = shapeName;
+	// Fork removed the spray shape; treat legacy id as sphere.
+	if (resolvedShape == "spray") {
+		resolvedShape = "sphere";
+	}
+	if (resolvedShape == "sphere") {
 		sdf = math::sdf::goxSphere;
-	} else if (shapeName == "cube") {
+	} else if (resolvedShape == "cube") {
 		sdf = math::sdf::goxCube;
-	} else if (shapeName == "cylinder") {
+	} else if (resolvedShape == "cylinder") {
 		sdf = math::sdf::goxCylinder;
 	} else {
 		Log::warn("Unknown goxel shape: %s", shapeName.c_str());
@@ -404,6 +417,12 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		delete blockVolume;
 	}
 	bool visible = true;
+	bool locked = false;
+	float opacity = 1.0f;
+	bool volSnap = true;
+	bool collapsed = false;
+	int32_t goxLayerId = 0;
+	int32_t goxParentId = 0;
 	char dictKey[256];
 	char dictValue[256];
 	int valueLength = 0;
@@ -420,7 +439,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			node.setName(dictValue);
 		} else if (!strcmp(dictKey, "visible")) {
 			// "visible" (bool)
-			visible = *(const bool *)dictValue;
+			visible = valueLength > 0 && dictValue[0] != 0;
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix) - also used as shape box for shape layers
 			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
@@ -436,17 +455,39 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			scenegraph::SceneGraphTransform transform;
 			transform.setWorldMatrix(mat);
 			node.setTransform(keyFrameIdx, transform);
-		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
+		} else if (!strcmp(dictKey, "img-path")) {
 			// "img-path" model texture path
-			// "id" unique id
 			node.setProperty(dictKey, dictValue);
-		} else if (!strcmp(dictKey, "base_id") || !strcmp(dictKey, "material")) {
-			// "base_id" int
-			// "material" int (index)
+		} else if (!strcmp(dictKey, "id") || !strcmp(dictKey, "base_id") || !strcmp(dictKey, "material") ||
+				   !strcmp(dictKey, "parent_id")) {
 			io::MemoryReadStream subStream(dictValue, sizeof(uint32_t));
-			int32_t v;
+			int32_t v = 0;
 			subStream.readInt32(v);
 			node.setProperty(dictKey, core::string::toString(v));
+			if (!strcmp(dictKey, "id")) {
+				goxLayerId = v;
+			} else if (!strcmp(dictKey, "parent_id")) {
+				goxParentId = v;
+			}
+		} else if (!strcmp(dictKey, "opacity")) {
+			if (valueLength == (int)sizeof(float)) {
+				io::MemoryReadStream subStream(dictValue, valueLength);
+				subStream.readFloat(opacity);
+				if (opacity < 0.0f) {
+					opacity = 0.0f;
+				} else if (opacity > 1.0f) {
+					opacity = 1.0f;
+				}
+				node.setProperty("opacity", core::string::toString(opacity));
+			}
+		} else if (!strcmp(dictKey, "vol_snap")) {
+			volSnap = valueLength > 0 && dictValue[0] != 0;
+			node.setProperty("vol_snap", volSnap ? "true" : "false");
+		} else if (!strcmp(dictKey, "collapsed")) {
+			collapsed = valueLength > 0 && dictValue[0] != 0;
+			node.setProperty("collapsed", collapsed ? "true" : "false");
+		} else if (!strcmp(dictKey, "locked")) {
+			locked = valueLength > 0 && dictValue[0] != 0;
 		} else if (!strcmp(dictKey, "marker_color")) {
 			if (valueLength == 4) {
 				node.setColor(color::RGBA((uint8_t)dictValue[0], (uint8_t)dictValue[1], (uint8_t)dictValue[2],
@@ -461,6 +502,9 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			}
 		} else if (!strcmp(dictKey, "box")) {
 			// optional bounding box - not used for shape rasterization
+		} else if (!strcmp(dictKey, "mode")) {
+			// Upstream blend mode; fork neither writes nor reads it.
+			Log::debug("Ignoring LAYR mode (upstream blend mode)");
 		} else {
 			Log::debug("LAYR chunk with key: %s and size %i", dictKey, valueLength);
 		}
@@ -493,9 +537,36 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		node.setVolume(modelVolume);
 	}
 	node.setVisible(visible);
+	node.setLocked(locked);
 	node.setPalette(palette);
-	sceneGraph.emplace(core::move(node));
+	const int nodeId = sceneGraph.emplace(core::move(node));
+	if (nodeId == InvalidNodeId) {
+		Log::error("Failed to add gox layer to scene graph");
+		return false;
+	}
+	if (goxLayerId != 0) {
+		state.layerIdToNodeId.put(goxLayerId, nodeId);
+	}
+	if (goxParentId != 0) {
+		LayerParentLink link;
+		link.nodeId = nodeId;
+		link.parentGoxId = goxParentId;
+		state.layerParents.push_back(link);
+	}
 	return true;
+}
+
+void GoxFormat::applyLayerParents(State &state, scenegraph::SceneGraph &sceneGraph) {
+	for (const LayerParentLink &link : state.layerParents) {
+		int parentNodeId = InvalidNodeId;
+		if (!state.layerIdToNodeId.get(link.parentGoxId, parentNodeId)) {
+			Log::warn("Gox layer parent_id %i not found for node %i", link.parentGoxId, link.nodeId);
+			continue;
+		}
+		if (!sceneGraph.changeParent(link.nodeId, parentNodeId, scenegraph::NodeMoveFlag::None)) {
+			Log::warn("Failed to apply gox parent_id %i to node %i", link.parentGoxId, link.nodeId);
+		}
+	}
 }
 
 bool GoxFormat::loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableReadStream &stream) {
@@ -582,6 +653,8 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 	char dictValue[256];
 	int valueLength = 0;
 	scenegraph::SceneGraphNodeCamera node;
+	bool camGotMode = false;
+	int32_t camMode = GoxCamOrbit;
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 127 chars max
@@ -598,7 +671,7 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 			}
 		} else if (!strcmp(dictKey, "ortho")) {
 			// "ortho" bool
-			const bool ortho = *(const bool *)dictValue;
+			const bool ortho = valueLength > 0 && dictValue[0] != 0;
 			if (ortho) {
 				node.setOrthographic();
 			} else {
@@ -616,10 +689,33 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 			transform.setWorldMatrix(mat);
 			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			node.setTransform(keyFrameIdx, transform);
+		} else if (!strcmp(dictKey, "mode")) {
+			if (valueLength == (int)sizeof(int32_t)) {
+				io::MemoryReadStream subStream(dictValue, valueLength);
+				subStream.readInt32(camMode);
+				camGotMode = true;
+			}
+		} else if (!strcmp(dictKey, "standing_h") || !strcmp(dictKey, "crouch_h")) {
+			if (valueLength == (int)sizeof(float)) {
+				io::MemoryReadStream subStream(dictValue, valueLength);
+				float height = 0.0f;
+				subStream.readFloat(height);
+				node.setProperty(dictKey, core::string::toString(height));
+			}
+		} else if (!strcmp(dictKey, "fpv")) {
+			// Legacy fork bool; only applied when mode is absent.
+			if (!camGotMode && valueLength > 0 && dictValue[0] != 0) {
+				camMode = GoxCamFpv;
+				camGotMode = true;
+			}
 		} else {
 			Log::debug("CAMR chunk with key: %s and size %i", dictKey, valueLength);
 		}
 	}
+	if (camMode > GoxCamPlayer) {
+		camMode = GoxCamOrbit;
+	}
+	node.setProperty("mode", core::string::toString(camMode));
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
@@ -757,11 +853,18 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 			wrapBool(loadChunk_IMG(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('L', 'I', 'G', 'H')) {
 			wrapBool(loadChunk_LIGH(state, c, *stream, sceneGraph))
+		} else if (c.type == FourCC('P', 'L', 'A', 'C') || c.type == FourCC('C', 'L', 'R', 'H') ||
+				   c.type == FourCC('C', 'U', 'S', 'T')) {
+			// GrandyB fork-only chunks: placer history, color MRU, custom objects.
+			// Not mapped into the scene graph; skip payload (upstream does the same).
+			Log::debug("Skipping gox fork chunk");
+			stream->seek(c.length, SEEK_CUR);
 		} else {
 			stream->seek(c.length, SEEK_CUR);
 		}
 		loadChunk_ValidateCRC(*stream);
 	}
+	applyLayerParents(state, sceneGraph);
 	return !sceneGraph.empty();
 }
 
@@ -848,6 +951,28 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(cam, 0);
 		const glm::mat4 &worldMatrix = transform.worldMatrix();
 		wrapBool(saveChunk_DictMat4(stream, "mat", worldMatrix))
+		// GrandyB fork camera fields (ignored by upstream)
+		int32_t mode = GoxCamOrbit;
+		const core::String &modeProp = cam.property("mode");
+		if (!modeProp.empty()) {
+			mode = modeProp.toInt();
+			if (mode < GoxCamOrbit || mode > GoxCamPlayer) {
+				mode = GoxCamOrbit;
+			}
+		}
+		wrapBool(saveChunk_DictInt(stream, "mode", mode))
+		float standingH = 2.7f;
+		const core::String &standingProp = cam.property("standing_h");
+		if (!standingProp.empty()) {
+			standingH = standingProp.toFloat();
+		}
+		wrapBool(saveChunk_DictFloat(stream, "standing_h", standingH))
+		float crouchH = 1.7f;
+		const core::String &crouchProp = cam.property("crouch_h");
+		if (!crouchProp.empty()) {
+			crouchH = crouchProp.toFloat();
+		}
+		wrapBool(saveChunk_DictFloat(stream, "crouch_h", crouchH))
 	}
 	return true;
 }
@@ -895,8 +1020,26 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 
 bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 							   int numBlocks) {
+	// Layer ids start at 1: fork parent_id 0 means top-level.
+	core::Map<int, int32_t> nodeToGoxLayerId;
+	int32_t nextGoxLayerId = 1;
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		int32_t goxId = nextGoxLayerId;
+		const core::String &idProp = node.property("id");
+		if (!idProp.empty()) {
+			const int32_t existing = idProp.toInt();
+			if (existing != 0) {
+				goxId = existing;
+			}
+		}
+		nodeToGoxLayerId.put(node.id(), goxId);
+		if (goxId >= nextGoxLayerId) {
+			nextGoxLayerId = goxId + 1;
+		}
+	}
+
 	int blockUid = 0;
-	int layerId = 0;
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
@@ -950,7 +1093,9 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 			mat[3] = glm::vec4(wt.x, -wt.z, wt.y, 1.0f);
 		}
 		wrapBool(saveChunk_DictMat4(stream, "mat", mat))
-		wrapBool(saveChunk_DictInt(stream, "id", layerId))
+		int32_t goxLayerId = 0;
+		nodeToGoxLayerId.get(node.id(), goxLayerId);
+		wrapBool(saveChunk_DictInt(stream, "id", goxLayerId))
 		const color::RGBA layerRGBA = node.color();
 		wrapBool(saveChunk_DictEntryHeader(stream, "marker_color", 4))
 		wrapBool(stream.writeUInt8(layerRGBA.r))
@@ -962,8 +1107,36 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictEntry(stream, "material", &material_idx))
 #endif
 		wrapBool(saveChunk_DictBool(stream, "visible", node.visible()))
-
-		++layerId;
+		// GrandyB fork layer fields (ignored by upstream)
+		float opacity = 1.0f;
+		const core::String &opacityProp = node.property("opacity");
+		if (!opacityProp.empty()) {
+			opacity = opacityProp.toFloat();
+			if (opacity < 0.0f) {
+				opacity = 0.0f;
+			} else if (opacity > 1.0f) {
+				opacity = 1.0f;
+			}
+		}
+		wrapBool(saveChunk_DictFloat(stream, "opacity", opacity))
+		bool volSnap = true;
+		const core::String &volSnapProp = node.property("vol_snap");
+		if (!volSnapProp.empty()) {
+			volSnap = volSnapProp != "false" && volSnapProp != "0";
+		}
+		wrapBool(saveChunk_DictBool(stream, "vol_snap", volSnap))
+		int32_t parentGoxId = 0;
+		if (const scenegraph::SceneGraphNode *parent = sceneGraph.parentNode(node)) {
+			nodeToGoxLayerId.get(parent->id(), parentGoxId);
+		}
+		wrapBool(saveChunk_DictInt(stream, "parent_id", parentGoxId))
+		bool collapsed = false;
+		const core::String &collapsedProp = node.property("collapsed");
+		if (!collapsedProp.empty()) {
+			collapsed = collapsedProp == "true" || collapsedProp == "1";
+		}
+		wrapBool(saveChunk_DictBool(stream, "collapsed", collapsed))
+		wrapBool(saveChunk_DictBool(stream, "locked", node.locked()))
 	}
 	if (numBlocks != 0) {
 		Log::error("Invalid amount of blocks");

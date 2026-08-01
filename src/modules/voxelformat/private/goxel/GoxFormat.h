@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/collection/Map.h"
 #include "core/collection/StringMap.h"
 #include "palette/Palette.h"
 #include <glm/vec3.hpp>
@@ -52,7 +53,12 @@ namespace voxelformat {
  *          4 bytes: y
  *          4 bytes: z
  *          4 bytes: 0
- *      [DICT]
+ *      [DICT] entries include (upstream + GrandyB fork):
+ *          name, mat, id, base_id, material, img-path, box, shape, color,
+ *          visible, marker_color
+ *          Fork additions (ignored by upstream):
+ *          opacity (float 0..1), vol_snap (bool), parent_id (int32),
+ *          collapsed (bool), locked (bool)
  *
  *  CAMR: a camera:
  *      [DICT] containing the following entries:
@@ -61,6 +67,8 @@ namespace voxelformat {
  *          rot: quaternion
  *          ofs: offset
  *          ortho: bool
+ *          Fork additions: mode (int32 orbit/fpv/player), standing_h,
+ *          crouch_h (float). Legacy: fpv (bool) when mode is absent.
  *
  *   LIGH: the light:
  *      [DICT] containing the following entries:
@@ -68,7 +76,13 @@ namespace voxelformat {
  *          yaw: radian
  *          intensity: float
  *
+ *   Fork-only chunks (skipped by upstream and by vengi voxel load):
+ *   PLAC: placer import history (UTF-8 text)
+ *   CLRH: recent paint-color MRU + noise settings (binary)
+ *   CUST: custom objects / metadata (versions 1-5 inside the chunk)
+ *
  * @note Goxel uses Z up - we use Y up
+ * @note Container stays magic "GOX " / version 2; fork extensions are additive.
  *
  * @ingroup Formats
  */
@@ -82,10 +96,18 @@ private:
 		int32_t length = 0u;
 	};
 
+	struct LayerParentLink {
+		int nodeId = -1;
+		int32_t parentGoxId = 0;
+	};
+
 	struct State {
 		int32_t version = 0;
 		core::DynamicArray<image::ImagePtr> images;
 		core::StringMap<palette::Material> materials;
+		/** gox layer id -> scenegraph node id (fork parent_id) */
+		core::Map<int32_t, int> layerIdToNodeId;
+		core::DynamicArray<LayerParentLink> layerParents;
 	};
 
 	bool loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream);
@@ -94,6 +116,7 @@ private:
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize);
 	bool loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
+	void applyLayerParents(State &state, scenegraph::SceneGraph &sceneGraph);
 	voxel::RawVolume *loadShape(const core::String &shapeName, color::RGBA shapeColor,
 								const float box[4][4], const palette::Palette &palette);
 	bool loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableReadStream &stream);
