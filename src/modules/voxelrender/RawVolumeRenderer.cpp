@@ -207,6 +207,7 @@ bool RawVolumeRenderer::init(bool normals) {
 
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
+	_voxelShaderVertData.opacity = 1.0f;
 
 	_shapeRenderer.init();
 
@@ -662,6 +663,10 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		if (!isVisible(meshState, idx)) {
 			continue;
 		}
+		// Faded nodes are drawn in the transparency pass so blending/sorting work.
+		if (meshState->opacity(idx) < 1.0f - 1e-5f) {
+			continue;
+		}
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 		if (indices == 0u) {
@@ -686,6 +691,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.opacity = meshState->opacity(idx);
 		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
 		_voxelShaderVertData.shownormals = _renderNormals->intVal();
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
@@ -716,9 +722,15 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 			if (!isVisible(meshState, idx)) {
 				continue;
 			}
+			const float opacity = meshState->opacity(idx);
+			if (opacity <= 0.0f) {
+				continue;
+			}
 			const int bufferIndex = meshState->resolveIdx(idx);
-			const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
-			if (indices == 0u) {
+			const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+			const bool faded = opacity < 1.0f - 1e-5f;
+			if (transparentIndices == 0u && !(faded && opaqueIndices > 0u)) {
 				continue;
 			}
 
@@ -739,23 +751,24 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	}
 
 	video::ScopedState scopedBlendTrans(video::State::Blend, true);
+	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 
 	for (int idx : sorted) {
 		const int bufferIndex = meshState->resolveIdx(idx);
-		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		const float opacity = meshState->opacity(idx);
+		const bool faded = opacity < 1.0f - 1e-5f;
 		updatePalette(meshState, idx);
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.opacity = opacity;
 		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
 		_voxelShaderVertData.shownormals = _renderNormals->intVal();
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
-		core_assert_always(scopedBuf.success());
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
@@ -763,7 +776,22 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 		}
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+
+		if (faded) {
+			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+			if (opaqueIndices > 0u) {
+				video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+				core_assert_always(scopedBuf.success());
+				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, opaqueIndices);
+			}
+		}
+
+		const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		if (transparentIndices > 0u) {
+			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
+			core_assert_always(scopedBuf.success());
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, transparentIndices);
+		}
 	}
 }
 

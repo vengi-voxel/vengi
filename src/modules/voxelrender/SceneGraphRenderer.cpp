@@ -226,6 +226,7 @@ void SceneGraphRenderer::updateNodeState(const voxel::MeshStatePtr &meshState, c
 		meshState->gray(idx, false);
 	}
 	meshState->setLocked(idx, node.locked());
+	meshState->setOpacity(idx, node.opacity());
 }
 
 void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {

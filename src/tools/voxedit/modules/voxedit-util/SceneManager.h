@@ -277,6 +277,7 @@ protected:
 	bool nodeRemove(int nodeId, bool recursive);
 	bool nodeSetVisible(int nodeId, bool visible);
 	bool nodeSetLocked(int nodeId, bool locked);
+	bool nodeSetOpacity(int nodeId, float opacity);
 	bool nodeActivate(int nodeId);
 	bool nodeUnreference(int nodeId);
 	bool nodeRemoveNormals(int nodeId);
@@ -829,6 +830,7 @@ public:
 	bool nodeRemove(const core::UUID &nodeUUID, bool recursive);
 	bool nodeSetVisible(const core::UUID &nodeUUID, bool visible);
 	bool nodeSetLocked(const core::UUID &nodeUUID, bool locked);
+	bool nodeSetOpacity(const core::UUID &nodeUUID, float opacity);
 	bool nodeActivate(const core::UUID &nodeUUID);
 	bool nodeUnreference(const core::UUID &nodeUUID);
 	void nodeGroupRemoveNormals();

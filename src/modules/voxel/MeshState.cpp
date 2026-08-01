@@ -582,4 +582,19 @@ void MeshState::setLocked(int idx, bool locked) {
 	_volumeData[idx]._locked = locked;
 }
 
+float MeshState::opacity(int idx) const {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
+		return 1.0f;
+	}
+	return _volumeData[idx]._opacity;
+}
+
+void MeshState::setOpacity(int idx, float opacity) {
+	if (idx < 0) {
+		return;
+	}
+	ensureSize(idx);
+	_volumeData[idx]._opacity = glm::clamp(opacity, 0.0f, 1.0f);
+}
+
 } // namespace voxel

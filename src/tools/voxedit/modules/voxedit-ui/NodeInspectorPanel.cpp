@@ -99,6 +99,14 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		ImGui::EndTable();
 	}
 
+	if (node.isAnyModelNode()) {
+		float opacityPct = node.opacity() * 100.0f;
+		if (ImGui::SliderFloat(_("Opacity"), &opacityPct, 0.0f, 100.0f, "%.0f %%")) {
+			_sceneMgr->nodeSetOpacity(node.uuid(), opacityPct / 100.0f);
+		}
+		ImGui::TooltipTextUnformatted(_("Fade the whole node without changing voxels"));
+	}
+
 	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_BAR, _("Color Histogram"))) {
 		if (_cachedHistogramNodeId != node.id()) {
 			_cachedHistogram.clear();
@@ -382,6 +390,14 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 	core_trace_scoped(SceneView);
 
 	sceneViewMenuBar(node);
+
+	if (node.isAnyModelNode()) {
+		float opacityPct = node.opacity() * 100.0f;
+		if (ImGui::SliderFloat(_("Opacity"), &opacityPct, 0.0f, 100.0f, "%.0f %%")) {
+			_sceneMgr->nodeSetOpacity(node.uuid(), opacityPct / 100.0f);
+		}
+		ImGui::TooltipTextUnformatted(_("Fade the whole node without changing voxels"));
+	}
 
 	bool change = false;
 	bool changeMultiple = false;

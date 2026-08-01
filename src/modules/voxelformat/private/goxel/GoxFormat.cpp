@@ -478,7 +478,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 				} else if (opacity > 1.0f) {
 					opacity = 1.0f;
 				}
-				node.setProperty("opacity", core::string::toString(opacity));
+				node.setOpacity(opacity);
 			}
 		} else if (!strcmp(dictKey, "vol_snap")) {
 			volSnap = valueLength > 0 && dictValue[0] != 0;
@@ -1108,17 +1108,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 #endif
 		wrapBool(saveChunk_DictBool(stream, "visible", node.visible()))
 		// GrandyB fork layer fields (ignored by upstream)
-		float opacity = 1.0f;
-		const core::String &opacityProp = node.property("opacity");
-		if (!opacityProp.empty()) {
-			opacity = opacityProp.toFloat();
-			if (opacity < 0.0f) {
-				opacity = 0.0f;
-			} else if (opacity > 1.0f) {
-				opacity = 1.0f;
-			}
-		}
-		wrapBool(saveChunk_DictFloat(stream, "opacity", opacity))
+		wrapBool(saveChunk_DictFloat(stream, "opacity", node.opacity()))
 		bool volSnap = true;
 		const core::String &volSnapProp = node.property("vol_snap");
 		if (!volSnapProp.empty()) {

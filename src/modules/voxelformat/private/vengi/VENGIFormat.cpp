@@ -269,6 +269,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeInt32(referencedNode != nullptr ? referencedNode->id() : InvalidNodeId))
 	wrapBool(stream.writeBool(node.visible()))
 	wrapBool(stream.writeBool(node.locked()))
+	wrapBool(stream.writeFloat(node.opacity()))
 	wrapBool(stream.writeUInt32(node.color().rgba))
 	wrapBool(stream.writeFloat(node.pivot().x))
 	wrapBool(stream.writeFloat(node.pivot().y))
@@ -586,6 +587,11 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	}
 	node.setVisible(stream.readBool());
 	node.setLocked(stream.readBool());
+	if (version >= 9) {
+		float opacity = 1.0f;
+		wrap(stream.readFloat(opacity))
+		node.setOpacity(opacity);
+	}
 	color::RGBA color;
 	wrap(stream.readUInt32(color.rgba))
 	node.setColor(color);
@@ -650,7 +656,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(8))
+	wrapBool(zipStream.writeUInt32(9))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -673,7 +679,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 8) {
+	if (version > 9) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}

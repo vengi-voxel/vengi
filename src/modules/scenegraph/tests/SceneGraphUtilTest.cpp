@@ -213,6 +213,7 @@ TEST_F(SceneGraphUtilTest, testCopyNode) {
 	src.createVolume(voxel::Region(0, 0));
 	src.setLocked(true);
 	src.setVisible(false);
+	src.setOpacity(0.5f);
 
 	SceneGraphNode target(SceneGraphNodeType::Model);
 	copyNode(src, target, true);
@@ -220,8 +221,20 @@ TEST_F(SceneGraphUtilTest, testCopyNode) {
 	EXPECT_EQ(src.name(), target.name());
 	EXPECT_EQ(src.locked(), target.locked());
 	EXPECT_EQ(src.visible(), target.visible());
+	EXPECT_FLOAT_EQ(src.opacity(), target.opacity());
 	EXPECT_NE(src.volume(), target.volume()); // Should be a copy
 	EXPECT_NE(nullptr, target.volume());
+}
+
+TEST_F(SceneGraphUtilTest, testNodeOpacityClamp) {
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	EXPECT_FLOAT_EQ(1.0f, node.opacity());
+	node.setOpacity(0.25f);
+	EXPECT_FLOAT_EQ(0.25f, node.opacity());
+	node.setOpacity(-1.0f);
+	EXPECT_FLOAT_EQ(0.0f, node.opacity());
+	node.setOpacity(2.0f);
+	EXPECT_FLOAT_EQ(1.0f, node.opacity());
 }
 
 TEST_F(SceneGraphUtilTest, testCopyNodeToSceneGraph) {

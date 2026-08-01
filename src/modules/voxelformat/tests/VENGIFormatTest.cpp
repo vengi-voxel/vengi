@@ -250,4 +250,33 @@ TEST_F(VENGIFormatTest, testSaveLoadBoneIndices) {
 	EXPECT_EQ(255u, v2.getBoneIdx());
 }
 
+TEST_F(VENGIFormatTest, testSaveLoadOpacity) {
+	VENGIFormat f;
+	palette::Palette pal;
+	pal.magicaVoxel();
+	const voxel::Region &region = voxel::Region::fromSize(2);
+	voxel::RawVolume original(region);
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 1)));
+
+	scenegraph::SceneGraph sceneGraphSave;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&original);
+		node.setPalette(pal);
+		node.setName("faded");
+		node.setOpacity(0.4f);
+		ASSERT_NE(InvalidNodeId, sceneGraphSave.emplace(core::move(node)));
+	}
+
+	const io::ArchivePtr &archive = helper_archive();
+	ASSERT_TRUE(f.save(sceneGraphSave, "testOpacity.vengi", archive, testSaveCtx));
+
+	scenegraph::SceneGraph sceneGraphLoad;
+	ASSERT_TRUE(f.load("testOpacity.vengi", archive, sceneGraphLoad, testLoadCtx));
+	const scenegraph::SceneGraphNode *loaded = sceneGraphLoad.firstModelNode();
+	ASSERT_NE(nullptr, loaded);
+	EXPECT_EQ("faded", loaded->name());
+	EXPECT_FLOAT_EQ(0.4f, loaded->opacity());
+}
+
 } // namespace voxelformat

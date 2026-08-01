@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Added bone index save/load support to the `vengi` format (version 8)
+   - Added node opacity save/load support to the `vengi` format (version 9)
    - Write Wavefront OBJ materials (one MTL entry per palette color with PBR properties)
    - Refactored parts of the io module and fixed memory leaks
    - Added support for `ldr` and `mpd` lego files

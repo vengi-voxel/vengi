@@ -38,6 +38,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_normalPalette = core::move(move._normalPalette);
 	_ikConstraint = core::move(move._ikConstraint);
 	_color = move._color;
+	_opacity = move._opacity;
 	_parent = move._parent;
 	move._parent = core::UUID();
 	_pivot = move._pivot;
@@ -76,6 +77,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_normalPalette = core::move(move._normalPalette);
 	_ikConstraint = core::move(move._ikConstraint);
 	_color = move._color;
+	_opacity = move._opacity;
 	_parent = move._parent;
 	move._parent = core::UUID();
 	_pivot = move._pivot;

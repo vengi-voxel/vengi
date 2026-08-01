@@ -58,7 +58,7 @@ TEST_F(GoxFormatTest, testForkLayerAndCameraRoundtrip) {
 		parent.setName("parent-layer");
 		parent.setUnownedVolume(&volume);
 		parent.setPalette(pal);
-		parent.setProperty("opacity", "0.5");
+		parent.setOpacity(0.5f);
 		parent.setProperty("vol_snap", "false");
 		parent.setProperty("collapsed", "true");
 		parent.setLocked(true);
@@ -70,7 +70,7 @@ TEST_F(GoxFormatTest, testForkLayerAndCameraRoundtrip) {
 		child.setName("child-layer");
 		child.setUnownedVolume(&volume);
 		child.setPalette(pal);
-		child.setProperty("opacity", "0.25");
+		child.setOpacity(0.25f);
 		const int childId = sceneGraphSave.emplace(core::move(child), parentId);
 		ASSERT_NE(InvalidNodeId, childId);
 	}
@@ -104,8 +104,8 @@ TEST_F(GoxFormatTest, testForkLayerAndCameraRoundtrip) {
 	ASSERT_NE(nullptr, child);
 	EXPECT_TRUE(parent->locked());
 	EXPECT_FALSE(child->locked());
-	EXPECT_FLOAT_EQ(0.5f, parent->propertyf("opacity"));
-	EXPECT_FLOAT_EQ(0.25f, child->propertyf("opacity"));
+	EXPECT_FLOAT_EQ(0.5f, parent->opacity());
+	EXPECT_FLOAT_EQ(0.25f, child->opacity());
 	EXPECT_EQ("false", parent->property("vol_snap"));
 	EXPECT_EQ("true", parent->property("collapsed"));
 	EXPECT_EQ(parent->id(), sceneGraphLoad.parentId(*child));

@@ -16,6 +16,7 @@ namespace voxelformat {
  * This format is our own format which stores a scene graph node hierarchy.
  *
  * It's a RIFF header based format. It stores one palette per model node.
+ * Current file version: 9 (node opacity).
  *
  * @ingroup Formats
  */

@@ -13,6 +13,7 @@ layout(std140, binding = 0) uniform u_vert {
 	int u_locked;
 	int u_vert_renderoutline;
 	int u_shownormals;
+	float u_opacity;
 };
 
 $out vec3 v_pos;

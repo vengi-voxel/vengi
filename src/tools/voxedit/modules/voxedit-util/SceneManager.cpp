@@ -6974,6 +6974,25 @@ bool SceneManager::nodeSetLocked(const core::UUID &nodeUUID, bool locked) {
 	return false;
 }
 
+bool SceneManager::nodeSetOpacity(int nodeId, float opacity) {
+	if (isLocked()) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		node->setOpacity(opacity);
+		markDirty();
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetOpacity(const core::UUID &nodeUUID, float opacity) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetOpacity(node->id(), opacity);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 	if (isLocked()) {
 		return false;

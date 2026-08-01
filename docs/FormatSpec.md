@@ -12,7 +12,7 @@ A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
 2. **Zip data**: zlib header (0x78, 0xDA)
-    * **Version**: A 4-byte version number. The current supported version is `8`.
+    * **Version**: A 4-byte version number. The current supported version is `9`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
 ## Node Structure
@@ -51,6 +51,7 @@ Each node chunk begins with the `NODE` FourCC and includes the following informa
 * **Reference Node ID**: 4-byte signed integer (for referenced nodes - `-1` if no node is referenced)
 * **Visibility**: 1-byte boolean
 * **Lock State**: 1-byte boolean
+* **Opacity**: 4-byte float in `0..1` (whole-node render fade; `1` = fully opaque; since version 9)
 * **Color**: 4-byte ABGR value
 * **Pivot**: Three 4-byte floats (x, y, z)
 * **Properties**: Properties chunk - optional if the node doesn't have any properties

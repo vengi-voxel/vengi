@@ -58,6 +58,7 @@ void main(void) {
 	} else {
 		v_color = materialColor;
 	}
+	v_color.a *= u_opacity;
 	v_glow = glowColor;
 	v_ambientocclusion = aovalues[a_ao];
 

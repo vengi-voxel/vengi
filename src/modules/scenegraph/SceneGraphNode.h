@@ -68,6 +68,8 @@ protected:
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
 	color::RGBA _color{255, 255, 255, 255};
+	/** Whole-node render fade in 0..1 (1 = fully opaque). Does not alter voxel data. */
+	float _opacity = 1.0f;
 	glm::vec3 _pivot {0.0f};
 
 	core::UUID _uuid;
@@ -239,6 +241,12 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
+	/**
+	 * @brief Per-node render opacity multiplier in 0..1.
+	 * Values below 1 fade the whole node (see-through) without changing voxels.
+	 */
+	float opacity() const;
+	void setOpacity(float opacity);
 
 	bool hasSelection() const;
 
@@ -431,4 +439,12 @@ inline void SceneGraphNode::setLocked(bool locked) {
 
 }
 
-} // namespace voxel
+inline float SceneGraphNode::opacity() const {
+	return _opacity;
+}
+
+inline void SceneGraphNode::setOpacity(float opacity) {
+	_opacity = glm::clamp(opacity, 0.0f, 1.0f);
+}
+
+} // namespace scenegraph

@@ -51,6 +51,7 @@ private:
 		bool _hidden = false;
 		bool _gray = false;
 		bool _locked = false;
+		float _opacity = 1.0f;
 		// if all axes scale positive: cull the back face
 		// if one or three axes are negative, then cull the front face
 		video::Face _cullFace = video::Face::Back;
@@ -215,6 +216,8 @@ public:
 	bool grayed(int idx) const;
 	void setLocked(int idx, bool locked);
 	bool locked(int idx) const;
+	void setOpacity(int idx, float opacity);
+	float opacity(int idx) const;
 
 	// for scaling on 1 or 3 axes negative we need to flip the face culling
 	video::Face cullFace(int idx) const;
