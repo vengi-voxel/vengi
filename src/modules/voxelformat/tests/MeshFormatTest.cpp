@@ -56,6 +56,45 @@ TEST_F(MeshFormatTest, testSubdivideSkipsNonFinite) {
 	EXPECT_TRUE(tinyTris.empty());
 }
 
+TEST_F(MeshFormatTest, testVoxelizeSkipsSubdivisionForVoxelSizedTris) {
+	// Non-axis-aligned tris that already fit in one voxel cell should take the high-quality
+	// path without the parallel subdivide/copy step.
+	class TestMesh : public MeshFormat {
+	public:
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+		int voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
+			return voxelizeMesh("tiny", sceneGraph, core::move(mesh), 0, false);
+		}
+	};
+
+	util::ScopedVarChange voxelizeMode(cfg::VoxformatVoxelizeMode, "0"); // HighQuality
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+
+	Mesh mesh;
+	voxelformat::MeshTri meshTri;
+	meshTri.setColor(color::RGBA(255, 0, 0), color::RGBA(255, 0, 0), color::RGBA(255, 0, 0));
+	meshTri.setVertices(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.2f, 0.15f), glm::vec3(0.2f, 0.65f, 0.25f));
+	const glm::vec3 size = meshTri.maxs() - meshTri.mins();
+	ASSERT_FALSE(glm::any(glm::greaterThan(size, glm::vec3(1.0f))));
+	mesh.addTriangle(meshTri);
+
+	MeshTriCollection checkTris;
+	checkTris.push_back(meshTri);
+	ASSERT_FALSE(MeshFormat::isVoxelMesh(checkTris));
+
+	TestMesh testMesh;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_NE(InvalidNodeId, testMesh.voxelize(sceneGraph, core::move(mesh)));
+	const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("tiny");
+	ASSERT_NE(nullptr, node);
+	ASSERT_NE(nullptr, node->volume());
+	EXPECT_GT(voxelutil::countVoxels(*node->volume()), 0);
+}
+
 TEST_F(MeshFormatTest, testColorAt) {
 	const image::ImagePtr &texture = image::loadImage("palette-nippon.png");
 	ASSERT_TRUE(texture);

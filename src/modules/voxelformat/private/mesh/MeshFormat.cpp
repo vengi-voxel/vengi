@@ -718,55 +718,74 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			voxelutil::fillHollow(wrapper, voxel);
 		}
 	} else {
-		const size_t parallel = app::for_parallel_size(0, tris.size());
-		Log::debug("Subdivide %i triangles (%i parallel)", (int)tris.size(), (int)parallel);
-		core::DynamicArray<MeshTriCollection> meshTriCollections;
-		meshTriCollections.resize(parallel);
-		core::AtomicInt currentIdx(0);
-		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
-			int c = currentIdx.increment();
-			MeshTriCollection &subdivided = meshTriCollections[c];
-			size_t estimateReserve = 0;
-			// cap per-triangle estimate to avoid pathological values (~1M)
-			const size_t maxPerTriangle = 1u << 20;
-			for (int i = start; i < end; ++i) {
-				const voxelformat::MeshTri &tri = tris[i];
-				estimateReserve += tri.subdivideTriCount(maxPerTriangle);
+		// Match subdivideTri(): only AABB extent > 1 needs splitting. Dense meshes that
+		// already fit in a voxel cell (common after scale-down) must not be copied through
+		// the parallel subdivide/merge path - that was a full O(n) MeshTri clone for no gain.
+		bool needsSubdivision = false;
+		for (const voxelformat::MeshTri &tri : tris) {
+			const glm::vec3 size = tri.maxs() - tri.mins();
+			if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
+				needsSubdivision = true;
+				break;
 			}
-			// Cap the total estimate to a reasonable upper bound to avoid huge single allocations
-			const size_t maxTotalReserve = (size_t)(end - start) * maxPerTriangle;
-			subdivided.reserve(glm::min(estimateReserve, maxTotalReserve));
-			for (int i = start; i < end; ++i) {
-				subdivideTri(tris[i], subdivided, 0);
-			}
-		});
-		Log::debug("Subdivision done");
-		tris.release();
-		size_t cnt = 0;
-		for (const MeshTriCollection &e : meshTriCollections) {
-			cnt += e.size();
 		}
 
 		MeshTriCollection subdivided;
-		subdivided.reserve(cnt);
-		for (MeshTriCollection &e : meshTriCollections) {
-			if (e.empty()) {
-				continue;
+		const MeshTriCollection *src = &tris;
+		if (needsSubdivision) {
+			const size_t parallel = app::for_parallel_size(0, tris.size());
+			Log::debug("Subdivide %i triangles (%i parallel)", (int)tris.size(), (int)parallel);
+			core::DynamicArray<MeshTriCollection> meshTriCollections;
+			meshTriCollections.resize(parallel);
+			core::AtomicInt currentIdx(0);
+			app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
+				int c = currentIdx.increment();
+				MeshTriCollection &chunk = meshTriCollections[c];
+				size_t estimateReserve = 0;
+				// cap per-triangle estimate to avoid pathological values (~1M)
+				const size_t maxPerTriangle = 1u << 20;
+				for (int i = start; i < end; ++i) {
+					const voxelformat::MeshTri &tri = tris[i];
+					estimateReserve += tri.subdivideTriCount(maxPerTriangle);
+				}
+				// Cap the total estimate to a reasonable upper bound to avoid huge single allocations
+				const size_t maxTotalReserve = (size_t)(end - start) * maxPerTriangle;
+				chunk.reserve(glm::min(estimateReserve, maxTotalReserve));
+				for (int i = start; i < end; ++i) {
+					subdivideTri(tris[i], chunk, 0);
+				}
+			});
+			Log::debug("Subdivision done");
+			tris.release();
+			size_t cnt = 0;
+			for (const MeshTriCollection &e : meshTriCollections) {
+				cnt += e.size();
 			}
-			subdivided.append(core::move(e));
-			e.release();
-		}
-		meshTriCollections.release();
 
-		if (subdivided.empty()) {
+			subdivided.reserve(cnt);
+			for (MeshTriCollection &e : meshTriCollections) {
+				if (e.empty()) {
+					continue;
+				}
+				subdivided.append(core::move(e));
+				e.release();
+			}
+			meshTriCollections.release();
+			src = &subdivided;
+		} else {
+			Log::debug("Skip subdivision - all %i tris already fit in a voxel cell", (int)tris.size());
+		}
+
+		if (src->empty()) {
 			Log::warn("Empty volume - could not subdivide");
 			return InvalidNodeId;
 		}
 
 		PosMap posMap;
-		posMap.reserve(subdivided.size());
-		transformTris(region, subdivided, posMap, meshMaterialArray, normalPalette);
+		posMap.reserve(src->size());
+		transformTris(region, *src, posMap, meshMaterialArray, normalPalette);
 		subdivided.release();
+		tris.release();
 		node.createVolume(region);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	}

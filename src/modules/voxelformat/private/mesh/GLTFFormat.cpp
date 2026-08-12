@@ -343,56 +343,91 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			mesh.materials.push_back(mat);
 			const MeshMaterialIndex materialIndex = (MeshMaterialIndex)(mesh.materials.size() - 1);
 
-			// Only load vertices referenced by this primitive. Exporters (including our
-			// per-color material path) often share one large vertex accessor across many
-			// primitives - copying posAccessor->count for each prim exploded memory/time
-			// (e.g. 30 * 15k verts for cc.vxl).
-			core::Buffer<cgltf_size> srcIndices;
+			// Only emit vertices referenced by this primitive (shared accessors across many
+			// prims must not duplicate the full accessor into mesh.vertices). Unpack via
+			// public cgltf helpers - no per-index read_float/read_index call overhead.
+			core::Buffer<uint32_t> srcIndices;
 			if (prim.indices) {
-				srcIndices.reserve((int)prim.indices->count);
-				for (cgltf_size ii = 0; ii < prim.indices->count; ++ii) {
-					srcIndices.push_back(cgltf_accessor_read_index(prim.indices, ii));
+				srcIndices.resize((size_t)prim.indices->count);
+				const cgltf_size unpacked = cgltf_accessor_unpack_indices(prim.indices, srcIndices.data(),
+																		  sizeof(uint32_t), srcIndices.size());
+				if (unpacked != srcIndices.size()) {
+					// Sparse / odd strides: public unpack can fail - fall back per element.
+					for (cgltf_size ii = 0; ii < prim.indices->count; ++ii) {
+						srcIndices[(size_t)ii] = (uint32_t)cgltf_accessor_read_index(prim.indices, ii);
+					}
 				}
 			} else {
-				srcIndices.reserve((int)posAccessor->count);
+				srcIndices.resize((size_t)posAccessor->count);
 				for (cgltf_size ii = 0; ii < posAccessor->count; ++ii) {
-					srcIndices.push_back(ii);
+					srcIndices[(size_t)ii] = (uint32_t)ii;
 				}
 			}
 
-			core::Map<cgltf_size, voxel::IndexType> remap((int)srcIndices.size());
-			for (cgltf_size srcIdx : srcIndices) {
-				voxel::IndexType dstIdx = 0;
-				if (!remap.get(srcIdx, dstIdx)) {
-					MeshVertex v;
-					float pos[3] = {0};
-					if (!cgltf_accessor_read_float(posAccessor, srcIdx, pos, 3)) {
-						continue;
+			core::Buffer<cgltf_float> positions((size_t)posAccessor->count * 3u);
+			if (cgltf_accessor_unpack_floats(posAccessor, positions.data(), positions.size()) != positions.size()) {
+				continue;
+			}
+			core::Buffer<cgltf_float> normals;
+			if (normalAccessor) {
+				normals.resize((size_t)normalAccessor->count * 3u);
+				if (cgltf_accessor_unpack_floats(normalAccessor, normals.data(), normals.size()) != normals.size()) {
+					normals.release();
+				}
+			}
+			core::Buffer<cgltf_float> uvs;
+			if (uvAccessor) {
+				uvs.resize((size_t)uvAccessor->count * 2u);
+				if (cgltf_accessor_unpack_floats(uvAccessor, uvs.data(), uvs.size()) != uvs.size()) {
+					uvs.release();
+				}
+			}
+			core::Buffer<cgltf_float> colors;
+			cgltf_size colorComps = 0;
+			if (colAccessor) {
+				colorComps = cgltf_num_components(colAccessor->type);
+				if (colorComps >= 3) {
+					colors.resize((size_t)colAccessor->count * colorComps);
+					if (cgltf_accessor_unpack_floats(colAccessor, colors.data(), colors.size()) != colors.size()) {
+						colors.release();
+						colorComps = 0;
 					}
+				}
+			}
+
+			const voxel::IndexType unmapped = ~voxel::IndexType(0);
+			core::Buffer<voxel::IndexType> remap((size_t)posAccessor->count, 0xFF);
+			mesh.vertices.reserve(mesh.vertices.size() + (size_t)posAccessor->count);
+			mesh.indices.reserve(mesh.indices.size() + srcIndices.size());
+			for (uint32_t srcIdx : srcIndices) {
+				if ((cgltf_size)srcIdx >= posAccessor->count) {
+					continue;
+				}
+				voxel::IndexType &dstIdx = remap[(size_t)srcIdx];
+				if (dstIdx == unmapped) {
+					MeshVertex v;
+					const cgltf_float *pos = &positions[(size_t)srcIdx * 3u];
 					v.pos = glm::vec3(pos[0], pos[1], pos[2]);
 
-					if (normalAccessor) {
-						float n[3] = {0};
-						cgltf_accessor_read_float(normalAccessor, srcIdx, n, 3);
+					if (!normals.empty() && (cgltf_size)srcIdx < normalAccessor->count) {
+						const cgltf_float *n = &normals[(size_t)srcIdx * 3u];
 						v.normal = glm::vec3(n[0], n[1], n[2]);
 					}
-					if (uvAccessor) {
-						float uv[2] = {0};
-						cgltf_accessor_read_float(uvAccessor, srcIdx, uv, 2);
+					if (!uvs.empty() && (cgltf_size)srcIdx < uvAccessor->count) {
+						const cgltf_float *uv = &uvs[(size_t)srcIdx * 2u];
 						v.uv = glm::vec2(uv[0], uv[1]);
 					}
-					if (colAccessor) {
-						float col[4] = {1, 1, 1, 1};
-						cgltf_accessor_read_float(colAccessor, srcIdx, col, 4);
+					if (!colors.empty() && (cgltf_size)srcIdx < colAccessor->count) {
+						const cgltf_float *col = &colors[(size_t)srcIdx * colorComps];
+						const float a = colorComps >= 4 ? col[3] : 1.0f;
 						v.color = color::RGBA((uint8_t)(col[0] * 255.0f), (uint8_t)(col[1] * 255.0f),
-											  (uint8_t)(col[2] * 255.0f), (uint8_t)(col[3] * 255.0f));
+											  (uint8_t)(col[2] * 255.0f), (uint8_t)(a * 255.0f));
 					} else {
 						v.color = mat->baseColor;
 					}
 					v.materialIdx = materialIndex;
 					dstIdx = (voxel::IndexType)mesh.vertices.size();
 					mesh.vertices.push_back(v);
-					remap.put(srcIdx, dstIdx);
 				}
 				mesh.indices.push_back(dstIdx);
 			}
