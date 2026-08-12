@@ -32,6 +32,7 @@ option(USE_LIBS_FORCE_LOCAL "Don't use systemwide installations" OFF)
 option(USE_LIBDEFLATE "Enable libdeflate support" ON)
 option(USE_BENCHMARKS "Build benchmarks" ON)
 option(USE_COVERAGE "Build with coverage" OFF)
+option(USE_IMPLOT_DEMO "Enable the implot demo" OFF)
 
 set(ROOT_PROJECT_MAJOR_VERSION 0)
 set(ROOT_PROJECT_MINOR_VERSION 6)

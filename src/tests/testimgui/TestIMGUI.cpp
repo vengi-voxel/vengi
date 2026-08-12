@@ -5,7 +5,10 @@
 #include "core/Log.h"
 #include "testcore/TestAppMain.h"
 #include "ui/IMGUIEx.h"
+#include "engine-config.h"
+#ifdef USE_IMPLOT_DEMO
 #include "ui/dearimgui/implot.h"
+#endif
 #include "video/Renderer.h"
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
@@ -43,7 +46,9 @@ void TestIMGUI::onRenderUI() {
 		ImGui::ShowMetricsWindow(&_showMetricsWindow);
 	}
 	if (_showImPlotWindow) {
+#if USE_IMPLOT_DEMO
 		ImPlot::ShowDemoWindow();
+#endif
 	}
 
 	if (_showTestWindow) {

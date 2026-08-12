@@ -29,3 +29,4 @@
 #cmakedefine USE_GL_RENDERER 1
 #cmakedefine USE_SPIRV 1
 #cmakedefine USE_YOCTO 1
+#cmakedefine USE_IMPLOT_DEMO 1
