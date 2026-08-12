@@ -1759,8 +1759,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
 
 static void TextAlignedEx(const ImVec4& text_color, float align_x, float size_x, const char* text)
 {
-    // FIXME: Use ImGui::TextAligned() ?
-#if 0 // #if IMGUI_VERSION_NUM >= 19194
+#if IMGUI_VERSION_NUM >= 19294
     ImGui::PushStyleColor(ImGuiCol_Text, text_color);
     ImGui::TextAligned(align_x, size_x, "%s", text);
     ImGui::PopStyleColor();

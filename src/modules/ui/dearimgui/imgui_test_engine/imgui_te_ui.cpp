@@ -391,7 +391,9 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter,
     ImVector<ImGuiTest*> tests_to_remove;
 
     // Set table child window to use _NavFlattened. WIP/Undocumented. (#8280)
-#if IMGUI_VERSION_NUM >= 19183
+#if IMGUI_VERSION_NUM >= 19293
+    ImGui::SetNextWindowChildFlags(ImGuiChildFlags_NavFlattened, true);
+#elif IMGUI_VERSION_NUM >= 19183
     {
         ImGuiContext& g = *GImGui;
         if (!(g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasChildFlags))

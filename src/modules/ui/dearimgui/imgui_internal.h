@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9
+// dear imgui, v1.93.0 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend Dear ImGui features but we don't provide any guarantee of forward compatibility.
@@ -560,8 +560,8 @@ IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 // Helpers: Geometry
 IMGUI_API ImVec2     ImBezierCubicCalc(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, float t);
-IMGUI_API ImVec2     ImBezierCubicClosestPoint(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& p, int num_segments);       // For curves with explicit number of segments
-IMGUI_API ImVec2     ImBezierCubicClosestPointCasteljau(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& p, float tess_tol);// For auto-tessellated curves you can use tess_tol = style.CurveTessellationTol
+IMGUI_API ImVec2     ImBezierCubicClosestPoint(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& p, int num_segments);        // For curves with explicit number of segments
+IMGUI_API ImVec2     ImBezierCubicClosestPointCasteljau(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& p, float max_error);// For auto-tessellated curves you can use max_error = style.CurveTessellationMaxError
 IMGUI_API ImVec2     ImBezierQuadraticCalc(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, float t);
 IMGUI_API ImVec2     ImLineClosestPoint(const ImVec2& a, const ImVec2& b, const ImVec2& p);
 IMGUI_API bool       ImTriangleContainsPoint(const ImVec2& a, const ImVec2& b, const ImVec2& c, const ImVec2& p);
@@ -906,9 +906,8 @@ struct IMGUI_API ImDrawListSharedData
     ImFont*         Font;                       // Current font (used for simplified AddText overload)
     float           FontSize;                   // Current font size (used for for simplified AddText overload)
     float           FontScale;                  // Current font scale (== FontSize / Font->FontSize)
-    float           CurveTessellationTol;       // Tessellation tolerance when using PathBezierCurveTo()
+    float           CurveTessellationMaxError;  // Tessellation tolerance when using PathBezierCurveTo()
     float           CircleTessellationMaxError; // Number of circle segments to use per pixel of radius for AddCircle() etc
-    float           InitialFringeScale;         // Initial scale to apply to AA fringe
     ImDrawListFlags InitialFlags;               // Initial flags at the beginning of the frame (it is possible to alter flags on a per-drawlist basis afterwards)
     ImVec4          ClipRectFullscreen;         // Value for PushClipRectFullscreen()
     ImVector<ImVec2> TempBuffer;                // Temporary write buffer
@@ -1276,6 +1275,7 @@ struct IMGUI_API ImGuiInputTextState
     ImStbTexteditState*     Stb;                    // State for stb_textedit.h
     ImGuiInputTextFlags     Flags;                  // copy of InputText() flags. may be used to check if e.g. ImGuiInputTextFlags_Password is set.
     ImGuiID                 ID;                     // widget id owning the text state
+    //int                   LastFrameActive;        // Last used frame-count (unused)
     int                     TextLen;                // UTF-8 length of the string in TextA (in bytes)
     const char*             TextSrc;                // == TextA.Data unless read-only, in which case == buf passed to InputText(). For _ReadOnly fields, pointer will be null outside the InputText() call.
     ImVector<char>          TextA;                  // main UTF8 buffer. TextA.Size is a buffer size! Should always be >= buf_size passed by user (and of course >= CurLenA + 1).
@@ -1375,8 +1375,10 @@ struct ImGuiNextWindowData
     ImVec2                      SizeVal;
     ImVec2                      ContentSizeVal;
     ImVec2                      ScrollVal;
-    ImGuiWindowFlags            WindowFlags;            // Only honored by BeginTable()
-    ImGuiChildFlags             ChildFlags;
+    ImGuiWindowFlags            WindowFlagsSet;         // Flags to set. Use SetNextWindowFlags()!
+    ImGuiWindowFlags            WindowFlagsClear;
+    ImGuiChildFlags             ChildFlagsSet;          // Flags to set. Use SetNextWindowChildFlags().
+    ImGuiChildFlags             ChildFlagsClear;
     bool                        PosUndock;
     bool                        CollapsedVal;
     ImRect                      SizeConstraintRect;
@@ -2463,7 +2465,7 @@ struct ImGuiContext
     float                   FontSize;                           // Currently bound font size == line height (== FontSizeBase + externals scales applied in the UpdateCurrentFontSize() function).
     float                   FontSizeBase;                       // Font size before scaling == style.FontSizeBase == value passed to PushFont() when specified.
     float                   FontBakedScale;                     // == FontBaked->Size / FontSize. Scale factor over baked size. Rarely used nowadays, very often == 1.0f.
-    float                   FontRasterizerDensity;              // Current font density. Used by all calls to GetFontBaked().
+    float                   CurrentPixelDensity;                // Current font density. Used by all calls to GetFontBaked().
     float                   CurrentDpiScale;                    // Current window/viewport DpiScale == CurrentViewport->DpiScale
     ImDrawListSharedData    DrawListSharedData;
     ImGuiID                 WithinEndChildID;                   // Set within EndChild()
@@ -3602,6 +3604,8 @@ namespace ImGui
     inline ImRect           WindowRectRelToAbs(ImGuiWindow* window, const ImRect& r) { ImVec2 off = window->DC.CursorStartPos; return ImRect(r.Min.x + off.x, r.Min.y + off.y, r.Max.x + off.x, r.Max.y + off.y); }
     inline ImVec2           WindowPosAbsToRel(ImGuiWindow* window, const ImVec2& p)  { ImVec2 off = window->DC.CursorStartPos; return ImVec2(p.x - off.x, p.y - off.y); }
     inline ImVec2           WindowPosRelToAbs(ImGuiWindow* window, const ImVec2& p)  { ImVec2 off = window->DC.CursorStartPos; return ImVec2(p.x + off.x, p.y + off.y); }
+    IMGUI_API void          SetNextWindowFlags(ImGuiWindowFlags flags, bool enabled);
+    IMGUI_API void          SetNextWindowChildFlags(ImGuiChildFlags flags, bool enabled);
 
     // Windows: Display Order and Focus Order
     IMGUI_API void          FocusWindow(ImGuiWindow* window, ImGuiFocusRequestFlags flags = 0);
@@ -3623,8 +3627,8 @@ namespace ImGui
     IMGUI_API void          UnregisterFontAtlas(ImFontAtlas* atlas);
     IMGUI_API void          SetCurrentFont(ImFont* font, float font_size_before_scaling, float font_size_after_scaling);
     IMGUI_API void          UpdateCurrentFontSize(float restore_font_size_after_scaling);
-    IMGUI_API void          SetFontRasterizerDensity(float rasterizer_density);
-    inline float            GetFontRasterizerDensity() { return GImGui->FontRasterizerDensity; }
+    IMGUI_API void          SetPixelDensity(float pixel_density); // was SetFontRasterizerDensity()
+    inline float            GetPixelDensity() { return GImGui->CurrentPixelDensity; }
     inline float            GetRoundedFontSize(float size) { return IM_ROUND(size); }
     IMGUI_API ImFont*       GetDefaultFont();
     IMGUI_API void          PushPasswordFont();
