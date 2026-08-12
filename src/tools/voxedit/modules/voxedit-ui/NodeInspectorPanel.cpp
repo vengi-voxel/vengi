@@ -151,8 +151,8 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 					const ColorBar &bar = bars[i];
 					const glm::vec4 &c = palette.color4(bar.index);
 					const core::String label = core::String::format("Color %d##c%d", bar.index, bar.index);
-					const double x = (double)i;
-					const double y = (double)bar.count;
+					const float x = (float)i;
+					const float y = (float)bar.count;
 					ImPlotSpec spec;
 					spec.FillColor = ImVec4(c.r, c.g, c.b, 1.0f);
 					spec.LineColor = ImVec4(c.r, c.g, c.b, 1.0f);
@@ -334,11 +334,11 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 		ImGui::EndCombo();
 	}
 	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_LINE, _("Interpolation details"))) {
-		core::Array<glm::dvec2, 20> data;
+		core::Array<glm::vec2, 20> data;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
 			const double v = scenegraph::interpolate(keyFrame.interpolation, t, 0.0, 1.0);
-			data[i] = glm::dvec2(t, v);
+			data[i] = glm::vec2((float)t, (float)v);
 		}
 		ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs;
 		if (ImPlot::BeginPlot("##plotintertype", ImVec2(-1, 0), flags)) {
@@ -350,7 +350,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 			ImPlotSpec spec;
 			spec.Flags = ImPlotLineFlags_None;
 			spec.Offset = 0;
-			spec.Stride = sizeof(glm::dvec2);
+			spec.Stride = sizeof(glm::vec2);
 			ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, (int)data.size(), spec);
 			ImPlot::EndPlot();
 		}
