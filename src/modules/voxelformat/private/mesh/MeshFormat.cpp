@@ -333,6 +333,9 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 	const glm::ivec3 imins(glm::floor(mins - shiftedTrisMins));
 	const glm::ivec3 imaxs(glm::ivec3(glm::ceil(maxs - shiftedTrisMins)) + 1);
 
+	glm::TriangleAABBPrep prep;
+	glm::prepareTriangleAABB(v0, v1, v2, voxelHalf, prep);
+
 	glm::vec3 center{};
 	for (int x = imins.x; x < imaxs.x; x++) {
 		center.x = trisMins.x + x;
@@ -340,7 +343,7 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 			center.y = trisMins.y + y;
 			for (int z = imins.z; z < imaxs.z; z++) {
 				center.z = trisMins.z + z;
-				if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
+				if (glm::intersectTriangleAABB(center, prep, v0, v1, v2)) {
 					glm::vec2 uv;
 					if (!meshTri.calcUVs(center, uv)) {
 						// The voxel center is outside the triangle but the triangle still

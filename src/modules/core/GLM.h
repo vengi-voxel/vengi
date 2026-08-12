@@ -56,6 +56,30 @@ bool intersectLines(const glm::vec3& p1,
 		glm::vec3& pa, glm::vec3& pb, float *pmua = nullptr,
 		float *pmub = nullptr);
 
+/**
+ * Precomputed, translation-invariant data for @c intersectTriangleAABB.
+ * Edge vectors and separating-axis radii do not depend on the box center, so
+ * callers that test one triangle against many AABBs (mesh voxelization) should
+ * prepare once and reuse.
+ */
+struct TriangleAABBPrep {
+	glm::vec3 e0;
+	glm::vec3 e1;
+	glm::vec3 e2;
+	glm::vec3 normal;
+	glm::vec3 halfSize;
+	/* rad for AXISTEST_X01 / Y02 / Z12 (e0), X01 / Y02 / Z0 (e1), X2 / Y1 / Z12 (e2) */
+	float radE0[3];
+	float radE1[3];
+	float radE2[3];
+};
+
+void prepareTriangleAABB(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &halfSize,
+						 TriangleAABBPrep &out);
+
+bool intersectTriangleAABB(const glm::vec3 &center, const TriangleAABBPrep &prep, glm::vec3 v0, glm::vec3 v1,
+						   glm::vec3 v2);
+
 bool intersectTriangleAABB(const glm::vec3 &center, const glm::vec3 &halfSize, glm::vec3 v0, glm::vec3 v1,
 						   glm::vec3 v2);
 

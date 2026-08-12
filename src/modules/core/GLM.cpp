@@ -90,6 +90,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	if (min > rad || max < -rad)                                                                                       \
 		return false;
 
+#define AXISTEST_X01_RAD(a, b, radval)                                                                                 \
+	p0 = (a)*v0.y - (b)*v0.z;                                                                                          \
+	p2 = (a)*v2.y - (b)*v2.z;                                                                                          \
+	if (p0 < p2) {                                                                                                     \
+		min = p0;                                                                                                      \
+		max = p2;                                                                                                      \
+	} else {                                                                                                           \
+		min = p2;                                                                                                      \
+		max = p0;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
+		return false;
+
 #define AXISTEST_X2(a, b, fa, fb)                                                                                      \
 	p0 = (a)*v0.y - (b)*v0.z;                                                                                          \
 	p1 = (a)*v1.y - (b)*v1.z;                                                                                          \
@@ -102,6 +115,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	}                                                                                                                  \
 	rad = (fa)*boxhalfsize.y + (fb)*boxhalfsize.z;                                                                     \
 	if (min > rad || max < -rad)                                                                                       \
+		return false;
+
+#define AXISTEST_X2_RAD(a, b, radval)                                                                                  \
+	p0 = (a)*v0.y - (b)*v0.z;                                                                                          \
+	p1 = (a)*v1.y - (b)*v1.z;                                                                                          \
+	if (p0 < p1) {                                                                                                     \
+		min = p0;                                                                                                      \
+		max = p1;                                                                                                      \
+	} else {                                                                                                           \
+		min = p1;                                                                                                      \
+		max = p0;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
 		return false;
 
 /*======================== Y-tests ========================*/
@@ -120,6 +146,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	if (min > rad || max < -rad)                                                                                       \
 		return false;
 
+#define AXISTEST_Y02_RAD(a, b, radval)                                                                                 \
+	p0 = -(a)*v0.x + (b)*v0.z;                                                                                         \
+	p2 = -(a)*v2.x + (b)*v2.z;                                                                                         \
+	if (p0 < p2) {                                                                                                     \
+		min = p0;                                                                                                      \
+		max = p2;                                                                                                      \
+	} else {                                                                                                           \
+		min = p2;                                                                                                      \
+		max = p0;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
+		return false;
+
 #define AXISTEST_Y1(a, b, fa, fb)                                                                                      \
 	p0 = -(a)*v0.x + (b)*v0.z;                                                                                         \
 	p1 = -(a)*v1.x + (b)*v1.z;                                                                                         \
@@ -132,6 +171,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	}                                                                                                                  \
 	rad = (fa)*boxhalfsize.x + (fb)*boxhalfsize.z;                                                                     \
 	if (min > rad || max < -rad)                                                                                       \
+		return false;
+
+#define AXISTEST_Y1_RAD(a, b, radval)                                                                                  \
+	p0 = -(a)*v0.x + (b)*v0.z;                                                                                         \
+	p1 = -(a)*v1.x + (b)*v1.z;                                                                                         \
+	if (p0 < p1) {                                                                                                     \
+		min = p0;                                                                                                      \
+		max = p1;                                                                                                      \
+	} else {                                                                                                           \
+		min = p1;                                                                                                      \
+		max = p0;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
 		return false;
 
 /*======================== Z-tests ========================*/
@@ -150,6 +202,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	if (min > rad || max < -rad)                                                                                       \
 		return false;
 
+#define AXISTEST_Z12_RAD(a, b, radval)                                                                                 \
+	p1 = (a)*v1.x - (b)*v1.y;                                                                                          \
+	p2 = (a)*v2.x - (b)*v2.y;                                                                                          \
+	if (p2 < p1) {                                                                                                     \
+		min = p2;                                                                                                      \
+		max = p1;                                                                                                      \
+	} else {                                                                                                           \
+		min = p1;                                                                                                      \
+		max = p2;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
+		return false;
+
 #define AXISTEST_Z0(a, b, fa, fb)                                                                                      \
 	p0 = (a)*v0.x - (b)*v0.y;                                                                                          \
 	p1 = (a)*v1.x - (b)*v1.y;                                                                                          \
@@ -164,6 +229,19 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	if (min > rad || max < -rad)                                                                                       \
 		return false;
 
+#define AXISTEST_Z0_RAD(a, b, radval)                                                                                  \
+	p0 = (a)*v0.x - (b)*v0.y;                                                                                          \
+	p1 = (a)*v1.x - (b)*v1.y;                                                                                          \
+	if (p0 < p1) {                                                                                                     \
+		min = p0;                                                                                                      \
+		max = p1;                                                                                                      \
+	} else {                                                                                                           \
+		min = p1;                                                                                                      \
+		max = p0;                                                                                                      \
+	}                                                                                                                  \
+	if (min > (radval) || max < -(radval))                                                                             \
+		return false;
+
 #define FINDMINMAX(x0, x1, x2, min, max)                                                                               \
 	(min) = (max) = (x0);                                                                                              \
 	if ((x1) < (min))                                                                                                  \
@@ -175,8 +253,38 @@ static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, cons
 	if ((x2) > (max))                                                                                                  \
 		(max) = (x2);
 
+void prepareTriangleAABB(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &halfSize,
+						 TriangleAABBPrep &out) {
+	out.e0 = v1 - v0;
+	out.e1 = v2 - v1;
+	out.e2 = v0 - v2;
+	out.normal = glm::cross(out.e0, out.e1);
+	out.halfSize = halfSize;
+
+	const float fex0 = glm::abs(out.e0.x);
+	const float fey0 = glm::abs(out.e0.y);
+	const float fez0 = glm::abs(out.e0.z);
+	out.radE0[0] = fez0 * halfSize.y + fey0 * halfSize.z;
+	out.radE0[1] = fez0 * halfSize.x + fex0 * halfSize.z;
+	out.radE0[2] = fey0 * halfSize.x + fex0 * halfSize.y;
+
+	const float fex1 = glm::abs(out.e1.x);
+	const float fey1 = glm::abs(out.e1.y);
+	const float fez1 = glm::abs(out.e1.z);
+	out.radE1[0] = fez1 * halfSize.y + fey1 * halfSize.z;
+	out.radE1[1] = fez1 * halfSize.x + fex1 * halfSize.z;
+	out.radE1[2] = fey1 * halfSize.x + fex1 * halfSize.y;
+
+	const float fex2 = glm::abs(out.e2.x);
+	const float fey2 = glm::abs(out.e2.y);
+	const float fez2 = glm::abs(out.e2.z);
+	out.radE2[0] = fez2 * halfSize.y + fey2 * halfSize.z;
+	out.radE2[1] = fez2 * halfSize.x + fex2 * halfSize.z;
+	out.radE2[2] = fey2 * halfSize.x + fex2 * halfSize.y;
+}
+
 // triBoxOverlap - see copyright above
-bool intersectTriangleAABB(const glm::vec3 &boxcenter, const glm::vec3 &boxhalfsize, glm::vec3 v0, glm::vec3 v1,
+bool intersectTriangleAABB(const glm::vec3 &boxcenter, const TriangleAABBPrep &prep, glm::vec3 v0, glm::vec3 v1,
 						   glm::vec3 v2) {
 	/*    use separating axis theorem to test overlap between triangle and box */
 	/*    need to test for overlap in these directions: */
@@ -186,75 +294,53 @@ bool intersectTriangleAABB(const glm::vec3 &boxcenter, const glm::vec3 &boxhalfs
 	/*    3) crossproduct(edge from tri, {x,y,z}-direction) */
 	/*       this gives 3x3=9 more tests */
 
-	/* This is the fastest branch on Sun */
-
 	/* move everything so that the boxcenter is in (0,0,0) */
-
 	v0 -= boxcenter;
 	v1 -= boxcenter;
 	v2 -= boxcenter;
 
-	/* compute triangle edges */
-	const glm::vec3 e0(v1 - v0); /* tri edge 0 */
-	const glm::vec3 e1(v2 - v1); /* tri edge 1 */
-	const glm::vec3 e2(v0 - v2); /* tri edge 2 */
+	const glm::vec3 &e0 = prep.e0;
+	const glm::vec3 &e1 = prep.e1;
+	const glm::vec3 &e2 = prep.e2;
+	const glm::vec3 &boxhalfsize = prep.halfSize;
 
-	/* Bullet 3:  */
+	/* Bullet 3: test the 9 tests first (this was faster on Sun) */
+	float p0, p1, p2, min, max;
 
-	/*  test the 9 tests first (this was faster) */
-	float fex = glm::abs(e0.x);
-	float fey = glm::abs(e0.y);
-	float fez = glm::abs(e0.z);
+	AXISTEST_X01_RAD(e0.z, e0.y, prep.radE0[0]);
+	AXISTEST_Y02_RAD(e0.z, e0.x, prep.radE0[1]);
+	AXISTEST_Z12_RAD(e0.y, e0.x, prep.radE0[2]);
 
-	float p0, p1, p2, min, max, rad;
+	AXISTEST_X01_RAD(e1.z, e1.y, prep.radE1[0]);
+	AXISTEST_Y02_RAD(e1.z, e1.x, prep.radE1[1]);
+	AXISTEST_Z0_RAD(e1.y, e1.x, prep.radE1[2]);
 
-	AXISTEST_X01(e0.z, e0.y, fez, fey);
-	AXISTEST_Y02(e0.z, e0.x, fez, fex);
-	AXISTEST_Z12(e0.y, e0.x, fey, fex);
+	AXISTEST_X2_RAD(e2.z, e2.y, prep.radE2[0]);
+	AXISTEST_Y1_RAD(e2.z, e2.x, prep.radE2[1]);
+	AXISTEST_Z12_RAD(e2.y, e2.x, prep.radE2[2]);
 
-	fex = glm::abs(e1.x);
-	fey = glm::abs(e1.y);
-	fez = glm::abs(e1.z);
-
-	AXISTEST_X01(e1.z, e1.y, fez, fey);
-	AXISTEST_Y02(e1.z, e1.x, fez, fex);
-	AXISTEST_Z0(e1.y, e1.x, fey, fex);
-
-	fex = glm::abs(e2.x);
-	fey = glm::abs(e2.y);
-	fez = glm::abs(e2.z);
-
-	AXISTEST_X2(e2.z, e2.y, fez, fey);
-	AXISTEST_Y1(e2.z, e2.x, fez, fex);
-	AXISTEST_Z12(e2.y, e2.x, fey, fex);
-
-	/* Bullet 1: */
-
-	/*  first test overlap in the {x,y,z}-directions */
-	/*  find min, max of the triangle each direction, and test for overlap in */
-	/*  that direction -- this is equivalent to testing a minimal AABB around */
-	/*  the triangle against the AABB */
-
-	/* test in X-direction */
+	/* Bullet 1: AABB overlap */
 	FINDMINMAX(v0.x, v1.x, v2.x, min, max);
 	if (min > boxhalfsize.x || max < -boxhalfsize.x)
 		return false;
 
-	/* test in Y-direction */
 	FINDMINMAX(v0.y, v1.y, v2.y, min, max);
 	if (min > boxhalfsize.y || max < -boxhalfsize.y)
 		return false;
 
-	/* test in Z-direction */
 	FINDMINMAX(v0.z, v1.z, v2.z, min, max);
 	if (min > boxhalfsize.z || max < -boxhalfsize.z)
 		return false;
 
-	/* Bullet 2: */
+	/* Bullet 2: plane overlap (normal precomputed) */
+	return priv::planeBoxOverlap(prep.normal, v0, boxhalfsize);
+}
 
-	/*  test if the box intersects the plane of the triangle */
-	/*  compute plane equation of triangle: normal*x+d=0 */
-	return priv::planeBoxOverlap(glm::cross(e0, e1), v0, boxhalfsize);
+bool intersectTriangleAABB(const glm::vec3 &boxcenter, const glm::vec3 &boxhalfsize, glm::vec3 v0, glm::vec3 v1,
+						   glm::vec3 v2) {
+	TriangleAABBPrep prep;
+	prepareTriangleAABB(v0, v1, v2, boxhalfsize, prep);
+	return intersectTriangleAABB(boxcenter, prep, v0, v1, v2);
 }
 
 bool intersectLines(const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3, const glm::vec3 &p4, glm::vec3 &pa,
