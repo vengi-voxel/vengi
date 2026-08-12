@@ -136,14 +136,24 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleVolumeFractional)(benchmark::State &
 }
 
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, FillHollow)(benchmark::State &state) {
-	voxel::RawVolume in(voxel::Region{0, 20});
-	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
-	auto func = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, voxel); };
-	voxelutil::visitVolumeParallel(in, func, voxelutil::VisitAll());
-	in.setVoxel(in.region().getCenter(), voxel::Voxel());
+	/* Closed shell with an empty interior - exercises the flood fill path. */
+	voxel::RawVolume in(voxel::Region{0, 63});
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int z = 0; z <= 63; ++z) {
+		for (int y = 0; y <= 63; ++y) {
+			for (int x = 0; x <= 63; ++x) {
+				const bool onBorder = x == 0 || x == 63 || y == 0 || y == 63 || z == 0 || z == 63;
+				if (onBorder) {
+					in.setVoxel(x, y, z, voxel);
+				}
+			}
+		}
+	}
 	for (auto _ : state) {
 		voxel::RawVolume copy(in);
 		voxelutil::fillHollow(copy, voxel);
+		voxel::Voxel center = copy.voxel(32, 32, 32);
+		benchmark::DoNotOptimize(center);
 	}
 }
 

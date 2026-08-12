@@ -6,6 +6,7 @@
 
 #include "app/ForParallel.h"
 #include "core/collection/Array3DView.h"
+#include "core/collection/Buffer.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
@@ -26,10 +27,15 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
+	if (width <= 0 || height <= 0 || depth <= 0) {
+		return;
+	}
 	const int64_t size = (int64_t)width * height * depth;
-	const glm::ivec3 mins = volume.region().getLowerCorner();
+	const int strideY = width;
+	const int strideZ = width * height;
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
+	bool *visitedRaw = visitedData.data();
 
 	auto fnWidth = [&volume, &visited, region, depth, height](int start, int end) {
 		typename VOLUME::Sampler sampler(&volume);
@@ -70,34 +76,61 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	};
 	app::for_parallel(0, width, fnWidth);
 
-	auto fnHeight = [&volume, &visited, width, depth, &mins](int start, int end) {
-		// TODO: PERF: use volume sampler
+	auto fnHeight = [&volume, &visited, width, depth, region](int start, int end) {
 		for (int y = start; y < end; ++y) {
+			typename VOLUME::Sampler samplerMinX(&volume);
+			typename VOLUME::Sampler samplerMaxX(&volume);
+			samplerMinX.setPosition(region.getLowerX(), region.getLowerY() + y, region.getLowerZ() + 1);
+			samplerMaxX.setPosition(region.getLowerX() + width - 1, region.getLowerY() + y, region.getLowerZ() + 1);
 			for (int z = 1; z < depth - 1; ++z) {
-				const glm::ivec3 v1(0, y, z);
-				const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
+				const voxel::VoxelType m1 = samplerMinX.voxel().getMaterial();
 				if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
-					visited.set(v1, true);
+					visited.set(0, y, z, true);
 				}
-				const glm::ivec3 v2(width - 1, y, z);
-				const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
+				const voxel::VoxelType m2 = samplerMaxX.voxel().getMaterial();
 				if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
-					visited.set(v2, true);
+					visited.set(width - 1, y, z, true);
 				}
+				samplerMinX.movePositiveZ();
+				samplerMaxX.movePositiveZ();
 			}
 		}
 	};
-	app::for_parallel(1, height - 1, fnHeight);
+	if (height > 2) {
+		app::for_parallel(1, height - 1, fnHeight);
+	}
 
-	core::Buffer<glm::ivec3> positions;
-	positions.reserve(size);
-	const bool *data = visitedData.data();
-	for (int z = 0; z < depth; ++z) {
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				if (*data++) {
-					positions.emplace_back(x, y, z);
-				}
+	/* Seed flood-fill from outside air on the border only (O(surface), not O(volume)).
+	 * Reserve for the worst case: exterior flood can touch nearly every air voxel. */
+	core::Buffer<int> positions;
+	positions.reserve((size_t)size);
+	auto pushIfVisited = [visitedRaw, strideY, strideZ, &positions](int x, int y, int z) {
+		const int idx = x + y * strideY + z * strideZ;
+		if (visitedRaw[idx]) {
+			positions.push_back(idx);
+		}
+	};
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			pushIfVisited(x, y, 0);
+			if (depth > 1) {
+				pushIfVisited(x, y, depth - 1);
+			}
+		}
+	}
+	for (int z = 1; z < depth - 1; ++z) {
+		for (int x = 0; x < width; ++x) {
+			pushIfVisited(x, 0, z);
+			if (height > 1) {
+				pushIfVisited(x, height - 1, z);
+			}
+		}
+	}
+	for (int z = 1; z < depth - 1; ++z) {
+		for (int y = 1; y < height - 1; ++y) {
+			pushIfVisited(0, y, z);
+			if (width > 1) {
+				pushIfVisited(width - 1, y, z);
 			}
 		}
 	}
@@ -114,7 +147,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 						sampler3.movePositiveX();
 						continue;
 					}
-					visited.set(x, y, z, true);
+					visitedRaw[x + y * strideY + z * strideZ] = true;
 					sampler3.movePositiveX();
 				}
 				sampler2.movePositiveY();
@@ -122,44 +155,41 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 			sampler.movePositiveZ();
 		}
 	}
-	while (!positions.empty()) {
-		const glm::ivec3 v = positions.back();
-		positions.erase(positions.size() - 1);
 
-		if (v.z > 0 && !visited.get(v.x, v.y, v.z - 1)) {
-			const glm::ivec3 v1(v.x, v.y, v.z - 1);
-			visited.set(v1, true);
-			positions.push_back(v1);
+	while (!positions.empty()) {
+		const int i = positions.back();
+		positions.pop();
+		const int x = i % width;
+		const int plane = i % strideZ; /* x + y * width within z-slice */
+
+		if (i >= strideZ && !visitedRaw[i - strideZ]) {
+			visitedRaw[i - strideZ] = true;
+			positions.push_back(i - strideZ);
 		}
-		if (v.y > 0 && !visited.get(v.x, v.y - 1, v.z)) {
-			const glm::ivec3 v1(v.x, v.y - 1, v.z);
-			visited.set(v1, true);
-			positions.push_back(v1);
+		if (plane >= strideY && !visitedRaw[i - strideY]) {
+			visitedRaw[i - strideY] = true;
+			positions.push_back(i - strideY);
 		}
-		if (v.x > 0 && !visited.get(v.x - 1, v.y, v.z)) {
-			const glm::ivec3 v1(v.x - 1, v.y, v.z);
-			visited.set(v1, true);
-			positions.push_back(v1);
+		if (x > 0 && !visitedRaw[i - 1]) {
+			visitedRaw[i - 1] = true;
+			positions.push_back(i - 1);
 		}
-		if (v.z < depth - 1 && !visited.get(v.x, v.y, v.z + 1)) {
-			const glm::ivec3 v1(v.x, v.y, v.z + 1);
-			visited.set(v1, true);
-			positions.push_back(v1);
+		if ((int64_t)i + strideZ < size && !visitedRaw[i + strideZ]) {
+			visitedRaw[i + strideZ] = true;
+			positions.push_back(i + strideZ);
 		}
-		if (v.y < height - 1 && !visited.get(v.x, v.y + 1, v.z)) {
-			const glm::ivec3 v1(v.x, v.y + 1, v.z);
-			visited.set(v1, true);
-			positions.push_back(v1);
+		if (plane + strideY < strideZ && !visitedRaw[i + strideY]) {
+			visitedRaw[i + strideY] = true;
+			positions.push_back(i + strideY);
 		}
-		if (v.x < width - 1 && !visited.get(v.x + 1, v.y, v.z)) {
-			const glm::ivec3 v1(v.x + 1, v.y, v.z);
-			visited.set(v1, true);
-			positions.push_back(v1);
+		if (x < width - 1 && !visitedRaw[i + 1]) {
+			visitedRaw[i + 1] = true;
+			positions.push_back(i + 1);
 		}
 	}
 
 	{
-		const bool *dataFinal = visitedData.data();
+		const bool *dataFinal = visitedRaw;
 		typename VOLUME::Sampler sampler(&volume);
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getLowerZ());
 		for (int z = 0; z < depth; ++z) {
