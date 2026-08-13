@@ -30,9 +30,11 @@
 #include <SDL3/SDL_stdinc.h>
 #include "voxel/Voxel.h"
 #include "voxel/external/stb_rect_pack.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "core/collection/Buffer.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -1476,6 +1478,44 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	const FrameIndex frameIdx = 0;
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
+
+	// Same palette + identity transforms: merge densily into a RawVolume. This avoids
+	// per-voxel DynamicMap inserts in SparseVolume (dominant cost for Minecraft regions).
+	if (checkSamePalette()) {
+		core::Buffer<const voxel::RawVolume *> volumes;
+		volumes.reserve(n);
+		bool identityTransforms = true;
+		visitChildren(root().id(), true, [&](const SceneGraphNode &node) {
+			if (!identityTransforms || !node.isAnyModelNode()) {
+				return;
+			}
+			if (skipHidden && !node.visible()) {
+				return;
+			}
+			if (!transformForFrame(node, frameIdx).isIdentity()) {
+				identityTransforms = false;
+				return;
+			}
+			const voxel::RawVolume *v = resolveVolume(node);
+			if (v == nullptr || !v->region().isValid()) {
+				return;
+			}
+			volumes.push_back(v);
+		});
+		if (identityTransforms && !volumes.empty()) {
+			voxel::RawVolume *mergedVolume = voxelutil::merge(volumes);
+			if (mergedVolume == nullptr || mergedVolume->voxels() == nullptr) {
+				Log::error("Failed to allocate merged volume");
+				delete mergedVolume;
+				return MergeResult{};
+			}
+			if (mergedVolume->isEmpty(mergedVolume->region())) {
+				delete mergedVolume;
+				return MergeResult{};
+			}
+			return MergeResult{mergedVolume, mergedPalette, normalPalette};
+		}
+	}
 
 	voxel::SparseVolume merged;
 	visitChildren(root().id(), true, [&](const SceneGraphNode &node) {

@@ -3,6 +3,7 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "palette/Palette.h"
 #include "scenegraph/CollisionNode.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -141,6 +142,34 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameCached)(benchmark::Stat
 	}
 }
 
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, MergeSamePaletteChunks)(benchmark::State &state) {
+	palette::Palette pal;
+	pal.minecraft();
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	scenegraph::SceneGraph sceneGraph;
+	for (int cz = 0; cz < 8; ++cz) {
+		for (int cx = 0; cx < 8; ++cx) {
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+			const voxel::Region region(cx * 16, 0, cz * 16, cx * 16 + 15, 15, cz * 16 + 15);
+			voxel::RawVolume *v = new voxel::RawVolume(region);
+			for (int y = 0; y < 16; ++y) {
+				for (int z = 0; z < 16; ++z) {
+					for (int x = 0; x < 16; ++x) {
+						v->setVoxel(region.getLowerX() + x, y, region.getLowerZ() + z, solid);
+					}
+				}
+			}
+			node.setVolume(v);
+			node.setPalette(pal);
+			sceneGraph.emplace(core::move(node));
+		}
+	}
+	for (auto _ : state) {
+		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+		benchmark::DoNotOptimize(merged.volume());
+	}
+}
+
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, Init);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SceneGraphNode);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SizeModel);
@@ -149,5 +178,6 @@ BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodes256);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, UpdateTransformsMany);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameCached);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, MergeSamePaletteChunks);
 
 BENCHMARK_MAIN();

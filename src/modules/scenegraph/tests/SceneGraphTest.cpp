@@ -629,6 +629,35 @@ TEST_F(SceneGraphTest, testMerge) {
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()));
 }
 
+TEST_F(SceneGraphTest, testMergeManySamePaletteChunks) {
+	SceneGraph sceneGraph;
+	palette::Palette pal;
+	pal.minecraft();
+	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	// Simulate a small MCA-style region: several non-overlapping chunk volumes sharing one palette.
+	for (int cz = 0; cz < 4; ++cz) {
+		for (int cx = 0; cx < 4; ++cx) {
+			SceneGraphNode node(SceneGraphNodeType::Model);
+			const voxel::Region region(cx * 16, 0, cz * 16, cx * 16 + 15, 7, cz * 16 + 15);
+			voxel::RawVolume *v = new voxel::RawVolume(region);
+			v->setVoxel(region.getLowerCorner(), solid);
+			v->setVoxel(region.getUpperCorner(), solid);
+			node.setVolume(v);
+			node.setPalette(pal);
+			ASSERT_GT(sceneGraph.emplace(core::move(node)), 0);
+		}
+	}
+	ASSERT_TRUE(sceneGraph.checkSamePalette());
+	SceneGraph::MergeResult merged = sceneGraph.merge();
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(voxel::Region(0, 0, 0, 63, 7, 63), v->region());
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(63, 7, 63).getMaterial()));
+	EXPECT_EQ(1, v->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(1, v->voxel(63, 7, 63).getColor());
+}
+
 TEST_F(SceneGraphTest, testSceneOBB) {
 	SceneGraph sceneGraph;
 	voxel::RawVolume v(voxel::Region(2, 3));
