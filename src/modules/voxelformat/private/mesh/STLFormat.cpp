@@ -145,7 +145,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			return false;
 		}
 	}
-	return voxelizeMesh(filename, sceneGraph, core::move(mesh));
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh), 0, true, ctx.progress);
 }
 
 #undef wrap

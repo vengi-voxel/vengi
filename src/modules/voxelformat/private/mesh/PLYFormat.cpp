@@ -605,7 +605,7 @@ bool PLYFormat::parseMeshAscii(io::SeekableReadStream &stream, const Header &hea
 }
 
 bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &stream,
-						  scenegraph::SceneGraph &sceneGraph, const Header &header) {
+						  scenegraph::SceneGraph &sceneGraph, const Header &header, core::IProgress *progress) {
 	Mesh mesh;
 	if (header.format == PlyFormatType::Ascii) {
 		if (!parseMeshAscii(stream, header, mesh)) {
@@ -621,7 +621,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
 		root.setProperty(scenegraph::PropDescription, header.comment);
 	}
-	return voxelizeMesh(filename, sceneGraph, core::move(mesh));
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh), 0, true, progress);
 }
 
 bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -650,7 +650,7 @@ bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return parsePointCloud(filename, *stream, sceneGraph, ctx, header);
 	}
 
-	return parseMesh(filename, *stream, sceneGraph, header);
+	return parseMesh(filename, *stream, sceneGraph, header, ctx.progress);
 }
 
 #undef wrapBool

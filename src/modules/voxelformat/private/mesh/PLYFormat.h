@@ -89,7 +89,7 @@ protected:
 	bool parseMeshBinary(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const;
 	bool parseMeshAscii(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const;
 	bool parseMesh(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   const Header &header);
+				   const Header &header, core::IProgress *progress = nullptr);
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;

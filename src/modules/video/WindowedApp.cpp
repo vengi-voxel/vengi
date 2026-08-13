@@ -575,6 +575,31 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 	return mode;
 }
 
+void WindowedApp::setWindowProgress(float progress01) {
+	if (_window == nullptr) {
+		return;
+	}
+#ifdef SDL_PROGRESS_STATE_NORMAL
+	progress01 = glm::clamp(progress01, 0.0f, 1.0f);
+	SDL_SetWindowProgressState(_window, SDL_PROGRESS_STATE_NORMAL);
+	SDL_SetWindowProgressValue(_window, progress01);
+#else
+	(void)progress01;
+#endif
+}
+
+void WindowedApp::clearWindowProgress() {
+	if (_window == nullptr) {
+		return;
+	}
+#ifdef SDL_PROGRESS_STATE_NORMAL
+	if (SDL_GetWindowProgressState(_window) != SDL_PROGRESS_STATE_NONE) {
+		SDL_SetWindowProgressState(_window, SDL_PROGRESS_STATE_NONE);
+		SDL_SetWindowProgressValue(_window, 0.0f);
+	}
+#endif
+}
+
 void WindowedApp::fileDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
 	Log::warn("This is not implemented in the base windowed application");
 }

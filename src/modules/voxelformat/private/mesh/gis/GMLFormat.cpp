@@ -1193,7 +1193,7 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				parseXMLFile(xmlData[i], fileObjects);
 				++filesProcessed;
 
-				ctx.progress("parse xml files", (int)filesProcessed, (int)xmlFiles.size());
+				ctx.report("parse xml files", (int)filesProcessed, (int)xmlFiles.size());
 			}
 
 			// TODO: PERF: collecting them in an array of size xmlData.size() and move them later by only allocating

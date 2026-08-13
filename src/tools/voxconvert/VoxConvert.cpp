@@ -6,6 +6,7 @@
 #include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/ProgressBar.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -113,6 +114,9 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--osm-natural").setDefaultValue("true").setDescription("Include natural features in OSM download");
 	registerArg("--osm-water").setDefaultValue("true").setDescription("Include water features in OSM download");
 	registerArg("--osm-landuse").setDefaultValue("true").setDescription("Include land use features in OSM download");
+	registerArg("--progress")
+		.setDescription("Enable progress output on stderr")
+		.addFlag(ARGUMENT_FLAG_BOOL);
 
 	voxelformat::FormatConfig::init();
 
@@ -193,10 +197,6 @@ void VoxConvert::usage() const {
 	usageFooter();
 }
 
-static void printProgress(const char *name, int cur, int max) {
-	Log::trace("%s: %i/%i", name, cur, max);
-}
-
 app::AppState VoxConvert::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -251,6 +251,10 @@ app::AppState VoxConvert::onInit() {
 
 	const bool hasScript = hasArg("--script");
 	const bool hasOsmInput = hasArg("--osm-lat") && hasArg("--osm-lon");
+
+	if (hasArg("--progress")) {
+		core::ProgressBar::setMode(core::ProgressBar::Mode::Always);
+	}
 
 	core::String infilesstr;
 	core::DynamicArray<core::String> infiles;
@@ -387,7 +391,7 @@ app::AppState VoxConvert::onInit() {
 	static image::ImagePtr thumbnail;
 	if (infiles.size() == 1) {
 		voxelformat::LoadContext loadCtx;
-		loadCtx.monitor = printProgress;
+		loadCtx.progress = progressSink();
 		thumbnail = voxelformat::loadScreenshot(infiles[0], io::openFilesystemArchive(filesystem()), loadCtx);
 	}
 	const io::ArchivePtr &fsArchive = io::openFilesystemArchive(filesystem());
@@ -414,9 +418,13 @@ app::AppState VoxConvert::onInit() {
 		infiles.push_back(cacheFilename);
 	}
 
-	for (const core::String &infile : infiles) {
+	for (size_t inputIdx = 0; inputIdx < infiles.size(); ++inputIdx) {
+		const core::String &infile = infiles[inputIdx];
 		if (shouldQuit()) {
 			break;
+		}
+		if (infiles.size() > 1) {
+			_progressBar.print("input files", (int)inputIdx, (int)infiles.size());
 		}
 		if (io::Filesystem::sysIsReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
@@ -476,6 +484,9 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 		}
+	}
+	if (infiles.size() > 1) {
+		_progressBar.print("input files", (int)infiles.size(), (int)infiles.size());
 	}
 	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -681,6 +692,7 @@ app::AppState VoxConvert::onInit() {
 		} else {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
+			saveCtx.progress = progressSink();
 			if (thumbnail && thumbnail->isLoaded()) {
 				auto fn = [](const scenegraph::SceneGraph &, const voxelformat::ThumbnailContext &ctx) {
 					thumbnail->resize(ctx.outputSize.x, ctx.outputSize.y);
@@ -766,7 +778,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 	}
 	scenegraph::SceneGraph newSceneGraph;
 	voxelformat::LoadContext loadCtx;
-	loadCtx.monitor = printProgress;
+	loadCtx.progress = progressSink();
 	io::FileDescription fileDesc;
 	fileDesc.set(infile);
 	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
@@ -804,13 +816,16 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGrap
 	Log::info("Export models into single objects");
 	int id = 0;
 	voxelformat::SaveContext saveCtx;
+	saveCtx.progress = progressSink();
 	const auto &nodes = sceneGraph.nodes();
 	const bool uniqueNames = hasUniqueModelNames(sceneGraph);
+	const int modelCount = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 	for (auto entry : nodes) {
 		const scenegraph::SceneGraphNode &node = entry->value;
 		if (!node.isModelNode()) {
 			continue;
 		}
+		_progressBar.print("export models", id, modelCount);
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(node, newNode, false);
@@ -823,6 +838,9 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGrap
 			Log::error(" .. %s", filename.c_str());
 		}
 		++id;
+	}
+	if (modelCount > 0) {
+		_progressBar.print("export models", modelCount, modelCount);
 	}
 }
 

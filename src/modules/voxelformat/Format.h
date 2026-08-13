@@ -12,6 +12,7 @@
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/FormatThumbnailFwd.h"
+#include "core/IProgress.h"
 #include <glm/fwd.hpp>
 
 namespace palette {
@@ -31,15 +32,36 @@ class SceneGraphNode;
 
 namespace voxelformat {
 
-typedef void (*ProgressMonitor)(const char *name, int cur, int max);
-
 struct LoadContext {
-	ProgressMonitor monitor = nullptr;
-	inline void progress(const char *name, int cur, int max) const {
-		if (monitor == nullptr) {
+	core::IProgress *progress = nullptr;
+
+	core::IProgress &progressRef() const {
+		return core::progressOrNull(progress);
+	}
+
+	void setProgress(float value) const {
+		progressRef().setProgress(value);
+	}
+
+	void setProgressText(const char *text) const {
+		progressRef().setText(text);
+	}
+
+	/**
+	 * @brief Discrete cur/max progress helper (maps onto normalized @c IProgress).
+	 */
+	inline void report(const char *name, int cur, int max) const {
+		if (progress == nullptr || max <= 0) {
 			return;
 		}
-		monitor(name, cur, max);
+		progress->setText(name);
+		if (cur < 0) {
+			cur = 0;
+		}
+		if (cur > max) {
+			cur = max;
+		}
+		progress->setProgress((float)cur / (float)max);
 	}
 };
 
@@ -49,12 +71,32 @@ struct SaveContext {
 	 */
 	static image::ImagePtr renderToImageThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
 														 const voxelformat::ThumbnailContext &ctx);
-	ProgressMonitor monitor = nullptr;
-	inline void progress(const char *name, int cur, int max) const {
-		if (monitor == nullptr) {
+	core::IProgress *progress = nullptr;
+
+	core::IProgress &progressRef() const {
+		return core::progressOrNull(progress);
+	}
+
+	void setProgress(float value) const {
+		progressRef().setProgress(value);
+	}
+
+	void setProgressText(const char *text) const {
+		progressRef().setText(text);
+	}
+
+	inline void report(const char *name, int cur, int max) const {
+		if (progress == nullptr || max <= 0) {
 			return;
 		}
-		monitor(name, cur, max);
+		progress->setText(name);
+		if (cur < 0) {
+			cur = 0;
+		}
+		if (cur > max) {
+			cur = max;
+		}
+		progress->setProgress((float)cur / (float)max);
 	}
 	/**
 	 * A callback that are either null or returns an instance of @c image::ImagePtr for the thumbnail of the

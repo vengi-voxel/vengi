@@ -27,6 +27,7 @@ vengi-voxconvert --help
 * `--output <file>`: allows you to specify the output filename
 * `--print-formats`: Print supported formats as json for easier parsing in other tools.
 * `--print-scripts`: Print found lua scripts as json for easier parsing in other tools.
+* `--progress`: Enable progress output on stderr. Mesh loads report nested progress (shapes / triangles).
 * `--resize <x:y:z>`: resize the volume by the given x (right), y (up) and z (back) values
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis. Specify e.g. `x:180` to rotate around x by 180 degree.
 * `--scale`: perform lod conversion of the input volume (50% scale per call)

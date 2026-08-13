@@ -40,6 +40,7 @@ General:
    - Added support for Luanti WorldEdit `we` files
    - Added support for BrickLink Studio `io` lego archives
    - Added support for Digital designer lego files (`lxf`, `lxfml`)
+   - Added progress bar support
 
 VoxEdit:
 

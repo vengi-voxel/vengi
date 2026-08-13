@@ -5,6 +5,8 @@
 #pragma once
 
 #include "app/CommandlineApp.h"
+#include "core/IProgress.h"
+#include "core/ProgressBar.h"
 #include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 
@@ -40,6 +42,14 @@ private:
 	bool _outputJson = false;
 	bool _outputImage = false;
 	bool _resizeModels = false;
+	core::ProgressBar _progressBar;
+
+	core::IProgress *progressSink() {
+		if (core::ProgressBar::mode() == core::ProgressBar::Mode::Never) {
+			return nullptr;
+		}
+		return &_progressBar;
+	}
 
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);

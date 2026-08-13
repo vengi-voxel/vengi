@@ -108,6 +108,15 @@ public:
 	bool isSingleWindowMode() const;
 
 	void *windowHandle();
+	/**
+	 * @brief OS taskbar/dock progress overlay (supported SDL builds only).
+	 * @param progress01 Normalized progress in [0, 1]
+	 */
+	void setWindowProgress(float progress01);
+	/**
+	 * @brief Hide the OS taskbar/dock progress overlay.
+	 */
+	void clearWindowProgress();
 	const util::KeyBindingHandler &keybindingHandler() const;
 
 	bool isDarkMode() const;

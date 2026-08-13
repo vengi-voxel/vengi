@@ -6,6 +6,7 @@
 #include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -281,7 +282,8 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 
 int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const core::String &filename,
 						  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-						  core::Map<const cgltf_node *, int> &nodeMap) const {
+						  core::Map<const cgltf_node *, int> &nodeMap, core::IProgress *progress, int meshCount,
+						  int &meshIdx) const {
 	int nodeId = parent;
 
 	if (node->mesh) {
@@ -441,7 +443,19 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			if (meshName.empty()) {
 				meshName = "mesh";
 			}
-			nodeId = voxelizeMesh(meshName, sceneGraph, core::move(mesh), parent, false);
+			if (progress != nullptr && meshCount > 0) {
+				core::ProgressRange meshRange(*progress, (float)meshIdx / (float)meshCount,
+											  (float)(meshIdx + 1) / (float)meshCount);
+				const core::String progressName =
+					core::String::format("%s (%i/%i)", meshName.c_str(), meshIdx + 1, meshCount);
+				++meshIdx;
+				nodeId = voxelizeMesh(progressName, sceneGraph, core::move(mesh), parent, false, &meshRange);
+				if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
+					sceneGraph.node(nodeId).setName(meshName);
+				}
+			} else {
+				nodeId = voxelizeMesh(meshName, sceneGraph, core::move(mesh), parent, false, progress);
+			}
 			if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
 				applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
 			} else {
@@ -466,7 +480,8 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 	}
 
 	for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
-		addNode_r(data, node->children[ci], filename, archive, sceneGraph, nodeId, nodeMap);
+		addNode_r(data, node->children[ci], filename, archive, sceneGraph, nodeId, nodeMap, progress, meshCount,
+				  meshIdx);
 	}
 
 	nodeMap.put(node, nodeId);
@@ -555,6 +570,16 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 		}
 	}
 }
+
+namespace {
+int countGltfMeshNodes_r(const cgltf_node *node) {
+	int count = node->mesh != nullptr ? 1 : 0;
+	for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
+		count += countGltfMeshNodes_r(node->children[ci]);
+	}
+	return count;
+}
+} // namespace
 
 bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
@@ -667,16 +692,24 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 		scene = &data->scenes[0];
 	}
 	// If there's a single scene-level node without a mesh, it's just a wrapper - skip it
+	int meshCount = 0;
+	for (cgltf_size ni = 0; ni < scene->nodes_count; ++ni) {
+		meshCount += countGltfMeshNodes_r(scene->nodes[ni]);
+	}
+	int meshIdx = 0;
+	core::IProgress *progress = ctx.progress;
+
 	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
 		const cgltf_node *wrapper = scene->nodes[0];
 		nodeMap.put(wrapper, 0);
 		for (cgltf_size ci = 0; ci < wrapper->children_count; ++ci) {
-			addNode_r(data, wrapper->children[ci], filename, archive, sceneGraph, 0, nodeMap);
+			addNode_r(data, wrapper->children[ci], filename, archive, sceneGraph, 0, nodeMap, progress, meshCount,
+					  meshIdx);
 		}
 	} else {
 		for (cgltf_size ni = 0; ni < scene->nodes_count; ++ni) {
 			const cgltf_node *node = scene->nodes[ni];
-			addNode_r(data, node, filename, archive, sceneGraph, 0, nodeMap);
+			addNode_r(data, node, filename, archive, sceneGraph, 0, nodeMap, progress, meshCount, meshIdx);
 		}
 	}
 

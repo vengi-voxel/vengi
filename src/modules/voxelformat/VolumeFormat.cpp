@@ -422,6 +422,8 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	const uint64_t msStart = timeProvider->systemMillis();
 	const core::String &filename = fileDesc.name;
+	ctx.setProgressText("load");
+	ctx.setProgress(0.0f);
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
 		if (!f->load(filename, archive, newSceneGraph, ctx)) {
@@ -429,11 +431,13 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 			newSceneGraph.clear();
 		}
 	} else {
+		ctx.setProgress(1.0f);
 		Log::error("Failed to load model file %s - unsupported "
 				   "file format",
 				   filename.c_str());
 		return false;
 	}
+	ctx.setProgress(1.0f);
 	const int models = (int)newSceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 	const int points = (int)newSceneGraph.size(scenegraph::SceneGraphNodeType::Point);
 	if (models == 0 && points == 0) {
@@ -508,7 +512,11 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 	if (desc != nullptr) {
 		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
-			if (f->save(sceneGraph, filename, archive, ctx)) {
+			ctx.setProgressText("save");
+			ctx.setProgress(0.0f);
+			const bool saved = f->save(sceneGraph, filename, archive, ctx);
+			ctx.setProgress(1.0f);
+			if (saved) {
 				const uint64_t msEnd = timeProvider->systemMillis();
 				const uint64_t msDiff = msEnd - msStart;
 				Log::info("Saved file for format '%s' (ext: '%s') (%ums)", desc->name.c_str(), ext.c_str(), (uint32_t)msDiff);
@@ -525,7 +533,11 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		}
 		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
-			if (f->save(sceneGraph, filename, archive, ctx)) {
+			ctx.setProgressText("save");
+			ctx.setProgress(0.0f);
+			const bool saved = f->save(sceneGraph, filename, archive, ctx);
+			ctx.setProgress(1.0f);
+			if (saved) {
 				const uint64_t msEnd = timeProvider->systemMillis();
 				const uint64_t msDiff = msEnd - msStart;
 				Log::info("Saved file for format '%s' (ext: '%s') (%ums)", desc->name.c_str(), ext.c_str(), (uint32_t)msDiff);

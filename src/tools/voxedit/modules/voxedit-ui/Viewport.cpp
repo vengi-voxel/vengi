@@ -15,6 +15,7 @@
 #include "color/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "core/Var.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
@@ -59,6 +60,41 @@
 
 namespace voxedit {
 
+static void renderCenteredProgress(const char *title, float progress, const core::String &progressText) {
+	const ImVec2 windowSize = ImGui::GetWindowSize();
+	const float barWidth = ImGui::GetFontSize() * 24.0f;
+	const float barHeight = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemSpacing.y;
+
+	ImVec2 titleSize;
+	{
+		ui::ScopedStyle style;
+		style.pushFontSize(imguiApp()->bigFontSize());
+		titleSize = ImGui::CalcTextSize(title);
+	}
+	const float blockHeight = titleSize.y + spacing + barHeight;
+	const float startY = (windowSize.y - blockHeight) * 0.5f;
+
+	{
+		ui::ScopedStyle style;
+		style.pushFontSize(imguiApp()->bigFontSize());
+		ImGui::SetCursorPosX((windowSize.x - titleSize.x) * 0.5f);
+		ImGui::SetCursorPosY(startY);
+		ImGui::TextUnformatted(title);
+	}
+
+	ImGui::SetCursorPosX((windowSize.x - barWidth) * 0.5f);
+	ImGui::SetCursorPosY(startY + titleSize.y + spacing);
+	char overlay[96];
+	if (progressText.empty()) {
+		core::String::formatBuf(overlay, sizeof(overlay), "%.0f%%", (double)(progress * 100.0f));
+	} else {
+		core::String::formatBuf(overlay, sizeof(overlay), "%s %.0f%%", progressText.c_str(),
+								(double)(progress * 100.0f));
+	}
+	ImGui::ProgressBar(progress, ImVec2(barWidth, 0.0f), overlay);
+}
+
 static void renderSceneJobQueue(SceneManager &sceneMgr) {
 	if (!sceneMgr.isSceneJobRunning() && sceneMgr.pendingSceneJobs() == 0) {
 		return;
@@ -84,7 +120,7 @@ static void renderSceneJobQueue(SceneManager &sceneMgr) {
 
 	if (sceneMgr.isSceneJobRunning()) {
 		ImGui::Text("%s %s", ICON_LC_LOADER, sceneMgr.sceneJobText().c_str());
-		ImGui::SameLine();
+		ImGui::ProgressBar(sceneMgr.sceneJobProgress(), ImVec2(-1.0f, 0.0f));
 		if (ImGui::SmallButton(_("Abort"))) {
 			sceneMgr.cancelSceneJob();
 		}
@@ -415,14 +451,12 @@ void Viewport::renderViewport() {
 			viewporthud::render(_sceneMgr, isSceneMode(), ImGui::GetWindowPos(), contentSize, headerSize);
 		}
 
-		if (_sceneMgr->isLoading() || _sceneMgr->isCommandRunning()) {
-			const float radius = ImGui::GetFontSize() * 12.0f;
-			ImGui::LoadingIndicatorCircle(_("Working"), radius, color::White(), color::Gray());
-			if (_sceneMgr->isSceneJobRunning()) {
-				ImGui::TextUnformatted(_sceneMgr->sceneJobText().c_str());
-				if (ImGui::Button(_("Cancel"))) {
-					_sceneMgr->cancelSceneJob();
-				}
+		if (_sceneMgr->isLoading()) {
+			renderCenteredProgress(_("Loading"), _sceneMgr->loadingProgress(), _sceneMgr->loadingProgressText());
+		} else if (_sceneMgr->isSceneJobRunning()) {
+			renderCenteredProgress(_("Working"), _sceneMgr->sceneJobProgress(), _sceneMgr->sceneJobProgressText());
+			if (ImGui::Button(_("Cancel"))) {
+				_sceneMgr->cancelSceneJob();
 			}
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();

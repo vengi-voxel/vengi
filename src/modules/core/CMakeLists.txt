@@ -64,6 +64,9 @@ set(SRCS
 	Path.cpp Path.h
 	PoolAllocator.h
 	Process.cpp Process.h
+	ProgressBar.cpp ProgressBar.h
+	IProgress.h
+	SharedProgress.h
 	ResultType.h
 	SharedPtr.h
 	Singleton.h
@@ -144,6 +147,7 @@ set(TEST_SRCS
 	tests/PathTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/ProcessTest.cpp
+	tests/ProgressBarTest.cpp
 	tests/QueueTest.cpp
 	tests/RingBufferTest.cpp
 	tests/SharedPtrTest.cpp

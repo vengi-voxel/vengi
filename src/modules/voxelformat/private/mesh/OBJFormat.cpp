@@ -6,6 +6,7 @@
 #include "OBJFormat.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -491,7 +492,8 @@ void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &
 
 bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
 								  const tinyobj::material_t *tinyMaterials, scenegraph::SceneGraph &sceneGraph,
-								  MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) const {
+								  MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray,
+								  core::IProgress *progress) const {
 	int indexOffset = 0;
 	Mesh mesh;
 	const tinyobj::mesh_t &tinyMesh = tinyShape.mesh;
@@ -563,7 +565,7 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 		indexOffset += faceVertices;
 	}
 	mesh.materials = meshMaterialArray;
-	const int nodeId = voxelizeMesh(tinyShape.name.c_str(), sceneGraph, core::move(mesh));
+	const int nodeId = voxelizeMesh(tinyShape.name.c_str(), sceneGraph, core::move(mesh), 0, true, progress);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 		return false;
@@ -695,11 +697,14 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	Log::debug("%i shapes", (int)tinyShapes.size());
+	core::StepProgress shapeSteps(ctx.progressRef(), (int)tinyShapes.size());
+	int shapeIdx = 0;
 	for (tinyobj::shape_t &tinyShape : tinyShapes) {
+		core::ProgressRange shapeRange = shapeSteps.range(shapeIdx++);
 		// TODO: VOXELFORMAT: shape.lines
 		if (!tinyShape.mesh.num_face_vertices.empty()) {
 			if (!voxelizeMeshShape(tinyShape, tinyAttrib, tinyMaterials.data(), sceneGraph, meshMaterials,
-								   meshMaterialArray)) {
+								   meshMaterialArray, &shapeRange)) {
 				Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 			}
 		}
@@ -710,6 +715,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				Log::error("Failed to voxelize point cloud from shape %s", tinyShape.name.c_str());
 			}
 		}
+		shapeRange.setProgress(1.0f);
 	}
 	return !sceneGraph.empty();
 }

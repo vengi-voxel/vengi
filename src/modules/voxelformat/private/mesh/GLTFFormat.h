@@ -29,7 +29,8 @@ private:
 						const LoadContext &ctx) override;
 	int addNode_r(const cgltf_data *data, const cgltf_node *node, const core::String &filename,
 				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-				  core::Map<const cgltf_node *, int> &nodeMap) const;
+				  core::Map<const cgltf_node *, int> &nodeMap, core::IProgress *progress, int meshCount,
+				  int &meshIdx) const;
 	MeshMaterialPtr loadMaterial(const cgltf_data *data, const cgltf_material *material, const core::String &filename,
 								 const io::ArchivePtr &archive) const;
 	void importAnimations(const cgltf_data *data, scenegraph::SceneGraph &sceneGraph,

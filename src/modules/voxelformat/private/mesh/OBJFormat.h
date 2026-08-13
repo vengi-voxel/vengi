@@ -42,7 +42,8 @@ protected:
 						const LoadContext &ctx) override;
 	bool voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
 						   const tinyobj::material_t *tinyMaterials, scenegraph::SceneGraph &sceneGraph,
-						   MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) const;
+						   MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray,
+						   core::IProgress *progress = nullptr) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,

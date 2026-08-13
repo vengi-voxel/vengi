@@ -105,7 +105,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (jobRunning) {
 			ImGui::TextUnformatted(_sceneMgr->sceneJobText().c_str());
-			ImGui::SameLine();
+			ImGui::ProgressBar(_sceneMgr->sceneJobProgress(), ImVec2(-1.0f, 0.0f));
 			if (ImGui::Button(_("Cancel"))) {
 				_sceneMgr->cancelSceneJob();
 			}

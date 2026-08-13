@@ -11,6 +11,7 @@
 #include "app/Async.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
+#include "app/I18N.h"
 #include "app/I18NMarkers.h"
 #include "color/ColorUtil.h"
 #include "color/Quantize.h"
@@ -18,6 +19,7 @@
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -773,10 +775,14 @@ bool SceneManager::load(const io::FileDescription& file) {
 		Log::error("Failed to load '%s' - still loading another model", file.c_str());
 		return false;
 	}
+	_loadingProgress.reset();
+	_loadingProgress.setText(_("Loading"));
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
-	_loadingFuture = app::async([archive, file] () {
+	core::SharedProgress *progress = &_loadingProgress;
+	_loadingFuture = app::async([archive, file, progress] () {
 		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
+		loadCtx.progress = progress;
 		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
 		return core::move(newSceneGraph);
 	});
@@ -1038,17 +1044,20 @@ bool SceneManager::startCropSceneJob(const core::UUID &nodeUUID, const core::Str
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::CropVolume;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		voxel::RawVolume *newVolume = voxelutil::cropVolume(snapshot);
 		delete snapshot;
 		if (newVolume == nullptr) {
 			result.error = "Failed to crop volume";
 			return result;
 		}
+		progress->setProgress(1.0f);
 		result.volume = newVolume;
 		result.modifiedRegion = newVolume->region();
 		result.success = true;
@@ -1064,17 +1073,20 @@ bool SceneManager::startScaleUpSceneJob(const core::UUID &nodeUUID, const core::
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleUpVolume;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		voxel::RawVolume *newVolume = voxelutil::scaleUp(*snapshot);
 		delete snapshot;
 		if (newVolume == nullptr) {
 			result.error = "Failed to scale up volume";
 			return result;
 		}
+		progress->setProgress(1.0f);
 		result.volume = newVolume;
 		result.modifiedRegion = newVolume->region();
 		result.success = true;
@@ -1097,15 +1109,18 @@ bool SceneManager::startScaleDownSceneJob(const core::UUID &nodeUUID, const core
 	}
 	const palette::Palette palette = node->palette();
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, srcRegion, targetDimensionsHalf, palette]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, srcRegion, targetDimensionsHalf, palette, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleDownVolume;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		voxel::RawVolume *newVolume = new voxel::RawVolume(destRegion);
 		voxelutil::scaleDown(*snapshot, palette, *newVolume);
 		delete snapshot;
+		progress->setProgress(1.0f);
 		result.volume = newVolume;
 		result.modifiedRegion = srcRegion;
 		result.success = true;
@@ -1123,17 +1138,20 @@ bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
 	const voxel::Region oldRegion = node->volume()->region();
 	const voxel::Region newRegion = request.region;
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeUUID = request.nodeUUID, snapshot, oldRegion, newRegion]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([nodeUUID = request.nodeUUID, snapshot, oldRegion, newRegion, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ResizeVolume;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		voxel::RawVolume *newVolume = voxelutil::resize(snapshot, newRegion);
 		delete snapshot;
 		if (newVolume == nullptr) {
 			result.error = "Failed to resize volume";
 			return result;
 		}
+		progress->setProgress(1.0f);
 		result.volume = newVolume;
 		result.modifiedRegion = sceneJobModifiedRegionForResize(oldRegion, newRegion);
 		result.success = true;
@@ -1156,9 +1174,10 @@ bool SceneManager::startVolumeOperationSceneJob(const SceneJobRequest &request) 
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([request, snapshot, selectionRegion]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([request, snapshot, selectionRegion, progress]() {
 		return makeVolumeOperationSceneJobResult(request.type, request.nodeUUID, snapshot, selectionRegion,
-												 request.voxel, request.overrideVoxels);
+												 request.voxel, request.overrideVoxels, progress);
 	});
 	return startActiveSceneJob(request.type, request.text, core::move(future));
 }
@@ -1173,18 +1192,22 @@ bool SceneManager::startSplitObjectsSceneJob(const core::UUID &nodeUUID, const c
 	const core::String name = node->name();
 	const palette::Palette palette = node->palette();
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([nodeUUID, parentNodeUUID, name, palette, snapshot]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future = app::async([nodeUUID, parentNodeUUID, name, palette, snapshot, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::SplitObjects;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(snapshot);
 		delete snapshot;
 		if (volumes.empty()) {
 			result.error = "No objects to split";
 			return result;
 		}
-		for (voxel::RawVolume *volume : volumes) {
+		const int volumeCount = (int)volumes.size();
+		for (int i = 0; i < volumeCount; ++i) {
+			voxel::RawVolume *volume = volumes[i];
 			SceneJobNewNode newNode;
 			newNode.sourceNodeUUID = nodeUUID;
 			newNode.parentNodeUUID = parentNodeUUID;
@@ -1192,6 +1215,7 @@ bool SceneManager::startSplitObjectsSceneJob(const core::UUID &nodeUUID, const c
 			newNode.palette = palette;
 			newNode.volume = volume;
 			result.newNodes.push_back(core::move(newNode));
+			progress->setProgress(((float)(i + 1)) / (float)volumeCount);
 		}
 		result.success = true;
 		return result;
@@ -1223,11 +1247,14 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 	}
 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
-	core::Future<SceneJobResult> future = app::async([request, parentNodeUUID, palette, nameSuffix, wanted, snapshot]() {
+	core::SharedProgress *progress = &_sceneJobProgress;
+	core::Future<SceneJobResult> future =
+		app::async([request, parentNodeUUID, palette, nameSuffix, wanted, snapshot, progress]() {
 		SceneJobResult result;
 		result.type = SceneJobType::ColorToModel;
 		result.nodeUUID = request.nodeUUID;
 
+		progress->setProgress(0.0f);
 		const voxel::Region region = snapshot->region();
 		voxel::RawVolume *newVolume = new voxel::RawVolume(region);
 		voxel::RawVolumeWrapper wrapper(snapshot);
@@ -1243,6 +1270,7 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 			return wanted[voxel.getColor()];
 		};
 		voxelutil::visitVolumeParallel(wrapper, func, condition);
+		progress->setProgress(0.8f);
 		if (!wrapper.dirtyRegion().isValid()) {
 			delete snapshot;
 			delete newVolume;
@@ -1259,6 +1287,7 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 		newNode.palette = palette;
 		newNode.volume = newVolume;
 		result.newNodes.push_back(core::move(newNode));
+		progress->setProgress(1.0f);
 		result.success = true;
 		return result;
 	});
@@ -1306,12 +1335,14 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 		return false;
 	}
 
+	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, sourceSnapshot, sourcePalette, sourceWorldMatrix, sourcePivot,
-													 transformSource, targets = core::move(targets)]() mutable {
+													 transformSource, targets = core::move(targets), progress]() mutable {
 		SceneJobResult result;
 		result.type = SceneJobType::SplatMerge;
 		result.nodeUUID = nodeUUID;
 
+		progress->setProgress(0.0f);
 		core::ScopedPtr<voxel::RawVolume> bakedSource;
 		const voxel::RawVolume *worldSource = sourceSnapshot;
 		if (transformSource) {
@@ -1325,8 +1356,13 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 		}
 		const voxel::Region &sourceWorldRegion = worldSource->region();
 		int mergedCount = 0;
-		for (SceneJobSplatTarget &target : targets) {
+		const int targetCount = (int)targets.size();
+		core::StepProgress steps(*progress, core_max(1, targetCount));
+		for (int i = 0; i < targetCount; ++i) {
+			SceneJobSplatTarget &target = targets[i];
+			steps.report(i, 0.0f);
 			if (!voxel::intersects(sourceWorldRegion, target.worldRegion)) {
+				steps.report(i, 1.0f);
 				continue;
 			}
 			voxel::Region worldOverlap = sourceWorldRegion;
@@ -1338,6 +1374,7 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 			const int count = voxelutil::mergeVolumes(target.volume, target.palette, worldSource, sourcePalette,
 													  targetLocalOverlap, worldOverlap);
 			if (count <= 0) {
+				steps.report(i, 1.0f);
 				continue;
 			}
 			SceneJobVolumeResult volumeResult;
@@ -1347,12 +1384,14 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 			target.volume = nullptr;
 			result.volumes.push_back(core::move(volumeResult));
 			mergedCount += count;
+			steps.report(i, 1.0f);
 		}
 		delete sourceSnapshot;
 		if (mergedCount == 0) {
 			result.error = "No overlapping nodes found";
 			return result;
 		}
+		progress->setProgress(1.0f);
 		result.removeSourceNode = true;
 		result.success = true;
 		return result;
@@ -5507,6 +5546,14 @@ bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
 
+float SceneManager::loadingProgress() const {
+	return _loadingProgress.progress();
+}
+
+core::String SceneManager::loadingProgressText() const {
+	return _loadingProgress.text();
+}
+
 bool SceneManager::isLocked() const {
 	if (isSceneJobRunning()) {
 		return true;
@@ -5527,7 +5574,15 @@ const core::String &SceneManager::sceneJobText() const {
 }
 
 float SceneManager::sceneJobProgress() const {
-	return _sceneJobProgress;
+	return _sceneJobProgress.progress();
+}
+
+core::String SceneManager::sceneJobProgressText() const {
+	const core::String text = _sceneJobProgress.text();
+	if (!text.empty()) {
+		return text;
+	}
+	return _sceneJobText;
 }
 
 bool SceneManager::cancelSceneJob() {
@@ -5536,6 +5591,7 @@ bool SceneManager::cancelSceneJob() {
 	}
 	_sceneJobCancelRequested = true;
 	_sceneJobText = _("Cancelling");
+	_sceneJobProgress.setText(_("Cancelling"));
 	return true;
 }
 
@@ -5617,7 +5673,9 @@ bool SceneManager::startActiveSceneJob(SceneJobType type, const core::String &te
 	}
 	_sceneJobType = type;
 	_sceneJobText = text;
-	_sceneJobProgress = -1.0f;
+	_sceneJobProgress.reset();
+	_sceneJobProgress.setText(text.c_str());
+	_sceneJobProgress.setProgress(0.0f);
 	_sceneJobCancelRequested = false;
 	_sceneJobFuture = core::move(future);
 	return true;
@@ -5779,7 +5837,7 @@ void SceneManager::updateSceneJob() {
 	_sceneJobFuture = {};
 	const bool cancelled = _sceneJobCancelRequested;
 	_sceneJobType = SceneJobType::None;
-	_sceneJobProgress = -1.0f;
+	_sceneJobProgress.reset();
 	_sceneJobCancelRequested = false;
 	_sceneJobText = "";
 
@@ -5884,6 +5942,7 @@ bool SceneManager::update(double nowSeconds) {
 			loadedNewScene = true;
 		}
 		_loadingFuture = {};
+		_loadingProgress.reset();
 	}
 
 	updateSceneJob();
@@ -5978,6 +6037,12 @@ void SceneManager::shutdown() {
 	}
 	if (_initialized != 0) {
 		return;
+	}
+
+	if (_loadingFuture.valid()) {
+		_loadingFuture.wait();
+		_loadingFuture = {};
+		_loadingProgress.reset();
 	}
 
 	autosave();

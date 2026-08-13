@@ -9,6 +9,7 @@
 #include "SceneJob.h"
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
+#include "core/SharedProgress.h"
 #include "core/SharedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -125,11 +126,12 @@ protected:
 	memento::MementoHandler *_mementoHandler = nullptr;
 	voxel::ClipboardData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
+	core::SharedProgress _loadingProgress;
 	core::Future<SceneJobResult> _sceneJobFuture;
 	core::DynamicArray<SceneJobRequest> _sceneJobQueue;
 	SceneJobType _sceneJobType = SceneJobType::None;
 	core::String _sceneJobText;
-	float _sceneJobProgress = -1.0f;
+	core::SharedProgress _sceneJobProgress;
 	bool _sceneJobCancelRequested = false;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
@@ -638,6 +640,14 @@ public:
 	bool load(const io::FileDescription &file);
 	bool load(const io::FileDescription &file, const uint8_t *data, size_t size);
 	bool isLoading() const;
+	/**
+	 * @brief Normalized load progress in [0, 1] while @c isLoading() is true.
+	 */
+	float loadingProgress() const;
+	/**
+	 * @brief Optional status text from the active format loader (e.g. mesh name).
+	 */
+	core::String loadingProgressText() const;
 	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect = true);
 
 	/**
@@ -651,7 +661,14 @@ public:
 	bool isCommandRunning() const;
 	bool isSceneJobRunning() const;
 	const core::String &sceneJobText() const;
+	/**
+	 * @brief Normalized scene-job progress in [0, 1] while @c isSceneJobRunning() is true.
+	 */
 	float sceneJobProgress() const;
+	/**
+	 * @brief Optional status text from the active scene job (falls back to @c sceneJobText()).
+	 */
+	core::String sceneJobProgressText() const;
 	bool cancelSceneJob();
 	bool cancelPendingSceneJob(int index);
 	void clearPendingSceneJobs();

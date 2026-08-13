@@ -19,6 +19,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/Mesh.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "core/IProgress.h"
 
 namespace voxelformat {
 
@@ -75,7 +76,7 @@ private:
 	 */
 	int voxelizeNode(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
-					 bool resetOrigin = true) const;
+					 bool resetOrigin = true, core::IProgress *progress = nullptr) const;
 protected:
 	/**
 	 * @brief Color flatten factor - see @c PosSampling::getColor()
@@ -143,10 +144,12 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
-	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0, bool resetOrigin = true) const {
-		return voxelizeMesh(core::UUID(), name, sceneGraph, core::move(mesh), parent, resetOrigin);
+	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0,
+					 bool resetOrigin = true, core::IProgress *progress = nullptr) const {
+		return voxelizeMesh(core::UUID(), name, sceneGraph, core::move(mesh), parent, resetOrigin, progress);
 	}
-	int voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0, bool resetOrigin = true) const;
+	int voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh,
+					 int parent = 0, bool resetOrigin = true, core::IProgress *progress = nullptr) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
@@ -172,7 +175,8 @@ protected:
 	 * @sa voxelizeTris()
 	 */
 	void transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-					   const MeshMaterialArray &meshMaterialArray, const palette::NormalPalette &normalPalette) const;
+					   const MeshMaterialArray &meshMaterialArray, const palette::NormalPalette &normalPalette,
+					   core::IProgress *progress = nullptr) const;
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
 	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
@@ -184,7 +188,8 @@ protected:
 	 */
 	void transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 								  const MeshMaterialArray &meshMaterialArray,
-								  const palette::NormalPalette &normalPalette) const;
+								  const palette::NormalPalette &normalPalette,
+								  core::IProgress *progress = nullptr) const;
 	/**
 	 * @brief Convert the given @c PosMap into a volume
 	 *
@@ -198,7 +203,8 @@ protected:
 	int voxelizeNodeChunked(const core::String &name, scenegraph::SceneGraph &sceneGraph,
 							MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray,
 							const glm::vec3 &trisMins, const voxel::Region &region,
-							const palette::NormalPalette &normalPalette, int parent, bool resetOrigin) const;
+							const palette::NormalPalette &normalPalette, int parent, bool resetOrigin,
+							core::IProgress *progress = nullptr) const;
 
 public:
 	MeshFormat();

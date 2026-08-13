@@ -840,6 +840,15 @@ app::AppState VoxEdit::onRunning() {
 	}
 
 	_collectionMgr->update(_nowSeconds);
+
+	if (_sceneMgr->isLoading()) {
+		setWindowProgress(_sceneMgr->loadingProgress());
+	} else if (_sceneMgr->isSceneJobRunning()) {
+		setWindowProgress(_sceneMgr->sceneJobProgress());
+	} else {
+		clearWindowProgress();
+	}
+
 	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
 	if (viewport) {
 		int ctx = 0;

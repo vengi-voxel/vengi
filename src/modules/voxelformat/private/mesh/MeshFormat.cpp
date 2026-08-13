@@ -7,6 +7,7 @@
 #include "app/ForParallel.h"
 #include "core/ConfigVar.h"
 #include "core/GLM.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "color/RGBA.h"
 #include "core/StringUtil.h"
@@ -50,6 +51,21 @@ namespace voxelformat {
 MeshFormat::MeshFormat() {
 	_weightedAverage = core::getVar(cfg::VoxformatRGBWeightedAverage)->boolVal();
 }
+
+namespace {
+
+void reportTriProgress(core::IProgress *progress, int index, int total) {
+	if (progress == nullptr || total <= 0) {
+		return;
+	}
+	const int step = core_max(1, total / 100);
+	if ((index % step) != 0 && index + 1 != total) {
+		return;
+	}
+	progress->setProgress((float)(index + 1) / (float)total);
+}
+
+} // namespace
 
 MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::ChunkMeshes &meshes,
 										   int nodeId) {
@@ -197,8 +213,11 @@ static void mergePosMap(PosMap &target, const PosMap &source) {
 
 void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 							   const MeshMaterialArray &meshMaterialArray,
-							   const palette::NormalPalette &normalPalette) const {
+							   const palette::NormalPalette &normalPalette, core::IProgress *progress) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
+	if (progress != nullptr) {
+		progress->setProgress(0.0f);
+	}
 	palette::NormalPaletteLookup normalLookup(normalPalette);
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
@@ -207,7 +226,10 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 		localMaps[i].reserve(((int)tris.size() / parallel) + 1);
 	}
 	core::AtomicInt mapIdx(0);
-	auto fn = [&tris, &region, &normalLookup, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
+	core::AtomicInt done(0);
+	const int triCount = (int)tris.size();
+	auto fn = [&tris, &region, &normalLookup, &localMaps, &mapIdx, &meshMaterialArray, &done, triCount, progress,
+			   this](int start, int end) {
 		const int idx = mapIdx.increment();
 		PosMap &localMap = localMaps[idx];
 		for (int i = start; i < end; ++i) {
@@ -218,6 +240,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			const glm::vec2 &uv = meshTri.centerUV();
 			const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
 			if (rgba.a <= AlphaThreshold) {
+				reportTriProgress(progress, done.increment(), triCount);
 				continue;
 			}
 			const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
@@ -231,18 +254,26 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 
 			const glm::ivec3 p(c);
 			addToPosMap(localMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
+			reportTriProgress(progress, done.increment(), triCount);
 		}
 	};
 	app::for_parallel(0, tris.size(), fn);
 	for (const PosMap &localMap : localMaps) {
 		mergePosMap(posMap, localMap);
 	}
+	if (progress != nullptr) {
+		progress->setProgress(1.0f);
+	}
 }
 
 void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 										  const MeshMaterialArray &meshMaterialArray,
-										  const palette::NormalPalette &normalPalette) const {
+										  const palette::NormalPalette &normalPalette,
+										  core::IProgress *progress) const {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
+	if (progress != nullptr) {
+		progress->setProgress(0.0f);
+	}
 	palette::NormalPaletteLookup normalLookup(normalPalette);
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
@@ -251,7 +282,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 		localMaps[i].reserve(((int)tris.size() / parallel) + 1);
 	}
 	core::AtomicInt mapIdx(0);
-	auto fn = [&tris, &normalLookup, region, &localMaps, &mapIdx, &meshMaterialArray, this](int start, int end) {
+	core::AtomicInt done(0);
+	const int triCount = (int)tris.size();
+	auto fn = [&tris, &normalLookup, region, &localMaps, &mapIdx, &meshMaterialArray, &done, triCount, progress,
+			   this](int start, int end) {
 		const int idx = mapIdx.increment();
 		PosMap &localMap = localMaps[idx];
 		for (int i = start; i < end; ++i) {
@@ -301,11 +335,15 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 					}
 				}
 			}
+			reportTriProgress(progress, done.increment(), triCount);
 		}
 	};
 	app::for_parallel(0, tris.size(), fn);
 	for (const PosMap &localMap : localMaps) {
 		mergePosMap(posMap, localMap);
+	}
+	if (progress != nullptr) {
+		progress->setProgress(1.0f);
 	}
 }
 
@@ -363,11 +401,19 @@ static constexpr int MaxSingleVolumeDim = 256;
 int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneGraph &sceneGraph,
 									MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray,
 									const glm::vec3 &trisMins, const voxel::Region &region,
-									const palette::NormalPalette &normalPalette, int parent, bool resetOrigin) const {
+									const palette::NormalPalette &normalPalette, int parent, bool resetOrigin,
+									core::IProgress *progress) const {
 	const int chunkSize = glm::clamp(core::getVar(cfg::VoxformatVoxelizeChunkSize)->intVal(), 16, 512);
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
 	Log::debug("Chunked voxelization (%i^3 chunks) for region %s (%i:%i:%i), %i triangles",
 			   chunkSize, region.toString().c_str(), vdim.x, vdim.y, vdim.z, (int)tris.size());
+
+	core::IProgress &progressRef = core::progressOrNull(progress);
+	progressRef.setText(name.c_str());
+	core::ProgressRange indexRange(progressRef, 0.0f, 0.2f);
+	core::ProgressRange paletteRange(progressRef, 0.2f, 0.35f);
+	core::ProgressRange batchRange(progressRef, 0.35f, 1.0f);
+	indexRange.setProgress(0.0f);
 
 	const bool fillHollow = core::getVar(cfg::VoxformatFillHollow)->boolVal();
 	if (fillHollow) {
@@ -387,6 +433,7 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	ChunkTriIndex chunkTriIndex;
 
 	for (int triIdx = 0; triIdx < (int)tris.size(); ++triIdx) {
+		reportTriProgress(&indexRange, triIdx, (int)tris.size());
 		const voxelformat::MeshTri &tri = tris[triIdx];
 		const glm::vec3 triAabbMins = tri.mins();
 		const glm::vec3 triAabbMaxs = tri.maxs();
@@ -412,12 +459,16 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	}
 
 	Log::debug("Spatial index built: %i occupied chunks from %i triangles", (int)chunkTriIndex.size(), (int)tris.size());
+	indexRange.setProgress(1.0f);
 
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+	paletteRange.setProgress(0.0f);
 	if (shouldCreatePalette) {
 		palette::RGBAMaterialMap colorMaterials;
+		int triIdx = 0;
 		for (const voxelformat::MeshTri &meshTri : tris) {
+			reportTriProgress(&paletteRange, triIdx++, (int)tris.size());
 			voxelizeTriangle(
 				trisMins, meshTri,
 				[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
@@ -433,6 +484,7 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	} else {
 		palette = voxel::getPalette();
 	}
+	paletteRange.setProgress(1.0f);
 
 	if (palette.colorCount() == 1) {
 		color::RGBA singleColor = palette.color(0);
@@ -468,10 +520,14 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	const int batchSize = DefaultBatchSize;
 	Log::debug("Processing %i chunks in batches of %i", totalChunks, batchSize);
 	int chunkIdx = 0;
+	batchRange.setProgress(0.0f);
 
 	for (int batchStart = 0; batchStart < totalChunks; batchStart += batchSize) {
 		if (stopExecution()) {
 			break;
+		}
+		if (totalChunks > 0) {
+			batchRange.setProgress((float)batchStart / (float)totalChunks);
 		}
 		const int batchEnd = glm::min(batchStart + batchSize, totalChunks);
 		const int batchCount = batchEnd - batchStart;
@@ -561,15 +617,21 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 	chunkTriIndex.clear();
 
 	Log::debug("Chunked voxelization: %i chunks created", chunkIdx);
+	batchRange.setProgress(1.0f);
 	return groupId;
 }
 
 int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-							 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent, bool resetOrigin) const {
+							 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent,
+							 bool resetOrigin, core::IProgress *progress) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return InvalidNodeId;
 	}
+
+	core::IProgress &progressRef = core::progressOrNull(progress);
+	progressRef.setText(name.c_str());
+	progressRef.setProgress(0.0f);
 
 	const bool axisAligned = isVoxelMesh(tris);
 	const int voxelizeMode = core::getVar(cfg::VoxformatVoxelizeMode)->intVal();
@@ -616,7 +678,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			normalPalette.redAlert2();
 		}
 		return voxelizeNodeChunked(name, sceneGraph, core::move(tris), meshMaterialArray,
-								   trisMins, region, normalPalette, parent, resetOrigin);
+								   trisMins, region, normalPalette, parent, resetOrigin, progress);
 	}
 
 	if (!checkValidRegion(region)) {
@@ -638,6 +700,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 
 	const bool fillHollow = core::getVar(cfg::VoxformatFillHollow)->boolVal();
 	const int64_t maxVoxels = (int64_t)vdim.x * vdim.y * vdim.z;
+	core::ProgressRange transformRange(progressRef, 0.0f, 0.85f);
+	core::ProgressRange finalizeRange(progressRef, 0.85f, 1.0f);
 	if (useAxisAligned) {
 		// estimate capacity from triangle bounding volumes (each axis-aligned tri covers a 2D area)
 		int64_t estimatedVoxels = 0;
@@ -651,18 +715,25 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		Log::debug("max voxels: %i, estimated: %i (%i:%i:%i)", (int)maxVoxels, (int)posMapCapacity, vdim.x, vdim.y, vdim.z);
 		PosMap posMap;
 		posMap.reserve(posMapCapacity);
-		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
+		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette, &transformRange);
 		tris.release();
+		finalizeRange.setProgress(0.0f);
 		node.createVolume(region);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
+		finalizeRange.setProgress(1.0f);
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
 		palette::Palette palette;
 
 		const bool shouldCreatePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+		core::ProgressRange paletteRange(transformRange, 0.0f, 0.3f);
+		core::ProgressRange voxelRange(transformRange, 0.3f, 1.0f);
 		if (shouldCreatePalette) {
 			palette::RGBAMaterialMap colorMaterials;
 			Log::debug("create palette");
+			int triIdx = 0;
+			const int triCount = (int)tris.size();
 			for (const voxelformat::MeshTri &meshTri : tris) {
+				reportTriProgress(&paletteRange, triIdx++, triCount);
 #if 1
 				voxelizeTriangle(
 					trisMins, meshTri,
@@ -683,8 +754,10 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 #endif
 			}
 			createPalette(colorMaterials, palette);
+			paletteRange.setProgress(1.0f);
 		} else {
 			palette = voxel::getPalette();
+			paletteRange.setProgress(1.0f);
 		}
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
@@ -692,7 +765,10 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		node.createVolume(region);
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::NormalPaletteLookup normalLookup(normalPalette);
+		int triIdx = 0;
+		const int triCount = (int)tris.size();
 		for (const voxelformat::MeshTri &meshTri : tris) {
+			reportTriProgress(&voxelRange, triIdx++, triCount);
 			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
 				const glm::vec3 &normal = tri.normal();
@@ -706,6 +782,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			voxelizeTriangle(trisMins, meshTri, fn);
 		}
 		tris.release();
+		voxelRange.setProgress(1.0f);
 
 		if (palette.colorCount() == 1) {
 			color::RGBA c = palette.color(0);
@@ -715,11 +792,13 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			}
 		}
 		node.setPalette(palette);
+		finalizeRange.setProgress(0.0f);
 		if (fillHollow && !stopExecution()) {
 			Log::debug("fill hollows");
 			const voxel::Voxel voxel = voxel::createVoxel(palette, FillColorIndex);
 			voxelutil::fillHollow(wrapper, voxel);
 		}
+		finalizeRange.setProgress(1.0f);
 	} else {
 		// Match subdivideTri(): only AABB extent > 1 needs splitting. Dense meshes that
 		// already fit in a voxel cell (common after scale-down) must not be copied through
@@ -735,13 +814,18 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 
 		MeshTriCollection subdivided;
 		const MeshTriCollection *src = &tris;
+		core::ProgressRange subdivideRange(transformRange, 0.0f, 0.35f);
+		core::ProgressRange sampleRange(transformRange, 0.35f, 1.0f);
 		if (needsSubdivision) {
+			subdivideRange.setProgress(0.0f);
 			const size_t parallel = app::for_parallel_size(0, tris.size());
 			Log::debug("Subdivide %i triangles (%i parallel)", (int)tris.size(), (int)parallel);
 			core::DynamicArray<MeshTriCollection> meshTriCollections;
 			meshTriCollections.resize(parallel);
 			core::AtomicInt currentIdx(0);
-			app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
+			core::AtomicInt done(0);
+			const int triCount = (int)tris.size();
+			app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx, &done, triCount, &subdivideRange] (int start, int end) {
 				int c = currentIdx.increment();
 				MeshTriCollection &chunk = meshTriCollections[c];
 				size_t estimateReserve = 0;
@@ -756,6 +840,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 				chunk.reserve(glm::min(estimateReserve, maxTotalReserve));
 				for (int i = start; i < end; ++i) {
 					subdivideTri(tris[i], chunk, 0);
+					reportTriProgress(&subdivideRange, done.increment(), triCount);
 				}
 			});
 			Log::debug("Subdivision done");
@@ -775,8 +860,10 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			}
 			meshTriCollections.release();
 			src = &subdivided;
+			subdivideRange.setProgress(1.0f);
 		} else {
 			Log::debug("Skip subdivision - all %i tris already fit in a voxel cell", (int)tris.size());
+			subdivideRange.setProgress(1.0f);
 		}
 
 		if (src->empty()) {
@@ -786,16 +873,20 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 
 		PosMap posMap;
 		posMap.reserve(src->size());
-		transformTris(region, *src, posMap, meshMaterialArray, normalPalette);
+		transformTris(region, *src, posMap, meshMaterialArray, normalPalette, &sampleRange);
 		subdivided.release();
 		tris.release();
+		finalizeRange.setProgress(0.0f);
 		node.createVolume(region);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
+		finalizeRange.setProgress(1.0f);
 	}
 
 	if (resetOrigin) {
 		node.volume()->translate(-region.getLowerCorner());
 	}
+
+	progressRef.setProgress(1.0f);
 
 	const int nodeId = sceneGraph.emplace(core::move(node), parent);
 
@@ -926,8 +1017,11 @@ void MeshFormat::ChunkMeshExt::visitByMaterial(
 
 bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	ctx.setProgressText(filename.c_str());
+	ctx.setProgress(0.0f);
 	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx);
 	sceneGraph.updateTransforms();
+	ctx.setProgress(1.0f);
 	return retVal;
 }
 
@@ -1007,7 +1101,13 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 	}
 }
 
-int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
+int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin, core::IProgress *progress) const {
+	core::IProgress &progressRef = core::progressOrNull(progress);
+	progressRef.setText(name.c_str());
+	core::ProgressRange prepareRange(progressRef, 0.0f, 0.15f);
+	core::ProgressRange voxelizeRange(progressRef, 0.15f, 1.0f);
+	prepareRange.setProgress(0.0f);
+
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
 	Log::debug("Total vertices: %i, indices: %i", (int)mesh.vertices.size(), (int)mesh.indices.size());
 	glm::vec3 meshMins, meshMaxs;
@@ -1016,6 +1116,8 @@ int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, s
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
 	MeshTriCollection tris;
 	tris.reserve(maxIndices / 3);
+	const int triTotal = (int)(maxIndices / 3);
+	int triBuilt = 0;
 	for (size_t i = 0; i < maxIndices; i += 3) {
 		voxelformat::MeshTri meshTri;
 		const MeshVertex &vertex0 = mesh.vertices[mesh.indices[i + 0]];
@@ -1034,9 +1136,11 @@ int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, s
 		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
 		meshTri.scaleVertices(scale);
 		tris.emplace_back(core::move(meshTri));
+		reportTriProgress(&prepareRange, triBuilt++, triTotal);
 	}
 	mesh.clearAfterTriangulation();
-	return voxelizeNode(uuid, name, sceneGraph, core::move(tris), mesh.materials, parent, resetOrigin);
+	prepareRange.setProgress(1.0f);
+	return voxelizeNode(uuid, name, sceneGraph, core::move(tris), mesh.materials, parent, resetOrigin, &voxelizeRange);
 }
 
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
@@ -1222,14 +1326,23 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &saveCtx) {
 	const bool withColor = core::getVar(cfg::VoxformatWithColor)->boolVal();
+	core::IProgress &progress = saveCtx.progressRef();
+	progress.setText("mesh");
 	if (core::getVar(cfg::VoxformatPointCloud)->boolVal()) {
-		return savePointClouds(sceneGraph, filename, archive, glm::vec3(1.0f), withColor);
+		progress.setProgress(0.0f);
+		const bool ok = savePointClouds(sceneGraph, filename, archive, glm::vec3(1.0f), withColor);
+		progress.setProgress(1.0f);
+		return ok;
 	}
 
 	const bool quads = core::getVar(cfg::VoxformatQuads)->boolVal();
 	const bool withTexCoords = core::getVar(cfg::VoxformatWithtexcoords)->boolVal();
 	const voxel::SurfaceExtractionType type =
 		(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
+
+	core::ProgressRange extractRange(progress, 0.0f, 0.85f);
+	core::ProgressRange writeRange(progress, 0.85f, 1.0f);
+	extractRange.setProgress(0.0f);
 
 	ChunkMeshes meshes;
 	meshes.resize(sceneGraph.nodes().size());
@@ -1274,6 +1387,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			}
 		}
 	});
+	extractRange.setProgress(1.0f);
 	ChunkMeshes nonEmptyMeshes;
 	nonEmptyMeshes.reserve(meshes.size());
 
@@ -1287,6 +1401,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		meshIdxNodeMap.put(iter->nodeId, (int)nonEmptyMeshes.size() - 1);
 	}
 	bool state;
+	writeRange.setProgress(0.0f);
 	if (nonEmptyMeshes.empty() && sceneGraph.empty(scenegraph::SceneGraphNodeType::Point)) {
 		Log::warn("Empty scene can't get saved as mesh");
 		state = false;
@@ -1295,6 +1410,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, archive, {1.0f, 1.0f, 1.0f},
 						   type == voxel::SurfaceExtractionType::Cubic ? quads : false, withColor, withTexCoords);
 	}
+	writeRange.setProgress(1.0f);
 	for (ChunkMeshExt &meshext : meshes) {
 		delete meshext.mesh;
 	}
