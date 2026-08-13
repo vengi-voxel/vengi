@@ -6,6 +6,7 @@
 #include "VXCFormat.h"
 #include "VXCArchive.h"
 #include "VXRFormat.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "io/Archive.h"
@@ -66,12 +67,14 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		return false;
 	}
 	int fileIndex = 0;
+	core::StepProgress steps(ctx.progressRef(), core_max(1, (int)files.size()));
 	for (const io::FilesystemEntry &entry : files) {
-		ctx.report("scene", fileIndex++, (int)files.size());
+		core::ProgressRange fileRange = steps.range(fileIndex++);
+		fileRange.setText(entry.name.c_str());
 		VXRFormat f;
-		f.load(entry.name, vxcArchive, sceneGraph, ctx);
+		f.load(entry.name, vxcArchive, sceneGraph, ctx.nested(fileRange));
 	}
-	ctx.report("scene", (int)files.size(), (int)files.size());
+	ctx.setProgress(1.0f);
 	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }

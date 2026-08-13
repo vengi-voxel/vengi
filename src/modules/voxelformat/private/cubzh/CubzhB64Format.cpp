@@ -6,6 +6,7 @@
 #include "CubzhB64Format.h"
 #include "color/Color.h"
 #include "core/Common.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -90,7 +91,9 @@ bool CubzhB64Format::readChunkMap(const core::String &filename, const io::Archiv
 	Log::debug("map name: %s", name.c_str());
 
 	scenegraph::SceneGraph modelScene;
-	if (loadObject(archive, name, modelScene, ctx)) {
+	core::ProgressRange mapRange(ctx.progressRef(), 0.0f, 1.0f);
+	mapRange.setText(name.c_str());
+	if (loadObject(archive, name, modelScene, ctx.nested(mapRange))) {
 		scenegraph::copySceneGraph(sceneGraph, modelScene);
 	} else {
 		Log::warn("Failed to load 3zh file: %s", name.c_str());
@@ -225,7 +228,11 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 		Log::trace("numInstances: %i, instanceCount: %i, numObjects: %i", numInstances, instanceCount, numObjects);
 
 		scenegraph::SceneGraph modelScene;
-		if (!loadObject(archive, luaName, modelScene, ctx)) {
+		const float begin = (float)instanceCount / (float)core_max(1, (int)numObjects);
+		const float end = (float)(instanceCount + numInstances) / (float)core_max(1, (int)numObjects);
+		core::ProgressRange objectRange(ctx.progressRef(), begin, end);
+		objectRange.setText(luaName.c_str());
+		if (!loadObject(archive, luaName, modelScene, ctx.nested(objectRange))) {
 			Log::warn("Failed to load 3zh file: %s", luaName.c_str());
 		}
 

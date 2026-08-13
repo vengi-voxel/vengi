@@ -3,6 +3,7 @@
  */
 
 #include "ThingFormat.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
@@ -160,9 +161,12 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 
 	io::ArchiveFiles files;
 	zipArchive->list("*.node", files);
+	const int fileCount = (int)files.size();
+	core::StepProgress steps(ctx.progressRef(), core_max(1, fileCount));
 	int fileIndex = 0;
 	for (const io::FilesystemEntry &file : files) {
-		ctx.report("node", fileIndex++, (int)files.size());
+		core::ProgressRange nodeRange = steps.range(fileIndex++);
+		nodeRange.setText(file.name.c_str());
 		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath));
 		if (nodeSpecStream) {
 			NodeSpec nodeSpec;
@@ -170,13 +174,13 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 				Log::error("ThingFormat: Failed to load node spec: %s", file.name.c_str());
 				return false;
 			}
-			if (!loadNode(zipArchive, nodeSpec, sceneGraph, ctx)) {
+			if (!loadNode(zipArchive, nodeSpec, sceneGraph, ctx.nested(nodeRange))) {
 				Log::error("ThingFormat: Failed to load node: %s", file.name.c_str());
 				return false;
 			}
 		}
 	}
-	ctx.report("node", (int)files.size(), (int)files.size());
+	ctx.setProgress(1.0f);
 	sceneGraph.updateTransforms();
 	return true;
 }

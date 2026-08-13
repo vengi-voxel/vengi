@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/Atomic.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
@@ -104,27 +105,35 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		}
 
 		voxel::RawVolume *volumes[SECTOR_INTS]{};
-		auto fn = [&volumes, &offsets, palette, &bufferedStream, this] (int start, int end) {
+		core::AtomicInt sectorsDone{0};
+		auto fn = [&volumes, &offsets, palette, &bufferedStream, &ctx, &sectorsDone, this](int start, int end) {
 			io::MemoryReadStream memStream(bufferedStream.getBuffer(), bufferedStream.size());
 			Log::debug("Loading sectors from %i to %i", start, end);
 			for (int i = start; i < end; ++i) {
 				if (offsets[i].sectorCount == 0u || offsets[i].offset < sizeof(offsets)) {
+					const int completed = sectorsDone.increment() + 1;
+					ctx.report("chunk", completed, SECTOR_INTS);
 					continue;
 				}
 				if (offsets[i].offset + 6 >= (uint32_t)memStream.size()) {
+					const int completed = sectorsDone.increment() + 1;
+					ctx.report("chunk", completed, SECTOR_INTS);
 					continue;
 				}
 				if (memStream.seek(offsets[i].offset) == -1) {
+					const int completed = sectorsDone.increment() + 1;
+					ctx.report("chunk", completed, SECTOR_INTS);
 					continue;
 				}
 				volumes[i] = readCompressedNBT(memStream, i, palette);
+				const int completed = sectorsDone.increment() + 1;
+				ctx.report("chunk", completed, SECTOR_INTS);
 			}
 		};
 		app::for_parallel(0, SECTOR_INTS, fn);
 
 		int added = 0;
 		for (int i = 0; i < SECTOR_INTS; ++i) {
-			ctx.report("chunk", i, SECTOR_INTS);
 			if (volumes[i] == nullptr) {
 				continue;
 			}

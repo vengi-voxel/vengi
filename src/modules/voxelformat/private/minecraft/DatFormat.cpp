@@ -12,6 +12,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Atomic.h"
 #include "io/Archive.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
@@ -24,6 +25,25 @@
 
 namespace voxelformat {
 namespace priv {
+
+static scenegraph::SceneGraphNode *loadRegionNode(const core::String &regionFilename, const io::ArchivePtr &archive,
+												  const LoadContext &regionCtx) {
+	MCRFormat mcrFormat;
+	scenegraph::SceneGraph newSceneGraph;
+	if (!mcrFormat.load(regionFilename, archive, newSceneGraph, regionCtx)) {
+		Log::debug("Could not load %s", regionFilename.c_str());
+		return nullptr;
+	}
+	const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+	if (!merged.hasVolume()) {
+		return nullptr;
+	}
+	scenegraph::SceneGraphNode *node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+	node->setVolume(merged.volume());
+	node->setPalette(merged.palette);
+	node->setNormalPalette(merged.normalPalette);
+	return node;
+}
 
 static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx, scenegraph::SceneGraph &sceneGraph,
 				 const io::ArchivePtr &archive, const LoadContext &loadctx) {
@@ -73,33 +93,30 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 		return false;
 	}
 
-	core::DynamicArray<scenegraph::SceneGraphNode*> nodes;
-	nodes.resize(entities.size());
-	Log::info("Found %i region files", (int)entities.size());
-	app::for_parallel(0, entities.size(), [&nodes, &entities, &baseName, &archive, &loadctx](int start, int end) {
+	const int regionCount = (int)entities.size();
+	core::DynamicArray<scenegraph::SceneGraphNode *> nodes;
+	nodes.resize(regionCount);
+	Log::info("Found %i region files", regionCount);
+
+	core::AtomicInt regionsDone{0};
+	app::for_parallel(0, regionCount, [&nodes, &entities, &baseName, &archive, &loadctx, &regionsDone,
+									   regionCount](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			const io::FilesystemEntry &e = entities[i];
 			if (e.type != io::FilesystemEntry::Type::file) {
+				regionsDone.increment();
 				continue;
 			}
 			const core::String &regionFilename = core::string::path(baseName, "region", e.name);
-			MCRFormat mcrFormat;
-			scenegraph::SceneGraph newSceneGraph;
-			if (!mcrFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
-				Log::debug("Could not load %s", regionFilename.c_str());
-				continue;
-			}
-			const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
-			if (!merged.hasVolume()) {
-				continue;
-			}
-			scenegraph::SceneGraphNode *node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-			node->setVolume(merged.volume());
-			node->setPalette(merged.palette);
-			node->setNormalPalette(merged.normalPalette);
-			nodes[i] = node;
+			// Nested MCR progress would race across parallel regions; report by completed
+			// region count on the shared parent sink instead.
+			LoadContext regionCtx;
+			nodes[i] = loadRegionNode(regionFilename, archive, regionCtx);
+			const int completed = regionsDone.increment() + 1;
+			loadctx.report(e.name.c_str(), completed, regionCount);
 		}
 	});
+	loadctx.report("regions", regionCount, regionCount);
 	Log::debug("Scheduled %i regions", (int)nodes.size());
 	int nodesAdded = 0;
 	for (scenegraph::SceneGraphNode *node : nodes) {

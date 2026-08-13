@@ -4,6 +4,7 @@
 
 #include "VXTFormat.h"
 #include "VXMFormat.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -62,13 +63,15 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	wrap(stream.readInt32(models))
 	scenegraph::SceneGraph tileGraph;
 
+	core::StepProgress modelSteps(ctx.progressRef(), core_max(1, models));
 	for (int32_t i = 0; i < models; ++i) {
-		ctx.report("model", i, models);
+		core::ProgressRange modelRange = modelSteps.range(i);
 		char path[1024];
 		wrapBool(stream.readString(sizeof(path), path, true))
+		modelRange.setText(path);
 		VXMFormat f;
 		scenegraph::SceneGraph subGraph;
-		if (!f.load(path, archive, subGraph, ctx)) {
+		if (!f.load(path, archive, subGraph, ctx.nested(modelRange))) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
@@ -81,7 +84,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			tileGraph.emplace(core::move(newNode));
 		}
 	}
-	ctx.report("model", models, models);
+	ctx.setProgress(1.0f);
 
 	int idx = 0;
 	for (;;) {

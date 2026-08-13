@@ -63,6 +63,15 @@ struct LoadContext {
 		}
 		progress->setProgress((float)cur / (float)max);
 	}
+
+	/**
+	 * @brief Child context that writes into @p childProgress (e.g. a @c ProgressRange).
+	 */
+	LoadContext nested(core::IProgress &childProgress) const {
+		LoadContext child;
+		child.progress = &childProgress;
+		return child;
+	}
 };
 
 struct SaveContext {
