@@ -242,6 +242,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	bool hasBlocks = false;
+	// findPaletteIndex / legacy block ids already index the minecraft palette that MCR loads into
+	// `palette`. Skip PaletteLookup (1M uint16_t memset) unless a remap palette was provided on secPal.
+	const bool samePalette = secPal.mcpal.colorCount() == 0 || palette.hash() == secPal.mcpal.hash();
 
 	if (secPal.pal.empty()) {
 		if (data.type() != priv::TagType::BYTE_ARRAY) {
@@ -250,7 +253,10 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			return false;
 		}
 		bool error = false;
-		palette::PaletteLookup palLookup(palette);
+		core::ScopedPtr<palette::PaletteLookup> palLookup;
+		if (!samePalette) {
+			palLookup = new palette::PaletteLookup(palette);
+		}
 		auto fn = [&] (int start, int end) {
 			voxel::RawVolume::Sampler sampler(v);
 			sampler.setPosition(0, start, 0);
@@ -268,7 +274,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 							return;
 						}
 						if (color) {
-							const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
+							const uint8_t palColIdx =
+								samePalette ? (uint8_t)color
+											: palLookup->findClosestIndex(secPal.mcpal.color(color));
 							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 							sampler3.setVoxel(voxel);
 							hasBlocks = true;
@@ -350,7 +358,10 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 		}
 
-		palette::PaletteLookup palLookup(palette);
+		core::ScopedPtr<palette::PaletteLookup> palLookup;
+		if (!samePalette) {
+			palLookup = new palette::PaletteLookup(palette);
+		}
 		auto fn = [&] (int start, int end) {
 			voxel::RawVolume::Sampler sampler(v);
 			sampler.setPosition(0, start, 0);
@@ -362,7 +373,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 						const uint16_t i = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
 						const uint8_t color = blocks[i];
 						if (color) {
-							const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
+							const uint8_t palColIdx =
+								samePalette ? color
+											: palLookup->findClosestIndex(secPal.mcpal.color(color));
 							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 							sampler3.setVoxel(voxel);
 						}
@@ -436,7 +449,6 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 			return error(volumes);
 		}
 		MinecraftSectionPalette secPal;
-		secPal.mcpal.minecraft();
 		if (!parsePaletteList(dataVersion, palette, secPal)) {
 			Log::error("Could not parse palette chunk");
 			return error(volumes);
@@ -509,7 +521,6 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		Log::debug("Y level for section compound: %i", (int)sectionY);
 
 		MinecraftSectionPalette secPal;
-		secPal.mcpal.minecraft();
 
 		const priv::NamedBinaryTag &palette = section.get("Palette");
 		if (palette.valid()) {
