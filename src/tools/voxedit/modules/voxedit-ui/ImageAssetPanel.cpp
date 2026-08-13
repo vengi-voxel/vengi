@@ -25,6 +25,7 @@ ImageAssetPanel::ImageAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &scene
 
 void ImageAssetPanel::shutdown() {
 	_images.clear();
+	_dragImage = image::ImagePtr();
 }
 
 bool ImageAssetPanel::init() {
@@ -35,7 +36,7 @@ bool ImageAssetPanel::init() {
 		for (const auto &e : entities) {
 			const core::String &fullName = core::string::path(dir, e.name);
 			if (io::isImage(fullName)) {
-				_images.emplace(image::loadImage(fullName));
+				_images.emplace(image::loadImageThumbnail(fullName, ThumbnailSize));
 			}
 		}
 	});
@@ -68,10 +69,15 @@ void ImageAssetPanel::update(const char *id) {
 			const image::ImagePtr &image = _texturePool->loadImage(e->first);
 			core::String imgId = core::String::format("##image-%i", n - 1);
 			ImGui::ImageButton(imgId.c_str(), handle, ImVec2(imageSize, imageSize));
-			ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
+			ImGui::TooltipText("%s", image->name().c_str());
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+				// Reload full-resolution image for drop targets (fill plane, texture brush, palette)
+				if (!_dragImage || _dragImage->name() != image->name()) {
+					_dragImage = image::loadImage(image->name());
+				}
 				ImGui::ImageButton(imgId.c_str(), handle, ImVec2(imageSize, imageSize));
-				ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&image, sizeof(image), ImGuiCond_Always);
+				ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&_dragImage, sizeof(_dragImage),
+										 ImGuiCond_Always);
 				ImGui::EndDragDropSource();
 			}
 			if (n % maxImages == 0) {

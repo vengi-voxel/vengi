@@ -249,6 +249,40 @@ ImagePtr loadImage(const core::String &filename) {
 	return loadImage(file);
 }
 
+static ImagePtr downscaleToThumbnail(const ImagePtr &image, int maxSize) {
+	if (!image || !image->isLoaded() || maxSize <= 0) {
+		return image;
+	}
+	const int w = image->width();
+	const int h = image->height();
+	if (w <= maxSize && h <= maxSize) {
+		return image;
+	}
+	int tw = maxSize;
+	int th = maxSize;
+	if (w > h) {
+		th = glm::max(1, (h * maxSize) / w);
+	} else {
+		tw = glm::max(1, (w * maxSize) / h);
+	}
+	if (!image->resize(tw, th)) {
+		Log::warn("Failed to resize image %s to thumbnail %i x %i", image->name().c_str(), tw, th);
+	}
+	return image;
+}
+
+ImagePtr loadImageThumbnail(const core::String &filename, int maxSize) {
+	return downscaleToThumbnail(loadImage(filename), maxSize);
+}
+
+ImagePtr loadImageThumbnail(const io::FilePtr &file, int maxSize) {
+	return downscaleToThumbnail(loadImage(file), maxSize);
+}
+
+ImagePtr loadImageThumbnail(const core::String &name, io::SeekableReadStream &stream, int maxSize, int length) {
+	return downscaleToThumbnail(loadImage(name, stream, length), maxSize);
+}
+
 bool Image::load(ImageType type, io::SeekableReadStream &stream, int length) {
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;

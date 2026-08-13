@@ -369,6 +369,15 @@ ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &strea
  */
 ImagePtr loadImage(const core::String &filename);
 
+/**
+ * @brief Load an image and downscale it so the longer side is at most @c maxSize pixels.
+ * Aspect ratio is preserved. Images that already fit are returned unchanged.
+ * @param maxSize Maximum width or height of the thumbnail. Must be > 0.
+ */
+ImagePtr loadImageThumbnail(const core::String &filename, int maxSize);
+ImagePtr loadImageThumbnail(const io::FilePtr &file, int maxSize);
+ImagePtr loadImageThumbnail(const core::String &name, io::SeekableReadStream &stream, int maxSize, int length = -1);
+
 bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream);
 core::String print(const image::ImagePtr &image, bool limited = true);
 

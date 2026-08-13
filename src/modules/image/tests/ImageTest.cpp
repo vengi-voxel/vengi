@@ -204,6 +204,25 @@ TEST_F(ImageTest, testResize) {
 	EXPECT_EQ(r, img->colorAt(0, 0));
 }
 
+TEST_F(ImageTest, testLoadImageThumbnail) {
+	const image::ImagePtr &full = image::loadImage("test-palette-in.png");
+	ASSERT_TRUE(full->isLoaded());
+	ASSERT_GT(full->width(), 4);
+	ASSERT_GT(full->height(), 4);
+
+	const int maxSize = 4;
+	const image::ImagePtr &thumb = image::loadImageThumbnail("test-palette-in.png", maxSize);
+	ASSERT_TRUE(thumb->isLoaded());
+	EXPECT_LE(thumb->width(), maxSize);
+	EXPECT_LE(thumb->height(), maxSize);
+	EXPECT_EQ(core_max(thumb->width(), thumb->height()), maxSize);
+
+	const image::ImagePtr &unchanged = image::loadImageThumbnail("test-palette-in.png", full->width() + full->height());
+	ASSERT_TRUE(unchanged->isLoaded());
+	EXPECT_EQ(full->width(), unchanged->width());
+	EXPECT_EQ(full->height(), unchanged->height());
+}
+
 TEST_F(ImageTest, testPngBase64) {
 	image::ImagePtr img = image::createEmptyImage("base64");
 	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));

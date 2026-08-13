@@ -16,10 +16,15 @@ class ImageAssetPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
+	// Longer side of asset panel preview thumbnails (display size is ~50px * dpi)
+	static constexpr int ThumbnailSize = 128;
+
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 	SceneManagerPtr _sceneMgr;
 	core::ConcurrentQueue<image::ImagePtr> _images;
+	// Full-resolution image kept alive for the current drag-drop payload
+	image::ImagePtr _dragImage;
 
 public:
 	ImageAssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
