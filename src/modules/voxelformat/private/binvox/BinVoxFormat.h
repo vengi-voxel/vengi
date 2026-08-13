@@ -30,7 +30,7 @@ private:
 	};
 
 	bool readData(State &state, const core::String &filename, io::SeekableReadStream &stream,
-				  scenegraph::SceneGraph &sceneGraph);
+				  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
 protected:
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,

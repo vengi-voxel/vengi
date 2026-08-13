@@ -291,7 +291,8 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 }
 
 bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+							   const LoadContext &ctx) {
 	const int size = (int)sceneGraph.size();
 	voxel::RawVolume *modelVolume = nullptr;
 	uint32_t blockCount;
@@ -303,6 +304,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	}
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
+		ctx.report("block", (int)i, (int)blockCount);
 		uint32_t index;
 		if ((stream.readUInt32(index)) != 0) {
 			Log::error("Could not load gox file: Failure to read block index");
@@ -509,6 +511,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			Log::debug("LAYR chunk with key: %s and size %i", dictKey, valueLength);
 		}
 	}
+	ctx.report("block", (int)blockCount, (int)blockCount);
 
 	// Generate voxels for shape layers (shape transform is in mat)
 	if (blockCount == 0 && !shapeName.empty()) {
@@ -844,7 +847,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		if (c.type == FourCC('B', 'L', '1', '6')) {
 			wrapBool(loadChunk_BL16(state, c, *stream))
 		} else if (c.type == FourCC('L', 'A', 'Y', 'R')) {
-			wrapBool(loadChunk_LAYR(state, c, *stream, sceneGraph, palette))
+			wrapBool(loadChunk_LAYR(state, c, *stream, sceneGraph, palette, ctx))
 		} else if (c.type == FourCC('C', 'A', 'M', 'R')) {
 			wrapBool(loadChunk_CAMR(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('M', 'A', 'T', 'E')) {

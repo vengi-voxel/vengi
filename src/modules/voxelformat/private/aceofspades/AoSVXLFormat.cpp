@@ -180,7 +180,10 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 			sampler.movePositiveZ();
 		}
 	};
+	ctx.setProgressText("voxel");
+	ctx.setProgress(0.0f);
 	app::for_parallel(0, mapSize, fn);
+	ctx.setProgress(1.0f);
 	libvxl_free(&map);
 	core_free(data);
 

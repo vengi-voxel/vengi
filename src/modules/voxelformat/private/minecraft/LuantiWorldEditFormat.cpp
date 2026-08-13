@@ -87,7 +87,6 @@ namespace voxelformat {
 bool LuantiWorldEditFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 										const LoadContext &ctx) {
-	(void)ctx;
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -141,6 +140,7 @@ bool LuantiWorldEditFormat::loadGroupsPalette(const core::String &filename, cons
 	glm::ivec3 maxs(0);
 	bool hasBounds = false;
 	for (size_t i = 0u; i < nodeCount; ++i) {
+		ctx.report("node", (int)i, (int)nodeCount);
 		lua_rawgeti(lua, rootIndex, (int)i + 1);
 		if (!lua_istable(lua, -1)) {
 			Log::error("Invalid Luanti WorldEdit node entry %i in %s", (int)i, filename.c_str());
@@ -166,6 +166,7 @@ bool LuantiWorldEditFormat::loadGroupsPalette(const core::String &filename, cons
 		nodes.push_back(core::move(entry));
 		lua.pop();
 	}
+	ctx.report("node", (int)nodeCount, (int)nodeCount);
 	lua.pop();
 
 	if (!hasBounds) {

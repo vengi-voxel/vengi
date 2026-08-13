@@ -118,7 +118,9 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 
 	// fill volume
 	glm::ivec3 pos(0, h, 0);
+	int tileIndex = 0;
 	for (const KenTile &tile : kenTiles) {
+		ctx.report("tile", tileIndex++, (int)kenTiles.size());
 		if (!tile.enabled) {
 			continue;
 		}
@@ -156,6 +158,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 			++pos.x;
 		}
 	}
+	ctx.report("tile", (int)kenTiles.size(), (int)kenTiles.size());
 
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }

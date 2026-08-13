@@ -117,6 +117,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	// TODO: PERF: use volume sampler on all loops
 	// TODO: PERF: FOR_PARALLEL
 	for (uint16_t x = 0; x < size.x; ++x) {
+		ctx.report("slice", (int)x, (int)size.x);
 		for (uint16_t y = 0; y < size.y; ++y) {
 			voxel::RawVolume::Sampler s(volume);
 			s.setPosition(x, y, 0);
@@ -136,6 +137,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			}
 		}
 	}
+	ctx.report("slice", (int)size.x, (int)size.x);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);

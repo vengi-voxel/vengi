@@ -4,6 +4,7 @@
 
 #include "MDLFormat.h"
 #include "core/FourCC.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -305,6 +306,12 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	// create textured triangle instances
+	int frameCount = 0;
+	for (const MDLPose &pose : poses) {
+		frameCount += (int)pose.frames.size();
+	}
+	core::StepProgress steps(ctx.progressRef(), frameCount);
+	int frameIdx = 0;
 	bool first = true;
 	for (uint32_t p = 0; p < poses.size(); ++p) {
 		const MDLPose &pose = poses[p];
@@ -355,7 +362,9 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				mesh.vertices.push_back(vert2);
 			}
 			mesh.materials = materials;
-			const int nodeId = voxelizeMesh(frame.name, sceneGraph, core::move(mesh));
+			core::ProgressRange range = steps.range(frameIdx++);
+			range.setText(frame.name.c_str());
+			const int nodeId = voxelizeMesh(frame.name, sceneGraph, core::move(mesh), 0, true, &range);
 			if (!first && nodeId != -1) {
 				sceneGraph.node(nodeId).setVisible(false);
 			}

@@ -319,7 +319,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	printDetails(scene);
 	loadPaletteFromScene(scene, palette);
-	if (!loadScene(scene, sceneGraph, palette)) {
+	if (!loadScene(scene, sceneGraph, palette, ctx)) {
 		ogt_vox_destroy_scene(scene);
 		return false;
 	}
@@ -337,7 +337,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 }
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
-						  const palette::Palette &palette) {
+						  const palette::Palette &palette, const LoadContext &ctx) {
 	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	core::DynamicArray<MVModelToNode> models;
 	// Shared model volumes are only needed when transforms stay on nodes (references).
@@ -350,6 +350,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 	}
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
+		ctx.report("group", (int)i, (int)scene->num_groups);
 		const ogt_vox_group &group = scene->groups[i];
 		if (group.parent_group_index != k_invalid_group_index) {
 			continue;
@@ -359,7 +360,9 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			return false;
 		}
 	}
+	ctx.report("group", (int)scene->num_groups, (int)scene->num_groups);
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
+		ctx.report("instance", (int)n, (int)scene->num_instances);
 		if (addedInstances.has(n)) {
 			continue;
 		}
@@ -368,6 +371,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			return false;
 		}
 	}
+	ctx.report("instance", (int)scene->num_instances, (int)scene->num_instances);
 	if (scene->num_instances == 0 && scene->num_models > 0) {
 		for (MVModelToNode &m : models) {
 			if (m.volume == nullptr) {

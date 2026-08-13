@@ -115,7 +115,7 @@ private:
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize);
 	bool loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
+						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
 	void applyLayerParents(State &state, scenegraph::SceneGraph &sceneGraph);
 	voxel::RawVolume *loadShape(const core::String &shapeName, color::RGBA shapeColor,
 								const float box[4][4], const palette::Palette &palette);

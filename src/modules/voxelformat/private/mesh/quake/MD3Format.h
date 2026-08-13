@@ -93,7 +93,8 @@ private:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool loadSurface(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
-					 int64_t &surfaceStart, const MD3Header &hdr, scenegraph::SceneGraph &sceneGraph);
+					 int64_t &surfaceStart, const MD3Header &hdr, scenegraph::SceneGraph &sceneGraph,
+					 core::IProgress *progress);
 	bool loadTags(io::SeekableReadStream &stream, int64_t startOffset, const MD3Header &hdr,
 				  scenegraph::SceneGraph &sceneGraph);
 

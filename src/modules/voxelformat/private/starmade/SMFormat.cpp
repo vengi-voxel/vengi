@@ -186,6 +186,7 @@ static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
 bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
+	ctx.setProgress(0.0f);
 	core::Map<int, int> blockPal;
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		blockPal.put(BLOCKCOLOR[i].blockId, palette.getClosestMatch(BLOCKCOLOR[i].color));
@@ -197,14 +198,22 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("Could not load file %s", filename.c_str());
 			return false;
 		}
-		return readSmd3(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		const bool loaded = readSmd3(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	} else if (extension == "smd2") {
 		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 		if (!stream) {
 			Log::error("Could not load file %s", filename.c_str());
 			return false;
 		}
-		return readSmd2(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		const bool loaded = readSmd2(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	} else if (extension == "sment") {
 		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 		if (!stream) {
@@ -234,7 +243,9 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 				}
 			}
 		}
+		int fileIndex = 0;
 		for (const io::FilesystemEntry &e : files) {
+			ctx.report("segment", fileIndex++, (int)files.size());
 			const core::String &fileExt = core::string::extractExtension(e.name);
 			const bool isSmd3 = fileExt == "smd3";
 			const bool isSmd2 = fileExt == "smd2";
@@ -283,8 +294,13 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 				}
 			}
 		}
+		ctx.report("segment", (int)files.size(), (int)files.size());
 	}
-	return !sceneGraph.empty();
+	const bool loaded = !sceneGraph.empty();
+	if (loaded) {
+		ctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,

@@ -66,6 +66,8 @@ static void renameModelNode(scenegraph::SceneGraph &sceneGraph, const core::Stri
 
 bool StudioIOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	ctx.setProgressText("Studio");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -87,6 +89,7 @@ bool StudioIOFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		Log::debug("Loading studio io model from %s", modelFile.c_str());
 		if (ldraw.load(modelFile, zipArchive, sceneGraph, ctx)) {
 			priv::renameModelNode(sceneGraph, filename);
+			ctx.setProgress(1.0f);
 			return true;
 		}
 		Log::debug("Failed to load %s - trying model2.ldr with embedded part definitions", modelFile.c_str());
@@ -103,6 +106,7 @@ bool StudioIOFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		return false;
 	}
 	priv::renameModelNode(sceneGraph, filename);
+	ctx.setProgress(1.0f);
 	return true;
 }
 

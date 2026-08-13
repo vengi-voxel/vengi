@@ -414,6 +414,7 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	Log::debug("rootChildren: %i", rootChildren);
 	if (rootChildren == 0) {
 		Log::debug("No children node found in vxa - positioning might be wrong");
+		ctx.setProgress(1.0f);
 		return true;
 	}
 
@@ -429,6 +430,7 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	for (int32_t i = 0; i < rootChildren; ++i) {
+		ctx.report("animation node", i, rootChildren);
 		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(sceneGraph.root().children()[i]);
 		if (node == nullptr) {
 			continue;
@@ -445,6 +447,7 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 			}
 		}
 	}
+	ctx.report("animation node", rootChildren, rootChildren);
 	if (version == 1) {
 		// VXA version 1 positions are relative to the parent model's center rather than
 		// its pivot. Apply the pivot correction using the parent's model pivot.

@@ -3,6 +3,7 @@
  */
 
 #include "Autodesk3DSFormat.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "image/Image.h"
@@ -822,6 +823,12 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		}
 	}
 	Log::debug("Import %i nodes", (int)nodes.size());
+	int meshCount = 0;
+	for (const Node3ds &node : nodes) {
+		meshCount += (int)node.meshes.size();
+	}
+	core::StepProgress steps(ctx.progressRef(), meshCount);
+	int meshIdx = 0;
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node '%s'", (int)node.meshes.size(), node.name.c_str());
 		for (const Mesh3ds &mesh3ds : node.meshes) {
@@ -870,7 +877,9 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				nodeName = mesh3ds.name;
 			}
 			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)mesh3ds.faces.size());
-			const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), parent);
+			core::ProgressRange range = steps.range(meshIdx++);
+			range.setText(nodeName.c_str());
+			const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), parent, true, &range);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}

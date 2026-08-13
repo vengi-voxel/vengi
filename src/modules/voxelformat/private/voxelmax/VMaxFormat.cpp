@@ -217,6 +217,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 	Log::debug("Load %i scene groups", (int)scene.groups.size());
 	const core::String &objName = core::string::extractFilenameWithExtension(filename);
 	for (size_t i = 0; i < scene.groups.size(); ++i) {
+		ctx.report("group", (int)i, (int)scene.groups.size());
 		if (stopExecution()) {
 			return false;
 		}
@@ -239,7 +240,9 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 			return false;
 		}
 	}
+	ctx.report("group", (int)scene.groups.size(), (int)scene.groups.size());
 	for (size_t i = 0; i < scene.objects.size(); ++i) {
+		ctx.report("object", (int)i, (int)scene.objects.size());
 		if (stopExecution()) {
 			return false;
 		}
@@ -261,6 +264,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 			break;
 		}
 	}
+	ctx.report("object", (int)scene.objects.size(), (int)scene.objects.size());
 	return true;
 }
 

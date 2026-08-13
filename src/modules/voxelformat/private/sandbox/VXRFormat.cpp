@@ -429,11 +429,14 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, const
 	wrap(stream.readUInt32(children))
 	const int rootNodeId = sceneGraph.root().id();
 	for (uint32_t i = 0; i < children; ++i) {
+		ctx.report("node", (int)i, (int)children);
 		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNodeId, ctx))
 	}
+	ctx.report("node", (int)children, (int)children);
 	int32_t modelCount;
 	wrap(stream.readInt32(modelCount))
 	for (int32_t i = 0; i < modelCount; ++i) {
+		ctx.report("model", i, modelCount);
 		char nodeId[1024];
 		wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
 		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(nodeId);
@@ -450,6 +453,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, const
 			}
 		}
 	}
+	ctx.report("model", modelCount, modelCount);
 
 	return true;
 }
@@ -528,8 +532,10 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 
 	Log::debug("Found %i children", children);
 	for (int32_t i = 0; i < children; ++i) {
+		ctx.report("node", i, children);
 		wrapBool(importChild(filename, archive, stream, sceneGraph, version, rootNodeId, ctx))
 	}
+	ctx.report("node", children, children);
 
 	// VXR6 and VXR7 store the base template after the children tree
 	if (version >= 6 && version <= 7 && stream.remaining() > 0) {

@@ -4,6 +4,7 @@
 
 #include "MD3Format.h"
 #include "core/FourCC.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -89,8 +90,10 @@ bool MD3Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	// iterate surfaces - each surface has its own offset chain
 	int64_t surfaceOffset = startOffset + hdr.ofsSurfaces;
+	core::StepProgress steps(ctx.progressRef(), hdr.numSurfaces);
 	for (int32_t i = 0; i < hdr.numSurfaces; ++i) {
-		if (!loadSurface(filename, archive, *stream, surfaceOffset, hdr, sceneGraph)) {
+		core::ProgressRange range = steps.range(i);
+		if (!loadSurface(filename, archive, *stream, surfaceOffset, hdr, sceneGraph, &range)) {
 			Log::error("Failed to load surface %i", i);
 			return false;
 		}
@@ -106,7 +109,7 @@ bool MD3Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &archive,
 							io::SeekableReadStream &stream, int64_t &surfaceStart,
-							const MD3Header &hdr, scenegraph::SceneGraph &sceneGraph) {
+							const MD3Header &hdr, scenegraph::SceneGraph &sceneGraph, core::IProgress *progress) {
 	if (stream.seek(surfaceStart) == -1) {
 		Log::error("Failed to seek to surface header");
 		return false;
@@ -251,7 +254,10 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		mesh.addTriangle(meshTri);
 	}
 
-	const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh));
+	if (progress != nullptr) {
+		progress->setText(nodeName.c_str());
+	}
+	const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), 0, true, progress);
 
 	// advance the surface offset for the next surface
 	surfaceStart = surfaceStart + surfHdr.ofsEnd;

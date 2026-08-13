@@ -44,6 +44,7 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 
 	palette::RGBABuffer colors;
 	for (uint32_t h = 0u; h < height; ++h) {
+		ctx.report("slice", (int)h, (int)height);
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
 				uint8_t r, g, b;
@@ -59,6 +60,7 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 			}
 		}
 	}
+	ctx.report("slice", (int)height, (int)height);
 	return createPalette(colors, palette);
 }
 
@@ -93,6 +95,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	sampler.setPosition(0, 0, 0);
 	// we have to flip depth with height for our own coordinate system
 	for (uint32_t h = 0u; h < height; ++h) { // y
+		ctx.report("slice", (int)h, (int)height);
 		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (uint32_t d = 0u; d < depth; ++d) { // z
 			voxel::RawVolume::Sampler sampler3 = sampler2;
@@ -116,6 +119,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		}
 		sampler.movePositiveY();
 	}
+	ctx.report("slice", (int)height, (int)height);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));

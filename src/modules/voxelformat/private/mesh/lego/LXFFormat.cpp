@@ -6,6 +6,7 @@
 #include "LegoUtil.h"
 #include "app/App.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -609,7 +610,10 @@ bool LXFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	int firstModelNodeId = InvalidNodeId;
+	core::StepProgress steps(ctx.progressRef(), (int)parts.size());
+	int partIdx = 0;
 	for (const priv::PartInstance &part : parts) {
+		core::ProgressRange range = steps.range(partIdx++);
 		core::String partFile = priv::designIdToPartFile(part.designId);
 		core::String mappedPartFile;
 		const int legoDesignId = SDL_atoi(part.designId.c_str());
@@ -635,7 +639,8 @@ bool LXFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			continue;
 		}
 		const core::String nodeName = createGroupNode ? partFile : modelName;
-		const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(brickMesh), parentNodeId, true);
+		range.setText(nodeName.c_str());
+		const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(brickMesh), parentNodeId, true, &range);
 		if (firstModelNodeId == InvalidNodeId) {
 			firstModelNodeId = nodeId;
 		}

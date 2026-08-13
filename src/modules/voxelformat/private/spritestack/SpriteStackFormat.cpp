@@ -165,6 +165,7 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 
 	// For each slice i, compute sub-image origin in the atlas and iterate pixels:
 	for (int i = 0; i < info.slices; ++i) {
+		ctx.report("slice", i, info.slices);
 		int sx, sy, sw, sh;
 		int trimLeft = 0, trimTop = 0;
 
@@ -229,6 +230,7 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 			}
 		}
 	}
+	ctx.report("slice", info.slices, info.slices);
 	if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 		Log::error("Failed to add node to scene graph");
 		return false;

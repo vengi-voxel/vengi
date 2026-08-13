@@ -574,6 +574,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	core::ScopedPtr<priv::State> state(new priv::State());
 	palette::PaletteLookup paletteLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
+		if (c % core_max(1u, numvoxs / 100u) == 0u) {
+			ctx.report("voxel", (int)c, (int)numvoxs);
+		}
 		color::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));
 		wrap2(stream->skip(1)) // slab6 always 128
@@ -590,6 +593,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].normal, state->voxdata[c].col);
 	}
+	ctx.report("voxel", (int)numvoxs, (int)numvoxs);
 
 	for (uint32_t x = 0u; x < width; ++x) {
 		wrap(stream->readInt32(state->xoffsets[x]))

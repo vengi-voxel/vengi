@@ -401,7 +401,7 @@ bool CrocotileFormat::voxelizeGroups(const core::String &filename, const io::Arc
 	}
 
 	const core::String name = core::string::extractFilename(filename);
-	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
+	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, ctx.progress);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to voxelize crocotile mesh: %s", filename.c_str());
 		return false;

@@ -106,6 +106,9 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	palette::PaletteLookup palLookup(palette);
 	voxel::SparseVolume v;
 	for (uint64_t i = 0; i < count; ++i) {
+		if (i % core_max((uint64_t)1, count / 100u) == 0u) {
+			ctx.report("voxel", (int)i, (int)count);
+		}
 		int32_t x = 0, y = 0, z = 0;
 		if constexpr (version == 1) {
 			wrap(stream->readInt32(x));
@@ -136,6 +139,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 		const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 		v.setVoxel(x, z, -y, voxel); // swap y and z
 	}
+	ctx.report("voxel", (int)count, (int)count);
 
 	int x = 0;
 	int z = 0;

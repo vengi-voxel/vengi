@@ -519,6 +519,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	for (uint8_t model = 0; model < maxModels; ++model) {
+		ctx.report("model", (int)model, (int)maxModels);
 		int idx = 0;
 		bool visible = true;
 		char modelName[1024];
@@ -570,6 +571,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		node.setProperty("filename", filename);
 		sceneGraph.emplace(core::move(node));
 	}
+	ctx.report("model", (int)maxModels, (int)maxModels);
 
 	if (version >= 10) {
 		uint8_t surface;

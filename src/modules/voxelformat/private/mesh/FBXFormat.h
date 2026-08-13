@@ -28,9 +28,11 @@ private:
 						const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-				  const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap) const;
+				  const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
+				  core::IProgress *progress, int meshCount, int &meshIdx) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
+					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
+					core::IProgress *progress, int meshCount, int &meshIdx) const;
 	int addGroupNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					 int parent, const glm::vec3 &scale) const;
 	void importAnimations(const ufbx_scene *scene, scenegraph::SceneGraph &sceneGraph,

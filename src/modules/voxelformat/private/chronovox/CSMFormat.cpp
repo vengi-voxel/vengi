@@ -103,6 +103,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 
 	palette::PaletteLookup palLookup(palette);
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
+		ctx.report("matrix", (int)i, (int)matrixCount);
 		core::String name;
 		core::String parent;
 		wrapBool(readString(*stream, name, readStringAsInt))
@@ -185,6 +186,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
 	}
+	ctx.report("matrix", (int)matrixCount, (int)matrixCount);
 	if (version > 1) {
 		updateParents(sceneGraph);
 	}

@@ -275,6 +275,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	core::DynamicArray<image::ImagePtr> diffuseImages;
 	diffuseImages.reserve(uniqueFaces);
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
+		ctx.report("face", (int)i, (int)uniqueFaces);
 		const core::String name = channels[0] + core::string::toString(i);
 		diffuseImages.emplace_back(image::loadRGBAImageFromStream(name, *stream, blockSize, blockSize));
 
@@ -283,6 +284,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		Log::printf("%s\n", imgPrint.c_str());
 #endif
 	}
+	ctx.report("face", (int)uniqueFaces, (int)uniqueFaces);
 
 	core::DynamicArray<image::ImagePtr> emissiveImages;
 	emissiveImages.reserve(uniqueFaces);

@@ -665,6 +665,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 
 bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -726,6 +727,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 			Log::debug("Update IK effector node for node %i to UUID %s", node.id(), ik->effectorUUID.str().c_str());
 		}
 		sceneGraph.updateTransforms();
+		ctx.setProgress(1.0f);
 		return true;
 	}
 	Log::error("Unknown chunk magic");

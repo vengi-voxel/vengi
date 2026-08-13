@@ -80,6 +80,8 @@ size_t GoxTxtFormat::loadPalette(const core::String &filename, const io::Archive
 bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
+	ctx.setProgressText("Goxel text");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -141,7 +143,11 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		const voxel::Voxel voxel = voxel::createVoxel(palette, idx);
 		volume->setVoxel(x, y, z, voxel);
 	}
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	const bool loaded = sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	if (loaded) {
+		ctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

@@ -443,6 +443,8 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, const io::Archiv
 bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 									const LoadContext &ctx) {
+	ctx.setProgressText("Cubzh base64");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -469,6 +471,7 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, const io::Arch
 		return false;
 	}
 	Log::debug("%i bytes left in the stream", (int)stream->remaining());
+	ctx.setProgress(1.0f);
 	return true;
 }
 

@@ -124,6 +124,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 		int added = 0;
 		for (int i = 0; i < SECTOR_INTS; ++i) {
+			ctx.report("chunk", i, SECTOR_INTS);
 			if (volumes[i] == nullptr) {
 				continue;
 			}
@@ -133,6 +134,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			sceneGraph.emplace(core::move(node));
 			++added;
 		}
+		ctx.report("chunk", SECTOR_INTS, SECTOR_INTS);
 
 		return added > 0;
 	}

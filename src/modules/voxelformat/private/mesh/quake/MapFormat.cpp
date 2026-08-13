@@ -4,6 +4,7 @@
 
 #include "MapFormat.h"
 #include "core/ArrayLength.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -402,8 +403,26 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	int entity = 0;
+	const int64_t startPos = stream->pos();
+	int entityCount = 0;
+	int depth = 0;
 	core::String line;
+	while (stream->readLine(line)) {
+		if (line == "{") {
+			if (depth == 0) {
+				++entityCount;
+			}
+			++depth;
+		} else if (line == "}") {
+			--depth;
+		}
+	}
+	if (stream->seek(startPos) == -1) {
+		Log::error("Failed to seek to map start");
+		return false;
+	}
+	core::StepProgress steps(ctx.progressRef(), entityCount);
+	int entity = 0;
 	while (stream->readLine(line)) {
 		if (line.empty() || core::string::startsWith(line, "//")) {
 			continue;
@@ -452,7 +471,9 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				core::String classname;
 				props.get("classname", classname);
 				const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
-				const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
+				core::ProgressRange range = steps.range(entity);
+				range.setText(name.c_str());
+				const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 				if (nodeId == InvalidNodeId) {
 					Log::error("Voxelization failed");
 					return false;

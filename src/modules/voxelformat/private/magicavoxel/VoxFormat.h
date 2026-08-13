@@ -45,7 +45,8 @@ private:
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					  uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
 	uint32_t saveModel(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx);
-	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
+	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+				   const LoadContext &ctx);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 					  int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,

@@ -20,6 +20,8 @@ int BenVoxelFormat::emptyPaletteIndex() const {
 bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									   const LoadContext &ctx) {
+	ctx.setProgressText("BenVoxel");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -32,9 +34,17 @@ bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::A
 			Log::error("Failed to read json file");
 			return false;
 		}
-		return benv::loadJson(sceneGraph, palette, jsonStr);
+		const bool loaded = benv::loadJson(sceneGraph, palette, jsonStr);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	} else if (core::string::endsWith(filename, "ben")) {
-		return benv::loadBinary(sceneGraph, palette, *stream);
+		const bool loaded = benv::loadBinary(sceneGraph, palette, *stream);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	}
 	return false;
 }

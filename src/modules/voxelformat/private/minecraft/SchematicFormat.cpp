@@ -29,6 +29,8 @@ namespace voxelformat {
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 										const LoadContext &loadctx) {
+	loadctx.setProgressText("schematic");
+	loadctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -39,7 +41,11 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	const core::String &extension = core::string::extractExtension(filename);
 	if (extension == "bp") {
 		// Axiom format is not a zip file, it has a custom binary format
-		return axiom::loadGroupsPalette(*stream, sceneGraph, palette);
+		const bool loaded = axiom::loadGroupsPalette(*stream, sceneGraph, palette);
+		if (loaded) {
+			loadctx.setProgress(1.0f);
+		}
+		return loaded;
 	}
 
 	io::ZipReadStream zipStream(*stream);
@@ -58,19 +64,29 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	if (extension == "nbt") {
 		const int dataVersion = schematic->get("DataVersion").int32(-1);
 		if (nbt::loadGroupsPalette(*schematic, sceneGraph, palette, dataVersion)) {
+			loadctx.setProgress(1.0f);
 			return true;
 		}
 	} else if (extension == "litematic") {
-		return litematic::loadGroupsPalette(*schematic, sceneGraph, palette);
+		const bool loaded = litematic::loadGroupsPalette(*schematic, sceneGraph, palette);
+		if (loaded) {
+			loadctx.setProgress(1.0f);
+		}
+		return loaded;
 	}
 
 	int version = schematic->get("Version").int32(-1);
 	if (version >= 3) {
 		if (sponge::loadGroupsPaletteSponge3(*schematic, sceneGraph, palette, version)) {
+			loadctx.setProgress(1.0f);
 			return true;
 		}
 	}
-	return sponge::loadGroupsPaletteSponge1And2(*schematic, sceneGraph, palette);
+	const bool loaded = sponge::loadGroupsPaletteSponge1And2(*schematic, sceneGraph, palette);
+	if (loaded) {
+		loadctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 image::ImagePtr SchematicFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,

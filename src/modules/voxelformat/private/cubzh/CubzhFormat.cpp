@@ -790,6 +790,8 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 bool CubzhFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									const LoadContext &ctx) {
+	ctx.setProgressText("Cubzh");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -811,7 +813,11 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 			return false;
 		}
 	}
-	return loadAnimations(filename, archive, sceneGraph, ctx);
+	const bool loaded = loadAnimations(filename, archive, sceneGraph, ctx);
+	if (loaded) {
+		ctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 size_t CubzhFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,

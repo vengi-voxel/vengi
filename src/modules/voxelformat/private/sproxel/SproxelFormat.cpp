@@ -159,6 +159,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 	palette::PaletteLookup palLookup(palette);
 	// TODO: PERF: use volume sampler
 	for (int y = sizey - 1; y >= 0; y--) {
+		ctx.report("slice", sizey - y - 1, sizey);
 		for (int z = 0; z < sizez; z++) {
 			for (int x = 0; x < sizex; x++) {
 				char hex[10];
@@ -194,6 +195,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 			return false;
 		}
 	}
+	ctx.report("slice", sizey, sizey);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;

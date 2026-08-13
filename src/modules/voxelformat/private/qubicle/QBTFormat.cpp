@@ -339,7 +339,7 @@ bool QBTFormat::skipNode(io::SeekableReadStream &stream) {
  * Children ChildCount nodes currently of type Matrix or Compound
  */
 bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-							 palette::Palette &palette, Header &state) {
+							 palette::Palette &palette, Header &state, const LoadContext &ctx) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName("Compound");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
@@ -352,17 +352,19 @@ bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGr
 	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);
 	for (uint32_t i = 0; i < childCount; ++i) {
+		ctx.report("node", (int)i, (int)childCount);
 		if (mergeCompounds) {
 			// if you don't need the datatree you can skip child nodes
 			if (!skipNode(stream)) {
 				return false;
 			}
 		} else {
-			if (!loadNode(stream, sceneGraph, nodeId, palette, state)) {
+			if (!loadNode(stream, sceneGraph, nodeId, palette, state, ctx)) {
 				return false;
 			}
 		}
 	}
+	ctx.report("node", (int)childCount, (int)childCount);
 	return true;
 }
 
@@ -490,7 +492,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
  * node) ChildCount 4 bytes, uint, number of child nodes Children ChildCount nodes currently of type Matrix or Compound
  */
 bool QBTFormat::loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-						  palette::Palette &palette, Header &state) {
+						  palette::Palette &palette, Header &state, const LoadContext &ctx) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -502,10 +504,12 @@ bool QBTFormat::loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph
 	node.setName("Model");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	for (uint32_t i = 0; i < childCount; i++) {
-		if (!loadNode(stream, sceneGraph, nodeId, palette, state)) {
+		ctx.report("node", (int)i, (int)childCount);
+		if (!loadNode(stream, sceneGraph, nodeId, palette, state, ctx)) {
 			return false;
 		}
 	}
+	ctx.report("node", (int)childCount, (int)childCount);
 	return true;
 }
 
@@ -515,7 +519,7 @@ bool QBTFormat::loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph
  * RootNode, can currently either be Model, Compound or Matrix
  */
 bool QBTFormat::loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-						 palette::Palette &palette, Header &state) {
+						 palette::Palette &palette, Header &state, const LoadContext &ctx) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -534,7 +538,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph 
 	}
 	case qbt::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!loadModel(stream, sceneGraph, parent, palette, state)) {
+		if (!loadModel(stream, sceneGraph, parent, palette, state, ctx)) {
 			Log::error("Failed to load model");
 			return false;
 		}
@@ -542,7 +546,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph 
 		break;
 	case qbt::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
-		if (!loadCompound(stream, sceneGraph, parent, palette, state)) {
+		if (!loadCompound(stream, sceneGraph, parent, palette, state, ctx)) {
 			Log::error("Failed to load compound");
 			return false;
 		}
@@ -662,7 +666,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		}
 		if (0 == memcmp(buf, "DATATREE", 8)) {
 			scenegraph::SceneGraph sceneGraph;
-			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
+			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state, ctx)) {
 				Log::error("Failed to load node");
 				return 0u;
 			}
@@ -703,7 +707,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			Log::debug("load data tree");
-			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
+			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state, ctx)) {
 				Log::error("Failed to load node");
 				return false;
 			}

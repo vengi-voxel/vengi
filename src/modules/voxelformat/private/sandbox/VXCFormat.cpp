@@ -65,10 +65,13 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		Log::debug("Could not find any vxr file in the vxc archive");
 		return false;
 	}
+	int fileIndex = 0;
 	for (const io::FilesystemEntry &entry : files) {
+		ctx.report("scene", fileIndex++, (int)files.size());
 		VXRFormat f;
 		f.load(entry.name, vxcArchive, sceneGraph, ctx);
 	}
+	ctx.report("scene", (int)files.size(), (int)files.size());
 	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }

@@ -160,7 +160,9 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 
 	io::ArchiveFiles files;
 	zipArchive->list("*.node", files);
+	int fileIndex = 0;
 	for (const io::FilesystemEntry &file : files) {
+		ctx.report("node", fileIndex++, (int)files.size());
 		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath));
 		if (nodeSpecStream) {
 			NodeSpec nodeSpec;
@@ -174,6 +176,7 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 			}
 		}
 	}
+	ctx.report("node", (int)files.size(), (int)files.size());
 	sceneGraph.updateTransforms();
 	return true;
 }

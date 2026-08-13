@@ -119,6 +119,8 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 bool DatFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								  const LoadContext &loadctx) {
+	loadctx.setProgressText("Minecraft DAT");
+	loadctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -152,7 +154,11 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	io::ZipReadStream zipStream(*stream);
 	ctx.stream = &zipStream;
 	ctx.bedrock = false;
-	return priv::load(filename, ctx, sceneGraph, archive, loadctx);
+	const bool loaded = priv::load(filename, ctx, sceneGraph, archive, loadctx);
+	if (loaded) {
+		loadctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 } // namespace voxelformat

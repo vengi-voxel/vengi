@@ -80,6 +80,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);
 	for (uint32_t i = 0; i < numBlocks; ++i) {
+		ctx.report("block", (int)i, (int)numBlocks);
 		uint32_t x, y, z;
 		wrap(stream->readUInt32BE(x))
 		wrap(stream->readUInt32BE(y))
@@ -95,6 +96,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 		blockPal.get(block, color);
 		volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));
 	}
+	ctx.report("block", (int)numBlocks, (int)numBlocks);
 #if 0
 	uint32_t connections;
 	wrap(stream->readUInt32BE(connections))

@@ -353,7 +353,7 @@ size_t QBCLFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	header.loadPalette = true;
 
 	scenegraph::SceneGraph sceneGraph;
-	wrapBool(readNodes(filename, *stream, sceneGraph, sceneGraph.root().id(), palette, header))
+	wrapBool(readNodes(filename, *stream, sceneGraph, sceneGraph.root().id(), palette, header, ctx))
 
 	Log::debug("qbcl: loaded %i colors", palette.colorCount());
 	return palette.colorCount();
@@ -503,7 +503,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader,
+						   const LoadContext &ctx) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: VOXELFORMAT: rotation matrix?
 	uint32_t childCount;
@@ -519,14 +520,17 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream 
 	int nodeId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
 	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header))
+		ctx.report("node", (int)i, (int)childCount);
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header, ctx))
 	}
+	ctx.report("node", (int)childCount, (int)childCount);
 	return true;
 }
 
 bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-							  palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+							  palette::Palette &palette, Header &header, const NodeHeader &nodeHeader,
+							  const LoadContext &ctx) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
@@ -541,13 +545,16 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 	wrap(stream.readUInt32(childCount))
 	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header))
+		ctx.report("node", (int)i, (int)childCount);
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header, ctx))
 	}
+	ctx.report("node", (int)childCount, (int)childCount);
 	return true;
 }
 
 bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, int parent, palette::Palette &palette, Header &header) {
+						   scenegraph::SceneGraph &sceneGraph, int parent, palette::Palette &palette, Header &header,
+						   const LoadContext &ctx) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t unknown;
@@ -572,7 +579,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream 
 		break;
 	case qbcl::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!readModel(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
+		if (!readModel(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader, ctx)) {
 			Log::error("Failed to load model %s", name.c_str());
 			return false;
 		}
@@ -581,7 +588,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream 
 	case qbcl::NODE_TYPE_COMPOUND:
 		core_assert(parent != -1);
 		Log::debug("Found compound");
-		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
+		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader, ctx)) {
 			Log::error("Failed to load compound %s", name.c_str());
 			return false;
 		}
@@ -637,7 +644,7 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	wrapBool(readHeader(*stream, header))
 
 	palette::Palette palCopy = palette;
-	wrapBool(readNodes(filename, *stream, sceneGraph, -1, palCopy, header))
+	wrapBool(readNodes(filename, *stream, sceneGraph, -1, palCopy, header, ctx))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty(scenegraph::PropTitle, header.title);

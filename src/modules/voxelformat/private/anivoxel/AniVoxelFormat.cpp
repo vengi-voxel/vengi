@@ -47,6 +47,8 @@ void AniVoxelFormat::seek(const ChunkHeader &header, io::SeekableReadStream &str
 bool AniVoxelFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									   const LoadContext &ctx) {
+	ctx.setProgressText("AniVoxel");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -96,6 +98,7 @@ bool AniVoxelFormat::loadGroupsPalette(const core::String &filename, const io::A
 		readBuffers(*stream, sceneGraph, ctx);
 	}
 #endif
+	ctx.setProgress(1.0f);
 	return true;
 }
 

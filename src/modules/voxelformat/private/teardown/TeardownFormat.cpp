@@ -571,12 +571,14 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	wrap(s.readUInt32(topEntityCount))
 	Log::debug("%u top entities", topEntityCount);
 	for (uint32_t i = 0; i < topEntityCount; ++i) {
+		ctx.report("entity", (int)i, (int)topEntityCount);
 		int nodeId = InvalidNodeId;
 		if (!readEntity(sceneGraph, s, sceneGraph.root().id(), nodeId)) {
 			Log::error("Failed to read top entity %u/%u", i, topEntityCount);
 			return false;
 		}
 	}
+	ctx.report("entity", (int)topEntityCount, (int)topEntityCount);
 
 	sceneGraph.updateTransforms();
 

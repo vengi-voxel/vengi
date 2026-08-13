@@ -59,12 +59,12 @@ private:
 					const NodeHeader &nodeHeader);
 	bool readModel(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				   int parent, const core::String &name, palette::Palette &palette, Header &header,
-				   const NodeHeader &nodeHeader);
+				   const NodeHeader &nodeHeader, const LoadContext &ctx);
 	bool readCompound(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  int parent, const core::String &name, palette::Palette &palette, Header &header,
-					  const NodeHeader &nodeHeader);
+					  const NodeHeader &nodeHeader, const LoadContext &ctx);
 	bool readNodes(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   int parent, palette::Palette &palette, Header &header);
+				   int parent, palette::Palette &palette, Header &header, const LoadContext &ctx);
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;

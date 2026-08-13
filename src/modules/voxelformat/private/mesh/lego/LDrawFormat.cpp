@@ -5,6 +5,7 @@
 #include "LDrawFormat.h"
 #include "LegoUtil.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -32,6 +33,23 @@ size_t countGeometryTris(const char *const *lines, size_t lineCount) {
 		}
 	}
 	return tris;
+}
+
+int countVoxelizeOperations(const core::DynamicArray<core::String> &lines) {
+	bool hasGeometry = false;
+	int subFileCount = 0;
+	for (const core::String &line : lines) {
+		const char *ptr = line.c_str();
+		while (*ptr == ' ' || *ptr == '\t') {
+			++ptr;
+		}
+		if (*ptr == '1') {
+			++subFileCount;
+		} else if (*ptr == '3' || *ptr == '4') {
+			hasGeometry = true;
+		}
+	}
+	return (hasGeometry ? 1 : 0) + subFileCount;
 }
 
 } // namespace
@@ -103,6 +121,12 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 
 	if (isMpd) {
 		bool success = false;
+		int voxelizeCount = 0;
+		for (const MpdSection &section : mpdSections) {
+			voxelizeCount += countVoxelizeOperations(section.lines);
+		}
+		core::StepProgress steps(ctx.progressRef(), voxelizeCount);
+		int voxelizeIdx = 0;
 		for (const MpdSection &section : mpdSections) {
 			Mesh mesh;
 			core::DynamicArray<legoutil::SubFileRef> subFiles;
@@ -131,7 +155,9 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 
 			int nodeId = InvalidNodeId;
 			if (!mesh.vertices.empty()) {
-				nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
+				core::ProgressRange range = steps.range(voxelizeIdx++);
+				range.setText(name.c_str());
+				nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 				if (nodeId == InvalidNodeId) {
 					continue;
 				}
@@ -140,9 +166,11 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 			}
 
 			for (const legoutil::SubFileRef &ref : subFiles) {
+				core::ProgressRange range = steps.range(voxelizeIdx++);
+				range.setText(ref.filename.c_str());
 				Mesh brickMesh;
 				if (legoutil::resolveSubFile(cachedArchive, ref, colors, brickMesh, 0) && !brickMesh.vertices.empty()) {
-					voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId);
+					voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
 				}
 			}
 
@@ -182,9 +210,14 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 		return false;
 	}
 
+	const int voxelizeCount = (mesh.vertices.empty() ? 0 : 1) + (int)subFiles.size();
+	core::StepProgress steps(ctx.progressRef(), voxelizeCount);
+	int voxelizeIdx = 0;
 	int nodeId = InvalidNodeId;
 	if (!mesh.vertices.empty()) {
-		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
+		core::ProgressRange range = steps.range(voxelizeIdx++);
+		range.setText(name.c_str());
+		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 		if (nodeId == InvalidNodeId) {
 			Log::error("Failed to voxelize LDraw mesh from %s", filename.c_str());
 			return false;
@@ -194,9 +227,11 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 	}
 
 	for (const legoutil::SubFileRef &ref : subFiles) {
+		core::ProgressRange range = steps.range(voxelizeIdx++);
+		range.setText(ref.filename.c_str());
 		Mesh brickMesh;
 		if (legoutil::resolveSubFile(cachedArchive, ref, colors, brickMesh, 0) && !brickMesh.vertices.empty()) {
-			voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId);
+			voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
 		} else if (brickMesh.vertices.empty()) {
 			Log::warn("No geometry resolved for sub-file reference: %s", ref.filename.c_str());
 		}

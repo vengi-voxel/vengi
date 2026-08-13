@@ -266,11 +266,12 @@ private:
 	void processCompatibility(const BBMeta &meta, BBElementMap &elementMap, BBNode &root) const;
 	void fixNode(BBNode &node) const;
 	bool addNode(const BBNode &node, const BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
-				 const MeshMaterialArray &meshMaterialArray, int parent) const;
+				 const MeshMaterialArray &meshMaterialArray, int parent, core::IProgress *progress,
+				 int meshCount, int &meshIdx) const;
 	bool generateCube(const BBNode &node, const BBElement &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
 	bool generateMesh(const BBNode &node, BBElement &element, const MeshMaterialArray &meshMaterialArray,
-					  scenegraph::SceneGraph &sceneGraph, int parent) const;
+					  scenegraph::SceneGraph &sceneGraph, int parent, core::IProgress *progress) const;
 
 protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,

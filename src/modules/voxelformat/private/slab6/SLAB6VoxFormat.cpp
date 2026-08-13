@@ -92,6 +92,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 	// TODO: PERF: use volume sampler
 	for (uint32_t w = 0u; w < width; ++w) {
+		ctx.report("scanline", (int)w, (int)width);
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t h = 0u; h < height; ++h) {
 				uint8_t palIdx;
@@ -105,6 +106,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 			}
 		}
 	}
+	ctx.report("scanline", (int)width, (int)width);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));

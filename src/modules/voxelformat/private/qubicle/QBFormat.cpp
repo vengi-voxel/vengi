@@ -509,12 +509,14 @@ size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 	palette::RGBABuffer colors;
 	colors.reserve(numMatrices * 256);
 	for (uint32_t i = 0; i < numMatrices; i++) {
+		ctx.report("matrix", (int)i, (int)numMatrices);
 		Log::debug("Loading matrix colors: %u", i);
 		if (!readPalette(state, *stream, colors)) {
 			Log::error("Failed to load the matrix colors %u", i);
 			break;
 		}
 	}
+	ctx.report("matrix", (int)numMatrices, (int)numMatrices);
 	return createPalette(colors, palette);
 }
 
@@ -558,12 +560,14 @@ bool QBFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 	sceneGraph.reserve(numMatrices);
 	palette::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
+		ctx.report("matrix", (int)i, (int)numMatrices);
 		Log::debug("Loading matrix: %u", i);
 		if (!readMatrix(state, *stream, sceneGraph, palLookup)) {
 			Log::error("Failed to load the matrix %u", i);
 			break;
 		}
 	}
+	ctx.report("matrix", (int)numMatrices, (int)numMatrices);
 	return true;
 }
 

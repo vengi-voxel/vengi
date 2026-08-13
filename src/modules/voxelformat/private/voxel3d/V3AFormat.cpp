@@ -117,6 +117,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 			}
 			y = 0;
 			++x;
+			ctx.report("slice", x, width + 1);
 			if (x > width) {
 				Log::error("Max width exceeded at line %i: x: %i, y: %i, width: %i, height: %i", lineCnt, x, y, width,
 						   height);
@@ -154,6 +155,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 	} while (stream->readLine(line));
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
+	ctx.report("slice", width + 1, width + 1);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 

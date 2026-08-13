@@ -661,6 +661,8 @@ size_t VXLFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 
 bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	ctx.setProgressText("Command and Conquer VXL");
+	ctx.setProgress(0.0f);
 	vxl::VXLModel mdl;
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
@@ -712,6 +714,7 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		}
 	}
 
+	ctx.setProgress(1.0f);
 	return true;
 }
 

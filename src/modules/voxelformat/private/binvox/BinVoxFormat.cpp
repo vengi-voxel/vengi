@@ -32,7 +32,7 @@ namespace voxelformat {
 	}
 
 bool BinVoxFormat::readData(State &state, const core::String &filename, io::SeekableReadStream &stream,
-							scenegraph::SceneGraph &sceneGraph) {
+							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	const voxel::Region region(0, 0, 0, (int)state._d - 1, (int)state._w - 1, (int)state._h - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
@@ -46,8 +46,14 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;
+	const uint32_t reportStep = core_max(1u, numVoxels / 100u);
+	uint32_t nextReport = 0u;
 	const palette::Palette &palette = node.palette();
 	while (endIndex < numVoxels) {
+		if (index >= nextReport) {
+			ctx.report("voxel", (int)index, (int)numVoxels);
+			nextReport = index + reportStep;
+		}
 		uint8_t value;
 		uint8_t count;
 		wrap(stream.readUInt8(value))
@@ -109,6 +115,7 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		}
 		index = endIndex;
 	}
+	ctx.report("voxel", (int)numVoxels, (int)numVoxels);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -160,7 +167,7 @@ bool BinVoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr
 			return false;
 		}
 	}
-	if (!readData(state, filename, *stream, sceneGraph)) {
+	if (!readData(state, filename, *stream, sceneGraph, ctx)) {
 		Log::warn("Could not load the data from %s", filename.c_str());
 		return false;
 	}

@@ -96,7 +96,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		meshMaterialArray.push_back(createMaterial(image));
 	}
 
-	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterialArray)) {
+	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterialArray, ctx.progress)) {
 		Log::error("Failed to load frame");
 		return false;
 	}
@@ -106,7 +106,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 						  const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
-						  const MeshMaterialArray &meshMaterialArray) {
+						  const MeshMaterialArray &meshMaterialArray, core::IProgress *progress) {
 	if (frameIndex >= hdr.numFrames) {
 		Log::error("Invalid frame index");
 		return false;
@@ -197,7 +197,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		mesh.addTriangle(meshTri);
 	}
 
-	return voxelizeMesh(filename, sceneGraph, core::move(mesh)) != InvalidNodeId;
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId;
 }
 
 #undef wrap

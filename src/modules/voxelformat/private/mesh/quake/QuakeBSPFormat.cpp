@@ -5,6 +5,7 @@
 #include "QuakeBSPFormat.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -461,7 +462,8 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 }
 
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
-								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
+								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header,
+								   core::IProgress *progress) {
 	MeshMaterialMap meshMaterials;
 	MeshMaterialArray meshMaterialArray;
 	core::DynamicArray<Texture> textures;
@@ -490,7 +492,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	}
 
 	const core::String &name = core::string::extractFilename(filename);
-	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray)) {
+	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray, progress)) {
 		Log::error("Failed to voxelize %s", filename.c_str());
 		return false;
 	}
@@ -552,7 +554,8 @@ static int parseMaxLevel(const core::String &entities) {
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
-											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
+											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header,
+											 core::IProgress *progress) {
 	Log::debug("Load textures");
 	MeshMaterialMap meshMaterials;
 	MeshMaterialArray meshMaterialArray;
@@ -600,6 +603,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	bool state = false;
 
 	core::Buffer<Face> facesLevel;
+	core::StepProgress steps(core::progressOrNull(progress), maxLevel);
 	for (int i = 0; i < maxLevel; ++i) {
 		Log::debug("Load level %i/%i", i, maxLevel);
 		facesLevel.clear();
@@ -608,8 +612,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			continue;
 		}
 		Log::debug("Voxelize level %i", i);
+		core::ProgressRange range = steps.range(i);
 		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph,
-					 core::String::format("Level %i", i + 1), meshMaterialArray)) {
+					 core::String::format("Level %i", i + 1), meshMaterialArray, &range)) {
 			state = true;
 		}
 	}
@@ -620,7 +625,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
 							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
 							  const core::Buffer<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
-							  const core::String &name, const MeshMaterialArray &meshMaterialArray) {
+							  const core::String &name, const MeshMaterialArray &meshMaterialArray,
+							  core::IProgress *progress) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -731,7 +737,10 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 		mesh.addTriangle(meshTri);
 	}
 
-	return voxelizeMesh(name, sceneGraph, core::move(mesh)) > 0;
+	if (progress != nullptr) {
+		progress->setText(name.c_str());
+	}
+	return voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, progress) > 0;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -757,10 +766,10 @@ bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::Arch
 	}
 
 	if (header.version == 79 && header.magic == bspMagic) {
-		return loadUFOAlienInvasionBsp(filename, *stream, sceneGraph, header);
+		return loadUFOAlienInvasionBsp(filename, *stream, sceneGraph, header, ctx.progress);
 	}
 	if (header.magic == q1Version) {
-		return loadQuake1Bsp(filename, *stream, sceneGraph, header);
+		return loadQuake1Bsp(filename, *stream, sceneGraph, header, ctx.progress);
 	}
 
 	uint8_t buf[4];

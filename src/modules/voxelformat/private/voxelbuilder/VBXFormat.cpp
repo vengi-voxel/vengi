@@ -72,6 +72,8 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	ctx.setProgressText("Voxel Builder");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -140,6 +142,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		}
 	}
 
+	ctx.setProgress(1.0f);
 	return true;
 }
 

@@ -228,12 +228,22 @@ bool PNGFormat::importAsPlane(scenegraph::SceneGraph &sceneGraph, const palette:
 bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	ctx.setProgressText("PNG");
+	ctx.setProgress(0.0f);
 	const int type = core::getVar(cfg::VoxformatImageImportType)->intVal();
 	if (type == ImageType::Heightmap) {
-		return importAsHeightmap(sceneGraph, palette, filename, archive);
+		const bool loaded = importAsHeightmap(sceneGraph, palette, filename, archive);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	}
 	if (type == ImageType::Volume) {
-		return importAsVolume(sceneGraph, palette, filename, archive);
+		const bool loaded = importAsVolume(sceneGraph, palette, filename, archive);
+		if (loaded) {
+			ctx.setProgress(1.0f);
+		}
+		return loaded;
 	}
 
 	core::String basename = core::string::extractFilename(filename);
@@ -252,10 +262,16 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	}
 	Log::debug("Found %i images for import", (int)entities.size());
 
+	bool loaded;
 	if (entities.size() > 1u) {
-		return importSlices(sceneGraph, palette, entities);
+		loaded = importSlices(sceneGraph, palette, entities);
+	} else {
+		loaded = importAsPlane(sceneGraph, palette, filename, archive);
 	}
-	return importAsPlane(sceneGraph, palette, filename, archive);
+	if (loaded) {
+		ctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,

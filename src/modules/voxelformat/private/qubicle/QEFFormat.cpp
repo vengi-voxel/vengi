@@ -35,6 +35,7 @@ namespace voxelformat {
 
 bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -96,6 +97,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	palette.setSize(paletteSize);
 
 	for (int i = 0; i < paletteSize; ++i) {
+		ctx.report("palette", i, paletteSize);
 		float r, g, b;
 		wrapBool(stream->readLine(sizeof(buf), buf))
 		if (sscanf(buf, "%f %f %f", &r, &g, &b) != 3) {
@@ -105,6 +107,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		const glm::vec4 color(r, g, b, 1.0f);
 		palette.setColor(i, color::getRGBA(color));
 	}
+	ctx.report("palette", paletteSize, paletteSize);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);
@@ -121,7 +124,11 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 		volume->setVoxel(x, y, z, voxel);
 	}
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	const bool loaded = sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	if (loaded) {
+		ctx.setProgress(1.0f);
+	}
+	return loaded;
 }
 
 bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

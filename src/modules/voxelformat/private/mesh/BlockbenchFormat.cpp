@@ -6,6 +6,7 @@
 #include "LZUTF8.h"
 #include "MeshMaterial.h"
 #include "Polygon.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -704,10 +705,11 @@ static void mergeGroupProperties(BlockbenchFormat::BBNode &node,
 }
 
 bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, const MeshMaterialArray &meshMaterialArray,
-									scenegraph::SceneGraph &sceneGraph, int parent) const {
+									scenegraph::SceneGraph &sceneGraph, int parent, core::IProgress *progress) const {
 	Mesh &mesh = bbElement.mesh;
 	mesh.materials = meshMaterialArray;
-	const int nodeIdx = voxelizeMesh(bbElement.uuid, bbElement.name, sceneGraph, core::move(mesh), parent);
+	const int nodeIdx =
+		voxelizeMesh(bbElement.uuid, bbElement.name, sceneGraph, core::move(mesh), parent, true, progress);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}
@@ -784,7 +786,8 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 }
 
 bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph,
-							   const MeshMaterialArray &meshMaterialArray, int parent) const {
+							   const MeshMaterialArray &meshMaterialArray, int parent, core::IProgress *progress,
+							   int meshCount, int &meshIdx) const {
 	Log::debug("node: %s with %i children", bbNode.name.c_str(), (int)bbNode.children.size());
 	for (const core::UUID &uuid : bbNode.referenced) {
 		auto elementIter = bbElementMap.find(uuid);
@@ -799,7 +802,14 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 				return false;
 			}
 		} else if (bbElement.type == BBElementType::Mesh) {
-			if (!generateMesh(bbNode, bbElement, meshMaterialArray, sceneGraph, parent)) {
+			core::IProgress *meshProgress = progress;
+			core::StepProgress steps(core::progressOrNull(progress), meshCount);
+			core::ProgressRange range = steps.range(meshIdx++);
+			if (progress != nullptr && meshCount > 0) {
+				range.setText(bbElement.name.c_str());
+				meshProgress = &range;
+			}
+			if (!generateMesh(bbNode, bbElement, meshMaterialArray, sceneGraph, parent, meshProgress)) {
 				return false;
 			}
 		} else if (bbElement.type == BBElementType::Locator || bbElement.type == BBElementType::NullObject) {
@@ -835,7 +845,7 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 		groupNode.setTranslation(localOrigin);
 		groupNode.setRotation(priv::eulerZYX(bbChild.rotation));
 		groupNode.setScale(bbChild.size);
-		if (!addNode(bbChild, bbElementMap, sceneGraph, meshMaterialArray, groupParent)) {
+		if (!addNode(bbChild, bbElementMap, sceneGraph, meshMaterialArray, groupParent, progress, meshCount, meshIdx)) {
 			return false;
 		}
 	}
@@ -1364,7 +1374,14 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	// Apply compatibility fixes for older Blockbench versions before creating scene nodes
 	processCompatibility(bbMeta, bbElementMap, bbRoot);
 
-	if (!addNode(bbRoot, bbElementMap, sceneGraph, meshMaterialArray, 0)) {
+	int meshCount = 0;
+	for (const auto &entry : bbElementMap) {
+		if (entry->value.type == BBElementType::Mesh) {
+			++meshCount;
+		}
+	}
+	int meshIdx = 0;
+	if (!addNode(bbRoot, bbElementMap, sceneGraph, meshMaterialArray, 0, ctx.progress, meshCount, meshIdx)) {
 		Log::error("Failed to add node");
 		return false;
 	}

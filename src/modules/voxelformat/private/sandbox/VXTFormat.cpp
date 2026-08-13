@@ -63,6 +63,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	scenegraph::SceneGraph tileGraph;
 
 	for (int32_t i = 0; i < models; ++i) {
+		ctx.report("model", i, models);
 		char path[1024];
 		wrapBool(stream.readString(sizeof(path), path, true))
 		VXMFormat f;
@@ -80,6 +81,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			tileGraph.emplace(core::move(newNode));
 		}
 	}
+	ctx.report("model", models, models);
 
 	int idx = 0;
 	for (;;) {

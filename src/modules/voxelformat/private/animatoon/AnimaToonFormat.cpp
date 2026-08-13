@@ -34,6 +34,8 @@ namespace voxelformat {
 bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 									 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 									 const LoadContext &ctx) {
+	ctx.setProgressText("AnimaToon");
+	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -417,6 +419,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	}
 #endif
 
+	ctx.setProgress(1.0f);
 	return true;
 }
 

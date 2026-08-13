@@ -352,6 +352,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	}
 
 	for (int i = 0; i < nBoxes; ++i) {
+		ctx.report("skin part", i, nBoxes);
 		const SkinBox &skinBox = boxes[i];
 		const glm::ivec3 size = skinBox.size;
 		const voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
@@ -386,6 +387,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			}
 		}
 	}
+	ctx.report("skin part", nBoxes, nBoxes);
 	return true;
 }
 

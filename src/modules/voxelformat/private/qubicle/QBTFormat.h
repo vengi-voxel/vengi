@@ -37,11 +37,11 @@ private:
 	bool loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
 					palette::Palette &palette, Header &state);
 	bool loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-					  palette::Palette &palette, Header &state);
+					  palette::Palette &palette, Header &state, const LoadContext &ctx);
 	bool loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-				   palette::Palette &palette, Header &state);
+				   palette::Palette &palette, Header &state, const LoadContext &ctx);
 	bool loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-				  palette::Palette &palette, Header &state);
+				  palette::Palette &palette, Header &state, const LoadContext &ctx);
 	bool loadColorMap(io::SeekableReadStream &stream, palette::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,

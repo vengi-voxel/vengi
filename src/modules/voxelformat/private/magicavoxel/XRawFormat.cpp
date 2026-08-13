@@ -243,6 +243,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	voxel::RawVolume::Sampler sampler(volume);
 	sampler.setPosition(width - 1, 0, 0);
 	for (uint32_t h = 0u; h < height; ++h) {
+		ctx.report("slice", (int)h, (int)height);
 		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (uint32_t d = 0u; d < depth; ++d) {
 			voxel::RawVolume::Sampler sampler3 = sampler2;
@@ -261,6 +262,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		}
 		sampler.movePositiveY();
 	}
+	ctx.report("slice", (int)height, (int)height);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));

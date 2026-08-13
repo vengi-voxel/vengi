@@ -6,6 +6,7 @@
 #include "app/Async.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -1233,7 +1234,10 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const bool hasRegionFilter = parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs);
 
 	int nodesCreated = 0;
+	core::StepProgress steps(ctx.progressRef(), (int)allObjects.size());
+	int objectIdx = 0;
 	for (const CityObject &obj : allObjects) {
+		core::ProgressRange range = steps.range(objectIdx++);
 		// Apply per-object region filter: compute the object's bounding box in GML world
 		// coordinates and check if it intersects the filter region
 		if (hasRegionFilter) {
@@ -1271,7 +1275,8 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::debug("Voxelizing object '%s' (%s): %d vertices, %d polygons", obj.name.c_str(), obj.type.c_str(),
 				   (int)mesh.vertices.size(), (int)mesh.polygons.size());
 
-		const int nodeId = voxelizeMesh(obj.name, sceneGraph, core::move(mesh));
+		range.setText(obj.name.c_str());
+		const int nodeId = voxelizeMesh(obj.name, sceneGraph, core::move(mesh), 0, true, &range);
 		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			node.setProperty("type", obj.type);

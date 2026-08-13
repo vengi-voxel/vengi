@@ -176,6 +176,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	// TODO: PERF: use volume sampler
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
+		ctx.report("scanline", (int)x, (int)xsiz_w);
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			const uint16_t end = xyoffsets[x][y + 1];
 			const uint16_t start = xyoffsets[x][y];
@@ -199,6 +200,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			}
 		}
 	}
+	ctx.report("scanline", (int)xsiz_w, (int)xsiz_w);
 
 	return true;
 }

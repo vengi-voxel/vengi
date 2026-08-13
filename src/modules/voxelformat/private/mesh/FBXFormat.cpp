@@ -6,6 +6,7 @@
 #include "FBXFormat.h"
 #include "color/Color.h"
 #include "core/Log.h"
+#include "core/IProgress.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
@@ -411,7 +412,8 @@ static color::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 } // namespace priv
 
 int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
-						   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
+						   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
+						   core::IProgress *progress, int meshCount, int &meshIdx) const {
 	Log::debug("Add model node");
 	ufbx_vec2 ufbxDefaultUV;
 	core_memset(&ufbxDefaultUV, 0, sizeof(ufbxDefaultUV));
@@ -592,7 +594,16 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		}
 	}
 	const core::String &name = priv::_ufbx_to_string(ufbxNode->name);
-	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true);
+	int nodeId;
+	if (progress != nullptr && meshCount > 0) {
+		core::ProgressRange range(*progress, (float)meshIdx / (float)meshCount,
+								  (float)(meshIdx + 1) / (float)meshCount);
+		range.setText(name.c_str());
+		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true, &range);
+		++meshIdx;
+	} else {
+		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true, progress);
+	}
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
 		return nodeId;
@@ -771,10 +782,11 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 
 int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-						 const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap) const {
+						 const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
+						 core::IProgress *progress, int meshCount, int &meshIdx) const {
 	int nodeId = parent;
 	if (ufbxNode->attrib_type == UFBX_ELEMENT_MESH) {
-		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent);
+		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent, progress, meshCount, meshIdx);
 	} else if (ufbxNode->attrib_type == UFBX_ELEMENT_CAMERA) {
 		nodeId = addCameraNode(ufbxScene, ufbxNode, sceneGraph, parent, scale);
 	} else {
@@ -788,7 +800,8 @@ int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 	ufbxNodeMap.put(ufbxNode, nodeId);
 
 	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
-		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId, scale, ufbxNodeMap);
+		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId, scale,
+									   ufbxNodeMap, progress, meshCount, meshIdx);
 		if (newNodeId == InvalidNodeId) {
 			const core::String name = priv::_ufbx_to_string(ufbxChildNode->name);
 			Log::warn("Failed to add child node '%s', skipping", name.c_str());
@@ -880,7 +893,10 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const glm::vec3 scale = getInputScale(sceneMins, sceneMaxs);
 
 	core::Map<const ufbx_node *, int> ufbxNodeMap(64);
-	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale, ufbxNodeMap) < 0) {
+	const int meshCount = (int)ufbxScene->meshes.count;
+	int meshIdx = 0;
+	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale,
+				  ufbxNodeMap, ctx.progress, meshCount, meshIdx) < 0) {
 		Log::error("Failed to add root child node");
 		ufbx_free_scene(ufbxScene);
 		return false;
