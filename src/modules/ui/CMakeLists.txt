@@ -60,6 +60,8 @@ list(APPEND SRCS dearimgui/backends/imgui_impl_sdl3.cpp dearimgui/backends/imgui
 
 set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)
 if (NOT USE_IMPLOT_DEMO)
+	# Restrict numeric instantiations to cut implot object size / link time.
+	# Main ui stays float-only; ui_test_engine needs double for imgui_te_perftool.
 	list(APPEND DEFINITIONS "IMPLOT_CUSTOM_NUMERIC_TYPES=(float)")
 endif()
 set(LIBS)
@@ -122,7 +124,13 @@ if (USE_IMGUITESTENGINE)
 			set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-shadow)
 		endforeach()
 	endif()
-	target_compile_definitions(${TEST_ENGINE} PUBLIC ${DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1 -DIMGUI_TEST_ENGINE_ENABLE_IMPLOT=1)
+	set(TEST_ENGINE_DEFINITIONS ${DEFINITIONS})
+	if (NOT USE_IMPLOT_DEMO)
+		# imgui_te_perftool instantiates ImPlot::PlotBars<double>
+		list(REMOVE_ITEM TEST_ENGINE_DEFINITIONS "IMPLOT_CUSTOM_NUMERIC_TYPES=(float)")
+		list(APPEND TEST_ENGINE_DEFINITIONS "IMPLOT_CUSTOM_NUMERIC_TYPES=(float)(double)")
+	endif()
+	target_compile_definitions(${TEST_ENGINE} PUBLIC ${TEST_ENGINE_DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1 -DIMGUI_TEST_ENGINE_ENABLE_IMPLOT=1)
 	target_include_directories(${TEST_ENGINE} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui dearimgui/imgui_test_engine)
 	target_link_libraries(${TEST_ENGINE} PRIVATE ui-fonts)
 	set_target_properties(${TEST_ENGINE} PROPERTIES UNITY_BUILD OFF)
