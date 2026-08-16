@@ -164,4 +164,16 @@ TEST_F(MeshTest, testOptimizeWithoutSimplificationKeepsIndexCount) {
 	simplifyRatio->setVal(previousRatio);
 }
 
+TEST_F(MeshTest, testClearReleasesCapacity) {
+	Mesh mesh(1024, 2048, true);
+	EXPECT_GE(mesh.getIndexVector().capacity(), 2048u);
+	EXPECT_GE(mesh.getVertexVector().capacity(), 1024u);
+	addColoredQuad(mesh, {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}, 1);
+	EXPECT_FALSE(mesh.isEmpty());
+	mesh.clear();
+	EXPECT_TRUE(mesh.isEmpty());
+	EXPECT_EQ(0u, mesh.getIndexVector().capacity());
+	EXPECT_EQ(0u, mesh.getVertexVector().capacity());
+}
+
 } // namespace voxel

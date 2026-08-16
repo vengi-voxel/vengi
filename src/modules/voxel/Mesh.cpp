@@ -190,8 +190,10 @@ void Mesh::setOffset(const glm::ivec3 &offset) {
 }
 
 void Mesh::clear() {
-	_vecVertices.clear();
-	_vecIndices.clear();
+	_vecVertices.release();
+	_vecIndices.release();
+	_normals.release();
+	_uvs.release();
 	_offset = glm::ivec3(0);
 }
 
