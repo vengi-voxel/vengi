@@ -184,9 +184,10 @@ public:
 
 	/**
 	 * @brief Execute the brush operation on the given node volume
+	 * @param preview When true, stroke path / blend visited state is not updated
 	 */
 	bool executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
-					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {});
+					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {}, bool preview = false);
 public:
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.

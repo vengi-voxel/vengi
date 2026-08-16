@@ -8,12 +8,14 @@
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "core/Trace.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include <glm/vec3.hpp>
 
 namespace palette {
 class Palette;
@@ -63,11 +65,16 @@ struct ModifierRendererContext {
 	// Brush preview
 	voxel::RawVolume *previewVolume = nullptr;
 	voxel::RawVolume *previewMirrorVolume = nullptr;
-	voxel::Region simplePreviewRegion;
-	voxel::Region simpleMirrorPreviewRegion;
+	voxel::Region simplePreviewRegion = voxel::Region::InvalidRegion;
+	voxel::Region simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
 	color::RGBA simplePreviewColor{0};
+	/** Thin surface-following radius outline polyline (paint brush) */
+	core::Buffer<glm::vec3> outlinePreviewPoints;
+	core::Buffer<glm::vec3> outlineMirrorPreviewPoints;
+	color::RGBA outlinePreviewColor{0};
 	palette::Palette *palette = nullptr;
 	bool useSimplePreview = false;
+	bool showOutlinePreview = false;
 	bool brushActive = false;
 };
 

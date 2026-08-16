@@ -25,11 +25,19 @@ static PaintBrush::PaintMode parsePaintMode(const core::String &mode) {
 	if (mode == "variation") {
 		return PaintBrush::PaintMode::Variation;
 	}
+	if (mode == "blend") {
+		return PaintBrush::PaintMode::Blend;
+	}
+	if (mode == "blur") {
+		return PaintBrush::PaintMode::Blur;
+	}
 	return PaintBrush::PaintMode::Replace;
 }
 
 PaintBrushTool::PaintBrushTool() : BrushTool("voxedit_paint_brush") {
-	_tool.set("description", "Paint/recolor existing voxels in a region with various modes (Replace, Brighten, Darken, Random, Variation)");
+	_tool.set("description",
+			  "Paint/recolor existing voxels in a region with various modes (Replace, Brighten, Darken, Random, "
+			  "Variation, Blend, Blur)");
 
 	json::Json inputSchema = json::Json::object();
 	inputSchema.set("type", "object");
@@ -47,14 +55,17 @@ PaintBrushTool::PaintBrushTool() : BrushTool("voxedit_paint_brush") {
 	json::Json paintModeProp = json::Json::object();
 	paintModeProp.set("type", "string");
 	paintModeProp.set("description",
-		"The paint mode: 'replace' (change to new color), 'brighten' (make lighter), 'darken' (make darker), "
-		"'random' (random palette colors), 'variation' (random brightness variation)");
+					  "The paint mode: 'replace' (change to new color), 'brighten' (make lighter), 'darken' (make "
+					  "darker), 'random' (random palette colors), 'variation' (random brightness variation), 'blend' "
+					  "(soft falloff mix into existing colors), 'blur' (gaussian blur of neighboring colors)");
 	json::Json _enumArr = json::Json::array();
 	_enumArr.push("replace");
 	_enumArr.push("brighten");
 	_enumArr.push("darken");
 	_enumArr.push("random");
 	_enumArr.push("variation");
+	_enumArr.push("blend");
+	_enumArr.push("blur");
 	paintModeProp.set("enum", _enumArr);
 	paintModeProp.set("default", "replace");
 	properties.set("paintMode", paintModeProp);
@@ -62,11 +73,20 @@ PaintBrushTool::PaintBrushTool() : BrushTool("voxedit_paint_brush") {
 	// Factor property for brighten/darken
 	json::Json factorProp = json::Json::object();
 	factorProp.set("type", "number");
-	factorProp.set("description", "Brightness factor for brighten/darken modes (1.0 = no change, >1.0 = brighter, <1.0 = darker)");
+	factorProp.set("description",
+				  "Brightness factor for brighten/darken modes (1.0 = no change, >1.0 = brighter, <1.0 = darker)");
 	factorProp.set("default", 1.2);
 	factorProp.set("minimum", 0.1);
 	factorProp.set("maximum", 3.0);
 	properties.set("factor", factorProp);
+
+	json::Json opacityProp = json::Json::object();
+	opacityProp.set("type", "number");
+	opacityProp.set("description", "Opacity at the brush center for blend mode (0.0 = none, 1.0 = full)");
+	opacityProp.set("default", 1.0);
+	opacityProp.set("minimum", 0.0);
+	opacityProp.set("maximum", 1.0);
+	properties.set("opacity", opacityProp);
 
 	inputSchema.set("properties", core::move(properties));
 	_tool.set("inputSchema", core::move(inputSchema));
@@ -90,6 +110,7 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	const core::String paintModeStr = args.strVal("paintMode", "replace").c_str();
 	const PaintBrush::PaintMode paintMode = parsePaintMode(paintModeStr);
 	const float factor = args.floatVal("factor", 1.2f);
+	const float opacity = args.floatVal("opacity", 1.0f);
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
@@ -125,11 +146,16 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	const BrushType prevBrushType = modifier.brushType();
 	const PaintBrush::PaintMode prevPaintMode = paintBrush.paintMode();
 	const float prevStrength = paintBrush.strength();
+	const float prevOpacity = paintBrush.blendOpacity();
 
 	// Configure the paint brush
 	modifier.setBrushType(BrushType::Paint);
 	paintBrush.setPaintMode(paintMode);
-	paintBrush.setStrength(factor);
+	if (paintMode == PaintBrush::PaintMode::Blend || paintMode == PaintBrush::PaintMode::Blur) {
+		paintBrush.setBlendOpacity(opacity);
+	} else {
+		paintBrush.setStrength(factor);
+	}
 	paintBrush.setBoxMode();
 
 	// Set up the AABB region
@@ -148,6 +174,7 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	// Restore previous state
 	paintBrush.setPaintMode(prevPaintMode);
 	paintBrush.setStrength(prevStrength);
+	paintBrush.setBlendOpacity(prevOpacity);
 	modifier.setBrushType(prevBrushType);
 
 	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();

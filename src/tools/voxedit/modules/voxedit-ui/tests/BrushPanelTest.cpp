@@ -304,6 +304,11 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		ctx->ItemClick("paintmode/###button2");
 		ctx->Yield();
 		IM_CHECK_EQ((int)brush.paintMode(), (int)PaintBrush::PaintMode::Darken);
+
+		ctx->ItemClick("paintmode/###button5");
+		ctx->Yield();
+		IM_CHECK_EQ((int)brush.paintMode(), (int)PaintBrush::PaintMode::Blend);
+		IM_CHECK_FLOAT_EQ(brush.blendOpacity(), 1.0f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "line brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {

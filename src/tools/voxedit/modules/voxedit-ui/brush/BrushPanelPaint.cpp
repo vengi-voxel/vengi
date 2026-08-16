@@ -28,8 +28,18 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		}
 	}
 
-	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
-		paintMode == PaintBrush::PaintMode::Variation) {
+	if (paintMode == PaintBrush::PaintMode::Blend || paintMode == PaintBrush::PaintMode::Blur) {
+		float opacity = brush.blendOpacity();
+		if (ImGui::InputFloat(_("Strength"), &opacity)) {
+			brush.setBlendOpacity(opacity);
+		}
+		if (paintMode == PaintBrush::PaintMode::Blur) {
+			ImGui::TooltipTextUnformatted(_("How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = full)"));
+		} else {
+			ImGui::TooltipTextUnformatted(_("Opacity at the brush center (0 = none, 1 = full)"));
+		}
+	} else if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
+			   paintMode == PaintBrush::PaintMode::Variation) {
 		float strength = brush.strength();
 		if (ImGui::InputFloat(_("Strength"), &strength)) {
 			brush.setStrength(strength);
@@ -45,15 +55,19 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 	}
 
 	brushpanel::aabbBrushOptions(listener, brush);
-	if (ImGui::RadioButton(_("Flood fill"), brush.floodFill())) {
-		brush.setFloodFill();
-	}
-	ImGui::TooltipTextUnformatted(_("Fill connected voxels of the same color on the clicked face"));
 
-	if (ImGui::RadioButton(_("Gradient"), brush.gradient())) {
-		brush.setGradient();
+	const bool softMode = paintMode == PaintBrush::PaintMode::Blend || paintMode == PaintBrush::PaintMode::Blur;
+	if (!softMode) {
+		if (ImGui::RadioButton(_("Flood fill"), brush.floodFill())) {
+			brush.setFloodFill();
+		}
+		ImGui::TooltipTextUnformatted(_("Fill connected voxels of the same color on the clicked face"));
+
+		if (ImGui::RadioButton(_("Gradient"), brush.gradient())) {
+			brush.setGradient();
+		}
+		ImGui::TooltipTextUnformatted(_("Blend from the hit color to the cursor color across the box"));
 	}
-	ImGui::TooltipTextUnformatted(_("Blend from the hit color to the cursor color across the box"));
 
 	brushpanel::aabbBrushModeOptions(brush);
 }

@@ -121,6 +121,16 @@ protected:
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
+	/** Last dab center while stroke-dragging; used to Bresenham-fill gaps */
+	glm::ivec3 _strokeLastPos{0};
+	bool _strokeHasLastPos = false;
+	/** True between beginBrush() and endBrush() while in stroke mode */
+	bool _strokeActive = false;
+	/** Accumulated dirty region across continuous stroke dabs (NoUndo) */
+	voxel::Region _strokeDirtyRegion = voxel::Region::InvalidRegion;
+	/** Region handed to ModifierButton after endBrush for a single undo entry */
+	voxel::Region _pendingUndoRegion = voxel::Region::InvalidRegion;
+
 	/**
 	 * @brief Snap a position to the grid resolution
 	 * @param[in] inPos Input position in voxel coordinates
@@ -146,6 +156,9 @@ protected:
 	bool isMode(uint32_t flag) const;
 	void setMode(uint32_t flag);
 
+	void generateMirrored(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region);
+
 	/**
 	 * @brief Allows derived classes to override whether AABB spanning is enabled
 	 *
@@ -167,6 +180,11 @@ public:
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
+
+	/**
+	 * @brief After a continuous stroke, return the accumulated dirty region for one undo entry
+	 */
+	voxel::Region consumePendingUndoRegion() override;
 
 	/**
 	 * @brief Get the current effective cursor position during multi-step AABB creation
@@ -279,6 +297,11 @@ public:
 	bool anyStrokeMode() const;
 
 	/**
+	 * @return True while a stroke drag is in progress (after beginBrush, before endBrush)
+	 */
+	bool strokeActive() const;
+
+	/**
 	 * @brief Enable box mode (default) - span a rectangular region
 	 */
 	void setBoxMode();
@@ -317,6 +340,10 @@ inline void AABBBrush::setCenterMode() {
 
 inline bool AABBBrush::anyStrokeMode() const {
 	return strokeMode() || strokeNoOverlap();
+}
+
+inline bool AABBBrush::strokeActive() const {
+	return _strokeActive;
 }
 
 inline bool AABBBrush::strokeMode() const {

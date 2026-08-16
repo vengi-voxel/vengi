@@ -44,6 +44,7 @@ General:
 
 VoxEdit:
 
+   - Added paint brush Blend and Blur modes (soft falloff / gaussian neighborhood blur)
    - Allow non-uniform voxel cursor / grid size via `ve_gridsize` (e.g. `1 2 3`)
    - Fixed massive performance issue with multiple viewports
    - Added the last recently used 10 colors to the viewport

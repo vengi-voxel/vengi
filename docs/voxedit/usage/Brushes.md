@@ -31,6 +31,8 @@ The paint brush provides various methods for coloring and modifying existing vox
 - **Darken**: Makes colors darker by a configurable strength
 - **Random**: Replaces voxels with random colors from the palette
 - **Variation**: Randomly brightens or darkens voxels for natural-looking surfaces
+- **Blend**: Softly mixes the cursor color into existing voxels. Falloff is stronger at the brush center and fades to the edge of the radius. Strength controls how much paint is applied at the center (0 = none, 1 = full). While dragging, each voxel keeps the strongest coverage from the stroke (from its original color) so overlapping motion does not restack, but the brush center can still upgrade a weak edge touch.
+- **Blur**: Gaussian-blurs each voxel using the colors of its solid neighbors (does not use the cursor color). Strength controls how strongly the blur replaces the original color. Uses the same stroke radius falloff as Blend.
 
 **Special modes:**
 
@@ -39,7 +41,7 @@ The paint brush provides various methods for coloring and modifying existing vox
 
 **Options:**
 
-- **Strength**: Controls the brightness adjustment for Brighten/Darken modes (1.0 = no change)
+- **Strength**: For Brighten/Darken, controls the brightness adjustment (1.0 = no change). For Blend/Blur, controls opacity at the brush center (0 = none, 1 = full).
 - **Variation chance (1 in N)**: For Variation mode, sets the chance to modify each voxel
 
 ## Plane brush

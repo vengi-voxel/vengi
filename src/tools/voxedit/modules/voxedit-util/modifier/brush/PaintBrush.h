@@ -6,8 +6,12 @@
 
 #include "AABBBrush.h"
 #include "app/I18NMarkers.h"
+#include "core/GLM.h"
+#include "core/collection/DynamicMap.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxel/Voxel.h"
+#include <glm/vec3.hpp>
 
 namespace palette {
 class Palette;
@@ -29,6 +33,8 @@ namespace voxedit {
  * - **Darken**: Make colors darker by a factor
  * - **Random**: Replace with random colors from the palette
  * - **Variation**: Randomly brighten or darken for natural variation
+ * - **Blend**: Soft mix of paint color into existing colors with spherical falloff
+ * - **Blur**: Gaussian blur of existing neighborhood colors (no paint color)
  *
  * # Special Modes
  *
@@ -45,22 +51,35 @@ public:
 	/**
 	 * @brief Different ways to modify voxel colors
 	 */
-	enum class PaintMode : uint8_t { Replace, Brighten, Darken, Random, Variation, Max };
+	enum class PaintMode : uint8_t { Replace, Brighten, Darken, Random, Variation, Blend, Blur, Max };
 
 	static constexpr const char *PaintModeStr[] = {N_("Replace"), N_("Brighten"), N_("Darken"), N_("Random"),
-												   N_("Variation")};
+												   N_("Variation"), N_("Blend"), N_("Blur")};
 	static_assert(lengthof(PaintModeStr) == (int)PaintBrush::PaintMode::Max, "PaintModeStr size mismatch");
 
 	static constexpr const char *PaintModeIcons[] = {ICON_LC_REPLACE, ICON_LC_SUN, ICON_LC_MOON, ICON_LC_SHUFFLE,
-													 ICON_LC_BLEND};
+													 ICON_LC_SPARKLES, ICON_LC_BLEND, ICON_LC_APERTURE};
 	static_assert(lengthof(PaintModeIcons) == (int)PaintBrush::PaintMode::Max, "PaintModeIcons size mismatch");
 
 private:
 	using Super = AABBBrush;
 
+	/**
+	 * Per-voxel stroke state for Blend/Blur: keep the original color and the strongest
+	 * falloff factor seen so far. Weak edge-first contact must not lock a voxel; when the
+	 * brush center later passes over it, upgrade from the original (never restack).
+	 */
+	struct BlendStrokeSample {
+		voxel::Voxel original;
+		float factor = 0.0f;
+	};
+	using BlendStrokeMap = core::DynamicMap<glm::ivec3, BlendStrokeSample, 1031, glm::hash<glm::ivec3>>;
+
 	float _strength = 1.0f;					   ///< Brightness factor for Brighten/Darken modes (1.0 = no change)
+	float _blendOpacity = 1.0f;				   ///< Opacity at brush center for Blend mode (0..1)
 	int _variationChance = 3;			   ///< 1 in N chance to apply variation
 	PaintMode _paintMode = PaintMode::Replace; ///< Active paint mode
+	BlendStrokeMap _blendStroke;			   ///< Max-weight samples for the current stroke
 
 	/**
 	 * @brief Additional flags specific to PaintBrush
@@ -117,6 +136,9 @@ public:
 	}
 	virtual ~PaintBrush() = default;
 
+	bool beginBrush(const BrushContext &ctx) override;
+	void endBrush(BrushContext &ctx) override;
+
 	/**
 	 * @brief Override to disable box spanning in flood fill mode
 	 */
@@ -150,6 +172,13 @@ public:
 	 */
 	void setStrength(float strength);
 	float strength() const;
+
+	/**
+	 * @brief Set opacity at the brush center for Blend mode
+	 * @param[in] opacity Value between 0.0 and 1.0
+	 */
+	void setBlendOpacity(float opacity);
+	float blendOpacity() const;
 };
 
 inline int PaintBrush::variationChance() const {
@@ -160,12 +189,22 @@ inline float PaintBrush::strength() const {
 	return _strength;
 }
 
+inline float PaintBrush::blendOpacity() const {
+	return _blendOpacity;
+}
+
 inline PaintBrush::PaintMode PaintBrush::paintMode() const {
 	return _paintMode;
 }
 
 inline void PaintBrush::setPaintMode(PaintMode mode) {
 	_paintMode = mode;
+	if ((mode == PaintMode::Blend || mode == PaintMode::Blur) && !anyStrokeMode()) {
+		setStrokeMode();
+		if (_radius == 0) {
+			setRadius(1);
+		}
+	}
 	markDirty();
 }
 

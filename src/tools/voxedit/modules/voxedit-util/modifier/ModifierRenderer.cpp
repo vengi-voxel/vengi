@@ -174,6 +174,32 @@ void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region, c
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
 
+void ModifierRenderer::updateBrushOutline(int idx, const voxel::Region &region, color::RGBA color) {
+	core_assert(idx >= 0 && idx < lengthof(_aabbMeshes));
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(color::fromRGBA(color));
+	_shapeBuilder.aabb(region.getLowerCornerf(), region.getUpperCornerf() + 1.0f, 2.0f);
+	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
+}
+
+void ModifierRenderer::updateBrushPolylineOutline(int idx, const core::Buffer<glm::vec3> &points, color::RGBA color) {
+	core_assert(idx >= 0 && idx < lengthof(_aabbMeshes));
+	_shapeBuilder.clear();
+	if (points.size() < 2) {
+		_shapeRenderer.deleteMesh(_aabbMeshes[idx]);
+		_aabbMeshes[idx] = -1;
+		return;
+	}
+	_shapeBuilder.setColor(color::fromRGBA(color));
+	// thickness <= 1 keeps real line primitives; > 1 wrongly builds cubes in ShapeBuilder::line
+	for (size_t i = 0; i < points.size(); ++i) {
+		const glm::vec3 &a = points[i];
+		const glm::vec3 &b = points[(i + 1) % points.size()];
+		_shapeBuilder.line(a, b);
+	}
+	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
+}
+
 void ModifierRenderer::renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model) {
 	_meshState->extractAllPending();
 	if (_meshState->volume(0) != nullptr) {
@@ -293,9 +319,13 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	// Update brush preview volumes
 	if (ctx.brushActive) {
 		if (ctx.useSimplePreview) {
-			// Simple AABB preview using shape rendering
+			// Simple AABB preview using shape rendering (filled)
 			updateBrushVolume(0, nullptr, nullptr);
 			updateBrushVolume(1, nullptr, nullptr);
+			for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
+				_shapeRenderer.deleteMesh(_aabbMeshes[i]);
+				_aabbMeshes[i] = -1;
+			}
 			if (ctx.simplePreviewRegion.isValid()) {
 				updateBrushVolume(0, ctx.simplePreviewRegion, ctx.simplePreviewColor);
 			}
@@ -303,7 +333,21 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 				updateBrushVolume(1, ctx.simpleMirrorPreviewRegion, ctx.simplePreviewColor);
 			}
 		} else {
-			// Complex voxel-based preview
+			// Complex voxel-based preview, optionally with a surface-following radius ring
+			if (ctx.showOutlinePreview && ctx.outlinePreviewPoints.size() >= 2) {
+				updateBrushPolylineOutline(0, ctx.outlinePreviewPoints, ctx.outlinePreviewColor);
+				if (ctx.outlineMirrorPreviewPoints.size() >= 2) {
+					updateBrushPolylineOutline(1, ctx.outlineMirrorPreviewPoints, ctx.outlinePreviewColor);
+				} else {
+					_shapeRenderer.deleteMesh(_aabbMeshes[1]);
+					_aabbMeshes[1] = -1;
+				}
+			} else {
+				for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
+					_shapeRenderer.deleteMesh(_aabbMeshes[i]);
+					_aabbMeshes[i] = -1;
+				}
+			}
 			updateBrushVolume(0, ctx.previewVolume, ctx.palette);
 			updateBrushVolume(1, ctx.previewMirrorVolume, ctx.palette);
 		}

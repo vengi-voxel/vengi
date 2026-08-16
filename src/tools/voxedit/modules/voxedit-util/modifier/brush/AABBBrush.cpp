@@ -7,11 +7,21 @@
 #include "command/Command.h"
 #include "core/Log.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "voxelutil/VolumeSelect.h"
 
 namespace voxedit {
+
+namespace {
+
+SceneModifiedFlags strokeAccumFlags() {
+	return SceneModifiedFlags::NoUndo & ~SceneModifiedFlags::ResetTrace;
+}
+
+} // namespace
 
 AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
 	: Super(type, defaultModifier, supportedModifiers) {
@@ -19,27 +29,33 @@ AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType 
 
 void AABBBrush::construct() {
 	Super::construct();
-	// TODO: BRUSH: some aabb brushes don't support center or single mode (e.g. the plane brush)
+	// TODO: BRUSH: some aabb brushes don't support center or stroke mode (e.g. the plane brush)
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("set" + cmdName + "center")
 		.setHandler([this](const command::CommandArgs &args) {
 			setCenterMode();
 		}).setHelp(_("Grow the box from the first click as the center"));
 
-	command::Command::registerCommand("set" + cmdName + "aabb")
-		.setHandler([this](const command::CommandArgs &args) {
-			setBoxMode();
-		}).setHelp(_("Click and drag to define a box of voxels"));
+	auto setBox = [this](const command::CommandArgs &) { setBoxMode(); };
+	command::Command::registerCommand("set" + cmdName + "box")
+		.setHandler(setBox)
+		.setHelp(_("Click and drag to define a box of voxels"));
+	// Backward-compatible alias for older keybindings / scripts
+	command::Command::registerCommand("set" + cmdName + "aabb").setHandler(setBox).setHelp(_("Alias for box mode"));
 
-	command::Command::registerCommand("set" + cmdName + "single")
-		.setHandler([this](const command::CommandArgs &args) {
-			setStrokeMode();
-		}).setHelp(_("Place voxels along the cursor while the action button is held"));
+	auto setStroke = [this](const command::CommandArgs &) { setStrokeMode(); };
+	command::Command::registerCommand("set" + cmdName + "stroke")
+		.setHandler(setStroke)
+		.setHelp(_("Place voxels along the cursor while the action button is held"));
+	command::Command::registerCommand("set" + cmdName + "single").setHandler(setStroke).setHelp(_("Alias for stroke mode"));
 
+	auto setNoOverlap = [this](const command::CommandArgs &) { setStrokeNoOverlap(); };
+	command::Command::registerCommand("set" + cmdName + "strokenooverlap")
+		.setHandler(setNoOverlap)
+		.setHelp(_("Like stroke mode, but do not replace the same voxel twice"));
 	command::Command::registerCommand("set" + cmdName + "singlemove")
-		.setHandler([this](const command::CommandArgs &args) {
-			setStrokeNoOverlap();
-		}).setHelp(_("Like stroke mode, but do not replace the same voxel twice"));
+		.setHandler(setNoOverlap)
+		.setHelp(_("Alias for stroke no-overlap mode"));
 }
 
 void AABBBrush::onSceneChange() {
@@ -47,6 +63,10 @@ void AABBBrush::onSceneChange() {
 	_secondPosValid = false;
 	_boxMode = false;
 	_aabbFace = voxel::FaceNames::Max;
+	_strokeHasLastPos = false;
+	_strokeActive = false;
+	_strokeDirtyRegion = voxel::Region::InvalidRegion;
+	_pendingUndoRegion = voxel::Region::InvalidRegion;
 }
 
 void AABBBrush::reset() {
@@ -60,6 +80,10 @@ void AABBBrush::reset() {
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);
+	_strokeHasLastPos = false;
+	_strokeActive = false;
+	_strokeDirtyRegion = voxel::Region::InvalidRegion;
+	_pendingUndoRegion = voxel::Region::InvalidRegion;
 }
 
 glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const {
@@ -134,10 +158,8 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 	return brushRegion;
 }
 
-bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
-	setErrorReason("");
-	voxel::Region region = calcRegion(ctx);
-	region = extendRegionInOrthoMode(region, wrapper.region(), ctx);
+void AABBBrush::generateMirrored(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+								 const BrushContext &ctx, const voxel::Region &region) {
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
 	if (!getMirrorBox(minsMirror, maxsMirror)) {
@@ -152,7 +174,59 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 			generate(sceneGraph, wrapper, ctx, second);
 		}
 	}
+}
+
+bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	setErrorReason("");
+
+	// Path accumulation is only for a live mouse-drag stroke on the real volume.
+	// Preview execute() must not advance _strokeLastPos / dirty accumulation.
+	if (anyStrokeMode() && _strokeActive && !ctx.preview) {
+		const glm::ivec3 end = currentCursorPosition(ctx);
+		auto runDab = [&](const glm::ivec3 &center) {
+			BrushContext dabCtx = ctx;
+			dabCtx.cursorPosition = center;
+			voxel::Region region = calcRegion(dabCtx);
+			region = extendRegionInOrthoMode(region, wrapper.region(), dabCtx);
+			generateMirrored(sceneGraph, wrapper, dabCtx, region);
+		};
+
+		if (_strokeHasLastPos && _strokeLastPos != end) {
+			bool skipFirst = true;
+			voxelutil::bresenham3d(_strokeLastPos, end, [&](const glm::ivec3 &p) {
+				if (skipFirst) {
+					skipFirst = false;
+					return;
+				}
+				runDab(p);
+			});
+		} else {
+			runDab(end);
+		}
+		_strokeLastPos = end;
+		_strokeHasLastPos = true;
+
+		const voxel::Region &dirty = wrapper.dirtyRegion();
+		if (dirty.isValid()) {
+			if (_strokeDirtyRegion.isValid()) {
+				_strokeDirtyRegion.accumulate(dirty);
+			} else {
+				_strokeDirtyRegion = dirty;
+			}
+		}
+		return true;
+	}
+
+	voxel::Region region = calcRegion(ctx);
+	region = extendRegionInOrthoMode(region, wrapper.region(), ctx);
+	generateMirrored(sceneGraph, wrapper, ctx, region);
 	return true;
+}
+
+voxel::Region AABBBrush::consumePendingUndoRegion() {
+	const voxel::Region region = _pendingUndoRegion;
+	_pendingUndoRegion = voxel::Region::InvalidRegion;
+	return region;
 }
 
 glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &ctx) const {
@@ -176,7 +250,10 @@ bool AABBBrush::wantBox() const {
 }
 
 bool AABBBrush::beginBrush(const BrushContext &ctx) {
-	if (_boxMode) {
+	// Stroke mode must always be able to start, even if a previous box span was left active.
+	if (anyStrokeMode()) {
+		_boxMode = false;
+	} else if (_boxMode) {
 		return false;
 	}
 
@@ -186,6 +263,13 @@ bool AABBBrush::beginBrush(const BrushContext &ctx) {
 	_secondPosValid = false;
 	_boxMode = wantBox();
 	_aabbFace = ctx.cursorFace;
+	_strokeHasLastPos = false;
+	_strokeDirtyRegion = voxel::Region::InvalidRegion;
+	_pendingUndoRegion = voxel::Region::InvalidRegion;
+	if (anyStrokeMode()) {
+		_strokeActive = true;
+		_sceneModifiedFlags = strokeAccumFlags();
+	}
 	return true;
 }
 
@@ -207,6 +291,10 @@ bool AABBBrush::active() const {
 }
 
 bool AABBBrush::aborted(const BrushContext &ctx) const {
+	// Stroke path painting does not require a valid hit face.
+	if (anyStrokeMode()) {
+		return false;
+	}
 	return _aabbFace == voxel::FaceNames::Max && ctx.lockedAxis == math::Axis::None;
 }
 
@@ -223,6 +311,12 @@ void AABBBrush::step(const BrushContext &ctx) {
 }
 
 void AABBBrush::endBrush(BrushContext &ctx) {
+	if (anyStrokeMode() && _strokeDirtyRegion.isValid()) {
+		_pendingUndoRegion = _strokeDirtyRegion;
+	}
+	_strokeDirtyRegion = voxel::Region::InvalidRegion;
+	_strokeHasLastPos = false;
+	_strokeActive = false;
 	_secondPosValid = false;
 	_boxMode = false;
 	_aabbFace = voxel::FaceNames::Max;
@@ -234,8 +328,10 @@ bool AABBBrush::isMode(uint32_t mode) const {
 
 void AABBBrush::setMode(uint32_t mode) {
 	_mode = mode;
-	if (strokeNoOverlap()) {
-		_sceneModifiedFlags = SceneModifiedFlags::NoResetTrace;
+	if (anyStrokeMode()) {
+		_boxMode = false;
+		_secondPosValid = false;
+		_sceneModifiedFlags = strokeAccumFlags();
 	} else {
 		_sceneModifiedFlags = SceneModifiedFlags::All;
 	}

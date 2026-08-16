@@ -82,6 +82,13 @@ struct BrushContext {
 	/** True while the brush gizmo is actively being manipulated in the viewport */
 	bool brushGizmoActive = false;
 
+	/**
+	 * True when execute() is building a hover/stroke volume preview, not committing
+	 * to the real scene. Stroke path accumulation and blend visited tracking must
+	 * ignore these calls or continuous click-and-drag painting breaks.
+	 */
+	bool preview = false;
+
 	/** The modifier operation to perform (Place, Erase, Override, Paint, Select) */
 	ModifierType modifierType = ModifierType::Place;
 };

@@ -4,12 +4,24 @@
 
 #include "PreviewManager.h"
 #include "Modifier.h"
+#include "brush/AABBBrush.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "core/collection/Buffer.h"
+#include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Config.h"
+#include "voxel/Face.h"
+#include "voxelutil/VolumeSelect.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <limits>
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace voxedit {
 
@@ -75,6 +87,85 @@ static void stripUnflaggedVoxels(voxel::RawVolume *vol) {
 				const voxel::Voxel &v = sampler.voxel();
 				if (!voxel::isAir(v.getMaterial()) && !(v.getFlags() & voxel::FlagOutline)) {
 					sampler.setVoxel(air);
+				}
+				sampler.movePositiveX();
+			}
+		}
+	}
+}
+
+/**
+ * @brief Build a thin closed polyline at brush radius, draped onto exposed surface voxels.
+ *
+ * Samples a circle in the cursor-face UV plane and snaps each sample to the nearest
+ * exposed surface along the face axis so the ring follows terrain / slopes.
+ */
+static void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 &center,
+									  voxel::FaceNames face, int radius, core::Buffer<glm::vec3> &out) {
+	out.clear();
+	if (volume == nullptr || radius < 0) {
+		return;
+	}
+	voxel::FaceNames outlineFace = face;
+	if (outlineFace == voxel::FaceNames::Max) {
+		outlineFace = voxel::FaceNames::PositiveY;
+	}
+	const math::Axis faceAxis = voxel::faceToAxis(outlineFace);
+	const int wAxis = math::getIndexForAxis(faceAxis);
+	const int uAxis = (wAxis + 1) % 3;
+	const int vAxis = (wAxis + 2) % 3;
+	const bool positiveNormal = voxel::isPositiveFace(outlineFace);
+	const voxel::Region &region = volume->region();
+	const int refW = center[wAxis];
+	const int tolerance = glm::max(radius * 2 + 4, 8);
+	const int segments = glm::clamp(radius * 8 + 24, 24, 96);
+	const float r = (float)radius + 0.5f;
+	const glm::vec3 faceN = voxel::faceNormal(outlineFace);
+
+	glm::ivec3 lastVoxel(std::numeric_limits<int>::min());
+	for (int i = 0; i < segments; ++i) {
+		const float angle = (float)i / (float)segments * glm::two_pi<float>();
+		const int u = center[uAxis] + (int)glm::round(glm::cos(angle) * r);
+		const int v = center[vAxis] + (int)glm::round(glm::sin(angle) * r);
+		int w = refW;
+		if (!voxelutil::findSurfaceNear(*volume, u, v, refW, tolerance, uAxis, vAxis, wAxis, positiveNormal, region,
+										w)) {
+			w = refW;
+		}
+		glm::ivec3 voxelPos(0);
+		voxelPos[uAxis] = u;
+		voxelPos[vAxis] = v;
+		voxelPos[wAxis] = w;
+		if (voxelPos == lastVoxel) {
+			continue;
+		}
+		lastVoxel = voxelPos;
+		out.push_back(glm::vec3(voxelPos) + 0.5f + faceN * 0.51f);
+	}
+}
+
+static void stripUnchangedVoxels(voxel::RawVolume *preview, const voxel::RawVolume *original) {
+	if (!preview || !original) {
+		return;
+	}
+	const voxel::Region &region = preview->region();
+	const voxel::Voxel air;
+	voxel::RawVolume::Sampler sampler(preview);
+	voxel::RawVolume::Sampler originalSampler(original);
+	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			sampler.setPosition(region.getLowerX(), y, z);
+			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel &v = sampler.voxel();
+				if (!voxel::isAir(v.getMaterial())) {
+					if (!original->region().containsPoint(x, y, z)) {
+						sampler.movePositiveX();
+						continue;
+					}
+					originalSampler.setPosition(x, y, z);
+					if (v == originalSampler.voxel()) {
+						sampler.setVoxel(air);
+					}
 				}
 				sampler.movePositiveX();
 			}
@@ -197,6 +288,26 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	}
 	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
 	bool simplePreview = isSimplePreview(brush, region);
+
+	// Paint radius: thin yellow polyline draped onto exposed surface voxels.
+	if (modifier.brushType() == BrushType::Paint) {
+		const AABBBrush *aabbBrush = modifier.currentAABBBrush();
+		const int radius = aabbBrush ? aabbBrush->radius() : 0;
+		_brushPreview.showOutlinePreview = true;
+		_brushPreview.outlinePreviewColor = color::RGBA(255, 220, 0, 220);
+		buildSurfaceRadiusOutline(activeVolume, brushContext.cursorPosition, brushContext.cursorFace, radius,
+								  _brushPreview.outlinePreviewPoints);
+		if (aabbBrush) {
+			glm::ivec3 minsMirror = region.getLowerCorner();
+			glm::ivec3 maxsMirror = region.getUpperCorner();
+			if (aabbBrush->getMirrorBox(minsMirror, maxsMirror)) {
+				const glm::ivec3 mirrorCenter = (minsMirror + maxsMirror) / 2;
+				buildSurfaceRadiusOutline(activeVolume, mirrorCenter, brushContext.cursorFace, radius,
+										  _brushPreview.outlineMirrorPreviewPoints);
+			}
+		}
+	}
+
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
@@ -204,12 +315,12 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
-			modifier.executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
+			modifier.executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel, {}, true);
 		}
 		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setUnownedVolume(_previewVolume);
-		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
 
 		// For selection brushes: remove voxels without FlagOutline from the preview
 		// volume. The preview is a copy of the real volume, and only voxels that the
@@ -221,20 +332,29 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 				stripUnflaggedVoxels(_previewMirrorVolume);
 			}
 		}
-	} else if (simplePreview) {
-		_brushPreview.useSimplePreview = true;
-		_brushPreview.simplePreviewRegion = region;
-		if (modifier.brushType() == BrushType::Select) {
-			// Selection brushes use a fixed high-contrast color so the preview
-			// is always visible regardless of the current palette color
-			_brushPreview.simplePreviewColor = color::RGBA(0, 200, 0, 100);
-		} else {
-			_brushPreview.simplePreviewColor = activePalette.color(brushContext.cursorVoxel.getColor());
+		// Paint: keep only voxels that actually changed color/material.
+		if (modifier.brushType() == BrushType::Paint && existingVolume != nullptr) {
+			stripUnchangedVoxels(_previewVolume, existingVolume);
+			if (_previewMirrorVolume) {
+				stripUnchangedVoxels(_previewMirrorVolume, existingVolume);
+			}
 		}
-		glm::ivec3 minsMirror = region.getLowerCorner();
-		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
-			_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
+	} else if (simplePreview || _brushPreview.showOutlinePreview) {
+		if (simplePreview) {
+			_brushPreview.useSimplePreview = true;
+			_brushPreview.simplePreviewRegion = region;
+			if (modifier.brushType() == BrushType::Select) {
+				// Selection brushes use a fixed high-contrast color so the preview
+				// is always visible regardless of the current palette color
+				_brushPreview.simplePreviewColor = color::RGBA(0, 200, 0, 100);
+			} else {
+				_brushPreview.simplePreviewColor = activePalette.color(brushContext.cursorVoxel.getColor());
+			}
+			glm::ivec3 minsMirror = region.getLowerCorner();
+			glm::ivec3 maxsMirror = region.getUpperCorner();
+			if (brush->getMirrorBox(minsMirror, maxsMirror)) {
+				_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
+			}
 		}
 	}
 }

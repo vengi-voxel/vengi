@@ -6,11 +6,13 @@
 
 #include "app/App.h"
 #include "core/TimedValue.h"
+#include "core/collection/Buffer.h"
 #include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
+#include <glm/vec3.hpp>
 
 namespace voxedit {
 
@@ -53,6 +55,8 @@ private:
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region);
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
+	void updateBrushOutline(int idx, const voxel::Region &region, color::RGBA color);
+	void updateBrushPolylineOutline(int idx, const core::Buffer<glm::vec3> &points, color::RGBA color);
 	void clear();
 	void handleCommandBuffer();
 

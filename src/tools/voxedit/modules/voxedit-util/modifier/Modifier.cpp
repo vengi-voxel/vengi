@@ -391,7 +391,7 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel,
-							const ModifiedRegionCallback &callback) {
+							const ModifiedRegionCallback &callback, bool preview) {
 	core_trace_scoped(ModifierExecuteBrush);
 	Brush *brush = currentBrush();
 	if (!brush) {
@@ -400,6 +400,8 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	ModifierVolumeWrapper wrapper(node, modifierType, _selectBrush.box3D().selectionRegion());
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
+	const bool prevPreview = _brushContext.preview;
+	_brushContext.preview = preview;
 	if (brush->clampToVolume()) {
 		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
 		_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
@@ -435,6 +437,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	}
 	_brushContext.cursorPosition = prevCursorPos;
 	_brushContext.cursorVoxel = prevVoxel;
+	_brushContext.preview = prevPreview;
 	return true;
 }
 
@@ -711,7 +714,13 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 			ctx.simpleMirrorPreviewRegion = preview.simpleMirrorPreviewRegion;
 			ctx.simplePreviewColor = preview.simplePreviewColor;
 		}
-		if (ctx.previewVolume || ctx.useSimplePreview) {
+		if (preview.showOutlinePreview) {
+			ctx.showOutlinePreview = true;
+			ctx.outlinePreviewPoints = preview.outlinePreviewPoints;
+			ctx.outlineMirrorPreviewPoints = preview.outlineMirrorPreviewPoints;
+			ctx.outlinePreviewColor = preview.outlinePreviewColor;
+		}
+		if (ctx.previewVolume || ctx.useSimplePreview || ctx.showOutlinePreview) {
 			ctx.palette = &activePalette;
 		}
 	} else {

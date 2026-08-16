@@ -10,9 +10,11 @@
 #include "brush/BrushType.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "color/RGBA.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include <glm/vec3.hpp>
 
 namespace palette {
 class Palette;
@@ -37,7 +39,12 @@ struct BrushPreview {
 	voxel::Region simplePreviewRegion = voxel::Region::InvalidRegion;
 	voxel::Region simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
 	color::RGBA simplePreviewColor{0};
+	/** Closed polyline of thin surface-following radius outline points (paint brush) */
+	core::Buffer<glm::vec3> outlinePreviewPoints;
+	core::Buffer<glm::vec3> outlineMirrorPreviewPoints;
+	color::RGBA outlinePreviewColor{0};
 	bool useSimplePreview = false;
+	bool showOutlinePreview = false;
 };
 
 /**
