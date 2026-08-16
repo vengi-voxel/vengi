@@ -42,6 +42,7 @@ General:
    - Added support for Digital designer lego files (`lxf`, `lxfml`)
    - Added progress bar support
    - Optional Minecraft map import that puts water into dedicated transparent child volumes (`voxformat_mcseparatewater`)
+   - Transparent voxels are composited with weighted blended order-independent transparency (no per-frame triangle sort)
 
 VoxEdit:
 

@@ -9,6 +9,7 @@
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
 #include "video/TextureConfig.h"
+#include "video/Types.h"
 
 namespace voxelrender {
 
@@ -26,6 +27,37 @@ bool RenderContext::applyTransforms() const {
 
 bool RenderContext::showCameras() const {
 	return isSceneMode();
+}
+
+bool RenderContext::hasOit() const {
+	return oitFrameBuffer.handle() != video::InvalidId;
+}
+
+static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::ivec2 &size) {
+	oitFrameBuffer.shutdown();
+	if (size.x <= 0 || size.y <= 0) {
+		return false;
+	}
+
+	video::TextureConfig colorCfg = video::createDefaultTextureConfig();
+	colorCfg.format(video::TextureFormat::RGBA16F);
+	colorCfg.filter(video::TextureFilter::Nearest);
+
+	video::FrameBufferConfig cfg;
+	cfg.dimension(size);
+	cfg.samples(0);
+	cfg.addTextureAttachment(colorCfg, video::FrameBufferAttachment::Color0);
+	cfg.addTextureAttachment(colorCfg, video::FrameBufferAttachment::Color1);
+	cfg.depthBuffer(true);
+	cfg.depthBufferFormat(video::TextureFormat::D24S8);
+	cfg.stencilBuffer(true);
+
+	if (!oitFrameBuffer.init(cfg)) {
+		Log::warn("Failed to initialize weighted OIT framebuffer");
+		oitFrameBuffer.shutdown();
+		return false;
+	}
+	return true;
 }
 
 bool RenderContext::init(const glm::ivec2 &size) {
@@ -129,6 +161,9 @@ bool RenderContext::init(const glm::ivec2 &size) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
+	if (!initOitFrameBuffer(oitFrameBuffer, size)) {
+		Log::warn("Weighted OIT disabled: falling back to sorted transparency");
+	}
 	return true;
 }
 
@@ -198,6 +233,9 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
+	if (!initOitFrameBuffer(oitFrameBuffer, size)) {
+		Log::warn("Weighted OIT disabled: falling back to sorted transparency");
+	}
 	return true;
 }
 
@@ -220,6 +258,7 @@ bool RenderContext::updateMultisampling() {
 void RenderContext::shutdown() {
 	frameBuffer.shutdown();
 	resolveFrameBuffer.shutdown();
+	oitFrameBuffer.shutdown();
 	bloomRenderer.shutdown();
 }
 

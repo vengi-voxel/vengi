@@ -148,6 +148,23 @@ vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
 	return color;
 }
 
+/**
+ * Weighted blended OIT (McGuire / Bavoil). Both MRT targets use additive blending.
+ * Color0: accum = sum(rgb * a * w, a * w)
+ * Color1.r: sum(log(1 - a)) so revealage = exp(Color1.r) = product(1 - a)
+ */
+void writeOIT(vec4 color) {
+	float a = clamp(color.a, 0.0, 1.0);
+	if (a < 1.0e-4) {
+		discard;
+	}
+	a = min(a, 0.999);
+	float z = gl_FragCoord.z;
+	float w = clamp(pow(min(1.0, a * 10.0) + 0.01, 3.0) * 1.0e8 * pow(max(1.0 - z, 1.0e-4), 3.0), 1.0e-2, 3.0e3);
+	o_color = vec4(color.rgb * a, a) * w;
+	o_glow = vec4(log(1.0 - a), 0.0, 0.0, 0.0);
+}
+
 
 vec4 darken(vec4 color) {
 	return vec4(color.rgb * vec3(0.3, 0.3, 0.3), color.a);

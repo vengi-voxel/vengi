@@ -361,6 +361,14 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height);
 
 /**
+ * @brief Set the draw buffers of the currently bound framebuffer.
+ *
+ * Used to restrict MRT writes (e.g. composite only into Color0). @p n may be 0
+ * to disable all color writes. Attachments that are not color attachments are ignored.
+ */
+void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments);
+
+/**
  * @brief Allocate and configure storage for a renderbuffer object.
  *
  * Typically used for depth/stencil or multisample attachments.

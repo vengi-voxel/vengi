@@ -13,6 +13,9 @@ set(SRCS
 set(SHADERS
 	voxel
 	voxelnorm
+	voxeloit
+	voxelnormoit
+	oit
 	shadowmap
 )
 set(SRCS_SHADERS

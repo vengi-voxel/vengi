@@ -3,7 +3,9 @@
  */
 
 #include "TestVolumeRenderer.h"
+#include "color/RGBA.h"
 #include "core/Log.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "testcore/TestAppMain.h"
 #include "video/ScopedState.h"
@@ -13,7 +15,7 @@
 
 TestVolumeRenderer::TestVolumeRenderer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider), _renderer(timeProvider) {
-	init(ORGANISATION, "testvolumeRenderer");
+	init(ORGANISATION, "testvolumerenderer");
 	setCameraMotion(true);
 	setRenderPlane(true);
 	setRenderAxis(true);
@@ -45,6 +47,11 @@ app::AppState TestVolumeRenderer::onInit() {
 	_renderContext.renderMode = voxelrender::RenderMode::Scene;
 
 	_palette.nippon();
+	const uint8_t waterIdx = 2;
+	color::RGBA waterColor = _palette.color(waterIdx);
+	waterColor.a = 128;
+	_palette.setColor(waterIdx, waterColor);
+	_palette.setMaterialType(waterIdx, palette::MaterialType::Glass);
 
 	const voxel::Region region(0, 0, 0, 31, 31, 31);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
@@ -60,6 +67,8 @@ app::AppState TestVolumeRenderer::onInit() {
 				if (glm::dot(diff, diff) <= radiusSq) {
 					const int colorIdx = 1 + (x + y + z) % (_palette.colorCount() - 1);
 					volume->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, colorIdx));
+				} else if (y <= 6) {
+					volume->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Transparent, waterIdx));
 				}
 			}
 		}

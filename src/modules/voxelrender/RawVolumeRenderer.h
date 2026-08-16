@@ -11,10 +11,14 @@
 #include "ShadowmapShader.h"
 #include "VoxelShader.h"
 #include "VoxelnormShader.h"
+#include "VoxeloitShader.h"
+#include "VoxelnormoitShader.h"
+#include "OitShader.h"
 #include "core/NonCopyable.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
+#include "video/Buffer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelrender/Shadow.h"
@@ -59,12 +63,18 @@ protected:
 
 	shader::VoxelShader &_voxelShader;
 	shader::VoxelnormShader &_voxelNormShader;
+	shader::VoxeloitShader &_voxelOitShader;
+	shader::VoxelnormoitShader &_voxelNormOitShader;
+	shader::OitShader &_oitShader;
 	shader::ShadowmapData _shadowMapUniformBlock;
 	shader::ShadowmapShader &_shadowMapShader;
 	voxelrender::Shadow _shadow;
 
 	render::ShapeRenderer _shapeRenderer;
 	video::ShapeBuilder _shapeBuilder;
+	video::Buffer _oitVbo;
+	int _oitBufferIndex = -1;
+	int _oitTexBufferIndex = -1;
 
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
@@ -109,6 +119,8 @@ protected:
 	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx);
 	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
+	void renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
+	void compositeOIT(RenderContext &renderContext);
 	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
 	void sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 public:

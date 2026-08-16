@@ -1622,6 +1622,37 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 	}
 }
 
+void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
+	syncState();
+	GLenum buffers[core::enumVal(FrameBufferAttachment::Max)];
+	uint8_t count = 0;
+	for (uint8_t i = 0; i < n; ++i) {
+		const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachments[i])];
+		if (glAttachment >= GL_COLOR_ATTACHMENT0 && glAttachment <= GL_COLOR_ATTACHMENT15) {
+			buffers[count++] = glAttachment;
+		}
+	}
+	if (useFeature(Feature::DirectStateAccess) && currentFramebuffer() != InvalidId) {
+		core_assert(glNamedFramebufferDrawBuffers != nullptr);
+		if (count == 0) {
+			const GLenum none[] = {GL_NONE};
+			glNamedFramebufferDrawBuffers(currentFramebuffer(), 1, none);
+		} else {
+			glNamedFramebufferDrawBuffers(currentFramebuffer(), (GLsizei)count, buffers);
+		}
+		checkError();
+		return;
+	}
+	core_assert(glDrawBuffers != nullptr);
+	if (count == 0) {
+		const GLenum none[] = {GL_NONE};
+		glDrawBuffers(1, none);
+	} else {
+		glDrawBuffers((GLsizei)count, buffers);
+	}
+	checkError();
+}
+
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	const Id old = rendererState().framebufferHandle;
 #if SANITY_CHECKS_GL

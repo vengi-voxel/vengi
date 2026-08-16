@@ -3,17 +3,22 @@
  */
 
 #include "voxelrender/SceneGraphRenderer.h"
+#include "color/RGBA.h"
 #include "core/SharedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/UUID.h"
+#include "palette/Material.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "video/Camera.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelrender/RenderContext.h"
+#include "voxelrender/RenderUtil.h"
 
 namespace voxelrender {
 
@@ -134,6 +139,40 @@ TEST_F(SceneGraphRendererTest, testModelReferenceLinksToTargetMeshSlot) {
 	EXPECT_NE(modelIdx, refIdx);
 	EXPECT_EQ(modelIdx, _meshState->reference(refIdx));
 	EXPECT_EQ(-1, _meshState->reference(modelIdx));
+}
+
+TEST_F(SceneGraphRendererTest, testRenderTransparentWeightedOIT) {
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+	model.setName("model");
+	voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+	palette::Palette pal;
+	pal.nippon();
+	pal.setColor(2, color::RGBA(40, 80, 200, 128));
+	pal.setMaterialType(2, palette::MaterialType::Glass);
+	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v->setVoxel(3, 3, 3, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+	v->setVoxel(4, 3, 3, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+	model.setVolume(v);
+	model.setPalette(pal);
+	ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(model)));
+	sceneGraph.updateTransforms();
+
+	RenderContext renderContext;
+	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	renderContext.sceneGraph = &sceneGraph;
+	renderContext.renderMode = RenderMode::Scene;
+	renderContext.enableBloom = false;
+	EXPECT_TRUE(renderContext.hasOit());
+
+	video::Camera camera;
+	camera.setSize(glm::ivec2(64, 64));
+	configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, 500.0f);
+
+	renderContext.frameBuffer.bind(true);
+	_renderer.render(_meshState, renderContext, camera, false, true);
+	renderContext.frameBuffer.unbind();
+	renderContext.shutdown();
 }
 
 } // namespace voxelrender

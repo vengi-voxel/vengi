@@ -288,6 +288,9 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 }
 
+void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
+}
+
 bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
 	return false;
 }

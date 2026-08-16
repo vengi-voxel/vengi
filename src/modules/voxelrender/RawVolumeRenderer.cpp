@@ -20,6 +20,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"
+#include "video/ScopedBlendMode.h"
 #include "video/ScopedFaceCull.h"
 #include "video/ScopedFrameBuffer.h"
 #include "video/ScopedPolygonMode.h"
@@ -27,6 +28,7 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Types.h"
+#include "video/FrameBuffer.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
@@ -35,6 +37,8 @@
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -44,6 +48,8 @@ namespace voxelrender {
 
 RawVolumeRenderer::RawVolumeRenderer(const core::TimeProviderPtr &timeProvider)
 	: _voxelShader(shader::VoxelShader::getInstance()), _voxelNormShader(shader::VoxelnormShader::getInstance()),
+	  _voxelOitShader(shader::VoxeloitShader::getInstance()),
+	  _voxelNormOitShader(shader::VoxelnormoitShader::getInstance()), _oitShader(shader::OitShader::getInstance()),
 	  _shadowMapShader(shader::ShadowmapShader::getInstance()), _timeProvider(timeProvider) {
 }
 
@@ -81,10 +87,6 @@ void RawVolumeRenderer::initStateBuffer(int idx) {
 			if (state._indexBufferIndex[i] == -1) {
 				Log::error("Could not create the vertex buffer object for the indices");
 				return;
-			}
-			if (i == voxel::MeshType_Transparency) {
-				// we are sorting the transparency buffer every frame
-				state._vertexBuffer[i].setMode(state._indexBufferIndex[i], video::BufferMode::Dynamic);
 			}
 		}
 	}
@@ -163,6 +165,18 @@ bool RawVolumeRenderer::init(bool normals) {
 		Log::error("Failed to initialize the voxelnorm shader");
 		return false;
 	}
+	if (!_voxelOitShader.setup()) {
+		Log::error("Failed to initialize the voxeloit shader");
+		return false;
+	}
+	if (!_voxelNormOitShader.setup()) {
+		Log::error("Failed to initialize the voxelnormoit shader");
+		return false;
+	}
+	if (!_oitShader.setup()) {
+		Log::error("Failed to initialize the oit composite shader");
+		return false;
+	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
 		return false;
@@ -193,6 +207,29 @@ bool RawVolumeRenderer::init(bool normals) {
 				   _voxelNormShader.getLocationInfo());
 		return false;
 	}
+
+	if (_voxelShader.getLocationPos() != _voxelOitShader.getLocationPos() ||
+		_voxelShader.getLocationInfo() != _voxelOitShader.getLocationInfo() ||
+		_voxelShader.getLocationInfo2() != _voxelOitShader.getLocationInfo2()) {
+		Log::error("OIT shader attribute order doesn't match the voxel shader");
+		return false;
+	}
+
+	if (_voxelNormShader.getLocationPos() != _voxelNormOitShader.getLocationPos() ||
+		_voxelNormShader.getLocationInfo() != _voxelNormOitShader.getLocationInfo() ||
+		_voxelNormShader.getLocationNormal() != _voxelNormOitShader.getLocationNormal()) {
+		Log::error("OIT shader attribute order doesn't match the voxelnorm shader");
+		return false;
+	}
+
+	_oitBufferIndex = _oitVbo.createFullscreenQuad();
+	_oitTexBufferIndex = _oitVbo.createFullscreenTextureBufferYFlipped();
+	if (_oitBufferIndex == -1 || _oitTexBufferIndex == -1) {
+		Log::error("Failed to create the OIT composite buffers");
+		return false;
+	}
+	core_assert_always(_oitVbo.addAttribute(_oitShader.getPosAttribute(_oitBufferIndex, &glm::vec2::x)));
+	core_assert_always(_oitVbo.addAttribute(_oitShader.getTexcoordAttribute(_oitTexBufferIndex, &glm::vec2::x)));
 
 	voxelrender::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
@@ -795,7 +832,125 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	}
 }
 
-// TODO: PERF: this is a huge bottleneck when rendering large scenes with many transparent objects
+void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
+											  const video::Camera &camera) {
+	core_trace_scoped(RenderTransparencyOIT);
+	core::Buffer<int> volumes;
+	volumes.reserve(meshState->activeIndices().size());
+	for (int idx : meshState->activeIndices()) {
+		if (!isVisible(meshState, idx)) {
+			continue;
+		}
+		const float opacity = meshState->opacity(idx);
+		if (opacity <= 0.0f) {
+			continue;
+		}
+		const int bufferIndex = meshState->resolveIdx(idx);
+		const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+		const bool faded = opacity < 1.0f - 1e-5f;
+		if (transparentIndices == 0u && !(faded && opaqueIndices > 0u)) {
+			continue;
+		}
+		volumes.push_back(idx);
+	}
+	if (volumes.empty()) {
+		return;
+	}
+
+	const video::Id mainFbo = video::currentFramebuffer();
+	int viewport[4];
+	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	const glm::ivec2 &dim = renderContext.oitFrameBuffer.dimension();
+
+	video::blitFramebuffer(mainFbo, renderContext.oitFrameBuffer.handle(), video::ClearFlag::Depth, dim.x, dim.y);
+	video::bindFramebuffer(mainFbo);
+
+	renderContext.oitFrameBuffer.bind(false);
+	const glm::vec4 oldClearColor = video::currentClearColor();
+	video::clearColor(glm::vec4(0.0f));
+	video::clear(video::ClearFlag::Color);
+	video::clearColor(oldClearColor);
+
+	const video::PolygonMode mode = camera.polygonMode();
+	video::ScopedBlendMode scopedBlend(video::BlendMode::One, video::BlendMode::One, video::BlendEquation::Add);
+	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
+	video::ScopedPolygonMode polygonMode(mode);
+	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+
+	for (int idx : volumes) {
+		const int bufferIndex = meshState->resolveIdx(idx);
+		const float opacity = meshState->opacity(idx);
+		const bool faded = opacity < 1.0f - 1e-5f;
+		updatePalette(meshState, idx);
+		_voxelShaderVertData.model = meshState->model(idx);
+		_voxelShaderVertData.gray = meshState->grayed(idx);
+		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.opacity = opacity;
+		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+		_voxelShaderVertData.shownormals = _renderNormals->intVal();
+		core_assert_always(_voxelData.update(_voxelShaderVertData));
+
+		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
+		if (_voxelNormOitShader.isActive()) {
+			core_assert_always(_voxelNormOitShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelNormOitShader.setVert(_voxelData.getVertUniformBuffer()));
+		} else {
+			core_assert_always(_voxelOitShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelOitShader.setVert(_voxelData.getVertUniformBuffer()));
+		}
+
+		if (faded) {
+			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+			if (opaqueIndices > 0u) {
+				video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+				core_assert_always(scopedBuf.success());
+				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, opaqueIndices);
+			}
+		}
+
+		const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		if (transparentIndices > 0u) {
+			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
+			core_assert_always(scopedBuf.success());
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, transparentIndices);
+		}
+	}
+
+	renderContext.oitFrameBuffer.unbind();
+	video::bindFramebuffer(mainFbo);
+	video::viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+}
+
+void RawVolumeRenderer::compositeOIT(RenderContext &renderContext) {
+	core_trace_scoped(CompositeOIT);
+	const video::Id mainFbo = video::currentFramebuffer();
+	const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
+	const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
+													video::FrameBufferAttachment::Color1};
+	if (mainFbo != video::InvalidId) {
+		video::drawBuffers(1, color0);
+	}
+
+	video::ScopedShader scoped(_oitShader);
+	video::ScopedState scopedDepth(video::State::DepthTest, false);
+	video::ScopedState scopedDepthMask(video::State::DepthMask, false);
+	video::ScopedBlendMode scopedBlend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
+									   video::BlendEquation::Add);
+	video::ScopedBuffer scopedBuf(_oitVbo);
+	core_assert_always(scopedBuf.success());
+	core_assert_always(video::bindTexture(video::TextureUnit::Zero, renderContext.oitFrameBuffer,
+										  video::FrameBufferAttachment::Color0));
+	core_assert_always(video::bindTexture(video::TextureUnit::One, renderContext.oitFrameBuffer,
+										  video::FrameBufferAttachment::Color1));
+	video::drawArrays(video::Primitive::Triangles, 6);
+
+	if (mainFbo != video::InvalidId) {
+		video::drawBuffers(2, color01);
+	}
+}
+
+// Fallback when the weighted OIT framebuffer is unavailable
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	const voxel::MeshState::MeshesMap &transparencyMeshes = meshState->meshes(voxel::MeshType_Transparency);
@@ -877,8 +1032,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			}
 		}
 	}
-
-	sortBeforeRender(meshState, camera);
 
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -983,7 +1136,26 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	renderOpaque(meshState, camera);
 
 	// --- transparency pass
-	renderTransparency(meshState, renderContext, camera);
+	const bool useOit = renderContext.hasOit();
+	if (useOit) {
+		if (normals) {
+			_voxelNormShader.deactivate();
+			_voxelNormOitShader.activate();
+		} else {
+			_voxelShader.deactivate();
+			_voxelOitShader.activate();
+		}
+		renderTransparencyOIT(meshState, renderContext, camera);
+		if (normals) {
+			_voxelNormOitShader.deactivate();
+		} else {
+			_voxelOitShader.deactivate();
+		}
+		compositeOIT(renderContext);
+	} else {
+		sortBeforeRender(meshState, camera);
+		renderTransparency(meshState, renderContext, camera);
+	}
 
 	if (mode == video::PolygonMode::Points) {
 		video::disable(video::State::PolygonOffsetPoint);
@@ -1115,11 +1287,17 @@ bool RawVolumeRenderer::resetStateBuffers(bool normals) {
 void RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_voxelNormShader.shutdown();
+	_voxelOitShader.shutdown();
+	_voxelNormOitShader.shutdown();
+	_oitShader.shutdown();
 	_shadowMapShader.shutdown();
 	_voxelData.shutdown();
 	_shadowMapUniformBlock.shutdown();
 	_shadow.shutdown();
 	shutdownStateBuffers();
+	_oitVbo.shutdown();
+	_oitBufferIndex = -1;
+	_oitTexBufferIndex = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }

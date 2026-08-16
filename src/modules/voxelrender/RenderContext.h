@@ -24,6 +24,7 @@ struct RenderContext : public core::NonCopyable {
 	video::FrameBuffer frameBuffer;        // Main framebuffer (multisampled when MSAA is enabled)
 	video::FrameBuffer resolveFrameBuffer; // Resolve target for multisampled framebuffer
 	render::BloomRenderer bloomRenderer;
+	video::FrameBuffer oitFrameBuffer; // Weighted blended OIT accum + reveal (non-MSAA)
 	const scenegraph::SceneGraph *sceneGraph = nullptr;
 	scenegraph::FrameIndex frame = 0;
 	bool hideInactive = false;
@@ -43,6 +44,7 @@ struct RenderContext : public core::NonCopyable {
 	bool isSceneMode() const;
 	bool showCameras() const;
 	bool applyTransforms() const;
+	bool hasOit() const;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();
