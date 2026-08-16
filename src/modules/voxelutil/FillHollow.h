@@ -5,6 +5,8 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/IProgress.h"
+#include "core/ProgressScope.h"
 #include "core/collection/Array3DView.h"
 #include "core/collection/Buffer.h"
 #include "voxel/Region.h"
@@ -36,6 +38,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 	bool *visitedRaw = visitedData.data();
+	core::StepProgress steps(core::currentProgress(), 4);
 
 	auto fnWidth = [&volume, &visited, region, depth, height](int start, int end) {
 		typename VOLUME::Sampler sampler(&volume);
@@ -75,6 +78,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 		}
 	};
 	app::for_parallel(0, width, fnWidth);
+	steps.report(0, 1.0f);
 
 	auto fnHeight = [&volume, &visited, width, depth, region](int start, int end) {
 		for (int y = start; y < end; ++y) {
@@ -99,6 +103,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	if (height > 2) {
 		app::for_parallel(1, height - 1, fnHeight);
 	}
+	steps.report(1, 1.0f);
 
 	/* Seed flood-fill from outside air on the border only (O(surface), not O(volume)).
 	 * Reserve for the worst case: exterior flood can touch nearly every air voxel. */
@@ -187,6 +192,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 			positions.push_back(i + 1);
 		}
 	}
+	steps.report(2, 1.0f);
 
 	{
 		const bool *dataFinal = visitedRaw;
@@ -207,6 +213,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 			sampler.movePositiveZ();
 		}
 	}
+	steps.report(3, 1.0f);
 }
 
 } // namespace voxelutil

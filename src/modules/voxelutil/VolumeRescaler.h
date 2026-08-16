@@ -4,6 +4,7 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/ProgressScope.h"
 #include "core/Trace.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"
@@ -28,9 +29,10 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	core_trace_scoped(ScaleVolumeDown);
 
 	const int32_t depth = destRegion.getDepthInVoxels();
+	core::ParallelProgress progress(core_max(1, depth) * 2);
 	// First of all we iterate over all destination voxels and compute their color as the
 	// avg of the colors of the eight corresponding voxels in the higher resolution version.
-	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](int start, int end) {
+	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion, &progress](int start, int end) {
 		const int32_t height = destRegion.getHeightInVoxels();
 		const int32_t width = destRegion.getWidthInVoxels();
 		for (int32_t z = start; z < end; ++z) {
@@ -104,6 +106,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 				}
 			}
 		}
+		progress.add(end - start);
 	});
 
 	// At this point the results are usable, but we have a problem with thin structures disappearing.
@@ -112,7 +115,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	// color changes, as this is very noticeable. Our solution is to process again only those voxels
 	// which lie on a material-air boundary, and to recompute their color using a larger neighborhood
 	// while also accounting for how visible the child voxels are.
-	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](int start, int end) {
+	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion, &progress](int start, int end) {
 		typename DestVolume::Sampler dstSampler1(destVolume);
 		glm::ivec3 pos = destRegion.getLowerCorner();
 		pos.z += start;
@@ -210,6 +213,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 			}
 			dstSampler1.movePositiveZ();
 		}
+		progress.add(end - start);
 	});
 }
 

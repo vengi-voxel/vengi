@@ -5,6 +5,7 @@
 #include "VolumeCropper.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
+#include "core/ProgressScope.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -47,6 +48,7 @@ namespace voxelutil {
 	int minX = width;
 	int maxX = -1;
 
+	core::IProgress *progress = core::currentProgressPtr();
 	// Scan through all Z-Y planes to find bounds
 	for (int z = 0; z < depth; ++z) {
 		const int64_t zBase = z * zStride;
@@ -80,6 +82,9 @@ namespace voxelutil {
 					}
 				}
 			}
+		}
+		if (progress != nullptr && depth > 0) {
+			progress->setProgress(((float)(z + 1)) / (float)depth);
 		}
 	}
 

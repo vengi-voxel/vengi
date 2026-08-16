@@ -5,6 +5,7 @@
 #include "VolumeRescaler.h"
 #include "app/App.h"
 #include "app/ForParallel.h"
+#include "core/ProgressScope.h"
 #include "voxel/VolumeSamplerUtil.h"
 
 namespace voxelutil {
@@ -22,7 +23,9 @@ namespace voxelutil {
 											 glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
 
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-	app::for_parallel(0, srcRegion.getDepthInVoxels(), [&sourceVolume, destVolume](int start, int end) {
+	const int depth = srcRegion.getDepthInVoxels();
+	core::ParallelProgress progress(depth);
+	app::for_parallel(0, depth, [&sourceVolume, destVolume, &progress](int start, int end) {
 		voxel::RawVolume::Sampler sourceSampler(sourceVolume);
 		const glm::ivec3 &dim = sourceVolume.region().getDimensionsInVoxels();
 		const glm::ivec3 &mins = sourceVolume.region().getLowerCorner();
@@ -43,6 +46,7 @@ namespace voxelutil {
 			}
 			sourceSampler.movePositiveZ();
 		}
+		progress.add(end - start);
 	});
 	return destVolume;
 }
@@ -85,6 +89,8 @@ namespace voxelutil {
 
 	// Backward mapping: iterate over destination and sample from source
 	// For scaling around pivot: srcPos = pivot + (destPos - pivot) * invScale
+	const int destDepth = destMaxs.z + 1 - destMins.z;
+	core::ParallelProgress progress(destDepth);
 	app::for_parallel(destMins.z, destMaxs.z + 1, [&](int start, int end) {
 		for (int32_t z = start; z < end; ++z) {
 			for (int32_t y = destMins.y; y <= destMaxs.y; ++y) {
@@ -101,6 +107,7 @@ namespace voxelutil {
 				}
 			}
 		}
+		progress.add(end - start);
 	});
 
 	return destVolume;

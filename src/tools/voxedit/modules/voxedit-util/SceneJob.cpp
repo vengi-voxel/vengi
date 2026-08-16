@@ -7,7 +7,7 @@
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/GLM.h"
-#include "core/IProgress.h"
+#include "core/ProgressScope.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/FillHollow.h"
@@ -215,13 +215,13 @@ voxel::Region sceneJobModifiedRegionForResize(const voxel::Region &oldRegion, co
 
 SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::UUID &nodeUUID, voxel::RawVolume *snapshot,
 												 const voxel::Region &selectionRegion, const voxel::Voxel &voxel,
-												 bool overrideVoxels, core::IProgress *progress) {
+												 bool overrideVoxels) {
 	SceneJobResult result;
 	result.type = type;
 	result.nodeUUID = nodeUUID;
 
-	core::IProgress &progressRef = core::progressOrNull(progress);
-	progressRef.setProgress(0.0f);
+	core::IProgress &progress = core::currentProgress();
+	progress.setProgress(0.0f);
 
 	voxel::RawVolumeWrapper wrapper(snapshot);
 	switch (type) {
@@ -253,7 +253,7 @@ SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::
 		return result;
 	}
 
-	progressRef.setProgress(1.0f);
+	progress.setProgress(1.0f);
 	result.volume = snapshot;
 	result.modifiedRegion = wrapper.dirtyRegion();
 	result.success = true;

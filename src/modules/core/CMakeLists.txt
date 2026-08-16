@@ -66,6 +66,7 @@ set(SRCS
 	Process.cpp Process.h
 	ProgressBar.cpp ProgressBar.h
 	IProgress.h
+	ProgressScope.cpp ProgressScope.h
 	SharedProgress.h
 	ResultType.h
 	SharedPtr.h

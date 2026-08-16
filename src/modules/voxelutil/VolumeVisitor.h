@@ -7,6 +7,7 @@
 #include "app/ForParallel.h"
 #include "color/ColorUtil.h"
 #include "core/GLM.h"
+#include "core/ProgressScope.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
@@ -991,19 +992,24 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	case VisitorOrder::mXZY:
 	case VisitorOrder::mXmZY:
 	case VisitorOrder::mXZmY:
-	case VisitorOrder::mXmZmY:
+	case VisitorOrder::mXmZmY: {
 		// anything were the outer loop is x is handled here
+		const int lower = region.getLowerX();
+		const int upperExclusive = region.getUpperX() + 1;
+		core::ParallelProgress progress(upperExclusive - lower);
 		app::for_parallel(
-			region.getLowerX(), region.getUpperX() + 1,
+			lower, upperExclusive,
 			[&](int32_t start, int32_t end) {
 				// we have to subtract 1 because the end is exclusive
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(start, region.getLowerY(), region.getLowerZ(), end - 1,
 											  region.getUpperY(), region.getUpperZ());
 				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				progress.add(end - start);
 			},
 			true);
 		break;
+	}
 
 	case VisitorOrder::YXZ:
 	case VisitorOrder::YZX:
@@ -1016,19 +1022,24 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	case VisitorOrder::mYmZmX:
 	case VisitorOrder::mYmXmZ:
 	case VisitorOrder::mYZmX:
-	case VisitorOrder::mYXZ:
+	case VisitorOrder::mYXZ: {
 		// anything were the outer loop is y is handled here
+		const int lower = region.getLowerY();
+		const int upperExclusive = region.getUpperY() + 1;
+		core::ParallelProgress progress(upperExclusive - lower);
 		app::for_parallel(
-			region.getLowerY(), region.getUpperY() + 1,
+			lower, upperExclusive,
 			[&](int32_t start, int32_t end) {
 				// we have to subtract 1 because the end is exclusive
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(region.getLowerX(), start, region.getLowerZ(), region.getUpperX(),
 											  end - 1, region.getUpperZ());
 				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				progress.add(end - start);
 			},
 			true);
 		break;
+	}
 	case VisitorOrder::ZYX:
 	case VisitorOrder::ZXY:
 	case VisitorOrder::ZXmY:
@@ -1037,19 +1048,24 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	case VisitorOrder::mZXY:
 	case VisitorOrder::mZXmY:
 	case VisitorOrder::mZmXY:
-	case VisitorOrder::mZmXmY:
+	case VisitorOrder::mZmXmY: {
 		// anything were the outer loop is z is handled here
+		const int lower = region.getLowerZ();
+		const int upperExclusive = region.getUpperZ() + 1;
+		core::ParallelProgress progress(upperExclusive - lower);
 		app::for_parallel(
-			region.getLowerZ(), region.getUpperZ() + 1,
+			lower, upperExclusive,
 			[&](int32_t start, int32_t end) {
 				// we have to subtract 1 because the end is exclusive
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(region.getLowerX(), region.getLowerY(), start, region.getUpperX(),
 											  region.getUpperY(), end - 1);
 				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				progress.add(end - start);
 			},
 			true);
 		break;
+	}
 	case voxelutil::VisitorOrder::Max:
 		break;
 	}

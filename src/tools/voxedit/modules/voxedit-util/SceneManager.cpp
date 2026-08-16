@@ -20,6 +20,7 @@
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/IProgress.h"
+#include "core/ProgressScope.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -1046,6 +1047,7 @@ bool SceneManager::startCropSceneJob(const core::UUID &nodeUUID, const core::Str
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::CropVolume;
 		result.nodeUUID = nodeUUID;
@@ -1075,6 +1077,7 @@ bool SceneManager::startScaleUpSceneJob(const core::UUID &nodeUUID, const core::
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleUpVolume;
 		result.nodeUUID = nodeUUID;
@@ -1111,6 +1114,7 @@ bool SceneManager::startScaleDownSceneJob(const core::UUID &nodeUUID, const core
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, snapshot, srcRegion, targetDimensionsHalf, palette, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::ScaleDownVolume;
 		result.nodeUUID = nodeUUID;
@@ -1140,6 +1144,7 @@ bool SceneManager::startResizeSceneJob(const SceneJobRequest &request) {
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID = request.nodeUUID, snapshot, oldRegion, newRegion, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::ResizeVolume;
 		result.nodeUUID = nodeUUID;
@@ -1176,8 +1181,9 @@ bool SceneManager::startVolumeOperationSceneJob(const SceneJobRequest &request) 
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([request, snapshot, selectionRegion, progress]() {
+		core::ProgressScope scope(*progress);
 		return makeVolumeOperationSceneJobResult(request.type, request.nodeUUID, snapshot, selectionRegion,
-												 request.voxel, request.overrideVoxels, progress);
+												 request.voxel, request.overrideVoxels);
 	});
 	return startActiveSceneJob(request.type, request.text, core::move(future));
 }
@@ -1194,6 +1200,7 @@ bool SceneManager::startSplitObjectsSceneJob(const core::UUID &nodeUUID, const c
 	voxel::RawVolume *snapshot = new voxel::RawVolume(*node->volume());
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, parentNodeUUID, name, palette, snapshot, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::SplitObjects;
 		result.nodeUUID = nodeUUID;
@@ -1250,6 +1257,7 @@ bool SceneManager::startColorToModelSceneJob(const SceneJobRequest &request) {
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future =
 		app::async([request, parentNodeUUID, palette, nameSuffix, wanted, snapshot, progress]() {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::ColorToModel;
 		result.nodeUUID = request.nodeUUID;
@@ -1338,6 +1346,7 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 	core::SharedProgress *progress = &_sceneJobProgress;
 	core::Future<SceneJobResult> future = app::async([nodeUUID, sourceSnapshot, sourcePalette, sourceWorldMatrix, sourcePivot,
 													 transformSource, targets = core::move(targets), progress]() mutable {
+		core::ProgressScope scope(*progress);
 		SceneJobResult result;
 		result.type = SceneJobType::SplatMerge;
 		result.nodeUUID = nodeUUID;

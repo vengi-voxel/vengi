@@ -4,6 +4,7 @@
 
 #include "core/ProgressBar.h"
 #include "core/IProgress.h"
+#include "core/ProgressScope.h"
 #include "core/SharedProgress.h"
 #include <gtest/gtest.h>
 
@@ -120,6 +121,46 @@ TEST_F(ProgressBarTest, testSharedProgress) {
 	progress.reset();
 	EXPECT_FLOAT_EQ(0.0f, progress.progress());
 	EXPECT_TRUE(progress.text().empty());
+}
+
+TEST_F(ProgressBarTest, testProgressScope) {
+	EXPECT_EQ(nullptr, currentProgressPtr());
+	EXPECT_EQ(&NullProgress::get(), &currentProgress());
+
+	RecordingProgress outer;
+	{
+		ProgressScope scope(outer);
+		EXPECT_EQ(&outer, currentProgressPtr());
+		currentProgress().setProgress(0.25f);
+		EXPECT_FLOAT_EQ(0.25f, outer.last);
+
+		RecordingProgress inner;
+		{
+			ProgressScope nested(inner);
+			EXPECT_EQ(&inner, currentProgressPtr());
+			currentProgress().setProgress(0.75f);
+			EXPECT_FLOAT_EQ(0.75f, inner.last);
+			EXPECT_FLOAT_EQ(0.25f, outer.last);
+		}
+		EXPECT_EQ(&outer, currentProgressPtr());
+	}
+	EXPECT_EQ(nullptr, currentProgressPtr());
+	EXPECT_EQ(&NullProgress::get(), &currentProgress());
+}
+
+TEST_F(ProgressBarTest, testParallelProgress) {
+	RecordingProgress root;
+	{
+		ProgressScope scope(root);
+		ParallelProgress progress(4);
+		progress.add(1);
+		EXPECT_FLOAT_EQ(0.25f, root.last);
+		progress.add(1);
+		EXPECT_FLOAT_EQ(0.5f, root.last);
+		progress.add(2);
+		EXPECT_FLOAT_EQ(1.0f, root.last);
+	}
+	EXPECT_EQ(nullptr, currentProgressPtr());
 }
 
 } // namespace core

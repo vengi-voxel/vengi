@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/collection/Buffer.h"
-#include "core/IProgress.h"
 #include "core/String.h"
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
@@ -154,6 +153,6 @@ struct SceneJobResult {
 voxel::Region sceneJobModifiedRegionForResize(const voxel::Region &oldRegion, const voxel::Region &newRegion);
 SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::UUID &nodeUUID, voxel::RawVolume *snapshot,
 												 const voxel::Region &selectionRegion, const voxel::Voxel &voxel,
-												 bool overrideVoxels, core::IProgress *progress = nullptr);
+												 bool overrideVoxels);
 
 } // namespace voxedit

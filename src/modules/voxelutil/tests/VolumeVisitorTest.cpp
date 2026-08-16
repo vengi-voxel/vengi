@@ -5,6 +5,8 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
+#include "core/ProgressScope.h"
+#include "core/SharedProgress.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -195,6 +197,22 @@ TEST_F(VolumeVisitorTest, testVisitFlatSurface) {
 
 	int cntWithDeviation = visitFlatSurface(volume2, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, 1);
 	EXPECT_EQ(9, cntWithDeviation); // all 9, including the 3 at y=1
+}
+
+TEST_F(VolumeVisitorTest, testVisitVolumeParallelProgress) {
+	const voxel::Region region(0, 31);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	volume.fill(voxel);
+
+	core::SharedProgress progress;
+	{
+		core::ProgressScope scope(progress);
+		const int cnt = visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::VisitAll());
+		EXPECT_EQ(region.voxels(), cnt);
+	}
+	EXPECT_FLOAT_EQ(1.0f, progress.progress());
+	EXPECT_EQ(nullptr, core::currentProgressPtr());
 }
 
 class VolumeVisitorParamTest : public app::AbstractTest, public ::testing::WithParamInterface<VisitorOrder> {};
