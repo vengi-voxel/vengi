@@ -75,9 +75,12 @@ void ImageAssetPanel::update(const char *id) {
 				if (!_dragImage || _dragImage->name() != image->name()) {
 					_dragImage = image::loadImage(image->name());
 				}
+				// Fall back to the pooled image (thumbnail) if the full reload failed
+				if (!_dragImage || !_dragImage->isLoaded()) {
+					_dragImage = image;
+				}
 				ImGui::ImageButton(imgId.c_str(), handle, ImVec2(imageSize, imageSize));
-				ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&_dragImage, sizeof(_dragImage),
-										 ImGuiCond_Always);
+				voxelui::dragdrop::setImagePayload(_dragImage);
 				ImGui::EndDragDropSource();
 			}
 			if (n % maxImages == 0) {

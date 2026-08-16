@@ -202,8 +202,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 			_sceneMgr->nodeSetColor(node.uuid(), paletteColorIdx, color::getRGBA(color));
 		}
 
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
-			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+		if (const image::ImagePtr image = voxelui::dragdrop::acceptImagePayload()) {
 			_importPalette = image->name();
 		}
 		ImGui::EndDragDropTarget();

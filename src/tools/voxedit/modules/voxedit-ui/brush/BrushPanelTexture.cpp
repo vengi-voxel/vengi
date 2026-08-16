@@ -28,8 +28,7 @@ void BrushPanelTexture::update(BrushPanelContext &ctx, command::CommandExecution
 	core::String name = brush.image() ? core::string::extractFilenameWithExtension(brush.image()->name()) : _("None");
 	ImGui::InputText(_("Texture"), &name, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
-			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+		if (const image::ImagePtr image = voxelui::dragdrop::acceptImagePayload()) {
 			brush.setImage(image);
 		}
 		ImGui::EndDragDropTarget();

@@ -615,6 +615,10 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	if (isLocked()) {
 		return;
 	}
+	if (!image || !image->isLoaded()) {
+		Log::error("No image for fill plane operation");
+		return;
+	}
 	const int nodeId = activeNode();
 	if (nodeId == InvalidNodeId) {
 		Log::error("No active node for fill plane operation");
@@ -628,6 +632,10 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
 	const glm::ivec3 &pos = _modifier->cursorPosition();
 	const voxel::FaceNames face = _modifier->cursorFace();
+	if (face == voxel::FaceNames::Max) {
+		Log::debug("No cursor face for fill plane operation");
+		return;
+	}
 	const voxel::Voxel hitVoxel/* = hitCursorVoxel()*/; // TODO: should be an option
 	voxelutil::fillPlane(wrapper, image, hitVoxel, pos, face);
 	modified(nodeId, wrapper.dirtyRegion());

@@ -22,6 +22,7 @@ void ImageAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId, ImVec2(0, -50)));
 		const core::String viewPortId = core::String::format("//%s", Viewport::viewportId(viewportId).c_str());
 
 		const size_t n = core_min(3, _texturePool->cache().size());

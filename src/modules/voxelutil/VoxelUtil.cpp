@@ -403,6 +403,9 @@ int extrudePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::
 
 int fillPlane(voxel::RawVolumeWrapper &volume, const image::Image *image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
+	if (image == nullptr || !image->isLoaded() || face == voxel::FaceNames::Max) {
+		return 0;
+	}
 	palette::Palette pal;
 	pal.nippon();
 	palette::PaletteLookup palLookup(pal);

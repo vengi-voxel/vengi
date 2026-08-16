@@ -268,8 +268,7 @@ void Viewport::updateViewportInput(float headerSize) {
 void Viewport::dragAndDrop(float headerSize) {
 	if (ImGui::BeginDragDropTarget()) {
 		if (!isSceneMode()) {
-			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
-				const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+			if (const image::ImagePtr image = voxelui::dragdrop::acceptImagePayload()) {
 				updateViewportInput(headerSize);
 				_sceneMgr->fillPlane(image);
 			}
