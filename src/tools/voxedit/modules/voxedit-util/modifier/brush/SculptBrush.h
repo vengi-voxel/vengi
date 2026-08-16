@@ -239,6 +239,7 @@ public:
 	void setRemoveOnly(bool removeOnly);
 	int brushRadius() const;
 	void setBrushRadius(int radius);
+	int previewRadius() const override;
 	bool planeFitted() const;
 
 	// Reskin accessors
@@ -519,6 +520,10 @@ inline void SculptBrush::setRemoveOnly(bool removeOnly) {
 }
 
 inline int SculptBrush::brushRadius() const {
+	return _brushRadius;
+}
+
+inline int SculptBrush::previewRadius() const {
 	return _brushRadius;
 }
 

@@ -101,7 +101,7 @@ protected:
 		if (brushType == BrushType::Shape) {
 			if (modifier.shapeBrush().strokeMode()) {
 				EXPECT_FALSE(modifier.shapeBrush().active())
-					<< "ShapeBrush is active in single mode for modifierType " << (int)modifierType;
+					<< "ShapeBrush is active in stroke mode for modifierType " << (int)modifierType;
 				return;
 			}
 			EXPECT_TRUE(modifier.shapeBrush().active())

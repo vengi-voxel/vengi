@@ -35,15 +35,15 @@ public:
 	/**
 	 * @brief Execute the @c ModifierType action
 	 *
-	 * @param single @c false if the action should not abort the modifier execution @c true means that the next
-	 * execution of the modifier action needs another @c handleDown() call.
+	 * @param continuous @c true for mid-stroke dabs (keep the brush open). @c false ends the brush
+	 *        after this execution (mouse up / final dab).
 	 *
 	 * @sa Modifier::aabbStart()
 	 * @sa Modifier::aabbAction()
 	 * @sa Modifier::aabbAbort()
 	 * @sa Modifier::aabbStep()
 	 */
-	void execute(bool single);
+	void execute(bool continuous);
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
 };

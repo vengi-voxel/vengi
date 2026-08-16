@@ -3,25 +3,15 @@
  */
 
 #include "PreviewManager.h"
+#include "BrushRadiusPreview.h"
 #include "Modifier.h"
-#include "brush/AABBBrush.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include "core/collection/Buffer.h"
-#include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Config.h"
-#include "voxel/Face.h"
-#include "voxelutil/VolumeSelect.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <limits>
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtc/constants.hpp>
+#include "voxel/Voxel.h"
 
 namespace voxedit {
 
@@ -91,56 +81,6 @@ static void stripUnflaggedVoxels(voxel::RawVolume *vol) {
 				sampler.movePositiveX();
 			}
 		}
-	}
-}
-
-/**
- * @brief Build a thin closed polyline at brush radius, draped onto exposed surface voxels.
- *
- * Samples a circle in the cursor-face UV plane and snaps each sample to the nearest
- * exposed surface along the face axis so the ring follows terrain / slopes.
- */
-static void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 &center,
-									  voxel::FaceNames face, int radius, core::Buffer<glm::vec3> &out) {
-	out.clear();
-	if (volume == nullptr || radius < 0) {
-		return;
-	}
-	voxel::FaceNames outlineFace = face;
-	if (outlineFace == voxel::FaceNames::Max) {
-		outlineFace = voxel::FaceNames::PositiveY;
-	}
-	const math::Axis faceAxis = voxel::faceToAxis(outlineFace);
-	const int wAxis = math::getIndexForAxis(faceAxis);
-	const int uAxis = (wAxis + 1) % 3;
-	const int vAxis = (wAxis + 2) % 3;
-	const bool positiveNormal = voxel::isPositiveFace(outlineFace);
-	const voxel::Region &region = volume->region();
-	const int refW = center[wAxis];
-	const int tolerance = glm::max(radius * 2 + 4, 8);
-	const int segments = glm::clamp(radius * 8 + 24, 24, 96);
-	const float r = (float)radius + 0.5f;
-	const glm::vec3 faceN = voxel::faceNormal(outlineFace);
-
-	glm::ivec3 lastVoxel(std::numeric_limits<int>::min());
-	for (int i = 0; i < segments; ++i) {
-		const float angle = (float)i / (float)segments * glm::two_pi<float>();
-		const int u = center[uAxis] + (int)glm::round(glm::cos(angle) * r);
-		const int v = center[vAxis] + (int)glm::round(glm::sin(angle) * r);
-		int w = refW;
-		if (!voxelutil::findSurfaceNear(*volume, u, v, refW, tolerance, uAxis, vAxis, wAxis, positiveNormal, region,
-										w)) {
-			w = refW;
-		}
-		glm::ivec3 voxelPos(0);
-		voxelPos[uAxis] = u;
-		voxelPos[vAxis] = v;
-		voxelPos[wAxis] = w;
-		if (voxelPos == lastVoxel) {
-			continue;
-		}
-		lastVoxel = voxelPos;
-		out.push_back(glm::vec3(voxelPos) + 0.5f + faceN * 0.51f);
 	}
 }
 
@@ -274,6 +214,25 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		return;
 	}
 
+	// Shared radius footprint for any brush that reports previewRadius() >= 0.
+	// Built before the per-frame-flush early-out so sculpt (and similar) still get it.
+	const int previewRadius = brush->previewRadius();
+	if (previewRadius >= 0) {
+		_brushPreview.showOutlinePreview = true;
+		_brushPreview.outlinePreviewColor = color::RGBA(255, 220, 0, 220);
+		buildSurfaceRadiusOutline(activeVolume, brushContext.cursorPosition, brushContext.cursorFace, previewRadius,
+								  _brushPreview.outlinePreviewPoints);
+		const voxel::Region radiusRegion(brushContext.cursorPosition - previewRadius,
+										 brushContext.cursorPosition + previewRadius);
+		glm::ivec3 minsMirror = radiusRegion.getLowerCorner();
+		glm::ivec3 maxsMirror = radiusRegion.getUpperCorner();
+		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
+			const glm::ivec3 mirrorCenter = (minsMirror + maxsMirror) / 2;
+			buildSurfaceRadiusOutline(activeVolume, mirrorCenter, brushContext.cursorFace, previewRadius,
+									  _brushPreview.outlineMirrorPreviewPoints);
+		}
+	}
+
 	// Safety net: brushes with pending changes are handled in render() by
 	// executing on the real volume. If we reach here anyway, bail out to
 	// avoid corrupting brush history state against a temporary dummy volume.
@@ -288,25 +247,6 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	}
 	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
 	bool simplePreview = isSimplePreview(brush, region);
-
-	// Paint radius: thin yellow polyline draped onto exposed surface voxels.
-	if (modifier.brushType() == BrushType::Paint) {
-		const AABBBrush *aabbBrush = modifier.currentAABBBrush();
-		const int radius = aabbBrush ? aabbBrush->radius() : 0;
-		_brushPreview.showOutlinePreview = true;
-		_brushPreview.outlinePreviewColor = color::RGBA(255, 220, 0, 220);
-		buildSurfaceRadiusOutline(activeVolume, brushContext.cursorPosition, brushContext.cursorFace, radius,
-								  _brushPreview.outlinePreviewPoints);
-		if (aabbBrush) {
-			glm::ivec3 minsMirror = region.getLowerCorner();
-			glm::ivec3 maxsMirror = region.getUpperCorner();
-			if (aabbBrush->getMirrorBox(minsMirror, maxsMirror)) {
-				const glm::ivec3 mirrorCenter = (minsMirror + maxsMirror) / 2;
-				buildSurfaceRadiusOutline(activeVolume, mirrorCenter, brushContext.cursorFace, radius,
-										  _brushPreview.outlineMirrorPreviewPoints);
-			}
-		}
-	}
 
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		glm::ivec3 minsMirror = region.getLowerCorner();

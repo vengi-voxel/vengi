@@ -77,9 +77,9 @@ protected:
 
 	/**
 	 * timer value which indicates the next execution time in case you keep the
-	 * modifier triggered
+	 * modifier triggered (stroke / continuous brushes)
 	 */
-	double _nextSingleExecution = 0;
+	double _nextContinuousExecution = 0;
 	double _nowSeconds = 0;
 
 	core::Buffer<Brush *> _brushes;

@@ -40,22 +40,16 @@ void AABBBrush::construct() {
 	command::Command::registerCommand("set" + cmdName + "box")
 		.setHandler(setBox)
 		.setHelp(_("Click and drag to define a box of voxels"));
-	// Backward-compatible alias for older keybindings / scripts
-	command::Command::registerCommand("set" + cmdName + "aabb").setHandler(setBox).setHelp(_("Alias for box mode"));
 
 	auto setStroke = [this](const command::CommandArgs &) { setStrokeMode(); };
 	command::Command::registerCommand("set" + cmdName + "stroke")
 		.setHandler(setStroke)
 		.setHelp(_("Place voxels along the cursor while the action button is held"));
-	command::Command::registerCommand("set" + cmdName + "single").setHandler(setStroke).setHelp(_("Alias for stroke mode"));
 
 	auto setNoOverlap = [this](const command::CommandArgs &) { setStrokeNoOverlap(); };
 	command::Command::registerCommand("set" + cmdName + "strokenooverlap")
 		.setHandler(setNoOverlap)
 		.setHelp(_("Like stroke mode, but do not replace the same voxel twice"));
-	command::Command::registerCommand("set" + cmdName + "singlemove")
-		.setHandler(setNoOverlap)
-		.setHelp(_("Alias for stroke no-overlap mode"));
 }
 
 void AABBBrush::onSceneChange() {
@@ -73,8 +67,8 @@ void AABBBrush::reset() {
 	Super::reset();
 	_secondPosValid = false;
 	_boxMode = false;
-	// Preserve _mode (AABB/Single/Center) - it is a user preference set via UI commands
-	// (e.g., SelectBrush::setSelectMode(Paint) calls setSingleMode()). Resetting it here
+	// Preserve _mode (Box/Stroke/Center) - it is a user preference set via UI commands
+	// (e.g., SelectBrush::setSelectMode(Paint) calls setStrokeMode()). Resetting it here
 	// causes a mismatch: the derived brush still shows its mode in the UI, but the
 	// underlying AABBBrush reverts to AABB behavior after a brush type round-trip.
 	_aabbFace = voxel::FaceNames::Max;
@@ -279,7 +273,7 @@ void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 	if (ctx.cursorPosition != _lastCursorPos) {
 		_lastCursorPos = ctx.cursorPosition;
 		// we have to update the preview each time we move the cursor if the brush
-		// is either spanning an aabb or has a radius set in single mode
+		// is either spanning an aabb or has a radius set in stroke mode
 		if (_boxMode || radius() > 0) {
 			markDirty();
 		}

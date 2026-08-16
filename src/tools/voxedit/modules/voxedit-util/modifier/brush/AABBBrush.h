@@ -58,10 +58,10 @@ enum BrushFlags : uint32_t {
  *
  * # Modes
  *
- * - **AABB Mode** (default): Click to set first corner, move cursor to span AABB
+ * - **Box Mode** (default): Click to set first corner, move cursor to span AABB
  * - **Center Mode**: First position is the center, AABB grows symmetrically
- * - **Single Mode**: Place voxels continuously as cursor moves (with radius support)
- * - **Single Move Mode**: Like Single but avoids re-placing at same position
+ * - **Stroke Mode**: Place voxels continuously as the cursor moves while held (with radius support)
+ * - **Stroke No-Overlap Mode**: Like Stroke but avoids re-placing at the same position
  *
  * # Grid Resolution
  *
@@ -107,7 +107,7 @@ protected:
 	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
 
 	uint32_t _mode = BRUSH_MODE_BOX; ///< Current brush mode flags
-	int _radius = 0;				  ///< Radius for single mode (0 = single voxel)
+	int _radius = 0;				  ///< Radius for stroke mode (0 = single voxel dab)
 
 	/**
 	 * The first corner position of the AABB, set by beginBrush()
@@ -162,7 +162,7 @@ protected:
 	/**
 	 * @brief Allows derived classes to override whether AABB spanning is enabled
 	 *
-	 * By default, AABB spanning happens unless single mode is active. Derived
+	 * By default, AABB spanning happens unless stroke mode is active. Derived
 	 * classes can override this to disable AABB behavior in specific cases
 	 * (e.g., PaintBrush in plane mode).
 	 *
@@ -321,11 +321,20 @@ public:
 	 * @return The current radius, or 0 if not in stroke mode
 	 */
 	int radius() const;
+
+	int previewRadius() const override;
 };
 
 inline int AABBBrush::radius() const {
 	if (!anyStrokeMode()) {
 		return 0;
+	}
+	return _radius;
+}
+
+inline int AABBBrush::previewRadius() const {
+	if (!anyStrokeMode()) {
+		return -1;
 	}
 	return _radius;
 }

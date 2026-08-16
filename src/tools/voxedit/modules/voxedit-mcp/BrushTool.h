@@ -29,7 +29,7 @@ protected:
 
 	/**
 	 * @brief Parse brush mode from string argument
-	 * @return Brush mode flag (AABB, single, center)
+	 * @return Brush mode flag (box, stroke, strokenooverlap, center)
 	 */
 	static uint32_t parseBrushMode(const core::String &mode);
 

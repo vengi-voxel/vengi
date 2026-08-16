@@ -55,7 +55,7 @@ enum class SelectMode : uint8_t {
 	/** Free-form polygon selection: click vertices to build a polygon, close it to select enclosed surface voxels */
 	Lasso,
 	/** Continuous paint-style selection: hold mouse and drag to select solid voxels within brush radius.
-	 *  Uses single mode for continuous execution. Single undo entry on release. */
+	 *  Uses stroke mode for continuous execution. Single undo entry on release. */
 	Paint,
 	/** Selection mode driven by a user-supplied Lua script */
 	Script,

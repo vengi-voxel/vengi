@@ -30,8 +30,11 @@ ModifierType BrushTool::parseModifierType(const core::String &type) {
 }
 
 uint32_t BrushTool::parseBrushMode(const core::String &mode) {
-	if (mode == "single") {
+	if (mode == "stroke") {
 		return BRUSH_MODE_STROKE;
+	}
+	if (mode == "strokenooverlap") {
+		return BRUSH_MODE_STROKE_NO_OVERLAP;
 	}
 	if (mode == "center") {
 		return BRUSH_MODE_CENTER;
@@ -57,14 +60,16 @@ json::Json BrushTool::propModifierType() {
 json::Json BrushTool::propBrushMode() {
 	json::Json prop = json::Json::object();
 	prop.set("type", "string");
-	prop.set("description", "The brush mode: 'aabb' (span rectangular region), 'single' (place single voxels), 'center' "
-						  "(expand from center point)");
+	prop.set("description",
+			 "The brush mode: 'box' (span rectangular region), 'stroke' (continuous dabs while held), "
+			 "'strokenooverlap' (stroke without redoing the same cell), 'center' (expand from center point)");
 	json::Json enumArr = json::Json::array();
-	enumArr.push("aabb");
-	enumArr.push("single");
+	enumArr.push("box");
+	enumArr.push("stroke");
+	enumArr.push("strokenooverlap");
 	enumArr.push("center");
 	prop.set("enum", enumArr);
-	prop.set("default", "aabb");
+	prop.set("default", "box");
 	return prop;
 }
 

@@ -46,7 +46,7 @@ protected:
 	}
 };
 
-TEST_F(PaintBrushTest, testExecuteSingle) {
+TEST_F(PaintBrushTest, testExecuteStroke) {
 	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setStrokeMode();
@@ -78,7 +78,7 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 	brush.shutdown();
 }
 
-TEST_F(PaintBrushTest, testExecuteSingleRadius) {
+TEST_F(PaintBrushTest, testExecuteStrokeRadius) {
 	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setStrokeMode();

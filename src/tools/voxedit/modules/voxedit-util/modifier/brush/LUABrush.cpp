@@ -548,7 +548,7 @@ bool LUABrush::loadScript(const core::String &filename) {
 				lua_getfield(_lua, -1, "mode");
 				if (lua_isstring(_lua, -1)) {
 					const char *mode = lua_tostring(_lua, -1);
-					_wantBox = SDL_strcmp(mode, "box") == 0 || SDL_strcmp(mode, "aabb") == 0;
+					_wantBox = SDL_strcmp(mode, "box") == 0;
 				}
 				lua_pop(_lua, 1); // pop mode field
 

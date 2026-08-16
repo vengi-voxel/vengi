@@ -348,6 +348,16 @@ public:
 	}
 
 	/**
+	 * @brief Radius for the shared surface radius outline preview, or -1 to hide it.
+	 *
+	 * Brushes that place/affect a circular footprint around the cursor (stroke AABB
+	 * radius, sculpt brush radius, ...) should return >= 0 while that mode is active.
+	 */
+	virtual int previewRadius() const {
+		return -1;
+	}
+
+	/**
 	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
 	 *
 	 * Called after endBrush() by the modifier button to push a single deferred undo entry

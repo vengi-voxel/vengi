@@ -189,23 +189,23 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
 	if (AABBBrush *aabbBrush = currentAABBBrush()) {
 		if (aabbBrush->anyStrokeMode()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
+			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
 				_actionExecuteButton.execute(true);
-				_nextSingleExecution = nowSeconds + 0.1;
+				_nextContinuousExecution = nowSeconds + 0.1;
 			}
 		}
 	} else if (_brushType == BrushType::Stamp) {
 		if (_stampBrush.continuousMode()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
+			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
 				_actionExecuteButton.execute(true);
-				_nextSingleExecution = nowSeconds + 0.1;
+				_nextContinuousExecution = nowSeconds + 0.1;
 			}
 		}
 	} else if (Brush *b = currentBrush()) {
 		if (b->wantsContinuousExecution()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
+			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
 				_actionExecuteButton.execute(true);
-				_nextSingleExecution = nowSeconds + 0.1;
+				_nextContinuousExecution = nowSeconds + 0.1;
 			}
 		}
 	}

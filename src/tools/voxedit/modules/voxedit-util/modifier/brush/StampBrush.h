@@ -75,7 +75,7 @@ public:
 	void setCenterMode(bool center);
 	bool centerMode() const;
 
-	void setContinuousMode(bool single);
+	void setContinuousMode(bool continuous);
 	bool continuousMode() const;
 
 	/**

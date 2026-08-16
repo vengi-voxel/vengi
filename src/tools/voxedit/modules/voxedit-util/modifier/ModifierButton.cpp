@@ -72,7 +72,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	return allUp;
 }
 
-void ModifierButton::execute(bool single) {
+void ModifierButton::execute(bool continuous) {
 	Modifier &modifier = _sceneMgr->modifier();
 	int nodes = 0;
 	auto func = [&](scenegraph::SceneGraphNode &node) {
@@ -96,7 +96,7 @@ void ModifierButton::execute(bool single) {
 		_sceneMgr->trace(false, true);
 		_oldType = ModifierType::None;
 	}
-	if (!single) {
+	if (!continuous) {
 		Brush *brush = modifier.currentBrush();
 		modifier.endBrush();
 		if (brush) {
