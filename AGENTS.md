@@ -46,3 +46,7 @@ If you need to do this on a non-palette format, you can use voxconvert here, too
 # Git workflow
 
 Always use a git worktree while starting a refactoring to not pollute the workspace for others.
+
+# Sandboxing
+
+When running tests or application, make sure to limit the cpu and memory via cgroups e.g. to not freeze the system on errors.
