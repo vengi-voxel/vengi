@@ -409,7 +409,13 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "script brush rescan")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Script));
+		// BrushType::Script has no fixed toolbar button (skipped in BrushPanel); lua scripts
+		// appear as separate buttons. Activate via command so the script settings show Rescan.
+		IM_CHECK(resetScene(ctx, _ctx.sceneMgr));
+		IM_CHECK(activateViewportEditMode(ctx, _app));
+		command::executeCommands("brushscript");
+		ctx->Yield();
+		IM_CHECK(_ctx.sceneMgr->modifier().brushType() == BrushType::Script);
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ctx->ItemClick("Rescan###Rescan");
 		ctx->Yield();
