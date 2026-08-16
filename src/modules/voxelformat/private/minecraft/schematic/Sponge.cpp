@@ -13,13 +13,15 @@
 namespace voxelformat {
 namespace sponge {
 
-static int loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal) {
+static int loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal,
+							  schematic::SchematicWaterPalette &waterPal) {
 	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs");
 	if (!blockIds.valid()) {
 		return -1;
 	}
 	Log::debug("Found MCEdit2 BlockIDs");
 	mcpal.resize(palette::PaletteMaxColors);
+	waterPal.resize(palette::PaletteMaxColors);
 	int paletteEntry = 0;
 	const int blockCnt = (int)blockIds.compound()->size();
 	Log::debug("Loading BlockIDs with %i entries", blockCnt);
@@ -31,14 +33,14 @@ static int loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, schematic::
 			Log::warn("Empty string in BlockIDs for %i", i);
 			continue;
 		}
-		// map to stone on default
-		mcpal[i] = findPaletteIndex(*value, 1);
+		schematic::setSchematicPaletteEntry(mcpal, waterPal, i, *value);
 		++paletteEntry;
 	}
 	return paletteEntry;
 }
 
-static int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal) {
+static int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal,
+								schematic::SchematicWaterPalette &waterPal) {
 	const int paletteMax = schematic.get("PaletteMax").int32(-1);
 	if (paletteMax == -1) {
 		return -1;
@@ -50,6 +52,7 @@ static int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, schematic
 			return -1;
 		}
 		mcpal.resize(paletteMax);
+		waterPal.resize(paletteMax);
 		int paletteEntry = 0;
 		for (const auto &c : *palette.compound()) {
 			const core::String &key = c->key;
@@ -62,8 +65,7 @@ static int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, schematic
 				Log::warn("Palette index %i is out of bounds", palIdx);
 				continue;
 			}
-			// map to stone on default
-			mcpal[palIdx] = findPaletteIndex(key, 1);
+			schematic::setSchematicPaletteEntry(mcpal, waterPal, palIdx, key);
 			++paletteEntry;
 		}
 		return paletteEntry;
@@ -72,7 +74,8 @@ static int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, schematic
 }
 
 // https://github.com/Lunatrius/Schematica/
-static int loadSchematicaPalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal) {
+static int loadSchematicaPalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal,
+								 schematic::SchematicWaterPalette &waterPal) {
 	const priv::NamedBinaryTag &schematicaMapping = schematic.get("SchematicaMapping");
 	if (!schematicaMapping.valid()) {
 		return -1;
@@ -89,23 +92,23 @@ static int loadSchematicaPalette(const priv::NamedBinaryTag &schematic, schemati
 			Log::warn("Failed to get int value for %s", key.c_str());
 			continue;
 		}
-		// map to stone on default
-		mcpal[palIdx] = findPaletteIndex(key, 1);
+		schematic::setSchematicPaletteEntry(mcpal, waterPal, palIdx, key);
 		++paletteEntry;
 	}
 	return paletteEntry;
 }
 
-static int parsePalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal) {
-	int paletteEntry = loadMCEdit2Palette(schematic, mcpal);
+static int parsePalette(const priv::NamedBinaryTag &schematic, schematic::SchematicPalette &mcpal,
+						schematic::SchematicWaterPalette &waterPal) {
+	int paletteEntry = loadMCEdit2Palette(schematic, mcpal, waterPal);
 	if (paletteEntry != -1) {
 		return paletteEntry;
 	}
-	paletteEntry = loadWorldEditPalette(schematic, mcpal);
+	paletteEntry = loadWorldEditPalette(schematic, mcpal, waterPal);
 	if (paletteEntry != -1) {
 		return paletteEntry;
 	}
-	paletteEntry = loadSchematicaPalette(schematic, mcpal);
+	paletteEntry = loadSchematicaPalette(schematic, mcpal, waterPal);
 	if (paletteEntry != -1) {
 		return paletteEntry;
 	}
@@ -194,7 +197,8 @@ static void parseMetadata(const priv::NamedBinaryTag &schematic, scenegraph::Sce
 
 static bool parseVarIntBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 								 palette::Palette &palette, const core::Buffer<int8_t> *blocks,
-								 const schematic::SchematicPalette &mcpal, int paletteEntry) {
+								 const schematic::SchematicPalette &mcpal, const schematic::SchematicWaterPalette &waterPal,
+								 int paletteEntry) {
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
@@ -221,9 +225,11 @@ static bool parseVarIntBlockData(const priv::NamedBinaryTag &schematic, scenegra
 					break;
 				}
 				if (palIdx != 0) {
-					uint8_t currentPalIdx = (paletteEntry == 0) ? palIdx : mcpal[palIdx];
+					const uint8_t currentPalIdx = (paletteEntry == 0) ? (uint8_t)palIdx : (uint8_t)mcpal[palIdx];
 					if (currentPalIdx != 0) {
-						sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
+						const bool water = paletteEntry == 0 ? schematic::schematicLegacyBlockIsWater(palIdx)
+														   : schematic::schematicPaletteEntryIsWater(waterPal, palIdx);
+						sampler3.setVoxel(schematic::createSchematicVoxel(palette, currentPalIdx, water));
 					}
 				}
 				sampler3.movePositiveX();
@@ -260,14 +266,16 @@ static bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::Sc
 		return false;
 	}
 	schematic::SchematicPalette mcpal;
-	const int paletteEntry = parsePalette(schematic, mcpal);
-	return parseVarIntBlockData(schematic, sceneGraph, palette, blocks, mcpal, paletteEntry);
+	schematic::SchematicWaterPalette waterPal;
+	const int paletteEntry = parsePalette(schematic, mcpal, waterPal);
+	return parseVarIntBlockData(schematic, sceneGraph, palette, blocks, mcpal, waterPal, paletteEntry);
 }
 
 static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 						palette::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
 	schematic::SchematicPalette mcpal;
-	const int paletteEntry = parsePalette(schematic, mcpal);
+	schematic::SchematicWaterPalette waterPal;
+	const int paletteEntry = parsePalette(schematic, mcpal, waterPal);
 
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
@@ -280,7 +288,7 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &palette](int start, int end) {
+	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &waterPal, &palette](int start, int end) {
 		voxel::RawVolume::Sampler sampler(volume);
 		sampler.setPosition(0, 0, start);
 		for (int z = start; z < end; ++z) {
@@ -293,12 +301,15 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 					const uint8_t palIdx = (*blocks.byteArray())[idx];
 					if (palIdx != 0u) {
 						uint8_t currentPalIdx;
-						if (paletteEntry == 0 || palIdx > paletteEntry) {
+						if (paletteEntry == 0 || palIdx > (uint8_t)paletteEntry) {
 							currentPalIdx = palIdx;
 						} else {
-							currentPalIdx = mcpal[palIdx];
+							currentPalIdx = (uint8_t)mcpal[palIdx];
 						}
-						sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
+						const bool water = paletteEntry == 0
+											   ? schematic::schematicLegacyBlockIsWater((int)palIdx)
+											   : schematic::schematicPaletteEntryIsWater(waterPal, (int)palIdx);
+						sampler3.setVoxel(schematic::createSchematicVoxel(palette, currentPalIdx, water));
 					}
 					sampler3.movePositiveX();
 				}
@@ -352,6 +363,7 @@ bool loadGroupsPaletteSponge3(const priv::NamedBinaryTag &schematic, scenegraph:
 		}
 		const priv::NamedBinaryTag &blockPalette = blocks.get("Palette");
 		schematic::SchematicPalette mcpal;
+		schematic::SchematicWaterPalette waterPal;
 		int paletteEntry = 0;
 		if (blockPalette.valid() && blockPalette.type() == priv::TagType::COMPOUND) {
 			for (const auto &c : *blockPalette.compound()) {
@@ -363,12 +375,13 @@ bool loadGroupsPaletteSponge3(const priv::NamedBinaryTag &schematic, scenegraph:
 				}
 				if (palIdx >= (int)mcpal.size()) {
 					mcpal.resize(palIdx + 1);
+					waterPal.resize(palIdx + 1);
 				}
-				mcpal[palIdx] = findPaletteIndex(key, 1);
+				schematic::setSchematicPaletteEntry(mcpal, waterPal, palIdx, key);
 				++paletteEntry;
 			}
 		}
-		return parseVarIntBlockData(schematic, sceneGraph, palette, data.byteArray(), mcpal, paletteEntry);
+		return parseVarIntBlockData(schematic, sceneGraph, palette, data.byteArray(), mcpal, waterPal, paletteEntry);
 	}
 	Log::error("Could not find valid 'Blocks' tags");
 	return false;

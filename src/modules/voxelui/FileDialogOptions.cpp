@@ -32,6 +32,9 @@
 #include "voxelformat/private/mesh/STLFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
+#include "voxelformat/private/minecraft/DatFormat.h"
+#include "voxelformat/private/minecraft/MCRFormat.h"
+#include "voxelformat/private/minecraft/MCWorldFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
@@ -394,6 +397,10 @@ static void loadOptionsMinecraftSkin(const io::FilesystemEntry &entry) {
 	ImGui::CheckboxVar(cfg::VoxformatSkinMergeFaces);
 }
 
+static void loadOptionsMinecraftMap() {
+	ImGui::CheckboxVar(cfg::VoxformatMCSeparateWater);
+}
+
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 				 const palette::PaletteCache &paletteCache) {
 	if (desc == nullptr) {
@@ -415,6 +422,11 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::SkinFormat::format()) {
 		loadOptionsMinecraftSkin(entry);
+	}
+
+	if (*desc == voxelformat::MCRFormat::format() || *desc == voxelformat::DatFormat::format() ||
+		*desc == voxelformat::MCWorldFormat::format() || *desc == voxelformat::SchematicFormat::format()) {
+		loadOptionsMinecraftMap();
 	}
 
 	if (*desc == voxelformat::VXLFormat::format()) {

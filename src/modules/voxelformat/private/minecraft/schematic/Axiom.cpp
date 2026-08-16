@@ -86,20 +86,25 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 		// minecraft:structure_void is air in Axiom schematics
 		const priv::NBTList &paletteNbt = *paletteTag.list();
 		schematic::SchematicPalette mcpal;
+		schematic::SchematicWaterPalette waterPal;
 		mcpal.resize(paletteNbt.size());
+		waterPal.resize(paletteNbt.size());
 		int paletteSize = 0;
 		for (const auto &palNbt : paletteNbt) {
 			const priv::NamedBinaryTag &materialName = palNbt.get("Name");
 			if (!materialName.valid()) {
 				Log::warn("Missing Name in palette entry");
-				mcpal[paletteSize++] = 0;
+				mcpal[paletteSize] = 0;
+				waterPal[paletteSize] = 0;
+				++paletteSize;
 				continue;
 			}
 			const core::String *name = materialName.string();
-			mcpal[paletteSize] = findPaletteIndex(name->c_str(), 1);
+			schematic::setSchematicPaletteEntry(mcpal, waterPal, paletteSize, *name);
 			Log::debug("Material name: %s, mapped to %i", name->c_str(), mcpal[paletteSize]);
 			if (*name == "minecraft:structure_void" || *name == "minecraft:air") {
 				mcpal[paletteSize] = palette::PaletteColorNotFound;
+				waterPal[paletteSize] = 0;
 			}
 			++paletteSize;
 		}
@@ -143,7 +148,8 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 					if (colorIdx == palette::PaletteColorNotFound) {
 						continue;
 					}
-					sampler.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
+					const bool water = schematic::schematicPaletteEntryIsWater(waterPal, (int)blockStateData[i]);
+					sampler.setVoxel(schematic::createSchematicVoxel(node.palette(), (uint8_t)colorIdx, water));
 					sampler.movePositiveX();
 				}
 			}

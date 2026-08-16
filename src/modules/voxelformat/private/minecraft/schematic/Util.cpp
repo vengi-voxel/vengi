@@ -3,7 +3,12 @@
  */
 
 #include "Util.h"
+#include "../MinecraftPaletteMap.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/Var.h"
+#include "palette/Palette.h"
+#include "voxel/Voxel.h"
 #include <glm/vec3.hpp>
 
 namespace voxelformat {
@@ -29,6 +34,36 @@ glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core::String
 		z = pos.get("z").int32(-1);
 	}
 	return glm::ivec3(x, y, z);
+}
+
+void setSchematicPaletteEntry(SchematicPalette &colors, SchematicWaterPalette &water, int idx,
+							  const core::String &blockName) {
+	if (idx >= (int)colors.size()) {
+		colors.resize(idx + 1);
+	}
+	if (idx >= (int)water.size()) {
+		water.resize(idx + 1);
+	}
+	colors[idx] = findPaletteIndex(blockName, 1);
+	water[idx] = isWaterBlock(blockName) ? 1u : 0u;
+}
+
+bool schematicPaletteEntryIsWater(const SchematicWaterPalette &water, int paletteIdx) {
+	if (paletteIdx < 0 || paletteIdx >= (int)water.size()) {
+		return false;
+	}
+	return water[paletteIdx] != 0u;
+}
+
+voxel::Voxel createSchematicVoxel(const palette::Palette &palette, uint8_t colorIdx, bool water) {
+	if (core::getVar(cfg::VoxformatMCSeparateWater)->boolVal() && water) {
+		return voxel::createVoxel(voxel::VoxelType::Transparent, colorIdx);
+	}
+	return voxel::createVoxel(palette, colorIdx);
+}
+
+bool schematicLegacyBlockIsWater(int blockId) {
+	return isLegacyWaterId(blockId);
 }
 
 } // namespace schematic

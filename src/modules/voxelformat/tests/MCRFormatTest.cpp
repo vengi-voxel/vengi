@@ -3,8 +3,16 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
+#include "io/Archive.h"
+#include "io/FormatDescription.h"
+#include "palette/Material.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "util/VarUtil.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/minecraft/NamedBinaryTag.h"
 
@@ -45,6 +53,63 @@ TEST_F(MCRFormatTest, testLoad117) {
 		EXPECT_TRUE(vxls[i].isSame(expected)) << vxls[i];
 	}
 	EXPECT_EQ(32512, v->region().voxels());
+}
+
+TEST_F(MCRFormatTest, testLoad117SeparateWater) {
+	util::ScopedVarChange scoped(cfg::VoxformatMCSeparateWater, "true");
+	scenegraph::SceneGraph sceneGraph;
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	if (!archive->exists("r.0.-2.mca")) {
+		GTEST_SKIP() << "Could not open r.0.-2.mca";
+	}
+	io::FileDescription fileDesc;
+	fileDesc.set("r.0.-2.mca");
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx));
+
+	int waterNodes = 0;
+	bool foundWaterVoxel = false;
+	bool foundWaterInTerrain = false;
+	sceneGraph.visitChildren(sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+		if (!node.isAnyModelNode() || node.volume() == nullptr) {
+			return;
+		}
+		const voxel::Voxel voxel = node.volume()->voxel(0, 62, -576);
+		if (node.name() == MCRFormat::WaterNodeName) {
+			++waterNodes;
+			const scenegraph::SceneGraphNode *parent = sceneGraph.parentNode(node);
+			EXPECT_NE(parent, nullptr);
+			EXPECT_TRUE(parent->isAnyModelNode() || parent->type() == scenegraph::SceneGraphNodeType::Root ||
+						parent->type() == scenegraph::SceneGraphNodeType::Group);
+			if (!voxel::isAir(voxel.getMaterial())) {
+				foundWaterVoxel = true;
+				EXPECT_TRUE(voxel::isTransparent(voxel.getMaterial())) << voxel;
+				EXPECT_EQ(22u, voxel.getColor()) << voxel;
+				EXPECT_LT(node.palette().color(22).a, 255u);
+				EXPECT_EQ(node.palette().material(22).type, palette::MaterialType::Glass);
+			}
+			return;
+		}
+		if (!voxel::isAir(voxel.getMaterial()) && voxel.getColor() == 22) {
+			foundWaterInTerrain = true;
+		}
+	});
+	EXPECT_GT(waterNodes, 0);
+	EXPECT_TRUE(foundWaterVoxel);
+	EXPECT_FALSE(foundWaterInTerrain);
+}
+
+TEST_F(MCRFormatTest, testExtractWaterVolume) {
+	const voxel::Region region(0, 0, 0, 3, 3, 3);
+	voxel::RawVolume terrain(region);
+	terrain.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+	terrain.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Transparent, 22));
+	voxel::RawVolume *water = MCRFormat::extractWaterVolume(&terrain);
+	ASSERT_NE(water, nullptr);
+	EXPECT_TRUE(voxel::isAir(terrain.voxel(2, 2, 2).getMaterial()));
+	EXPECT_EQ(5u, terrain.voxel(1, 1, 1).getColor());
+	EXPECT_TRUE(voxel::isTransparent(water->voxel(2, 2, 2).getMaterial()));
+	EXPECT_EQ(22u, water->voxel(2, 2, 2).getColor());
+	delete water;
 }
 
 TEST_F(MCRFormatTest, testLoad110) {

@@ -5,22 +5,28 @@
 #include "MCRFormat.h"
 #include "app/Async.h"
 #include "color/Color.h"
+#include "color/RGBA.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/concurrent/Atomic.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/Material.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "MinecraftPaletteMap.h"
 #include "NamedBinaryTag.h"
 
@@ -50,6 +56,88 @@ core::String blockStateFromCompound(const priv::NamedBinaryTag &block) {
 }
 
 } // namespace
+
+constexpr float MinecraftWaterAlpha = 0.5f;
+
+voxel::RawVolume *MCRFormat::extractWaterVolume(voxel::RawVolume *terrain) {
+	if (terrain == nullptr) {
+		return nullptr;
+	}
+	const voxel::Region region = terrain->region();
+	voxel::RawVolume *water = new voxel::RawVolume(region);
+	core::AtomicInt hasWater{0};
+	app::for_parallel(region.getLowerY(), region.getUpperY() + 1, [terrain, water, &region, &hasWater](int start, int end) {
+		voxel::RawVolume::Sampler terrainSampler(terrain);
+		voxel::RawVolume::Sampler waterSampler(water);
+		terrainSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
+		waterSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
+		for (int y = start; y < end; ++y) {
+			voxel::RawVolume::Sampler terrain2 = terrainSampler;
+			voxel::RawVolume::Sampler water2 = waterSampler;
+			for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+				voxel::RawVolume::Sampler terrain3 = terrain2;
+				voxel::RawVolume::Sampler water3 = water2;
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					const voxel::Voxel voxel = terrain3.voxel();
+					if (voxel::isTransparent(voxel.getMaterial())) {
+						water3.setVoxel(voxel);
+						terrain3.setVoxel(voxel::Voxel());
+						hasWater.increment();
+					}
+					terrain3.movePositiveX();
+					water3.movePositiveX();
+				}
+				terrain2.movePositiveZ();
+				water2.movePositiveZ();
+			}
+			terrainSampler.movePositiveY();
+			waterSampler.movePositiveY();
+		}
+	});
+	if ((int)hasWater == 0) {
+		delete water;
+		return nullptr;
+	}
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(water)) {
+		delete water;
+		return cropped;
+	}
+	return water;
+}
+
+void MCRFormat::applyWaterTransparency(palette::Palette &palette, const voxel::RawVolume *water) {
+	if (water == nullptr) {
+		return;
+	}
+	uint8_t used[256]{};
+	voxelutil::visitVolume(
+		*water,
+		[&used](int, int, int, const voxel::Voxel &voxel) {
+			used[voxel.getColor()] = 1;
+		},
+		voxelutil::VisitSolid());
+	const int colorCount = palette.colorCount();
+	for (int i = 0; i < colorCount; ++i) {
+		if (used[i] == 0) {
+			continue;
+		}
+		color::RGBA c = palette.color((uint8_t)i);
+		c.a = (uint8_t)(MinecraftWaterAlpha * 255.0f + 0.5f);
+		palette.setColor((uint8_t)i, c);
+		palette.setMaterialType((uint8_t)i, palette::MaterialType::Glass);
+	}
+}
+
+scenegraph::SceneGraphNode MCRFormat::createWaterNode(voxel::RawVolume *water, const palette::Palette &palette) {
+	scenegraph::SceneGraphNode waterNode(scenegraph::SceneGraphNodeType::Model);
+	waterNode.setName(WaterNodeName);
+	waterNode.setProperty("mctype", "water");
+	waterNode.setVolume(water);
+	palette::Palette waterPalette = palette;
+	applyWaterTransparency(waterPalette, water);
+	waterNode.setPalette(waterPalette);
+	return waterNode;
+}
 
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \
@@ -156,15 +244,42 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		app::for_parallel(0, SECTOR_INTS, fn);
 
 		int added = 0;
+		const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			if (volumes[i] == nullptr) {
 				continue;
 			}
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(volumes[i]);
-			node.setPalette(palette);
-			sceneGraph.emplace(core::move(node));
-			++added;
+			voxel::RawVolume *water = nullptr;
+			if (separateWater) {
+				water = extractWaterVolume(volumes[i]);
+				if (water != nullptr) {
+					if (voxel::RawVolume *cropped = voxelutil::cropVolume(volumes[i])) {
+						delete volumes[i];
+						volumes[i] = cropped;
+					} else if (volumes[i]->isEmpty(volumes[i]->region())) {
+						delete volumes[i];
+						volumes[i] = nullptr;
+					}
+				}
+			}
+			int parentId = 0;
+			if (volumes[i] != nullptr) {
+				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+				node.setVolume(volumes[i]);
+				node.setPalette(palette);
+				parentId = sceneGraph.emplace(core::move(node));
+				if (parentId == InvalidNodeId) {
+					parentId = 0;
+				} else {
+					++added;
+				}
+			}
+			if (water != nullptr) {
+				const int waterId = sceneGraph.emplace(createWaterNode(water, palette), parentId);
+				if (waterId != InvalidNodeId) {
+					++added;
+				}
+			}
 		}
 		ctx.report("chunk", SECTOR_INTS, SECTOR_INTS);
 
@@ -268,6 +383,13 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 	// findPaletteIndex / legacy block ids already index the minecraft palette that MCR loads into
 	// `palette`. Skip PaletteLookup (1M uint16_t memset) unless a remap palette was provided on secPal.
 	const bool samePalette = secPal.mcpal.colorCount() == 0 || palette.hash() == secPal.mcpal.hash();
+	const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
+	auto createBlockVoxel = [&palette, separateWater](uint8_t palColIdx, bool water) {
+		if (separateWater && water) {
+			return voxel::createVoxel(voxel::VoxelType::Transparent, palColIdx);
+		}
+		return voxel::createVoxel(palette, palColIdx);
+	};
 
 	if (secPal.pal.empty()) {
 		if (data.type() != priv::TagType::BYTE_ARRAY) {
@@ -300,7 +422,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 							const uint8_t palColIdx =
 								samePalette ? (uint8_t)color
 											: palLookup->findClosestIndex(secPal.mcpal.color(color));
-							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+							const voxel::Voxel voxel = createBlockVoxel(palColIdx, isLegacyWaterId(color));
 							sampler3.setVoxel(voxel);
 							hasBlocks = true;
 						}
@@ -326,6 +448,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 
 		constexpr int blockCount = MAX_SIZE * MAX_SIZE * MAX_SIZE;
 		uint8_t blocks[blockCount];
+		uint8_t waterFlags[blockCount]{};
 		int bsCnt = 0;
 		size_t bitCnt = 0;
 		if (dataVersion < 2529) {
@@ -337,6 +460,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 					const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
 					if (blockIndex < secPal.pal.size()) {
 						blocks[i] = secPal.pal[blockIndex];
+						if (blockIndex < secPal.isWater.size()) {
+							waterFlags[i] = secPal.isWater[blockIndex];
+						}
 						hasBlocks = true;
 					} else {
 						blocks[i] = 0;
@@ -355,6 +481,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 					blockIndex += (blockState2 << (bitSize - bitCnt)) & bitMask;
 					if (blockIndex < secPal.pal.size()) {
 						blocks[i] = secPal.pal[blockIndex];
+						if (blockIndex < secPal.isWater.size()) {
+							waterFlags[i] = secPal.isWater[blockIndex];
+						}
 						hasBlocks = true;
 					} else {
 						blocks[i] = 0;
@@ -377,6 +506,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 					}
 					if (blockIndex < secPal.pal.size()) {
 						blocks[i] = secPal.pal[blockIndex];
+						if (blockIndex < secPal.isWater.size()) {
+							waterFlags[i] = secPal.isWater[blockIndex];
+						}
 						if (blocks[i] != 0) {
 							hasBlocks = true;
 						}
@@ -404,7 +536,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 							const uint8_t palColIdx =
 								samePalette ? color
 											: palLookup->findClosestIndex(secPal.mcpal.color(color));
-							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+							const voxel::Voxel voxel = createBlockVoxel(palColIdx, waterFlags[i] != 0);
 							sampler3.setVoxel(voxel);
 						}
 						sampler3.movePositiveX();
@@ -424,7 +556,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 			const uint8_t palColIdx =
 				samePalette ? color : palLookup->findClosestIndex(secPal.mcpal.color(color));
-			const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+			const bool water = !secPal.isWater.empty() && secPal.isWater[0] != 0;
+			const voxel::Voxel voxel = createBlockVoxel(palColIdx, water);
 			auto fn = [&] (int start, int end) {
 				voxel::RawVolume::Sampler sampler(v);
 				sampler.setPosition(0, start, 0);
@@ -620,6 +753,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 		return false;
 	}
 	sectionPal.pal.resize(paletteCount);
+	sectionPal.isWater.resize(paletteCount);
 	if (paletteCount <= 1u) {
 		sectionPal.numBits = 0u;
 	} else {
@@ -639,6 +773,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 			return false;
 		}
 		sectionPal.pal[paletteEntry] = (uint8_t)findPaletteIndex(state, 1);
+		sectionPal.isWater[paletteEntry] = isWaterBlock(state) ? 1 : 0;
 		++paletteEntry;
 	}
 	return true;

@@ -2400,6 +2400,15 @@ McBlock parseBlock(const core::String &blockId) {
 	return block;
 }
 
+bool isWaterBlock(const core::String &name) {
+	const McBlock block = parseBlock(name);
+	return block.blockId == "minecraft:water" || block.blockId == "minecraft:flowing_water";
+}
+
+bool isLegacyWaterId(int id) {
+	return id == 8 || id == 9;
+}
+
 int findPaletteIndex(const core::String &name, int defaultValue) {
 	const McPaletteMap &map = getPaletteMap();
 	const McBlock block = parseBlock(name);

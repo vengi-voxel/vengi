@@ -3,13 +3,16 @@
  */
 
 #include "SchematicFormat.h"
+#include "MCRFormat.h"
 #include "MinecraftPaletteMap.h"
 #include "NamedBinaryTag.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "palette/Palette.h"
@@ -17,6 +20,7 @@
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelutil/VolumeCropper.h"
 #include "schematic/Axiom.h"
 #include "schematic/Litematic.h"
 #include "schematic/Nbt.h"
@@ -25,6 +29,50 @@
 #include <glm/common.hpp>
 
 namespace voxelformat {
+
+static void separateWaterVolumes(scenegraph::SceneGraph &sceneGraph) {
+	if (!core::getVar(cfg::VoxformatMCSeparateWater)->boolVal()) {
+		return;
+	}
+	core::DynamicArray<int> modelNodes;
+	sceneGraph.visitChildren(sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+		if (!node.isAnyModelNode() || node.volume() == nullptr) {
+			return;
+		}
+		if (node.name() == MCRFormat::WaterNodeName) {
+			return;
+		}
+		modelNodes.push_back(node.id());
+	});
+	for (int nodeId : modelNodes) {
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		voxel::RawVolume *terrain = node.volume();
+		if (terrain == nullptr) {
+			continue;
+		}
+		voxel::RawVolume *water = MCRFormat::extractWaterVolume(terrain);
+		if (water == nullptr) {
+			continue;
+		}
+		if (voxel::RawVolume *cropped = voxelutil::cropVolume(terrain)) {
+			node.setVolume(cropped);
+			delete terrain;
+			terrain = cropped;
+		} else if (terrain->isEmpty(terrain->region())) {
+			const palette::Palette nodePalette = node.palette();
+			sceneGraph.removeNode(nodeId, false);
+			const int waterId = sceneGraph.emplace(MCRFormat::createWaterNode(water, nodePalette));
+			if (waterId == InvalidNodeId) {
+				delete water;
+			}
+			continue;
+		}
+		const int waterId = sceneGraph.emplace(MCRFormat::createWaterNode(water, node.palette()), nodeId);
+		if (waterId == InvalidNodeId) {
+			delete water;
+		}
+	}
+}
 
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
@@ -43,6 +91,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 		// Axiom format is not a zip file, it has a custom binary format
 		const bool loaded = axiom::loadGroupsPalette(*stream, sceneGraph, palette);
 		if (loaded) {
+			separateWaterVolumes(sceneGraph);
 			loadctx.setProgress(1.0f);
 		}
 		return loaded;
@@ -64,12 +113,14 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	if (extension == "nbt") {
 		const int dataVersion = schematic->get("DataVersion").int32(-1);
 		if (nbt::loadGroupsPalette(*schematic, sceneGraph, palette, dataVersion)) {
+			separateWaterVolumes(sceneGraph);
 			loadctx.setProgress(1.0f);
 			return true;
 		}
 	} else if (extension == "litematic") {
 		const bool loaded = litematic::loadGroupsPalette(*schematic, sceneGraph, palette);
 		if (loaded) {
+			separateWaterVolumes(sceneGraph);
 			loadctx.setProgress(1.0f);
 		}
 		return loaded;
@@ -78,12 +129,14 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	int version = schematic->get("Version").int32(-1);
 	if (version >= 3) {
 		if (sponge::loadGroupsPaletteSponge3(*schematic, sceneGraph, palette, version)) {
+			separateWaterVolumes(sceneGraph);
 			loadctx.setProgress(1.0f);
 			return true;
 		}
 	}
 	const bool loaded = sponge::loadGroupsPaletteSponge1And2(*schematic, sceneGraph, palette);
 	if (loaded) {
+		separateWaterVolumes(sceneGraph);
 		loadctx.setProgress(1.0f);
 	}
 	return loaded;

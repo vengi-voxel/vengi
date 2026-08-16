@@ -41,6 +41,7 @@ General:
    - Added support for BrickLink Studio `io` lego archives
    - Added support for Digital designer lego files (`lxf`, `lxfml`)
    - Added progress bar support
+   - Optional Minecraft map import that puts water into dedicated transparent child volumes (`voxformat_mcseparatewater`)
 
 VoxEdit:
 

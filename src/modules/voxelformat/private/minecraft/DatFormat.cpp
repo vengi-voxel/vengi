@@ -8,9 +8,12 @@
 #include "app/Async.h"
 #include "color/Color.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Atomic.h"
 #include "io/Archive.h"
@@ -19,30 +22,110 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
 
 #include <glm/common.hpp>
 
 namespace voxelformat {
 namespace priv {
 
-static scenegraph::SceneGraphNode *loadRegionNode(const core::String &regionFilename, const io::ArchivePtr &archive,
-												  const LoadContext &regionCtx) {
+static voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &volumes) {
+	if (volumes.empty()) {
+		return nullptr;
+	}
+	voxel::RawVolume *merged = voxelutil::merge(volumes);
+	if (merged == nullptr) {
+		return nullptr;
+	}
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(merged)) {
+		delete merged;
+		return cropped;
+	}
+	if (merged->isEmpty(merged->region())) {
+		delete merged;
+		return nullptr;
+	}
+	return merged;
+}
+
+struct RegionLoadResult {
+	scenegraph::SceneGraphNode *terrain = nullptr;
+	scenegraph::SceneGraphNode *water = nullptr;
+};
+
+static RegionLoadResult loadRegionNode(const core::String &regionFilename, const io::ArchivePtr &archive,
+									   const LoadContext &regionCtx) {
+	RegionLoadResult result;
 	MCRFormat mcrFormat;
 	scenegraph::SceneGraph newSceneGraph;
 	if (!mcrFormat.load(regionFilename, archive, newSceneGraph, regionCtx)) {
 		Log::debug("Could not load %s", regionFilename.c_str());
-		return nullptr;
+		return result;
 	}
-	const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
-	if (!merged.hasVolume()) {
-		return nullptr;
+	const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
+	if (!separateWater) {
+		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+		if (!merged.hasVolume()) {
+			return result;
+		}
+		result.terrain = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+		result.terrain->setVolume(merged.volume());
+		result.terrain->setPalette(merged.palette);
+		result.terrain->setNormalPalette(merged.normalPalette);
+		result.terrain->setName(core::string::extractFilenameWithExtension(regionFilename));
+		return result;
 	}
-	scenegraph::SceneGraphNode *node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-	node->setVolume(merged.volume());
-	node->setPalette(merged.palette);
-	node->setNormalPalette(merged.normalPalette);
-	return node;
+
+	core::Buffer<const voxel::RawVolume *> terrainVols;
+	core::Buffer<const voxel::RawVolume *> waterVols;
+	palette::Palette terrainPalette;
+	palette::Palette waterPalette;
+	palette::NormalPalette normalPalette;
+	bool hasTerrainPalette = false;
+	newSceneGraph.visitChildren(newSceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+		if (!node.isAnyModelNode() || node.volume() == nullptr) {
+			return;
+		}
+		if (node.name() == MCRFormat::WaterNodeName) {
+			waterVols.push_back(node.volume());
+			if (waterPalette.colorCount() == 0) {
+				waterPalette = node.palette();
+			}
+			return;
+		}
+		terrainVols.push_back(node.volume());
+		if (!hasTerrainPalette) {
+			terrainPalette = node.palette();
+			normalPalette = node.normalPalette();
+			hasTerrainPalette = true;
+		}
+	});
+
+	voxel::RawVolume *terrain = mergeAndCrop(terrainVols);
+	voxel::RawVolume *water = mergeAndCrop(waterVols);
+	if (terrain == nullptr && water == nullptr) {
+		return result;
+	}
+
+	const core::String regionName = core::string::extractFilenameWithExtension(regionFilename);
+	if (terrain != nullptr) {
+		result.terrain = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+		result.terrain->setVolume(terrain);
+		result.terrain->setPalette(hasTerrainPalette ? terrainPalette : waterPalette);
+		result.terrain->setNormalPalette(normalPalette);
+		result.terrain->setName(regionName);
+	}
+	if (water != nullptr) {
+		const palette::Palette &srcPal = hasTerrainPalette ? terrainPalette : waterPalette;
+		result.water = new scenegraph::SceneGraphNode(MCRFormat::createWaterNode(water, srcPal));
+		if (result.terrain == nullptr) {
+			result.water->setName(regionName);
+		}
+	}
+	return result;
 }
 
 static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx, scenegraph::SceneGraph &sceneGraph,
@@ -94,7 +177,7 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	}
 
 	const int regionCount = (int)entities.size();
-	core::DynamicArray<scenegraph::SceneGraphNode *> nodes;
+	core::DynamicArray<RegionLoadResult> nodes;
 	nodes.resize(regionCount);
 	Log::info("Found %i region files", regionCount);
 
@@ -119,13 +202,30 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	loadctx.report("regions", regionCount, regionCount);
 	Log::debug("Scheduled %i regions", (int)nodes.size());
 	int nodesAdded = 0;
-	for (scenegraph::SceneGraphNode *node : nodes) {
-		if (node == nullptr) {
+	for (RegionLoadResult &loaded : nodes) {
+		if (loaded.terrain == nullptr && loaded.water == nullptr) {
 			continue;
 		}
-		sceneGraph.emplace(core::move(*node), rootNode);
-		delete node;
-		Log::debug("... loaded %i", nodesAdded++);
+		int parentId = rootNode;
+		if (loaded.terrain != nullptr) {
+			parentId = sceneGraph.emplace(core::move(*loaded.terrain), rootNode);
+			delete loaded.terrain;
+			loaded.terrain = nullptr;
+			if (parentId == InvalidNodeId) {
+				parentId = rootNode;
+			} else {
+				++nodesAdded;
+			}
+		}
+		if (loaded.water != nullptr) {
+			const int waterId = sceneGraph.emplace(core::move(*loaded.water), parentId);
+			delete loaded.water;
+			loaded.water = nullptr;
+			if (waterId != InvalidNodeId) {
+				++nodesAdded;
+			}
+		}
+		Log::debug("... loaded %i", nodesAdded);
 	}
 
 	return nodesAdded > 0;

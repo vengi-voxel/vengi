@@ -70,5 +70,13 @@ McBlock parseBlock(const core::String &blockId);
  */
 int findPaletteIndex(const core::String &name, int defaultValue = -1);
 core::String findPaletteName(int palIdx);
+/**
+ * @brief @c true for minecraft:water and minecraft:flowing_water (including block states)
+ */
+bool isWaterBlock(const core::String &name);
+/**
+ * @brief Pre-flattening block ids 8 (flowing water) and 9 (still water)
+ */
+bool isLegacyWaterId(int id);
 
 } // namespace voxelformat

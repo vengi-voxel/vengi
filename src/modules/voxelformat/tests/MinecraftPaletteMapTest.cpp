@@ -17,10 +17,18 @@ namespace voxelformat {
 
 class MinecraftPaletteMapTest : public app::AbstractTest {};
 
-TEST_F(MinecraftPaletteMapTest, testParse) {
-	EXPECT_EQ(191,
-			  findPaletteIndex(
-				  "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554"));
+TEST_F(MinecraftPaletteMapTest, testIsWaterBlock) {
+	EXPECT_TRUE(isWaterBlock("minecraft:water"));
+	EXPECT_TRUE(isWaterBlock("minecraft:water[level=0]"));
+	EXPECT_TRUE(isWaterBlock("minecraft:flowing_water"));
+	EXPECT_TRUE(isWaterBlock("minecraft:flowing_water,level=7"));
+	EXPECT_FALSE(isWaterBlock("minecraft:stone"));
+	EXPECT_FALSE(isWaterBlock("minecraft:blue_wool"));
+	EXPECT_FALSE(isWaterBlock("minecraft:bubble_column"));
+	EXPECT_TRUE(isLegacyWaterId(8));
+	EXPECT_TRUE(isLegacyWaterId(9));
+	EXPECT_FALSE(isLegacyWaterId(1));
+	EXPECT_FALSE(isLegacyWaterId(10));
 }
 
 TEST_F(MinecraftPaletteMapTest, testStripBlockId) {

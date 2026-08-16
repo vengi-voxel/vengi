@@ -242,6 +242,11 @@ bool FormatConfig::init() {
 											   N_("Merge face parts into single volume for Minecraft skins"),
 											   core::CV_NOPERSIST);
 	core::registerVar(voxformatSkinMergeFaces);
+	const core::VarDef voxformatMCSeparateWater(
+		cfg::VoxformatMCSeparateWater, false, N_("Separate water"),
+		N_("Put Minecraft water voxels into a dedicated transparent volume as a child of each region"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatMCSeparateWater);
 	const core::VarDef voxformatMeshSimplify(cfg::VoxformatMeshSimplify, false, N_("Simplify"),
 											 N_("Simplify the mesh when voxelizing a mesh format"), core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshSimplify);

@@ -7,6 +7,7 @@
 #include "voxelformat/Format.h"
 #include "core/collection/Buffer.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "NamedBinaryTag.h"
 
 namespace io {
@@ -75,6 +76,7 @@ protected:
 
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
+		core::Buffer<uint8_t> isWater;
 		uint32_t numBits = 0u;
 		palette::Palette mcpal;
 	};
@@ -83,6 +85,17 @@ protected:
 
 	bool parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
 						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) const;
+
+public:
+	static constexpr const char *WaterNodeName = "Water";
+
+	/**
+	 * @brief Move transparent water voxels out of @p terrain into a cropped water volume.
+	 * @return water volume or @c nullptr if there was no water. Caller owns the result.
+	 */
+	static voxel::RawVolume *extractWaterVolume(voxel::RawVolume *terrain);
+	static void applyWaterTransparency(palette::Palette &palette, const voxel::RawVolume *water);
+	static scenegraph::SceneGraphNode createWaterNode(voxel::RawVolume *water, const palette::Palette &palette);
 
 private:
 	static constexpr int VERSION_GZIP = 1;
