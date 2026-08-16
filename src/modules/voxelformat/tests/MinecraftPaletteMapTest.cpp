@@ -38,6 +38,14 @@ TEST_F(MinecraftPaletteMapTest, testStripBlockId) {
 	EXPECT_EQ("minecraft:waxed_exposed_copper_bulb,biome=minecraft:badlands,lit=true", block.normalize());
 }
 
+TEST_F(MinecraftPaletteMapTest, testFindPaletteIndexLitFallback) {
+	EXPECT_EQ(162, findPaletteIndex("minecraft:waxed_copper_bulb"));
+	EXPECT_EQ(162, findPaletteIndex("minecraft:waxed_copper_bulb,lit=false"));
+	EXPECT_EQ(162, findPaletteIndex("minecraft:waxed_copper_bulb,lit=true"));
+	EXPECT_EQ(73, findPaletteIndex("minecraft:waxed_exposed_copper_bulb"));
+	EXPECT_EQ(48, findPaletteIndex("minecraft:waxed_weathered_copper_bulb,lit=false"));
+}
+
 TEST_F(MinecraftPaletteMapTest, DISABLED_testMaterialComplete) {
 	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 		const core::String &blockId = findPaletteName(i);

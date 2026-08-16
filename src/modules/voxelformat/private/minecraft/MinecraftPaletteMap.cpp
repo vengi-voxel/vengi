@@ -2402,15 +2402,32 @@ McBlock parseBlock(const core::String &blockId) {
 
 int findPaletteIndex(const core::String &name, int defaultValue) {
 	const McPaletteMap &map = getPaletteMap();
-	const McBlock &block = parseBlock(name);
+	const McBlock block = parseBlock(name);
 
-	const core::String &normalizedBlock = block.normalize();
+	core::String normalizedBlock = block.normalize();
 	auto iter = map.find(normalizedBlock);
 	if (iter != map.end()) {
 		return iter->value.palIdx;
 	}
 
-	Log::debug("Could not find a color mapping for '%s'", normalizedBlock.c_str());
+	// region palette entries often split block id and properties into separate nbt fields
+	if (block.lit == -1) {
+		McBlock withLit = block;
+		withLit.lit = 0;
+		normalizedBlock = withLit.normalize();
+		iter = map.find(normalizedBlock);
+		if (iter != map.end()) {
+			return iter->value.palIdx;
+		}
+		withLit.lit = 1;
+		normalizedBlock = withLit.normalize();
+		iter = map.find(normalizedBlock);
+		if (iter != map.end()) {
+			return iter->value.palIdx;
+		}
+	}
+
+	Log::debug("Could not find a color mapping for '%s'", block.normalize().c_str());
 	return defaultValue;
 }
 

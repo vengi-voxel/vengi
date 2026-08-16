@@ -69,16 +69,9 @@ public:
 		static io::FormatDescription f{"Minecraft region", "", {"mca", "mcr"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
-private:
-	static constexpr int VERSION_GZIP = 1;
-	static constexpr int VERSION_DEFLATE = 2;
-	static constexpr int MAX_SIZE = 16;
 
-	struct Offset {
-		uint32_t offset;
-		uint8_t sectorCount;
-	};
-	using Offsets = core::Array<Offset, SECTOR_INTS>;
+protected:
+	static constexpr int MAX_SIZE = 16;
 
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
@@ -88,6 +81,19 @@ private:
 
 	using SectionVolumes = core::Buffer<voxel::RawVolume *>;
 
+	bool parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
+						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) const;
+
+private:
+	static constexpr int VERSION_GZIP = 1;
+	static constexpr int VERSION_DEFLATE = 2;
+
+	struct Offset {
+		uint32_t offset;
+		uint8_t sectorCount;
+	};
+	using Offsets = core::Array<Offset, SECTOR_INTS>;
+
 	voxel::RawVolume *error(SectionVolumes &volumes) const;
 	voxel::RawVolume *finalize(SectionVolumes &volumes, int xPos, int zPos) const;
 
@@ -96,8 +102,6 @@ private:
 	// shared across versions
 	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette,
 						  MinecraftSectionPalette &sectionPal) const;
-	bool parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
-						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) const;
 
 	// new version (>= 2844)
 	voxel::RawVolume *parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,

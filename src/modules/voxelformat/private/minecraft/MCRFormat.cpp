@@ -28,6 +28,29 @@
 
 namespace voxelformat {
 
+namespace {
+
+core::String blockStateFromCompound(const priv::NamedBinaryTag &block) {
+	const core::String *name = block.get("Name").string();
+	if (name == nullptr) {
+		return {};
+	}
+	core::String state = *name;
+	const priv::NamedBinaryTag &props = block.get("Properties");
+	if (props.valid() && props.type() == priv::TagType::COMPOUND) {
+		for (const auto &entry : *props.compound()) {
+			const core::String *val = entry->value.string();
+			if (val == nullptr) {
+				continue;
+			}
+			state.append(",").append(entry->key).append("=").append(*val);
+		}
+	}
+	return state;
+}
+
+} // namespace
+
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \
 		if ((expression) != 0) {                                                                                       \
@@ -339,23 +362,28 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 				}
 			}
 		} else {
-			const size_t bitSize = secPal.numBits;
-			const uint32_t bitMask = (1 << bitSize) - 1;
-			for (int i = 0; i < blockCount; i++) {
-				const uint64_t blockState = blockStates[bsCnt];
-				const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
-				if (blockIndex < secPal.pal.size()) {
-					blocks[i] = secPal.pal[blockIndex];
-					hasBlocks = true;
-				} else {
-					blocks[i] = 0;
+				const size_t bitSize = secPal.numBits;
+				const uint32_t bitMask = bitSize > 0 ? ((1u << bitSize) - 1u) : 0u;
+				for (int i = 0; i < blockCount; ++i) {
+					uint32_t blockIndex = 0;
+					if (bitSize > 0) {
+						if (bitCnt + bitSize > 64) {
+							bsCnt++;
+							bitCnt = 0;
+						}
+						const uint64_t blockState = blockStates[bsCnt];
+						blockIndex = (uint32_t)((blockState >> bitCnt) & bitMask);
+						bitCnt += bitSize;
+					}
+					if (blockIndex < secPal.pal.size()) {
+						blocks[i] = secPal.pal[blockIndex];
+						if (blocks[i] != 0) {
+							hasBlocks = true;
+						}
+					} else {
+						blocks[i] = 0;
+					}
 				}
-				bitCnt += bitSize;
-				if (bitCnt + bitSize > 64) {
-					bsCnt++;
-					bitCnt = 0;
-				}
-			}
 		}
 
 		core::ScopedPtr<palette::PaletteLookup> palLookup;
@@ -387,6 +415,35 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 		};
 		app::for_parallel(0, MAX_SIZE, fn);
+	} else if (!secPal.pal.empty()) {
+		const uint8_t color = secPal.pal[0];
+		if (color != 0) {
+			core::ScopedPtr<palette::PaletteLookup> palLookup;
+			if (!samePalette) {
+				palLookup = new palette::PaletteLookup(palette);
+			}
+			const uint8_t palColIdx =
+				samePalette ? color : palLookup->findClosestIndex(secPal.mcpal.color(color));
+			const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+			auto fn = [&] (int start, int end) {
+				voxel::RawVolume::Sampler sampler(v);
+				sampler.setPosition(0, start, 0);
+				for (int y = start; y < end; ++y) {
+					voxel::RawVolume::Sampler sampler2 = sampler;
+					for (int z = 0; z < MAX_SIZE; ++z) {
+						voxel::RawVolume::Sampler sampler3 = sampler2;
+						for (int x = 0; x < MAX_SIZE; ++x) {
+							sampler3.setVoxel(voxel);
+							sampler3.movePositiveX();
+						}
+						sampler2.movePositiveZ();
+					}
+					sampler.movePositiveY();
+				}
+			};
+			app::for_parallel(0, MAX_SIZE, fn);
+			hasBlocks = true;
+		}
 	}
 
 	if (hasBlocks) {
@@ -443,15 +500,17 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 		}
 		Log::debug("Y level for section compound: %i", (int)sectionY);
 
-		const priv::NamedBinaryTag &palette = blockStates.get("palette");
-		if (!palette.valid()) {
-			Log::error("Could not find 'palette'");
-			return error(volumes);
-		}
+		const priv::NamedBinaryTag &paletteTag = blockStates.get("palette");
 		MinecraftSectionPalette secPal;
-		if (!parsePaletteList(dataVersion, palette, secPal)) {
-			Log::error("Could not parse palette chunk");
-			return error(volumes);
+		if (paletteTag.valid()) {
+			if (!parsePaletteList(dataVersion, paletteTag, secPal)) {
+				Log::error("Could not parse palette chunk");
+				return error(volumes);
+			}
+		} else {
+			secPal.pal.resize(1);
+			secPal.pal[0] = (uint8_t)findPaletteIndex("minecraft:air", 0);
+			secPal.numBits = 0u;
 		}
 		const priv::NamedBinaryTag &data = blockStates.get("data");
 		if (!parseBlockStates(dataVersion, pal, data, volumes, sectionY, secPal)) {
@@ -556,12 +615,16 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	}
 	const priv::NBTList &paletteList = *palette.list();
 	const size_t paletteCount = paletteList.size();
-	if (paletteCount > 512u) {
+	if (paletteCount > 4096u) {
 		Log::error("Palette overflow");
 		return false;
 	}
 	sectionPal.pal.resize(paletteCount);
-	sectionPal.numBits = (uint32_t)glm::max(glm::ceil(glm::log2((float)paletteCount)), 4.0f);
+	if (paletteCount <= 1u) {
+		sectionPal.numBits = 0u;
+	} else {
+		sectionPal.numBits = (uint32_t)glm::max(glm::ceil(glm::log2((float)paletteCount)), 4.0f);
+	}
 
 	int paletteEntry = 0;
 	for (const priv::NamedBinaryTag &block : paletteList) {
@@ -570,17 +633,12 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 			return false;
 		}
 
-		for (const auto &entry : *block.compound()) {
-			if (entry->key != "Name") {
-				continue;
-			}
-			const priv::NamedBinaryTag &nbt = entry->value;
-			const core::String *value = nbt.string();
-			if (value == nullptr) {
-				continue;
-			}
-			sectionPal.pal[paletteEntry] = findPaletteIndex(*value);
+		const core::String state = blockStateFromCompound(block);
+		if (state.empty()) {
+			Log::error("Could not parse block state from palette entry %i", paletteEntry);
+			return false;
 		}
+		sectionPal.pal[paletteEntry] = (uint8_t)findPaletteIndex(state, 1);
 		++paletteEntry;
 	}
 	return true;
