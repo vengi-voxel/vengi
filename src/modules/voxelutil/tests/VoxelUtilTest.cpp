@@ -262,6 +262,10 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 			<< ") at " << x << "\n"
 			<< v;
 	}
+
+	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, (const image::Image *)nullptr, voxel::Voxel(), glm::ivec3(0),
+									  voxel::FaceNames::PositiveZ));
+	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0), voxel::FaceNames::Max));
 }
 
 TEST_F(VoxelUtilTest, copyIntoRegion) {
