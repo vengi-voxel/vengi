@@ -95,4 +95,19 @@ TEST_F(JsonExporterFlagsTest, testAnimationsFlag) {
 	EXPECT_NE(withoutFlag.find("\"volume\""), std::string::npos);
 }
 
+TEST_F(JsonExporterFlagsTest, testPaletteOnlyOmitsStats) {
+	const uint32_t flags = JSONEXPORTER_PALETTE | JSONEXPORTER_CHILDREN;
+	std::string json = exportJson(flags);
+	EXPECT_EQ(json.find("\"stats\""), std::string::npos);
+	EXPECT_EQ(json.find("voxel_count"), std::string::npos);
+}
+
+TEST_F(JsonExporterFlagsTest, testPaletteWithChildren) {
+	const uint32_t flags = JSONEXPORTER_PALETTE | JSONEXPORTER_CHILDREN;
+	std::string json = exportJson(flags);
+	EXPECT_NE(json.find("\"children\""), std::string::npos);
+	EXPECT_NE(json.find("child"), std::string::npos);
+	EXPECT_EQ(json.find("\"volume\""), std::string::npos);
+}
+
 } // namespace scenegraph

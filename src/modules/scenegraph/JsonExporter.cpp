@@ -250,9 +250,17 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 }
 
 void sceneGraphNodeStatsJson(const NodeStats &stats, io::WriteStream &stream, uint32_t flags) {
-	stream.writeStringFormat(false, "{\"voxel_count\":%i", stats.voxels);
+	stream.writeStringFormat(false, "{");
+	bool first = true;
+	if (flags & JSONEXPORTER_NODEDETAILS) {
+		stream.writeStringFormat(false, "\"voxel_count\":%i", stats.voxels);
+		first = false;
+	}
 	if (flags & JSONEXPORTER_MESHDETAILS) {
-		stream.writeStringFormat(false, ",\"vertex_count\":%i", stats.vertices);
+		if (!first) {
+			stream.writeStringFormat(false, ",");
+		}
+		stream.writeStringFormat(false, "\"vertex_count\":%i", stats.vertices);
 		stream.writeStringFormat(false, ",\"index_count\":%i", stats.indices);
 	}
 	stream.writeStringFormat(false, "}");
@@ -262,8 +270,10 @@ void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &s
 	stream.writeStringFormat(false, "{");
 	stream.writeStringFormat(false, "\"root\":");
 	NodeStats stats = sceneGraphNodeJson(sceneGraph, sceneGraph.root().id(), stream, flags);
-	stream.writeStringFormat(false, ",\"stats\":");
-	sceneGraphNodeStatsJson(stats, stream, flags);
+	if ((flags & (JSONEXPORTER_NODEDETAILS | JSONEXPORTER_MESHDETAILS)) != 0u) {
+		stream.writeStringFormat(false, ",\"stats\":");
+		sceneGraphNodeStatsJson(stats, stream, flags);
+	}
 	stream.writeStringFormat(false, "}");
 }
 

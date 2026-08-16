@@ -613,7 +613,7 @@ app::AppState VoxConvert::onInit() {
 			} else if (flag == "all") {
 				jsonFlags |= scenegraph::JSONEXPORTER_ALL;
 			} else if (flag == "palette") {
-				jsonFlags |= scenegraph::JSONEXPORTER_PALETTE;
+				jsonFlags |= scenegraph::JSONEXPORTER_PALETTE | scenegraph::JSONEXPORTER_CHILDREN;
 			} else if (flag == "meshdetails") {
 				jsonFlags |= scenegraph::JSONEXPORTER_MESHDETAILS;
 			} else if (flag == "nodedetails") {
