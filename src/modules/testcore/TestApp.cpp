@@ -116,6 +116,8 @@ app::AppState TestApp::onInit() {
 	if (hasArg("--screenshot")) {
 		_screenshotFrames = getArgVal("--screenshot", "5").toInt();
 		_screenshotType = getArgVal("--screenshottype", "png");
+		// Mouse look / WASD would otherwise make comparison shots diverge.
+		_cameraMotion = false;
 		Log::info("Taking screenshot after %i frames (type: %s)", _screenshotFrames, _screenshotType.c_str());
 	}
 
@@ -124,17 +126,19 @@ app::AppState TestApp::onInit() {
 
 void TestApp::beforeUI() {
 	Super::beforeUI();
-	if (_cameraMotion) {
-		const bool current = isRelativeMouseMode();
-		if (current) {
-			camera().rotate(glm::vec3(_mouseRelativePos.y,_mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
-			centerMousePosition();
+	if (_screenshotFrames < 0) {
+		if (_cameraMotion) {
+			const bool current = isRelativeMouseMode();
+			if (current) {
+				camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+				centerMousePosition();
+			}
 		}
-	}
 
-	_movement.update(_nowSeconds);
-	const glm::vec3& moveDelta = _movement.moveDelta(_cameraSpeed);
-	camera().move(moveDelta);
+		_movement.update(_nowSeconds);
+		const glm::vec3 &moveDelta = _movement.moveDelta(_cameraSpeed);
+		camera().move(moveDelta);
+	}
 	camera().update(_deltaFrameSeconds);
 
 	if (_renderPlane) {
@@ -229,6 +233,9 @@ app::AppState TestApp::onCleanup() {
 
 bool TestApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	const bool retVal = Super::onMouseWheel(windowHandle, x, y, mouseId);
+	if (_screenshotFrames >= 0) {
+		return retVal;
+	}
 	const float targetDistance = glm::clamp(camera().targetDistance() - y, 0.0f, 500.0f);
 	camera().setTargetDistance(targetDistance);
 	return retVal;
