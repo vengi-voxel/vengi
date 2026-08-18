@@ -24,6 +24,11 @@ A test application that applies bloom to an image
 
 Test camera options and collisions.
 
+## testcomputeshader
+
+Fills a texture with a compute shader (UV gradient plus a centered circle) and
+draws it fullscreen. Intended as a GL/VK visual comparison via `--screenshot`.
+
 ## testglslcomp
 
 Uses GLSL compute shader to render a circle.

@@ -1,0 +1,26 @@
+#extension GL_ARB_shader_image_size : enable
+#extension GL_ARB_shader_image_load_store : enable
+
+layout (local_size_x = 8, local_size_y = 8) in;
+layout (rgba32f, binding = 0) $writeonly uniform image2D img_output;
+
+void main() {
+	ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 dims = imageSize(img_output);
+	if (pixelCoords.x >= dims.x || pixelCoords.y >= dims.y) {
+		return;
+	}
+
+	vec2 uv = (vec2(pixelCoords) + vec2(0.5)) / vec2(dims);
+	vec2 centered = uv * 2.0 - 1.0;
+	float radius = length(centered);
+
+	vec4 pixel = vec4(uv.x, uv.y, 0.25, 1.0);
+	if (radius < 0.35) {
+		pixel = vec4(1.0, 1.0, 1.0, 1.0);
+	} else if (radius < 0.45) {
+		pixel = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	imageStore(img_output, pixelCoords, pixel);
+}

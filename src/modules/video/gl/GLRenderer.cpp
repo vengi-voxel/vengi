@@ -2491,6 +2491,8 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 		return false;
 	}
 
+	video::useProgram(program);
+	video::syncPendingState();
 	video::validate(program);
 	core_assert(glDispatchCompute != nullptr);
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
