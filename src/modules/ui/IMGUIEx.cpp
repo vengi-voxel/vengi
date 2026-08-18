@@ -785,23 +785,39 @@ ImTextureID toImTextureID(video::Id handle) {
 #endif
 
 void AddImage(video::Id handle, const glm::vec2 &uv0, const glm::vec2 &uv1) {
-	ImGui::GetWindowDrawList()->AddImage(toImTextureID(handle), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+	const ImTextureID tex = toImTextureID(handle);
+	if (tex == ImTextureID_Invalid) {
+		return;
+	}
+	ImGui::GetWindowDrawList()->AddImage(tex, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 }
 
 void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
-	ImGui::ImageWithBg(toImTextureID(handle), ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(borderColor), ImVec4(tintColor));
+	const ImTextureID tex = toImTextureID(handle);
+	if (tex == ImTextureID_Invalid) {
+		return;
+	}
+	ImGui::ImageWithBg(tex, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(borderColor), ImVec4(tintColor));
 }
 
 void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0, const ImVec2 &uv1, const ImVec4 &tintColor, const ImVec4 &borderColor) {
-	ImGui::ImageWithBg(toImTextureID(handle), size, uv0, uv1, borderColor, tintColor);
+	const ImTextureID tex = toImTextureID(handle);
+	if (tex == ImTextureID_Invalid) {
+		return;
+	}
+	ImGui::ImageWithBg(tex, size, uv0, uv1, borderColor, tintColor);
 }
 
 bool ImageButton(const char *str_id, video::Id handle, const ImVec2 &size) {
+	const ImTextureID tex = toImTextureID(handle);
+	if (tex == ImTextureID_Invalid) {
+		return false;
+	}
 	ImVec2 uv0(0, 0);
 	ImVec2 uv1(1, 1);
 	ImVec4 bgColor(0, 0, 0, 0);
 	ImVec4 tintColor(1, 1, 1, 1);
-	return ImGui::ImageButton(str_id, toImTextureID(handle), size, uv0, uv1, bgColor, tintColor);
+	return ImGui::ImageButton(str_id, tex, size, uv0, uv1, bgColor, tintColor);
 }
 
 bool MenuItemCmd(const char *label, const char *command) {
