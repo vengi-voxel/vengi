@@ -176,11 +176,10 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 }
 
 void ShapeRenderer::activateShader(const video::Camera &camera, const glm::mat4 &model) const {
-	if (_colorShader.isActive()) {
-		// camera and model is only updated once for all meshes
-		return;
+	const bool wasActive = _colorShader.isActive();
+	if (!wasActive) {
+		_colorShader.activate();
 	}
-	_colorShader.activate();
 	_uniformBlockData.model = model;
 	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
 	// TODO: RENDERER: allow to configure lighting
@@ -188,7 +187,9 @@ void ShapeRenderer::activateShader(const video::Camera &camera, const glm::mat4 
 	_uniformBlockData.lightColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	_uniformBlockData.lightPos = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	core_assert_always(_uniformBlock.update(_uniformBlockData));
-	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+	if (!wasActive) {
+		core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+	}
 }
 
 int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model) const {
