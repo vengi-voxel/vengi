@@ -223,7 +223,7 @@ bool RawVolumeRenderer::init(bool normals) {
 	}
 
 	_oitBufferIndex = _oitVbo.createFullscreenQuad();
-	_oitTexBufferIndex = _oitVbo.createFullscreenTextureBufferYFlipped();
+	_oitTexBufferIndex = _oitVbo.createFullscreenTextureBufferForFramebuffer();
 	if (_oitBufferIndex == -1 || _oitTexBufferIndex == -1) {
 		Log::error("Failed to create the OIT composite buffers");
 		return false;
@@ -935,6 +935,7 @@ void RawVolumeRenderer::compositeOIT(RenderContext &renderContext) {
 	video::ScopedShader scoped(_oitShader);
 	video::ScopedState scopedDepth(video::State::DepthTest, false);
 	video::ScopedState scopedDepthMask(video::State::DepthMask, false);
+	video::ScopedState scopedCull(video::State::CullFace, false);
 	video::ScopedBlendMode scopedBlend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
 									   video::BlendEquation::Add);
 	video::ScopedBuffer scopedBuf(_oitVbo);

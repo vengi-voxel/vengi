@@ -158,6 +158,7 @@ image::ImagePtr FrameBuffer::image(const core::String &name, FrameBufferAttachme
 void FrameBuffer::bind(bool clear) {
 	video::getViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
 	video::viewport(0, 0, _dimension.x, _dimension.y);
+	video::scissor(0, 0, _dimension.x, _dimension.y);
 	_oldFramebuffer = video::bindFramebuffer(_fbo);
 	if (clear) {
 		video::clear(_clearFlag);

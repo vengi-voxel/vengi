@@ -192,6 +192,7 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	core_trace_scoped(BloomRender);
 	video::ScopedState depthTest(video::State::DepthTest, false);
 	video::ScopedState scissor(video::State::Scissor, false);
+	video::ScopedState cullFace(video::State::CullFace, false);
 	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::OneMinusSourceAlpha);
 
 	// backup the current state
@@ -245,13 +246,25 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	}
 
 	{
-		// restore previous fbo and viewport
+		// Copy the scene out of the destination FBO, then combine scene+bloom
+		// back in. Sampling a color attachment while rendering into it is
+		// invalid on Vulkan; the blit path is valid on OpenGL too.
+		const int w = srcTexture->width();
+		const int h = srcTexture->height();
+		video::blitFramebuffer(oldFB, _bloom[1].handle(), video::ClearFlag::Color, w, h);
 		video::bindFramebuffer(oldFB);
 		video::viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-		video::ScopedShader scoped(_combine2Shader);
-		video::bindTexture(video::TextureUnit::Zero, srcTexture);
-		video::bindTexture(video::TextureUnit::One, _bloom[0].texture());
-		video::drawArrays(video::Primitive::Triangles, 6);
+		{
+			const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
+			const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
+															video::FrameBufferAttachment::Color1};
+			video::drawBuffers(1, color0);
+			video::ScopedShader scoped(_combine2Shader);
+			video::bindTexture(video::TextureUnit::Zero, _bloom[1].texture());
+			video::bindTexture(video::TextureUnit::One, _bloom[0].texture());
+			video::drawArrays(video::Primitive::Triangles, 6);
+			video::drawBuffers(2, color01);
+		}
 		_vbo.unbind();
 	}
 }

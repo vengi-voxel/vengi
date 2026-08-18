@@ -90,6 +90,12 @@ public:
 	int32_t createFullscreenTextureBuffer(int32_t idx = -1);
 	int32_t createFullscreenTextureBufferYFlipped(int32_t idx = -1);
 	/**
+	 * Texcoords for sampling a framebuffer color attachment. Uses
+	 * video::framebufferUV() so OpenGL (bottom-up) and Vulkan (top-left) share
+	 * the same caller.
+	 */
+	int32_t createFullscreenTextureBufferForFramebuffer(int32_t idx = -1);
+	/**
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
 	 */
 	glm::ivec2 createFullscreenTexturedQuad3d(bool yFlipped = false);

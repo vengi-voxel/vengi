@@ -441,6 +441,14 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped(int32_t idx) {
 	return idx;
 }
 
+int32_t Buffer::createFullscreenTextureBufferForFramebuffer(int32_t idx) {
+	const glm::vec4 &uv = framebufferUV();
+	if (uv.y > uv.w) {
+		return createFullscreenTextureBufferYFlipped(idx);
+	}
+	return createFullscreenTextureBuffer(idx);
+}
+
 int32_t Buffer::createWhiteColorForQuad() {
 	alignas(16) static const glm::vec4 color[] = {
 		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)

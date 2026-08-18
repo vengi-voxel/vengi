@@ -33,6 +33,12 @@ bool RenderContext::hasOit() const {
 	return oitFrameBuffer.handle() != video::InvalidId;
 }
 
+static void addDepthBuffer(video::FrameBufferConfig &cfg) {
+	cfg.depthBufferFormat(video::TextureFormat::D32F);
+	cfg.stencilBuffer(false);
+	cfg.depthBuffer(true);
+}
+
 static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::ivec2 &size) {
 	oitFrameBuffer.shutdown();
 	if (size.x <= 0 || size.y <= 0) {
@@ -48,9 +54,7 @@ static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::iv
 	cfg.samples(0);
 	cfg.addTextureAttachment(colorCfg, video::FrameBufferAttachment::Color0);
 	cfg.addTextureAttachment(colorCfg, video::FrameBufferAttachment::Color1);
-	cfg.depthBuffer(true);
-	cfg.depthBufferFormat(video::TextureFormat::D24S8);
-	cfg.stencilBuffer(true);
+	addDepthBuffer(cfg);
 
 	if (!oitFrameBuffer.init(cfg)) {
 		Log::warn("Failed to initialize weighted OIT framebuffer");
@@ -109,12 +113,12 @@ bool RenderContext::init(const glm::ivec2 &size) {
 		// Add multisampled depth buffer
 		video::TextureConfig msaaDepthConfig = video::createDefaultMultiSampleTextureConfig();
 		msaaDepthConfig.samples(multisampleSamples);
-		msaaDepthConfig.format(video::TextureFormat::D24S8);
-		cfg.addTextureAttachment(msaaDepthConfig, video::FrameBufferAttachment::DepthStencil);
+		msaaDepthConfig.format(video::TextureFormat::D32F);
+		cfg.addTextureAttachment(msaaDepthConfig, video::FrameBufferAttachment::Depth);
 	} else {
 		cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 		cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
-		cfg.depthBuffer(true);
+		addDepthBuffer(cfg);
 	}
 
 	if (!frameBuffer.init(cfg)) {
@@ -129,7 +133,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 			fallbackCfg.samples(0); // Explicitly disable multisampling
 			fallbackCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0);
 			fallbackCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1);
-			fallbackCfg.depthBuffer(true);
+			addDepthBuffer(fallbackCfg);
 			if (!frameBuffer.init(fallbackCfg)) {
 				Log::error("Failed to initialize the volume renderer framebuffer");
 				return false;
@@ -147,7 +151,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 		resolveCfg.samples(0); // No multisampling for resolve target
 		resolveCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0);
 		resolveCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1);
-		resolveCfg.depthBuffer(true);
+		addDepthBuffer(resolveCfg);
 
 		if (!resolveFrameBuffer.init(resolveCfg)) {
 			Log::error("Failed to initialize resolve framebuffer for multisampling");
@@ -156,8 +160,8 @@ bool RenderContext::init(const glm::ivec2 &size) {
 		Log::debug("Successfully created resolve framebuffer for multisampling");
 	}
 
-	// we have to do an y-flip here due to the framebuffer handling
-	if (!bloomRenderer.init(true, size.x, size.y)) {
+	const glm::vec4 &fbUv = video::framebufferUV();
+	if (!bloomRenderer.init(fbUv.y > fbUv.w, size.x, size.y)) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
@@ -192,12 +196,12 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 		// Add multisampled depth buffer
 		video::TextureConfig msaaDepthConfig = video::createDefaultMultiSampleTextureConfig();
 		msaaDepthConfig.samples(multisampleSamples);
-		msaaDepthConfig.format(video::TextureFormat::D24S8);
-		cfg.addTextureAttachment(msaaDepthConfig, video::FrameBufferAttachment::DepthStencil);
+		msaaDepthConfig.format(video::TextureFormat::D32F);
+		cfg.addTextureAttachment(msaaDepthConfig, video::FrameBufferAttachment::Depth);
 	} else {
 		cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 		cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
-		cfg.depthBuffer(true);
+		addDepthBuffer(cfg);
 	}
 	// Check GL state before framebuffer creation
 	if (enableMultisampling) {
@@ -219,7 +223,7 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 		resolveCfg.samples(0); // No multisampling for resolve target
 		resolveCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0);
 		resolveCfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1);
-		resolveCfg.depthBuffer(true);
+		addDepthBuffer(resolveCfg);
 
 		if (!resolveFrameBuffer.init(resolveCfg)) {
 			Log::error("Failed to initialize resolve framebuffer for multisampling");

@@ -33,4 +33,9 @@ TEST_F(RendererTest, testMapTypeStructOffset) {
 	ASSERT_EQ(DataType::UnsignedShort, mapType<decltype(Buf::us)>());
 }
 
+TEST_F(RendererTest, testFramebufferUvUIncreasesLeftToRight) {
+	const glm::vec4 &uv = framebufferUV();
+	EXPECT_LT(uv.x, uv.z);
+}
+
 }
