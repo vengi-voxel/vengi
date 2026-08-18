@@ -71,7 +71,7 @@ app::AppState TestVolumeRenderer::onConstruct() {
 void TestVolumeRenderer::configureRendererFeatures() {
 	_renderer.setAmbientColor(glm::vec3(0.25f, 0.26f, 0.30f));
 	_renderer.setDiffuseColor(glm::vec3(0.85f, 0.80f, 0.70f));
-	_renderer.setSunAngle(glm::vec3(50.0f, 140.0f, 0.0f));
+	_renderer.setSunAngle(glm::vec3(32.0f, 50.0f, 0.0f));
 }
 
 bool TestVolumeRenderer::addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
@@ -131,10 +131,12 @@ bool TestVolumeRenderer::createMaterialScene() {
 	_palette.setColor(6, color::RGBA(255, 230, 80));
 	_palette.setMaterialType(6, palette::MaterialType::Diffuse);
 
-	const voxel::Region region(-8, -2, -8, 84, 16, 24);
+	const voxel::Region region(-8, -2, -8, 84, 24, 24);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	fillBox(volume, voxel::Region(-8, -2, -8, 84, -1, 24), voxel::createVoxel(_palette, 5));
+	// Tall wall on the +X side. Sun is from +X/+Z so the shadow falls -X across the floor.
+	fillBox(volume, voxel::Region(78, 0, -6, 80, 22, 20), voxel::createVoxel(_palette, 1));
 	fillBox(volume, voxel::Region(0, 0, 0, 11, 11, 11), voxel::createVoxel(_palette, 1));
 	fillBox(volume, voxel::Region(20, 0, 0, 31, 11, 11), voxel::createVoxel(_palette, 2));
 	fillBox(volume, voxel::Region(40, 0, 0, 51, 11, 11), voxel::createVoxel(_palette, 3));
