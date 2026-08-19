@@ -477,10 +477,13 @@ enum class Feature {
 	DebugOutput,
 	DirectStateAccess,
 	BufferStorage,
+	/** Always enabled when the driver supports it (no r_* cvar). */
 	MultiDrawIndirect,
 	ComputeShaders,
 	TransformFeedback,
+	/** Always enabled when the driver supports it (no r_* cvar). */
 	ShaderStorageBufferObject,
+	/** Always enabled when the driver supports it (no r_* cvar). */
 	ShaderDrawParameters,
 
 	Max

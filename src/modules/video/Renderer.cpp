@@ -30,11 +30,12 @@ static struct RenderFeature {
 	{"r_debugoutput", N_("Support for renderer debug output messages")},
 	{"r_directstateaccess", N_("Support for modifying renderer objects without binding them")},
 	{"r_bufferstorage", N_("Support for immutable buffer storage")},
-	{"r_multidrawindirect", N_("Support for batching multiple draw calls into a single indirect call")},
+	// Multi-draw / SSBO / draw-parameters: always used when the driver exposes them (no cvar).
+	{nullptr, nullptr},
 	{"r_computeshaders", N_("Support for compute shaders")},
 	{"r_transformfeedback", N_("Support for capturing shader output into buffers")},
-	{"r_shaderstoragebufferobject", N_("Support for large read-write storage buffers accessible from shaders")},
-	{"r_shaderdrawparameters", N_("Support for gl_DrawIDARB / multi-draw shader draw parameters")}
+	{nullptr, nullptr},
+	{nullptr, nullptr}
 };
 static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];
@@ -43,6 +44,9 @@ static RenderState s;
 
 void construct() {
 	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
+		if (featuresArray[i].var == nullptr) {
+			continue;
+		}
 		core::VarDef varDef(featuresArray[i].var, false, featuresArray[i].description, N_("Renderer feature cvar"));
 		featureVars[i] = core::Var::registerVar(varDef);
 	}

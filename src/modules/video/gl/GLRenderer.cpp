@@ -2397,7 +2397,7 @@ void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indire
 	if (drawCount <= 0) {
 		return;
 	}
-	if (!useFeature(Feature::MultiDrawIndirect) || glMultiDrawElementsIndirect == nullptr) {
+	if (!hasFeature(Feature::MultiDrawIndirect) || glMultiDrawElementsIndirect == nullptr) {
 		Log::error("multiDrawElementsIndirect requested without Feature::MultiDrawIndirect");
 		return;
 	}
