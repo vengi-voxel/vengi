@@ -59,6 +59,20 @@ bool UniformBuffer::update(const void *data, size_t size) {
 	return true;
 }
 
+bool UniformBuffer::updateRange(intptr_t offset, const void *data, size_t size) {
+	if (_handle == video::InvalidId || size == 0u || data == nullptr) {
+		return false;
+	}
+	core_assert(offset >= 0);
+	core_assert((size_t)offset + size <= _size);
+#if VIDEO_UNIFORM_BUFFER_HASH_COMPARE
+	// Partial updates invalidate the full-buffer hash.
+	_hash = 0u;
+#endif
+	video::bufferSubData(_handle, BufferType::UniformBuffer, offset, data, size);
+	return true;
+}
+
 bool UniformBuffer::bind(uint32_t index) const {
 	if (_handle == video::InvalidId) {
 		return false;

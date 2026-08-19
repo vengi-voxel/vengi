@@ -44,6 +44,10 @@ public:
 	Id handle() const;
 	bool create(const void *data, size_t size);
 	bool update(const void *data, size_t size);
+	/**
+	 * @brief Update a sub-range of an existing uniform buffer without rewriting the whole store.
+	 */
+	bool updateRange(intptr_t offset, const void *data, size_t size);
 	size_t size() const;
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
