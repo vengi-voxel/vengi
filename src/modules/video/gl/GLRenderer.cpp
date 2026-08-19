@@ -1163,6 +1163,7 @@ bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 
 bool bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
+		statsStateChangeSkipped();
 		return false;
 	}
 	core_assert(glBindVertexArray != nullptr);
@@ -1312,6 +1313,7 @@ bool bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
 	if (rendererState().bufferHandle[typeIndex] == handle) {
+		statsStateChangeSkipped();
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
