@@ -17,6 +17,7 @@
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "video/Renderer.h"
+#include "video/DeferredDestroy.h"
 #include "util/IncludeUtil.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "engine-config.h"
@@ -105,10 +106,16 @@ Shader::~Shader() {
 
 void Shader::shutdown() {
 	for (auto& shader : _shader) {
-		video::deleteShader(shader);
+		if (shader != InvalidId) {
+			deferredDestroyEnqueue(DestroyResourceType::Shader, shader);
+			shader = InvalidId;
+		}
 	}
 	_uniformStateMap.clear();
-	video::deleteProgram(_program);
+	if (_program != InvalidId) {
+		deferredDestroyEnqueue(DestroyResourceType::Program, _program);
+		_program = InvalidId;
+	}
 	_initialized = false;
 	_active = false;
 	markDirty();

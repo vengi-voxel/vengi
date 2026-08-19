@@ -24,6 +24,8 @@ set(SRCS
 	Renderer.cpp Renderer.h
 	RendererInterface.h
 	RenderStats.cpp RenderStats.h
+	DeferredDestroy.cpp DeferredDestroy.h
+	UploadRing.cpp UploadRing.h
 	RendererState.cpp RendererState.h
 	RenderBuffer.cpp RenderBuffer.h
 	SamplerConfig.h

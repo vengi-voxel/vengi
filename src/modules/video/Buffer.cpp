@@ -4,6 +4,7 @@
 
 #include "Buffer.h"
 #include "Renderer.h"
+#include "UploadRing.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/Trace.h"
@@ -222,6 +223,18 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
+	if (size > 0 && data != nullptr && uploadRingEnabled()) {
+		const UploadRingAllocation alloc = uploadRingAlloc(type, size);
+		if (alloc.valid) {
+			if (oldSize < size || _modes[idx] == BufferMode::Static) {
+				video::bufferData(id, type, _modes[idx], nullptr, size);
+			}
+			core_memcpy(alloc.cpuPtr, data, size);
+			if (uploadRingCopyToBuffer(alloc, id, type, 0, size)) {
+				return true;
+			}
+		}
+	}
 	if (size > 0) {
 		if (orphaning) {
 			// Orphaning strategy: allocate new buffer storage to avoid GPU stalls
@@ -514,8 +527,12 @@ Buffer::~Buffer() {
 
 void Buffer::shutdown() {
 	video::deleteVertexArray(_vao);
-	video::deleteBuffers(_handleIdx, _handles);
-	_handleIdx = 0;
+	_vao = InvalidId;
+	for (uint32_t i = 0u; i < _handleIdx; ++i) {
+		video::deleteBuffer(_handles[i]);
+		_handles[i] = InvalidId;
+	}
+	_handleIdx = 0u;
 	for (int i = 0; i < MAX_HANDLES; ++i) {
 		_targets[i] = BufferType::Max;
 		_modes[i] = BufferMode::Static;

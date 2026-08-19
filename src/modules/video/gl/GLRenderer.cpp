@@ -22,6 +22,8 @@
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
 #include "video/Trace.h"
+#include "video/DeferredDestroy.h"
+#include "video/UploadRing.h"
 #include "video/Types.h"
 #include "video/gl/GLVersion.h"
 #include "video/gl/flextGL.h"
@@ -1177,6 +1179,10 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glMapNamedBuffer != nullptr);
 		void *data = glMapNamedBuffer(handle, glMode);
+		if (data == nullptr) {
+			checkError(false);
+			return nullptr;
+		}
 		checkError();
 		return data;
 	}
@@ -1185,6 +1191,11 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	core_assert(glMapBuffer != nullptr);
 	void *data = glMapBuffer(glType, glMode);
+	if (data == nullptr) {
+		checkError(false);
+		unbindBuffer(type);
+		return nullptr;
+	}
 	checkError();
 	unbindBuffer(type);
 	return data;
@@ -1214,16 +1225,29 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	if ((flags & MapBufferFlag::InvalidateRange) == MapBufferFlag::InvalidateRange) {
 		access |= GL_MAP_INVALIDATE_RANGE_BIT;
 	}
+	if ((flags & MapBufferFlag::InvalidateBuffer) == MapBufferFlag::InvalidateBuffer) {
+		access |= GL_MAP_INVALIDATE_BUFFER_BIT;
+	}
 	if ((flags & MapBufferFlag::Unsynchronized) == MapBufferFlag::Unsynchronized) {
 		access |= GL_MAP_UNSYNCHRONIZED_BIT;
 	}
 	if ((flags & MapBufferFlag::ExplicitFlush) == MapBufferFlag::ExplicitFlush) {
 		access |= GL_MAP_FLUSH_EXPLICIT_BIT;
 	}
+	if ((flags & MapBufferFlag::Persistent) == MapBufferFlag::Persistent) {
+		access |= GL_MAP_PERSISTENT_BIT;
+	}
+	if ((flags & MapBufferFlag::Coherent) == MapBufferFlag::Coherent) {
+		access |= GL_MAP_COHERENT_BIT;
+	}
 
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glMapNamedBufferRange != nullptr);
 		void *ptr = glMapNamedBufferRange((GLuint)handle, (GLintptr)offset, (GLsizeiptr)length, access);
+		if (ptr == nullptr) {
+			checkError(false);
+			return nullptr;
+		}
 		checkError();
 		return ptr;
 	}
@@ -1234,6 +1258,17 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	const bool changed = bindBuffer(type, handle);
 	core_assert(glMapBufferRange != nullptr);
 	void *ptr = glMapBufferRange(glType, (GLintptr)offset, (GLsizeiptr)length, access);
+	if (ptr == nullptr) {
+		checkError(false);
+		if (changed) {
+			if (old == InvalidId) {
+				unbindBuffer(type);
+			} else {
+				bindBuffer(type, old);
+			}
+		}
+		return nullptr;
+	}
 	checkError();
 	if (changed) {
 		if (old == InvalidId) {
@@ -1813,6 +1848,71 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data
 	}
 	statsBufferUpdate(size);
 	statsUploadScopeEnd();
+}
+
+bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
+	if (!hasFeature(Feature::BufferStorage) || handle == InvalidId || size == 0u) {
+		return false;
+	}
+	GLbitfield glFlags = 0;
+	if ((flags & BufferStorageFlag::Dynamic) != BufferStorageFlag::None) {
+		glFlags |= GL_DYNAMIC_STORAGE_BIT;
+	}
+	if ((flags & BufferStorageFlag::MapWrite) != BufferStorageFlag::None) {
+		glFlags |= GL_MAP_WRITE_BIT;
+	}
+	if ((flags & BufferStorageFlag::MapPersistent) != BufferStorageFlag::None) {
+		glFlags |= GL_MAP_PERSISTENT_BIT;
+	}
+	if ((flags & BufferStorageFlag::MapCoherent) != BufferStorageFlag::None) {
+		glFlags |= GL_MAP_COHERENT_BIT;
+	}
+	const GLuint lid = (GLuint)handle;
+	if (useFeature(Feature::DirectStateAccess) && glNamedBufferStorage != nullptr) {
+		glNamedBufferStorage(lid, (GLsizeiptr)size, nullptr, glFlags);
+		return !checkError(false);
+	}
+	if (glBufferStorage == nullptr) {
+		return false;
+	}
+	const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
+	const Id oldBuffer = boundBuffer(type);
+	const bool changed = bindBuffer(type, handle);
+	glBufferStorage(glType, (GLsizeiptr)size, nullptr, glFlags);
+	const bool ok = !checkError(false);
+	if (changed) {
+		if (oldBuffer == InvalidId) {
+			unbindBuffer(type);
+		} else {
+			bindBuffer(type, oldBuffer);
+		}
+	}
+	return ok;
+}
+
+bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
+	if (readBuffer == InvalidId || writeBuffer == InvalidId || size == 0u) {
+		return false;
+	}
+	statsUploadScopeBegin();
+	if (useFeature(Feature::DirectStateAccess) && glCopyNamedBufferSubData != nullptr) {
+		glCopyNamedBufferSubData((GLuint)readBuffer, (GLuint)writeBuffer, (GLintptr)readOffset, (GLintptr)writeOffset,
+								 (GLsizeiptr)size);
+	} else if (glCopyBufferSubData != nullptr) {
+		glBindBuffer(GL_COPY_READ_BUFFER, (GLuint)readBuffer);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, (GLuint)writeBuffer);
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, (GLintptr)readOffset, (GLintptr)writeOffset,
+							(GLsizeiptr)size);
+		glBindBuffer(GL_COPY_READ_BUFFER, 0);
+		glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+	} else {
+		statsUploadScopeEnd();
+		return false;
+	}
+	checkError();
+	statsBufferUpdate(size);
+	statsUploadScopeEnd();
+	return true;
 }
 
 // the fbo is flipped in memory, we have to deal with it here
@@ -2595,6 +2695,8 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name)
 }
 
 void destroyContext(RendererContext &context) {
+	deferredDestroyFlushAll();
+	uploadRingShutdown();
 	SDL_GL_DestroyContext((SDL_GLContext)context);
 }
 
@@ -2707,6 +2809,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	_priv::setupFeatures(glState().glVersion);
 	_priv::setupLimitsAndSpecs();
+	uploadRingInit();
 
 	const char *glvendor = (const char *)glGetString(GL_VENDOR);
 	const char *glrenderer = (const char *)glGetString(GL_RENDERER);

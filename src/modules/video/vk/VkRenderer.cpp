@@ -305,6 +305,23 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
 }
 
+bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
+	(void)handle;
+	(void)type;
+	(void)size;
+	(void)flags;
+	return false;
+}
+
+bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
+	(void)readBuffer;
+	(void)readOffset;
+	(void)writeBuffer;
+	(void)writeOffset;
+	(void)size;
+	return false;
+}
+
 const glm::vec4 &framebufferUV() {
 	static glm::vec4 todo;
 	return todo;

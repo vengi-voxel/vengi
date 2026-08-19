@@ -19,6 +19,8 @@
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
 #include "video/Trace.h"
+#include "video/DeferredDestroy.h"
+#include "video/UploadRing.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
@@ -67,6 +69,7 @@ WindowedApp::~WindowedApp() {
 
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
+	uploadRingEndFrame();
 	video::endFrameStats();
 	video::endFrame(_window);
 	video_trace_frame_end();
@@ -522,6 +525,8 @@ app::AppState WindowedApp::onConstruct() {
 }
 
 app::AppState WindowedApp::onCleanup() {
+	deferredDestroyFlushAll();
+	uploadRingShutdown();
 	core::Singleton<video::EventHandler>::getInstance().removeObserver(this);
 	video::destroyContext(_rendererContext);
 	if (_window != nullptr) {

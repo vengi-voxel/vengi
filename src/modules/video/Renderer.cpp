@@ -4,6 +4,8 @@
 
 #include "Renderer.h"
 #include "RenderStats.h"
+#include "DeferredDestroy.h"
+#include "UploadRing.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/Enum.h"
@@ -60,7 +62,7 @@ void deleteRenderbuffer(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	deleteRenderbuffers(1, &id);
+	deferredDestroyEnqueue(DestroyResourceType::Renderbuffer, id);
 	id = InvalidId;
 }
 
@@ -68,7 +70,7 @@ void deleteFramebuffer(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	deleteFramebuffers(1, &id);
+	deferredDestroyEnqueue(DestroyResourceType::Framebuffer, id);
 	id = InvalidId;
 }
 
@@ -76,7 +78,7 @@ void deleteTexture(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	deleteTextures(1, &id);
+	deferredDestroyEnqueue(DestroyResourceType::Texture, id);
 	id = InvalidId;
 }
 
@@ -90,7 +92,7 @@ void deleteBuffer(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	deleteBuffers(1, &id);
+	deferredDestroyEnqueue(DestroyResourceType::Buffer, id);
 	id = InvalidId;
 }
 
@@ -395,7 +397,7 @@ void deleteVertexArray(Id &id) {
 	if (rendererState().vertexArrayHandle == id) {
 		bindVertexArray(InvalidId);
 	}
-	deleteVertexArrays(1, &id);
+	deferredDestroyEnqueue(DestroyResourceType::VertexArray, id);
 	id = InvalidId;
 }
 
@@ -422,6 +424,8 @@ float getScaleFactor() {
 }
 
 void startFrame(SDL_Window *window, RendererContext &context) {
+	deferredDestroyAdvanceFrame();
+	uploadRingBeginFrame();
 	beginFrameStats();
 	rendererState().startFrame();
 

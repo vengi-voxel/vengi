@@ -28,6 +28,7 @@ struct RenderStats {
 	double cpuUploadMs = 0.0;
 	uint64_t frameNumber = 0;
 	uint64_t stateChangeSkipped = 0;
+	uint64_t deferredDestroyCount = 0;
 };
 
 const RenderStats &renderStats();
@@ -47,6 +48,7 @@ void statsRenderPass();
 void statsFullscreenPass();
 void statsBlit();
 void statsStateChangeSkipped();
+void statsDeferredDestroy(uint32_t count = 1u);
 
 void statsUploadScopeBegin();
 void statsUploadScopeEnd();

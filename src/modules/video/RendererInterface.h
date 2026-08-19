@@ -53,8 +53,30 @@ enum class MapBufferFlag : uint8_t {
 	Unsynchronized = 1u << 1,
 	/** Use explicit flush (GL_MAP_FLUSH_EXPLICIT_BIT) when available */
 	ExplicitFlush = 1u << 2,
+	/** Invalidate the entire buffer (GL_MAP_INVALIDATE_BUFFER_BIT) */
+	InvalidateBuffer = 1u << 3,
+	/** Keep the mapping active across frames (GL_MAP_PERSISTENT_BIT) */
+	Persistent = 1u << 4,
+	/** Coherent persistent mapping (GL_MAP_COHERENT_BIT) */
+	Coherent = 1u << 5,
 };
 CORE_ENUM_BIT_OPERATIONS(MapBufferFlag)
+
+/**
+ * Flags for immutable buffer storage allocation (glBufferStorage and equivalents).
+ */
+enum class BufferStorageFlag : uint8_t {
+	None = 0,
+	/** Allow subsequent storage updates (GL_DYNAMIC_STORAGE_BIT) */
+	Dynamic = 1u << 0,
+	/** Allow CPU write mapping (GL_MAP_WRITE_BIT) */
+	MapWrite = 1u << 1,
+	/** Allow persistent mapping (GL_MAP_PERSISTENT_BIT) */
+	MapPersistent = 1u << 2,
+	/** Allow coherent persistent mapping (GL_MAP_COHERENT_BIT) */
+	MapCoherent = 1u << 3,
+};
+CORE_ENUM_BIT_OPERATIONS(BufferStorageFlag)
 
 /**
  * Map a buffer range. This is a thin, backend-agnostic wrapper that allows
@@ -413,6 +435,22 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
  * @param size Number of bytes to update.
  */
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size);
+
+/**
+ * @brief Allocate immutable buffer storage.
+ *
+ * Backend equivalent of glBufferStorage. Returns @c false if unsupported or on
+ * driver error.
+ */
+bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags);
+
+/**
+ * @brief Copy bytes between two buffer objects.
+ *
+ * Backend equivalent of glCopyBufferSubData / glCopyNamedBufferSubData.
+ * Does not require either buffer to be bound as a vertex/index/uniform buffer.
+ */
+bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size);
 
 /**
  * @brief Get the UV transform to map framebuffer coordinates to texture UVs.

@@ -40,6 +40,7 @@ void accumulateTotals(const RenderStats &frame) {
 	s_totals.cpuRenderMs += frame.cpuRenderMs;
 	s_totals.cpuUploadMs += frame.cpuUploadMs;
 	s_totals.stateChangeSkipped += frame.stateChangeSkipped;
+	s_totals.deferredDestroyCount += frame.deferredDestroyCount;
 	s_totals.frameNumber = frame.frameNumber;
 }
 
@@ -76,11 +77,12 @@ void endFrameStats() {
 		",\"buffer_updates\":%" PRIu64 ",\"buffer_bytes_uploaded\":%" PRIu64
 		",\"resource_creates\":%" PRIu64 ",\"resource_destroys\":%" PRIu64
 		",\"render_passes\":%" PRIu64 ",\"fullscreen_passes\":%" PRIu64 ",\"blits\":%" PRIu64
-		",\"cpu_render_ms\":%.3f,\"cpu_upload_ms\":%.3f,\"state_change_skipped\":%" PRIu64 "}",
+		",\"cpu_render_ms\":%.3f,\"cpu_upload_ms\":%.3f,\"state_change_skipped\":%" PRIu64
+		",\"deferred_destroy_count\":%" PRIu64 "}",
 		s_frame.frameNumber, s_frame.drawCalls, s_frame.pipelineBinds, s_frame.descriptorBinds,
 		s_frame.bufferUpdates, s_frame.bufferBytesUploaded, s_frame.resourceCreates, s_frame.resourceDestroys,
 		s_frame.renderPasses, s_frame.fullscreenPasses, s_frame.blits, s_frame.cpuRenderMs, s_frame.cpuUploadMs,
-		s_frame.stateChangeSkipped);
+		s_frame.stateChangeSkipped, s_frame.deferredDestroyCount);
 }
 
 void logRenderStatsTotals() {
@@ -89,11 +91,12 @@ void logRenderStatsTotals() {
 		" frames: draw_calls=%" PRIu64 " pipeline_binds=%" PRIu64 " descriptor_binds=%" PRIu64
 		" buffer_updates=%" PRIu64 " buffer_bytes=%" PRIu64 " resource_creates=%" PRIu64
 		" resource_destroys=%" PRIu64 " render_passes=%" PRIu64 " fullscreen_passes=%" PRIu64
-		" blits=%" PRIu64 " cpu_render_ms=%.3f cpu_upload_ms=%.3f state_change_skipped=%" PRIu64,
+		" blits=%" PRIu64 " cpu_render_ms=%.3f cpu_upload_ms=%.3f state_change_skipped=%" PRIu64
+		" deferred_destroy_count=%" PRIu64,
 		s_totals.frameNumber, s_totals.drawCalls, s_totals.pipelineBinds, s_totals.descriptorBinds,
 		s_totals.bufferUpdates, s_totals.bufferBytesUploaded, s_totals.resourceCreates, s_totals.resourceDestroys,
 		s_totals.renderPasses, s_totals.fullscreenPasses, s_totals.blits, s_totals.cpuRenderMs, s_totals.cpuUploadMs,
-		s_totals.stateChangeSkipped);
+		s_totals.stateChangeSkipped, s_totals.deferredDestroyCount);
 }
 
 void statsDrawCall() {
@@ -135,6 +138,10 @@ void statsBlit() {
 
 void statsStateChangeSkipped() {
 	++s_frame.stateChangeSkipped;
+}
+
+void statsDeferredDestroy(uint32_t count) {
+	s_frame.deferredDestroyCount += count;
 }
 
 void statsUploadScopeBegin() {
