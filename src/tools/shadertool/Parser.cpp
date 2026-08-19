@@ -243,7 +243,11 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				preprocessorError = true;
 			}
 			const core::String& preprocessor = rawtok.next();
-			if (core::string::contains(preprocessor.c_str(), "_")) {
+			// GLSL predefined macros always use __NAME__; they are valid on every GLSL
+			// version we target (desktop and ES) and must not trigger the underscore warn.
+			const bool isGlslBuiltinMacro = preprocessor == "__VERSION__" || preprocessor == "__LINE__" ||
+											preprocessor == "__FILE__";
+			if (!isGlslBuiltinMacro && core::string::contains(preprocessor.c_str(), "_")) {
 				Log::warn("Warning in %s:%i:%i. Found preprocessor token with _ - some drivers doesn't support this: %s",
 						rawtok.file(), rawtok.line(), rawtok.col(), preprocessor.c_str());
 				Log::warn("If this is a shader cvar define, just remove the _");
