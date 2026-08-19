@@ -27,6 +27,7 @@ protected:
 	float _cameraSpeed = 50.0f;
 	int _screenshotFrames = -1;
 	int _frameCounter = 0;
+	bool _renderStats = false;
 	core::String _screenshotType = "png";
 
 	virtual void doRender() = 0;

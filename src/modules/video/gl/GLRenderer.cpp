@@ -17,6 +17,7 @@
 #include "core/sdl/SDLSystem.h"
 #include "engine-config.h"
 #include "video/Renderer.h"
+#include "video/RenderStats.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
@@ -808,6 +809,7 @@ static bool bindTextureForce(TextureUnit unit, TextureType type, Id handle) {
 			core_assert(glBindTextureUnit != nullptr);
 			glBindTextureUnit(core::enumVal(unit), handle);
 			checkError();
+			statsDescriptorBind();
 			return true;
 		}
 	} else {
@@ -817,9 +819,11 @@ static bool bindTextureForce(TextureUnit unit, TextureType type, Id handle) {
 			core_assert(glBindTexture != nullptr);
 			glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
 			checkError();
+			statsDescriptorBind();
 			return true;
 		}
 	}
+	statsStateChangeSkipped();
 	return false;
 }
 
@@ -828,6 +832,7 @@ static void syncState() {
 
 	if (rs.programHandle != rs.pendingProgramHandle) {
 		rs.programHandle = rs.pendingProgramHandle;
+		statsPipelineBind();
 		core_assert(glUseProgram != nullptr);
 		glUseProgram(rs.programHandle);
 		checkError();
@@ -836,6 +841,7 @@ static void syncState() {
 
 	// Apply pending uniforms after program is bound
 	if (!rs.pendingUniformi.empty()) {
+		statsDescriptorBind((uint32_t)rs.pendingUniformi.size());
 		for (const auto& entry : rs.pendingUniformi) {
 			core_assert(glUniform1i != nullptr);
 			glUniform1i(entry->first, entry->second);
@@ -1054,6 +1060,8 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 
 	if (unit == TextureUnit::Upload) {
 		bindTextureForce(unit, type, handle);
+	} else if (!changed) {
+		statsStateChangeSkipped();
 	}
 	return changed;
 }
@@ -1301,6 +1309,7 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	Id cachedHandle = InvalidId;
 	if (rendererState().bufferBaseBindings.get(key, cachedHandle)) {
 		if (cachedHandle == handle) {
+			statsStateChangeSkipped();
 			return false; // binding already set, avoid redundant call
 		}
 	}
@@ -1310,10 +1319,12 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	glBindBufferBase(glType, (GLuint)index, handle);
 	checkError();
 	rendererState().bufferBaseBindings.put(key, handle);
+	statsDescriptorBind();
 	return true;
 }
 
 void genBuffers(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateBuffers != nullptr);
@@ -1330,6 +1341,7 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
+	statsResourceDestroy(amount);
 	for (uint8_t i = 0u; i < amount; ++i) {
 		for (int j = 0; j < lengthof(rendererState().bufferHandle); ++j) {
 			if (rendererState().bufferHandle[j] == ids[i]) {
@@ -1347,6 +1359,7 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 }
 
 void genVertexArrays(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateVertexArrays != nullptr);
@@ -1414,6 +1427,7 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
+	statsResourceDestroy(amount);
 	for (int i = 0; i < amount; ++i) {
 		if (rendererState().vertexArrayHandle == ids[i]) {
 			bindVertexArray(InvalidId);
@@ -1430,6 +1444,7 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 }
 
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		const GLenum glTexType = _priv::TextureTypes[core::enumVal(cfg.type())];
@@ -1450,6 +1465,7 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
+	statsResourceDestroy(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteTextures != nullptr);
 	glDeleteTextures((GLsizei)amount, (GLuint *)ids);
@@ -1497,6 +1513,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateFramebuffers != nullptr);
@@ -1512,6 +1529,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
+	statsResourceDestroy(amount);
 	for (int i = 0; i < amount; ++i) {
 		if (ids[i] == currentFramebuffer()) {
 			bindFramebuffer(InvalidId);
@@ -1528,6 +1546,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 }
 
 void genRenderbuffers(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateRenderbuffers != nullptr);
@@ -1543,6 +1562,7 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
+	statsResourceDestroy(amount);
 	for (uint8_t i = 0u; i < amount; ++i) {
 		if (rendererState().renderBufferHandle == ids[i]) {
 			bindRenderbuffer(InvalidId);
@@ -1601,6 +1621,7 @@ void finish() {
 }
 
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
+	statsBlit();
 	syncState();
 	const GLbitfield glValue = getBitField(flag);
 	GLenum filter = GL_NEAREST;
@@ -1661,8 +1682,10 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
 	if (old == handle && mode == rendererState().framebufferMode) {
+		statsStateChangeSkipped();
 		return handle;
 	}
+	statsRenderPass();
 	rendererState().framebufferHandle = handle;
 	rendererState().framebufferMode = mode;
 	const int typeIndex = core::enumVal(mode);
@@ -1723,6 +1746,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	if (size <= 0) {
 		return;
 	}
+	statsUploadScopeBegin();
 	core_assert_msg(type != BufferType::UniformBuffer || limiti(Limit::MaxUniformBufferSize) <= 0 ||
 						(int)size <= limiti(Limit::MaxUniformBufferSize),
 					"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxUniformBufferSize));
@@ -1756,6 +1780,8 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 		glFlush(); // TODO: RENDERER: use glFenceSync here glClientWaitSync
 	}
 	checkError();
+	statsBufferUpdate(size);
+	statsUploadScopeEnd();
 }
 
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
@@ -1763,6 +1789,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data
 	if (size == 0) {
 		return;
 	}
+	statsUploadScopeBegin();
 	const int typeIndex = core::enumVal(type);
 	if (useFeature(Feature::DirectStateAccess)) {
 		const GLuint lid = (GLuint)handle;
@@ -1784,6 +1811,8 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data
 			}
 		}
 	}
+	statsBufferUpdate(size);
+	statsUploadScopeEnd();
 }
 
 // the fbo is flipped in memory, we have to deal with it here
@@ -2112,6 +2141,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 
 void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
 	video_trace_scoped(UploadTexture);
+	statsUploadScopeBegin();
 	const int samples = cfg.samples();
 	const TextureType type = cfg.type();
 	const TextureFormat format = cfg.format();
@@ -2228,6 +2258,10 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			checkError();
 		}
 	}
+	const size_t uploadBytes =
+		(size_t)glm::max(width, 0) * (size_t)glm::max(height, 1) * (size_t)glm::max(f.bits / 8, 1);
+	statsBufferUpdate(uploadBytes);
+	statsUploadScopeEnd();
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
@@ -2235,7 +2269,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	if (numIndices <= 0) {
 		return;
 	}
-	rendererState().drawCalls++;
+	statsDrawCall();
 	syncState();
 	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
@@ -2251,7 +2285,7 @@ void drawArrays(Primitive mode, size_t count) {
 		return;
 	}
 	video_trace_scoped(DrawArrays);
-	rendererState().drawCalls++;
+	statsDrawCall();
 	syncState();
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	video::validate(rendererState().programHandle);
@@ -2447,6 +2481,7 @@ bool linkComputeShader(Id program, Id comp, const core::String &name) {
 bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	if (rendererState().imageHandle == textureHandle && rendererState().imageFormat == format &&
 		rendererState().imageAccessMode == mode) {
+		statsStateChangeSkipped();
 		return false;
 	}
 	const GLenum glFormat = _priv::ImageFormatTypes[core::enumVal(format)];
@@ -2462,6 +2497,7 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	rendererState().imageHandle = textureHandle;
 	rendererState().imageFormat = format;
 	rendererState().imageAccessMode = mode;
+	statsDescriptorBind();
 	return true;
 }
 
@@ -2498,6 +2534,7 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
 	video::checkError();
 	waitShader(wait);
+	statsDrawCall();
 	return true;
 }
 

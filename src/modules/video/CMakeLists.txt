@@ -23,6 +23,7 @@ set(SRCS
 	PenAxis.h
 	Renderer.cpp Renderer.h
 	RendererInterface.h
+	RenderStats.cpp RenderStats.h
 	RendererState.cpp RendererState.h
 	RenderBuffer.cpp RenderBuffer.h
 	SamplerConfig.h

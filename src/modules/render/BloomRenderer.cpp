@@ -161,6 +161,7 @@ void BloomRenderer::blur(const video::TexturePtr &source, video::FrameBuffer &de
 	core_assert_always(video::bindTexture(_convolutionShader.getBoundImageTexUnit(), source));
 	dest.bind(true);
 	video::viewport(0, 0, source->width(), source->height());
+	video::statsFullscreenPass();
 	video::drawArrays(video::Primitive::Triangles, 6);
 }
 
@@ -178,6 +179,7 @@ void BloomRenderer::apply(video::FrameBuffer *sources, video::FrameBuffer *dests
 				core_assert_always(video::bindTexture(video::TextureUnit::One, _black));
 			}
 			core_assert_always(video::bindTexture(video::TextureUnit::Zero, srcTex));
+			video::statsFullscreenPass();
 			video::drawArrays(video::Primitive::Triangles, 6);
 		}
 		{
@@ -215,6 +217,7 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 		video::ScopedShader scoped(_textureShader);
 		_frameBuffers0[0].bind(true);
 		video::bindTexture(video::TextureUnit::Zero, _bloom[1].texture());
+		video::statsFullscreenPass();
 		video::drawArrays(video::Primitive::Triangles, 6);
 	}
 
@@ -231,6 +234,7 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 			// use the texture from the final blur stage
 			const video::TexturePtr &blurTex = _frameBuffers2[i - 1].texture();
 			core_assert_always(video::bindTexture(video::TextureUnit::Zero, blurTex));
+			video::statsFullscreenPass();
 			video::drawArrays(video::Primitive::Triangles, 6);
 		}
 	}
@@ -242,6 +246,7 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 		_bloom[0].bind(true);
 		video::bindTexture(video::TextureUnit::Zero, glowTexture);
 		video::bindTexture(video::TextureUnit::One, _frameBuffers1[0].texture());
+		video::statsFullscreenPass();
 		video::drawArrays(video::Primitive::Triangles, 6);
 	}
 
@@ -262,6 +267,7 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 			video::ScopedShader scoped(_combine2Shader);
 			video::bindTexture(video::TextureUnit::Zero, _bloom[1].texture());
 			video::bindTexture(video::TextureUnit::One, _bloom[0].texture());
+			video::statsFullscreenPass();
 			video::drawArrays(video::Primitive::Triangles, 6);
 			video::drawBuffers(2, color01);
 		}

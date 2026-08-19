@@ -466,6 +466,9 @@ void App::onFrame() {
 			if (AppState::Running == _nextState) {
 				core_trace_scoped(AppOnAfterRunning);
 				onAfterRunning();
+			} else if (state != AppState::Running) {
+				core_trace_scoped(AppOnAfterRunning);
+				onAfterRunning();
 			}
 			const double framesPerSecondsCap = _framesPerSecondsCap->floatVal();
 			if (framesPerSecondsCap >= 1.0) {

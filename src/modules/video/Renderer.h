@@ -9,6 +9,7 @@
 #pragma once
 
 #include "RendererInterface.h"
+#include "RenderStats.h"
 
 namespace video {
 

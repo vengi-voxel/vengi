@@ -3,6 +3,7 @@
  */
 
 #include "Renderer.h"
+#include "RenderStats.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/Enum.h"
@@ -374,6 +375,7 @@ Id getProgram() {
 
 bool useProgram(Id handle) {
 	if (rendererState().pendingProgramHandle == handle) {
+		statsStateChangeSkipped();
 		return false;
 	}
 	// Clear pending uniforms when switching programs since uniform locations are program-specific
@@ -402,7 +404,7 @@ Id currentFramebuffer() {
 }
 
 int drawCalls() {
-	return rendererState().drawCalls;
+	return (int)renderStats().drawCalls;
 }
 
 void resize(int windowWidth, int windowHeight, float scaleFactor) {
@@ -420,6 +422,7 @@ float getScaleFactor() {
 }
 
 void startFrame(SDL_Window *window, RendererContext &context) {
+	beginFrameStats();
 	rendererState().startFrame();
 
 	activateContext(window, context);

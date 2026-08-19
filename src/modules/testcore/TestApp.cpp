@@ -9,6 +9,7 @@
 #include "command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/Renderer.h"
+#include "video/RenderStats.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/ConfigVar.h"
@@ -71,6 +72,9 @@ app::AppState TestApp::onConstruct() {
 		.addValidValue("txt")
 		.setDescription("Screenshot output type: png (default) or txt")
 		.setDefaultValue("png");
+	registerArg("--render-stats")
+		.setDescription("Log accumulated render counter totals on exit")
+		.setDefaultValue("false");
 
 	return state;
 }
@@ -119,6 +123,10 @@ app::AppState TestApp::onInit() {
 		// Mouse look / WASD would otherwise make comparison shots diverge.
 		_cameraMotion = false;
 		Log::info("Taking screenshot after %i frames (type: %s)", _screenshotFrames, _screenshotType.c_str());
+	}
+	if (hasArg("--render-stats")) {
+		_renderStats = getArgVal("--render-stats", "true") != "false";
+		Log::info("Render stats logging enabled");
 	}
 
 	return state;
@@ -218,6 +226,17 @@ void TestApp::onRenderUI() {
 	if (ImGui::Button(_("Show all cvars"))) {
 		showCvarDialog();
 	}
+	const video::RenderStats &frameStats = video::renderStats();
+	if (ImGui::CollapsingHeader("Render stats (frame)")) {
+		ImGui::Text("Draw calls: %" PRIu64, frameStats.drawCalls);
+		ImGui::Text("Pipeline binds: %" PRIu64, frameStats.pipelineBinds);
+		ImGui::Text("Descriptor binds: %" PRIu64, frameStats.descriptorBinds);
+		ImGui::Text("Buffer updates: %" PRIu64, frameStats.bufferUpdates);
+		ImGui::Text("Render passes: %" PRIu64, frameStats.renderPasses);
+		ImGui::Text("Fullscreen passes: %" PRIu64, frameStats.fullscreenPasses);
+		ImGui::Text("Blits: %" PRIu64, frameStats.blits);
+		ImGui::Text("CPU render ms: %.3f", frameStats.cpuRenderMs);
+	}
 	ImGui::SameLine();
 	if (ImGui::Button("Quit")) {
 		requestQuit();
@@ -225,6 +244,9 @@ void TestApp::onRenderUI() {
 }
 
 app::AppState TestApp::onCleanup() {
+	if (_renderStats) {
+		video::logRenderStatsTotals();
+	}
 	_axis.shutdown();
 	_plane.shutdown();
 	_movement.shutdown();

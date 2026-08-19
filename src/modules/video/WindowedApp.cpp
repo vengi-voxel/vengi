@@ -67,6 +67,7 @@ WindowedApp::~WindowedApp() {
 
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
+	video::endFrameStats();
 	video::endFrame(_window);
 	video_trace_frame_end();
 

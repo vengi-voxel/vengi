@@ -10,6 +10,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "video/Renderer.h"
+#include "video/RenderStats.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/ISceneRenderer.h"
@@ -53,7 +54,17 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Free volume indices: %i"), stats.freeVolumeIndices);
 		ImGui::CheckboxVar(cfg::RenderCullNodes);
 		ImGui::CheckboxVar(cfg::RenderCullBuffers);
-		ImGui::Text(_("Draw calls: %i"), video::drawCalls());
+		if (ImGui::CollapsingHeader(_("Render stats"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			const video::RenderStats &videoStats = video::renderStats();
+			ImGui::Text(_("Draw calls: %" PRIu64), videoStats.drawCalls);
+			ImGui::Text(_("Pipeline binds: %" PRIu64), videoStats.pipelineBinds);
+			ImGui::Text(_("Descriptor binds: %" PRIu64), videoStats.descriptorBinds);
+			ImGui::Text(_("Buffer updates: %" PRIu64), videoStats.bufferUpdates);
+			ImGui::Text(_("Render passes: %" PRIu64), videoStats.renderPasses);
+			ImGui::Text(_("Fullscreen passes: %" PRIu64), videoStats.fullscreenPasses);
+			ImGui::Text(_("Blits: %" PRIu64), videoStats.blits);
+			ImGui::Text(_("CPU render ms: %.3f"), videoStats.cpuRenderMs);
+		}
 
 		scenegraph::KinematicBody &body = _sceneMgr->cameraMovement().body();
 		ImGui::Text(_("Camera position: %.2f %.2f %.2f"), body.position.x, body.position.y, body.position.z);
