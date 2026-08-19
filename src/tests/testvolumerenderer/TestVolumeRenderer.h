@@ -26,6 +26,7 @@ private:
 	bool createMaterialScene();
 	bool loadScene(const core::String &filename);
 	bool addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, const glm::mat4 &worldMatrix);
+	void addReferenceInstances(int count);
 	void configureRendererFeatures();
 	void flushMeshes();
 	void presentFrameBuffer();

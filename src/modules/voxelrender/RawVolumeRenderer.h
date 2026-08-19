@@ -153,8 +153,15 @@ protected:
 	void prepareRenderFrame(const voxel::MeshStatePtr &meshState, const video::Camera &camera, RenderFrame &frame,
 							bool orderIndependentTransparency);
 	void bindDrawInstances(const DrawInstanceData *data, int count);
+	/**
+	 * Upload instance SSBO from @_drawInstanceScratch and issue one or multi-draw for
+	 * a run of volumes that share the same mesh buffer and mesh type.
+	 */
+	void submitMultiDraw(int bufferIndex, voxel::MeshType meshType, uint32_t indexCount, int batchCount);
 	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
 					  const core::Buffer<int> &sorted);
+	void renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
+							 const glm::mat4 &lightViewProjection);
 	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
 							const core::Buffer<int> &sorted);
 	void renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,

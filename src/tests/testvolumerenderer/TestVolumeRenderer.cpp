@@ -6,6 +6,7 @@
 #include "color/RGBA.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
@@ -59,6 +60,8 @@ app::AppState TestVolumeRenderer::onConstruct() {
 		.setShort("-i")
 		.setDescription("Optional voxel model to load instead of the built-in material scene")
 		.addFlag(ARGUMENT_FLAG_FILE);
+	registerArg("--instances")
+		.setDescription("Add N mesh-reference copies of volume 0 (MDI batching stress; default 0)");
 
 	core::getVar(cfg::ClientBloom)->setVal(true);
 	core::getVar(cfg::ClientShadowMap)->setVal(true);
@@ -155,6 +158,32 @@ bool TestVolumeRenderer::createMaterialScene() {
 	return true;
 }
 
+void TestVolumeRenderer::addReferenceInstances(int count) {
+	if (count <= 0) {
+		return;
+	}
+	const voxel::RawVolume *volume = _meshState->volume(0);
+	if (volume == nullptr) {
+		Log::warn("Cannot add reference instances: volume 0 is missing");
+		return;
+	}
+	const voxel::Region &region = volume->region();
+	for (int i = 1; i <= count; ++i) {
+		_meshState->setReference(i, 0);
+		_renderer.ensureRenderState(i);
+		const glm::mat4 worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 36.0f * (float)i));
+		glm::vec3 mins;
+		glm::vec3 maxs;
+		region.transformArvo(worldMatrix, mins, maxs);
+		_meshState->setCullFace(i, video::Face::Back);
+		if (!_meshState->setModelMatrix(i, worldMatrix, mins, maxs)) {
+			Log::error("Failed to set model matrix for reference volume %i", i);
+			return;
+		}
+	}
+	Log::info("Added %i mesh-reference instance(s) for MDI batching", count);
+}
+
 bool TestVolumeRenderer::loadScene(const core::String &filename) {
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
@@ -228,6 +257,9 @@ app::AppState TestVolumeRenderer::onInit() {
 		Log::error("Failed to create the material scene");
 		return app::AppState::InitFailure;
 	}
+
+	const int instances = core::string::toInt(getArgVal("--instances", "0"));
+	addReferenceInstances(instances);
 
 	flushMeshes();
 	return state;

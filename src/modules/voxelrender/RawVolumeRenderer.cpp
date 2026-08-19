@@ -837,6 +837,40 @@ void RawVolumeRenderer::bindDrawInstances(const DrawInstanceData *data, int coun
 	core_assert_always(_drawInstanceSSBO.bind(3));
 }
 
+void RawVolumeRenderer::submitMultiDraw(int bufferIndex, voxel::MeshType meshType, uint32_t indexCount,
+										int batchCount) {
+	core_assert(_useMultiDraw);
+	core_assert(batchCount > 0);
+	core_assert((int)_drawInstanceScratch.size() == batchCount);
+	bindDrawInstances(_drawInstanceScratch.data(), batchCount);
+	if (batchCount == 1) {
+		_state[bufferIndex]._vertexBuffer[meshType].bind();
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indexCount);
+		return;
+	}
+	// Upload the indirect command buffer before binding the mesh VAO; Buffer::update
+	// asserts that no vertex array is currently bound.
+	video::bindVertexArray(video::InvalidId);
+	_indirectScratch.clear();
+	_indirectScratch.reserve(batchCount);
+	for (int k = 0; k < batchCount; ++k) {
+		video::DrawElementsIndirectCommand cmd;
+		cmd.count = indexCount;
+		cmd.instanceCount = 1u;
+		cmd.firstIndex = 0u;
+		cmd.baseVertex = 0;
+		cmd.baseInstance = 0u;
+		_indirectScratch.push_back(cmd);
+	}
+	const size_t bytes = (size_t)batchCount * sizeof(video::DrawElementsIndirectCommand);
+	core_assert_always(_indirectDrawBuffer.update(_indirectDrawBufferIdx, _indirectScratch.data(), bytes, true));
+	_state[bufferIndex]._vertexBuffer[meshType].bind();
+	video::bindBuffer(video::BufferType::IndirectBuffer, _indirectDrawBuffer.bufferHandle(_indirectDrawBufferIdx));
+	video::multiDrawElementsIndirect(video::Primitive::Triangles, video::mapType<voxel::IndexType>(), nullptr,
+									 batchCount, 0);
+	video::unbindBuffer(video::BufferType::IndirectBuffer);
+}
+
 void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
 									 const core::Buffer<int> &sorted) {
 	core_trace_scoped(RenderOpaque);
@@ -908,9 +942,6 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 				meshState->normalsPalette(bi).hash() != runNormalsHash) {
 				break;
 			}
-			if (_state[bi].indices(voxel::MeshType_Opaque) != indexCount) {
-				break;
-			}
 		}
 		const int batchCount = j - i;
 
@@ -933,36 +964,36 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 			inst.pad = 0;
 			_drawInstanceScratch.push_back(inst);
 		}
-		bindDrawInstances(_drawInstanceScratch.data(), batchCount);
-		_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
-		if (batchCount == 1) {
-			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indexCount);
-		} else {
-			_indirectScratch.clear();
-			_indirectScratch.reserve(batchCount);
-			for (int k = 0; k < batchCount; ++k) {
-				video::DrawElementsIndirectCommand cmd;
-				cmd.count = indexCount;
-				cmd.instanceCount = 1u;
-				cmd.firstIndex = 0u;
-				cmd.baseVertex = 0;
-				cmd.baseInstance = 0u;
-				_indirectScratch.push_back(cmd);
-			}
-			const size_t bytes = (size_t)batchCount * sizeof(video::DrawElementsIndirectCommand);
-			core_assert_always(
-				_indirectDrawBuffer.update(_indirectDrawBufferIdx, _indirectScratch.data(), bytes, true));
-			video::bindBuffer(video::BufferType::IndirectBuffer,
-							  _indirectDrawBuffer.bufferHandle(_indirectDrawBufferIdx));
-			video::multiDrawElementsIndirect(video::Primitive::Triangles, video::mapType<voxel::IndexType>(),
-											 nullptr, batchCount, 0);
-			video::unbindBuffer(video::BufferType::IndirectBuffer);
-		}
+		submitMultiDraw(bufferIndex, voxel::MeshType_Opaque, indexCount, batchCount);
 		i = j;
 	}
 
 	video::bindVertexArray(video::InvalidId);
 	video::cullFace(oldCullFace);
+}
+
+void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
+											const glm::mat4 &lightViewProjection) {
+	core_trace_scoped(RenderShadowVolumes);
+	// Shadows stay on the UBO model path. MDI+SSBO+gl_DrawID here regresses hard when
+	// almost every volume is a unique mesh (voxedit): no batches, but every cascade draw
+	// pays SSBO uploads and the draw-parameters shader path.
+	alignas(16) shader::ShadowmapData::BlockData var;
+	var.lightviewprojection = lightViewProjection;
+	core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
+	for (int idx : sorted) {
+		const int bufferIndex = meshState->resolveIdx(idx);
+		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+		if (indices == 0u) {
+			continue;
+		}
+		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+		var.model = meshState->model(idx);
+		_shadowMapUniformBlock.update(var);
+		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
+		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+	}
 }
 
 void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
@@ -1258,8 +1289,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
 				math::Frustum frustum;
 				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
-				alignas(16) shader::ShadowmapData::BlockData var;
-				var.lightviewprojection = lightViewProjection;
 
 				core::Buffer<int> &sorted = _volumeSortScratch;
 				sorted.clear();
@@ -1268,7 +1297,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 					if (meshState->hidden(idx)) {
 						continue;
 					}
-					if (_state[idx]._empty) {
+					const int bufferIndex = meshState->resolveIdx(idx);
+					if (_state[bufferIndex]._empty) {
 						continue;
 					}
 					const glm::vec3 &mins = meshState->mins(idx);
@@ -1287,21 +1317,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 					return meshState->resolveIdx(a) < meshState->resolveIdx(b);
 				});
 
-				core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
-				for (int idx : sorted) {
-					const int bufferIndex = meshState->resolveIdx(idx);
-					for (int i = 0; i < voxel::MeshType_Transparency; ++i) {
-						const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
-						if (indices > 0u) {
-							video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
-							var.model = meshState->model(idx);
-							_shadowMapUniformBlock.update(var);
-							video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-							static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-							video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-						}
-					}
-				}
+				renderShadowVolumes(meshState, sorted, lightViewProjection);
 				return true;
 			};
 			_shadow.render(renderFunc, true);

@@ -13,7 +13,7 @@ namespace voxelrender {
 
 /**
  * Per-draw instance data uploaded to the draw-instance SSBO for MDI (std430).
- * Layout must match DrawInstance in shaders/_sharedvert.glsl.
+ * Layout must match DrawInstance in shaders/_drawinstance.glsl.
  */
 struct DrawInstanceData {
 	glm::mat4 model{1.0f};

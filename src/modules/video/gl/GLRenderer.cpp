@@ -2402,7 +2402,8 @@ void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indire
 		return;
 	}
 	video_trace_scoped(MultiDrawElementsIndirect);
-	statsDrawCall((uint32_t)drawCount);
+	// One GPU submission regardless of how many indirect commands are packed.
+	statsDrawCall();
 	syncState();
 	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
