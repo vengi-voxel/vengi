@@ -263,13 +263,18 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 			const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
 			const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
 															video::FrameBufferAttachment::Color1};
-			video::drawBuffers(1, color0);
+			// Default FB (e.g. testbloom) rejects COLOR_ATTACHMENT draw buffers.
+			if (oldFB != video::InvalidId) {
+				video::drawBuffers(1, color0);
+			}
 			video::ScopedShader scoped(_combine2Shader);
 			video::bindTexture(video::TextureUnit::Zero, _bloom[1].texture());
 			video::bindTexture(video::TextureUnit::One, _bloom[0].texture());
 			video::statsFullscreenPass();
 			video::drawArrays(video::Primitive::Triangles, 6);
-			video::drawBuffers(2, color01);
+			if (oldFB != video::InvalidId) {
+				video::drawBuffers(2, color01);
+			}
 		}
 		_vbo.unbind();
 	}

@@ -1045,10 +1045,12 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	core_trace_scoped(RawVolumeRendererRender);
 
 	const core::Buffer<int> &activeForRender = meshState->activeIndices();
-	RenderFrame &frame = _renderFrame;
 	const bool useOit = renderContext.hasOit();
+	const int prepareIdx = 1 - _submitFrameIdx;
+	RenderFrame &frame = _renderFrames[prepareIdx];
 
 	// Prepare (cull + sorted draw lists) can run on a worker while main updates shadows.
+	// Ping-pong buffers so prepare never clears the list currently being submitted.
 	core::Future<void> prepareFuture = app::async([this, meshState, &camera, &frame, useOit]() {
 		prepareRenderFrame(meshState, camera, frame, useOit);
 	});
@@ -1058,6 +1060,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	}
 
 	prepareFuture.wait();
+	_submitFrameIdx = prepareIdx;
 	if (!frame.anyVisible) {
 		return;
 	}
@@ -1359,7 +1362,10 @@ void RawVolumeRenderer::shutdown() {
 	_uploadVerticesScratch.release();
 	_uploadNormalsScratch.release();
 	_uploadIndicesScratch.release();
-	_renderFrame.release();
+	for (int i = 0; i < lengthof(_renderFrames); ++i) {
+		_renderFrames[i].release();
+	}
+	_submitFrameIdx = 0;
 }
 
 } // namespace voxelrender

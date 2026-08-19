@@ -83,7 +83,8 @@ protected:
 	core::Buffer<uint8_t> _uploadVerticesScratch;
 	core::Buffer<uint8_t> _uploadNormalsScratch;
 	core::Buffer<uint8_t> _uploadIndicesScratch;
-	RenderFrame _renderFrame;
+	RenderFrame _renderFrames[2];
+	int _submitFrameIdx = 0;
 
 	uint8_t *ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes);
 
