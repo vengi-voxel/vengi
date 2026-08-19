@@ -101,6 +101,11 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 
 	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
+	/**
+	 * Upload vertex UBO. Full upload when palette/normals changed; otherwise only
+	 * the per-draw tail (viewprojection, model, flags) to cut buffer bytes.
+	 */
+	bool uploadVertUniforms(bool paletteChanged);
 	enum UpdateBufferFlags : uint8_t {
 		Vertices = 1 << 0,
 		Normals = 1 << 1,

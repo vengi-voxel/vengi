@@ -46,6 +46,34 @@
 
 namespace voxelrender {
 
+namespace {
+
+/**
+ * Sort volumes for opaque/OIT submission: palette (UBO), cull face (state), then
+ * resolved mesh buffer (VAO skip for reference meshes).
+ */
+struct VolumeBindSort {
+	const voxel::MeshStatePtr &meshState;
+
+	bool operator()(int a, int b) const {
+		const int bufA = meshState->resolveIdx(a);
+		const int bufB = meshState->resolveIdx(b);
+		const uint64_t hashA = meshState->palette(bufA).hash();
+		const uint64_t hashB = meshState->palette(bufB).hash();
+		if (hashA != hashB) {
+			return hashA < hashB;
+		}
+		const video::Face faceA = meshState->cullFace(a);
+		const video::Face faceB = meshState->cullFace(b);
+		if (faceA != faceB) {
+			return (int)faceA < (int)faceB;
+		}
+		return bufA < bufB;
+	}
+};
+
+} // namespace
+
 RawVolumeRenderer::RawVolumeRenderer(const core::TimeProviderPtr &timeProvider)
 	: _voxelShader(shader::VoxelShader::getInstance()), _voxelNormShader(shader::VoxelnormShader::getInstance()),
 	  _voxelOitShader(shader::VoxeloitShader::getInstance()),
@@ -585,6 +613,17 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	}
 }
 
+bool RawVolumeRenderer::uploadVertUniforms(bool paletteChanged) {
+	if (paletteChanged) {
+		return _voxelData.update(_voxelShaderVertData);
+	}
+	// Palette/normals occupy the front of VertData; only the per-draw fields change.
+	static constexpr size_t dynamicOffset = offsetof(shader::VoxelData::VertData, viewprojection);
+	static constexpr size_t dynamicSize = sizeof(shader::VoxelData::VertData) - dynamicOffset;
+	const uint8_t *bytes = (const uint8_t *)&_voxelShaderVertData;
+	return _voxelData._vert.updateRange((intptr_t)dynamicOffset, bytes + dynamicOffset, dynamicSize);
+}
+
 void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera) {
 	if (meshState->hidden(idx)) {
 		_state[idx]._culled = true;
@@ -709,36 +748,40 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		sorted.push_back(idx);
 	}
 
-	// sort by palette hash to minimize redundant toVec4f conversions in updatePalette
-	app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
-		const int bufA = meshState->resolveIdx(a);
-		const int bufB = meshState->resolveIdx(b);
-		return meshState->palette(bufA).hash() < meshState->palette(bufB).hash();
-	});
+	// Group by palette, then cull face, then mesh buffer to minimize UBO/state/VAO churn.
+	app::sort_parallel(sorted.begin(), sorted.end(), VolumeBindSort{meshState});
 
+	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.shownormals = _renderNormals->intVal();
+
+	if (_voxelNormShader.isActive()) {
+		core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
+	} else {
+		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+	}
+
+	uint64_t lastPaletteHash = _paletteHash;
+	uint32_t lastNormalsHash = _normalsPaletteHash;
 	for (int idx : sorted) {
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 
 		updatePalette(meshState, bufferIndex);
-		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+		const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
+		lastPaletteHash = _paletteHash;
+		lastNormalsHash = _normalsPaletteHash;
+
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		_voxelShaderVertData.opacity = meshState->opacity(idx);
-		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
-		_voxelShaderVertData.shownormals = _renderNormals->intVal();
-		core_assert_always(_voxelData.update(_voxelShaderVertData));
+		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::cullFace(meshState->cullFace(idx));
 		_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
-		if (_voxelNormShader.isActive()) {
-			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-		} else {
-			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
 	video::bindVertexArray(video::InvalidId);
@@ -789,28 +832,35 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
+	if (_voxelNormShader.isActive()) {
+		core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
+	} else {
+		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+	}
+
+	uint64_t lastPaletteHash = _paletteHash;
+	uint32_t lastNormalsHash = _normalsPaletteHash;
 	for (int idx : sorted) {
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const float opacity = meshState->opacity(idx);
 		const bool faded = opacity < 1.0f - 1e-5f;
 		updatePalette(meshState, idx);
+		const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
+		lastPaletteHash = _paletteHash;
+		lastNormalsHash = _normalsPaletteHash;
+
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		_voxelShaderVertData.opacity = opacity;
-		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
-		_voxelShaderVertData.shownormals = _renderNormals->intVal();
-		core_assert_always(_voxelData.update(_voxelShaderVertData));
+		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-		if (_voxelNormShader.isActive()) {
-			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-		} else {
-			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-		}
 
 		if (faded) {
 			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
@@ -857,6 +907,9 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 		return;
 	}
 
+	// OIT is order-independent: group by palette/cull/mesh to cut UBO and state churn.
+	app::sort_parallel(volumes.begin(), volumes.end(), VolumeBindSort{meshState});
+
 	const video::Id mainFbo = video::currentFramebuffer();
 	int viewport[4];
 	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -876,28 +929,35 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
+	if (_voxelNormOitShader.isActive()) {
+		core_assert_always(_voxelNormOitShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelNormOitShader.setVert(_voxelData.getVertUniformBuffer()));
+	} else {
+		core_assert_always(_voxelOitShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelOitShader.setVert(_voxelData.getVertUniformBuffer()));
+	}
+
+	uint64_t lastPaletteHash = _paletteHash;
+	uint32_t lastNormalsHash = _normalsPaletteHash;
 	for (int idx : volumes) {
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const float opacity = meshState->opacity(idx);
 		const bool faded = opacity < 1.0f - 1e-5f;
 		updatePalette(meshState, idx);
+		const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
+		lastPaletteHash = _paletteHash;
+		lastNormalsHash = _normalsPaletteHash;
+
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		_voxelShaderVertData.opacity = opacity;
-		_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
-		_voxelShaderVertData.shownormals = _renderNormals->intVal();
-		core_assert_always(_voxelData.update(_voxelShaderVertData));
+		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-		if (_voxelNormOitShader.isActive()) {
-			core_assert_always(_voxelNormOitShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelNormOitShader.setVert(_voxelData.getVertUniformBuffer()));
-		} else {
-			core_assert_always(_voxelOitShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelOitShader.setVert(_voxelData.getVertUniformBuffer()));
-		}
 
 		if (faded) {
 			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
@@ -1050,6 +1110,9 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			alignas(16) shader::ShadowmapData::BlockData var;
 			var.lightviewprojection = lightViewProjection;
 
+			core::Buffer<int> &sorted = _volumeSortScratch;
+			sorted.clear();
+			sorted.reserve(activeForRender.size());
 			for (int idx : activeForRender) {
 				if (meshState->hidden(idx)) {
 					continue;
@@ -1062,6 +1125,19 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 				if (!frustum.isVisible(mins, maxs)) {
 					continue;
 				}
+				sorted.push_back(idx);
+			}
+			app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
+				const video::Face faceA = meshState->cullFace(a);
+				const video::Face faceB = meshState->cullFace(b);
+				if (faceA != faceB) {
+					return (int)faceA < (int)faceB;
+				}
+				return meshState->resolveIdx(a) < meshState->resolveIdx(b);
+			});
+
+			core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
+			for (int idx : sorted) {
 				const int bufferIndex = meshState->resolveIdx(idx);
 				for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
 					const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
@@ -1069,7 +1145,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
 						var.model = meshState->model(idx);
 						_shadowMapUniformBlock.update(var);
-						_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
 						// negative scaling might require to flip the cull face
 						// TODO: RENDERER: does this impact the shadow acne fix in the Shadow class render() function?
 						video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
@@ -1128,9 +1203,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	} else if (mode == video::PolygonMode::Solid) {
 		video::enable(video::State::PolygonOffsetFill);
 	}
-
-	_paletteHash = 0;
-	_normalsPaletteHash = 0;
 
 	// --- opaque pass
 	renderOpaque(meshState, camera);
