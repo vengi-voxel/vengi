@@ -76,6 +76,15 @@ protected:
 	int _oitBufferIndex = -1;
 	int _oitTexBufferIndex = -1;
 
+	core::Buffer<int> _volumeSortScratch;
+	core::Buffer<int> _deferredUploadScratch;
+	core::Buffer<int> _sortBeforeRenderScratch;
+	core::Buffer<uint8_t> _uploadVerticesScratch;
+	core::Buffer<uint8_t> _uploadNormalsScratch;
+	core::Buffer<uint8_t> _uploadIndicesScratch;
+
+	uint8_t *ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes);
+
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
 	core::VarPtr _cullBuffers;

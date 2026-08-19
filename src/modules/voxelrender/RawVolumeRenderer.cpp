@@ -56,6 +56,14 @@ RawVolumeRenderer::RawVolumeRenderer(const core::TimeProviderPtr &timeProvider)
 void RawVolumeRenderer::construct() {
 }
 
+uint8_t *RawVolumeRenderer::ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes) {
+	if (bytes == 0u) {
+		return nullptr;
+	}
+	scratch.reserve(bytes);
+	return scratch.data();
+}
+
 bool RawVolumeRenderer::initStateBuffers(bool normals) {
 	_hasNormals = normals;
 	for (int idx = 0; idx < (int)_state.size(); ++idx) {
@@ -269,7 +277,8 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	// Re-queuing inside the loop would spin: pop() clears _pendingMeshDirty,
 	// deferPendingMesh() immediately re-pushes, and the next iteration pops it
 	// again - burning the full 10ms budget every frame for hidden volumes.
-	core::Buffer<int> deferred;
+	core::Buffer<int> &deferred = _deferredUploadScratch;
+	deferred.clear();
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	const uint64_t startTime = timeProvider->systemMillis();
 	for (;;) {
@@ -306,7 +315,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 													   size_t indCount) {
 	core_trace_scoped(UpdateIndexBufferForVolumeCull);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
-	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
+	voxel::IndexType *indicesBuf = (voxel::IndexType *)ensureUploadScratch(_uploadIndicesScratch, indicesBufSize);
 	voxel::IndexType *indicesPos = indicesBuf;
 	voxel::IndexType offset = (voxel::IndexType)0;
 	const int bufferIndex = meshState->resolveIdx(idx);
@@ -344,17 +353,15 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 	const size_t reducedIndices = (size_t)(indicesPos - indicesBuf) * sizeof(voxel::IndexType);
 	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, reducedIndices, true)) {
 		Log::error("Failed to update the index buffer with culling");
-		core_free(indicesBuf);
 		return false;
 	}
-	core_free(indicesBuf);
 	return true;
 }
 
 bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount) {
 	core_trace_scoped(UpdateIndexBufferForVolume);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
-	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
+	voxel::IndexType *indicesBuf = (voxel::IndexType *)ensureUploadScratch(_uploadIndicesScratch, indicesBufSize);
 	voxel::IndexType *indicesPos = indicesBuf;
 	voxel::IndexType offset = (voxel::IndexType)0;
 	const int bufferIndex = meshState->resolveIdx(idx);
@@ -379,10 +386,8 @@ bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &me
 	const size_t reducedIndices = (size_t)(indicesPos - indicesBuf) * sizeof(voxel::IndexType);
 	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, reducedIndices, true)) {
 		Log::error("Failed to update the index buffer");
-		core_free(indicesBuf);
 		return false;
 	}
-	core_free(indicesBuf);
 	return true;
 }
 
@@ -420,11 +425,11 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 	}
 
 	const size_t verticesBufSize = vertCount * sizeof(voxel::VoxelVertex);
-	voxel::VoxelVertex *verticesBuf = (voxel::VoxelVertex *)core_malloc(verticesBufSize);
+	voxel::VoxelVertex *verticesBuf = (voxel::VoxelVertex *)ensureUploadScratch(_uploadVerticesScratch, verticesBufSize);
 	const size_t normalsBufSize = normalsCount * sizeof(glm::vec3);
-	glm::vec3 *normalsBuf = (glm::vec3 *)core_malloc(normalsBufSize);
+	glm::vec3 *normalsBuf = (glm::vec3 *)ensureUploadScratch(_uploadNormalsScratch, normalsBufSize);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
-	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
+	voxel::IndexType *indicesBuf = (voxel::IndexType *)ensureUploadScratch(_uploadIndicesScratch, indicesBufSize);
 
 	voxel::VoxelVertex *verticesPos = verticesBuf;
 	glm::vec3 *normalsPos = normalsBuf;
@@ -464,36 +469,27 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		Log::debug("update vertexbuffer: %i (type: %i)", idx, type);
 		if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
 			Log::error("Failed to update the vertex buffer");
-			core_free(indicesBuf);
-			core_free(verticesBuf);
-			core_free(normalsBuf);
 			return false;
 		}
 	}
-	core_free(verticesBuf);
 
 	if (flags & UpdateBufferFlags::Normals) {
 		if (state._normalBufferIndex[type] != -1) {
 			Log::debug("update normalbuffer: %i (type: %i)", idx, type);
 			if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
 				Log::error("Failed to update the normal buffer");
-				core_free(normalsBuf);
-				core_free(indicesBuf);
 				return false;
 			}
 		}
 	}
-	core_free(normalsBuf);
 
 	if (flags & UpdateBufferFlags::Indices) {
 		Log::debug("update indexbuffer: %i (type: %i)", idx, type);
 		if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
 			Log::error("Failed to update the index buffer");
-			core_free(indicesBuf);
 			return false;
 		}
 	}
-	core_free(indicesBuf);
 	return true;
 }
 
@@ -694,7 +690,8 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	const video::Face oldCullFace = video::currentCullFace();
 	video::ScopedPolygonMode polygonMode(mode);
 
-	core::Buffer<int> sorted;
+	core::Buffer<int> &sorted = _volumeSortScratch;
+	sorted.clear();
 	sorted.reserve(meshState->activeIndices().size());
 	for (int idx : meshState->activeIndices()) {
 		if (!isVisible(meshState, idx)) {
@@ -751,9 +748,10 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderTransparency);
 	const video::PolygonMode mode = camera.polygonMode();
-	core::Buffer<int> sorted;
+	core::Buffer<int> &sorted = _volumeSortScratch;
 	{
 		core_trace_scoped(Sort);
+		sorted.clear();
 		sorted.reserve(meshState->activeIndices().size());
 		for (int idx : meshState->activeIndices()) {
 			if (!isVisible(meshState, idx)) {
@@ -835,7 +833,8 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
 											  const video::Camera &camera) {
 	core_trace_scoped(RenderTransparencyOIT);
-	core::Buffer<int> volumes;
+	core::Buffer<int> &volumes = _volumeSortScratch;
+	volumes.clear();
 	volumes.reserve(meshState->activeIndices().size());
 	for (int idx : meshState->activeIndices()) {
 		if (!isVisible(meshState, idx)) {
@@ -958,7 +957,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 	if (transparencyMeshes.empty()) {
 		return;
 	}
-	core::Buffer<int> indices;
+	core::Buffer<int> &indices = _sortBeforeRenderScratch;
 	indices.resize(meshState->maxSize());
 	const core::Buffer<int> &active = meshState->activeIndices();
 	for (const auto &i : transparencyMeshes) {
@@ -1301,6 +1300,12 @@ void RawVolumeRenderer::shutdown() {
 	_oitTexBufferIndex = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
+	_volumeSortScratch.release();
+	_deferredUploadScratch.release();
+	_sortBeforeRenderScratch.release();
+	_uploadVerticesScratch.release();
+	_uploadNormalsScratch.release();
+	_uploadIndicesScratch.release();
 }
 
 } // namespace voxelrender

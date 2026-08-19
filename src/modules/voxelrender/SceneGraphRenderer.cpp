@@ -94,6 +94,7 @@ void SceneGraphRenderer::setSunAngle(const glm::vec3 &angle) {
 void SceneGraphRenderer::shutdown() {
 	_volumeRenderer.shutdown();
 	_cameraRenderer.shutdown();
+	_visibleNodesScratch.release();
 }
 
 void SceneGraphRenderer::clear(const voxel::MeshStatePtr &meshState) {
@@ -311,11 +312,8 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
 
 	// Phase 1: update visibility flags sequentially (cheap, avoids thread pool overhead)
-	struct VisibleNode {
-		int nodeId;
-		int idx;
-	};
-	core::Buffer<VisibleNode> visibleNodes;
+	core::Buffer<VisibleNode> &visibleNodes = _visibleNodesScratch;
+	visibleNodes.clear();
 	visibleNodes.reserve(sceneGraph.size());
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->value;

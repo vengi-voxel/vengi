@@ -42,6 +42,12 @@ protected:
 	void prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 	void prepareCameraNodes(const RenderContext &renderContext);
 
+	struct VisibleNode {
+		int nodeId;
+		int idx;
+	};
+	core::Buffer<VisibleNode> _visibleNodesScratch;
+
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
