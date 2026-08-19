@@ -305,6 +305,11 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
+	if (_defines.hasKey("USEDRAWPARAMETERS") &&
+		(shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment)) {
+		src.append("#extension GL_ARB_shader_draw_parameters : enable\n");
+		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
+	}
 
 #ifndef USE_OPENGLES
 	if (glslVersion < 420) {

@@ -519,6 +519,16 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset = nullptr);
 
 /**
+ * @brief Multi-draw indexed geometry from a DRAW_INDIRECT_BUFFER.
+ *
+ * Requires Feature::MultiDrawIndirect. @p indirect is a byte offset into the
+ * currently bound IndirectBuffer (or a client pointer if the backend allows).
+ * Each command is a DrawElementsIndirectCommand; @p stride 0 means tightly packed.
+ */
+void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount,
+							   int stride = 0);
+
+/**
  * @brief Draw non-indexed primitives.
  */
 void drawArrays(Primitive mode, size_t count);

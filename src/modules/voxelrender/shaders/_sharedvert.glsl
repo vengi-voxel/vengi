@@ -16,6 +16,30 @@ layout(std140, binding = 0) uniform u_vert {
 	float u_opacity;
 };
 
+// Per-draw instance data for multi-draw-indirect (gl_DrawID). Binding 3 is free
+// (0=vert UBO, 1=frag UBO, 2=shadow sampler). Extension is injected by Shader::getSource.
+#ifdef USEDRAWPARAMETERS
+struct DrawInstance {
+	mat4 model;
+	int gray;
+	int locked;
+	float opacity;
+	int pad;
+};
+layout(std430, binding = 3) readonly buffer DrawInstanceBuffer {
+	DrawInstance u_drawinstances[];
+};
+mat4 getModelMatrix() { return u_drawinstances[gl_DrawID].model; }
+int getGrayFlag() { return u_drawinstances[gl_DrawID].gray; }
+int getLockedFlag() { return u_drawinstances[gl_DrawID].locked; }
+float getOpacity() { return u_drawinstances[gl_DrawID].opacity; }
+#else
+mat4 getModelMatrix() { return u_model; }
+int getGrayFlag() { return u_gray; }
+int getLockedFlag() { return u_locked; }
+float getOpacity() { return u_opacity; }
+#endif
+
 $out vec3 v_pos;
 $out vec3 v_normal;
 $out vec4 v_color;

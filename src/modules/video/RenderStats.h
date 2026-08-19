@@ -39,6 +39,7 @@ void endFrameStats();
 void logRenderStatsTotals();
 
 void statsDrawCall();
+void statsDrawCall(uint32_t count);
 void statsPipelineBind();
 void statsDescriptorBind(uint32_t count = 1u);
 void statsBufferUpdate(size_t bytes);

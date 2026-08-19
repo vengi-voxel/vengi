@@ -269,6 +269,17 @@ enum class BufferMode {
 	Max
 };
 
+/**
+ * GPU draw command for multiDrawElementsIndirect (matches GL DrawElementsIndirectCommand).
+ */
+struct DrawElementsIndirectCommand {
+	uint32_t count = 0u;
+	uint32_t instanceCount = 1u;
+	uint32_t firstIndex = 0u;
+	int32_t baseVertex = 0;
+	uint32_t baseInstance = 0u;
+};
+
 enum class Primitive {
 	Points,
 	Lines,

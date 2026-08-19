@@ -204,6 +204,20 @@ bool RawVolumeRenderer::init(bool normals) {
 	_renderOutline = core::getVar(cfg::RenderOutline);
 	_renderNormals = core::getVar(cfg::RenderNormals);
 
+	_useMultiDraw = video::hasFeature(video::Feature::MultiDrawIndirect) &&
+					video::hasFeature(video::Feature::ShaderStorageBufferObject) &&
+					video::Shader::glslVersion >= 460;
+	if (_useMultiDraw) {
+		_voxelShader.addDefine("USEDRAWPARAMETERS", "1");
+		_voxelNormShader.addDefine("USEDRAWPARAMETERS", "1");
+		_voxelOitShader.addDefine("USEDRAWPARAMETERS", "1");
+		_voxelNormOitShader.addDefine("USEDRAWPARAMETERS", "1");
+		Log::info("Voxel multi-draw-indirect enabled (draw-instance SSBO + gl_DrawID)");
+	} else {
+		Log::debug("Voxel multi-draw-indirect disabled (need MDI+SSBO and GLSL >= 460, have %i)",
+				   video::Shader::glslVersion);
+	}
+
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
 		return false;
@@ -292,6 +306,21 @@ bool RawVolumeRenderer::init(bool normals) {
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
 	_voxelShaderVertData.opacity = 1.0f;
+
+	if (_useMultiDraw) {
+		DrawInstanceData emptyInstance;
+		if (!_drawInstanceSSBO.create(&emptyInstance, sizeof(emptyInstance))) {
+			Log::warn("Failed to create draw-instance SSBO; falling back to single draws");
+			_useMultiDraw = false;
+		}
+		_indirectDrawBufferIdx = _indirectDrawBuffer.create(nullptr, 0, video::BufferType::IndirectBuffer);
+		if (_indirectDrawBufferIdx == -1) {
+			Log::warn("Failed to create indirect draw buffer; falling back to single draws");
+			_useMultiDraw = false;
+		} else {
+			_indirectDrawBuffer.setMode(_indirectDrawBufferIdx, video::BufferMode::Stream);
+		}
+	}
 
 	_shapeRenderer.init();
 
@@ -768,6 +797,9 @@ void RawVolumeRenderer::prepareRenderFrame(const voxel::MeshStatePtr &meshState,
 		if (transparentIndices > 0u || (faded && opaqueIndices > 0u)) {
 			frame.transparent.push_back(idx);
 		}
+		if (!frame.sceneHasGlow && meshState->palette(bufferIndex).hasAnyEmit()) {
+			frame.sceneHasGlow = true;
+		}
 	}
 
 	if (!frame.opaque.empty()) {
@@ -781,6 +813,18 @@ void RawVolumeRenderer::prepareRenderFrame(const voxel::MeshStatePtr &meshState,
 							   VolumeDistanceSort{meshState, camera.worldPosition()});
 		}
 	}
+}
+
+void RawVolumeRenderer::bindDrawInstances(const DrawInstanceData *data, int count) {
+	core_assert(_useMultiDraw);
+	core_assert(data != nullptr && count > 0);
+	const size_t bytes = (size_t)count * sizeof(DrawInstanceData);
+	if (_drawInstanceSSBO.size() < bytes) {
+		core_assert_always(_drawInstanceSSBO.create(data, bytes));
+	} else {
+		core_assert_always(_drawInstanceSSBO.update(data, bytes));
+	}
+	core_assert_always(_drawInstanceSSBO.bind(3));
 }
 
 void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
@@ -807,25 +851,106 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 
 	uint64_t lastPaletteHash = _paletteHash;
 	uint32_t lastNormalsHash = _normalsPaletteHash;
-	for (int idx : sorted) {
-		const int bufferIndex = meshState->resolveIdx(idx);
-		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+
+	if (!_useMultiDraw) {
+		for (int idx : sorted) {
+			const int bufferIndex = meshState->resolveIdx(idx);
+			const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+
+			updatePalette(meshState, bufferIndex);
+			const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
+			lastPaletteHash = _paletteHash;
+			lastNormalsHash = _normalsPaletteHash;
+
+			_voxelShaderVertData.model = meshState->model(idx);
+			_voxelShaderVertData.gray = meshState->grayed(idx);
+			_voxelShaderVertData.locked = meshState->locked(idx);
+			_voxelShaderVertData.opacity = meshState->opacity(idx);
+			core_assert_always(uploadVertUniforms(paletteChanged));
+
+			video::cullFace(meshState->cullFace(idx));
+			_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+		}
+		video::bindVertexArray(video::InvalidId);
+		video::cullFace(oldCullFace);
+		return;
+	}
+
+	const int n = (int)sorted.size();
+	int i = 0;
+	while (i < n) {
+		const int firstIdx = sorted[i];
+		const int bufferIndex = meshState->resolveIdx(firstIdx);
+		const uint32_t indexCount = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+		const video::Face cullFace = meshState->cullFace(firstIdx);
+		const uint64_t runPaletteHash = meshState->palette(bufferIndex).hash();
+		const uint32_t runNormalsHash = meshState->normalsPalette(bufferIndex).hash();
+
+		int j = i + 1;
+		for (; j < n; ++j) {
+			const int idx = sorted[j];
+			const int bi = meshState->resolveIdx(idx);
+			if (bi != bufferIndex || meshState->cullFace(idx) != cullFace) {
+				break;
+			}
+			if (meshState->palette(bi).hash() != runPaletteHash ||
+				meshState->normalsPalette(bi).hash() != runNormalsHash) {
+				break;
+			}
+			if (_state[bi].indices(voxel::MeshType_Opaque) != indexCount) {
+				break;
+			}
+		}
+		const int batchCount = j - i;
 
 		updatePalette(meshState, bufferIndex);
 		const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
-
-		_voxelShaderVertData.model = meshState->model(idx);
-		_voxelShaderVertData.gray = meshState->grayed(idx);
-		_voxelShaderVertData.locked = meshState->locked(idx);
-		_voxelShaderVertData.opacity = meshState->opacity(idx);
 		core_assert_always(uploadVertUniforms(paletteChanged));
+		video::cullFace(cullFace);
 
-		video::cullFace(meshState->cullFace(idx));
+		_drawInstanceScratch.clear();
+		_drawInstanceScratch.reserve(batchCount);
+		for (int k = i; k < j; ++k) {
+			const int idx = sorted[k];
+			DrawInstanceData inst;
+			inst.model = meshState->model(idx);
+			inst.gray = meshState->grayed(idx) ? 1 : 0;
+			inst.locked = meshState->locked(idx) ? 1 : 0;
+			inst.opacity = meshState->opacity(idx);
+			inst.pad = 0;
+			_drawInstanceScratch.push_back(inst);
+		}
+		bindDrawInstances(_drawInstanceScratch.data(), batchCount);
 		_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+		if (batchCount == 1) {
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indexCount);
+		} else {
+			_indirectScratch.clear();
+			_indirectScratch.reserve(batchCount);
+			for (int k = 0; k < batchCount; ++k) {
+				video::DrawElementsIndirectCommand cmd;
+				cmd.count = indexCount;
+				cmd.instanceCount = 1u;
+				cmd.firstIndex = 0u;
+				cmd.baseVertex = 0;
+				cmd.baseInstance = 0u;
+				_indirectScratch.push_back(cmd);
+			}
+			const size_t bytes = (size_t)batchCount * sizeof(video::DrawElementsIndirectCommand);
+			core_assert_always(
+				_indirectDrawBuffer.update(_indirectDrawBufferIdx, _indirectScratch.data(), bytes, true));
+			video::bindBuffer(video::BufferType::IndirectBuffer,
+							  _indirectDrawBuffer.bufferHandle(_indirectDrawBufferIdx));
+			video::multiDrawElementsIndirect(video::Primitive::Triangles, video::mapType<voxel::IndexType>(),
+											 nullptr, batchCount, 0);
+			video::unbindBuffer(video::BufferType::IndirectBuffer);
+		}
+		i = j;
 	}
+
 	video::bindVertexArray(video::InvalidId);
 	video::cullFace(oldCullFace);
 }
@@ -863,11 +988,21 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
 
-		_voxelShaderVertData.model = meshState->model(idx);
-		_voxelShaderVertData.gray = meshState->grayed(idx);
-		_voxelShaderVertData.locked = meshState->locked(idx);
-		_voxelShaderVertData.opacity = opacity;
-		core_assert_always(uploadVertUniforms(paletteChanged));
+		if (_useMultiDraw) {
+			DrawInstanceData inst;
+			inst.model = meshState->model(idx);
+			inst.gray = meshState->grayed(idx) ? 1 : 0;
+			inst.locked = meshState->locked(idx) ? 1 : 0;
+			inst.opacity = opacity;
+			bindDrawInstances(&inst, 1);
+			core_assert_always(uploadVertUniforms(paletteChanged));
+		} else {
+			_voxelShaderVertData.model = meshState->model(idx);
+			_voxelShaderVertData.gray = meshState->grayed(idx);
+			_voxelShaderVertData.locked = meshState->locked(idx);
+			_voxelShaderVertData.opacity = opacity;
+			core_assert_always(uploadVertUniforms(paletteChanged));
+		}
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 
@@ -937,11 +1072,21 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
 
-		_voxelShaderVertData.model = meshState->model(idx);
-		_voxelShaderVertData.gray = meshState->grayed(idx);
-		_voxelShaderVertData.locked = meshState->locked(idx);
-		_voxelShaderVertData.opacity = opacity;
-		core_assert_always(uploadVertUniforms(paletteChanged));
+		if (_useMultiDraw) {
+			DrawInstanceData inst;
+			inst.model = meshState->model(idx);
+			inst.gray = meshState->grayed(idx) ? 1 : 0;
+			inst.locked = meshState->locked(idx) ? 1 : 0;
+			inst.opacity = opacity;
+			bindDrawInstances(&inst, 1);
+			core_assert_always(uploadVertUniforms(paletteChanged));
+		} else {
+			_voxelShaderVertData.model = meshState->model(idx);
+			_voxelShaderVertData.gray = meshState->grayed(idx);
+			_voxelShaderVertData.locked = meshState->locked(idx);
+			_voxelShaderVertData.opacity = opacity;
+			core_assert_always(uploadVertUniforms(paletteChanged));
+		}
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 
@@ -1046,22 +1191,31 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 
 	const core::Buffer<int> &activeForRender = meshState->activeIndices();
 	const bool useOit = renderContext.hasOit();
-	const int prepareIdx = 1 - _submitFrameIdx;
-	RenderFrame &frame = _renderFrames[prepareIdx];
 
-	// Prepare (cull + sorted draw lists) can run on a worker while main updates shadows.
-	// Ping-pong buffers so prepare never clears the list currently being submitted.
-	core::Future<void> prepareFuture = app::async([this, meshState, &camera, &frame, useOit]() {
-		prepareRenderFrame(meshState, camera, frame, useOit);
-	});
+	// N+1 prepare: prefer the list built at the end of the previous frame.
+	// Cold start prepares synchronously into the free ping-pong slot.
+	if (_preparePending) {
+		_prepareFuture.wait();
+		_preparePending = false;
+		_submitFrameIdx = _prepareFrameIdx;
+	} else {
+		const int prepareIdx = 1 - _submitFrameIdx;
+		prepareRenderFrame(meshState, camera, _renderFrames[prepareIdx], useOit);
+		_submitFrameIdx = prepareIdx;
+	}
 
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
 	}
 
-	prepareFuture.wait();
-	_submitFrameIdx = prepareIdx;
+	RenderFrame &frame = _renderFrames[_submitFrameIdx];
 	if (!frame.anyVisible) {
+		const int nextIdx = 1 - _submitFrameIdx;
+		_prepareFrameIdx = nextIdx;
+		_prepareFuture = app::async([this, meshState, camera, nextIdx, useOit]() {
+			prepareRenderFrame(meshState, camera, _renderFrames[nextIdx], useOit);
+		});
+		_preparePending = true;
 		return;
 	}
 
@@ -1218,38 +1372,21 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		} else if (mode == video::PolygonMode::Solid) {
 			video::disable(video::State::PolygonOffsetFill);
 		}
-		if (bloom && _bloom->boolVal()) {
-			bool sceneHasGlow = false;
-			for (int idx : frame.opaque) {
-				if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
-					sceneHasGlow = true;
-					break;
-				}
-			}
-			if (!sceneHasGlow) {
-				for (int idx : frame.transparent) {
-					if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
-						sceneHasGlow = true;
-						break;
-					}
-				}
-			}
-			if (sceneHasGlow) {
-				if (renderContext.enableMultisampling) {
-					const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
-					video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
-										 video::ClearFlag::Color, fbDim.x, fbDim.y);
+		if (bloom && _bloom->boolVal() && frame.sceneHasGlow) {
+			if (renderContext.enableMultisampling) {
+				const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
+				video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
+									 video::ClearFlag::Color, fbDim.x, fbDim.y);
 
-					video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
-					const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-					const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-					renderContext.bloomRenderer.render(color0, color1);
-				} else {
-					video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-					const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-					const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-					renderContext.bloomRenderer.render(color0, color1);
-				}
+				video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
+				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+				renderContext.bloomRenderer.render(color0, color1);
+			} else {
+				video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
+				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+				renderContext.bloomRenderer.render(color0, color1);
 			}
 		}
 		if (normals) {
@@ -1261,6 +1398,14 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		renderNormals(meshState, renderContext, camera);
 		video::useProgram(oldShader);
 	}
+
+	// Kick prepare for the next frame into the free ping-pong slot (overlaps UI/app work).
+	const int nextIdx = 1 - _submitFrameIdx;
+	_prepareFrameIdx = nextIdx;
+	_prepareFuture = app::async([this, meshState, camera, nextIdx, useOit]() {
+		prepareRenderFrame(meshState, camera, _renderFrames[nextIdx], useOit);
+	});
+	_preparePending = true;
 }
 
 void RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
@@ -1365,7 +1510,18 @@ void RawVolumeRenderer::shutdown() {
 	for (int i = 0; i < lengthof(_renderFrames); ++i) {
 		_renderFrames[i].release();
 	}
+	if (_preparePending) {
+		_prepareFuture.wait();
+		_preparePending = false;
+	}
+	_drawInstanceSSBO.shutdown();
+	_indirectDrawBuffer.shutdown();
+	_indirectDrawBufferIdx = -1;
+	_drawInstanceScratch.release();
+	_indirectScratch.release();
 	_submitFrameIdx = 0;
+	_prepareFrameIdx = 0;
+	_useMultiDraw = false;
 }
 
 } // namespace voxelrender

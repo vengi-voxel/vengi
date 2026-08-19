@@ -103,6 +103,10 @@ void statsDrawCall() {
 	++s_frame.drawCalls;
 }
 
+void statsDrawCall(uint32_t count) {
+	s_frame.drawCalls += count;
+}
+
 void statsPipelineBind() {
 	++s_frame.pipelineBinds;
 }

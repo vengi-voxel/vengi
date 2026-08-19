@@ -2382,6 +2382,25 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	checkError();
 }
 
+void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
+	if (drawCount <= 0) {
+		return;
+	}
+	if (!useFeature(Feature::MultiDrawIndirect) || glMultiDrawElementsIndirect == nullptr) {
+		Log::error("multiDrawElementsIndirect requested without Feature::MultiDrawIndirect");
+		return;
+	}
+	video_trace_scoped(MultiDrawElementsIndirect);
+	statsDrawCall((uint32_t)drawCount);
+	syncState();
+	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
+	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
+	video::validate(rendererState().programHandle);
+	glMultiDrawElementsIndirect(glMode, glType, indirect, (GLsizei)drawCount, (GLsizei)stride);
+	checkError();
+}
+
 void drawArrays(Primitive mode, size_t count) {
 	if (count == 0u) {
 		return;
