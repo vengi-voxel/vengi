@@ -242,7 +242,6 @@ bool Shader::isActive() const {
 bool Shader::activate() const {
 	video::useProgram(_program);
 	_active = true;
-	_uniformStateMap.clear();
 	return _active;
 }
 
