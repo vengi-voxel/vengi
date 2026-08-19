@@ -33,7 +33,8 @@ static struct RenderFeature {
 	{"r_multidrawindirect", N_("Support for batching multiple draw calls into a single indirect call")},
 	{"r_computeshaders", N_("Support for compute shaders")},
 	{"r_transformfeedback", N_("Support for capturing shader output into buffers")},
-	{"r_shaderstoragebufferobject", N_("Support for large read-write storage buffers accessible from shaders")}
+	{"r_shaderstoragebufferobject", N_("Support for large read-write storage buffers accessible from shaders")},
+	{"r_shaderdrawparameters", N_("Support for gl_DrawIDARB / multi-draw shader draw parameters")}
 };
 static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];

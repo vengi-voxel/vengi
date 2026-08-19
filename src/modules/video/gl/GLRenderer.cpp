@@ -622,10 +622,11 @@ void setupFeatures(GLVersion version) {
 		// https://www.opengl.org/registry/specs/ARB/direct_state_access.txt
 		{"GL_ARB_direct_state_access"},
 		{"GL_ARB_buffer_storage"},
-		{"GL_ARB_multi_draw_indirect"},
+		{"GL_ARB_multi_draw_indirect", "GL_AMD_multi_draw_indirect"},
 		{"GL_ARB_compute_shader"},
 		{"GL_ARB_transform_feedback2"},
-		{"GL_ARB_shader_storage_buffer_object"}
+		{"GL_ARB_shader_storage_buffer_object"},
+		{"GL_ARB_shader_draw_parameters"}
 	};
 	static_assert(core::enumVal(Feature::Max) == (int)lengthof(extensionArray), "Array sizes don't match for Feature enum");
 
@@ -658,9 +659,19 @@ void setupFeatures(GLVersion version) {
 		}
 	}
 
+	// Core feature promotions (extensions are often omitted from the string list in core profiles).
+	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 3)) {
+		renderState().features[core::enumVal(Feature::MultiDrawIndirect)] = true;
+		renderState().features[core::enumVal(Feature::ShaderStorageBufferObject)] = true;
+		renderState().features[core::enumVal(Feature::ComputeShaders)] = true;
+	}
 	// Buffer storage is a core feature in OpenGL 4.4+
 	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 4)) {
 		renderState().features[core::enumVal(Feature::BufferStorage)] = true;
+	}
+	// Shader draw parameters (gl_DrawID) are core in OpenGL 4.6+
+	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 6)) {
+		renderState().features[core::enumVal(Feature::ShaderDrawParameters)] = true;
 	}
 
 #ifdef GL_CLIP_ORIGIN

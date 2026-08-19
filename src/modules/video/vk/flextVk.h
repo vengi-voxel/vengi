@@ -122,7 +122,7 @@ extern "C" {
 // Vulkan 1.0 version number
 #define VK_API_VERSION_1_0 VK_MAKE_API_VERSION(0, 1, 0, 0)// Patch version should always be set to 0
 // Version of this file
-#define VK_HEADER_VERSION 349
+#define VK_HEADER_VERSION 360
 // Complete version of this file
 #define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)
 #define VK_DEFINE_HANDLE(object) typedef struct object##_T* object;
@@ -1142,7 +1142,8 @@ typedef enum {
     VK_VENDOR_ID_CODEPLAY = 0x10004,
     VK_VENDOR_ID_MESA = 0x10005,
     VK_VENDOR_ID_POCL = 0x10006,
-    VK_VENDOR_ID_MOBILEYE = 0x10007
+    VK_VENDOR_ID_MOBILEYE = 0x10007,
+    VK_VENDOR_ID_APE = 0x10008
 } VkVendorId;
 
 typedef void  (VKAPI_PTR *PFN_vkInternalAllocationNotification)(
@@ -1606,7 +1607,7 @@ typedef struct VkBufferCreateInfo {
     const void*            pNext;
     VkBufferCreateFlags    flags;
     VkDeviceSize           size;
-    VkBufferUsageFlags     usage;
+    VkBufferUsageFlags usage;
     VkSharingMode          sharingMode;
     uint32_t               queueFamilyIndexCount;
     const uint32_t*        pQueueFamilyIndices;
@@ -1678,7 +1679,7 @@ typedef struct VkImageMemoryBarrier {
 typedef struct VkImageCreateInfo {
     VkStructureType sType;
     const void*            pNext;
-    VkImageCreateFlags     flags;
+    VkImageCreateFlags flags;
     VkImageType            imageType;
     VkFormat               format;
     VkExtent3D             extent;
@@ -1686,7 +1687,7 @@ typedef struct VkImageCreateInfo {
     uint32_t               arrayLayers;
     VkSampleCountFlagBits  samples;
     VkImageTiling          tiling;
-    VkImageUsageFlags      usage;
+    VkImageUsageFlags usage;
     VkSharingMode          sharingMode;
     uint32_t               queueFamilyIndexCount;
     const uint32_t*        pQueueFamilyIndices;
@@ -1873,7 +1874,7 @@ typedef struct VkPipelineShaderStageCreateInfo {
 typedef struct VkComputePipelineCreateInfo {
     VkStructureType sType;
     const void*            pNext;
-    VkPipelineCreateFlags  flags;
+    VkPipelineCreateFlags flags;
     VkPipelineShaderStageCreateInfo stage;
     VkPipelineLayout       layout;
     VkPipeline      basePipelineHandle;
@@ -2014,7 +2015,7 @@ typedef struct VkPipelineDepthStencilStateCreateInfo {
 typedef struct VkGraphicsPipelineCreateInfo {
     VkStructureType sType;
     const void*            pNext;
-    VkPipelineCreateFlags  flags;
+    VkPipelineCreateFlags flags;
     uint32_t stageCount;
     const VkPipelineShaderStageCreateInfo* pStages;
     const VkPipelineShaderStageCreateInfo* pStages;
@@ -2279,7 +2280,7 @@ typedef struct VkSurfaceCapabilitiesKHR {
     VkSurfaceTransformFlagsKHR       supportedTransforms;
     VkSurfaceTransformFlagBitsKHR    currentTransform;
     VkCompositeAlphaFlagsKHR         supportedCompositeAlpha;
-    VkImageUsageFlags                supportedUsageFlags;
+    VkImageUsageFlags supportedUsageFlags;
 } VkSurfaceCapabilitiesKHR;
 
 typedef struct VkSurfaceFormatKHR {
@@ -2297,7 +2298,7 @@ typedef struct VkSwapchainCreateInfoKHR {
     VkColorSpaceKHR                  imageColorSpace;
     VkExtent2D                       imageExtent;
     uint32_t                         imageArrayLayers;
-    VkImageUsageFlags                imageUsage;
+    VkImageUsageFlags imageUsage;
     VkSharingMode                    imageSharingMode;
     uint32_t         queueFamilyIndexCount;
     const uint32_t*                  pQueueFamilyIndices;

@@ -307,8 +307,12 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 	if (_defines.hasKey("USEDRAWPARAMETERS") &&
 		(shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment)) {
+		// ARB names keep MDI working on GLSL < 460; core gl_DrawID needs 460+.
 		src.append("#extension GL_ARB_shader_draw_parameters : enable\n");
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
+		if (glslVersion < 420) {
+			src.append("#extension GL_ARB_shading_language_420pack : enable\n");
+		}
 	}
 
 #ifndef USE_OPENGLES

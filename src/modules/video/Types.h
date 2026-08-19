@@ -481,6 +481,7 @@ enum class Feature {
 	ComputeShaders,
 	TransformFeedback,
 	ShaderStorageBufferObject,
+	ShaderDrawParameters,
 
 	Max
 };

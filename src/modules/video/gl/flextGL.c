@@ -605,6 +605,9 @@ int flextInit(void) {
     if (SDL_GL_ExtensionSupported("GL_ARB_ES2_compatibility")) {
         FLEXT_ARB_ES2_compatibility = GL_TRUE;
     }
+    if (SDL_GL_ExtensionSupported("GL_ARB_shader_draw_parameters")) {
+        FLEXT_ARB_shader_draw_parameters = GL_TRUE;
+    }
 
     return 0;
 }
@@ -624,6 +627,7 @@ int FLEXT_KHR_debug = GL_FALSE;
 int FLEXT_ARB_texture_filter_anisotropic = GL_FALSE;
 int FLEXT_ARB_gl_spirv = GL_FALSE;
 int FLEXT_ARB_ES2_compatibility = GL_FALSE;
+int FLEXT_ARB_shader_draw_parameters = GL_FALSE;
 
 /* Function pointer definitions */
 

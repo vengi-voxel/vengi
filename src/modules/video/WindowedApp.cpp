@@ -487,7 +487,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientGamma);
 	const core::VarDef clientWindowDisplay(cfg::ClientWindowDisplay, 0, N_("Window display"), _("The display index to create the window on"));
 	core::Var::registerVar(clientWindowDisplay);
-	const core::VarDef clientOpenGLVersion(cfg::ClientOpenGLVersion, "4.6", N_("OpenGL Version"), _("The OpenGL version to use"), core::CV_READONLY);
+	const core::VarDef clientOpenGLVersion(cfg::ClientOpenGLVersion, "4.3", N_("OpenGL Version"), _("The OpenGL version to use"), core::CV_READONLY);
 	core::Var::registerVar(clientOpenGLVersion);
 	const core::VarDef renderOutline(cfg::RenderOutline, false, N_("Outlines"), _("Render voxel outline"));
 	core::Var::registerVar(renderOutline);

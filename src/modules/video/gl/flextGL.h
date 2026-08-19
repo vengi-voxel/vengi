@@ -2778,6 +2778,7 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_ARB_gl_spirv
 #define GL_ARB_instanced_arrays
 #define GL_ARB_multi_draw_indirect
+#define GL_ARB_shader_draw_parameters
 #define GL_ARB_shader_image_load_store
 #define GL_ARB_shader_storage_buffer_object
 #define GL_ARB_texture_filter_anisotropic
@@ -2812,6 +2813,7 @@ extern int FLEXT_KHR_debug;
 extern int FLEXT_ARB_texture_filter_anisotropic;
 extern int FLEXT_ARB_gl_spirv;
 extern int FLEXT_ARB_ES2_compatibility;
+extern int FLEXT_ARB_shader_draw_parameters;
 
 int flextInit(void);
 

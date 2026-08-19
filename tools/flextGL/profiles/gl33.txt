@@ -13,3 +13,4 @@ extension KHR_debug optional
 extension ARB_texture_filter_anisotropic optional
 extension ARB_gl_spirv optional
 extension ARB_ES2_compatibility optional
+extension ARB_shader_draw_parameters optional

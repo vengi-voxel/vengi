@@ -206,16 +206,26 @@ bool RawVolumeRenderer::init(bool normals) {
 
 	_useMultiDraw = video::hasFeature(video::Feature::MultiDrawIndirect) &&
 					video::hasFeature(video::Feature::ShaderStorageBufferObject) &&
-					video::Shader::glslVersion >= 460;
+					video::hasFeature(video::Feature::ShaderDrawParameters);
+	// Voxel shaders are singletons shared by every RawVolumeRenderer. Defines must be
+	// applied before the first setup(); later inits only reuse that compilation.
+	static bool s_voxelMdiDefinesApplied = false;
 	if (_useMultiDraw) {
-		_voxelShader.addDefine("USEDRAWPARAMETERS", "1");
-		_voxelNormShader.addDefine("USEDRAWPARAMETERS", "1");
-		_voxelOitShader.addDefine("USEDRAWPARAMETERS", "1");
-		_voxelNormOitShader.addDefine("USEDRAWPARAMETERS", "1");
-		Log::info("Voxel multi-draw-indirect enabled (draw-instance SSBO + gl_DrawID)");
+		if (!_voxelShader.isInitialized()) {
+			_voxelShader.addDefine("USEDRAWPARAMETERS", "1");
+			_voxelNormShader.addDefine("USEDRAWPARAMETERS", "1");
+			_voxelOitShader.addDefine("USEDRAWPARAMETERS", "1");
+			_voxelNormOitShader.addDefine("USEDRAWPARAMETERS", "1");
+			s_voxelMdiDefinesApplied = true;
+			Log::info("Voxel multi-draw-indirect enabled (SSBO + gl_DrawIDARB, GLSL %i)",
+					  video::Shader::glslVersion);
+		} else {
+			_useMultiDraw = s_voxelMdiDefinesApplied;
+		}
 	} else {
-		Log::debug("Voxel multi-draw-indirect disabled (need MDI+SSBO and GLSL >= 460, have %i)",
-				   video::Shader::glslVersion);
+		Log::debug(
+			"Voxel multi-draw-indirect disabled (need MultiDrawIndirect+SSBO+ShaderDrawParameters; GLSL %i)",
+			video::Shader::glslVersion);
 	}
 
 	if (!_voxelShader.setup()) {

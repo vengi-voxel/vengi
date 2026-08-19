@@ -12,7 +12,7 @@ You can load and save a lot of different [voxel formats](../Formats.md). Its bui
 
 # Requirements
 
-* OpenGL 3.2
+* OpenGL 4.3
 
 # Further reading
 
