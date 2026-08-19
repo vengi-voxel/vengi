@@ -5,6 +5,7 @@ set(SRCS
 	Shadow.h Shadow.cpp
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	RenderContext.cpp RenderContext.h
+	RenderFrame.h
 	RenderState.cpp RenderState.h
 	RenderUtil.cpp RenderUtil.h
 	ShaderAttribute.h

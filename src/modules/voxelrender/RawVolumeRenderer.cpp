@@ -72,6 +72,17 @@ struct VolumeBindSort {
 	}
 };
 
+struct VolumeDistanceSort {
+	const voxel::MeshStatePtr &meshState;
+	glm::vec3 camPos;
+
+	bool operator()(int a, int b) const {
+		const glm::vec3 &posA = meshState->centerPos(a, true);
+		const glm::vec3 &posB = meshState->centerPos(b, true);
+		return glm::distance2(camPos, posA) > glm::distance2(camPos, posB);
+	}
+};
+
 } // namespace
 
 RawVolumeRenderer::RawVolumeRenderer(const core::TimeProviderPtr &timeProvider)
@@ -723,33 +734,64 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 	}
 }
 
-void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
-	core_trace_scoped(RenderOpaque);
-	const video::PolygonMode mode = camera.polygonMode();
-	const video::Face oldCullFace = video::currentCullFace();
-	video::ScopedPolygonMode polygonMode(mode);
+void RawVolumeRenderer::prepareRenderFrame(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
+										   RenderFrame &frame, bool orderIndependentTransparency) {
+	core_trace_scoped(PrepareRenderFrame);
+	frame.clear();
 
-	core::Buffer<int> &sorted = _volumeSortScratch;
-	sorted.clear();
-	sorted.reserve(meshState->activeIndices().size());
-	for (int idx : meshState->activeIndices()) {
+	const core::Buffer<int> &active = meshState->activeIndices();
+	app::for_parallel(0, (int)active.size(), [this, &meshState, &camera, &active](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			updateCulling(meshState, active[i], camera);
+		}
+	});
+
+	frame.opaque.reserve(active.size());
+	frame.transparent.reserve(active.size());
+	for (int idx : active) {
 		if (!isVisible(meshState, idx)) {
 			continue;
 		}
-		// Faded nodes are drawn in the transparency pass so blending/sorting work.
-		if (meshState->opacity(idx) < 1.0f - 1e-5f) {
+		frame.anyVisible = true;
+		const float opacity = meshState->opacity(idx);
+		if (opacity <= 0.0f) {
 			continue;
 		}
 		const int bufferIndex = meshState->resolveIdx(idx);
-		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
-		if (indices == 0u) {
-			continue;
+		const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+		const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		const bool faded = opacity < 1.0f - 1e-5f;
+
+		if (!faded && opaqueIndices > 0u) {
+			frame.opaque.push_back(idx);
 		}
-		sorted.push_back(idx);
+		if (transparentIndices > 0u || (faded && opaqueIndices > 0u)) {
+			frame.transparent.push_back(idx);
+		}
 	}
 
-	// Group by palette, then cull face, then mesh buffer to minimize UBO/state/VAO churn.
-	app::sort_parallel(sorted.begin(), sorted.end(), VolumeBindSort{meshState});
+	if (!frame.opaque.empty()) {
+		app::sort_parallel(frame.opaque.begin(), frame.opaque.end(), VolumeBindSort{meshState});
+	}
+	if (!frame.transparent.empty()) {
+		if (orderIndependentTransparency) {
+			app::sort_parallel(frame.transparent.begin(), frame.transparent.end(), VolumeBindSort{meshState});
+		} else {
+			app::sort_parallel(frame.transparent.begin(), frame.transparent.end(),
+							   VolumeDistanceSort{meshState, camera.worldPosition()});
+		}
+	}
+}
+
+void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
+									 const core::Buffer<int> &sorted) {
+	core_trace_scoped(RenderOpaque);
+	if (sorted.empty()) {
+		return;
+	}
+	const video::PolygonMode mode = camera.polygonMode();
+	const video::Face oldCullFace = video::currentCullFace();
+	video::ScopedPolygonMode polygonMode(mode);
 
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
@@ -788,46 +830,13 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	video::cullFace(oldCullFace);
 }
 
-void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera) {
+void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
+										   const video::Camera &camera, const core::Buffer<int> &sorted) {
 	core_trace_scoped(RenderTransparency);
-	const video::PolygonMode mode = camera.polygonMode();
-	core::Buffer<int> &sorted = _volumeSortScratch;
-	{
-		core_trace_scoped(Sort);
-		sorted.clear();
-		sorted.reserve(meshState->activeIndices().size());
-		for (int idx : meshState->activeIndices()) {
-			if (!isVisible(meshState, idx)) {
-				continue;
-			}
-			const float opacity = meshState->opacity(idx);
-			if (opacity <= 0.0f) {
-				continue;
-			}
-			const int bufferIndex = meshState->resolveIdx(idx);
-			const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
-			const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
-			const bool faded = opacity < 1.0f - 1e-5f;
-			if (transparentIndices == 0u && !(faded && opaqueIndices > 0u)) {
-				continue;
-			}
-
-			sorted.push_back(idx);
-		}
-		if (sorted.empty()) {
-			return;
-		}
-
-		const glm::vec3 &camPos = camera.worldPosition();
-		app::sort_parallel(sorted.begin(), sorted.end(), [&camPos, &meshState](int a, int b) {
-			const glm::vec3 &posA = meshState->centerPos(a, true);
-			const glm::vec3 &posB = meshState->centerPos(b, true);
-			const float d1 = glm::distance2(camPos, posA);
-			const float d2 = glm::distance2(camPos, posB);
-			return d1 > d2;
-		});
+	if (sorted.empty()) {
+		return;
 	}
-
+	const video::PolygonMode mode = camera.polygonMode();
 	video::ScopedState scopedBlendTrans(video::State::Blend, true);
 	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
@@ -881,34 +890,11 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 }
 
 void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
-											  const video::Camera &camera) {
+											  const video::Camera &camera, const core::Buffer<int> &volumes) {
 	core_trace_scoped(RenderTransparencyOIT);
-	core::Buffer<int> &volumes = _volumeSortScratch;
-	volumes.clear();
-	volumes.reserve(meshState->activeIndices().size());
-	for (int idx : meshState->activeIndices()) {
-		if (!isVisible(meshState, idx)) {
-			continue;
-		}
-		const float opacity = meshState->opacity(idx);
-		if (opacity <= 0.0f) {
-			continue;
-		}
-		const int bufferIndex = meshState->resolveIdx(idx);
-		const uint32_t transparentIndices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
-		const uint32_t opaqueIndices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
-		const bool faded = opacity < 1.0f - 1e-5f;
-		if (transparentIndices == 0u && !(faded && opaqueIndices > 0u)) {
-			continue;
-		}
-		volumes.push_back(idx);
-	}
 	if (volumes.empty()) {
 		return;
 	}
-
-	// OIT is order-independent: group by palette/cull/mesh to cut UBO and state churn.
-	app::sort_parallel(volumes.begin(), volumes.end(), VolumeBindSort{meshState});
 
 	const video::Id mainFbo = video::currentFramebuffer();
 	int viewport[4];
@@ -1058,28 +1044,27 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 							   const video::Camera &camera, bool shadow, bool bloom) {
 	core_trace_scoped(RawVolumeRendererRender);
 
-	bool visible = false;
 	const core::Buffer<int> &activeForRender = meshState->activeIndices();
-	app::for_parallel(0, (int)activeForRender.size(), [&](int start, int end) {
-		for (int i = start; i < end; ++i) {
-			const int idx = activeForRender[i];
-			updateCulling(meshState, idx, camera);
-			if (!isVisible(meshState, idx)) {
-				continue;
-			}
-			visible = true;
-		}
+	RenderFrame &frame = _renderFrame;
+	const bool useOit = renderContext.hasOit();
+
+	// Prepare (cull + sorted draw lists) can run on a worker while main updates shadows.
+	core::Future<void> prepareFuture = app::async([this, meshState, &camera, &frame, useOit]() {
+		prepareRenderFrame(meshState, camera, frame, useOit);
 	});
-	if (!visible) {
+
+	if (_shadowMap->boolVal()) {
+		_shadow.update(camera, true);
+	}
+
+	prepareFuture.wait();
+	if (!frame.anyVisible) {
 		return;
 	}
 
 	if (_cullBuffers->boolVal()) {
 		core_trace_scoped(CullBuffers);
-		for (int idx : activeForRender) {
-			if (!isVisible(meshState, idx)) {
-				continue;
-			}
+		for (int idx : frame.opaque) {
 			size_t indCount = 0u;
 			size_t vertCount = 0u;
 			size_t normalsCount = 0u;
@@ -1093,190 +1078,186 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		}
 	}
 
-	video::ScopedState scopedDepth(video::State::DepthTest);
-	video::depthFunc(video::CompareFunc::LessEqual);
-	video::ScopedState scopedCullFace(video::State::CullFace);
-	video::ScopedState scopedScissor(video::State::Scissor, false);
-	video::ScopedState scopedBlend(video::State::Blend, false);
-	video::ScopedState scopedDepthMask(video::State::DepthMask);
-	if (_shadowMap->boolVal()) {
-		_shadow.update(camera, true);
-	}
-	if (_shadowMap->boolVal() && shadow) {
-		video::ScopedShader scoped(_shadowMapShader);
-		auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
-			math::Frustum frustum;
-			frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
-			alignas(16) shader::ShadowmapData::BlockData var;
-			var.lightviewprojection = lightViewProjection;
+	{
+		core_trace_scoped(SubmitRenderFrame);
+		video::ScopedState scopedDepth(video::State::DepthTest);
+		video::depthFunc(video::CompareFunc::LessEqual);
+		video::ScopedState scopedCullFace(video::State::CullFace);
+		video::ScopedState scopedScissor(video::State::Scissor, false);
+		video::ScopedState scopedBlend(video::State::Blend, false);
+		video::ScopedState scopedDepthMask(video::State::DepthMask);
+		if (_shadowMap->boolVal() && shadow) {
+			video::ScopedShader scoped(_shadowMapShader);
+			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+				math::Frustum frustum;
+				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
+				alignas(16) shader::ShadowmapData::BlockData var;
+				var.lightviewprojection = lightViewProjection;
 
-			core::Buffer<int> &sorted = _volumeSortScratch;
-			sorted.clear();
-			sorted.reserve(activeForRender.size());
-			for (int idx : activeForRender) {
-				if (meshState->hidden(idx)) {
-					continue;
+				core::Buffer<int> &sorted = _volumeSortScratch;
+				sorted.clear();
+				sorted.reserve(activeForRender.size());
+				for (int idx : activeForRender) {
+					if (meshState->hidden(idx)) {
+						continue;
+					}
+					if (_state[idx]._empty) {
+						continue;
+					}
+					const glm::vec3 &mins = meshState->mins(idx);
+					const glm::vec3 &maxs = meshState->maxs(idx);
+					if (!frustum.isVisible(mins, maxs)) {
+						continue;
+					}
+					sorted.push_back(idx);
 				}
-				if (_state[idx]._empty) {
-					continue;
+				app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
+					const video::Face faceA = meshState->cullFace(a);
+					const video::Face faceB = meshState->cullFace(b);
+					if (faceA != faceB) {
+						return (int)faceA < (int)faceB;
+					}
+					return meshState->resolveIdx(a) < meshState->resolveIdx(b);
+				});
+
+				core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
+				for (int idx : sorted) {
+					const int bufferIndex = meshState->resolveIdx(idx);
+					for (int i = 0; i < voxel::MeshType_Transparency; ++i) {
+						const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
+						if (indices > 0u) {
+							video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
+							var.model = meshState->model(idx);
+							_shadowMapUniformBlock.update(var);
+							video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
+							static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+							video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+						}
+					}
 				}
-				const glm::vec3 &mins = meshState->mins(idx);
-				const glm::vec3 &maxs = meshState->maxs(idx);
-				if (!frustum.isVisible(mins, maxs)) {
-					continue;
-				}
-				sorted.push_back(idx);
+				return true;
+			};
+			_shadow.render(renderFunc, true);
+		} else {
+			auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
+				video::clear(video::ClearFlag::Depth);
+				return true;
+			};
+			_shadow.render(renderFunc);
+		}
+
+		_voxelShaderFragData.depthsize = _shadow.dimension();
+		for (int i = 0; i < shader::VoxelShaderConstants::getMaxDepthBuffers(); ++i) {
+			_voxelShaderFragData.cascades[i] = _shadow.cascades()[i];
+			_voxelShaderFragData.distances[i] = _shadow.distances()[i];
+		}
+		_voxelShaderFragData.lightdir = _shadow.sunDirection();
+		{
+			float t[4];
+			_selectionTint->vec4Val(t);
+			_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
+		}
+		_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
+		_voxelShaderFragData.gamma = _gamma->floatVal();
+		_voxelShaderFragData.checkerboard = _checkerboard->intVal();
+		_voxelShaderFragData.debugShadow = _debugShadow->intVal();
+		_voxelShaderFragData.debugCascade = _debugCascade->intVal();
+		_voxelShaderFragData.tonemapping = _tonemapping->intVal();
+		_voxelShaderFragData.renderoutline = _renderOutline->intVal();
+		_voxelShaderFragData.shadowmap = _shadowMap->intVal();
+		core_assert_always(_voxelData.update(_voxelShaderFragData));
+
+		const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
+		const bool normals = meshMode == voxel::SurfaceExtractionType::MarchingCubes;
+		video::Id oldShader = video::getProgram();
+		if (normals) {
+			_voxelNormShader.activate();
+		} else {
+			_voxelShader.activate();
+		}
+		core_assert_always(_shadow.bind(video::TextureUnit::Two));
+
+		const video::PolygonMode mode = camera.polygonMode();
+		if (mode == video::PolygonMode::Points) {
+			video::enable(video::State::PolygonOffsetPoint);
+		} else if (mode == video::PolygonMode::WireFrame) {
+			video::enable(video::State::PolygonOffsetLine);
+		} else if (mode == video::PolygonMode::Solid) {
+			video::enable(video::State::PolygonOffsetFill);
+		}
+
+		renderOpaque(meshState, camera, frame.opaque);
+
+		if (useOit) {
+			if (normals) {
+				_voxelNormShader.deactivate();
+				_voxelNormOitShader.activate();
+			} else {
+				_voxelShader.deactivate();
+				_voxelOitShader.activate();
 			}
-			app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
-				const video::Face faceA = meshState->cullFace(a);
-				const video::Face faceB = meshState->cullFace(b);
-				if (faceA != faceB) {
-					return (int)faceA < (int)faceB;
-				}
-				return meshState->resolveIdx(a) < meshState->resolveIdx(b);
-			});
+			renderTransparencyOIT(meshState, renderContext, camera, frame.transparent);
+			if (normals) {
+				_voxelNormOitShader.deactivate();
+			} else {
+				_voxelOitShader.deactivate();
+			}
+			compositeOIT(renderContext);
+		} else {
+			sortBeforeRender(meshState, camera);
+			renderTransparency(meshState, renderContext, camera, frame.transparent);
+		}
 
-			core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
-			for (int idx : sorted) {
-				const int bufferIndex = meshState->resolveIdx(idx);
-				for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
-					const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
-					if (indices > 0u) {
-						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
-						var.model = meshState->model(idx);
-						_shadowMapUniformBlock.update(var);
-						// negative scaling might require to flip the cull face
-						// TODO: RENDERER: does this impact the shadow acne fix in the Shadow class render() function?
-						video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-						static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-						video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+		if (mode == video::PolygonMode::Points) {
+			video::disable(video::State::PolygonOffsetPoint);
+		} else if (mode == video::PolygonMode::WireFrame) {
+			video::disable(video::State::PolygonOffsetLine);
+		} else if (mode == video::PolygonMode::Solid) {
+			video::disable(video::State::PolygonOffsetFill);
+		}
+		if (bloom && _bloom->boolVal()) {
+			bool sceneHasGlow = false;
+			for (int idx : frame.opaque) {
+				if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
+					sceneHasGlow = true;
+					break;
+				}
+			}
+			if (!sceneHasGlow) {
+				for (int idx : frame.transparent) {
+					if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
+						sceneHasGlow = true;
+						break;
 					}
 				}
 			}
-			return true;
-		};
-		_shadow.render(renderFunc, true);
-	} else {
-		auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
-			video::clear(video::ClearFlag::Depth);
-			return true;
-		};
-		_shadow.render(renderFunc);
-	}
+			if (sceneHasGlow) {
+				if (renderContext.enableMultisampling) {
+					const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
+					video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
+										 video::ClearFlag::Color, fbDim.x, fbDim.y);
 
-	_voxelShaderFragData.depthsize = _shadow.dimension();
-	for (int i = 0; i < shader::VoxelShaderConstants::getMaxDepthBuffers(); ++i) {
-		_voxelShaderFragData.cascades[i] = _shadow.cascades()[i];
-		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
-	}
-	_voxelShaderFragData.lightdir = _shadow.sunDirection();
-	{
-		float t[4];
-		_selectionTint->vec4Val(t);
-		_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
-	}
-	_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
-	_voxelShaderFragData.gamma = _gamma->floatVal();
-	_voxelShaderFragData.checkerboard = _checkerboard->intVal();
-	_voxelShaderFragData.debugShadow = _debugShadow->intVal();
-	_voxelShaderFragData.debugCascade = _debugCascade->intVal();
-	_voxelShaderFragData.tonemapping = _tonemapping->intVal();
-	_voxelShaderFragData.renderoutline = _renderOutline->intVal();
-	_voxelShaderFragData.shadowmap = _shadowMap->intVal();
-	core_assert_always(_voxelData.update(_voxelShaderFragData));
-
-	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
-	const bool normals = meshMode == voxel::SurfaceExtractionType::MarchingCubes;
-	video::Id oldShader = video::getProgram();
-	if (normals) {
-		_voxelNormShader.activate();
-	} else {
-		_voxelShader.activate();
-	}
-	core_assert_always(_shadow.bind(video::TextureUnit::Two));
-
-	const video::PolygonMode mode = camera.polygonMode();
-	if (mode == video::PolygonMode::Points) {
-		video::enable(video::State::PolygonOffsetPoint);
-	} else if (mode == video::PolygonMode::WireFrame) {
-		video::enable(video::State::PolygonOffsetLine);
-	} else if (mode == video::PolygonMode::Solid) {
-		video::enable(video::State::PolygonOffsetFill);
-	}
-
-	// --- opaque pass
-	renderOpaque(meshState, camera);
-
-	// --- transparency pass
-	const bool useOit = renderContext.hasOit();
-	if (useOit) {
+					video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
+					const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+					const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+					renderContext.bloomRenderer.render(color0, color1);
+				} else {
+					video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
+					const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+					const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+					renderContext.bloomRenderer.render(color0, color1);
+				}
+			}
+		}
 		if (normals) {
 			_voxelNormShader.deactivate();
-			_voxelNormOitShader.activate();
 		} else {
 			_voxelShader.deactivate();
-			_voxelOitShader.activate();
 		}
-		renderTransparencyOIT(meshState, renderContext, camera);
-		if (normals) {
-			_voxelNormOitShader.deactivate();
-		} else {
-			_voxelOitShader.deactivate();
-		}
-		compositeOIT(renderContext);
-	} else {
-		sortBeforeRender(meshState, camera);
-		renderTransparency(meshState, renderContext, camera);
-	}
 
-	if (mode == video::PolygonMode::Points) {
-		video::disable(video::State::PolygonOffsetPoint);
-	} else if (mode == video::PolygonMode::WireFrame) {
-		video::disable(video::State::PolygonOffsetLine);
-	} else if (mode == video::PolygonMode::Solid) {
-		video::disable(video::State::PolygonOffsetFill);
+		renderNormals(meshState, renderContext, camera);
+		video::useProgram(oldShader);
 	}
-	if (bloom && _bloom->boolVal()) {
-		bool sceneHasGlow = false;
-		for (int idx : activeForRender) {
-			if (!isVisible(meshState, idx)) {
-				continue;
-			}
-			if (meshState->palette(meshState->resolveIdx(idx)).hasAnyEmit()) {
-				sceneHasGlow = true;
-				break;
-			}
-		}
-		if (sceneHasGlow) {
-			// If multisampling is enabled, resolve the multisampled framebuffer to regular textures first
-			if (renderContext.enableMultisampling) {
-				const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
-				// Resolve color attachments
-				video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
-									 video::ClearFlag::Color, fbDim.x, fbDim.y);
-
-				// Use resolved textures for bloom
-				video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
-				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-				renderContext.bloomRenderer.render(color0, color1);
-			} else {
-				// Use regular framebuffer textures directly
-				video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-				renderContext.bloomRenderer.render(color0, color1);
-			}
-		}
-	}
-	if (normals) {
-		_voxelNormShader.deactivate();
-	} else {
-		_voxelShader.deactivate();
-	}
-
-	renderNormals(meshState, renderContext, camera);
-	video::useProgram(oldShader);
 }
 
 void RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
@@ -1378,6 +1359,7 @@ void RawVolumeRenderer::shutdown() {
 	_uploadVerticesScratch.release();
 	_uploadNormalsScratch.release();
 	_uploadIndicesScratch.release();
+	_renderFrame.release();
 }
 
 } // namespace voxelrender

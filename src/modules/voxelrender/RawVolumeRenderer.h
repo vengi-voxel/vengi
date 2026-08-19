@@ -23,6 +23,7 @@
 #include "voxel/Region.h"
 #include "voxelrender/Shadow.h"
 #include "voxelrender/RenderContext.h"
+#include "voxelrender/RenderFrame.h"
 #include "voxelrender/RenderState.h"
 
 namespace video {
@@ -82,6 +83,7 @@ protected:
 	core::Buffer<uint8_t> _uploadVerticesScratch;
 	core::Buffer<uint8_t> _uploadNormalsScratch;
 	core::Buffer<uint8_t> _uploadIndicesScratch;
+	RenderFrame _renderFrame;
 
 	uint8_t *ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes);
 
@@ -131,9 +133,18 @@ protected:
 	 * @brief Updates the vertex buffers manually
 	 */
 	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx);
-	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
-	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
-	void renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
+	/**
+	 * Cull + build sorted opaque/transparent draw lists into @p frame.
+	 * Safe to run on a worker thread (no GL calls).
+	 */
+	void prepareRenderFrame(const voxel::MeshStatePtr &meshState, const video::Camera &camera, RenderFrame &frame,
+							bool orderIndependentTransparency);
+	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
+					  const core::Buffer<int> &sorted);
+	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
+							const core::Buffer<int> &sorted);
+	void renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
+							   const video::Camera &camera, const core::Buffer<int> &volumes);
 	void compositeOIT(RenderContext &renderContext);
 	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
 	void sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
