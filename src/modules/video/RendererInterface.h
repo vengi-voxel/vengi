@@ -608,6 +608,20 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name 
 void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count);
 
 /**
+ * @brief Declare the push-constant block size for a program (bytes, multiple of 4).
+ * Vulkan only; GL no-op. Must be set before the program's pipeline layout is created.
+ */
+void setProgramPushConstantSize(Id program, uint32_t size);
+
+/**
+ * @brief Mark UBO regions that are supplied via push constants for this buffer.
+ * When only those regions change, the Vulkan backend can reuse the previous
+ * uniform-ring snapshot instead of re-uploading the whole UBO.
+ * @p fields describe UBO -> push-constant copies (offsets from generated layouts).
+ */
+void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count);
+
+/**
  * @brief Link a compute shader program.
  *
  * Similar to @c linkShader but for compute-only programs. On failure the

@@ -143,7 +143,8 @@ static bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat glo
 static bool createFramebuffers(VkDevice device, VkRenderPass renderPass, const VkImageView *imageViews,
 							   const VkImageView *glowImageViews, uint32_t imageCount, VkExtent2D extent,
 							   VkFramebuffer *&outFramebuffers);
-static int32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeBits, VkMemoryPropertyFlags required);
+static int32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeBits, VkMemoryPropertyFlags required,
+							  VkMemoryPropertyFlags preferred = 0);
 
 static const uint32_t MAX_FRAMES_IN_FLIGHT = 2u;
 
@@ -194,6 +195,7 @@ struct VkState : public RendererState {
 		static const uint32_t MAX_BINDINGS = 16u;
 		ShaderResourceBinding registeredBindings[MAX_BINDINGS] = {};
 		uint32_t registeredBindingCount = 0u;
+		uint32_t pushConstantSize = 0u;
 	};
 	struct VaoHandle {
 		Id id = InvalidId;
@@ -223,6 +225,20 @@ struct VkState : public RendererState {
 		VkBufferUsageFlags usage = 0u;
 		void *mapped = nullptr; // persistently mapped pointer (HOST_VISIBLE|HOST_COHERENT)
 		bool slabMemory = false;
+		// Partial update tracking. When only push-overlay fields change, the
+		// uniform ring can reuse the previous snapshot (see setUniformBufferPushOverlay).
+		bool partialDirty = false;
+		size_t partialOffset = 0u;
+		size_t partialSize = 0u;
+		uint32_t stableRingFrame = ~0u;
+		VkBuffer stableRingBuffer = VK_NULL_HANDLE;
+		VkDeviceSize stableRingOffset = 0u;
+		uint8_t *stableData = nullptr;
+		size_t stableDataSize = 0u;
+		static const uint32_t MAX_PUSH_OVERLAY_FIELDS = 8u;
+		UniformPushOverlayField pushOverlayFields[MAX_PUSH_OVERLAY_FIELDS] = {};
+		uint32_t pushOverlayFieldCount = 0u;
+		uint32_t pushConstantSize = 0u;
 	};
 	struct TextureHandle {
 		Id id = InvalidId;
@@ -396,6 +412,17 @@ struct VkState : public RendererState {
 	PendingFboDestroy *pendingFboDestroys = nullptr;
 	uint32_t pendingFboDestroyCount = 0u;
 	uint32_t pendingFboDestroyCapacity = 0u;
+	// Buffers replaced/grown while a command buffer may still reference the old
+	// VkBuffer (ensureBufferAlloc). Destroy after in-flight frames complete.
+	struct PendingBufferDestroy {
+		VkBuffer buffer = VK_NULL_HANDLE;
+		VkDeviceMemory memory = VK_NULL_HANDLE;
+		void *mapped = nullptr;
+		bool freeMemory = false;
+	};
+	PendingBufferDestroy *pendingBufferDestroys = nullptr;
+	uint32_t pendingBufferDestroyCount = 0u;
+	uint32_t pendingBufferDestroyCapacity = 0u;
 	// Per-frame rings of uniform data snapshotted at each draw. Without this, all
 	// draws in a command buffer read the last CPU write to each shared UBO.
 	// Chunks grow if a frame needs more than UNIFORM_RING_CHUNK_SIZE.
@@ -429,9 +456,15 @@ struct VkState : public RendererState {
 	BufferHandle *bufferHandles = nullptr;
 	uint32_t bufferHandleCount = 0;
 	uint32_t bufferHandleCapacity = 0;
+	// O(1) Id -> bufferHandles[] index (UINT32_MAX = missing). Required: MCA scenes
+	// create thousands of buffers and findBufferHandle is on the draw hot path.
+	uint32_t *bufferIdIndex = nullptr;
+	uint32_t bufferIdIndexCapacity = 0u;
 	VaoHandle *vaoHandles = nullptr;
 	uint32_t vaoHandleCount = 0;
 	uint32_t vaoHandleCapacity = 0;
+	uint32_t *vaoIdIndex = nullptr;
+	uint32_t vaoIdIndexCapacity = 0u;
 	TextureHandle *textureHandles = nullptr;
 	uint32_t textureHandleCount = 0;
 	uint32_t textureHandleCapacity = 0;
@@ -454,6 +487,26 @@ struct VkState : public RendererState {
 	// to wire combined image samplers in shaders to actual VkImages.
 	Id boundTextures[16] = {};
 
+	// Draw-state cache for the currently recording command buffer. Avoids
+	// per-draw vkAllocateDescriptorSets / vkCmdBindPipeline when nothing changed
+	// except UBO contents (handled via UNIFORM_BUFFER_DYNAMIC offsets).
+	VkPipeline boundGraphicsPipeline = VK_NULL_HANDLE;
+	Id boundVaoId = InvalidId;
+	Id descCacheProgramId = InvalidId;
+	VkDescriptorSet descCacheSet = VK_NULL_HANDLE;
+	Id descCacheTextures[16] = {};
+	Id descCacheImage = InvalidId;
+	VkBuffer descCacheUboBuffers[16] = {};
+	VkDeviceSize descCacheUboRanges[16] = {};
+	uint32_t descCacheUboCount = 0u;
+	// Last dynamic offsets actually bound on the recording command buffer.
+	// When the descriptor set is reused and offsets are unchanged (stable VertData
+	// ring slot), skip vkCmdBindDescriptorSets entirely.
+	uint32_t descBoundDynOffsets[16] = {};
+	uint32_t descBoundDynOffsetCount = 0u;
+	VkDescriptorSet descBoundSet = VK_NULL_HANDLE;
+	int descCacheViewport[4] = {0, 0, -1, -1};
+	int descCacheScissor[4] = {0, 0, -1, -1};
 	// Current draw state
 	Id currentProgram = InvalidId;
 	VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -577,14 +630,46 @@ static bool ensureProgramCapacity(VkState &s) {
 	return true;
 }
 
-static VkState::BufferHandle *findBufferHandle(VkState &s, Id id) {
-	for (uint32_t i = 0; i < s.bufferHandleCount; ++i) {
-		VkState::BufferHandle &h = s.bufferHandles[i];
-		if (h.alive && h.id == id) {
-			return &h;
-		}
+static bool ensureIdIndexCapacity(uint32_t **table, uint32_t *capacity, Id id) {
+	if (id == InvalidId) {
+		return false;
 	}
-	return nullptr;
+	if ((uint32_t)id < *capacity) {
+		return true;
+	}
+	uint32_t newCap = *capacity == 0u ? 1024u : *capacity;
+	while (newCap <= (uint32_t)id) {
+		newCap *= 2u;
+	}
+	uint32_t *neu = (uint32_t *)core_malloc(sizeof(uint32_t) * newCap);
+	if (neu == nullptr) {
+		return false;
+	}
+	for (uint32_t i = 0; i < newCap; ++i) {
+		neu[i] = ~0u;
+	}
+	if (*table != nullptr) {
+		core_memcpy(neu, *table, sizeof(uint32_t) * (*capacity));
+		core_free(*table);
+	}
+	*table = neu;
+	*capacity = newCap;
+	return true;
+}
+
+static VkState::BufferHandle *findBufferHandle(VkState &s, Id id) {
+	if (id == InvalidId || (uint32_t)id >= s.bufferIdIndexCapacity) {
+		return nullptr;
+	}
+	const uint32_t idx = s.bufferIdIndex[id];
+	if (idx == ~0u || idx >= s.bufferHandleCount) {
+		return nullptr;
+	}
+	VkState::BufferHandle &h = s.bufferHandles[idx];
+	if (!h.alive || h.id != id) {
+		return nullptr;
+	}
+	return &h;
 }
 
 static bool ensureBufferCapacity(VkState &s) {
@@ -609,16 +694,18 @@ static bool ensureBufferCapacity(VkState &s) {
 }
 
 static VkState::VaoHandle *findVaoHandle(VkState &s, Id id) {
-	if (id == InvalidId) {
+	if (id == InvalidId || (uint32_t)id >= s.vaoIdIndexCapacity) {
 		return nullptr;
 	}
-	for (uint32_t i = 0; i < s.vaoHandleCount; ++i) {
-		VkState::VaoHandle &h = s.vaoHandles[i];
-		if (h.alive && h.id == id) {
-			return &h;
-		}
+	const uint32_t idx = s.vaoIdIndex[id];
+	if (idx == ~0u || idx >= s.vaoHandleCount) {
+		return nullptr;
 	}
-	return nullptr;
+	VkState::VaoHandle &h = s.vaoHandles[idx];
+	if (!h.alive || h.id != id) {
+		return nullptr;
+	}
+	return &h;
 }
 
 static bool ensureVaoCapacity(VkState &s) {
@@ -855,13 +942,13 @@ static bool hasInstanceLayer(const char *layerName) {
 
 static void destroyBufferAlloc(VkState &s, VkState::BufferHandle &h);
 static bool dedicatedAlloc(VkState &s, VkDeviceSize size, uint32_t memoryTypeBits, VkMemoryPropertyFlags properties,
-						   VkDeviceMemory *outMemory, void **outMapped);
+						   VkDeviceMemory *outMemory, void **outMapped, VkMemoryPropertyFlags preferred = 0);
 static bool slabAlloc(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
 					  VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-					  void **outMapped);
+					  void **outMapped, VkMemoryPropertyFlags preferred = 0);
 static bool allocGpuMemory(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
 						   VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-						   void **outMapped, bool *outSlab);
+						   void **outMapped, bool *outSlab, VkMemoryPropertyFlags preferred = 0);
 static void destroyMemorySlabs(VkState &s);
 
 // Destroy swapchain images/views and sync objects, but keep the swapchain handle itself
@@ -1180,7 +1267,8 @@ static bool createSwapchain(VkState &s) {
 
 		VkMemoryRequirements req;
 		vkGetImageMemoryRequirements(s.device, s.glowImages[i], &req);
-		const int32_t memType = findMemoryType(s.physicalDevice, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		const int32_t memType =
+			findMemoryType(s.physicalDevice, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0);
 		if (memType < 0) {
 			Log::error("No device-local memory type for glow image");
 			return false;
@@ -1554,7 +1642,7 @@ static bool createUniformRingChunk(VkState &s, VkState::UniformRingChunk &chunk,
 	vkGetBufferMemoryRequirements(s.device, chunk.buffer, &req);
 	if (!dedicatedAlloc(s, req.size, req.memoryTypeBits,
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &chunk.memory,
-						&chunk.mapped) ||
+						&chunk.mapped, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ||
 		chunk.mapped == nullptr) {
 		Log::error("Failed to allocate uniform ring buffer memory");
 		vkDestroyBuffer(s.device, chunk.buffer, nullptr);
@@ -1578,15 +1666,14 @@ static bool createUniformRingChunk(VkState &s, VkState::UniformRingChunk &chunk,
 }
 
 static void destroyUniformRingChunk(VkState &s, VkState::UniformRingChunk &chunk) {
-	if (chunk.mapped != nullptr && chunk.memory != VK_NULL_HANDLE && s.device != VK_NULL_HANDLE) {
-		vkUnmapMemory(s.device, chunk.memory);
-	}
-	if (chunk.buffer != VK_NULL_HANDLE && s.device != VK_NULL_HANDLE) {
-		vkDestroyBuffer(s.device, chunk.buffer, nullptr);
-	}
-	if (chunk.memory != VK_NULL_HANDLE && s.device != VK_NULL_HANDLE) {
-		vkFreeMemory(s.device, chunk.memory, nullptr);
-	}
+	// Route through the deferred buffer path so in-flight command buffers can finish.
+	VkState::BufferHandle tmp{};
+	tmp.buffer = chunk.buffer;
+	tmp.memory = chunk.memory;
+	tmp.mapped = chunk.mapped;
+	tmp.slabMemory = false;
+	tmp.capacity = chunk.capacity;
+	destroyBufferAlloc(s, tmp);
 	chunk = VkState::UniformRingChunk{};
 }
 
@@ -1674,11 +1761,86 @@ static void resetUniformRingFrame(VkState &s, uint32_t frame) {
 
 // Copy the current CPU UBO contents into the per-frame ring and return the
 // descriptor buffer/offset/range for this draw.
-static bool snapshotUniformToRing(VkState &s, const VkState::BufferHandle &bh, VkBuffer &outBuffer,
+//
+// When a buffer has a push-constant overlay (setUniformBufferPushOverlay), and
+// only those UBO regions differ from the last ring snapshot, reuse the previous
+// ring slot and let the draw path push the overlay fields instead of memcpy'ing
+// the whole UBO (GL only uploads the dynamic tail for large vert blocks).
+static bool bufferDataMatchesStableExceptPushOverlay(const VkState::BufferHandle &bh) {
+	if (bh.stableData == nullptr || bh.stableDataSize != bh.size || bh.data == nullptr) {
+		return false;
+	}
+	if (bh.pushOverlayFieldCount == 0u) {
+		return core_memcmp(bh.data, bh.stableData, bh.size) == 0;
+	}
+	size_t pos = 0u;
+	for (uint32_t i = 0; i < bh.pushOverlayFieldCount; ++i) {
+		const UniformPushOverlayField &f = bh.pushOverlayFields[i];
+		if ((size_t)f.uboOffset > bh.size || (size_t)f.uboOffset + (size_t)f.size > bh.size) {
+			return false;
+		}
+		if (f.uboOffset < pos) {
+			return false; // fields must be sorted by uboOffset
+		}
+		if (f.uboOffset > pos) {
+			if (core_memcmp(bh.data + pos, bh.stableData + pos, (size_t)f.uboOffset - pos) != 0) {
+				return false;
+			}
+		}
+		pos = (size_t)f.uboOffset + (size_t)f.size;
+	}
+	if (pos < bh.size) {
+		if (core_memcmp(bh.data + pos, bh.stableData + pos, bh.size - pos) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static bool storeStableUniformSnapshot(VkState::BufferHandle &bh) {
+	if (bh.data == nullptr || bh.size == 0u) {
+		return false;
+	}
+	if (bh.stableData == nullptr || bh.stableDataSize != bh.size) {
+		if (bh.stableData != nullptr) {
+			core_free(bh.stableData);
+			bh.stableData = nullptr;
+			bh.stableDataSize = 0u;
+		}
+		bh.stableData = (uint8_t *)core_malloc(bh.size);
+		if (bh.stableData == nullptr) {
+			return false;
+		}
+		bh.stableDataSize = bh.size;
+	}
+	core_memcpy(bh.stableData, bh.data, bh.size);
+	return true;
+}
+
+static bool snapshotUniformToRing(VkState &s, VkState::BufferHandle &bh, VkBuffer &outBuffer,
 								  VkDeviceSize &outOffset, VkDeviceSize &outRange) {
 	if (bh.data == nullptr || bh.size == 0u) {
 		return false;
 	}
+
+	// Unchanged CPU UBO (no bufferSubData/bufferData since last snapshot): reuse.
+	if (!bh.partialDirty && bh.stableRingFrame == s.currentFrame && bh.stableRingBuffer != VK_NULL_HANDLE) {
+		outBuffer = bh.stableRingBuffer;
+		outOffset = bh.stableRingOffset;
+		outRange = (VkDeviceSize)bh.size;
+		return true;
+	}
+
+	// Only push-overlay fields changed vs last ring snapshot: reuse slot.
+	if (bh.partialDirty && bh.pushOverlayFieldCount > 0u && bh.stableRingFrame == s.currentFrame &&
+		bh.stableRingBuffer != VK_NULL_HANDLE && bufferDataMatchesStableExceptPushOverlay(bh)) {
+		outBuffer = bh.stableRingBuffer;
+		outOffset = bh.stableRingOffset;
+		outRange = (VkDeviceSize)bh.size;
+		bh.partialDirty = false;
+		return true;
+	}
+
 	VkState::UniformRingFrame &ring = s.uniformRings[s.currentFrame];
 	if (ring.chunkCount == 0u) {
 		if (!addUniformRingChunk(s, ring, core_max(VkState::UNIFORM_RING_CHUNK_SIZE, (VkDeviceSize)bh.size))) {
@@ -1697,6 +1859,11 @@ static bool snapshotUniformToRing(VkState &s, const VkState::BufferHandle &bh, V
 				outBuffer = chunk.buffer;
 				outOffset = offset;
 				outRange = needed;
+				bh.stableRingFrame = s.currentFrame;
+				bh.stableRingBuffer = outBuffer;
+				bh.stableRingOffset = outOffset;
+				(void)storeStableUniformSnapshot(bh);
+				bh.partialDirty = false;
 				return true;
 			}
 		}
@@ -2001,12 +2168,47 @@ static bool createGraphicsPipelineForProgram(VkState &s, VkState::ProgramHandle 
 
 static VkDescriptorType descriptorTypeForBinding(const ShaderResourceBinding &rb) {
 	if (rb.type == ShaderResourceBinding::UniformBuffer) {
-		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		// Dynamic offsets let us reuse one descriptor set across draws that only
+		// change uniform contents (snapshotted into the per-frame ring).
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	}
 	if (rb.type == ShaderResourceBinding::StorageImage) {
 		return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	}
 	return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+}
+
+// Destroy cached pipelines + layout so the next draw rebuilds them. Keeps the
+// descriptor set layout unless @p destroyDescriptorSetLayout is true.
+static void invalidateProgramPipelines(VkState &s, VkState::ProgramHandle &prog, bool destroyDescriptorSetLayout) {
+	if (s.device == VK_NULL_HANDLE) {
+		prog.layout = VK_NULL_HANDLE;
+		if (destroyDescriptorSetLayout) {
+			prog.descriptorSetLayout = VK_NULL_HANDLE;
+		}
+		prog.pipelineCount = 0u;
+		prog.computePipeline = VK_NULL_HANDLE;
+		return;
+	}
+	for (uint32_t j = 0; j < prog.pipelineCount; ++j) {
+		if (prog.pipelines != nullptr && prog.pipelines[j].pipeline != VK_NULL_HANDLE) {
+			vkDestroyPipeline(s.device, prog.pipelines[j].pipeline, nullptr);
+			prog.pipelines[j].pipeline = VK_NULL_HANDLE;
+		}
+	}
+	prog.pipelineCount = 0u;
+	if (prog.computePipeline != VK_NULL_HANDLE) {
+		vkDestroyPipeline(s.device, prog.computePipeline, nullptr);
+		prog.computePipeline = VK_NULL_HANDLE;
+	}
+	if (prog.layout != VK_NULL_HANDLE) {
+		vkDestroyPipelineLayout(s.device, prog.layout, nullptr);
+		prog.layout = VK_NULL_HANDLE;
+	}
+	if (destroyDescriptorSetLayout && prog.descriptorSetLayout != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(s.device, prog.descriptorSetLayout, nullptr);
+		prog.descriptorSetLayout = VK_NULL_HANDLE;
+	}
 }
 
 static bool ensureProgramLayout(VkState &s, VkState::ProgramHandle &prog) {
@@ -2049,13 +2251,19 @@ static bool ensureProgramLayout(VkState &s, VkState::ProgramHandle &prog) {
 		rb.type = ShaderResourceBinding::StorageImage;
 		rb.stageFlags = 8;
 	}
-	VkDescriptorSetLayoutCreateInfo dslInfo;
-	dslInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	dslInfo.pNext = nullptr;
-	dslInfo.flags = 0;
-	dslInfo.bindingCount = dslBindingCount;
-	dslInfo.pBindings = dslBindingCount == 0u ? nullptr : dslBindings;
-	vkCreateDescriptorSetLayout(s.device, &dslInfo, nullptr, &prog.descriptorSetLayout);
+	if (prog.descriptorSetLayout == VK_NULL_HANDLE) {
+		VkDescriptorSetLayoutCreateInfo dslInfo;
+		dslInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		dslInfo.pNext = nullptr;
+		dslInfo.flags = 0;
+		dslInfo.bindingCount = dslBindingCount;
+		dslInfo.pBindings = dslBindingCount == 0u ? nullptr : dslBindings;
+		if (vkCreateDescriptorSetLayout(s.device, &dslInfo, nullptr, &prog.descriptorSetLayout) != VK_SUCCESS) {
+			Log::error("vkCreateDescriptorSetLayout failed for %s", prog.name.c_str());
+			prog.descriptorSetLayout = VK_NULL_HANDLE;
+			return false;
+		}
+	}
 
 	VkPipelineLayoutCreateInfo plInfo;
 	plInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -2063,10 +2271,18 @@ static bool ensureProgramLayout(VkState &s, VkState::ProgramHandle &prog) {
 	plInfo.flags = 0;
 	plInfo.setLayoutCount = (prog.descriptorSetLayout != VK_NULL_HANDLE) ? 1u : 0u;
 	plInfo.pSetLayouts = (prog.descriptorSetLayout != VK_NULL_HANDLE) ? &prog.descriptorSetLayout : nullptr;
-	plInfo.pushConstantRangeCount = 0;
-	plInfo.pPushConstantRanges = nullptr;
-	vkCreatePipelineLayout(s.device, &plInfo, nullptr, &prog.layout);
-	return prog.layout != VK_NULL_HANDLE;
+	VkPushConstantRange pushRange;
+	pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	pushRange.offset = 0;
+	pushRange.size = prog.pushConstantSize;
+	plInfo.pushConstantRangeCount = prog.pushConstantSize > 0u ? 1u : 0u;
+	plInfo.pPushConstantRanges = prog.pushConstantSize > 0u ? &pushRange : nullptr;
+	if (vkCreatePipelineLayout(s.device, &plInfo, nullptr, &prog.layout) != VK_SUCCESS) {
+		Log::error("vkCreatePipelineLayout failed for %s", prog.name.c_str());
+		prog.layout = VK_NULL_HANDLE;
+		return false;
+	}
+	return true;
 }
 
 static bool ensureComputePipeline(VkState &s, VkState::ProgramHandle &prog) {
@@ -2238,10 +2454,37 @@ RendererContext createContext(SDL_Window *window) {
 	const char *enabledLayers[1] = {"VK_LAYER_KHRONOS_validation"};
 	uint32_t enabledLayerCount = 0;
 	const bool haveDebugReport = _priv::hasInstanceExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-	if (_priv::hasInstanceLayer(enabledLayers[0])) {
+
+	// Validation (especially sync) can drop a busy scene from ~100 FPS to single digits.
+	// Default: off. Opt in with VENGI_VK_VALIDATION=core|sync|full (or 0 to force off).
+	// In DEBUG builds, "core" is the default when the env var is unset.
+	enum class ValidationMode { Off, Core, Sync, Full };
+	ValidationMode validationMode = ValidationMode::Off;
+#ifdef DEBUG
+	validationMode = ValidationMode::Core;
+#endif
+	if (const char *env = SDL_getenv("VENGI_VK_VALIDATION")) {
+		if (env[0] == '\0' || !core_strcasecmp(env, "0") || !core_strcasecmp(env, "off") ||
+			!core_strcasecmp(env, "none")) {
+			validationMode = ValidationMode::Off;
+		} else if (!core_strcasecmp(env, "core") || !core_strcasecmp(env, "1")) {
+			validationMode = ValidationMode::Core;
+		} else if (!core_strcasecmp(env, "sync")) {
+			validationMode = ValidationMode::Sync;
+		} else if (!core_strcasecmp(env, "full") || !core_strcasecmp(env, "all")) {
+			validationMode = ValidationMode::Full;
+		} else {
+			Log::warn("Unknown VENGI_VK_VALIDATION=%s (use off|core|sync|full)", env);
+		}
+	}
+
+	const bool wantValidation = validationMode != ValidationMode::Off;
+	const bool wantSync = validationMode == ValidationMode::Sync || validationMode == ValidationMode::Full;
+	const bool wantBestPractices = validationMode == ValidationMode::Full;
+	if (wantValidation && _priv::hasInstanceLayer(enabledLayers[0])) {
 		enabledLayerCount = 1;
 		s.validationEnabled = true;
-	} else {
+	} else if (wantValidation) {
 		Log::warn("Vulkan validation layer not available: %s", enabledLayers[0]);
 	}
 	if (haveDebugReport) {
@@ -2263,26 +2506,33 @@ RendererContext createContext(SDL_Window *window) {
 	appInfo.engineVersion = 1;
 	appInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 1, 0);
 
-	// Core + sync + best practices. GPU-AV is left off: it is very slow with core
-	// checks and was forcing extra device features the engine does not use.
-	const VkValidationFeatureEnableEXT validationEnables[] = {
-		VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-		VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
+	// GPU-AV stays off: extremely slow and pulls in unused device features.
+	VkValidationFeatureEnableEXT validationEnables[2];
+	uint32_t validationEnableCount = 0u;
+	if (wantBestPractices) {
+		validationEnables[validationEnableCount++] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
+	}
+	if (wantSync) {
+		validationEnables[validationEnableCount++] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+	}
 	VkValidationFeaturesEXT validationFeatures;
 	validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
 	validationFeatures.pNext = nullptr;
-	validationFeatures.enabledValidationFeatureCount = lengthof(validationEnables);
-	validationFeatures.pEnabledValidationFeatures = validationEnables;
+	validationFeatures.enabledValidationFeatureCount = validationEnableCount;
+	validationFeatures.pEnabledValidationFeatures = validationEnableCount > 0u ? validationEnables : nullptr;
 	validationFeatures.disabledValidationFeatureCount = 0;
 	validationFeatures.pDisabledValidationFeatures = nullptr;
 
 	const VkBool32 settingTrue = VK_TRUE;
 	const VkBool32 settingFalse = VK_FALSE;
+	const VkBool32 settingSync = wantSync ? VK_TRUE : VK_FALSE;
+	const VkBool32 settingBest = wantBestPractices ? VK_TRUE : VK_FALSE;
 	const VkLayerSettingEXT layerSettings[] = {
 		{"VK_LAYER_KHRONOS_validation", "validate_core", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &settingTrue},
-		{"VK_LAYER_KHRONOS_validation", "validate_sync", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &settingTrue},
+		{"VK_LAYER_KHRONOS_validation", "validate_sync", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &settingSync},
 		{"VK_LAYER_KHRONOS_validation", "gpuav_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &settingFalse},
-		{"VK_LAYER_KHRONOS_validation", "validate_best_practices", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &settingTrue}};
+		{"VK_LAYER_KHRONOS_validation", "validate_best_practices", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1,
+		 &settingBest}};
 	VkLayerSettingsCreateInfoEXT layerSettingsInfo;
 	layerSettingsInfo.sType = VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT;
 	layerSettingsInfo.pNext = nullptr;
@@ -2292,9 +2542,8 @@ RendererContext createContext(SDL_Window *window) {
 	VkDebugReportCallbackCreateInfoEXT debugInfo;
 	debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	debugInfo.pNext = nullptr;
-	debugInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
-					  VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-					  VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+	// Errors + warnings only. Info/debug/perf spam is a major FPS tax with many draws.
+	debugInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 	debugInfo.pfnCallback = _priv::vkDebugReportCallback;
 	debugInfo.pUserData = &s;
 
@@ -2309,14 +2558,20 @@ RendererContext createContext(SDL_Window *window) {
 	createInfo.ppEnabledExtensionNames = extensions;
 
 	if (s.validationEnabled) {
-		layerSettingsInfo.pNext = &validationFeatures;
+		layerSettingsInfo.pNext = validationEnableCount > 0u ? &validationFeatures : nullptr;
 		if (haveDebugReport) {
 			debugInfo.pNext = &layerSettingsInfo;
 			createInfo.pNext = &debugInfo;
 		} else {
 			createInfo.pNext = &layerSettingsInfo;
 		}
-		Log::info("Vulkan validation enabled (core, sync, best practices)");
+		if (wantBestPractices) {
+			Log::info("Vulkan validation enabled (core, sync, best practices) via VENGI_VK_VALIDATION");
+		} else if (wantSync) {
+			Log::info("Vulkan validation enabled (core, sync) via VENGI_VK_VALIDATION");
+		} else {
+			Log::info("Vulkan validation enabled (core only)");
+		}
 	} else if (haveDebugReport) {
 		createInfo.pNext = &debugInfo;
 	}
@@ -2378,10 +2633,42 @@ void destroyContext(RendererContext &context) {
 
 	if (s.device != VK_NULL_HANDLE) {
 		vkDeviceWaitIdle(s.device);
+		for (uint32_t i = 0; i < _priv::MAX_FRAMES_IN_FLIGHT; ++i) {
+			if (s.frameCommandPools[i] != VK_NULL_HANDLE) {
+				vkResetCommandPool(s.device, s.frameCommandPools[i], 0);
+			}
+		}
+		s.frameAcquired = false;
+		s.mainRenderPassActive = false;
+		s.fboRenderPassActive = false;
+		for (uint32_t i = 0; i < _priv::MAX_FRAMES_IN_FLIGHT; ++i) {
+			if (s.pendingFreeSetCount[i] == 0u || s.descriptorPool == VK_NULL_HANDLE) {
+				continue;
+			}
+			vkFreeDescriptorSets(s.device, s.descriptorPool, s.pendingFreeSetCount[i], s.pendingFreeSets[i]);
+			s.pendingFreeSetCount[i] = 0u;
+		}
 	}
 
 	_priv::destroySwapchainResources(s, true);
 	_priv::destroyUniformRingBuffer(s);
+	// Flush buffers queued by destroyUniformRingBuffer / handle teardown.
+	if (s.device != VK_NULL_HANDLE) {
+		vkDeviceWaitIdle(s.device);
+		for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
+			const _priv::VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
+			if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
+				vkUnmapMemory(s.device, p.memory);
+			}
+			if (p.buffer != VK_NULL_HANDLE) {
+				vkDestroyBuffer(s.device, p.buffer, nullptr);
+			}
+			if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
+				vkFreeMemory(s.device, p.memory, nullptr);
+			}
+		}
+		s.pendingBufferDestroyCount = 0u;
+	}
 
 	if (s.device != VK_NULL_HANDLE) {
 		if (s.shaderHandles != nullptr) {
@@ -2400,6 +2687,10 @@ void destroyContext(RendererContext &context) {
 						vkDestroyPipeline(s.device, p.pipelines[j].pipeline, nullptr);
 						p.pipelines[j].pipeline = VK_NULL_HANDLE;
 					}
+				}
+				if (p.computePipeline != VK_NULL_HANDLE) {
+					vkDestroyPipeline(s.device, p.computePipeline, nullptr);
+					p.computePipeline = VK_NULL_HANDLE;
 				}
 				if (p.layout != VK_NULL_HANDLE) {
 					vkDestroyPipelineLayout(s.device, p.layout, nullptr);
@@ -2421,6 +2712,11 @@ void destroyContext(RendererContext &context) {
 				_priv::VkState::TextureHandle &h = s.textureHandles[i];
 				if (!h.alive) {
 					continue;
+				}
+				// Free imgui descriptor sets before samplers/images they reference.
+				if (h.imguiSet != VK_NULL_HANDLE && s.descriptorPool != VK_NULL_HANDLE) {
+					vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &h.imguiSet);
+					h.imguiSet = VK_NULL_HANDLE;
 				}
 				if (h.sampler != VK_NULL_HANDLE) {
 					vkDestroySampler(s.device, h.sampler, nullptr);
@@ -2493,6 +2789,19 @@ void destroyContext(RendererContext &context) {
 			}
 		}
 		s.pendingFboDestroyCount = 0u;
+		for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
+			const _priv::VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
+			if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
+				vkUnmapMemory(s.device, p.memory);
+			}
+			if (p.buffer != VK_NULL_HANDLE) {
+				vkDestroyBuffer(s.device, p.buffer, nullptr);
+			}
+			if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
+				vkFreeMemory(s.device, p.memory, nullptr);
+			}
+		}
+		s.pendingBufferDestroyCount = 0u;
 		if (s.framebufferHandles != nullptr) {
 			for (uint32_t i = 0; i < s.framebufferHandleCount; ++i) {
 				_priv::VkState::FramebufferHandle &h = s.framebufferHandles[i];
@@ -2536,6 +2845,11 @@ void destroyContext(RendererContext &context) {
 		s.pendingFboDestroys = nullptr;
 	}
 	s.pendingFboDestroyCapacity = 0u;
+	if (s.pendingBufferDestroys != nullptr) {
+		core_free(s.pendingBufferDestroys);
+		s.pendingBufferDestroys = nullptr;
+	}
+	s.pendingBufferDestroyCapacity = 0u;
 	for (uint32_t f = 0; f < _priv::MAX_FRAMES_IN_FLIGHT; ++f) {
 		if (s.pendingFreeSets[f] != nullptr) {
 			core_free(s.pendingFreeSets[f]);
@@ -2611,18 +2925,33 @@ void destroyContext(RendererContext &context) {
 				core_free((void *)s.bufferHandles[i].data);
 				s.bufferHandles[i].data = nullptr;
 			}
+			if (s.bufferHandles[i].stableData != nullptr) {
+				core_free(s.bufferHandles[i].stableData);
+				s.bufferHandles[i].stableData = nullptr;
+				s.bufferHandles[i].stableDataSize = 0u;
+			}
 		}
 		delete[] s.bufferHandles;
 		s.bufferHandles = nullptr;
 	}
 	s.bufferHandleCount = 0;
 	s.bufferHandleCapacity = 0;
+	if (s.bufferIdIndex != nullptr) {
+		core_free(s.bufferIdIndex);
+		s.bufferIdIndex = nullptr;
+	}
+	s.bufferIdIndexCapacity = 0u;
 	if (s.vaoHandles != nullptr) {
 		delete[] s.vaoHandles;
 		s.vaoHandles = nullptr;
 	}
 	s.vaoHandleCount = 0;
 	s.vaoHandleCapacity = 0;
+	if (s.vaoIdIndex != nullptr) {
+		core_free(s.vaoIdIndex);
+		s.vaoIdIndex = nullptr;
+	}
+	s.vaoIdIndexCapacity = 0u;
 	if (s.textureHandles != nullptr) {
 		delete[] s.textureHandles;
 		s.textureHandles = nullptr;
@@ -2646,6 +2975,9 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	s.windowWidth = windowWidth;
 	s.windowHeight = windowHeight;
 	s.scaleFactor = scaleFactor;
+	// Vulkan NDC is upper-left origin with depth in [0, 1].
+	s.clipOriginLowerLeft = false;
+	s.clipDepthZeroToOne = true;
 
 	if (s.instance == VK_NULL_HANDLE) {
 		Log::error("Vulkan instance not created - call createContext first");
@@ -2886,25 +3218,26 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 	}
 
-	// Descriptor pool large enough for ImGui's internal needs and a handful of engine resources.
-	// Matches the pool layout documented in the dear-imgui Vulkan example.
+	// Descriptor pool: ImGui + per-draw sets. UBO count is high because each
+	// draw snapshots uniforms into a fresh set while older sets stay live until
+	// their frame slot is reused (MAX_FRAMES_IN_FLIGHT).
 	if (s.descriptorPool == VK_NULL_HANDLE) {
 		VkDescriptorPoolSize poolSizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-											{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+											{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4000},
 											{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
 											{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
 											{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
 											{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-											{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+											{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4000},
 											{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
-											{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+											{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 16000},
 											{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
 											{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 		VkDescriptorPoolCreateInfo poolInfo;
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.pNext = nullptr;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 1000 * (uint32_t)lengthof(poolSizes);
+		poolInfo.maxSets = 16000;
 		poolInfo.poolSizeCount = (uint32_t)lengthof(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 		VkResult poolRes = vkCreateDescriptorPool(s.device, &poolInfo, nullptr, &s.descriptorPool);
@@ -3237,6 +3570,7 @@ namespace _priv {
 // Forward decls for helpers defined further down in this file.
 static void releasePendingDescriptorSets(VkState &s, uint32_t frame);
 static void releasePendingFboDestroys(VkState &s);
+static void releasePendingBufferDestroys(VkState &s);
 static void resetUniformRingFrame(VkState &s, uint32_t frame);
 
 // Record-time: acquire the next swapchain image and start the main render pass so that
@@ -3284,6 +3618,7 @@ static bool beginVulkanFrame(VkState &s) {
 	// vkResetFences: waitAllInFlightFrames waits every fence, including the current slot
 	// which is still signaled here but unsignaled immediately after reset.
 	releasePendingFboDestroys(s);
+	releasePendingBufferDestroys(s);
 
 	// Only reset the fence after we've successfully acquired, otherwise we'd deadlock
 	// the next wait on a frame we never submitted.
@@ -3305,6 +3640,22 @@ static bool beginVulkanFrame(VkState &s) {
 		return false;
 	}
 	resetUniformRingFrame(s, s.currentFrame);
+	s.boundGraphicsPipeline = VK_NULL_HANDLE;
+	s.boundVaoId = InvalidId;
+	s.descCacheProgramId = InvalidId;
+	s.descCacheSet = VK_NULL_HANDLE;
+	s.descCacheImage = InvalidId;
+	s.descCacheUboCount = 0u;
+	s.descBoundSet = VK_NULL_HANDLE;
+	s.descBoundDynOffsetCount = 0u;
+	for (uint32_t i = 0; i < 16u; ++i) {
+		s.descCacheTextures[i] = InvalidId;
+		s.descCacheUboBuffers[i] = VK_NULL_HANDLE;
+		s.descCacheUboRanges[i] = 0u;
+		s.descBoundDynOffsets[i] = 0u;
+	}
+	s.descCacheViewport[2] = -1;
+	s.descCacheScissor[2] = -1;
 
 	const glm::vec4 &cc = rendererState().pendingClearColor;
 	VkClearValue clearValues[2];
@@ -3329,6 +3680,7 @@ static bool beginVulkanFrame(VkState &s) {
 	rpBegin.clearValueCount = lengthof(clearValues);
 	rpBegin.pClearValues = clearValues;
 	vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+	statsRenderPass();
 
 	s.frameAcquired = true;
 	s.advancedToOverlaySubpass = false;
@@ -3463,6 +3815,26 @@ void endFrame(SDL_Window *window) {
 }
 
 void waitDeviceIdle() {
+	_priv::VkState &s = vkstate();
+	if (s.device == VK_NULL_HANDLE) {
+		return;
+	}
+	// Drop an in-progress recording without submitting so we can wait safely.
+	if (s.frameAcquired && s.frameCommandPools[s.currentFrame] != VK_NULL_HANDLE) {
+		vkResetCommandPool(s.device, s.frameCommandPools[s.currentFrame], 0);
+		s.frameAcquired = false;
+		s.mainRenderPassActive = false;
+		s.fboRenderPassActive = false;
+		s.advancedToOverlaySubpass = false;
+		s.inFlightFencePending[s.currentFrame] = false;
+	}
+	vkDeviceWaitIdle(s.device);
+	for (uint32_t i = 0; i < _priv::MAX_FRAMES_IN_FLIGHT; ++i) {
+		if (s.frameCommandPools[i] != VK_NULL_HANDLE) {
+			vkResetCommandPool(s.device, s.frameCommandPools[i], 0);
+		}
+		s.inFlightFencePending[i] = false;
+	}
 }
 
 bool checkError(bool triggerAssert) {
@@ -3588,9 +3960,24 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 }
 
 namespace _priv {
-static int32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeBits, VkMemoryPropertyFlags required) {
+static int32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeBits, VkMemoryPropertyFlags required,
+							  VkMemoryPropertyFlags preferred) {
 	VkPhysicalDeviceMemoryProperties props;
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &props);
+	// Prefer DEVICE_LOCAL|HOST_VISIBLE (ReBAR) when requested so mesh/UBO reads
+	// stay in VRAM. First match on required-only often picks sysram HOST_VISIBLE
+	// and makes large MCA scenes PCIe-bound (~10 FPS on discrete GPUs).
+	if (preferred != 0u) {
+		const VkMemoryPropertyFlags want = required | preferred;
+		for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
+			if ((typeBits & (1u << i)) == 0) {
+				continue;
+			}
+			if ((props.memoryTypes[i].propertyFlags & want) == want) {
+				return (int32_t)i;
+			}
+		}
+	}
 	for (uint32_t i = 0; i < props.memoryTypeCount; ++i) {
 		if ((typeBits & (1u << i)) == 0) {
 			continue;
@@ -3603,30 +3990,40 @@ static int32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeBits
 }
 
 static bool dedicatedAlloc(VkState &s, VkDeviceSize size, uint32_t memoryTypeBits, VkMemoryPropertyFlags properties,
-						   VkDeviceMemory *outMemory, void **outMapped) {
-	const int32_t memType = findMemoryType(s.physicalDevice, memoryTypeBits, properties);
-	if (memType < 0 || outMemory == nullptr) {
+						   VkDeviceMemory *outMemory, void **outMapped, VkMemoryPropertyFlags preferred) {
+	if (outMemory == nullptr) {
 		return false;
 	}
-	VkMemoryAllocateInfo ai{};
-	ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	ai.allocationSize = size;
-	ai.memoryTypeIndex = (uint32_t)memType;
-	if (vkAllocateMemory(s.device, &ai, nullptr, outMemory) != VK_SUCCESS) {
-		*outMemory = VK_NULL_HANDLE;
-		return false;
-	}
-	if (outMapped != nullptr) {
-		*outMapped = nullptr;
-		if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
-			if (vkMapMemory(s.device, *outMemory, 0, VK_WHOLE_SIZE, 0, outMapped) != VK_SUCCESS) {
-				vkFreeMemory(s.device, *outMemory, nullptr);
-				*outMemory = VK_NULL_HANDLE;
-				return false;
+	// Prefer ReBAR (DEVICE_LOCAL|HOST_VISIBLE) when asked, but fall back to
+	// plain HOST_VISIBLE sysram if that heap is exhausted.
+	const VkMemoryPropertyFlags prefs[2] = {preferred, 0};
+	const uint32_t passes = preferred != 0u ? 2u : 1u;
+	for (uint32_t pass = 0; pass < passes; ++pass) {
+		const int32_t memType = findMemoryType(s.physicalDevice, memoryTypeBits, properties, prefs[pass]);
+		if (memType < 0) {
+			continue;
+		}
+		VkMemoryAllocateInfo ai{};
+		ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		ai.allocationSize = size;
+		ai.memoryTypeIndex = (uint32_t)memType;
+		if (vkAllocateMemory(s.device, &ai, nullptr, outMemory) != VK_SUCCESS) {
+			*outMemory = VK_NULL_HANDLE;
+			continue;
+		}
+		if (outMapped != nullptr) {
+			*outMapped = nullptr;
+			if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
+				if (vkMapMemory(s.device, *outMemory, 0, VK_WHOLE_SIZE, 0, outMapped) != VK_SUCCESS) {
+					vkFreeMemory(s.device, *outMemory, nullptr);
+					*outMemory = VK_NULL_HANDLE;
+					continue;
+				}
 			}
 		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool ensureSlabCapacity(VkState &s) {
@@ -3652,76 +4049,84 @@ static bool ensureSlabCapacity(VkState &s) {
 
 static bool slabAlloc(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
 					  VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-					  void **outMapped) {
+					  void **outMapped, VkMemoryPropertyFlags preferred) {
 	if (s.device == VK_NULL_HANDLE || size == 0u || outMemory == nullptr || outOffset == nullptr) {
-		return false;
-	}
-	const int32_t memType = findMemoryType(s.physicalDevice, memoryTypeBits, properties);
-	if (memType < 0) {
 		return false;
 	}
 	if (alignment < 256u) {
 		alignment = 256u;
 	}
-	for (uint32_t i = 0; i < s.memorySlabCount; ++i) {
-		VkState::MemorySlab &slab = s.memorySlabs[i];
-		if (slab.memoryTypeIndex != (uint32_t)memType || slab.memory == VK_NULL_HANDLE) {
-			continue;
-		}
-		const VkDeviceSize aligned = (slab.used + alignment - 1u) & ~(alignment - 1u);
-		if (aligned + size <= slab.capacity) {
-			*outMemory = slab.memory;
-			*outOffset = aligned;
-			if (outMapped != nullptr) {
-				*outMapped = (slab.mapped != nullptr) ? ((uint8_t *)slab.mapped + aligned) : nullptr;
-			}
-			slab.used = aligned + size;
-			return true;
-		}
-	}
 	if (size + alignment > VkState::MEMORY_SLAB_SIZE) {
 		return false;
 	}
-	if (!ensureSlabCapacity(s)) {
-		Log::error("Vulkan memory slab grow failed");
-		return false;
-	}
-	VkMemoryAllocateInfo ai{};
-	ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	ai.allocationSize = VkState::MEMORY_SLAB_SIZE;
-	ai.memoryTypeIndex = (uint32_t)memType;
-	VkState::MemorySlab &slab = s.memorySlabs[s.memorySlabCount];
-	if (vkAllocateMemory(s.device, &ai, nullptr, &slab.memory) != VK_SUCCESS) {
-		Log::error("Failed to allocate %llu byte memory slab", (unsigned long long)VkState::MEMORY_SLAB_SIZE);
-		slab.memory = VK_NULL_HANDLE;
-		return false;
-	}
-	slab.capacity = VkState::MEMORY_SLAB_SIZE;
-	slab.used = 0;
-	slab.memoryTypeIndex = (uint32_t)memType;
-	slab.properties = properties;
-	slab.mapped = nullptr;
-	if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
-		if (vkMapMemory(s.device, slab.memory, 0, VK_WHOLE_SIZE, 0, &slab.mapped) != VK_SUCCESS) {
-			Log::error("Failed to map memory slab");
-			vkFreeMemory(s.device, slab.memory, nullptr);
-			slab.memory = VK_NULL_HANDLE;
+	// Prefer ReBAR when requested; if that heap cannot fit another 64MiB slab,
+	// fall back to host-visible sysram so mesh uploads keep working.
+	const VkMemoryPropertyFlags prefs[2] = {preferred, 0};
+	const uint32_t passes = preferred != 0u ? 2u : 1u;
+	for (uint32_t pass = 0; pass < passes; ++pass) {
+		const int32_t memType = findMemoryType(s.physicalDevice, memoryTypeBits, properties, prefs[pass]);
+		if (memType < 0) {
+			continue;
+		}
+		for (uint32_t i = 0; i < s.memorySlabCount; ++i) {
+			VkState::MemorySlab &slab = s.memorySlabs[i];
+			if (slab.memoryTypeIndex != (uint32_t)memType || slab.memory == VK_NULL_HANDLE) {
+				continue;
+			}
+			const VkDeviceSize aligned = (slab.used + alignment - 1u) & ~(alignment - 1u);
+			if (aligned + size <= slab.capacity) {
+				*outMemory = slab.memory;
+				*outOffset = aligned;
+				if (outMapped != nullptr) {
+					*outMapped = (slab.mapped != nullptr) ? ((uint8_t *)slab.mapped + aligned) : nullptr;
+				}
+				slab.used = aligned + size;
+				return true;
+			}
+		}
+		if (!ensureSlabCapacity(s)) {
+			Log::error("Vulkan memory slab grow failed");
 			return false;
 		}
+		VkMemoryAllocateInfo ai{};
+		ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		ai.allocationSize = VkState::MEMORY_SLAB_SIZE;
+		ai.memoryTypeIndex = (uint32_t)memType;
+		VkState::MemorySlab &slab = s.memorySlabs[s.memorySlabCount];
+		if (vkAllocateMemory(s.device, &ai, nullptr, &slab.memory) != VK_SUCCESS) {
+			slab.memory = VK_NULL_HANDLE;
+			Log::debug("Vulkan memory slab alloc failed for memoryType %d (pass %u)", memType, pass);
+			continue;
+		}
+		slab.capacity = VkState::MEMORY_SLAB_SIZE;
+		slab.used = 0;
+		slab.memoryTypeIndex = (uint32_t)memType;
+		slab.properties = properties;
+		slab.mapped = nullptr;
+		if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
+			if (vkMapMemory(s.device, slab.memory, 0, VK_WHOLE_SIZE, 0, &slab.mapped) != VK_SUCCESS) {
+				Log::error("Failed to map memory slab");
+				vkFreeMemory(s.device, slab.memory, nullptr);
+				slab.memory = VK_NULL_HANDLE;
+				continue;
+			}
+		}
+		++s.memorySlabCount;
+		*outMemory = slab.memory;
+		*outOffset = 0;
+		if (outMapped != nullptr) {
+			*outMapped = slab.mapped;
+		}
+		slab.used = size;
+		return true;
 	}
-	++s.memorySlabCount;
-	*outMemory = slab.memory;
-	*outOffset = 0;
-	if (outMapped != nullptr) {
-		*outMapped = slab.mapped;
-	}
-	slab.used = size;
-	return true;
+	Log::error("Failed to allocate %llu byte memory slab", (unsigned long long)VkState::MEMORY_SLAB_SIZE);
+	return false;
 }
 
 static bool allocGpuMemory(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
 						   VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-						   void **outMapped, bool *outSlab) {
+						   void **outMapped, bool *outSlab, VkMemoryPropertyFlags preferred) {
 	if (size + (alignment > 256u ? alignment : 256u) > VkState::MEMORY_SLAB_SIZE) {
 		if (outSlab != nullptr) {
 			*outSlab = false;
@@ -3729,12 +4134,12 @@ static bool allocGpuMemory(VkState &s, VkDeviceSize size, VkDeviceSize alignment
 		if (outOffset != nullptr) {
 			*outOffset = 0;
 		}
-		return dedicatedAlloc(s, size, memoryTypeBits, properties, outMemory, outMapped);
+		return dedicatedAlloc(s, size, memoryTypeBits, properties, outMemory, outMapped, preferred);
 	}
 	if (outSlab != nullptr) {
 		*outSlab = true;
 	}
-	return slabAlloc(s, size, alignment, memoryTypeBits, properties, outMemory, outOffset, outMapped);
+	return slabAlloc(s, size, alignment, memoryTypeBits, properties, outMemory, outOffset, outMapped, preferred);
 }
 
 static void destroyMemorySlabs(VkState &s) {
@@ -3760,46 +4165,77 @@ static void destroyMemorySlabs(VkState &s) {
 }
 
 static VkBufferUsageFlags bufferUsageFor(BufferType type) {
+	VkBufferUsageFlags usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	switch (type) {
 	case BufferType::ArrayBuffer:
-		return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		break;
 	case BufferType::IndexBuffer:
-		return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		break;
 	case BufferType::UniformBuffer:
 		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	case BufferType::ShaderStorageBuffer:
-		return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		break;
 	case BufferType::IndirectBuffer:
-		return VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+		usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+		break;
 	case BufferType::PixelBuffer:
 	case BufferType::TransformBuffer:
 	case BufferType::Max:
+		usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		break;
 	}
-	return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	// Mesh-like buffers live in DEVICE_LOCAL memory and are filled via staging.
+	usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	return usage;
+}
+
+static bool bufferUseDeviceLocal(BufferType type) {
+	return type == BufferType::ArrayBuffer || type == BufferType::IndexBuffer ||
+		   type == BufferType::ShaderStorageBuffer || type == BufferType::IndirectBuffer;
 }
 
 static void destroyBufferAlloc(VkState &s, VkState::BufferHandle &h) {
-	if (h.mapped != nullptr && h.memory != VK_NULL_HANDLE && !h.slabMemory) {
-		vkUnmapMemory(s.device, h.memory);
+	if (h.buffer == VK_NULL_HANDLE && h.memory == VK_NULL_HANDLE && h.mapped == nullptr) {
+		h.capacity = 0u;
+		h.slabMemory = false;
+		h.usage = 0u;
+		return;
 	}
-	h.mapped = nullptr;
-	if (h.buffer != VK_NULL_HANDLE) {
-		vkDestroyBuffer(s.device, h.buffer, nullptr);
-		h.buffer = VK_NULL_HANDLE;
+	// Defer GPU destroy: the old VkBuffer may still be referenced by an in-flight
+	// or currently recording command buffer (common when meshes grow on upload).
+	if (s.pendingBufferDestroyCount >= s.pendingBufferDestroyCapacity) {
+		const uint32_t newCap = s.pendingBufferDestroyCapacity == 0u ? 64u : s.pendingBufferDestroyCapacity * 2u;
+		VkState::PendingBufferDestroy *newArr =
+			(VkState::PendingBufferDestroy *)core_malloc(sizeof(VkState::PendingBufferDestroy) * newCap);
+		if (s.pendingBufferDestroys != nullptr) {
+			core_memcpy(newArr, s.pendingBufferDestroys,
+						sizeof(VkState::PendingBufferDestroy) * s.pendingBufferDestroyCount);
+			core_free(s.pendingBufferDestroys);
+		}
+		s.pendingBufferDestroys = newArr;
+		s.pendingBufferDestroyCapacity = newCap;
 	}
-	if (h.memory != VK_NULL_HANDLE && !h.slabMemory) {
-		vkFreeMemory(s.device, h.memory, nullptr);
-	}
+	VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[s.pendingBufferDestroyCount++];
+	p.buffer = h.buffer;
+	p.memory = h.memory;
+	p.mapped = h.mapped;
+	p.freeMemory = h.memory != VK_NULL_HANDLE && !h.slabMemory;
+	h.buffer = VK_NULL_HANDLE;
 	h.memory = VK_NULL_HANDLE;
+	h.mapped = nullptr;
 	h.slabMemory = false;
 	h.capacity = 0u;
+	h.usage = 0u;
 }
 
 // Create or grow the VkBuffer + backing memory behind @c h so that it can hold
 // @c size bytes with the usage implied by @c h.type. Returns false on failure.
-// The backing memory is HOST_VISIBLE|HOST_COHERENT and stays persistently
-// mapped via @c h.mapped. Existing contents are not preserved across a grow.
+// Vertex/index/SSBO/indirect buffers use DEVICE_LOCAL memory (filled via staging).
+// Uniform buffers stay HOST_VISIBLE (preferring ReBAR) and persistently mapped.
+// Existing contents are not preserved across a grow.
 static bool ensureBufferAlloc(VkState &s, VkState::BufferHandle &h, size_t size) {
 	if (s.device == VK_NULL_HANDLE || size == 0u) {
 		return false;
@@ -3831,9 +4267,19 @@ static bool ensureBufferAlloc(VkState &s, VkState::BufferHandle &h, size_t size)
 	VkDeviceSize offset = 0;
 	void *mapped = nullptr;
 	bool slab = true;
-	if (!allocGpuMemory(s, req.size, req.alignment, req.memoryTypeBits,
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &h.memory, &offset,
-						&mapped, &slab)) {
+	const bool deviceLocal = bufferUseDeviceLocal(h.type);
+	if (deviceLocal) {
+		if (!allocGpuMemory(s, req.size, req.alignment, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+							&h.memory, &offset, nullptr, &slab, 0)) {
+			Log::error("No device-local memory for buffer (size=%zu)", size);
+			vkDestroyBuffer(s.device, h.buffer, nullptr);
+			h.buffer = VK_NULL_HANDLE;
+			return false;
+		}
+		mapped = nullptr;
+	} else if (!allocGpuMemory(s, req.size, req.alignment, req.memoryTypeBits,
+							   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &h.memory,
+							   &offset, &mapped, &slab, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
 		Log::error("No host-visible memory for buffer (size=%zu)", size);
 		vkDestroyBuffer(s.device, h.buffer, nullptr);
 		h.buffer = VK_NULL_HANDLE;
@@ -3855,6 +4301,169 @@ static bool ensureBufferAlloc(VkState &s, VkState::BufferHandle &h, size_t size)
 	h.mapped = mapped;
 	h.slabMemory = slab;
 	h.capacity = req.size;
+	return true;
+}
+
+// Upload bytes into @p h at @p offset. Host-visible buffers memcpy; DEVICE_LOCAL
+// buffers go through a staging buffer + vkCmdCopyBuffer.
+static bool uploadBufferRegion(VkState &s, VkState::BufferHandle &h, size_t offset, const void *data, size_t size) {
+	if (data == nullptr || size == 0u || h.buffer == VK_NULL_HANDLE) {
+		return data == nullptr || size == 0u;
+	}
+	if (offset + size > (size_t)h.capacity) {
+		return false;
+	}
+	if (h.mapped != nullptr) {
+		core_memcpy((uint8_t *)h.mapped + offset, data, size);
+		return true;
+	}
+
+	VkBuffer staging = VK_NULL_HANDLE;
+	VkDeviceMemory stagingMem = VK_NULL_HANDLE;
+	void *stagingPtr = nullptr;
+	VkBufferCreateInfo bci{};
+	bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bci.size = (VkDeviceSize)size;
+	bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	if (vkCreateBuffer(s.device, &bci, nullptr, &staging) != VK_SUCCESS) {
+		Log::error("uploadBufferRegion: staging create failed");
+		return false;
+	}
+	VkMemoryRequirements bmr;
+	vkGetBufferMemoryRequirements(s.device, staging, &bmr);
+	if (!dedicatedAlloc(s, bmr.size, bmr.memoryTypeBits,
+						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingMem,
+						&stagingPtr, 0) ||
+		stagingPtr == nullptr) {
+		Log::error("uploadBufferRegion: staging alloc failed");
+		vkDestroyBuffer(s.device, staging, nullptr);
+		return false;
+	}
+	if (vkBindBufferMemory(s.device, staging, stagingMem, 0) != VK_SUCCESS) {
+		Log::error("uploadBufferRegion: staging bind failed");
+		if (stagingPtr != nullptr) {
+			vkUnmapMemory(s.device, stagingMem);
+		}
+		vkFreeMemory(s.device, stagingMem, nullptr);
+		vkDestroyBuffer(s.device, staging, nullptr);
+		return false;
+	}
+	core_memcpy(stagingPtr, data, size);
+
+	VkBufferCopy region{};
+	region.srcOffset = 0;
+	region.dstOffset = (VkDeviceSize)offset;
+	region.size = (VkDeviceSize)size;
+
+	if (s.frameAcquired && s.frameCommandBuffers[s.currentFrame] != VK_NULL_HANDLE) {
+		endFboRenderPassIfActive(s);
+		endMainRenderPassIfActive(s);
+		VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
+		VkBufferMemoryBarrier barriers[2]{};
+		barriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barriers[0].srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+		barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barriers[0].buffer = staging;
+		barriers[0].offset = 0;
+		barriers[0].size = VK_WHOLE_SIZE;
+		barriers[1].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barriers[1].srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+									 VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+		barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barriers[1].buffer = h.buffer;
+		barriers[1].offset = (VkDeviceSize)offset;
+		barriers[1].size = (VkDeviceSize)size;
+		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_HOST_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT |
+									  VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+							 VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 2, barriers, 0, nullptr);
+		vkCmdCopyBuffer(cmd, staging, h.buffer, 1, &region);
+		VkBufferMemoryBarrier after{};
+		after.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		after.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		after.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT |
+							  VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		after.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		after.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		after.buffer = h.buffer;
+		after.offset = (VkDeviceSize)offset;
+		after.size = (VkDeviceSize)size;
+		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+							 VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+								 VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+							 0, 0, nullptr, 1, &after, 0, nullptr);
+		// Staging must stay alive until this frame finishes.
+		if (s.pendingBufferDestroyCount >= s.pendingBufferDestroyCapacity) {
+			const uint32_t newCap = s.pendingBufferDestroyCapacity == 0u ? 64u : s.pendingBufferDestroyCapacity * 2u;
+			VkState::PendingBufferDestroy *newArr =
+				(VkState::PendingBufferDestroy *)core_malloc(sizeof(VkState::PendingBufferDestroy) * newCap);
+			if (s.pendingBufferDestroys != nullptr) {
+				core_memcpy(newArr, s.pendingBufferDestroys,
+							sizeof(VkState::PendingBufferDestroy) * s.pendingBufferDestroyCount);
+				core_free(s.pendingBufferDestroys);
+			}
+			s.pendingBufferDestroys = newArr;
+			s.pendingBufferDestroyCapacity = newCap;
+		}
+		VkState::PendingBufferDestroy &pend = s.pendingBufferDestroys[s.pendingBufferDestroyCount++];
+		pend.buffer = staging;
+		pend.memory = stagingMem;
+		pend.mapped = stagingPtr;
+		pend.freeMemory = true;
+		return true;
+	}
+
+	// Outside a frame: one-shot submit.
+	if (s.commandPool == VK_NULL_HANDLE) {
+		vkUnmapMemory(s.device, stagingMem);
+		vkFreeMemory(s.device, stagingMem, nullptr);
+		vkDestroyBuffer(s.device, staging, nullptr);
+		return false;
+	}
+	VkCommandBufferAllocateInfo cbai{};
+	cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cbai.commandPool = s.commandPool;
+	cbai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cbai.commandBufferCount = 1;
+	VkCommandBuffer ccb = VK_NULL_HANDLE;
+	if (vkAllocateCommandBuffers(s.device, &cbai, &ccb) != VK_SUCCESS || ccb == VK_NULL_HANDLE) {
+		vkUnmapMemory(s.device, stagingMem);
+		vkFreeMemory(s.device, stagingMem, nullptr);
+		vkDestroyBuffer(s.device, staging, nullptr);
+		return false;
+	}
+	VkCommandBufferBeginInfo cbbi{};
+	cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cbbi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	vkBeginCommandBuffer(ccb, &cbbi);
+	vkCmdCopyBuffer(ccb, staging, h.buffer, 1, &region);
+	VkBufferMemoryBarrier after{};
+	after.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	after.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	after.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
+	after.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	after.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	after.buffer = h.buffer;
+	after.offset = (VkDeviceSize)offset;
+	after.size = (VkDeviceSize)size;
+	vkCmdPipelineBarrier(ccb, VK_PIPELINE_STAGE_TRANSFER_BIT,
+						 VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 1,
+						 &after, 0, nullptr);
+	vkEndCommandBuffer(ccb);
+	VkSubmitInfo si{};
+	si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	si.commandBufferCount = 1;
+	si.pCommandBuffers = &ccb;
+	vkQueueSubmit(s.graphicsQueue, 1, &si, VK_NULL_HANDLE);
+	vkQueueWaitIdle(s.graphicsQueue);
+	vkFreeCommandBuffers(s.device, s.commandPool, 1, &ccb);
+	vkUnmapMemory(s.device, stagingMem);
+	vkFreeMemory(s.device, stagingMem, nullptr);
+	vkDestroyBuffer(s.device, staging, nullptr);
 	return true;
 }
 
@@ -3945,6 +4554,26 @@ static void releasePendingFboDestroys(VkState &s) {
 		}
 	}
 	s.pendingFboDestroyCount = 0u;
+}
+
+static void releasePendingBufferDestroys(VkState &s) {
+	if (s.pendingBufferDestroyCount == 0u || s.device == VK_NULL_HANDLE) {
+		return;
+	}
+	waitAllInFlightFrames(s);
+	for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
+		const VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
+		if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
+			vkUnmapMemory(s.device, p.memory);
+		}
+		if (p.buffer != VK_NULL_HANDLE) {
+			vkDestroyBuffer(s.device, p.buffer, nullptr);
+		}
+		if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
+			vkFreeMemory(s.device, p.memory, nullptr);
+		}
+	}
+	s.pendingBufferDestroyCount = 0u;
 }
 
 static void queuePendingFramebufferAndView(VkState &s, VkFramebuffer framebuffer, VkImageView extraView) {
@@ -4293,6 +4922,7 @@ static void resumeMainRenderPass(VkState &s) {
 	rpBegin.clearValueCount = 0;
 	rpBegin.pClearValues = nullptr;
 	vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+	statsRenderPass();
 	s.mainRenderPassActive = true;
 	// Resumed pass starts at subpass 0; allow draws and overlay advance again.
 	s.advancedToOverlaySubpass = false;
@@ -4394,6 +5024,7 @@ static bool beginFboRenderPass(VkState &s, VkState::FramebufferHandle &fb, FboBe
 		rpBegin.pClearValues = nullptr;
 	}
 	vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+	statsRenderPass();
 	s.fboRenderPassActive = true;
 	s.boundFboHandle = fb.id;
 	s.currentRenderPass = rpBegin.renderPass;
@@ -4449,7 +5080,8 @@ bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 	VkMemoryRequirements memReq;
 	vkGetBufferMemoryRequirements(s.device, staging, &memReq);
 	int32_t memType = _priv::findMemoryType(s.physicalDevice, memReq.memoryTypeBits,
-											VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+											VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+											0);
 	if (memType < 0) {
 		Log::error("readFramebuffer: no host-visible memory type");
 		vkDestroyBuffer(s.device, staging, nullptr);
@@ -4676,27 +5308,33 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 }
 
 void genBuffers(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (!_priv::ensureBufferCapacity(s)) {
 			ids[i] = InvalidId;
 			continue;
 		}
-		_priv::VkState::BufferHandle &h = s.bufferHandles[s.bufferHandleCount++];
+		const uint32_t index = s.bufferHandleCount++;
+		_priv::VkState::BufferHandle &h = s.bufferHandles[index];
 		h.id = _priv::allocHandleId(s);
 		h.alive = true;
 		h.type = BufferType::Max;
 		h.size = 0u;
 		h.data = nullptr;
+		if (_priv::ensureIdIndexCapacity(&s.bufferIdIndex, &s.bufferIdIndexCapacity, h.id)) {
+			s.bufferIdIndex[h.id] = index;
+		}
 		ids[i] = h.id;
 	}
 }
 
 void deleteBuffers(uint8_t amount, Id *ids) {
-	_priv::VkState &s = vkstate();
-	if (s.device != VK_NULL_HANDLE) {
-		vkDeviceWaitIdle(s.device);
+	if (amount == 0) {
+		return;
 	}
+	statsResourceDestroy(amount);
+	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		Id &id = ids[i];
 		if (id == InvalidId) {
@@ -4712,25 +5350,42 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 				core_free((void *)h->data);
 				h->data = nullptr;
 			}
+			if (h->stableData != nullptr) {
+				core_free(h->stableData);
+				h->stableData = nullptr;
+				h->stableDataSize = 0u;
+			}
+			h->pushOverlayFieldCount = 0u;
+			h->pushConstantSize = 0u;
+			h->stableRingFrame = ~0u;
+			h->stableRingBuffer = VK_NULL_HANDLE;
+		}
+		if ((uint32_t)id < s.bufferIdIndexCapacity) {
+			s.bufferIdIndex[id] = ~0u;
 		}
 		id = InvalidId;
 	}
 }
 
 void genVertexArrays(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (!_priv::ensureVaoCapacity(s)) {
 			ids[i] = InvalidId;
 			continue;
 		}
-		_priv::VkState::VaoHandle &v = s.vaoHandles[s.vaoHandleCount++];
+		const uint32_t index = s.vaoHandleCount++;
+		_priv::VkState::VaoHandle &v = s.vaoHandles[index];
 		v.id = _priv::allocHandleId(s);
 		v.alive = true;
 		v.attributeCount = 0u;
 		v.indexBuffer = InvalidId;
 		for (int j = 0; j < 16; ++j) {
 			v.arrayBuffers[j] = InvalidId;
+		}
+		if (_priv::ensureIdIndexCapacity(&s.vaoIdIndex, &s.vaoIdIndexCapacity, v.id)) {
+			s.vaoIdIndex[v.id] = index;
 		}
 		ids[i] = v.id;
 	}
@@ -4810,6 +5465,8 @@ void deleteProgram(Id &id) {
 		h->uniformOffsets.clear();
 		h->uniforms.clear();
 		h->attributes.clear();
+		h->registeredBindingCount = 0u;
+		h->pushConstantSize = 0u;
 		h->alive = false;
 	}
 	id = InvalidId;
@@ -4828,6 +5485,10 @@ Id genProgram() {
 }
 
 void deleteVertexArrays(uint8_t amount, Id *ids) {
+	if (amount == 0) {
+		return;
+	}
+	statsResourceDestroy(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		Id &id = ids[i];
@@ -4840,11 +5501,15 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 			v->attributeCount = 0u;
 			v->indexBuffer = InvalidId;
 		}
+		if ((uint32_t)id < s.vaoIdIndexCapacity) {
+			s.vaoIdIndex[id] = ~0u;
+		}
 		id = InvalidId;
 	}
 }
 
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (!_priv::ensureTextureCapacity(s)) {
@@ -4891,7 +5556,14 @@ static void destroyTextureGpu(_priv::VkState &s, _priv::VkState::TextureHandle &
 }
 
 void deleteTextures(uint8_t amount, Id *ids) {
+	if (amount == 0) {
+		return;
+	}
+	statsResourceDestroy(amount);
 	_priv::VkState &s = vkstate();
+	if (s.device != VK_NULL_HANDLE) {
+		_priv::waitAllInFlightFrames(s);
+	}
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (ids[i] == InvalidId) {
 			continue;
@@ -4906,6 +5578,7 @@ void deleteTextures(uint8_t amount, Id *ids) {
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {
+	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (!_priv::ensureFramebufferCapacity(s)) {
@@ -4921,6 +5594,10 @@ void genFramebuffers(uint8_t amount, Id *ids) {
 }
 
 void deleteFramebuffers(uint8_t amount, Id *ids) {
+	if (amount == 0) {
+		return;
+	}
+	statsResourceDestroy(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (ids[i] == InvalidId) {
@@ -4936,6 +5613,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 				vkQueueWaitIdle(s.graphicsQueue);
 			}
 			_priv::releasePendingFboDestroys(s);
+			_priv::releasePendingBufferDestroys(s);
 			h->alive = false;
 		}
 		ids[i] = InvalidId;
@@ -4944,6 +5622,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 
 void genRenderbuffers(uint8_t amount, Id *ids) {
 	// Allocate as texture handles so FBO depth attachments can use findTextureHandle().
+	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
 		if (!_priv::ensureTextureCapacity(s)) {
@@ -5062,6 +5741,7 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 	if (s.device == VK_NULL_HANDLE || !s.frameAcquired || width <= 0 || height <= 0) {
 		return;
 	}
+	statsBlit();
 	_priv::VkState::FramebufferHandle *srcFb = _priv::findFramebufferHandle(s, handle);
 	if (srcFb == nullptr) {
 		Log::error("blitFramebuffer: unknown source framebuffer %u", handle);
@@ -5292,9 +5972,14 @@ Id bindRenderbuffer(Id handle) {
 }
 
 void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
+	if (size <= 0u) {
+		return;
+	}
+	statsUploadScopeBegin();
 	_priv::VkState &s = vkstate();
 	_priv::VkState::BufferHandle *h = _priv::findBufferHandle(s, handle);
 	if (h == nullptr) {
+		statsUploadScopeEnd();
 		return;
 	}
 	h->type = type;
@@ -5303,54 +5988,178 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 			core_free((void *)h->data);
 			h->data = nullptr;
 		}
-		if (size > 0u) {
-			h->data = (uint8_t *)core_malloc(size);
-		}
+		h->data = (uint8_t *)core_malloc(size);
 		h->size = size;
+		if (h->stableData != nullptr) {
+			core_free(h->stableData);
+			h->stableData = nullptr;
+			h->stableDataSize = 0u;
+		}
 	}
-	if (data != nullptr && h->data != nullptr && size > 0u) {
+	h->partialDirty = false;
+	h->stableRingFrame = ~0u;
+	h->stableRingBuffer = VK_NULL_HANDLE;
+	if (data != nullptr && h->data != nullptr) {
 		core_memcpy(h->data, data, size);
 	}
-	// Upload to GPU-visible, persistently-mapped VkBuffer.
-	if (size > 0u && _priv::ensureBufferAlloc(s, *h, size)) {
-		if (data != nullptr && h->mapped != nullptr) {
-			core_memcpy(h->mapped, data, size);
+	// Upload to GPU buffer (DEVICE_LOCAL via staging, or host-mapped uniforms).
+	if (_priv::ensureBufferAlloc(s, *h, size)) {
+		if (data != nullptr) {
+			if (!_priv::uploadBufferRegion(s, *h, 0u, data, size)) {
+				Log::error("bufferData: upload failed (size=%zu)", size);
+			} else {
+				statsBufferUpdate(size);
+			}
 		}
 	}
+	statsUploadScopeEnd();
 }
 
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
+	if (size == 0u) {
+		return;
+	}
+	statsUploadScopeBegin();
 	_priv::VkState &s = vkstate();
 	_priv::VkState::BufferHandle *h = _priv::findBufferHandle(s, handle);
-	if (h == nullptr || data == nullptr || size == 0u) {
+	if (h == nullptr || data == nullptr) {
+		statsUploadScopeEnd();
 		return;
 	}
 	if (offset < 0 || (size_t)offset + size > h->size) {
+		statsUploadScopeEnd();
 		return;
 	}
 	if (h->data != nullptr) {
 		core_memcpy(h->data + offset, data, size);
 	}
-	if (h->mapped != nullptr && (size_t)offset + size <= (size_t)h->capacity) {
-		core_memcpy((uint8_t *)h->mapped + offset, data, size);
+	if (h->buffer != VK_NULL_HANDLE) {
+		if (!_priv::uploadBufferRegion(s, *h, (size_t)offset, data, size)) {
+			Log::error("bufferSubData: upload failed (offset=%zu size=%zu)", (size_t)offset, size);
+			statsUploadScopeEnd();
+			return;
+		}
 	}
+	h->partialDirty = true;
+	h->partialOffset = (size_t)offset;
+	h->partialSize = size;
+	statsBufferUpdate(size);
+	statsUploadScopeEnd();
 }
 
 bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
-	(void)handle;
-	(void)type;
-	(void)size;
 	(void)flags;
-	return false;
+	if (handle == InvalidId || size == 0u) {
+		return false;
+	}
+	_priv::VkState &s = vkstate();
+	_priv::VkState::BufferHandle *h = _priv::findBufferHandle(s, handle);
+	if (h == nullptr) {
+		return false;
+	}
+	h->type = type;
+	if (h->size < size) {
+		if (h->data != nullptr) {
+			core_free((void *)h->data);
+			h->data = nullptr;
+		}
+		h->data = (uint8_t *)core_malloc(size);
+		if (h->data == nullptr) {
+			return false;
+		}
+		core_memset(h->data, 0, size);
+		h->size = size;
+	}
+	return _priv::ensureBufferAlloc(s, *h, size);
 }
 
 bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
-	(void)readBuffer;
-	(void)readOffset;
-	(void)writeBuffer;
-	(void)writeOffset;
-	(void)size;
-	return false;
+	if (readBuffer == InvalidId || writeBuffer == InvalidId || size == 0u) {
+		return false;
+	}
+	statsUploadScopeBegin();
+	_priv::VkState &s = vkstate();
+	if (!s.frameAcquired) {
+		statsUploadScopeEnd();
+		return false;
+	}
+	_priv::VkState::BufferHandle *src = _priv::findBufferHandle(s, readBuffer);
+	_priv::VkState::BufferHandle *dst = _priv::findBufferHandle(s, writeBuffer);
+	if (src == nullptr || dst == nullptr || src->buffer == VK_NULL_HANDLE || dst->buffer == VK_NULL_HANDLE) {
+		statsUploadScopeEnd();
+		return false;
+	}
+	if (readOffset < 0 || writeOffset < 0) {
+		statsUploadScopeEnd();
+		return false;
+	}
+	if ((size_t)readOffset + size > src->size || (size_t)writeOffset + size > dst->size) {
+		statsUploadScopeEnd();
+		return false;
+	}
+	// Host fallback: both buffers are persistently mapped.
+	if (src->mapped != nullptr && dst->mapped != nullptr) {
+		core_memcpy((uint8_t *)dst->mapped + writeOffset, (const uint8_t *)src->mapped + readOffset, size);
+		if (dst->data != nullptr) {
+			core_memcpy(dst->data + writeOffset, (const uint8_t *)src->mapped + readOffset, size);
+		}
+		statsBufferUpdate(size);
+		statsUploadScopeEnd();
+		return true;
+	}
+	// DEVICE_LOCAL path: GPU copy into the current frame command buffer.
+	if (src->buffer == VK_NULL_HANDLE || dst->buffer == VK_NULL_HANDLE) {
+		statsUploadScopeEnd();
+		return false;
+	}
+	_priv::endFboRenderPassIfActive(s);
+	_priv::endMainRenderPassIfActive(s);
+	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
+	VkBufferCopy region{};
+	region.srcOffset = (VkDeviceSize)readOffset;
+	region.dstOffset = (VkDeviceSize)writeOffset;
+	region.size = (VkDeviceSize)size;
+	VkBufferMemoryBarrier barriers[2]{};
+	barriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	barriers[0].srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT |
+								 VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+	barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+	barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barriers[0].buffer = src->buffer;
+	barriers[0].offset = (VkDeviceSize)readOffset;
+	barriers[0].size = (VkDeviceSize)size;
+	barriers[1].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	barriers[1].srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT |
+								 VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+	barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barriers[1].buffer = dst->buffer;
+	barriers[1].offset = (VkDeviceSize)writeOffset;
+	barriers[1].size = (VkDeviceSize)size;
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+								  VK_PIPELINE_STAGE_TRANSFER_BIT,
+						 VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 2, barriers, 0, nullptr);
+	vkCmdCopyBuffer(cmd, src->buffer, dst->buffer, 1, &region);
+	VkBufferMemoryBarrier after{};
+	after.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	after.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	after.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
+	after.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	after.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	after.buffer = dst->buffer;
+	after.offset = (VkDeviceSize)writeOffset;
+	after.size = (VkDeviceSize)size;
+	vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+						 VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 1,
+						 &after, 0, nullptr);
+	if (dst->data != nullptr && src->data != nullptr) {
+		core_memcpy(dst->data + writeOffset, src->data + readOffset, size);
+	}
+	statsBufferUpdate(size);
+	statsUploadScopeEnd();
+	return true;
 }
 
 const glm::vec4 &framebufferUV() {
@@ -5537,9 +6346,11 @@ static VkSamplerAddressMode textureWrapToVk(TextureWrap w) {
 }
 
 void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
+	statsUploadScopeBegin();
 	_priv::VkState &s = vkstate();
 	_priv::VkState::TextureHandle *h = _priv::findTextureHandle(s, texture);
 	if (h == nullptr || width <= 0 || height <= 0) {
+		statsUploadScopeEnd();
 		return;
 	}
 	h->width = width;
@@ -5615,6 +6426,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 	if (vkCreateImage(s.device, &ici, nullptr, &h->image) != VK_SUCCESS) {
 		Log::error("uploadTexture: vkCreateImage failed (%dx%d fmt=%d)", width, height, (int)actualFmt);
 		h->image = VK_NULL_HANDLE;
+		statsUploadScopeEnd();
 		return;
 	}
 
@@ -5626,12 +6438,14 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 							   &h->memory, &imgOffset, nullptr, &slab)) {
 		Log::error("uploadTexture: image memory alloc failed (%dx%d)", width, height);
 		destroyTextureGpu(s, *h);
+		statsUploadScopeEnd();
 		return;
 	}
 	h->slabMemory = slab;
 	if (vkBindImageMemory(s.device, h->image, h->memory, imgOffset) != VK_SUCCESS) {
 		Log::error("uploadTexture: vkBindImageMemory failed");
 		destroyTextureGpu(s, *h);
+		statsUploadScopeEnd();
 		return;
 	}
 
@@ -5668,6 +6482,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			Log::error("uploadTexture: staging buffer create failed");
 			if (expanded != nullptr) core_free(expanded);
 			destroyTextureGpu(s, *h);
+			statsUploadScopeEnd();
 			return;
 		}
 		VkMemoryRequirements bmr;
@@ -5681,6 +6496,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			vkDestroyBuffer(s.device, staging, nullptr);
 			if (expanded != nullptr) core_free(expanded);
 			destroyTextureGpu(s, *h);
+			statsUploadScopeEnd();
 			return;
 		}
 		if (vkBindBufferMemory(s.device, staging, stagingMem, 0) != VK_SUCCESS || ptr == nullptr) {
@@ -5690,6 +6506,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			vkFreeMemory(s.device, stagingMem, nullptr);
 			if (expanded != nullptr) core_free(expanded);
 			destroyTextureGpu(s, *h);
+			statsUploadScopeEnd();
 			return;
 		}
 		core_memcpy(ptr, uploadData, (size_t)uploadSize);
@@ -5707,6 +6524,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			vkFreeMemory(s.device, stagingMem, nullptr);
 			if (expanded != nullptr) core_free(expanded);
 			destroyTextureGpu(s, *h);
+			statsUploadScopeEnd();
 			return;
 		}
 		VkCommandBufferBeginInfo cbbi{};
@@ -5772,6 +6590,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		if (vkAllocateCommandBuffers(s.device, &cbai, &ccb) != VK_SUCCESS || ccb == VK_NULL_HANDLE) {
 			Log::error("uploadTexture: cmd buffer alloc failed for depth array init");
 			destroyTextureGpu(s, *h);
+			statsUploadScopeEnd();
 			return;
 		}
 		VkCommandBufferBeginInfo cbbi{};
@@ -5866,7 +6685,13 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		Log::error("uploadTexture: vkCreateSampler failed");
 		h->sampler = VK_NULL_HANDLE;
 	}
+	const size_t uploadBytes = (uploadData != nullptr) ? (size_t)uploadSize : 0u;
+	if (uploadBytes > 0u) {
+		statsBufferUpdate(uploadBytes);
+	}
+	statsUploadScopeEnd();
 }
+
 
 bool getVulkanTextureHandles(Id handle, void **outView, void **outSampler) {
 	_priv::VkState &s = vkstate();
@@ -5972,155 +6797,303 @@ static uint64_t hashPipelineKey(const VkState::VaoHandle *vao, VkPrimitiveTopolo
 // a set that was previously bound to a recording command buffer invalidates
 // the command buffer. Each draw gets its own set and they are released in
 // bulk when the owning frame slot cycles back around.
-static VkDescriptorSet acquireDescriptorSet(VkState &s, VkState::ProgramHandle &prog) {
-	if (prog.descriptorSetLayout == VK_NULL_HANDLE) {
-		return VK_NULL_HANDLE;
-	}
-	VkDescriptorSetAllocateInfo alloc;
-	alloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	alloc.pNext = nullptr;
-	alloc.descriptorPool = s.descriptorPool;
-	alloc.descriptorSetCount = 1;
-	alloc.pSetLayouts = &prog.descriptorSetLayout;
-	VkDescriptorSet set = VK_NULL_HANDLE;
-	VkResult r = vkAllocateDescriptorSets(s.device, &alloc, &set);
-	if (r != VK_SUCCESS) {
-		Log::error("vkAllocateDescriptorSets failed for %s: %s", prog.name.c_str(), vkResultStr(r));
-		return VK_NULL_HANDLE;
+
+// Bind descriptors for the current program. Uniform buffers use DYNAMIC offsets
+// into the per-frame ring so one VkDescriptorSet can be reused across draws that
+// only change UBO contents. Returns false if required descriptors cannot be satisfied.
+static bool bindDescriptorsForDraw(VkState &s, VkState::ProgramHandle &prog, Id programId, VkCommandBuffer cmd,
+								   VkPipelineBindPoint bindPoint) {
+	if (prog.descriptorSetLayout == VK_NULL_HANDLE || prog.layout == VK_NULL_HANDLE) {
+		return true;
 	}
 
-	VkDescriptorBufferInfo bufferInfos[16];
-	VkDescriptorImageInfo imageInfos[16];
-	VkWriteDescriptorSet writes[16];
-	uint32_t writeCount = 0u;
-	uint32_t bufferInfoCount = 0u;
-	uint32_t imageInfoCount = 0u;
-	for (uint32_t bi = 0; bi < prog.registeredBindingCount && writeCount < 16u; ++bi) {
+	// Indexed by binding number so dynamic offsets can be emitted in ascending
+	// binding order (Vulkan requirement for pDynamicOffsets).
+	VkBuffer uboBufferByBinding[16];
+	VkDeviceSize uboRangeByBinding[16];
+	uint32_t uboOffsetByBinding[16];
+	bool uboValidByBinding[16];
+	for (uint32_t i = 0; i < 16u; ++i) {
+		uboBufferByBinding[i] = VK_NULL_HANDLE;
+		uboRangeByBinding[i] = 0u;
+		uboOffsetByBinding[i] = 0u;
+		uboValidByBinding[i] = false;
+	}
+
+	Id textureIds[16];
+	for (uint32_t i = 0; i < 16u; ++i) {
+		textureIds[i] = (i < (uint32_t)lengthof(s.boundTextures)) ? s.boundTextures[i] : InvalidId;
+	}
+	const Id imageId = rendererState().imageHandle;
+
+	for (uint32_t bi = 0; bi < prog.registeredBindingCount; ++bi) {
 		const ShaderResourceBinding &rb = prog.registeredBindings[bi];
-		const uint32_t binding = rb.binding;
-		VkWriteDescriptorSet &w = writes[writeCount];
-		w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		w.pNext = nullptr;
-		w.dstSet = set;
-		w.dstBinding = binding;
-		w.dstArrayElement = 0;
-		w.descriptorCount = 1;
-		w.pTexelBufferView = nullptr;
-		if (rb.type == ShaderResourceBinding::UniformBuffer) {
-			const uint64_t key = (static_cast<uint64_t>(core::enumVal(BufferType::UniformBuffer)) << 32) |
-								 (uint64_t)binding;
-			Id uboId = InvalidId;
-			(void)s.bufferBaseBindings.get(key, uboId);
-			VkBuffer buf = VK_NULL_HANDLE;
-			VkDeviceSize uboOffset = 0u;
-			VkDeviceSize uboRange = 0u;
-			if (uboId != InvalidId) {
-				VkState::BufferHandle *bh = findBufferHandle(s, uboId);
-				if (bh != nullptr && bh->buffer != VK_NULL_HANDLE) {
-					if (snapshotUniformToRing(s, *bh, buf, uboOffset, uboRange)) {
-						// buf / offset / range filled from the per-frame ring
-					} else {
-						buf = bh->buffer;
-						uboRange = bh->size > 0u ? bh->size : VK_WHOLE_SIZE;
-					}
-				}
-			}
-			if (buf == VK_NULL_HANDLE) {
-				continue;
-			}
-			if (bufferInfoCount >= 16u) {
-				break;
-			}
-			bufferInfos[bufferInfoCount].buffer = buf;
-			bufferInfos[bufferInfoCount].offset = uboOffset;
-			bufferInfos[bufferInfoCount].range = uboRange;
-			w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			w.pImageInfo = nullptr;
-			w.pBufferInfo = &bufferInfos[bufferInfoCount];
-			++bufferInfoCount;
-		} else if (rb.type == ShaderResourceBinding::StorageImage) {
-			Id imgId = rendererState().imageHandle;
-			if (imgId == InvalidId && binding < (uint32_t)lengthof(s.boundTextures)) {
-				imgId = s.boundTextures[binding];
-			}
-			VkState::TextureHandle *th = findTextureHandle(s, imgId);
-			if (th == nullptr || th->view == VK_NULL_HANDLE) {
-				continue;
-			}
-			if (imageInfoCount >= 16u) {
-				break;
-			}
-			imageInfos[imageInfoCount].sampler = VK_NULL_HANDLE;
-			imageInfos[imageInfoCount].imageView = th->view;
-			imageInfos[imageInfoCount].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-			w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			w.pImageInfo = &imageInfos[imageInfoCount];
-			w.pBufferInfo = nullptr;
-			++imageInfoCount;
-		} else {
-			VkImageView view = VK_NULL_HANDLE;
-			VkSampler sampler = VK_NULL_HANDLE;
-			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			VkState::TextureHandle *th = nullptr;
-			if (binding < (uint32_t)lengthof(s.boundTextures)) {
-				const Id tid = s.boundTextures[binding];
-				if (tid != InvalidId) {
-					th = findTextureHandle(s, tid);
-					if (th != nullptr && th->view != VK_NULL_HANDLE && th->sampler != VK_NULL_HANDLE) {
-						view = th->view;
-						sampler = th->sampler;
-						layout = th->layout;
-					}
-				}
-			}
-			if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
-				if (th != nullptr && th->type == TextureType::Texture2DArray) {
-					view = s.placeholderDepthArrayView;
-					sampler = s.placeholderDepthArraySampler;
-					layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-				} else {
-					view = s.placeholderImageView;
-					sampler = s.placeholderSampler;
-				}
-			}
-			if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
-				continue;
-			}
-			if (imageInfoCount >= 16u) {
-				break;
-			}
-			imageInfos[imageInfoCount].sampler = sampler;
-			imageInfos[imageInfoCount].imageView = view;
-			imageInfos[imageInfoCount].imageLayout = layout;
-			w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			w.pImageInfo = &imageInfos[imageInfoCount];
-			w.pBufferInfo = nullptr;
-			++imageInfoCount;
+		if (rb.type != ShaderResourceBinding::UniformBuffer || rb.binding >= 16u) {
+			continue;
 		}
-		++writeCount;
-	}
-	if (writeCount > 0u) {
-		vkUpdateDescriptorSets(s.device, writeCount, writes, 0, nullptr);
-	} else {
-		// No bindings could be satisfied - free the set immediately and skip binding
-		vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &set);
-		return VK_NULL_HANDLE;
+		const uint64_t key =
+			(static_cast<uint64_t>(core::enumVal(BufferType::UniformBuffer)) << 32) | (uint64_t)rb.binding;
+		Id uboId = InvalidId;
+		(void)s.bufferBaseBindings.get(key, uboId);
+		if (uboId == InvalidId) {
+			continue;
+		}
+		VkState::BufferHandle *bh = findBufferHandle(s, uboId);
+		if (bh == nullptr || bh->data == nullptr || bh->size == 0u) {
+			continue;
+		}
+		VkBuffer buf = VK_NULL_HANDLE;
+		VkDeviceSize offset = 0u;
+		VkDeviceSize range = 0u;
+		if (!snapshotUniformToRing(s, *bh, buf, offset, range)) {
+			Log::error("bindDescriptorsForDraw: uniform ring snapshot failed for %s binding %u", prog.name.c_str(),
+					   rb.binding);
+			return false;
+		}
+		uboBufferByBinding[rb.binding] = buf;
+		uboRangeByBinding[rb.binding] = range;
+		uboOffsetByBinding[rb.binding] = (uint32_t)offset;
+		uboValidByBinding[rb.binding] = true;
+
+		// Push per-draw overlay fields (registered via setUniformBufferPushOverlay).
+		if (bh->pushOverlayFieldCount > 0u && bh->pushConstantSize > 0u && bh->data != nullptr &&
+			bindPoint == VK_PIPELINE_BIND_POINT_GRAPHICS && prog.pushConstantSize > 0u) {
+			const uint32_t pcSize = core_min(bh->pushConstantSize, prog.pushConstantSize);
+			uint8_t stackPc[256];
+			uint8_t *pc = stackPc;
+			uint8_t *heapPc = nullptr;
+			if (pcSize > (uint32_t)sizeof(stackPc)) {
+				heapPc = (uint8_t *)core_malloc(pcSize);
+				pc = heapPc;
+			}
+			if (pc != nullptr) {
+				core_memset(pc, 0, pcSize);
+				for (uint32_t fi = 0; fi < bh->pushOverlayFieldCount; ++fi) {
+					const UniformPushOverlayField &f = bh->pushOverlayFields[fi];
+					if ((size_t)f.uboOffset + (size_t)f.size > bh->size || f.pushOffset + f.size > pcSize) {
+						continue;
+					}
+					core_memcpy(pc + f.pushOffset, bh->data + f.uboOffset, f.size);
+				}
+				vkCmdPushConstants(cmd, prog.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, pcSize, pc);
+			}
+			if (heapPc != nullptr) {
+				core_free(heapPc);
+			}
+		}
 	}
 
-	// Queue for free on the next reuse of this frame slot.
-	const uint32_t frame = s.currentFrame;
-	if (s.pendingFreeSetCount[frame] >= s.pendingFreeSetCapacity[frame]) {
-		const uint32_t newCap = s.pendingFreeSetCapacity[frame] == 0u ? 64u : s.pendingFreeSetCapacity[frame] * 2u;
-		VkDescriptorSet *newArr = (VkDescriptorSet *)core_malloc(sizeof(VkDescriptorSet) * newCap);
-		if (s.pendingFreeSets[frame] != nullptr) {
-			core_memcpy(newArr, s.pendingFreeSets[frame], sizeof(VkDescriptorSet) * s.pendingFreeSetCount[frame]);
-			core_free(s.pendingFreeSets[frame]);
+	// Compact dynamic offsets in ascending binding order (Vulkan spec).
+	VkBuffer uboBuffers[16];
+	VkDeviceSize uboRanges[16];
+	uint32_t uboDynOffsets[16];
+	uint32_t uboCount = 0u;
+	for (uint32_t binding = 0; binding < 16u; ++binding) {
+		if (!uboValidByBinding[binding]) {
+			continue;
 		}
-		s.pendingFreeSets[frame] = newArr;
-		s.pendingFreeSetCapacity[frame] = newCap;
+		uboBuffers[uboCount] = uboBufferByBinding[binding];
+		uboRanges[uboCount] = uboRangeByBinding[binding];
+		uboDynOffsets[uboCount] = uboOffsetByBinding[binding];
+		++uboCount;
 	}
-	s.pendingFreeSets[frame][s.pendingFreeSetCount[frame]++] = set;
-	return set;
+
+	bool cacheHit = bindPoint == VK_PIPELINE_BIND_POINT_GRAPHICS && s.descCacheSet != VK_NULL_HANDLE &&
+					s.descCacheProgramId == programId && s.descCacheImage == imageId && s.descCacheUboCount == uboCount;
+	if (cacheHit) {
+		for (uint32_t i = 0; i < 16u; ++i) {
+			if (s.descCacheTextures[i] != textureIds[i]) {
+				cacheHit = false;
+				break;
+			}
+		}
+	}
+	if (cacheHit) {
+		for (uint32_t i = 0; i < uboCount; ++i) {
+			if (s.descCacheUboBuffers[i] != uboBuffers[i] || s.descCacheUboRanges[i] != uboRanges[i]) {
+				cacheHit = false;
+				break;
+			}
+		}
+	}
+
+	VkDescriptorSet set = s.descCacheSet;
+	if (!cacheHit) {
+		VkDescriptorSetAllocateInfo alloc;
+		alloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		alloc.pNext = nullptr;
+		alloc.descriptorPool = s.descriptorPool;
+		alloc.descriptorSetCount = 1;
+		alloc.pSetLayouts = &prog.descriptorSetLayout;
+		set = VK_NULL_HANDLE;
+		VkResult r = vkAllocateDescriptorSets(s.device, &alloc, &set);
+		if (r != VK_SUCCESS) {
+			Log::error("vkAllocateDescriptorSets failed for %s: %s", prog.name.c_str(), vkResultStr(r));
+			return false;
+		}
+
+		VkDescriptorBufferInfo bufferInfos[16];
+		VkDescriptorImageInfo imageInfos[16];
+		VkWriteDescriptorSet writes[16];
+		uint32_t writeCount = 0u;
+		uint32_t bufferInfoCount = 0u;
+		uint32_t imageInfoCount = 0u;
+
+		for (uint32_t bi = 0; bi < prog.registeredBindingCount && writeCount < 16u; ++bi) {
+			const ShaderResourceBinding &rb = prog.registeredBindings[bi];
+			const uint32_t binding = rb.binding;
+			VkWriteDescriptorSet &w = writes[writeCount];
+			w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			w.pNext = nullptr;
+			w.dstSet = set;
+			w.dstBinding = binding;
+			w.dstArrayElement = 0;
+			w.descriptorCount = 1;
+			w.pTexelBufferView = nullptr;
+			if (rb.type == ShaderResourceBinding::UniformBuffer) {
+				if (binding >= 16u || !uboValidByBinding[binding] || bufferInfoCount >= 16u) {
+					Log::error("bindDescriptorsForDraw: missing uniform buffer for %s binding %u", prog.name.c_str(),
+							   binding);
+					vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &set);
+					return false;
+				}
+				bufferInfos[bufferInfoCount].buffer = uboBufferByBinding[binding];
+				bufferInfos[bufferInfoCount].offset = 0u;
+				bufferInfos[bufferInfoCount].range = uboRangeByBinding[binding];
+				w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+				w.pImageInfo = nullptr;
+				w.pBufferInfo = &bufferInfos[bufferInfoCount];
+				++bufferInfoCount;
+			} else if (rb.type == ShaderResourceBinding::StorageImage) {
+				Id imgId = imageId;
+				if (imgId == InvalidId && binding < (uint32_t)lengthof(s.boundTextures)) {
+					imgId = s.boundTextures[binding];
+				}
+				VkState::TextureHandle *th = findTextureHandle(s, imgId);
+				if (th == nullptr || th->view == VK_NULL_HANDLE) {
+					continue;
+				}
+				if (imageInfoCount >= 16u) {
+					break;
+				}
+				imageInfos[imageInfoCount].sampler = VK_NULL_HANDLE;
+				imageInfos[imageInfoCount].imageView = th->view;
+				imageInfos[imageInfoCount].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+				w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				w.pImageInfo = &imageInfos[imageInfoCount];
+				w.pBufferInfo = nullptr;
+				++imageInfoCount;
+			} else {
+				VkImageView view = VK_NULL_HANDLE;
+				VkSampler sampler = VK_NULL_HANDLE;
+				VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				VkState::TextureHandle *th = nullptr;
+				if (binding < (uint32_t)lengthof(s.boundTextures)) {
+					const Id tid = s.boundTextures[binding];
+					if (tid != InvalidId) {
+						th = findTextureHandle(s, tid);
+						if (th != nullptr && th->view != VK_NULL_HANDLE && th->sampler != VK_NULL_HANDLE &&
+							th->layout != VK_IMAGE_LAYOUT_UNDEFINED) {
+							view = th->view;
+							sampler = th->sampler;
+							layout = th->layout;
+						}
+					}
+				}
+				if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
+					if (th != nullptr && th->type == TextureType::Texture2DArray) {
+						view = s.placeholderDepthArrayView;
+						sampler = s.placeholderDepthArraySampler;
+						layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+					} else {
+						view = s.placeholderImageView;
+						sampler = s.placeholderSampler;
+					}
+				}
+				if (view == VK_NULL_HANDLE || sampler == VK_NULL_HANDLE) {
+					continue;
+				}
+				if (imageInfoCount >= 16u) {
+					break;
+				}
+				imageInfos[imageInfoCount].sampler = sampler;
+				imageInfos[imageInfoCount].imageView = view;
+				imageInfos[imageInfoCount].imageLayout = layout;
+				w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				w.pImageInfo = &imageInfos[imageInfoCount];
+				w.pBufferInfo = nullptr;
+				++imageInfoCount;
+			}
+			++writeCount;
+		}
+		if (writeCount == 0u) {
+			vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &set);
+			return false;
+		}
+		vkUpdateDescriptorSets(s.device, writeCount, writes, 0, nullptr);
+
+		const uint32_t frame = s.currentFrame;
+		if (s.pendingFreeSetCount[frame] >= s.pendingFreeSetCapacity[frame]) {
+			const uint32_t newCap = s.pendingFreeSetCapacity[frame] == 0u ? 64u : s.pendingFreeSetCapacity[frame] * 2u;
+			VkDescriptorSet *newArr = (VkDescriptorSet *)core_malloc(sizeof(VkDescriptorSet) * newCap);
+			if (s.pendingFreeSets[frame] != nullptr) {
+				core_memcpy(newArr, s.pendingFreeSets[frame], sizeof(VkDescriptorSet) * s.pendingFreeSetCount[frame]);
+				core_free(s.pendingFreeSets[frame]);
+			}
+			s.pendingFreeSets[frame] = newArr;
+			s.pendingFreeSetCapacity[frame] = newCap;
+		}
+		s.pendingFreeSets[frame][s.pendingFreeSetCount[frame]++] = set;
+
+		if (bindPoint == VK_PIPELINE_BIND_POINT_GRAPHICS) {
+			s.descCacheSet = set;
+			s.descCacheProgramId = programId;
+			s.descCacheImage = imageId;
+			s.descCacheUboCount = uboCount;
+			for (uint32_t i = 0; i < 16u; ++i) {
+				s.descCacheTextures[i] = textureIds[i];
+				s.descCacheUboBuffers[i] = (i < uboCount) ? uboBuffers[i] : VK_NULL_HANDLE;
+				s.descCacheUboRanges[i] = (i < uboCount) ? uboRanges[i] : 0u;
+			}
+		}
+	}
+
+	bool offsetsMatch = cacheHit && s.descBoundSet == set && s.descBoundDynOffsetCount == uboCount;
+	if (offsetsMatch) {
+		for (uint32_t i = 0; i < uboCount; ++i) {
+			if (s.descBoundDynOffsets[i] != uboDynOffsets[i]) {
+				offsetsMatch = false;
+				break;
+			}
+		}
+	}
+	if (offsetsMatch) {
+		statsStateChangeSkipped();
+		return true;
+	}
+
+	vkCmdBindDescriptorSets(cmd, bindPoint, prog.layout, 0, 1, &set, uboCount, uboCount > 0u ? uboDynOffsets : nullptr);
+	statsDescriptorBind();
+	if (bindPoint == VK_PIPELINE_BIND_POINT_GRAPHICS) {
+		s.descBoundSet = set;
+		s.descBoundDynOffsetCount = uboCount;
+		for (uint32_t i = 0; i < 16u; ++i) {
+			s.descBoundDynOffsets[i] = (i < uboCount) ? uboDynOffsets[i] : 0u;
+		}
+	}
+	if (cacheHit) {
+		statsStateChangeSkipped();
+	}
+	return true;
+}
+
+// Used by runShader (compute). Binds descriptors immediately; return value unused.
+static VkDescriptorSet acquireDescriptorSet(VkState &s, VkState::ProgramHandle &prog) {
+	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
+	if (!bindDescriptorsForDraw(s, prog, prog.id, cmd, VK_PIPELINE_BIND_POINT_COMPUTE)) {
+		return VK_NULL_HANDLE;
+	}
+	return (VkDescriptorSet)(uintptr_t)1; // non-null success sentinel for callers
 }
 
 static void releasePendingDescriptorSets(VkState &s, uint32_t frame) {
@@ -6131,7 +7104,6 @@ static void releasePendingDescriptorSets(VkState &s, uint32_t frame) {
 	s.pendingFreeSetCount[frame] = 0u;
 }
 
-// Apply rendererState pending viewport/scissor (same conventions as the GL backend).
 static void applyPendingViewportScissor(VkState &s, VkCommandBuffer cmd) {
 	RendererState &rs = rendererState();
 	uint32_t targetW = s.swapchainExtent.width;
@@ -6153,14 +7125,23 @@ static void applyPendingViewportScissor(VkState &s, VkCommandBuffer cmd) {
 		vpW = (int)targetW;
 		vpH = (int)targetH;
 	}
-	VkViewport vp;
-	vp.x = (float)vpX;
-	vp.y = (float)(vpY + vpH);
-	vp.width = (float)vpW;
-	vp.height = -(float)vpH;
-	vp.minDepth = 0.0f;
-	vp.maxDepth = 1.0f;
-	vkCmdSetViewport(cmd, 0, 1, &vp);
+	if (s.descCacheViewport[0] != vpX || s.descCacheViewport[1] != vpY || s.descCacheViewport[2] != vpW ||
+		s.descCacheViewport[3] != vpH) {
+		VkViewport vp;
+		vp.x = (float)vpX;
+		vp.y = (float)(vpY + vpH);
+		vp.width = (float)vpW;
+		vp.height = -(float)vpH;
+		vp.minDepth = 0.0f;
+		vp.maxDepth = 1.0f;
+		vkCmdSetViewport(cmd, 0, 1, &vp);
+		s.descCacheViewport[0] = vpX;
+		s.descCacheViewport[1] = vpY;
+		s.descCacheViewport[2] = vpW;
+		s.descCacheViewport[3] = vpH;
+	} else {
+		statsStateChangeSkipped();
+	}
 
 	// Pending scissor uses the same lower-left origin as GL glScissor().
 	int scX = rs.pendingScissorX;
@@ -6234,8 +7215,18 @@ static void applyPendingViewportScissor(VkState &s, VkCommandBuffer cmd) {
 	if (sc.extent.height == 0u) {
 		sc.extent.height = 1u;
 	}
-	vkCmdSetScissor(cmd, 0, 1, &sc);
+	if (s.descCacheScissor[0] != sc.offset.x || s.descCacheScissor[1] != sc.offset.y ||
+		s.descCacheScissor[2] != (int)sc.extent.width || s.descCacheScissor[3] != (int)sc.extent.height) {
+		vkCmdSetScissor(cmd, 0, 1, &sc);
+		s.descCacheScissor[0] = sc.offset.x;
+		s.descCacheScissor[1] = sc.offset.y;
+		s.descCacheScissor[2] = (int)sc.extent.width;
+		s.descCacheScissor[3] = (int)sc.extent.height;
+	} else {
+		statsStateChangeSkipped();
+	}
 }
+
 
 // Prepare pipeline + descriptor set + bind vertex/index buffers + set
 // viewport/scissor. Returns the command buffer to record draw calls into,
@@ -6261,22 +7252,22 @@ static VkCommandBuffer prepareDrawState(VkState &s, VkPrimitiveTopology topology
 
 	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
 
-	// Viewport & scissor use dynamic state; honor FrameBuffer::bind() and friends.
 	applyPendingViewportScissor(s, cmd);
 
-	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
-
-	if (prog->descriptorSetLayout != VK_NULL_HANDLE) {
-		VkDescriptorSet set = acquireDescriptorSet(s, *prog);
-		if (set != VK_NULL_HANDLE) {
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, prog->layout, 0, 1, &set, 0, nullptr);
-		} else {
-			return VK_NULL_HANDLE; // can't draw without required descriptors
-		}
+	if (s.boundGraphicsPipeline != pipe) {
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
+		s.boundGraphicsPipeline = pipe;
+		statsPipelineBind();
+	} else {
+		statsStateChangeSkipped();
 	}
 
-	// Bind vertex buffers in the order of the bindings created in pipeline.
-	if (vao != nullptr && vao->attributeCount > 0u) {
+	if (!bindDescriptorsForDraw(s, *prog, programId, cmd, VK_PIPELINE_BIND_POINT_GRAPHICS)) {
+		return VK_NULL_HANDLE;
+	}
+
+	const Id vaoId = rendererState().vertexArrayHandle;
+	if (vao != nullptr && vao->attributeCount > 0u && s.boundVaoId != vaoId) {
 		VkBuffer vertexBuffers[16];
 		VkDeviceSize offsets[16];
 		int seenBufferIndex[16];
@@ -6303,7 +7294,6 @@ static VkCommandBuffer prepareDrawState(VkState &s, VkPrimitiveTopology topology
 			}
 			VkState::BufferHandle *bh = findBufferHandle(s, arrId);
 			if (bh == nullptr || bh->buffer == VK_NULL_HANDLE) {
-				// nothing usable -> cannot issue the draw
 				return VK_NULL_HANDLE;
 			}
 			vertexBuffers[bindingCount] = bh->buffer;
@@ -6313,6 +7303,9 @@ static VkCommandBuffer prepareDrawState(VkState &s, VkPrimitiveTopology topology
 		if (bindingCount > 0u) {
 			vkCmdBindVertexBuffers(cmd, 0, bindingCount, vertexBuffers, offsets);
 		}
+		s.boundVaoId = vaoId;
+	} else if (vao != nullptr && s.boundVaoId == vaoId) {
+		statsStateChangeSkipped();
 	}
 
 	return cmd;
@@ -6339,6 +7332,38 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 }
 
 void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
+	if (drawCount <= 0) {
+		return;
+	}
+	if (!hasFeature(Feature::MultiDrawIndirect)) {
+		Log::error("multiDrawElementsIndirect requested without Feature::MultiDrawIndirect");
+		return;
+	}
+	_priv::VkState &s = vkstate();
+	VkCommandBuffer cmd = _priv::prepareDrawState(s, _priv::primitiveTopologyFor(mode));
+	if (cmd == VK_NULL_HANDLE) {
+		return;
+	}
+	_priv::VkState::VaoHandle *vao = _priv::findVaoHandle(s, rendererState().vertexArrayHandle);
+	Id indexId = vao != nullptr ? vao->indexBuffer : rendererState().bufferHandle[core::enumVal(BufferType::IndexBuffer)];
+	_priv::VkState::BufferHandle *ibh = _priv::findBufferHandle(s, indexId);
+	if (ibh == nullptr || ibh->buffer == VK_NULL_HANDLE) {
+		return;
+	}
+	vkCmdBindIndexBuffer(cmd, ibh->buffer, 0, _priv::indexTypeFor(type));
+
+	const Id indirectId = rendererState().bufferHandle[core::enumVal(BufferType::IndirectBuffer)];
+	_priv::VkState::BufferHandle *ind = _priv::findBufferHandle(s, indirectId);
+	if (ind == nullptr || ind->buffer == VK_NULL_HANDLE) {
+		Log::error("multiDrawElementsIndirect: no IndirectBuffer bound");
+		return;
+	}
+	const VkDeviceSize offset = (VkDeviceSize)(uintptr_t)indirect;
+	const uint32_t strideBytes =
+		stride > 0 ? (uint32_t)stride : (uint32_t)sizeof(DrawElementsIndirectCommand);
+	// One submission for the whole indirect batch (matches GL stats accounting).
+	vkCmdDrawIndexedIndirect(cmd, ind->buffer, offset, (uint32_t)drawCount, strideBytes);
+	statsDrawCall();
 }
 
 void drawArrays(Primitive mode, size_t count) {
@@ -6451,6 +7476,57 @@ void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, i
 		prog->registeredBindings[i] = bindings[i];
 		++prog->registeredBindingCount;
 	}
+	// Bindings define the descriptor set layout; rebuild pipelines/layout next draw.
+	_priv::invalidateProgramPipelines(s, *prog, true);
+}
+
+void setProgramPushConstantSize(Id program, uint32_t size) {
+	_priv::VkState &s = vkstate();
+	_priv::VkState::ProgramHandle *prog = _priv::findProgramHandle(s, program);
+	if (prog == nullptr) {
+		return;
+	}
+	// Push-constant range sizes must be a multiple of 4.
+	const uint32_t aligned = (size + 3u) & ~3u;
+	if (prog->pushConstantSize == aligned && prog->layout != VK_NULL_HANDLE) {
+		return;
+	}
+	prog->pushConstantSize = aligned;
+	// Pipelines reference the old pipeline layout; destroy them before the layout.
+	_priv::invalidateProgramPipelines(s, *prog, false);
+}
+
+void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
+	_priv::VkState &s = vkstate();
+	_priv::VkState::BufferHandle *bh = _priv::findBufferHandle(s, buffer);
+	if (bh == nullptr || fields == nullptr || count <= 0) {
+		return;
+	}
+	const uint32_t n =
+		(uint32_t)core_min(count, (int)_priv::VkState::BufferHandle::MAX_PUSH_OVERLAY_FIELDS);
+	bh->pushOverlayFieldCount = 0u;
+	bh->pushConstantSize = 0u;
+	for (uint32_t i = 0; i < n; ++i) {
+		bh->pushOverlayFields[i] = fields[i];
+		const uint32_t end = fields[i].pushOffset + fields[i].size;
+		if (end > bh->pushConstantSize) {
+			bh->pushConstantSize = end;
+		}
+		++bh->pushOverlayFieldCount;
+	}
+	bh->pushConstantSize = (bh->pushConstantSize + 3u) & ~3u;
+	// Insertion-sort by uboOffset so stable compares can walk linearly.
+	for (uint32_t i = 1; i < bh->pushOverlayFieldCount; ++i) {
+		UniformPushOverlayField key = bh->pushOverlayFields[i];
+		int32_t j = (int32_t)i - 1;
+		while (j >= 0 && bh->pushOverlayFields[j].uboOffset > key.uboOffset) {
+			bh->pushOverlayFields[j + 1] = bh->pushOverlayFields[j];
+			--j;
+		}
+		bh->pushOverlayFields[j + 1] = key;
+	}
+	bh->stableRingFrame = ~0u;
+	bh->stableRingBuffer = VK_NULL_HANDLE;
 }
 
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
@@ -6635,9 +7711,8 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 
 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, prog->computePipeline);
 	if (prog->descriptorSetLayout != VK_NULL_HANDLE) {
-		VkDescriptorSet set = _priv::acquireDescriptorSet(s, *prog);
-		if (set == VK_NULL_HANDLE) {
-			Log::error("runShader: failed to acquire compute descriptor set for %s", prog->name.c_str());
+		if (_priv::acquireDescriptorSet(s, *prog) == VK_NULL_HANDLE) {
+			Log::error("runShader: failed to bind compute descriptors for %s", prog->name.c_str());
 			if (resumeFbo && savedFbo != InvalidId) {
 				_priv::VkState::FramebufferHandle *fb = _priv::findFramebufferHandle(s, savedFbo);
 				if (fb != nullptr) {
@@ -6648,7 +7723,6 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 			}
 			return false;
 		}
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, prog->layout, 0, 1, &set, 0, nullptr);
 	}
 	vkCmdDispatch(cmd, workGroups.x, workGroups.y, workGroups.z);
 	waitShader(wait);
