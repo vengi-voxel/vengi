@@ -1,5 +1,3 @@
-layout(location = 0) $out vec4 o_color;
-
+// Depth-only shadow pass: no color attachments in the FBO.
 void main() {
-	o_color = vec4(0.0);
 }
