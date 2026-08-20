@@ -152,6 +152,13 @@ void activateContext(SDL_Window *window, RendererContext &context);
  */
 void endFrame(SDL_Window *window);
 /**
+ * @brief Block until the GPU has finished all submitted work.
+ *
+ * Also abandons any in-progress command buffer recording so teardown/destroy
+ * paths can safely free resources referenced by the last frames.
+ */
+void waitDeviceIdle();
+/**
  * @brief Checks the error state since the last call to this function.
  *
  * Queries the backend for any pending error state (for GL this calls glGetError

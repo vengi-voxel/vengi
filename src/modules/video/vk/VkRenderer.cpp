@@ -179,6 +179,9 @@ void syncPendingState() {
 void endFrame(SDL_Window *window) {
 }
 
+void waitDeviceIdle() {
+}
+
 bool checkError(bool triggerAssert) {
 	// Vulkan errors are checked immediately when calling functions
 	// This is mostly for API compatibility with OpenGL

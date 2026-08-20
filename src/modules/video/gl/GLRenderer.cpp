@@ -2747,6 +2747,11 @@ void endFrame(SDL_Window *window) {
 	SDL_GL_SwapWindow(window);
 }
 
+void waitDeviceIdle() {
+	core_assert(glFinish != nullptr);
+	glFinish();
+}
+
 void setup() {
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

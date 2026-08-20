@@ -103,6 +103,7 @@ void deferredDestroyEnqueue(DestroyResourceType type, Id id) {
 }
 
 void deferredDestroyFlushAll() {
+	waitDeviceIdle();
 	s_immediateMode = true;
 	for (const PendingDestroy &entry : s_pending) {
 		executeDestroy(entry.type, entry.id);
