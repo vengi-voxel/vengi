@@ -316,6 +316,7 @@ bool RawVolumeRenderer::init(bool normals) {
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
 	_voxelShaderVertData.opacity = 1.0f;
+	_voxelShaderVertData.useDrawInstances = 0;
 
 	if (_useMultiDraw) {
 		DrawInstanceData emptyInstance;
@@ -910,6 +911,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 			_voxelShaderVertData.gray = meshState->grayed(idx);
 			_voxelShaderVertData.locked = meshState->locked(idx);
 			_voxelShaderVertData.opacity = meshState->opacity(idx);
+			_voxelShaderVertData.useDrawInstances = 0;
 			core_assert_always(uploadVertUniforms(paletteChanged));
 
 			video::cullFace(meshState->cullFace(idx));
@@ -949,22 +951,35 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		const bool paletteChanged = lastPaletteHash != _paletteHash || lastNormalsHash != _normalsPaletteHash;
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
-		core_assert_always(uploadVertUniforms(paletteChanged));
 		video::cullFace(cullFace);
 
-		_drawInstanceScratch.clear();
-		_drawInstanceScratch.reserve(batchCount);
-		for (int k = i; k < j; ++k) {
-			const int idx = sorted[k];
-			DrawInstanceData inst;
-			inst.model = meshState->model(idx);
-			inst.gray = meshState->grayed(idx) ? 1 : 0;
-			inst.locked = meshState->locked(idx) ? 1 : 0;
-			inst.opacity = meshState->opacity(idx);
-			inst.pad = 0;
-			_drawInstanceScratch.push_back(inst);
+		if (batchCount == 1) {
+			// Unique mesh: keep the cheap UBO path. MCA/voxedit almost never batch.
+			_voxelShaderVertData.model = meshState->model(firstIdx);
+			_voxelShaderVertData.gray = meshState->grayed(firstIdx);
+			_voxelShaderVertData.locked = meshState->locked(firstIdx);
+			_voxelShaderVertData.opacity = meshState->opacity(firstIdx);
+			_voxelShaderVertData.useDrawInstances = 0;
+			core_assert_always(uploadVertUniforms(paletteChanged));
+			_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indexCount);
+		} else {
+			_voxelShaderVertData.useDrawInstances = 1;
+			core_assert_always(uploadVertUniforms(paletteChanged));
+			_drawInstanceScratch.clear();
+			_drawInstanceScratch.reserve(batchCount);
+			for (int k = i; k < j; ++k) {
+				const int idx = sorted[k];
+				DrawInstanceData inst;
+				inst.model = meshState->model(idx);
+				inst.gray = meshState->grayed(idx) ? 1 : 0;
+				inst.locked = meshState->locked(idx) ? 1 : 0;
+				inst.opacity = meshState->opacity(idx);
+				inst.pad = 0;
+				_drawInstanceScratch.push_back(inst);
+			}
+			submitMultiDraw(bufferIndex, voxel::MeshType_Opaque, indexCount, batchCount);
 		}
-		submitMultiDraw(bufferIndex, voxel::MeshType_Opaque, indexCount, batchCount);
 		i = j;
 	}
 
@@ -1029,21 +1044,12 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
 
-		if (_useMultiDraw) {
-			DrawInstanceData inst;
-			inst.model = meshState->model(idx);
-			inst.gray = meshState->grayed(idx) ? 1 : 0;
-			inst.locked = meshState->locked(idx) ? 1 : 0;
-			inst.opacity = opacity;
-			bindDrawInstances(&inst, 1);
-			core_assert_always(uploadVertUniforms(paletteChanged));
-		} else {
-			_voxelShaderVertData.model = meshState->model(idx);
-			_voxelShaderVertData.gray = meshState->grayed(idx);
-			_voxelShaderVertData.locked = meshState->locked(idx);
-			_voxelShaderVertData.opacity = opacity;
-			core_assert_always(uploadVertUniforms(paletteChanged));
-		}
+		_voxelShaderVertData.model = meshState->model(idx);
+		_voxelShaderVertData.gray = meshState->grayed(idx);
+		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.opacity = opacity;
+		_voxelShaderVertData.useDrawInstances = 0;
+		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 
@@ -1113,21 +1119,12 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 		lastPaletteHash = _paletteHash;
 		lastNormalsHash = _normalsPaletteHash;
 
-		if (_useMultiDraw) {
-			DrawInstanceData inst;
-			inst.model = meshState->model(idx);
-			inst.gray = meshState->grayed(idx) ? 1 : 0;
-			inst.locked = meshState->locked(idx) ? 1 : 0;
-			inst.opacity = opacity;
-			bindDrawInstances(&inst, 1);
-			core_assert_always(uploadVertUniforms(paletteChanged));
-		} else {
-			_voxelShaderVertData.model = meshState->model(idx);
-			_voxelShaderVertData.gray = meshState->grayed(idx);
-			_voxelShaderVertData.locked = meshState->locked(idx);
-			_voxelShaderVertData.opacity = opacity;
-			core_assert_always(uploadVertUniforms(paletteChanged));
-		}
+		_voxelShaderVertData.model = meshState->model(idx);
+		_voxelShaderVertData.gray = meshState->grayed(idx);
+		_voxelShaderVertData.locked = meshState->locked(idx);
+		_voxelShaderVertData.opacity = opacity;
+		_voxelShaderVertData.useDrawInstances = 0;
+		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 
