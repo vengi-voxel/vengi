@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include <stddef.h>
+#include <stdint.h>
 
 namespace video {
 
