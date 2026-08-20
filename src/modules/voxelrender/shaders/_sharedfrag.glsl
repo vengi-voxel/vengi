@@ -51,7 +51,17 @@ vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
 	 * version of textureProj that can take a sampler2DArrayShadow
 	 * Also bring the ndc into the range [0-1] because the depth map
 	 * is in that range */
-	return (lightp.xyz / lightp.w) * 0.5 + 0.5;
+	vec3 ndc = lightp.xyz / lightp.w;
+#ifdef CLIPDEPTHZ0TO1
+	vec3 uv = vec3(ndc.xy * 0.5 + 0.5, ndc.z);
+#else
+	vec3 uv = ndc * 0.5 + 0.5;
+#endif
+#ifdef CLIPORIGINUPPERLEFT
+	// Upper-left clip origin stores NDC +Y at texel row 0; flip so UV matches the map.
+	uv.y = 1.0 - uv.y;
+#endif
+	return uv;
 }
 
 vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {

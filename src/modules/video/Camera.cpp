@@ -3,6 +3,7 @@
  */
 
 #include "Camera.h"
+#include "Renderer.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/GLMConst.h"
@@ -13,6 +14,8 @@
 #include "core/GLM.h"
 #include "math/Ray.h"
 #include <glm/ext/scalar_constants.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_projection.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -504,6 +507,13 @@ math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	}
 
 	// Perspective: unproject near and far points
+	if (clipDepthZeroToOne()) {
+		const glm::vec3 origin =
+			glm::unProjectZO(glm::vec3(winX, winY, 0.0f), _viewMatrix, _projectionMatrix, viewport);
+		const glm::vec3 farPoint =
+			glm::unProjectZO(glm::vec3(winX, winY, 1.0f), _viewMatrix, _projectionMatrix, viewport);
+		return math::Ray(origin, glm::normalize(farPoint - origin));
+	}
 	const glm::vec3 origin = glm::unProject(glm::vec3(winX, winY, 0.0f), _viewMatrix, _projectionMatrix, viewport);
 	const glm::vec3 farPoint = glm::unProject(glm::vec3(winX, winY, 1.0f), _viewMatrix, _projectionMatrix, viewport);
 
@@ -588,7 +598,7 @@ void Camera::updateFrustumVertices() {
 		return;
 	}
 
-	_frustum.updateVertices(viewMatrix(), projectionMatrix());
+	_frustum.updateVertices(viewMatrix(), projectionMatrix(), clipDepthZeroToOne());
 }
 
 void Camera::updateFrustumPlanes() {
@@ -596,7 +606,7 @@ void Camera::updateFrustumPlanes() {
 		return;
 	}
 
-	_frustum.updatePlanes(viewMatrix(), projectionMatrix());
+	_frustum.updatePlanes(viewMatrix(), projectionMatrix(), clipDepthZeroToOne());
 }
 
 math::AABB<float> Camera::aabb() const {
@@ -626,6 +636,9 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		const float bottom = (float)_windowSize.y;
 		core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
+		if (clipDepthZeroToOne()) {
+			return glm::orthoZO(left, right, bottom, top, nplane, fplane);
+		}
 		return glm::ortho(left, right, bottom, top, nplane, fplane);
 	}
 	const float zoom = _orthoZoom / PIXELS_PER_UNIT;
@@ -645,11 +658,17 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		farZ =  _orthoDepth * 0.5f;
 	}
 
+	if (clipDepthZeroToOne()) {
+		return glm::orthoRH_ZO(left * zoom, right * zoom, bottom * zoom, top * zoom, nearZ, farZ);
+	}
 	return glm::orthoRH(left * zoom, right * zoom, bottom * zoom, top * zoom, nearZ, farZ);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
 	const float fov = glm::radians(_fieldOfView);
+	if (clipDepthZeroToOne()) {
+		return glm::perspectiveFovRH_ZO(fov, (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
+	}
 	return glm::perspectiveFovRH(fov, (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
 }
 

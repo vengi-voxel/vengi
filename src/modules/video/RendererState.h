@@ -21,7 +21,6 @@ namespace video {
  */
 struct RendererState {
 	core::DynamicSet<Id> textures;
-	bool clipOriginLowerLeft = true;
 	glm::vec4 clearColor {0.0f};
 	glm::vec4 pendingClearColor {0.0f};
 	Face cullFace = Face::Back;

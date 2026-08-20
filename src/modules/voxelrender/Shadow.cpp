@@ -10,6 +10,7 @@
 #include "core/collection/Array.h"
 #include "video/Renderer.h"
 #include "core/Log.h"
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
@@ -134,13 +135,13 @@ void Shadow::update(const video::Camera& camera, bool active) {
 		const float zRound = 1.0f;
 		const glm::vec3 round(xRound, yRound, zRound);
 		const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
-		const glm::mat4& lightProjection = glm::ortho(
-				 lightCenterRounded.x - lightRadius,
-				 lightCenterRounded.x + lightRadius,
-				 lightCenterRounded.y - lightRadius,
-				 lightCenterRounded.y + lightRadius,
-				-lightCenterRounded.z - (_shadowRangeZ - lightRadius),
-				-lightCenterRounded.z + lightRadius);
+		const glm::mat4 lightProjection = video::clipDepthZeroToOne()
+			? glm::orthoRH_ZO(lightCenterRounded.x - lightRadius, lightCenterRounded.x + lightRadius,
+							  lightCenterRounded.y - lightRadius, lightCenterRounded.y + lightRadius,
+							  -lightCenterRounded.z - (_shadowRangeZ - lightRadius), -lightCenterRounded.z + lightRadius)
+			: glm::ortho(lightCenterRounded.x - lightRadius, lightCenterRounded.x + lightRadius,
+						 lightCenterRounded.y - lightRadius, lightCenterRounded.y + lightRadius,
+						 -lightCenterRounded.z - (_shadowRangeZ - lightRadius), -lightCenterRounded.z + lightRadius);
 		_cascades[i] = lightProjection * _lightView;
 		_distances[i] = far;
 	}

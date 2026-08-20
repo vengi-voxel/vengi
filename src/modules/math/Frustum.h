@@ -58,13 +58,13 @@ public:
 
 	bool isVisible(const glm::vec3& center, float radius) const;
 
-	void split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const;
+	void split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne = false) const;
 
-	void updateVertices(const glm::mat4& view, const glm::mat4& projection);
+	void updateVertices(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
 
-	void updatePlanes(const glm::mat4& view, const glm::mat4& projection);
+	void updatePlanes(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
 
-	void update(const glm::mat4& view, const glm::mat4& projection);
+	void update(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
 
 	AABB<float> aabb() const;
 
@@ -94,9 +94,9 @@ inline const Plane& Frustum::plane(FrustumPlanes frustumPlane) const {
 	return _planes[(int)frustumPlane];
 }
 
-inline void Frustum::update(const glm::mat4& view, const glm::mat4& projection) {
-	updatePlanes(view, projection);
-	updateVertices(view, projection);
+inline void Frustum::update(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
+	updatePlanes(view, projection, depthZeroToOne);
+	updateVertices(view, projection, depthZeroToOne);
 }
 
 

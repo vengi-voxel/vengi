@@ -38,4 +38,13 @@ TEST_F(RendererTest, testFramebufferUvUIncreasesLeftToRight) {
 	EXPECT_LT(uv.x, uv.z);
 }
 
+TEST_F(RendererTest, testFramebufferUvYFlippedWhenClipOriginLowerLeft) {
+	const glm::vec4 &uv = framebufferUV();
+	if (clipOriginLowerLeft()) {
+		EXPECT_GT(uv.y, uv.w);
+	} else {
+		EXPECT_LT(uv.y, uv.w);
+	}
+}
+
 }

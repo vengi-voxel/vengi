@@ -333,6 +333,13 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 #endif
 
+	if (clipDepthZeroToOne()) {
+		src.append("#define CLIPDEPTHZ0TO1\n");
+	}
+	if (!clipOriginLowerLeft()) {
+		src.append("#define CLIPORIGINUPPERLEFT\n");
+	}
+
 	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
 		src.append("#ifndef ");
 		src.append(i->key);

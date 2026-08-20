@@ -485,6 +485,8 @@ enum class Feature {
 	ShaderStorageBufferObject,
 	/** Always enabled when the driver supports it (no r_* cvar). */
 	ShaderDrawParameters,
+	/** Always enabled when the driver supports it (no r_* cvar). */
+	ClipControl,
 
 	Max
 };

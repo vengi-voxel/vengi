@@ -1285,7 +1285,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			video::ScopedShader scoped(_shadowMapShader);
 			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
 				math::Frustum frustum;
-				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
+				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection, video::clipDepthZeroToOne());
 
 				core::Buffer<int> &sorted = _volumeSortScratch;
 				sorted.clear();

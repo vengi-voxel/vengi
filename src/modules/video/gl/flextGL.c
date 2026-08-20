@@ -25,6 +25,9 @@ void flextLoadOpenGLFunctions(void) {
     /* GL_ARB_buffer_storage */
     glpfBufferStorage = (PFNGLBUFFERSTORAGE_PROC*)SDL_GL_GetProcAddress("glBufferStorage");
 
+    /* GL_ARB_clip_control */
+    glpfClipControl = (PFNGLCLIPCONTROL_PROC*)SDL_GL_GetProcAddress("glClipControl");
+
     /* GL_ARB_compute_shader */
     glpfDispatchCompute = (PFNGLDISPATCHCOMPUTE_PROC*)SDL_GL_GetProcAddress("glDispatchCompute");
     glpfDispatchComputeIndirect = (PFNGLDISPATCHCOMPUTEINDIRECT_PROC*)SDL_GL_GetProcAddress("glDispatchComputeIndirect");
@@ -608,6 +611,9 @@ int flextInit(void) {
     if (SDL_GL_ExtensionSupported("GL_ARB_shader_draw_parameters")) {
         FLEXT_ARB_shader_draw_parameters = GL_TRUE;
     }
+    if (SDL_GL_ExtensionSupported("GL_ARB_clip_control")) {
+        FLEXT_ARB_clip_control = GL_TRUE;
+    }
 
     return 0;
 }
@@ -628,6 +634,7 @@ int FLEXT_ARB_texture_filter_anisotropic = GL_FALSE;
 int FLEXT_ARB_gl_spirv = GL_FALSE;
 int FLEXT_ARB_ES2_compatibility = GL_FALSE;
 int FLEXT_ARB_shader_draw_parameters = GL_FALSE;
+int FLEXT_ARB_clip_control = GL_FALSE;
 
 /* Function pointer definitions */
 
@@ -642,6 +649,10 @@ PFNGLSHADERBINARY_PROC* glpfShaderBinary = NULL;
 /* GL_ARB_buffer_storage */
 
 PFNGLBUFFERSTORAGE_PROC* glpfBufferStorage = NULL;
+
+/* GL_ARB_clip_control */
+
+PFNGLCLIPCONTROL_PROC* glpfClipControl = NULL;
 
 /* GL_ARB_compute_shader */
 

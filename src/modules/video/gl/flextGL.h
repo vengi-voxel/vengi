@@ -1200,6 +1200,15 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_MAX_FRAGMENT_UNIFORM_VECTORS 0x8DFD
 #define GL_RGB565 0x8D62
 
+/* GL_ARB_clip_control */
+
+#define GL_LOWER_LEFT 0x8CA1
+#define GL_UPPER_LEFT 0x8CA2
+#define GL_NEGATIVE_ONE_TO_ONE 0x935E
+#define GL_ZERO_TO_ONE 0x935F
+#define GL_CLIP_ORIGIN 0x935C
+#define GL_CLIP_DEPTH_MODE 0x935D
+
 /* -------------------------- FUNCTION PROTOTYPES -------------------------- */
 
 /* GL_ARB_ES2_compatibility */
@@ -1229,6 +1238,14 @@ typedef void (APIENTRY PFNGLBUFFERSTORAGE_PROC (GLenum target, GLsizeiptr size, 
 GLAPI PFNGLBUFFERSTORAGE_PROC* glpfBufferStorage;
 
 #define glBufferStorage glpfBufferStorage
+
+/* GL_ARB_clip_control */
+
+typedef void (APIENTRY PFNGLCLIPCONTROL_PROC (GLenum origin, GLenum depth));
+
+GLAPI PFNGLCLIPCONTROL_PROC* glpfClipControl;
+
+#define glClipControl glpfClipControl
 
 /* GL_ARB_compute_shader */
 
@@ -2771,6 +2788,7 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 
 #define GL_ARB_ES2_compatibility
 #define GL_ARB_buffer_storage
+#define GL_ARB_clip_control
 #define GL_ARB_compute_shader
 #define GL_ARB_debug_output
 #define GL_ARB_direct_state_access
@@ -2814,6 +2832,7 @@ extern int FLEXT_ARB_texture_filter_anisotropic;
 extern int FLEXT_ARB_gl_spirv;
 extern int FLEXT_ARB_ES2_compatibility;
 extern int FLEXT_ARB_shader_draw_parameters;
+extern int FLEXT_ARB_clip_control;
 
 int flextInit(void);
 

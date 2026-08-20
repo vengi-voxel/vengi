@@ -88,12 +88,14 @@ math::AABB<float> Frustum::aabb() const {
 	return math::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
 }
 
-void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
+void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne) const {
+	const float nearZ = depthZeroToOne ? 0.0f : -1.0f;
+	const float farZ = 1.0f;
 	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+		glm::vec4(-1.0f,  1.0f,  farZ, 1.0f), glm::vec4(-1.0f, -1.0f,  farZ, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  farZ, 1.0f), glm::vec4( 1.0f, -1.0f,  farZ, 1.0f),
+		glm::vec4(-1.0f,  1.0f, nearZ, 1.0f), glm::vec4(-1.0f, -1.0f, nearZ, 1.0f),
+		glm::vec4( 1.0f,  1.0f, nearZ, 1.0f), glm::vec4( 1.0f, -1.0f, nearZ, 1.0f)
 	};
 
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
@@ -107,7 +109,7 @@ void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_M
  * http://gamedevs.org/uploads/fast-extraction-viewing-frustum-planes-from-world-view-projection-matrix.pdf
  * https://fgiesen.wordpress.com/2012/08/31/frustum-planes-from-the-projection-matrix/
  */
-void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection) {
+void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
 	// world space
 	const glm::mat4 &clipMatrix = projection * view;
 
@@ -120,17 +122,24 @@ void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection) {
 	plane(FrustumPlanes::Left).  set(rw - rx);
 	plane(FrustumPlanes::Bottom).set(rw + ry);
 	plane(FrustumPlanes::Top).   set(rw - ry);
-	plane(FrustumPlanes::Far).   set(rw + rz);
-	plane(FrustumPlanes::Near).  set(rw - rz);
+	if (depthZeroToOne) {
+		plane(FrustumPlanes::Near).set(rz);
+		plane(FrustumPlanes::Far). set(rw - rz);
+	} else {
+		plane(FrustumPlanes::Far). set(rw + rz);
+		plane(FrustumPlanes::Near).set(rw - rz);
+	}
 }
 
-void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection) {
+void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
 	const glm::mat4& transform = glm::inverse(projection * view);
+	const float nearZ = depthZeroToOne ? 0.0f : -1.0f;
+	const float farZ = 1.0f;
 	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+		glm::vec4(-1.0f,  1.0f,  farZ, 1.0f), glm::vec4(-1.0f, -1.0f,  farZ, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  farZ, 1.0f), glm::vec4( 1.0f, -1.0f,  farZ, 1.0f),
+		glm::vec4(-1.0f,  1.0f, nearZ, 1.0f), glm::vec4(-1.0f, -1.0f, nearZ, 1.0f),
+		glm::vec4( 1.0f,  1.0f, nearZ, 1.0f), glm::vec4( 1.0f, -1.0f, nearZ, 1.0f)
 	};
 
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {

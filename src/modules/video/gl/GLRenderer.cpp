@@ -626,7 +626,8 @@ void setupFeatures(GLVersion version) {
 		{"GL_ARB_compute_shader"},
 		{"GL_ARB_transform_feedback2"},
 		{"GL_ARB_shader_storage_buffer_object"},
-		{"GL_ARB_shader_draw_parameters"}
+		{"GL_ARB_shader_draw_parameters"},
+		{"GL_ARB_clip_control"}
 	};
 	static_assert(core::enumVal(Feature::Max) == (int)lengthof(extensionArray), "Array sizes don't match for Feature enum");
 
@@ -673,13 +674,10 @@ void setupFeatures(GLVersion version) {
 	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 6)) {
 		renderState().features[core::enumVal(Feature::ShaderDrawParameters)] = true;
 	}
-
-#ifdef GL_CLIP_ORIGIN
-	GLenum clipOrigin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&clipOrigin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
-	if (clipOrigin == GL_UPPER_LEFT) {
-		s.clipOriginLowerLeft = false;
+	// Clip control is core in OpenGL 4.5+
+	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 5)) {
+		renderState().features[core::enumVal(Feature::ClipControl)] = true;
 	}
-#endif
 
 #ifdef USE_OPENGLES
 	renderState().features[core::enumVal(Feature::TextureFloat)] = true;
@@ -688,6 +686,35 @@ void setupFeatures(GLVersion version) {
 	renderState().features[core::enumVal(Feature::TextureCompressionETC2)] = true;
 #else
 	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = renderState().features[core::enumVal(Feature::TextureFloat)];
+#endif
+}
+
+void setupClipControl() {
+	RenderState &rs = renderState();
+#ifdef USE_OPENGLES
+	if (!SDL_GL_ExtensionSupported("GL_EXT_clip_control")) {
+		return;
+	}
+	typedef void (*PFNGLCLIPCONTROLEXT)(GLenum origin, GLenum depth);
+	PFNGLCLIPCONTROLEXT clipControlExt =
+		(PFNGLCLIPCONTROLEXT)SDL_GL_GetProcAddress("glClipControlEXT");
+	if (clipControlExt == nullptr) {
+		return;
+	}
+	clipControlExt(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+	rs.clipOriginLowerLeft = false;
+	rs.clipDepthZeroToOne = true;
+	rs.features[core::enumVal(Feature::ClipControl)] = true;
+	Log::debug("Enabled glClipControlEXT(GL_UPPER_LEFT, GL_ZERO_TO_ONE)");
+#else
+	if (!hasFeature(Feature::ClipControl) || glClipControl == nullptr) {
+		return;
+	}
+	glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+	checkError(false);
+	rs.clipOriginLowerLeft = false;
+	rs.clipDepthZeroToOne = true;
+	Log::debug("Enabled glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE)");
 #endif
 }
 
@@ -907,7 +934,7 @@ static void syncState() {
 		rs.scissorH = rs.pendingScissorH;
 
 		GLint bottom;
-		if (rs.clipOriginLowerLeft) {
+		if (renderState().clipOriginLowerLeft) {
 			bottom = rs.viewportH - (rs.scissorY + rs.scissorH);
 		} else {
 			bottom = rs.scissorY;
@@ -1930,9 +1957,13 @@ bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intpt
 	return true;
 }
 
-// the fbo is flipped in memory, we have to deal with it here
+// FBO color sampling: lower-left clip stores rows bottom-up; upper-left matches Vulkan.
 const glm::vec4 &framebufferUV() {
-	static const glm::vec4 uv(0.0f, 1.0f, 1.0, 0.0f);
+	if (renderState().clipOriginLowerLeft) {
+		static const glm::vec4 uv(0.0f, 1.0f, 1.0f, 0.0f);
+		return uv;
+	}
+	static const glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
 	return uv;
 }
 
@@ -2848,6 +2879,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	}
 
 	_priv::setupFeatures(glState().glVersion);
+	_priv::setupClipControl();
 	_priv::setupLimitsAndSpecs();
 	uploadRingInit();
 

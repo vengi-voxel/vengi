@@ -122,6 +122,8 @@ struct RenderState {
 	inline bool supports(video::Feature feature) const {
 		return features[core::enumVal(feature)];
 	}
+	bool clipOriginLowerLeft = true;
+	bool clipDepthZeroToOne = false;
 };
 
 RenderState &renderState();
@@ -138,6 +140,14 @@ inline void drawElements(Primitive mode, size_t numIndices, size_t indexSize, vo
 
 inline bool hasFeature(Feature feature) {
 	return renderState().supports(feature);
+}
+
+inline bool clipDepthZeroToOne() {
+	return renderState().clipDepthZeroToOne;
+}
+
+inline bool clipOriginLowerLeft() {
+	return renderState().clipOriginLowerLeft;
 }
 
 bool useFeature(Feature feature);

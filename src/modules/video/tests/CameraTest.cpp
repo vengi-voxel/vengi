@@ -10,6 +10,7 @@
 #include "math/Frustum.h"
 #include "math/Ray.h"
 #include "util/VarUtil.h"
+#include "video/Renderer.h"
 
 namespace video {
 
@@ -333,6 +334,39 @@ TEST_F(CameraTest, testMouseRay) {
 	const math::Ray& ray3 = camera.mouseRay(glm::ivec2(100, 50));
 	EXPECT_GT(ray3.direction.x, 0.0f);
 	EXPECT_NEAR(0.0f, ray3.direction.y, 0.001f);
+}
+
+// Regression: UPPER_LEFT + ZERO_TO_ONE must not skip UI Y flip for picking.
+TEST_F(CameraTest, testMouseRayClipControlUpperLeftZeroToOne) {
+	RenderState &rs = renderState();
+	const bool prevOrigin = rs.clipOriginLowerLeft;
+	const bool prevDepth = rs.clipDepthZeroToOne;
+	rs.clipOriginLowerLeft = false;
+	rs.clipDepthZeroToOne = true;
+
+	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+
+	const math::Ray &ray = camera.mouseRay(glm::ivec2(50, 50));
+	EXPECT_NEAR(0.0f, ray.direction.x, 0.001f);
+	EXPECT_NEAR(0.0f, ray.direction.y, 0.001f);
+	EXPECT_NEAR(-1.0f, ray.direction.z, 0.001f);
+
+	const math::Ray &rayTop = camera.mouseRay(glm::ivec2(50, 0));
+	EXPECT_GT(rayTop.direction.y, 0.0f);
+	EXPECT_NEAR(0.0f, rayTop.direction.x, 0.001f);
+
+	const math::Ray &rayBottom = camera.mouseRay(glm::ivec2(50, 100));
+	EXPECT_LT(rayBottom.direction.y, 0.0f);
+	EXPECT_NEAR(0.0f, rayBottom.direction.x, 0.001f);
+
+	const glm::ivec2 center = camera.worldToScreen(glm::vec3(0.0, 0.0, 0.0));
+	EXPECT_EQ(50, center.x);
+	EXPECT_EQ(50, center.y);
+	const glm::ivec2 up = camera.worldToScreen(glm::up());
+	EXPECT_LT(up.y, center.y);
+
+	rs.clipOriginLowerLeft = prevOrigin;
+	rs.clipDepthZeroToOne = prevDepth;
 }
 
 TEST_F(CameraTest, testBillboard) {
