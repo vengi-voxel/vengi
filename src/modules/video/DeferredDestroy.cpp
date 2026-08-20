@@ -56,7 +56,6 @@ void executeDestroy(DestroyResourceType type, Id id) {
 	default:
 		break;
 	}
-	statsResourceDestroy();
 }
 
 void flushReadyDestroys() {

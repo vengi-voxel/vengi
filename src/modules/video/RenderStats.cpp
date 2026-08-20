@@ -17,6 +17,9 @@ uint64_t s_frameStartTicks = 0u;
 uint64_t s_uploadScopeStartTicks = 0u;
 uint64_t s_uploadScopeDepth = 0u;
 bool s_frameOpen = false;
+double s_displayCpuRenderMs = 0.0;
+double s_displayCpuUploadMs = 0.0;
+double s_uploadThisFrameMs = 0.0;
 
 inline double ticksToMs(uint64_t ticks) {
 	const uint64_t freq = core::TimeProvider::highResTimeResolution();
@@ -57,8 +60,11 @@ const RenderStats &renderStatsTotals() {
 void beginFrameStats() {
 	s_frame = RenderStats {};
 	s_frame.frameNumber = s_totals.frameNumber + 1u;
+	s_frame.cpuRenderMs = s_displayCpuRenderMs;
+	s_frame.cpuUploadMs = s_displayCpuUploadMs;
 	s_frameStartTicks = core::TimeProvider::highResTime();
 	s_frameOpen = true;
+	s_uploadThisFrameMs = 0.0;
 }
 
 void endFrameStats() {
@@ -70,6 +76,9 @@ void endFrameStats() {
 		const uint64_t now = core::TimeProvider::highResTime();
 		s_frame.cpuRenderMs = ticksToMs(now - s_frameStartTicks);
 	}
+	s_frame.cpuUploadMs = s_uploadThisFrameMs;
+	s_displayCpuRenderMs = s_frame.cpuRenderMs;
+	s_displayCpuUploadMs = s_frame.cpuUploadMs;
 	accumulateTotals(s_frame);
 	Log::debug(
 		"render-stats {\"frame\":%" PRIu64
@@ -161,7 +170,9 @@ void statsUploadScopeEnd() {
 	--s_uploadScopeDepth;
 	if (s_uploadScopeDepth == 0u && s_uploadScopeStartTicks != 0u) {
 		const uint64_t now = core::TimeProvider::highResTime();
-		s_frame.cpuUploadMs += ticksToMs(now - s_uploadScopeStartTicks);
+		const double dt = ticksToMs(now - s_uploadScopeStartTicks);
+		s_uploadThisFrameMs += dt;
+		s_frame.cpuUploadMs = s_displayCpuUploadMs + s_uploadThisFrameMs;
 		s_uploadScopeStartTicks = 0u;
 	}
 }

@@ -1423,6 +1423,7 @@ void deleteShader(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
+	statsResourceDestroy();
 	core_assert(glIsShader != nullptr);
 	core_assert(glDeleteShader != nullptr);
 	core_assert_msg(glIsShader((GLuint)id), "%u is no valid shader object", (unsigned int)id);
@@ -1447,6 +1448,7 @@ void deleteProgram(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
+	statsResourceDestroy();
 	core_assert(glIsShader != nullptr);
 	core_assert(glDeleteProgram != nullptr);
 	core_assert_msg(glIsProgram((GLuint)id), "%u is no valid program object", (unsigned int)id);
