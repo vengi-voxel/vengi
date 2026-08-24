@@ -58,4 +58,23 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	ASSERT_TRUE(smallVolume.voxel(regionSmall.getUpperCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << smallVolume << ", " << bigVolume;
 }
 
+TEST_F(VolumeMergerTest, testMergeAndCropSparseSections) {
+	voxel::RawVolume lower(voxel::Region(0, 0, 0, 15, 15, 15));
+	voxel::RawVolume upper(voxel::Region(0, 32, 0, 15, 47, 15));
+	ASSERT_TRUE(lower.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(upper.setVoxel(2, 34, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+
+	core::Buffer<voxel::RawVolume *> volumes;
+	volumes.push_back(&lower);
+	volumes.push_back(&upper);
+
+	voxel::RawVolume *merged = voxelutil::mergeAndCrop(volumes);
+	ASSERT_NE(nullptr, merged);
+	EXPECT_EQ(glm::ivec3(1, 1, 1), merged->region().getLowerCorner());
+	EXPECT_EQ(glm::ivec3(2, 34, 2), merged->region().getUpperCorner());
+	EXPECT_TRUE(merged->voxel(1, 1, 1).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(merged->voxel(2, 34, 2).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+	delete merged;
+}
+
 }

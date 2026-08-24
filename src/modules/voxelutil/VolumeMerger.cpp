@@ -3,6 +3,8 @@
  */
 
 #include "VolumeMerger.h"
+#include "VolumeCropper.h"
+#include "VolumeVisitor.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include <glm/common.hpp>
@@ -46,6 +48,63 @@ voxel::RawVolume *merge(const core::Buffer<voxel::RawVolume *> &volumes) {
 		v.push_back(v1);
 	}
 	return merge(v);
+}
+
+voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &volumes) {
+	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
+	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+	bool found = false;
+	for (const voxel::RawVolume *v : volumes) {
+		if (v == nullptr) {
+			continue;
+		}
+		glm::ivec3 volumeMins;
+		glm::ivec3 volumeMaxs;
+		if (!computeSolidBounds(v, volumeMins, volumeMaxs)) {
+			continue;
+		}
+		if (!found) {
+			mins = volumeMins;
+			maxs = volumeMaxs;
+			found = true;
+		} else {
+			mins = (glm::min)(mins, volumeMins);
+			maxs = (glm::max)(maxs, volumeMaxs);
+		}
+	}
+	if (!found) {
+		return nullptr;
+	}
+
+	const voxel::Region mergedRegion(mins, maxs);
+	Log::debug("Starting to merge volumes into one cropped region: %i:%i:%i - %i:%i:%i", mergedRegion.getLowerX(),
+			   mergedRegion.getLowerY(), mergedRegion.getLowerZ(), mergedRegion.getUpperX(), mergedRegion.getUpperY(),
+			   mergedRegion.getUpperZ());
+	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
+	for (const voxel::RawVolume *v : volumes) {
+		if (v == nullptr) {
+			continue;
+		}
+		voxelutil::visitVolume(
+			*v,
+			[merged](int x, int y, int z, const voxel::Voxel &voxel) {
+				merged->setVoxel(x, y, z, voxel);
+			},
+			voxelutil::VisitSolid());
+	}
+	return merged;
+}
+
+voxel::RawVolume *mergeAndCrop(const core::Buffer<voxel::RawVolume *> &volumes) {
+	core::Buffer<const voxel::RawVolume *> v;
+	v.reserve(volumes.size());
+	for (const voxel::RawVolume *v1 : volumes) {
+		if (v1 == nullptr) {
+			continue;
+		}
+		v.push_back(v1);
+	}
+	return mergeAndCrop(v);
 }
 
 } // namespace voxelutil

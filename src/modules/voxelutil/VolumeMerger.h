@@ -123,4 +123,11 @@ inline int mergeRawVolumesSameDimension(voxel::RawVolume* destination, const vox
 [[nodiscard]] voxel::RawVolume* merge(const core::Buffer<voxel::RawVolume*>& volumes);
 [[nodiscard]] voxel::RawVolume* merge(const core::Buffer<const voxel::RawVolume*>& volumes);
 
+/**
+ * @brief Merge @p volumes into one volume sized to the union of their solid-voxel bounds.
+ * @return merged volume or @c nullptr if no solid voxels were found. Caller owns the result.
+ */
+[[nodiscard]] voxel::RawVolume *mergeAndCrop(const core::Buffer<voxel::RawVolume *> &volumes);
+[[nodiscard]] voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &volumes);
+
 }

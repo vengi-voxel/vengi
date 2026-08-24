@@ -215,6 +215,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			return false;
 		}
 
+		const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
 		voxel::RawVolume *volumes[SECTOR_INTS]{};
 		core::AtomicInt sectorsDone{0};
 		auto fn = [&volumes, &offsets, palette, &bufferedStream, &ctx, &sectorsDone, this](int start, int end) {
@@ -244,7 +245,6 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		app::for_parallel(0, SECTOR_INTS, fn);
 
 		int added = 0;
-		const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			if (volumes[i] == nullptr) {
 				continue;
@@ -358,15 +358,14 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 		Log::debug("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
-	voxel::RawVolume *merged = voxelutil::merge(volumes);
+	voxel::RawVolume *merged = voxelutil::mergeAndCrop(volumes);
 	for (voxel::RawVolume *v : volumes) {
 		delete v;
 	}
-	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
-	if (voxel::RawVolume *cropped = voxelutil::cropVolume(merged)) {
-		delete merged;
-		return cropped;
+	if (merged == nullptr) {
+		return nullptr;
 	}
+	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
 	return merged;
 }
 
