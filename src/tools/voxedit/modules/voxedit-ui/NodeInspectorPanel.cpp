@@ -134,8 +134,8 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				}
 			}
 
-			// sort by count descending for the chart
-			bars.sort([](const ColorBar &a, const ColorBar &b) {
+			core::DynamicArray<ColorBar> chartBars = bars;
+			chartBars.sort([](const ColorBar &a, const ColorBar &b) {
 				return a.count > b.count;
 			});
 
@@ -148,7 +148,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				ImPlot::SetupAxis(ImAxis_Y1, _("Voxels"), ImPlotAxisFlags_AutoFit);
 				ImPlot::SetupAxisLimits(ImAxis_X1, -0.5, n - 0.5, ImGuiCond_Always);
 				for (int i = 0; i < n; i++) {
-					const ColorBar &bar = bars[i];
+					const ColorBar &bar = chartBars[i];
 					const glm::vec4 &c = palette.color4(bar.index);
 					const core::String label = core::String::format("Color %d##c%d", bar.index, bar.index);
 					const float x = (float)i;
@@ -174,7 +174,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				ImGui::TableHeadersRow();
 
 				if (ImGuiTableSortSpecs *sortSpecs = ImGui::TableGetSortSpecs()) {
-					if (sortSpecs->SpecsDirty && sortSpecs->SpecsCount > 0) {
+					if (sortSpecs->SpecsCount > 0) {
 						const ImGuiTableColumnSortSpecs &sortSpec = sortSpecs->Specs[0];
 						const bool asc = sortSpec.SortDirection == ImGuiSortDirection_Ascending;
 						switch (sortSpec.ColumnIndex) {
@@ -193,7 +193,11 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 								return asc ? a.percentage < b.percentage : a.percentage > b.percentage;
 							});
 							break;
+						default:
+							break;
 						}
+					}
+					if (sortSpecs->SpecsDirty) {
 						sortSpecs->SpecsDirty = false;
 					}
 				}

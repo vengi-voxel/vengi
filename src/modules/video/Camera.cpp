@@ -484,6 +484,8 @@ void Camera::updateViewMatrix() {
 math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	const glm::vec4 viewport(0.0f, 0.0f, _windowSize.x, _windowSize.y);
 
+	// UI pixelPos is top-left; GLM unProject / NDC math expect lower-left window coords.
+	// glClipControl(UPPER_LEFT) only changes the GPU viewport mapping - always flip Y here.
 	const float winX = (float)pixelPos.x;
 	const float winY = (float)(_windowSize.y - pixelPos.y);
 
@@ -528,6 +530,7 @@ glm::ivec2 Camera::worldToScreen(const glm::mat4& matrix, const glm::vec3& world
 	glm::vec4 trans = matrix * glm::vec4(worldPos, 1.0f);
 	trans *= 0.5f / trans.w;
 	trans += glm::vec4(0.5f, 0.5f, 0.0f, 0.0f);
+	// GLM NDC is y-up (bottom=0); convert to UI top-left. Independent of clip origin.
 	trans.y = 1.0f - trans.y;
 	trans.x *= (float)_windowSize.x;
 	trans.y *= (float)_windowSize.y;
