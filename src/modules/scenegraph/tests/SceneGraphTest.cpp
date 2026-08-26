@@ -1606,4 +1606,23 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
 	EXPECT_EQ(1, validNodes) << "Node under rotated group should be found at its rotated world position";
 }
 
+TEST_F(SceneGraphTest, testRemoveUnusedColors) {
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 2, 2, 2));
+	palette::Palette pal;
+	pal.setColor(0, color::RGBA(255, 0, 0));
+	pal.setColor(1, color::RGBA(0, 255, 0));
+	pal.setColor(2, color::RGBA(0, 0, 255));
+	pal.setColor(3, color::RGBA(255, 255, 0));
+	node.setPalette(pal);
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	node.volume()->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	ASSERT_TRUE(node.removeUnusedColors(true));
+	EXPECT_EQ(2, node.palette().colorCount());
+	EXPECT_EQ(0u, node.volume()->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(1u, node.volume()->voxel(1, 0, 0).getColor());
+	EXPECT_EQ(color::RGBA(255, 0, 0), node.palette().color(0));
+	EXPECT_EQ(color::RGBA(0, 0, 255), node.palette().color(1));
+}
+
 } // namespace scenegraph

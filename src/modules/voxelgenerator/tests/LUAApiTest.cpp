@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Bezier.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
@@ -1576,6 +1577,40 @@ TEST_F(LUAApiTest, testSparseVolumeWithVolumeModule) {
 TEST_F(LUAApiTest, testScriptTerrainColoring) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "terrain-coloring.lua");
+}
+
+TEST_F(LUAApiTest, testRemoveUnusedColors) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local ok = node:removeUnusedColors(true)
+			assert(ok, "removeUnusedColors should succeed")
+			local size = node:palette():size()
+			assert(size >= 1, "palette should keep used colors, got " .. tostring(size))
+			assert(size < 256, "palette should be compacted, got " .. tostring(size))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+	scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+	EXPECT_LT(node.palette().colorCount(), palette::PaletteMaxColors);
+	EXPECT_GE(node.palette().colorCount(), 1);
+}
+
+TEST_F(LUAApiTest, testScriptShade) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "shade.lua",
+			{"45", "71", "0.3", "0.7", "5", "false", "false", "1.0", "true", "false"});
+	scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+	const voxel::RawVolume *volume = node.volume();
+	ASSERT_NE(nullptr, volume);
+	const uint8_t topIdx = volume->voxel(0, 2, 0).getColor();
+	const uint8_t botIdx = volume->voxel(0, 0, 0).getColor();
+	const color::RGBA topColor = node.palette().color(topIdx);
+	const color::RGBA botColor = node.palette().color(botIdx);
+	const int topLum = (int)topColor.r + (int)topColor.g + (int)topColor.b;
+	const int botLum = (int)botColor.r + (int)botColor.g + (int)botColor.b;
+	EXPECT_GE(topLum, botLum) << "Top voxel should be at least as bright as the bottom voxel";
+	EXPECT_GT(node.palette().colorCount(), 1) << "Shading should introduce additional palette colors";
 }
 
 } // namespace voxelgenerator

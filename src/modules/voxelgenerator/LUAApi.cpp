@@ -3530,6 +3530,13 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_removeunusedcolors(lua_State *s) {
+	LuaSceneGraphNode *node = luaVoxel_toscenegraphnode(s, 1);
+	const bool reindexPalette = clua_optboolean(s, 2, true);
+	lua_pushboolean(s, node->node->removeUnusedColors(reindexPalette) ? 1 : 0);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_normalpalette(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	palette::NormalPalette &pal = node->node->normalPalette();
@@ -6068,6 +6075,20 @@ static int luaVoxel_scenegraphnode_setpalette_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_removeunusedcolors_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "removeUnusedColors",
+		"summary": "Remove unused colors from the node's palette.",
+		"parameters": [
+			{"name": "reindex", "type": "boolean", "description": "Compact the palette and remap voxel color indices (optional, default true)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if unused colors were removed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_setpivot_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "setPivot",
@@ -6821,6 +6842,7 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"hasNormalPalette", luaVoxel_scenegraphnode_hasnormalpalette, luaVoxel_scenegraphnode_hasnormalpalette_jsonhelp},
 		{"setName", luaVoxel_scenegraphnode_setname, luaVoxel_scenegraphnode_setname_jsonhelp},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette, luaVoxel_scenegraphnode_setpalette_jsonhelp},
+		{"removeUnusedColors", luaVoxel_scenegraphnode_removeunusedcolors, luaVoxel_scenegraphnode_removeunusedcolors_jsonhelp},
 		{"setPivot", luaVoxel_scenegraphnode_setpivot, luaVoxel_scenegraphnode_setpivot_jsonhelp},
 		{"pivot", luaVoxel_scenegraphnode_pivot, luaVoxel_scenegraphnode_pivot_jsonhelp},
 		{"numKeyFrames", luaVoxel_scenegraphnode_numkeyframes, luaVoxel_scenegraphnode_numkeyframes_jsonhelp},

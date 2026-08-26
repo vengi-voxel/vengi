@@ -33,6 +33,7 @@
 | `region()` | Get the region of the model node. |
 | `removeKeyFrame(index)` | Remove a keyframe by index. |
 | `removeKeyFrameForFrame(frame)` | Remove the keyframe at the specified frame. |
+| `removeUnusedColors(reindex)` | Remove unused colors from the node's palette. |
 | `setName(name)` | Set the name of the node. |
 | `setNormalPalette(normalpalette)` | Set the normal palette of the node. |
 | `setPalette(palette, remap)` | Set the palette of the node. |
@@ -353,6 +354,22 @@ Remove the keyframe at the specified frame.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `frame` | `integer` | The frame number. |
+
+### removeUnusedColors
+
+Remove unused colors from the node's palette.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `reindex` | `boolean` | Compact the palette and remap voxel color indices (optional, default true). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if unused colors were removed. |
 
 ### setName
 
