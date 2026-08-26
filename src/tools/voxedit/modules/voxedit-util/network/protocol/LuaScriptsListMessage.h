@@ -17,6 +17,7 @@ enum class LuaParameterType : uint8_t {
 	Boolean,
 	ColorIndex,
 	Enum,
+	EnumMulti,
 	File,
 	HexColor,
 	Max

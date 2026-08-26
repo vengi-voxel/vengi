@@ -63,6 +63,23 @@ ScriptTool::ScriptTool(const voxedit::LuaScriptInfo &info) : Tool(toolName(info)
 				propSchema.set("enum", core::move(enumArray));
 			}
 			break;
+		case voxedit::LuaParameterType::EnumMulti:
+			propSchema.set("type", "array");
+			{
+				json::Json itemsSchema = json::Json::object();
+				itemsSchema.set("type", "string");
+				if (!param.enumValues.empty()) {
+					json::Json enumArray = json::Json::array();
+					core::DynamicArray<core::String> values;
+					core::string::splitString(param.enumValues, values, ";");
+					for (const core::String &v : values) {
+						enumArray.push(v.c_str());
+					}
+					itemsSchema.set("enum", core::move(enumArray));
+				}
+				propSchema.set("items", core::move(itemsSchema));
+			}
+			break;
 		case voxedit::LuaParameterType::String:
 		case voxedit::LuaParameterType::File:
 		default:
@@ -115,6 +132,18 @@ bool ScriptTool::execute(const json::Json &id, const json::Json &args, ToolConte
 						builtArgs += " ";
 					}
 					builtArgs += val.str().c_str();
+				} else if (val.isArray()) {
+					core::DynamicArray<core::String> parts;
+					for (int i = 0; i < val.size(); ++i) {
+						const json::Json entry = val.get(i);
+						if (entry.isString()) {
+							parts.push_back(entry.str().c_str());
+						}
+					}
+					if (!builtArgs.empty()) {
+						builtArgs += " ";
+					}
+					builtArgs += core::string::join(parts, ",");
 				} else if (val.isNumber()) {
 					if (!builtArgs.empty()) {
 						builtArgs += " ";

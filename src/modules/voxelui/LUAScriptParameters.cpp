@@ -75,6 +75,12 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 				}
 				break;
 			}
+			case voxelgenerator::LUAParameterType::EnumMulti: {
+				core::DynamicArray<core::String> tokens;
+				core::string::splitString(p.enumValues, tokens, ",");
+				ImGui::MultiSelectComboItems(p.name.c_str(), str, tokens);
+				break;
+			}
 			case voxelgenerator::LUAParameterType::ColorIndex: {
 				int val = core::string::toInt(str);
 				if (palette && val >= 0 && val < palette->colorCount()) {

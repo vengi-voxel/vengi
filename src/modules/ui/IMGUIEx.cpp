@@ -1149,4 +1149,313 @@ bool DisabledIconButton(const char *icon, const char *label, bool disabled, cons
 	return DisabledButton(labelWithIcon, disabled, size);
 }
 
+namespace multiSelectCombo {
+
+static bool spansEqual(const char *aBegin, const char *aEnd, const char *bBegin, const char *bEnd) {
+	const size_t lenA = (size_t)(aEnd - aBegin);
+	const size_t lenB = (size_t)(bEnd - bBegin);
+	if (lenA != lenB) {
+		return false;
+	}
+	return memcmp(aBegin, bBegin, lenA) == 0;
+}
+
+static bool nextToken(const char *&cursor, const char *valueEnd, const char **tokenBegin, const char **tokenEnd) {
+	while (cursor < valueEnd && *cursor == ',') {
+		++cursor;
+	}
+	if (cursor >= valueEnd) {
+		return false;
+	}
+	*tokenBegin = cursor;
+	while (cursor < valueEnd && *cursor != ',') {
+		++cursor;
+	}
+	*tokenEnd = cursor;
+	if (*tokenBegin == *tokenEnd) {
+		return false;
+	}
+	if (cursor < valueEnd && *cursor == ',') {
+		++cursor;
+	}
+	return true;
+}
+
+static bool hasAnyToken(const char *valueBegin, const char *valueEnd) {
+	const char *cursor = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	return nextToken(cursor, valueEnd, &tokenBegin, &tokenEnd);
+}
+
+static bool containsToken(const char *valueBegin, const char *valueEnd, const char *itemBegin, const char *itemEnd) {
+	const char *cursor = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	while (nextToken(cursor, valueEnd, &tokenBegin, &tokenEnd)) {
+		if (spansEqual(tokenBegin, tokenEnd, itemBegin, itemEnd)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static int layoutTagRows(const char *valueBegin, const char *valueEnd, float previewInnerWidth, float tagHeight,
+						 float tagSpacing, float tagPadding, float xBtnSize) {
+	if (!hasAnyToken(valueBegin, valueEnd)) {
+		return 1;
+	}
+	int rows = 1;
+	float cursorX = 0.0f;
+	const char *cursor = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	while (nextToken(cursor, valueEnd, &tokenBegin, &tokenEnd)) {
+		const float tagW = ImGui::CalcTextSize(tokenBegin, tokenEnd, false).x + tagPadding * 2.0f + xBtnSize + tagPadding;
+		if (cursorX > 0.0f && cursorX + tagW > previewInnerWidth) {
+			++rows;
+			cursorX = 0.0f;
+		}
+		cursorX += tagW + tagSpacing;
+	}
+	return rows;
+}
+
+static void removeTokenAtIndex(core::String &value, int indexToRemove) {
+	const char *valueBegin = value.c_str();
+	const char *valueEnd = valueBegin + value.size();
+	core::String result;
+	result.reserve(value.size());
+	const char *cursor = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	int index = 0;
+	while (nextToken(cursor, valueEnd, &tokenBegin, &tokenEnd)) {
+		if (index != indexToRemove) {
+			if (!result.empty()) {
+				result.append(",", 1);
+			}
+			result.append(tokenBegin, (size_t)(tokenEnd - tokenBegin));
+		}
+		++index;
+	}
+	// don't move, that would also keep the reserved capacity which is maybe too much
+	value = result;
+}
+
+static void toggleToken(core::String &value, const core::String &item, bool select) {
+	const char *itemBegin = item.c_str();
+	const char *itemEnd = itemBegin + item.size();
+	const char *valueBegin = value.c_str();
+	const char *valueEnd = valueBegin + value.size();
+	if (select) {
+		if (containsToken(valueBegin, valueEnd, itemBegin, itemEnd)) {
+			return;
+		}
+		if (!value.empty()) {
+			value.append(",", 1);
+		}
+		value.append(item);
+		return;
+	}
+
+	core::String result;
+	result.reserve(value.size() + item.size() + 1);
+	const char *cursor = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	while (nextToken(cursor, valueEnd, &tokenBegin, &tokenEnd)) {
+		if (spansEqual(tokenBegin, tokenEnd, itemBegin, itemEnd)) {
+			continue;
+		}
+		if (!result.empty()) {
+			result.append(",", 1);
+		}
+		result.append(tokenBegin, (size_t)(tokenEnd - tokenBegin));
+	}
+	// don't move, that would also keep the reserved capacity which is maybe too much
+	value = result;
+}
+
+} // namespace multiSelectCombo
+
+bool MultiSelectComboItems(const char *label, core::String &value, const core::DynamicArray<core::String> &items) {
+	ImGuiWindow *window = ImGui::GetCurrentWindow();
+	if (window->SkipItems) {
+		return false;
+	}
+
+	ImGui::PushID(label);
+
+	const ImGuiStyle &style = ImGui::GetStyle();
+	const char *labelEnd = ImGui::FindRenderedTextEnd(label);
+	const ImVec2 labelSize = ImGui::CalcTextSize(label, labelEnd, false);
+
+	const float arrowSize = ImGui::GetFrameHeight();
+	const float w = ImGui::CalcItemWidth();
+	const float tagPadding = style.FramePadding.x * 0.5f;
+	const float tagSpacing = style.ItemInnerSpacing.x * 0.5f;
+	const float xBtnSize = ImGui::GetTextLineHeight();
+	const float tagHeight = ImGui::GetTextLineHeight() + tagPadding * 2.0f;
+	const float previewInnerWidth =
+		core_max(w - arrowSize - style.FramePadding.x * 2.0f, tagHeight);
+
+	const char *valueBegin = value.c_str();
+	const char *valueEnd = valueBegin + value.size();
+
+	const int tagRows =
+		multiSelectCombo::layoutTagRows(valueBegin, valueEnd, previewInnerWidth, tagHeight, tagSpacing, tagPadding, xBtnSize);
+	const float previewContentHeight =
+		tagRows * tagHeight + core_max(0, tagRows - 1) * tagSpacing + style.FramePadding.y * 2.0f;
+	const float frameHeight = core_max(labelSize.y + style.FramePadding.y * 2.0f, previewContentHeight);
+
+	const ImVec2 pos = window->DC.CursorPos;
+	const ImRect bb(pos, ImVec2(pos.x + w, pos.y + frameHeight));
+	const ImRect totalBb(
+		bb.Min,
+		ImVec2(bb.Max.x + (labelSize.x > 0.0f ? style.ItemInnerSpacing.x + labelSize.x : 0.0f), bb.Max.y));
+	ImGui::ItemSize(totalBb, style.FramePadding.y);
+	if (!bb.Overlaps(window->ClipRect)) {
+		ImGui::PopID();
+		return false;
+	}
+
+	const ImRect previewBb(bb.Min, ImVec2(bb.Max.x - arrowSize, bb.Max.y));
+	const ImRect arrowBb(ImVec2(bb.Max.x - arrowSize, bb.Min.y), bb.Max);
+	const ImGuiID popupId = window->GetID("##MultiSelectComboPopup");
+	const bool popupOpen = ImGui::IsPopupOpen(popupId, ImGuiPopupFlags_None);
+
+	bool changed = false;
+	bool openPopup = false;
+	int removeIndex = -1;
+
+	const ImU32 frameCol = ImGui::GetColorU32(ImGuiCol_FrameBg);
+	window->DrawList->AddRectFilled(bb.Min, previewBb.Max, frameCol, style.FrameRounding,
+									ImDrawFlags_RoundCornersLeft);
+	const ImU32 arrowBgCol = ImGui::GetColorU32(ImGuiCol_Button);
+	window->DrawList->AddRectFilled(arrowBb.Min, arrowBb.Max, arrowBgCol, style.FrameRounding,
+									ImDrawFlags_RoundCornersRight);
+	ImGui::RenderFrameBorder(bb.Min, bb.Max, style.FrameRounding);
+	if (arrowBb.GetWidth() > 0.0f) {
+		const ImU32 arrowCol = ImGui::GetColorU32(ImGuiCol_Text);
+		ImGui::RenderArrow(window->DrawList,
+						   ImVec2(arrowBb.Min.x + style.FramePadding.y, arrowBb.Min.y + style.FramePadding.y),
+						   arrowCol, ImGuiDir_Down, 1.0f);
+	}
+
+	ImGui::SetNextItemAllowOverlap();
+	ImGui::SetCursorScreenPos(previewBb.Min);
+	if (ImGui::InvisibleButton("##preview", previewBb.GetSize())) {
+		openPopup = true;
+	}
+	const bool previewHovered = ImGui::IsItemHovered();
+
+	if (previewHovered || popupOpen) {
+		window->DrawList->AddRectFilled(bb.Min, previewBb.Max, ImGui::GetColorU32(ImGuiCol_FrameBgHovered),
+										style.FrameRounding, ImDrawFlags_RoundCornersLeft);
+	}
+
+	ImGui::PushClipRect(previewBb.Min, previewBb.Max, true);
+	ImVec2 cursor(previewBb.Min.x + style.FramePadding.x, previewBb.Min.y + style.FramePadding.y);
+	const float rowStartX = cursor.x;
+	const char *cursorToken = valueBegin;
+	const char *tokenBegin = nullptr;
+	const char *tokenEnd = nullptr;
+	int tokenIndex = 0;
+	while (multiSelectCombo::nextToken(cursorToken, valueEnd, &tokenBegin, &tokenEnd)) {
+		const float textWidth = ImGui::CalcTextSize(tokenBegin, tokenEnd, false).x;
+		const float tagW = textWidth + tagPadding * 2.0f + xBtnSize + tagPadding;
+		if (cursor.x + tagW > previewBb.Max.x - style.FramePadding.x && cursor.x > rowStartX) {
+			cursor.x = rowStartX;
+			cursor.y += tagHeight + tagSpacing;
+		}
+
+		const ImRect tagBb(cursor, ImVec2(cursor.x + tagW, cursor.y + tagHeight));
+		const ImRect xBb(ImVec2(tagBb.Max.x - tagPadding - xBtnSize, tagBb.Min.y + tagPadding),
+						 ImVec2(tagBb.Max.x - tagPadding, tagBb.Max.y - tagPadding));
+
+		window->DrawList->AddRectFilled(tagBb.Min, tagBb.Max, ImGui::GetColorU32(ImGuiCol_Button), tagHeight * 0.5f);
+		window->DrawList->AddText(ImVec2(tagBb.Min.x + tagPadding, tagBb.Min.y + tagPadding),
+								  ImGui::GetColorU32(ImGuiCol_Text), tokenBegin, tokenEnd);
+
+		ImGui::SetCursorScreenPos(xBb.Min);
+		ImGui::PushID(tokenIndex);
+		if (ImGui::Button(ICON_LC_X, ImVec2(xBtnSize, xBtnSize))) {
+			removeIndex = tokenIndex;
+			openPopup = false;
+		}
+		ImGui::PopID();
+
+		cursor.x = tagBb.Max.x + tagSpacing;
+		++tokenIndex;
+	}
+
+	if (tokenIndex == 0) {
+		window->DrawList->AddText(ImVec2(previewBb.Min.x + style.FramePadding.x, previewBb.Min.y + style.FramePadding.y),
+								  ImGui::GetColorU32(ImGuiCol_TextDisabled), _("None selected"));
+	}
+	ImGui::PopClipRect();
+
+	if (removeIndex >= 0) {
+		multiSelectCombo::removeTokenAtIndex(value, removeIndex);
+		changed = true;
+		valueBegin = value.c_str();
+		valueEnd = valueBegin + value.size();
+	}
+
+	ImGui::SetCursorScreenPos(arrowBb.Min);
+	if (ImGui::InvisibleButton("##arrow", arrowBb.GetSize())) {
+		openPopup = true;
+	}
+	const bool arrowHovered = ImGui::IsItemHovered();
+
+	if (arrowHovered || popupOpen) {
+		window->DrawList->AddRectFilled(arrowBb.Min, arrowBb.Max, ImGui::GetColorU32(ImGuiCol_ButtonHovered),
+										style.FrameRounding, ImDrawFlags_RoundCornersRight);
+		if (arrowBb.GetWidth() > 0.0f) {
+			ImGui::RenderArrow(window->DrawList,
+							   ImVec2(arrowBb.Min.x + style.FramePadding.y, arrowBb.Min.y + style.FramePadding.y),
+							   ImGui::GetColorU32(ImGuiCol_Text), ImGuiDir_Down, 1.0f);
+		}
+	}
+
+	if (openPopup && !popupOpen) {
+		ImGui::OpenPopupEx(popupId, ImGuiPopupFlags_None);
+	}
+
+	if (labelSize.x > 0.0f) {
+		ImGui::RenderText(ImVec2(bb.Max.x + style.ItemInnerSpacing.x, bb.Min.y + style.FramePadding.y), label,
+							labelEnd, false);
+	}
+
+	bool selectionChanged = changed;
+	if (ImGui::IsPopupOpen(popupId, ImGuiPopupFlags_None)) {
+		ImGui::SetNextWindowPos(ImVec2(bb.Min.x, bb.Max.y));
+		ImGui::SetNextWindowSizeConstraints(ImVec2(bb.GetWidth(), 0.0f), ImVec2(FLT_MAX, FLT_MAX));
+		if (ImGui::BeginPopupEx(popupId, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar |
+											 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+			valueBegin = value.c_str();
+			valueEnd = valueBegin + value.size();
+			for (int i = 0; i < (int)items.size(); ++i) {
+				const core::String &item = items[i];
+				const char *itemBegin = item.c_str();
+				const char *itemEnd = itemBegin + item.size();
+				bool checked = multiSelectCombo::containsToken(valueBegin, valueEnd, itemBegin, itemEnd);
+				ImGui::PushID(i);
+				if (ImGui::Checkbox(item.c_str(), &checked)) {
+					multiSelectCombo::toggleToken(value, item, checked);
+					selectionChanged = true;
+					valueBegin = value.c_str();
+					valueEnd = valueBegin + value.size();
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndPopup();
+		}
+	}
+
+	ImGui::PopID();
+	return selectionChanged;
+}
+
 } // namespace ImGui

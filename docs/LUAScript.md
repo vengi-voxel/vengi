@@ -110,6 +110,8 @@ Supported `type`s are:
 
 * `enum`: `enum` as a property specifies a list of string separated by `,`
 
+* `enummulti`: like `enum`, but allows selecting multiple values. Selected values are passed to `main()` as a lua table. The UI shows a tag-style multi-select combobox. Values are stored comma-separated.
+
 * `str`: string input
 
 * `colorindex`: a color index from current palette (clamped)

@@ -199,6 +199,15 @@ bool StipplePattern(const char *label, Pattern &pattern) {
 	return changed;
 }
 
+/**
+ * @brief Combobox with checkbox list and tag-style preview for multi-selection.
+ * @param label Widget label.
+ * @param value Comma-separated list of selected item strings (updated on change).
+ * @param items All available options.
+ * @return @c true if the selection changed.
+ */
+IMGUI_API bool MultiSelectComboItems(const char *label, core::String &value, const core::DynamicArray<core::String> &items);
+
 // TODO: replace with SetItemTooltip
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API bool TooltipTextUnformatted(const char *text);

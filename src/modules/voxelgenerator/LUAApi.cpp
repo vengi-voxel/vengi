@@ -7331,6 +7331,8 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 					type = LUAParameterType::String;
 				} else if (value == "file") {
 					type = LUAParameterType::File;
+				} else if (value == "enummulti") {
+					type = LUAParameterType::EnumMulti;
 				} else if (core::string::startsWith(value, "enum")) {
 					type = LUAParameterType::Enum;
 				} else if (core::string::startsWith(value, "bool")) {
@@ -7357,15 +7359,16 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		}
 
 		if (type == LUAParameterType::Max) {
-			const core::String &errorMsg = core::String::format("No type = 'int', 'float', 'str', 'bool', 'enum', 'colorindex' or 'hexcolor' key given for '%s'", name.c_str());
+			const core::String &errorMsg = core::String::format("No type = 'int', 'float', 'str', 'bool', 'enum', 'enummulti', 'colorindex' or 'hexcolor' key given for '%s'", name.c_str());
 			Log::error("%s", errorMsg.c_str());
 			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
 			return false;
 		}
 
-		if (type == LUAParameterType::Enum && enumValues.empty()) {
-			const core::String &errorMsg = core::String::format("No enum property given for argument '%s', but type is 'enum'", name.c_str());
+		if ((type == LUAParameterType::Enum || type == LUAParameterType::EnumMulti) && enumValues.empty()) {
+			const core::String &errorMsg = core::String::format("No enum property given for argument '%s', but type is '%s'", name.c_str(),
+																 type == LUAParameterType::EnumMulti ? "enummulti" : "enum");
 			Log::error("%s", errorMsg.c_str());
 			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
@@ -7393,6 +7396,16 @@ bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& arg
 		case LUAParameterType::File:
 			lua_pushstring(s, arg.c_str());
 			break;
+		case LUAParameterType::EnumMulti: {
+			core::DynamicArray<core::String> selected;
+			core::string::splitString(arg, selected, ",");
+			lua_createtable(s, (int)selected.size(), 0);
+			for (int j = 0; j < (int)selected.size(); ++j) {
+				lua_pushstring(s, selected[j].c_str());
+				lua_rawseti(s, -2, j + 1);
+			}
+			break;
+		}
 		case LUAParameterType::Boolean: {
 			const bool val = core::string::toBool(arg);
 			lua_pushboolean(s, val ? 1 : 0);

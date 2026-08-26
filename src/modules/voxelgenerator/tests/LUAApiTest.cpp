@@ -160,6 +160,55 @@ TEST_F(LUAApiTest, testArgumentInfo) {
 	g.shutdown();
 }
 
+TEST_F(LUAApiTest, testArgumentInfoEnumMulti) {
+	const core::String script = R"(
+		function arguments()
+			return {
+					{ name = 'tags', desc = 'tags', type = 'enummulti', enum = 'a,b,c', default = 'a,c' }
+				}
+		end
+	)";
+
+	LUAApi g(_testApp->filesystem());
+	ASSERT_TRUE(g.init());
+
+	core::DynamicArray<LUAParameterDescription> params;
+	EXPECT_TRUE(g.argumentInfo(script, params));
+	ASSERT_EQ(1u, params.size());
+	EXPECT_STREQ("tags", params[0].name.c_str());
+	EXPECT_EQ(LUAParameterType::EnumMulti, params[0].type);
+	EXPECT_STREQ("a,b,c", params[0].enumValues.c_str());
+	EXPECT_STREQ("a,c", params[0].defaultValue.c_str());
+	g.shutdown();
+}
+
+TEST_F(LUAApiTest, testArgumentsEnumMulti) {
+	const core::String script = R"(
+		function arguments()
+			return {
+					{ name = 'tags', desc = 'tags', type = 'enummulti', enum = 'a,b,c' }
+				}
+		end
+
+		function main(node, region, color, tags)
+			if type(tags) ~= 'table' then
+				error('Expected tags to be a table')
+			end
+			if #tags ~= 2 then
+				error('Expected 2 tags')
+			end
+			if tags[1] ~= 'a' or tags[2] ~= 'c' then
+				error('Unexpected tag values')
+			end
+		end
+	)";
+
+	core::DynamicArray<core::String> args;
+	args.push_back("a,c");
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script, args);
+}
+
 TEST_F(LUAApiTest, testArguments) {
 	const core::String script = R"(
 		function arguments()

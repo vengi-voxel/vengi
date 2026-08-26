@@ -38,6 +38,7 @@ enum class LUAParameterType {
 	Boolean,
 	ColorIndex,
 	Enum,
+	EnumMulti,
 	File,
 	HexColor,
 
