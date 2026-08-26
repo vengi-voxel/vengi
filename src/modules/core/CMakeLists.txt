@@ -14,6 +14,7 @@ set(SRCS
 	collection/DynamicParallelMap.h
 	collection/DynamicList.h
 	collection/DynamicMap.h
+	collection/DynamicMultiMap.h
 	collection/DynamicStack.h
 	collection/DynamicStringMap.h
 	collection/Functions.h
@@ -143,6 +144,7 @@ set(TEST_SRCS
 	tests/MapTest.cpp
 	tests/MRUBufferTest.cpp
 	tests/DynamicMapTest.cpp
+	tests/DynamicMultiMapTest.cpp
 	tests/MD5Test.cpp
 	tests/OptionalTest.cpp
 	tests/PathTest.cpp

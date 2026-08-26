@@ -146,7 +146,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		}
 	}
 	for (const SDL_Keycode keyCode : keyCodes) {
-		_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count, bindingContext)));
+		_bindings.insert(keyCode, CommandModifierPair(command, modifier, count, bindingContext));
 	}
 }
 

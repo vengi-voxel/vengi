@@ -6,7 +6,7 @@
 
 #include "core/BindingContext.h"
 #include "core/String.h"
-#include <unordered_map>
+#include "core/collection/DynamicMultiMap.h"
 
 namespace util {
 
@@ -19,7 +19,7 @@ struct CommandModifierPair {
 	uint16_t count;
 	core::BindingContext context;
 };
-typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;
+typedef core::DynamicMultiMap<int32_t, CommandModifierPair> BindMap;
 
 /**
  * @brief Parses keys/command combinations

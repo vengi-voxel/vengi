@@ -1,6 +1,7 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/Assert.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicMultiMap.h"
 #include "core/collection/Map.h"
 #include <map>
 #include <unordered_map>
@@ -58,6 +59,71 @@ BENCHMARK_DEFINE_F(MapBenchmark, compareToMapCore)(benchmark::State &state) {
 BENCHMARK_REGISTER_F(MapBenchmark, compareToMapCore)->RangeMultiplier(2)->Range(8, 512);
 BENCHMARK_REGISTER_F(MapBenchmark, compareToMapStd)->RangeMultiplier(2)->Range(8, 512);
 BENCHMARK_REGISTER_F(MapBenchmark, compareToUnorderedMapStd)->RangeMultiplier(2)->Range(8, 512);
+
+class MultiMapBenchmark : public app::AbstractBenchmark {};
+
+BENCHMARK_DEFINE_F(MultiMapBenchmark, compareToMultiMapStd)(benchmark::State &state) {
+	for (auto _ : state) {
+		std::multimap<int64_t, int64_t> map;
+		const int64_t n = state.range(0);
+		for (int64_t i = 0; i < n; ++i) {
+			map.insert(std::make_pair(i / 2, i));
+			const auto range = map.equal_range(i / 2);
+			int64_t sum = 0;
+			for (auto it = range.first; it != range.second; ++it) {
+				sum += it->second;
+			}
+			if (sum < i) {
+				state.SkipWithError("Failed!");
+				break;
+			}
+		}
+	}
+}
+
+BENCHMARK_DEFINE_F(MultiMapBenchmark, compareToUnorderedMultiMapStd)(benchmark::State &state) {
+	for (auto _ : state) {
+		std::unordered_multimap<int64_t, int64_t, std::hash<int64_t>> map;
+		const int64_t n = state.range(0);
+		map.reserve((size_t)n);
+		for (int64_t i = 0; i < n; ++i) {
+			map.insert(std::make_pair(i / 2, i));
+			const auto range = map.equal_range(i / 2);
+			int64_t sum = 0;
+			for (auto it = range.first; it != range.second; ++it) {
+				sum += it->second;
+			}
+			if (sum < i) {
+				state.SkipWithError("Failed!");
+				break;
+			}
+		}
+	}
+}
+
+BENCHMARK_DEFINE_F(MultiMapBenchmark, compareToDynamicMultiMapCore)(benchmark::State &state) {
+	for (auto _ : state) {
+		core::DynamicMultiMap<int64_t, int64_t, 4096, std::hash<int64_t>> map;
+		const int64_t n = state.range(0);
+		map.reserve((size_t)n);
+		for (int64_t i = 0; i < n; ++i) {
+			map.insert(i / 2, i);
+			const auto range = map.equal_range(i / 2);
+			int64_t sum = 0;
+			for (auto it = range.first; it != range.second; ++it) {
+				sum += it->second;
+			}
+			if (sum < i) {
+				state.SkipWithError("Failed!");
+				break;
+			}
+		}
+	}
+}
+
+BENCHMARK_REGISTER_F(MultiMapBenchmark, compareToDynamicMultiMapCore)->RangeMultiplier(2)->Range(8, 512);
+BENCHMARK_REGISTER_F(MultiMapBenchmark, compareToMultiMapStd)->RangeMultiplier(2)->Range(8, 512);
+BENCHMARK_REGISTER_F(MultiMapBenchmark, compareToUnorderedMultiMapStd)->RangeMultiplier(2)->Range(8, 512);
 
 class DynamicArrayBenchmark : public app::AbstractBenchmark {
 protected:

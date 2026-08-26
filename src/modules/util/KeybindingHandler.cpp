@@ -185,7 +185,7 @@ void KeyBindingHandler::construct() {
 					}
 				}
 				if (!found) {
-					_bindings.insert(std::make_pair(keyCode, pair));
+					_bindings.insert(keyCode, pair);
 					Log::info("Added binding for key %s", key.c_str());
 				}
 			}
@@ -388,7 +388,7 @@ bool KeyBindingHandler::registerBinding(const core::String &command, int32_t key
 				   core::bindingContextString(context).c_str(), i->second.command.c_str(), command.c_str());
 		return false;
 	}
-	_bindings.insert(std::make_pair(key, CommandModifierPair{command, modifier, count, context}));
+	_bindings.insert(key, CommandModifierPair{command, modifier, count, context});
 	invalidateKeyBindingStrings();
 	return true;
 }

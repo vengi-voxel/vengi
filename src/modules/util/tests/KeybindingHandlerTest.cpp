@@ -240,8 +240,8 @@ TEST_F(KeybindingHandlerTest, testValidateBindingsDetectsSameContextConflict) {
 	ASSERT_TRUE(handler.registerBinding("w", "+foo", "foo"));
 	ASSERT_FALSE(handler.registerBinding("w", "+bar", "foo"));
 	BindMap map;
-	map.insert(std::make_pair((int32_t)SDLK_W, CommandModifierPair("+foo", 0, 1u, core::BindingContext::Context1)));
-	map.insert(std::make_pair((int32_t)SDLK_W, CommandModifierPair("+bar", 0, 1u, core::BindingContext::Context1)));
+	map.insert((int32_t)SDLK_W, CommandModifierPair("+foo", 0, 1u, core::BindingContext::Context1));
+	map.insert((int32_t)SDLK_W, CommandModifierPair("+bar", 0, 1u, core::BindingContext::Context1));
 	handler.setBindings(map);
 	EXPECT_EQ(1, handler.validateBindings());
 }
