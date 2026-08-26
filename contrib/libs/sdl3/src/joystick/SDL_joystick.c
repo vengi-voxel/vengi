@@ -477,6 +477,7 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x10f5, 0x7084), // Turtle Beach VelocityOne
     MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
     MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
+    MAKE_VIDPID(0x231d, 0x0200), // VKB Gladiator NXT Evo (grip)
     MAKE_VIDPID(0x3344, 0x4391), // VIRPIL Controls R-VPC Stick MT-50CM3
     MAKE_VIDPID(0x3344, 0x8390), // VIRPIL Controls L-VPC Stick MT-50CM3
     MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
@@ -3392,7 +3393,8 @@ bool SDL_IsJoystickGameSirController(Uint16 vendor_id, Uint16 product_id)
         return false;
     }
 
-    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K);
+    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K ||
+            product_id == USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K);
 }
 
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
