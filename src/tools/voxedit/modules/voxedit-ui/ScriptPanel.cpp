@@ -96,7 +96,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 
 			priv::ScriptPanelExecutorContext ctx(_sceneMgr, listener);
 			_luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
-																		voxelui::LUAAPI_WIDGET_FLAG_RUN);
+																		voxelui::LUAAPI_WIDGET_FLAG_RUN_BUTTON);
 		}
 	}
 

@@ -27,8 +27,10 @@ struct LUAApiExecutorContext {
 
 enum LUAApiWidgetFlags {
 	LUAAPI_WIDGET_FLAG_NONE = 0u,
-	LUAAPI_WIDGET_FLAG_RUN = 1u << 0,
-	LUAAPI_WIDGET_FLAG_NOTIFY = 1u << 1
+	/** Add a run button to the widget */
+	LUAAPI_WIDGET_FLAG_RUN_BUTTON = 1u << 0,
+	/** Allow leaving the script combobox empty (index -1 / "None"). */
+	LUAAPI_WIDGET_FLAG_COMBOBOX_NONE = 1u << 1
 };
 
 class LUAApiWidget {
@@ -55,7 +57,7 @@ public:
 	 * @return @c true if the current script is valid
 	 */
 	bool updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, const palette::Palette &palette,
-									LUAApiExecutorContext &ctx, uint32_t flags);
+									LUAApiExecutorContext &ctx, uint32_t flags = LUAAPI_WIDGET_FLAG_NONE);
 };
 
 inline const voxelgenerator::LUAScript &LUAApiWidget::currentScript() const {

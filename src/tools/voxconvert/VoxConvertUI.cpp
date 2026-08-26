@@ -185,8 +185,7 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		if (ImGui::CollapsingHeader(_("Script options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			_luaApiWidget.updateScriptExecutionPanel(_luaApi, voxel::getPalette(), _luaApiCtx,
-													 voxelui::LUAAPI_WIDGET_FLAG_NOTIFY);
+			_luaApiWidget.updateScriptExecutionPanel(_luaApi, voxel::getPalette(), _luaApiCtx);
 		}
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {

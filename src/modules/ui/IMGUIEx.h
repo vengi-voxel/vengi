@@ -259,17 +259,21 @@ IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::Stri
 /**
  * @brief A combobox with a built-in search/filter bar at the top.
  * @param label The combobox label (use ## prefix to hide).
- * @param currentItem Pointer to the selected index.
+ * @param currentItem Pointer to the selected index. May be set to @c -1 if @c allowNone is true.
  * @param items Collection of items with c_str() on each element.
  * @param searchFilter Reference to a core::String that persists the filter text between frames.
+ * @param allowNone If true, offers a "None" entry that sets @c *currentItem to @c -1.
  * @return @c true if the selection changed.
  */
 template<class Collection>
-bool SearchableComboItems(const char *label, int *currentItem, const Collection &items, core::String &searchFilter) {
+bool SearchableComboItems(const char *label, int *currentItem, const Collection &items, core::String &searchFilter,
+						  bool allowNone = false) {
 	const char *previewValue = nullptr;
 	const int itemCount = (int)items.size();
 	if (*currentItem >= 0 && *currentItem < itemCount) {
 		previewValue = items[*currentItem].c_str();
+	} else if (allowNone) {
+		previewValue = _("None");
 	} else {
 		previewValue = _("Unknown");
 	}
@@ -283,6 +287,17 @@ bool SearchableComboItems(const char *label, int *currentItem, const Collection 
 		ImGui::SetNextItemWidth(-FLT_MIN);
 		ImGui::InputTextWithHint("##combofilter", ICON_LC_SEARCH, &searchFilter);
 		ImGui::Separator();
+
+		if (allowNone) {
+			const bool selected = *currentItem < 0;
+			if (ImGui::Selectable(_("None"), selected)) {
+				*currentItem = -1;
+				changed = true;
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
 
 		for (int i = 0; i < itemCount; ++i) {
 			const char *text = items[i].c_str();

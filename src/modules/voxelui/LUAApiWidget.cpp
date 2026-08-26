@@ -31,7 +31,8 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 	if (_scripts.empty()) {
 		return false;
 	}
-	if (_currentScript == -1) {
+	const bool optional = (flags & LUAAPI_WIDGET_FLAG_COMBOBOX_NONE) != 0;
+	if (_currentScript == -1 && !optional) {
 		_currentScript = 0;
 		if (!_scripts[0].valid) {
 			reloadScriptParameters(luaApi, _scripts[0]);
@@ -42,14 +43,18 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 		return true;
 	}
 
-	if (ImGui::SearchableComboItems("##script", &_currentScript, _scripts, _scriptSearchFilter)) {
-		loadCurrentScript(luaApi);
+	if (ImGui::SearchableComboItems("##script", &_currentScript, _scripts, _scriptSearchFilter, optional)) {
+		if (_currentScript < 0) {
+			_activeScript.clear();
+		} else {
+			loadCurrentScript(luaApi);
+		}
 	}
 	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
 
 	const voxelgenerator::LUAScript &script = currentScript();
 	const bool validScriptIndex = script.valid;
-	if (flags & LUAAPI_WIDGET_FLAG_RUN) {
+	if (flags & LUAAPI_WIDGET_FLAG_RUN_BUTTON) {
 		ImGui::SameLine();
 
 		if (ImGui::DisabledButton(_("Run"), !validScriptIndex)) {
@@ -65,15 +70,15 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 		ImGui::TooltipTextUnformatted(_("Execute the selected script for the currently loaded voxel volumes"));
 	}
 
-	ImGui::TextWrappedUnformatted(script.desc.c_str());
+	if (validScriptIndex) {
+		ImGui::TextWrappedUnformatted(script.desc.c_str());
+	}
 
 	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
 		updateScriptParameters(*s, palette);
 	}
 
-	if (flags & LUAAPI_WIDGET_FLAG_NOTIFY) {
-		ctx.notify(script.filename, script.parameters);
-	}
+	ctx.notify(script.filename, script.parameters);
 	return validScriptIndex;
 }
 
