@@ -454,6 +454,12 @@ msgstr "Versteckte anzeigen"
 msgid "Show hidden file system entities"
 msgstr "Versteckte Dateisystem-Entitäten anzeigen"
 
+msgid "Show model preview"
+msgstr "Zeige Modellvorschau"
+
+msgid "Show model preview in file dialog"
+msgstr "Zeige Modellvorschau im Dateidialog"
+
 msgid "Last directory"
 msgstr "Letztes Verzeichnis"
 
@@ -554,6 +560,12 @@ msgstr "Mehrere Monitor-Setups zulassen - erfordert einen Neustart"
 
 msgid "Multi monitor"
 msgstr "Mehrere Monitore"
+
+msgid "Console"
+msgstr "Konsole"
+
+msgid "Show the console panel"
+msgstr "Konsole anzeigen"
 
 msgid "Render UI"
 msgstr "UI rendern"
@@ -726,8 +738,14 @@ msgstr ""
 "Im Browser öffnen\n"
 "%s"
 
+msgid "None selected"
+msgstr "Nichts ausgewählt"
+
 msgid "Unknown"
 msgstr "Unbekannt"
+
+msgid "None"
+msgstr "Nichts"
 
 msgid "Corporate Grey"
 msgstr "Corporate Grey"
@@ -825,19 +843,11 @@ msgstr "Unterstützung zum Ändern von Renderer-Objekten ohne Binding"
 msgid "Support for immutable buffer storage"
 msgstr "Unterstützung für unveränderlichen Pufferspeicher"
 
-msgid "Support for batching multiple draw calls into a single indirect call"
-msgstr ""
-"Unterstützung zum Bündeln mehrerer Draw-Calls in einen indirekten Aufruf"
-
 msgid "Support for compute shaders"
 msgstr "Unterstützung für Compute-Shader"
 
 msgid "Support for capturing shader output into buffers"
 msgstr "Unterstützung zum Schreiben von Shader-Ausgaben in Puffer"
-
-msgid "Support for large read-write storage buffers accessible from shaders"
-msgstr ""
-"Unterstützung für große von Shadern nutzbare Lese-/Schreib-Speicherpuffer"
 
 msgid "Renderer feature cvar"
 msgstr "Renderer-Feature-CVar"
@@ -893,6 +903,12 @@ msgstr "Bloom-Nachbearbeitung aktivieren"
 
 msgid "Bloom"
 msgstr "Bloom"
+
+msgid "Bloom passes"
+msgstr ""
+
+msgid "Number of bloom downsample/upsample passes. Does not reallocate FBOs."
+msgstr ""
 
 msgid "Activate shadow debug rendering"
 msgstr "Schatten-Debug-Rendering aktivieren"
@@ -1250,6 +1266,13 @@ msgid "Crop volumes to tight bounds on load to save memory"
 msgstr ""
 "Volumina beim Laden auf enge Grenzen zuschneiden, um Speicher zu sparen"
 
+msgid "Dedupe texture atlas"
+msgstr ""
+
+msgid ""
+"Reuse identical color patches in the greedy texture atlas to pack more faces"
+msgstr ""
+
 msgid "Create groups"
 msgstr "Gruppen erstellen"
 
@@ -1272,6 +1295,15 @@ msgctxt ""
 "of keyframe animations"
 msgid "Import animation frames as nodes"
 msgstr "Animationsframes als Knoten importieren"
+
+msgid "Apply transforms"
+msgstr "Transformationen anwenden"
+
+msgctxt ""
+"Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to "
+"keep shared models and node TRS"
+msgid "Bake MagicaVoxel transforms into voxels"
+msgstr ""
 
 msgid "Left handed"
 msgstr "Linkshändig"
@@ -1316,9 +1348,11 @@ msgid "KHR_materials_pbrSpecularGlossiness"
 msgstr "KHR_materials_pbrSpecularGlossiness"
 
 msgid ""
-"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"
+"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format "
+"(prefer KHR_materials_specular)"
 msgstr ""
-"Wende KHR_materials_pbrSpecularGlossiness beim Speichern im glTF-Format an"
+"Wende KHR_materials_pbrSpecularGlossiness beim Speichern im glTF-Format an "
+"(verwende KHR_materials_specular bevorzugt)"
 
 msgid "KHR_materials_specular"
 msgstr "KHR_materials_specular"
@@ -1419,6 +1453,14 @@ msgstr "Seiten zusammenführen"
 msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 "Führe Oberflächenteile in ein einzelnes Volumen für Minecraft-Skins zusammen"
+
+msgid "Separate water"
+msgstr ""
+
+msgid ""
+"Put Minecraft water voxels into a dedicated transparent volume as a child of "
+"each region"
+msgstr ""
 
 msgid "Simplify"
 msgstr "Vereinfachen"
@@ -1682,6 +1724,27 @@ msgstr ""
 msgid "Script parameters"
 msgstr "Skriptparameter"
 
+msgid "Preview unavailable"
+msgstr "Vorschau nicht verfügbar"
+
+msgid "No model"
+msgstr "Kein Modell"
+
+msgid "Drag to orbit, wheel to zoom, double-click to reset"
+msgstr ""
+
+msgid "Select a model"
+msgstr "Modell auswählen"
+
+msgid "Mesh preview not available"
+msgstr ""
+
+msgid "No preview"
+msgstr ""
+
+msgid "Failed to load preview"
+msgstr ""
+
 msgid "Script Browser"
 msgstr "Skript-Browser"
 
@@ -1785,6 +1848,10 @@ msgstr "Client-Kamerazoomgeschwindigkeit"
 
 msgid "The speed of camera zoom for the client"
 msgstr "Kamerazoomgeschwindigkeit für den Client"
+
+msgid ""
+"Print mcp.json for MCP clients using the current network settings and quit"
+msgstr ""
 
 msgid "Pen pressure controls radius"
 msgstr "Stiftdruck steuert Radius"
@@ -2476,9 +2543,6 @@ msgstr "Global: Als Knoten einfügen"
 msgid "Select"
 msgstr "Auswählen"
 
-msgid "None"
-msgstr "Keine"
-
 msgid "Invert"
 msgstr "Invertieren"
 
@@ -2505,6 +2569,15 @@ msgstr "Nur Ecken auswählen"
 
 msgid "Grow Selection"
 msgstr "Auswahl vergrößern"
+
+msgid "View"
+msgstr "Ansicht"
+
+msgid "Reset layout"
+msgstr "Layout zurücksetzen"
+
+msgid "Scene insights"
+msgstr "Szeneninterna"
 
 msgid "UI"
 msgstr "Benutzeroberfläche"
@@ -2617,6 +2690,12 @@ msgstr "Starte Server"
 
 msgid "Region"
 msgstr "Region"
+
+msgid "Opacity"
+msgstr ""
+
+msgid "Fade the whole node without changing voxels"
+msgstr ""
 
 msgid "Color Histogram"
 msgstr "Farbhistogramm"
@@ -2847,9 +2926,6 @@ msgstr "Umdrehen"
 msgid "Rotate 90 deg"
 msgstr "Um 90 Grad drehen"
 
-msgid "Reset layout"
-msgstr "Layout zurücksetzen"
-
 msgid "Full pre-alloc"
 msgstr "Volle Vorallokation"
 
@@ -3043,30 +3119,29 @@ msgstr ""
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
 
-msgid "Save image"
-msgstr "Bild speichern"
+msgid "Presets"
+msgstr ""
 
-msgid "Sync camera"
-msgstr "Kamera synchronisieren"
+msgid "Reset all"
+msgstr "Alles zurücksetzen"
 
-msgid "Stop path tracer"
-msgstr "Pfadverfolgung stoppen"
+msgid "Restore default path tracer settings"
+msgstr ""
 
-#, c-format
-msgid "Sample %i / %i"
-msgstr "Beispiel %i / %i"
+msgid "High quality"
+msgstr "Hohe Qualität"
 
-msgid "Start path tracer"
-msgstr "Pfadverfolgung starten"
+msgid "Path tracing with high sample and bounce counts"
+msgstr ""
 
-msgid "Render"
-msgstr "Render"
+msgid "Geometry preview"
+msgstr "Geometrie-Vorschau"
 
-msgid "Render Settings"
-msgstr "Rendereinstellungen"
+msgid "Fast eyelight preview for checking geometry"
+msgstr ""
 
-msgid "Dimensions"
-msgstr "Dimensionen"
+msgid "Quality"
+msgstr "Qualität"
 
 msgid "Tracer"
 msgstr "Tracer"
@@ -3074,23 +3149,14 @@ msgstr "Tracer"
 msgid "Samples"
 msgstr "Samples"
 
-msgid ""
-"The number of per-pixel samples used while rendering and is the only "
-"parameter used to control the tradeoff between noise and speed."
+msgid "Per-pixel samples. Higher values reduce noise but take longer."
 msgstr ""
-"Die Anzahl der pro Pixel verwendeten Samples während des Renderings und ist "
-"der einzige Parameter, der den Kompromiss zwischen Rauschen und "
-"Geschwindigkeit steuert."
 
 msgid "Bounces"
 msgstr "Bounces"
 
-msgid ""
-"The maximum number of bounces and should be high for scenes with glass and "
-"volumes, but otherwise a low number would suffice."
+msgid "Maximum light bounces. Increase for glass and volumes."
 msgstr ""
-"Die maximale Anzahl der Bounces sollte hoch sein für Szenen mit Glas und "
-"Volumen, aber ansonsten reicht eine niedrige Zahl aus."
 
 msgid "Clamp"
 msgstr "Clamp"
@@ -3101,38 +3167,47 @@ msgstr "Hochenergetische Glühwürmchen entfernen"
 msgid "Preview ratio"
 msgstr "Vorschauverhältnis"
 
+msgid "Lower resolution ratio used while samples accumulate"
+msgstr ""
+
 msgid "Batch"
 msgstr "Stapel"
 
-msgid "No caustics"
-msgstr "Keine Kaustiken"
+msgid "Samples computed per update step"
+msgstr ""
 
-msgid "Removes certain path that cause caustics"
-msgstr "Entfernt bestimmte Pfade, die Kaustiken verursachen"
+msgid "Dimensions"
+msgstr "Dimensionen"
 
-msgid "Hide environment"
-msgstr "Umgebung ausblenden"
-
-msgid "Removes the environment map from the camera rays."
-msgstr "Entfernt die Umgebungskarte von den Kamerarays."
+msgid "Output image size in pixels (square)"
+msgstr ""
 
 msgid "Apply a linear filter to the image pixels"
 msgstr "Wendet einen linearen Filter auf die Bildpixel an"
 
-msgid "High Quality BVH"
-msgstr "Hochwertige BVH (Bounding Volume Hierarchy)"
-
-msgid "High quality bounding volume hierarchy"
-msgstr "Hochwertige Bounding Volume Hierarchy"
-
 msgid "Denoise"
 msgstr "Rauschunterdrückung"
+
+msgid "Exposure"
+msgstr "Belichtung"
+
+msgid "Exposure compensation in stops for tonemapping."
+msgstr "Belichtungskompensation in Blendenstufen für Tonemapping."
+
+msgid "Filmic"
+msgstr "Filmic"
+
+msgid "Use filmic tonemapping for softer highlight rolloff."
+msgstr "Filmisches Tonemapping für weicheren Highlight-Übergang verwenden."
 
 msgid "Aperture"
 msgstr "Blende"
 
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
 msgstr "Blende für Tiefenschärfe. 0 = Lochkamera (kein DOF)."
+
+msgid "Lighting"
+msgstr ""
 
 msgid "Sun intensity"
 msgstr "Sonnenintensität"
@@ -3155,29 +3230,48 @@ msgstr "Sonnenscheibe"
 msgid "Show visible sun disk in the sky."
 msgstr "Sichtbare Sonnenscheibe am Himmel anzeigen."
 
-msgid "Exposure"
-msgstr "Belichtung"
+msgid "Hide environment"
+msgstr "Umgebung ausblenden"
 
-msgid "Exposure compensation in stops for tonemapping."
-msgstr "Belichtungskompensation in Blendenstufen für Tonemapping."
+msgid "Removes the environment map from the camera rays."
+msgstr "Entfernt die Umgebungskarte von den Kamerarays."
 
-msgid "Filmic"
-msgstr "Filmic"
+msgid "No caustics"
+msgstr "Keine Kaustiken"
 
-msgid "Use filmic tonemapping for softer highlight rolloff."
-msgstr "Filmisches Tonemapping für weicheren Highlight-Übergang verwenden."
+msgid "Removes certain paths that cause caustics"
+msgstr "Entfernt bestimmte Pfade, die Kaustiken verursachen"
 
-msgid "Reset all"
-msgstr "Alles zurücksetzen"
+msgid "High Quality BVH"
+msgstr "Hochwertige BVH"
 
-msgid "High quality"
-msgstr "Hohe Qualität"
+msgid "High quality bounding volume hierarchy"
+msgstr "Hochwertige Bounding Volume Hierarchy"
 
-msgid "Geometry preview"
-msgstr "Geometrie-Vorschau"
+msgid "Settings"
+msgstr "Einstellungen"
 
-msgid "Scene insights"
-msgstr "Szeneninterna"
+msgid "Save image"
+msgstr "Bild speichern"
+
+msgid "Sync camera"
+msgstr "Kamera synchronisieren"
+
+msgid "Restart with the current viewport camera"
+msgstr ""
+
+msgid "Stop path tracer"
+msgstr "Pfadverfolgung stoppen"
+
+#, c-format
+msgid "Sample %i / %i"
+msgstr "Beispiel %i / %i"
+
+msgid "Start path tracer"
+msgstr "Pfadverfolgung starten"
+
+msgid "Render"
+msgstr "Render"
 
 #, c-format
 msgid "Pending extractions: %i"
@@ -3203,9 +3297,40 @@ msgstr "Volumenindex-Hochwasser: %i"
 msgid "Free volume indices: %i"
 msgstr "Freie Volumenindizes: %i"
 
+msgid "Render stats"
+msgstr ""
+
 #, c-format
-msgid "Draw calls: %i"
+msgid "Draw calls: %<PRIu64>"
 msgstr "Draw Calls: %i"
+
+#, c-format
+msgid "Pipeline binds: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Descriptor binds: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Buffer updates: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Render passes: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Fullscreen passes: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Blits: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "CPU render ms: %.3f"
+msgstr ""
 
 #, c-format
 msgid "Camera position: %.2f %.2f %.2f"
@@ -3697,6 +3822,12 @@ msgstr "Deaktiviert"
 msgid "Distance"
 msgstr "Entfernung"
 
+msgid "Grid size"
+msgstr "Rastergröße"
+
+msgid "Apply this axis size to the other axes"
+msgstr ""
+
 msgid "Gizmo settings"
 msgstr "Gizmo-Einstellungen"
 
@@ -3723,6 +3854,9 @@ msgstr "Minecraft Skin"
 
 msgid "Ace Of Spades"
 msgstr "Ace Of Spades"
+
+msgid "Minimal"
+msgstr ""
 
 msgid "Default"
 msgstr "Standard"
@@ -3770,6 +3904,9 @@ msgstr "dist: %i:%i:%i"
 msgid "Slice view"
 msgstr "Slice-Ansicht"
 
+msgid "Loading"
+msgstr "Laden..."
+
 msgid "Working"
 msgstr "Arbeitet…"
 
@@ -3806,17 +3943,11 @@ msgstr ""
 msgid "Screenshot"
 msgstr "Screenshot"
 
-msgid "View"
-msgstr "Ansicht"
-
 msgid "Reset camera"
 msgstr "Kamera zurücksetzen"
 
 msgid "Scene Mode"
 msgstr "Szenenmodus"
-
-msgid "Apply transforms"
-msgstr "Transformationen anwenden"
 
 msgid "EditMode"
 msgstr "Bearbeitungsmodus"
@@ -4061,6 +4192,14 @@ msgstr "Modus"
 
 msgid "Strength"
 msgstr "Stärke"
+
+msgid ""
+"How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = "
+"full)"
+msgstr ""
+
+msgid "Opacity at the brush center (0 = none, 1 = full)"
+msgstr ""
 
 msgid "Amount of brighten or darken to apply"
 msgstr "Stärke der Aufhellung oder Abdunkelung"
@@ -4542,11 +4681,8 @@ msgstr "Modellanimationsgeschwindigkeit"
 msgid "Auto normal mode"
 msgstr "Automatischer Normalen-Modus"
 
-msgid "Grid size"
-msgstr "Rastergröße"
-
-msgid "The size of the voxel grid"
-msgstr "Die Größe des Voxelgitters"
+msgid "The size of the voxel grid per axis (e.g. 1 or 1 2 3)"
+msgstr "Die Größe des Voxelgitters pro Achse (z.B. 1 oder 1 2 3)"
 
 msgid "Plane size"
 msgstr "Ebenengröße"
@@ -4685,6 +4821,81 @@ msgstr "Konfigurieren Sie den Editor-Ansichtsmodus"
 
 msgid "View mode"
 msgstr "Oberflächenmodus"
+
+msgid "Show the palette panel"
+msgstr ""
+
+msgid "Show the normal palette panel"
+msgstr ""
+
+msgid "Memento"
+msgstr ""
+
+msgid "Show the memento panel"
+msgstr ""
+
+msgid "Show the camera panel"
+msgstr ""
+
+msgid "Show the L-System panel"
+msgstr ""
+
+msgid "Script"
+msgstr "Skript"
+
+msgid "Show the script panel"
+msgstr ""
+
+msgid "Show the network panel"
+msgstr ""
+
+msgid "Show the game mode panel"
+msgstr ""
+
+msgid "Assets"
+msgstr ""
+
+msgid "Show the asset panels"
+msgstr ""
+
+msgid "Show the render panel"
+msgstr ""
+
+msgid "Show the animation settings panel"
+msgstr ""
+
+msgid "Animation timeline"
+msgstr ""
+
+msgid "Show the animation timeline panel"
+msgstr ""
+
+msgid "Show the scene panel"
+msgstr ""
+
+msgid "Show the tools panel"
+msgstr ""
+
+msgid "Show the scene settings panel"
+msgstr ""
+
+msgid "Show the help panel"
+msgstr ""
+
+msgid "Node properties"
+msgstr ""
+
+msgid "Show the node properties panel"
+msgstr ""
+
+msgid "Show the volume/node inspector panel"
+msgstr ""
+
+msgid "Volume inspector"
+msgstr "Volumeninspektor"
+
+msgid "Show the brushes and brush settings panels"
+msgstr ""
 
 msgid "Show the tip of the day on startup"
 msgstr "Zeige den Tipp des Tages beim Start"
@@ -5126,8 +5337,8 @@ msgstr "Alle Kindknoten anzeigen"
 msgid "Hide all children nodes"
 msgstr "Alle Kindknoten ausblenden"
 
-msgid "Hide all model nodes except the active one"
-msgstr "Alle Modellknoten außer dem aktiven ausblenden"
+msgid "Hide all nodes except the given one and its children"
+msgstr "Alle Knoten außer dem angegebenen Knoten und seinen Kindknoten ausblenden"
 
 msgid "Lock all nodes"
 msgstr "Alle Knoten sperren"
@@ -5341,6 +5552,12 @@ msgstr "Abdunkeln"
 
 msgid "Random"
 msgstr "Zufällig"
+
+msgid "Blend"
+msgstr ""
+
+msgid "Blur"
+msgstr ""
 
 msgid "Variation"
 msgstr "Variation"

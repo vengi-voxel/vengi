@@ -90,6 +90,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxel_croponload\fP: Crop volumes to tight bounds on load to save memory
 .PP
+\fBvoxel_texture_dedupe\fP: Reuse identical color patches in the greedy texture atlas to pack more faces
+.PP
 \fBvoxformat_ambientocclusion\fP: Extra vertices for ambient occlusion
 .PP
 \fBvoxformat_binvoxversion\fP: Save in version 1, 2 or the unofficial version 3
@@ -125,6 +127,8 @@ Use a camera that is available in the scene. Not all formats are supporting this
 \fBvoxformat_imagevolumemaxdepth\fP: The maximum depth of the volume when importing an image as volume
 .PP
 \fBvoxformat_ldrawdir\fP: Path to the LDraw parts library directory for resolving part references
+.PP
+\fBvoxformat_mcseparatewater\fP: Put Minecraft water voxels into a dedicated transparent volume as a child of each region
 .PP
 \fBvoxformat_merge\fP: Merge all objects into one
 .PP

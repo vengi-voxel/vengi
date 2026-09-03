@@ -421,6 +421,12 @@ msgstr ""
 msgid "Show hidden file system entities"
 msgstr ""
 
+msgid "Show model preview"
+msgstr ""
+
+msgid "Show model preview in file dialog"
+msgstr ""
+
 msgid "Last directory"
 msgstr ""
 
@@ -518,6 +524,12 @@ msgid "Allow multi monitor setups - requires a restart"
 msgstr ""
 
 msgid "Multi monitor"
+msgstr ""
+
+msgid "Console"
+msgstr ""
+
+msgid "Show the console panel"
 msgstr ""
 
 msgid "Render UI"
@@ -685,7 +697,13 @@ msgid ""
 "%s"
 msgstr ""
 
+msgid "None selected"
+msgstr ""
+
 msgid "Unknown"
+msgstr ""
+
+msgid "None"
 msgstr ""
 
 msgid "Corporate Grey"
@@ -784,16 +802,10 @@ msgstr ""
 msgid "Support for immutable buffer storage"
 msgstr ""
 
-msgid "Support for batching multiple draw calls into a single indirect call"
-msgstr ""
-
 msgid "Support for compute shaders"
 msgstr ""
 
 msgid "Support for capturing shader output into buffers"
-msgstr ""
-
-msgid "Support for large read-write storage buffers accessible from shaders"
 msgstr ""
 
 msgid "Renderer feature cvar"
@@ -849,6 +861,12 @@ msgid "Activate bloom post processing"
 msgstr ""
 
 msgid "Bloom"
+msgstr ""
+
+msgid "Bloom passes"
+msgstr ""
+
+msgid "Number of bloom downsample/upsample passes. Does not reallocate FBOs."
 msgstr ""
 
 msgid "Activate shadow debug rendering"
@@ -1187,6 +1205,13 @@ msgstr ""
 msgid "Crop volumes to tight bounds on load to save memory"
 msgstr ""
 
+msgid "Dedupe texture atlas"
+msgstr ""
+
+msgid ""
+"Reuse identical color patches in the greedy texture atlas to pack more faces"
+msgstr ""
+
 msgid "Create groups"
 msgstr ""
 
@@ -1208,6 +1233,15 @@ msgctxt ""
 "Import MagicaVoxel animation frames as dedicated single volume nodes instead "
 "of keyframe animations"
 msgid "Import animation frames as nodes"
+msgstr ""
+
+msgid "Apply transforms"
+msgstr ""
+
+msgctxt ""
+"Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to "
+"keep shared models and node TRS"
+msgid "Bake MagicaVoxel transforms into voxels"
 msgstr ""
 
 msgid "Left handed"
@@ -1249,7 +1283,8 @@ msgid "KHR_materials_pbrSpecularGlossiness"
 msgstr ""
 
 msgid ""
-"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"
+"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format "
+"(prefer KHR_materials_specular)"
 msgstr ""
 
 msgid "KHR_materials_specular"
@@ -1341,6 +1376,14 @@ msgid "Merge faces"
 msgstr ""
 
 msgid "Merge face parts into single volume for Minecraft skins"
+msgstr ""
+
+msgid "Separate water"
+msgstr ""
+
+msgid ""
+"Put Minecraft water voxels into a dedicated transparent volume as a child of "
+"each region"
 msgstr ""
 
 msgid "Simplify"
@@ -1589,6 +1632,27 @@ msgstr ""
 msgid "Script parameters"
 msgstr ""
 
+msgid "Preview unavailable"
+msgstr ""
+
+msgid "No model"
+msgstr ""
+
+msgid "Drag to orbit, wheel to zoom, double-click to reset"
+msgstr ""
+
+msgid "Select a model"
+msgstr ""
+
+msgid "Mesh preview not available"
+msgstr ""
+
+msgid "No preview"
+msgstr ""
+
+msgid "Failed to load preview"
+msgstr ""
+
 msgid "Script Browser"
 msgstr ""
 
@@ -1691,6 +1755,10 @@ msgid "Client Camera Zoom Speed"
 msgstr ""
 
 msgid "The speed of camera zoom for the client"
+msgstr ""
+
+msgid ""
+"Print mcp.json for MCP clients using the current network settings and quit"
 msgstr ""
 
 msgid "Pen pressure controls radius"
@@ -2360,9 +2428,6 @@ msgstr ""
 msgid "Select"
 msgstr ""
 
-msgid "None"
-msgstr ""
-
 msgid "Invert"
 msgstr ""
 
@@ -2388,6 +2453,12 @@ msgid "Select Only Corners"
 msgstr ""
 
 msgid "Grow Selection"
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "Reset layout"
 msgstr ""
 
 msgid "Scene insights"
@@ -2501,6 +2572,12 @@ msgid "Start Server"
 msgstr ""
 
 msgid "Region"
+msgstr ""
+
+msgid "Opacity"
+msgstr ""
+
+msgid "Fade the whole node without changing voxels"
 msgstr ""
 
 msgid "Color Histogram"
@@ -2721,9 +2798,6 @@ msgid "Flip"
 msgstr ""
 
 msgid "Rotate 90 deg"
-msgstr ""
-
-msgid "Reset layout"
 msgstr ""
 
 msgid "Full pre-alloc"
@@ -3089,8 +3163,39 @@ msgstr ""
 msgid "Free volume indices: %i"
 msgstr ""
 
+msgid "Render stats"
+msgstr ""
+
 #, c-format
-msgid "Draw calls: %i"
+msgid "Draw calls: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Pipeline binds: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Descriptor binds: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Buffer updates: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Render passes: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Fullscreen passes: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "Blits: %<PRIu64>"
+msgstr ""
+
+#, c-format
+msgid "CPU render ms: %.3f"
 msgstr ""
 
 #, c-format
@@ -3520,6 +3625,12 @@ msgstr ""
 msgid "Distance"
 msgstr ""
 
+msgid "Grid size"
+msgstr ""
+
+msgid "Apply this axis size to the other axes"
+msgstr ""
+
 msgid "Gizmo settings"
 msgstr ""
 
@@ -3545,6 +3656,9 @@ msgid "Minecraft Skin"
 msgstr ""
 
 msgid "Ace Of Spades"
+msgstr ""
+
+msgid "Minimal"
 msgstr ""
 
 msgid "Default"
@@ -3593,6 +3707,9 @@ msgstr ""
 msgid "Slice view"
 msgstr ""
 
+msgid "Loading"
+msgstr ""
+
 msgid "Working"
 msgstr ""
 
@@ -3627,16 +3744,10 @@ msgstr ""
 msgid "Screenshot"
 msgstr ""
 
-msgid "View"
-msgstr ""
-
 msgid "Reset camera"
 msgstr ""
 
 msgid "Scene Mode"
-msgstr ""
-
-msgid "Apply transforms"
 msgstr ""
 
 msgid "EditMode"
@@ -3871,6 +3982,14 @@ msgid "Mode"
 msgstr ""
 
 msgid "Strength"
+msgstr ""
+
+msgid ""
+"How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = "
+"full)"
+msgstr ""
+
+msgid "Opacity at the brush center (0 = none, 1 = full)"
 msgstr ""
 
 msgid "Amount of brighten or darken to apply"
@@ -4326,10 +4445,7 @@ msgstr ""
 msgid "Auto normal mode"
 msgstr ""
 
-msgid "Grid size"
-msgstr ""
-
-msgid "The size of the voxel grid"
+msgid "The size of the voxel grid per axis (e.g. 1 or 1 2 3)"
 msgstr ""
 
 msgid "Plane size"
@@ -4463,6 +4579,81 @@ msgid "Configure the editor view mode"
 msgstr ""
 
 msgid "View mode"
+msgstr ""
+
+msgid "Show the palette panel"
+msgstr ""
+
+msgid "Show the normal palette panel"
+msgstr ""
+
+msgid "Memento"
+msgstr ""
+
+msgid "Show the memento panel"
+msgstr ""
+
+msgid "Show the camera panel"
+msgstr ""
+
+msgid "Show the L-System panel"
+msgstr ""
+
+msgid "Script"
+msgstr ""
+
+msgid "Show the script panel"
+msgstr ""
+
+msgid "Show the network panel"
+msgstr ""
+
+msgid "Show the game mode panel"
+msgstr ""
+
+msgid "Assets"
+msgstr ""
+
+msgid "Show the asset panels"
+msgstr ""
+
+msgid "Show the render panel"
+msgstr ""
+
+msgid "Show the animation settings panel"
+msgstr ""
+
+msgid "Animation timeline"
+msgstr ""
+
+msgid "Show the animation timeline panel"
+msgstr ""
+
+msgid "Show the scene panel"
+msgstr ""
+
+msgid "Show the tools panel"
+msgstr ""
+
+msgid "Show the scene settings panel"
+msgstr ""
+
+msgid "Show the help panel"
+msgstr ""
+
+msgid "Node properties"
+msgstr ""
+
+msgid "Show the node properties panel"
+msgstr ""
+
+msgid "Show the volume/node inspector panel"
+msgstr ""
+
+msgid "Volume inspector"
+msgstr ""
+
+msgid "Show the brushes and brush settings panels"
 msgstr ""
 
 msgid "Show the tip of the day on startup"
@@ -4828,7 +5019,7 @@ msgstr ""
 msgid "Hide all children nodes"
 msgstr ""
 
-msgid "Hide all model nodes except the active one"
+msgid "Hide all nodes except the given one and its children"
 msgstr ""
 
 msgid "Lock all nodes"
@@ -5028,6 +5219,12 @@ msgid "Darken"
 msgstr ""
 
 msgid "Random"
+msgstr ""
+
+msgid "Blend"
+msgstr ""
+
+msgid "Blur"
 msgstr ""
 
 msgid "Variation"
