@@ -31,6 +31,7 @@ Use Shift+Open for running the cli - otherwise it will exit immediately.
 # Further reading
 
 * [Usage](Usage.md)
+* [Blender addon](Blender.md)
 * [Configuration](Configuration.md)
 * [Examples](Examples.md)
 * [Screenshots](Screenshots.md)

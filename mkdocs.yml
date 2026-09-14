@@ -44,6 +44,7 @@ nav:
   - VoxConvert:
       - voxconvert/Index.md
       - voxconvert/Usage.md
+      - voxconvert/Blender.md
       - voxconvert/Configuration.md
       - voxconvert/Examples.md
       - voxconvert/Screenshots.md

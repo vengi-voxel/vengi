@@ -39,13 +39,33 @@ if (VOXCONVERT_PYTHON_EXECUTABLE)
 	)
 endif()
 
+find_program(BLENDER_EXECUTABLE NAMES blender blender.exe)
+if (BLENDER_EXECUTABLE)
+	add_test(NAME tests-${PROJECT_NAME}-blender-smoke
+		COMMAND ${BLENDER_EXECUTABLE} --background --factory-startup --python-exit-code 1
+			--python "${CMAKE_CURRENT_SOURCE_DIR}/blender/tests/blender_smoke.py"
+			-- $<TARGET_FILE:${PROJECT_NAME}>
+	)
+	set_tests_properties(tests-${PROJECT_NAME}-blender-smoke PROPERTIES DEPENDS ${PROJECT_NAME})
+endif()
+
 set(BLENDER_ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blender/io_vengi_voxconvert)
+set(BLENDER_ADDON_STAGE ${CMAKE_CURRENT_BINARY_DIR}/io_vengi_voxconvert)
 set(BLENDER_ADDON_ZIP ${CMAKE_BINARY_DIR}/io_vengi_voxconvert.zip)
 add_custom_command(
 	OUTPUT ${BLENDER_ADDON_ZIP}
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${BLENDER_ADDON_STAGE}
+	COMMAND ${CMAKE_COMMAND} -E copy
+		${BLENDER_ADDON_DIR}/__init__.py
+		${BLENDER_ADDON_DIR}/util.py
+		${BLENDER_ADDON_DIR}/blender_manifest.toml
+		${BLENDER_ADDON_STAGE}
 	COMMAND ${CMAKE_COMMAND} -E tar cf ${BLENDER_ADDON_ZIP} --format=zip -- io_vengi_voxconvert
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/blender
-	DEPENDS ${BLENDER_ADDON_DIR}/__init__.py ${BLENDER_ADDON_DIR}/util.py
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	DEPENDS
+		${BLENDER_ADDON_DIR}/__init__.py
+		${BLENDER_ADDON_DIR}/util.py
+		${BLENDER_ADDON_DIR}/blender_manifest.toml
 	COMMENT "Creating Blender addon zip"
 )
 add_custom_target(blender-addon ALL DEPENDS ${BLENDER_ADDON_ZIP})

@@ -1,0 +1,24 @@
+schema_version = "1.0.0"
+
+id = "io_vengi_voxconvert"
+version = "1.0.0"
+name = "Vengi Voxconvert"
+tagline = "Import and export voxel formats via vengi-voxconvert"
+maintainer = "Martin Gerhardy"
+type = "add-on"
+
+website = "https://vengi-voxel.github.io/vengi/voxconvert/Blender/"
+tags = ["Import-Export"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:MIT",
+]
+copyright = [
+  "2023-2026 Martin Gerhardy",
+]
+
+[permissions]
+files = "Read and write voxel files and locate the vengi-voxconvert executable"
+network = "Download vengi-voxconvert from GitHub releases on Windows"

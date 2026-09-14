@@ -11,22 +11,23 @@ bl_info = {
     "location": "File > Import/Export",
     "description": "Import/Export voxel formats via vengi-voxconvert",
     "category": "Import-Export",
-    "doc_url": "https://vengi-voxel.github.io/vengi/",
+    "doc_url": "https://vengi-voxel.github.io/vengi/voxconvert/Blender/",
     "tracker_url": "https://github.com/vengi-voxel/vengi/issues",
 }
 
 import bpy
-import json
+import addon_utils
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 from bpy.props import (
-    StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty,
+    StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, PointerProperty,
 )
 from bpy.types import (
-    AddonPreferences, Operator,
+    AddonPreferences, Operator, PropertyGroup,
     TOPBAR_MT_file_import, TOPBAR_MT_file_export,
 )
 from bpy_extras.io_utils import ImportHelper, ExportHelper
@@ -40,6 +41,18 @@ try:
         cvar_path_subtype,
         cvar_rna_name,
         cvar_set_args,
+        download_windows_voxconvert,
+        ensure_gltf_addon,
+        find_voxconvert,
+        gltf_export_kwargs,
+        gltf_export_rna_prop_names,
+        int_enum_ident_from_cli,
+        int_enum_rna_items,
+        is_relevant_cvar,
+        parse_leading_json,
+        split_cvar_keys,
+        IMPORT_PRIMARY_CVARS,
+        EXPORT_PRIMARY_CVARS,
     )
 except ImportError:
     from util import (
@@ -50,20 +63,49 @@ except ImportError:
         cvar_path_subtype,
         cvar_rna_name,
         cvar_set_args,
+        download_windows_voxconvert,
+        ensure_gltf_addon,
+        find_voxconvert,
+        gltf_export_kwargs,
+        gltf_export_rna_prop_names,
+        int_enum_ident_from_cli,
+        int_enum_rna_items,
+        is_relevant_cvar,
+        parse_leading_json,
+        split_cvar_keys,
+        IMPORT_PRIMARY_CVARS,
+        EXPORT_PRIMARY_CVARS,
     )
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _addon_dir():
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def _user_voxconvert_dir():
+    try:
+        return bpy.utils.user_resource("SCRIPTS", path="vengi")
+    except Exception:
+        return ""
+
+
 def _find_voxconvert():
-    path = shutil.which("vengi-voxconvert")
-    if path:
-        return path
-    for c in ("/usr/bin/vengi-voxconvert", "/usr/local/bin/vengi-voxconvert"):
-        if os.path.isfile(c):
-            return c
-    return ""
+    return find_voxconvert(addon_dir=_addon_dir(), user_install_dir=_user_voxconvert_dir())
+
+
+def _gltf_rna_prop_names():
+    return gltf_export_rna_prop_names(bpy)
+
+
+def _require_gltf(op):
+    ok, msg = ensure_gltf_addon(addon_utils, bpy)
+    if not ok:
+        op.report({'ERROR'}, msg)
+        return False
+    return True
 
 
 def _run(exe, args, timeout=600):
@@ -74,14 +116,7 @@ def _run(exe, args, timeout=600):
 
 def _get_json(exe, flag):
     out, _, _ = _run(exe, [flag], timeout=10)
-    for i, ch in enumerate(out):
-        if ch in ('{', '['):
-            out = out[i:]
-            break
-    try:
-        return json.loads(out)
-    except Exception:
-        return None
+    return parse_leading_json(out)
 
 
 # ---------------------------------------------------------------------------
@@ -96,20 +131,8 @@ _cache = {
     "export_filter": "*.*",
 }
 
-# Skip cvars that are internal / not useful in a Blender context
-_SKIP_PREFIXES = ("app_", "core_", "metric_")
-# Flag bit 0 = readonly
-_FLAG_READONLY = 1
-
-
 def _is_relevant_cvar(key, info):
-    if any(key.startswith(p) for p in _SKIP_PREFIXES):
-        return False
-    if info.get("flags", 0) & _FLAG_READONLY:
-        return False
-    if info.get("type") == "unknown":
-        return False
-    return True
+    return is_relevant_cvar(key, info)
 
 
 def _refresh_cache(exe):
@@ -143,6 +166,11 @@ def _make_prop(key, info):
     val = info.get("value", "")
     helptext = cvar_help(info, key)
     name = cvar_rna_name(info, key)
+
+    enum_items = int_enum_rna_items(key)
+    if enum_items:
+        ident = int_enum_ident_from_cli(key, val)
+        return EnumProperty(name=name, items=enum_items, default=ident, description=helptext)
 
     if typ == "boolean":
         default = (val.lower() == "true") if isinstance(val, str) else bool(val)
@@ -204,17 +232,39 @@ def _make_cvar_annotations():
     return annotations
 
 
-def _cvar_keys_sorted():
-    """Return sorted list of relevant cvar keys."""
+def _cvar_keys():
     cvars = _cache.get("cvars")
     if not cvars:
         return []
-    return sorted(k for k, v in cvars.items() if _is_relevant_cvar(k, v))
+    return [k for k, v in cvars.items() if _is_relevant_cvar(k, v)]
 
 
-def _cvar_set_args(op):
-    """Build -set key value CLI args for cvars that differ from defaults."""
-    return cvar_set_args(_cache.get("cvars") or {}, op)
+def _cvar_set_args(context):
+    settings = getattr(context.window_manager, "vengi_cvars", None)
+    if settings is None:
+        return []
+    return cvar_set_args(_cache.get("cvars") or {}, settings)
+
+
+_cvar_group_cls = None
+
+
+def _rebuild_cvar_group():
+    """Recreate the WindowManager PropertyGroup from current --jsonconfig."""
+    global _cvar_group_cls
+    if hasattr(bpy.types.WindowManager, "vengi_cvars"):
+        del bpy.types.WindowManager.vengi_cvars
+    if _cvar_group_cls is not None:
+        try:
+            bpy.utils.unregister_class(_cvar_group_cls)
+        except Exception:
+            pass
+        _cvar_group_cls = None
+    annotations = _make_cvar_annotations()
+    cls = type("VENGI_PG_cvars", (PropertyGroup,), {"__annotations__": annotations})
+    bpy.utils.register_class(cls)
+    bpy.types.WindowManager.vengi_cvars = PointerProperty(type=cls)
+    _cvar_group_cls = cls
 
 
 # ---------------------------------------------------------------------------
@@ -244,27 +294,45 @@ def _convert_thread(exe, args, state):
 # Draw cvars in the file browser sidebar
 # ---------------------------------------------------------------------------
 
-def _draw_cvars(layout, op):
-    cvars = _cache.get("cvars")
-    if not cvars:
+def _draw_cvars(layout, context, op, primary):
+    settings = getattr(context.window_manager, "vengi_cvars", None)
+    if settings is None:
         return
+    prim, adv = split_cvar_keys(_cvar_keys(), primary)
     box = layout.box()
-    box.label(text="Voxconvert Settings", icon='PREFERENCES')
-    for key in _cvar_keys_sorted():
-        if hasattr(op, key):
-            box.prop(op, key)
+    box.label(text="Voxconvert", icon='PREFERENCES')
+    for key in prim:
+        if hasattr(settings, key):
+            box.prop(settings, key)
+    if not adv:
+        return
+    box.prop(op, "show_advanced", toggle=True)
+    if not op.show_advanced:
+        return
+    adv_box = layout.box()
+    adv_box.label(text="Advanced")
+    for key in adv:
+        if hasattr(settings, key):
+            adv_box.prop(settings, key)
 
 
 # ---------------------------------------------------------------------------
-# Dynamic operator class creation
+# Operators
 # ---------------------------------------------------------------------------
 
-def _make_import_class():
-    annotations = {
-        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX),
-        "filepath": StringProperty(subtype='FILE_PATH'),
-    }
-    annotations.update(_make_cvar_annotations())
+class IMPORT_SCENE_OT_vengi_voxconvert(Operator, ImportHelper):
+    bl_idname = "import_scene.vengi_voxconvert"
+    bl_label = "Import Vengi Voxconvert"
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
+    filename_ext = ""
+
+    filter_glob: StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX)
+    filepath: StringProperty(subtype='FILE_PATH')
+    show_advanced: BoolProperty(
+        name="Advanced",
+        default=False,
+        description="Show all other voxconvert cvars",
+    )
 
     def invoke(self, context, event):
         self.filter_glob = _cache.get("import_filter", "*.*")
@@ -276,10 +344,12 @@ def _make_import_class():
         if not exe:
             self.report({'ERROR'}, "vengi-voxconvert not found. Set path in addon preferences.")
             return {'CANCELLED'}
+        if not _require_gltf(self):
+            return {'CANCELLED'}
         self._tmpdir = tempfile.mkdtemp(prefix="vengi_")
         tmp_out = os.path.join(self._tmpdir, "out.glb")
         args = ["--input", self.filepath, "--output", tmp_out, "--force"]
-        args += _cvar_set_args(self)
+        args += _cvar_set_args(context)
         self._state = _ConversionState()
         self._state.output_path = tmp_out
         t = threading.Thread(target=_convert_thread, args=(exe, args, self._state))
@@ -314,36 +384,38 @@ def _make_import_class():
         return {'FINISHED'}
 
     def draw(self, context):
-        _draw_cvars(self.layout, self)
-
-    cls = type("IMPORT_SCENE_OT_vengi_voxconvert", (Operator, ImportHelper), {
-        "__annotations__": annotations,
-        "bl_idname": "import_scene.vengi_voxconvert",
-        "bl_label": "Import Vengi Voxconvert",
-        "bl_options": {'REGISTER', 'UNDO', 'PRESET'},
-        "filename_ext": "",
-        "invoke": invoke,
-        "execute": execute,
-        "modal": modal,
-        "draw": draw,
-        "_state": None,
-        "_timer": None,
-        "_tmpdir": None,
-    })
-    return cls
+        _draw_cvars(self.layout, context, self, IMPORT_PRIMARY_CVARS)
 
 
-def _make_export_class():
-    annotations = {
-        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX),
-        "filepath": StringProperty(subtype='FILE_PATH'),
-        "crop": BoolProperty(name="Crop", default=False, description="Reduce models to real voxel sizes"),
-        "merge": BoolProperty(name="Merge", default=False, description="Merge models into one volume"),
-        "scale_half": BoolProperty(name="Scale 50%", default=False, description="Scale model to 50%"),
-        "script": StringProperty(name="Lua Script", default="", description="Apply a lua script to the output"),
-        "filter_nodes": StringProperty(name="Filter", default="", description="Model filter e.g. '1-4,6'"),
-    }
-    annotations.update(_make_cvar_annotations())
+class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
+    bl_idname = "export_scene.vengi_voxconvert"
+    bl_label = "Export Vengi Voxconvert"
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
+    filename_ext = ""
+    check_extension = False
+
+    filter_glob: StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX)
+    filepath: StringProperty(subtype='FILE_PATH')
+    show_advanced: BoolProperty(
+        name="Advanced",
+        default=False,
+        description="Show all other voxconvert cvars",
+    )
+    use_selection: BoolProperty(
+        name="Selected objects only",
+        default=False,
+        description="Export only selected objects through glTF",
+    )
+    apply_modifiers: BoolProperty(
+        name="Apply modifiers",
+        default=False,
+        description="Apply modifiers when exporting the glTF mesh",
+    )
+    crop: BoolProperty(name="Crop", default=False, description="Reduce models to real voxel sizes")
+    merge: BoolProperty(name="Merge", default=False, description="Merge models into one volume")
+    scale_half: BoolProperty(name="Scale 50%", default=False, description="Scale model to 50%")
+    script: StringProperty(name="Lua Script", default="", description="Apply a lua script to the output")
+    filter_nodes: StringProperty(name="Filter", default="", description="Model filter e.g. '1-4,6'")
 
     def invoke(self, context, event):
         self.filter_glob = _cache.get("export_filter", "*.*")
@@ -355,13 +427,18 @@ def _make_export_class():
         if not exe:
             self.report({'ERROR'}, "vengi-voxconvert not found. Set path in addon preferences.")
             return {'CANCELLED'}
+        if not _require_gltf(self):
+            return {'CANCELLED'}
         self._tmpdir = tempfile.mkdtemp(prefix="vengi_")
         tmp_in = os.path.join(self._tmpdir, "scene.glb")
         try:
-            bpy.ops.export_scene.gltf(
-                filepath=tmp_in, export_format='GLB',
-                export_colors=True, export_materials='EXPORT',
-            )
+            bpy.ops.export_scene.gltf(**gltf_export_kwargs(
+                tmp_in,
+                blender_version=bpy.app.version,
+                rna_prop_names=_gltf_rna_prop_names(),
+                use_selection=self.use_selection,
+                apply_modifiers=self.apply_modifiers,
+            ))
         except Exception as e:
             self.report({'ERROR'}, "glTF export failed: " + str(e)[:300])
             shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -377,7 +454,7 @@ def _make_export_class():
             args += ["--script", self.script]
         if self.filter_nodes:
             args += ["--filter", self.filter_nodes]
-        args += _cvar_set_args(self)
+        args += _cvar_set_args(context)
         self._state = _ConversionState()
         t = threading.Thread(target=_convert_thread, args=(exe, args, self._state))
         t.daemon = True
@@ -402,35 +479,44 @@ def _make_export_class():
     def draw(self, context):
         layout = self.layout
         box = layout.box()
+        box.label(text="Blender", icon='BLENDER')
+        box.prop(self, "use_selection")
+        box.prop(self, "apply_modifiers")
+        box = layout.box()
         box.label(text="Operations", icon='MODIFIER')
         box.prop(self, "crop")
         box.prop(self, "merge")
         box.prop(self, "scale_half")
         box.prop(self, "script")
         box.prop(self, "filter_nodes")
-        _draw_cvars(layout, self)
-
-    cls = type("EXPORT_SCENE_OT_vengi_voxconvert", (Operator, ExportHelper), {
-        "__annotations__": annotations,
-        "bl_idname": "export_scene.vengi_voxconvert",
-        "bl_label": "Export Vengi Voxconvert",
-        "bl_options": {'REGISTER', 'UNDO', 'PRESET'},
-        "filename_ext": "",
-        "check_extension": False,
-        "invoke": invoke,
-        "execute": execute,
-        "modal": modal,
-        "draw": draw,
-        "_state": None,
-        "_timer": None,
-        "_tmpdir": None,
-    })
-    return cls
+        _draw_cvars(layout, context, self, EXPORT_PRIMARY_CVARS)
 
 
 # ---------------------------------------------------------------------------
 # Preferences
 # ---------------------------------------------------------------------------
+
+class VENGI_OT_download_voxconvert(Operator):
+    """Download win-voxconvert.zip from the latest GitHub release (Windows only)."""
+    bl_idname = "vengi_voxconvert.download_binary"
+    bl_label = "Download vengi-voxconvert"
+    bl_description = "Download win-voxconvert.zip from GitHub releases into Blender's user scripts/vengi folder"
+
+    def execute(self, context):
+        if sys.platform != "win32":
+            self.report({'ERROR'}, "Automatic download is only available on Windows")
+            return {'CANCELLED'}
+        dest = bpy.utils.user_resource("SCRIPTS", path="vengi", create=True)
+        try:
+            path = download_windows_voxconvert(dest)
+        except Exception as e:
+            self.report({'ERROR'}, "Download failed: " + str(e)[:400])
+            return {'CANCELLED'}
+        prefs = context.preferences.addons[__package__].preferences
+        prefs.executable = path
+        self.report({'INFO'}, "Installed vengi-voxconvert to " + path)
+        return {'FINISHED'}
+
 
 class VengiVoxconvertPreferences(AddonPreferences):
     bl_idname = __package__
@@ -451,13 +537,18 @@ class VengiVoxconvertPreferences(AddonPreferences):
             cvars = _cache.get("cvars") or {}
             n = sum(1 for k, v in cvars.items() if _is_relevant_cvar(k, v))
             layout.label(text="Loaded %d settings from vengi-voxconvert" % n, icon='CHECKMARK')
-            layout.label(text="Restart Blender after changing the executable to reload settings", icon='INFO')
         else:
             layout.label(text="vengi-voxconvert not found - set the path above", icon='ERROR')
+            if sys.platform == "win32":
+                layout.operator("vengi_voxconvert.download_binary", icon='IMPORT')
 
 
 def _on_exe_changed(exe):
     _refresh_cache(exe)
+    try:
+        _rebuild_cvar_group()
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -476,16 +567,13 @@ def _menu_export(self, context):
 # Registration
 # ---------------------------------------------------------------------------
 
-_dynamic_classes = []
-
-
 def register():
     exe = _find_voxconvert()
     _refresh_cache(exe)
 
+    bpy.utils.register_class(VENGI_OT_download_voxconvert)
     bpy.utils.register_class(VengiVoxconvertPreferences)
 
-    # re-read saved preference before building dynamic classes
     try:
         prefs = bpy.context.preferences.addons[__package__].preferences
         if prefs.executable and prefs.executable != exe:
@@ -493,13 +581,9 @@ def register():
     except Exception:
         pass
 
-    imp_cls = _make_import_class()
-    exp_cls = _make_export_class()
-    _dynamic_classes.clear()
-    _dynamic_classes.extend([imp_cls, exp_cls])
-
-    for cls in _dynamic_classes:
-        bpy.utils.register_class(cls)
+    _rebuild_cvar_group()
+    bpy.utils.register_class(IMPORT_SCENE_OT_vengi_voxconvert)
+    bpy.utils.register_class(EXPORT_SCENE_OT_vengi_voxconvert)
 
     TOPBAR_MT_file_import.append(_menu_import)
     TOPBAR_MT_file_export.append(_menu_export)
@@ -508,10 +592,19 @@ def register():
 def unregister():
     TOPBAR_MT_file_export.remove(_menu_export)
     TOPBAR_MT_file_import.remove(_menu_import)
-    for cls in reversed(_dynamic_classes):
-        bpy.utils.unregister_class(cls)
-    _dynamic_classes.clear()
+    bpy.utils.unregister_class(EXPORT_SCENE_OT_vengi_voxconvert)
+    bpy.utils.unregister_class(IMPORT_SCENE_OT_vengi_voxconvert)
+    if hasattr(bpy.types.WindowManager, "vengi_cvars"):
+        del bpy.types.WindowManager.vengi_cvars
+    global _cvar_group_cls
+    if _cvar_group_cls is not None:
+        try:
+            bpy.utils.unregister_class(_cvar_group_cls)
+        except Exception:
+            pass
+        _cvar_group_cls = None
     bpy.utils.unregister_class(VengiVoxconvertPreferences)
+    bpy.utils.unregister_class(VENGI_OT_download_voxconvert)
 
 
 if __name__ == "__main__":
