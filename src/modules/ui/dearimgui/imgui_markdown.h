@@ -360,7 +360,7 @@ namespace ImGui
     struct Line;
     inline void UnderLine( ImColor col_ );
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
-    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_ );
+    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ );
 
     struct TextRegion
     {
@@ -473,7 +473,22 @@ namespace ImGui
         int columnCount = 0;
         int rowStart = 0;
         bool active = false;
+        bool pushedId = false;
     };
+
+    inline void EndMarkdownTable( Table& table )
+    {
+        if( !table.active )
+        {
+            return;
+        }
+        ImGui::EndTable();
+        if( table.pushedId )
+        {
+            ImGui::PopID();
+        }
+        table = Table();
+    }
 
     inline void UnderLine( ImColor col_ )
     {
@@ -483,9 +498,202 @@ namespace ImGui
         ImGui::GetWindowDrawList()->AddLine( min, max, col_, 1.0f );
     }
 
-    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_ )
+    // Find the next table cell delimiter, ignoring pipes inside `code` and [links](url).
+    inline int FindTableCellEnd( const char* markdown_, int start_, int lineEnd_ )
     {
-        // Parse cells separated by pipes
+        bool inCode = false;
+        for( int i = start_; i < lineEnd_; ++i )
+        {
+            const char c = markdown_[i];
+            if( c == '\\' && i + 1 < lineEnd_ )
+            {
+                ++i;
+                continue;
+            }
+            if( c == '`' )
+            {
+                inCode = !inCode;
+                continue;
+            }
+            if( inCode )
+            {
+                continue;
+            }
+            if( c == '[' )
+            {
+                int textEnd = i + 1;
+                while( textEnd < lineEnd_ && markdown_[textEnd] != ']' )
+                {
+                    if( markdown_[textEnd] == '\\' && textEnd + 1 < lineEnd_ )
+                    {
+                        textEnd += 2;
+                        continue;
+                    }
+                    ++textEnd;
+                }
+                if( textEnd < lineEnd_ && textEnd + 1 < lineEnd_ && markdown_[textEnd + 1] == '(' )
+                {
+                    int urlEnd = textEnd + 2;
+                    int depth = 1;
+                    while( urlEnd < lineEnd_ && depth > 0 )
+                    {
+                        if( markdown_[urlEnd] == '\\' && urlEnd + 1 < lineEnd_ )
+                        {
+                            urlEnd += 2;
+                            continue;
+                        }
+                        if( markdown_[urlEnd] == '(' )
+                        {
+                            ++depth;
+                        }
+                        else if( markdown_[urlEnd] == ')' )
+                        {
+                            --depth;
+                        }
+                        if( depth > 0 )
+                        {
+                            ++urlEnd;
+                        }
+                    }
+                    if( depth == 0 )
+                    {
+                        i = urlEnd;
+                        continue;
+                    }
+                }
+            }
+            if( c == '|' )
+            {
+                return i;
+            }
+        }
+        return lineEnd_;
+    }
+
+    inline void RenderTableCellText( const char* begin, const char* end, bool& first )
+    {
+        if( begin >= end )
+        {
+            return;
+        }
+        if( !first )
+        {
+            ImGui::SameLine( 0.0f, 0.0f );
+        }
+        first = false;
+        ImGui::TextUnformatted( begin, end );
+    }
+
+    inline void RenderTableCellInline( const char* markdown_, int cellStart, int cellEnd, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
+    {
+        (void)linkHoverStart_;
+        int i = cellStart;
+        int last = cellStart;
+        bool first = true;
+
+        while( i < cellEnd )
+        {
+            const char c = markdown_[i];
+            if( c == '`' )
+            {
+                int close = i + 1;
+                while( close < cellEnd && markdown_[close] != '`' )
+                {
+                    ++close;
+                }
+                if( close < cellEnd )
+                {
+                    RenderTableCellText( markdown_ + last, markdown_ + i, first );
+                    if( !first )
+                    {
+                        ImGui::SameLine( 0.0f, 0.0f );
+                    }
+                    first = false;
+                    MarkdownFormatInfo formatInfo;
+                    formatInfo.config = &mdConfig_;
+                    formatInfo.type = MarkdownFormatType::CODE;
+                    mdConfig_.formatCallback( formatInfo, true );
+                    ImGui::TextUnformatted( markdown_ + i + 1, markdown_ + close );
+                    mdConfig_.formatCallback( formatInfo, false );
+                    i = close + 1;
+                    last = i;
+                    continue;
+                }
+            }
+            else if( c == '[' )
+            {
+                int textEnd = i + 1;
+                while( textEnd < cellEnd && markdown_[textEnd] != ']' )
+                {
+                    if( markdown_[textEnd] == '\\' && textEnd + 1 < cellEnd )
+                    {
+                        textEnd += 2;
+                        continue;
+                    }
+                    ++textEnd;
+                }
+                if( textEnd < cellEnd && textEnd + 1 < cellEnd && markdown_[textEnd + 1] == '(' )
+                {
+                    int urlEnd = textEnd + 2;
+                    int depth = 1;
+                    while( urlEnd < cellEnd && depth > 0 )
+                    {
+                        if( markdown_[urlEnd] == '\\' && urlEnd + 1 < cellEnd )
+                        {
+                            urlEnd += 2;
+                            continue;
+                        }
+                        if( markdown_[urlEnd] == '(' )
+                        {
+                            ++depth;
+                        }
+                        else if( markdown_[urlEnd] == ')' )
+                        {
+                            --depth;
+                        }
+                        if( depth > 0 )
+                        {
+                            ++urlEnd;
+                        }
+                    }
+                    if( depth == 0 )
+                    {
+                        RenderTableCellText( markdown_ + last, markdown_ + i, first );
+                        if( !first )
+                        {
+                            ImGui::SameLine( 0.0f, 0.0f );
+                        }
+                        first = false;
+                        char label[256];
+                        const int labelLen = textEnd - ( i + 1 );
+                        const int copyLen = labelLen < (int)sizeof( label ) - 1 ? labelLen : (int)sizeof( label ) - 1;
+                        for( int n = 0; n < copyLen; ++n )
+                        {
+                            label[n] = markdown_[i + 1 + n];
+                        }
+                        label[copyLen] = '\0';
+                        if( ImGui::TextLink( label ) && mdConfig_.linkCallback )
+                        {
+                            mdConfig_.linkCallback( { markdown_ + i + 1, textEnd - ( i + 1 ), markdown_ + textEnd + 2, urlEnd - ( textEnd + 2 ), mdConfig_.userData, false } );
+                        }
+                        if( mdConfig_.tooltipCallback && ImGui::IsItemHovered() )
+                        {
+                            mdConfig_.tooltipCallback( { { markdown_ + i + 1, textEnd - ( i + 1 ), markdown_ + textEnd + 2, urlEnd - ( textEnd + 2 ), mdConfig_.userData, false }, mdConfig_.linkIcon } );
+                        }
+                        i = urlEnd + 1;
+                        last = i;
+                        continue;
+                    }
+                }
+            }
+            ++i;
+        }
+        RenderTableCellText( markdown_ + last, markdown_ + cellEnd, first );
+    }
+
+    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_, const char** linkHoverStart_ )
+    {
+        // Parse cells separated by pipes, keeping markdown links and code spans intact
         int cellStart = lineStart_;
         int cellIndex = 0;
 
@@ -495,43 +703,40 @@ namespace ImGui
             cellStart++;
         }
 
-        for( int i = cellStart; i <= lineEnd_ && cellIndex < columnCount_; ++i )
+        while( cellStart <= lineEnd_ && cellIndex < columnCount_ )
         {
-            if( i == lineEnd_ || markdown_[i] == '|' )
+            const int cellEnd = FindTableCellEnd( markdown_, cellStart, lineEnd_ );
+            int trimStart = cellStart;
+            int trimEnd = cellEnd;
+
+            while( trimStart < trimEnd && markdown_[trimStart] == ' ' )
             {
-                // Found end of cell
-                int cellEnd = i;
-
-                // Trim leading/trailing spaces
-                while( cellStart < cellEnd && markdown_[cellStart] == ' ' )
-                {
-                    cellStart++;
-                }
-                while( cellEnd > cellStart && markdown_[cellEnd - 1] == ' ' )
-                {
-                    cellEnd--;
-                }
-
-                ImGui::TableNextColumn();
-
-                if( isHeader_ )
-                {
-                    MarkdownFormatInfo formatInfo;
-                    formatInfo.config = &mdConfig_;
-                    formatInfo.type = MarkdownFormatType::EMPHASIS;
-                    formatInfo.level = 2; // Bold for headers
-                    mdConfig_.formatCallback( formatInfo, true );
-                    ImGui::TextUnformatted( markdown_ + cellStart, markdown_ + cellEnd );
-                    mdConfig_.formatCallback( formatInfo, false );
-                }
-                else
-                {
-                    ImGui::TextUnformatted( markdown_ + cellStart, markdown_ + cellEnd );
-                }
-
-                cellStart = i + 1;
-                cellIndex++;
+                trimStart++;
             }
+            while( trimEnd > trimStart && markdown_[trimEnd - 1] == ' ' )
+            {
+                trimEnd--;
+            }
+
+            ImGui::TableNextColumn();
+
+            if( isHeader_ )
+            {
+                MarkdownFormatInfo formatInfo;
+                formatInfo.config = &mdConfig_;
+                formatInfo.type = MarkdownFormatType::EMPHASIS;
+                formatInfo.level = 2; // Bold for headers
+                mdConfig_.formatCallback( formatInfo, true );
+                RenderTableCellInline( markdown_, trimStart, trimEnd, mdConfig_, linkHoverStart_ );
+                mdConfig_.formatCallback( formatInfo, false );
+            }
+            else
+            {
+                RenderTableCellInline( markdown_, trimStart, trimEnd, mdConfig_, linkHoverStart_ );
+            }
+
+            cellStart = cellEnd < lineEnd_ ? cellEnd + 1 : lineEnd_ + 1;
+            cellIndex++;
         }
     }
 
@@ -845,8 +1050,7 @@ namespace ImGui
             if( !line.isLeadingSpace && table.active && !line.isTableRow )
             {
                 // We're in a table but this line is not a table row - end the table
-                ImGui::EndTable();
-                table = Table();
+                EndMarkdownTable( table );
             }
 
             if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) )
@@ -1161,12 +1365,17 @@ namespace ImGui
                     // Handle table rendering
                     if( table.state == Table::HEADER )
                     {
-                        // Start new table
+                        ImGui::PushID( line.lineStart );
                         if( ImGui::BeginTable( "##mdtable", table.columnCount, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg ) )
                         {
                             table.active = true;
+                            table.pushedId = true;
                             ImGui::TableNextRow( ImGuiTableRowFlags_Headers );
-                            RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, true, mdConfig_ );
+                            RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, true, mdConfig_, &linkHoverStart );
+                        }
+                        else
+                        {
+                            ImGui::PopID();
                         }
                     }
                     else if( line.isTableSeparator && table.active )
@@ -1177,17 +1386,13 @@ namespace ImGui
                     {
                         // Render data row
                         ImGui::TableNextRow();
-                        RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, false, mdConfig_ );
+                        RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, false, mdConfig_, &linkHoverStart );
                     }
                 }
                 else
                 {
                     // End table if we were in one
-                    if( table.active )
-                    {
-                        ImGui::EndTable();
-                        table = Table();
-                    }
+                    EndMarkdownTable( table );
                     // render the line: multiline emphasis requires a complex implementation so not supporting
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
                 }
@@ -1221,11 +1426,7 @@ namespace ImGui
         else
         {
             // Close any open table
-            if( table.active )
-            {
-                ImGui::EndTable();
-                table = Table();
-            }
+            EndMarkdownTable( table );
 
             // render any remaining text if last char wasn't 0
             if( markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[ line.lineStart ] != 0 )

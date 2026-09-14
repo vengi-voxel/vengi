@@ -445,6 +445,25 @@ function(engine_add_build_executable)
 	set_property(TARGET ${_EXE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION False)
 endfunction()
 
+# ui_test_engine is a full replacement for ui (same sources, plus imgui test
+# engine). Linking both produces duplicate symbols. Rewrite ui -> ui_test_engine
+# wherever a target lists ui as a dependency.
+function(engine_replace_ui_with_test_engine DEPS_VAR)
+	if (NOT USE_IMGUITESTENGINE)
+		return()
+	endif()
+	set(_deps ${${DEPS_VAR}})
+	if (NOT _deps)
+		return()
+	endif()
+	list(FIND _deps ui OLD_VALUE_INDEX)
+	if (OLD_VALUE_INDEX GREATER_EQUAL 0)
+		list(REMOVE_AT _deps ${OLD_VALUE_INDEX})
+		list(INSERT _deps ${OLD_VALUE_INDEX} ui_test_engine)
+		set(${DEPS_VAR} ${_deps} PARENT_SCOPE)
+	endif()
+endfunction()
+
 #
 # Adds a new entity (src/modules) to the list of known modules. Each module can
 # provide files and lua scripts to their dependent modules. This is done in a way
@@ -471,13 +490,7 @@ function(engine_add_module)
 		check_lua_files(${_LIB_TARGET} ${_LIB_LUA_SRCS})
 	endif()
 
-	if (USE_IMGUITESTENGINE AND _LIB_DEPENDENCIES)
-		list(FIND _LIB_DEPENDENCIES ui OLD_VALUE_INDEX)
-		if(OLD_VALUE_INDEX GREATER_EQUAL 0)
-			list(REMOVE_AT _LIB_DEPENDENCIES ${OLD_VALUE_INDEX})
-			list(INSERT _LIB_DEPENDENCIES ${OLD_VALUE_INDEX} ui_test_engine)
-		endif()
-	endif()
+	engine_replace_ui_with_test_engine(_LIB_DEPENDENCIES)
 
 	set_target_properties(${_LIB_TARGET} PROPERTIES FOLDER ${_LIB_TARGET})
 	if (_LIB_DEPENDENCIES)
@@ -618,6 +631,8 @@ function(engine_target_link_libraries)
 	set(_MULTI_VALUE_ARGS DEPENDENCIES)
 
 	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
+
+	engine_replace_ui_with_test_engine(_LIBS_DEPENDENCIES)
 
 	set_property(GLOBAL PROPERTY ${_LIBS_TARGET}_DEPENDENCIES ${_LIBS_DEPENDENCIES})
 	target_link_libraries(${_LIBS_TARGET} PUBLIC ${_LIBS_DEPENDENCIES})
