@@ -41,6 +41,7 @@ private:
 	bool _requestFocus = false;
 	bool _showUpload = false;
 	bool _useApiKey = false;
+	bool _focusLogin = false;
 
 	void fetchModels();
 	void loginPanel();

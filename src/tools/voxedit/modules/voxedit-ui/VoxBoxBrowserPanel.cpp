@@ -6,6 +6,7 @@
 #include "ScopedID.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
+#include "core/Common.h"
 #include "core/Var.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
@@ -13,6 +14,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/Style.h"
 
 namespace voxedit {
 
@@ -48,8 +50,12 @@ VoxBoxBrowserPanel::VoxBoxBrowserPanel(ui::IMGUIApp *app, const SceneManagerPtr 
 void VoxBoxBrowserPanel::open() {
 	_open = true;
 	_requestFocus = true;
-	if (_state.info.empty() && !_requestPending) {
-		fetchModels();
+	if (_api.isLoggedIn()) {
+		if (_state.info.empty() && !_requestPending) {
+			fetchModels();
+		}
+	} else {
+		_focusLogin = true;
 	}
 }
 
@@ -66,61 +72,93 @@ void VoxBoxBrowserPanel::loginPanel() {
 		if (ImGui::IconButton(ICON_LC_LOG_OUT, _("Logout"))) {
 			_api.logout();
 			_varApiKey->setVal("");
+			_state.info.clear();
+			_state.count = 0;
+			_showUpload = false;
+			_focusLogin = true;
 		}
 		return;
 	}
 
+	ImGui::IconDialog(ICON_LC_LOG_IN, _("Login required"), true);
+	ImGui::TextWrappedUnformatted(
+		_("A VoxBox account is required to browse, download and upload assets."));
+	ImGui::Spacing();
+
+	const float itemWidth = core_min(ImGui::GetContentRegionAvail().x, ImGui::GetFontSize() * 24.0f);
+
 	if (_useApiKey) {
 		core::String apiKey = _varApiKey->strVal();
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.7f);
-		if (ImGui::InputTextWithHint("##voxbox_apikey", _("API key (refresh token)"), &apiKey, ImGuiInputTextFlags_Password)) {
+		ImGui::TextUnformatted(_("API key"));
+		if (_focusLogin) {
+			ImGui::SetKeyboardFocusHere();
+			_focusLogin = false;
+		}
+		ImGui::SetNextItemWidth(itemWidth);
+		const bool submitted =
+			ImGui::InputTextWithHint("##voxbox_apikey", _("Refresh token"), &apiKey,
+									 ImGuiInputTextFlags_Password | ImGuiInputTextFlags_EnterReturnsTrue);
+		if (apiKey != _varApiKey->strVal()) {
 			_varApiKey->setVal(apiKey);
 		}
-		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_LOG_IN, _("Connect"))) {
-			if (apiKey.empty()) {
-				_loginError = _("API key is empty");
-			} else {
-				_api.setRefreshToken(apiKey);
-				_varApiKey->setVal(apiKey);
-				_loginError = "";
-			}
+		const bool canConnect = !apiKey.empty();
+		if (ImGui::DisabledIconButton(ICON_LC_LOG_IN, _("Connect"), !canConnect, ImVec2(itemWidth, 0.0f)) ||
+			(submitted && canConnect)) {
+			_api.setRefreshToken(apiKey);
+			_varApiKey->setVal(apiKey);
+			_loginError = "";
+			fetchModels();
 		}
-		ImGui::SameLine();
 		if (ImGui::SmallButton(_("Use password"))) {
 			_useApiKey = false;
+			_focusLogin = true;
 		}
 	} else {
 		core::String username = _varUsername->strVal();
 		core::String password = _varPassword->strVal();
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.4f);
-		if (ImGui::InputTextWithHint("##voxbox_user", _("Username"), &username)) {
+		ImGui::TextUnformatted(_("Username"));
+		if (_focusLogin) {
+			ImGui::SetKeyboardFocusHere();
+			_focusLogin = false;
+		}
+		ImGui::SetNextItemWidth(itemWidth);
+		if (ImGui::InputTextWithHint("##voxbox_user", _("Your VoxBox username"), &username)) {
 			_varUsername->setVal(username);
 		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-		if (ImGui::InputTextWithHint("##voxbox_pass", _("Password"), &password, ImGuiInputTextFlags_Password)) {
+		ImGui::TextUnformatted(_("Password"));
+		ImGui::SetNextItemWidth(itemWidth);
+		const bool submitted =
+			ImGui::InputTextWithHint("##voxbox_pass", _("Your VoxBox password"), &password,
+									 ImGuiInputTextFlags_Password | ImGuiInputTextFlags_EnterReturnsTrue);
+		if (password != _varPassword->strVal()) {
 			_varPassword->setVal(password);
 		}
-		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_LOG_IN, _("Login"))) {
+		const bool canLogin = !username.empty() && !password.empty();
+		if (ImGui::DisabledIconButton(ICON_LC_LOG_IN, _("Login"), !canLogin, ImVec2(itemWidth, 0.0f)) ||
+			(submitted && canLogin)) {
 			if (_api.login(username, password)) {
 				_loginError = "";
 				_varPassword->setVal("");
 				_varApiKey->setVal(_api.refreshToken());
+				fetchModels();
 			} else {
 				_loginError = _("Login failed");
 			}
 		}
-		ImGui::SameLine();
 		if (ImGui::SmallButton(_("Use API key"))) {
 			_useApiKey = true;
+			_focusLogin = true;
 		}
 	}
+
 	if (!_loginError.empty()) {
-		ImGui::SameLine();
-		ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "%s", _loginError.c_str());
+		const glm::vec4 &warningTextColor = style::color(style::ColorWarningText);
+		ImGui::TextColored(warningTextColor, "%s", _loginError.c_str());
 	}
+
+	ImGui::Spacing();
+	ImGui::TextWrappedUnformatted(_("No account yet? Create one at voxbox.store."));
+	ImGui::URLIconButton(ICON_LC_EXTERNAL_LINK, _("VoxBox Store"), "https://voxbox.store");
 }
 
 void VoxBoxBrowserPanel::searchPanel(command::CommandExecutionListener *listener) {
@@ -418,15 +456,15 @@ void VoxBoxBrowserPanel::update(const char *id, command::CommandExecutionListene
 	}
 	if (ImGui::Begin(title.c_str(), &_open)) {
 		loginPanel();
-		ImGui::SameLine();
-		ImGui::URLIconButton(ICON_LC_EXTERNAL_LINK, _("VoxBox Store"), "https://voxbox.store");
-		ImGui::Separator();
-
-		if (_showUpload && _api.isLoggedIn()) {
-			uploadPanel();
+		if (_api.isLoggedIn()) {
+			ImGui::SameLine();
+			ImGui::URLIconButton(ICON_LC_EXTERNAL_LINK, _("VoxBox Store"), "https://voxbox.store");
 			ImGui::Separator();
-		} else {
-			if (_api.isLoggedIn()) {
+
+			if (_showUpload) {
+				uploadPanel();
+				ImGui::Separator();
+			} else {
 				const bool sceneEmpty = _sceneMgr->sceneGraph().empty();
 				const VoxBoxModelInfo sceneInfo = VoxBoxApi::readMetadata(_sceneMgr->sceneGraph());
 				const core::String loggedInUserId = _api.loggedInUserId();
@@ -445,8 +483,8 @@ void VoxBoxBrowserPanel::update(const char *id, command::CommandExecutionListene
 					}
 					ImGui::SameLine();
 				}
+				searchPanel(listener);
 			}
-			searchPanel(listener);
 		}
 	}
 	ImGui::End();
