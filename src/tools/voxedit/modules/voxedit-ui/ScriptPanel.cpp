@@ -50,13 +50,18 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 		if (ui::ScopedPanel::Scope scope =
 				panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 			voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
+			_luaApiWidget.ensureCurrentScript(luaApi);
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 					if (ImGui::IconMenuItem(ICON_LC_SQUARE, _("New"))) {
 						const core::String savePath = _app->filesystem()->homeWritePath("scripts");
 						_app->filesystem()->sysCreateDir(savePath);
-						_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) {
-							if (_app->filesystem()->sysWrite(file, _luaApiWidget._activeScript)) {
+						core::String content = _luaApiWidget._activeScript;
+						if (content.empty()) {
+							content = "function main(node, region, color)\nend\n";
+						}
+						_app->saveDialog([this, content](const core::String &file, const io::FormatDescription *desc) {
+							if (_app->filesystem()->sysWrite(file, content)) {
 								_luaApiWidget.clear();
 							}
 						}, {}, io::format::lua(), core::string::path(savePath, "new_script.lua"));

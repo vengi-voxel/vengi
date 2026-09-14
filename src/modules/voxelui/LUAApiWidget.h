@@ -47,6 +47,11 @@ private:
 
 public:
 	void clear();
+	/**
+	 * Load the script list if needed and select a current script so callers such as
+	 * the File menu can rely on currentScript() before the combo is drawn.
+	 */
+	bool ensureCurrentScript(voxelgenerator::LUAApi &luaApi);
 	voxelgenerator::LUAScript *currentScriptPointer();
 	const voxelgenerator::LUAScript &currentScript() const;
 	const voxelgenerator::LUAScript &script(int idx) const;

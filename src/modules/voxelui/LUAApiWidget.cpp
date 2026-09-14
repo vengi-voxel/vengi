@@ -18,6 +18,22 @@ void LUAApiWidget::clear() {
 	_currentScript = -1;
 }
 
+bool LUAApiWidget::ensureCurrentScript(voxelgenerator::LUAApi &luaApi) {
+	if (_scripts.empty()) {
+		_scripts = luaApi.listScripts();
+	}
+	if (_scripts.empty()) {
+		return false;
+	}
+	if (_currentScript == -1) {
+		_currentScript = 0;
+		if (!_scripts[0].valid) {
+			reloadScriptParameters(luaApi, _scripts[0]);
+		}
+	}
+	return currentScript().valid;
+}
+
 bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, const palette::Palette &palette) {
 	renderScriptParameters(script.parameterDescription, script.parameters, &palette);
 	return true;
@@ -25,18 +41,14 @@ bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, con
 
 bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, const palette::Palette &palette,
 											  LUAApiExecutorContext &ctx, uint32_t flags) {
-	if (_scripts.empty()) {
+	const bool optional = (flags & LUAAPI_WIDGET_FLAG_COMBOBOX_NONE) != 0;
+	if (!optional) {
+		ensureCurrentScript(luaApi);
+	} else if (_scripts.empty()) {
 		_scripts = luaApi.listScripts();
 	}
 	if (_scripts.empty()) {
 		return false;
-	}
-	const bool optional = (flags & LUAAPI_WIDGET_FLAG_COMBOBOX_NONE) != 0;
-	if (_currentScript == -1 && !optional) {
-		_currentScript = 0;
-		if (!_scripts[0].valid) {
-			reloadScriptParameters(luaApi, _scripts[0]);
-		}
 	}
 	if (ctx.isRunning) {
 		ImGui::Spinner("running_scripts", ImGui::Size(1.0f));
