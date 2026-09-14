@@ -265,6 +265,8 @@ protected:
 	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeMoveKeyFrame(int nodeId, scenegraph::FrameIndex fromFrameIdx, scenegraph::FrameIndex toFrameIdx);
+	bool nodeKeyFramesChanged(int nodeId);
 	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
 	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
 	bool nodeRemoveProperty(int nodeId, const core::String &key);
@@ -416,6 +418,8 @@ protected:
 	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
+	bool nodeMoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex fromFrameIdx,
+						  scenegraph::FrameIndex toFrameIdx);
 	void nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId = nullptr);
 	int nodeReference(const scenegraph::SceneGraphNode &node);
 	bool nodeUnreference(scenegraph::SceneGraphNode &node);
@@ -832,6 +836,9 @@ public:
 	bool nodeDuplicate(const core::UUID &nodeUUID, core::UUID *newNodeUUID = nullptr);
 	bool nodeRemoveKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx);
+	bool nodeMoveKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex fromFrameIdx,
+						 scenegraph::FrameIndex toFrameIdx);
+	bool nodeKeyFramesChanged(const core::UUID &nodeUUID);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
 	bool nodeMove(const core::UUID &sourceNodeUUID, const core::UUID &targetNodeUUID, scenegraph::NodeMoveFlag flags);
 	bool nodeSetProperty(const core::UUID &nodeUUID, const core::String &key, const core::String &value);

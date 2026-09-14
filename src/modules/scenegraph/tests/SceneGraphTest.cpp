@@ -959,6 +959,20 @@ TEST_F(SceneGraphTest, testAddKeyFrame) {
 	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(20));
 }
 
+TEST_F(SceneGraphTest, testMoveKeyFrame) {
+	SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	EXPECT_EQ(1, node.addKeyFrame(10));
+	EXPECT_TRUE(node.hasKeyFrame(10));
+	EXPECT_FALSE(node.moveKeyFrame(10, 10));
+	EXPECT_FALSE(node.moveKeyFrame(10, 0)) << "Target frame 0 is already occupied";
+	EXPECT_FALSE(node.moveKeyFrame(99, 50)) << "Source keyframe does not exist";
+	EXPECT_TRUE(node.moveKeyFrame(10, 50));
+	EXPECT_FALSE(node.hasKeyFrame(10));
+	EXPECT_TRUE(node.hasKeyFrame(50));
+	EXPECT_EQ((scenegraph::KeyFrameIndex)1, node.keyFrameForFrame(50));
+	EXPECT_TRUE(node.keyFramesValidate());
+}
+
 TEST_F(SceneGraphTest, testAddKeyFrameValidateTranslate) {
 	SceneGraph sceneGraph;
 	voxel::RawVolume v(voxel::Region(0, 0));

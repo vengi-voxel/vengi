@@ -782,6 +782,34 @@ void SceneGraphNode::sortKeyFrames() {
 	}
 }
 
+bool SceneGraphNode::moveKeyFrame(FrameIndex fromFrameIdx, FrameIndex toFrameIdx) {
+	if (toFrameIdx < 0) {
+		toFrameIdx = 0;
+	}
+	if (fromFrameIdx == toFrameIdx) {
+		return false;
+	}
+	SceneGraphKeyFrames *kfs = keyFrames();
+	if (kfs == nullptr) {
+		return false;
+	}
+	KeyFrameIndex fromIdx = InvalidKeyFrame;
+	for (size_t i = 0; i < kfs->size(); ++i) {
+		const SceneGraphKeyFrame &kf = (*kfs)[i];
+		if (kf.frameIdx == fromFrameIdx) {
+			fromIdx = (KeyFrameIndex)i;
+		} else if (kf.frameIdx == toFrameIdx) {
+			return false;
+		}
+	}
+	if (fromIdx == InvalidKeyFrame) {
+		return false;
+	}
+	(*kfs)[fromIdx].frameIdx = toFrameIdx;
+	sortKeyFrames();
+	return true;
+}
+
 bool SceneGraphNode::removeKeyFrame(FrameIndex frameIdx) {
 	const SceneGraphKeyFrames *kfs = keyFrames();
 	if (kfs == nullptr || kfs->size() <= 1) {

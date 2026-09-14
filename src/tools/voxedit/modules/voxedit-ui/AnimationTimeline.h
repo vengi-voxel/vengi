@@ -9,6 +9,7 @@
 #include "core/UUID.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/Set.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
@@ -41,6 +42,7 @@ private:
 		core::UUID nodeUUID;
 	};
 	core::Buffer<Selection> _selectionBuffer;
+	core::Set<core::UUID, 11, core::UUIDHash> _keyframeDragChangedNodes;
 	SceneManagerPtr _sceneMgr;
 
 	void header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame);
@@ -48,6 +50,7 @@ private:
 					   core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 					   scenegraph::SceneGraphNode &node);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
+	void recordMovedKeyFrames();
 
 public:
 	AnimationTimeline(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)

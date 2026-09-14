@@ -282,6 +282,11 @@ public:
 	FrameIndex maxFrame() const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool hasKeyFrame(FrameIndex frameIdx) const;
+	/**
+	 * @brief Move an existing keyframe from @c fromFrameIdx to @c toFrameIdx
+	 * @return @c false if the source keyframe does not exist or the target frame is already occupied
+	 */
+	bool moveKeyFrame(FrameIndex fromFrameIdx, FrameIndex toFrameIdx);
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;

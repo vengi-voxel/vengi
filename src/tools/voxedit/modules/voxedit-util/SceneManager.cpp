@@ -6628,6 +6628,37 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 	return false;
 }
 
+bool SceneManager::nodeMoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex fromFrameIdx,
+									scenegraph::FrameIndex toFrameIdx) {
+	if (!node.moveKeyFrame(fromFrameIdx, toFrameIdx)) {
+		return false;
+	}
+	nodeKeyFramesChanged(node);
+	return true;
+}
+
+bool SceneManager::nodeMoveKeyFrame(int nodeId, scenegraph::FrameIndex fromFrameIdx,
+									scenegraph::FrameIndex toFrameIdx) {
+	if (isLocked()) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeMoveKeyFrame(*node, fromFrameIdx, toFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeKeyFramesChanged(int nodeId) {
+	if (isLocked()) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeKeyFramesChanged(*node);
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
 	if (isLocked()) {
 		return false;
@@ -7591,6 +7622,21 @@ bool SceneManager::nodeActivate(const core::UUID &nodeUUID) {
 bool SceneManager::nodeAddKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex frameIdx) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeAddKeyFrame(node->id(), frameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeMoveKeyFrame(const core::UUID &nodeUUID, scenegraph::FrameIndex fromFrameIdx,
+									scenegraph::FrameIndex toFrameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeMoveKeyFrame(node->id(), fromFrameIdx, toFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeKeyFramesChanged(const core::UUID &nodeUUID) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeKeyFramesChanged(node->id());
 	}
 	return false;
 }

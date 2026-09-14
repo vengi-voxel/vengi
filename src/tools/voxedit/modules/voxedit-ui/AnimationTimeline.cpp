@@ -112,6 +112,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				}
 			}
 			sceneGraph.markKeyFramesDirty(node.id());
+			_keyframeDragChangedNodes.insert(node.uuid());
 		}
 		if (activeNode != _lastActivedNodeUUID && node.uuid() == activeNode) {
 			_lastActivedNodeUUID = activeNode;
@@ -133,6 +134,17 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 		}
 		ImGui::EndNeoTimeLine();
 	}
+}
+
+void AnimationTimeline::recordMovedKeyFrames() {
+	if (_keyframeDragChangedNodes.empty()) {
+		return;
+	}
+	memento::ScopedMementoGroup mementoGroup(_sceneMgr->mementoHandler(), "move_keyframes");
+	for (const auto &entry : _keyframeDragChangedNodes) {
+		_sceneMgr->nodeKeyFramesChanged(entry->key);
+	}
+	_keyframeDragChangedNodes.clear();
 }
 
 bool AnimationTimeline::init() {
@@ -194,9 +206,13 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 			}
 		}
 		bool selectionRightClicked = ImGui::IsNeoKeyframeSelectionRightClicked();
+		const bool draggingKeyframes = ImGui::NeoIsDraggingSelection();
 		// check if current frame was changed by dragging the handle
 		if (frame != currentFrame) {
 			_sceneMgr->setCurrentFrame(currentFrame);
+		}
+		if (!draggingKeyframes) {
+			recordMovedKeyFrames();
 		}
 		ImGui::EndNeoSequencer();
 

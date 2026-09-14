@@ -1023,6 +1023,61 @@ TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
 	EXPECT_FLOAT_EQ(0.0f, node.keyFrame(5).transform().worldTranslation().x);
 }
 
+TEST_F(SceneManagerTest, testMoveKeyFrameUndoRedo) {
+	const core::UUID nodeUUID = _sceneMgr->sceneGraph().uuid(1);
+	ASSERT_TRUE(_sceneMgr->nodeAddKeyFrame(nodeUUID, 10));
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(1);
+	ASSERT_TRUE(node.hasKeyFrame(10));
+	ASSERT_FALSE(node.hasKeyFrame(50));
+
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	ASSERT_TRUE(mementoHandler.canUndo());
+	const size_t statesBeforeMove = mementoHandler.stateSize();
+
+	ASSERT_TRUE(_sceneMgr->nodeMoveKeyFrame(nodeUUID, 10, 50));
+	EXPECT_FALSE(node.hasKeyFrame(10));
+	EXPECT_TRUE(node.hasKeyFrame(50));
+	EXPECT_GT(mementoHandler.stateSize(), statesBeforeMove);
+	ASSERT_TRUE(mementoHandler.canUndo());
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(node.hasKeyFrame(10)) << "Moving a keyframe must be undoable";
+	EXPECT_FALSE(node.hasKeyFrame(50));
+
+	ASSERT_TRUE(mementoHandler.canRedo());
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_FALSE(node.hasKeyFrame(10));
+	EXPECT_TRUE(node.hasKeyFrame(50));
+}
+
+TEST_F(SceneManagerTest, testKeyFrameDragRecordsMemento) {
+	const core::UUID nodeUUID = _sceneMgr->sceneGraph().uuid(1);
+	ASSERT_TRUE(_sceneMgr->nodeAddKeyFrame(nodeUUID, 10));
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(1);
+	scenegraph::SceneGraphKeyFrames *kfs = node.keyFrames();
+	ASSERT_NE(nullptr, kfs);
+
+	bool moved = false;
+	for (scenegraph::SceneGraphKeyFrame &kf : *kfs) {
+		if (kf.frameIdx == 10) {
+			kf.frameIdx = 50;
+			moved = true;
+		}
+	}
+	ASSERT_TRUE(moved);
+	kfs->sort([](const scenegraph::SceneGraphKeyFrame &a, const scenegraph::SceneGraphKeyFrame &b) {
+		return a.frameIdx > b.frameIdx;
+	});
+
+	ASSERT_TRUE(_sceneMgr->nodeKeyFramesChanged(nodeUUID));
+	EXPECT_FALSE(node.hasKeyFrame(10));
+	EXPECT_TRUE(node.hasKeyFrame(50));
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(node.hasKeyFrame(10)) << "In-place keyframe moves must still record memento";
+	EXPECT_FALSE(node.hasKeyFrame(50));
+}
+
 TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
