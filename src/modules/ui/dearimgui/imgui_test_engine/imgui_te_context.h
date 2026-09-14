@@ -134,6 +134,7 @@ enum ImGuiTestOpFlags_
     ImGuiTestOpFlags_MoveToEdgeU        = 1 << 10,
     ImGuiTestOpFlags_MoveToEdgeD        = 1 << 11,
     ImGuiTestOpFlags_NoScroll           = 1 << 12,  // Disable automatically scrolling to reach an item.
+    ImGuiTestOpFlags_NoWaitWhenMoving   = 1 << 13,  // Avoid waiting for item to be stable, lock current position and aim.
 };
 
 // Advanced filtering for ItemActionAll()
@@ -194,6 +195,7 @@ struct IMGUI_API ImGuiTestGenericVars
     bool                    ShowWindow1, ShowWindow2;
     bool                    UseClipper;
     bool                    UseViewports;
+    bool                    UseMixedValue;
     float                   Width;
     ImVec2                  Pos;
     ImVec2                  Pivot;
@@ -456,6 +458,7 @@ struct IMGUI_API ImGuiTestContext
     bool        ItemIsChecked(ImGuiTestRef ref);
     bool        ItemIsOpened(ImGuiTestRef ref);
     bool        ItemIsVisible(ImGuiTestRef ref);
+    void        ItemMakeVisible(ImGuiTestRef ref, ImGuiTestOpFlags flags);
     void        ItemVerifyCheckedIfAlive(ImGuiTestRef ref, bool checked);
 
     // Item/Widgets: Drag and Mouse operations
@@ -463,7 +466,8 @@ struct IMGUI_API ImGuiTestContext
     void        ItemHoldForFrames(ImGuiTestRef ref, int frames);
     void        ItemDragOverAndHold(ImGuiTestRef ref_src, ImGuiTestRef ref_dst);
     void        ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref_dst, ImGuiMouseButton button = 0);
-    void        ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_delta);
+    void        ItemDragToPos(ImGuiTestRef ref_src, const ImVec2& pos);
+    void        ItemDragWithDelta(ImGuiTestRef ref_src, const ImVec2& pos_delta);
 
     // Helpers for Tab Bars widgets
     void        TabClose(ImGuiTestRef ref);

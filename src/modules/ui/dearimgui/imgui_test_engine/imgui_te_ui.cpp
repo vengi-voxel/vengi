@@ -139,7 +139,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
     ImGuiTestLog* log = &test_output->Log;
     const char* text = log->Buffer.begin();
     const char* text_end = log->Buffer.end();
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f, 2.0f) * dpi_scale);
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImFloor(ImVec2(6.0f, 2.0f) * dpi_scale));
     ImGuiListClipper clipper;
     ImGuiTestVerboseLevel max_log_level = test_output->Status == ImGuiTestStatus_Error ? e->IO.ConfigVerboseLevelOnError : e->IO.ConfigVerboseLevel;
     int line_count = log->ExtractLinesForVerboseLevels(ImGuiTestVerboseLevel_Silent, max_log_level, nullptr);

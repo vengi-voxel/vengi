@@ -194,6 +194,7 @@ struct ImGuiWindow;                 // Storage for one window
 struct ImGuiWindowDockStyle;        // Storage for window-style data which needs to be stored for docking purpose
 struct ImGuiWindowTempData;         // Temporary storage for one window (that's the data which in theory we could ditch at the end of the frame, in practice we currently keep it for each window)
 struct ImGuiWindowSettings;         // Storage for a window .ini settings (we keep one of those even if the actual window wasn't instanced during this session)
+struct ImGuiWindowStackData;        // Storage for each window pushed into the stack
 
 // Enumerations
 // Use your programming IDE "Go to definition" facility on the names of the center columns to find the actual flags/enum lists.
@@ -576,25 +577,25 @@ IM_MSVC_RUNTIME_CHECKS_OFF
 struct ImVec1
 {
     float   x;
-    constexpr ImVec1()         : x(0.0f) { }
-    constexpr ImVec1(float _x) : x(_x) { }
+    IM_NODEBUGSTEP constexpr inline ImVec1()         : x(0.0f) { }
+    IM_NODEBUGSTEP constexpr inline ImVec1(float _x) : x(_x) { }
 };
 
 // Helper: ImVec2i (2D vector, integer)
 struct ImVec2i
 {
     int         x, y;
-    constexpr ImVec2i()                             : x(0), y(0) {}
-    constexpr ImVec2i(int _x, int _y)               : x(_x), y(_y) {}
+    IM_NODEBUGSTEP constexpr inline ImVec2i()                             : x(0), y(0) {}
+    IM_NODEBUGSTEP constexpr inline ImVec2i(int _x, int _y)               : x(_x), y(_y) {}
 };
 
 // Helper: ImVec2ih (2D vector, half-size integer, for long-term packed storage)
 struct ImVec2ih
 {
     short   x, y;
-    constexpr ImVec2ih()                           : x(0), y(0) {}
-    constexpr ImVec2ih(short _x, short _y)         : x(_x), y(_y) {}
-    constexpr explicit ImVec2ih(const ImVec2& rhs) : x((short)rhs.x), y((short)rhs.y) {}
+    IM_NODEBUGSTEP constexpr inline ImVec2ih()                           : x(0), y(0) {}
+    IM_NODEBUGSTEP constexpr inline ImVec2ih(short _x, short _y)         : x(_x), y(_y) {}
+    IM_NODEBUGSTEP constexpr inline explicit ImVec2ih(const ImVec2& rhs) : x((short)rhs.x), y((short)rhs.y) {}
 };
 
 // Helper: ImRect (2D axis aligned bounding-box)
@@ -604,10 +605,10 @@ struct IMGUI_API ImRect
     ImVec2      Min;    // Upper-left
     ImVec2      Max;    // Lower-right
 
-    constexpr ImRect()                                        : Min(0.0f, 0.0f), Max(0.0f, 0.0f)  {}
-    constexpr ImRect(const ImVec2& min, const ImVec2& max)    : Min(min), Max(max)                {}
-    constexpr ImRect(const ImVec4& v)                         : Min(v.x, v.y), Max(v.z, v.w)      {}
-    constexpr ImRect(float x1, float y1, float x2, float y2)  : Min(x1, y1), Max(x2, y2)          {}
+    IM_NODEBUGSTEP constexpr inline ImRect()                                        : Min(0.0f, 0.0f), Max(0.0f, 0.0f)  {}
+    IM_NODEBUGSTEP constexpr inline ImRect(const ImVec2& min, const ImVec2& max)    : Min(min), Max(max)                {}
+    IM_NODEBUGSTEP constexpr inline ImRect(const ImVec4& v)                         : Min(v.x, v.y), Max(v.z, v.w)      {}
+    IM_NODEBUGSTEP constexpr inline ImRect(float x1, float y1, float x2, float y2)  : Min(x1, y1), Max(x2, y2)          {}
 
     ImVec2      GetCenter() const                   { return ImVec2((Min.x + Max.x) * 0.5f, (Min.y + Max.y) * 0.5f); }
     ImVec2      GetSize() const                     { return ImVec2(Max.x - Min.x, Max.y - Min.y); }
@@ -709,13 +710,13 @@ struct ImSpan
     inline bool         empty() const               { return Data == DataEnd; }
     inline int          size() const                { return (int)(ptrdiff_t)(DataEnd - Data); }
     inline int          size_in_bytes() const       { return (int)(ptrdiff_t)(DataEnd - Data) * (int)sizeof(T); }
-    inline T&           operator[](int i)           { T* p = Data + i; IM_ASSERT(p >= Data && p < DataEnd); return *p; }
-    inline const T&     operator[](int i) const     { const T* p = Data + i; IM_ASSERT(p >= Data && p < DataEnd); return *p; }
 
-    inline T*           begin()                     { return Data; }
-    inline const T*     begin() const               { return Data; }
-    inline T*           end()                       { return DataEnd; }
-    inline const T*     end() const                 { return DataEnd; }
+    IM_NODEBUGSTEP inline T&        operator[](int i)       { T* p = Data + i; IM_ASSERT(p >= Data && p < DataEnd); return *p; }
+    IM_NODEBUGSTEP inline const T&  operator[](int i) const { const T* p = Data + i; IM_ASSERT(p >= Data && p < DataEnd); return *p; }
+    IM_NODEBUGSTEP inline T*        begin()                 { return Data; }
+    IM_NODEBUGSTEP inline const T*  begin() const           { return Data; }
+    IM_NODEBUGSTEP inline T*        end()                   { return DataEnd; }
+    IM_NODEBUGSTEP inline const T*  end() const             { return DataEnd; }
 
     // Utilities
     inline int  index_from_ptr(const T* it) const   { IM_ASSERT(it >= Data && it < DataEnd); const ptrdiff_t off = it - Data; return (int)off; }
@@ -943,6 +944,8 @@ struct ImFontStackData
 // [SECTION] Style support
 //-----------------------------------------------------------------------------
 
+#define ImGuiCol_TextMixedValue     ImGuiCol_TextDisabled
+
 struct ImGuiStyleVarInfo
 {
     ImU32           Count : 8;      // 1+
@@ -1004,7 +1007,6 @@ enum ImGuiItemFlagsPrivate_
 {
     // Controlled by user
     ImGuiItemFlags_ReadOnly                 = 1 << 11, // false     // [ALPHA] Allow hovering interactions but underlying value is not changed.
-    ImGuiItemFlags_MixedValue               = 1 << 12, // false     // [BETA] Represent a mixed/indeterminate value, generally multi-selection where values differ. Currently only supported by Checkbox() (later should support all sorts of widgets)
     ImGuiItemFlags_NoWindowHoverableCheck   = 1 << 13, // false     // Disable hoverable check in ItemHoverable()
     ImGuiItemFlags_AllowOverlap             = 1 << 14, // false     // Allow being overlapped by another widget. Not-hovered to Hovered transition deferred by a frame.
     ImGuiItemFlags_NoNavDisableMouseHover   = 1 << 15, // false     // Nav keyboard/gamepad mode doesn't disable hover highlight (behave as if NavHighlightItemUnderNav==false).
@@ -1092,12 +1094,6 @@ enum ImGuiButtonFlagsPrivate_
     ImGuiButtonFlags_PressedOnMask_         = ImGuiButtonFlags_PressedOnClick | ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnClickReleaseAnywhere | ImGuiButtonFlags_PressedOnRelease | ImGuiButtonFlags_PressedOnDoubleClick | ImGuiButtonFlags_PressedOnDragDropHold,
     ImGuiButtonFlags_PressedOnDefault_      = ImGuiButtonFlags_PressedOnClickRelease,
     //ImGuiButtonFlags_NoKeyModifiers       = ImGuiButtonFlags_NoKeyModsAllowed, // Renamed in 1.91.4
-};
-
-// Extend ImGuiComboFlags_
-enum ImGuiComboFlagsPrivate_
-{
-    ImGuiComboFlags_CustomPreview           = 1 << 20,  // enable BeginComboPreview()
 };
 
 // Extend ImGuiSliderFlags_
@@ -1194,6 +1190,10 @@ enum ImGuiPlotType
     ImGuiPlotType_Histogram,
 };
 
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+//ImGuiComboFlags_CustomPreview = 1 << 20,  // enable BeginComboPreview() // [Obsoleted in 1.93.0] Unnecessary: can now use BeginComboPreview() without a flag.
+#endif
+
 // Storage data for BeginComboPreview()/EndComboPreview()
 struct IMGUI_API ImGuiComboPreviewData
 {
@@ -1202,7 +1202,10 @@ struct IMGUI_API ImGuiComboPreviewData
     ImVec2          BackupCursorMaxPos;
     ImVec2          BackupCursorPosPrevLine;
     float           BackupPrevLineTextBaseOffset;
-    ImGuiLayoutType BackupLayout;
+    float           BackupWorkRectMaxX;
+    float           BackupContentRectMaxX;
+    ImGuiLayoutType BackupLayout : 8;
+    int             WithinPreview : 2;
 
     ImGuiComboPreviewData() { memset((void*)this, 0, sizeof(*this)); }
 };
@@ -1291,6 +1294,7 @@ struct IMGUI_API ImGuiInputTextState
     bool                    SelectedAllMouseLock;   // after a double-click to select all, we ignore further mouse drags to update selection
     bool                    EditedBefore;           // edited since activated
     bool                    EditedThisFrame;        // edited this frame
+    bool                    ValidatedThisFrame;
     bool                    WantReloadUserBuf;      // force a reload of user buf so it may be modified externally. may be automatic in future version.
     ImS8                    LastMoveDirectionLR;    // ImGuiDir_Left or ImGuiDir_Right. track last movement direction so when cursor cross over a word-wrapping boundaries we can display it on either line depending on last move.s
     int                     ReloadSelectionStart;
@@ -1476,7 +1480,7 @@ struct IMGUI_API ImGuiErrorRecoveryState
     ImGuiErrorRecoveryState() { memset((void*)this, 0, sizeof(*this)); }
 };
 
-// Data saved for each window pushed into the stack
+// Storage for each window pushed into the stack.
 struct ImGuiWindowStackData
 {
     ImGuiWindow*            Window;
@@ -1484,6 +1488,7 @@ struct ImGuiWindowStackData
     ImGuiErrorRecoveryState StackSizesInBegin;          // Store size of various stacks for asserting
     bool                    DisabledOverrideReenable;   // Non-child window override disabled flag
     float                   DisabledOverrideReenableAlphaBackup;
+    ImRect                  ParentLastComboPreviewRect;
 };
 
 struct ImGuiShrinkWidthItem
@@ -2180,8 +2185,9 @@ struct ImGuiViewportP : public ImGuiViewport
     float               LastAlpha;
     bool                LastFocusedHadNavWindow;// Instead of maintaining a LastFocusedWindow (which may harder to correctly maintain), we merely store weither NavWindow != NULL last time the viewport was focused.
     short               PlatformMonitor;
-    float               BgFgDrawListsLastTimeActive[2]; // Last frame number the background (0) and foreground (1) draw lists were used
     ImDrawList*         BgFgDrawLists[2];       // Convenience background (0) and foreground (1) draw lists. We use them to draw software mouser cursor when io.MouseDrawCursor is set and to draw most debug overlays.
+    int                 BgFgDrawListsLastFrameActive[2]; // Last frame the background (0) and foreground (1) draw lists were used.
+    float               BgFgDrawListsLastTimeActive[2];  // Timestamps for Gc.
     ImDrawData          DrawDataP;
     ImDrawDataBuilder   DrawDataBuilder;        // Temporary data while building final ImDrawData
     ImVec2              LastPlatformPos;
@@ -2197,7 +2203,7 @@ struct ImGuiViewportP : public ImGuiViewport
     ImVec2              BuildWorkInsetMin;      // Work Area inset accumulator for current frame, to become next frame's WorkInset
     ImVec2              BuildWorkInsetMax;      // "
 
-    ImGuiViewportP()                    { Window = NULL; Idx = -1; LastFrameActive = LastFocusedStampCount = -1; BgFgDrawListsLastTimeActive[0] = BgFgDrawListsLastTimeActive[1] = -1.0f; LastNameHash = 0; Alpha = LastAlpha = 1.0f; LastFocusedHadNavWindow = false; PlatformMonitor = -1; BgFgDrawLists[0] = BgFgDrawLists[1] = NULL; LastPlatformPos = LastPlatformSize = LastRendererSize = ImVec2(FLT_MAX, FLT_MAX); }
+    ImGuiViewportP()                    { Window = NULL; Idx = -1; LastFrameActive = LastFocusedStampCount = -1; LastNameHash = 0; Alpha = LastAlpha = 1.0f; LastFocusedHadNavWindow = false; PlatformMonitor = -1; BgFgDrawLists[0] = BgFgDrawLists[1] = NULL; BgFgDrawListsLastFrameActive[0] = BgFgDrawListsLastFrameActive[1] = -1; BgFgDrawListsLastTimeActive[0] = BgFgDrawListsLastTimeActive[1] = -1.0; LastPlatformPos = LastPlatformSize = LastRendererSize = ImVec2(FLT_MAX, FLT_MAX); }
     ~ImGuiViewportP()                   { if (BgFgDrawLists[0]) IM_DELETE(BgFgDrawLists[0]); if (BgFgDrawLists[1]) IM_DELETE(BgFgDrawLists[1]); }
     void    ClearRequestFlags()         { PlatformRequestClose = PlatformRequestMove = PlatformRequestResize = false; }
 
@@ -2501,6 +2507,7 @@ struct ImGuiContext
     ImVec2                  WheelingAxisAvg;
 
     // Item/widgets state and tracking information
+    const char*             MixedValueLabel;                    // Value replacement when displaying a mixed value. Default to "-" (Unreal uses "Multiple values", Unity uses "---"). May be interpreted as a format: must not contain single %. Set to NULL to display original value.
     ImGuiID                 DebugDrawIdConflictsId;             // Set when we detect multiple items with the same identifier
     ImGuiID                 DebugHookIdInfoId;                  // Will call core hooks: DebugHookIdInfo() from GetID functions, used by ID Stack Tool [next HoveredId/ActiveId to not pull in an extra cache-line]
     ImGuiID                 HoveredId;                          // Hovered widget, filled during the frame
@@ -2900,7 +2907,7 @@ struct IMGUI_API ImGuiWindowTempData
     ImVec2                  MenuBarOffset;          // MenuBarOffset.x is sort of equivalent of a per-layer CursorPos.x, saved/restored as we switch to the menu bar. The only situation when MenuBarOffset.y is > 0 if when (SafeAreaPadding.y > FramePadding.y), often used on TVs.
     ImGuiMenuColumns        MenuColumns;            // Simplified columns storage for menu items measurement
     int                     TreeDepth;              // Current tree depth.
-    ImU32                   TreeHasStackDataDepthMask;      // Store whether given depth has ImGuiTreeNodeStackData data. Could be turned into a ImU64 if necessary.
+    ImU32                   TreeHasStackDataDepthMask;      // Store whether given depth has ImGuiTreeNodeStackData data. Could be turned into a ImU64 if necessary. Sync any changes with TREE_NODE_MAX_DEPTH/TREE_NODE_GET_DEPTH_MASK!
     ImU32                   TreeRecordsClippedNodesY2Mask;  // Store whether we should keep recording Y2. Cleared when passing clip max. Equivalent TreeHasStackDataDepthMask value should always be set.
     ImVector<ImGuiWindow*>  ChildWindows;
     ImGuiStorage*           StateStorage;           // Current persistent per-window storage (store e.g. tree node open/close state)
@@ -3771,7 +3778,7 @@ namespace ImGui
 
     // Combos
     IMGUI_API bool          BeginComboPopup(ImGuiID popup_id, const ImRect& bb, ImGuiComboFlags flags);
-    IMGUI_API bool          BeginComboPreview();
+    IMGUI_API bool          BeginComboPreview(); // Submit preview contents a combo. Call this after EndCombo() to display contents that's more than just a text label.
     IMGUI_API void          EndComboPreview();
 
     // Keyboard/Gamepad Navigation
@@ -4018,7 +4025,7 @@ namespace ImGui
     IMGUI_API void          RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool borders = true, float rounding = 0.0f);
     IMGUI_API void          RenderFrameBorder(ImVec2 p_min, ImVec2 p_max, float rounding = 0.0f);
     IMGUI_API void          RenderColorComponentMarker(const ImRect& bb, ImU32 col, float rounding);
-    IMGUI_API void          RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, float grid_step, ImVec2 grid_off, float rounding = 0.0f, ImDrawFlags flags = 0);
+    IMGUI_API void          RenderColorRectWithAlphaCheckerboard(ImDrawList* draw_list, ImVec2 p_min, ImVec2 p_max, ImU32 col, float alpha, float grid_step, ImVec2 grid_off, float rounding = 0.0f, ImDrawFlags flags = 0);
     IMGUI_API void          RenderNavCursor(const ImRect& bb, ImGuiID id, ImGuiNavRenderCursorFlags flags = ImGuiNavRenderCursorFlags_None, float rounding = -1.0f); // Navigation highlight
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     inline    void          RenderNavHighlight(const ImRect& bb, ImGuiID id, ImGuiNavRenderCursorFlags flags = ImGuiNavRenderCursorFlags_None) { RenderNavCursor(bb, id, flags); } // Renamed in 1.91.4

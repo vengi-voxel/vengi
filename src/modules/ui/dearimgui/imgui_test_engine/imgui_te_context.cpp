@@ -374,6 +374,7 @@ ImGuiTestStatus ImGuiTestContext::RunChildTest(const char* child_test_name, ImGu
 
 // Return true to request aborting TestFunc
 // Called via IM_SUSPEND_TESTFUNC()
+// FIXME: Would be nice to ignore/skip this when running in headless/TTY mode but we currently do not have this information.
 bool    ImGuiTestContext::SuspendTestFunc(const char* file, int line)
 {
     if (IsError())
@@ -1596,6 +1597,20 @@ void    ImGuiTestContext::ScrollToItemY(ImGuiTestRef ref)
     ScrollToItem(ref, ImGuiAxis_Y);
 }
 
+static void TabBarWaitForScrolling(ImGuiTestContext* ctx, ImGuiTabBar* tab_bar)
+{
+    if (ctx->EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Fast)
+    {
+        tab_bar->ScrollingAnim = tab_bar->ScrollingTarget;
+        ctx->Yield();
+    }
+    else
+    {
+        while (tab_bar->ScrollingAnim != tab_bar->ScrollingTarget)
+            ctx->Yield();
+    }
+}
+
 void    ImGuiTestContext::ScrollToTabItem(ImGuiTabBar* tab_bar, ImGuiID tab_id)
 {
     if (IsError())
@@ -1648,16 +1663,7 @@ void    ImGuiTestContext::ScrollToTabItem(ImGuiTabBar* tab_bar, ImGuiID tab_id)
 
     // Skip the scroll animation
     Yield();
-    if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Fast)
-    {
-        tab_bar->ScrollingAnim = tab_bar->ScrollingTarget;
-        Yield();
-    }
-    else
-    {
-        while (tab_bar->ScrollingAnim != tab_bar->ScrollingTarget)
-            Yield();
-    }
+    TabBarWaitForScrolling(this, tab_bar);
 
     SetRef(backup_ref);
 }
@@ -1867,13 +1873,96 @@ static void FocusOrMakeClickableAtPos(ImGuiTestContext* ctx, ImGuiWindow* window
     }
 }
 
+// Supported values for ImGuiTestOpFlags:
+// - ImGuiTestOpFlags_NoAutoOpenFullPath
+// - ImGuiTestOpFlags_NoScroll
+void    ImGuiTestContext::ItemMakeVisible(ImGuiTestRef ref, ImGuiTestOpFlags flags)
+{
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    ImGuiContext& g = *UiContext;
+
+    ImGuiTestItemInfo item;
+    if (flags & ImGuiTestOpFlags_NoAutoOpenFullPath)
+        item = ItemInfo(ref);
+    else
+        item = ItemInfoOpenFullPath(ref);
+    ImGuiWindow* window = item.Window;
+
+    // Check visibility and scroll if necessary
+#if IMGUI_VERSION_NUM < 19183
+    const ImVec2 hover_padding = g.WindowsHoverPadding;
+#else
+    const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
+#endif
+    if (item.NavLayer == ImGuiNavLayer_Main)
+    {
+        float min_visible_size = 10.0f;
+        float min_window_size_x = window->DecoInnerSizeX1 + window->DecoOuterSizeX1 + window->DecoOuterSizeX2 + min_visible_size + hover_padding.x * 2.0f;
+        float min_window_size_y = window->DecoInnerSizeY1 + window->DecoOuterSizeY1 + window->DecoOuterSizeY2 + min_visible_size + hover_padding.y * 2.0f;
+        if ((window->Size.x < min_window_size_x || window->Size.y < min_window_size_y) && (window->Flags & ImGuiWindowFlags_NoResize) == 0 && (window->Flags & ImGuiWindowFlags_AlwaysAutoResize) == 0)
+        {
+            LogDebug("MouseMove: Will attempt to resize window to make item in main scrolling layer visible.");
+            if (window->Size.x < min_window_size_x)
+                WindowResize(window->ID, ImVec2(min_window_size_x, window->Size.y));
+            if (window->Size.y < min_window_size_y)
+                WindowResize(window->ID, ImVec2(window->Size.x, min_window_size_y));
+            item = ItemInfo(item.ID);
+        }
+    }
+
+    //ImRect window_r = window->InnerClipRect;
+    //window_r.Expand(ImVec2(-hover_padding.x, -hover_padding.y));
+
+    ImRect item_r_clipped = item.RectClipped;
+    //item_r_clipped.Min.x = ImClamp(item.RectFull.Min.x, window_r.Min.x, window_r.Max.x);
+    //item_r_clipped.Min.y = ImClamp(item.RectFull.Min.y, window_r.Min.y, window_r.Max.y);
+    //item_r_clipped.Max.x = ImClamp(item.RectFull.Max.x, window_r.Min.x, window_r.Max.x);
+    //item_r_clipped.Max.y = ImClamp(item.RectFull.Max.y, window_r.Min.y, window_r.Max.y);
+
+    // In theory all we need is one visible point, but it is generally nicer if we scroll toward visibility.
+    // Bias toward reducing amount of horizontal scroll.
+    if ((flags & ImGuiTestOpFlags_NoScroll) == 0)
+    {
+        float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
+        float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
+        if (visibility_ratio_x < 0.70f)
+            ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
+        if (visibility_ratio_y < 0.90f)
+            ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
+
+        //if (ImGuiTabBar* tab_bar = ImGui::TabBarFindByID(item.ParentID)) // -> favor lazily doing it in MouseMove() when item is moving.
+        //    TabBarWaitForScrolling(this, tab_bar);
+
+        // FIXME: Scroll parent window
+        item = ItemInfo(ref);
+    }
+
+    // Menu layer is not scrollable: attempt to resize window.
+    if (item.NavLayer == ImGuiNavLayer_Menu)
+    {
+        // FIXME-TESTS: We designed RectClipped as being within RectFull which is not what we want here. Approximate using window's Max.x
+        ImRect window_r = window->Rect();
+        if (item.RectFull.Min.x > window_r.Max.x)
+        {
+            float extra_width_desired = item.RectFull.Max.x - window_r.Max.x; // item->RectClipped.Max.x;
+            if (extra_width_desired > 0.0f && (flags & ImGuiTestOpFlags_IsSecondAttempt) == 0)
+            {
+                LogDebug("MouseMove: Will attempt to resize window to make item in menu layer visible.");
+                WindowResize(window->ID, window->Size + ImVec2(extra_width_desired, 0.0f));
+            }
+        }
+    }
+}
+
 // Conceptually this could be called ItemHover()
 // Supported values for ImGuiTestOpFlags:
+// - ImGuiTestOpFlags_NoAutoOpenFullPath
 // - ImGuiTestOpFlags_NoFocusWindow
 // - ImGuiTestOpFlags_NoCheckHoveredId (automatic if there's an active id)
 // - ImGuiTestOpFlags_NoScroll
 // - ImGuiTestOpFlags_IsSecondAttempt [used when recursively calling ourself)
 // - ImGuiTestOpFlags_MoveToEdgeXXX flags
+// - ImGuiTestOpFlags_NoWaitWhenMoving
 // FIXME-TESTS: This is too eagerly trying to scroll everything even if already visible.
 void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 {
@@ -1910,74 +1999,12 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     // then we need to make space by moving other windows away.
     // An easy to reproduce this bug is to run "docking_dockspace_tab_amend" with Test Engine UI over top-left corner, covering the Tools menu.
 
-    // Check visibility and scroll if necessary
-    {
-#if IMGUI_VERSION_NUM < 19183
-        const ImVec2 hover_padding = g.WindowsHoverPadding;
-#else
-        const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
-#endif
-        if (item.NavLayer == ImGuiNavLayer_Main)
-        {
-            float min_visible_size = 10.0f;
-            float min_window_size_x = window->DecoInnerSizeX1 + window->DecoOuterSizeX1 + window->DecoOuterSizeX2 + min_visible_size + hover_padding.x * 2.0f;
-            float min_window_size_y = window->DecoInnerSizeY1 + window->DecoOuterSizeY1 + window->DecoOuterSizeY2 + min_visible_size + hover_padding.y * 2.0f;
-            if ((window->Size.x < min_window_size_x || window->Size.y < min_window_size_y) && (window->Flags & ImGuiWindowFlags_NoResize) == 0 && (window->Flags & ImGuiWindowFlags_AlwaysAutoResize) == 0)
-            {
-                LogDebug("MouseMove: Will attempt to resize window to make item in main scrolling layer visible.");
-                if (window->Size.x < min_window_size_x)
-                    WindowResize(window->ID, ImVec2(min_window_size_x, window->Size.y));
-                if (window->Size.y < min_window_size_y)
-                    WindowResize(window->ID, ImVec2(window->Size.x, min_window_size_y));
-                item = ItemInfo(item.ID);
-            }
-        }
-
-        //ImRect window_r = window->InnerClipRect;
-        //window_r.Expand(ImVec2(-hover_padding.x, -hover_padding.y));
-
-        ImRect item_r_clipped = item.RectClipped;
-        //item_r_clipped.Min.x = ImClamp(item.RectFull.Min.x, window_r.Min.x, window_r.Max.x);
-        //item_r_clipped.Min.y = ImClamp(item.RectFull.Min.y, window_r.Min.y, window_r.Max.y);
-        //item_r_clipped.Max.x = ImClamp(item.RectFull.Max.x, window_r.Min.x, window_r.Max.x);
-        //item_r_clipped.Max.y = ImClamp(item.RectFull.Max.y, window_r.Min.y, window_r.Max.y);
-
-        // In theory all we need is one visible point, but it is generally nicer if we scroll toward visibility.
-        // Bias toward reducing amount of horizontal scroll.
-        if ((flags & ImGuiTestOpFlags_NoScroll) == 0)
-        {
-            float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
-            float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
-            if (visibility_ratio_x < 0.70f)
-                ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
-            if (visibility_ratio_y < 0.90f)
-                ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
-            // FIXME: Scroll parent window
-        }
-    }
-
-    // Menu layer is not scrollable: attempt to resize window.
-    if (item.NavLayer == ImGuiNavLayer_Menu)
-    {
-        // FIXME-TESTS: We designed RectClipped as being within RectFull which is not what we want here. Approximate using window's Max.x
-        ImRect window_r = window->Rect();
-        if (item.RectFull.Min.x > window_r.Max.x)
-        {
-            float extra_width_desired = item.RectFull.Max.x - window_r.Max.x; // item->RectClipped.Max.x;
-            if (extra_width_desired > 0.0f && (flags & ImGuiTestOpFlags_IsSecondAttempt) == 0)
-            {
-                LogDebug("MouseMove: Will attempt to resize window to make item in menu layer visible.");
-                WindowResize(window->ID, window->Size + ImVec2(extra_width_desired, 0.0f));
-            }
-        }
-    }
-
-    // Update item
+    // Make visible
+    ItemMakeVisible(ref, flags);
     item = ItemInfo(item.ID);
 
     // FIXME-TESTS-NOT_SAME_AS_END_USER
-    ImVec2 pos = item.RectFull.GetCenter();
-    if (WindowTeleportToMakePosVisible(window->ID, pos))
+    if (WindowTeleportToMakePosVisible(window->ID, item.RectFull.GetCenter()))
         item = ItemInfo(item.ID);
 
     // Handle the off-chance that e.g. item/window stops being submitted while scrolling (easy to repro by pressing Esc during a long scroll)
@@ -1990,15 +2017,33 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     // Keep a copy of item info
     const ImGuiTestItemInfo item_initial_state = item;
 
+    // Verify that item is not moving/animating around?
+    // FIXME: Attempts should in a simulated time?
+    if (item.FramesNotMoving == 0 && (flags & ImGuiTestOpFlags_NoWaitWhenMoving) == 0)
+    {
+        IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+        LogDebug("MouseMove: item %s is moving, waiting for it to be stable.", desc.c_str());
+        int wait_attempts = 0;
+        int stable_frames = 0;
+        do
+        {
+            Yield();
+            item = ItemInfo(item.ID);
+            stable_frames = item.FramesNotMoving;
+            wait_attempts++;
+        } while (stable_frames < 2 && wait_attempts < 10);
+        LogDebug("  Done: wait_attempts=%d, stable_frames=%d", wait_attempts, stable_frames);
+    }
+
     // Target point
-    pos = GetMouseAimingPos(item, flags);
+    ImVec2 pos = GetMouseAimingPos(item, flags);
 
     // Focus window
     if (!(flags & ImGuiTestOpFlags_NoFocusWindow) && item.Window != nullptr)
         FocusOrMakeClickableAtPos(this, item.Window, pos);
 
     // Another is window active test (in the case focus change has a side effect but also as we have yield an extra frame)
-    if (!item.Window->WasActive)
+    if (item.Window == nullptr || !item.Window->WasActive)
     {
         LogError("MouseMove: Window '%s' is not active (after aiming)", item.Window->Name);
         return;
@@ -2553,6 +2598,20 @@ ImVec2   ImGuiTestContext::GetPosOnVoid(ImGuiViewport* viewport)
     return void_pos;
 }
 
+#if IMGUI_VERSION_NUM < 19298
+namespace ImGui
+{
+    #define TabBarGetTabPos TabBarGetTabPos2
+    ImVec2 TabBarGetTabPos2(ImGuiTabBar* tab_bar, ImGuiTabItem* tab)
+    {
+        if ((tab->Flags & ImGuiTabItemFlags_SectionMask_) == 0)
+            return tab_bar->BarRect.Min + ImVec2(IM_TRUNC(tab->Offset - tab_bar->ScrollingAnim), 0.0f);
+        else
+            return tab_bar->BarRect.Min + ImVec2(tab->Offset, 0.0f);
+    }
+}
+#endif
+
 ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
 {
     // FIXME-TESTS: Need to find a -visible- click point. 'pos' may end up being outside of main viewport.
@@ -2575,7 +2634,16 @@ ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
             ImGuiTabBar* tab_bar = window->DockNode->TabBar;
             ImGuiTabItem* tab = ImGui::TabBarFindTabByID(tab_bar, window->TabId);
             IM_ASSERT(tab != nullptr);
-            pos = tab_bar->BarRect.Min + ImVec2(tab->Offset + tab->Width * 0.5f, tab_bar->BarRect.GetHeight() * 0.5f);
+            pos = ImGui::TabBarGetTabPos(tab_bar, tab) + ImVec2(tab->Width * 0.5f, tab_bar->BarRect.GetHeight() * 0.5f);
+
+            if (ActiveFunc == ImGuiTestActiveFunc_TestFunc)
+                if (pos.x <= tab_bar->BarRect.Min.x || pos.x >= tab_bar->BarRect.Max.x)
+                {
+                    ScrollToTabItem(tab_bar, tab->ID);
+                    pos = ImGui::TabBarGetTabPos(tab_bar, tab) + ImVec2(tab->Width * 0.5f, tab_bar->BarRect.GetHeight() * 0.5f);
+                }
+
+            pos.x = ImClamp(pos.x, tab_bar->BarRect.Min.x, tab_bar->BarRect.Max.x);
         }
         else
 #endif
@@ -3487,7 +3555,7 @@ void    ImGuiTestContext::ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref
     MouseUp(button);
 }
 
-void    ImGuiTestContext::ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_delta)
+void    ImGuiTestContext::ItemDragToPos(ImGuiTestRef ref_src, const ImVec2& pos)
 {
     if (IsError())
         return;
@@ -3495,7 +3563,26 @@ void    ImGuiTestContext::ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_del
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
     ImGuiTestItemInfo item_src = ItemInfo(ref_src);
     ImGuiTestRefDesc desc_src(ref_src, item_src);
-    LogDebug("ItemDragWithDelta %s to (%f, %f)", desc_src.c_str(), pos_delta.x, pos_delta.y);
+    LogDebug("ItemDragToPos %s to (%f, %f)", desc_src.c_str(), pos.x, pos.y);
+
+    MouseMove(ref_src);
+    SleepStandard();
+    MouseDown(0);
+
+    MouseMoveToPos(pos);
+    SleepStandard();
+    MouseUp(0);
+}
+
+void    ImGuiTestContext::ItemDragWithDelta(ImGuiTestRef ref_src, const ImVec2& pos_delta)
+{
+    if (IsError())
+        return;
+
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    ImGuiTestItemInfo item_src = ItemInfo(ref_src);
+    ImGuiTestRefDesc desc_src(ref_src, item_src);
+    LogDebug("ItemDragWithDelta %s (%f, %f)", desc_src.c_str(), pos_delta.x, pos_delta.y);
 
     MouseMove(ref_src);
     SleepStandard();
