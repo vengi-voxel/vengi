@@ -6,6 +6,7 @@
 #include "app/I18N.h"
 #include "color/Quantize.h"
 #include "core/ConfigVar.h"
+#include "core/Path.h"
 #include "core/Var.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
@@ -38,7 +39,7 @@ bool FormatConfig::init() {
 	core::Var::registerVar(palformatGimpRGBA);
 
 	const core::VarDef voxelPalette(
-		cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(), N_("Palette"),
+		cfg::VoxelPalette, core::Path(core::String(palette::Palette::getDefaultPaletteName())), N_("Palette"),
 		N_("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));
 	core::Var::registerVar(voxelPalette);
 	const core::VarDef normalPalette(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),

@@ -27,6 +27,8 @@ const char *varTypeName(VarType type) {
 		return "boolean";
 	case VarType::Path:
 		return "path";
+	case VarType::Directory:
+		return "directory";
 	case VarType::Enum:
 		return "enum";
 	default:
@@ -65,6 +67,13 @@ VarDef::VarDef(const core::String &defName, const core::Path &path, const char *
 			   int32_t defFlags)
 	: type(VarType::Path), name(defName), value(path.toString()), flags(defFlags), title(defTitle ? defTitle : ""),
 	  description(defDescription ? defDescription : "") {
+}
+
+VarDef::VarDef(const core::String &defName, const core::Path &path, const char *defTitle, const char *defDescription,
+			   int32_t defFlags, VarType pathType)
+	: type(pathType), name(defName), value(path.toString()), flags(defFlags), title(defTitle ? defTitle : ""),
+	  description(defDescription ? defDescription : "") {
+	core_assert(pathType == VarType::Path || pathType == VarType::Directory);
 }
 
 VarDef::VarDef(const core::String &defName, int defValue, const char *defTitle, const char *defDescription,
@@ -286,6 +295,9 @@ VarPtr Var::createVar(const VarDef &def) {
 		v->_def.maxValue = def.maxValue;
 	}
 	if (v->_def.type == VarType::Unknown) {
+		v->_def.type = def.type;
+	} else if (v->_def.type == VarType::String &&
+			   (def.type == VarType::Path || def.type == VarType::Directory)) {
 		v->_def.type = def.type;
 	}
 	if (v->_def.validValues.empty() && def.hasValidValues()) {

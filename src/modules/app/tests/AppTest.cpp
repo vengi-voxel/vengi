@@ -3,11 +3,15 @@
  */
 
 #include "app/App.h"
+#include "core/Path.h"
 #include "core/TimeProvider.h"
 #include "core/ArrayLength.h"
+#include "core/Var.h"
 #include "io/Filesystem.h"
+#include "io/BufferedReadWriteStream.h"
 #include <gtest/gtest.h>
 #include "core/tests/TestHelper.h"
+#include <string.h>
 
 namespace app {
 
@@ -175,6 +179,21 @@ TEST(AppTest, testEmptyArgvStillAllowsExplicitFlag) {
 	TestApp app(lengthof(args), args);
 	app.registerArg("--jsonconfig").setDescription("Print the cvars in json format").addFlag(App::ARGUMENT_FLAG_BOOL);
 	EXPECT_TRUE(app.hasArg("--jsonconfig"));
+}
+
+TEST(AppTest, testWriteConfigJsonMinMaxAndDirectory) {
+	core::Var::registerVar(core::VarDef("test_jsonconfig_int", 5, 0, 10, "Int Title", "int help"));
+	core::Var::registerVar(core::VarDef("test_jsonconfig_dir", core::Path(), "Dir Title", "dir help", core::CV_NONE,
+										core::VarType::Directory));
+	io::BufferedReadWriteStream stream;
+	App::writeConfigJson(stream);
+	ASSERT_TRUE(stream.writeUInt8(0));
+	const char *json = (const char *)stream.getBuffer();
+	ASSERT_NE(json, nullptr);
+	EXPECT_NE(strstr(json, "\"test_jsonconfig_int\""), nullptr);
+	EXPECT_NE(strstr(json, "\"min\": 0, \"max\": 10"), nullptr);
+	EXPECT_NE(strstr(json, "\"test_jsonconfig_dir\""), nullptr);
+	EXPECT_NE(strstr(json, "\"type\": \"directory\""), nullptr);
 }
 
 } // namespace app

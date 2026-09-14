@@ -25,6 +25,7 @@ vengi-voxconvert --help
 * `--merge`: will merge a multi model volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
+* `--jsonconfig`: Print all cvars as JSON (value, type, title, description, flags, min/max, valid_values). Used by the Blender addon to build its UI.
 * `--print-formats`: Print supported formats as json for easier parsing in other tools.
 * `--print-scripts`: Print found lua scripts as json for easier parsing in other tools.
 * `--progress`: Enable progress output on stderr. Mesh loads report nested progress (shapes / triangles).

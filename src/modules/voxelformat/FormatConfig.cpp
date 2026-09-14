@@ -5,6 +5,7 @@
 #include "FormatConfig.h"
 #include "app/I18N.h"
 #include "core/ConfigVar.h"
+#include "core/Path.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "palette/FormatConfig.h"
@@ -200,9 +201,9 @@ bool FormatConfig::init() {
 													 N_("Import the image as volume for both sides"),
 													 core::CV_NOPERSIST);
 	core::registerVar(voxformatImageVolumeBothSides);
-	const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, "", N_("Texture search path"),
+	const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, core::Path(), N_("Texture search path"),
 											N_("Register an additional search path for texture lookups"),
-											core::CV_NOPERSIST);
+											core::CV_NOPERSIST, core::VarType::Directory);
 	core::registerVar(voxformatTexturePath);
 	const core::VarDef voxformatImageImportType(cfg::VoxformatImageImportType, PNGFormat::ImageType::Plane,
 												PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume,
@@ -278,13 +279,13 @@ bool FormatConfig::init() {
 	core::registerVar(voxformatOSMMetersPerVoxel);
 	const core::VarDef voxformatLDrawDir(cfg::VoxformatLDrawDir,
 #ifdef __linux__
-										 "/usr/share/ldraw/",
+										 core::Path(core::String("/usr/share/ldraw/")),
 #else
-										 "",
+										 core::Path(),
 #endif
 										 N_("LDraw library path"),
 										 N_("Path to the LDraw parts library directory for resolving part references"),
-										 core::CV_NOPERSIST);
+										 core::CV_NOPERSIST, core::VarType::Directory);
 	core::registerVar(voxformatLDrawDir);
 
 	return true;

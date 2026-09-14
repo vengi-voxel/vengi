@@ -195,6 +195,7 @@ set(TEST_SRCS
 	tests/ConvertTest.cpp
 	tests/CrocotileFormatTest.cpp
 	tests/FormatPaletteTest.cpp
+	tests/FormatConfigTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/CubzhFormatTest.cpp

@@ -647,6 +647,8 @@ void IMGUIApp::renderCvarDialog() {
 						ImGui::InputVarFloat(var->name().c_str());
 					} else if (var->type() == core::VarType::Path) {
 						ImGui::InputFileVar(var->name().c_str(), nullptr);
+					} else if (var->type() == core::VarType::Directory) {
+						ImGui::InputFolderVar(var->name().c_str());
 					} else {
 						int flags = 0;
 						const bool secret = (var->getFlags() & core::CV_SECRET) != 0;

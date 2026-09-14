@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "core/Path.h"
 #include "core/Var.h"
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_version.h>
@@ -204,6 +205,12 @@ TEST_F(VarTest, testEnumReRegister) {
 	EXPECT_EQ(3u, v->validValues().size());
 	EXPECT_FALSE(v->setVal("d"));
 	EXPECT_TRUE(v->setVal("c"));
+}
+
+TEST_F(VarTest, testDirectoryType) {
+	const VarPtr &v = Var::registerVar(VarDef("test", core::Path(), "Dir", "Help", CV_NONE, VarType::Directory));
+	EXPECT_EQ(VarType::Directory, v->type());
+	EXPECT_STREQ("directory", varTypeName(v->type()));
 }
 
 }

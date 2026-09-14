@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ConfigVar.h"
+#include "core/Path.h"
 #include "core/Var.h"
 #include "io/FilesystemArchive.h"
 
@@ -24,7 +25,8 @@ public:
 	bool onInitApp() override {
 		Super::onInitApp();
 		_archive = io::openFilesystemArchive(io::filesystem());
-		const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, "", "", "");
+		const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, core::Path(), "", "", core::CV_NONE,
+												core::VarType::Directory);
 		core::Var::registerVar(voxformatTexturePath);
 		return true;
 	}

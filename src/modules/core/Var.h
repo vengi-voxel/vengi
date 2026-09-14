@@ -44,7 +44,10 @@ enum class VarType : uint8_t {
 	Float,
 	Boolean,
 	Enum,
+	/** Filesystem file path (file picker). */
 	Path,
+	/** Filesystem directory path (directory picker). */
+	Directory,
 
 	Unknown
 };
@@ -69,6 +72,12 @@ struct VarDef {
 		   int32_t defFlags = CV_NONE);
 	VarDef(const core::String &defName, const core::Path &path, const char *defTitle, const char *defDescription,
 		   int32_t defFlags = CV_NONE);
+	/**
+	 * @brief Path cvar that is a file (@c VarType::Path) or a directory (@c VarType::Directory).
+	 * @c pathType must be @c Path or @c Directory.
+	 */
+	VarDef(const core::String &defName, const core::Path &path, const char *defTitle, const char *defDescription,
+		   int32_t defFlags, VarType pathType);
 	/**
 	 * @brief Construct an integer cvar with min/max range validation.
 	 * The range is checked automatically - no need to specify a validator.
@@ -290,6 +299,9 @@ public:
 	 * @return @c true if some @c Var::setVal call changed the initial/default value that was specified on construction
 	 */
 	bool isDirty() const;
+	bool isReadOnly() const;
+	bool isSecret() const;
+	bool isPersisted() const;
 	void markClean();
 
 	/**
@@ -369,6 +381,18 @@ inline const core::String& Var::name() const {
 
 inline bool Var::isDirty() const {
 	return _dirty;
+}
+
+inline bool Var::isReadOnly() const {
+	return (_flags & CV_READONLY) != 0;
+}
+
+inline bool Var::isPersisted() const {
+	return (_flags & CV_NOPERSIST) == 0;
+}
+
+inline bool Var::isSecret() const {
+	return (_flags & CV_SECRET) != 0;
 }
 
 inline void Var::markClean() {

@@ -83,6 +83,8 @@ IMGUI_API bool InputIVec3Var(const char *varName, int minVal = 1, int maxVal = 6
 IMGUI_API bool InputIVec3Var(const core::VarPtr &var, int minVal = 1, int maxVal = 64);
 IMGUI_API bool InputFileVar(const char *varName, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
 IMGUI_API bool InputFileVar(const core::VarPtr &var, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
+IMGUI_API bool InputFolderVar(const char *varName, ImGuiInputTextFlags flags = 0u);
+IMGUI_API bool InputFolderVar(const core::VarPtr &var, ImGuiInputTextFlags flags = 0u);
 
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API void IconDialog(const char *icon, const char *text, bool wrap = false);

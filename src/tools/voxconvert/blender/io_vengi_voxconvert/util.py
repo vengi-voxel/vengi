@@ -36,6 +36,51 @@ def build_filter_glob(extensions, max_len=FILTER_GLOB_MAX):
     return joined
 
 
+def cvar_rna_name(info, key):
+    """RNA label from --jsonconfig title, otherwise the cvar key."""
+    title = (info or {}).get("title")
+    if title:
+        return title
+    return key
+
+
+def cvar_help(info, key):
+    """Description text: description, then help, then the key."""
+    if not info:
+        return key
+    return info.get("description") or info.get("help") or key
+
+
+def cvar_numeric_bounds(info):
+    """Return (min, max) from --jsonconfig, or (None, None)."""
+    if not info or ("min" not in info and "max" not in info):
+        return None, None
+    typ = info.get("type", "string")
+    mn = info.get("min")
+    mx = info.get("max")
+    if typ == "int":
+        if mn is not None:
+            mn = int(mn)
+        if mx is not None:
+            mx = int(mx)
+    elif typ == "float":
+        if mn is not None:
+            mn = float(mn)
+        if mx is not None:
+            mx = float(mx)
+    return mn, mx
+
+
+def cvar_path_subtype(info):
+    """Blender StringProperty subtype for path/directory cvars, or None."""
+    typ = (info or {}).get("type")
+    if typ == "directory":
+        return "DIR_PATH"
+    if typ == "path":
+        return "FILE_PATH"
+    return None
+
+
 def format_cvar_cli_value(typ, cur):
     """Return the voxconvert -set value string for a current operator value."""
     if typ == "boolean":

@@ -5,6 +5,7 @@
 #include "MaterialColor.h"
 #include "app/I18N.h"
 #include "core/Optional.h"
+#include "core/Path.h"
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
@@ -49,7 +50,8 @@ palette::Palette &getPalette() {
 	core::ScopedLock lock(_priv::_lock);
 	if (!hasPalette()) {
 		palette::Palette palette;
-		const core::VarDef voxelPaletteDef(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
+		const core::VarDef voxelPaletteDef(cfg::VoxelPalette,
+										   core::Path(core::String(palette::Palette::getDefaultPaletteName())),
 										   N_("Voxel palette"), N_("A palette of voxel colors"));
 		const core::VarPtr &var = core::Var::registerVar(voxelPaletteDef);
 		const core::String &defaultPalette = var->strVal();

@@ -1100,6 +1100,20 @@ void App::zshCompletion() const {
 			Log::printf("\t\t\t\t_files\n");
 			Log::printf("\t\t\t\t;;\n");
 		}
+		core::String dirCvars;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Directory) {
+				if (!dirCvars.empty()) {
+					dirCvars += "|";
+				}
+				dirCvars += var->name();
+			}
+		});
+		if (!dirCvars.empty()) {
+			Log::printf("\t\t\t%s)\n", dirCvars.c_str());
+			Log::printf("\t\t\t\t_files -/\n");
+			Log::printf("\t\t\t\t;;\n");
+		}
 		core::Var::visit([&](const core::VarPtr &var) {
 			if (!var->validValues().empty()) {
 				Log::printf("\t\t\t%s)\n", var->name().c_str());
@@ -1199,6 +1213,22 @@ void App::bashCompletion() const {
 		Log::printf("\t\t%s)\n", pathCvars.c_str());
 		Log::printf("\t\t\tcompopt -o nospace 2>/dev/null\n");
 		Log::printf("\t\t\tmapfile -t COMPREPLY < <(compgen -f -- \"$cur\")\n");
+		Log::printf("\t\t\treturn\n");
+		Log::printf("\t\t\t;;\n");
+	}
+	core::String dirCvars;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (var->type() == core::VarType::Directory) {
+			if (!dirCvars.empty()) {
+				dirCvars += "|";
+			}
+			dirCvars += var->name();
+		}
+	});
+	if (!dirCvars.empty()) {
+		Log::printf("\t\t%s)\n", dirCvars.c_str());
+		Log::printf("\t\t\tcompopt -o nospace 2>/dev/null\n");
+		Log::printf("\t\t\tmapfile -t COMPREPLY < <(compgen -d -- \"$cur\")\n");
 		Log::printf("\t\t\treturn\n");
 		Log::printf("\t\t\t;;\n");
 	}
@@ -1343,6 +1373,26 @@ void App::powershellCompletion() const {
 		if (!firstPath) {
 			Log::printf(") } {\n");
 			Log::printf("\t\t\t\tGet-ChildItem -Path \"$wordToComplete*\" -ErrorAction SilentlyContinue | ForEach-Object {\n");
+			Log::printf("\t\t\t\t\t[System.Management.Automation.CompletionResult]::new($_.FullName, $_.Name, 'ProviderItem', $_.FullName)\n");
+			Log::printf("\t\t\t\t}\n");
+			Log::printf("\t\t\t}\n");
+		}
+
+		bool firstDir = true;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Directory) {
+				if (firstDir) {
+					Log::printf("\t\t\t{ $_ -in @(");
+					firstDir = false;
+				} else {
+					Log::printf(", ");
+				}
+				Log::printf("'%s'", var->name().c_str());
+			}
+		});
+		if (!firstDir) {
+			Log::printf(") } {\n");
+			Log::printf("\t\t\t\tGet-ChildItem -Path \"$wordToComplete*\" -Directory -ErrorAction SilentlyContinue | ForEach-Object {\n");
 			Log::printf("\t\t\t\t\t[System.Management.Automation.CompletionResult]::new($_.FullName, $_.Name, 'ProviderItem', $_.FullName)\n");
 			Log::printf("\t\t\t\t}\n");
 			Log::printf("\t\t\t}\n");
@@ -1822,6 +1872,19 @@ void App::writeConfigJson(io::WriteStream &stream) {
 		stream.writeStringFormat(false, "\"%s\": {", var->name().c_str());
 		stream.writeStringFormat(false, "\"value\":\"%s\"", var->strVal().c_str());
 		stream.writeStringFormat(false, ",\"flags\": %u", var->getFlags());
+		stream.writeStringFormat(false, ",\"readonly\": %s", var->isReadOnly() ? "true" : "false");
+		stream.writeStringFormat(false, ",\"secret\": %s", var->isSecret() ? "true" : "false");
+		stream.writeStringFormat(false, ",\"persist\": %s", var->isPersisted() ? "true" : "false");
+		stream.writeStringFormat(false, ",\"title\": \"%s\"", var->title().c_str());
+		stream.writeStringFormat(false, ",\"description\": \"%s\"", var->description().c_str());
+		if (var->hasMinMax()) {
+			if (var->type() == core::VarType::Int) {
+				stream.writeStringFormat(false, ",\"min\": %i, \"max\": %i", var->intMinValue(), var->intMaxValue());
+			} else {
+				stream.writeStringFormat(false, ",\"min\": %f, \"max\": %f", var->floatMinValue(),
+										 var->floatMaxValue());
+			}
+		}
 		stream.writeStringFormat(false, ",\"type\": \"%s\"", core::varTypeName(var->type()));
 		const core::DynamicArray<core::String> &validValues = var->validValues();
 		if (!validValues.empty()) {

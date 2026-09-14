@@ -312,7 +312,7 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 		ImGui::EndDisabled();
 	}
 
-	ImGui::InputVarString(cfg::VoxformatTexturePath);
+	ImGui::InputFolderVar(cfg::VoxformatTexturePath);
 	ImGui::CheckboxVar(cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(cfg::VoxformatPointCloudSize);
 	ImGui::CheckboxVar(cfg::VoxformatMeshSimplify);
@@ -439,7 +439,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	if (*desc == voxelformat::LDrawFormat::format() || *desc == voxelformat::StudioIOFormat::format() || *desc == voxelformat::LXFFormat::format()) {
-		ImGui::InputVarString(cfg::VoxformatLDrawDir);
+		ImGui::InputFolderVar(cfg::VoxformatLDrawDir);
 	}
 
 	ImGui::CheckboxVar(cfg::VoxelCropOnLoad);

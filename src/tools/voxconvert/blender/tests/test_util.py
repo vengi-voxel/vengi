@@ -8,7 +8,17 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "io_vengi_voxconvert"))
 
-from util import FILTER_GLOB_MAX, build_filter_glob, cvar_set_args, cvar_value_changed, format_cvar_cli_value
+from util import (
+    FILTER_GLOB_MAX,
+    build_filter_glob,
+    cvar_help,
+    cvar_numeric_bounds,
+    cvar_path_subtype,
+    cvar_rna_name,
+    cvar_set_args,
+    cvar_value_changed,
+    format_cvar_cli_value,
+)
 
 
 class TestBuildFilterGlob(unittest.TestCase):
@@ -124,6 +134,28 @@ class TestFormatCvarCliValue(unittest.TestCase):
     def test_boolean(self):
         self.assertEqual(format_cvar_cli_value("boolean", True), "true")
         self.assertEqual(format_cvar_cli_value("boolean", False), "false")
+
+
+class TestCvarJsonconfigMetadata(unittest.TestCase):
+    def test_rna_name_uses_title(self):
+        self.assertEqual(cvar_rna_name({"title": "Voxel size"}, "voxformat_voxelsize"), "Voxel size")
+        self.assertEqual(cvar_rna_name({}, "voxformat_voxelsize"), "voxformat_voxelsize")
+        self.assertEqual(cvar_rna_name({"title": ""}, "voxformat_voxelsize"), "voxformat_voxelsize")
+
+    def test_help_prefers_description(self):
+        self.assertEqual(cvar_help({"description": "desc", "help": "old"}, "k"), "desc")
+        self.assertEqual(cvar_help({"help": "old"}, "k"), "old")
+        self.assertEqual(cvar_help({}, "k"), "k")
+
+    def test_numeric_bounds(self):
+        self.assertEqual(cvar_numeric_bounds({"type": "int", "min": 0, "max": 1024}), (0, 1024))
+        self.assertEqual(cvar_numeric_bounds({"type": "float", "min": 0.0, "max": 1.0}), (0.0, 1.0))
+        self.assertEqual(cvar_numeric_bounds({"type": "int"}), (None, None))
+
+    def test_path_subtype(self):
+        self.assertEqual(cvar_path_subtype({"type": "path"}), "FILE_PATH")
+        self.assertEqual(cvar_path_subtype({"type": "directory"}), "DIR_PATH")
+        self.assertIsNone(cvar_path_subtype({"type": "string"}))
 
 
 if __name__ == "__main__":

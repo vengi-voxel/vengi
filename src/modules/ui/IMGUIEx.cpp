@@ -369,6 +369,31 @@ bool InputFileVar(const char *varName, const io::FormatDescription *descriptions
 	return InputFileVar(core::getVar(varName), descriptions, flags, options);
 }
 
+bool InputFolderVar(const core::VarPtr &var, ImGuiInputTextFlags flags) {
+	const core::String label = _priv::varLabel(var);
+	core::String buf = var->strVal();
+	BeginGroup();
+	InputText(label.c_str(), &buf, flags);
+	SameLine();
+	core::String id(ICON_LC_FOLDER "##");
+	id += label;
+	if (Button(id.c_str())) {
+		imguiApp()->directoryDialog([var](const core::String &folderName, const io::FormatDescription *desc) {
+			var->setVal(folderName);
+		}, {});
+	}
+	_priv::varTooltip(var);
+	EndGroup();
+	if (var->setVal(buf)) {
+		return true;
+	}
+	return false;
+}
+
+bool InputFolderVar(const char *varName, ImGuiInputTextFlags flags) {
+	return InputFolderVar(core::getVar(varName), flags);
+}
+
 bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags) {
 	return InputInt2(label, glm::value_ptr(vec), flags);
 }

@@ -32,9 +32,25 @@ from bpy.types import (
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
 try:
-    from .util import FILTER_GLOB_MAX, build_filter_glob, cvar_set_args
+    from .util import (
+        FILTER_GLOB_MAX,
+        build_filter_glob,
+        cvar_help,
+        cvar_numeric_bounds,
+        cvar_path_subtype,
+        cvar_rna_name,
+        cvar_set_args,
+    )
 except ImportError:
-    from util import FILTER_GLOB_MAX, build_filter_glob, cvar_set_args
+    from util import (
+        FILTER_GLOB_MAX,
+        build_filter_glob,
+        cvar_help,
+        cvar_numeric_bounds,
+        cvar_path_subtype,
+        cvar_rna_name,
+        cvar_set_args,
+    )
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -125,36 +141,52 @@ def _make_prop(key, info):
     """Return a bpy property definition for a single cvar, or None."""
     typ = info.get("type", "string")
     val = info.get("value", "")
-    helptext = info.get("help", key)
+    helptext = cvar_help(info, key)
+    name = cvar_rna_name(info, key)
 
     if typ == "boolean":
         default = (val.lower() == "true") if isinstance(val, str) else bool(val)
-        return BoolProperty(name=key, default=default, description=helptext)
+        return BoolProperty(name=name, default=default, description=helptext)
 
     if typ == "enum":
         valid = info.get("valid_values", [])
         if not valid:
-            return StringProperty(name=key, default=str(val), description=helptext)
+            return StringProperty(name=name, default=str(val), description=helptext)
         items = [(v, v, "") for v in valid]
         default = val if val in valid else valid[0]
-        return EnumProperty(name=key, items=items, default=default, description=helptext)
+        return EnumProperty(name=name, items=items, default=default, description=helptext)
 
     if typ == "int":
         try:
             default = int(val)
         except (ValueError, TypeError):
             default = 0
-        return IntProperty(name=key, default=default, description=helptext)
+        kwargs = dict(name=name, default=default, description=helptext)
+        mn, mx = cvar_numeric_bounds(info)
+        if mn is not None:
+            kwargs["min"] = mn
+        if mx is not None:
+            kwargs["max"] = mx
+        return IntProperty(**kwargs)
 
     if typ == "float":
         try:
             default = float(val)
         except (ValueError, TypeError):
             default = 0.0
-        return FloatProperty(name=key, default=default, description=helptext)
+        kwargs = dict(name=name, default=default, description=helptext)
+        mn, mx = cvar_numeric_bounds(info)
+        if mn is not None:
+            kwargs["min"] = mn
+        if mx is not None:
+            kwargs["max"] = mx
+        return FloatProperty(**kwargs)
 
-    # string / fallback
-    return StringProperty(name=key, default=str(val), description=helptext)
+    subtype = cvar_path_subtype(info)
+    if subtype:
+        return StringProperty(name=name, default=str(val), description=helptext, subtype=subtype)
+
+    return StringProperty(name=name, default=str(val), description=helptext)
 
 
 def _make_cvar_annotations():
