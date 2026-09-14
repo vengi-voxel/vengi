@@ -217,6 +217,21 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginIconMenu(ICON_LC_PUZZLE, _("Extensions"))) {
+			if (ImGui::IconMenuItem(ICON_LC_DOWNLOAD, _("Download scripts..."))) {
+				if (_scriptBrowserPanel) {
+					_scriptBrowserPanel->open();
+				}
+			}
+			ImGui::CommandIconMenuItem(ICON_LC_FILE_PLUS, _("Install script..."), "script_install", true, &listener);
+			ImGui::Separator();
+			if (ImGui::IconMenuItem(ICON_LC_CLOUD_DOWNLOAD, _("VoxBox Browser..."))) {
+				if (_voxBoxBrowserPanel) {
+					_voxBoxBrowserPanel->open();
+				}
+			}
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
@@ -245,18 +260,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			if (ImGui::MenuItem(_("Welcome screen"))) {
 				core::getVar(cfg::VoxEditPopupWelcome)->setVal(true);
-			}
-			if (ImGui::IconMenuItem(ICON_LC_DOWNLOAD, _("Download scripts..."))) {
-				if (_scriptBrowserPanel) {
-					_scriptBrowserPanel->open();
-				}
-			}
-			ImGui::CommandIconMenuItem(ICON_LC_FILE_PLUS, _("Install script..."), "script_install", true, &listener);
-			ImGui::Separator();
-			if (ImGui::IconMenuItem(ICON_LC_CLOUD_DOWNLOAD, _("VoxBox Browser..."))) {
-				if (_voxBoxBrowserPanel) {
-					_voxBoxBrowserPanel->open();
-				}
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(_("Minecraft mapping"))) {

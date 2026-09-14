@@ -169,6 +169,20 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield(3);
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "extensions download scripts")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Extensions/Download scripts...");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, TITLE_SCRIPT_BROWSER));
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "extensions voxbox browser")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Extensions/VoxBox Browser...");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, TITLE_VOXBOX_BROWSER));
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "about screen")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/About");
