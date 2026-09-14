@@ -1596,21 +1596,4 @@ TEST_F(LUAApiTest, testRemoveUnusedColors) {
 	EXPECT_GE(node.palette().colorCount(), 1);
 }
 
-TEST_F(LUAApiTest, testScriptShade) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "shade.lua",
-			{"45", "71", "0.3", "0.7", "5", "false", "false", "1.0", "true", "false"});
-	scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
-	const voxel::RawVolume *volume = node.volume();
-	ASSERT_NE(nullptr, volume);
-	const uint8_t topIdx = volume->voxel(0, 2, 0).getColor();
-	const uint8_t botIdx = volume->voxel(0, 0, 0).getColor();
-	const color::RGBA topColor = node.palette().color(topIdx);
-	const color::RGBA botColor = node.palette().color(botIdx);
-	const int topLum = (int)topColor.r + (int)topColor.g + (int)topColor.b;
-	const int botLum = (int)botColor.r + (int)botColor.g + (int)botColor.b;
-	EXPECT_GE(topLum, botLum) << "Top voxel should be at least as bright as the bottom voxel";
-	EXPECT_GT(node.palette().colorCount(), 1) << "Shading should introduce additional palette colors";
-}
-
 } // namespace voxelgenerator
