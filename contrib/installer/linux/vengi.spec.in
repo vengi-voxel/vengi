@@ -65,6 +65,7 @@ cmake --install . --component voxeditserver --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxeditmcp --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxconvert --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxconvertui --prefix $RPM_BUILD_ROOT%{prefix}
+cmake --install . --component voxconvertblender --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component thumbnailer --prefix $RPM_BUILD_ROOT%{prefix}
 install -D contrib/installer/linux/x-voxel.xml $RPM_BUILD_ROOT%{prefix}/share/mime/packages/x-voxel.xml
 install -D contrib/installer/linux/application-x-voxel.svgz $RPM_BUILD_ROOT%{prefix}/share/icons/hicolor/scalable/mimetypes/application-x-voxel.svgz

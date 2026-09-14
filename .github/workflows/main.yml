@@ -155,7 +155,7 @@ jobs:
             cmake --build . --target package
             zip -r mac-dmg.zip *.dmg
             zip -r mac-voxedit.zip voxedit/vengi-voxedit.app
-            zip -r mac-voxconvert.zip voxconvert/vengi-voxconvert.app
+            zip -r mac-voxconvert.zip voxconvert/vengi-voxconvert.app io_vengi_voxconvert.zip
             zip -r mac-palconvert.zip palconvert/vengi-palconvert.app
             zip -r mac-thumbnailer.zip thumbnailer/vengi-thumbnailer.app
 
@@ -421,6 +421,7 @@ jobs:
             cmake --install . --component palconvert --prefix palconvert-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxconvertui --prefix voxconvert-install
+            cmake --install . --component voxconvertblender --prefix voxconvert-install
             cpack
             Compress-Archive -Path vengi.msi -DestinationPath win-vengi-msi${{ matrix.artifactsPostfix }}.zip
             Compress-Archive -Path voxedit-install -DestinationPath win-voxedit${{ matrix.artifactsPostfix }}.zip

@@ -5,7 +5,7 @@
 
 bl_info = {
     "name": "Vengi Voxconvert",
-    "author": "vengi-voxel",
+    "author": "Martin Gerhardy",
     "version": (1, 0, 0),
     "blender": (3, 6, 0),
     "location": "File > Import/Export",
@@ -30,6 +30,11 @@ from bpy.types import (
     TOPBAR_MT_file_import, TOPBAR_MT_file_export,
 )
 from bpy_extras.io_utils import ImportHelper, ExportHelper
+
+try:
+    from .util import FILTER_GLOB_MAX, build_filter_glob, cvar_set_args
+except ImportError:
+    from util import FILTER_GLOB_MAX, build_filter_glob, cvar_set_args
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -108,8 +113,8 @@ def _refresh_cache(exe):
                 imp.add(ext.lower())
                 if entry.get("save"):
                     exp.add(ext.lower())
-    _cache["import_filter"] = ";".join("*." + e for e in sorted(imp)) if imp else "*.*"
-    _cache["export_filter"] = ";".join("*." + e for e in sorted(exp)) if exp else "*.*"
+    _cache["import_filter"] = build_filter_glob(imp)
+    _cache["export_filter"] = build_filter_glob(exp)
 
 
 # ---------------------------------------------------------------------------
@@ -177,21 +182,7 @@ def _cvar_keys_sorted():
 
 def _cvar_set_args(op):
     """Build -set key value CLI args for cvars that differ from defaults."""
-    args = []
-    cvars = _cache.get("cvars") or {}
-    for key, info in cvars.items():
-        if not hasattr(op, key):
-            continue
-        cur = getattr(op, key)
-        typ = info.get("type", "string")
-        default_str = info.get("value", "")
-        if typ == "boolean":
-            cur_str = "true" if cur else "false"
-        else:
-            cur_str = str(cur)
-        if cur_str != default_str:
-            args += ["-set", key, cur_str]
-    return args
+    return cvar_set_args(_cache.get("cvars") or {}, op)
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +229,7 @@ def _draw_cvars(layout, op):
 
 def _make_import_class():
     annotations = {
-        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}),
+        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX),
         "filepath": StringProperty(subtype='FILE_PATH'),
     }
     annotations.update(_make_cvar_annotations())
@@ -312,7 +303,7 @@ def _make_import_class():
 
 def _make_export_class():
     annotations = {
-        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}),
+        "filter_glob": StringProperty(default="*.*", options={'HIDDEN'}, maxlen=FILTER_GLOB_MAX),
         "filepath": StringProperty(subtype='FILE_PATH'),
         "crop": BoolProperty(name="Crop", default=False, description="Reduce models to real voxel sizes"),
         "merge": BoolProperty(name="Merge", default=False, description="Merge models into one volume"),
@@ -392,7 +383,8 @@ def _make_export_class():
         "bl_idname": "export_scene.vengi_voxconvert",
         "bl_label": "Export Vengi Voxconvert",
         "bl_options": {'REGISTER', 'UNDO', 'PRESET'},
-        "filename_ext": ".vox",
+        "filename_ext": "",
+        "check_extension": False,
         "invoke": invoke,
         "execute": execute,
         "modal": modal,

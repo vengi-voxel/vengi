@@ -41,7 +41,7 @@ A few of the features are:
 * Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
 * Calculating normals for voxels (non-hollow models) is supported, too. This is useful for some games like Command & Conquer.
 * View modes for animation, Command & Conquer, Ace Of Spades, Teardown or simple voxel editing
-* [voxbox.store](https://voxbox.store/) integration to share and upload your models
+* [voxbox.store](https://voxbox.store/) integration to browse, download and upload models (requires a VoxBox account)
 
 ## Usage
 

@@ -31,13 +31,33 @@ else()
 endif()
 set_tests_properties(shelltests-${PROJECT_NAME} PROPERTIES DEPENDS ${PROJECT_NAME})
 
+find_program(VOXCONVERT_PYTHON_EXECUTABLE NAMES python3 python)
+if (VOXCONVERT_PYTHON_EXECUTABLE)
+	add_test(NAME tests-${PROJECT_NAME}-blender-addon
+		COMMAND ${VOXCONVERT_PYTHON_EXECUTABLE} -m unittest discover -s "${CMAKE_CURRENT_SOURCE_DIR}/blender/tests" -v
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/blender/tests
+	)
+endif()
+
 set(BLENDER_ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blender/io_vengi_voxconvert)
 set(BLENDER_ADDON_ZIP ${CMAKE_BINARY_DIR}/io_vengi_voxconvert.zip)
 add_custom_command(
 	OUTPUT ${BLENDER_ADDON_ZIP}
 	COMMAND ${CMAKE_COMMAND} -E tar cf ${BLENDER_ADDON_ZIP} --format=zip -- io_vengi_voxconvert
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/blender
-	DEPENDS ${BLENDER_ADDON_DIR}/__init__.py
+	DEPENDS ${BLENDER_ADDON_DIR}/__init__.py ${BLENDER_ADDON_DIR}/util.py
 	COMMENT "Creating Blender addon zip"
 )
 add_custom_target(blender-addon ALL DEPENDS ${BLENDER_ADDON_ZIP})
+
+if (NOT EMSCRIPTEN)
+	if (WIN32)
+		set(BLENDER_ADDON_INSTALL_DIR "${PROJECT_NAME}")
+	elseif (APPLE)
+		set(BLENDER_ADDON_INSTALL_DIR ".")
+	else()
+		set(BLENDER_ADDON_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/${CMAKE_PROJECT_NAME}-${PROJECT_NAME}")
+	endif()
+	install(FILES ${BLENDER_ADDON_ZIP} DESTINATION ${BLENDER_ADDON_INSTALL_DIR} COMPONENT voxconvertblender)
+	cpack_add_component(voxconvertblender DISPLAY_NAME "Blender addon" DESCRIPTION "Blender import/export addon for vengi-voxconvert")
+endif()
