@@ -24,6 +24,7 @@ set(LUA_SRCS
 	scripts/compaction.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
+	scripts/dnahelix.lua
 	scripts/erode.lua
 	scripts/fillhollow.lua
 	scripts/fillz.lua
