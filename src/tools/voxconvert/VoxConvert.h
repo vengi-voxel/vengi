@@ -83,4 +83,6 @@ public:
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
+
+	void writeConfigJsonExtra(io::WriteStream &stream, const core::VarPtr &var) const override;
 };

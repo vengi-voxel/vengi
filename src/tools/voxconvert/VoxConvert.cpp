@@ -1141,6 +1141,10 @@ void VoxConvert::translate(const glm::ivec3 &pos, scenegraph::SceneGraph &sceneG
 	}
 }
 
+void VoxConvert::writeConfigJsonExtra(io::WriteStream &stream, const core::VarPtr &var) const {
+	voxelformat::FormatConfig::writeConfigJson(stream, var);
+}
+
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();

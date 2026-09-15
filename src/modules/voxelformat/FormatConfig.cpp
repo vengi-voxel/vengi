@@ -291,4 +291,9 @@ bool FormatConfig::init() {
 	return true;
 }
 
+void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &var) {
+	// TODO: add extra config information to the json file - is this cvar for saving, for loading, for which format - put a static data structure together for this
+	// that is also used to assemble the FileDialogOptions - then use it for the blender plugin, too
+}
+
 } // namespace voxelformat
