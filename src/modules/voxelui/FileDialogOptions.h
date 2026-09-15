@@ -42,5 +42,9 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 				 const palette::PaletteCache &paletteCache);
 // mesh mode for exporting/saving meshes - includes greedy texture
 void meshModeOption();
+// Integer cvar combo using FormatConfig value titles (translated at display).
+// titlesFromVar: look up titles from another registered format cvar (e.g. renderer
+// voxel_meshmode reuses voxformat_meshmode titles).
+bool comboVar(const char *varName, const char *titlesFromVar = nullptr);
 
 } // namespace voxelui

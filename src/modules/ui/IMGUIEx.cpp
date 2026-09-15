@@ -241,6 +241,45 @@ bool ComboVar(const core::VarPtr &var) {
 	return changed;
 }
 
+bool ComboVar(const core::VarPtr &var, const char *const *titles, int titleCount) {
+	if (!var || titles == nullptr || titleCount <= 0) {
+		return false;
+	}
+	int minV = 0;
+	int maxV = titleCount - 1;
+	if (var->hasMinMax()) {
+		minV = core_max(minV, var->intMinValue());
+		maxV = core_min(maxV, var->intMaxValue());
+	}
+	const int current = var->intVal();
+	const char *preview = _("Unknown");
+	if (current >= 0 && current < titleCount && titles[current] != nullptr && titles[current][0] != '\0') {
+		preview = _(titles[current]);
+	}
+	const core::String label = _priv::varLabel(var);
+	bool changed = false;
+	if (ImGui::BeginCombo(label.c_str(), preview)) {
+		for (int i = minV; i <= maxV; ++i) {
+			if (titles[i] == nullptr || titles[i][0] == '\0') {
+				continue;
+			}
+			const bool selected = i == current;
+			ImGui::PushID(i);
+			if (ImGui::Selectable(_(titles[i]), selected)) {
+				var->setVal(i);
+				changed = true;
+			}
+			ImGui::PopID();
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	_priv::varTooltip(var);
+	return changed;
+}
+
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
 	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 	flags |= ImGuiInputTextFlags_CallbackResize;

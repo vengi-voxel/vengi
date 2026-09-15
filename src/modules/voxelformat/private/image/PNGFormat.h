@@ -41,6 +41,11 @@ public:
 					   const LoadContext &ctx) override;
 
 	enum ImageType { Plane = 0, Heightmap = 1, Volume = 2, Thumbnail = 3 };
+
+	static const io::FormatDescription &format() {
+		static const io::FormatDescription f = io::format::png();
+		return f;
+	}
 };
 
 } // namespace voxelformat

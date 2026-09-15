@@ -4,14 +4,41 @@
 
 #include "FormatConfig.h"
 #include "app/I18N.h"
+#include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
 #include "core/Path.h"
-#include "core/StringUtil.h"
+#include "core/String.h"
 #include "core/Var.h"
+#include "io/FormatDescription.h"
+#include "io/Stream.h"
 #include "palette/FormatConfig.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/binvox/BinVoxFormat.h"
+#include "voxelformat/private/commandconquer/VXLFormat.h"
+#include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/OBJFormat.h"
+#include "voxelformat/private/mesh/PLYFormat.h"
+#include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/mesh/gis/GMLFormat.h"
+#include "voxelformat/private/mesh/gis/OSMFormat.h"
+#include "voxelformat/private/mesh/lego/LDrawFormat.h"
+#include "voxelformat/private/mesh/lego/LXFFormat.h"
+#include "voxelformat/private/mesh/lego/StudioIOFormat.h"
+#include "voxelformat/private/minecraft/DatFormat.h"
+#include "voxelformat/private/minecraft/MCRFormat.h"
+#include "voxelformat/private/minecraft/MCWorldFormat.h"
+#include "voxelformat/private/minecraft/SchematicFormat.h"
+#include "voxelformat/private/minecraft/SkinFormat.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
+#include "voxelformat/private/qubicle/QBTFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
+
+#include <string.h>
 
 namespace voxelformat {
 
@@ -212,7 +239,7 @@ bool FormatConfig::init() {
 	core::registerVar(voxformatImageImportType);
 	const core::VarDef voxformatImageSaveType(
 		cfg::VoxformatImageSaveType, PNGFormat::ImageType::Plane, PNGFormat::ImageType::Plane,
-		PNGFormat::ImageType::Volume, N_("Image save type"),
+		PNGFormat::ImageType::Thumbnail, N_("Image save type"),
 		NC_("Image save type", "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"), core::CV_NOPERSIST);
 	core::registerVar(voxformatImageSaveType);
 	const core::VarDef voxformatImageSliceOffsetAxis(
@@ -225,6 +252,7 @@ bool FormatConfig::init() {
 	core::registerVar(voxformatImageSliceOffset);
 	static_assert(PNGFormat::ImageType::Plane == 0, "Plane must be 0");
 	static_assert(PNGFormat::ImageType::Volume == 2, "Volume must be 2");
+	static_assert(PNGFormat::ImageType::Thumbnail == 3, "Thumbnail must be 3");
 	const core::VarDef voxformatSchematicType(
 		cfg::VoxformatSchematicType, "mcedit2", {"mcedit2", "worldedit", "schematica"}, N_("Schematic type"),
 		N_("The type of schematic format to use when saving schematics"), core::CV_NOPERSIST);
@@ -291,9 +319,221 @@ bool FormatConfig::init() {
 	return true;
 }
 
+// Display order is the FileDialogOptions widget order (save entries first, then load).
+static const char *const g_meshModeTitles[] = {N_("Cubes"), N_("Marching cubes"), N_("Binary"), N_("Greedy texture")};
+static_assert(lengthof(g_meshModeTitles) == (int)voxel::SurfaceExtractionType::Max, "Update mesh mode value titles");
+
+static const FormatVarMeta g_formatCVars[] = {
+	// mesh save
+	{cfg::VoxformatMergequads, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatReusevertices, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxelTextureDedupe, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatAmbientocclusion, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatTransform, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatOptimize, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatMeshSimplifyRatio, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatPointCloud, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatQuads, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatWithColor, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatWithNormals, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatColorAsFloat, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatWithtexcoords, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
+	{cfg::VoxformatGLTF_KHR_materials_specular, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
+	{cfg::VoxformatWithMaterials, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatMeshMode, FormatCVarFlag_Save | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {g_meshModeTitles[0], g_meshModeTitles[1], g_meshModeTitles[2], g_meshModeTitles[3]}},
+	{cfg::VoxformatBinvoxVersion, FormatCVarFlag_Save, {&BinVoxFormat::format()}, {nullptr, N_("Binvox 1 (white)"), N_("Binvox 2 (multi colors)"), N_("Binvox 3 (unofficial)")}},
+	{cfg::VoxformatSchematicType, FormatCVarFlag_Save, {&SchematicFormat::format()}, {}},
+	{cfg::VoxformatQBTPaletteMode, FormatCVarFlag_Save, {&QBTFormat::format()}, {}},
+	{cfg::VoxformatVOXCreateGroups, FormatCVarFlag_Save, {&VoxFormat::format()}, {}},
+	{cfg::VoxformatVOXCreateLayers, FormatCVarFlag_Save, {&VoxFormat::format()}, {}},
+	{cfg::VoxformatVOXAnimAsNodes, FormatCVarFlag_Load | FormatCVarFlag_Save, {&VoxFormat::format()}, {}},
+	{cfg::VoxformatQBSaveLeftHanded, FormatCVarFlag_Save, {&QBFormat::format()}, {}},
+	{cfg::VoxformatQBSaveCompressed, FormatCVarFlag_Save, {&QBFormat::format()}, {}},
+	{cfg::VoxformatImageSaveType, FormatCVarFlag_Save | FormatCVarFlag_Image, {&PNGFormat::format()}, {N_("Plane"), N_("Heightmap"), N_("Volume"), N_("Thumbnail")}},
+	{cfg::VoxformatEmptyPaletteIndex, FormatCVarFlag_Save, {&VENGIFormat::format()}, {}},
+	{cfg::VoxformatMerge, FormatCVarFlag_Save | FormatCVarFlag_All, {}, {}},
+	{cfg::VoxformatSaveVisibleOnly, FormatCVarFlag_Save | FormatCVarFlag_All, {}, {}},
+	{cfg::VoxformatVoxelSize, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {}},
+	{cfg::VoxformatScale, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatScaleX, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatScaleY, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatScaleZ, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatTexturePath, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatFillHollow, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {}},
+	{cfg::VoxformatPointCloudSize, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatMeshSimplify, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::NormalPalette, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatGMLRegion, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {&GMLFormat::format()}, {}},
+	{cfg::VoxformatGMLFilenameFilter, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {&GMLFormat::format()}, {}},
+	{cfg::VoxformatVoxelizeMode, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {N_("High quality"), N_("Fast")}},
+	{cfg::VoxformatVoxelizeChunked, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatVoxelizeChunkSize, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatRGBWeightedAverage, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatOSMURL, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {&OSMFormat::format()}, {}},
+	{cfg::VoxformatOSMMetersPerVoxel, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {&OSMFormat::format()}, {}},
+	{cfg::VoxformatLDrawDir, FormatCVarFlag_Load | FormatCVarFlag_Mesh, {&LDrawFormat::format(), &StudioIOFormat::format(), &LXFFormat::format()}, {}},
+	{cfg::VoxformatImageImportType, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {N_("Plane"), N_("Heightmap"), N_("Volume")}},
+	{cfg::VoxformatImageVolumeMaxDepth, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
+	{cfg::VoxformatImageVolumeBothSides, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
+	{cfg::VoxformatImageHeightmapMinHeight, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
+	{cfg::VoxformatImageSliceOffset, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format()}, {}},
+	{cfg::VoxformatImageSliceOffsetAxis, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format()}, {}},
+	{cfg::VoxformatSkinApplyTransform, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
+	{cfg::VoxformatSkinAddGroups, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
+	{cfg::VoxformatSkinMergeFaces, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
+	{cfg::VoxformatMCSeparateWater, FormatCVarFlag_Load, {&MCRFormat::format(), &DatFormat::format(), &MCWorldFormat::format(), &SchematicFormat::format()}, {}},
+	{cfg::VoxformatVXLLoadHVA, FormatCVarFlag_Load, {&VXLFormat::format()}, {}},
+	{cfg::VoxformatMVApplyTransform, FormatCVarFlag_Load, {&VoxFormat::format()}, {}},
+	{cfg::VoxformatQBTMergeCompounds, FormatCVarFlag_Load, {&QBTFormat::format()}, {}},
+	{cfg::VoxelCropOnLoad, FormatCVarFlag_Load | FormatCVarFlag_All, {}, {}},
+	{cfg::CoreColorReduction, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_RGB | FormatCVarFlag_Primary, {}, {}},
+	{cfg::VoxformatRGBFlattenFactor, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_RGB, {}, {}},
+	{cfg::VoxformatTargetColors, FormatCVarFlag_Load | FormatCVarFlag_Mesh | FormatCVarFlag_RGB, {}, {}},
+	{cfg::VoxelCreatePalette, FormatCVarFlag_Load | FormatCVarFlag_All, {}, {}},
+	{cfg::VoxelPalette, FormatCVarFlag_Load | FormatCVarFlag_All | FormatCVarFlag_Primary, {}, {}},
+};
+
+static_assert(MeshFormat::VoxelizeMode::HighQuality == 0, "HighQuality must be 0");
+static_assert(MeshFormat::VoxelizeMode::Fast == 1, "Fast must be 1");
+
+const FormatVarMeta *FormatConfig::varsMeta() {
+	return g_formatCVars;
+}
+
+int FormatConfig::cvarCount() {
+	return lengthof(g_formatCVars);
+}
+
+const FormatVarMeta *FormatConfig::findVarMeta(const char *name) {
+	if (name == nullptr) {
+		return nullptr;
+	}
+	for (int i = 0; i < lengthof(g_formatCVars); ++i) {
+		if (strcmp(g_formatCVars[i].name, name) == 0) {
+			return &g_formatCVars[i];
+		}
+	}
+	return nullptr;
+}
+
+static bool hasFormats(const FormatVarMeta &meta) {
+	return meta.formats[0] != nullptr;
+}
+
+static bool isImageFormat(const io::FormatDescription &desc) {
+	return desc == PNGFormat::format() || desc == AsepriteFormat::format();
+}
+
+bool FormatConfig::meshSaveSupportsQuads(const io::FormatDescription &desc) {
+	return desc == OBJFormat::format() || desc == PLYFormat::format();
+}
+
+bool FormatConfig::meshSaveSupportsColor(const io::FormatDescription &desc) {
+	return !(desc == STLFormat::format());
+}
+
+bool FormatConfig::meshSaveSupportsTexCoords(const io::FormatDescription &desc) {
+	return meshSaveSupportsColor(desc);
+}
+
+bool FormatConfig::appliesTo(const FormatVarMeta &meta, bool save, const io::FormatDescription &desc) {
+	if (save) {
+		if ((meta.flags & FormatCVarFlag_Save) == 0u) {
+			return false;
+		}
+	} else if ((meta.flags & FormatCVarFlag_Load) == 0u) {
+		return false;
+	}
+
+	if (meta.flags & FormatCVarFlag_All) {
+		return true;
+	}
+
+	if (hasFormats(meta)) {
+		for (int i = 0; i < FormatVarMeta::MaxFormats; ++i) {
+			if (meta.formats[i] == nullptr) {
+				break;
+			}
+			if (*meta.formats[i] == desc) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if ((meta.flags & FormatCVarFlag_Mesh) && isMeshFormat(desc)) {
+		return true;
+	}
+	if ((meta.flags & FormatCVarFlag_Image) && isImageFormat(desc)) {
+		return true;
+	}
+	if ((meta.flags & FormatCVarFlag_RGB) && isRGBFormat(desc)) {
+		return true;
+	}
+	return false;
+}
+
+static void writeJsonBool(io::WriteStream &stream, const char *key, bool value) {
+	stream.writeStringFormat(false, ",\"%s\": %s", key, value ? "true" : "false");
+}
+
 void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &var) {
-	// TODO: add extra config information to the json file - is this cvar for saving, for loading, for which format - put a static data structure together for this
-	// that is also used to assemble the FileDialogOptions - then use it for the blender plugin, too
+	if (!var) {
+		return;
+	}
+	const FormatVarMeta *meta = findVarMeta(var->name());
+	if (meta == nullptr) {
+		return;
+	}
+
+	writeJsonBool(stream, "load", (meta->flags & FormatCVarFlag_Load) != 0u);
+	writeJsonBool(stream, "save", (meta->flags & FormatCVarFlag_Save) != 0u);
+	writeJsonBool(stream, "mesh", (meta->flags & FormatCVarFlag_Mesh) != 0u);
+	writeJsonBool(stream, "image", (meta->flags & FormatCVarFlag_Image) != 0u);
+	writeJsonBool(stream, "rgb", (meta->flags & FormatCVarFlag_RGB) != 0u);
+	writeJsonBool(stream, "all", (meta->flags & FormatCVarFlag_All) != 0u);
+	writeJsonBool(stream, "primary", (meta->flags & FormatCVarFlag_Primary) != 0u);
+	stream.writeStringFormat(false, ",\"order\": %i", (int)(meta - g_formatCVars));
+
+	if (hasFormats(*meta)) {
+		stream.writeString(",\"formats\": [", false);
+		bool first = true;
+		for (int i = 0; i < FormatVarMeta::MaxFormats; ++i) {
+			if (meta->formats[i] == nullptr) {
+				break;
+			}
+			if (!first) {
+				stream.write(",", 1);
+			}
+			first = false;
+			stream.writeStringFormat(false, "\"%s\"", meta->formats[i]->name.c_str());
+		}
+		stream.writeString("]", false);
+	}
+
+	int lastTitle = -1;
+	for (int i = 0; i < FormatVarMeta::MaxValueTitles; ++i) {
+		if (meta->valueTitles[i] != nullptr && meta->valueTitles[i][0] != '\0') {
+			lastTitle = i;
+		}
+	}
+	if (lastTitle < 0) {
+		return;
+	}
+	stream.writeString(",\"value_titles\": [", false);
+	for (int i = 0; i <= lastTitle; ++i) {
+		if (i > 0) {
+			stream.write(",", 1);
+		}
+		const char *title = meta->valueTitles[i];
+		if (title == nullptr || title[0] == '\0') {
+			stream.writeString("\"\"", false);
+		} else {
+			stream.writeStringFormat(false, "\"%s\"", title);
+		}
+	}
+	stream.writeString("]", false);
 }
 
 } // namespace voxelformat

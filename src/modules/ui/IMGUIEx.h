@@ -244,6 +244,15 @@ IMGUI_API inline bool ComboVar(const char *varName) {
 	return ComboVar(core::getVar(varName));
 }
 
+/**
+ * @brief Combobox for integer cvars using untranslated title strings (translated via _() at display).
+ * Empty or null slots are skipped. If the var has a min/max range, only values inside it are shown.
+ */
+IMGUI_API bool ComboVar(const core::VarPtr &var, const char *const *titles, int titleCount);
+IMGUI_API inline bool ComboVar(const char *varName, const char *const *titles, int titleCount) {
+	return ComboVar(core::getVar(varName), titles, titleCount);
+}
+
 IMGUI_API void TextCentered(const char *text, bool reset = false);
 IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);

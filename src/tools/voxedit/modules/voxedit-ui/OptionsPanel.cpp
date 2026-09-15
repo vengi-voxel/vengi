@@ -10,7 +10,6 @@
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "ui/ScopedID.h"
 #include "imgui.h"
@@ -18,8 +17,8 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/PopupAbout.h"
+#include "voxelui/FileDialogOptions.h"
 #include "voxedit-util/Config.h"
-#include "voxel/MeshState.h"
 #include "voxel/SurfaceExtractor.h"
 
 namespace voxedit {
@@ -186,14 +185,11 @@ void OptionsPanel::renderEditor() {
 		_app->colorReductionOptions();
 	}
 	if (matchesVarFilter(cfg::VoxelMeshMode)) {
-		static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
-			_("Cubes"), _("Marching cubes"), _("Binary")};
-		ImGui::ComboVar(cfg::VoxelMeshMode, meshModes);
+		voxelui::comboVar(cfg::VoxelMeshMode, cfg::VoxformatMeshMode);
 	}
 	if (matchesVarFilter(cfg::VoxelMeshAlloc)) {
-		static const core::Array<core::String, (int)voxel::MeshAllocStrategy::Max> meshAllocModes = {
-			_("Full pre-alloc"), _("Small (grow as needed)")};
-		ImGui::ComboVar(cfg::VoxelMeshAlloc, meshAllocModes);
+		static const char *const meshAllocTitles[] = {N_("Full pre-alloc"), N_("Small (grow as needed)")};
+		ImGui::ComboVar(cfg::VoxelMeshAlloc, meshAllocTitles, lengthof(meshAllocTitles));
 	}
 }
 
