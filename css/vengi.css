@@ -1,0 +1,13 @@
+img[src*="#gallery"] {
+    width: 23%; /* thumbnail size */
+    height: auto;
+    border: 4px solid black;
+    margin: 4px;
+    transition: transform 0.3s ease, z-index 0.3s ease;
+    cursor: zoom-in;
+}
+img[src*="#gallery"]:hover {
+    transform: scale(4); /* zoom effect */
+    z-index: 10;
+    position: relative; /* so it overlays neighbors */
+}
