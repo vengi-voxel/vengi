@@ -170,7 +170,11 @@ public:
 	int startMainLoop(int argc, char *argv[]);
 	void setArgs(int argc, char *argv[]);
 
-	static void writeConfigJson(io::WriteStream &stream);
+	void writeConfigJson(io::WriteStream &stream) const;
+	/**
+	 * @brief Can be overridden by derived classes to add extra JSON attributes for a config var
+	 */
+	virtual void writeConfigJsonExtra(io::WriteStream &stream, const core::VarPtr &var) const;
 
 	/**
 	 * @brief Register your commands and cvars here

@@ -1860,7 +1860,7 @@ void App::openURL(const core::String &url) {
 	SDL_OpenURL(url.c_str());
 }
 
-void App::writeConfigJson(io::WriteStream &stream) {
+void App::writeConfigJson(io::WriteStream &stream) const {
 	stream.writeString("{", false);
 	bool first = true;
 	core::Var::visit([&](const core::VarPtr &var) {
@@ -1901,9 +1901,13 @@ void App::writeConfigJson(io::WriteStream &stream) {
 		if (!var->description().empty()) {
 			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->description().c_str());
 		}
+		writeConfigJsonExtra(stream, var);
 		stream.writeString("}", false);
 	});
 	stream.writeString("}", false);
+}
+
+void App::writeConfigJsonExtra(io::WriteStream &stream, const core::VarPtr &var) const {
 }
 
 void App::schedule(core::Function<void()> &&f) {

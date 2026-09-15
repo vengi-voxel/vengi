@@ -186,7 +186,8 @@ TEST(AppTest, testWriteConfigJsonMinMaxAndDirectory) {
 	core::Var::registerVar(core::VarDef("test_jsonconfig_dir", core::Path(), "Dir Title", "dir help", core::CV_NONE,
 										core::VarType::Directory));
 	io::BufferedReadWriteStream stream;
-	App::writeConfigJson(stream);
+	TestApp app;
+	app.writeConfigJson(stream);
 	ASSERT_TRUE(stream.writeUInt8(0));
 	const char *json = (const char *)stream.getBuffer();
 	ASSERT_NE(json, nullptr);
