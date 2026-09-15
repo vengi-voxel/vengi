@@ -3,8 +3,12 @@
 
 import json
 import os
+import re
 import shutil
+import signal
+import subprocess
 import sys
+import threading
 import urllib.request
 import zipfile
 
@@ -249,6 +253,193 @@ def cvar_set_args(cvars, op):
             continue
         args += ["-set", key, format_cvar_cli_value(typ, cur, key=key)]
     return args
+
+
+# ---------------------------------------------------------------------------
+# Process / --progress (stderr)
+# ---------------------------------------------------------------------------
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b[@-Z\\-_]")
+# ProgressBar::format: "[####----]  42% load" (bar width varies; not a TTY => one line per update)
+_PROGRESS_RE = re.compile(r"\[[#\-]+\]\s+(\d+)\s*%\s+(.*)$")
+
+
+def strip_ansi(text):
+    """Remove ANSI color/control sequences from log text."""
+    if not text:
+        return ""
+    return _ANSI_RE.sub("", text)
+
+
+def parse_progress_line(line):
+    """Parse a voxconvert --progress stderr line. Returns (percent 0-100, name) or None."""
+    if not line:
+        return None
+    s = strip_ansi(line).replace("\r", "\n")
+    last = [p for p in s.split("\n") if p.strip()]
+    if not last:
+        return None
+    m = _PROGRESS_RE.search(last[-1].strip())
+    if not m:
+        return None
+    pct = max(0, min(100, int(m.group(1))))
+    name = m.group(2).strip()
+    return pct, name
+
+
+def subprocess_hidden_kwargs():
+    """Kwargs so Windows does not flash a console window."""
+    kw = {}
+    if sys.platform == "win32":
+        kw["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+    return kw
+
+
+def subprocess_popen_kwargs():
+    """Kwargs for a killable child (own session on Unix, hidden console on Windows)."""
+    kw = subprocess_hidden_kwargs()
+    if sys.platform != "win32":
+        kw["start_new_session"] = True
+    return kw
+
+
+def kill_process(proc):
+    """Terminate a child started with subprocess_popen_kwargs()."""
+    if proc is None or proc.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            proc.kill()
+            return
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except Exception:
+            proc.terminate()
+        try:
+            proc.wait(timeout=1)
+        except Exception:
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except Exception:
+                proc.kill()
+    except Exception:
+        pass
+
+
+class ConversionState:
+    def __init__(self):
+        self.done = False
+        self.success = False
+        self.cancelled = False
+        self.error = ""
+        self.output_path = ""
+        self.progress = 0
+        self.progress_text = ""
+        self.proc = None
+
+    def request_cancel(self):
+        if self.done:
+            return
+        self.cancelled = True
+        kill_process(self.proc)
+
+
+def run_command(exe, args, timeout=10):
+    """Short-lived voxconvert invocation (jsonconfig / print-formats)."""
+    kw = subprocess_hidden_kwargs()
+    p = subprocess.run([exe] + list(args), capture_output=True, text=True, timeout=timeout, **kw)
+    return p.stdout, p.stderr, p.returncode
+
+
+def run_voxconvert(exe, args, state, timeout=600):
+    """Run voxconvert with --progress. Updates state from a worker thread."""
+    cmd = [exe] + list(args)
+    if "--progress" not in cmd:
+        cmd.append("--progress")
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            **subprocess_popen_kwargs()
+        )
+    except Exception as e:
+        state.success = False
+        state.error = strip_ansi(str(e))[:600]
+        state.done = True
+        return
+    state.proc = proc
+    if state.cancelled:
+        kill_process(proc)
+
+    stdout_chunks = []
+    stderr_err = []
+
+    def read_stdout():
+        try:
+            stdout_chunks.append(proc.stdout.read() or "")
+        except Exception:
+            pass
+
+    def read_stderr():
+        try:
+            for line in proc.stderr:
+                if state.cancelled:
+                    break
+                cleaned = strip_ansi(line).replace("\r", "\n")
+                for part in cleaned.split("\n"):
+                    part = part.strip()
+                    if not part:
+                        continue
+                    parsed = parse_progress_line(part)
+                    if parsed is not None:
+                        state.progress, state.progress_text = parsed
+                    else:
+                        stderr_err.append(part)
+        except Exception:
+            pass
+
+    t_out = threading.Thread(target=read_stdout)
+    t_err = threading.Thread(target=read_stderr)
+    t_out.daemon = True
+    t_err.daemon = True
+    t_out.start()
+    t_err.start()
+    rc = None
+    try:
+        rc = proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        state.cancelled = True
+        kill_process(proc)
+        try:
+            rc = proc.wait(timeout=5)
+        except Exception:
+            rc = -1
+        state.error = "vengi-voxconvert timed out"
+    t_out.join(timeout=2)
+    t_err.join(timeout=2)
+    try:
+        if proc.stdout:
+            proc.stdout.close()
+        if proc.stderr:
+            proc.stderr.close()
+    except Exception:
+        pass
+    if rc == 0:
+        state.success = True
+        state.cancelled = False
+    elif state.cancelled:
+        state.success = False
+        if not state.error:
+            state.error = "Cancelled"
+    else:
+        state.success = False
+        err = "\n".join(stderr_err).strip()
+        out = "".join(stdout_chunks).strip()
+        state.error = (err or strip_ansi(out) or "vengi-voxconvert failed")[:600]
+    state.done = True
 
 
 # ---------------------------------------------------------------------------

@@ -9,7 +9,6 @@ Also collected by unittest discover. Tests that need bpy skip when it is missing
 """
 
 import os
-import subprocess
 import sys
 import unittest
 
@@ -22,6 +21,7 @@ from util import (  # noqa: E402
     gltf_export_kwargs,
     gltf_export_rna_prop_names,
     parse_leading_json,
+    run_command,
 )
 
 
@@ -64,8 +64,8 @@ class TestPrintFormatsParse(unittest.TestCase):
             exe = find_voxconvert(use_well_known=True)
         if not exe or not os.path.isfile(exe):
             self.skipTest("vengi-voxconvert not available")
-        proc = subprocess.run([exe, "--print-formats"], capture_output=True, text=True, timeout=30)
-        data = parse_leading_json(proc.stdout or proc.stderr)
+        out, err, _rc = run_command(exe, ["--print-formats"], timeout=30)
+        data = parse_leading_json(out or err)
         self.assertIsNotNone(data, "failed to parse --print-formats JSON")
         self.assertIn("voxels", data)
         self.assertTrue(data["voxels"])

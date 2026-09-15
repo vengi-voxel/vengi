@@ -19,7 +19,6 @@ import bpy
 import addon_utils
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
@@ -41,6 +40,7 @@ try:
         cvar_path_subtype,
         cvar_rna_name,
         cvar_set_args,
+        ConversionState,
         download_windows_voxconvert,
         ensure_gltf_addon,
         find_voxconvert,
@@ -50,7 +50,10 @@ try:
         int_enum_rna_items,
         is_relevant_cvar,
         parse_leading_json,
+        run_command,
+        run_voxconvert,
         split_cvar_keys,
+        strip_ansi,
         IMPORT_PRIMARY_CVARS,
         EXPORT_PRIMARY_CVARS,
     )
@@ -63,6 +66,7 @@ except ImportError:
         cvar_path_subtype,
         cvar_rna_name,
         cvar_set_args,
+        ConversionState,
         download_windows_voxconvert,
         ensure_gltf_addon,
         find_voxconvert,
@@ -72,7 +76,10 @@ except ImportError:
         int_enum_rna_items,
         is_relevant_cvar,
         parse_leading_json,
+        run_command,
+        run_voxconvert,
         split_cvar_keys,
+        strip_ansi,
         IMPORT_PRIMARY_CVARS,
         EXPORT_PRIMARY_CVARS,
     )
@@ -109,9 +116,7 @@ def _require_gltf(op):
 
 
 def _run(exe, args, timeout=600):
-    cmd = [exe] + args
-    p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
-    return p.stdout, p.stderr, p.returncode
+    return run_command(exe, args, timeout=timeout)
 
 
 def _get_json(exe, flag):
@@ -271,23 +276,55 @@ def _rebuild_cvar_group():
 # Non-blocking conversion
 # ---------------------------------------------------------------------------
 
-class _ConversionState:
-    def __init__(self):
-        self.done = False
-        self.success = False
-        self.error = ""
-        self.output_path = ""
-
-
-def _convert_thread(exe, args, state):
+def _start_convert(op, context, exe, args, tmpdir, output_path=""):
+    op._tmpdir = tmpdir
+    op._state = ConversionState()
+    op._state.output_path = output_path
+    t = threading.Thread(target=run_voxconvert, args=(exe, args, op._state))
+    t.daemon = True
+    t.start()
+    op._timer = context.window_manager.event_timer_add(0.1, window=context.window)
+    op._progress_active = False
     try:
-        out, err, rc = _run(exe, args)
-        state.success = (rc == 0)
-        state.error = (err or out)[:600] if rc != 0 else ""
-    except Exception as e:
-        state.success = False
-        state.error = str(e)[:600]
-    state.done = True
+        context.window_manager.progress_begin(0, 100)
+        op._progress_active = True
+    except Exception:
+        pass
+    context.window_manager.modal_handler_add(op)
+    return {'RUNNING_MODAL'}
+
+
+def _modal_convert(op, context, event, error_prefix="Conversion failed: "):
+    """Drive progress / cancel. Returns a set if the convert finished or was cancelled."""
+    wm = context.window_manager
+    if event.type in {'ESC'}:
+        op._state.request_cancel()
+        return {'RUNNING_MODAL'}
+    if event.type != 'TIMER':
+        return {'PASS_THROUGH'}
+    if op._progress_active:
+        try:
+            wm.progress_update(int(op._state.progress))
+        except Exception:
+            pass
+    if not op._state.done:
+        return {'RUNNING_MODAL'}
+    wm.event_timer_remove(op._timer)
+    if op._progress_active:
+        try:
+            wm.progress_end()
+        except Exception:
+            pass
+        op._progress_active = False
+    if op._state.cancelled:
+        shutil.rmtree(op._tmpdir, ignore_errors=True)
+        op.report({'INFO'}, "Cancelled")
+        return {'CANCELLED'}
+    if not op._state.success:
+        op.report({'ERROR'}, error_prefix + strip_ansi(op._state.error))
+        shutil.rmtree(op._tmpdir, ignore_errors=True)
+        return {'CANCELLED'}
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -346,29 +383,16 @@ class IMPORT_SCENE_OT_vengi_voxconvert(Operator, ImportHelper):
             return {'CANCELLED'}
         if not _require_gltf(self):
             return {'CANCELLED'}
-        self._tmpdir = tempfile.mkdtemp(prefix="vengi_")
-        tmp_out = os.path.join(self._tmpdir, "out.glb")
+        tmpdir = tempfile.mkdtemp(prefix="vengi_")
+        tmp_out = os.path.join(tmpdir, "out.glb")
         args = ["--input", self.filepath, "--output", tmp_out, "--force"]
         args += _cvar_set_args(context)
-        self._state = _ConversionState()
-        self._state.output_path = tmp_out
-        t = threading.Thread(target=_convert_thread, args=(exe, args, self._state))
-        t.daemon = True
-        t.start()
-        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
+        return _start_convert(self, context, exe, args, tmpdir, output_path=tmp_out)
 
     def modal(self, context, event):
-        if event.type != 'TIMER':
-            return {'PASS_THROUGH'}
-        if not self._state.done:
-            return {'PASS_THROUGH'}
-        context.window_manager.event_timer_remove(self._timer)
-        if not self._state.success:
-            self.report({'ERROR'}, "Conversion failed: " + self._state.error)
-            shutil.rmtree(self._tmpdir, ignore_errors=True)
-            return {'CANCELLED'}
+        result = _modal_convert(self, context, event)
+        if result is not None:
+            return result
         if not os.path.isfile(self._state.output_path):
             self.report({'ERROR'}, "Conversion produced no output file")
             shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -429,8 +453,8 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
             return {'CANCELLED'}
         if not _require_gltf(self):
             return {'CANCELLED'}
-        self._tmpdir = tempfile.mkdtemp(prefix="vengi_")
-        tmp_in = os.path.join(self._tmpdir, "scene.glb")
+        tmpdir = tempfile.mkdtemp(prefix="vengi_")
+        tmp_in = os.path.join(tmpdir, "scene.glb")
         try:
             bpy.ops.export_scene.gltf(**gltf_export_kwargs(
                 tmp_in,
@@ -441,7 +465,7 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
             ))
         except Exception as e:
             self.report({'ERROR'}, "glTF export failed: " + str(e)[:300])
-            shutil.rmtree(self._tmpdir, ignore_errors=True)
+            shutil.rmtree(tmpdir, ignore_errors=True)
             return {'CANCELLED'}
         args = ["--input", tmp_in, "--output", self.filepath, "--force"]
         if self.crop:
@@ -455,24 +479,13 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
         if self.filter_nodes:
             args += ["--filter", self.filter_nodes]
         args += _cvar_set_args(context)
-        self._state = _ConversionState()
-        t = threading.Thread(target=_convert_thread, args=(exe, args, self._state))
-        t.daemon = True
-        t.start()
-        self._timer = context.window_manager.event_timer_add(0.1, window=context.window)
-        context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
+        return _start_convert(self, context, exe, args, tmpdir)
 
     def modal(self, context, event):
-        if event.type != 'TIMER':
-            return {'PASS_THROUGH'}
-        if not self._state.done:
-            return {'PASS_THROUGH'}
-        context.window_manager.event_timer_remove(self._timer)
+        result = _modal_convert(self, context, event, error_prefix="Export failed: ")
+        if result is not None:
+            return result
         shutil.rmtree(self._tmpdir, ignore_errors=True)
-        if not self._state.success:
-            self.report({'ERROR'}, "Export failed: " + self._state.error)
-            return {'CANCELLED'}
         self.report({'INFO'}, "Exported via vengi-voxconvert")
         return {'FINISHED'}
 

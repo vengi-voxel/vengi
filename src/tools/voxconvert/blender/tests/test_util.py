@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "io_vengi_voxco
 from util import (
     FILTER_GLOB_MAX,
     WIN_VOXCONVERT_ASSET,
+    ConversionState,
     build_filter_glob,
     cvar_help,
     cvar_numeric_bounds,
@@ -30,8 +31,13 @@ from util import (
     int_enum_rna_items,
     is_relevant_cvar,
     parse_leading_json,
+    parse_progress_line,
     pick_windows_release_asset,
+    run_voxconvert,
     split_cvar_keys,
+    strip_ansi,
+    subprocess_hidden_kwargs,
+    subprocess_popen_kwargs,
     voxconvert_exe_name,
     EXPORT_PRIMARY_CVARS,
     IMPORT_PRIMARY_CVARS,
@@ -366,6 +372,128 @@ class TestIntEnumOverlay(unittest.TestCase):
         cvars = {"voxformat_meshmode": {"type": "int", "value": "2"}}
         op = types.SimpleNamespace(voxformat_meshmode="cubic")
         self.assertEqual(cvar_set_args(cvars, op), ["-set", "voxformat_meshmode", "0"])
+
+
+class TestProgressAndProcess(unittest.TestCase):
+    def test_strip_ansi(self):
+        self.assertEqual(strip_ansi(""), "")
+        self.assertEqual(strip_ansi(None), "")
+        self.assertEqual(strip_ansi("plain"), "plain")
+        self.assertEqual(strip_ansi("\033[31mERROR: boom\033[00m"), "ERROR: boom")
+        self.assertEqual(strip_ansi("\033[33mwarn\033[00m and \033[31merr\033[00m"), "warn and err")
+
+    def test_parse_progress_line(self):
+        self.assertIsNone(parse_progress_line(""))
+        self.assertIsNone(parse_progress_line("ERROR: failed"))
+        self.assertEqual(parse_progress_line("[----------]   0% load"), (0, "load"))
+        self.assertEqual(parse_progress_line("[##------]  25% save"), (25, "save"))
+        self.assertEqual(parse_progress_line("[##########] 100% load"), (100, "load"))
+        self.assertEqual(parse_progress_line("\r[####----]  42% mesh"), (42, "mesh"))
+        self.assertEqual(
+            parse_progress_line("[----------]   0% load\n[##------]  25% load"),
+            (25, "load"),
+        )
+
+    def test_subprocess_kwargs(self):
+        import subprocess as sp
+        import util as u
+
+        old = u.sys.platform
+        try:
+            u.sys.platform = "linux"
+            self.assertEqual(subprocess_hidden_kwargs(), {})
+            self.assertTrue(subprocess_popen_kwargs().get("start_new_session"))
+            u.sys.platform = "win32"
+            hidden = subprocess_hidden_kwargs()
+            self.assertEqual(hidden.get("creationflags"), getattr(sp, "CREATE_NO_WINDOW", 0x08000000))
+            self.assertNotIn("start_new_session", subprocess_popen_kwargs())
+        finally:
+            u.sys.platform = old
+
+    def _write_script(self, td, body):
+        path = os.path.join(td, "fake_voxconvert.py")
+        with open(path, "w") as f:
+            f.write(body)
+        return path
+
+    def test_run_voxconvert_progress_and_success(self):
+        script = (
+            "import sys\n"
+            "if '--progress' not in sys.argv:\n"
+            "    sys.stderr.write('missing --progress\\n')\n"
+            "    sys.exit(1)\n"
+            "sys.stderr.write('[----------]   0% load\\n')\n"
+            "sys.stderr.flush()\n"
+            "sys.stderr.write('[##------]  25% load\\n')\n"
+            "sys.stderr.flush()\n"
+            "sys.stderr.write('[##########] 100% load\\n')\n"
+            "sys.stderr.flush()\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            path = self._write_script(td, script)
+            state = ConversionState()
+            run_voxconvert(sys.executable, [path], state)
+            self.assertTrue(state.done)
+            self.assertTrue(state.success)
+            self.assertEqual(state.progress, 100)
+            self.assertEqual(state.progress_text, "load")
+
+    def test_run_voxconvert_strips_ansi_errors(self):
+        script = (
+            "import sys\n"
+            "sys.stderr.write('\\033[31mERROR: boom\\033[00m\\n')\n"
+            "sys.exit(1)\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            path = self._write_script(td, script)
+            state = ConversionState()
+            run_voxconvert(sys.executable, [path], state)
+            self.assertTrue(state.done)
+            self.assertFalse(state.success)
+            self.assertNotIn("\033", state.error)
+            self.assertIn("ERROR: boom", state.error)
+
+    def test_cancel_kills_subprocess(self):
+        import threading
+        import time
+
+        script = (
+            "import sys, time\n"
+            "sys.stderr.write('[----------]   0% wait\\n')\n"
+            "sys.stderr.flush()\n"
+            "time.sleep(30)\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            path = self._write_script(td, script)
+            state = ConversionState()
+            t = threading.Thread(target=run_voxconvert, args=(sys.executable, [path], state))
+            t.daemon = True
+            t.start()
+            deadline = time.time() + 5
+            while time.time() < deadline and state.proc is None:
+                time.sleep(0.05)
+            self.assertIsNotNone(state.proc)
+            pid = state.proc.pid
+            state.request_cancel()
+            t.join(timeout=10)
+            self.assertTrue(t.is_alive() is False)
+            self.assertTrue(state.done)
+            self.assertTrue(state.cancelled)
+            self.assertFalse(state.success)
+            try:
+                os.kill(pid, 0)
+                still_alive = True
+            except OSError:
+                still_alive = False
+            self.assertFalse(still_alive)
+
+    def test_late_cancel_keeps_success(self):
+        state = ConversionState()
+        state.done = True
+        state.success = True
+        state.request_cancel()
+        self.assertFalse(state.cancelled)
+        self.assertTrue(state.success)
 
 
 if __name__ == "__main__":
