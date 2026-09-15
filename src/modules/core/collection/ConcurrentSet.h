@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <unordered_set>
 
-namespace collection {
+namespace core {
 
 template<class Data>
 class ConcurrentSet {
