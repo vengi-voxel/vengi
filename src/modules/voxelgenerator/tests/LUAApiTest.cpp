@@ -5,6 +5,8 @@
 #include "voxelgenerator/LUAApi.h"
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
+#include "io/BufferedReadWriteStream.h"
+#include "json/JSON.h"
 #include "math/Bezier.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -1594,6 +1596,36 @@ TEST_F(LUAApiTest, testRemoveUnusedColors) {
 	scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
 	EXPECT_LT(node.palette().colorCount(), palette::PaletteMaxColors);
 	EXPECT_GE(node.palette().colorCount(), 1);
+}
+
+TEST_F(LUAApiTest, testLuaParameterEnumValues) {
+	core::DynamicArray<core::String> tokens;
+	luaParameterEnumValues("32, 64;128", tokens);
+	ASSERT_EQ(3u, tokens.size());
+	EXPECT_STREQ("32", tokens[0].c_str());
+	EXPECT_STREQ("64", tokens[1].c_str());
+	EXPECT_STREQ("128", tokens[2].c_str());
+	luaParameterEnumValues("", tokens);
+	EXPECT_TRUE(tokens.empty());
+}
+
+TEST_F(LUAApiTest, testScriptsJsonToStream) {
+	LUAApi g(_testApp->filesystem());
+	ASSERT_TRUE(g.init());
+	io::BufferedReadWriteStream stream;
+	ASSERT_TRUE(g.scriptsJsonToStream(stream));
+	ASSERT_TRUE(stream.writeUInt8('\0'));
+	ASSERT_NE(stream.getBuffer(), nullptr);
+	const core::String json((const char *)stream.getBuffer());
+	json::Json parsed = json::Json::parse(json);
+	ASSERT_TRUE(parsed.isValid()) << json.substr(0, 200).c_str();
+	ASSERT_TRUE(parsed.get("scripts").isArray());
+	EXPECT_TRUE(json.contains("\"name\":\"cover.lua\"")) << json.substr(0, 400).c_str();
+	EXPECT_TRUE(json.contains("\"valid\":true"));
+	EXPECT_TRUE(json.contains("\"name\":\"genland.lua\""));
+	EXPECT_TRUE(json.contains("\"enum\":[\"32\",\"64\",\"128\",\"256\",\"512\",\"1024\"]"));
+	EXPECT_TRUE(json.contains("\"type\":\"hexcolor\""));
+	g.shutdown();
 }
 
 } // namespace voxelgenerator

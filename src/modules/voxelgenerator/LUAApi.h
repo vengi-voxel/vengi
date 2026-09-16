@@ -68,6 +68,9 @@ struct LUAParameterDescription {
 	}
 };
 
+const char *luaParameterTypeName(LUAParameterType type);
+void luaParameterEnumValues(const core::String &enumValues, core::DynamicArray<core::String> &out);
+
 struct LUAScript {
 	core::String filename;
 	bool valid = false; // main() was found
@@ -144,6 +147,12 @@ public:
 	 * @return true if successful, false otherwise
 	 */
 	bool apiJsonToStream(io::WriteStream &stream) const;
+	/**
+	 * @brief Dump installed generator scripts as JSON for tools (voxconvert --print-scripts)
+	 * @param stream The stream to write the JSON to
+	 * @return true if successful, false otherwise
+	 */
+	bool scriptsJsonToStream(io::WriteStream &stream);
 };
 
 inline const core::String &LUAApi::error() const {

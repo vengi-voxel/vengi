@@ -67,7 +67,7 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 			}
 			case voxelgenerator::LUAParameterType::Enum: {
 				core::DynamicArray<core::String> tokens;
-				core::string::splitString(p.enumValues, tokens, ",");
+				voxelgenerator::luaParameterEnumValues(p.enumValues, tokens);
 				const auto iter = core::find(tokens.begin(), tokens.end(), str);
 				int selected = iter == tokens.end() ? 0 : (int)(iter - tokens.begin());
 				if (ImGui::ComboItems(p.name.c_str(), &selected, tokens)) {
@@ -77,7 +77,7 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 			}
 			case voxelgenerator::LUAParameterType::EnumMulti: {
 				core::DynamicArray<core::String> tokens;
-				core::string::splitString(p.enumValues, tokens, ",");
+				voxelgenerator::luaParameterEnumValues(p.enumValues, tokens);
 				ImGui::MultiSelectComboItems(p.name.c_str(), str, tokens);
 				break;
 			}

@@ -14,6 +14,7 @@
 #include "io/FilesystemArchive.h"
 #include "io/Stream.h"
 #include "io/StreamArchive.h"
+#include "json/JSON.h"
 #include "lauxlib.h"
 #include "math/Axis.h"
 #include "math/Random.h"
@@ -7621,6 +7622,99 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	_nargs = 3 + _argsInfo.size();
 
 	return true;
+}
+
+const char *luaParameterTypeName(LUAParameterType type) {
+	switch (type) {
+	case LUAParameterType::String:
+		return "string";
+	case LUAParameterType::Integer:
+		return "int";
+	case LUAParameterType::Float:
+		return "float";
+	case LUAParameterType::Boolean:
+		return "bool";
+	case LUAParameterType::ColorIndex:
+		return "colorindex";
+	case LUAParameterType::Enum:
+		return "enum";
+	case LUAParameterType::EnumMulti:
+		return "enummulti";
+	case LUAParameterType::File:
+		return "file";
+	case LUAParameterType::HexColor:
+		return "hexcolor";
+	case LUAParameterType::Max:
+		break;
+	}
+	return "string";
+}
+
+void luaParameterEnumValues(const core::String &enumValues, core::DynamicArray<core::String> &out) {
+	out.clear();
+	if (enumValues.empty()) {
+		return;
+	}
+	const core::String normalized = core::string::replaceAll(enumValues, core::String(";"), ",");
+	core::DynamicArray<core::String> values;
+	core::string::splitString(normalized, values, ",");
+	out.reserve(values.size());
+	for (core::String &v : values) {
+		v = v.trim();
+		if (!v.empty()) {
+			out.emplace_back(core::move(v));
+		}
+	}
+}
+
+static json::Json parameterToJson(const LUAParameterDescription &param) {
+	json::Json json = json::Json::object();
+	json.set("name", param.name);
+	json.set("type", luaParameterTypeName(param.type));
+	json.set("description", param.description);
+	if (param.type == LUAParameterType::Integer || param.type == LUAParameterType::ColorIndex) {
+		json.set("default", core::String::format("%i", (int)core::string::toFloat(param.defaultValue)));
+	} else {
+		json.set("default", param.defaultValue);
+	}
+	if (!param.enumValues.empty()) {
+		json::Json enums = json::Json::array();
+		core::DynamicArray<core::String> tokens;
+		luaParameterEnumValues(param.enumValues, tokens);
+		for (const core::String &v : tokens) {
+			enums.push(v);
+		}
+		json.set("enum", enums);
+	}
+	if (param.shouldClamp()) {
+		json.set("min", param.minValue);
+		json.set("max", param.maxValue);
+	}
+	return json;
+}
+
+bool LUAApi::scriptsJsonToStream(io::WriteStream &stream) {
+	json::Json root = json::Json::object();
+	json::Json scriptsJson = json::Json::array();
+	core::DynamicArray<LUAScript> scripts = listScripts();
+	for (LUAScript &script : scripts) {
+		reloadScriptParameters(script);
+		json::Json entry = json::Json::object();
+		entry.set("name", script.filename);
+		entry.set("valid", script.valid);
+		entry.set("description", script.desc);
+		json::Json parameters = json::Json::array();
+		for (const LUAParameterDescription &param : script.parameterDescription) {
+			parameters.push(parameterToJson(param));
+		}
+		entry.set("parameters", parameters);
+		scriptsJson.push(entry);
+	}
+	root.set("scripts", scriptsJson);
+	if (!stream.writeString(root.dump(), false)) {
+		return false;
+	}
+	return stream.writeUInt8('\n');
 }
 
 bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {

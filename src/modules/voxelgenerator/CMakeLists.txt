@@ -94,7 +94,7 @@ set(SRCS
 	LSystem.h LSystem.cpp
 	LUAApi.h LUAApi.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil voxelfont voxelformat noise commonlua scenegraph)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil voxelfont voxelformat noise commonlua scenegraph json)
 
 set(TEST_SRCS
 	tests/GenlandTest.cpp

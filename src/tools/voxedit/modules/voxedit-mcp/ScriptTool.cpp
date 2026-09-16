@@ -4,6 +4,7 @@
 
 #include "ScriptTool.h"
 #include "core/StringUtil.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxedit-util/network/protocol/LuaScriptExecMessage.h"
 
 namespace voxedit {
@@ -56,7 +57,7 @@ ScriptTool::ScriptTool(const voxedit::LuaScriptInfo &info) : Tool(toolName(info)
 			if (!param.enumValues.empty()) {
 				json::Json enumArray = json::Json::array();
 				core::DynamicArray<core::String> values;
-				core::string::splitString(param.enumValues, values, ";");
+				voxelgenerator::luaParameterEnumValues(param.enumValues, values);
 				for (const core::String &v : values) {
 					enumArray.push(v.c_str());
 				}
@@ -71,7 +72,7 @@ ScriptTool::ScriptTool(const voxedit::LuaScriptInfo &info) : Tool(toolName(info)
 				if (!param.enumValues.empty()) {
 					json::Json enumArray = json::Json::array();
 					core::DynamicArray<core::String> values;
-					core::string::splitString(param.enumValues, values, ";");
+					voxelgenerator::luaParameterEnumValues(param.enumValues, values);
 					for (const core::String &v : values) {
 						enumArray.push(v.c_str());
 					}

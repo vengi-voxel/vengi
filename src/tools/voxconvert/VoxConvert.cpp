@@ -226,17 +226,11 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (hasArg("--print-scripts")) {
-		Log::printf("{\"scripts\":[");
 		voxelgenerator::LUAApi scriptApi(filesystem());
-		const core::DynamicArray<voxelgenerator::LUAScript> &scripts = scriptApi.listScripts();
-		for (size_t i = 0; i < scripts.size(); ++i) {
-			if (i > 0) {
-				Log::printf(",");
-			}
-			Log::printf("{\"name\":\"%s\",\"valid\":%s}", scripts[i].filename.c_str(),
-						(scripts[i].valid ? "true" : "false"));
-		}
-		Log::printf("]}\n");
+		scriptApi.init();
+		io::StdoutWriteStream stream;
+		scriptApi.scriptsJsonToStream(stream);
+		scriptApi.shutdown();
 		return state;
 	}
 
