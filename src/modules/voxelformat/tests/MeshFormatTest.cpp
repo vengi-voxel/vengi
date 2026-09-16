@@ -16,6 +16,7 @@
 #include "video/ShapeBuilder.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/tests/AbstractFormatTest.h"
@@ -331,6 +332,28 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 	EXPECT_EQ(glm::vec3(1.5f, 0.5f, 0.5f), testMesh.savedPointCloud[1].position);
 	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[0].color);
 	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[1].color);
+}
+
+TEST_F(MeshFormatTest, testSaveWithNodeIdHole) {
+	scenegraph::SceneGraph sceneGraph;
+	{
+		scenegraph::SceneGraphNode empty(scenegraph::SceneGraphNodeType::Model);
+		empty.createVolume(voxel::Region(0, 1));
+		empty.setName("empty");
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(empty)));
+	}
+	{
+		scenegraph::SceneGraphNode filled(scenegraph::SceneGraphNodeType::Model);
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 3));
+		volume->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		filled.setVolume(volume);
+		filled.setName("filled");
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(filled)));
+	}
+	ASSERT_TRUE(sceneGraph.removeNode(1, false));
+	ASSERT_FALSE(sceneGraph.hasNode(1));
+	ASSERT_TRUE(sceneGraph.hasNode(2));
+	ASSERT_TRUE(helper_saveSceneGraph(sceneGraph, "test-nodeid-hole.obj"));
 }
 
 } // namespace voxelformat

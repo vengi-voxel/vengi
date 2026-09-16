@@ -1345,10 +1345,17 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	extractRange.setProgress(0.0f);
 
 	ChunkMeshes meshes;
-	meshes.resize(sceneGraph.nodes().size());
+	core::DynamicArray<int> modelNodeIds;
+	modelNodeIds.reserve(sceneGraph.nodes().size());
+	for (const auto &entry : sceneGraph.nodes()) {
+		if (entry->value.isAnyModelNode()) {
+			modelNodeIds.push_back(entry->value.id());
+		}
+	}
+	meshes.resize(modelNodeIds.size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
-	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, &meshes] (int start, int end) {
+	app::for_parallel(0, (int)modelNodeIds.size(), [&sceneGraph, type, &meshes, &modelNodeIds] (int start, int end) {
 		const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 		const bool optimizeMesh = core::getVar(cfg::VoxformatOptimize)->boolVal();
 		const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
@@ -1356,7 +1363,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
 		const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
 		for (int i = start; i < end; ++i) {
-			const scenegraph::SceneGraphNode &node = sceneGraph.node(i);
+			const int nodeId = modelNodeIds[i];
+			const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			if (!node.isAnyModelNode()) {
 				continue;
 			}
@@ -1378,7 +1386,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			if (!ctx.textureData.empty()) {
 				core::String texName = node.name();
 				if (texName.empty()) {
-					texName = core::String::format("texture%i", i);
+					texName = core::String::format("texture%i", nodeId);
 				}
 				texName = core::string::sanitizeFilename(texName);
 				texName += ".png";
