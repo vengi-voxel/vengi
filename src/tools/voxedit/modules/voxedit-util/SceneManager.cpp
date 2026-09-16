@@ -89,6 +89,7 @@
 
 #include "Config.h"
 #include "CommandCompleter.h"
+#include "3dprint/PrintCommands.h"
 
 namespace voxedit {
 
@@ -3230,6 +3231,24 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 	return newNodeId;
 }
 
+void SceneManager::onRegridComplete(const core::DynamicArray<int> &newCellIds,
+									const core::DynamicArray<int> &deletedSourceIds) {
+	for (int nodeId : deletedSourceIds) {
+		_sceneRenderer->removeNode(nodeId);
+	}
+	for (int nodeId : newCellIds) {
+		if (!_sceneGraph.hasNode(nodeId)) {
+			continue;
+		}
+		const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		_sceneRenderer->updateNodeRegion(nodeId, node.region());
+	}
+	if (!newCellIds.empty()) {
+		nodeActivate(newCellIds.back());
+	}
+	markDirty();
+}
+
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disconnect) {
 	core_trace_scoped(LoadSceneGraph);
 
@@ -3868,6 +3887,8 @@ void SceneManager::construct() {
 	_server.construct();
 	_client.construct();
 	_soundManager->construct();
+
+	printing::registerCommands(this);
 
 	command::Command::registerCommand("resizetoselection")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to resize"})
