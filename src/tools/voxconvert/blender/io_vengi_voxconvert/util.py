@@ -56,10 +56,10 @@ def cvar_rna_name(info, key):
 
 
 def cvar_help(info, key):
-    """Description text: description, then help, then the key."""
+    """Description text from --jsonconfig, otherwise the cvar key."""
     if not info:
         return key
-    return info.get("description") or info.get("help") or key
+    return info.get("description") or key
 
 
 def cvar_numeric_bounds(info):
@@ -93,65 +93,60 @@ def cvar_path_subtype(info):
 
 
 # ---------------------------------------------------------------------------
-# Settings grouping / int-as-enum overlays (FileDialogOptions labels)
+# Settings grouping from --jsonconfig (FormatConfig::writeConfigJson)
 # ---------------------------------------------------------------------------
-# Per-format load/save panels live in FileDialogOptions.cpp and are not cvar
-# metadata. Do not tag every cvar with format names. Until vengi exposes a
-# structured option map, blender shows a small always-on set plus Advanced.
+# load/save/mesh/image/rgb/all/primary/order, optional formats[] and value_titles[]
+# come from voxconvert. Only cvars with load or save metadata are FileDialogOptions
+# settings. Blender operators are not 1:1 with a single format:
+#   import   = volume load + mesh save (GLB preview)
+#   voxelize = mesh/image load + mesh save (GLB preview)
+#   export   = mesh load (GLB) + volume save (or mesh save when the target is a mesh)
 
-SKIP_CVAR_PREFIXES = ("app_", "metric_")
-KEEP_CVARS = ("core_colorreduction",)
-
-# ident must be a valid RNA identifier (not a leading digit).
-INT_ENUMS = {
-    "voxformat_meshmode": (
-        ("cubic", "0", "Cubes", "Cubic / MagicaVoxel-style cubes"),
-        ("marching_cubes", "1", "Marching cubes", "Smooth isosurface"),
-        ("binary", "2", "Binary", "Fast binary mesher"),
-        ("greedy_texture", "3", "Greedy texture", "Greedy meshing with a texture atlas"),
-    ),
-    "voxformat_voxelizemode": (
-        ("high_quality", "0", "High quality", "Accurate voxelization"),
-        ("fast", "1", "Fast", "Faster and uses less memory"),
-    ),
-}
-
-IMPORT_PRIMARY_CVARS = (
-    "voxformat_voxelsize",
-    "voxformat_meshmode",
-    "palette",
-    "core_colorreduction",
-    "voxformat_fillhollow",
-)
-
-EXPORT_PRIMARY_CVARS = (
-    "voxformat_voxelizemode",
-    "voxformat_fillhollow",
-    "palette",
-    "core_colorreduction",
-    "voxformat_savevisibleonly",
-)
+CVAR_OP_IMPORT = "import"
+CVAR_OP_VOXELIZE = "voxelize"
+CVAR_OP_EXPORT = "export"
+FORMAT_ALL_ID = "ALL"
+MAGICAVOXEL_FORMAT_NAME = "MagicaVoxel"
+GLTF_FORMAT_NAME = "GL Transmission Format"
 
 
-def is_relevant_cvar(key, info):
-    if key in KEEP_CVARS:
-        pass
-    elif key.startswith("core_"):
-        return False
-    elif any(key.startswith(p) for p in SKIP_CVAR_PREFIXES):
-        return False
+def is_relevant_cvar(info):
+    """True if --jsonconfig marked this cvar as a load/save format option."""
     if not info:
         return False
-    if info.get("flags", 0) & 1:
+    if info.get("readonly"):
         return False
     if info.get("type") == "unknown":
         return False
-    return True
+    return cvar_has_usage_meta(info)
 
 
-def int_enum_cli_value(key, cur):
+def _enum_ident_from_title(title, index):
+    ident = re.sub(r"[^a-z0-9]+", "_", (title or "").lower()).strip("_")
+    if not ident:
+        ident = "v%d" % index
+    if ident[0].isdigit():
+        ident = "v" + ident
+    return ident
+
+
+def int_enum_rows(info=None):
+    """Return (ident, cli, label, desc) rows from --jsonconfig value_titles."""
+    titles = (info or {}).get("value_titles")
+    if not titles:
+        return None
+    generated = []
+    for i, title in enumerate(titles):
+        if not title:
+            continue
+        ident = _enum_ident_from_title(title, i)
+        generated.append((ident, str(i), title, title))
+    return generated or None
+
+
+def int_enum_cli_value(cur, info=None):
     """Map a blender enum identifier to the numeric cvar string, or None."""
-    rows = INT_ENUMS.get(key)
+    rows = int_enum_rows(info)
     if not rows:
         return None
     s = str(cur)
@@ -161,8 +156,8 @@ def int_enum_cli_value(key, cur):
     return None
 
 
-def int_enum_ident_from_cli(key, cli_val):
-    rows = INT_ENUMS.get(key)
+def int_enum_ident_from_cli(cli_val, info=None):
+    rows = int_enum_rows(info)
     if not rows:
         return None
     s = str(cli_val).split(".")[0]
@@ -172,24 +167,148 @@ def int_enum_ident_from_cli(key, cli_val):
     return rows[0][0]
 
 
-def int_enum_rna_items(key):
-    rows = INT_ENUMS.get(key)
+def int_enum_rna_items(info=None):
+    rows = int_enum_rows(info)
     if not rows:
         return None
     return [(ident, label, desc) for ident, _cli, label, desc in rows]
 
 
-def split_cvar_keys(keys, primary):
-    """Return (primary_in_order, advanced_sorted) for keys that exist."""
-    keyset = set(keys)
-    prim = [k for k in primary if k in keyset]
-    adv = sorted(k for k in keys if k not in primary)
-    return prim, adv
+def cvar_order(info):
+    """Stable UI order from FormatConfig table index, or a large fallback."""
+    if not info:
+        return 10 ** 9
+    order = info.get("order")
+    if isinstance(order, int):
+        return order
+    try:
+        return int(order)
+    except (TypeError, ValueError):
+        return 10 ** 9
 
 
-def format_cvar_cli_value(typ, cur, key=None):
+def split_cvar_keys(keys, cvars=None, skip=()):
+    """Return (primary, format_specific, advanced) using --jsonconfig flags.
+
+    primary: primary=true
+    format_specific: formats[] (already filtered to the active format)
+    advanced: remaining, in FormatConfig order
+    """
+    skipset = set(skip or ())
+    cvars = cvars or {}
+    kept = [k for k in keys if k not in skipset]
+    prim = []
+    fmt = []
+    adv = []
+    for key in kept:
+        info = cvars.get(key) or {}
+        if info.get("primary"):
+            prim.append(key)
+        elif info.get("formats"):
+            fmt.append(key)
+        else:
+            adv.append(key)
+    prim.sort(key=lambda k: cvar_order(cvars.get(k)))
+    fmt.sort(key=lambda k: cvar_order(cvars.get(k)))
+    adv.sort(key=lambda k: cvar_order(cvars.get(k)))
+    return prim, fmt, adv
+
+
+def format_is_mesh(formats, format_id):
+    fmt = find_format(formats, format_id)
+    return bool(fmt and fmt.get("mesh"))
+
+
+def gltf_format_name(formats):
+    """FormatDescription.name of the glTF entry from --print-formats."""
+    for fmt in formats or []:
+        if fmt.get("name") == GLTF_FORMAT_NAME:
+            return GLTF_FORMAT_NAME
+    return None
+
+
+def resolve_format_name(formats, format_id, filepath=None, all_id=None):
+    """Selected format's --print-formats name, or infer from filepath when ALL."""
+    if all_id is None:
+        all_id = FORMAT_ALL_ID
+    if format_id and format_id != all_id:
+        fmt = find_format(formats, format_id)
+        if fmt:
+            return fmt.get("name")
+    if filepath:
+        for fmt in formats or []:
+            if path_matches_extensions(filepath, fmt.get("extensions")):
+                return fmt.get("name")
+    return None
+
+
+def cvar_has_usage_meta(info):
+    return bool(info) and ("load" in info or "save" in info)
+
+
+def cvar_applies_to_format(info, format_name):
+    """True if the cvar is generic, or format_name is listed in formats[]."""
+    names = (info or {}).get("formats") or []
+    if not names:
+        return True
+    if not format_name:
+        return False
+    return format_name in names
+
+
+def cvar_allowed_for_op(info, op, export_mesh=False, load_format=None, save_format=None):
+    """Whether a --jsonconfig entry applies to a Blender operator.
+
+    Import = volume load + mesh save. Voxelize = mesh/image load + mesh save.
+    Export = mesh load + volume save (or mesh save when the target is a mesh).
+    Format-specific cvars (formats[]) must match the load or save format name.
+    """
+    if not cvar_has_usage_meta(info):
+        return False
+    load = bool(info.get("load"))
+    save = bool(info.get("save"))
+    mesh = bool(info.get("mesh"))
+    image = bool(info.get("image"))
+    rgb = bool(info.get("rgb"))
+    all_fmt = bool(info.get("all"))
+
+    if load and cvar_applies_to_format(info, load_format):
+        if op == CVAR_OP_IMPORT:
+            if all_fmt or rgb or (not mesh and not image):
+                return True
+        elif op == CVAR_OP_VOXELIZE:
+            if all_fmt or mesh or image or rgb:
+                return True
+        elif all_fmt or mesh or rgb:
+            return True
+    if save and cvar_applies_to_format(info, save_format):
+        if op == CVAR_OP_IMPORT or op == CVAR_OP_VOXELIZE:
+            if all_fmt or mesh:
+                return True
+        else:
+            if mesh:
+                return bool(export_mesh)
+            return True
+    return False
+
+
+def skip_cvars_not_allowed(keys, op, export_mesh=False, cvars=None, load_format=None, save_format=None):
+    if not cvars:
+        return ()
+    if not any(cvar_has_usage_meta(cvars.get(key)) for key in keys):
+        return ()
+    return tuple(
+        k
+        for k in keys
+        if not cvar_allowed_for_op(
+            cvars.get(k), op, export_mesh, load_format=load_format, save_format=save_format
+        )
+    )
+
+
+def format_cvar_cli_value(typ, cur, info=None):
     """Return the voxconvert -set value string for a current operator value."""
-    mapped = int_enum_cli_value(key, cur)
+    mapped = int_enum_cli_value(cur, info)
     if mapped is not None:
         return mapped
     if typ == "boolean":
@@ -209,9 +328,9 @@ def format_cvar_cli_value(typ, cur, key=None):
     return str(cur)
 
 
-def cvar_value_changed(typ, cur, default_str, key=None):
+def cvar_value_changed(typ, cur, default_str, info=None):
     """True if the operator value differs from the --jsonconfig default."""
-    mapped = int_enum_cli_value(key, cur)
+    mapped = int_enum_cli_value(cur, info)
     if mapped is not None:
         cur = mapped
         typ = "int"
@@ -238,20 +357,23 @@ def cvar_value_changed(typ, cur, default_str, key=None):
     return str(cur) != str(default_str)
 
 
-def cvar_set_args(cvars, op):
+def cvar_set_args(cvars, op, skip_keys=None):
     """Build -set key value CLI args for cvars that differ from defaults."""
     args = []
     if not cvars:
         return args
+    skip = set(skip_keys or ())
     for key, info in cvars.items():
+        if key in skip:
+            continue
         if not hasattr(op, key):
             continue
         cur = getattr(op, key)
         typ = info.get("type", "string")
         default_str = info.get("value", "")
-        if not cvar_value_changed(typ, cur, default_str, key=key):
+        if not cvar_value_changed(typ, cur, default_str, info=info):
             continue
-        args += ["-set", key, format_cvar_cli_value(typ, cur, key=key)]
+        args += ["-set", key, format_cvar_cli_value(typ, cur, info=info)]
     return args
 
 
@@ -345,10 +467,56 @@ class ConversionState:
 
 
 def run_command(exe, args, timeout=10):
-    """Short-lived voxconvert invocation (jsonconfig / print-formats)."""
+    """Short-lived voxconvert invocation (jsonconfig / print-formats / version)."""
     kw = subprocess_hidden_kwargs()
     p = subprocess.run([exe] + list(args), capture_output=True, text=True, timeout=timeout, **kw)
     return p.stdout, p.stderr, p.returncode
+
+
+REQUIRED_VOXCONVERT_VERSION = (0, 6, 0)
+_VERSION_RE = re.compile(
+    r"(?:^|[\s:])(?:vengi-)?voxconvert(?:\.exe)?\s+(\d+)\.(\d+)\.(\d+)",
+    re.IGNORECASE,
+)
+
+
+def parse_voxconvert_version(text):
+    """Parse major.minor.patch from `vengi-voxconvert --version` after the binary name."""
+    m = _VERSION_RE.search(strip_ansi(text or ""))
+    if not m:
+        return None
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+
+def format_voxconvert_version(ver):
+    if not ver:
+        return ""
+    return "%d.%d.%d" % tuple(ver)[:3]
+
+
+def voxconvert_version_atleast(ver, required=None):
+    """True if ver is at least required (SDL_VERSION_ATLEAST)."""
+    if ver is None:
+        return False
+    if required is None:
+        required = REQUIRED_VOXCONVERT_VERSION
+    return tuple(ver)[:3] >= tuple(required)[:3]
+
+
+def check_voxconvert_version(exe):
+    """Return (version, error). error is empty when version is REQUIRED or newer."""
+    required = format_voxconvert_version(REQUIRED_VOXCONVERT_VERSION)
+    if not exe or not os.path.isfile(exe):
+        return None, "vengi-voxconvert not found. Set the path in addon preferences."
+    out, err, _rc = run_command(exe, ["--version"])
+    ver = parse_voxconvert_version((out or "") + "\n" + (err or ""))
+    if ver is None:
+        return None, "Could not parse vengi-voxconvert --version (need %s or newer)" % required
+    if not voxconvert_version_atleast(ver):
+        return ver, "vengi-voxconvert %s or newer required, found %s" % (
+            required, format_voxconvert_version(ver)
+        )
+    return ver, ""
 
 
 def run_voxconvert(exe, args, state, timeout=600):
@@ -458,6 +626,236 @@ def parse_leading_json(text):
         return json.loads(text)
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------------------
+# --print-formats: per-format enum (name + extensions + save + mesh)
+# ---------------------------------------------------------------------------
+# Import lists voxel/volume formats only (not mesh). Mesh/image files
+# go through a separate voxelize operator (--print-formats "mesh" flag + images[]).
+
+_IDENT_UNSAFE_RE = re.compile(r"[^a-z0-9_]+")
+
+ROTATE_ITEMS = (
+    ("NONE", "None", "No extra rotation. MagicaVoxel Z-up is already mapped through vengi Y-up and glTF to Blender Z-up"),
+    ("x", "X +90", "Rotate 90 degrees around X (--rotate x)"),
+    ("y", "Y +90", "Rotate 90 degrees around Y (--rotate y)"),
+    ("z", "Z +90", "Rotate 90 degrees around Z (--rotate z)"),
+    ("x_180", "X 180", "Rotate 180 degrees around X (--rotate x:180)"),
+    ("y_180", "Y 180", "Rotate 180 degrees around Y (--rotate y:180)"),
+    ("z_180", "Z 180", "Rotate 180 degrees around Z (--rotate z:180)"),
+    ("x_270", "X -90", "Rotate 270 degrees around X (--rotate x:270)"),
+    ("y_270", "Y -90", "Rotate 270 degrees around Y (--rotate y:270)"),
+    ("z_270", "Z -90", "Rotate 270 degrees around Z (--rotate z:270)"),
+)
+ROTATE_CLI = {
+    "NONE": None,
+    "x": "x",
+    "y": "y",
+    "z": "z",
+    "x_180": "x:180",
+    "y_180": "y:180",
+    "z_180": "z:180",
+    "x_270": "x:270",
+    "y_270": "y:270",
+    "z_270": "z:270",
+}
+MIRROR_ITEMS = (
+    ("NONE", "None", "No mirroring"),
+    ("x", "X", "Mirror on X (--mirror x)"),
+    ("y", "Y", "Mirror on Y (--mirror y)"),
+    ("z", "Z", "Mirror on Z (--mirror z)"),
+)
+
+
+def format_ident(name, used):
+    """Stable RNA identifier from a --print-formats name."""
+    base = _IDENT_UNSAFE_RE.sub("_", (name or "").lower()).strip("_")
+    if not base:
+        base = "fmt"
+    if base[0].isdigit():
+        base = "f_" + base
+    ident = base
+    n = 2
+    while ident in used:
+        ident = "%s_%d" % (base, n)
+        n += 1
+    used.add(ident)
+    return ident
+
+
+def _entries_from_group(raw_list, used):
+    out = []
+    for raw in raw_list or []:
+        name = raw.get("name") or ""
+        exts = [e for e in (raw.get("extensions") or []) if e]
+        ident = format_ident(name, used)
+        out.append({
+            "id": ident,
+            "name": name or ident,
+            "extensions": exts,
+            "save": bool(raw.get("save")),
+            "mesh": bool(raw.get("mesh")),
+        })
+    return out
+
+
+def parse_print_formats(data):
+    """Split --print-formats JSON using the mesh/save flags voxconvert already emits.
+
+    volume: voxels without mesh (MagicaVoxel, Qubicle, ...)
+    voxelize: voxels with mesh plus images[] (obj, glb, png, md2, ... )
+    saveable: voxels with save
+    """
+    used = set([FORMAT_ALL_ID])
+    voxels = _entries_from_group((data or {}).get("voxels"), used)
+    images = _entries_from_group((data or {}).get("images"), used)
+    volume = [f for f in voxels if not f["mesh"]]
+    mesh = [f for f in voxels if f["mesh"]]
+    saveable = [f for f in voxels if f["save"]]
+    return {
+        "volume": volume,
+        "saveable": saveable,
+        "voxelize": mesh + images,
+    }
+
+
+def find_format(formats, format_id):
+    for fmt in formats or []:
+        if fmt.get("id") == format_id:
+            return fmt
+    return None
+
+
+def format_enum_items(formats, include_all=True, all_label="All formats"):
+    """RNA EnumProperty items from parsed format dicts."""
+    items = []
+    if include_all:
+        items.append((FORMAT_ALL_ID, all_label, "Do not filter by a single format"))
+    for fmt in formats or []:
+        exts = [e for e in (fmt.get("extensions") or []) if e and "." not in e]
+        shown = ", ".join("." + e for e in exts[:3])
+        label = "%s (%s)" % (fmt["name"], shown) if shown else fmt["name"]
+        items.append((fmt["id"], label, fmt.get("name") or fmt["id"]))
+    if not items:
+        items.append((FORMAT_ALL_ID, all_label, "Do not filter by a single format"))
+    return items
+
+
+def format_filter_glob(formats, format_id, all_id=FORMAT_ALL_ID):
+    """File-browser glob for a format id. ALL joins every extension (or *.* if too long)."""
+    if format_id == all_id or not format_id:
+        exts = []
+        for fmt in formats or []:
+            exts.extend(fmt.get("extensions") or [])
+        return build_filter_glob(exts)
+    fmt = find_format(formats, format_id)
+    if not fmt:
+        return "*.*"
+    return build_filter_glob(fmt.get("extensions") or [])
+
+
+def format_filename_ext(formats, format_id, all_id=FORMAT_ALL_ID):
+    """Primary suffix for ExportHelper, or empty for ALL."""
+    if format_id == all_id or not format_id:
+        return ""
+    fmt = find_format(formats, format_id)
+    if not fmt:
+        return ""
+    for e in fmt.get("extensions") or []:
+        if e and "." not in e:
+            return "." + e
+    if fmt.get("extensions"):
+        return "." + fmt["extensions"][0]
+    return ""
+
+
+def default_save_format_id(formats, current_id=None):
+    """Prefer the current format, else MagicaVoxel, else the first saveable format."""
+    if current_id and current_id != FORMAT_ALL_ID and find_format(formats, current_id):
+        return current_id
+    for fmt in formats or []:
+        if fmt.get("name") == MAGICAVOXEL_FORMAT_NAME:
+            return fmt["id"]
+    if formats:
+        return formats[0]["id"]
+    return FORMAT_ALL_ID
+
+
+def ensure_filepath_ext(filepath, filename_ext):
+    """Replace or append filename_ext (ExportHelper / file-browser filename)."""
+    if not filepath or not filename_ext:
+        return filepath
+    desired = filename_ext if filename_ext.startswith(".") else "." + filename_ext
+    directory, name = os.path.split(filepath)
+    if not name:
+        return filepath
+    stem, ext = os.path.splitext(name)
+    if stem.startswith(".") and not ext:
+        stem, ext = "", stem
+    if ext.lower() == desired.lower():
+        return filepath
+    new_name = stem + desired
+    if directory:
+        return os.path.join(directory, new_name)
+    return new_name
+
+
+def sync_filename_for_format(filename, formats, format_id):
+    """Replace the filename suffix with the selected save format's extension."""
+    ext = format_filename_ext(formats, format_id)
+    if not ext:
+        return filename
+    return ensure_filepath_ext(filename, ext)
+
+
+def operator_idnames_match(bl_idname, dotted, rna):
+    """True if bl_idname is the dotted or RNA form, including a dotted extension prefix."""
+    if not bl_idname:
+        return False
+    if bl_idname in (dotted, rna):
+        return True
+    return bl_idname.endswith("." + dotted) or bl_idname.endswith("." + rna)
+
+
+def path_matches_extensions(path, extensions):
+    name = os.path.basename(path or "").lower()
+    if not name:
+        return False
+    for ext in extensions or []:
+        e = (ext or "").lower().lstrip(".")
+        if not e:
+            continue
+        if name.endswith("." + e):
+            return True
+    return False
+
+
+def path_allowed_for_format(path, formats, format_id, all_id=FORMAT_ALL_ID):
+    """True if path's suffix matches the selected format (or any format when ALL)."""
+    if format_id == all_id or not format_id:
+        return any(path_matches_extensions(path, f.get("extensions")) for f in (formats or []))
+    fmt = find_format(formats, format_id)
+    if not fmt:
+        return False
+    return path_matches_extensions(path, fmt.get("extensions"))
+
+
+def import_transform_args(rotate="NONE", mirror="NONE", scale=1.0):
+    """CLI args for --rotate / --mirror / voxformat_scale."""
+    args = []
+    rot = ROTATE_CLI.get(rotate, rotate)
+    if rot and rot != "NONE":
+        args += ["--rotate", rot]
+    if mirror and mirror != "NONE":
+        args += ["--mirror", mirror]
+    try:
+        scale_f = float(scale)
+    except (TypeError, ValueError):
+        scale_f = 1.0
+    if abs(scale_f - 1.0) > 1e-6:
+        args += ["-set", "voxformat_scale", str(scale_f)]
+    return args
 
 
 # ---------------------------------------------------------------------------
@@ -605,7 +1003,6 @@ def find_voxconvert(
     extra_dirs=None,
     path_env=None,
     system=None,
-    cwd=None,
     program_files=None,
     program_files_x86=None,
     user_install_dir=None,
@@ -614,15 +1011,13 @@ def find_voxconvert(
 ):
     """Locate vengi-voxconvert the way VoxConvertUI/sysFindBinary does, plus OS paths.
 
-    Search order:
-    1. cwd
-    2. PATH (shutil.which)
-    3. sibling to the addon folder, and the addon folder itself
-    4. user install dir (Windows download target)
-    5. OS-specific: Program Files, /usr/bin, Mac .app bundle
+    Search order (cwd is not searched; a random binary there is not the install):
+    1. PATH (shutil.which)
+    2. sibling to the addon folder, and the addon folder itself
+    3. user install dir (Windows download target)
+    4. OS-specific: Program Files, /usr/bin, Mac .app bundle
     """
     system = system or sys.platform
-    cwd = os.getcwd() if cwd is None else cwd
     extra_dirs = list(extra_dirs or [])
 
     def _first_in(dirs):
@@ -638,11 +1033,6 @@ def find_voxconvert(
             if located:
                 return located
         return ""
-
-    # sysFindBinary: cwd, then PATH
-    found = _first_in([cwd] if cwd else [])
-    if found:
-        return found
 
     which_fn = which if which is not None else shutil.which
     which_kwargs = {}

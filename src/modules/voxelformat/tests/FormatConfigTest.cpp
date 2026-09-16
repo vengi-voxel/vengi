@@ -86,6 +86,18 @@ TEST_F(FormatConfigTest, testMeshSaveCapabilities) {
 	EXPECT_EQ(FormatConfig::meshSaveSupportsColor(STLFormat::format()),
 			  FormatConfig::meshSaveSupportsTexCoords(STLFormat::format()));
 	EXPECT_TRUE(FormatConfig::meshSaveSupportsTexCoords(OBJFormat::format()));
+
+	const FormatVarMeta *quads = FormatConfig::findVarMeta(cfg::VoxformatQuads);
+	ASSERT_NE(quads, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*quads, true, OBJFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*quads, true, PLYFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*quads, true, GLTFFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*quads, true, STLFormat::format()));
+
+	const FormatVarMeta *withColor = FormatConfig::findVarMeta(cfg::VoxformatWithColor);
+	ASSERT_NE(withColor, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*withColor, true, GLTFFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*withColor, true, STLFormat::format()));
 }
 
 TEST_F(FormatConfigTest, testAppliesToFormatSpecific) {
@@ -171,6 +183,25 @@ TEST_F(FormatConfigTest, testWriteConfigJsonExtra) {
 	EXPECT_NE(strstr(binvoxJson, "\"formats\": [\"BinVox\"]"), nullptr);
 	EXPECT_NE(strstr(binvoxJson, "\"primary\": false"), nullptr);
 	EXPECT_NE(strstr(binvoxJson, "Binvox 1 (white)"), nullptr);
+
+	io::BufferedReadWriteStream quadsStream;
+	FormatConfig::writeConfigJson(quadsStream, core::getVar(cfg::VoxformatQuads));
+	ASSERT_TRUE(quadsStream.writeUInt8(0));
+	const char *quadsJson = (const char *)quadsStream.getBuffer();
+	ASSERT_NE(quadsJson, nullptr);
+	EXPECT_NE(strstr(quadsJson, "\"formats\": ["), nullptr);
+	EXPECT_NE(strstr(quadsJson, "Wavefront Object"), nullptr);
+	EXPECT_NE(strstr(quadsJson, "Polygon File Format"), nullptr);
+	EXPECT_EQ(strstr(quadsJson, "GL Transmission Format"), nullptr);
+	EXPECT_EQ(strstr(quadsJson, "Standard Triangle Language"), nullptr);
+
+	io::BufferedReadWriteStream colorStream;
+	FormatConfig::writeConfigJson(colorStream, core::getVar(cfg::VoxformatWithColor));
+	ASSERT_TRUE(colorStream.writeUInt8(0));
+	const char *colorJson = (const char *)colorStream.getBuffer();
+	ASSERT_NE(colorJson, nullptr);
+	EXPECT_NE(strstr(colorJson, "GL Transmission Format"), nullptr);
+	EXPECT_EQ(strstr(colorJson, "Standard Triangle Language"), nullptr);
 }
 
 TEST_F(FormatConfigTest, testImageSaveTypeAllowsThumbnail) {

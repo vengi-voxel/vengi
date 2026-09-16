@@ -437,6 +437,24 @@ bool FormatConfig::meshSaveSupportsTexCoords(const io::FormatDescription &desc) 
 	return meshSaveSupportsColor(desc);
 }
 
+static bool meshSaveCvarAllowed(const FormatVarMeta &meta, const io::FormatDescription &desc) {
+	if (!strcmp(meta.name, cfg::VoxformatQuads)) {
+		return FormatConfig::meshSaveSupportsQuads(desc);
+	}
+	if (!strcmp(meta.name, cfg::VoxformatWithColor) || !strcmp(meta.name, cfg::VoxformatColorAsFloat)) {
+		return FormatConfig::meshSaveSupportsColor(desc);
+	}
+	if (!strcmp(meta.name, cfg::VoxformatWithtexcoords)) {
+		return FormatConfig::meshSaveSupportsTexCoords(desc);
+	}
+	return true;
+}
+
+static bool meshSaveCvarRestrictsFormats(const FormatVarMeta &meta) {
+	return !strcmp(meta.name, cfg::VoxformatQuads) || !strcmp(meta.name, cfg::VoxformatWithColor) ||
+		   !strcmp(meta.name, cfg::VoxformatColorAsFloat) || !strcmp(meta.name, cfg::VoxformatWithtexcoords);
+}
+
 bool FormatConfig::appliesTo(const FormatVarMeta &meta, bool save, const io::FormatDescription &desc) {
 	if (save) {
 		if ((meta.flags & FormatCVarFlag_Save) == 0u) {
@@ -463,6 +481,9 @@ bool FormatConfig::appliesTo(const FormatVarMeta &meta, bool save, const io::For
 	}
 
 	if ((meta.flags & FormatCVarFlag_Mesh) && isMeshFormat(desc)) {
+		if (save) {
+			return meshSaveCvarAllowed(meta, desc);
+		}
 		return true;
 	}
 	if ((meta.flags & FormatCVarFlag_Image) && isImageFormat(desc)) {
@@ -508,6 +529,20 @@ void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &
 			}
 			first = false;
 			stream.writeStringFormat(false, "\"%s\"", meta->formats[i]->name.c_str());
+		}
+		stream.writeString("]", false);
+	} else if (meshSaveCvarRestrictsFormats(*meta)) {
+		stream.writeString(",\"formats\": [", false);
+		bool first = true;
+		for (const io::FormatDescription *desc = voxelSave(); desc->valid(); ++desc) {
+			if (!isMeshFormat(*desc) || !meshSaveCvarAllowed(*meta, *desc)) {
+				continue;
+			}
+			if (!first) {
+				stream.write(",", 1);
+			}
+			first = false;
+			stream.writeStringFormat(false, "\"%s\"", desc->name.c_str());
 		}
 		stream.writeString("]", false);
 	}

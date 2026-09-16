@@ -1,99 +1,81 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Blender smoke test for the vengi-voxconvert addon helpers.
+"""Optional live checks.
 
-Run with:
   blender --background --factory-startup --python-exit-code 1 --python blender_smoke.py -- /path/to/vengi-voxconvert
-
-Also collected by unittest discover. Tests that need bpy skip when it is missing.
 """
 
 import os
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "io_vengi_voxconvert"))
 
 from util import (  # noqa: E402
     GLTF_ADDON_MODULES,
+    REQUIRED_VOXCONVERT_VERSION,
     ensure_gltf_addon,
-    find_voxconvert,
     gltf_export_kwargs,
     gltf_export_rna_prop_names,
     parse_leading_json,
+    parse_print_formats,
+    parse_voxconvert_version,
     run_command,
+    voxconvert_version_atleast,
 )
 
 
-def _cli_voxconvert():
+def _exe():
     if "--" in sys.argv:
         rest = sys.argv[sys.argv.index("--") + 1 :]
         if rest:
             return rest[0]
-    env = os.environ.get("VOXCONVERT_BIN", "")
-    if env:
-        return env
-    for a in sys.argv[1:]:
-        if a.endswith("vengi-voxconvert") or a.endswith("vengi-voxconvert.exe"):
-            return a
-    return ""
+    return os.environ.get("VOXCONVERT_BIN", "")
 
 
-class TestMissingExe(unittest.TestCase):
-    def test_empty_search_returns_empty(self):
-        import tempfile
+class TestLive(unittest.TestCase):
+    def test_print_formats_and_jsonconfig(self):
+        exe = _exe()
+        self.assertTrue(exe and os.path.isfile(exe), "vengi-voxconvert not given")
+        out, err, _rc = run_command(exe, ["--version"])
+        ver = parse_voxconvert_version((out or "") + "\n" + (err or ""))
+        self.assertTrue(
+            voxconvert_version_atleast(ver),
+            "need vengi-voxconvert %s or newer, got %s" % (REQUIRED_VOXCONVERT_VERSION, ver),
+        )
+        formats = parse_leading_json(run_command(exe, ["--print-formats"], timeout=30)[0])
+        self.assertTrue(formats and formats.get("voxels"))
+        self.assertTrue(parse_print_formats(formats)["volume"])
+        cfg = parse_leading_json(run_command(exe, ["--jsonconfig"], timeout=30)[0])
+        mesh = (cfg or {}).get("voxformat_meshmode") or {}
+        self.assertTrue(mesh.get("save"))
+        self.assertTrue(mesh.get("primary"))
+        self.assertIn("Cubes", mesh.get("value_titles") or [])
+        quads = (cfg or {}).get("voxformat_quads") or {}
+        self.assertIn("Wavefront Object", quads.get("formats") or [])
+        self.assertNotIn("GL Transmission Format", quads.get("formats") or [])
 
-        with tempfile.TemporaryDirectory() as td:
-            self.assertEqual(
-                find_voxconvert(
-                    addon_dir=td,
-                    cwd=td,
-                    path_env=td,
-                    which=lambda *a, **k: None,
-                    use_well_known=False,
-                    system="Linux",
-                ),
-                "",
-            )
-
-
-class TestPrintFormatsParse(unittest.TestCase):
-    def test_parse_real_binary_if_given(self):
-        exe = _cli_voxconvert()
-        if not exe or not os.path.isfile(exe):
-            exe = find_voxconvert(use_well_known=True)
-        if not exe or not os.path.isfile(exe):
-            self.skipTest("vengi-voxconvert not available")
-        out, err, _rc = run_command(exe, ["--print-formats"], timeout=30)
-        data = parse_leading_json(out or err)
-        self.assertIsNotNone(data, "failed to parse --print-formats JSON")
-        self.assertIn("voxels", data)
-        self.assertTrue(data["voxels"])
-        first = data["voxels"][0]
-        self.assertIn("extensions", first)
-        self.assertIn("save", first)
-
-
-class TestGltfOperatorKwargs(unittest.TestCase):
-    def test_live_rna(self):
+    def test_gltf_rna(self):
         try:
             import addon_utils
             import bpy
         except ImportError:
-            self.skipTest("bpy not available (run under blender --background --python)")
+            self.skipTest("bpy not available")
         ok, msg = ensure_gltf_addon(addon_utils, bpy)
         self.assertTrue(ok, msg)
         names = gltf_export_rna_prop_names(bpy)
-        self.assertTrue(names, "export_scene.gltf RNA is empty after enabling %s" % (GLTF_ADDON_MODULES,))
-        kw = gltf_export_kwargs("/tmp/out.glb", blender_version=bpy.app.version, rna_prop_names=names)
-        self.assertEqual(kw["export_format"], "GLB")
+        self.assertTrue(names, "empty glTF RNA after enabling %s" % (GLTF_ADDON_MODULES,))
+        kw = gltf_export_kwargs(
+            os.path.join(tempfile.gettempdir(), "out.glb"),
+            blender_version=bpy.app.version,
+            rna_prop_names=names,
+        )
         for key in kw:
-            if key == "filepath":
-                continue
-            self.assertIn(key, names, "glTF kwarg %s is not a property of this Blender" % key)
+            if key != "filepath":
+                self.assertIn(key, names)
 
 
 if __name__ == "__main__":
-    argv = [sys.argv[0]]
-    result = unittest.main(argv=argv, exit=False)
+    result = unittest.main(argv=[sys.argv[0]], exit=False)
     sys.exit(0 if result.result.wasSuccessful() else 1)

@@ -1898,9 +1898,6 @@ void App::writeConfigJson(io::WriteStream &stream) const {
 			stream.writeString("]", false);
 		}
 
-		if (!var->description().empty()) {
-			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->description().c_str());
-		}
 		writeConfigJsonExtra(stream, var);
 		stream.writeString("}", false);
 	});
