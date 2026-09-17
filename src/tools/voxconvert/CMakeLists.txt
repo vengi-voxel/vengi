@@ -32,21 +32,28 @@ endif()
 set_tests_properties(shelltests-${PROJECT_NAME} PROPERTIES DEPENDS ${PROJECT_NAME})
 
 find_program(VOXCONVERT_PYTHON_EXECUTABLE NAMES python3 python)
-if (VOXCONVERT_PYTHON_EXECUTABLE)
+if (NOT EMSCRIPTEN AND VOXCONVERT_PYTHON_EXECUTABLE)
 	add_test(NAME tests-${PROJECT_NAME}-blender-addon
 		COMMAND ${VOXCONVERT_PYTHON_EXECUTABLE} -m unittest discover -s "${CMAKE_CURRENT_SOURCE_DIR}/blender/tests" -v
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/blender/tests
 	)
+	set_tests_properties(tests-${PROJECT_NAME}-blender-addon PROPERTIES
+		DEPENDS ${PROJECT_NAME}
+		ENVIRONMENT "VOXCONVERT_BIN=$<TARGET_FILE:${PROJECT_NAME}>"
+	)
 endif()
 
 find_program(BLENDER_EXECUTABLE NAMES blender blender.exe)
-if (BLENDER_EXECUTABLE)
+if (NOT EMSCRIPTEN AND BLENDER_EXECUTABLE)
 	add_test(NAME tests-${PROJECT_NAME}-blender-smoke
 		COMMAND ${BLENDER_EXECUTABLE} --background --factory-startup --python-exit-code 1
-			--python "${CMAKE_CURRENT_SOURCE_DIR}/blender/tests/blender_smoke.py"
+			--python "${CMAKE_CURRENT_SOURCE_DIR}/blender/tests/test_smoke.py"
 			-- $<TARGET_FILE:${PROJECT_NAME}>
 	)
-	set_tests_properties(tests-${PROJECT_NAME}-blender-smoke PROPERTIES DEPENDS ${PROJECT_NAME})
+	set_tests_properties(tests-${PROJECT_NAME}-blender-smoke PROPERTIES
+		DEPENDS ${PROJECT_NAME}
+		ENVIRONMENT "VOXCONVERT_BIN=$<TARGET_FILE:${PROJECT_NAME}>"
+	)
 endif()
 
 set(BLENDER_ADDON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blender/io_vengi_voxconvert)

@@ -106,8 +106,8 @@ CVAR_OP_IMPORT = "import"
 CVAR_OP_VOXELIZE = "voxelize"
 CVAR_OP_EXPORT = "export"
 FORMAT_ALL_ID = "ALL"
-MAGICAVOXEL_FORMAT_NAME = "MagicaVoxel"
-GLTF_FORMAT_NAME = "GL Transmission Format"
+SCRIPT_NONE_ID = "NONE"
+SCRIPT_ARG_MAX = 32
 
 
 def is_relevant_cvar(info):
@@ -219,11 +219,19 @@ def format_is_mesh(formats, format_id):
     return bool(fmt and fmt.get("mesh"))
 
 
+def _format_exts(fmt):
+    return {e.lower().lstrip(".") for e in (fmt.get("extensions") or []) if e}
+
+
 def gltf_format_name(formats):
-    """FormatDescription.name of the glTF entry from --print-formats."""
+    """FormatDescription.name of the glTF mesh entry from --print-formats.
+
+    Identified by glb+gltf extensions (and mesh), not by the English name.
+    """
     for fmt in formats or []:
-        if fmt.get("name") == GLTF_FORMAT_NAME:
-            return GLTF_FORMAT_NAME
+        exts = _format_exts(fmt)
+        if fmt.get("mesh") and "glb" in exts and "gltf" in exts:
+            return fmt.get("name")
     return None
 
 
@@ -391,6 +399,24 @@ def strip_ansi(text):
     if not text:
         return ""
     return _ANSI_RE.sub("", text)
+
+
+def convert_error_message(stderr_lines, stdout="", limit=600):
+    """Prefer ERROR/WARNING lines over the Options dump that leads stderr."""
+    picked = []
+    for line in stderr_lines or []:
+        u = strip_ansi(line).upper()
+        if u.startswith("ERROR") or u.startswith("WARNING") or "FAILED" in u:
+            picked.append(strip_ansi(line))
+    if picked:
+        text = "\n".join(picked[-8:])
+    else:
+        text = "\n".join(stderr_lines or []).strip() or strip_ansi(stdout).strip() or "vengi-voxconvert failed"
+        if len(text) > limit:
+            text = text[-limit:]
+    if len(text) > limit:
+        text = text[-limit:]
+    return text
 
 
 def parse_progress_line(line):
@@ -604,9 +630,7 @@ def run_voxconvert(exe, args, state, timeout=600):
             state.error = "Cancelled"
     else:
         state.success = False
-        err = "\n".join(stderr_err).strip()
-        out = "".join(stdout_chunks).strip()
-        state.error = (err or strip_ansi(out) or "vengi-voxconvert failed")[:600]
+        state.error = convert_error_message(stderr_err, "".join(stdout_chunks))
     state.done = True
 
 
@@ -632,7 +656,7 @@ def parse_leading_json(text):
 # --print-formats: per-format enum (name + extensions + save + mesh)
 # ---------------------------------------------------------------------------
 # Import lists voxel/volume formats only (not mesh). Mesh/image files
-# go through a separate voxelize operator (--print-formats "mesh" flag + images[]).
+# go through voxelize mode on the same import operator (--print-formats "mesh" flag + images[]).
 
 _IDENT_UNSAFE_RE = re.compile(r"[^a-z0-9_]+")
 
@@ -720,6 +744,92 @@ def parse_print_formats(data):
     }
 
 
+def _script_enum_list(raw):
+    if isinstance(raw, list):
+        return [str(x) for x in raw if x not in (None, "")]
+    if isinstance(raw, str) and raw:
+        sep = ";" if ";" in raw else ","
+        return [x.strip() for x in raw.split(sep) if x.strip()]
+    return []
+
+
+def parse_print_scripts(data):
+    """Parse --print-scripts JSON into dicts with stable RNA ids."""
+    used = set([SCRIPT_NONE_ID])
+    scripts = []
+    for raw in (data or {}).get("scripts") or []:
+        name = raw.get("name") or ""
+        ident = format_ident(name, used)
+        params = []
+        for p in raw.get("parameters") or []:
+            params.append({
+                "name": p.get("name") or "",
+                "type": p.get("type") or "string",
+                "description": p.get("description") or "",
+                "default": "" if p.get("default") is None else str(p.get("default")),
+                "enum": _script_enum_list(p.get("enum")),
+                "min": p.get("min"),
+                "max": p.get("max"),
+            })
+        scripts.append({
+            "id": ident,
+            "name": name,
+            "valid": bool(raw.get("valid")),
+            "description": raw.get("description") or "",
+            "parameters": params,
+        })
+    return scripts
+
+
+def find_script(scripts, script_id):
+    if not script_id or script_id == SCRIPT_NONE_ID:
+        return None
+    for script in scripts or []:
+        if script.get("id") == script_id:
+            return script
+    return None
+
+
+def script_enum_items(scripts):
+    items = [(SCRIPT_NONE_ID, "None", "Do not run a lua script")]
+    for script in scripts or []:
+        if not script.get("valid"):
+            continue
+        label = script.get("name") or script["id"]
+        if label.endswith(".lua"):
+            label = label[:-4]
+        desc = script.get("description") or script.get("name") or script["id"]
+        items.append((script["id"], label, desc[:1024]))
+    return items
+
+
+def quote_script_token(val):
+    s = "" if val is None else str(val)
+    # Tokenizer treats # and // as comments, and splits on space and (){};
+    if not s or any(c in s for c in " (){};\"\\#"):
+        return '"%s"' % s.replace("\\", "\\\\").replace('"', '\\"')
+    return s
+
+
+def script_cli_arg(script, arg_values):
+    """Build the --script value: 'name.lua arg0 arg1 ...'."""
+    if not script:
+        return ""
+    name = script.get("name") or ""
+    if not name:
+        return ""
+    parts = [name]
+    for i, param in enumerate(script.get("parameters") or []):
+        if i >= SCRIPT_ARG_MAX:
+            break
+        if i < len(arg_values):
+            val = arg_values[i]
+        else:
+            val = param.get("default") or ""
+        parts.append(quote_script_token(val))
+    return " ".join(parts)
+
+
 def find_format(formats, format_id):
     for fmt in formats or []:
         if fmt.get("id") == format_id:
@@ -771,12 +881,9 @@ def format_filename_ext(formats, format_id, all_id=FORMAT_ALL_ID):
 
 
 def default_save_format_id(formats, current_id=None):
-    """Prefer the current format, else MagicaVoxel, else the first saveable format."""
+    """Keep the current format if it is still in the list, else the first saveable."""
     if current_id and current_id != FORMAT_ALL_ID and find_format(formats, current_id):
         return current_id
-    for fmt in formats or []:
-        if fmt.get("name") == MAGICAVOXEL_FORMAT_NAME:
-            return fmt["id"]
     if formats:
         return formats[0]["id"]
     return FORMAT_ALL_ID
@@ -841,20 +948,19 @@ def path_allowed_for_format(path, formats, format_id, all_id=FORMAT_ALL_ID):
     return path_matches_extensions(path, fmt.get("extensions"))
 
 
-def import_transform_args(rotate="NONE", mirror="NONE", scale=1.0):
-    """CLI args for --rotate / --mirror / voxformat_scale."""
+def import_has_input_file(path):
+    """True if path is an existing file. Empty paths and directories are not."""
+    return bool(path) and os.path.isfile(path)
+
+
+def import_transform_args(rotate="NONE", mirror="NONE"):
+    """CLI args for --rotate / --mirror."""
     args = []
     rot = ROTATE_CLI.get(rotate, rotate)
     if rot and rot != "NONE":
         args += ["--rotate", rot]
     if mirror and mirror != "NONE":
         args += ["--mirror", mirror]
-    try:
-        scale_f = float(scale)
-    except (TypeError, ValueError):
-        scale_f = 1.0
-    if abs(scale_f - 1.0) > 1e-6:
-        args += ["-set", "voxformat_scale", str(scale_f)]
     return args
 
 

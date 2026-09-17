@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Optional live checks.
+"""Live checks against a vengi-voxconvert binary (and Blender when bpy is present).
 
-  blender --background --factory-startup --python-exit-code 1 --python blender_smoke.py -- /path/to/vengi-voxconvert
+  VOXCONVERT_BIN=/path/to/vengi-voxconvert python3 -m unittest discover -s tests -v
+
+  blender --background --factory-startup --python-exit-code 1 --python test_smoke.py -- /path/to/vengi-voxconvert
 """
 
 import os

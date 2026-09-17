@@ -166,7 +166,7 @@ class TestPrintFormats(unittest.TestCase):
         ident = default_save_format_id(parsed["saveable"])
         self.assertEqual(
             next(f["name"] for f in parsed["saveable"] if f["id"] == ident),
-            "MagicaVoxel",
+            "OtherVox",
         )
         self.assertEqual(format_filename_ext(parsed["saveable"], ident), ".vox")
         self.assertEqual(gltf_format_name(parsed["voxelize"]), "GL Transmission Format")

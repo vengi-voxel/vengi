@@ -67,8 +67,8 @@ def _require_gltf(op):
     return True
 
 
-def _get_json(exe, flag):
-    out, _, _ = util.run_command(exe, [flag], timeout=10)
+def _get_json(exe, flag, timeout=30):
+    out, _, _ = util.run_command(exe, [flag], timeout=timeout)
     return util.parse_leading_json(out)
 
 
@@ -87,6 +87,8 @@ _cache = {
     "import_enum_items": (),
     "export_enum_items": (),
     "voxelize_enum_items": (),
+    "scripts": [],
+    "script_enum_items": (),
 }
 # Keep the last few EnumProperty item tuples alive (Blender holds char pointers).
 _ENUM_ITEMS_KEEP_MAX = 8
@@ -106,6 +108,8 @@ def _empty_format_filters():
     _cache["import_enum_items"] = ()
     _cache["export_enum_items"] = ()
     _cache["voxelize_enum_items"] = ()
+    _cache["scripts"] = []
+    _cache["script_enum_items"] = ()
 
 
 def _refresh_cache(exe):
@@ -132,10 +136,13 @@ def _refresh_cache(exe):
     _cache["voxelize_enum_items"] = tuple(
         util.format_enum_items(parsed["voxelize"], include_all=True, all_label="All mesh/image formats")
     )
+    _cache["scripts"] = util.parse_print_scripts(_get_json(exe, "--print-scripts"))
+    _cache["script_enum_items"] = tuple(util.script_enum_items(_cache["scripts"]))
     _pin_enum_items(
         _cache["import_enum_items"],
         _cache["export_enum_items"],
         _cache["voxelize_enum_items"],
+        _cache["script_enum_items"],
     )
 
 
@@ -422,10 +429,9 @@ def _draw_cvars(layout, context, op, skip=()):
 
 
 def _draw_axis(layout, op):
-    col = _section_column(layout, "Axis / scale", 'EMPTY_ARROWS')
+    col = _section_column(layout, "Axis", 'EMPTY_ARROWS')
     col.prop(op, "rotate")
     col.prop(op, "mirror")
-    col.prop(op, "import_scale")
 
 
 def _volume_formats():
@@ -440,6 +446,10 @@ def _voxelize_formats():
     return _cache.get("voxelize_formats") or []
 
 
+def _import_formats(voxelize):
+    return _voxelize_formats() if voxelize else _volume_formats()
+
+
 _ENUM_FALLBACK = ((util.FORMAT_ALL_ID, "All formats", "vengi-voxconvert --print-formats not loaded yet"),)
 
 
@@ -452,6 +462,10 @@ def _keep_enum_items(items):
 
 
 def _import_format_items(self, context):
+    if getattr(self, "voxelize", False):
+        return _cache.get("voxelize_enum_items") or _keep_enum_items(
+            util.format_enum_items(_voxelize_formats(), include_all=True, all_label="All mesh/image formats")
+        )
     return _cache.get("import_enum_items") or _keep_enum_items(
         util.format_enum_items(_volume_formats(), include_all=True, all_label="All voxel formats")
     )
@@ -463,23 +477,32 @@ def _export_format_items(self, context):
     )
 
 
-def _voxelize_format_items(self, context):
-    return _cache.get("voxelize_enum_items") or _keep_enum_items(
-        util.format_enum_items(_voxelize_formats(), include_all=True, all_label="All mesh/image formats")
-    )
+def _script_items(self, context):
+    return _cache.get("script_enum_items") or _keep_enum_items(util.script_enum_items(_cache.get("scripts")))
 
 
 def _invoke_import_browser(op, context, formats):
     if not _cache.get("exe"):
         op.report({'ERROR'}, _exe_error())
         return {'CANCELLED'}
-    op.filter_glob = util.format_filter_glob(formats, op.file_format)
+    if util.find_script(_cache.get("scripts"), getattr(op, "script", util.SCRIPT_NONE_ID)):
+        op.filter_glob = "*.*"
+    else:
+        op.filter_glob = util.format_filter_glob(formats, op.file_format)
     context.window_manager.fileselect_add(op)
     return {'RUNNING_MODAL'}
 
 
 def _update_import_format(self, context):
-    self.filter_glob = util.format_filter_glob(_volume_formats(), self.file_format)
+    if util.find_script(_cache.get("scripts"), getattr(self, "script", util.SCRIPT_NONE_ID)):
+        self.filter_glob = "*.*"
+        return
+    self.filter_glob = util.format_filter_glob(_import_formats(getattr(self, "voxelize", False)), self.file_format)
+
+
+def _update_voxelize_flag(self, context):
+    self.file_format = util.FORMAT_ALL_ID
+    _update_import_format(self, context)
 
 
 def _apply_export_format(op):
@@ -544,8 +567,61 @@ def _update_export_format(self, context):
     _sync_export_file_browser(self, context)
 
 
-def _update_voxelize_format(self, context):
-    self.filter_glob = util.format_filter_glob(_voxelize_formats(), self.file_format)
+def _update_script(self, context):
+    script = util.find_script(_cache.get("scripts"), getattr(self, "script", util.SCRIPT_NONE_ID))
+    params = (script or {}).get("parameters") or []
+    for i in range(util.SCRIPT_ARG_MAX):
+        key = "script_arg_%d" % i
+        if not hasattr(self, key):
+            continue
+        if i < len(params):
+            setattr(self, key, params[i].get("default") or "")
+        else:
+            setattr(self, key, "")
+    _update_import_format(self, context)
+
+
+def _script_arg_values(op):
+    return [getattr(op, "script_arg_%d" % i, "") for i in range(util.SCRIPT_ARG_MAX)]
+
+
+def _draw_script(layout, op):
+    col = _section_column(layout, "Lua script", 'SCRIPT')
+    col.prop(op, "script")
+    script = util.find_script(_cache.get("scripts"), op.script)
+    if not script:
+        return
+    hint = col.row()
+    hint.use_property_split = False
+    hint.label(text="File is optional if the script generates a scene")
+    for i, param in enumerate((script.get("parameters") or [])[:util.SCRIPT_ARG_MAX]):
+        key = "script_arg_%d" % i
+        if not hasattr(op, key):
+            continue
+        label = param.get("name") or ("Arg %d" % (i + 1))
+        choices = param.get("enum") or []
+        if choices and len(choices) <= 8:
+            label = "%s (%s)" % (label, ", ".join(choices))
+        col.prop(op, key, text=label)
+
+
+def _script_arg_annotations():
+    props = {}
+    for i in range(util.SCRIPT_ARG_MAX):
+        props["script_arg_%d" % i] = StringProperty(
+            name="Arg %d" % (i + 1),
+            default="",
+            description="Argument for the selected --print-scripts lua script",
+        )
+    return props
+
+
+def _script_cli_args(op):
+    script = util.find_script(_cache.get("scripts"), getattr(op, "script", util.SCRIPT_NONE_ID))
+    cli = util.script_cli_arg(script, _script_arg_values(op))
+    if cli:
+        return ["--script", cli]
+    return []
 
 
 def _import_file_error(voxelize=False):
@@ -555,6 +631,12 @@ def _import_file_error(voxelize=False):
         "This importer is for voxel/volume files. "
         "Use File > Import > Vengi voxelize and import for mesh and image formats."
     )
+
+
+def _import_missing_input_error(voxelize=False):
+    if voxelize:
+        return "Select a mesh or image file, or a lua script that generates a scene"
+    return "Select a voxel file, or a lua script that generates a scene"
 
 
 def _exe_error():
@@ -568,17 +650,26 @@ def _start_file_import(op, context, formats, format_id, voxelize=False):
         return {'CANCELLED'}
     if not _require_gltf(op):
         return {'CANCELLED'}
-    if not util.path_allowed_for_format(op.filepath, formats, format_id):
-        op.report({'ERROR'}, _import_file_error(voxelize=voxelize))
+    has_file = util.import_has_input_file(op.filepath)
+    script_args = _script_cli_args(op)
+    if has_file:
+        if not util.path_allowed_for_format(op.filepath, formats, format_id):
+            op.report({'ERROR'}, _import_file_error(voxelize=voxelize))
+            return {'CANCELLED'}
+    elif not script_args:
+        op.report({'ERROR'}, _import_missing_input_error(voxelize=voxelize))
         return {'CANCELLED'}
     tmpdir = tempfile.mkdtemp(prefix="vengi_")
     tmp_out = os.path.join(tmpdir, "out.glb")
-    args = ["--input", op.filepath, "--output", tmp_out, "--force"]
-    args += util.import_transform_args(op.rotate, op.mirror, op.import_scale)
+    args = ["--output", tmp_out, "--force"]
+    if has_file:
+        args = ["--input", op.filepath] + args
+    args += util.import_transform_args(op.rotate, op.mirror)
+    args += script_args
     kind = util.CVAR_OP_VOXELIZE if voxelize else util.CVAR_OP_IMPORT
     args += _cvar_set_args(
         context,
-        skip_keys=_skip_cvars(kind, format_id, filepath=op.filepath),
+        skip_keys=_skip_cvars(kind, format_id, filepath=op.filepath if has_file else None),
     )
     return _start_convert(op, context, exe, args, tmpdir, output_path=tmp_out)
 
@@ -612,12 +703,19 @@ class IMPORT_SCENE_OT_vengi_voxconvert(Operator, ImportHelper):
     bl_description = "Import a voxel/volume file as a meshed preview (voxel -> voxconvert -> GLB -> Blender mesh)"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
     filename_ext = ""
+    check_existing = False
 
     filter_glob: StringProperty(default="*.*", options={'HIDDEN'}, maxlen=util.FILTER_GLOB_MAX)
     filepath: StringProperty(subtype='FILE_PATH')
+    voxelize: BoolProperty(
+        name="Voxelize mesh or image",
+        default=False,
+        description="Load a mesh or image from --print-formats, voxelize it, then import the mesh preview",
+        update=_update_voxelize_flag,
+    )
     file_format: EnumProperty(
         name="Format",
-        description="Filter the file browser to one voxel format from --print-formats",
+        description="Filter the file browser to one format from --print-formats",
         items=_import_format_items,
         update=_update_import_format,
     )
@@ -638,19 +736,20 @@ class IMPORT_SCENE_OT_vengi_voxconvert(Operator, ImportHelper):
         default="NONE",
         description="Optional --mirror after load",
     )
-    import_scale: FloatProperty(
-        name="Scale",
-        default=1.0,
-        min=0.001,
-        max=100.0,
-        description="Uniform scale (voxformat_scale)",
+    script: EnumProperty(
+        name="Lua Script",
+        items=_script_items,
+        description="Apply a lua script from vengi-voxconvert --print-scripts after load",
+        update=_update_script,
     )
 
     def invoke(self, context, event):
-        return _invoke_import_browser(self, context, _volume_formats())
+        return _invoke_import_browser(self, context, _import_formats(self.voxelize))
 
     def execute(self, context):
-        return _start_file_import(self, context, _volume_formats(), self.file_format, voxelize=False)
+        return _start_file_import(
+            self, context, _import_formats(self.voxelize), self.file_format, voxelize=self.voxelize
+        )
 
     def modal(self, context, event):
         return _modal_file_import(self, context, event)
@@ -659,83 +758,41 @@ class IMPORT_SCENE_OT_vengi_voxconvert(Operator, ImportHelper):
         layout = self.layout
         _ui_props(layout)
         box = _section_column(layout, "Format", 'FILE_FOLDER')
+        box.prop(self, "voxelize")
         box.prop(self, "file_format")
         hint = box.row()
         hint.use_property_split = False
-        hint.label(text="Imports as a mesh preview, not voxels")
+        if self.voxelize:
+            hint.label(text="Voxelize, then import as a mesh preview")
+        else:
+            hint.label(text="Imports as a mesh preview, not voxels")
         _draw_axis(layout, self)
+        _draw_script(layout, self)
+        has_file = util.import_has_input_file(self.filepath)
+        kind = util.CVAR_OP_VOXELIZE if self.voxelize else util.CVAR_OP_IMPORT
         _draw_cvars(
             layout,
             context,
             self,
-            skip=_skip_cvars(util.CVAR_OP_IMPORT, self.file_format, filepath=self.filepath),
+            skip=_skip_cvars(kind, self.file_format, filepath=self.filepath if has_file else None),
         )
 
 
-class IMPORT_SCENE_OT_vengi_voxelize(Operator, ImportHelper):
+IMPORT_SCENE_OT_vengi_voxconvert.__annotations__.update(_script_arg_annotations())
+
+
+class IMPORT_SCENE_OT_vengi_voxelize(Operator):
+    """Old bl_idname: File > Import and scripts that still call import_scene.vengi_voxelize."""
     bl_idname = "import_scene.vengi_voxelize"
     bl_label = "Voxelize and Import"
     bl_description = "Voxelize a mesh or image from vengi-voxconvert --print-formats, then import the mesh preview"
-    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
-    filename_ext = ""
-
-    filter_glob: StringProperty(default="*.*", options={'HIDDEN'}, maxlen=util.FILTER_GLOB_MAX)
-    filepath: StringProperty(subtype='FILE_PATH')
-    file_format: EnumProperty(
-        name="Format",
-        description="Filter to a mesh or image format voxconvert can voxelize",
-        items=_voxelize_format_items,
-        update=_update_voxelize_format,
-    )
-    show_advanced: BoolProperty(
-        name="Advanced",
-        default=False,
-        description="Show additional voxconvert cvars that apply to this direction",
-    )
-    rotate: EnumProperty(
-        name="Rotate",
-        items=util.ROTATE_ITEMS,
-        default="NONE",
-        description="Optional --rotate after voxelize",
-    )
-    mirror: EnumProperty(
-        name="Mirror",
-        items=util.MIRROR_ITEMS,
-        default="NONE",
-        description="Optional --mirror after voxelize",
-    )
-    import_scale: FloatProperty(
-        name="Scale",
-        default=1.0,
-        min=0.001,
-        max=100.0,
-        description="Uniform scale (voxformat_scale)",
-    )
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-        return _invoke_import_browser(self, context, _voxelize_formats())
+        return bpy.ops.import_scene.vengi_voxconvert('INVOKE_DEFAULT', voxelize=True)
 
     def execute(self, context):
-        return _start_file_import(self, context, _voxelize_formats(), self.file_format, voxelize=True)
-
-    def modal(self, context, event):
-        return _modal_file_import(self, context, event)
-
-    def draw(self, context):
-        layout = self.layout
-        _ui_props(layout)
-        box = _section_column(layout, "Format", 'FILE_FOLDER')
-        box.prop(self, "file_format")
-        hint = box.row()
-        hint.use_property_split = False
-        hint.label(text="Voxelize, then import as a mesh preview")
-        _draw_axis(layout, self)
-        _draw_cvars(
-            layout,
-            context,
-            self,
-            skip=_skip_cvars(util.CVAR_OP_VOXELIZE, self.file_format, filepath=self.filepath),
-        )
+        return bpy.ops.import_scene.vengi_voxconvert('EXEC_DEFAULT', voxelize=True)
 
 
 class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
@@ -771,7 +828,6 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
     crop: BoolProperty(name="Crop", default=False, description="Reduce models to real voxel sizes")
     merge: BoolProperty(name="Merge", default=False, description="Merge models into one volume")
     scale_half: BoolProperty(name="Scale 50%", default=False, description="Scale model to 50%")
-    script: StringProperty(name="Lua Script", default="", description="Apply a lua script to the output")
 
     def invoke(self, context, event):
         if not _cache.get("exe"):
@@ -819,8 +875,6 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
             args.append("--merge")
         if self.scale_half:
             args.append("--scale")
-        if self.script:
-            args += ["--script", self.script]
         args += _cvar_set_args(
             context,
             skip_keys=_skip_cvars(util.CVAR_OP_EXPORT, self.file_format, filepath=self.filepath),
@@ -849,7 +903,6 @@ class EXPORT_SCENE_OT_vengi_voxconvert(Operator, ExportHelper):
         ops.prop(self, "crop")
         ops.prop(self, "merge")
         ops.prop(self, "scale_half")
-        ops.prop(self, "script")
         skip = _skip_cvars(util.CVAR_OP_EXPORT, self.file_format, filepath=self.filepath)
         _draw_cvars(layout, context, self, skip=skip)
 
@@ -916,8 +969,10 @@ def _on_exe_changed(exe):
 # ---------------------------------------------------------------------------
 
 def _menu_import(self, context):
-    self.layout.operator("import_scene.vengi_voxconvert", text="Vengi voxel (.vox, .qb, ...)")
-    self.layout.operator("import_scene.vengi_voxelize", text="Vengi voxelize mesh/image")
+    volume = self.layout.operator("import_scene.vengi_voxconvert", text="Vengi voxel (.vox, .qb, ...)")
+    volume.voxelize = False
+    voxelize = self.layout.operator("import_scene.vengi_voxconvert", text="Vengi voxelize mesh/image")
+    voxelize.voxelize = True
 
 
 def _menu_export(self, context):
