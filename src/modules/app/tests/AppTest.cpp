@@ -185,6 +185,7 @@ TEST(AppTest, testWriteConfigJsonMinMaxAndDirectory) {
 	core::Var::registerVar(core::VarDef("test_jsonconfig_int", 5, 0, 10, "Int Title", "int help"));
 	core::Var::registerVar(core::VarDef("test_jsonconfig_dir", core::Path(), "Dir Title", "dir help", core::CV_NONE,
 										core::VarType::Directory));
+	core::Var::registerVar(core::VarDef("test_jsonconfig_slash", "C:\\Users\\foo\\bar", "Slash Title", "say \"hi\""));
 	io::BufferedReadWriteStream stream;
 	TestApp app;
 	app.writeConfigJson(stream);
@@ -195,6 +196,8 @@ TEST(AppTest, testWriteConfigJsonMinMaxAndDirectory) {
 	EXPECT_NE(strstr(json, "\"min\": 0, \"max\": 10"), nullptr);
 	EXPECT_NE(strstr(json, "\"test_jsonconfig_dir\""), nullptr);
 	EXPECT_NE(strstr(json, "\"type\": \"directory\""), nullptr);
+	EXPECT_NE(strstr(json, "C:\\\\Users\\\\foo\\\\bar"), nullptr);
+	EXPECT_NE(strstr(json, "say \\\"hi\\\""), nullptr);
 }
 
 } // namespace app

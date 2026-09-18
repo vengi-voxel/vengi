@@ -528,7 +528,7 @@ void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &
 				stream.write(",", 1);
 			}
 			first = false;
-			stream.writeStringFormat(false, "\"%s\"", meta->formats[i]->name.c_str());
+			stream.writeJsonString(meta->formats[i]->name.c_str());
 		}
 		stream.writeString("]", false);
 	} else if (meshSaveCvarRestrictsFormats(*meta)) {
@@ -542,7 +542,7 @@ void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &
 				stream.write(",", 1);
 			}
 			first = false;
-			stream.writeStringFormat(false, "\"%s\"", desc->name.c_str());
+			stream.writeJsonString(desc->name.c_str());
 		}
 		stream.writeString("]", false);
 	}
@@ -561,12 +561,7 @@ void FormatConfig::writeConfigJson(io::WriteStream &stream, const core::VarPtr &
 		if (i > 0) {
 			stream.write(",", 1);
 		}
-		const char *title = meta->valueTitles[i];
-		if (title == nullptr || title[0] == '\0') {
-			stream.writeString("\"\"", false);
-		} else {
-			stream.writeStringFormat(false, "\"%s\"", title);
-		}
+		stream.writeJsonString(meta->valueTitles[i]);
 	}
 	stream.writeString("]", false);
 }

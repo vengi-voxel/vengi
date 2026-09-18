@@ -288,6 +288,11 @@ public:
 	 * @return @c false if not everything was written
 	 */
 	bool writeString(const core::String &string, bool terminate);
+	/**
+	 * @brief Write a JSON string literal, including surrounding quotes and escapes.
+	 */
+	bool writeJsonString(const char *str);
+	bool writeJsonString(const core::String &str);
 	bool writeLine(const core::String &string, const char *lineEnding = "\n");
 
 	/**

@@ -1869,14 +1869,18 @@ void App::writeConfigJson(io::WriteStream &stream) const {
 		} else {
 			first = false;
 		}
-		stream.writeStringFormat(false, "\"%s\": {", var->name().c_str());
-		stream.writeStringFormat(false, "\"value\":\"%s\"", var->strVal().c_str());
+		stream.writeJsonString(var->name().c_str());
+		stream.writeString(": {", false);
+		stream.writeString("\"value\":", false);
+		stream.writeJsonString(var->strVal().c_str());
 		stream.writeStringFormat(false, ",\"flags\": %u", var->getFlags());
 		stream.writeStringFormat(false, ",\"readonly\": %s", var->isReadOnly() ? "true" : "false");
 		stream.writeStringFormat(false, ",\"secret\": %s", var->isSecret() ? "true" : "false");
 		stream.writeStringFormat(false, ",\"persist\": %s", var->isPersisted() ? "true" : "false");
-		stream.writeStringFormat(false, ",\"title\": \"%s\"", var->title().c_str());
-		stream.writeStringFormat(false, ",\"description\": \"%s\"", var->description().c_str());
+		stream.writeString(",\"title\": ", false);
+		stream.writeJsonString(var->title().c_str());
+		stream.writeString(",\"description\": ", false);
+		stream.writeJsonString(var->description().c_str());
 		if (var->hasMinMax()) {
 			if (var->type() == core::VarType::Int) {
 				stream.writeStringFormat(false, ",\"min\": %i, \"max\": %i", var->intMinValue(), var->intMaxValue());
@@ -1893,7 +1897,7 @@ void App::writeConfigJson(io::WriteStream &stream) const {
 				if (i > 0) {
 					stream.write(",", 1);
 				}
-				stream.writeStringFormat(false, "\"%s\"", validValues[i].c_str());
+				stream.writeJsonString(validValues[i].c_str());
 			}
 			stream.writeString("]", false);
 		}

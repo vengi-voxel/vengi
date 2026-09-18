@@ -270,6 +270,13 @@ TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
 	EXPECT_STREQ("foobar barfoo", buf);
 }
 
+TEST(BufferedReadWriteStreamTest, testWriteJsonString) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeJsonString("C:\\Users\\foo\"bar"));
+	EXPECT_TRUE(stream.writeUInt8(0));
+	EXPECT_STREQ("\"C:\\\\Users\\\\foo\\\"bar\"", (const char *)stream.getBuffer());
+}
+
 TEST(BufferedReadWriteStreamTest, testSkipDelta) {
 	BufferedReadWriteStream stream(100 * sizeof(uint32_t));
 	for (int i = 0; i < 100; ++i) {
