@@ -35,6 +35,7 @@ from util import (
     resolve_format_name,
     split_cvar_keys,
     strip_ansi,
+    voxconvert_exe_name,
     voxconvert_version_atleast,
 )
 
@@ -126,7 +127,7 @@ class TestCvars(unittest.TestCase):
 
     def test_find_voxconvert_extra_dir(self):
         with tempfile.TemporaryDirectory() as d:
-            path = os.path.join(d, "vengi-voxconvert")
+            path = os.path.join(d, voxconvert_exe_name())
             with open(path, "w"):
                 pass
             os.chmod(path, 0o755)
