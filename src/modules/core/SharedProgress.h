@@ -49,7 +49,7 @@ public:
 		return _value;
 	}
 
-	const core::String &text() const {
+	core::String text() const {
 		ScopedLock lock(_lock);
 		return _text;
 	}
