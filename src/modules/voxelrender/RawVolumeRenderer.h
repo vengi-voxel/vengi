@@ -26,7 +26,6 @@
 #include "voxelrender/RenderFrame.h"
 #include "voxelrender/RenderState.h"
 #include "video/ShaderStorageBuffer.h"
-#include "core/concurrent/Future.h"
 
 namespace video {
 class Camera;
@@ -87,9 +86,6 @@ protected:
 	core::Buffer<uint8_t> _uploadIndicesScratch;
 	RenderFrame _renderFrames[2];
 	int _submitFrameIdx = 0;
-	int _prepareFrameIdx = 0;
-	bool _preparePending = false;
-	core::Future<void> _prepareFuture;
 
 	core::Buffer<DrawInstanceData> _drawInstanceScratch;
 	core::Buffer<video::DrawElementsIndirectCommand> _indirectScratch;

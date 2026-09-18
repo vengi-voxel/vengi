@@ -1230,17 +1230,11 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	const core::Buffer<int> &activeForRender = meshState->activeIndices();
 	const bool useOit = renderContext.hasOit();
 
-	// N+1 prepare: prefer the list built at the end of the previous frame.
-	// Cold start prepares synchronously into the free ping-pong slot.
-	if (_preparePending) {
-		_prepareFuture.wait();
-		_preparePending = false;
-		_submitFrameIdx = _prepareFrameIdx;
-	} else {
-		const int prepareIdx = 1 - _submitFrameIdx;
-		prepareRenderFrame(meshState, camera, _renderFrames[prepareIdx], useOit);
-		_submitFrameIdx = prepareIdx;
-	}
+	// Build cull lists on this thread so scene mutations (newScene, tests)
+	// cannot free volumes while a worker still reads MeshState.
+	const int prepareIdx = 1 - _submitFrameIdx;
+	prepareRenderFrame(meshState, camera, _renderFrames[prepareIdx], useOit);
+	_submitFrameIdx = prepareIdx;
 
 	if (_shadowMap->boolVal()) {
 		_shadow.update(camera, true);
@@ -1248,12 +1242,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 
 	RenderFrame &frame = _renderFrames[_submitFrameIdx];
 	if (!frame.anyVisible) {
-		const int nextIdx = 1 - _submitFrameIdx;
-		_prepareFrameIdx = nextIdx;
-		_prepareFuture = app::async([this, meshState, camera, nextIdx, useOit]() {
-			prepareRenderFrame(meshState, camera, _renderFrames[nextIdx], useOit);
-		});
-		_preparePending = true;
 		return;
 	}
 
@@ -1421,14 +1409,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		renderNormals(meshState, renderContext, camera);
 		video::useProgram(oldShader);
 	}
-
-	// Kick prepare for the next frame into the free ping-pong slot (overlaps UI/app work).
-	const int nextIdx = 1 - _submitFrameIdx;
-	_prepareFrameIdx = nextIdx;
-	_prepareFuture = app::async([this, meshState, camera, nextIdx, useOit]() {
-		prepareRenderFrame(meshState, camera, _renderFrames[nextIdx], useOit);
-	});
-	_preparePending = true;
 }
 
 void RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
@@ -1533,17 +1513,12 @@ void RawVolumeRenderer::shutdown() {
 	for (int i = 0; i < lengthof(_renderFrames); ++i) {
 		_renderFrames[i].release();
 	}
-	if (_preparePending) {
-		_prepareFuture.wait();
-		_preparePending = false;
-	}
 	_drawInstanceSSBO.shutdown();
 	_indirectDrawBuffer.shutdown();
 	_indirectDrawBufferIdx = -1;
 	_drawInstanceScratch.release();
 	_indirectScratch.release();
 	_submitFrameIdx = 0;
-	_prepareFrameIdx = 0;
 	_useMultiDraw = false;
 }
 
