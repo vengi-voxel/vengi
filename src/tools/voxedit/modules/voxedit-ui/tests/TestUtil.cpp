@@ -19,7 +19,20 @@
 
 namespace voxedit {
 
+bool waitForSceneJob(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int maxYields) {
+	for (int i = 0; i < maxYields; ++i) {
+		if (!sceneMgr->isSceneJobRunning() && sceneMgr->pendingSceneJobs() == 0) {
+			return true;
+		}
+		ctx->Yield();
+	}
+	IM_CHECK_RETV(!sceneMgr->isSceneJobRunning(), false);
+	IM_CHECK_RETV(sceneMgr->pendingSceneJobs() == 0, false);
+	return false;
+}
+
 bool resetScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr) {
+	IM_CHECK_RETV(waitForSceneJob(ctx, sceneMgr), false);
 	IM_CHECK_RETV(sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)), false);
 	IM_CHECK_RETV(command::executeCommands("camera_reset") == 1, false);
 	ctx->Yield();
@@ -210,7 +223,7 @@ bool newFilledScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, cons
 					const voxel::Region &region) {
 	IM_CHECK_RETV(resetScene(ctx, sceneMgr), false);
 	command::executeCommands("fill");
-	ctx->Yield(3);
+	IM_CHECK_RETV(waitForSceneJob(ctx, sceneMgr), false);
 	return true;
 }
 

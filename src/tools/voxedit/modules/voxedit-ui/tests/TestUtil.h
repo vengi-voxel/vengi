@@ -23,6 +23,7 @@ void executeViewportClick();
 bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, const ImVec2 &offset);
 
 bool resetScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr);
+bool waitForSceneJob(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int maxYields = 2000);
 bool newTemplateScene(ImGuiTestContext *ctx, const core::String &templateName);
 bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode);
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset = {0.0f, 0.0f});

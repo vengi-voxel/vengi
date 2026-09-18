@@ -30,6 +30,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			}
 			ctx->LogInfo("Found button %i", buttonIdx);
 			ctx->ItemClick(btnid.c_str());
+			IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 			++buttonIdx;
 		}
 		IM_CHECK(buttonIdx > 0);
@@ -46,6 +47,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			}
 			ctx->LogInfo("Found button %i", buttonIdx);
 			ctx->ItemClick(btnid.c_str());
+			IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 			++buttonIdx;
 		}
 		IM_CHECK(buttonIdx > 0);
@@ -63,7 +65,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const voxel::Region regionBefore = node->region();
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button0"); // crop
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -77,9 +79,9 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// fill + hollow to create a shell, then click fillhollow button
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button11"); // fill
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 		ctx->ItemClick("toolbar/###button8"); // hollow
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
@@ -87,7 +89,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int countAfterHollow = voxelutil::countVoxels(*node->volume());
 
 		ctx->ItemClick("toolbar/###button7"); // fillhollow
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -100,7 +102,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button11"); // fill
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
@@ -108,7 +110,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int countBefore = voxelutil::countVoxels(*node->volume());
 
 		ctx->ItemClick("toolbar/###button8"); // hollow
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -198,7 +200,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int modelsBefore = (int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button2"); // splitobjects
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 		IM_CHECK((int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model) > modelsBefore);
 	};
 
@@ -208,7 +210,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button11"); // fill
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
@@ -216,7 +218,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int widthBefore = node->region().getWidthInVoxels();
 
 		ctx->ItemClick("toolbar/###button5"); // scaledown
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -229,7 +231,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button11"); // fill
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
@@ -237,7 +239,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int widthBefore = node->region().getWidthInVoxels();
 
 		ctx->ItemClick("toolbar/###button6"); // scaleup
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 
 		node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -277,7 +279,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int modelsBefore = (int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button4"); // colortomodel
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 		IM_CHECK((int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model) > modelsBefore);
 	};
 
@@ -337,7 +339,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button1"); // resizetoselection
-		ctx->Yield(3);
+		IM_CHECK(waitForSceneJob(ctx, _sceneMgr));
 	};
 }
 
