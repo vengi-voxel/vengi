@@ -42,7 +42,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *get_config_json() {
 	app.setArgs(lengthof(argv), argv);
 	app.onConstruct();
 	io::BufferedReadWriteStream stream;
-	app::App::writeConfigJson(stream);
+	app.writeConfigJson(stream);
 	app.onCleanup();
 	app.onDestroy();
 	formats = core::String((const char *)stream.getBuffer(), stream.size());
