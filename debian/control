@@ -14,7 +14,7 @@ Build-Depends:
  libcurl-ssl-dev,
  libdeflate-dev,
  libjpeg-dev,
- libsdl2-dev,
+ libsdl3-dev,
  libfreetype-dev,
  liblua5.4-dev,
  wayland-protocols,

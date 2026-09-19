@@ -8,7 +8,7 @@ Group: Applications/Multimedia
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 Vendor: Martin Gerhardy
-BuildRequires: SDL2-devel
+BuildRequires: SDL3-devel
 BuildRequires: freetype-devel
 BuildRequires: libjpeg-devel
 BuildRequires: binutils-devel

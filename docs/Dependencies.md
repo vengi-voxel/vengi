@@ -9,7 +9,7 @@
 * development headers/libs for
   * glm
   * lua >= 5.4
-  * sdl2 > 2.0.16
+  * sdl3
   * gtest (and gmock)
   * freetype2 (optional)
   * libjpeg (optional but recommended)
@@ -22,7 +22,7 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl2-dev wayland-protocols pkg-config libjpeg-dev libpng-dev
+apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl3-dev wayland-protocols pkg-config libjpeg-dev libpng-dev
 ```
 
 ## RockyLinux
@@ -30,7 +30,7 @@ apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfr
 ```bash
 dnf install epel-release
 dnf config-manager --set-enabled crb
-dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel
+dnf install SDL3-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel
 ```
 
 To also build the rpm files:
@@ -44,17 +44,17 @@ rpmbuild -ba build/vengi.spec
 ## Arch
 
 ```bash
-pacman -Sy git make cmake ninja sdl2 clang
+pacman -Sy git make cmake ninja sdl3 clang
 ```
 
 ## Brew
 
 ```bash
-brew install sdl2 jpeg-turbo freetype cmake ninja pkg-config
+brew install sdl3 jpeg-turbo freetype cmake ninja pkg-config
 ```
 
 ## Windows
 
 ```bash
-vcpkg install pkg-config sdl2 libjpeg-turbo lua glm glslang gtest freetype
+vcpkg install pkg-config sdl3 libjpeg-turbo lua glm glslang gtest freetype
 ```
