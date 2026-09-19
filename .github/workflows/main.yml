@@ -12,6 +12,7 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +21,7 @@ concurrency:
 jobs:
     pkg-rockylinux:
         runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         container:
           image: rockylinux/rockylinux:10
 
@@ -73,7 +74,7 @@ jobs:
 
     pkg-ubuntu:
         timeout-minutes: 45
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-26.04
         steps:
         - uses: actions/checkout@v5
