@@ -712,6 +712,9 @@ msgstr "Debug-Protokollierung für die Konsole aktivieren"
 msgid "Auto scrolling"
 msgstr "Automatisches Scrollen"
 
+msgid "Unknown"
+msgstr "Unbekannt"
+
 msgid "X"
 msgstr "X"
 
@@ -740,9 +743,6 @@ msgstr ""
 
 msgid "None selected"
 msgstr "Nichts ausgewählt"
-
-msgid "Unknown"
-msgstr "Unbekannt"
 
 msgid "None"
 msgstr "Nichts"
@@ -1223,10 +1223,10 @@ msgstr "Voxelgröße"
 
 msgid ""
 "The number of voxels on the largest axis (0 = disabled, use scale cvars "
-"instead). This only works for single mesh exports."
+"instead). This only works for single mesh imports."
 msgstr ""
 "Anzahl Voxel auf der längsten Achse (0 = deaktiviert, dann Scale-CVars). Nur "
-"für Einzel-Mesh-Exporte."
+"für Einzel-Mesh-Importe."
 
 msgid "Palette mode"
 msgstr "Palettenmodus"
@@ -1520,6 +1520,45 @@ msgstr "LDraw-Bibliothekspfad"
 msgid "Path to the LDraw parts library directory for resolving part references"
 msgstr "Pfad zur LDraw-Teilebibliothek zum Auflösen von Teilreferenzen"
 
+msgid "Binary"
+msgstr "Binär"
+
+msgid "Cubes"
+msgstr "Würfel"
+
+msgid "Greedy texture"
+msgstr "Greedy-Textur"
+
+msgid "Marching cubes"
+msgstr "Marching Cubes"
+
+msgid "Binvox 1 (white)"
+msgstr "Binvox 1 (weiß)"
+
+msgid "Binvox 2 (multi colors)"
+msgstr "Binvox 2 (Mehrfarbig)"
+
+msgid "Binvox 3 (unofficial)"
+msgstr "Binvox 3 (inoffiziell)"
+
+msgid "Heightmap"
+msgstr "Höhenkarte"
+
+msgid "Plane"
+msgstr "Ebene"
+
+msgid "Thumbnail"
+msgstr "Miniaturansicht"
+
+msgid "Volume"
+msgstr "Volumen"
+
+msgid "Fast"
+msgstr ""
+
+msgid "High quality"
+msgstr "Hohe Qualität"
+
 msgid "Draw line forwards"
 msgstr "Linie nach vorne zeichnen"
 
@@ -1631,20 +1670,8 @@ msgstr "Front"
 msgid "Right"
 msgstr "Rechts"
 
-msgid "Heightmap"
-msgstr "Höhenkarte"
-
-msgid "Plane"
-msgstr "Ebene"
-
-msgid "Thumbnail"
-msgstr "Miniaturansicht"
-
-msgid "Volume"
-msgstr "Volumen"
-
-msgid "Image mode"
-msgstr "Bildmodus"
+msgid "Map colors to palette"
+msgstr "Mappe Farben auf Palette"
 
 msgid "Layer information"
 msgstr "Ebeneninformationen"
@@ -1660,15 +1687,6 @@ msgstr ""
 "Der Name der Dateien enthält die UUID des Knotens\n"
 "und den Z-Ebenenindex."
 
-msgid "Binvox 1 (white)"
-msgstr "Binvox 1 (weiß)"
-
-msgid "Binvox 2 (multi colors)"
-msgstr "Binvox 2 (Mehrfarbig)"
-
-msgid "Binvox 3 (unofficial)"
-msgstr "Binvox 3 (inoffiziell)"
-
 #, c-format
 msgid "Depth map: %s"
 msgstr "Tiefenkarte: %s"
@@ -1676,40 +1694,6 @@ msgstr "Tiefenkarte: %s"
 #, c-format
 msgid "Depth map not found: %s"
 msgstr "Tiefenkarte nicht gefunden: %s"
-
-msgid ""
-"Only load objects that intersect with the given region. The coordinates are "
-"in the order of minX minY minZ maxX maxY maxZ. They are in world coordinates "
-"of the given GML file, so you might need to check the envelope of the file "
-"first to determine the correct region."
-msgstr ""
-"Nur Objekte laden, die die angegebene Region schneiden. "
-"Koordinatenreihenfolge: minX minY minZ maxX maxY maxZ in Weltkoordinaten der "
-"GML-Datei; ggf. zuerst die Envelope prüfen."
-
-msgid "faster and less memory"
-msgstr "schneller und weniger Speicher"
-
-msgid "high quality"
-msgstr "hohe Qualität"
-
-msgid "Voxelization mode"
-msgstr "Voxelisierungsmodus"
-
-msgid "Map colors to palette"
-msgstr "Mappe Farben auf Palette"
-
-msgid "Binary"
-msgstr "Binär"
-
-msgid "Cubes"
-msgstr "Würfel"
-
-msgid "Greedy texture"
-msgstr "Greedy-Textur"
-
-msgid "Marching cubes"
-msgstr "Marching Cubes"
 
 msgid "LUA scripts for manipulating the voxel volumes"
 msgstr "LUA-Skripte zur Manipulation der Voxelvolumen"
@@ -2576,6 +2560,12 @@ msgstr "Ansicht"
 msgid "Reset layout"
 msgstr "Layout zurücksetzen"
 
+msgid "Extensions"
+msgstr "Erweiterungen"
+
+msgid "Install script..."
+msgstr "Skript installieren…"
+
 msgid "Scene insights"
 msgstr "Szeneninterna"
 
@@ -2587,9 +2577,6 @@ msgstr "FPS-Statistiken anzeigen"
 
 msgid "Welcome screen"
 msgstr "Willkommensbildschirm"
-
-msgid "Install script..."
-msgstr "Skript installieren…"
 
 msgid "License"
 msgstr "Lizenz"
@@ -3127,9 +3114,6 @@ msgstr "Alles zurücksetzen"
 
 msgid "Restore default path tracer settings"
 msgstr ""
-
-msgid "High quality"
-msgstr "Hohe Qualität"
 
 msgid "Path tracing with high sample and bounce counts"
 msgstr ""
@@ -4022,20 +4006,32 @@ msgstr "Angemeldet als %s"
 msgid "Logout"
 msgstr "Abmelden"
 
-msgid "API key (refresh token)"
-msgstr "API-Schlüssel (Refresh-Token)"
+msgid "Login required"
+msgstr "Anmeldung notwendig"
+
+msgid "A VoxBox account is required to browse, download and upload assets."
+msgstr ""
+
+msgid "API key"
+msgstr "API-Schlüssel"
+
+msgid "Refresh token"
+msgstr ""
 
 msgid "Connect"
 msgstr "Verbinden"
 
-msgid "API key is empty"
-msgstr "API-Schlüssel ist leer"
-
 msgid "Use password"
 msgstr "Passwort verwenden"
 
+msgid "Your VoxBox username"
+msgstr "VoxBox-Benutzername"
+
 msgid "Password"
 msgstr "Passwort"
+
+msgid "Your VoxBox password"
+msgstr "VoxBox-Passwort"
 
 msgid "Login"
 msgstr "Anmelden"
@@ -4045,6 +4041,12 @@ msgstr "Anmeldung fehlgeschlagen"
 
 msgid "Use API key"
 msgstr "API-Schlüssel verwenden"
+
+msgid "No account yet? Create one at voxbox.store."
+msgstr ""
+
+msgid "VoxBox Store"
+msgstr "VoxBox-Store"
 
 msgid "Fetching models..."
 msgstr "Modelle werden geladen..."
@@ -4103,9 +4105,6 @@ msgstr "Absenden"
 
 msgid "VoxBox Browser"
 msgstr "VoxBox-Browser"
-
-msgid "VoxBox Store"
-msgstr "VoxBox-Store"
 
 msgid "Upload current scene..."
 msgstr "Aktuelle Szene hochladen…"
@@ -5338,7 +5337,8 @@ msgid "Hide all children nodes"
 msgstr "Alle Kindknoten ausblenden"
 
 msgid "Hide all nodes except the given one and its children"
-msgstr "Alle Knoten außer dem angegebenen Knoten und seinen Kindknoten ausblenden"
+msgstr ""
+"Alle Knoten außer dem angegebenen Knoten und seinen Kindknoten ausblenden"
 
 msgid "Lock all nodes"
 msgstr "Alle Knoten sperren"
