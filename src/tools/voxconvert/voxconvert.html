@@ -6,6 +6,16 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@NAME@</title>
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('vengi-theme');
+                if (stored === 'bright' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                }
+            } catch (e) { }
+        })();
+    </script>
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Vengi Voxel Tools" />
@@ -22,10 +32,140 @@
             --anim-card-duration: 340ms;
             --anim-step-duration: 360ms;
             --focus-color: #00d1b2;
+            --focus-color-end: #00a88f;
             --muted: #888;
             --radius: 8px;
             --panel: rgba(255, 255, 255, 0.02);
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-input: #09131f;
+            --bg-modal: #141414;
+            --bg-console: #0b0b0b;
+            --bg-card: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            --bg-dropzone: rgba(255, 255, 255, 0.01);
+            --bg-progress: rgba(255, 255, 255, 0.05);
+            --bg-step-dot: rgba(255, 255, 255, 0.06);
+            --bg-overlay: rgba(0, 0, 0, 0.45);
+            --text: #f0f0f0;
+            --text-strong: #e6f7ff;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --text-input: #00ffc8;
+            --text-console: #ddd;
+            --text-cancel: #ccc;
+            --border: #444;
+            --border-soft: rgba(255, 255, 255, 0.1);
+            --border-ghost: rgba(255, 255, 255, 0.06);
+            --border-footer: #333;
+            --border-dropzone: rgba(255, 255, 255, 0.04);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.6);
+            --confirm-text: #022;
+            --error: #f44;
         }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+            --focus-color: #008f7a;
+            --focus-color-end: #007a68;
+            --muted: #5c5c5c;
+            --panel: rgba(0, 0, 0, 0.03);
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-input: #ffffff;
+            --bg-modal: #ffffff;
+            --bg-console: #1e1e1e;
+            --bg-card: linear-gradient(180deg, rgba(0, 0, 0, 0.03), transparent);
+            --bg-dropzone: rgba(0, 0, 0, 0.02);
+            --bg-progress: rgba(0, 0, 0, 0.08);
+            --bg-step-dot: rgba(0, 0, 0, 0.12);
+            --bg-overlay: rgba(0, 0, 0, 0.35);
+            --text: #1a1a1a;
+            --text-strong: #0a2a33;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --text-input: #006655;
+            --text-console: #ddd;
+            --text-cancel: #444;
+            --border: #d0d5db;
+            --border-soft: rgba(0, 0, 0, 0.15);
+            --border-ghost: rgba(0, 0, 0, 0.12);
+            --border-footer: #d0d5db;
+            --border-dropzone: rgba(0, 0, 0, 0.15);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --confirm-text: #fff;
+            --error: #c62828;
+            }
+        }
+
+        /* Optional manual override via toggle (same key across pages) */
+        html[data-theme="dark"] {
+            --anim-card-duration: 340ms;
+            --anim-step-duration: 360ms;
+            --focus-color: #00d1b2;
+            --focus-color-end: #00a88f;
+            --muted: #888;
+            --radius: 8px;
+            --panel: rgba(255, 255, 255, 0.02);
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-input: #09131f;
+            --bg-modal: #141414;
+            --bg-console: #0b0b0b;
+            --bg-card: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            --bg-dropzone: rgba(255, 255, 255, 0.01);
+            --bg-progress: rgba(255, 255, 255, 0.05);
+            --bg-step-dot: rgba(255, 255, 255, 0.06);
+            --bg-overlay: rgba(0, 0, 0, 0.45);
+            --text: #f0f0f0;
+            --text-strong: #e6f7ff;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --text-input: #00ffc8;
+            --text-console: #ddd;
+            --text-cancel: #ccc;
+            --border: #444;
+            --border-soft: rgba(255, 255, 255, 0.1);
+            --border-ghost: rgba(255, 255, 255, 0.06);
+            --border-footer: #333;
+            --border-dropzone: rgba(255, 255, 255, 0.04);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.6);
+            --confirm-text: #022;
+            --error: #f44;
+        }
+
+        html[data-theme="bright"] {
+            --focus-color: #008f7a;
+            --focus-color-end: #007a68;
+            --muted: #5c5c5c;
+            --panel: rgba(0, 0, 0, 0.03);
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-input: #ffffff;
+            --bg-modal: #ffffff;
+            --bg-console: #1e1e1e;
+            --bg-card: linear-gradient(180deg, rgba(0, 0, 0, 0.03), transparent);
+            --bg-dropzone: rgba(0, 0, 0, 0.02);
+            --bg-progress: rgba(0, 0, 0, 0.08);
+            --bg-step-dot: rgba(0, 0, 0, 0.12);
+            --bg-overlay: rgba(0, 0, 0, 0.35);
+            --text: #1a1a1a;
+            --text-strong: #0a2a33;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --text-input: #006655;
+            --text-console: #ddd;
+            --text-cancel: #444;
+            --border: #d0d5db;
+            --border-soft: rgba(0, 0, 0, 0.15);
+            --border-ghost: rgba(0, 0, 0, 0.12);
+            --border-footer: #d0d5db;
+            --border-dropzone: rgba(0, 0, 0, 0.15);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --confirm-text: #fff;
+            --error: #c62828;
+        }
+
+
 
         * {
             margin: 0;
@@ -40,19 +180,20 @@
 
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #1e1e1e;
-            color: #f0f0f0;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 180ms ease, color 180ms ease;
             line-height: 1.6;
         }
 
         header {
-            background-color: #2b2b2b;
+            background-color: var(--bg-elevated);
             padding: 20px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid var(--border);
         }
 
         footer {
@@ -60,8 +201,8 @@
             padding: 20px;
             margin-top: 40px;
             font-size: 0.9rem;
-            color: #666;
-            border-top: 1px solid #333;
+            color: var(--text-footer);
+            border-top: 1px solid var(--border-footer);
         }
 
         h1 {
@@ -75,7 +216,7 @@
         a {
             margin: 8px 12px;
             text-decoration: none;
-            color: #aaa;
+            color: var(--text-link);
             transition: color 0.3s;
         }
 
@@ -124,14 +265,14 @@
         select {
             padding: 8px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: #09131f;
-            color: #00ffc8;
+            border: 1px solid var(--border-soft);
+            background: var(--bg-input);
+            color: var(--text-input);
             font-size: 14px;
         }
 
         .btn {
-            background-color: #2b2b2b;
+            background-color: var(--bg-elevated);
             border-radius: var(--radius);
             padding: 20px;
             border-left: 4px solid var(--focus-color);
@@ -146,7 +287,7 @@
         }
 
         .btn.secondary {
-            border: 1px solid #2b2b2b;
+            border: 1px solid var(--border);
         }
 
         .btn.secondary:hover:not(:disabled) {
@@ -155,8 +296,8 @@
 
         .btn.ghost {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #aaa;
+            border: 1px solid var(--border-ghost);
+            color: var(--text-link);
         }
 
         .btn:disabled,
@@ -166,16 +307,16 @@
         }
 
         .btn.confirm {
-            background: linear-gradient(90deg, var(--focus-color), #00a88f);
-            color: #022;
+            background: linear-gradient(90deg, var(--focus-color), var(--focus-color-end));
+            color: var(--confirm-text);
             border-left: none;
             padding: 10px 14px;
         }
 
         .btn.cancel {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #ccc;
+            border: 1px solid var(--border-ghost);
+            color: var(--text-cancel);
             padding: 10px 14px;
         }
 
@@ -188,7 +329,7 @@
 
         .output-item,
         .card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            background: var(--bg-card);
             border-radius: var(--radius);
             padding: 12px;
             display: flex;
@@ -223,7 +364,7 @@
 
         .card .title {
             font-weight: 700;
-            color: #e6f7ff;
+            color: var(--text-strong);
             word-break: break-word;
         }
 
@@ -249,17 +390,17 @@
         }
 
         progress::-webkit-progress-bar {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-progress);
         }
 
         progress::-webkit-progress-value {
-            background: linear-gradient(90deg, var(--focus-color), #00a88f);
+            background: linear-gradient(90deg, var(--focus-color), var(--focus-color-end));
         }
 
         #output {
             display: none;
             white-space: pre-wrap;
-            color: #fff;
+            color: var(--text);
             padding: 10px;
             border-radius: var(--radius);
             margin-top: 14px;
@@ -304,10 +445,10 @@
         }
 
         .dropzone {
-            border: 2px dashed rgba(255, 255, 255, 0.04);
+            border: 2px dashed var(--border-dropzone);
             border-radius: var(--radius);
             padding: 12px;
-            background: rgba(255, 255, 255, 0.01);
+            background: var(--bg-dropzone);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -361,7 +502,7 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--bg-step-dot);
         }
 
         .step-indicator .step-dot.active {
@@ -394,7 +535,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: var(--bg-overlay);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -410,12 +551,12 @@
         }
 
         .modal {
-            background: #141414;
+            background: var(--bg-modal);
             border-radius: 10px;
             padding: 18px;
             width: 92%;
             max-width: 480px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            box-shadow: var(--shadow-modal);
             transform: translateY(6px);
             transition: transform 180ms ease;
         }
@@ -427,7 +568,7 @@
         .modal-title {
             font-weight: 700;
             margin-bottom: 8px;
-            color: #e6f7ff;
+            color: var(--text-strong);
         }
 
         .modal-message {
@@ -456,8 +597,8 @@
         }
 
         .console-modal pre {
-            background: #0b0b0b;
-            color: #ddd;
+            background: var(--bg-console);
+            color: var(--text-console);
             padding: 12px;
             border-radius: var(--radius);
             max-height: 60vh;
@@ -514,7 +655,7 @@
         }
 
         .error-text {
-            color: #f44;
+            color: var(--error);
         }
 
         .btn-spacing {
@@ -534,6 +675,55 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
+        }
+
+
+        .header-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            padding: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 12px;
+            line-height: 0;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--focus-color);
+            color: var(--focus-color);
+        }
+        html[data-theme="dark"] .theme-icon-moon,
+        html[data-theme="bright"] .theme-icon-sun {
+            display: none;
+        }
+
+        html:not([data-theme]) .theme-icon-sun {
+            display: inline-flex;
+        }
+
+        html:not([data-theme]) .theme-icon-moon {
+            display: none;
+        }
+
+        @media (prefers-color-scheme: light) {
+            html:not([data-theme]) .theme-icon-sun {
+                display: none;
+            }
+
+            html:not([data-theme]) .theme-icon-moon {
+                display: inline-flex;
+            }
         }
 
         .results-actions {
@@ -566,6 +756,45 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         function log(msg) { appendOutput(msg); console.log(msg); }
+        var THEME_KEY = 'vengi-theme';
+
+        function systemTheme() {
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'bright' : 'dark';
+        }
+
+        function applyTheme(theme) {
+            /* null => follow prefers-color-scheme (same source as SDL_GetSystemTheme) */
+            if (!theme) {
+                document.documentElement.removeAttribute('data-theme');
+                try { localStorage.removeItem(THEME_KEY); } catch (e) { }
+                return;
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) { }
+        }
+
+        function toggleTheme() {
+            var forced = document.documentElement.getAttribute('data-theme');
+            if (!forced) {
+                applyTheme(systemTheme() === 'bright' ? 'dark' : 'bright');
+            } else if (forced === 'bright') {
+                applyTheme('dark');
+            } else {
+                applyTheme(null);
+            }
+            try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) { }
+        }
+
+        function initThemeToggle() {
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                toggleTheme();
+            });
+        }
+
+
         var selectedFiles = [];
 
         function humanFileSize(bytes) {
@@ -917,6 +1146,7 @@
             });
 
             try { if (window.lucide?.createIcons) lucide.createIcons(); } catch (e) { }
+            initThemeToggle();
             renderSelectedFiles();
             updateDownloadsButton();
 
@@ -942,14 +1172,20 @@
 <body>
     <header>
         <div class="logo">vengi Voxel Tools</div>
-        <nav>
-            <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
-            <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
-            <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
-            <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
-            <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
-            <a href="https://vengi-voxel.de/discord">Discord</a>
-        </nav>
+        <div class="header-right">
+            <nav>
+                <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
+                <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
+                <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
+                <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
+                <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
+                <a href="https://vengi-voxel.de/discord">Discord</a>
+            </nav>
+            <button type="button" id="themeToggle" class="theme-toggle" title="Toggle bright mode" aria-label="Toggle bright mode">
+                <i data-lucide="sun" class="theme-icon-sun"></i>
+                <i data-lucide="moon" class="theme-icon-moon"></i>
+            </button>
+        </div>
     </header>
     <main>
         <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
