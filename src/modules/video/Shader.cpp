@@ -90,6 +90,45 @@ static core::String stripLayoutQualifier(const core::String &src, const char *qu
 	}
 	return out;
 }
+
+/**
+ * @brief Remove empty layout() qualifiers left after stripping binding/set.
+ * ESSL rejects "layout() uniform ..." as a syntax error.
+ */
+static core::String stripEmptyLayoutQualifiers(const core::String &src) {
+	core::String out = src;
+	size_t pos = 0;
+	while ((pos = out.find("layout", pos)) != core::String::npos) {
+		size_t open = out.find("(", pos);
+		if (open == core::String::npos || open > pos + 16) {
+			pos += 6;
+			continue;
+		}
+		size_t close = out.find(")", open);
+		if (close == core::String::npos) {
+			pos += 6;
+			continue;
+		}
+		bool empty = true;
+		for (size_t i = open + 1; i < close; ++i) {
+			const char c = out[i];
+			if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+				empty = false;
+				break;
+			}
+		}
+		if (!empty) {
+			pos = close + 1;
+			continue;
+		}
+		size_t end = close + 1;
+		while (end < out.size() && (out[end] == ' ' || out[end] == '\t')) {
+			++end;
+		}
+		out.erase(pos, end - pos);
+	}
+	return out;
+}
 #endif
 
 int Shader::glslVersion = 430;
@@ -414,6 +453,8 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		if (glslVersion < 310) {
 			src = stripLayoutQualifier(src, "binding");
 			src = stripLayoutQualifier(src, "set");
+			// layout(binding = N) alone becomes layout(), which is invalid ESSL syntax
+			src = stripEmptyLayoutQualifiers(src);
 		}
 #endif
 	}
