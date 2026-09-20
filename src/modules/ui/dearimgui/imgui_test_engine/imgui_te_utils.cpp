@@ -8,6 +8,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_te_utils.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -1285,6 +1286,16 @@ ImFont* ImGui::FindFontByPrefix(const char* prefix)
 const char* ImGui::TabBarGetTabName(ImGuiTabBar* tab_bar, ImGuiTabItem* tab)
 {
     return tab_bar->GetTabName(tab);
+}
+#endif
+
+#if IMGUI_VERSION_NUM < 19298
+ImVec2 ImGui::TabBarGetTabPosImpl(ImGuiTabBar* tab_bar, ImGuiTabItem* tab)
+{
+    if ((tab->Flags & ImGuiTabItemFlags_SectionMask_) == 0)
+        return tab_bar->BarRect.Min + ImVec2(IM_TRUNC(tab->Offset - tab_bar->ScrollingAnim), 0.0f);
+    else
+        return tab_bar->BarRect.Min + ImVec2(tab->Offset, 0.0f);
 }
 #endif
 
