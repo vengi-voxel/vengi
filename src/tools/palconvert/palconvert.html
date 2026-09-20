@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@NAME@</title>
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('vengi-theme');
+                if (stored === 'bright' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                }
+            } catch (e) { }
+        })();
+    </script>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vengi Voxel Tools" />
+    <meta property="og:description" content="Palette conversion tools for artists and developers" />
+    <meta property="og:image"
+        content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
+
+    <meta name="keywords"
+        content="palette,palconvert,gimp,aseprite,photoshop,paint.net,voxel,magicavoxel" />
+    <meta name="description" content="Palette conversion tool for artists and developers">
+
+    <style>
+        :root {
+            --anim-card-duration: 340ms;
+            --anim-step-duration: 360ms;
+            --focus-color: #00d1b2;
+            --focus-color-end: #00a88f;
+            --muted: #888;
+            --radius: 8px;
+            --panel: rgba(255, 255, 255, 0.02);
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-input: #09131f;
+            --bg-modal: #141414;
+            --bg-console: #0b0b0b;
+            --bg-card: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            --bg-dropzone: rgba(255, 255, 255, 0.01);
+            --bg-progress: rgba(255, 255, 255, 0.05);
+            --bg-step-dot: rgba(255, 255, 255, 0.06);
+            --bg-overlay: rgba(0, 0, 0, 0.45);
+            --text: #f0f0f0;
+            --text-strong: #e6f7ff;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --text-input: #00ffc8;
+            --text-console: #ddd;
+            --text-cancel: #ccc;
+            --border: #444;
+            --border-soft: rgba(255, 255, 255, 0.1);
+            --border-ghost: rgba(255, 255, 255, 0.06);
+            --border-footer: #333;
+            --border-dropzone: rgba(255, 255, 255, 0.04);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.6);
+            --confirm-text: #022;
+            --error: #f44;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+            --focus-color: #008f7a;
+            --focus-color-end: #007a68;
+            --muted: #5c5c5c;
+            --panel: rgba(0, 0, 0, 0.03);
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-input: #ffffff;
+            --bg-modal: #ffffff;
+            --bg-console: #1e1e1e;
+            --bg-card: linear-gradient(180deg, rgba(0, 0, 0, 0.03), transparent);
+            --bg-dropzone: rgba(0, 0, 0, 0.02);
+            --bg-progress: rgba(0, 0, 0, 0.08);
+            --bg-step-dot: rgba(0, 0, 0, 0.12);
+            --bg-overlay: rgba(0, 0, 0, 0.35);
+            --text: #1a1a1a;
+            --text-strong: #0a2a33;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --text-input: #006655;
+            --text-console: #ddd;
+            --text-cancel: #444;
+            --border: #d0d5db;
+            --border-soft: rgba(0, 0, 0, 0.15);
+            --border-ghost: rgba(0, 0, 0, 0.12);
+            --border-footer: #d0d5db;
+            --border-dropzone: rgba(0, 0, 0, 0.15);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --confirm-text: #fff;
+            --error: #c62828;
+            }
+        }
+
+        /* Optional manual override via toggle (same key across pages) */
+        html[data-theme="dark"] {
+            --anim-card-duration: 340ms;
+            --anim-step-duration: 360ms;
+            --focus-color: #00d1b2;
+            --focus-color-end: #00a88f;
+            --muted: #888;
+            --radius: 8px;
+            --panel: rgba(255, 255, 255, 0.02);
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-input: #09131f;
+            --bg-modal: #141414;
+            --bg-console: #0b0b0b;
+            --bg-card: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            --bg-dropzone: rgba(255, 255, 255, 0.01);
+            --bg-progress: rgba(255, 255, 255, 0.05);
+            --bg-step-dot: rgba(255, 255, 255, 0.06);
+            --bg-overlay: rgba(0, 0, 0, 0.45);
+            --text: #f0f0f0;
+            --text-strong: #e6f7ff;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --text-input: #00ffc8;
+            --text-console: #ddd;
+            --text-cancel: #ccc;
+            --border: #444;
+            --border-soft: rgba(255, 255, 255, 0.1);
+            --border-ghost: rgba(255, 255, 255, 0.06);
+            --border-footer: #333;
+            --border-dropzone: rgba(255, 255, 255, 0.04);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.6);
+            --confirm-text: #022;
+            --error: #f44;
+        }
+
+        html[data-theme="bright"] {
+            --focus-color: #008f7a;
+            --focus-color-end: #007a68;
+            --muted: #5c5c5c;
+            --panel: rgba(0, 0, 0, 0.03);
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-input: #ffffff;
+            --bg-modal: #ffffff;
+            --bg-console: #1e1e1e;
+            --bg-card: linear-gradient(180deg, rgba(0, 0, 0, 0.03), transparent);
+            --bg-dropzone: rgba(0, 0, 0, 0.02);
+            --bg-progress: rgba(0, 0, 0, 0.08);
+            --bg-step-dot: rgba(0, 0, 0, 0.12);
+            --bg-overlay: rgba(0, 0, 0, 0.35);
+            --text: #1a1a1a;
+            --text-strong: #0a2a33;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --text-input: #006655;
+            --text-console: #ddd;
+            --text-cancel: #444;
+            --border: #d0d5db;
+            --border-soft: rgba(0, 0, 0, 0.15);
+            --border-ghost: rgba(0, 0, 0, 0.12);
+            --border-footer: #d0d5db;
+            --border-dropzone: rgba(0, 0, 0, 0.15);
+            --shadow-modal: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --confirm-text: #fff;
+            --error: #c62828;
+        }
+
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 180ms ease, color 180ms ease;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--bg-elevated);
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: var(--text-footer);
+            border-top: 1px solid var(--border-footer);
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            font-size: clamp(1.25rem, 2vw, 1.75rem);
+            background: url('vengi-banner-493x58.png') no-repeat right center;
+            background-size: auto 58px;
+            line-height: 58px;
+        }
+
+        a {
+            margin: 8px 12px;
+            text-decoration: none;
+            color: var(--text-link);
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: var(--focus-color);
+        }
+
+        .disclaimer {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            align-items: start;
+            margin-top: 12px;
+        }
+
+        @media (min-width: 900px) {
+            .controls {
+                grid-template-columns: 1fr 420px;
+            }
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 16px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            color: var(--muted);
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        input[type=file],
+        select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-soft);
+            background: var(--bg-input);
+            color: var(--text-input);
+            font-size: 14px;
+        }
+
+        .btn {
+            background-color: var(--bg-elevated);
+            border-radius: var(--radius);
+            padding: 20px;
+            border-left: 4px solid var(--focus-color);
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            color: var(--focus-color);
+            cursor: pointer;
+        }
+
+        .btn:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
+
+        .btn.secondary {
+            border: 1px solid var(--border);
+        }
+
+        .btn.secondary:hover:not(:disabled) {
+            background: rgba(30, 167, 253, 0.05);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid var(--border-ghost);
+            color: var(--text-link);
+        }
+
+        .btn:disabled,
+        .btn.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn.confirm {
+            background: linear-gradient(90deg, var(--focus-color), var(--focus-color-end));
+            color: var(--confirm-text);
+            border-left: none;
+            padding: 10px 14px;
+        }
+
+        .btn.cancel {
+            background: transparent;
+            border: 1px solid var(--border-ghost);
+            color: var(--text-cancel);
+            padding: 10px 14px;
+        }
+
+        .pending-list,
+        .selected-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .output-item,
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .output-item {
+            justify-content: space-between;
+            padding: 10px 12px;
+        }
+
+        .card {
+            flex-direction: column;
+            transition: transform var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1), opacity var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1);
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        .card-exit {
+            opacity: 0 !important;
+            transform: translateY(-12px) !important;
+        }
+
+        .card .title {
+            font-weight: 700;
+            color: var(--text-strong);
+            word-break: break-word;
+        }
+
+        .card .meta,
+        .output-item .meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .card .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        progress {
+            width: 100%;
+            height: 12px;
+            appearance: none;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        progress::-webkit-progress-bar {
+            background: var(--bg-progress);
+        }
+
+        progress::-webkit-progress-value {
+            background: linear-gradient(90deg, var(--focus-color), var(--focus-color-end));
+        }
+
+        #output {
+            display: none;
+            white-space: pre-wrap;
+            color: var(--text);
+            padding: 10px;
+            border-radius: var(--radius);
+            margin-top: 14px;
+            max-height: 240px;
+            min-height: 48px;
+            overflow: auto;
+            font-size: 13px;
+        }
+
+        .results-title,
+        .progress-title {
+            margin-top: 6px;
+            color: var(--muted);
+        }
+
+        .downloads-title {
+            margin-top: 10px;
+            color: var(--muted);
+        }
+
+        .step {
+            display: block;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity var(--anim-step-duration) cubic-bezier(.2, .9, .2, 1), transform var(--anim-step-duration) cubic-bezier(.2, .9, .2, 1);
+        }
+
+        .step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .step-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--border-dropzone);
+            border-radius: var(--radius);
+            padding: 12px;
+            background: var(--bg-dropzone);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 64px;
+            transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
+        }
+
+        .dropzone {
+            position: relative;
+        }
+
+        .dropzone.dragover {
+            background: rgba(0, 209, 178, 0.04);
+            border-color: rgba(0, 209, 178, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .dropzone .hint {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .dropzone-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-badge {
+            display: inline-block;
+            background: rgba(0, 209, 178, 0.08);
+            color: var(--focus-color);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 13px;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .step-indicator .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--bg-step-dot);
+        }
+
+        .step-indicator .step-dot.active {
+            background: var(--focus-color);
+            box-shadow: 0 0 6px rgba(0, 209, 178, 0.25);
+        }
+
+        .step-indicator .step-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        :focus-visible {
+            outline: 4px solid var(--focus-color);
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        .btn:focus-visible {
+            box-shadow: 0 0 0 6px rgba(0, 209, 178, 0.08);
+            outline: none;
+        }
+
+        input:focus-visible,
+        select:focus-visible {
+            box-shadow: 0 0 0 4px rgba(0, 209, 178, 0.06) inset;
+            outline: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-overlay);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms ease;
+            z-index: 1200;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-modal);
+            border-radius: 10px;
+            padding: 18px;
+            width: 92%;
+            max-width: 480px;
+            box-shadow: var(--shadow-modal);
+            transform: translateY(6px);
+            transition: transform 180ms ease;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-strong);
+        }
+
+        .modal-message {
+            color: var(--muted);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .console-modal {
+            display: none;
+        }
+
+        .console-modal.open {
+            display: flex;
+        }
+
+        .console-modal .modal {
+            max-width: 900px;
+            width: 96%;
+        }
+
+        .console-modal pre {
+            background: var(--bg-console);
+            color: var(--text-console);
+            padding: 12px;
+            border-radius: var(--radius);
+            max-height: 60vh;
+            overflow: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .file-card {
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .config-input {
+            width: 220px;
+        }
+
+        .config-help {
+            font-size: 12px;
+            color: var(--muted);
+            margin-left: 0;
+        }
+
+        .config-option-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .config-section-title {
+            margin: 12px 0 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-strong);
+        }
+
+        .config-link {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        .options-container {
+            margin-top: 12px;
+        }
+
+        .progress-wrapper {
+            flex: 1;
+        }
+
+        .timestamp {
+            font-size: 11px;
+        }
+
+        .error-text {
+            color: var(--error);
+        }
+
+        .btn-spacing {
+            margin-left: 6px;
+        }
+
+        .step-spacer {
+            width: 8px;
+        }
+
+        .flex-grow {
+            flex: 1;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .header-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            padding: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 12px;
+            line-height: 0;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--focus-color);
+            color: var(--focus-color);
+        }
+        html[data-theme="dark"] .theme-icon-moon,
+        html[data-theme="bright"] .theme-icon-sun {
+            display: none;
+        }
+
+        html:not([data-theme]) .theme-icon-sun {
+            display: inline-flex;
+        }
+
+        html:not([data-theme]) .theme-icon-moon {
+            display: none;
+        }
+
+        @media (prefers-color-scheme: light) {
+            html:not([data-theme]) .theme-icon-sun {
+                display: none;
+            }
+
+            html:not([data-theme]) .theme-icon-moon {
+                display: inline-flex;
+            }
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+    </style>
+    <script>
+        function _readCssMsVar(name, fallback) {
+            try {
+                var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+                if (!v) return fallback;
+                var n = parseInt(v.trim().replace('ms', ''), 10);
+                return isNaN(n) ? fallback : n;
+            } catch (e) { return fallback; }
+        }
+        const ANIM_CARD_MS = _readCssMsVar('--anim-card-duration', 340);
+        const ANIM_STEP_MS = _readCssMsVar('--anim-step-duration', 360);
+
+        function appendOutput(text) {
+            var o = document.getElementById('output');
+            if (o) { o.textContent += text + '\n'; o.scrollTop = o.scrollHeight; }
+        }
+
+        var Module = { preRun: [], postRun: [], noInitialRun: true, print: appendOutput, printErr: appendOutput };
+        window.onerror = function (event) { appendOutput('Error: ' + event.message); };
+    </script>
+    {{{ SCRIPT }}}
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        function log(msg) { appendOutput(msg); console.log(msg); }
+        var THEME_KEY = 'vengi-theme';
+
+        function systemTheme() {
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'bright' : 'dark';
+        }
+
+        function applyTheme(theme) {
+            /* null => follow prefers-color-scheme (same source as SDL_GetSystemTheme) */
+            if (!theme) {
+                document.documentElement.removeAttribute('data-theme');
+                try { localStorage.removeItem(THEME_KEY); } catch (e) { }
+                return;
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) { }
+        }
+
+        function toggleTheme() {
+            var forced = document.documentElement.getAttribute('data-theme');
+            if (!forced) {
+                applyTheme(systemTheme() === 'bright' ? 'dark' : 'bright');
+            } else if (forced === 'bright') {
+                applyTheme('dark');
+            } else {
+                applyTheme(null);
+            }
+            try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) { }
+        }
+
+        function initThemeToggle() {
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                toggleTheme();
+            });
+        }
+
+
+        var selectedFiles = [];
+
+        function humanFileSize(bytes) {
+            if (!bytes) return '0 B';
+            var i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
+        }
+
+        function toggleButton(id, enabled, tooltip) {
+            var btn = document.getElementById(id);
+            if (!btn) return;
+            btn.disabled = !enabled;
+            btn.classList.toggle('disabled', !enabled);
+            btn.title = (tooltip && !enabled) ? tooltip : '';
+        }
+
+        function updateFileBadge() {
+            var badge = document.getElementById('fileCountBadge');
+            if (!badge) return;
+            var count = selectedFiles.length;
+            var total = selectedFiles.reduce(function (s, f) { return s + (f.size || 0); }, 0);
+            badge.textContent = count ? count + ' file' + (count > 1 ? 's' : '') + ' • ' + humanFileSize(total) : '0';
+            toggleButton('filesNext', count > 0, 'Select at least one file to continue');
+        }
+
+        function updateDownloadsButton() {
+            var count = document.getElementById('historyGrid')?.querySelectorAll('.card').length || 0;
+            toggleButton('clearDownloadsBtn', count > 0, 'No downloads to clear');
+        }
+
+        function addFilesToSelection(fileList) {
+            for (let i = 0; i < fileList.length; i++) {
+                const f = fileList[i];
+                if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified))
+                    selectedFiles.push(f);
+            }
+            renderSelectedFiles();
+        }
+
+        function removeSelectedFileAt(index) {
+            if (index >= 0 && index < selectedFiles.length) {
+                selectedFiles.splice(index, 1);
+                renderSelectedFiles();
+            }
+        }
+
+        function renderSelectedFiles() {
+            const container = document.getElementById('selectedList');
+            if (!container) return;
+            container.innerHTML = '';
+            selectedFiles.forEach(function (f, idx) {
+                const card = document.createElement('div');
+                card.className = 'card file-card';
+                card.innerHTML = '<div class="file-info">' +
+                    '<div class="title">' + f.name + '</div><div class="meta">' + humanFileSize(f.size) + '</div></div>' +
+                    '<button class="btn secondary" title="Remove"><i data-lucide="x"></i></button>';
+
+                card.querySelector('button').onclick = function () {
+                    card.classList.add('card-exit');
+                    setTimeout(function () { removeSelectedFileAt(idx); }, ANIM_CARD_MS);
+                };
+
+                container.appendChild(card);
+                requestAnimationFrame(function () { card.classList.add('visible'); });
+            });
+            try { if (window.lucide?.createIcons) lucide.createIcons(); } catch (e) { }
+            updateFileBadge();
+        }
+
+        function fetchFormats() {
+            var json = JSON.parse(Module.ccall('get_supported_formats_json', 'string', [], []));
+            var sel = document.getElementById('formatSelect');
+            sel.innerHTML = '';
+            (json.palettes || []).forEach(function (item) {
+                if (!item.save) return;
+                item.extensions.forEach(function (ext) {
+                    var opt = document.createElement('option');
+                    opt.value = ext;
+                    opt.textContent = item.name + ' (.' + ext + ')';
+                    sel.appendChild(opt);
+                });
+            });
+            sel.selectedIndex = 0;
+            sel.disabled = false;
+            toggleButton('formatNext', true);
+        }
+
+        function isPalconvertCvar(key, entry) {
+            if (!entry || entry.readonly || entry.secret) return false;
+            if (entry.type === 'unknown') return false;
+            if (key.indexOf('palformat_') === 0) return true;
+            if (key === 'core_colorreduction') return true;
+            return false;
+        }
+
+        function cvarLabel(key, entry) {
+            return (entry && entry.title) ? entry.title : key;
+        }
+
+        function cvarHelp(key, entry) {
+            if (!entry) return key;
+            return entry.description || entry.title || key;
+        }
+
+        function appendConfigHelp(helpEl, key, entry) {
+            var docsBase = 'https://vengi-voxel.github.io/vengi/Configuration/';
+            var label = cvarLabel(key, entry);
+            var desc = cvarHelp(key, entry);
+            helpEl.appendChild(document.createTextNode(desc + ' ('));
+            var keyLink = document.createElement('a');
+            keyLink.href = docsBase + '#' + encodeURIComponent(key);
+            keyLink.target = '_blank';
+            keyLink.rel = 'noopener noreferrer';
+            keyLink.textContent = key;
+            keyLink.className = 'config-link';
+            keyLink.title = label;
+            helpEl.appendChild(keyLink);
+            helpEl.appendChild(document.createTextNode(')'));
+        }
+
+        function createCvarControl(key, entry) {
+            var typ = (entry && entry.type) || 'string';
+            var value = entry && entry.value != null ? String(entry.value) : '';
+            var control;
+
+            if (typ === 'boolean' || value === 'true' || value === 'false') {
+                control = document.createElement('input');
+                control.type = 'checkbox';
+                control.checked = value === 'true';
+                control.addEventListener('change', function () {
+                    window.runtimeOptions[key] = control.checked ? 'true' : 'false';
+                });
+                return control;
+            }
+
+            if (typ === 'enum' && entry.valid_values && entry.valid_values.length) {
+                control = document.createElement('select');
+                entry.valid_values.forEach(function (v) {
+                    var opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v;
+                    if (v === value) opt.selected = true;
+                    control.appendChild(opt);
+                });
+                if (!entry.valid_values.includes(value) && entry.valid_values.length) {
+                    control.selectedIndex = 0;
+                    value = entry.valid_values[0];
+                }
+                control.addEventListener('change', function () {
+                    window.runtimeOptions[key] = control.value;
+                });
+                return control;
+            }
+
+            if (typ === 'int' || typ === 'float') {
+                control = document.createElement('input');
+                control.type = 'number';
+                control.value = value;
+                control.className = 'config-input';
+                if (entry.min != null) control.min = entry.min;
+                if (entry.max != null && entry.max >= (entry.min != null ? entry.min : entry.max)) control.max = entry.max;
+                if (typ === 'float') control.step = 'any';
+                else control.step = '1';
+                control.addEventListener('input', function () {
+                    window.runtimeOptions[key] = control.value;
+                });
+                return control;
+            }
+
+            control = document.createElement('input');
+            control.type = 'text';
+            control.value = value;
+            control.className = 'config-input';
+            control.addEventListener('input', function () {
+                window.runtimeOptions[key] = control.value;
+            });
+            return control;
+        }
+
+        function appendCliFlagRow(container, id, flag, title, description) {
+            var row = document.createElement('div');
+            row.className = 'config-row';
+
+            var control = document.createElement('input');
+            control.type = 'checkbox';
+            control.id = id;
+            control.checked = !!window.cliFlags[flag];
+            control.addEventListener('change', function () {
+                window.cliFlags[flag] = control.checked;
+            });
+
+            var helpEl = document.createElement('div');
+            helpEl.className = 'config-help';
+            helpEl.appendChild(document.createTextNode(description + ' (' + flag + ')'));
+
+            var titleEl = document.createElement('div');
+            titleEl.className = 'config-option-title';
+            titleEl.textContent = title;
+
+            var textWrap = document.createElement('div');
+            textWrap.appendChild(titleEl);
+            textWrap.appendChild(helpEl);
+
+            row.appendChild(control);
+            row.appendChild(textWrap);
+            container.appendChild(row);
+        }
+
+        function fetchConfig() {
+            var json = {};
+            try { json = JSON.parse(Module.ccall('get_config_json', 'string', [], []) || '{}'); }
+            catch (e) { console.warn('fetchConfig error:', e); }
+
+            var container = document.getElementById('optionsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            window.runtimeOptions = {};
+            window.cliFlags = window.cliFlags || { quantize: false, optimize: false };
+
+            var section = document.createElement('div');
+            section.className = 'config-section-title';
+            section.textContent = 'Conversion options';
+            container.appendChild(section);
+
+            appendCliFlagRow(container, 'cliQuantize', 'quantize', 'Quantize',
+                'Quantize the input palette to 256 colors');
+            appendCliFlagRow(container, 'cliOptimize', 'optimize', 'Optimize',
+                'Remove duplicated or fully transparent colors');
+
+            section = document.createElement('div');
+            section.className = 'config-section-title';
+            section.textContent = 'Palette settings';
+            container.appendChild(section);
+
+            Object.keys(json).sort().forEach(function (key) {
+                var entry = json[key];
+                if (!isPalconvertCvar(key, entry)) return;
+
+                var value = entry && entry.value != null ? String(entry.value) : '';
+                window.runtimeOptions[key] = value;
+
+                var row = document.createElement('div');
+                row.className = 'config-row';
+
+                var control = createCvarControl(key, entry);
+                window.runtimeOptions[key] = (control.type === 'checkbox')
+                    ? (control.checked ? 'true' : 'false')
+                    : (control.value != null ? String(control.value) : value);
+
+                var textWrap = document.createElement('div');
+                var titleEl = document.createElement('div');
+                titleEl.className = 'config-option-title';
+                titleEl.textContent = cvarLabel(key, entry);
+                textWrap.appendChild(titleEl);
+
+                var helpEl = document.createElement('div');
+                helpEl.className = 'config-help';
+                appendConfigHelp(helpEl, key, entry);
+                textWrap.appendChild(helpEl);
+
+                row.appendChild(control);
+                row.appendChild(textWrap);
+                container.appendChild(row);
+            });
+        }
+
+        function buildConvertArgs(inPath, outPath) {
+            var args = ['--input', inPath, '--output', outPath, '--force'];
+            try {
+                if (window.cliFlags) {
+                    if (window.cliFlags.quantize) args.push('--quantize');
+                    if (window.cliFlags.optimize) args.push('--optimize');
+                }
+                if (window.runtimeOptions) {
+                    Object.keys(window.runtimeOptions).forEach(function (k) {
+                        var v = window.runtimeOptions[k];
+                        if (v != null && v !== '') args.push('-set', k, String(v));
+                    });
+                }
+            } catch (e) { }
+            return args;
+        }
+
+        async function runConvert(file, idx, progressCb) {
+            var ext = document.getElementById('formatSelect').value;
+            if (!ext) throw new Error('No output format selected');
+
+            log('Uploading: ' + file.name);
+            progressCb?.(0.05, 'Uploading');
+
+            const inPath = '/' + Date.now() + '-' + idx + '-' + file.name;
+            try { Module.FS.writeFile(inPath, new Uint8Array(await file.arrayBuffer())); }
+            catch (e) { log('FS.writeFile error: ' + e); return { file: file.name, ok: false, error: e }; }
+
+            progressCb?.(0.12, 'Running');
+            const outName = (file.name.replace(/\.[^/.]+$/, '') || file.name) + '.' + ext;
+            const outPath = '/' + outName;
+            var args = buildConvertArgs(inPath, outPath);
+
+            var callMainOk = false;
+            try {
+                if (Module.callMain) {
+                    await Promise.resolve(Module.callMain(args));
+                    callMainOk = true;
+                }
+            } catch (e) { log('Conversion error: ' + e); }
+
+            if (!callMainOk) {
+                try {
+                    if (Module.ccall) {
+                        Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
+                    } else if (Module._convert_file) {
+                        Module._convert_file(inPath, outPath);
+                    }
+                } catch (e2) { log('Fallback conversion error: ' + e2); }
+            }
+            progressCb?.(0.8, 'Finalizing');
+
+            let data = null;
+            try { data = Module.FS.readFile(outPath); }
+            catch (e) {
+                await new Promise(r => setTimeout(r, 200));
+                try { data = Module.FS.readFile(outPath); } catch (e2) { }
+            }
+            if (!data) { log('No output produced for ' + file.name); return { file: file.name, ok: false, error: 'no output' }; }
+
+            const blob = new Blob([data.slice ? data.slice(0) : new Uint8Array(data)], { type: 'application/octet-stream' });
+            log('Finished: ' + file.name);
+            progressCb?.(1, 'Done');
+            return { file: file.name, ok: true, outName: outName, blobUrl: URL.createObjectURL(blob) };
+        }
+
+        async function runAll() {
+            if (!selectedFiles.length) { log('No files selected'); return; }
+
+            const runBtn = document.getElementById('runStart');
+            const fileInput = document.getElementById('fileInput');
+            const pending = document.getElementById('pendingListRight') || document.getElementById('pendingList');
+            const historyGrid = document.getElementById('historyGrid');
+
+            if (runBtn) runBtn.disabled = true;
+            if (fileInput) fileInput.disabled = true;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const item = document.createElement('div');
+                item.className = 'output-item';
+                item.innerHTML = '<div class="progress-wrapper"><div class="meta">' + file.name + '</div><progress max="1" value="0"></progress></div>';
+                const prog = item.querySelector('progress');
+                const title = item.querySelector('.meta');
+                pending.appendChild(item);
+
+                const res = await runConvert(file, i, function (p, msg) {
+                    prog.value = Math.max(0, Math.min(1, p));
+                    title.textContent = file.name + ' - ' + msg;
+                });
+
+                pending.removeChild(item);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                const timestamp = new Date().toLocaleString();
+                const fmt = document.getElementById('formatSelect').value;
+
+                if (res.ok) {
+                    card.innerHTML = '<div class="title">' + file.name + '</div>' +
+                        '<div class="meta">Format: ' + fmt + ' - ' + res.outName + '</div>' +
+                        '<div class="row"><button class="btn secondary">Download ' + res.outName + '</button>' +
+                        '<button class="btn secondary btn-spacing">Remove</button></div>' +
+                        '<div class="meta timestamp">' + timestamp + '</div>';
+                    card.dataset.bloburl = res.blobUrl;
+                    var btns = card.querySelectorAll('button');
+                    btns[0].onclick = function () {
+                        const a = document.createElement('a');
+                        a.href = res.blobUrl;
+                        a.download = res.outName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+                    btns[1].onclick = function () {
+                        try { URL.revokeObjectURL(res.blobUrl); } catch (e) { }
+                        card.classList.add('card-exit');
+                        setTimeout(function () { card.remove(); updateDownloadsButton(); }, ANIM_CARD_MS);
+                    };
+                } else {
+                    card.innerHTML = '<div class="title">' + file.name + '</div>' +
+                        '<div class="meta">Failed: ' + (res.error || 'unknown') + '</div>' +
+                        '<div class="row"><div class="error-text">Error</div></div>' +
+                        '<div class="meta timestamp">' + timestamp + '</div>';
+                }
+
+                historyGrid.appendChild(card);
+                requestAnimationFrame(function () { card.classList.add('visible'); });
+                updateDownloadsButton();
+            }
+
+            if (runBtn) runBtn.disabled = false;
+            if (fileInput) fileInput.disabled = false;
+        }
+
+        function showStep(id) {
+            ['step-files', 'step-format', 'step-run'].forEach(function (s) {
+                var el = document.getElementById(s);
+                if (!el) return;
+                if (s === id) {
+                    el.classList.remove('hidden');
+                    setTimeout(function () { el.classList.add('visible'); }, 10);
+                } else {
+                    el.classList.remove('visible');
+                    setTimeout(function () { el.classList.add('hidden'); }, ANIM_STEP_MS);
+                }
+            });
+            var cb = document.getElementById('toggleConsoleBtn');
+            if (cb) cb.style.display = id === 'step-run' ? 'inline-flex' : 'none';
+            window.currentStep = id;
+        }
+
+        function setActiveDot(name) {
+            ['files', 'format', 'run'].forEach(function (k) {
+                var el = document.getElementById('dot-' + k);
+                if (el) el.classList.toggle('active', k === name);
+            });
+        }
+
+        function navigate(step, dot) {
+            showStep(step);
+            setActiveDot(dot);
+        }
+
+        function buildUI() {
+            var fileInput = document.getElementById('fileInput');
+            var dropzone = document.getElementById('dropzone');
+
+            if (fileInput) fileInput.onchange = function (e) { addFilesToSelection(e.target.files); e.target.value = ''; };
+            if (dropzone) {
+                dropzone.addEventListener('click', function () { fileInput.click(); });
+                dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+                dropzone.addEventListener('dragleave', function (e) { e.preventDefault(); dropzone.classList.remove('dragover'); });
+                dropzone.addEventListener('drop', function (e) {
+                    e.preventDefault(); dropzone.classList.remove('dragover');
+                    addFilesToSelection(e.dataTransfer.files);
+                });
+            }
+
+            document.getElementById('filesNext')?.addEventListener('click', function () {
+                if (selectedFiles.length) {
+                    navigate('step-format', 'format');
+                    fetchFormats();
+                    try { fetchConfig(); } catch (e) { console.warn(e); }
+                }
+            });
+            document.getElementById('formatBack')?.addEventListener('click', function () { navigate('step-files', 'files'); });
+            document.getElementById('formatNext')?.addEventListener('click', function () {
+                if (document.getElementById('formatSelect').value) navigate('step-run', 'run');
+            });
+            document.getElementById('runBack')?.addEventListener('click', function () { navigate('step-format', 'format'); });
+            document.getElementById('runStart')?.addEventListener('click', runAll);
+            document.getElementById('formatSelect')?.addEventListener('change', function (e) { toggleButton('formatNext', !!e.target.value); });
+
+            var consoleBtn = document.getElementById('toggleConsoleBtn');
+            if (consoleBtn) {
+                consoleBtn.style.display = 'none';
+                consoleBtn.addEventListener('click', showConsoleModal);
+            }
+
+            document.getElementById('clearDownloadsBtn')?.addEventListener('click', function () {
+                var grid = document.getElementById('historyGrid');
+                var count = grid?.querySelectorAll('.card').length || 0;
+                if (!count) return;
+                showConfirmModal('Clear all ' + count + ' downloads?').then(function (ok) {
+                    if (!ok) return;
+                    Array.from(grid.querySelectorAll('.card')).forEach(function (c) {
+                        if (c.dataset.bloburl) try { URL.revokeObjectURL(c.dataset.bloburl); } catch (e) { }
+                    });
+                    grid.innerHTML = '';
+                    updateDownloadsButton();
+                });
+            });
+
+            try { if (window.lucide?.createIcons) lucide.createIcons(); } catch (e) { }
+            initThemeToggle();
+            renderSelectedFiles();
+            updateDownloadsButton();
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                var t = document.activeElement;
+                if (!t || t.isContentEditable || ['input', 'textarea', 'select'].includes(t.tagName?.toLowerCase())) return;
+                var btnId = { 'step-files': 'filesNext', 'step-format': 'formatNext', 'step-run': 'runStart' }[window.currentStep || 'step-files'];
+                var btn = document.getElementById(btnId);
+                if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+            });
+        }
+
+        function onReady() { buildUI(); fetchFormats(); }
+
+        try {
+            var prev = Module.onRuntimeInitialized;
+            Module.onRuntimeInitialized = prev ? function () { try { prev(); } catch (e) { } onReady(); } : onReady;
+        } catch (e) { setTimeout(onReady, 0); }
+    </script>
+</head>
+
+<body>
+    <header>
+        <div class="logo">vengi Voxel Tools</div>
+        <div class="header-right">
+            <nav>
+                <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
+                <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
+                <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
+                <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
+                <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
+                <a href="https://vengi-voxel.de/discord">Discord</a>
+            </nav>
+            <button type="button" id="themeToggle" class="theme-toggle" title="Toggle bright mode" aria-label="Toggle bright mode">
+                <i data-lucide="sun" class="theme-icon-sun"></i>
+                <i data-lucide="moon" class="theme-icon-moon"></i>
+            </button>
+        </div>
+    </header>
+    <main>
+        <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
+        <div class="disclaimer">This is a very simplified version of vengi-palconvert. The tool is opensource and free to
+            use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
+        <div id="controlsRoot" class="controls">
+            <div class="panel left-panel">
+                <div class="step-indicator" aria-hidden="true">
+                    <div class="step-dot active" id="dot-files"></div>
+                    <div class="step-label">Files</div>
+                    <div class="step-spacer"></div>
+                    <div class="step-dot" id="dot-format"></div>
+                    <div class="step-label">Options</div>
+                    <div class="step-spacer"></div>
+                    <div class="step-dot" id="dot-run"></div>
+                    <div class="step-label">Run</div>
+                    <div class="flex-grow"></div>
+                    <div class="file-badge" id="fileCountBadge">0</div>
+                </div>
+
+                <div id="step-files" class="step visible">
+                    <h3>Select input files</h3>
+                    <div id="dropzone" class="dropzone">
+                        <div class="hint">Drag & drop files here or click to choose</div>
+                        <input type="file" id="fileInput" multiple class="dropzone-input" />
+                    </div>
+                    <label>Selected files:
+                        <div id="selectedList" class="selected-list"></div>
+                    </label>
+                    <div class="step-footer">
+                        <button id="filesNext" class="btn disabled" disabled>Continue</button>
+                    </div>
+                </div>
+
+                <div id="step-format" class="step hidden">
+                    <h3>Options</h3>
+                    <label>Output format:
+                        <select id="formatSelect" disabled></select>
+                    </label>
+                    <div id="optionsContainer" class="options-container"></div>
+                    <div class="step-footer">
+                        <button id="formatBack" class="btn ghost">Back to files</button>
+                        <button id="formatNext" class="btn disabled" disabled>Continue to run</button>
+                    </div>
+                </div>
+
+                <div id="step-run" class="step hidden">
+                    <h3>Run conversion</h3>
+                    <div class="progress-title">In progress</div>
+                    <div id="pendingList" class="pending-list"></div>
+                    <div class="step-footer">
+                        <button id="runBack" class="btn ghost">Back to options</button>
+                        <button id="runStart" class="btn">Start conversion</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel right-panel">
+                <div class="results-header">
+                    <div class="results-title">Results</div>
+                    <div class="results-actions">
+                        <button id="toggleConsoleBtn" class="btn secondary" title="Toggle Console"><i
+                                data-lucide="terminal"></i></button>
+                        <button id="clearDownloadsBtn" class="btn secondary" title="Clear Downloads"><i
+                                data-lucide="trash-2"></i></button>
+                    </div>
+                </div>
+                <div id="results-area">
+                    <div class="progress-title">In progress</div>
+                    <div id="pendingListRight" class="pending-list"></div>
+                    <div class="downloads-title">Downloads</div>
+                    <div id="historyGrid" class="history-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div id="output"></div>
+    </main>
+
+    <div id="confirmModal" class="modal-overlay" role="dialog" aria-hidden="true">
+        <div class="modal" role="document">
+            <div class="modal-title">Confirm action</div>
+            <div class="modal-message" id="confirmModalMessage">Are you sure?</div>
+            <div class="modal-actions">
+                <button id="confirmCancel" class="btn cancel">Cancel</button>
+                <button id="confirmOk" class="btn confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="consoleModal" class="modal-overlay console-modal" role="dialog" aria-hidden="true">
+        <div class="modal" role="document">
+            <div class="modal-title">Console output</div>
+            <pre id="consoleModalContent"></pre>
+            <div class="modal-actions">
+                <button id="consoleClose" class="btn cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>&copy; @COPYRIGHT_YEAR@ Vengi Voxel Tools. All rights reserved.</footer>
+
+    <script>
+        function trapFocus(overlay, e) {
+            if (e.key !== 'Tab') return;
+            var focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusable?.length) return;
+            var first = focusable[0], last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+
+        function showConfirmModal(message) {
+            return new Promise(function (resolve) {
+                var overlay = document.getElementById('confirmModal');
+                var msg = document.getElementById('confirmModalMessage');
+                var ok = document.getElementById('confirmOk');
+                var cancel = document.getElementById('confirmCancel');
+                if (!overlay || !ok || !cancel || !msg) { resolve(window.confirm(message)); return; }
+
+                msg.textContent = message;
+                function cleanup(result) {
+                    overlay.classList.remove('open');
+                    overlay.setAttribute('aria-hidden', 'true');
+                    ok.removeEventListener('click', onOk);
+                    cancel.removeEventListener('click', onCancel);
+                    document.removeEventListener('keydown', onKey);
+                    resolve(result);
+                }
+                function onOk(e) { e?.preventDefault(); cleanup(true); }
+                function onCancel(e) { e?.preventDefault(); cleanup(false); }
+                function onKey(e) {
+                    if (e.key === 'Escape') { e.preventDefault(); cleanup(false); }
+                    else if (e.key === 'Enter') { e.preventDefault(); cleanup(true); }
+                    else trapFocus(overlay, e);
+                }
+
+                ok.addEventListener('click', onOk);
+                cancel.addEventListener('click', onCancel);
+                document.addEventListener('keydown', onKey);
+                overlay.classList.add('open');
+                overlay.setAttribute('aria-hidden', 'false');
+                cancel.focus();
+            });
+        }
+
+        function showConsoleModal() {
+            var overlay = document.getElementById('consoleModal');
+            var content = document.getElementById('consoleModalContent');
+            var close = document.getElementById('consoleClose');
+            var source = document.getElementById('output');
+            if (!overlay || !content || !close || !source) { alert(source?.textContent || 'No console'); return; }
+
+            content.textContent = source.textContent || '';
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            var obs = new MutationObserver(function () {
+                content.textContent = source.textContent || '';
+                content.scrollTop = content.scrollHeight;
+            });
+            obs.observe(source, { childList: true, subtree: true, characterData: true });
+
+            function cleanup() {
+                obs.disconnect();
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                close.removeEventListener('click', onClose);
+                document.removeEventListener('keydown', onKey);
+            }
+            function onClose(e) { e?.preventDefault(); cleanup(); }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); cleanup(); }
+                else trapFocus(overlay, e);
+            }
+
+            close.addEventListener('click', onClose);
+            document.addEventListener('keydown', onKey);
+            content.scrollTop = content.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

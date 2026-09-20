@@ -4,6 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <title>Vengi Voxel Tools</title>
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('vengi-theme');
+                if (stored === 'bright' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                }
+            } catch (e) { }
+        })();
+    </script>
     <link rel="icon" type="image/png" href="favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -17,6 +27,78 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style type="text/css">
+        :root {
+            --focus-color: #00d1b2;
+            --focus-hover: #00ffc8;
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-table-head: #3c3c3c;
+            --bg-row-even: #252525;
+            --bg-row-hover: #333;
+            --text: #f0f0f0;
+            --text-heading: #fff;
+            --text-muted: #ccc;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --border: #444;
+            --border-footer: #333;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+            --focus-color: #008f7a;
+            --focus-hover: #006655;
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-table-head: #e8ecf0;
+            --bg-row-even: #f0f3f6;
+            --bg-row-hover: #e4e9ee;
+            --text: #1a1a1a;
+            --text-heading: #111;
+            --text-muted: #4a4a4a;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --border: #d0d5db;
+            --border-footer: #d0d5db;
+            }
+        }
+
+        html[data-theme="dark"] {
+            --focus-color: #00d1b2;
+            --focus-hover: #00ffc8;
+            --bg: #1e1e1e;
+            --bg-elevated: #2b2b2b;
+            --bg-table-head: #3c3c3c;
+            --bg-row-even: #252525;
+            --bg-row-hover: #333;
+            --text: #f0f0f0;
+            --text-heading: #fff;
+            --text-muted: #ccc;
+            --text-link: #aaa;
+            --text-footer: #666;
+            --border: #444;
+            --border-footer: #333;
+        }
+
+        html[data-theme="bright"] {
+            --focus-color: #008f7a;
+            --focus-hover: #006655;
+            --bg: #f4f6f8;
+            --bg-elevated: #ffffff;
+            --bg-table-head: #e8ecf0;
+            --bg-row-even: #f0f3f6;
+            --bg-row-hover: #e4e9ee;
+            --text: #1a1a1a;
+            --text-heading: #111;
+            --text-muted: #4a4a4a;
+            --text-link: #4a4a4a;
+            --text-footer: #6a6a6a;
+            --border: #d0d5db;
+            --border-footer: #d0d5db;
+        }
+
+
+
         * {
             margin: 0;
             padding: 0;
@@ -25,20 +107,69 @@
 
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #1e1e1e;
-            color: #f0f0f0;
+            background-color: var(--bg);
+            color: var(--text);
             line-height: 1.6;
+            transition: background-color 180ms ease, color 180ms ease;
         }
 
         header {
-            background-color: #2b2b2b;
+            background-color: var(--bg-elevated);
             padding: 20px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid var(--border);
             animation: fadeIn 0.8s ease-out;
+        }
+
+        .header-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 12px;
+            line-height: 0;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--focus-color);
+            color: var(--focus-color);
+        }
+        html[data-theme="dark"] .theme-icon-moon,
+        html[data-theme="bright"] .theme-icon-sun {
+            display: none;
+        }
+
+        html:not([data-theme]) .theme-icon-sun {
+            display: inline-flex;
+        }
+
+        html:not([data-theme]) .theme-icon-moon {
+            display: none;
+        }
+
+        @media (prefers-color-scheme: light) {
+            html:not([data-theme]) .theme-icon-sun {
+                display: none;
+            }
+
+            html:not([data-theme]) .theme-icon-moon {
+                display: inline-flex;
+            }
         }
 
         .logo {
@@ -49,12 +180,12 @@
         nav a {
             margin: 8px 12px;
             text-decoration: none;
-            color: #aaa;
+            color: var(--text-link);
             transition: color 0.3s;
         }
 
         nav a:hover {
-            color: #00d1b2;
+            color: var(--focus-color);
         }
 
         main {
@@ -67,13 +198,13 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 15px;
-            color: #fff;
+            color: var(--text-heading);
         }
 
         p {
             font-size: 1.1rem;
             margin-bottom: 20px;
-            color: #ccc;
+            color: var(--text-muted);
         }
 
         /* Features Grid */
@@ -85,10 +216,10 @@
         }
 
         .feature-card {
-            background-color: #2b2b2b;
+            background-color: var(--bg-elevated);
             border-radius: 8px;
             padding: 20px;
-            border-left: 4px solid #00d1b2;
+            border-left: 4px solid var(--focus-color);
             opacity: 0;
             transform: translateY(15px);
             animation: slideIn 1s forwards;
@@ -113,23 +244,23 @@
         .feature-card h2 {
             margin-bottom: 10px;
             font-size: 1.4rem;
-            color: #00d1b2;
+            color: var(--focus-color);
         }
 
         .feature-card p {
-            color: #ccc;
+            color: var(--text-muted);
             margin-bottom: 10px;
         }
 
         .feature-card a {
-            color: #00d1b2;
+            color: var(--focus-color);
             text-decoration: none;
             font-weight: bold;
             transition: color 0.3s;
         }
 
         .feature-card a:hover {
-            color: #00ffc8;
+            color: var(--focus-hover);
         }
 
         img {
@@ -154,7 +285,7 @@
             border-collapse: collapse;
             margin: 25px 0;
             font-size: 0.95rem;
-            background-color: #2b2b2b;
+            background-color: var(--bg-elevated);
             border-radius: 6px;
             overflow: hidden;
             opacity: 0;
@@ -169,16 +300,16 @@
         }
 
         th {
-            background-color: #3c3c3c;
-            color: #fff;
+            background-color: var(--bg-table-head);
+            color: var(--text-heading);
         }
 
         tr:nth-child(even) {
-            background-color: #252525;
+            background-color: var(--bg-row-even);
         }
 
         tr:hover {
-            background-color: #333;
+            background-color: var(--bg-row-hover);
         }
 
         footer {
@@ -186,8 +317,8 @@
             padding: 20px;
             margin-top: 40px;
             font-size: 0.9rem;
-            color: #666;
-            border-top: 1px solid #333;
+            color: var(--text-footer);
+            border-top: 1px solid var(--border-footer);
             opacity: 0;
             animation: fadeIn 0.8s 1.1s ease-out forwards;
         }
@@ -255,14 +386,20 @@
 <body>
     <header>
         <div class="logo">vengi Voxel Tools</div>
-        <nav>
-            <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
-            <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
-            <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
-            <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
-            <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
-            <a href="https://vengi-voxel.de/discord">Discord</a>
-        </nav>
+        <div class="header-right">
+            <nav>
+                <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
+                <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
+                <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
+                <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
+                <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
+                <a href="https://vengi-voxel.de/discord">Discord</a>
+            </nav>
+            <button type="button" id="themeToggle" class="theme-toggle" title="Toggle bright mode" aria-label="Toggle bright mode">
+                <i data-lucide="sun" class="theme-icon-sun"></i>
+                <i data-lucide="moon" class="theme-icon-moon"></i>
+            </button>
+        </div>
     </header>
 
     <main>
@@ -310,6 +447,39 @@
     <script src="data.js"></script>
     <script>
         lucide.createIcons();
+        var THEME_KEY = 'vengi-theme';
+
+        function systemTheme() {
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'bright' : 'dark';
+        }
+
+        function applyTheme(theme) {
+            if (!theme) {
+                document.documentElement.removeAttribute('data-theme');
+                try { localStorage.removeItem(THEME_KEY); } catch (e) { }
+                return;
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) { }
+        }
+
+        function toggleTheme() {
+            var forced = document.documentElement.getAttribute('data-theme');
+            if (!forced) {
+                applyTheme(systemTheme() === 'bright' ? 'dark' : 'bright');
+            } else if (forced === 'bright') {
+                applyTheme('dark');
+            } else {
+                applyTheme(null);
+            }
+            try { lucide.createIcons(); } catch (e) { }
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', function (e) {
+            e.preventDefault();
+            toggleTheme();
+        });
+
 
         function jsonToTable(data, category, id) {
             const table = document.createElement('table');

@@ -340,6 +340,7 @@ jobs:
             cp -r build/generated build/emscripten
             emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
             cmake --build build/emscripten --target voxconvert
+            cmake --build build/emscripten --target palconvert
             cmake --build build/emscripten --target voxedit
 
         - name: Package
@@ -347,6 +348,7 @@ jobs:
             cd build/emscripten
             zip -r voxedit.zip voxedit
             zip -r voxconvert.zip voxconvert
+            zip -r palconvert.zip palconvert
 
         - name: Upload the build artifacts voxedit
           uses: actions/upload-artifact@v4
@@ -359,6 +361,12 @@ jobs:
           with:
             name: emscripten-voxconvert
             path: build/emscripten/voxconvert
+
+        - name: Upload the build artifacts palconvert
+          uses: actions/upload-artifact@v4
+          with:
+            name: emscripten-palconvert
+            path: build/emscripten/palconvert
 
         - name: Upload the release artifacts
           if: startsWith(github.ref, 'refs/tags/')

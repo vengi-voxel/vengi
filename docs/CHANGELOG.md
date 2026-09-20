@@ -12,6 +12,10 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+PalConvert:
+
+   - A web version is available now, too
+
 ## 0.6.0 (2026-09-19)
 
 General:
