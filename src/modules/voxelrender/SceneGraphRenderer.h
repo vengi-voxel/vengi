@@ -79,7 +79,7 @@ public:
 	void nodeRemove(const voxel::MeshStatePtr &meshState, const core::UUID &uuid);
 	/**
 	 * @brief Checks whether the given model node is visible
-	 * @param[in] nodeId The node id
+	 * @param[in] uuid The node uuid
 	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
 	 * @return @c true if the node is visible, @c false otherwise
 	 */
