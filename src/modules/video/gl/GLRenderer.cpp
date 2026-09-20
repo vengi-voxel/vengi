@@ -1564,9 +1564,45 @@ void deleteTextures(uint8_t amount, Id *ids) {
 }
 
 void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
-	(void)program;
-	(void)bindings;
-	(void)count;
+	if (program == InvalidId || bindings == nullptr || count <= 0) {
+		return;
+	}
+
+	// Sampler uniforms require the program to be bound; UBO block bindings do not.
+	// Flush sampler uniforms before restoring the previous program - useProgram() clears
+	// the pending uniform cache on a program switch.
+	const Id previousProgram = rendererState().pendingProgramHandle;
+	useProgram(program);
+	syncPendingState();
+
+	for (int i = 0; i < count; ++i) {
+		const ShaderResourceBinding &b = bindings[i];
+		if (b.name == nullptr || b.name[0] == '\0') {
+			continue;
+		}
+		if (b.type == ShaderResourceBinding::UniformBuffer) {
+			core_assert(glGetUniformBlockIndex != nullptr);
+			core_assert(glUniformBlockBinding != nullptr);
+			const GLuint blockIndex = glGetUniformBlockIndex((GLuint)program, b.name);
+			if (blockIndex != GL_INVALID_INDEX) {
+				glUniformBlockBinding((GLuint)program, blockIndex, (GLuint)b.binding);
+				checkError();
+			} else {
+				Log::debug("Uniform block '%s' not active in program", b.name);
+			}
+		} else if (b.type == ShaderResourceBinding::CombinedImageSampler) {
+			core_assert(glGetUniformLocation != nullptr);
+			const GLint location = glGetUniformLocation((GLuint)program, b.name);
+			if (location >= 0) {
+				setUniformi((int)location, (int)b.binding);
+			} else {
+				Log::debug("Sampler '%s' not active in program", b.name);
+			}
+		}
+	}
+
+	syncPendingState();
+	useProgram(previousProgram);
 }
 
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {

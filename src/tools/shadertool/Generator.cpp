@@ -896,7 +896,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		// UBOs: present in vertex (and possibly fragment) stage
 		for (const auto &ubuf : shaderStruct.uniformBlocks) {
 			if (ubuf.layout.binding >= 0) {
-				entries += "\t\t{";
+				entries += "\t\t{\"";
+				entries += ubuf.name;
+				entries += "\", ";
 				entries += core::string::toString(ubuf.layout.binding);
 				entries += ", video::ShaderResourceBinding::UniformBuffer, 1 | 2},\n"; // vertex + fragment
 				++bindingCount;
@@ -909,7 +911,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			}
 			auto layoutIter = shaderStruct.layouts.find(v.name);
 			if (layoutIter != shaderStruct.layouts.end() && layoutIter->second.binding >= 0) {
-				entries += "\t\t{";
+				entries += "\t\t{\"";
+				entries += v.name;
+				entries += "\", ";
 				entries += core::string::toString(layoutIter->second.binding);
 				entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2},\n"; // fragment
 				++bindingCount;

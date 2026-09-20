@@ -214,6 +214,12 @@ bool useProgram(Id handle) {
 	return false;
 }
 
+void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
+	(void)program;
+	(void)bindings;
+	(void)count;
+}
+
 Id getProgram() {
 	return InvalidId;
 }
