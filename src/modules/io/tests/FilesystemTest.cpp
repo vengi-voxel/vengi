@@ -242,4 +242,20 @@ TEST_F(FilesystemTest, testHomeWritePathTraversal) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testSysOfferDownload) {
+	EXPECT_FALSE(io::Filesystem::sysOfferDownload(""));
+	EXPECT_FALSE(io::Filesystem::sysOfferDownload("does-not-exist-offer-download.bin"));
+#ifndef __EMSCRIPTEN__
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(io::Filesystem::sysCreateDir("offerdownloadtest"));
+	EXPECT_TRUE(io::Filesystem::sysWrite("offerdownloadtest/file.bin", "payload"));
+	// Desktop builds never trigger a browser download
+	EXPECT_FALSE(io::Filesystem::sysOfferDownload("offerdownloadtest/file.bin"));
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile("offerdownloadtest/file.bin"));
+	EXPECT_TRUE(io::Filesystem::sysRemoveDir("offerdownloadtest"));
+	fs.shutdown();
+#endif
+}
+
 } // namespace io

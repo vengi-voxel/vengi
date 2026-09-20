@@ -22,6 +22,7 @@
 #include <unistd.h>
 #endif
 #ifdef __EMSCRIPTEN__
+#include "system/emscripten_browser_file.h"
 #include <emscripten.h>
 #endif
 
@@ -608,6 +609,36 @@ long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) 
 bool Filesystem::sysWrite(const core::String &filename, const core::String &string) {
 	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return sysWrite(filename, buf, string.size());
+}
+
+bool Filesystem::sysOfferDownload(const core::String &filename) {
+#ifdef __EMSCRIPTEN__
+	if (filename.empty()) {
+		return false;
+	}
+	io::File f(filename, FileMode::SysRead);
+	if (!f.validHandle()) {
+		Log::error("Failed to offer download for '%s': could not open file", filename.c_str());
+		return false;
+	}
+	uint8_t *buf = nullptr;
+	const int len = f.read((void **)&buf);
+	if (len <= 0 || buf == nullptr) {
+		delete[] buf;
+		Log::error("Failed to offer download for '%s': empty or unreadable file", filename.c_str());
+		return false;
+	}
+	core::String downloadName = core::string::extractFilenameWithExtension(filename);
+	if (downloadName.empty()) {
+		downloadName = filename;
+	}
+	emscripten_browser_file::download(downloadName.c_str(), "application/octet-stream", buf, (size_t)len);
+	delete[] buf;
+	return true;
+#else
+	(void)filename;
+	return false;
+#endif
 }
 
 } // namespace io

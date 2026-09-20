@@ -58,11 +58,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *get_supported_formats_json() {
 						   {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 						   {"mesh", VOX_FORMAT_FLAG_MESH},
 						   {"animation", VOX_FORMAT_FLAG_ANIMATION},
-						   {"save", FORMAT_FLAG_SAVE}});
+						   {"save", FORMAT_FLAG_SAVE},
+						   {"noload", FORMAT_FLAG_NO_LOAD}});
 	stream.writeString("],\"images\":[", false);
-	io::format::writeJson(stream, io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
+	io::format::writeJson(stream, io::format::images(),
+						  {{"save", FORMAT_FLAG_SAVE}, {"noload", FORMAT_FLAG_NO_LOAD}});
 	stream.writeString("],\"palettes\":[", false);
-	io::format::writeJson(stream, palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
+	io::format::writeJson(stream, palette::palettes(),
+						  {{"save", FORMAT_FLAG_SAVE}, {"noload", FORMAT_FLAG_NO_LOAD}});
 	stream.writeString("]}", false);
 	formats = core::String((const char *)stream.getBuffer(), stream.size());
 	return formats.c_str();

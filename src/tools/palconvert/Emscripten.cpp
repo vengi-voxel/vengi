@@ -53,7 +53,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *get_supported_formats_json() {
 	static core::String formats;
 	io::BufferedReadWriteStream stream;
 	stream.writeString("{\"palettes\":[", false);
-	io::format::writeJson(stream, palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
+	io::format::writeJson(stream, palette::palettes(),
+						  {{"save", FORMAT_FLAG_SAVE}, {"noload", FORMAT_FLAG_NO_LOAD}});
 	stream.writeString("]}", false);
 	formats = core::String((const char *)stream.getBuffer(), stream.size());
 	return formats.c_str();

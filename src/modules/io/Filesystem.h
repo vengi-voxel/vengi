@@ -196,6 +196,13 @@ public:
 	static bool sysWrite(const core::String& filename, const core::String& string);
 
 	/**
+	 * @brief Offer a file that already exists in the virtual filesystem as a browser download.
+	 * Only has an effect for emscripten builds; returns @c false on other platforms.
+	 * Use this for intentional user exports (e.g. after FileDialog Save), not for every write.
+	 */
+	static bool sysOfferDownload(const core::String &filename);
+
+	/**
 	 * @brief This will create the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */

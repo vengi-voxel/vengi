@@ -8,9 +8,6 @@
 #include "core/StringUtil.h"
 #include "core/concurrent/Lock.h"
 #include "io/system/System.h"
-#ifdef __EMSCRIPTEN__
-#include "system/emscripten_browser_file.h"
-#endif
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_iostream.h>
@@ -325,25 +322,6 @@ void File::close() {
 	if (_file != nullptr) {
 		closeRWops(_file);
 		_file = nullptr;
-#ifdef __EMSCRIPTEN__
-		if (_mode == FileMode::SysWrite) {
-			_file = createRWops(FileMode::SysRead);
-			_mode = FileMode::SysRead;
-			if (_file == nullptr) {
-				Log::error("Failed to download file %s", _rawPath.c_str());
-			} else {
-				uint8_t *buf = nullptr;
-				const int len = read((void **)&buf);
-				if (len > 0) {
-					emscripten_browser_file::download(_rawPath.c_str(), "application/octet-stream", buf, (size_t)len);
-				}
-				delete[] buf;
-				closeRWops(_file);
-				_file = nullptr;
-			}
-			_mode = FileMode::SysWrite;
-		}
-#endif
 	}
 }
 

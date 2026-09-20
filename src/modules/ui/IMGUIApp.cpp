@@ -918,6 +918,9 @@ app::AppState IMGUIApp::onRunning() {
 		if (_fileDialog.showFileDialog(_fileDialogOptions, buf, _fileDialogMode, &formatDesc, _showFileDialog)) {
 			if (buf[0] != '\0') {
 				_fileDialogCallback(buf, formatDesc);
+				if (_fileDialogMode == video::OpenFileMode::Save) {
+					io::Filesystem::sysOfferDownload(buf);
+				}
 			}
 			_showFileDialog = false;
 		}

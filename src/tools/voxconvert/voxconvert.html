@@ -755,6 +755,9 @@
     {{{ SCRIPT }}}
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
+@CONVERT_FILE_FILTER_JS@
+    </script>
+    <script>
         function log(msg) { appendOutput(msg); console.log(msg); }
         var THEME_KEY = 'vengi-theme';
 
@@ -826,11 +829,7 @@
         }
 
         function addFilesToSelection(fileList) {
-            for (let i = 0; i < fileList.length; i++) {
-                const f = fileList[i];
-                if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified))
-                    selectedFiles.push(f);
-            }
+            VengiConvertFileFilter.mergeAcceptedFiles(fileList, selectedFiles, { log: log });
             renderSelectedFiles();
         }
 
@@ -866,9 +865,11 @@
 
         function fetchFormats() {
             var json = JSON.parse(Module.ccall('get_supported_formats_json', 'string', [], []));
+            VengiConvertFileFilter.applyInputAcceptFilter(VengiConvertFileFilter.formatGroupsFromJson(json));
+
             var sel = document.getElementById('formatSelect');
             sel.innerHTML = '';
-            json.voxels.forEach(function (item) {
+            (json.voxels || []).forEach(function (item) {
                 item.extensions.forEach(function (ext) {
                     var opt = document.createElement('option');
                     opt.value = ext;
@@ -1209,7 +1210,7 @@
                 <div id="step-files" class="step visible">
                     <h3>Select input files</h3>
                     <div id="dropzone" class="dropzone">
-                        <div class="hint">Drag & drop files here or click to choose</div>
+                        <div class="hint" id="dropzoneHint">Drag & drop files here or click to choose</div>
                         <input type="file" id="fileInput" multiple class="dropzone-input" />
                     </div>
                     <label>Selected files:
