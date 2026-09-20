@@ -147,7 +147,7 @@ app::AppState WindowedApp::onRunning() {
 	if (_powerSaveMode && _showWindow) {
 		bool windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
 		while (windowIsHidden) {
-			if (SDL_WaitEvent(&event) == 1) {
+			if (SDL_WaitEvent(&event)) {
 				quit = handleSDLEvent(event);
 				windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
 			}
