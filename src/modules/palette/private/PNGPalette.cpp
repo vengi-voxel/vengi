@@ -55,4 +55,4 @@ bool PNGPalette::save(const palette::Palette &palette, const core::String &filen
 	return true;
 }
 
-} // namespace voxel
+} // namespace palette
