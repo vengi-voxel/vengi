@@ -144,6 +144,12 @@ app::AppState WindowedApp::onRunning() {
 	bool quit = false;
 	// we are checking the non headless flag here because we assume that a headless windowed
 	// application is trying to e.g. render off-screen but without hidden timeouts
+	//
+	// On emscripten, page visibilitychange maps to SDL_WINDOW_HIDDEN/SHOWN. Entering a
+	// blocking SDL_WaitEvent loop here freezes the tab: the main loop never returns, so the
+	// browser cannot deliver the SHOWN event that would exit the wait (github issue #244).
+	// Background tabs are already throttled via requestAnimationFrame.
+#ifndef __EMSCRIPTEN__
 	if (_powerSaveMode && _showWindow) {
 		bool windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
 		while (windowIsHidden) {
@@ -153,6 +159,7 @@ app::AppState WindowedApp::onRunning() {
 			}
 		}
 	}
+#endif
 	while (SDL_PollEvent(&event)) {
 		quit |= handleSDLEvent(event);
 	}
