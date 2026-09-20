@@ -5,7 +5,6 @@
 #include "JSON.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/MemoryReadStream.h"
 #include <cJSON.h>
 
 namespace json {
