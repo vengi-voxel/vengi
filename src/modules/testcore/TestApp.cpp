@@ -271,7 +271,10 @@ image::ImagePtr TestApp::screenShot() {
 		Log::error("Failed to read framebuffer");
 		return image::ImagePtr();
 	}
-	image::Image::flipVerticalRGBA(pixels, w, h);
+	// With lower-left clip origin, glReadPixels returns bottom-up rows. UPPER_LEFT matches image layout.
+	if (video::clipOriginLowerLeft()) {
+		image::Image::flipVerticalRGBA(pixels, w, h);
+	}
 	image::ImagePtr img = image::createEmptyImage("screenshot");
 	img->loadRGBA(pixels, w, h);
 	core_free(pixels);

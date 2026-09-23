@@ -145,7 +145,10 @@ image::ImagePtr FrameBuffer::image(const core::String &name, FrameBufferAttachme
 	image::ImagePtr image;
 	if (video::readTexture(video::TextureUnit::Upload, fboTexture->type(), fboTexture->format(), fboTexture->handle(),
 						   fboTexture->width(), fboTexture->height(), &pixels)) {
-		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
+		// With lower-left clip origin, GL stores FBO rows bottom-up. UPPER_LEFT matches image/Vulkan layout.
+		if (video::clipOriginLowerLeft()) {
+			image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
+		}
 		image = image::createEmptyImage(name);
 		image->loadRGBA(pixels, fboTexture->width(), fboTexture->height());
 	} else {
