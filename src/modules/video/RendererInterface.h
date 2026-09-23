@@ -256,8 +256,9 @@ bool bindVertexArray(Id handle);
  *
  * @param handle Buffer handle returned from mapBuffer().
  * @param type The buffer binding type used for mapping.
+ * @return @c true if the buffer was unmapped successfully.
  */
-void unmapBuffer(Id handle, BufferType type);
+bool unmapBuffer(Id handle, BufferType type);
 
 /**
  * @brief Map a buffer object's data store into client memory for CPU access.

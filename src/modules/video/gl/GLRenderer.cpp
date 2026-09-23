@@ -1319,16 +1319,20 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	return ptr;
 }
 
-void unmapBuffer(Id handle, BufferType type) {
+bool unmapBuffer(Id handle, BufferType type) {
 	video_trace_scoped(UnmapBuffer);
 	if (handle == InvalidId) {
-		return;
+		return false;
 	}
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glUnmapNamedBuffer != nullptr);
-		core_assert(glUnmapNamedBuffer((GLuint)handle) == GL_TRUE);
+		const GLboolean ok = glUnmapNamedBuffer((GLuint)handle);
 		checkError();
-		return;
+		if (ok != GL_TRUE) {
+			Log::debug("glUnmapNamedBuffer failed for handle %u", (unsigned int)handle);
+			return false;
+		}
+		return true;
 	}
 
 	const int typeIndex = core::enumVal(type);
@@ -1336,7 +1340,7 @@ void unmapBuffer(Id handle, BufferType type) {
 	const Id oldBuffer = boundBuffer(type);
 	const bool changed = bindBuffer(type, handle);
 	core_assert(glUnmapBuffer != nullptr);
-	core_assert_always(glUnmapBuffer(glType) == GL_TRUE);
+	const GLboolean ok = glUnmapBuffer(glType);
 	checkError();
 	if (changed) {
 		if (oldBuffer == InvalidId) {
@@ -1345,6 +1349,11 @@ void unmapBuffer(Id handle, BufferType type) {
 			bindBuffer(type, oldBuffer);
 		}
 	}
+	if (ok != GL_TRUE) {
+		Log::debug("glUnmapBuffer failed for handle %u type %i", (unsigned int)handle, typeIndex);
+		return false;
+	}
+	return true;
 }
 
 bool bindBuffer(BufferType type, Id handle) {

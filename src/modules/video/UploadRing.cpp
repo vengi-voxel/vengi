@@ -104,8 +104,10 @@ void resetRingSlot(RingSlot &slot) {
 
 void destroyRingSlot(RingSlot &slot, BufferType type) {
 	if (slot.handle != InvalidId) {
-		if (slot.mapped != nullptr || slot.persistentMap) {
+		if (slot.mapped != nullptr) {
 			unmapBuffer(slot.handle, type);
+			slot.mapped = nullptr;
+			slot.persistentMap = false;
 		}
 		Id ids[1] = {slot.handle};
 		deleteBuffers(1, ids);

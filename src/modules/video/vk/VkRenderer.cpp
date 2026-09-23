@@ -415,7 +415,10 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return nullptr;
 }
 
-void unmapBuffer(Id handle, BufferType type) {
+bool unmapBuffer(Id handle, BufferType type) {
+	(void)handle;
+	(void)type;
+	return false;
 }
 
 void setUniformi(int location, int value) {
