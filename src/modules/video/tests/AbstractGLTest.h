@@ -118,7 +118,8 @@ public:
 	}
 
 	void TearDown() override {
-		app::AbstractTest::TearDown();
+		// Flush deferred GL deletes and destroy the context before AbstractTest::TearDown
+		// runs (~TestApp calls SDL_Quit), otherwise glIs* asserts on already-dead objects.
 		if (_ctx != nullptr) {
 			video::destroyContext(_ctx);
 			_ctx = nullptr;
@@ -127,7 +128,7 @@ public:
 			SDL_DestroyWindow(_window);
 			_window = nullptr;
 		}
-		SDL_Quit();
+		app::AbstractTest::TearDown();
 	}
 };
 
