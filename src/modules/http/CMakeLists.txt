@@ -2,6 +2,8 @@ set(SRCS
 	HttpCacheStream.cpp HttpCacheStream.h
 	Http.cpp Http.h
 	Request.cpp Request.h
+	RequestAsync.cpp RequestAsync.h
+	Response.h
 )
 
 set(LIB http)
@@ -29,6 +31,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS
 	tests/RequestTest.cpp
+	tests/RequestAsyncTest.cpp
 	tests/HttpCacheStreamTest.cpp
 )
 

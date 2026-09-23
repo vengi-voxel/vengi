@@ -6,14 +6,14 @@ Global: `g_http`
 
 | Function | Description |
 | -------- | ----------- |
-| `get(url, headers)` | Perform an HTTP GET request. |
-| `post(url, body, headers)` | Perform an HTTP POST request. |
+| `get(url, headers)` | Perform an HTTP GET request. Yields the script coroutine until the response arrives. |
+| `post(url, body, headers)` | Perform an HTTP POST request. Yields the script coroutine until the response arrives. |
 
 ## Detailed Documentation
 
 ### get
 
-Perform an HTTP GET request.
+Perform an HTTP GET request. Yields the script coroutine until the response arrives.
 
 **Parameters:**
 
@@ -31,7 +31,7 @@ Perform an HTTP GET request.
 
 ### post
 
-Perform an HTTP POST request.
+Perform an HTTP POST request. Yields the script coroutine until the response arrives.
 
 **Parameters:**
 

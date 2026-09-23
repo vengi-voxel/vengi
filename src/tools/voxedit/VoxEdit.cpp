@@ -368,24 +368,25 @@ app::AppState VoxEdit::onConstruct() {
 		.addArg({"source", command::ArgType::String, true, "", "Local file path, file:// URI, or http(s):// URL of a .lua script"})
 		.setHandler([this](const command::CommandArgs &args) {
 			const core::String &source = args.str("source");
+			auto onInstalled = [this](bool ok) {
+				if (!ok) {
+					return;
+				}
+				voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+				scriptMgr.reloadBrushScripts();
+				scriptMgr.reloadSelectionModeScripts();
+			};
 			if (source.empty()) {
-				openDialog([this](const core::String &file, const io::FormatDescription *desc) {
+				openDialog([this, onInstalled](const core::String &file, const io::FormatDescription *desc) {
 					voxelui::ScriptApi api;
-					if (api.install(filesystem(), file)) {
-						voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
-						scriptMgr.reloadBrushScripts();
-						scriptMgr.reloadSelectionModeScripts();
-					}
+					api.installAsync(filesystem(), file, onInstalled);
 				}, {}, io::format::lua());
 				return;
 			}
 			voxelui::ScriptApi api;
-			if (api.install(filesystem(), source)) {
-				voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
-				scriptMgr.reloadBrushScripts();
-				scriptMgr.reloadSelectionModeScripts();
-			}
+			api.installAsync(filesystem(), source, onInstalled);
 		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Install a lua script from a file path, file:// URI or http(s):// URL"));
+
 
 	command::Command::registerCommand("script_uninstall")
 		.addArg({"filename", command::ArgType::String, false, "", "Filename of the script to uninstall (e.g. myscript.lua)"})
