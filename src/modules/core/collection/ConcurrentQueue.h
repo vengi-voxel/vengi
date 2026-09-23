@@ -140,7 +140,7 @@ public:
 			return false;
 		}
 
-		out.append(_data);
+		out.append(core::move(_data));
 		_data.clear();
 		return true;
 	}
