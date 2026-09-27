@@ -13,6 +13,7 @@ enum class CoordinateSystem : uint8_t {
 	MagicaVoxel,
 	VXL,
 	DirectX,
+	Unity, // same axes as DirectX: left-handed, Y-up, Z-forward
 	OpenGL,
 	Maya,
 	Autodesk3dsmax,

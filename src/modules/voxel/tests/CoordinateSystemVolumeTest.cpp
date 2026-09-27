@@ -24,6 +24,18 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelMagicaVoxel) {
 	EXPECT_EQ(v.getColor(), voxel.getColor()) << volume;
 }
 
+TEST_F(CoordinateSystemVolumeTest, testSetVoxelUnity) {
+	const voxel::Region &region = voxel::Region::fromSize(10);
+	voxel::RawVolume volume(region);
+	const math::CoordinateSystem srcSystem = math::CoordinateSystem::Unity;
+	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
+	EXPECT_TRUE(csVolume.setVoxel(1, 2, 3, voxel))
+		<< "The conversion of the coordinates failed and the position was out of the region";
+	const voxel::Voxel &v = volume.voxel(1, 2, 6);
+	EXPECT_EQ(v.getColor(), voxel.getColor()) << volume;
+}
+
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelDirectX) {
 	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);

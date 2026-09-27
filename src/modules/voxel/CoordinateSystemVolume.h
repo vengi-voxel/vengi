@@ -41,6 +41,7 @@ public:
 		case math::CoordinateSystem::OpenGL:
 			break;
 		case math::CoordinateSystem::DirectX:
+		case math::CoordinateSystem::Unity:
 			v.z = zFlipped;
 			break;
 		case math::CoordinateSystem::Autodesk3dsmax:

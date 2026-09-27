@@ -38,4 +38,15 @@ inline bool convertCoordinateSystem(math::CoordinateSystem from, scenegraph::Sce
  */
 SceneGraphTransform convertCoordinateSystem(math::CoordinateSystem from, const SceneGraphTransform &fromTransform);
 
+/**
+ * Convert a Unity translation into vengi space.
+ * Same Z flip as @c math::CoordinateSystem::Unity / DirectX.
+ */
+glm::vec3 convertUnityToVengi(const glm::vec3 &unityPos);
+/**
+ * Flip handedness of a Unity quaternion: (x, y, -z, -w).
+ * Same conversion as @c math::CoordinateSystem::Unity.
+ */
+glm::quat convertUnityToVengi(const glm::quat &unityRot);
+
 } // namespace scenegraph

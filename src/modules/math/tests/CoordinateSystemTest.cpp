@@ -77,6 +77,11 @@ TEST_F(CoordinateSystemTest, testDirectX) {
 	testConvert(CoordinateSystem::DirectX, CoordinateSystem::Vengi);
 }
 
+TEST_F(CoordinateSystemTest, testUnity) {
+	testConvertIdentity(CoordinateSystem::Unity, CoordinateSystem::Vengi);
+	testConvert(CoordinateSystem::Unity, CoordinateSystem::Vengi);
+}
+
 TEST_F(CoordinateSystemTest, test3dsMax) {
 	testConvertIdentity(CoordinateSystem::Autodesk3dsmax, CoordinateSystem::Vengi);
 	testConvert(CoordinateSystem::Autodesk3dsmax, CoordinateSystem::Vengi);
@@ -130,6 +135,18 @@ TEST_F(CoordinateSystemTest, testDirectXAxisConversion) {
 					   glm::vec3(0.0f, 0.0f, -1.0f));
 	// DirectX backward (-Z) becomes vengi backward (+Z)
 	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f),
+					   glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
+// Unity uses the same axes as DirectX (left-handed, Y-up, Z-forward)
+TEST_F(CoordinateSystemTest, testUnityAxisConversion) {
+	testAxisConversion(CoordinateSystem::Unity, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f),
+					   glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::Unity, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::Unity, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
+					   glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::Unity, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f),
 					   glm::vec3(0.0f, 0.0f, 1.0f));
 }
 

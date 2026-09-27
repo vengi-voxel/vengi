@@ -27,6 +27,7 @@ namespace math {
 //
 //   LEFT-HANDED (Y-up, Z-forward):
 //     - DirectX
+//     - Unity
 //
 //   RIGHT-HANDED (Z-up, Y-forward):
 //     - MagicaVoxel
@@ -56,7 +57,8 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		forward = glm::vec3(0.0f, 0.0f, 1.0f); // Z-axis (not -Z or glm::forward())
 		break;
 	case CoordinateSystem::DirectX:
-		// DirectX: Left-handed, Y-up, Z-forward
+	case CoordinateSystem::Unity:
+		// DirectX / Unity: Left-handed, Y-up, Z-forward
 		// vengi is right-handed, so we need to flip Z to convert handedness
 		right = glm::vec3(1.0f, 0.0f, 0.0f);	// X-axis unchanged
 		up = glm::vec3(0.0f, 1.0f, 0.0f);		// Y-axis unchanged

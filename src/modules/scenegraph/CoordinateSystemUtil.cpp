@@ -5,6 +5,10 @@
 #include "CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "math/CoordinateSystemUtil.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtc/quaternion.hpp>
 
 namespace scenegraph {
 
@@ -59,6 +63,14 @@ SceneGraphTransform convertCoordinateSystem(math::CoordinateSystem from, const S
 	SceneGraphTransform transform;
 	transform.setLocalMatrix(math::convertCoordinateSystem(from, fromTransform.calculateLocalMatrix()));
 	return transform;
+}
+
+glm::vec3 convertUnityToVengi(const glm::vec3 &unityPos) {
+	return glm::vec3(unityPos.x, unityPos.y, -unityPos.z);
+}
+
+glm::quat convertUnityToVengi(const glm::quat &unityRot) {
+	return glm::quat::wxyz(-unityRot.w, unityRot.x, unityRot.y, -unityRot.z);
 }
 
 } // namespace scenegraph
