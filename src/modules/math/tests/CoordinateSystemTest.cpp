@@ -72,6 +72,11 @@ TEST_F(CoordinateSystemTest, testMaya) {
 	testConvert(CoordinateSystem::Maya, CoordinateSystem::Vengi);
 }
 
+TEST_F(CoordinateSystemTest, testSceneKit) {
+	testConvertIdentity(CoordinateSystem::SceneKit, CoordinateSystem::Vengi);
+	testConvert(CoordinateSystem::SceneKit, CoordinateSystem::Vengi);
+}
+
 TEST_F(CoordinateSystemTest, testDirectX) {
 	testConvertIdentity(CoordinateSystem::DirectX, CoordinateSystem::Vengi);
 	testConvert(CoordinateSystem::DirectX, CoordinateSystem::Vengi);
@@ -105,6 +110,18 @@ TEST_F(CoordinateSystemTest, testMagicaVoxelAxisConversion) {
 	// In VENGI (0,1,0) = up (in Y direction)
 	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
 					   glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+// SceneKit uses the same axes as OpenGL/vengi (right-handed, Y-up, +Z toward viewer)
+TEST_F(CoordinateSystemTest, testSceneKitAxisConversion) {
+	testAxisConversion(CoordinateSystem::SceneKit, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f),
+					   glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::SceneKit, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::SceneKit, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f),
+					   glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::SceneKit, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
+					   glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 // OpenGL and vengi use the same coordinate system (right-handed, Y-up, -Z-forward)

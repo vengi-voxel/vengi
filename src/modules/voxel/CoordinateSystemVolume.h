@@ -39,6 +39,7 @@ public:
 		case math::CoordinateSystem::Vengi:
 		case math::CoordinateSystem::Maya:
 		case math::CoordinateSystem::OpenGL:
+		case math::CoordinateSystem::SceneKit:
 			break;
 		case math::CoordinateSystem::DirectX:
 		case math::CoordinateSystem::Unity:

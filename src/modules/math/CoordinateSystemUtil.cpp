@@ -24,6 +24,7 @@ namespace math {
 //     - vengi (internal)
 //     - OpenGL
 //     - Maya
+//     - SceneKit (Apple: camera looks down -Z, +Z toward viewer)
 //
 //   LEFT-HANDED (Y-up, Z-forward):
 //     - DirectX
@@ -48,7 +49,8 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	case CoordinateSystem::Vengi:
 	case CoordinateSystem::Maya:
 	case CoordinateSystem::OpenGL:
-		// vengi, OpenGL, and Maya all use the same right-handed Y-up -Z-forward system
+	case CoordinateSystem::SceneKit:
+		// vengi, OpenGL, Maya, and SceneKit all use the same right-handed Y-up -Z-forward system
 		// Identity - no conversion needed
 		// Note: We use standard basis vectors (1,0,0), (0,1,0), (0,0,1)
 		// The "forward" semantic (-Z direction) is handled by the application logic
