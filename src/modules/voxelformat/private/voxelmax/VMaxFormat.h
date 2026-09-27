@@ -120,7 +120,11 @@ namespace voxelformat {
  *
  * the binary data is not RLE encoded, was too slow, got better size/speed with the overall lzfse compression, but
  * the binary data is morton encoded (I use morton 256, for object (aggregated from chunk id +local chunk coord) and
- * morton 32 for the chunks)
+ * morton 32 for the chunks). morton256_x/y/z LUTs match voxel/Morton.h (x<<0, y<<1, z<<2).
+ *
+ * SamplerCoord (runtime lookup, not stored): t, chunkId, localId. Cache is 257 entries
+ * (256 + 1 for rendered meshes). chunkId = morton256(dim)[t >> chunkExtent.order],
+ * localId = morton256(dim)[t & chunkExtent.coordMax]. Equatable ignores t.
  *
  * a voxel has:
  * * 1 byte extended layer info - there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
@@ -178,7 +182,7 @@ private:
 	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
 
 	struct VolumeExtent {
-		int o = 0; // order: chunkOrder = t >> chunkExtent.order
+		int o = 0; // chunkExtent.order: chunkOrder = t >> o (32^3 => 5)
 		int min[3] {0, 0, 0};
 		int max[3] {0, 0, 0};
 	};

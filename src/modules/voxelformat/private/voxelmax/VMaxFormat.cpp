@@ -286,8 +286,7 @@ VMaxFormat::VolumeStats VMaxFormat::parseStats(const util::BinaryPList &snapshot
 		volumeStats.smin[i] = (int)statsSmins[i].asInt();
 		volumeStats.smax[i] = (int)statsSmaxs[i].asInt();
 	}
-	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emin
-	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emax
+	// emin/emax are work-area extent when smaller than 256^3, not extent.r
 	volumeStats.extent.o = (int)extent.getDictEntry("o").asInt();
 	// const util::BinaryPList &regionBounds = extent.getDictEntry("r");
 	// const util::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
