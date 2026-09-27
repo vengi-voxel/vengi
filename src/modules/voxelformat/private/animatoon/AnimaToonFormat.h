@@ -12,11 +12,22 @@
 namespace voxelformat {
 
 /**
- * @brief Animatoon format
+ * @brief Animatoon .scn format
  *
- * @ingroup Formats
+ * JSON document with gzip+base64 voxel volumes in @c ModelSave. Scene hierarchy
+ * (node names, parents, volume size) is hard-coded per @c SceneName because
+ * Animatoon 3.0 embeds that in the Unity scene, not the file.
+ *
+ * @c savedPositionsList stores one Unity @c SavePositions JSON string per
+ * timeline frame. @c meshPositions / @c meshRotations are local TRS of
+ * @c FrameSaver.usedMeshes (already IK-baked). @c ModelSave parts share one
+ * rest-pose volume; joints are inferred from occupancy (prefab Pivot is not
+ * stored). Voxels are remapped with @c math::CoordinateSystem::Unity. Unity
+ * local TRS is converted with @c scenegraph::convertUnityToVengi and scaled
+ * by 10 (PicaVoxel VoxelSize 0.1).
  *
  * @todo Animations are not yet working
+ * @ingroup Formats
  */
 class AnimaToonFormat : public RGBAFormat {
 protected:
