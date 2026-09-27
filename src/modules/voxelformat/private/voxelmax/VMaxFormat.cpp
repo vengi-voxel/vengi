@@ -162,6 +162,8 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 		for (const json::Json &obj : groups) {
 			VMaxGroup o;
 			jsonBool(obj, s, o);
+			jsonBool(obj, h, o);
+			jsonString(obj, name, o);
 			jsonString(obj, pid, o);
 			jsonString(obj, id, o);
 			jsonVec(obj, e_c, o);

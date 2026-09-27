@@ -21,7 +21,9 @@ namespace voxelformat {
  * up to 2040 materials
  * 256x256x256 working area
  * unlimited history
- * z points upwards
+ * z points upwards. scene.json t_r is SceneKit axis-angle (xyz + radians), not a quaternion.
+ * Volume voxels and node TRS remap (x, y, z_up) to vengi (x, z_up, y).
+ * Transforms stay on nodes; volumes are cropped and the origin shift is folded into TRS.
  *
  * ------------------
  *
@@ -153,8 +155,8 @@ private:
 		core::String t_pa;					   // pivotAlign
 		core::String t_pf;					   // pivotFace
 		core::String t_po;					   // pivotOffset
-		glm::vec3 t_p{0.0f};				   // position
-		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // rotation
+		glm::vec3 t_p{0.0f};				   // position (VoxelMax Z-up)
+		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
 		glm::vec3 t_s{1.0f};				   // scale
 		glm::vec3 ind{0.0f};				   // index
 		glm::vec3 e_c{0.0f};				   // extent center
@@ -216,13 +218,14 @@ private:
 		core::UUID id;
 		core::String name;
 		core::UUID pid;					   // parent id
-		glm::vec3 t_p{0.0f};				   // position
-		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // rotation
+		glm::vec3 t_p{0.0f};				   // position (VoxelMax Z-up)
+		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
 		glm::vec3 t_s{1.0f};				   // scale
 		glm::vec3 e_c{0.0f};				   // extent center
 		glm::vec3 e_ma{0.0f};				   // extent max
 		glm::vec3 e_mi{0.0f};				   // extent min
 		bool s = true;						   // selected
+		bool h = false;						   // hidden
 	};
 	// scene nodes hierarchy, groups and volumes
 	struct VMaxScene {
