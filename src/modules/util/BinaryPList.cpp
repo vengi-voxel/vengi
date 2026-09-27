@@ -464,8 +464,11 @@ BinaryPList BinaryPList::readData(io::SeekableReadStream &stream, BPListFormats 
 	const uint32_t length = readLength(stream, size);
 	Log::debug("BPLIST: Read data of length %u", length);
 	PListByteArray data;
+	if (length == 0u) {
+		return BinaryPList{core::move(data)};
+	}
 	data.resize(length);
-	if (!stream.read(data.data(), data.size())) {
+	if (stream.read(data.data(), data.size()) != (int)length) {
 		Log::error("Failed to read data of length %i", (int)length);
 		return BinaryPList{};
 	}
