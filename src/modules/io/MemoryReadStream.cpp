@@ -14,6 +14,9 @@ MemoryReadStream::~MemoryReadStream() {
 }
 
 int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
+	if (dataSize == 0) {
+		return 0;
+	}
 	const int64_t rem = remaining();
 	if (rem == 0) {
 		return 0;
