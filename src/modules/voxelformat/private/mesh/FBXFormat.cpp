@@ -892,7 +892,8 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 	const glm::vec3 scale = getInputScale(sceneMins, sceneMaxs);
 
-	core::Map<const ufbx_node *, int> ufbxNodeMap(64);
+	const int nodeMapCapacity = core_max(2, (int)ufbxScene->nodes.count);
+	core::Map<const ufbx_node *, int> ufbxNodeMap(nodeMapCapacity);
 	const int meshCount = (int)ufbxScene->meshes.count;
 	int meshIdx = 0;
 	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id(), scale,

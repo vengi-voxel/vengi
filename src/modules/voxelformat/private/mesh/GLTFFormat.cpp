@@ -678,8 +678,9 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 		}
 	}
 
-	// Build a map from cgltf_node* to scenegraph node id for animation import
-	core::Map<const cgltf_node *, int> nodeMap(64);
+	// One slot per glTF node - animation import looks up by cgltf_node*.
+	const int nodeMapCapacity = core_max(2, (int)data->nodes_count);
+	core::Map<const cgltf_node *, int> nodeMap(nodeMapCapacity);
 
 	const cgltf_scene *scene = data->scene;
 	if (!scene) {
