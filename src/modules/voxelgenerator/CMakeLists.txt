@@ -3,7 +3,6 @@ set(LIB voxelgenerator)
 set(LUA_SRCS
 	scripts/modules/perlin.lua
 	scripts/modules/volume.lua
-	scripts/modules/bodypart.lua
 	scripts/modules/JSON.lua
 	scripts/modules/stb_aos.lua
 	scripts/modules/tree_utils.lua

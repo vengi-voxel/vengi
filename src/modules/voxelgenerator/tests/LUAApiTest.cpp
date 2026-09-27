@@ -789,6 +789,24 @@ TEST_F(LUAApiTest, testScriptAlign) {
 	runFile(sceneGraph, "align.lua");
 }
 
+TEST_F(LUAApiTest, testIdentifyBodyPart) {
+	const core::String script = R"(
+		function main(node, region, color)
+			if g_scenegraph.identifyBodyPart("K_Arm_Left") ~= "left_arm" then
+				error("identifyBodyPart failed")
+			end
+			if g_scenegraph.detectBodyPartSide("shoulder_r") ~= "right" then
+				error("detectBodyPartSide failed")
+			end
+			if g_scenegraph.identifyBodyPart("nope") ~= nil then
+				error("unknown name should be nil")
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testScriptMandelbulb) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "mandelbulb.lua");

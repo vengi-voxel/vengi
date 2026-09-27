@@ -9,6 +9,7 @@ set(SRCS
 	JsonExporter.h JsonExporter.cpp
 	Physics.h Physics.cpp
 	SceneGraph.h SceneGraph.cpp
+	SceneGraphBodyPart.h SceneGraphBodyPart.cpp
 	SceneGraphAnimation.h
 	SceneGraphKeyFrame.h
 	SceneGraphNode.h SceneGraphNode.cpp
@@ -29,6 +30,7 @@ set(TEST_SRCS
 	tests/JsonExporterTest.cpp
 	tests/PhysicsTest.cpp
 	tests/SceneGraphTest.cpp
+	tests/SceneGraphBodyPartTest.cpp
 	tests/SceneGraphTransformTest.cpp
 	tests/SceneGraphNodeValueCacheTest.cpp
 	tests/SceneGraphUtilTest.cpp

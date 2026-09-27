@@ -10,11 +10,14 @@ Global: `g_scenegraph`
 | `addAnimation(name)` | Add a new animation to the scene graph. |
 | `align(padding)` | Align all nodes in the scene graph. |
 | `animations()` | Get all animation names. |
+| `detectBodyPartSide(name)` | Detect left/right from a node name. |
 | `duplicateAnimation(source, target)` | Duplicate an existing animation. |
 | `get(id)` | Get a node by its ID. |
 | `getByName(name)` | Get a node by its name. |
 | `getByUUID(uuid)` | Get a node by its UUID. |
 | `hasAnimation(name)` | Check if an animation exists. |
+| `identifyBodyPart(name)` | Map a node name to an animate.lua body-part key, or nil if unrecognized. |
+| `identifyBodyPartSkipMessage()` | Message shown when a node name is not a recognized body part. |
 | `new(name, region, visible, type)` | Create a new node in the scene graph for model nodes the parameters differ. |
 | `nodeIds()` | Get all node IDs in the scene graph. |
 | `setAnimation(name)` | Set the active animation. |
@@ -67,6 +70,22 @@ Get all animation names.
 | Type | Description |
 | ---- | ----------- |
 | `table` | A table of animation names. |
+
+### detectBodyPartSide
+
+Detect left/right from a node name.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | 'left', 'right', or nil. |
 
 ### duplicateAnimation
 
@@ -148,6 +167,32 @@ Check if an animation exists.
 | Type | Description |
 | ---- | ----------- |
 | `boolean` | True if animation exists. |
+
+### identifyBodyPart
+
+Map a node name to an animate.lua body-part key, or nil if unrecognized.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | Body-part key (torso, head, left_arm, ...) or nil. |
+
+### identifyBodyPartSkipMessage
+
+Message shown when a node name is not a recognized body part.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | The skip/error message. |
 
 ### new
 

@@ -54,14 +54,11 @@ local function addOrGetKeyFrame(node, frame)
 end
 
 ---------------------------------------------------------------------------
--- Body part identification (shared module)
+-- Body part identification (C++ g_scenegraph.identifyBodyPart)
 ---------------------------------------------------------------------------
 
-local bodypart = require "modules.bodypart"
-
--- Convenience alias
 local function identifyBodyPart(name)
-	return bodypart.identify(name)
+	return g_scenegraph.identifyBodyPart(name)
 end
 
 ---------------------------------------------------------------------------

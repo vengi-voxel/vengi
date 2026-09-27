@@ -26,6 +26,7 @@
 #include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphBodyPart.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
@@ -3014,6 +3015,33 @@ static int luaVoxel_scenegraph_align(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraph_identifybodypart(lua_State *s) {
+	const char *name = luaL_checkstring(s, 1);
+	const core::String part = scenegraph::identifyBodyPart(name);
+	if (part.empty()) {
+		lua_pushnil(s);
+	} else {
+		lua_pushstring(s, part.c_str());
+	}
+	return 1;
+}
+
+static int luaVoxel_scenegraph_detectbodypartside(lua_State *s) {
+	const char *name = luaL_checkstring(s, 1);
+	const core::String side = scenegraph::detectBodyPartSide(name);
+	if (side.empty()) {
+		lua_pushnil(s);
+	} else {
+		lua_pushstring(s, side.c_str());
+	}
+	return 1;
+}
+
+static int luaVoxel_scenegraph_identifybodypartskipmessage(lua_State *s) {
+	lua_pushstring(s, scenegraph::identifyBodyPartSkipMessage());
+	return 1;
+}
+
 static scenegraph::SceneGraphNodeType toNodeType(const char *type) {
 	for (int i = 0; i < lengthof(scenegraph::SceneGraphNodeTypeStr); ++i) {
 		if (core::string::iequals(type, scenegraph::SceneGraphNodeTypeStr[i])) {
@@ -5731,6 +5759,46 @@ static int luaVoxel_scenegraph_align_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraph_identifybodypart_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "identifyBodyPart",
+		"summary": "Map a node name to an animate.lua body-part key, or nil if unrecognized.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The node name."}
+		],
+		"returns": [
+			{"type": "string", "description": "Body-part key (torso, head, left_arm, ...) or nil."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_detectbodypartside_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "detectBodyPartSide",
+		"summary": "Detect left/right from a node name.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The node name."}
+		],
+		"returns": [
+			{"type": "string", "description": "'left', 'right', or nil."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_identifybodypartskipmessage_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "identifyBodyPartSkipMessage",
+		"summary": "Message shown when a node name is not a recognized body part.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The skip/error message."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_scenegraph_new_node_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "new",
@@ -6808,6 +6876,9 @@ void luaVoxel_prepareState(lua_State* s) {
 
 	static const clua_Reg sceneGraphFuncs[] = {
 		{"align", luaVoxel_scenegraph_align, luaVoxel_scenegraph_align_jsonhelp},
+		{"identifyBodyPart", luaVoxel_scenegraph_identifybodypart, luaVoxel_scenegraph_identifybodypart_jsonhelp},
+		{"detectBodyPartSide", luaVoxel_scenegraph_detectbodypartside, luaVoxel_scenegraph_detectbodypartside_jsonhelp},
+		{"identifyBodyPartSkipMessage", luaVoxel_scenegraph_identifybodypartskipmessage, luaVoxel_scenegraph_identifybodypartskipmessage_jsonhelp},
 		{"new", luaVoxel_scenegraph_new_node, luaVoxel_scenegraph_new_node_jsonhelp},
 		{"get", luaVoxel_scenegraph_get_node_by_id, luaVoxel_scenegraph_get_node_by_id_jsonhelp},
 		{"getByName", luaVoxel_scenegraph_get_node_by_name, luaVoxel_scenegraph_get_node_by_name_jsonhelp},
