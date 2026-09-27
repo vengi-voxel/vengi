@@ -15,6 +15,7 @@ BuildRequires: binutils-devel
 BuildRequires: libasan
 BuildRequires: libubsan
 BuildRequires: libcurl-devel
+BuildRequires: libbrotli-devel
 
 %define debug_package %{nil}
 %define __defattr %defattr(-,root,root)

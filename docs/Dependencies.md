@@ -14,6 +14,7 @@
   * freetype2 (optional)
   * libjpeg (optional but recommended)
   * libpng (optional)
+  * libbrotli (optional; decoder is bundled)
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have
@@ -22,7 +23,7 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl3-dev wayland-protocols pkg-config libjpeg-dev libpng-dev
+apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl3-dev wayland-protocols pkg-config libjpeg-dev libpng-dev libbrotli-dev
 ```
 
 ## RockyLinux

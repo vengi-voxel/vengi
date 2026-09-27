@@ -13,6 +13,7 @@ Build-Depends:
  libunwind-dev,
  libcurl-ssl-dev,
  libdeflate-dev,
+ libbrotli-dev,
  libjpeg-dev,
  libsdl3-dev,
  libfreetype-dev,
