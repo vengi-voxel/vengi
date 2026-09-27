@@ -18,9 +18,11 @@
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <SDL3/SDL_stdinc.h>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 // https://starmadepedia.net/wiki/ID_list
@@ -45,110 +47,599 @@ constexpr int smd3SegmentDataSize = ((smd3Blocks * smd3Blocks * smd3Blocks) * 3 
 
 } // namespace priv
 
-struct DockEntry {
-	core::String subfolder;
-	glm::ivec3 position{0};
-	glm::mat3 rotation{1.0f};
+static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v);
+
+// StarMade Tag types (org.schema.schine.resource.tag.Tag)
+enum SMTagType {
+	SMTag_Finish = 0,
+	SMTag_Byte = 1,
+	SMTag_Short = 2,
+	SMTag_Int = 3,
+	SMTag_Long = 4,
+	SMTag_Float = 5,
+	SMTag_Double = 6,
+	SMTag_ByteArray = 7,
+	SMTag_String = 8,
+	SMTag_Vec3f = 9,
+	SMTag_Vec3i = 10,
+	SMTag_Vec3b = 11,
+	SMTag_List = 12,
+	SMTag_Struct = 13,
+	SMTag_Serializable = 14,
+	SMTag_Vec4f = 15,
+	SMTag_Mat4 = 16,
+	SMTag_Nothing = 17,
+	SMTag_Mat3 = 18
 };
 
-// Parse dock entries from meta.smbpm - extracts attachment positions and rotations
-static void parseDockEntries(io::SeekableReadStream &stream, core::DynamicArray<DockEntry> &docks) {
-	const int64_t size = stream.remaining();
-	if (size <= 0) {
-		return;
-	}
-	core::DynamicArray<uint8_t> buf((size_t)size);
-	if (stream.read(buf.data(), (size_t)size) != (int)size) {
-		return;
-	}
-	const uint8_t *data = buf.data();
-	const size_t len = (size_t)size;
+struct SMDock {
+	core::String name;
+	glm::vec3 translation{0.0f};
+	glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
+};
 
-	// Search for ATTACHED_ paths and extract dock position + rotation
-	size_t pos = 0;
-	while (pos < len) {
-		// Find next "ATTACHED_" occurrence
-		const uint8_t *found = nullptr;
-		for (size_t i = pos; i + 9 < len; ++i) {
-			if (SDL_memcmp(&data[i], "ATTACHED_", 9) == 0) {
-				found = &data[i];
-				break;
-			}
-		}
-		if (!found) {
-			break;
-		}
-		const size_t attachIdx = (size_t)(found - data);
-
-		// Find the 2-byte length prefix for the full path (Java writeUTF)
-		core::String subfolder;
-		size_t afterPath = 0;
-		for (size_t back = 2; back < 60 && attachIdx >= back; ++back) {
-			const size_t prefixOff = attachIdx - back;
-			const uint16_t strLen = (uint16_t)((data[prefixOff] << 8) | data[prefixOff + 1]);
-			if (strLen > 0 && strLen < 200 && prefixOff + 2 + strLen <= len) {
-				const char *str = (const char *)&data[prefixOff + 2];
-				// Verify it contains ATTACHED_
-				if (SDL_memcmp(str + (back - 2), "ATTACHED_", 9) == 0) {
-					subfolder = core::String(str, strLen);
-					afterPath = prefixOff + 2 + strLen;
-					break;
-				}
-			}
-		}
-		if (subfolder.empty()) {
-			pos = attachIdx + 1;
-			continue;
-		}
-
-		// Find the two 0xf6 markers: first is parent dock pos, second is attached dock pos
-		DockEntry entry;
-		entry.subfolder = subfolder;
-		glm::ivec3 parentDock{0};
-		glm::ivec3 attachedDock{0};
-		int markersFound = 0;
-		for (size_t i = afterPath; i + 13 < len && i < afterPath + 500; ++i) {
-			if (data[i] == 0xf6) {
-				const size_t p = i + 1;
-				if (p + 12 > len) {
-					break;
-				}
-				glm::ivec3 v;
-				v.x = (int32_t)((data[p] << 24) | (data[p + 1] << 16) | (data[p + 2] << 8) | data[p + 3]);
-				v.y = (int32_t)((data[p + 4] << 24) | (data[p + 5] << 16) | (data[p + 6] << 8) | data[p + 7]);
-				v.z = (int32_t)((data[p + 8] << 24) | (data[p + 9] << 16) | (data[p + 10] << 8) | data[p + 11]);
-				if (markersFound == 0) {
-					parentDock = v;
-				} else {
-					attachedDock = v;
-				}
-				++markersFound;
-				i = p + 11; // skip past this marker's data
-				if (markersFound == 2) {
-					break;
-				}
-			}
-		}
-		if (markersFound >= 2) {
-			entry.position = parentDock - attachedDock;
-			Log::debug("Dock entry: %s parent=(%i,%i,%i) attached=(%i,%i,%i) offset=(%i,%i,%i)",
-					   entry.subfolder.c_str(), parentDock.x, parentDock.y, parentDock.z, attachedDock.x,
-					   attachedDock.y, attachedDock.z, entry.position.x, entry.position.y, entry.position.z);
-			docks.push_back(entry);
-		} else if (markersFound == 1) {
-			entry.position = parentDock;
-			Log::debug("Dock entry: %s pos=(%i,%i,%i) (single marker)", entry.subfolder.c_str(), entry.position.x,
-					   entry.position.y, entry.position.z);
-			docks.push_back(entry);
-		}
-		pos = attachIdx + 1;
+static void stripTrailingSlash(core::String &path) {
+	while (!path.empty() && path.last() == '/') {
+		path = path.substr(0, path.size() - 1);
 	}
 }
 
-// Find dock entry for a given file path (e.g. "Ship/ATTACHED_0/DATA/file.smd3")
-static const DockEntry *findDockEntry(const core::DynamicArray<DockEntry> &docks, const core::String &filePath) {
-	for (const DockEntry &dock : docks) {
-		if (filePath.contains(dock.subfolder)) {
+static core::String pathBasename(const core::String &path) {
+	core::String p = path;
+	stripTrailingSlash(p);
+	const size_t slash = p.rfind('/');
+	if (slash == core::String::npos) {
+		return p;
+	}
+	return p.substr(slash + 1);
+}
+
+// DATA/file.smd3 -> empty, ship/DATA/file.smd3 -> ship
+static core::String entityPrefixFromDir(const core::String &dir) {
+	core::String prefix = dir;
+	if (core::string::endsWith(prefix, "DATA/")) {
+		prefix = prefix.substr(0, prefix.size() - 5);
+	} else if (core::string::endsWith(prefix, "DATA")) {
+		prefix = prefix.substr(0, prefix.size() - 4);
+	}
+	stripTrailingSlash(prefix);
+	return prefix;
+}
+
+static glm::mat3 mat4RowMajorBasis(const float m[16]) {
+	return glm::mat3(m[0], m[4], m[8], m[1], m[5], m[9], m[2], m[6], m[10]);
+}
+
+// javax.vecmath Matrix3f.rotX/Y/Z (column-vector multiply)
+static glm::mat3 smRotX(float a) {
+	const float c = glm::cos(a);
+	const float s = glm::sin(a);
+	return glm::mat3(1.0f, 0.0f, 0.0f, 0.0f, c, s, 0.0f, -s, c);
+}
+
+static glm::mat3 smRotY(float a) {
+	const float c = glm::cos(a);
+	const float s = glm::sin(a);
+	return glm::mat3(c, 0.0f, -s, 0.0f, 1.0f, 0.0f, s, 0.0f, c);
+}
+
+static glm::mat3 smRotZ(float a) {
+	const float c = glm::cos(a);
+	const float s = glm::sin(a);
+	return glm::mat3(c, s, 0.0f, -s, c, 0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+struct SMRigid {
+	glm::mat3 basis{1.0f};
+	glm::vec3 origin{0.0f};
+};
+
+static SMRigid smMul(const SMRigid &a, const SMRigid &b) {
+	SMRigid out;
+	out.basis = a.basis * b.basis;
+	out.origin = a.basis * b.origin + a.origin;
+	return out;
+}
+
+static SMRigid smInverse(const SMRigid &t) {
+	SMRigid out;
+	out.basis = glm::transpose(t.basis);
+	out.origin = -out.basis * t.origin;
+	return out;
+}
+
+static const int8_t smOriencubeMirror[24] = {4,  5,	 6,	 7,	 0,	 1,	 2,	 3,	 12, 13, 14, 15,
+											 8,	 9,	 10, 11, 20, 21, 22, 23, 16, 17, 18, 19};
+// Element side: 0 front +Z, 1 back -Z, 2 top +Y, 3 bottom -Y, 4 right -X, 5 left +X
+static const int8_t smOriencubePrimary[24] = {0, 0, 0, 0, 1, 1, 1, 1, 3, 3, 3, 3,
+											  2, 2, 2, 2, 4, 4, 4, 4, 5, 5, 5, 5};
+static const float smOriencubeSecondaryY[24] = {
+	0.0f, 1.5707964f, 3.1415927f, 4.712389f, 3.1415927f, 1.5707964f, 0.0f,	  4.712389f,
+	3.1415927f, 4.712389f, 0.0f, 1.5707964f, 3.1415927f, 1.5707964f, 0.0f,	  4.712389f,
+	0.0f, 1.5707964f, 3.1415927f, 4.712389f, 0.0f,		  4.712389f,  3.1415927f, 1.5707964f};
+
+static SMRigid oriencubeGetTrans(const glm::ivec3 &position, int orientation, bool mirrored, int move) {
+	int idx = orientation % 24;
+	if (idx < 0) {
+		idx += 24;
+	}
+	if (mirrored) {
+		idx = (int)smOriencubeMirror[idx];
+	}
+	const int face = (int)smOriencubePrimary[idx];
+	glm::vec3 origin((float)(position.x - 16), (float)(position.y - 16), (float)(position.z - 16));
+	glm::mat3 primary(1.0f);
+	if (face == 0) {
+		primary = smRotX(glm::half_pi<float>());
+		origin.z += (float)move;
+	} else if (face == 1) {
+		primary = smRotX(-glm::half_pi<float>());
+		origin.z -= (float)move;
+	} else if (face == 3) {
+		primary = smRotZ(-glm::pi<float>());
+		origin.y -= (float)move;
+	} else if (face == 2) {
+		origin.y += (float)move;
+	} else if (face == 4) {
+		primary = smRotZ(glm::half_pi<float>());
+		origin.x -= (float)move;
+	} else {
+		primary = smRotZ(-glm::half_pi<float>());
+		origin.x += (float)move;
+	}
+	SMRigid trans;
+	trans.basis = primary * smRotY(smOriencubeSecondaryY[idx]);
+	trans.origin = origin;
+	return trans;
+}
+
+// RailRelation.getBlockTransform (static dock / originalOut path)
+static SMRigid railBlockTransform(const glm::ivec3 &railPos, int railOri, const glm::ivec3 &dockedPos, int dockedOri,
+								  const glm::mat3 &movingBasis, const glm::vec3 &movingOrigin) {
+	SMRigid rail = oriencubeGetTrans(railPos, railOri, false, 1);
+	rail.basis = movingBasis * rail.basis;
+	SMRigid docked = oriencubeGetTrans(dockedPos, dockedOri, true, 0);
+	SMRigid moving;
+	moving.basis = glm::mat3(1.0f);
+	moving.origin = movingOrigin;
+	return smMul(smMul(moving, rail), smInverse(docked));
+}
+
+static int smTagAbs(int8_t type) {
+	return type < 0 ? -(int)type : (int)type;
+}
+
+static bool skipSMPayload(io::SeekableReadStream &stream, int type, int depth);
+
+static bool readSMTagHeader(io::SeekableReadStream &stream, int8_t &type, core::String &name) {
+	if (stream.readInt8(type) != 0) {
+		return false;
+	}
+	name = core::String::Empty;
+	if (type > 0) {
+		if (!stream.readPascalStringUInt16BE(name)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static bool skipSMPayload(io::SeekableReadStream &stream, int type, int depth) {
+	if (depth > 32) {
+		Log::error("StarMade tag nesting too deep");
+		return false;
+	}
+	switch (type) {
+	case SMTag_Finish:
+	case SMTag_Nothing:
+		return true;
+	case SMTag_Byte:
+		return stream.skip(1) != -1;
+	case SMTag_Short:
+		return stream.skip(2) != -1;
+	case SMTag_Int:
+	case SMTag_Float:
+		return stream.skip(4) != -1;
+	case SMTag_Long:
+	case SMTag_Double:
+	case SMTag_Vec4f:
+		return stream.skip(8) != -1;
+	case SMTag_Vec3f:
+	case SMTag_Vec3i:
+		return stream.skip(12) != -1;
+	case SMTag_Vec3b:
+		return stream.skip(3) != -1;
+	case SMTag_Mat3:
+		return stream.skip(36) != -1;
+	case SMTag_Mat4:
+		return stream.skip(64) != -1;
+	case SMTag_ByteArray: {
+		int32_t len = 0;
+		if (stream.readInt32BE(len) != 0 || len < 0) {
+			return false;
+		}
+		return stream.skip(len) != -1;
+	}
+	case SMTag_String: {
+		core::String dummy;
+		return stream.readPascalStringUInt16BE(dummy);
+	}
+	case SMTag_List: {
+		int8_t listType = 0;
+		int32_t count = 0;
+		if (stream.readInt8(listType) != 0 || stream.readInt32BE(count) != 0 || count < 0 || count > 1000000) {
+			return false;
+		}
+		const int absType = smTagAbs(listType);
+		for (int32_t i = 0; i < count; ++i) {
+			if (!skipSMPayload(stream, absType, depth + 1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	case SMTag_Struct: {
+		for (;;) {
+			int8_t childType = 0;
+			core::String childName;
+			if (!readSMTagHeader(stream, childType, childName)) {
+				return false;
+			}
+			if (childType == SMTag_Finish) {
+				return true;
+			}
+			if (!skipSMPayload(stream, smTagAbs(childType), depth + 1)) {
+				return false;
+			}
+		}
+	}
+	case SMTag_Serializable:
+		Log::debug("Skipping StarMade SERIALIZABLE tag");
+		return false;
+	default:
+		Log::error("Unknown StarMade tag type %i", type);
+		return false;
+	}
+}
+
+struct SMRailPiece {
+	glm::ivec3 position{0};
+	int orientation = 0;
+	bool valid = false;
+};
+
+static bool skipUntilFinish(io::SeekableReadStream &stream, int depth) {
+	for (;;) {
+		int8_t type = 0;
+		core::String name;
+		if (!readSMTagHeader(stream, type, name)) {
+			return false;
+		}
+		if (type == SMTag_Finish) {
+			return true;
+		}
+		if (!skipSMPayload(stream, smTagAbs(type), depth + 1)) {
+			return false;
+		}
+	}
+}
+
+static bool expectSMTag(io::SeekableReadStream &stream, int expectedAbs, int depth) {
+	int8_t type = 0;
+	core::String name;
+	if (!readSMTagHeader(stream, type, name)) {
+		return false;
+	}
+	if (smTagAbs(type) != expectedAbs) {
+		if (type != SMTag_Finish && !skipSMPayload(stream, smTagAbs(type), depth + 1)) {
+			return false;
+		}
+		return false;
+	}
+	return true;
+}
+
+static bool readSMMat4(io::SeekableReadStream &stream, float m[16], int depth) {
+	if (!expectSMTag(stream, SMTag_Mat4, depth)) {
+		return false;
+	}
+	for (int i = 0; i < 16; ++i) {
+		if (stream.readFloatBE(m[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static bool parseRailPiece(io::SeekableReadStream &stream, SMRailPiece &piece, int depth) {
+	if (!expectSMTag(stream, SMTag_Struct, depth)) {
+		return false;
+	}
+	int8_t kind = 0;
+	if (!expectSMTag(stream, SMTag_Byte, depth + 1) || stream.readInt8(kind) != 0) {
+		return false;
+	}
+	(void)kind;
+	if (!expectSMTag(stream, SMTag_String, depth + 1)) {
+		return false;
+	}
+	core::String uid;
+	if (!stream.readPascalStringUInt16BE(uid)) {
+		return false;
+	}
+	if (!expectSMTag(stream, SMTag_Vec3i, depth + 1) || !readIvec3(stream, piece.position)) {
+		return false;
+	}
+	if (!expectSMTag(stream, SMTag_Short, depth + 1)) {
+		return false;
+	}
+	int16_t blockType = 0;
+	if (stream.readInt16BE(blockType) != 0) {
+		return false;
+	}
+	int8_t orient = 0;
+	if (!expectSMTag(stream, SMTag_Byte, depth + 1) || stream.readInt8(orient) != 0) {
+		return false;
+	}
+	piece.orientation = (int)orient;
+	piece.valid = true;
+	return skipUntilFinish(stream, depth + 1);
+}
+
+static bool parseRailChildTag(io::SeekableReadStream &stream, SMDock &dock) {
+	int16_t tagVersion = 0;
+	if (stream.readInt16BE(tagVersion) != 0) {
+		return false;
+	}
+
+	if (!expectSMTag(stream, SMTag_Struct, 0)) {
+		return false;
+	}
+
+	if (!expectSMTag(stream, SMTag_Byte, 1)) {
+		return skipUntilFinish(stream, 0);
+	}
+	int8_t railTagType = 0;
+	if (stream.readInt8(railTagType) != 0) {
+		return false;
+	}
+	if (railTagType != 1 && railTagType != 3) {
+		return skipUntilFinish(stream, 0);
+	}
+
+	if (!expectSMTag(stream, SMTag_Struct, 1)) {
+		return skipUntilFinish(stream, 0);
+	}
+	if (!expectSMTag(stream, SMTag_Struct, 2)) {
+		return skipUntilFinish(stream, 0);
+	}
+
+	SMRailPiece rail;
+	SMRailPiece docked;
+	if (!parseRailPiece(stream, rail, 3) || !parseRailPiece(stream, docked, 3)) {
+		return false;
+	}
+
+	float railTransform[16];
+	float dockedTransform[16];
+	float moving[16];
+	if (!readSMMat4(stream, railTransform, 3) || !readSMMat4(stream, dockedTransform, 3)) {
+		return false;
+	}
+	if (!expectSMTag(stream, SMTag_Vec3i, 3)) {
+		return false;
+	}
+	glm::ivec3 railContact;
+	if (!readIvec3(stream, railContact)) {
+		return false;
+	}
+	if (!readSMMat4(stream, moving, 3)) {
+		return false;
+	}
+	if (!skipUntilFinish(stream, 3) || !skipUntilFinish(stream, 2) || !skipUntilFinish(stream, 1)) {
+		return false;
+	}
+
+	if (!rail.valid || !docked.valid) {
+		return true;
+	}
+
+	(void)railTransform;
+	(void)dockedTransform;
+	(void)railContact;
+
+	const glm::vec3 movingT(moving[3], moving[7], moving[11]);
+	const SMRigid dockedToParent =
+		railBlockTransform(rail.position, rail.orientation, docked.position, docked.orientation,
+						   mat4RowMajorBasis(moving), movingT);
+	dock.translation = dockedToParent.origin;
+	dock.orientation = glm::normalize(glm::quat_cast(dockedToParent.basis));
+	Log::debug("Rail dock %s offset=(%f,%f,%f) rail=(%i,%i,%i) ori=%i docker=(%i,%i,%i) ori=%i", dock.name.c_str(),
+			   dock.translation.x, dock.translation.y, dock.translation.z, rail.position.x, rail.position.y,
+			   rail.position.z, rail.orientation, docked.position.x, docked.position.y, docked.position.z,
+			   docked.orientation);
+	return true;
+}
+
+static bool skipWirelessAndReadRailChildren(io::SeekableReadStream &stream, int32_t metaVersion,
+											core::DynamicArray<SMDock> &docks) {
+	if (metaVersion >= 2) {
+		core::String railUid;
+		if (!stream.readPascalStringUInt16BE(railUid)) {
+			return false;
+		}
+		int32_t wirelessCount = 0;
+		if (stream.readInt32BE(wirelessCount) != 0 || wirelessCount < 0 || wirelessCount > 100000) {
+			return false;
+		}
+		for (int32_t i = 0; i < wirelessCount; ++i) {
+			core::String marking;
+			if (!stream.readPascalStringUInt16BE(marking)) {
+				return false;
+			}
+			int64_t dummy = 0;
+			if (stream.readInt64BE(dummy) != 0 || stream.readInt64BE(dummy) != 0) {
+				return false;
+			}
+		}
+	}
+	int32_t childCount = 0;
+	if (stream.readInt32BE(childCount) != 0 || childCount < 0 || childCount > 10000) {
+		return false;
+	}
+	for (int32_t i = 0; i < childCount; ++i) {
+		core::String childPath;
+		if (!stream.readPascalStringUInt16BE(childPath)) {
+			return false;
+		}
+		int32_t tagSize = 0;
+		if (stream.readInt32BE(tagSize) != 0 || tagSize < 0) {
+			return false;
+		}
+		SMDock dock;
+		dock.name = pathBasename(childPath);
+		if (tagSize == 0) {
+			docks.push_back(dock);
+			continue;
+		}
+		const int64_t tagStart = stream.pos();
+		if (!parseRailChildTag(stream, dock)) {
+			Log::warn("Failed to parse rail child tag for %s", dock.name.c_str());
+			if (stream.seek(tagStart + tagSize) == -1) {
+				return false;
+			}
+		} else {
+			const int64_t consumed = stream.pos() - tagStart;
+			if (consumed < tagSize) {
+				if (stream.skip((int64_t)tagSize - consumed) == -1) {
+					return false;
+				}
+			}
+		}
+		docks.push_back(dock);
+	}
+	return true;
+}
+
+static bool parseSmbpm(io::SeekableReadStream &stream, core::DynamicArray<SMDock> &docks) {
+	int32_t metaVersion = 0;
+	if (stream.readInt32BE(metaVersion) != 0) {
+		return false;
+	}
+	Log::debug("StarMade meta version %i", (int)metaVersion);
+	// docking offset is always block pos - 16
+	const int coreOffset = 16;
+
+	while (stream.remaining() > 0) {
+		int8_t tag = 0;
+		if (stream.readInt8(tag) != 0) {
+			return false;
+		}
+		if (tag == 1) {
+			break;
+		}
+		if (tag == 2 || tag == 9) {
+			// manager / thrust consume the rest of the file
+			break;
+		}
+		if (tag == 3) {
+			int32_t count = 0;
+			if (stream.readInt32BE(count) != 0 || count < 0 || count > 10000) {
+				return false;
+			}
+			for (int32_t i = 0; i < count; ++i) {
+				core::String childPath;
+				if (!stream.readPascalStringUInt16BE(childPath)) {
+					return false;
+				}
+				glm::ivec3 pos;
+				if (!readIvec3(stream, pos)) {
+					return false;
+				}
+				float sizeX, sizeY, sizeZ;
+				if (stream.readFloatBE(sizeX) != 0 || stream.readFloatBE(sizeY) != 0 || stream.readFloatBE(sizeZ) != 0) {
+					return false;
+				}
+				int16_t style = 0;
+				int8_t orientation = 0;
+				if (stream.readInt16BE(style) != 0 || stream.readInt8(orientation) != 0) {
+					return false;
+				}
+				SMDock dock;
+				dock.name = pathBasename(childPath);
+				dock.translation = glm::vec3((float)(pos.x - coreOffset), (float)(pos.y - coreOffset),
+											 (float)(pos.z - coreOffset));
+				Log::debug("Docking entry %s pos=(%i,%i,%i) orient=%i", dock.name.c_str(), pos.x, pos.y, pos.z,
+						   (int)orientation);
+				docks.push_back(dock);
+			}
+			continue;
+		}
+		if (tag == 4) {
+			float dummy = 0.0f;
+			for (int i = 0; i < 6; ++i) {
+				if (stream.readFloatBE(dummy) != 0) {
+					return false;
+				}
+			}
+			if (!skipWirelessAndReadRailChildren(stream, metaVersion, docks)) {
+				return false;
+			}
+			continue;
+		}
+		if (tag == 5) {
+			int32_t tagSize = 0;
+			if (stream.readInt32BE(tagSize) != 0 || tagSize < 0) {
+				return false;
+			}
+			if (stream.skip(tagSize) == -1) {
+				return false;
+			}
+			continue;
+		}
+		if (tag == 6) {
+			int8_t exists = 0;
+			if (stream.readInt8(exists) != 0) {
+				return false;
+			}
+			if (exists > 0) {
+				int32_t count = 0;
+				if (stream.readInt32BE(count) != 0 || count < 0 || count > 100000) {
+					return false;
+				}
+				// 3*int32 + int16 + 3 bytes
+				if (stream.skip((int64_t)count * 17) == -1) {
+					return false;
+				}
+			}
+			continue;
+		}
+		if (tag == 7 || tag == 8) {
+			int8_t exists = 0;
+			if (stream.readInt8(exists) != 0) {
+				return false;
+			}
+			if (exists > 0) {
+				int32_t count = 0;
+				if (stream.readInt32BE(count) != 0 || count < 0 || count > 100000) {
+					return false;
+				}
+				if (stream.skip((int64_t)count * 16) == -1) {
+					return false;
+				}
+			}
+			continue;
+		}
+		Log::debug("Unknown StarMade meta tag %i", (int)tag);
+		break;
+	}
+	return true;
+}
+
+static const SMDock *findDock(const core::DynamicArray<SMDock> &docks, const core::String &attachedName) {
+	const core::String wanted = pathBasename(attachedName);
+	for (const SMDock &dock : docks) {
+		if (dock.name == wanted) {
 			return &dock;
 		}
 	}
@@ -198,7 +689,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("Could not load file %s", filename.c_str());
 			return false;
 		}
-		const bool loaded = readSmd3(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		const bool loaded = readSmd3(*stream, sceneGraph, blockPal, {0, 0, 0}, palette, 0);
 		if (loaded) {
 			ctx.setProgress(1.0f);
 		}
@@ -209,7 +700,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("Could not load file %s", filename.c_str());
 			return false;
 		}
-		const bool loaded = readSmd2(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+		const bool loaded = readSmd2(*stream, sceneGraph, blockPal, {0, 0, 0}, palette, 0);
 		if (loaded) {
 			ctx.setProgress(1.0f);
 		}
@@ -227,32 +718,69 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("No smd3 or smd2 files found in %s", filename.c_str());
 			return false;
 		}
-		// Parse meta.smbpm for dock positions/rotations of attached entities
-		core::DynamicArray<DockEntry> docks;
-		{
-			io::ArchiveFiles metaFiles;
-			zipArchive->list("*.smbpm", metaFiles);
-			for (const io::FilesystemEntry &m : metaFiles) {
-				// Only parse the root meta file, not those inside ATTACHED_N dirs
-				if (m.fullPath.contains("ATTACHED_")) {
-					continue;
-				}
-				core::ScopedPtr<io::SeekableReadStream> metaStream(zipArchive->readStream(m.fullPath));
-				if (metaStream) {
-					parseDockEntries(*metaStream, docks);
+		io::ArchiveFiles metaFiles;
+		zipArchive->list("*.smbpm", metaFiles);
+
+		core::String rootPrefix;
+		for (const io::FilesystemEntry &m : metaFiles) {
+			if (!m.fullPath.contains("ATTACHED_")) {
+				rootPrefix = entityPrefixFromDir(core::string::extractDir(m.fullPath));
+				break;
+			}
+		}
+		if (rootPrefix.empty()) {
+			for (const io::FilesystemEntry &e : files) {
+				if (!e.fullPath.contains("ATTACHED_")) {
+					rootPrefix = entityPrefixFromDir(core::string::extractDir(e.fullPath));
+					break;
 				}
 			}
 		}
-		int fileIndex = 0;
-		for (const io::FilesystemEntry &e : files) {
-			ctx.report("segment", fileIndex++, (int)files.size());
-			const core::String &fileExt = core::string::extractExtension(e.name);
-			const bool isSmd3 = fileExt == "smd3";
-			const bool isSmd2 = fileExt == "smd2";
-			if (isSmd2 || isSmd3) {
-				// position is encoded in the filename
-				// ENTITY_SHIP_Rexio_1686826017103.0.0.0.smd3
-				// split on '.' and take parts from the end: [l-4].[l-3].[l-2].ext
+
+		auto loadEntity = [&](const core::String &prefix, int parent, const SMDock *dock,
+							  auto &&loadEntityRef) -> bool {
+			scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
+			const core::String groupName = prefix.empty() ? core::string::extractFilename(filename) : pathBasename(prefix);
+			group.setName(groupName);
+			if (dock != nullptr) {
+				group.setTranslation(dock->translation);
+				group.setRotation(dock->orientation);
+			}
+			const int groupId = sceneGraph.emplace(core::move(group), parent);
+			if (groupId == InvalidNodeId) {
+				return false;
+			}
+
+			core::DynamicArray<SMDock> childDocks;
+			const core::String metaPath =
+				prefix.empty() ? core::String("meta.smbpm") : core::String::format("%s/meta.smbpm", prefix.c_str());
+			{
+				core::ScopedPtr<io::SeekableReadStream> metaStream(zipArchive->readStream(metaPath));
+				if (metaStream) {
+					if (!parseSmbpm(*metaStream, childDocks)) {
+						Log::warn("Failed to parse %s", metaPath.c_str());
+					}
+				}
+			}
+
+			int fileIndex = 0;
+			for (const io::FilesystemEntry &e : files) {
+				ctx.report("segment", fileIndex++, (int)files.size());
+				const core::String dataPrefix =
+					prefix.empty() ? core::String("DATA/") : core::String::format("%s/DATA/", prefix.c_str());
+				if (!core::string::startsWith(e.fullPath, dataPrefix)) {
+					continue;
+				}
+				const core::String afterData = e.fullPath.substr(dataPrefix.size());
+				if (afterData.contains("/")) {
+					continue;
+				}
+				const core::String &fileExt = core::string::extractExtension(e.name);
+				const bool isSmd3 = fileExt == "smd3";
+				const bool isSmd2 = fileExt == "smd2";
+				if (!isSmd2 && !isSmd3) {
+					continue;
+				}
 				glm::ivec3 position(0);
 				core::DynamicArray<core::String> parts;
 				core::string::splitString(e.name, parts, ".");
@@ -267,32 +795,52 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 					Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 					continue;
 				}
-				const DockEntry *dock = findDockEntry(docks, e.fullPath);
-				const int nodesBefore = (int)sceneGraph.nodeSize();
 				if (isSmd3) {
-					if (!readSmd3(*modelStream, sceneGraph, blockPal, position, palette)) {
+					if (!readSmd3(*modelStream, sceneGraph, blockPal, position, palette, groupId)) {
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 					}
-				} else if (isSmd2) {
-					if (!readSmd2(*modelStream, sceneGraph, blockPal, position, palette)) {
-						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
-					}
-				}
-				if (dock) {
-					const scenegraph::SceneGraphKeyFrame keyFrame;
-					for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-						if ((*iter).id() < nodesBefore) {
-							continue;
-						}
-						scenegraph::SceneGraphNode &node = *iter;
-						scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(0);
-						scenegraph::SceneGraphTransform &transform = kf.transform();
-						transform.setLocalTranslation(glm::vec3(dock->position));
-						const glm::quat orientation = glm::quat_cast(dock->rotation);
-						transform.setLocalOrientation(orientation);
-					}
+				} else if (!readSmd2(*modelStream, sceneGraph, blockPal, position, palette, groupId)) {
+					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 				}
 			}
+
+			core::DynamicArray<core::String> childNames;
+			const core::String attachedPrefix =
+				prefix.empty() ? core::String("ATTACHED_") : core::String::format("%s/ATTACHED_", prefix.c_str());
+			for (const io::FilesystemEntry &e : files) {
+				if (!core::string::startsWith(e.fullPath, attachedPrefix)) {
+					continue;
+				}
+				core::String rest = e.fullPath.substr(attachedPrefix.size());
+				const size_t slash = rest.find("/");
+				if (slash == core::String::npos) {
+					continue;
+				}
+				const core::String childName = core::String("ATTACHED_") + rest.substr(0, slash);
+				bool exists = false;
+				for (const core::String &n : childNames) {
+					if (n == childName) {
+						exists = true;
+						break;
+					}
+				}
+				if (!exists) {
+					childNames.push_back(childName);
+				}
+			}
+			for (const core::String &childName : childNames) {
+				const core::String childPrefix =
+					prefix.empty() ? childName : core::String::format("%s/%s", prefix.c_str(), childName.c_str());
+				const SMDock *childDock = findDock(childDocks, childName);
+				if (!loadEntityRef(childPrefix, groupId, childDock, loadEntityRef)) {
+					Log::warn("Failed to load attached entity %s", childPrefix.c_str());
+				}
+			}
+			return true;
+		};
+
+		if (!loadEntity(rootPrefix, 0, nullptr, loadEntity)) {
+			Log::error("Failed to load StarMade blueprint entities from %s", filename.c_str());
 		}
 		ctx.report("segment", (int)files.size(), (int)files.size());
 	}
@@ -305,7 +853,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 
 bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 						const core::Map<int, int> &blockPal, const glm::ivec3 &position,
-						const palette::Palette &palette) {
+						const palette::Palette &palette, int parent) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
 
@@ -321,8 +869,10 @@ bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 		uint64_t timestamp;
 		wrap(stream.readUInt64BE(timestamp))
 	}
+	int segmentIndex = 0;
 	while (!stream.eos()) {
-		if (!readSegment(stream, sceneGraph, blockPal, version, 2, palette)) {
+		if (!readSegment(stream, sceneGraph, blockPal, version, 2, palette, parent,
+						 core::String::format("smd2_%i", segmentIndex++))) {
 			Log::error("Failed to read segment");
 			return false;
 		}
@@ -333,7 +883,7 @@ bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 
 bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 						const core::Map<int, int> &blockPal, const glm::ivec3 &position,
-						const palette::Palette &palette) {
+						const palette::Palette &palette, int parent) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
 
@@ -349,8 +899,10 @@ bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 			segmentsMap.put(segmentId, segmentSize);
 		}
 	}
+	int segmentIndex = 0;
 	while (!stream.eos()) {
-		if (!readSegment(stream, sceneGraph, blockPal, version, 3, palette)) {
+		if (!readSegment(stream, sceneGraph, blockPal, version, 3, palette, parent,
+						 core::String::format("smd3_%i", segmentIndex++))) {
 			Log::error("Failed to read segment");
 			return false;
 		}
@@ -390,7 +942,7 @@ size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 
 bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 						   const core::Map<int, int> &blockPal, int headerVersion, int fileVersion,
-						   const palette::Palette &palette) {
+						   const palette::Palette &palette, int parent, const core::String &name) {
 	const int64_t startHeader = stream.pos();
 	const bool isSmd2 = fileVersion == 2;
 	const int blocks = isSmd2 ? priv::smd2Blocks : priv::smd3Blocks;
@@ -435,7 +987,8 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 
 	io::ZipReadStream blockDataStream(stream, (int)compressedSize);
 
-	const voxel::Region region(segmentPosition, segmentPosition + (blocks - 1));
+	const glm::ivec3 origin = segmentPosition - glm::ivec3(16);
+	const voxel::Region region(origin, origin + (blocks - 1));
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -474,7 +1027,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 			palIndex = palIter->value;
 		}
 
-		glm::ivec3 pos = segmentPosition + posByIndex(index, blocks);
+		glm::ivec3 pos = origin + posByIndex(index, blocks);
 
 		volume->setVoxel(pos, voxel::createVoxel(palette, palIndex));
 		empty = false;
@@ -485,7 +1038,9 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		return true;
 	}
 
-	sceneGraph.emplace(core::move(node));
+	node.setName(core::String::format("%s_%i_%i_%i", name.empty() ? "segment" : name.c_str(), segmentPosition.x,
+									  segmentPosition.y, segmentPosition.z));
+	sceneGraph.emplace(core::move(node), parent);
 
 	return true;
 }

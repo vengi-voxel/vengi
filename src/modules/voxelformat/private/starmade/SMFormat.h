@@ -15,6 +15,12 @@ namespace voxelformat {
  *
  * @li https://www.star-made.org
  * @li https://starmadepedia.net/wiki/Blueprint_File_Formats
+ * @li https://starmadepedia.net/wiki/Blueprint_File_Format_Metadata
+ * @li https://starmadepedia.net/wiki/Blueprint_File_Format_Block_Data#Orientation
+ *
+ * Docked ATTACHED_N entities are placed from meta.smbpm tag 3 (old docks) and
+ * tag 4 (rail docks). Rail TRS matches StarMade RailRelation.getBlockTransform:
+ * movingAtDock * Oriencube(rail, move=1) * inverse(Oriencube(docker mirrored)).
  *
  * @ingroup Formats
  */
@@ -23,13 +29,15 @@ private:
 	// Starmade Region Data file
 	// StarMade v0.199.257
 	bool readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette);
+				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette,
+				  int parent);
 	// Starmade Region Data file
 	bool readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette);
+				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette,
+				  int parent);
 	bool readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					 const core::Map<int, int> &blockPal, int headerVersion, int fileVersion,
-					 const palette::Palette &palette);
+					 const palette::Palette &palette, int parent, const core::String &name);
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
