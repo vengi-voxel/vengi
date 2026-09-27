@@ -4,9 +4,9 @@
 
 #include "VolumeMerger.h"
 #include "VolumeCropper.h"
-#include "VolumeVisitor.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <limits>
@@ -85,12 +85,14 @@ voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &vol
 		if (v == nullptr) {
 			continue;
 		}
-		voxelutil::visitVolume(
-			*v,
-			[merged](int x, int y, int z, const voxel::Voxel &voxel) {
-				merged->setVoxel(x, y, z, voxel);
-			},
-			voxelutil::VisitSolid());
+		voxel::Region overlap = v->region();
+		if (!overlap.cropTo(mergedRegion)) {
+			continue;
+		}
+		if (v->isEmpty(overlap)) {
+			continue;
+		}
+		voxelutil::mergeVolumes(merged, v, overlap, overlap);
 	}
 	return merged;
 }
