@@ -12,6 +12,8 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Fixed starmade `sment` format issues
+
 PalConvert:
 
    - A web version is available now, too
