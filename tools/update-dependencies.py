@@ -460,17 +460,17 @@ def update_brotli():
         "brotli",
         "https://github.com/google/brotli.git",
         [
-            ("c/include/brotli", "contrib/libs/brotli/brotli"),
-            ("c/common", "contrib/libs/brotli/common"),
-            ("c/dec", "contrib/libs/brotli/dec"),
+            ("c/include/brotli/decode.h", "contrib/libs/brotli/brotli/decode.h"),
+            ("c/include/brotli/port.h", "contrib/libs/brotli/brotli/port.h"),
+            ("c/include/brotli/shared_dictionary.h", "contrib/libs/brotli/brotli/shared_dictionary.h"),
+            ("c/include/brotli/types.h", "contrib/libs/brotli/brotli/types.h"),
+            ("c/common/*.c", "contrib/libs/brotli/common"),
+            ("c/common/*.h", "contrib/libs/brotli/common"),
+            ("c/dec/*.c", "contrib/libs/brotli/dec"),
+            ("c/dec/*.h", "contrib/libs/brotli/dec"),
             ("LICENSE", "contrib/libs/brotli/LICENSE"),
         ]
     )
-    # Generation artifacts; the decoder uses dictionary_inc.h instead.
-    remove_files("contrib/libs/brotli/common/*.bin")
-    remove_files("contrib/libs/brotli/common/*.br")
-    # Decoder-only vendor tree.
-    remove_files("contrib/libs/brotli/brotli/encode.h")
 
 def update_minlzma():
     update_target(
