@@ -38,6 +38,8 @@ namespace math {
 //
 // The basis vectors below represent each system's axes expressed in vengi coordinates.
 //
+// https://mastodon.social/@acegikmo/113313928426095165
+//
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	// Each case defines the basis vectors of the source coordinate system
 	// expressed in vengi's coordinate system.
