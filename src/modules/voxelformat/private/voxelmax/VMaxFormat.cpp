@@ -3,6 +3,7 @@
  */
 
 #include "VMaxFormat.h"
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -13,23 +14,22 @@
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Morton.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
+#include "voxelutil/VolumeCropper.h"
 #include "json/JSON.h"
 #include <glm/common.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -90,10 +90,119 @@ namespace vmax {
 constexpr int MaxVolumeSize = 256u;
 } // namespace vmax
 
-bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream("scene.json"));
+// VoxelMax volumes are Z-up. Morton decode already stores (x, z_up, y).
+static glm::vec3 vmaxToVengi(const glm::vec3 &v) {
+	return glm::vec3(v.x, v.z, v.y);
+}
+
+static glm::quat vmaxAxisAngleToQuat(const glm::vec4 &t_r) {
+	const glm::vec3 axis = vmaxToVengi(glm::vec3(t_r));
+	// (x,y,z)->(x,z,y) has det -1, so R conjugates as R(C*axis, -angle).
+	const float angle = -t_r.w;
+	const float len2 = glm::dot(axis, axis);
+	if (len2 <= 1.0e-12f || glm::abs(angle) <= 1.0e-8f) {
+		return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+	return glm::angleAxis(angle, axis / glm::sqrt(len2));
+}
+
+static core::String vmaxPaletteFileForContents(const core::String &contentsPath) {
+	const core::String name = core::string::extractFilenameWithExtension(contentsPath);
+	int idx = 0;
+	if (SDL_sscanf(name.c_str(), "contents%i.", &idx) == 1 && idx > 0) {
+		return core::String::format("palette%i.png", idx);
+	}
+	return "palette.png";
+}
+
+static core::String vmaxJoin(const core::String &dir, const core::String &name) {
+	if (name.empty()) {
+		return name;
+	}
+	if (dir.empty()) {
+		return name;
+	}
+	return core::string::path(dir, name);
+}
+
+static bool vmaxPlistNumber(const util::BinaryPList &value, double &out) {
+	if (value.isReal()) {
+		out = value.asReal();
+		return true;
+	}
+	if (value.isInt()) {
+		out = (double)value.asInt();
+		return true;
+	}
+	return false;
+}
+
+// encodes as '0'..'8'. material index '1'..'8' map to voxel bytes 0..7.
+static bool vmaxParseLayerIndex(const util::BinaryPList &value, int &layer) {
+	if (value.isString()) {
+		const core::String &s = value.asString();
+		if (s.size() == 1u) {
+			const char c = s.c_str()[0];
+			if (c >= '1' && c <= '8') {
+				layer = (int)(c - '1');
+				return true;
+			}
+		}
+		return false;
+	}
+	if (value.isInt()) {
+		const int v = (int)value.asInt();
+		if (v >= 1 && v <= 8) {
+			layer = v - 1;
+			return true;
+		}
+	}
+	return false;
+}
+
+// NSFileWrapper packages are a directory (Name.vmax/) or a zip. scene.json is the catalog.
+static bool vmaxIsPackage(const io::ArchivePtr &archive, const core::String &filename, core::String &packageDir) {
+	const core::String dirScene = vmaxJoin(filename, "scene.json");
+	if (archive->exists(dirScene)) {
+		packageDir = filename;
+		return true;
+	}
+	if (core::string::extractExtension(filename) == "vmaxb") {
+		const core::String dir = core::string::extractDir(filename);
+		if (archive->exists(vmaxJoin(dir, "scene.json"))) {
+			packageDir = dir;
+			return true;
+		}
+	}
+	return false;
+}
+
+void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
+									 const glm::vec3 &t_s) const {
+	applySceneTransform(node, t_p, t_r, t_s, glm::vec3(0.0f));
+}
+
+void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
+									 const glm::vec3 &t_s, const glm::vec3 &volumeMins) const {
+	scenegraph::SceneGraphTransform transform;
+	// VoxelMax uses T * R * S from t_p/t_r/t_s and applies that matrix on the parent chain.
+	// Decoder stores e_c but does not fold it into the matrix.
+	// Voxels stay in the 256 work-area; crop + T(volumeMins) restores those coords.
+	// vmaxToVengi is (x,z,y) (det -1); vmaxAxisAngleToQuat uses -t_r.w so R conjugates.
+	const glm::mat4 local = glm::translate(glm::mat4(1.0f), vmaxToVengi(t_p)) *
+							glm::mat4_cast(vmaxAxisAngleToQuat(t_r)) *
+							glm::scale(glm::mat4(1.0f), vmaxToVengi(t_s)) *
+							glm::translate(glm::mat4(1.0f), volumeMins);
+	transform.setLocalMatrix(local);
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx, transform);
+}
+
+bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
+							   const core::String &sceneJsonPath) const {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(sceneJsonPath));
 	if (!stream) {
-		Log::error("Failed to load scene.json");
+		Log::error("Failed to load %s", sceneJsonPath.c_str());
 		return false;
 	}
 
@@ -151,9 +260,9 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 		jsonVec(obj, t_p, o);
 		jsonVec(obj, t_s, o);
 		jsonVec(obj, t_r, o);
-		o.e_c = glm::ceil(o.e_c);
-		o.e_mi = glm::ceil(o.e_mi);
-		o.e_ma = glm::ceil(o.e_ma);
+		if (o.n.empty() && !o.data.empty()) {
+			o.n = core::string::extractFilename(o.data);
+		}
 		scene.objects.push_back(o);
 	}
 
@@ -172,9 +281,6 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 			jsonVec(obj, t_p, o);
 			jsonVec(obj, t_s, o);
 			jsonVec(obj, t_r, o);
-			o.e_c = glm::ceil(o.e_c);
-			o.e_mi = glm::ceil(o.e_mi);
-			o.e_ma = glm::ceil(o.e_ma);
 			scene.groups.push_back(o);
 		}
 	}
@@ -182,42 +288,19 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 	return true;
 }
 
-bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-								   const LoadContext &ctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return false;
-	}
-	const core::String &ext = core::string::extractExtension(filename);
-	const bool onlyOneObject = ext == "vmaxb";
-	if (onlyOneObject) {
-		palette::Palette vmaxPalette;
-		const core::String &baseDir = core::string::extractDir(filename);
-		int palIdx = 1;
-		SDL_sscanf(filename.c_str(), "%*[^0-9]%i", &palIdx);
-		Log::error("Palette index: %i", palIdx);
-		const core::String &palName = core::string::path(baseDir, core::String::format("palette%i.png", palIdx));
-		if (!loadPaletteFromArchive(archive, palName, vmaxPalette, ctx)) {
-			return false;
-		}
-		VMaxObject obj;
-		if (!loadObject(filename, stream, sceneGraph, ctx, obj, vmaxPalette)) {
-			Log::error("Failed to load object %s", obj.n.c_str());
-			return false;
-		}
-		return true;
-	}
-	io::ArchivePtr zipArchive = io::openZipArchive(stream);
+bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::String &packageDir,
+								  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	VMaxScene scene;
-	if (!loadSceneJson(zipArchive, scene)) {
+	if (!loadSceneJson(archive, scene, vmaxJoin(packageDir, "scene.json"))) {
 		return false;
 	}
 
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
 	Log::debug("Load %i scene groups", (int)scene.groups.size());
-	const core::String &objName = core::string::extractFilenameWithExtension(filename);
+	for (VMaxObject &obj : scene.objects) {
+		obj.data = vmaxJoin(packageDir, obj.data);
+		obj.pal = vmaxJoin(packageDir, obj.pal);
+	}
 	for (size_t i = 0; i < scene.groups.size(); ++i) {
 		ctx.report("group", (int)i, (int)scene.groups.size());
 		if (stopExecution()) {
@@ -226,20 +309,29 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		const VMaxGroup &obj = scene.groups[i];
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group, obj.id);
 		node.setName(obj.name);
-		scenegraph::SceneGraphTransform transform;
-		const glm::mat4x4 matrix =
-			glm::translate(obj.t_p) * glm::mat4_cast(glm::quat(glm::radians(obj.t_r))) * glm::scale(obj.t_s);
-		transform.setLocalMatrix(matrix);
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-		if (obj.pid.isValid()) {
-			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
-		}
-		node.setVisible(!obj.s);
+		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s);
+		node.setVisible(!obj.h);
 		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 			const core::String uuidStr = obj.id.str();
 			Log::error("Failed to add group %s to the scene graph", uuidStr.c_str());
 			return false;
+		}
+	}
+	for (const VMaxGroup &obj : scene.groups) {
+		if (!obj.pid.isValid()) {
+			continue;
+		}
+		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(obj.id);
+		scenegraph::SceneGraphNode *parent = sceneGraph.findNodeByUUID(obj.pid);
+		if (node == nullptr || parent == nullptr) {
+			const core::String uuidStr = obj.id.str();
+			const core::String parentStr = obj.pid.str();
+			Log::warn("Could not parent group %s to %s", uuidStr.c_str(), parentStr.c_str());
+			continue;
+		}
+		if (!sceneGraph.changeParent(node->id(), parent->id(), scenegraph::NodeMoveFlag::None)) {
+			const core::String uuidStr = obj.id.str();
+			Log::warn("Failed to reparent group %s", uuidStr.c_str());
 		}
 	}
 	ctx.report("group", (int)scene.groups.size(), (int)scene.groups.size());
@@ -249,25 +341,81 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 			return false;
 		}
 		const VMaxObject &obj = scene.objects[i];
-		if (onlyOneObject && obj.data != objName) {
-			Log::debug("Skip to load object %s", obj.data.c_str());
+		if (obj.data.empty()) {
+			Log::error("Scene object %i has no contents path", (int)i);
+			continue;
+		}
+		if (obj.pal.empty()) {
+			Log::error("Failed to load object %s: empty palette path", obj.n.c_str());
 			continue;
 		}
 		palette::Palette vmaxPalette;
-		if (!loadPaletteFromArchive(zipArchive, obj.pal, vmaxPalette, ctx)) {
-			return false;
+		VmaxLayerMaterials layers;
+		if (!loadPaletteFromArchive(archive, obj.pal, vmaxPalette, ctx, layers)) {
+			Log::error("Failed to load palette %s for object %s", obj.pal.c_str(), obj.n.c_str());
+			continue;
 		}
-		if (!loadObjectFromArchive(filename, zipArchive, sceneGraph, ctx, obj, vmaxPalette)) {
+		if (!loadObjectFromArchive(obj.data, archive, sceneGraph, ctx, obj, vmaxPalette, layers)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
-			return false;
+			continue;
 		}
 		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
-		if (onlyOneObject) {
-			break;
-		}
 	}
 	ctx.report("object", (int)scene.objects.size(), (int)scene.objects.size());
 	return true;
+}
+
+bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+								   const LoadContext &ctx) {
+	core::String packageDir;
+	if (vmaxIsPackage(archive, filename, packageDir)) {
+		Log::debug("Load VoxelMax package from %s", vmaxJoin(packageDir, "scene.json").c_str());
+		return loadScenePackage(archive, packageDir, sceneGraph, ctx);
+	}
+
+	const core::String &ext = core::string::extractExtension(filename);
+	const bool onlyOneObject = ext == "vmaxb";
+	if (onlyOneObject) {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
+			return false;
+		}
+		palette::Palette vmaxPalette;
+		VmaxLayerMaterials layers;
+		const core::String palFile = vmaxPaletteFileForContents(filename);
+		const core::String palPath = vmaxJoin(core::string::extractDir(filename), palFile);
+		Log::debug("Standalone vmaxb palette: %s", palPath.c_str());
+		if (!loadPaletteFromArchive(archive, palPath, vmaxPalette, ctx, layers) &&
+			(palPath == palFile || !loadPaletteFromArchive(archive, palFile, vmaxPalette, ctx, layers))) {
+			if (stream->seek(0) == -1 || !loadPaletteFromVmaxb(*stream, vmaxPalette, layers)) {
+				return false;
+			}
+			if (stream->seek(0) == -1) {
+				return false;
+			}
+		}
+		VMaxObject obj;
+		obj.data = core::string::extractFilenameWithExtension(filename);
+		if (!loadObject(filename, stream, sceneGraph, ctx, obj, vmaxPalette, layers)) {
+			Log::error("Failed to load object %s", obj.n.c_str());
+			return false;
+		}
+		return true;
+	}
+
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	io::ArchivePtr zipArchive = io::openZipArchive(stream);
+	if (!zipArchive) {
+		Log::error("Failed to open VoxelMax archive %s", filename.c_str());
+		return false;
+	}
+	return loadScenePackage(zipArchive, "", sceneGraph, ctx);
 }
 
 VMaxFormat::VolumeStats VMaxFormat::parseStats(const util::BinaryPList &snapshot) const {
@@ -323,7 +471,12 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const util::BinaryPList &snapshot) cons
 
 bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
-									   const VMaxObject &obj, const palette::Palette &palette) const {
+									   const VMaxObject &obj, const palette::Palette &palette,
+									   const VmaxLayerMaterials &layers) const {
+	if (obj.data.empty()) {
+		Log::error("Empty object contents path");
+		return false;
+	}
 	core::ScopedPtr<io::SeekableReadStream> data(archive->readStream(obj.data));
 	if (!data) {
 		Log::error("Failed to load %s", obj.data.c_str());
@@ -333,11 +486,11 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		Log::error("Failed to seek to the beginning of the sub stream");
 		return false;
 	}
-	return loadObject(filename, data, sceneGraph, ctx, obj, palette);
+	return loadObject(filename, data, sceneGraph, ctx, obj, palette, layers);
 }
 
 bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream* data, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
-							const VMaxObject &obj, const palette::Palette &palette) const {
+							const VMaxObject &obj, const palette::Palette &palette, const VmaxLayerMaterials &layers) const {
 	io::LZFSEReadStream stream(*data);
 
 	// io::filesystem()->write(filename + ".plist", stream);
@@ -353,6 +506,9 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 	auto snapshots = dict.find("snapshots");
 	if (snapshots == dict.end()) {
 		Log::error("No 'snapshots' node found in bplist");
+		if (dict.hasKey("chunks") || dict.hasKey("voxels")) {
+			Log::error("File uses obsolete VoxelMax chunks/voxels storage");
+		}
 		return false;
 	}
 	if (!snapshots->value.isArray()) {
@@ -364,6 +520,25 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		Log::debug("Node 'snapshots' is empty");
 		return true;
 	}
+
+	palette::Palette pal = palette;
+	VmaxLayerMaterials objectLayers = layers;
+	const util::BinaryPList &embeddedPal = plist.getDictEntry("pal");
+	if (embeddedPal.isDict()) {
+		if (pal.colorCount() == 0) {
+			const util::BinaryPList &colors = embeddedPal.getDictEntry("colors");
+			if (colors.isData() && colors.size() >= 4u) {
+				image::ImagePtr img = image::createEmptyImage("vmax-pal");
+				const int ncolors = (int)(colors.size() / 4u);
+				if (!img->loadRGBA(colors.asData().data(), ncolors, 1) || !pal.load(img)) {
+					Log::debug("Failed to load embedded vmaxb pal.colors");
+				}
+			}
+		}
+		applyVmaxPaletteSettings(embeddedPal, pal, objectLayers);
+	}
+	uint8_t assignedLayer[256];
+	core_memset(assignedLayer, 0xFF, sizeof(assignedLayer));
 
 	int parent = sceneGraph.root().id();
 	if (obj.pid.isValid()) {
@@ -422,7 +597,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v);
-		node.setPalette(palette);
+		node.setPalette(pal);
 
 		const int mortonStartIdx = volumeStats.min[3];
 		uint8_t chunkOffsetX, chunkOffsetY, chunkOffsetZ;
@@ -449,6 +624,16 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 				++mortonIdx;
 				continue;
 			}
+			const uint8_t layer = material & 7;
+			if (objectLayers.present[layer]) {
+				if (assignedLayer[palIdx] == 0xFF) {
+					assignedLayer[palIdx] = layer;
+					applyVmaxLayerMaterial(pal, palIdx, objectLayers.layers[layer]);
+				} else if (assignedLayer[palIdx] != layer) {
+					Log::debug("Palette index %u used on VoxelMax layers %u and %u", palIdx,
+							   assignedLayer[palIdx], layer);
+				}
+			}
 			uint8_t x, y, z;
 			// the voxels are stored in morton order - use the index to find the voxel position
 			// y and z are swapped here
@@ -458,7 +643,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			}
 			++mortonIdx;
 			if (!wrapper.setVoxel(x, y, z,
-								  voxel::createVoxel(palette, palIdx))) {
+								  voxel::createVoxel(pal, palIdx))) {
 				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", x, y,
 						  z, mortonIdx);
 			}
@@ -475,42 +660,51 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		Log::error("No volumes found in the scene graph");
 		return false;
 	}
+	voxel::RawVolume *volume = merged.volume();
+	voxel::RawVolume *cropped = voxelutil::cropVolume(volume);
+	if (cropped != nullptr) {
+		delete volume;
+		volume = cropped;
+	}
+	const glm::ivec3 volumeMins = volume->region().getLowerCorner();
+	volume->translate(-volumeMins);
+
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, obj.id);
 	node.setName(obj.n);
-
-	scenegraph::SceneGraphTransform transform;
-	const glm::mat4x4 matrix =
-		glm::translate(obj.t_p) * glm::mat4_cast(glm::quat(glm::radians(obj.t_r))) * glm::scale(obj.t_s);
-	transform.setLocalMatrix(matrix);
-
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
+	applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(volumeMins));
 	if (obj.pid.isValid()) {
 		node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
 	}
 	node.setVisible(!obj.h);
-	node.setVolume(merged.volume());
-	node.setPalette(merged.palette);
+	node.setVolume(volume);
+	node.setPalette(pal);
 	node.setNormalPalette(merged.normalPalette);
 	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										   const LoadContext &ctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return image::ImagePtr();
-	}
-
 	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
 	core::ScopedPtr<io::SeekableReadStream> thumbnailStream;
-	const io::ArchivePtr &zipArchive = io::openZipArchive(stream);
-	if (zipArchive) {
-		thumbnailStream = zipArchive->readStream(thumbnailPath);
+
+	core::String packageDir;
+	if (vmaxIsPackage(archive, filename, packageDir)) {
+		thumbnailStream = archive->readStream(vmaxJoin(packageDir, thumbnailPath));
 	} else {
-		const core::String fullPath = core::string::path(core::string::extractDir(filename), thumbnailPath);
-		thumbnailStream = archive->readStream(fullPath);
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
+			return image::ImagePtr();
+		}
+		const io::ArchivePtr &zipArchive = io::openZipArchive(stream);
+		if (zipArchive) {
+			thumbnailStream = zipArchive->readStream(thumbnailPath);
+		} else {
+			const core::String fullPath = vmaxJoin(core::string::extractDir(filename), thumbnailPath);
+			if (archive->exists(fullPath)) {
+				thumbnailStream = archive->readStream(fullPath);
+			}
+		}
 	}
 	if (!thumbnailStream) {
 		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
@@ -522,8 +716,244 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 	return image::loadImage(name, *thumbnailStream);
 }
 
+bool VMaxFormat::parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &material, int &layer) const {
+	if (!node.isDict()) {
+		return false;
+	}
+	layer = -1;
+	vmaxParseLayerIndex(node.getDictEntry("mi"), layer);
+	const util::BinaryPList &name = node.getDictEntry("name");
+	if (name.isString()) {
+		material.name = name.asString();
+	}
+	double value = 0.0;
+	if (vmaxPlistNumber(node.getDictEntry("sic"), value)) {
+		material.emission = value;
+		material.hasEmission = true;
+	}
+	if (vmaxPlistNumber(node.getDictEntry("mc"), value)) {
+		material.metalness = value;
+		material.hasMetalness = true;
+	}
+	if (vmaxPlistNumber(node.getDictEntry("rc"), value)) {
+		material.roughness = value;
+		material.hasRoughness = true;
+	}
+	const util::BinaryPList &shadows = node.getDictEntry("sh");
+	if (shadows.isBoolean()) {
+		material.enableShadows = shadows.asBoolean();
+	}
+	const util::BinaryPList &medium = node.getDictEntry("medium");
+	if (medium.isDict()) {
+		if (vmaxPlistNumber(medium.getDictEntry("t"), value)) {
+			material.transmission = value;
+			material.hasTransmission = true;
+		}
+		if (vmaxPlistNumber(medium.getDictEntry("i"), value)) {
+			material.ior = value;
+			material.hasIor = true;
+		}
+		if (vmaxPlistNumber(medium.getDictEntry("a"), value)) {
+			material.anisotropy = value;
+		}
+	}
+	return layer >= 0 && layer < 8;
+}
+
+void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palIdx, const VmaxMaterial &material) const {
+	if (material.hasMetalness) {
+		palette.setMetal(palIdx, (float)material.metalness);
+	}
+	if (material.hasRoughness) {
+		palette.setRoughness(palIdx, (float)material.roughness);
+	}
+	if (material.hasEmission && material.emission > 0.0) {
+		palette.setEmit(palIdx, (float)material.emission);
+		palette.setMaterialType(palIdx, palette::MaterialType::Emit);
+	} else if (material.hasTransmission && material.transmission > 0.0) {
+		palette.setMaterialType(palIdx, palette::MaterialType::Glass);
+		if (material.hasIor) {
+			palette.setIndexOfRefraction(palIdx, (float)material.ior);
+		}
+	}
+}
+
+void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palette::Palette &palette,
+										  VmaxLayerMaterials &layers) const {
+	if (!plist.isDict()) {
+		return;
+	}
+	const util::BinaryPList &name = plist.getDictEntry("name");
+	if (name.isString()) {
+		palette.setName(name.asString());
+	}
+	int activeLayer = layers.activeLayer;
+	if (vmaxParseLayerIndex(plist.getDictEntry("ali"), activeLayer)) {
+		layers.activeLayer = activeLayer;
+	}
+
+	const util::BinaryPList &materialsNode = plist.getDictEntry("materials");
+	if (materialsNode.isArray()) {
+		const util::PListArray &materialsArray = materialsNode.asArray();
+		Log::debug("Found %i VoxelMax layer materials", (int)materialsArray.size());
+		for (size_t i = 0; i < materialsArray.size(); ++i) {
+			VmaxMaterial material;
+			int layer = -1;
+			if (!parseVmaxMaterial(materialsArray[i], material, layer)) {
+				if (i < 8) {
+					layer = (int)i;
+				} else {
+					continue;
+				}
+			}
+			layers.layers[layer] = material;
+			layers.present[layer] = true;
+		}
+	}
+
+	int applyLayer = layers.activeLayer;
+	int firstLayer = -1;
+	bool layersMatch = true;
+	for (int i = 0; i < 8; ++i) {
+		if (!layers.present[i]) {
+			continue;
+		}
+		if (firstLayer == -1) {
+			firstLayer = i;
+			continue;
+		}
+		const VmaxMaterial &a = layers.layers[firstLayer];
+		const VmaxMaterial &b = layers.layers[i];
+		if (glm::abs(a.roughness - b.roughness) > 1.0e-4 || glm::abs(a.metalness - b.metalness) > 1.0e-4 ||
+			glm::abs(a.emission - b.emission) > 1.0e-4 || glm::abs(a.transmission - b.transmission) > 1.0e-4) {
+			layersMatch = false;
+			break;
+		}
+	}
+	if (layersMatch && firstLayer != -1) {
+		applyLayer = firstLayer;
+	}
+	if (applyLayer < 0 || applyLayer > 7 || !layers.present[applyLayer]) {
+		applyLayer = firstLayer;
+	}
+
+	const util::BinaryPList &lc = plist.getDictEntry("lc");
+	if (applyLayer >= 0 && lc.isData() && layers.present[applyLayer]) {
+		const util::PListByteArray &usage = lc.asData();
+		const size_t n = core_min(usage.size(), (size_t)palette::PaletteMaxColors);
+		for (size_t i = 1; i < n; ++i) {
+			if (usage[i] == 0) {
+				continue;
+			}
+			applyVmaxLayerMaterial(palette, (uint8_t)i, layers.layers[applyLayer]);
+		}
+	}
+
+	const util::BinaryPList &voxmats = plist.getDictEntry("voxmats");
+	if (!voxmats.isArray()) {
+		return;
+	}
+	const util::PListArray &voxArray = voxmats.asArray();
+	for (size_t i = 0; i < voxArray.size(); ++i) {
+		const util::BinaryPList &entry = voxArray[i];
+		if (!entry.isDict()) {
+			continue;
+		}
+		const util::BinaryPList &idNode = entry.getDictEntry("id");
+		if (!idNode.isInt()) {
+			continue;
+		}
+		const int palIdx = (int)idNode.asInt();
+		if (palIdx <= 0 || palIdx >= palette::PaletteMaxColors) {
+			continue;
+		}
+		const util::BinaryPList &tp = entry.getDictEntry("tp");
+		if (tp.isString() && tp.asString().size() == 1u) {
+			switch (tp.asString().c_str()[0]) {
+			case 'm':
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Metal);
+				break;
+			case 'g':
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Glass);
+				break;
+			case 'e':
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Emit);
+				break;
+			case 'b':
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Blend);
+				break;
+			case 'c':
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Media);
+				break;
+			default:
+				palette.setMaterialType((uint8_t)palIdx, palette::MaterialType::Diffuse);
+				break;
+			}
+		}
+		double value = 0.0;
+		if (vmaxPlistNumber(entry.getDictEntry("mt"), value)) {
+			palette.setMetal((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("rg"), value)) {
+			palette.setRoughness((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("io"), value)) {
+			palette.setIndexOfRefraction((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("em"), value) && value > 0.0) {
+			palette.setEmit((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("ap"), value)) {
+			palette.setAlpha((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("fl"), value)) {
+			palette.setFlux((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("ld"), value)) {
+			palette.setLowDynamicRange((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("dn"), value)) {
+			palette.setDensity((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("md"), value)) {
+			palette.setMedia((uint8_t)palIdx, (float)value);
+		}
+		if (vmaxPlistNumber(entry.getDictEntry("ph"), value)) {
+			palette.setPhase((uint8_t)palIdx, (float)value);
+		}
+	}
+}
+
+bool VMaxFormat::loadPaletteFromVmaxb(io::SeekableReadStream &stream, palette::Palette &palette,
+									  VmaxLayerMaterials &layers) const {
+	io::LZFSEReadStream lzfse(stream);
+	const util::BinaryPList plist = util::BinaryPList::parse(lzfse);
+	const util::BinaryPList &embeddedPal = plist.getDictEntry("pal");
+	if (!embeddedPal.isDict()) {
+		return false;
+	}
+	if (palette.colorCount() == 0) {
+		const util::BinaryPList &colors = embeddedPal.getDictEntry("colors");
+		if (colors.isData() && colors.size() >= 4u) {
+			image::ImagePtr img = image::createEmptyImage("vmax-pal");
+			const int ncolors = (int)(colors.size() / 4u);
+			if (!img->loadRGBA(colors.asData().data(), ncolors, 1) || !palette.load(img)) {
+				Log::error("Failed to load embedded vmaxb pal.colors");
+				return false;
+			}
+		}
+	}
+	applyVmaxPaletteSettings(embeddedPal, palette, layers);
+	return palette.colorCount() > 0;
+}
+
 bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
-										palette::Palette &palette, const LoadContext &ctx) const {
+										palette::Palette &palette, const LoadContext &ctx,
+										VmaxLayerMaterials &layers) const {
+	if (paletteName.empty()) {
+		Log::error("Empty palette path");
+		return false;
+	}
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(paletteName));
 	if (!stream) {
 		Log::error("Failed to load %s", paletteName.c_str());
@@ -542,59 +972,25 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 	core::String settingsName = core::string::stripExtension(paletteName);
 	settingsName.append(".settings.vmaxpsb");
-	core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream(settingsName));
-	if (!paletteSettingsStream) {
-		paletteSettingsStream = archive->readStream("palette.settings.vmaxpsb");
+	if (!archive->exists(settingsName)) {
+		const core::String fallback = vmaxJoin(core::string::extractDir(paletteName), "palette.settings.vmaxpsb");
+		if (archive->exists(fallback)) {
+			settingsName = fallback;
+		} else if (archive->exists("palette.settings.vmaxpsb")) {
+			settingsName = "palette.settings.vmaxpsb";
+		} else {
+			settingsName = "";
+		}
 	}
 
-	if (paletteSettingsStream) {
-		const util::BinaryPList &plist = util::BinaryPList::parse(*paletteSettingsStream);
-		if (plist.isDict()) {
-			const util::PListDict &dict = plist.asDict();
-
-			const auto &name = plist.getDictEntry("name");
-			if (name.isString()) {
-				palette.setName(name.asString());
-			}
-
-			auto materials = dict.find("materials");
-			if (materials != dict.end()) {
-				if (materials->value.isArray()) {
-					const util::PListArray &materialsArray = materials->value.asArray();
-					Log::debug("Found %i materials", (int)materialsArray.size());
-					// should always be 8 materials
-					for (size_t i = 0; i < materialsArray.size(); ++i) {
-						VmaxMaterial vmaxmaterial;
-						const auto &material = materialsArray[i];
-						// const auto &materialIndex = material.getDictEntry("mi");
-						const auto &transmission = material.getDictEntry("tc");
-						const auto &emission = material.getDictEntry("sic");
-						const auto &roughness = material.getDictEntry("rc");
-						const auto &metallic = material.getDictEntry("mc");
-						// const auto &enableShadow = material.getDictEntry("sh");
-						if (transmission.isReal()) {
-							vmaxmaterial.transmission = transmission.asReal();
-						}
-						if (emission.isReal()) {
-							vmaxmaterial.emission = emission.asReal();
-						}
-						if (roughness.isReal()) {
-							vmaxmaterial.roughness = roughness.asReal();
-						}
-						if (metallic.isReal()) {
-							vmaxmaterial.metalness = metallic.asReal();
-						}
-						// TODO: MATERIAL: use the material properties
-					}
-				} else {
-					Log::debug("Node 'materials' has unexpected type");
-				}
-			} else {
-				Log::debug("No 'materials' node found in bplist");
-			}
+	if (!settingsName.empty()) {
+		core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream(settingsName));
+		if (paletteSettingsStream) {
+			const util::BinaryPList &plist = util::BinaryPList::parse(*paletteSettingsStream);
+			applyVmaxPaletteSettings(plist, palette, layers);
 		}
 	} else {
-		Log::debug("No 'palette.settings.vmaxpsb' node found in archive");
+		Log::debug("No palette settings sidecar found for %s", paletteName.c_str());
 	}
 
 	return true;
@@ -602,28 +998,39 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
-	// TODO: VOXELFORMAT: there is also a "pal" dict in the vmaxb plist file for some files
-	// pal->dict
-	//      colors->data
-	//      materials->array
-	//            dict
-	//      name->string
+	const core::String &paletteName = "palette.png";
+	VmaxLayerMaterials layers;
+	core::String packageDir;
+	if (vmaxIsPackage(archive, filename, packageDir)) {
+		if (loadPaletteFromArchive(archive, vmaxJoin(packageDir, paletteName), palette, ctx, layers)) {
+			return palette.colorCount();
+		}
+		return 0u;
+	}
 	core::ScopedPtr<io::SeekableReadStream> archiveStream(archive->readStream(filename));
 	if (!archiveStream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return false;
+		const core::String fullPath = vmaxJoin(core::string::extractDir(filename), paletteName);
+		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx, layers)) {
+			Log::error("Failed to load palette from %s", fullPath.c_str());
+			return 0u;
+		}
+		return palette.colorCount();
 	}
 	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
-	const core::String &paletteName = "palette.png";
 	if (zipArchive) {
 		Log::debug("Found zip archive %s", filename.c_str());
-		if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx)) {
+		if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx, layers)) {
 			Log::error("Failed to load palette from %s", paletteName.c_str());
 			return 0u;
 		}
 	} else {
-		const core::String fullPath = core::string::path(core::string::extractDir(filename), paletteName);
-		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx)) {
+		const core::String fullPath = vmaxJoin(core::string::extractDir(filename), paletteName);
+		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx, layers)) {
+			if (core::string::extractExtension(filename) == "vmaxb") {
+				if (archiveStream->seek(0) != -1 && loadPaletteFromVmaxb(*archiveStream, palette, layers)) {
+					return palette.colorCount();
+				}
+			}
 			Log::error("Failed to load palette from %s", fullPath.c_str());
 			return 0u;
 		}

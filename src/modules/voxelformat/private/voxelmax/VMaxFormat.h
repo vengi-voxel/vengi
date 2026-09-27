@@ -16,7 +16,11 @@
 namespace voxelformat {
 
 /**
- * @brief VoxelMax (*.vmax, *.vmax.zip)
+ * @brief VoxelMax (*.vmax, *.vmax.zip, *.vmaxb)
+ *
+ * NSFileWrapper package: a zip (`*.vmax.zip` / `*.vmax`) or an unpacked directory (`Name.vmax/`)
+ * with `scene.json` plus `contents*.vmaxb` and `palette*.png`. Opening a `contents.vmaxb` that
+ * sits next to `scene.json` loads the whole package, not that single leftover object.
  *
  * up to 2040 materials
  * 256x256x256 working area
@@ -28,6 +32,8 @@ namespace voxelformat {
  * ------------------
  *
  * scene.json gives the scene nodes hierarchy, groups and volumes.
+ * palette.png holds colors. palette.settings.vmaxpsb (and older vmaxb pal dict)
+ * stores 8 layer materials (mi/sic/mc/rc/medium/sh) plus optional MagicaVoxel voxmats.
  * each material(max 8) of an object is rendered as a separate sub-mesh and the position of those are offset by the
  * pivot given by the combination e_c and , t_al, t_pf, t_pa, t_po
  *
@@ -99,7 +105,7 @@ namespace voxelformat {
  * the volume itself is split in 32^3 chunks and saved in snapshots that come with a unique identifier:
  *
  * Snapshot Identifier
- * * case cid = "c" chunk indexes (also morton)
+ * * case cid = "c" chunk id (morton)
  * * case sid = "s" snapshot id (timeline)
  * * case type = "t" type uint8 see below
  *
@@ -170,13 +176,28 @@ private:
 		bool h = false;						   // hidden
 	};
 
+	// 8 layers (mi '1'..'8' -> voxel byte 0..7). PBR is per
+	// layer, not per palette color. vmaxpsb keys: mi, sic, mc, rc, medium{t,i,a}, sh, name.
 	struct VmaxMaterial {
 		core::String name;
-		double transmission;
-		double roughness;
-		double metalness;
-		double emission;
-		bool enableShadows;
+		double transmission = 0.0;
+		double ior = 0.0;
+		double anisotropy = 0.0;
+		double roughness = 0.0;
+		double metalness = 0.0;
+		double emission = 0.0;
+		bool enableShadows = true;
+		bool hasTransmission = false;
+		bool hasIor = false;
+		bool hasRoughness = false;
+		bool hasMetalness = false;
+		bool hasEmission = false;
+	};
+
+	struct VmaxLayerMaterials {
+		VmaxMaterial layers[8];
+		bool present[8]{false, false, false, false, false, false, false, false};
+		int activeLayer = 0; // voxel byte 0-7 from ali
 	};
 
 	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
@@ -267,15 +288,28 @@ private:
 
 	VolumeStats parseStats(const util::BinaryPList &snapshot) const;
 	VolumeId parseId(const util::BinaryPList &snapshot) const;
+	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
+							 const glm::vec3 &t_s) const;
+	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
+							 const glm::vec3 &t_s, const glm::vec3 &volumeMins) const;
 
-	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const;
+	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene, const core::String &sceneJsonPath) const;
+	bool loadScenePackage(const io::ArchivePtr &archive, const core::String &packageDir,
+						  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 	bool loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
-							   const palette::Palette &palette) const;
+							   const palette::Palette &palette, const VmaxLayerMaterials &layers) const;
 	bool loadObject(const core::String &filename, io::SeekableReadStream *data, scenegraph::SceneGraph &sceneGraph,
-					const LoadContext &ctx, const VMaxObject &obj, const palette::Palette &palette) const;
+					const LoadContext &ctx, const VMaxObject &obj, const palette::Palette &palette,
+					const VmaxLayerMaterials &layers) const;
 	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
-								palette::Palette &palette, const LoadContext &ctx) const;
+								palette::Palette &palette, const LoadContext &ctx, VmaxLayerMaterials &layers) const;
+	bool loadPaletteFromVmaxb(io::SeekableReadStream &stream, palette::Palette &palette,
+							  VmaxLayerMaterials &layers) const;
+	void applyVmaxPaletteSettings(const util::BinaryPList &plist, palette::Palette &palette,
+								  VmaxLayerMaterials &layers) const;
+	void applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palIdx, const VmaxMaterial &material) const;
+	bool parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &material, int &layer) const;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
@@ -292,7 +326,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"VoxelMax", "", {"vmax.zip", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+			"VoxelMax", "", {"vmax.zip", "vmax", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };

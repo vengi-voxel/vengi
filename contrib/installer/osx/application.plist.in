@@ -1190,6 +1190,7 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vmax.zip</string>
+          <string>vmax</string>
           <string>vmaxb</string>
         </array>
         <key>CFBundleTypeRole</key>

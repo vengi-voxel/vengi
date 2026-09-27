@@ -1183,6 +1183,7 @@ const jsonData = {
       "name": "VoxelMax",
       "extensions": [
         "vmax.zip",
+        "vmax",
         "vmaxb"
       ],
       "magics": [],

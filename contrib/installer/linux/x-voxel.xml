@@ -403,6 +403,7 @@
 	<mime-type type="application/x-voxelmax">
 		<comment>VoxelMax</comment>
 		<glob pattern="*.vmax.zip"/>
+		<glob pattern="*.vmax"/>
 		<glob pattern="*.vmaxb"/>
 	</mime-type>
 	<mime-type type="application/x-spritestack">
