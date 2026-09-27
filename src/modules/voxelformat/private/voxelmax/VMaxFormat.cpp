@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/LZFSEReadStream.h"
@@ -25,7 +26,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
 #include "json/JSON.h"
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -547,7 +548,20 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		}
 	}
 
-	scenegraph::SceneGraph objectSceneGraph;
+	// Merge 32^3 chunks with voxelutil, not SceneGraph::merge. Chunk palettes
+	// diverge while layer materials are applied, so SceneGraph takes SparseVolume
+	// + DynamicMap instead of the dense same-palette path. mergeAndCrop keeps the
+	// solid AABB and copies with parallel mergeVolumes.
+	struct ChunkVolumes {
+		core::Buffer<voxel::RawVolume *> volumes;
+		~ChunkVolumes() {
+			for (voxel::RawVolume *volume : volumes) {
+				delete volume;
+			}
+		}
+	};
+	ChunkVolumes chunks;
+	chunks.volumes.reserve(snapshotsArray.size());
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
 		Log::debug("Load snapshot %i of %i", (int)i, (int)snapshotsArray.size());
 		const util::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
@@ -595,9 +609,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		// now loop over the 'voxels' array and create a volume from it
 		const voxel::Region region(0, maxChunkSize - 1);
 		voxel::RawVolume *v = new voxel::RawVolume(region);
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v);
-		node.setPalette(pal);
+		chunks.volumes.push_back(v);
 
 		const int mortonStartIdx = volumeStats.min[3];
 		uint8_t chunkOffsetX, chunkOffsetY, chunkOffsetZ;
@@ -650,21 +662,11 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		}
 		const glm::ivec3 mins(chunkX * maxChunkSize, chunkY * maxChunkSize, chunkZ * maxChunkSize);
 		v->translate(mins);
-
-		if (objectSceneGraph.emplace(core::move(node)) == InvalidNodeId) {
-			return false;
-		}
 	}
-	const scenegraph::SceneGraph::MergeResult &merged = objectSceneGraph.merge();
-	if (!merged.hasVolume()) {
+	voxel::RawVolume *volume = voxelutil::mergeAndCrop(chunks.volumes);
+	if (volume == nullptr) {
 		Log::error("No volumes found in the scene graph");
 		return false;
-	}
-	voxel::RawVolume *volume = merged.volume();
-	voxel::RawVolume *cropped = voxelutil::cropVolume(volume);
-	if (cropped != nullptr) {
-		delete volume;
-		volume = cropped;
 	}
 	const glm::ivec3 volumeMins = volume->region().getLowerCorner();
 	volume->translate(-volumeMins);
@@ -678,7 +680,6 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 	node.setVisible(!obj.h);
 	node.setVolume(volume);
 	node.setPalette(pal);
-	node.setNormalPalette(merged.normalPalette);
 	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 
