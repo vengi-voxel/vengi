@@ -15,6 +15,7 @@ General:
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
    - Fixed VoxelMax `vmaxb` loading and transforms
+   - Added Sandbox `vxm` version 13 and `vxa` version 10 support
 
 PalConvert:
 

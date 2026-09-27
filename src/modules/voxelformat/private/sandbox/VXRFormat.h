@@ -65,7 +65,7 @@ public:
 		static io::FormatDescription f{"Sandbox VoxEdit Hierarchy",
 									"",
 									{"vxr"},
-									{"VXR9", "VXR8", "VXR7", "VXR6", "VXR5", "VXR4", "VXR3", "VXR2", "VXR1"},
+									{"VXRA", "VXR9", "VXR8", "VXR7", "VXR6", "VXR5", "VXR4", "VXR3", "VXR2", "VXR1"},
 									VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}

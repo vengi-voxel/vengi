@@ -64,6 +64,9 @@
 		<comment>Sandbox VoxEdit Model</comment>
 		<glob pattern="*.vxm"/>
 		<magic priority="50">
+			<match type="string" offset="0" value="VXMD"/>
+		</magic>
+		<magic priority="50">
 			<match type="string" offset="0" value="VXMA"/>
 		</magic>
 		<magic priority="50">
@@ -112,6 +115,9 @@
 	<mime-type type="application/x-sandbox-voxedit-hierarchy">
 		<comment>Sandbox VoxEdit Hierarchy</comment>
 		<glob pattern="*.vxr"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXRA"/>
+		</magic>
 		<magic priority="50">
 			<match type="string" offset="0" value="VXR9"/>
 		</magic>

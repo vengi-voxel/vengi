@@ -382,6 +382,10 @@ const jsonData = {
       "magics": [
         {
           "type": "bytes",
+          "value": "0x56584D44"
+        },
+        {
+          "type": "bytes",
           "value": "0x56584D41"
         },
         {
@@ -472,6 +476,10 @@ const jsonData = {
         "vxr"
       ],
       "magics": [
+        {
+          "type": "bytes",
+          "value": "0x56585241"
+        },
         {
           "type": "bytes",
           "value": "0x56585239"

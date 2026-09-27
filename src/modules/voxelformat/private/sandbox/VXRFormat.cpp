@@ -321,6 +321,10 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	Log::debug("load node %s", id);
+	char bakingNode[1024] = "";
+	if (version >= 10) {
+		wrapBool(stream.readString(sizeof(bakingNode), bakingNode, true))
+	}
 	char filename[1024];
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
@@ -330,12 +334,23 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
 	}
+	if (version >= 10) {
+		// two 4x4 float matrices (world without pivot + parent world at frame 0)
+		if (stream.skip(128) == -1) {
+			Log::error("Could not load vxr file: Not enough data in stream for node matrices (line %i)",
+					   (int)__LINE__);
+			return false;
+		}
+	}
 	if (node.volume() == nullptr) {
 		node = scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Group);
 	}
 	node.setName(id);
 	node.setProperty("id", id);
 	node.setProperty("filename", filename);
+	if (version >= 10 && bakingNode[0] != '\0') {
+		node.setProperty("bakingnode", bakingNode);
+	}
 	if (version > 4) {
 		if (version >= 9) {
 			node.setProperty("collidable", stream.readBool());
@@ -526,8 +541,13 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 	int32_t children = 0;
 	wrap(stream.readInt32(children))
 
-	if (version >= 8) {
+	if (version >= 8 && version <= 9) {
 		wrapBool(handleVersion8AndLater(stream, rootNode, ctx));
+	} else if (version >= 10) {
+		// VXR A: base template only - the v8/v9 baked static LOD section was removed
+		char baseTemplate[1024];
+		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
+		rootNode.setProperty("basetemplate", baseTemplate);
 	}
 
 	Log::debug("Found %i children", children);
@@ -543,6 +563,17 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 		wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
 		rootNode.setProperty("basetemplate", baseTemplate);
 		Log::debug("VXR%i base template: '%s'", version, baseTemplate);
+	}
+
+	if (version >= 10) {
+		// five shared palettes, 255 materials each (color + emissive)
+		for (int p = 0; p < 5; ++p) {
+			for (int j = 0; j < 255; ++j) {
+				uint32_t color;
+				wrap(stream.readUInt32(color))
+				stream.readBool(); // emissive
+			}
+		}
 	}
 
 	// VXR8 has an extra recursive pass for collideable/decorative data after children
@@ -612,6 +643,8 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	int version;
 	if (magic[3] >= '0' && magic[3] <= '9') {
 		version = magic[3] - '0';
+	} else if (magic[3] == 'A') {
+		version = 10;
 	} else {
 		Log::error("Invalid version found");
 		return false;
@@ -621,7 +654,7 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	sceneGraph.node(0).setProperty("vxrversion", core::string::toString(version));
 
-	if (version < 1 || version > 9) {
+	if (version < 1 || version > 10) {
 		Log::error("Could not load vxr file: Unsupported version found (%i)", version);
 		return false;
 	}

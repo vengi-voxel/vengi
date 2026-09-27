@@ -294,14 +294,15 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	int version;
 	if (magic[3] >= '0' && magic[3] <= '9') {
 		version = magic[3] - '0';
-	} else if (magic[3] >= 'A' && magic[3] <= 'C') {
+	} else if (magic[3] >= 'A' && magic[3] <= 'D') {
+		// 'A' = 10, 'B' = 11, 'C' = 12, 'D' = 13
 		version = 10 + magic[3] - 'A';
 	} else {
 		Log::error("Unsupported version found");
 		return false;
 	}
 
-	if (version < 3 || version > 12) {
+	if (version < 3 || version > 13) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -367,7 +368,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			stream->skip(skipWidth * skipHeight);
 		}
 	}
-	if (version >= 8) {
+	// VXM D (version 13) dropped the LOD header: no scale/pivot and a single mesh
+	if (version >= 8 && version <= 12) {
 		float dummy;				   // since version 'A'
 		wrap(stream->readFloat(dummy)); // lod scale
 		wrap(stream->readFloat(dummy)); // lod pivot x
@@ -376,7 +378,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	uint32_t lodLevels = 1;
-	if (version >= 7) {
+	if (version >= 7 && version <= 12) {
 		wrap(stream->readUInt32(lodLevels));
 	}
 	for (uint32_t lodLevel = 0u; lodLevel < lodLevels; ++lodLevel) {
@@ -588,19 +590,10 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			wrap(stream->readUInt32(endz))
 			wrap(stream->readUInt32(normal))
 		}
-		// here might be another byte - but it isn't written everytime
-		uint8_t templateModelResized;
-		stream->peekUInt8(templateModelResized);
-		if (!stream->eos() && templateModelResized != 127) {
-			stream->readBool(); // templateModelResized
-		}
-		if (!stream->eos()) {
-			uint8_t sentinelByte;
-			wrap(stream->readUInt8(sentinelByte))
-			if (sentinelByte != 127) {
-				Log::warn("Sentinel byte is not 127");
-				return true; // true anyway, because the additional palette data is optional
-			}
+		if (version >= 13) {
+			// VXM D: templateModelResized and selectedPalette are always present, no 127 sentinel
+			uint8_t templateModelResized;
+			wrap(stream->readUInt8(templateModelResized))
 			uint8_t selectedPalette;
 			wrap(stream->readUInt8(selectedPalette))
 			if (selectedPalette != 255) {
@@ -608,6 +601,30 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 					uint32_t color;
 					wrap(stream->readUInt32(color))
 					/*bool emissive =*/ stream->readBool();
+				}
+			}
+		} else {
+			// here might be another byte - but it isn't written everytime
+			uint8_t templateModelResized;
+			stream->peekUInt8(templateModelResized);
+			if (!stream->eos() && templateModelResized != 127) {
+				stream->readBool(); // templateModelResized
+			}
+			if (!stream->eos()) {
+				uint8_t sentinelByte;
+				wrap(stream->readUInt8(sentinelByte))
+				if (sentinelByte != 127) {
+					Log::warn("Sentinel byte is not 127");
+					return true; // true anyway, because the additional palette data is optional
+				}
+				uint8_t selectedPalette;
+				wrap(stream->readUInt8(selectedPalette))
+				if (selectedPalette != 255) {
+					for (int i = 0; i < 255; ++i) {
+						uint32_t color;
+						wrap(stream->readUInt32(color))
+						/*bool emissive =*/ stream->readBool();
+					}
 				}
 			}
 		}
