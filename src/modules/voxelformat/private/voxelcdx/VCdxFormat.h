@@ -18,7 +18,7 @@ namespace voxelformat {
  * Export writes one model whose layers are the vengi model nodes (world TRS baked).
  * Import maps a multi-layer model to a group of child nodes.
  *
- * Writers emit version 10. Readers accept versions 1-10.
+ * Writers emit version 11. Readers accept versions 1-11.
  *
  * Coordinate system is Y-up, matching vengi. Palette index 0 is empty.
  *

@@ -63,7 +63,7 @@ namespace voxelformat {
 
 namespace priv {
 
-static const int Version = 10;
+static const int Version = 11;
 static const int ChunkSize = 32;
 static const int ChunkVoxels = 32768;
 static const int MaxPaletteSlots = 1024;
@@ -353,7 +353,13 @@ static bool skipRig(io::SeekableReadStream &stream, int version, int layerCount)
 				if (stream.readUInt8(interpolation) != 0) {
 					return false;
 				}
+				if (version >= 11 && !skipVec3f(stream)) {
+					return false;
+				}
 			}
+		}
+		if (version >= 11) {
+			(void)stream.readBool();
 		}
 	}
 	if (version < 7) {
