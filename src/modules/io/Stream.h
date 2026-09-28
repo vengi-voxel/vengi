@@ -152,6 +152,11 @@ public:
 	bool readPascalStringUInt16BE(core::String &str);
 	bool readPascalStringUInt32LE(core::String &str, uint32_t maxLength = (uint32_t)-1);
 	bool readPascalStringUInt32BE(core::String &str, uint32_t maxLength = (uint32_t)-1);
+	/**
+	 * @brief .NET System.IO.BinaryReader.ReadString: 7-bit encoded UTF-8 byte length, then the bytes (no terminator).
+	 * @param[in] maxLength Reject claimed lengths above this (default 1 MiB).
+	 */
+	bool readDotNetString(core::String &str, uint32_t maxLength = 1024 * 1024);
 
 	bool readUTF16BE(uint16_t characters, core::String &str);
 };
@@ -317,6 +322,10 @@ public:
 
 	bool writePascalStringUInt16LE(const core::String &str);
 	bool writePascalStringUInt16BE(const core::String &str);
+	/**
+	 * @brief .NET System.IO.BinaryWriter.Write(string): 7-bit encoded UTF-8 byte length, then the bytes (no terminator).
+	 */
+	bool writeDotNetString(const core::String &str);
 };
 
 /**

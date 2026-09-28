@@ -226,6 +226,21 @@ bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 	return writeString(str, false);
 }
 
+bool WriteStream::writeDotNetString(const core::String &str) {
+	uint32_t value = (uint32_t)str.size();
+	reserve(5 + (int)value);
+	while (value > 0x7F) {
+		if (!writeUInt8((uint8_t)((value & 0x7F) | 0x80))) {
+			return false;
+		}
+		value >>= 7;
+	}
+	if (!writeUInt8((uint8_t)(value & 0x7F))) {
+		return false;
+	}
+	return writeString(str, false);
+}
+
 bool WriteStream::writePascalStringUInt8(const core::String &str) {
 	const uint8_t length = (uint8_t)str.size();
 	reserve(sizeof(uint8_t) + length);
@@ -518,6 +533,35 @@ bool ReadStream::readPascalStringUInt32BE(core::String &str, uint32_t maxLength)
 	if (length >= maxLength) {
 		Log::error("String length %u exceeds max length %u", length, maxLength);
 		return false;
+	}
+	return readString((int)length, str, false);
+}
+
+bool ReadStream::readDotNetString(core::String &str, uint32_t maxLength) {
+	uint32_t length = 0;
+	int shift = 0;
+	for (;;) {
+		uint8_t b;
+		if (readUInt8(b) != 0) {
+			return false;
+		}
+		length |= ((uint32_t)(b & 0x7F)) << shift;
+		if (b < 0x80) {
+			break;
+		}
+		shift += 7;
+		if (shift > 28) {
+			Log::error("Invalid 7-bit encoded string length");
+			return false;
+		}
+	}
+	if (length > maxLength) {
+		Log::error("dotnet string length %u exceeds max length %u", length, maxLength);
+		return false;
+	}
+	str = "";
+	if (length == 0) {
+		return true;
 	}
 	return readString((int)length, str, false);
 }

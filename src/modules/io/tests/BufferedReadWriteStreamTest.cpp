@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/FourCC.h"
+#include "core/String.h"
 #include "io/BufferedReadWriteStream.h"
 #include <limits.h>
 
@@ -248,6 +249,57 @@ TEST(BufferedReadWriteStreamTest, testPascalString32LE) {
 	core::String buf;
 	EXPECT_TRUE(stream.readPascalStringUInt32LE(buf));
 	EXPECT_EQ("foobar", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testDotNetString) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeDotNetString("foobar"));
+	EXPECT_EQ(7, stream.size());
+	stream.writeString("ignore", true);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readDotNetString(buf));
+	EXPECT_EQ("foobar", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testDotNetStringEmpty) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeDotNetString(""));
+	EXPECT_EQ(1, stream.size());
+	stream.seek(0);
+	uint8_t lengthByte = 0xFF;
+	EXPECT_EQ(0, stream.readUInt8(lengthByte));
+	EXPECT_EQ(0u, lengthByte);
+	stream.seek(0);
+	core::String buf("not-empty");
+	EXPECT_TRUE(stream.readDotNetString(buf));
+	EXPECT_EQ("", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testDotNetString7BitLength) {
+	BufferedReadWriteStream stream;
+	const core::String payload(128, 'a');
+	EXPECT_TRUE(stream.writeDotNetString(payload));
+	EXPECT_EQ(130, stream.size());
+	stream.seek(0);
+	uint8_t b0 = 0;
+	uint8_t b1 = 0;
+	EXPECT_EQ(0, stream.readUInt8(b0));
+	EXPECT_EQ(0, stream.readUInt8(b1));
+	EXPECT_EQ(0x80u, b0);
+	EXPECT_EQ(0x01u, b1);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readDotNetString(buf));
+	EXPECT_EQ(payload, buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testDotNetStringMaxLength) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeDotNetString("ab"));
+	stream.seek(0);
+	core::String buf;
+	EXPECT_FALSE(stream.readDotNetString(buf, 1));
 }
 
 TEST(BufferedReadWriteStreamTest, testEmptyString) {
