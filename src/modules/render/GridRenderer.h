@@ -136,4 +136,4 @@ inline void GridRenderer::setRenderGrid(bool renderGrid) {
 	_dirty = true;
 }
 
-}
+} // namespace render
