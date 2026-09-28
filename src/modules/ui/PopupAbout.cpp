@@ -67,6 +67,7 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 
 				if (ImGui::BeginTabItem(_("Credits"))) {
 					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", urlIconWidth);
+					ImGui::URLItem("brotli", "https://github.com/google/brotli", urlIconWidth);
 #ifdef USE_CURL
 					ImGui::Text("libCURL");
 #endif
