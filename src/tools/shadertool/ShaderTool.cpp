@@ -24,6 +24,10 @@ ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProv
 	_saveConfiguration = false;
 }
 
+bool ShaderTool::createPid() {
+	return false;
+}
+
 bool ShaderTool::parse(const core::String &filename, const core::String &buffer, bool vertex) {
 	return shadertool::parse(io::filesystem()->sysAbsolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
 }

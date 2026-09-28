@@ -47,6 +47,7 @@ protected:
 public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
+	bool createPid() override;
 	app::AppState onConstruct() override;
 	app::AppState onRunning() override;
 };
