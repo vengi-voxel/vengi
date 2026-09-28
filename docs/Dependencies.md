@@ -14,7 +14,7 @@
   * freetype2 (optional)
   * libjpeg (optional but recommended)
   * libpng (optional)
-  * libbrotli (optional; decoder is bundled)
+  * libbrotli (optional; decoder and encoder are bundled)
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have

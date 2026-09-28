@@ -1,6 +1,7 @@
-# Prefer system libbrotlidec (Debian/Fedora/Arch pkg-config name).
-# Falls back to the bundled decoder in contrib/libs/brotli via engine_add_library.
-if (DEFINED BROTLI_FOUND)
+# Prefer system libbrotlidec + libbrotlienc (Debian/Fedora/Arch pkg-config names).
+# Falls back to the bundled codec in contrib/libs/brotli via engine_add_library.
+# Encoder is required for VoxelCdx (.vcdx) save.
+if (DEFINED BROTLI_FOUND AND BROTLI_ENC_LIBRARY)
 	return()
 endif()
 if (DEFINED BROTLI_LOCAL OR USE_LIBS_FORCE_LOCAL)
@@ -30,13 +31,15 @@ set(_SEARCH_PATHS
 find_package(PkgConfig QUIET)
 if (PKG_CONFIG_FOUND)
 	pkg_check_modules(_BROTLI libbrotlidec)
+	pkg_check_modules(_BROTLIENC libbrotlienc)
 endif()
 find_path(BROTLI_INCLUDE_DIRS
-	NAMES brotli/decode.h
+	NAMES brotli/decode.h brotli/encode.h
 	HINTS ENV BROTLIDIR
 	PATH_SUFFIXES include
 	PATHS
 		${_BROTLI_INCLUDE_DIRS}
+		${_BROTLIENC_INCLUDE_DIRS}
 		${_SEARCH_PATHS}
 )
 find_library(BROTLI_DEC_LIBRARY
@@ -47,20 +50,34 @@ find_library(BROTLI_DEC_LIBRARY
 		${_BROTLI_LIBRARY_DIRS}
 		${_SEARCH_PATHS}
 )
+find_library(BROTLI_ENC_LIBRARY
+	NAMES brotlienc
+	HINTS ENV BROTLIDIR
+	PATH_SUFFIXES lib64 lib lib/${_PROCESSOR_ARCH}
+	PATHS
+		${_BROTLIENC_LIBRARY_DIRS}
+		${_BROTLI_LIBRARY_DIRS}
+		${_SEARCH_PATHS}
+)
 find_library(BROTLI_COMMON_LIBRARY
 	NAMES brotlicommon
 	HINTS ENV BROTLIDIR
 	PATH_SUFFIXES lib64 lib lib/${_PROCESSOR_ARCH}
 	PATHS
 		${_BROTLI_LIBRARY_DIRS}
+		${_BROTLIENC_LIBRARY_DIRS}
 		${_SEARCH_PATHS}
 )
-set(BROTLI_LIBRARIES ${BROTLI_DEC_LIBRARY})
+set(BROTLI_LIBRARIES)
+if (BROTLI_ENC_LIBRARY)
+	list(APPEND BROTLI_LIBRARIES ${BROTLI_ENC_LIBRARY})
+endif()
+list(APPEND BROTLI_LIBRARIES ${BROTLI_DEC_LIBRARY})
 if (BROTLI_COMMON_LIBRARY)
 	list(APPEND BROTLI_LIBRARIES ${BROTLI_COMMON_LIBRARY})
 endif()
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(brotli FOUND_VAR BROTLI_FOUND REQUIRED_VARS BROTLI_INCLUDE_DIRS BROTLI_DEC_LIBRARY)
+find_package_handle_standard_args(brotli FOUND_VAR BROTLI_FOUND REQUIRED_VARS BROTLI_INCLUDE_DIRS BROTLI_DEC_LIBRARY BROTLI_ENC_LIBRARY)
 var_global(BROTLI_INCLUDE_DIRS BROTLI_LIBRARIES BROTLI_FOUND)
 unset(_SEARCH_PATHS)
 unset(_PROCESSOR_ARCH)

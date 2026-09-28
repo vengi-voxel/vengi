@@ -3,6 +3,7 @@ set(SRCS
 
 	Archive.cpp Archive.h
 	BrotliReadStream.cpp BrotliReadStream.h
+	BrotliWriteStream.cpp BrotliWriteStream.h
 	Base64.cpp Base64.h
 	Base64Stream.cpp Base64Stream.h
 	CachingArchive.cpp CachingArchive.h
@@ -115,6 +116,7 @@ set(TEST_FILES
 
 set(TEST_SRCS
 	tests/BrotliReadStreamTest.cpp
+	tests/BrotliWriteStreamTest.cpp
 	tests/Base64Test.cpp
 	tests/BufferedReadWriteStreamTest.cpp
 	tests/BufferedWriteStreamTest.cpp

@@ -461,6 +461,7 @@ def update_brotli():
         "https://github.com/google/brotli.git",
         [
             ("c/include/brotli/decode.h", "contrib/libs/brotli/brotli/decode.h"),
+            ("c/include/brotli/encode.h", "contrib/libs/brotli/brotli/encode.h"),
             ("c/include/brotli/port.h", "contrib/libs/brotli/brotli/port.h"),
             ("c/include/brotli/shared_dictionary.h", "contrib/libs/brotli/brotli/shared_dictionary.h"),
             ("c/include/brotli/types.h", "contrib/libs/brotli/brotli/types.h"),
@@ -468,6 +469,9 @@ def update_brotli():
             ("c/common/*.h", "contrib/libs/brotli/common"),
             ("c/dec/*.c", "contrib/libs/brotli/dec"),
             ("c/dec/*.h", "contrib/libs/brotli/dec"),
+            ("c/enc/*.c", "contrib/libs/brotli/enc"),
+            ("c/enc/*.h", "contrib/libs/brotli/enc"),
+            ("c/enc/*.cc", "contrib/libs/brotli/enc"),
             ("LICENSE", "contrib/libs/brotli/LICENSE"),
         ]
     )
