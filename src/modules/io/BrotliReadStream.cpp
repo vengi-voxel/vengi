@@ -11,11 +11,11 @@
 
 namespace io {
 
-static void *brotliAlloc(void *, size_t size) {
+static void *brotliDecoderAlloc(void *, size_t size) {
 	return core_malloc(size);
 }
 
-static void brotliFree(void *, void *address) {
+static void brotliDecoderFree(void *, void *address) {
 	core_free(address);
 }
 
@@ -24,7 +24,7 @@ BrotliReadStream::BrotliReadStream(io::SeekableReadStream &readStream, int size)
 	size_t availableIn = (size_t)s.size();
 	const uint8_t *nextIn = s.getBuffer();
 
-	BrotliDecoderState *state = BrotliDecoderCreateInstance(brotliAlloc, brotliFree, nullptr);
+	BrotliDecoderState *state = BrotliDecoderCreateInstance(brotliDecoderAlloc, brotliDecoderFree, nullptr);
 	if (state == nullptr) {
 		Log::error("Brotli: failed to create decoder");
 		return;

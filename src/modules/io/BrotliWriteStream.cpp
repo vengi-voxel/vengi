@@ -10,16 +10,16 @@
 
 namespace io {
 
-static void *brotliAlloc(void *, size_t size) {
+static void *brotliEncoderAlloc(void *, size_t size) {
 	return core_malloc(size);
 }
 
-static void brotliFree(void *, void *address) {
+static void brotliEncoderFree(void *, void *address) {
 	core_free(address);
 }
 
 BrotliWriteStream::BrotliWriteStream(io::WriteStream &outStream, int quality) : _outStream(outStream) {
-	BrotliEncoderState *state = BrotliEncoderCreateInstance(brotliAlloc, brotliFree, nullptr);
+	BrotliEncoderState *state = BrotliEncoderCreateInstance(brotliEncoderAlloc, brotliEncoderFree, nullptr);
 	if (state == nullptr) {
 		Log::error("Brotli: failed to create encoder");
 		return;
