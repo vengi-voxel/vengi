@@ -26,4 +26,12 @@ TEST_F(ShaderTest, testInclude) {
 	ASSERT_TRUE(core::string::contains(frag, "SUCCESS")) << "fragment shader: " << frag;
 }
 
+TEST_F(ShaderTest, testStripUnsupportedEsslRemovesNoperspective) {
+	const core::String src = "noperspective in float v_edge;\nflat in float v_keep;\n";
+	const core::String out = Shader::stripUnsupportedEssl(src);
+	EXPECT_FALSE(core::string::contains(out, "noperspective")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "in float v_edge")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "flat in float v_keep")) << out.c_str();
+}
+
 }

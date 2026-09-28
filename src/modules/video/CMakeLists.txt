@@ -106,6 +106,7 @@ set(TEST_SRCS
 	tests/ShapeBuilderTest.cpp
 	tests/CameraTest.cpp
 	tests/RendererTest.cpp
+	tests/FrameBufferTest.cpp
 	tests/WindowedAppTest.cpp
 )
 

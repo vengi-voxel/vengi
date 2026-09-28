@@ -110,6 +110,7 @@ public:
 		_position = glm::vec3(0.0f);
 		_rotation = glm::mat3(1.0f);
 		_applyRotation = false;
+		_primitive = Primitive::Triangles;
 		if (_initialSize > 0) {
 			reserve(_initialSize, _initialSize);
 		}

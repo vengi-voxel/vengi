@@ -3664,6 +3664,12 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 	if (renderScene) {
 		_sceneRenderer->renderScene(renderContext, camera);
 	}
+
+	// Bloom the volume before overlays so grid, cursor, and gizmos stay unbloomed.
+	renderContext.resolveMultisampling();
+	renderContext.applyBloom();
+	renderContext.beginOverlays();
+
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
 		_sceneRenderer->setAddNodePreview(*_addNodePreview);
@@ -3674,14 +3680,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 		}
 	}
 
-	// If multisampling is enabled, resolve the multisampled framebuffer before unbinding
-	if (renderContext.enableMultisampling) {
-		const glm::ivec2 fbDim = renderContext.frameBuffer.dimension();
-		video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
-							 video::ClearFlag::Color, fbDim.x, fbDim.y);
-	}
-
-	renderContext.frameBuffer.unbind();
+	renderContext.endFrame();
 }
 
 int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name) const {

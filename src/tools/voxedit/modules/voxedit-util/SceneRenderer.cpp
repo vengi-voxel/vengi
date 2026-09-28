@@ -204,6 +204,7 @@ void SceneRenderer::doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGrap
 	}
 	core_trace_scoped(UpdateBoneMesh);
 	_shapeBuilder.clear();
+	_shapeBuilder.setPrimitive(video::Primitive::Triangles);
 	_shapeBuilder.setColor(style::color(style::ColorBone));
 
 	const bool hideInactive = _hideInactive->boolVal();

@@ -26,6 +26,7 @@ app::AppState TestGridRenderer::onInit() {
 
 void TestGridRenderer::doRender() {
 	_gridRenderer.render(camera(), _aabb);
+	_gridRenderer.renderForwardArrow(camera());
 }
 
 app::AppState TestGridRenderer::onCleanup() {

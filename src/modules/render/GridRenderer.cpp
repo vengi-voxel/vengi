@@ -4,19 +4,23 @@
 
 #include "GridRenderer.h"
 #include "color/Color.h"
-#include "core/GLM.h"
-#include "core/GLMConst.h"
+#include "color/ColorUtil.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "math/AABB.h"
-#include "math/Plane.h"
 #include "video/Camera.h"
+#include "video/Renderer.h"
+#include "video/ScopedBlendMode.h"
+#include "video/ScopedFaceCull.h"
 #include "video/ScopedState.h"
+#include "core/GLM.h"
+#include "core/GLMConst.h"
 
 namespace render {
 
 GridRenderer::GridRenderer(bool renderAABB, bool renderGrid, bool renderPlane)
-	: _renderAABB(renderAABB), _renderGrid(renderGrid), _renderPlane(renderPlane) {
+	: _gridShader(shader::GridShader::getInstance()), _renderAABB(renderAABB), _renderGrid(renderGrid),
+	  _renderPlane(renderPlane) {
 }
 
 bool GridRenderer::init() {
@@ -24,7 +28,12 @@ bool GridRenderer::init() {
 		Log::error("Failed to initialize the shape renderer");
 		return false;
 	}
-
+	if (!_gridShader.setup()) {
+		Log::error("Failed to initialize the grid shader");
+		return false;
+	}
+	core_assert_always(_gridData.create(_vertData));
+	core_assert_always(_gridData.create(_fragData));
 	return true;
 }
 
@@ -51,6 +60,7 @@ const glm::ivec3 &GridRenderer::gridResolution() const {
 
 void GridRenderer::setColor(const glm::vec4 &color) {
 	if (_shapeBuilder.setColor(color)) {
+		_color = color;
 		_dirty = true;
 	}
 }
@@ -75,24 +85,82 @@ void GridRenderer::createForwardArrow(const math::AABB<float> &aabb) {
 	_shapeRenderer.hide(_arrow, true);
 }
 
-void GridRenderer::createPlane() {
-	_shapeBuilder.clear();
-	for (int i = -_planeGridSize; i <= _planeGridSize; ++i) {
-		if (glm::abs(i) % 100 == 0) {
-			_shapeBuilder.setColor(color::DarkGray());
-		} else if (glm::abs(i) % 10 == 0) {
-			_shapeBuilder.setColor(color::Gray());
-		} else {
-			_shapeBuilder.setColor(color::LightGray());
-		}
-		for (int dir = 0; dir < 2; dir++) {
-			glm::vec3 start(dir ? -_planeGridSize : i, 0.f, dir ? i : -_planeGridSize);
-			glm::vec3 end(dir ? _planeGridSize : i, 0.f, dir ? i : _planeGridSize);
-			_shapeBuilder.line(start, end);
-		}
+bool GridRenderer::uploadMesh(video::Buffer &vbo, int32_t &vertexIndex, int32_t &indexIndex,
+							  const video::ShapeBuilder &builder) {
+	const video::ShapeBuilder::Vertices &vertices = builder.getVertices();
+	const video::ShapeBuilder::Indices &indices = builder.getIndices();
+	if (vertices.empty() || indices.empty()) {
+		return false;
 	}
-	_shapeRenderer.createOrUpdate(_plane, _shapeBuilder);
-	_shapeRenderer.hide(_plane, true);
+	if (vertexIndex == -1) {
+		vertexIndex = vbo.create(vertices.data(), vertices.size() * sizeof(glm::vec3));
+		if (vertexIndex == -1) {
+			Log::error("Failed to create grid vertex buffer");
+			return false;
+		}
+		vbo.setMode(vertexIndex, video::BufferMode::Dynamic);
+		indexIndex = vbo.create(indices.data(), indices.size() * sizeof(video::ShapeBuilder::Indices::value_type),
+								video::BufferType::IndexBuffer);
+		if (indexIndex == -1) {
+			Log::error("Failed to create grid index buffer");
+			vertexIndex = -1;
+			vbo.shutdown();
+			return false;
+		}
+		vbo.setMode(indexIndex, video::BufferMode::Dynamic);
+		core_assert_always(vbo.addAttribute(_gridShader.getPosAttribute(vertexIndex, &glm::vec3::x)));
+	} else {
+		core_assert_always(vbo.update(vertexIndex, vertices.data(), vertices.size() * sizeof(glm::vec3)));
+		core_assert_always(vbo.update(indexIndex, indices.data(),
+									  indices.size() * sizeof(video::ShapeBuilder::Indices::value_type)));
+	}
+	return true;
+}
+
+void GridRenderer::drawMesh(video::Buffer &vbo, int32_t vertexIndex, int32_t indexIndex, const video::Camera &camera,
+							const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &step,
+							float majorStride) {
+	if (vertexIndex < 0 || indexIndex < 0) {
+		return;
+	}
+	const uint32_t indices =
+		vbo.elements(indexIndex, 1, sizeof(video::ShapeBuilder::Indices::value_type));
+	if (indices == 0) {
+		return;
+	}
+
+	_vertData.viewprojection = camera.viewProjectionMatrix();
+	_vertData.model = model;
+	_fragData.mins = glm::vec4(mins, 0.0f);
+	_fragData.step = glm::vec4(step, majorStride);
+	const glm::vec4 minor = color::darker(_color, 1.4f);
+	_fragData.color = minor;
+	_fragData.majorcolor = (majorStride <= 1.0001f) ? minor : glm::mix(minor, _color, 0.28f);
+	core_assert_always(_gridData.update(_vertData));
+	core_assert_always(_gridData.update(_fragData));
+
+	const bool wasActive = _gridShader.isActive();
+	if (!wasActive) {
+		_gridShader.activate();
+	}
+	core_assert_always(_gridShader.setVert(_gridData.getVertUniformBuffer()));
+	core_assert_always(_gridShader.setFrag(_gridData.getFragUniformBuffer()));
+	core_assert_always(vbo.bind());
+	video::drawElements<video::ShapeBuilder::Indices::value_type>(video::Primitive::Triangles, indices);
+	vbo.unbind();
+	if (!wasActive) {
+		_gridShader.deactivate();
+	}
+}
+
+void GridRenderer::createPlane() {
+	if (_planeGridSize < 1) {
+		return;
+	}
+	_shapeBuilder.clear();
+	const float s = (float)_planeGridSize;
+	_shapeBuilder.cube(glm::vec3(-s, 0.0f, -s), glm::vec3(s, 0.0f, s), video::ShapeBuilderCube::Bottom);
+	uploadMesh(_planeVbo, _planeVertexIndex, _planeIndexIndex, _shapeBuilder);
 }
 
 void GridRenderer::update(const math::AABB<float> &aabb) {
@@ -105,35 +173,11 @@ void GridRenderer::update(const math::AABB<float> &aabb) {
 	if (_resolution.x <= 0 || _resolution.y <= 0 || _resolution.z <= 0) {
 		return;
 	}
-	const float thickness = 1.0f;
 	_aabb = aabb;
 	_shapeBuilder.clear();
-	_shapeBuilder.aabb(aabb, false, 1.0f, thickness);
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution.x, (float)_resolution.y, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexXYFar, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution.x, (float)_resolution.z, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexXZFar, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution.y, (float)_resolution.z, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexYZFar, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution.x, (float)_resolution.y, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexXYNear, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution.x, (float)_resolution.z, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexXZNear, _shapeBuilder);
-
-	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution.y, (float)_resolution.z, thickness);
-	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
+	const glm::vec3 pad(0.02f);
+	_shapeBuilder.cube(aabb.mins() - pad, aabb.maxs() + pad, video::ShapeBuilderCube::All);
+	uploadMesh(_gridVbo, _gridVertexIndex, _gridIndexIndex, _shapeBuilder);
 
 	createForwardArrow(aabb);
 
@@ -152,54 +196,21 @@ void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &
 		update(aabb);
 	}
 
-	_shapeRenderer.hide(_aabbMeshIndex, !_renderAABB);
-	_shapeRenderer.hide(_plane, true);
-	if (_renderGrid && aabb.isValid()) {
-		const glm::vec3 aabbCenter = aabb.getCenter();
-		const glm::vec3 &halfWidth = aabb.getWidth() / 2.0f;
-
-		const glm::mat3 rotationMatrix(model);
-		// Transform the plane points from local AABB space to world space
-		const glm::vec3 pLeft = glm::vec3(model * glm::vec4(aabbCenter + glm::left() * halfWidth, 1.0f));
-		const glm::vec3 pRight = glm::vec3(model * glm::vec4(aabbCenter + glm::right() * halfWidth, 1.0f));
-		const glm::vec3 pBottom = glm::vec3(model * glm::vec4(aabbCenter + glm::down() * halfWidth, 1.0f));
-		const glm::vec3 pTop = glm::vec3(model * glm::vec4(aabbCenter + glm::up() * halfWidth, 1.0f));
-		const glm::vec3 pNear = glm::vec3(model * glm::vec4(aabbCenter + glm::forward() * halfWidth, 1.0f));
-		const glm::vec3 pFar = glm::vec3(model * glm::vec4(aabbCenter + glm::backward() * halfWidth, 1.0f));
-
-		const math::Plane planeLeft(rotationMatrix * glm::left(), pLeft);
-		const math::Plane planeRight(rotationMatrix * glm::right(), pRight);
-		const math::Plane planeBottom(rotationMatrix * glm::down(), pBottom);
-		const math::Plane planeTop(rotationMatrix * glm::up(), pTop);
-		const math::Plane planeNear(rotationMatrix * glm::forward(), pNear);
-		const math::Plane planeFar(rotationMatrix * glm::backward(), pFar);
-
-		if (camera.mode() == video::CameraMode::Perspective) {
-			const glm::vec3 &eye = camera.eye();
-			_shapeRenderer.hide(_gridMeshIndexXYFar, !planeFar.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexXZFar, !planeTop.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexYZFar, !planeRight.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(eye));
-		} else {
-			const glm::vec3 &viewDirection = -camera.forward();
-			_shapeRenderer.hide(_gridMeshIndexXYFar, glm::dot(viewDirection, planeFar.norm()) > 0);
-			_shapeRenderer.hide(_gridMeshIndexXYNear, glm::dot(viewDirection, planeNear.norm()) > 0);
-			_shapeRenderer.hide(_gridMeshIndexXZFar, glm::dot(viewDirection, planeTop.norm()) > 0);
-			_shapeRenderer.hide(_gridMeshIndexXZNear, glm::dot(viewDirection, planeBottom.norm()) > 0);
-			_shapeRenderer.hide(_gridMeshIndexYZFar, glm::dot(viewDirection, planeRight.norm()) > 0);
-			_shapeRenderer.hide(_gridMeshIndexYZNear, glm::dot(viewDirection, planeLeft.norm()) > 0);
-		}
-	} else {
-		_shapeRenderer.hide(_gridMeshIndexXYFar, true);
-		_shapeRenderer.hide(_gridMeshIndexXYNear, true);
-		_shapeRenderer.hide(_gridMeshIndexXZFar, true);
-		_shapeRenderer.hide(_gridMeshIndexXZNear, true);
-		_shapeRenderer.hide(_gridMeshIndexYZFar, true);
-		_shapeRenderer.hide(_gridMeshIndexYZNear, true);
+	if ((!_renderGrid && !_renderAABB) || !aabb.isValid() || _gridVertexIndex < 0) {
+		return;
 	}
-	_shapeRenderer.renderAll(camera, model);
+
+	video::ScopedBlendMode blend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
+								 video::BlendEquation::Add);
+	video::ScopedState depthMask(video::State::DepthMask, false);
+	video::ScopedFaceCull cull(video::Face::Front);
+	if (_renderGrid) {
+		const glm::vec3 step((float)_resolution.x, (float)_resolution.y, (float)_resolution.z);
+		drawMesh(_gridVbo, _gridVertexIndex, _gridIndexIndex, camera, model, aabb.mins(), step, 5.0f);
+	} else {
+		const glm::vec3 extent = glm::max(aabb.maxs() - aabb.mins(), glm::vec3(1.0e-4f));
+		drawMesh(_gridVbo, _gridVertexIndex, _gridIndexIndex, camera, model, aabb.mins(), extent, 1.0f);
+	}
 }
 
 void GridRenderer::renderPlane(const video::Camera &camera, const glm::mat4 &model) {
@@ -210,9 +221,17 @@ void GridRenderer::renderPlane(const video::Camera &camera, const glm::mat4 &mod
 		createPlane();
 		_dirtyPlane = false;
 	}
-	_shapeRenderer.hide(_plane, false);
-	_shapeRenderer.render(_plane, camera, model);
-	_shapeRenderer.hide(_plane, true);
+	if (_planeVertexIndex < 0) {
+		return;
+	}
+	video::ScopedBlendMode blend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
+								 video::BlendEquation::Add);
+	video::ScopedState depthMask(video::State::DepthMask, false);
+	video::ScopedState cullFace(video::State::CullFace, false);
+	const float s = (float)_planeGridSize;
+	const glm::vec3 mins(-s, 0.0f, -s);
+	const glm::vec3 step(1.0f, 1.0f, 1.0f);
+	drawMesh(_planeVbo, _planeVertexIndex, _planeIndexIndex, camera, model, mins, step, 10.0f);
 }
 
 void GridRenderer::renderForwardArrow(const video::Camera &camera, const glm::mat4 &model) {
@@ -223,15 +242,15 @@ void GridRenderer::renderForwardArrow(const video::Camera &camera, const glm::ma
 }
 
 void GridRenderer::shutdown() {
-	_aabbMeshIndex = -1;
-	_gridMeshIndexXYNear = -1;
-	_gridMeshIndexXYFar = -1;
-	_gridMeshIndexXZNear = -1;
-	_gridMeshIndexXZFar = -1;
-	_gridMeshIndexYZNear = -1;
-	_gridMeshIndexYZFar = -1;
 	_arrow = -1;
-	_plane = -1;
+	_gridVertexIndex = -1;
+	_gridIndexIndex = -1;
+	_planeVertexIndex = -1;
+	_planeIndexIndex = -1;
+	_gridVbo.shutdown();
+	_planeVbo.shutdown();
+	_gridData.shutdown();
+	_gridShader.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }

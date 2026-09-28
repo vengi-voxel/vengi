@@ -297,6 +297,14 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 }
 
+void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
+	(void)handle;
+	(void)target;
+	(void)attachment;
+	(void)width;
+	(void)height;
+}
+
 void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 }
 

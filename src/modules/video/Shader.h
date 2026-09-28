@@ -92,6 +92,12 @@ public:
 	bool loadSPIRV(const core::String& name, const uint8_t* spirv, size_t spirvSize, ShaderType shaderType);
 
 	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
+	/**
+	 * ESSL 300 (WebGL 2 / Emscripten) has no noperspective. Shadertool finalize and
+	 * runtime GLES compilation both go through getSource(); this rewrite is applied
+	 * when USE_OPENGLES is set (and can be tested on desktop).
+	 */
+	static core::String stripUnsupportedEssl(const core::String &src);
 
 	Id handle() const;
 

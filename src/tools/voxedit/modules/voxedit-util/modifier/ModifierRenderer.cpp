@@ -209,7 +209,7 @@ void ModifierRenderer::renderBrushVolume(voxelrender::RenderContext &renderConte
 		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 	_volumeRenderer.update(_meshState);
-	_volumeRenderer.render(_meshState, renderContext, camera, false, false);
+	_volumeRenderer.render(_meshState, renderContext, camera, false);
 }
 
 void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &region) {

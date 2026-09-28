@@ -192,7 +192,6 @@ void RawVolumeRenderer::ensureSize(int idx) {
 
 bool RawVolumeRenderer::init(bool normals) {
 	_shadowMap = core::getVar(cfg::ClientShadowMap);
-	_bloom = core::getVar(cfg::ClientBloom);
 	_cullBuffers = core::getVar(cfg::RenderCullBuffers);
 	_cullNodes = core::getVar(cfg::RenderCullNodes);
 	_selectionTint = core::getVar(cfg::RenderSelectionTint);
@@ -1224,7 +1223,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 }
 
 void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
-							   const video::Camera &camera, bool shadow, bool bloom) {
+							   const video::Camera &camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	const core::Buffer<int> &activeForRender = meshState->activeIndices();
@@ -1241,6 +1240,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	}
 
 	RenderFrame &frame = _renderFrames[_submitFrameIdx];
+	renderContext.sceneHasGlow = frame.sceneHasGlow;
 	if (!frame.anyVisible) {
 		return;
 	}
@@ -1382,23 +1382,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			video::disable(video::State::PolygonOffsetLine);
 		} else if (mode == video::PolygonMode::Solid) {
 			video::disable(video::State::PolygonOffsetFill);
-		}
-		if (bloom && _bloom->boolVal() && frame.sceneHasGlow) {
-			if (renderContext.enableMultisampling) {
-				const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
-				video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
-									 video::ClearFlag::Color, fbDim.x, fbDim.y);
-
-				video::FrameBuffer &frameBuffer = renderContext.resolveFrameBuffer;
-				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-				renderContext.bloomRenderer.render(color0, color1);
-			} else {
-				video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-				const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-				const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
-				renderContext.bloomRenderer.render(color0, color1);
-			}
 		}
 		if (normals) {
 			_voxelNormShader.deactivate();

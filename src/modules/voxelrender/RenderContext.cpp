@@ -70,8 +70,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 
 	// Configure multisampling based on configuration variables
 	const core::VarPtr &multisampleSamplesVar = core::getVar(cfg::ClientMultiSampleSamples);
-	const core::VarPtr &multisampleBuffersVar = core::getVar(cfg::ClientMultiSampleBuffers);
-	enableMultisampling = multisampleSamplesVar->intVal() > 0 && multisampleBuffersVar->intVal() > 0;
+	enableMultisampling = multisampleSamplesVar->intVal() > 1;
 	multisampleSamples = multisampleSamplesVar->intVal();
 
 	if (enableMultisampling && multisampleSamples > 1) {
@@ -245,8 +244,7 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 
 bool RenderContext::updateMultisampling() {
 	const core::VarPtr &multisampleSamplesVar = core::getVar(cfg::ClientMultiSampleSamples);
-	const core::VarPtr &multisampleBuffersVar = core::getVar(cfg::ClientMultiSampleBuffers);
-	bool newEnableMultisampling = multisampleSamplesVar->intVal() > 0 && multisampleBuffersVar->intVal() > 0;
+	bool newEnableMultisampling = multisampleSamplesVar->intVal() > 1;
 	int newMultisampleSamples = multisampleSamplesVar->intVal();
 
 	if (enableMultisampling != newEnableMultisampling || multisampleSamples != newMultisampleSamples) {
@@ -257,6 +255,73 @@ bool RenderContext::updateMultisampling() {
 		return resize(currentSize);
 	}
 	return true;
+}
+
+static void restoreColorDrawBuffers(video::Id handle) {
+	if (handle == video::InvalidId) {
+		return;
+	}
+	const video::Id prev = video::bindFramebuffer(handle);
+	const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
+													video::FrameBufferAttachment::Color1};
+	video::drawBuffers(2, color01);
+	video::bindFramebuffer(prev);
+}
+
+void RenderContext::resolveMultisampling() {
+	if (!enableMultisampling) {
+		return;
+	}
+	const glm::ivec2 &dim = frameBuffer.dimension();
+	const video::Id src = frameBuffer.handle();
+	const video::Id dst = resolveFrameBuffer.handle();
+	video::blitFramebuffer(src, dst, video::FrameBufferAttachment::Color0, dim.x, dim.y);
+	video::blitFramebuffer(src, dst, video::FrameBufferAttachment::Color1, dim.x, dim.y);
+	restoreColorDrawBuffers(dst);
+	restoreColorDrawBuffers(src);
+	video::blitFramebuffer(src, dst, video::ClearFlag::Depth, dim.x, dim.y);
+}
+
+void RenderContext::applyBloom() {
+	if (!enableBloom || !sceneHasGlow) {
+		return;
+	}
+	video::FrameBuffer &display = enableMultisampling ? resolveFrameBuffer : frameBuffer;
+	const video::TexturePtr &color0 = display.texture(video::FrameBufferAttachment::Color0);
+	const video::TexturePtr &color1 = display.texture(video::FrameBufferAttachment::Color1);
+	if (!color0 || !color1) {
+		return;
+	}
+	const glm::ivec2 &dim = display.dimension();
+	const video::Id prev = video::bindFramebuffer(display.handle());
+	int viewport[4];
+	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	video::viewport(0, 0, dim.x, dim.y);
+	bloomRenderer.render(color0, color1);
+	video::bindFramebuffer(prev);
+	video::viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+}
+
+void RenderContext::beginOverlays() {
+	if (enableMultisampling) {
+		frameBuffer.unbind();
+		resolveFrameBuffer.bind(false);
+	}
+	const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
+	video::drawBuffers(1, color0);
+}
+
+void RenderContext::endFrame() {
+	if (video::currentFramebuffer() != video::InvalidId) {
+		const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
+														video::FrameBufferAttachment::Color1};
+		video::drawBuffers(2, color01);
+	}
+	if (enableMultisampling) {
+		resolveFrameBuffer.unbind();
+	} else {
+		frameBuffer.unbind();
+	}
 }
 
 void RenderContext::shutdown() {

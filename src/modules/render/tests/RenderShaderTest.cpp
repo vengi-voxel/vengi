@@ -5,6 +5,8 @@
 #include "ColorShader.h"
 #include "Combine2Shader.h"
 #include "ConvolutionShader.h"
+#include "GridShader.h"
+#include "LineShader.h"
 #include "TextureShader.h"
 #include "video/tests/AbstractGLTest.h"
 #include "../BloomRenderer.h"
@@ -33,6 +35,18 @@ TEST_P(RenderShaderTest, testCombine2Shader) {
 
 TEST_P(RenderShaderTest, testConvolutionShader) {
 	shader::ConvolutionShader shader;
+	EXPECT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
+TEST_P(RenderShaderTest, testGridShader) {
+	shader::GridShader shader;
+	EXPECT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
+TEST_P(RenderShaderTest, testLineShader) {
+	shader::LineShader shader;
 	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }

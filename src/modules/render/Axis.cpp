@@ -4,7 +4,6 @@
 
 #include "Axis.h"
 #include "video/Camera.h"
-#include "video/ScopedLineWidth.h"
 #include "video/ScopedState.h"
 #include "color/Color.h"
 #include "core/GLM.h"
@@ -23,18 +22,16 @@ void Axis::render(const video::Camera& camera, uint32_t renderMask) {
 	video::ScopedState disableDepthTest(video::State::DepthTest, false);
 
 	const glm::mat4& t = glm::translate(_pos);
-	{
-		video::ScopedLineWidth width(_lineWidth);
-		const glm::mat4& model = glm::scale(t, _size);
-		if ((renderMask & AxisMask::RenderXAxis) != 0u) {
-			_shapeRenderer.render(_meshXIndex, camera, model);
-		}
-		if ((renderMask & AxisMask::RenderYAxis) != 0u) {
-			_shapeRenderer.render(_meshYIndex, camera, model);
-		}
-		if ((renderMask & AxisMask::RenderZAxis) != 0u) {
-			_shapeRenderer.render(_meshZIndex, camera, model);
-		}
+	_shapeRenderer.setLineWidth(_lineWidth);
+	const glm::mat4& model = glm::scale(t, _size);
+	if ((renderMask & AxisMask::RenderXAxis) != 0u) {
+		_shapeRenderer.render(_meshXIndex, camera, model);
+	}
+	if ((renderMask & AxisMask::RenderYAxis) != 0u) {
+		_shapeRenderer.render(_meshYIndex, camera, model);
+	}
+	if ((renderMask & AxisMask::RenderZAxis) != 0u) {
+		_shapeRenderer.render(_meshZIndex, camera, model);
 	}
 	if (glm::abs(_size.x) > 1.0f && (renderMask & AxisMask::RenderXCone) != 0u) {
 		_shapeRenderer.render(_coneXIndex, camera, t);

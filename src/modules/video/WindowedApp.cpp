@@ -464,9 +464,9 @@ app::AppState WindowedApp::onInit() {
 
 app::AppState WindowedApp::onConstruct() {
 	app::AppState state = Super::onConstruct();
-	const core::VarDef clientMultiSampleBuffers(cfg::ClientMultiSampleBuffers, 0, N_("Multisample buffers"), _("The number of multisample buffers to use for the default framebuffer"));
+	const core::VarDef clientMultiSampleBuffers(cfg::ClientMultiSampleBuffers, 0, N_("Multisample buffers"), _("Window backbuffer MSAA buffers. 0 disables window MSAA."));
 	core::Var::registerVar(clientMultiSampleBuffers);
-	const core::VarDef clientMultiSampleSamples(cfg::ClientMultiSampleSamples, 0, N_("Multisample samples"), _("The number of samples to use for multisampling in the default framebuffer"));
+	const core::VarDef clientMultiSampleSamples(cfg::ClientMultiSampleSamples, 4, N_("Multisample samples"), _("Scene viewport sample count. Also used for the window if cl_multisamplebuffers is > 0."));
 	core::Var::registerVar(clientMultiSampleSamples);
 	const core::VarDef clientWindowHighDPI(cfg::ClientWindowHighDPI, true, N_("High DPI"), _("Enable high DPI mode"), core::CV_READONLY);
 	core::Var::registerVar(clientWindowHighDPI);

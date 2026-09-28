@@ -81,7 +81,7 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.frameBuffer.bind(true);
-	volumeRenderer.render(meshState, renderContext, camera, true, true);
+	volumeRenderer.render(meshState, renderContext, camera, true);
 	renderContext.frameBuffer.unbind();
 
 	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);

@@ -193,6 +193,7 @@ void BloomRenderer::apply(video::FrameBuffer *sources, video::FrameBuffer *dests
 void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::TexturePtr& glowTexture) {
 	core_trace_scoped(BloomRender);
 	video::ScopedState depthTest(video::State::DepthTest, false);
+	video::ScopedState depthMask(video::State::DepthMask, false);
 	video::ScopedState scissor(video::State::Scissor, false);
 	video::ScopedState cullFace(video::State::CullFace, false);
 	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::OneMinusSourceAlpha);

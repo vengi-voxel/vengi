@@ -133,6 +133,28 @@ static core::String stripEmptyLayoutQualifiers(const core::String &src) {
 
 int Shader::glslVersion = 430;
 
+core::String Shader::stripUnsupportedEssl(const core::String &src) {
+	core::String out = src;
+	const char *kw = "noperspective";
+	const size_t kwLen = 13;
+	size_t pos = 0;
+	while ((pos = out.find(kw, pos)) != core::String::npos) {
+		const bool startOk = pos == 0 || !(core::string::isAlphaNum((int)out[pos - 1]) || out[pos - 1] == '_');
+		const size_t after = pos + kwLen;
+		const bool endOk = after >= out.size() || !(core::string::isAlphaNum((int)out[after]) || out[after] == '_');
+		if (!startOk || !endOk) {
+			pos = after;
+			continue;
+		}
+		size_t end = after;
+		while (end < out.size() && (out[end] == ' ' || out[end] == '\t')) {
+			++end;
+		}
+		out.erase(pos, end - pos);
+	}
+	return out;
+}
+
 Shader::Shader() {
 	for (int i = 0; i < (int)ShaderType::Max; ++i) {
 		_shader[i] = InvalidId;
@@ -455,6 +477,10 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 			src = stripLayoutQualifier(src, "set");
 			// layout(binding = N) alone becomes layout(), which is invalid ESSL syntax
 			src = stripEmptyLayoutQualifiers(src);
+		}
+		// ESSL 300 (WebGL 2) has no noperspective; ESSL 320 / GLES 3.2 does.
+		if (glslVersion < 320) {
+			src = stripUnsupportedEssl(src);
 		}
 #endif
 	}

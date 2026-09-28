@@ -14,6 +14,7 @@
 #include "core/ArrayLength.h"
 #include "color/Color.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/Var.h"
@@ -741,20 +742,13 @@ void Viewport::shutdown() {
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
 	const bool prevBloom = _renderContext.enableBloom;
-	_renderContext.enableBloom = true;
+	const core::VarPtr &bloomVar = core::getVar(cfg::ClientBloom);
+	_renderContext.enableBloom = bloomVar != nullptr && bloomVar->boolVal();
 	_sceneMgr->render(_renderContext, _modifierRenderContext, camera(), SceneManager::RenderScene);
 	_renderContext.enableBloom = prevBloom;
-
-	// If multisampling is enabled, resolve first, then get image from resolve framebuffer
-	if (_renderContext.enableMultisampling) {
-		const glm::ivec2 fbDim = _renderContext.frameBuffer.dimension();
-		// Resolve the multisampled framebuffer to regular textures
-		video::blitFramebuffer(_renderContext.frameBuffer.handle(), _renderContext.resolveFrameBuffer.handle(),
-							 video::ClearFlag::Color, fbDim.x, fbDim.y);
-		return _renderContext.resolveFrameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
-	} else {
-		return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
-	}
+	video::FrameBuffer &display = _renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer
+																	: _renderContext.frameBuffer;
+	return display.image(imageName, video::FrameBufferAttachment::Color0);
 }
 
 bool Viewport::saveImage(const char *filename) {

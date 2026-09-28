@@ -277,12 +277,9 @@ void TestVolumeRenderer::presentFrameBuffer() {
 void TestVolumeRenderer::doRender() {
 	_renderer.update(_meshState);
 	_renderContext.frameBuffer.bind(true);
-	_renderer.render(_meshState, _renderContext, camera(), true, true);
-	if (_renderContext.enableMultisampling) {
-		const glm::ivec2 dim = _renderContext.frameBuffer.dimension();
-		video::blitFramebuffer(_renderContext.frameBuffer.handle(), _renderContext.resolveFrameBuffer.handle(),
-							   video::ClearFlag::Color, dim.x, dim.y);
-	}
+	_renderer.render(_meshState, _renderContext, camera(), true);
+	_renderContext.resolveMultisampling();
+	_renderContext.applyBloom();
 	_renderContext.frameBuffer.unbind();
 	presentFrameBuffer();
 }

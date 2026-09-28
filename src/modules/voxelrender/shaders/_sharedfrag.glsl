@@ -177,50 +177,26 @@ void writeOIT(vec4 color) {
 
 
 vec4 darken(vec4 color) {
-	return vec4(color.rgb * vec3(0.3, 0.3, 0.3), color.a);
+	return vec4(color.rgb * 0.3, color.a);
 }
 
 vec4 brighten(vec4 color) {
 	return clamp(vec4(color.rgb * vec3(1.5, 1.5, 1.5), color.a), 0.0, 1.0);
 }
 
-// pos is in object space
-// pulse: 0.0 = no outline edges, 1.0 = full outline edges
+// Object-space voxel grid overlay. Lines stay ~1px via fwidth (https://iquilezles.org/).
+// Works on greedy-merged quads because pos is still voxel coordinates.
+// pulse: 0.0 = no edges, 1.0 = full edges (selection pulse uses values in between).
 vec4 outline(vec3 pos, vec4 color, vec3 normal, float pulse) {
-#if 0
-	vec3 f = fract(pos);
-	float edge;
-	if (abs(normal.y) > 0.5) {
-		// top or bottom face XZ plane
-		edge = min(min(f.x, 1.0 - f.x), min(f.z, 1.0 - f.z));
-	} else if (abs(normal.x) > 0.5) {
-		// left / right face YZ plane
-		edge = min(min(f.y, 1.0 - f.y), min(f.z, 1.0 - f.z));
-	} else {
-		// front / back face XY plane
-		edge = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
+	vec3 faceN = abs(cross(dFdx(pos), dFdy(pos)));
+	if (dot(faceN, faceN) < 1.0e-12) {
+		faceN = abs(normal);
 	}
-	float seam = smoothstep(0.02, 0.05, edge);
-	return mix(color, color * seam, pulse);
-#else
-	const float epsilona = 0.025;
-	const float epsilonb = 0.0001;
-	vec3 frac = abs(fract(pos));
-	bool nearX = (frac.x <= epsilona || 1.0 - frac.x <= epsilona);
-	bool nearY = (frac.y <= epsilona || 1.0 - frac.y <= epsilona);
-	bool nearZ = (frac.z <= epsilona || 1.0 - frac.z <= epsilona);
-	bool overX = (frac.x <= epsilonb || 1.0 - frac.x <= epsilonb);
-	bool overY = (frac.y <= epsilonb || 1.0 - frac.y <= epsilonb);
-	bool overZ = (frac.z <= epsilonb || 1.0 - frac.z <= epsilonb);
-	if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
-		vec4 edgeColor;
-		if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) {
-			edgeColor = brighten(color);
-		} else {
-			edgeColor = darken(color);
-		}
-		color = mix(color, edgeColor, pulse);
-	}
-	return color;
-#endif
+	vec2 f = (faceN.x > faceN.y && faceN.x > faceN.z) ? pos.yz : ((faceN.y > faceN.z) ? pos.xz : pos.xy);
+	vec2 d = max(fwidth(f), vec2(1.0e-5));
+	vec2 g = abs(fract(f - 0.5) - 0.5) / d;
+	float line = 1.0 - min(min(g.x, g.y), 1.0);
+	float strength = clamp(line * pulse, 0.0, 1.0);
+	vec4 edgeColor = (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) ? brighten(color) : darken(color);
+	return mix(color, edgeColor, strength);
 }

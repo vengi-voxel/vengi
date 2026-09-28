@@ -18,6 +18,10 @@ General:
    - Fixed VoxelMax `vmaxb` loading and transforms
    - Added Sandbox `vxm` version 13 and `vxa` version 10 support
 
+VoxEdit:
+
+   - Improved line rendering quality for the viewport
+
 PalConvert:
 
    - A web version is available now, too

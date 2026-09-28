@@ -97,7 +97,6 @@ protected:
 	uint8_t *ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes);
 
 	core::VarPtr _shadowMap;
-	core::VarPtr _bloom;
 	core::VarPtr _cullBuffers;
 	core::VarPtr _cullNodes;
 	core::VarPtr _selectionTint;
@@ -169,7 +168,7 @@ public:
 	RawVolumeRenderer(const core::TimeProviderPtr &timeProvider);
 
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
-				bool shadow, bool bloom);
+				bool shadow);
 	void ensureRenderState(int idx);
 	void ensureSize(int idx);
 	void clear(const voxel::MeshStatePtr &meshState);

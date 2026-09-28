@@ -4,9 +4,11 @@
 
 #include "voxelrender/SceneGraphRenderer.h"
 #include "color/RGBA.h"
+#include "core/ConfigVar.h"
 #include "core/SharedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/UUID.h"
+#include "core/Var.h"
 #include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -172,6 +174,39 @@ TEST_F(SceneGraphRendererTest, testRenderTransparentWeightedOIT) {
 	renderContext.frameBuffer.bind(true);
 	_renderer.render(_meshState, renderContext, camera, false, true);
 	renderContext.frameBuffer.unbind();
+	renderContext.shutdown();
+}
+
+TEST_F(SceneGraphRendererTest, testBloomThenOverlays) {
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+	model.setName("model");
+	voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+	palette::Palette pal;
+	pal.nippon();
+	pal.setEmit(1, 1.0f);
+	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	model.setVolume(v);
+	model.setPalette(pal);
+	ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(model)));
+	sceneGraph.updateTransforms();
+
+	RenderContext renderContext;
+	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	renderContext.sceneGraph = &sceneGraph;
+	renderContext.renderMode = RenderMode::Scene;
+	renderContext.enableBloom = true;
+
+	video::Camera camera;
+	camera.setSize(glm::ivec2(64, 64));
+	configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, 500.0f);
+
+	renderContext.frameBuffer.bind(true);
+	_renderer.render(_meshState, renderContext, camera, false, true);
+	renderContext.resolveMultisampling();
+	renderContext.applyBloom();
+	renderContext.beginOverlays();
+	renderContext.endFrame();
 	renderContext.shutdown();
 }
 

@@ -9,6 +9,8 @@ set(SHADERS
 	color
 	combine2
 	convolution
+	grid
+	line
 	texture
 )
 set(SRCS_SHADERS)
@@ -22,6 +24,8 @@ engine_generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/RenderShaderTest.cpp
+	tests/GridRendererTest.cpp
+	tests/ShapeRendererTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

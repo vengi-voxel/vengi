@@ -30,8 +30,9 @@ struct RenderContext : public core::NonCopyable {
 	bool hideInactive = false;
 	bool grayInactive = false;
 	bool onlyModels = false;
-	// When false, RawVolumeRenderer skips the bloom post-process (FBOs stay allocated).
+	// Per-target bloom switch (FBOs stay allocated). Callers combine this with cl_bloom.
 	bool enableBloom = true;
+	bool sceneHasGlow = false;
 	// render the built-in normals
 	bool renderNormals = false;
 	bool applyTransformsInEditMode = true;
@@ -50,6 +51,26 @@ struct RenderContext : public core::NonCopyable {
 	void shutdown();
 	bool resize(const glm::ivec2 &size);
 	bool updateMultisampling();
+	/**
+	 * Resolve MSAA Color0, Color1, and depth into resolveFrameBuffer. No-op without MSAA.
+	 * Color1 (emit/glow) is blitted separately so Color0 is not copied onto it.
+	 */
+	void resolveMultisampling();
+	/**
+	 * Composite bloom onto the displayed color target. Must run after MSAA resolve and
+	 * before overlay (grid, cursor, gizmos) rendering so those stay unbloomed.
+	 */
+	void applyBloom();
+	/**
+	 * Bind the displayed color target for overlays after resolve/bloom. MSAA switches
+	 * from the multisample FBO to the resolve FBO (without clearing). Restricts draws
+	 * to Color0 so overlays cannot write the glow attachment.
+	 */
+	void beginOverlays();
+	/**
+	 * Restore Color0+Color1 draw buffers and unbind the framebuffer used for this frame.
+	 */
+	void endFrame();
 };
 
 } // namespace voxelrender

@@ -1742,7 +1742,58 @@ void finish() {
 	checkError();
 }
 
+static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttachment, int width, int height) {
+	statsBlit();
+	syncState();
+	const GLenum buffers[] = {glAttachment};
+	if (useFeature(Feature::DirectStateAccess) && handle != InvalidId && target != InvalidId &&
+		glBlitNamedFramebuffer != nullptr) {
+		if (glNamedFramebufferReadBuffer != nullptr) {
+			glNamedFramebufferReadBuffer(handle, glAttachment);
+		} else {
+			const Id prev = currentFramebuffer();
+			video::bindFramebuffer(handle, FrameBufferMode::Read);
+			core_assert(glReadBuffer != nullptr);
+			glReadBuffer(glAttachment);
+			video::bindFramebuffer(prev, FrameBufferMode::Default);
+		}
+		core_assert(glNamedFramebufferDrawBuffers != nullptr);
+		glNamedFramebufferDrawBuffers(target, 1, buffers);
+		glBlitNamedFramebuffer(handle, target, 0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT,
+							   GL_NEAREST);
+		checkError();
+		if (glNamedFramebufferReadBuffer != nullptr) {
+			glNamedFramebufferReadBuffer(handle, GL_COLOR_ATTACHMENT0);
+		}
+		return;
+	}
+	const Id prev = currentFramebuffer();
+	video::bindFramebuffer(target, FrameBufferMode::Draw);
+	core_assert(glDrawBuffers != nullptr);
+	glDrawBuffers(1, buffers);
+	video::bindFramebuffer(handle, FrameBufferMode::Read);
+	core_assert(glReadBuffer != nullptr);
+	glReadBuffer(glAttachment);
+	core_assert(glBlitFramebuffer != nullptr);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	checkError();
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	video::bindFramebuffer(prev, FrameBufferMode::Default);
+}
+
+void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
+	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
+	if (glAttachment < GL_COLOR_ATTACHMENT0 || glAttachment > GL_COLOR_ATTACHMENT15) {
+		return;
+	}
+	blitFramebufferColorAttachment(handle, target, glAttachment, width, height);
+}
+
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
+	if (flag == ClearFlag::Color && handle != InvalidId && target != InvalidId) {
+		blitFramebuffer(handle, target, FrameBufferAttachment::Color0, width, height);
+		return;
+	}
 	statsBlit();
 	syncState();
 	const GLbitfield glValue = getBitField(flag);
@@ -1755,13 +1806,13 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 		glBlitNamedFramebuffer(handle, target, 0, 0, width, height, 0, 0, width, height, glValue, filter);
 		checkError();
 	} else {
+		const Id prev = currentFramebuffer();
 		video::bindFramebuffer(target, FrameBufferMode::Draw);
 		video::bindFramebuffer(handle, FrameBufferMode::Read);
 		core_assert(glBlitFramebuffer != nullptr);
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, filter);
 		checkError();
-		video::bindFramebuffer(handle, FrameBufferMode::Default);
-		video::bindFramebuffer(target, FrameBufferMode::Default);
+		video::bindFramebuffer(prev, FrameBufferMode::Default);
 	}
 }
 

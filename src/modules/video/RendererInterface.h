@@ -386,9 +386,16 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
  *
  * Copies the specified buffers (color/depth/stencil as indicated by @p flag)
  * from @p handle to @p target with a full-size rectangle of @p width x @p height.
- * The backend may choose an appropriate filter for color blits.
+ * Color blits to an FBO copy only Color0 (use the attachment overload for Color1).
  */
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height);
+/**
+ * @brief Blit one color attachment with GL_NEAREST (required for MSAA resolve).
+ *
+ * Sets the source read buffer and destination draw buffer to @p attachment so
+ * Color0 is not copied onto Color1 (the default COLOR_BUFFER_BIT blit would).
+ */
+void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height);
 
 /**
  * @brief Set the draw buffers of the currently bound framebuffer.

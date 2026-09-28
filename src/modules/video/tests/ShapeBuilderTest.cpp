@@ -17,4 +17,16 @@ TEST_F(ShapeBuilderTest, testOBB) {
 	EXPECT_EQ(24u, shapeBuilder.getIndices().size());
 }
 
+TEST_F(ShapeBuilderTest, testClearResetsPrimitiveForBones) {
+	ShapeBuilder shapeBuilder(256);
+	shapeBuilder.obb(math::OBBF(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3x3(1.0f)));
+	EXPECT_EQ(Primitive::Lines, shapeBuilder.primitive());
+	shapeBuilder.clear();
+	EXPECT_EQ(Primitive::Triangles, shapeBuilder.primitive());
+	shapeBuilder.bone(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 8.0f));
+	EXPECT_EQ(Primitive::Triangles, shapeBuilder.primitive());
+	EXPECT_GT(shapeBuilder.getIndices().size(), 0u);
+	EXPECT_EQ(0u, shapeBuilder.getIndices().size() % 3u);
+}
+
 } // namespace video
