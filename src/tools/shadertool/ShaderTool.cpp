@@ -55,15 +55,19 @@ app::AppState ShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-void ShaderTool::validate(const core::String &name) {
+void ShaderTool::validate(const core::String &name, bool essl) {
 	if (_glslangValidatorBin.empty()) {
 		return;
 	}
 	const core::String &writePath = filesystem()->homePath();
 	core::DynamicArray<core::String> args;
+	if (essl) {
+		args.push_back("--glsl-version");
+		args.push_back("300es");
+	}
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
-			   args[0].c_str());
+			   args[args.size() - 1].c_str());
 	io::BufferedReadWriteStream stream(4096);
 	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, &stream);
 	if (exitCode != 0) {
@@ -421,6 +425,15 @@ app::AppState ShaderTool::onRunning() {
 	const core::String& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
 	const core::String& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, true);
 
+	const bool savedEssl = video::Shader::essl;
+	const int savedVersion = video::Shader::glslVersion;
+	video::Shader::essl = true;
+	video::Shader::glslVersion = 300;
+	const core::String esslFragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
+	const core::String esslVertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
+	video::Shader::essl = savedEssl;
+	video::Shader::glslVersion = savedVersion;
+
 	if (changedDir) {
 		fs->sysPopDir();
 	}
@@ -440,6 +453,17 @@ app::AppState ShaderTool::onRunning() {
 	validate(finalVertexFilename);
 	if (!geometrySource.empty()) {
 		validate(finalGeometryFilename);
+	}
+
+	// WebGL 2 / Emscripten is ESSL 300. Geometry shaders are desktop-only.
+	if (geometrySource.empty()) {
+		const core::String esslFragmentFilename = _appname + "-essl-" + fragmentFilename;
+		const core::String esslVertexFilename = _appname + "-essl-" + vertexFilename;
+		fs->homeWrite(esslFragmentFilename, esslFragmentSource);
+		fs->homeWrite(esslVertexFilename, esslVertexSource);
+		Log::debug("Validating ESSL 300 shader file %s", _shaderfile.c_str());
+		validate(esslFragmentFilename, true);
+		validate(esslVertexFilename, true);
 	}
 
 	return app::AppState::Cleanup;

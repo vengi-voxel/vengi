@@ -5,6 +5,8 @@
 #include "app/tests/AbstractTest.h"
 #include "../Util.h"
 #include "../Parser.h"
+#include "video/Shader.h"
+#include "core/StringUtil.h"
 
 class ShaderToolTest: public app::AbstractTest {
 };
@@ -149,4 +151,18 @@ TEST_F(ShaderToolTest, testStd430Alignment) {
 	vec4ArrayVar.type = Variable::VEC4;
 	vec4ArrayVar.arraySize = 4;
 	EXPECT_EQ(16u, util::std430Size(vec4ArrayVar)); // 4 * 4 = 16
+}
+
+TEST_F(ShaderToolTest, testEsslFinalizeStripsNoperspective) {
+	const bool savedEssl = video::Shader::essl;
+	const int savedVersion = video::Shader::glslVersion;
+	video::Shader::essl = true;
+	video::Shader::glslVersion = 300;
+	video::Shader shader;
+	const core::String out = shader.getSource(video::ShaderType::Vertex, "noperspective $out float v_edge;\n", true);
+	video::Shader::essl = savedEssl;
+	video::Shader::glslVersion = savedVersion;
+	EXPECT_TRUE(core::string::contains(out, "#version 300 es")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "noperspective")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "out float v_edge")) << out.c_str();
 }

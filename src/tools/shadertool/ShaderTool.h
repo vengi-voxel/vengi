@@ -12,7 +12,8 @@
 #include "core/Pair.h"
 
 /**
- * @brief This tool validates the GLSL shaders and generates c++ code for them.
+ * @brief This tool validates the GLSL shaders (and ESSL 300 for Emscripten/WebGL 2)
+ * and generates c++ code for them.
  *
  * @ingroup Tools
  */
@@ -40,7 +41,7 @@ protected:
 	core::List<core::String> _includeDirs;
 
 	bool parse(const core::String& filename, const core::String& src, bool vertex);
-	void validate(const core::String& name);
+	void validate(const core::String& name, bool essl = false);
 	bool compileSPIRV(const core::String& source, const core::String& shaderType, core::DynamicArray<uint32_t>& spirvBinary);
 	core::Pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();

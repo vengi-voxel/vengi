@@ -76,6 +76,12 @@ public:
 	static core::String validPreprocessorName(const core::String& name);
 
 	static int glslVersion;
+	/**
+	 * When true, getSource() emits ESSL (WebGL 2 / Emscripten): `#version N es`,
+	 * precision qualifiers, and strips layout(binding) / noperspective as needed.
+	 * Shadertool sets this for an ESSL 300 validation pass. GLES builds default to true.
+	 */
+	static bool essl;
 
 	virtual void shutdown();
 
@@ -93,9 +99,8 @@ public:
 
 	core::String getSource(ShaderType shaderType, const core::String& buffer, bool finalize = true, core::List<core::String>* includedFiles = nullptr) const;
 	/**
-	 * ESSL 300 (WebGL 2 / Emscripten) has no noperspective. Shadertool finalize and
-	 * runtime GLES compilation both go through getSource(); this rewrite is applied
-	 * when USE_OPENGLES is set (and can be tested on desktop).
+	 * ESSL 300 (WebGL 2 / Emscripten) has no noperspective. Used by getSource() when
+	 * essl is set and glslVersion < 320.
 	 */
 	static core::String stripUnsupportedEssl(const core::String &src);
 
