@@ -22,6 +22,8 @@ namespace voxelformat {
  *
  * Coordinate system is Y-up, matching vengi. Palette index 0 is empty.
  *
+ * https://github.com/sazixworkbench/voxelcdx-releases/blob/main/docs/vcdx-format.md
+ *
  * @ingroup Formats
  */
 class VCdxFormat : public PaletteFormat {
