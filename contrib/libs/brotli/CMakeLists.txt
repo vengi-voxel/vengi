@@ -43,3 +43,9 @@ engine_add_library(
 	LIB ${LIB}
 	SRCS ${SRCS}
 )
+# Encoder .c files each define file-local Hash, IsMatch, EmitInsertLen, ...
+# Unity builds concatenate them into one TU and fail (emscripten CI).
+get_target_property(_brotli_type ${LIB} TYPE)
+if (_brotli_type STREQUAL "STATIC_LIBRARY")
+	set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
+endif()
