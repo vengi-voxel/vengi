@@ -1201,6 +1201,22 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "VoxelCdx",
+      "extensions": [
+        "vcdx"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x56434458"
+        }
+      ],
+      "mimetype": "application/x-voxelcdx",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "SpriteStack",
       "extensions": [
         "zip"

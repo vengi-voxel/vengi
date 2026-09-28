@@ -12,6 +12,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Added VoxelCdx (`.vcdx`) format support
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
    - Fixed VoxelMax `vmaxb` loading and transforms

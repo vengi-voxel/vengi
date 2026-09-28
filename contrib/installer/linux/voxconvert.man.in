@@ -497,6 +497,8 @@ Voxel3D (*.v3a, *.v3b)
 .TP
 VoxelBuilder (*.vbx)
 .TP
+VoxelCdx (*.vcdx)
+.TP
 VoxelMax (*.vmax.zip, *.vmax, *.vmaxb)
 .TP
 Wavefront Object (*.obj)
@@ -576,6 +578,8 @@ Veloren terrain (*.dat)
 Vengi (*.vengi)
 .TP
 Voxel3D (*.v3a, *.v3b)
+.TP
+VoxelCdx (*.vcdx)
 .TP
 Wavefront Object (*.obj)
 

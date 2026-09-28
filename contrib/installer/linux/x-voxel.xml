@@ -412,6 +412,13 @@
 		<glob pattern="*.vmax"/>
 		<glob pattern="*.vmaxb"/>
 	</mime-type>
+	<mime-type type="application/x-voxelcdx">
+		<comment>VoxelCdx</comment>
+		<glob pattern="*.vcdx"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VCDX"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-spritestack">
 		<comment>SpriteStack</comment>
 		<glob pattern="*.zip"/>

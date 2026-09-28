@@ -87,6 +87,7 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelformat/private/voxel3d/V3AFormat.h"
 #include "voxelformat/private/voxelbuilder/VBXFormat.h"
+#include "voxelformat/private/voxelcdx/VCdxFormat.h"
 #include "voxelformat/private/voxelmax/VMaxFormat.h"
 
 namespace voxelformat {
@@ -157,6 +158,7 @@ const io::FormatDescription *voxelFormats() {
 												 CSMFormat::formatNVM(),
 												 SLAB6VoxFormat::format(),
 												 VMaxFormat::format(),
+												 VCdxFormat::format(),
 												 SpriteStackFormat::format(),
 												 VelorenTerrainFormat::format(),
 												 io::format::png(),
@@ -244,6 +246,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<VXBFormat>();
 		} else if (io::isA(VMaxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VMaxFormat>();
+		} else if (io::isA(VCdxFormat::format(), desc, ext, magic)) {
+			return core::make_shared<VCdxFormat>();
 		} else if (io::isA(BlockbenchFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BlockbenchFormat>();
 		} else if (io::isA(CrocotileFormat::format(), desc, ext, magic)) {

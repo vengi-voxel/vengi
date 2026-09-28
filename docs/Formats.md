@@ -54,6 +54,7 @@
 | Vengi                      | vengi       | X       | X      |            | X       | X          |
 | Voxel3D                    | v3a         | X       | X      |            |         |            |
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
+| VoxelCdx                   | vcdx        | X       | X      | X          | X       |            |
 | VoxelMax                   | vmax.zip    | X       |        | X          | X       |            |
 
 ## Mesh formats

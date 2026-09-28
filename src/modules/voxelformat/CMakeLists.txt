@@ -177,6 +177,7 @@ set(SRCS
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
+	private/voxelcdx/VCdxFormat.h            private/voxelcdx/VCdxFormat.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric tinyxml2 json ${LIB}-external)
@@ -242,6 +243,7 @@ set(TEST_SRCS
 	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
+	tests/VCdxFormatTest.cpp
 	tests/VelorenTerrainFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
@@ -444,6 +446,8 @@ set(TEST_FILES
 	"tests/test-transform.vmax.zip"
 	"tests/test-transform.vox"
 	"tests/test.vxm"
+	"tests/Untitled.vcdx"
+	"tests/Untitled.vox"
 	"tests/ufoai.bsp"
 	"tests/vox_character.vox"
 	"tests/voxelbuilder.vbx"
