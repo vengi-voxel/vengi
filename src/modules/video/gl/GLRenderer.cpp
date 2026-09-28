@@ -2184,136 +2184,141 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 void setupTexture(Id texture, const TextureConfig &config) {
 	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
-	if (useFeature(Feature::DirectStateAccess)) {
-		core_assert(glTextureParameteri != nullptr);
-		core_assert(glTextureParameterfv != nullptr);
-		if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
-			const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
-			glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, glFilterMag);
-			checkError();
-		}
-		if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
-			const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
-			glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, glFilterMin);
-			checkError();
-		}
-		if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
-			const GLenum glWrapR = _priv::TextureWraps[core::enumVal(config.wrapR())];
-			glTextureParameteri(texture, GL_TEXTURE_WRAP_R, glWrapR);
-			checkError();
-		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
-			config.wrapS() != TextureWrap::Max) {
-			const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
-			glTextureParameteri(texture, GL_TEXTURE_WRAP_S, glWrapS);
-			checkError();
-		}
-		if (config.compareMode() != TextureCompareMode::Max) {
-			const GLenum glMode = _priv::TextureCompareModes[core::enumVal(config.compareMode())];
-			glTextureParameteri(texture, GL_TEXTURE_COMPARE_MODE, glMode);
-			checkError();
-		}
-		if (config.compareFunc() != CompareFunc::Max) {
-			const GLenum glFunc = _priv::CompareFuncs[core::enumVal(config.compareFunc())];
-			glTextureParameteri(texture, GL_TEXTURE_COMPARE_FUNC, glFunc);
-			checkError();
-		}
-#ifndef __EMSCRIPTEN__
-		if (config.useBorderColor()) {
-			glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
-		}
-		if (config.lodBias() != 0.0f) {
-			const GLfloat requested = config.lodBias();
-			const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-			const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
-			core_assert(glTextureParameterf != nullptr);
-			glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
-			checkError();
-		}
-#endif
-		/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
-		// glTextureParameteri(texture, GL_TEXTURE_BASE_LEVEL, 0);
-		/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
-		// glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, 0);
-
-		if (FLEXT_ARB_texture_filter_anisotropic) {
-			const GLfloat maxAnisotropy = config.maxAnisotropy();
-			if (maxAnisotropy > 1.0f) {
-				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
-				const GLfloat clampedMaxAnisotropy =
-					core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
-				core_assert(glTextureParameterf != nullptr);
-				glTextureParameterf(texture, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+	const bool multisampleTex = config.type() == TextureType::Texture2DMultisample ||
+								config.type() == TextureType::Texture2DMultisampleArray;
+	// Sampler state is invalid on multisample textures (GL_INVALID_ENUM).
+	if (!multisampleTex) {
+		if (useFeature(Feature::DirectStateAccess)) {
+			core_assert(glTextureParameteri != nullptr);
+			core_assert(glTextureParameterfv != nullptr);
+			if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
+				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
+				glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, glFilterMag);
 				checkError();
 			}
-		}
-	} else {
-		core_assert(glTexParameteri != nullptr);
-		core_assert(glTexParameterfv != nullptr);
-		if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
-			const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
-			glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
-			checkError();
-		}
-		if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
-			const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
-			glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin); // TODO: RENDERER: mipmapping
-			checkError();
-		}
-		if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
-			const GLenum glWrapR = _priv::TextureWraps[core::enumVal(config.wrapR())];
-			glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
-			checkError();
-		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
-			config.wrapS() != TextureWrap::Max) {
-			const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
-			glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
-			checkError();
-		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
-			config.wrapT() != TextureWrap::Max) {
-			const GLenum glWrapT = _priv::TextureWraps[core::enumVal(config.wrapT())];
-			glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
-			checkError();
-		}
-		if (config.compareMode() != TextureCompareMode::Max) {
-			const GLenum glMode = _priv::TextureCompareModes[core::enumVal(config.compareMode())];
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
-			checkError();
-		}
-		if (config.compareFunc() != CompareFunc::Max) {
-			const GLenum glFunc = _priv::CompareFuncs[core::enumVal(config.compareFunc())];
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
-			checkError();
-		}
-#ifndef __EMSCRIPTEN__
-		if (config.useBorderColor()) {
-			glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
-		}
-		if (config.lodBias() != 0.0f) {
-			const GLfloat requested = config.lodBias();
-			const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-			const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
-			core_assert(glTexParameterf != nullptr);
-			glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
-			checkError();
-		}
-#endif
-		/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
-		// glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
-		/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
-		// glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
-
-		if (FLEXT_ARB_texture_filter_anisotropic) {
-			const GLfloat maxAnisotropy = config.maxAnisotropy();
-			if (maxAnisotropy > 1.0f) {
-				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
-				const GLfloat clampedMaxAnisotropy =
-					core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
-				core_assert(glTexParameterf != nullptr);
-				glTexParameterf(glType, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+			if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
+				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
+				glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, glFilterMin);
 				checkError();
+			}
+			if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
+				const GLenum glWrapR = _priv::TextureWraps[core::enumVal(config.wrapR())];
+				glTextureParameteri(texture, GL_TEXTURE_WRAP_R, glWrapR);
+				checkError();
+			}
+			if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+				config.wrapS() != TextureWrap::Max) {
+				const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
+				glTextureParameteri(texture, GL_TEXTURE_WRAP_S, glWrapS);
+				checkError();
+			}
+			if (config.compareMode() != TextureCompareMode::Max) {
+				const GLenum glMode = _priv::TextureCompareModes[core::enumVal(config.compareMode())];
+				glTextureParameteri(texture, GL_TEXTURE_COMPARE_MODE, glMode);
+				checkError();
+			}
+			if (config.compareFunc() != CompareFunc::Max) {
+				const GLenum glFunc = _priv::CompareFuncs[core::enumVal(config.compareFunc())];
+				glTextureParameteri(texture, GL_TEXTURE_COMPARE_FUNC, glFunc);
+				checkError();
+			}
+#ifndef __EMSCRIPTEN__
+			if (config.useBorderColor()) {
+				glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+			}
+			if (config.lodBias() != 0.0f) {
+				const GLfloat requested = config.lodBias();
+				const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+				const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+				core_assert(glTextureParameterf != nullptr);
+				glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
+				checkError();
+			}
+#endif
+			/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
+			// glTextureParameteri(texture, GL_TEXTURE_BASE_LEVEL, 0);
+			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
+			// glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, 0);
+
+			if (FLEXT_ARB_texture_filter_anisotropic) {
+				const GLfloat maxAnisotropy = config.maxAnisotropy();
+				if (maxAnisotropy > 1.0f) {
+					const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
+					const GLfloat clampedMaxAnisotropy =
+						core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+					core_assert(glTextureParameterf != nullptr);
+					glTextureParameterf(texture, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+					checkError();
+				}
+			}
+		} else {
+			core_assert(glTexParameteri != nullptr);
+			core_assert(glTexParameterfv != nullptr);
+			if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
+				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
+				glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
+				checkError();
+			}
+			if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
+				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
+				glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin); // TODO: RENDERER: mipmapping
+				checkError();
+			}
+			if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
+				const GLenum glWrapR = _priv::TextureWraps[core::enumVal(config.wrapR())];
+				glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
+				checkError();
+			}
+			if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+				config.wrapS() != TextureWrap::Max) {
+				const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
+				glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
+				checkError();
+			}
+			if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+				config.wrapT() != TextureWrap::Max) {
+				const GLenum glWrapT = _priv::TextureWraps[core::enumVal(config.wrapT())];
+				glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
+				checkError();
+			}
+			if (config.compareMode() != TextureCompareMode::Max) {
+				const GLenum glMode = _priv::TextureCompareModes[core::enumVal(config.compareMode())];
+				glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
+				checkError();
+			}
+			if (config.compareFunc() != CompareFunc::Max) {
+				const GLenum glFunc = _priv::CompareFuncs[core::enumVal(config.compareFunc())];
+				glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
+				checkError();
+			}
+#ifndef __EMSCRIPTEN__
+			if (config.useBorderColor()) {
+				glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+			}
+			if (config.lodBias() != 0.0f) {
+				const GLfloat requested = config.lodBias();
+				const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+				const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+				core_assert(glTexParameterf != nullptr);
+				glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
+				checkError();
+			}
+#endif
+			/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
+			// glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
+			// glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+
+			if (FLEXT_ARB_texture_filter_anisotropic) {
+				const GLfloat maxAnisotropy = config.maxAnisotropy();
+				if (maxAnisotropy > 1.0f) {
+					const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
+					const GLfloat clampedMaxAnisotropy =
+						core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+					core_assert(glTexParameterf != nullptr);
+					glTexParameterf(glType, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+					checkError();
+				}
 			}
 		}
 	}
