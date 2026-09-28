@@ -10,14 +10,7 @@ flat $in uint v_flags;
 
 vec4 calcColor(void) {
 	vec3 normal = v_normal;
-	float ndotl1 = dot(normal, u_lightdir);
-	float ndotl2 = dot(normal, -u_lightdir);
-	bool usePrimaryLight = ndotl1 >= ndotl2;
-	vec3 lightDir = usePrimaryLight ? u_lightdir : -u_lightdir;
-	float ndotl = max(ndotl1, ndotl2);
-	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
-	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
-	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
+	vec3 shadowColor = shadeLit(normal, v_color.rgb);
 	vec4 ocolor = vec4(shadowColor, v_color.a);
 	if ((v_flags & FLAGOUTLINE) != 0u) {
 		if (u_renderoutline != 0) {

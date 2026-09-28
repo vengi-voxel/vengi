@@ -136,6 +136,21 @@ vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3
 	return shadow(vec4(v_lightspacepos, 1.0), bias, normal, lightDir, color, diffuse, ambient);
 }
 
+vec3 shadeLit(in vec3 normal, in vec3 color) {
+	float ndotl1 = dot(normal, u_lightdir);
+	float ndotl2 = dot(normal, -u_lightdir);
+	bool usePrimaryLight = ndotl1 >= ndotl2;
+	vec3 lightDir = usePrimaryLight ? u_lightdir : -u_lightdir;
+	float ndotl = max(ndotl1, ndotl2);
+	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
+	// Base bias for shadow mapping - kept small since normal offset is the primary technique
+	// The bias is increased slightly for surfaces facing away from the light
+	float slopeFactor = 1.0 - ndotl;
+	float bias = 0.0005 + 0.001 * slopeFactor;
+	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
+	return shadowColor;
+}
+
 // https://thebookofshaders.com
 float checker(in vec2 pos, float strength) {
 	vec2 c = floor(pos);
@@ -174,7 +189,6 @@ void writeOIT(vec4 color) {
 	o_color = vec4(color.rgb * a, a) * w;
 	o_glow = vec4(log(1.0 - a), 0.0, 0.0, 0.0);
 }
-
 
 vec4 darken(vec4 color) {
 	return vec4(color.rgb * 0.3, color.a);
