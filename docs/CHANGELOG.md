@@ -12,11 +12,11 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
-   - Added VoxelCdx (`.vcdx`) format support
+   - Added support for VoxelCdx files `.vcdx`
+   - Added support for Sandbox `vxm` version 13 and `vxa` version 10
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
    - Fixed VoxelMax `vmaxb` loading and transforms
-   - Added Sandbox `vxm` version 13 and `vxa` version 10 support
 
 VoxEdit:
 
