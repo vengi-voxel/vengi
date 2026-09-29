@@ -1087,6 +1087,9 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 	video::bindFramebuffer(mainFbo);
 
 	renderContext.oitFrameBuffer.bind(false);
+	const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
+													video::FrameBufferAttachment::Color1};
+	video::drawBuffers(2, color01);
 	const glm::vec4 oldClearColor = video::currentClearColor();
 	video::clearColor(glm::vec4(0.0f));
 	video::clear(video::ClearFlag::Color);
@@ -1379,20 +1382,22 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		renderOpaque(meshState, camera, frame.opaque);
 
 		if (useOit) {
-			if (normals) {
-				_voxelNormShader.deactivate();
-				_voxelNormOitShader.activate();
-			} else {
-				_voxelShader.deactivate();
-				_voxelOitShader.activate();
+			if (!frame.transparent.empty()) {
+				if (normals) {
+					_voxelNormShader.deactivate();
+					_voxelNormOitShader.activate();
+				} else {
+					_voxelShader.deactivate();
+					_voxelOitShader.activate();
+				}
+				renderTransparencyOIT(meshState, renderContext, camera, frame.transparent);
+				if (normals) {
+					_voxelNormOitShader.deactivate();
+				} else {
+					_voxelOitShader.deactivate();
+				}
+				compositeOIT(renderContext);
 			}
-			renderTransparencyOIT(meshState, renderContext, camera, frame.transparent);
-			if (normals) {
-				_voxelNormOitShader.deactivate();
-			} else {
-				_voxelOitShader.deactivate();
-			}
-			compositeOIT(renderContext);
 		} else {
 			sortBeforeRender(meshState, camera);
 			renderTransparency(meshState, renderContext, camera, frame.transparent);
