@@ -18,6 +18,8 @@
 #include "app/I18N.h"
 #include "engine-config.h"
 #include "http/Request.h"
+#include "http/RequestAsync.h"
+#include "http/Http.h"
 #include "io/Filesystem.h"
 #include "io/StdoutWriteStream.h"
 #include "io/BufferedReadWriteStream.h"
@@ -350,6 +352,7 @@ void App::onFrame() {
 	}
 
 	_timeProvider->updateTickTime();
+	http::update();
 	if (AppState::Blocked == _curState) {
 		wait(1);
 		_deltaFrameSeconds = 0.001;
@@ -413,13 +416,14 @@ void App::onFrame() {
 						request.addHeader("Content-Type", "text/plain");
 						request.addHeader("X-OperatingSystem", _osName);
 						request.addHeader("X-OperatingSystemVersion", _osVersion);
-						io::NOPWriteStream stream;
-						int statusCode = 0;
-						if (!request.execute(stream, &statusCode)) {
-							Log::error("Failed to upload crash log with status: %i", statusCode);
-						} else {
-							io::Filesystem::sysRemoveFile(crashlogFilename);
-						}
+						const core::String crashlogFilenameCopy = crashlogFilename;
+						http::requestAsync(core::move(request), [crashlogFilenameCopy](const http::Response &response) {
+							if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+								Log::error("Failed to upload crash log with status: %i", response.statusCode);
+								return;
+							}
+							io::Filesystem::sysRemoveFile(crashlogFilenameCopy);
+						});
 					}
 					if (buttonId == 3 && !crashLog.empty()) {
 						Log::info("Copy crash log to clipboard");
@@ -1796,6 +1800,8 @@ AppState App::onCleanup() {
 	metric::count("stop");
 
 	metric::shutdown();
+
+	http::clearPending();
 
 	saveConfiguration();
 
