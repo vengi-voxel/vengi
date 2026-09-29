@@ -2919,7 +2919,8 @@ struct ImGuiOnceUponAFrame
     operator bool() const { int current_frame = ImGui::GetFrameCount(); if (RefFrame == current_frame) return false; RefFrame = current_frame; return true; }
 };
 
-// Helper: Parse and apply text filters e.g. 'aaa bbb -ccc'.
+// Helper: Parse and apply text filters e.g. 'aaa bbb' (all), 'aaa,bbb' (any), '-aaa' (exclude), '"Hello, world"' (exact sequence)
+struct ImGuiTextFilterItem;
 struct ImGuiTextFilter
 {
     IMGUI_API           ImGuiTextFilter(const char* default_filter = "");
@@ -2935,21 +2936,10 @@ struct ImGuiTextFilter
     inline bool         Draw(const char* label, float width)            { if (width != 0.0f) ImGui::SetNextItemWidth(width); return Draw(label); }
 #endif
 
-    // [Internal] Don't use! Will be replaced with ImStrv.
-    struct ImGuiTextFilterItem
-    {
-        const char*     Begin;
-        const char*     End;
-        ImGuiTextFilterItem(const char* b, const char* e) { Begin = b; End = e; }
-    };
-
-    // [Internal] Members
+    // Members
     char                InputBuf[256];      // User input buffer
-    char                FilterOp;           // == '|' (any) pr '&' (all)
-    ImU8                MinWordSize;        // == 1
-    int                 _CountExclude;      // >= 0
-    int                 _CountInclude;      // >= 0
-    ImVector<ImGuiTextFilterItem> _Items;   // Pre-parsed, trimmed, reordered items
+    int                 _CountExclude;      // [Internal] >= 0 count of leading exclude
+    ImVector<ImGuiTextFilterItem> _Items;   // [Internal] Pre-parsed, trimmed, reordered items
 };
 
 // Helper: Growable text buffer for logging/accumulating text
