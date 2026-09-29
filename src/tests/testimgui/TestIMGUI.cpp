@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "testcore/TestAppMain.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IMGUIStyle.h"
 #include "ui/IconsLucide.h"
 #include "engine-config.h"
 #ifdef USE_IMPLOT_DEMO
@@ -60,7 +61,21 @@ void TestIMGUI::renderStylePreview() {
 	}
 
 	ImGui::Headline("Widget spacing");
-	ImGui::TextWrappedUnformatted("Typical vengi widgets used to judge padding and item spacing.");
+	ImGui::TextWrappedUnformatted("Typical vengi widgets used to judge padding, item spacing and color themes.");
+	const core::VarPtr &uiStyleVar = core::getVar(cfg::UIStyle);
+	const int currentStyle = uiStyleVar->intVal();
+	if (ImGui::BeginCombo("Color theme", ImGui::GetStyleName(currentStyle))) {
+		for (int i = 0; i < ImGui::MaxStyles; ++i) {
+			const bool isSelected = i == currentStyle;
+			if (ImGui::Selectable(ImGui::GetStyleName(i), isSelected)) {
+				uiStyleVar->setVal(i);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
 	ImGui::Separator();
 
 	if (ImGui::BeginTable("##stylepreview_cols", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV)) {

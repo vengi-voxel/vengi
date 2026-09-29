@@ -191,7 +191,7 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = ImGui::StyleLight;
 	}
-	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue, 0, (int)ImGui::MaxStyles - 1, N_("UI style"), N_("Change the ui colors - [0-3]"));
+	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue, 0, (int)ImGui::MaxStyles - 1, N_("UI style"), N_("Change the ui color theme"));
 	_uistyle = core::Var::registerVar(uIStyle);
 	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, N_("Notification timeout"), N_("Timeout for notifications in millis"));
 	core::Var::registerVar(uINotifyDismissMillis);
@@ -431,6 +431,7 @@ void IMGUIApp::setColorTheme() {
 	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
 	style.FontSizeBase = _uiFontSize->floatVal();
 
+	bool applyDefaultRounding = true;
 	switch (_uistyle->intVal()) {
 	case ImGui::StyleCorporateGrey:
 		ImGui::StyleColorsCorporateGrey();
@@ -444,10 +445,32 @@ void IMGUIApp::setColorTheme() {
 	case ImGui::StyleClassic:
 		ImGui::StyleColorsClassic();
 		break;
+	case ImGui::StyleDarkPastel:
+		ImGui::StyleColorsDarkPastel();
+		applyDefaultRounding = false;
+		break;
+	case ImGui::StyleRoseQuartz:
+		ImGui::StyleColorsRoseQuartz();
+		applyDefaultRounding = false;
+		break;
+	case ImGui::StyleGruvboxHard:
+		ImGui::StyleColorsGruvboxHard();
+		applyDefaultRounding = false;
+		break;
+	case ImGui::StyleDracula:
+		ImGui::StyleColorsDracula();
+		applyDefaultRounding = false;
+		break;
 	default:
 		_uistyle->setVal(ImGui::StyleCorporateGrey);
 		ImGui::StyleColorsCorporateGrey();
 		break;
+	}
+
+	if (applyDefaultRounding) {
+		style.FrameRounding = 2.0f;
+		style.ChildRounding = 4.0f;
+		style.WindowRounding = 6.0f;
 	}
 
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -457,10 +480,6 @@ void IMGUIApp::setColorTheme() {
 
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
-
-	style.FrameRounding = 2.0f;
-	style.ChildRounding = 4.0f;
-	style.WindowRounding = 6.0f;
 	ImGui::StyleApplySpacing();
 
 	const float mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
