@@ -369,6 +369,73 @@ TEST_F(CameraTest, testMouseRayClipControlUpperLeftZeroToOne) {
 	rs.clipDepthZeroToOne = prevDepth;
 }
 
+TEST_F(CameraTest, testSliceFrustumNearCascadesStayTight) {
+	Camera camera = setup();
+	camera.setNearPlane(0.1f);
+	camera.setFarPlane(5000.0f);
+	camera.update(0.0);
+
+	float planes[8];
+	camera.sliceFrustum(planes, 8, 4, 0.75f);
+	EXPECT_FLOAT_EQ(planes[0], 0.1f);
+	EXPECT_FLOAT_EQ(planes[7], 5000.0f);
+	EXPECT_LT(planes[1], planes[3]);
+	EXPECT_LT(planes[3], planes[5]);
+	EXPECT_LT(planes[5], planes[7]);
+	// Negative sliceWeight used to push the first split past 800 units on a 5000 far plane.
+	EXPECT_LT(planes[1], 250.0f);
+}
+
+TEST_F(CameraTest, testOrthoClipWIsNotViewDepth) {
+	Camera camera = setup();
+	camera.setMode(CameraMode::Orthogonal);
+	camera.setWorldPosition(glm::vec3(0.0f, 0.0f, 200.0f));
+	camera.lookAt(glm::vec3(0.0f), glm::up());
+	camera.update(0.0);
+
+	const glm::vec4 clip = camera.viewProjectionMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	EXPECT_NEAR(clip.w, 1.0f, 0.01f);
+	const float viewz = glm::dot(glm::vec3(0.0f) - camera.eye(), camera.forward());
+	EXPECT_GT(viewz, 1.0f);
+}
+
+TEST_F(CameraTest, testOrthoSplitFrustumUsesSliceDepth) {
+	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0.0f, 80.0f, 80.0f), glm::vec3(0.0f), glm::up());
+	camera.setMode(CameraMode::Isometric);
+	camera.setOrthoDepth(10000.0f);
+	camera.setNearPlane(0.1f);
+	camera.update(0.0);
+
+	glm::vec3 corners[math::FRUSTUM_VERTICES_MAX];
+	camera.splitFrustum(0.1f, 50.0f, corners);
+	float zmin = 1.0e9f;
+	float zmax = -1.0e9f;
+	for (uint8_t i = 0; i < math::FRUSTUM_VERTICES_MAX; ++i) {
+		const glm::vec3 view = glm::vec3(camera.viewMatrix() * glm::vec4(corners[i], 1.0f));
+		zmin = core_min(zmin, view.z);
+		zmax = core_max(zmax, view.z);
+	}
+	EXPECT_LT(zmax - zmin, 400.0f);
+}
+
+TEST_F(CameraTest, testOrthoSliceFrustumPositiveDistances) {
+	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0.0f, 80.0f, 80.0f), glm::vec3(0.0f), glm::up());
+	camera.setMode(CameraMode::Isometric);
+	camera.setOrthoDepth(10000.0f);
+	camera.setNearPlane(0.1f);
+	camera.update(0.0);
+
+	float planes[8];
+	camera.sliceFrustum(planes, 8, 4, 0.75f);
+	EXPECT_GT(planes[0], 0.0f);
+	EXPECT_LT(planes[1], 250.0f);
+	EXPECT_LT(planes[3], planes[5]);
+	EXPECT_FLOAT_EQ(planes[7], 5000.0f);
+	for (int i = 0; i < 8; ++i) {
+		EXPECT_GT(planes[i], 0.0f);
+	}
+}
+
 TEST_F(CameraTest, testBillboard) {
 	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
 	glm::vec3 right, up;

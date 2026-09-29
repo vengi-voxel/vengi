@@ -543,8 +543,10 @@ glm::ivec2 Camera::worldToScreen(const glm::mat4& matrix, const glm::vec3& world
 void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight) const {
 	core_assert_always(bufSize >= splits * 2);
 	core_assert_always(splits >= 1);
-	const float near = nearPlane();
-	const float far = farPlane();
+	// Ortho nearPlane() is clip -orthoDepth/2 (behind the camera). Cascade distances
+	// are positive view-space depth, matching shadow() viewz = dot(world - eye, forward).
+	const float near = glm::max(_nearPlane, 0.01f);
+	const float far = glm::max(farPlane(), near + 1.0f);
 	const float ratio = far / (glm::abs(near) + glm::epsilon<float>());
 #if 1
 	const int numSlices = splits * 2;
@@ -593,7 +595,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::F
 	}
 
 	const glm::mat4& transform = glm::inverse(proj * viewMatrix());
-	frustum().split(transform, out);
+	frustum().split(transform, out, clipDepthZeroToOne());
 }
 
 void Camera::updateFrustumVertices() {
@@ -652,19 +654,10 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float bottom = -halfHeight;
 	const float top = halfHeight;
 
-	float nearZ = nplane;
-	float farZ = fplane;
-
-	if (isOrthographic()) {
-		// Make depth camera-relative
-		nearZ = -_orthoDepth * 0.5f;
-		farZ =  _orthoDepth * 0.5f;
-	}
-
 	if (clipDepthZeroToOne()) {
-		return glm::orthoRH_ZO(left * zoom, right * zoom, bottom * zoom, top * zoom, nearZ, farZ);
+		return glm::orthoRH_ZO(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
 	}
-	return glm::orthoRH(left * zoom, right * zoom, bottom * zoom, top * zoom, nearZ, farZ);
+	return glm::orthoRH(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
