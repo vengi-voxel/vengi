@@ -28,6 +28,7 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 
 #include <d3d11_1.h>
 #ifdef HAVE_DXGI1_5_H
@@ -127,7 +128,6 @@ typedef struct
     int lockedTexturePositionX;
     int lockedTexturePositionY;
     const float *YCbCr_matrix;
-#ifdef SDL_HAVE_YUV
     // YV12 texture support
     bool yuv;
     ID3D11Texture2D *mainTextureU;
@@ -142,7 +142,6 @@ typedef struct
     Uint8 *pixels;
     int pitch;
     SDL_Rect locked_rect;
-#endif
 } D3D11_TextureData;
 
 // Blend mode data
@@ -266,14 +265,15 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
         return DXGI_FORMAT_R8_UNORM;
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return DXGI_FORMAT_NV12;
     case SDL_PIXELFORMAT_P010:
         return DXGI_FORMAT_P010;
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I0FL:
+    case SDL_PIXELFORMAT_I4FL:
         return DXGI_FORMAT_R16_UNORM;
     default:
         for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
@@ -1270,9 +1270,9 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, textureData->mainTexture);
 
-#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
-        texture->format == SDL_PIXELFORMAT_IYUV) {
+        texture->format == SDL_PIXELFORMAT_IYUV ||
+        texture->format == SDL_PIXELFORMAT_I0FL) {
         textureData->yuv = true;
 
         textureDesc.Width = (textureDesc.Width + 1) / 2;
@@ -1306,14 +1306,14 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_V_POINTER, textureData->mainTextureV);
 
-        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
+        const int bits_per_pixel = (texture->format == SDL_PIXELFORMAT_I0FL) ? 16 : 8;
+        textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, bits_per_pixel);
         if (!textureData->YCbCr_matrix) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
-    if (texture->format == SDL_PIXELFORMAT_P408 ||
-        texture->format == SDL_PIXELFORMAT_P416) {
-
+    if (texture->format == SDL_PIXELFORMAT_I444 ||
+        texture->format == SDL_PIXELFORMAT_I4FL) {
         textureData->yuv = true;
 
         if (!GetTextureProperty(create_props, SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER, &textureData->mainTextureU)) {
@@ -1344,7 +1344,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_V_POINTER, textureData->mainTextureV);
 
-        const int bits_per_pixel = (texture->format == SDL_PIXELFORMAT_P408) ? 8 : 16;
+        const int bits_per_pixel = (texture->format == SDL_PIXELFORMAT_I4FL) ? 16 : 8;
         textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, bits_per_pixel);
         if (!textureData->YCbCr_matrix) {
             return SDL_SetError("Unsupported YUV colorspace");
@@ -1353,24 +1353,14 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
         texture->format == SDL_PIXELFORMAT_P010) {
-        int bits_per_pixel;
-
         textureData->nv12 = true;
 
-        switch (texture->format) {
-        case SDL_PIXELFORMAT_P010:
-            bits_per_pixel = 10;
-            break;
-        default:
-            bits_per_pixel = 8;
-            break;
-        }
+        const int bits_per_pixel = (texture->format == SDL_PIXELFORMAT_P010) ? 10 : 8;
         textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, bits_per_pixel);
         if (!textureData->YCbCr_matrix) {
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
-#endif // SDL_HAVE_YUV
     SDL_zero(resourceViewDesc);
     resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, renderer->output_colorspace);
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -1384,7 +1374,6 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
     }
 
-#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
                                                        (ID3D11Resource *)textureData->mainTextureU,
@@ -1419,7 +1408,6 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
         }
     }
-#endif // SDL_HAVE_YUV
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -1453,14 +1441,12 @@ static void D3D11_DestroyTexture(SDL_Renderer *renderer,
     SAFE_RELEASE(data->mainTextureResourceView);
     SAFE_RELEASE(data->mainTextureRenderTargetView);
     SAFE_RELEASE(data->stagingTexture);
-#ifdef SDL_HAVE_YUV
     SAFE_RELEASE(data->mainTextureU);
     SAFE_RELEASE(data->mainTextureResourceViewU);
     SAFE_RELEASE(data->mainTextureV);
     SAFE_RELEASE(data->mainTextureResourceViewV);
     SAFE_RELEASE(data->mainTextureResourceViewNV);
     SDL_free(data->pixels);
-#endif
     SDL_free(data);
     texture->internal = NULL;
 }
@@ -1568,7 +1554,6 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                  const SDL_Rect *rect,
                                  const Uint8 *Yplane, int Ypitch,
@@ -1579,7 +1564,6 @@ static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const Uint8 *Yplane, int Ypitch,
                                   const Uint8 *Uplane, int Upitch,
                                   const Uint8 *Vplane, int Vpitch);
-#endif
 
 static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *srcPixels,
@@ -1592,7 +1576,6 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-#ifdef SDL_HAVE_YUV
     if (textureData->nv12) {
         int UVbpp = SDL_BYTESPERPIXEL(texture->format) * 2;
         int Ypitch = srcPitch;
@@ -1603,7 +1586,7 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return D3D11_UpdateTextureNV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch);
 
     } else if (textureData->yuv) {
-        if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+        if (texture->format == SDL_PIXELFORMAT_I444 || texture->format == SDL_PIXELFORMAT_I4FL) {
             const Uint8 *plane0 = (const Uint8 *)srcPixels;
             const Uint8 *plane1 = plane0 + rect->h * srcPitch;
             const Uint8 *plane2 = plane1 + rect->h * srcPitch;
@@ -1615,8 +1598,9 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                 return false;
             }
         } else {
-            int Ypitch = srcPitch;
-            int UVpitch = ((Ypitch + 1) / 2);
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int Ypitch = srcPitch;
+            const int UVpitch = ((Ypitch / bpp + 1) / 2) * bpp;
             const Uint8 *plane0 = (const Uint8 *)srcPixels;
             const Uint8 *plane1 = plane0 + rect->h * Ypitch;
             const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
@@ -1628,7 +1612,6 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         }
     }
-#endif
 
     if (!D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch)) {
         return false;
@@ -1636,7 +1619,6 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -1653,7 +1635,7 @@ static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch)) {
         return false;
     }
-    if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+    if (texture->format == SDL_PIXELFORMAT_I444 || texture->format == SDL_PIXELFORMAT_I4FL) {
         if (!D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Uplane, Upitch)) {
             return false;
         }
@@ -1784,7 +1766,6 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 
     return true;
 }
-#endif
 
 static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, void **pixels, int *pitch)
@@ -1798,12 +1779,15 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
     }
-#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
-            textureData->pitch = texture->w;
-            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            size_t size, calculated_calculated_pitch;
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &calculated_calculated_pitch)) {
+                return false;
+            }
+            textureData->pitch = (int)calculated_calculated_pitch;
+            textureData->pixels = (Uint8 *)SDL_malloc(size);
             if (!textureData->pixels) {
                 return false;
             }
@@ -1815,7 +1799,6 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         *pitch = textureData->pitch;
         return true;
     }
-#endif
     if (textureData->stagingTexture) {
         return SDL_SetError("texture is already locked");
     }
@@ -1875,7 +1858,6 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!textureData) {
         return;
     }
-#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->locked_rect;
         void *pixels =
@@ -1884,7 +1866,6 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         D3D11_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
         return;
     }
-#endif
     // Commit the pixel buffer's changes back to the staging texture:
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
                               (ID3D11Resource *)textureData->stagingTexture,
@@ -2216,7 +2197,7 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
-        case SDL_PIXELFORMAT_P408:
+        case SDL_PIXELFORMAT_I444:
             constants->texture_type = TEXTURETYPE_YUV;
             constants->input_type = INPUTTYPE_SRGB;
             break;
@@ -2232,7 +2213,8 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             constants->texture_type = TEXTURETYPE_NV12;
             constants->input_type = INPUTTYPE_HDR10;
             break;
-        case SDL_PIXELFORMAT_P416:
+        case SDL_PIXELFORMAT_I0FL:
+        case SDL_PIXELFORMAT_I4FL:
             constants->texture_type = TEXTURETYPE_YUV;
             constants->input_type = INPUTTYPE_HDR10;
             break;
@@ -2301,7 +2283,8 @@ static D3D11_Shader SelectShader(SDL_Renderer *renderer, const D3D11_PixelShader
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-            if (shader_constants->input_type == INPUTTYPE_HDR10 &&
+            if (shader_constants->texture_type == TEXTURETYPE_RGB &&
+                shader_constants->input_type == INPUTTYPE_HDR10 &&
                 !PQShaderScalesInput(shader_constants)) {
                 // Do a simple 1-1 copy
                 return SHADER_RGB_SIMPLE;
@@ -2590,14 +2573,12 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
         ++numShaderSamplers;
     }
 
-#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         shaderResources[numShaderResources++] = textureData->mainTextureResourceViewU;
         shaderResources[numShaderResources++] = textureData->mainTextureResourceViewV;
     } else if (textureData->nv12) {
         shaderResources[numShaderResources++] = textureData->mainTextureResourceViewNV;
     }
-#endif // SDL_HAVE_YUV
     return D3D11_SetDrawState(renderer, cmd, &constants, numShaderResources, shaderResources, numShaderSamplers, shaderSamplers, matrix);
 }
 
@@ -3011,10 +2992,8 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->DestroyPalette = D3D11_DestroyPalette;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
-#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
     renderer->UpdateTextureNV = D3D11_UpdateTextureNV;
-#endif
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetRenderTarget = D3D11_SetRenderTarget;
@@ -3075,11 +3054,12 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I444);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P416);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I0FL);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I4FL);
 
     return true;
 }

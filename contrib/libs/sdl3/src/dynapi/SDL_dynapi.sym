@@ -1303,6 +1303,19 @@ SDL3_0.0.0 {
     SDL_GetDeviceFormFactorName;
     SDL_IsUbuntuTouch;
     SDL_GetNumProperties;
+    SDL_JoystickHasSensor;
+    SDL_SetJoystickSensorEnabled;
+    SDL_JoystickSensorEnabled;
+    SDL_GetJoystickSensorDataRate;
+    SDL_GetJoystickSensorData;
+    SDL_SetRenderViewportFloat;
+    SDL_GetRenderViewportFloat;
+    SDL_SetRenderClipRectFloat;
+    SDL_GetRenderClipRectFloat;
+    SDL_GetOpenHarmonySDKVersion;
+    SDL_GetOpenHarmonyInternalStoragePath;
+    SDL_RequestOpenHarmonyPermission;
+    SDL_GetAudioDeviceProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

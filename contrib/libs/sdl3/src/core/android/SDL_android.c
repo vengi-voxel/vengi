@@ -584,7 +584,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 #ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
 #endif
+#ifndef SDL_HIDAPI_DISABLED
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
+#endif
 
     return JNI_VERSION_1_4;
 }
@@ -815,7 +817,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *en
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, handle);
+            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, NULL, handle);
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }

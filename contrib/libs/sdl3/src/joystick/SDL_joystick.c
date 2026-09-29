@@ -448,6 +448,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
     MAKE_VIDPID(0x3297, 0x1969), // Moonlander MK1 Keyboard
     MAKE_VIDPID(0x3434, 0x0121), // Keychron Q3 System Control
+    MAKE_VIDPID(0x3434, 0x0163), // Keychron Q6 System Control
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
     MAKE_VIDPID(0x3434, 0x02a0), // Keychron K10 Pro System Control
     MAKE_VIDPID(0x3434, 0x0353), // Keychron V5 System Control
@@ -618,26 +619,26 @@ static SDL_vidpid_list wheel_devices = {
 };
 
 static Uint32 initial_guitar_devices[] = {
-	MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
-	MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
-	MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
-	MAKE_VIDPID(0x1BAD, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
-	MAKE_VIDPID(0x1BAD, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
-	MAKE_VIDPID(0x0351, 0x1000), // CRKD Guitar
-	MAKE_VIDPID(0x0351, 0x2000), // CRKD Guitar
-	MAKE_VIDPID(0x0738, 0x02A6), // Mad Catz Wireless Rock Band Guitar
-	MAKE_VIDPID(0x0738, 0x02AB), // Mad Catz Wireless Precision Bass Guitar
-	MAKE_VIDPID(0x0738, 0x9806), // Mad Catz Precision Bass Guitar
-	MAKE_VIDPID(0x1430, 0x02a7), // Guitar Hero Wireless Guitar (Linux)
-	MAKE_VIDPID(0x1430, 0x0705), // Guitar Hero 5 Guitar
-	MAKE_VIDPID(0x1430, 0x070B), // Guitar Hero Live Guitar
-	MAKE_VIDPID(0x1430, 0x4734), // Guitar Hero World Tour Kiosk
-	MAKE_VIDPID(0x1430, 0x4748), // RedOctane Guitar Hero X-plorer
-	MAKE_VIDPID(0x1bad, 0x02a6), // Rock Band 2 Wireless Guitar (Linux)
-	MAKE_VIDPID(0x1bad, 0x02ab), // Rock Band Wireless Bass Guitar (Linux)
-	MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
-	MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
-	MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
+    MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
+    MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
+    MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
+    MAKE_VIDPID(0x1BAD, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
+    MAKE_VIDPID(0x1BAD, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
+    MAKE_VIDPID(0x0351, 0x1000), // CRKD Guitar
+    MAKE_VIDPID(0x0351, 0x2000), // CRKD Guitar
+    MAKE_VIDPID(0x0738, 0x02A6), // Mad Catz Wireless Rock Band Guitar
+    MAKE_VIDPID(0x0738, 0x02AB), // Mad Catz Wireless Precision Bass Guitar
+    MAKE_VIDPID(0x0738, 0x9806), // Mad Catz Precision Bass Guitar
+    MAKE_VIDPID(0x1430, 0x02a7), // Guitar Hero Wireless Guitar (Linux)
+    MAKE_VIDPID(0x1430, 0x0705), // Guitar Hero 5 Guitar
+    MAKE_VIDPID(0x1430, 0x070B), // Guitar Hero Live Guitar
+    MAKE_VIDPID(0x1430, 0x4734), // Guitar Hero World Tour Kiosk
+    MAKE_VIDPID(0x1430, 0x4748), // RedOctane Guitar Hero X-plorer
+    MAKE_VIDPID(0x1bad, 0x02a6), // Rock Band 2 Wireless Guitar (Linux)
+    MAKE_VIDPID(0x1bad, 0x02ab), // Rock Band Wireless Bass Guitar (Linux)
+    MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
+    MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
+    MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
 };
 static SDL_vidpid_list guitar_devices = {
     SDL_HINT_JOYSTICK_GUITAR_DEVICES, 0, 0, NULL,
@@ -647,17 +648,17 @@ static SDL_vidpid_list guitar_devices = {
 };
 
 static Uint32 initial_drum_devices[] = {
-	MAKE_VIDPID(0x12ba, 0x0120), // PS3 Guitar Hero Drums
-	MAKE_VIDPID(0x12ba, 0x0210), // PS3 Rock Band Drums
-	MAKE_VIDPID(0x12ba, 0x0218), // PS3 Midi Pro Adapter - Drums Mode
-	MAKE_VIDPID(0x1BAD, 0x0005), // Wii RB1 Drums (Uses PS3 protocol)
-	MAKE_VIDPID(0x1BAD, 0x3110), // Wii RB2 Drums (Uses PS3 protocol)
-	MAKE_VIDPID(0x1BAD, 0x3138), // Wii RB3 Midi Pro Adapter - Drums Mode (Uses PS3 protocol)
-	MAKE_VIDPID(0x1430, 0x02a8), // Guitar Hero Wireless Drum Kit (Linux)
-	MAKE_VIDPID(0x1430, 0x0805), // Band Hero Wireless Drum Kit
-	MAKE_VIDPID(0x1bad, 0x0003), // Harmonix Rock Band Drumkit
-	MAKE_VIDPID(0x1bad, 0x0130), // ION Drum Rocker
-	MAKE_VIDPID(0x2068, 0x0002), // Power Gig Drums
+    MAKE_VIDPID(0x12ba, 0x0120), // PS3 Guitar Hero Drums
+    MAKE_VIDPID(0x12ba, 0x0210), // PS3 Rock Band Drums
+    MAKE_VIDPID(0x12ba, 0x0218), // PS3 Midi Pro Adapter - Drums Mode
+    MAKE_VIDPID(0x1BAD, 0x0005), // Wii RB1 Drums (Uses PS3 protocol)
+    MAKE_VIDPID(0x1BAD, 0x3110), // Wii RB2 Drums (Uses PS3 protocol)
+    MAKE_VIDPID(0x1BAD, 0x3138), // Wii RB3 Midi Pro Adapter - Drums Mode (Uses PS3 protocol)
+    MAKE_VIDPID(0x1430, 0x02a8), // Guitar Hero Wireless Drum Kit (Linux)
+    MAKE_VIDPID(0x1430, 0x0805), // Band Hero Wireless Drum Kit
+    MAKE_VIDPID(0x1bad, 0x0003), // Harmonix Rock Band Drumkit
+    MAKE_VIDPID(0x1bad, 0x0130), // ION Drum Rocker
+    MAKE_VIDPID(0x2068, 0x0002), // Power Gig Drums
 };
 static SDL_vidpid_list drum_devices = {
     SDL_HINT_JOYSTICK_DRUM_DEVICES, 0, 0, NULL,
@@ -1887,6 +1888,177 @@ bool SDL_GetJoystickButton(SDL_Joystick *joystick, int button)
     SDL_UnlockJoysticks();
 
     return down;
+}
+
+static bool ErrorNoSuchSensor(void)
+{
+    return SDL_SetError("No such sensor on this device");
+}
+
+/**
+ *  Return whether a joystick has a particular sensor.
+ */
+bool SDL_JoystickHasSensor(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    bool result = false;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                result = true;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+/*
+ *  Set whether data reporting for a joystick sensor is enabled
+ */
+bool SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, bool enabled)
+{
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                if (sensor->enabled == (enabled != false)) {
+                    SDL_UnlockJoysticks();
+                    return true;
+                }
+
+                if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
+                    if (enabled) {
+                        joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
+                        if (!joystick->accel) {
+                            SDL_UnlockJoysticks();
+                            return false;
+                        }
+                    } else {
+                        if (joystick->accel) {
+                            SDL_CloseSensor(joystick->accel);
+                            joystick->accel = NULL;
+                        }
+                    }
+                } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
+                    if (enabled) {
+                        joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
+                        if (!joystick->gyro) {
+                            SDL_UnlockJoysticks();
+                            return false;
+                        }
+                    } else {
+                        if (joystick->gyro) {
+                            SDL_CloseSensor(joystick->gyro);
+                            joystick->gyro = NULL;
+                        }
+                    }
+                } else {
+                    if (enabled) {
+                        if (joystick->nsensors_enabled == 0) {
+                            if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
+                                SDL_UnlockJoysticks();
+                                return false;
+                            }
+                        }
+                        ++joystick->nsensors_enabled;
+                    } else {
+                        if (joystick->nsensors_enabled == 1) {
+                            if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
+                                SDL_UnlockJoysticks();
+                                return false;
+                            }
+                        }
+                        --joystick->nsensors_enabled;
+                    }
+                }
+
+                sensor->enabled = enabled;
+                SDL_UnlockJoysticks();
+                return true;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return ErrorNoSuchSensor();
+}
+
+/*
+ *  Query whether sensor data reporting is enabled for a joystick
+ */
+bool SDL_JoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    bool result = false;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                result = joystick->sensors[i].enabled;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+/*
+ *  Get the data rate of a joystick sensor.
+ */
+float SDL_GetJoystickSensorDataRate(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    float result = 0.0f;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, 0.0f);
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                result = sensor->rate;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+/*
+ *  Get the current state of a joystick sensor.
+ */
+bool SDL_GetJoystickSensorData(SDL_Joystick *joystick, SDL_SensorType type, float *data, int num_values)
+{
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
+                SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
+                SDL_UnlockJoysticks();
+                return true;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return ErrorNoSuchSensor();
 }
 
 /*
@@ -3380,7 +3552,7 @@ bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_FLYDIGI_V2) {
-        if (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER) {
+        if (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER || product_id == USB_PRODUCT_FLYDIGI_V2_APEX6) {
             return true;
         }
     }
