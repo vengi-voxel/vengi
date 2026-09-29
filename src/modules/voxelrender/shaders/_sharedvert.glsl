@@ -59,6 +59,20 @@ $out vec4 v_glow;
 flat $out uint v_flags;
 
 $out vec3 v_lightspacepos;
-$out float v_viewz;
+flat $out vec3 v_nm0;
+flat $out vec3 v_nm1;
+flat $out vec3 v_nm2;
 
 const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
+
+void writeNormalMatrix() {
+	mat4 m = getModelMatrix();
+	vec3 c0 = vec3(m[0][0], m[0][1], m[0][2]);
+	vec3 c1 = vec3(m[1][0], m[1][1], m[1][2]);
+	vec3 c2 = vec3(m[2][0], m[2][1], m[2][2]);
+	float det = dot(c0, cross(c1, c2));
+	float invDet = (abs(det) > 1.0e-8) ? (1.0 / det) : 1.0;
+	v_nm0 = cross(c1, c2) * invDet;
+	v_nm1 = cross(c2, c0) * invDet;
+	v_nm2 = cross(c0, c1) * invDet;
+}

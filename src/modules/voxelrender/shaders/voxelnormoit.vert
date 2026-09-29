@@ -13,7 +13,8 @@ void main(void) {
 	uint a_colorindex = a_info[1];
 	vec4 pos = getModelMatrix() * vec4(a_pos, 1.0);
 	v_pos = a_pos;
-	v_normal = a_normal;
+	writeNormalMatrix();
+	v_normal = normalize(v_nm0 * a_normal.x + v_nm1 * a_normal.y + v_nm2 * a_normal.z);
 
 	int materialColorIndex = int(a_colorindex);
 	vec4 materialColor = u_materialcolor[materialColorIndex];
@@ -47,7 +48,6 @@ void main(void) {
 	v_glow = glowColor;
 
 	v_lightspacepos = pos.xyz;
-	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 
 	gl_Position = u_viewprojection * pos;
 }

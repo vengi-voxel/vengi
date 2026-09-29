@@ -15,34 +15,37 @@ layout(std140, binding = 1) uniform u_frag {
 	int u_tonemapping;
 	int u_renderoutline;
 	int u_shadowmap;
+	vec4 u_camerapos;
+	vec4 u_cameradir;
 };
 
 layout(location = 0) $out vec4 o_color;
 layout(location = 1) $out vec4 o_glow;
 
 $in vec3 v_lightspacepos;
-$in float v_viewz;
+flat $in vec3 v_nm0;
+flat $in vec3 v_nm1;
+flat $in vec3 v_nm2;
 $constant MaxDepthBuffers 4
 
 layout(binding = 2) uniform sampler2DArrayShadow u_shadowmaptex;
 
 /**
- * perform percentage-closer shadow map lookup
- * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
+ * Hard 1-tap compare. Linear/PCF on voxel casters produces concentric acne on large planes.
  */
-float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compare) {
-	float result = 0.0;
-	float compareDepth = compare - bias;
-	const int r = 2;
-	for (int x = -r; x <= r; x++) {
-		for (int y = -r; y <= r; y++) {
-			vec2 off = vec2(x, y) / u_depthsize;
-			result += texture(u_shadowmaptex, vec4(uv + off, cascade, compareDepth));
-		}
-	}
-	const float size = 2.0 * float(r) + 1.0;
-	const float elements = size * size;
-	return result / elements;
+float sampleShadow(in float bias, in int cascade, in vec2 uv, in float compare) {
+	return texture(u_shadowmaptex, vec4(uv, cascade, compare - bias));
+}
+
+// Nearest 2x2 min. Average/Linear PCF haloed voxel planes; at cube edges a 1-tap
+// sample often hits an empty shadow texel (border=lit) and draws a bright rim.
+float sampleShadowConservative(in float bias, in int cascade, in vec2 uv, in float compare) {
+	vec2 texel = 1.0 / max(u_depthsize, vec2(1.0));
+	float s00 = sampleShadow(bias, cascade, uv, compare);
+	float s10 = sampleShadow(bias, cascade, uv + vec2(texel.x, 0.0), compare);
+	float s01 = sampleShadow(bias, cascade, uv + vec2(0.0, texel.y), compare);
+	float s11 = sampleShadow(bias, cascade, uv + texel, compare);
+	return min(min(s00, s10), min(s01, s11));
 }
 
 vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
@@ -64,45 +67,30 @@ vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
 	return uv;
 }
 
-vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in vec4 lightspacepos, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	if (u_shadowmap == 0) {
 		return color * (ambient + diffuse);
 	}
-	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
+	float viewz = dot(lightspacepos.xyz - u_camerapos.xyz, u_cameradir.xyz);
+	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
 	cascade = clamp(cascade, 0, MaxDepthBuffers - 1);
-	float cascadeNear = (cascade == 0) ? 0.0 : u_distances[cascade - 1];
-	float cascadeFar = u_distances[cascade];
-	float cascadeRange = max(cascadeFar - cascadeNear, 0.001);
 
-	vec3 normalizedLightDir = normalize(lightDir);
-	vec3 normalizedNormal = normalize(normal);
-	float NdotL = dot(normalizedNormal, normalizedLightDir);
-	float alignment = max(NdotL, 0.0);
-
-	// Calculate texel size for this cascade (approximate world space size)
-	// Higher cascades cover more area, so texels are larger in world space
-	float cascadeScale = 1.0 + float(cascade) * 0.5;
-	float texelSize = cascadeScale / u_depthsize.x;
-
-	// Normal offset bias: offset along surface normal to avoid shadow acne on slopes
-	// This is the primary technique to fix both shadow acne and peter panning
-	// The offset is proportional to the texel size and increases with surface slope
-	float normalOffsetScale = texelSize * 2.5;
-	float slopeScale = clamp(1.0 - NdotL, 0.0, 1.0);
-	vec3 normalOffset = normalizedNormal * normalOffsetScale * (1.0 + slopeScale * 3.0);
-
-	// Small constant depth bias to handle depth precision issues
-	// This should be minimal to avoid peter panning
-	float depthBias = bias * (0.5 + float(cascade) * 0.25);
-
-	// Apply normal offset to position before transforming to shadow space
-	vec3 offsetPos = lightspacepos.xyz + normalOffset;
-	vec3 uv = calculateShadowUVZ(vec4(offsetPos, 1.0), cascade);
-
-	// Additional slope-scaled depth bias for the comparison
-	// Use a smaller bias since we already applied normal offset
-	float slopeBias = depthBias * (0.1 + slopeScale * 0.4);
-	float shadow = sampleShadowPCF(slopeBias, cascade, uv.xy, uv.z);
+	vec3 uv = calculateShadowUVZ(lightspacepos, cascade);
+	const float bias = 0.0002;
+	// 2x2 min on large planes recreates the concentric PCF rings. Only use it
+	// where screen-space derivatives mix two cube faces (silhouette / crease).
+	vec3 nRaw = cross(dFdx(lightspacepos.xyz), dFdy(lightspacepos.xyz));
+	float axis = 1.0;
+	if (dot(nRaw, nRaw) > 1.0e-20) {
+		vec3 nAbs = abs(normalize(nRaw));
+		axis = max(nAbs.x, max(nAbs.y, nAbs.z));
+	}
+	float shadow;
+	if (axis > 0.92) {
+		shadow = sampleShadow(bias, cascade, uv.xy, uv.z);
+	} else {
+		shadow = sampleShadowConservative(bias, cascade, uv.xy, uv.z);
+	}
 	if (u_debug_cascade != 0) {
 		if (cascade == 0) {
 			color.r = 0.0;
@@ -128,27 +116,58 @@ vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightD
 		// shadow only rendering
 		return vec3(shadow);
 	}
-	vec3 lightvalue = ambient + (diffuse * shadow);
+	// Apply the map to all incoming light. Key-only modulation was invisible
+	// when ambient dominated (and in Unlit: diffuse is 0).
+	vec3 lightvalue = (ambient + diffuse) * mix(0.25, 1.0, shadow);
 	return color * lightvalue;
 }
 
-vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return shadow(vec4(v_lightspacepos, 1.0), bias, normal, lightDir, color, diffuse, ambient);
+vec3 shadow(vec3 color, in vec3 diffuse, in vec3 ambient) {
+	return shadow(vec4(v_lightspacepos, 1.0), color, diffuse, ambient);
 }
 
+/**
+ * Greedy cube faces are axis-aligned in model space. Screen-space dFdx mixes
+ * two faces at voxel edges, which skewed lighting. Snap to the dominant cube
+ * axis, then transform to world.
+ */
+vec3 voxelFaceNormal(vec3 n) {
+	vec3 an = abs(n);
+	if (an.x >= an.y && an.x >= an.z) {
+		return vec3(sign(n.x), 0.0, 0.0);
+	}
+	if (an.y >= an.z) {
+		return vec3(0.0, sign(n.y), 0.0);
+	}
+	return vec3(0.0, 0.0, sign(n.z));
+}
+
+vec3 cubicWorldNormal(vec3 pos) {
+	vec3 nModel = cross(dFdx(pos), dFdy(pos));
+	if (dot(nModel, nModel) < 1.0e-20) {
+		vec3 nWorld = cross(dFdx(v_lightspacepos), dFdy(v_lightspacepos));
+		if (dot(nWorld, nWorld) < 1.0e-20) {
+			return vec3(0.0, 1.0, 0.0);
+		}
+		return voxelFaceNormal(nWorld);
+	}
+	vec3 nFace = voxelFaceNormal(nModel);
+	return normalize(v_nm0 * nFace.x + v_nm1 * nFace.y + v_nm2 * nFace.z);
+}
+
+// One sun (key) is shadowed. Back faces get fill + sky, not a fake opposite sun.
 vec3 shadeLit(in vec3 normal, in vec3 color) {
-	float ndotl1 = dot(normal, u_lightdir);
-	float ndotl2 = dot(normal, -u_lightdir);
-	bool usePrimaryLight = ndotl1 >= ndotl2;
-	vec3 lightDir = usePrimaryLight ? u_lightdir : -u_lightdir;
-	float ndotl = max(ndotl1, ndotl2);
-	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
-	// Base bias for shadow mapping - kept small since normal offset is the primary technique
-	// The bias is increased slightly for surfaces facing away from the light
-	float slopeFactor = 1.0 - ndotl;
-	float bias = 0.0005 + 0.001 * slopeFactor;
-	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
-	return shadowColor;
+	vec3 n = normalize(normal);
+	vec3 sun = normalize(u_lightdir);
+	float key = max(dot(n, sun), 0.0);
+	vec3 fillDir = normalize(-sun + vec3(0.0, 0.35, 0.0));
+	float fill = max(dot(n, fillDir), 0.0);
+	float sky = 0.5 + 0.5 * n.y;
+	float lit = step(1.0e-5, dot(u_diffuse_color, u_diffuse_color));
+	vec3 ambient = u_ambient_color * mix(1.0, mix(0.70, 1.0, sky), lit);
+	vec3 keyDiffuse = u_diffuse_color * key;
+	vec3 fillDiffuse = u_diffuse_color * fill * 0.35 * lit;
+	return shadow(color, keyDiffuse, ambient + fillDiffuse);
 }
 
 // https://thebookofshaders.com

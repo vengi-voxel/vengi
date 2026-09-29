@@ -14,6 +14,7 @@ void main(void) {
 	uint a_normalindex = a_info2[0];
 	vec4 pos = getModelMatrix() * vec4(a_pos, 1.0);
 	v_pos = a_pos;
+	writeNormalMatrix();
 
 	int materialColorIndex = int(a_colorindex);
 	vec4 materialColor = u_materialcolor[materialColorIndex];
@@ -21,7 +22,7 @@ void main(void) {
 
 	int normalIndex = int(a_normalindex);
 	vec4 normal = u_normals[normalIndex];
-	v_normal = normal.xyz;
+	v_normal = (normalIndex > 0) ? normalize(v_nm0 * normal.x + v_nm1 * normal.y + v_nm2 * normal.z) : normal.xyz;
 	v_flags = 0u;
 
 	if (u_vert_renderoutline != 0) {
@@ -63,7 +64,6 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 
 	v_lightspacepos = pos.xyz;
-	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 
 	gl_Position = u_viewprojection * pos;
 }

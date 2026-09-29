@@ -1340,6 +1340,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 		}
 		_voxelShaderFragData.lightdir = _shadow.sunDirection();
+		_voxelShaderFragData.camerapos = glm::vec4(camera.eye(), 0.0f);
+		_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), 0.0f);
 		{
 			float t[4];
 			_selectionTint->vec4Val(t);

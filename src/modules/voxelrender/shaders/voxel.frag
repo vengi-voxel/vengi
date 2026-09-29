@@ -13,11 +13,7 @@ vec4 calcColor(void) {
 	if ((v_flags & FLAGHASNORMALPALETTECOLOR) != 0u) {
 		normal = v_normal;
 	} else {
-		vec3 fdx = dFdx(v_pos);
-		vec3 fdy = dFdy(v_pos);
-		// http://www.aclockworkberry.com/shader-derivative-functions/
-		// face normal (flat shading)
-		normal = normalize(cross(fdx, fdy));
+		normal = cubicWorldNormal(v_pos);
 	}
 	vec3 shadowColor = shadeLit(normal, v_color.rgb);
 	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
