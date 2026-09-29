@@ -68,6 +68,7 @@ FrameBufferConfig& FrameBufferConfig::samples(int samples) {
 FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers) {
 	TextureConfig cfg;
 	cfg.format(TextureFormat::D32F).type(TextureType::Texture2DArray);
+	cfg.filter(TextureFilter::Nearest);
 	cfg.compareFunc(CompareFunc::Less).compareMode(TextureCompareMode::RefToTexture).layers(maxDepthBuffers);
 	// coordinates outside the depth buffer will result in no shadow
 	cfg.borderColor(glm::vec4(1.0f));
