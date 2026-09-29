@@ -81,10 +81,12 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.frameBuffer.bind(true);
-	volumeRenderer.render(meshState, renderContext, camera, true);
+	volumeRenderer.render(meshState, renderContext, camera, true, true);
+	renderContext.resolveMultisampling();
+	renderContext.applyBloom();
 	renderContext.frameBuffer.unbind();
-
-	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
+	video::FrameBuffer &display = renderContext.enableMultisampling ? renderContext.resolveFrameBuffer : renderContext.frameBuffer;
+	return display.image("thumbnail", video::FrameBufferAttachment::Color0);
 }
 
 image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
