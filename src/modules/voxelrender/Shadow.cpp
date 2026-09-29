@@ -3,21 +3,16 @@
  */
 
 #include "Shadow.h"
+#include "math/Frustum.h"
 #include "video/Camera.h"
 #include "core/GLM.h"
 #include "video/Trace.h"
 #include "core/Var.h"
-#include "core/collection/Array.h"
-#include "video/Renderer.h"
 #include "core/Log.h"
+#include "video/Renderer.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/constants.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
 
 namespace voxelrender {
 
@@ -51,62 +46,60 @@ void Shadow::shutdown() {
 	_parameters = ShadowParameters();
 }
 
-static inline float getBoundingSphereRadius(const glm::vec3& center, const core::Array<glm::vec3, 8>& points) {
-	float radius = 0.0f;
-	for (size_t i = 0; i < points.size(); ++i) {
-		const glm::vec3& p = points[i];
-		radius = core_max(radius, glm::distance2(center, p));
+namespace {
+
+void lightSpaceAABB(const glm::mat4 &lightView, const glm::vec3 *worldPts, int n, glm::vec3 &mins, glm::vec3 &maxs) {
+	mins = glm::vec3(1.0e8f);
+	maxs = glm::vec3(-1.0e8f);
+	for (int i = 0; i < n; ++i) {
+		const glm::vec3 lp(lightView * glm::vec4(worldPts[i], 1.0f));
+		mins = glm::min(mins, lp);
+		maxs = glm::max(maxs, lp);
 	}
-	return glm::sqrt(radius);
 }
 
-glm::vec4 Shadow::splitFrustumSphereBoundingBox(const video::Camera& camera, float near, float far) const {
-	const glm::mat4& projection = camera.projectionMatrix();
-	const glm::mat4& inverseProjection = camera.inverseProjectionMatrix();
+void worldAABBToLightSpace(const glm::mat4 &lightView, const glm::vec3 &wmins, const glm::vec3 &wmaxs, glm::vec3 &mins,
+						   glm::vec3 &maxs) {
+	glm::vec3 pts[8];
+	for (int i = 0; i < 8; ++i) {
+		pts[i] = glm::vec3((i & 1) ? wmaxs.x : wmins.x, (i & 2) ? wmaxs.y : wmins.y, (i & 4) ? wmaxs.z : wmins.z);
+	}
+	lightSpaceAABB(lightView, pts, 8, mins, maxs);
+}
 
-	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
-	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
+glm::mat4 lightOrtho(const glm::mat4 &lightView, const glm::vec3 &lightMins, const glm::vec3 &lightMaxs,
+					 const glm::ivec2 &dim) {
+	glm::vec3 center = (lightMins + lightMaxs) * 0.5f;
+	const glm::vec3 extent = (lightMaxs - lightMins) * 0.5f;
+	float radius = core_max(extent.x, extent.y);
+	radius = core_max(radius, 8.0f);
+	radius += 2.0f;
 
-	core::Array<glm::vec3, 8> points;
-
-	int idx = 0;
-	for (int x = 0; x < 2; ++x) {
-		for (int y = 0; y < 2; ++y) {
-			for (int z = 0; z < 2; ++z) {
-				const glm::vec3 v(x ? 1 : -1, y ? 1 : -1, z ? zfarp : znearp);
-				const glm::vec3& p = glm::project(inverseProjection, v);
-				points[idx++] = p;
-			}
+	if (dim.x > 0 && dim.y > 0) {
+		const float xRound = radius * 2.0f / (float)dim.x;
+		const float yRound = radius * 2.0f / (float)dim.y;
+		if (xRound > 0.0f && yRound > 0.0f) {
+			center.x = glm::round(center.x / xRound) * xRound;
+			center.y = glm::round(center.y / yRound) * yRound;
 		}
 	}
 
-	const glm::vec3& begin = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, znearp));
-	const glm::vec3& end = glm::project(inverseProjection, glm::vec3(0.0f, 0.0f, zfarp));
-	float radiusBegin = getBoundingSphereRadius(begin, points);
-	float radiusEnd = getBoundingSphereRadius(end, points);
-
-	float rangeBegin = 0.0f;
-	float rangeEnd = 1.0f;
-
-	while (rangeEnd - rangeBegin > 1e-3) {
-		const float rangeMiddle = (rangeBegin + rangeEnd) / 2.0f;
-		const float radiusMiddle = getBoundingSphereRadius(glm::mix(begin, end, rangeMiddle), points);
-
-		if (radiusBegin < radiusEnd) {
-			radiusEnd = radiusMiddle;
-			rangeEnd = rangeMiddle;
-		} else {
-			radiusBegin = radiusMiddle;
-			rangeBegin = rangeMiddle;
-		}
+	const float zPad = core_max(32.0f, core_max(extent.z, radius) * 0.25f);
+	float zNear = -lightMaxs.z - zPad;
+	float zFar = -lightMins.z + 16.0f;
+	if (zFar < zNear + 1.0f) {
+		zFar = zNear + 1.0f;
 	}
-
-	return glm::vec4(glm::mix(begin, end, rangeBegin), radiusBegin);
+	const glm::mat4 lightProjection = video::clipDepthZeroToOne()
+		? glm::orthoRH_ZO(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar)
+		: glm::ortho(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar);
+	return lightProjection * lightView;
 }
 
-void Shadow::update(const video::Camera& camera, bool active) {
+} // namespace
+
+void Shadow::update(const video::Camera& camera, bool active, const glm::vec3& sceneMins, const glm::vec3& sceneMaxs) {
 	core_trace_scoped(ShadowCalculate);
-	_shadowRangeZ = camera.farPlane() * 3.0f;
 
 	if (!active) {
 		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
@@ -116,33 +109,34 @@ void Shadow::update(const video::Camera& camera, bool active) {
 		return;
 	}
 
-	const glm::vec2 &dim = dimension();
+	const bool hasScene = sceneMins.x < sceneMaxs.x && sceneMins.y < sceneMaxs.y && sceneMins.z < sceneMaxs.z;
+	const glm::ivec2 &dim = dimension();
 	float planes[shader::VoxelShaderConstants::getMaxDepthBuffers() * 2];
 	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
-	const glm::mat4 &inverseView = camera.inverseViewMatrix();
-	const glm::mat4 &inverseLightView = _lightView * inverseView;
+
+	if (hasScene) {
+		// Voxel scenes are small. Fit every cascade to the volumes, not to a camera
+		// slice that may sit in empty space in front of an isometric camera.
+		glm::vec3 sceneLightMins;
+		glm::vec3 sceneLightMaxs;
+		worldAABBToLightSpace(_lightView, sceneMins, sceneMaxs, sceneLightMins, sceneLightMaxs);
+		const glm::mat4 cascade = lightOrtho(_lightView, sceneLightMins, sceneLightMaxs, dim);
+		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
+			_cascades[i] = cascade;
+			_distances[i] = planes[i * 2 + 1];
+		}
+		return;
+	}
 
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
 		const float far = planes[i * 2 + 1];
-		const glm::vec4 &sphere = splitFrustumSphereBoundingBox(camera, near, far);
-		const glm::vec3 lightCenter(inverseLightView * glm::vec4(sphere.x, sphere.y, sphere.z, 1.0f));
-		const float lightRadius = sphere.w;
-
-		// round to prevent movement
-		const float xRound = lightRadius * 2.0f / dim.x;
-		const float yRound = lightRadius * 2.0f / dim.y;
-		const float zRound = 1.0f;
-		const glm::vec3 round(xRound, yRound, zRound);
-		const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
-		const glm::mat4 lightProjection = video::clipDepthZeroToOne()
-			? glm::orthoRH_ZO(lightCenterRounded.x - lightRadius, lightCenterRounded.x + lightRadius,
-							  lightCenterRounded.y - lightRadius, lightCenterRounded.y + lightRadius,
-							  -lightCenterRounded.z - (_shadowRangeZ - lightRadius), -lightCenterRounded.z + lightRadius)
-			: glm::ortho(lightCenterRounded.x - lightRadius, lightCenterRounded.x + lightRadius,
-						 lightCenterRounded.y - lightRadius, lightCenterRounded.y + lightRadius,
-						 -lightCenterRounded.z - (_shadowRangeZ - lightRadius), -lightCenterRounded.z + lightRadius);
-		_cascades[i] = lightProjection * _lightView;
+		glm::vec3 corners[math::FRUSTUM_VERTICES_MAX];
+		camera.splitFrustum(near, far, corners);
+		glm::vec3 lightMins;
+		glm::vec3 lightMaxs;
+		lightSpaceAABB(_lightView, corners, math::FRUSTUM_VERTICES_MAX, lightMins, lightMaxs);
+		_cascades[i] = lightOrtho(_lightView, lightMins, lightMaxs, dim);
 		_distances[i] = far;
 	}
 }
@@ -156,16 +150,13 @@ bool Shadow::bind(video::TextureUnit unit) {
 void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video_trace_scoped(ShadowRender);
 	const bool oldBlend = video::disable(video::State::Blend);
-	// Enable front face culling to reduce shadow acne (render back faces into shadow map)
+	// Greedy voxel meshes are single-sided. Front-face culling wrote only the
+	// sides away from the sun, so casters self-shadowed and cast a back-face hull.
 	video::enable(video::State::CullFace);
-	video::cullFace(video::Face::Front);
+	video::cullFace(video::Face::Back);
 
-	// Enable polygon offset to help with depth precision issues
-	// This provides a hardware-assisted constant and slope-scaled depth bias
 	video::enable(video::State::PolygonOffsetFill);
-	// factor: slope-scaled bias (helps with surfaces at angles)
-	// units: constant bias (helps with depth buffer precision)
-	video::polygonOffset(glm::vec2(1.1f, 4.0f));
+	video::polygonOffset(glm::vec2(1.0f, 2.0f));
 
 	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
@@ -198,7 +189,6 @@ void Shadow::setPosition(const glm::vec3& eye, const glm::vec3& center, const gl
 
 void Shadow::setLightViewMatrix(const glm::mat4& lightView) {
 	_lightView = lightView;
-	//_sunDirection = normalize(center - sunPos);
 	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 }
 

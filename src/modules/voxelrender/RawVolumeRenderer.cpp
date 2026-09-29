@@ -39,6 +39,7 @@
 #include <glm/gtc/epsilon.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <glm/common.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -1236,7 +1237,26 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	_submitFrameIdx = prepareIdx;
 
 	if (_shadowMap->boolVal()) {
-		_shadow.update(camera, true);
+		glm::vec3 sceneMins(1.0e8f);
+		glm::vec3 sceneMaxs(-1.0e8f);
+		bool hasScene = false;
+		for (int idx : activeForRender) {
+			if (meshState->hidden(idx)) {
+				continue;
+			}
+			const int bufferIndex = meshState->resolveIdx(idx);
+			if (_state[bufferIndex]._empty) {
+				continue;
+			}
+			sceneMins = glm::min(sceneMins, meshState->mins(idx));
+			sceneMaxs = glm::max(sceneMaxs, meshState->maxs(idx));
+			hasScene = true;
+		}
+		if (hasScene) {
+			_shadow.update(camera, true, sceneMins, sceneMaxs);
+		} else {
+			_shadow.update(camera, true);
+		}
 	}
 
 	RenderFrame &frame = _renderFrames[_submitFrameIdx];

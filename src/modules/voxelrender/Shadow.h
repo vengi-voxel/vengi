@@ -30,8 +30,8 @@ struct ShadowParameters {
 	 */
 	int maxDepthBuffers = -1;
 
-	/** Used to slice the camera frustum */
-	float sliceWeight = -0.3f;
+	/** Used to slice the camera frustum. 0 = linear, 1 = logarithmic (tighter near cascades). */
+	float sliceWeight = 0.75f;
 };
 
 /**
@@ -49,9 +49,6 @@ private:
 	Distances _distances;
 	video::FrameBuffer _depthBuffer;
 	ShadowParameters _parameters;
-	float _shadowRangeZ = 0.0f;
-
-	glm::vec4 splitFrustumSphereBoundingBox(const video::Camera& camera, float near, float far) const;
 
 public:
 	~Shadow();
@@ -61,7 +58,8 @@ public:
 
 	typedef core::Function<bool(int, const glm::mat4& viewProjection)> funcRender;
 
-	void update(const video::Camera& camera, bool active);
+	void update(const video::Camera& camera, bool active, const glm::vec3& sceneMins = glm::vec3(0.0f),
+				const glm::vec3& sceneMaxs = glm::vec3(0.0f));
 
 	bool bind(video::TextureUnit unit);
 
