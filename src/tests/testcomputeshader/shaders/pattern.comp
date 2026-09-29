@@ -1,5 +1,7 @@
+#ifndef VULKAN
 #extension GL_ARB_shader_image_size : enable
 #extension GL_ARB_shader_image_load_store : enable
+#endif
 
 layout (local_size_x = 8, local_size_y = 8) in;
 layout (rgba32f, binding = 0) $writeonly uniform image2D img_output;

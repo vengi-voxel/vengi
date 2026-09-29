@@ -95,6 +95,11 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 		core::string::splitString(source, lines, "\n");
 		for (const core::String &line : lines) {
 			core::String trimmed = core::string::trim(line);
+			// OpenGL ARB extensions are not valid in Vulkan GLSL.
+			if (core::string::startsWith(_spirvEnv, "vulkan") &&
+				core::string::contains(trimmed, "#extension GL_ARB_")) {
+				continue;
+			}
 			// Strip interpolation qualifiers for detection
 			core::String check = trimmed;
 			if (core::string::startsWith(check, "flat ")) {
@@ -146,6 +151,19 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 				processed += line;
 				processed += "\n";
 			}
+		}
+	}
+
+	// OpenGL clip Z is [-w, w]; Vulkan is [0, w]. Without this remap, near-side
+	// triangles are clipped and meshes look inside-out (false face-culling).
+	if (shaderType == ".vert" && core::string::startsWith(_spirvEnv, "vulkan")) {
+		const size_t mainPos = processed.find("void main");
+		if (mainPos != core::String::npos) {
+			processed = processed.substr(0, mainPos) + "void _vengi_orig_main" + processed.substr(mainPos + 9);
+			processed += "\nvoid main() {\n";
+			processed += "\t_vengi_orig_main();\n";
+			processed += "\tgl_Position.z = (gl_Position.z + gl_Position.w) * 0.5;\n";
+			processed += "}\n";
 		}
 	}
 

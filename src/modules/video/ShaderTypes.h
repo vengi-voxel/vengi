@@ -20,12 +20,24 @@ typedef core::DynamicStringMap<int> ShaderAttributes;
 struct ShaderResourceBinding {
 	enum Type : uint8_t {
 		UniformBuffer = 1,
-		CombinedImageSampler = 2
+		CombinedImageSampler = 2,
+		StorageImage = 3
 	};
 	const char *name;
 	uint8_t binding;
 	Type type;
 	uint8_t stageFlags; // 1=vertex, 2=fragment, 4=geometry, 8=compute
+};
+
+/**
+ * Maps a slice of a uniform buffer into the program push-constant block.
+ * Used by Vulkan to keep large UBOs stable across draws while updating only
+ * per-draw fields via vkCmdPushConstants (see _sharedvert.glsl DrawPush).
+ */
+struct UniformPushOverlayField {
+	uint32_t uboOffset = 0u;
+	uint32_t size = 0u;
+	uint32_t pushOffset = 0u;
 };
 
 }
