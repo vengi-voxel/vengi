@@ -129,6 +129,19 @@ void StyleColorsNeoSequencer() {
 	neoStyle.Colors[ImGuiNeoSequencerCol_Selection] = style.Colors[ImGuiCol_FrameBgActive];
 }
 
+void StyleApplySpacing() {
+	ImGuiStyle &style = ImGui::GetStyle();
+	// Dear ImGui defaults are WindowPadding (8,8), FramePadding (4,3),
+	// ItemSpacing (8,4), ItemInnerSpacing (4,4), CellPadding (4,2).
+	style.WindowPadding = ImVec2(10.0f, 10.0f);
+	style.FramePadding = ImVec2(6.0f, 5.0f);
+	style.ItemSpacing = ImVec2(10.0f, 6.0f);
+	style.ItemInnerSpacing = ImVec2(6.0f, 5.0f);
+	style.CellPadding = ImVec2(6.0f, 4.0f);
+	style.IndentSpacing = 24.0f;
+	style.SeparatorTextPadding = ImVec2(20.0f, 5.0f);
+}
+
 void StyleImGuizmo() {
 	ImGuizmo::Style &guizmoStyle = ImGuizmo::GetStyle();
 	const ImGuiStyle &style = ImGui::GetStyle();

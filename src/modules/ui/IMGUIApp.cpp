@@ -461,6 +461,7 @@ void IMGUIApp::setColorTheme() {
 	style.FrameRounding = 2.0f;
 	style.ChildRounding = 4.0f;
 	style.WindowRounding = 6.0f;
+	ImGui::StyleApplySpacing();
 
 	const float mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
 	style.ScaleAllSizes(mainScale);

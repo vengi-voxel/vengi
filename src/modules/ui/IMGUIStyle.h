@@ -26,5 +26,11 @@ const char *GetStyleName(int style);
 void StyleColorsCorporateGrey();
 void StyleColorsNeoSequencer();
 void StyleImGuizmo();
+/**
+ * @brief Slightly increase default Dear ImGui padding and item spacing so
+ * widgets and panels have more breathing room. Call after resetting the style
+ * and applying a color theme, and before ScaleAllSizes().
+ */
+void StyleApplySpacing();
 
 }
