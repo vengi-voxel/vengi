@@ -78,7 +78,10 @@ TEST_F(SceneRendererTest, testClearCancelsPendingRegionExtractions) {
 	_sceneRenderer.updateNodeRegion(core::UUID::generate(), region);
 	_sceneRenderer.updateNodeRegion(core::UUID::generate(), region);
 	_sceneRenderer.clear();
+	EXPECT_EQ(0, _sceneRenderer.rendererStats().pendingExtractions);
+	EXPECT_EQ(0, _sceneRenderer.rendererStats().mappedNodes);
 	_sceneRenderer.update();
+	EXPECT_EQ(0, _sceneRenderer.rendererStats().pendingExtractions);
 }
 
 } // namespace voxedit

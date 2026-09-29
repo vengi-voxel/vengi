@@ -613,6 +613,16 @@ int RawVolumeRenderer::culledVolumeCount() const {
 	return culledCount;
 }
 
+uint32_t RawVolumeRenderer::indexCount(int idx, voxel::MeshType type) const {
+	if (idx < 0 || idx >= (int)_state.size()) {
+		return 0u;
+	}
+	if (type < voxel::MeshType_Opaque || type >= voxel::MeshType_Max) {
+		return 0u;
+	}
+	return _state[idx].indices(type);
+}
+
 voxel::RawVolume *RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &meshState, int idx) {
 	return setVolume(meshState, idx, nullptr, nullptr, nullptr, true);
 }
@@ -641,6 +651,9 @@ void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
 	}
 	meshState->resetReferences();
 	meshState->clearMeshes();
+	for (int i = 0; i < (int)_state.size(); ++i) {
+		deleteMeshes(i);
+	}
 }
 
 void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int idx) {

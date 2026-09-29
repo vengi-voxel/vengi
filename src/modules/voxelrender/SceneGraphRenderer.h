@@ -49,6 +49,7 @@ protected:
 	core::Buffer<VisibleNode> _visibleNodesScratch;
 
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
+	void releaseMissingNodes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
 	voxel::Region _sliceRegion = voxel::Region::InvalidRegion;
@@ -129,6 +130,8 @@ public:
 	inline int getOrAssignVolumeIdx(const scenegraph::SceneGraphNode &node) {
 		return getOrAssignVolumeIdx(node.uuid());
 	}
+
+	uint32_t indexCount(const core::UUID &uuid, voxel::MeshType type) const;
 };
 
 } // namespace voxelrender

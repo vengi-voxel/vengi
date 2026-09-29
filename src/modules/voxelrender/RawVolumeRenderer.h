@@ -202,6 +202,8 @@ public:
 	void setDiffuseColor(const glm::vec3 &color);
 	void setSunAngle(const glm::vec3 &angle);
 
+	uint32_t indexCount(int idx, voxel::MeshType type) const;
+
 	void construct();
 
 	/**

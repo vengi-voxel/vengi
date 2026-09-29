@@ -102,6 +102,44 @@ TEST_F(SceneGraphRendererTest, testNodeRemoveWithoutVolumeIsSafe) {
 	_renderer.nodeRemove(_meshState, uuid);
 }
 
+TEST_F(SceneGraphRendererTest, testPrepareDropsNodesMissingFromSceneGraph) {
+	scenegraph::SceneGraph sceneA;
+	{
+		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+		model.setName("a");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		model.setVolume(v);
+		ASSERT_NE(InvalidNodeId, sceneA.emplace(core::move(model)));
+	}
+	sceneA.updateTransforms();
+
+	RenderContext ctxA;
+	ctxA.sceneGraph = &sceneA;
+	ctxA.renderMode = RenderMode::Scene;
+	_renderer.prepare(_meshState, ctxA);
+	const core::UUID uuidA = sceneA.firstModelNode()->uuid();
+	EXPECT_GE(_renderer.getVolumeIdx(uuidA), 0);
+
+	scenegraph::SceneGraph sceneB;
+	{
+		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+		model.setName("b");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		model.setVolume(v);
+		ASSERT_NE(InvalidNodeId, sceneB.emplace(core::move(model)));
+	}
+	sceneB.updateTransforms();
+
+	RenderContext ctxB;
+	ctxB.sceneGraph = &sceneB;
+	ctxB.renderMode = RenderMode::Scene;
+	_renderer.prepare(_meshState, ctxB);
+	EXPECT_EQ(-1, _renderer.getVolumeIdx(uuidA)) << "uuid volume slots from the old scene must not survive prepare";
+	EXPECT_GE(_renderer.getVolumeIdx(sceneB.firstModelNode()->uuid()), 0);
+}
+
 TEST_F(SceneGraphRendererTest, testClearResetsUuidMapping) {
 	const core::UUID uuid = core::UUID::generate();
 	EXPECT_GE(_renderer.getOrAssignVolumeIdx(uuid), 0);
@@ -238,6 +276,69 @@ TEST_F(SceneGraphRendererTest, testClearAfterRenderDropsVolumesSafely) {
 	// before the scene graph frees the volumes.
 	_renderer.clear(_meshState);
 	sceneGraph.clear();
+	renderContext.shutdown();
+}
+
+TEST_F(SceneGraphRendererTest, testNewOpaqueSceneDropsPreviousTransparencyMesh) {
+	scenegraph::SceneGraph glassScene;
+	{
+		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+		model.setName("glass");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+		palette::Palette pal;
+		pal.nippon();
+		pal.setColor(2, color::RGBA(40, 80, 200, 128));
+		pal.setMaterialType(2, palette::MaterialType::Glass);
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		for (int x = 0; x < 8; ++x) {
+			for (int z = 0; z < 8; ++z) {
+				v->setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+			}
+		}
+		model.setVolume(v);
+		model.setPalette(pal);
+		ASSERT_NE(InvalidNodeId, glassScene.emplace(core::move(model)));
+	}
+	glassScene.updateTransforms();
+	const core::UUID glassUuid = glassScene.firstModelNode()->uuid();
+
+	RenderContext renderContext;
+	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	renderContext.renderMode = RenderMode::Scene;
+	renderContext.enableBloom = false;
+
+	video::Camera camera;
+	camera.setSize(glm::ivec2(64, 64));
+	configureCamera(camera, glassScene.sceneRegion(), SceneCameraMode::Top, 500.0f);
+	camera.update(0.0);
+
+	renderContext.sceneGraph = &glassScene;
+	renderContext.frameBuffer.bind(true);
+	_renderer.render(_meshState, renderContext, camera, false, true);
+	EXPECT_GT(_renderer.indexCount(glassUuid, voxel::MeshType_Transparency), 0u);
+
+	scenegraph::SceneGraph opaqueScene;
+	{
+		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+		model.setName("opaque");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		model.setVolume(v);
+		ASSERT_NE(InvalidNodeId, opaqueScene.emplace(core::move(model)));
+	}
+	opaqueScene.updateTransforms();
+	const core::UUID opaqueUuid = opaqueScene.firstModelNode()->uuid();
+
+	renderContext.sceneGraph = &opaqueScene;
+	renderContext.frameBuffer.bind(true);
+	_renderer.render(_meshState, renderContext, camera, false, true);
+	renderContext.frameBuffer.unbind();
+
+	EXPECT_EQ(-1, _renderer.getVolumeIdx(glassUuid));
+	EXPECT_EQ(0u, _renderer.indexCount(glassUuid, voxel::MeshType_Transparency));
+	EXPECT_EQ(0u, _renderer.indexCount(opaqueUuid, voxel::MeshType_Transparency));
+	EXPECT_GT(_renderer.indexCount(opaqueUuid, voxel::MeshType_Opaque), 0u);
+
 	renderContext.shutdown();
 }
 

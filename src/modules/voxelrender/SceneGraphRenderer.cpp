@@ -6,6 +6,7 @@
 #include "app/ForParallel.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
 #include "math/Math.h"
 #include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraph.h"
@@ -128,6 +129,23 @@ void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, const 
 	// ignore the return value because the volume is owned by the node
 	(void)_volumeRenderer.resetVolume(meshState, idx);
 	freeVolumeIdx(uuid);
+}
+
+void SceneGraphRenderer::releaseMissingNodes(const voxel::MeshStatePtr &meshState,
+											 const scenegraph::SceneGraph &sceneGraph) {
+	core::DynamicArray<core::UUID> stale;
+	for (auto e : _uuidToVolumeIdx) {
+		if (sceneGraph.findNodeByUUID(e->key) == nullptr) {
+			stale.push_back(e->key);
+		}
+	}
+	for (const core::UUID &uuid : stale) {
+		nodeRemove(meshState, uuid);
+	}
+}
+
+uint32_t SceneGraphRenderer::indexCount(const core::UUID &uuid, voxel::MeshType type) const {
+	return _volumeRenderer.indexCount(getVolumeIdx(uuid), type);
 }
 
 bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, const core::UUID &uuid, bool hideEmpty) const {
@@ -378,6 +396,7 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
+	releaseMissingNodes(meshState, *renderContext.sceneGraph);
 	prepareCameraNodes(renderContext);
 	prepareModelNodes(meshState, renderContext);
 	prepareReferenceNodes(meshState, renderContext);
