@@ -1108,6 +1108,11 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	video_trace_scoped(ReadTexture);
+	if (type == TextureType::Texture2DMultisample || type == TextureType::Texture2DMultisampleArray) {
+		Log::error("readTexture: cannot read a multisample texture; resolve to a non-MSAA target first");
+		*pixels = nullptr;
+		return false;
+	}
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
 	*pixels = (uint8_t *)core_malloc(h * pitch);
