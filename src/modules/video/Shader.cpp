@@ -389,7 +389,10 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src.append("precision highp samplerCube;\n");
 		src.append("precision highp sampler2D;\n");
 		src.append("precision highp sampler3D;\n");
+		src.append("precision highp usampler2D;\n");
+		src.append("precision highp usampler3D;\n");
 		src.append("precision highp sampler2DArray;\n");
+		src.append("precision highp usampler2DArray;\n");
 		src.append("precision highp sampler2DArrayShadow;\n");
 	}
 

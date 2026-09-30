@@ -19,7 +19,7 @@ private:
 	SamplerConfig _samplerConfig;
 	TextureType _type = TextureType::Texture2D;
 	TextureFormat _format = TextureFormat::RGBA;
-	uint8_t _layers = 1u;
+	int _layers = 1;
 	uint8_t _alignment = 1u;
 	int _samples = 0;
 
@@ -43,7 +43,7 @@ public:
 	 * @param[in] layers The amount of layers for the given texture.
 	 * @see TextureType
 	 */
-	TextureConfig &layers(uint8_t layers);
+	TextureConfig &layers(int layers);
 	/**
 	 * @param[in] alignment A value of 0 doesn't change the default.
 	 * Valid values are @c 0, @c 1, @c 2, @c 4 and @c 8.
@@ -62,7 +62,7 @@ public:
 	int samples() const;
 	float maxAnisotropy() const;
 	float lodBias() const;
-	uint8_t layers() const;
+	int layers() const;
 	uint8_t alignment() const;
 	CompareFunc compareFunc() const;
 	TextureCompareMode compareMode() const;
@@ -122,7 +122,7 @@ inline TextureCompareMode TextureConfig::compareMode() const {
 	return _samplerConfig.compareMode;
 }
 
-inline uint8_t TextureConfig::layers() const {
+inline int TextureConfig::layers() const {
 	return _layers;
 }
 

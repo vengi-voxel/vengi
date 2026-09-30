@@ -422,9 +422,15 @@ enum class TextureFormat {
 	S8,
 
 	RG16U,
+	R16U,
+	R8U,
 
 	Max
 };
+
+inline bool isIntegerTextureFormat(TextureFormat format) {
+	return format == TextureFormat::RG16U || format == TextureFormat::R16U || format == TextureFormat::R8U;
+}
 
 enum class Spec {
 	UniformBufferAlignment,

@@ -62,4 +62,18 @@ TEST_F(ShaderTest, testGetSourceDesktopKeepsNoperspective) {
 	EXPECT_FALSE(core::string::contains(out, " es\n")) << out.c_str();
 }
 
+TEST_F(ShaderTest, testGetSourceEsslIntegerSamplerPrecision) {
+	const bool savedEssl = Shader::essl;
+	const int savedVersion = Shader::glslVersion;
+	Shader::essl = true;
+	Shader::glslVersion = 300;
+	Shader s;
+	const core::String out = s.getSource(ShaderType::Fragment, "void main() {}\n", true);
+	Shader::essl = savedEssl;
+	Shader::glslVersion = savedVersion;
+	EXPECT_TRUE(core::string::contains(out, "precision highp usampler2D;")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "precision highp usampler3D;")) << out.c_str();
+	EXPECT_TRUE(core::string::contains(out, "precision highp usampler2DArray;")) << out.c_str();
+}
+
 }

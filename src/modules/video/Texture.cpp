@@ -111,8 +111,8 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	_width = width;
 	_height = height;
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
-	if (_config.maxAnisotropy() < 1.0f && type() != TextureType::Texture2DMultisample &&
-		type() != TextureType::Texture2DMultisampleArray) {
+	if (!isIntegerTextureFormat(_config.format()) && _config.maxAnisotropy() < 1.0f &&
+		type() != TextureType::Texture2DMultisample && type() != TextureType::Texture2DMultisampleArray) {
 		const float maxAnisotropy = core::getVar(cfg::RenderMaxAnisotropy)->floatVal();
 		_config.maxAnisotropy(maxAnisotropy);
 	}

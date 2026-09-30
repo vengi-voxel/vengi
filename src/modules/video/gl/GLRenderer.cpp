@@ -64,7 +64,9 @@ static const struct Formats {
 	{32, GL_DEPTH_COMPONENT24, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8},
 	{32, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},
 	{0, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8},
-	{16, GL_RG16UI, GL_RG, GL_UNSIGNED_BYTE}
+	{32, GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT},
+	{16, GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},
+	{8, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE}
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 
@@ -81,7 +83,9 @@ static const GLenum TextureFormats[] {
 	GL_DEPTH_COMPONENT32F,
 	GL_STENCIL_INDEX8,
 
-	GL_RG16UI
+	GL_RG16UI,
+	GL_R16UI,
+	GL_R8UI
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
@@ -2244,16 +2248,19 @@ void setupTexture(Id texture, const TextureConfig &config) {
 								config.type() == TextureType::Texture2DMultisampleArray;
 	// Sampler state is invalid on multisample textures (GL_INVALID_ENUM).
 	if (!multisampleTex) {
+		const bool integerTex = isIntegerTextureFormat(config.format());
+		const TextureFilter filterMag = integerTex ? TextureFilter::Nearest : config.filterMag();
+		const TextureFilter filterMin = integerTex ? TextureFilter::Nearest : config.filterMin();
 		if (useFeature(Feature::DirectStateAccess)) {
 			core_assert(glTextureParameteri != nullptr);
 			core_assert(glTextureParameterfv != nullptr);
-			if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
-				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
+			if (config.type() != TextureType::Texture2DMultisample && filterMag != TextureFilter::Max) {
+				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(filterMag)];
 				glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, glFilterMag);
 				checkError();
 			}
-			if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
-				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
+			if (config.type() != TextureType::Texture2DMultisample && filterMin != TextureFilter::Max) {
+				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(filterMin)];
 				glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, glFilterMin);
 				checkError();
 			}
@@ -2296,7 +2303,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
 			// glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, 0);
 
-			if (FLEXT_ARB_texture_filter_anisotropic) {
+			if (!integerTex && FLEXT_ARB_texture_filter_anisotropic) {
 				const GLfloat maxAnisotropy = config.maxAnisotropy();
 				if (maxAnisotropy > 1.0f) {
 					const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
@@ -2310,13 +2317,13 @@ void setupTexture(Id texture, const TextureConfig &config) {
 		} else {
 			core_assert(glTexParameteri != nullptr);
 			core_assert(glTexParameterfv != nullptr);
-			if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
-				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
+			if (config.type() != TextureType::Texture2DMultisample && filterMag != TextureFilter::Max) {
+				const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(filterMag)];
 				glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
 				checkError();
 			}
-			if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
-				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
+			if (config.type() != TextureType::Texture2DMultisample && filterMin != TextureFilter::Max) {
+				const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(filterMin)];
 				glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin); // TODO: RENDERER: mipmapping
 				checkError();
 			}
@@ -2365,7 +2372,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
 			// glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 
-			if (FLEXT_ARB_texture_filter_anisotropic) {
+			if (!integerTex && FLEXT_ARB_texture_filter_anisotropic) {
 				const GLfloat maxAnisotropy = config.maxAnisotropy();
 				if (maxAnisotropy > 1.0f) {
 					const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
@@ -2410,6 +2417,9 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 	}
 	// Multisample textures cannot have mipmaps
 	if (type == TextureType::Texture2DMultisample || type == TextureType::Texture2DMultisampleArray) {
+		wantMipmaps = false;
+	}
+	if (isIntegerTextureFormat(format)) {
 		wantMipmaps = false;
 	}
 

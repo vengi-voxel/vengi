@@ -4,6 +4,7 @@
 
 #include "app/tests/AbstractTest.h"
 #include "video/Renderer.h"
+#include "video/TextureConfig.h"
 
 namespace video {
 
@@ -45,6 +46,30 @@ TEST_F(RendererTest, testFramebufferUvYFlippedWhenClipOriginLowerLeft) {
 	} else {
 		EXPECT_LT(uv.y, uv.w);
 	}
+}
+
+TEST_F(RendererTest, testIntegerTextureFormat) {
+	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::R8U));
+	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::R16U));
+	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::RG16U));
+	EXPECT_FALSE(isIntegerTextureFormat(TextureFormat::RGBA));
+	EXPECT_FALSE(isIntegerTextureFormat(TextureFormat::RGBA16F));
+}
+
+TEST_F(RendererTest, testIntegerTextureConfigForcesNearest) {
+	TextureConfig cfg;
+	cfg.filter(TextureFilter::Linear);
+	cfg.format(TextureFormat::R8U);
+	EXPECT_EQ(TextureFilter::Nearest, cfg.filterMag());
+	EXPECT_EQ(TextureFilter::Nearest, cfg.filterMin());
+	EXPECT_FLOAT_EQ(0.0f, cfg.maxAnisotropy());
+
+	cfg.filter(TextureFilter::LinearMipmapLinear);
+	EXPECT_EQ(TextureFilter::Nearest, cfg.filterMag());
+	EXPECT_EQ(TextureFilter::Nearest, cfg.filterMin());
+
+	cfg.maxAnisotropy(16.0f);
+	EXPECT_FLOAT_EQ(0.0f, cfg.maxAnisotropy());
 }
 
 }

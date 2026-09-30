@@ -91,7 +91,9 @@ static const VkFormat TextureFormats[] = {
 	VK_FORMAT_D24_UNORM_S8_UINT,   // D24 (approximation)
 	VK_FORMAT_D32_SFLOAT,		   // D32F
 	VK_FORMAT_S8_UINT,			   // S8
-	VK_FORMAT_R16G16_UINT		   // RG16U
+	VK_FORMAT_R16G16_UINT,		   // RG16U
+	VK_FORMAT_R16_UINT,			   // R16U
+	VK_FORMAT_R8_UINT			   // R8U
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
@@ -171,7 +173,9 @@ static const Formats textureFormats[] = {
 	{VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT, 24},		// D24
 	{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT, 32},								// D32F
 	{VK_FORMAT_S8_UINT, VK_FORMAT_S8_UINT, VK_FORMAT_S8_UINT, 8},										// S8
-	{VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_UINT, 32}							// RG16U
+	{VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_UINT, 32},							// RG16U
+	{VK_FORMAT_R16_UINT, VK_FORMAT_R16_UINT, VK_FORMAT_R16_UINT, 16},									// R16U
+	{VK_FORMAT_R8_UINT, VK_FORMAT_R8_UINT, VK_FORMAT_R8_UINT, 8}											// R8U
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 

@@ -29,22 +29,34 @@ TextureConfig& TextureConfig::wrapT(TextureWrap wrap) {
 	return *this;
 }
 
+static TextureFilter clampIntegerTextureFilter(TextureFormat format, TextureFilter filter) {
+	if (isIntegerTextureFormat(format)) {
+		return TextureFilter::Nearest;
+	}
+	return filter;
+}
+
 TextureConfig& TextureConfig::filter(TextureFilter filter) {
+	filter = clampIntegerTextureFilter(_format, filter);
 	_samplerConfig.filterMag = _samplerConfig.filterMin = filter;
 	return *this;
 }
 
 TextureConfig& TextureConfig::filterMag(TextureFilter filter) {
-	_samplerConfig.filterMag = filter;
+	_samplerConfig.filterMag = clampIntegerTextureFilter(_format, filter);
 	return *this;
 }
 
 TextureConfig& TextureConfig::filterMin(TextureFilter filter) {
-	_samplerConfig.filterMin = filter;
+	_samplerConfig.filterMin = clampIntegerTextureFilter(_format, filter);
 	return *this;
 }
 
 TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
+	if (isIntegerTextureFormat(_format)) {
+		_samplerConfig.maxAnisotropy = 0.0f;
+		return *this;
+	}
 	const float maxAnisotropy = video::limit(video::Limit::MaxAnisotropy);
 	if (aniso <= 1.0f) {
 		aniso = maxAnisotropy;
@@ -82,10 +94,15 @@ TextureConfig& TextureConfig::type(TextureType type) {
 
 TextureConfig& TextureConfig::format(TextureFormat format) {
 	_format = format;
+	if (isIntegerTextureFormat(format)) {
+		_samplerConfig.filterMag = TextureFilter::Nearest;
+		_samplerConfig.filterMin = TextureFilter::Nearest;
+		_samplerConfig.maxAnisotropy = 0.0f;
+	}
 	return *this;
 }
 
-TextureConfig& TextureConfig::layers(uint8_t layers) {
+TextureConfig& TextureConfig::layers(int layers) {
 	_layers = layers;
 	return *this;
 }
