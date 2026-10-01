@@ -494,6 +494,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// the material property sliders should be in the context menu
 		const ImGuiTestItemInfo metalInfo = ctx->ItemInfo("//$FOCUSED/metal", ImGuiTestOpFlags_NoError);
 		IM_CHECK(metalInfo.ID != 0);
+		const ImGuiTestItemInfo typeInfo = ctx->ItemInfo("//$FOCUSED/Type", ImGuiTestOpFlags_NoError);
+		IM_CHECK(typeInfo.ID != 0);
 
 		ctx->KeyPress(ImGuiKey_Escape);
 	};

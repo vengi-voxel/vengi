@@ -287,6 +287,7 @@ protected:
 	bool nodeRemoveAlpha(int nodeId, uint8_t palIdx);
 	bool nodeResetMaterial(int nodeId, uint8_t palIdx);
 	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
+	bool nodeSetMaterialType(int nodeId, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(int nodeId, const voxel::Region &region);
 	void nodeResize(int nodeId, const glm::ivec3 &size);
@@ -447,6 +448,7 @@ protected:
 	 */
 	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material,
 						 float value);
+	bool nodeSetMaterialType(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
@@ -887,6 +889,7 @@ public:
 	 * representation of the palette)
 	 */
 	bool nodeSetMaterial(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialProperty material, float value);
+	bool nodeSetMaterialType(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(const core::UUID &nodeUUID, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(const core::UUID &nodeUUID, const voxel::Region &region);
 	void nodeResize(const core::UUID &nodeUUID, const glm::ivec3 &size);

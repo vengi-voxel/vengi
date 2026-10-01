@@ -4,6 +4,8 @@
 
 #include "Material.h"
 #include "core/Log.h"
+#include "core/String.h"
+#include "core/StringUtil.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
@@ -12,6 +14,52 @@ namespace palette {
 Material::Material() {
 	setValue(MaterialRoughness, 0.1f);
 	setValue(MaterialIndexOfRefraction, 1.3f);
+}
+
+bool materialTypeFromName(const char *name, MaterialType &out) {
+	if (name == nullptr) {
+		return false;
+	}
+	for (int i = 0; i < lengthof(MaterialTypeNames); ++i) {
+		if (core::string::iequals(name, MaterialTypeNames[i])) {
+			out = (MaterialType)i;
+			return true;
+		}
+	}
+	return false;
+}
+
+void applyMaterialTypeDefaults(Material &mat) {
+	const MaterialType type = mat.type;
+	mat = Material();
+	mat.type = type;
+	switch (type) {
+	case MaterialType::Diffuse:
+		break;
+	case MaterialType::Metal:
+		mat.setValue(MaterialMetal, 1.0f);
+		mat.setValue(MaterialRoughness, 0.2f);
+		mat.setValue(MaterialSpecular, 1.0f);
+		break;
+	case MaterialType::Glass:
+		mat.setValue(MaterialIndexOfRefraction, 1.5f);
+		mat.setValue(MaterialRoughness, 0.0f);
+		break;
+	case MaterialType::Emit:
+		mat.setValue(MaterialEmit, 1.0f);
+		break;
+	case MaterialType::Blend:
+		mat.setValue(MaterialIndexOfRefraction, 1.5f);
+		mat.setValue(MaterialRoughness, 0.0f);
+		break;
+	case MaterialType::Media:
+		mat.setValue(MaterialIndexOfRefraction, 1.01f);
+		mat.setValue(MaterialDensity, 0.5f);
+		mat.setValue(MaterialPhase, 0.5f);
+		mat.setValue(MaterialMedia, 1.0f);
+		mat.setValue(MaterialRoughness, 1.0f);
+		break;
+	}
 }
 
 bool Material::operator!=(const Material &rhs) const {

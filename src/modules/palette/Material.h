@@ -10,7 +10,6 @@
 
 namespace palette {
 
-// unused in vengi at the moment, but here to provide a better magicavoxel import/export experience
 enum class MaterialType {
 	Diffuse = 0, // diffuse is default
 	Metal = 1,
@@ -19,6 +18,19 @@ enum class MaterialType {
 	Blend = 4,
 	Media = 5,
 };
+
+static constexpr const char *MaterialTypeNames[] = {"Diffuse", "Metal", "Glass", "Emit", "Blend", "Media"};
+static_assert(lengthof(MaterialTypeNames) == (int)MaterialType::Media + 1, "MaterialTypeNames size mismatch");
+
+inline const char *MaterialTypeName(MaterialType type) {
+	const int i = (int)type;
+	if (i < 0 || i >= lengthof(MaterialTypeNames)) {
+		return MaterialTypeNames[0];
+	}
+	return MaterialTypeNames[i];
+}
+
+bool materialTypeFromName(const char *name, MaterialType &out);
 
 // just a few of these values are used for rendering in vengi - but all are used for import/export if the format
 // supports it
@@ -71,6 +83,8 @@ struct Material {
 	float value(MaterialProperty n) const;
 	void setValue(MaterialProperty n, float value);
 };
+
+void applyMaterialTypeDefaults(Material &mat);
 
 // make sure to keep the order of the properties - see Material struct float values
 // none is not included in this array - beware of the -1 offset

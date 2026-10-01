@@ -1751,6 +1751,33 @@ static int luaVoxel_palette_setmaterialproperty(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_palette_setmaterialtype(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	palette::MaterialType type = palette::MaterialType::Diffuse;
+	if (lua_type(s, 3) == LUA_TNUMBER) {
+		const int v = (int)luaL_checkinteger(s, 3);
+		if (v < 0 || v >= lengthof(palette::MaterialTypeNames)) {
+			return luaL_error(s, "invalid material type %d", v);
+		}
+		type = (palette::MaterialType)v;
+	} else {
+		const char *name = luaL_checkstring(s, 3);
+		if (!palette::materialTypeFromName(name, type)) {
+			return luaL_error(s, "invalid material type '%s'", name);
+		}
+	}
+	palette->setMaterialType(idx, type);
+	return 0;
+}
+
+static int luaVoxel_palette_materialtype(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	lua_pushstring(s, palette::MaterialTypeName(palette->material(idx).type));
+	return 1;
+}
+
 static int luaVoxel_palette_materialproperty(lua_State* s) {
 	palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
@@ -5190,6 +5217,33 @@ static int luaVoxel_palette_setmaterialproperty_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_palette_setmaterialtype_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setMaterialType",
+		"summary": "Set the MagicaVoxel material type for a palette color and apply that type's property defaults.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
+			{"name": "type", "type": "string", "description": "Diffuse, Metal, Glass, Emit, Blend, or Media (or 0-5)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_materialtype_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "materialType",
+		"summary": "Get the MagicaVoxel material type name for a palette color.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "string", "description": "Diffuse, Metal, Glass, Emit, Blend, or Media."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_palette_materialproperty_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "material",
@@ -6979,7 +7033,9 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
 		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
+		{"setMaterialType", luaVoxel_palette_setmaterialtype, luaVoxel_palette_setmaterialtype_jsonhelp},
 		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
+		{"materialType", luaVoxel_palette_materialtype, luaVoxel_palette_materialtype_jsonhelp},
 		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
 		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
 		{"colorName", luaVoxel_palette_colorname, luaVoxel_palette_colorname_jsonhelp},
@@ -7024,7 +7080,9 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
 		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
+		{"setMaterialType", luaVoxel_palette_setmaterialtype, luaVoxel_palette_setmaterialtype_jsonhelp},
 		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
+		{"materialType", luaVoxel_palette_materialtype, luaVoxel_palette_materialtype_jsonhelp},
 		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
 		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
 		{"colorName", luaVoxel_palette_colorname, luaVoxel_palette_colorname_jsonhelp},

@@ -7,6 +7,7 @@
 #include "color/Color.h"
 #include "color/ColorUtil.h"
 #include "core/StringUtil.h"
+#include "core/ArrayLength.h"
 #include "io/FormatDescription.h"
 #include "memento/MementoHandler.h"
 #include "palette/Palette.h"
@@ -64,6 +65,26 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 		// we might open the context menu for a color that is not in the selection
 		const bool isCurrentInSelection = _selectedIndices.has(paletteColorIdx);
 		if (usableColor) {
+			int typeIdx = (int)palette.material(paletteColorIdx).type;
+			if (typeIdx < 0 || typeIdx >= lengthof(palette::MaterialTypeNames)) {
+				typeIdx = 0;
+			}
+			if (ImGui::BeginCombo(_("Type"), _(palette::MaterialTypeNames[typeIdx]))) {
+				for (int t = 0; t < lengthof(palette::MaterialTypeNames); ++t) {
+					if (ImGui::Selectable(_(palette::MaterialTypeNames[t]), t == typeIdx)) {
+						memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "changematerialtype");
+						const palette::MaterialType type = (palette::MaterialType)t;
+						if (isCurrentInSelection) {
+							for (const auto &e : _selectedIndices) {
+								_sceneMgr->nodeSetMaterialType(node.uuid(), e->key, type);
+							}
+						} else {
+							_sceneMgr->nodeSetMaterialType(node.uuid(), paletteColorIdx, type);
+						}
+					}
+				}
+				ImGui::EndCombo();
+			}
 			for (int i = 0; i < (int)palette::MaterialProperty::MaterialMax; ++i) {
 				if (i == palette::MaterialProperty::MaterialNone) {
 					continue;

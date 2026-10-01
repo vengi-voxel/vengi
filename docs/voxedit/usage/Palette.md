@@ -30,7 +30,7 @@ Direct LoSpec palette import is possible and next to LoSpec you can import or ex
 Right-click on a color to open the context menu:
 
 * **Color Picker**: Adjust the color using the color picker.
-* **Material Properties**: Adjust material properties like Metal, Roughness, Specular, etc.
+* **Material Properties**: Choose MagicaVoxel material type (Diffuse / Metal / Glass / Emit / Blend / Media). Changing type applies that type's property defaults. Then adjust metal, roughness, IOR, emit, and the other sliders.
 * **Remove Alpha**: Remove transparency from the color.
 * **Model from Color**: Create a new model containing only voxels of this color.
 * **Duplicate Color**: Duplicate the selected color into a free slot.

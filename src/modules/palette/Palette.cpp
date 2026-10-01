@@ -1112,7 +1112,11 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 }
 
 void Palette::setMaterialType(uint8_t paletteColorIdx, MaterialType type) {
-	_materials[paletteColorIdx].type = type;
+	Material &mat = _materials[paletteColorIdx];
+	if (mat.type != type) {
+		mat.type = type;
+		applyMaterialTypeDefaults(mat);
+	}
 	markDirty();
 }
 

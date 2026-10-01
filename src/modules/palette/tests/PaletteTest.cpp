@@ -401,6 +401,28 @@ TEST_F(PaletteTest, testMaterialProperties) {
 	EXPECT_TRUE(pal.hasMaterials());
 }
 
+TEST_F(PaletteTest, testMaterialTypeDefaults) {
+	Palette pal;
+	pal.setColor(0, color::RGBA{255, 0, 0, 255});
+	pal.setMaterialType(0, MaterialType::Glass);
+	EXPECT_EQ(MaterialType::Glass, pal.material(0).type);
+	EXPECT_FLOAT_EQ(1.5f, pal.material(0).indexOfRefraction);
+	EXPECT_FLOAT_EQ(0.0f, pal.material(0).roughness);
+
+	pal.setIndexOfRefraction(0, 1.8f);
+	pal.setMaterialType(0, MaterialType::Glass);
+	EXPECT_FLOAT_EQ(1.8f, pal.material(0).indexOfRefraction);
+
+	pal.setMaterialType(0, MaterialType::Metal);
+	EXPECT_FLOAT_EQ(1.0f, pal.material(0).metal);
+	EXPECT_FLOAT_EQ(0.2f, pal.material(0).roughness);
+	EXPECT_FLOAT_EQ(1.0f, pal.material(0).specular);
+
+	MaterialType parsed = MaterialType::Diffuse;
+	EXPECT_TRUE(materialTypeFromName("glass", parsed));
+	EXPECT_EQ(MaterialType::Glass, parsed);
+}
+
 TEST_F(PaletteTest, testColorNames) {
 	Palette pal;
 	pal.nippon();

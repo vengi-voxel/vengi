@@ -29,6 +29,7 @@ Global: `g_palette`
 | `load(name)` | Load a palette from a file or built-in name. |
 | `match(r, g, b, skipIndex)` | Find the closest matching color in the palette. |
 | `material(index, property)` | Get a material property for a palette color. |
+| `materialType(index)` | Get the MagicaVoxel material type name for a palette color. |
 | `name()` | Get the name of the palette. |
 | `new()` | Create a new empty palette. |
 | `reduce(targetColors)` | Reduce the palette to a target number of colors. |
@@ -38,6 +39,7 @@ Global: `g_palette`
 | `setColor(index, r, g, b, a)` | Set a color in the palette. |
 | `setColorName(index, name)` | Set the name of a color in the palette. |
 | `setMaterial(index, property, value)` | Set a material property for a palette color. |
+| `setMaterialType(index, type)` | Set the MagicaVoxel material type for a palette color and apply that type's property defaults. |
 | `setName(name)` | Set the name of the palette. |
 | `setSize(count)` | Set the number of colors in the palette. |
 | `similar(index, count)` | Find similar colors in the palette. |
@@ -335,6 +337,22 @@ Get a material property for a palette color.
 | ---- | ----------- |
 | `number` | The property value. |
 
+### materialType
+
+Get the MagicaVoxel material type name for a palette color.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `index` | `integer` | The color index (0-255). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | Diffuse, Metal, Glass, Emit, Blend, or Media. |
+
 ### name
 
 Get the name of the palette.
@@ -452,6 +470,17 @@ Set a material property for a palette color.
 | `index` | `integer` | The color index (0-255). |
 | `property` | `string` | The property name. |
 | `value` | `number` | The property value. |
+
+### setMaterialType
+
+Set the MagicaVoxel material type for a palette color and apply that type's property defaults.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `index` | `integer` | The color index (0-255). |
+| `type` | `string` | Diffuse, Metal, Glass, Emit, Blend, or Media (or 0-5). |
 
 ### setName
 

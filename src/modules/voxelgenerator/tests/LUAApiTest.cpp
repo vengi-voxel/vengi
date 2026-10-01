@@ -1136,6 +1136,12 @@ TEST_F(LUAApiTest, testPaletteExtendedBindings) {
 			local mats = pal:hasMaterials()
 			local freeSlot = pal:hasFreeSlot()
 
+			pal:setMaterialType(0, "Glass")
+			assert(pal:materialType(0) == "Glass", "material type should be Glass")
+			assert(pal:material(0, "indexOfRefraction") > 1.4, "glass should default ior to 1.5")
+			pal:setMaterialType(0, 1)
+			assert(pal:materialType(0) == "Metal", "material type should be Metal")
+
 			-- test exchange and copy
 			pal:setColor(1, 0, 255, 0, 255)
 			pal:exchange(0, 1)

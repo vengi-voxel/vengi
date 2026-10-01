@@ -7528,12 +7528,30 @@ bool SceneManager::nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t pal
 	return true;
 }
 
+bool SceneManager::nodeSetMaterialType(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialType type) {
+	palette::Palette &palette = node.palette();
+	palette.setMaterialType(palIdx, type);
+	palette.markSave();
+	_mementoHandler->markPaletteChange(_sceneGraph, node);
+	return true;
+}
+
 bool SceneManager::nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value) {
 	if (isLocked()) {
 		return false;
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeSetMaterial(*node, palIdx, material, value);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetMaterialType(int nodeId, uint8_t palIdx, palette::MaterialType type) {
+	if (isLocked()) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeSetMaterialType(*node, palIdx, type);
 	}
 	return false;
 }
@@ -7788,6 +7806,13 @@ bool SceneManager::nodeSetMaterial(const core::UUID &nodeUUID, uint8_t palIdx, p
 								   float value) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeSetMaterial(node->id(), palIdx, material, value);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetMaterialType(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialType type) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
+		return nodeSetMaterialType(node->id(), palIdx, type);
 	}
 	return false;
 }
