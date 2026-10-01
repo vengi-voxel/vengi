@@ -19,6 +19,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelrender/RenderUtil.h"
 
 namespace voxedit {
 
@@ -56,7 +57,7 @@ void MenuBar::viewportOptions() {
 		ImGui::EndCombo();
 	}
 	ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
-	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);
+	ImGui::ComboVar(cfg::RenderToneMapping, voxelrender::ToneMappingItems, voxelrender::ToneMappingMax);
 	ImGui::Separator();
 	ImGui::IconCheckboxVar(ICON_LC_MESSAGE_SQUARE, cfg::VoxEditViewportHud);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::VoxEditAddNode);

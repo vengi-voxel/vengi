@@ -106,12 +106,61 @@ vec3 agxLook(vec3 val, int look) {
 	return luma + sat * (val - luma);
 }
 
-vec3 tonemapping(vec3 value) {
-	if (u_tonemapping != 0) {
+// ACES (Academy Color Encoding System) filmic tone mapping curve.
+// Fitted approximation by Krzysztof Narkowicz.
+// Reference: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+vec3 toneAces(vec3 x) {
+	const float a = 2.51;
+	const float b = 0.03;
+	const float c = 2.43;
+	const float d = 0.59;
+	const float e = 0.14;
+	return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+// Uncharted 2 / "Hable" filmic tone mapping operator.
+// Reference: Hable, "Filmic Tonemapping Operators", GDC 2010 / Uncharted 2.
+// http://filmicworlds.com/blog/filmic-tonemapping-operators/
+vec3 toneHable(vec3 x) {
+	const float A = 0.15;
+	const float B = 0.50;
+	const float C = 0.10;
+	const float D = 0.20;
+	const float E = 0.02;
+	const float F = 0.30;
+	return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
+// Reinhard tone mapping: maps [0, inf) to [0, 1).
+// Reference: Reinhard et al., "Photographic Tone Reproduction for Digital Images", SIGGRAPH 2002.
+vec3 toneReinhard(vec3 x) {
+	return x / (1.0 + x);
+}
+
+// IEC 61966-2-1 sRGB transfer function (linear -> sRGB gamma encoding).
+// Piecewise: linear segment below 0.0031308, gamma 2.4 segment above.
+vec3 linearToSrgb(vec3 c) {
+	vec3 lo = c * 12.92;
+	vec3 hi = 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055;
+	return mix(hi, lo, vec3(lessThanEqual(c, vec3(0.0031308))));
+}
+
+// mode: 0 = none, 1 = AgX, 2 = AgX golden, 3 = AgX punchy, 4 = ACES, 5 = Hable, 6 = Reinhard
+vec3 tonemapping(vec3 value, int mode) {
+	if (mode >= 1 && mode <= 3) {
 		value = agx(value);
-		value = agxLook(value, u_tonemapping - 1);
+		value = agxLook(value, mode - 1);
 		value = agxEotf(value);
 		return value;
+	}
+	if (mode == 4) {
+		return toneAces(value);
+	}
+	if (mode == 5) {
+		return clamp(toneHable(value * 2.0) / toneHable(vec3(11.2)), 0.0, 1.0);
+	}
+	if (mode == 6) {
+		return toneReinhard(value);
 	}
 	return clamp(value, 0.0, 1.0);
 }

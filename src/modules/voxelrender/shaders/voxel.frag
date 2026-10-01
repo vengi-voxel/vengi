@@ -16,7 +16,7 @@ vec4 calcColor(void) {
 		normal = cubicWorldNormal(v_pos);
 	}
 	vec3 shadowColor = shadeLit(normal, v_color.rgb);
-	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
+	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion, u_tonemapping));
 	vec4 ocolor = vec4(color, v_color.a);
 	if ((v_flags & FLAGOUTLINE) != 0u) {
 		if (u_renderoutline != 0) {

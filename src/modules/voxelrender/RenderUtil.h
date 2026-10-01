@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/I18NMarkers.h"
+#include "core/ArrayLength.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "video/Camera.h"
 #include "voxel/Region.h"
@@ -32,6 +33,21 @@ static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode:
 static constexpr const char *SceneCameraModeArgs[] = {"free", "top", "bottom", "left", "right", "front", "back"};
 static_assert(lengthof(SceneCameraModeArgs) == (int)voxelrender::SceneCameraMode::Max,
 			  "Array size doesn't match enum values");
+
+// Matches u_tonemapping and r_tonemapping.
+enum ToneMapping {
+	ToneMappingNone = 0,
+	ToneMappingAgx = 1,
+	ToneMappingAgxGolden = 2,
+	ToneMappingAgxPunchy = 3,
+	ToneMappingAces = 4,
+	ToneMappingHable = 5,
+	ToneMappingReinhard = 6,
+	ToneMappingMax
+};
+static constexpr const char *ToneMappingItems[] = {N_("None"), N_("AgX"), N_("AgX Golden"), N_("AgX Punchy"),
+												   N_("ACES"), N_("Hable"), N_("Reinhard")};
+static_assert(lengthof(ToneMappingItems) == ToneMappingMax, "Tone mapping labels must match ToneMapping");
 
 /**
  * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.

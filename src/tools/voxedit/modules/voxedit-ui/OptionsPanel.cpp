@@ -20,6 +20,7 @@
 #include "voxelui/FileDialogOptions.h"
 #include "voxedit-util/Config.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelrender/RenderUtil.h"
 
 namespace voxedit {
 
@@ -279,7 +280,7 @@ void OptionsPanel::renderRendering() {
 		ImGui::SliderVarInt(cfg::ClientBloomPasses);
 	}
 	if (matchesVarFilter(cfg::RenderToneMapping)) {
-		ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::RenderToneMapping);
+		ImGui::ComboVar(cfg::RenderToneMapping, voxelrender::ToneMappingItems, voxelrender::ToneMappingMax);
 	}
 }
 
