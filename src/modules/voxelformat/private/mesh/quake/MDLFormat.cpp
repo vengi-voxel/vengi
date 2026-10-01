@@ -17,7 +17,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace voxelformat {
 

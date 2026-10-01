@@ -13,7 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace voxelformat {
 
