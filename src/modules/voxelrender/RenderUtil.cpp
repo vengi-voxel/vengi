@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "video/Camera.h"
+#include "core/GLM.h"
 
 namespace voxelrender {
 
@@ -95,6 +96,12 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - distance));
 	}
 	camera.lookAt(center);
+}
+
+glm::vec3 sunDirectionFromAngle(const glm::vec3 &angleDegrees) {
+	const float pitch = glm::radians(angleDegrees.x);
+	const float yaw = glm::radians(angleDegrees.y);
+	return glm::normalize(glm::vec3(glm::cos(pitch) * glm::cos(yaw), glm::sin(pitch), glm::cos(pitch) * glm::sin(yaw)));
 }
 
 static video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode,

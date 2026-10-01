@@ -41,4 +41,10 @@ static_assert(lengthof(SceneCameraModeArgs) == (int)voxelrender::SceneCameraMode
 void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
 					 const glm::vec3 &angles = {0.0f, 0.0f, 0.0f});
 
+/**
+ * @brief Convert scene sun Euler angles in degrees (elevation/pitch, azimuth/yaw, unused roll)
+ * to a unit direction vector. Matches the forward renderer sun.
+ */
+glm::vec3 sunDirectionFromAngle(const glm::vec3 &angleDegrees);
+
 } // namespace voxelrender
