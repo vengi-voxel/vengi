@@ -788,6 +788,11 @@ public:
 	memento::MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
+	/**
+	 * @brief Fingerprint of the loaded scene for restarting dependent views (pathtracer).
+	 * Mixes memento position, graph bounds, visible model nodes, volume identity, and palette hash.
+	 */
+	uint64_t calculateHash() const;
 	voxelgenerator::LUAApi &luaApi();
 	Server &server();
 	Client &client();

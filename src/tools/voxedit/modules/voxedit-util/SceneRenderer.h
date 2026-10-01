@@ -14,7 +14,7 @@
 #include "voxedit-util/AddNodePreview.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace voxedit {
 

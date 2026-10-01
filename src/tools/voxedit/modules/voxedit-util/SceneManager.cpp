@@ -3340,6 +3340,41 @@ scenegraph::SceneGraph &SceneManager::sceneGraph() {
 	return _sceneGraph;
 }
 
+uint64_t SceneManager::calculateHash() const {
+	uint64_t stamp = 14695981039346656037ull;
+	auto mix = [&](uint64_t v) {
+		stamp ^= v + 0x9e3779b97f4a7c15ull + (stamp << 6u) + (stamp >> 2u);
+	};
+	mix((uint64_t)_mementoHandler->stateSize());
+	mix((uint64_t)_mementoHandler->statePosition());
+	mix((uint64_t)_sceneGraph.size());
+	const voxel::Region region = _sceneGraph.sceneRegion();
+	if (region.isValid()) {
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const glm::ivec3 &maxs = region.getUpperCorner();
+		mix((uint64_t)(uint32_t)mins.x);
+		mix((uint64_t)(uint32_t)mins.y);
+		mix((uint64_t)(uint32_t)mins.z);
+		mix((uint64_t)(uint32_t)maxs.x);
+		mix((uint64_t)(uint32_t)maxs.y);
+		mix((uint64_t)(uint32_t)maxs.z);
+	}
+	for (const auto &e : _sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (!node.isAnyModelNode() || !node.visible()) {
+			continue;
+		}
+		mix((uint64_t)node.id());
+		const voxel::RawVolume *volume = _sceneGraph.resolveVolume(node);
+		mix((uint64_t)(uintptr_t)volume);
+		if (volume != nullptr) {
+			mix((uint64_t)volume->region().voxels());
+		}
+		mix(_sceneGraph.resolvePalette(node).hash());
+	}
+	return stamp;
+}
+
 bool SceneManager::setAnimation(const core::String &animation) {
 	if (isLocked()) {
 		return false;

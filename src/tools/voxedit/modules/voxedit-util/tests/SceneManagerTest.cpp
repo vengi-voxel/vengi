@@ -8,6 +8,7 @@
 #include "voxedit-util/Config.h"
 #include "AbstractSceneManagerTest.h"
 #include "command/CommandHandler.h"
+#include "color/RGBA.h"
 #include "image/Image.h"
 #include "io/FilesystemArchive.h"
 #include "math/tests/TestMathHelper.h"
@@ -2996,6 +2997,21 @@ TEST_F(SceneManagerTest, testAddModelAdjacentIgnoreOverlap) {
 	EXPECT_EQ(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
 	core::getVar(cfg::VoxEditAddNodeIgnoreOverlap)->setVal(true);
 	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX));
+}
+
+TEST_F(SceneManagerTest, testCalculateHash) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 7, 7)));
+	const uint64_t first = _sceneMgr->calculateHash();
+	EXPECT_EQ(first, _sceneMgr->calculateHash());
+
+	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 15, 15, 15)));
+	const uint64_t resized = _sceneMgr->calculateHash();
+	EXPECT_NE(first, resized);
+
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	node->palette().setColor(1, color::RGBA(1, 2, 3, 255));
+	EXPECT_NE(resized, _sceneMgr->calculateHash());
 }
 
 } // namespace voxedit
