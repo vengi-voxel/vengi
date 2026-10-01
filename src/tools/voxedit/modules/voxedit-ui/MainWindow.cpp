@@ -177,7 +177,7 @@ bool MainWindow::initViewports() {
 	_lastHoveredViewport = _viewports[0];
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	for (int i = 0; i < _viewports.size(); i++) {
+	for (unsigned int i = 0; i < _viewports.size(); i++) {
 		_viewports[i]->registerUITests(_app->imguiTestEngine(), nullptr);
 	}
 #endif

@@ -313,7 +313,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		newNode.createVolume(voxel::Region(0, 31));
 		const int secondNode = _sceneMgr->moveNodeToSceneGraph(newNode, sceneGraph.root().id());
 		IM_CHECK(secondNode != InvalidNodeId);
-		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2u);
 
 		// switch to scene mode
 		const int viewportId = viewportSceneMode(ctx, _app);
