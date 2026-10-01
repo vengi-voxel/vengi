@@ -1193,7 +1193,7 @@ void Palette::setIndexOfRefraction(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 3.0f) {
 		Log::warn("Unexpected ior value %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, glm::clamp(factor, 1.0f, 3.0f));
+	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, glm::clamp(factor, 0.0f, 3.0f));
 }
 
 void Palette::setAttenuation(uint8_t paletteColorIdx, float factor) {

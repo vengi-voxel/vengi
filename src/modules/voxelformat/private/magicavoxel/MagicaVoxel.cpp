@@ -348,7 +348,8 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 			palette.setSpecular(palIdx, matl.spec);
 		}
 		if (matl.content_flags & k_ogt_vox_matl_have_ior) {
-			palette.setIndexOfRefraction(palIdx, matl.ior);
+			const float n = matl.ior < 1.0f ? (1.0f + matl.ior) : matl.ior;
+			palette.setIndexOfRefraction(palIdx, n);
 		}
 		if (matl.content_flags & k_ogt_vox_matl_have_ri) {
 			palette.setIndexOfRefraction(palIdx, matl.ri);
@@ -381,6 +382,9 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 		}
 		if (matl.content_flags & k_ogt_vox_matl_have_media) {
 			palette.setMedia(palIdx, matl.media);
+		}
+		if (matl.media_type != ogt_media_type_absorb || matl.type == ogt_matl_type_media) {
+			palette.setMedia(palIdx, (float)matl.media_type);
 		}
 		++palIdx;
 	}

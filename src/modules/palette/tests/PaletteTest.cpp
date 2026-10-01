@@ -395,6 +395,9 @@ TEST_F(PaletteTest, testMaterialProperties) {
 	pal.setSpecular(idx, 0.9f);
 	EXPECT_FLOAT_EQ(0.9f, pal.material(idx).specular);
 
+	pal.setIndexOfRefraction(idx, 0.3f);
+	EXPECT_FLOAT_EQ(0.3f, pal.material(idx).indexOfRefraction);
+
 	EXPECT_TRUE(pal.hasMaterials());
 }
 

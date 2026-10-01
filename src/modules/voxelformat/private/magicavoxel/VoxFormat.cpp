@@ -737,6 +737,16 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		if (material.has(palette::MaterialProperty::MaterialMedia)) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_media;
 			mat.matl[i].media = material.value(palette::MaterialMedia);
+			int mediaType = (int)(material.media + 0.5f);
+			if (mediaType < 0) {
+				mediaType = 0;
+			} else if (mediaType > 3) {
+				mediaType = 3;
+			}
+			mat.matl[i].media_type = (ogt_media_type)mediaType;
+		} else if (type == palette::MaterialType::Glass || type == palette::MaterialType::Blend ||
+				   type == palette::MaterialType::Media) {
+			mat.matl[i].media_type = ogt_media_type_absorb;
 		}
 	}
 
