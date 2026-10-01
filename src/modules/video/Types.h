@@ -424,12 +424,14 @@ enum class TextureFormat {
 	RG16U,
 	R16U,
 	R8U,
+	R32U,
 
 	Max
 };
 
 inline bool isIntegerTextureFormat(TextureFormat format) {
-	return format == TextureFormat::RG16U || format == TextureFormat::R16U || format == TextureFormat::R8U;
+	return format == TextureFormat::RG16U || format == TextureFormat::R32U || format == TextureFormat::R16U ||
+		   format == TextureFormat::R8U;
 }
 
 enum class Spec {
@@ -441,6 +443,7 @@ enum class Spec {
 
 enum class Limit {
 	MaxTextureSize,
+	Max3DTextureSize,
 	MaxSamples,
 	MaxCubeMapTextureSize,
 	MaxViewPortWidth,

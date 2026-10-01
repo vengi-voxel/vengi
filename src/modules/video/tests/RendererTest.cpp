@@ -51,6 +51,7 @@ TEST_F(RendererTest, testFramebufferUvYFlippedWhenClipOriginLowerLeft) {
 TEST_F(RendererTest, testIntegerTextureFormat) {
 	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::R8U));
 	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::R16U));
+	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::R32U));
 	EXPECT_TRUE(isIntegerTextureFormat(TextureFormat::RG16U));
 	EXPECT_FALSE(isIntegerTextureFormat(TextureFormat::RGBA));
 	EXPECT_FALSE(isIntegerTextureFormat(TextureFormat::RGBA16F));

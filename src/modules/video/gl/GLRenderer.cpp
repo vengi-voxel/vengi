@@ -66,7 +66,8 @@ static const struct Formats {
 	{0, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8},
 	{32, GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT},
 	{16, GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},
-	{8, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE}
+	{8, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE},
+	{32, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT}
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
 
@@ -85,7 +86,8 @@ static const GLenum TextureFormats[] {
 
 	GL_RG16UI,
 	GL_R16UI,
-	GL_R8UI
+	GL_R8UI,
+	GL_R32UI
 };
 static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
 
@@ -523,6 +525,8 @@ void setupLimitsAndSpecs() {
 	checkError();
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
 	checkError();
+	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::Max3DTextureSize)]);
+	checkError();
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxCubeMapTextureSize)]);
 	checkError();
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &renderState().limits[core::enumVal(Limit::MaxViewPortWidth)]);
@@ -604,6 +608,8 @@ void setupLimitsAndSpecs() {
 		checkError();
 	}
 
+	Log::debug("GL_MAX_TEXTURE_SIZE: %i", renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
+	Log::debug("GL_MAX_3D_TEXTURE_SIZE: %i", renderState().limits[core::enumVal(Limit::Max3DTextureSize)]);
 	Log::debug("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
 	Log::debug("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
 	Log::debug("GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT: %i", (int)renderState().specs[core::enumVal(Spec::UniformBufferAlignment)]);
