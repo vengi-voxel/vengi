@@ -39,7 +39,6 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	TransformBrush &brush = modifier.transformBrush();
 
-	const int nodeId = ctx.sceneMgr->sceneGraph().activeNode();
 	if (!ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID())) {
 		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
 		return;
