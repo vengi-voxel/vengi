@@ -1,8 +1,8 @@
 
 layout(std140, binding = 1) uniform u_frag {
 	mediump vec3 u_lightdir;
-	lowp vec3 u_diffuse_color;
-	lowp vec3 u_ambient_color;
+	lowp vec3 u_diffusecolor;
+	lowp vec3 u_ambientcolor;
 	vec2 u_depthsize;
 	vec4 u_distances;
 	mat4 u_cascades[4];
@@ -10,8 +10,8 @@ layout(std140, binding = 1) uniform u_frag {
 	uint u_timemillis;
 	float u_gamma;
 	int u_checkerboard;
-	int u_debug_shadow;
-	int u_debug_cascade;
+	int u_debugshadow;
+	int u_debugcascade;
 	int u_tonemapping;
 	int u_renderoutline;
 	int u_shadowmap;
@@ -91,7 +91,7 @@ vec3 shadow(in vec4 lightspacepos, vec3 color, in vec3 diffuse, in vec3 ambient)
 	} else {
 		shadow = sampleShadowConservative(bias, cascade, uv.xy, uv.z);
 	}
-	if (u_debug_cascade != 0) {
+	if (u_debugcascade != 0) {
 		if (cascade == 0) {
 			color.r = 0.0;
 			color.g = 1.0;
@@ -112,7 +112,7 @@ vec3 shadow(in vec4 lightspacepos, vec3 color, in vec3 diffuse, in vec3 ambient)
 			color.r = 1.0;
 		}
 	}
-	if (u_debug_shadow != 0) {
+	if (u_debugshadow != 0) {
 		// shadow only rendering
 		return vec3(shadow);
 	}
@@ -163,10 +163,10 @@ vec3 shadeLit(in vec3 normal, in vec3 color) {
 	vec3 fillDir = normalize(-sun + vec3(0.0, 0.35, 0.0));
 	float fill = max(dot(n, fillDir), 0.0);
 	float sky = 0.5 + 0.5 * n.y;
-	float lit = step(1.0e-5, dot(u_diffuse_color, u_diffuse_color));
-	vec3 ambient = u_ambient_color * mix(1.0, mix(0.70, 1.0, sky), lit);
-	vec3 keyDiffuse = u_diffuse_color * key;
-	vec3 fillDiffuse = u_diffuse_color * fill * 0.35 * lit;
+	float lit = step(1.0e-5, dot(u_diffusecolor, u_diffusecolor));
+	vec3 ambient = u_ambientcolor * mix(1.0, mix(0.70, 1.0, sky), lit);
+	vec3 keyDiffuse = u_diffusecolor * key;
+	vec3 fillDiffuse = u_diffusecolor * fill * 0.35 * lit;
 	return shadow(color, keyDiffuse, ambient + fillDiffuse);
 }
 

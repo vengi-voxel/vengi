@@ -310,14 +310,14 @@ bool RawVolumeRenderer::init(bool normals) {
 		return false;
 	}
 
-	_voxelShaderFragData.diffuseColor = glm::vec3(0.0f, 0.0f, 0.0f);
-	_voxelShaderFragData.ambientColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	_voxelShaderFragData.diffusecolor = glm::vec3(0.0f, 0.0f, 0.0f);
+	_voxelShaderFragData.ambientcolor = glm::vec3(1.0f, 1.0f, 1.0f);
 	_voxelShaderFragData.gamma = _gamma->floatVal();
 
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
 	_voxelShaderVertData.opacity = 1.0f;
-	_voxelShaderVertData.useDrawInstances = 0;
+	_voxelShaderVertData.usedrawinstances = 0;
 
 	if (_useMultiDraw) {
 		DrawInstanceData emptyInstance;
@@ -574,11 +574,11 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 }
 
 void RawVolumeRenderer::setAmbientColor(const glm::vec3 &color) {
-	_voxelShaderFragData.ambientColor = color;
+	_voxelShaderFragData.ambientcolor = color;
 }
 
 void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
-	_voxelShaderFragData.diffuseColor = color;
+	_voxelShaderFragData.diffusecolor = color;
 }
 
 // Convert Euler angles (pitch, yaw, roll) to a directional vector
@@ -885,7 +885,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	video::ScopedPolygonMode polygonMode(mode);
 
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.vertrenderoutline = _renderOutline->intVal();
 	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
 	if (_voxelNormShader.isActive()) {
@@ -913,7 +913,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 			_voxelShaderVertData.gray = meshState->grayed(idx);
 			_voxelShaderVertData.locked = meshState->locked(idx);
 			_voxelShaderVertData.opacity = meshState->opacity(idx);
-			_voxelShaderVertData.useDrawInstances = 0;
+			_voxelShaderVertData.usedrawinstances = 0;
 			core_assert_always(uploadVertUniforms(paletteChanged));
 
 			video::cullFace(meshState->cullFace(idx));
@@ -961,12 +961,12 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 			_voxelShaderVertData.gray = meshState->grayed(firstIdx);
 			_voxelShaderVertData.locked = meshState->locked(firstIdx);
 			_voxelShaderVertData.opacity = meshState->opacity(firstIdx);
-			_voxelShaderVertData.useDrawInstances = 0;
+			_voxelShaderVertData.usedrawinstances = 0;
 			core_assert_always(uploadVertUniforms(paletteChanged));
 			_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indexCount);
 		} else {
-			_voxelShaderVertData.useDrawInstances = 1;
+			_voxelShaderVertData.usedrawinstances = 1;
 			core_assert_always(uploadVertUniforms(paletteChanged));
 			_drawInstanceScratch.clear();
 			_drawInstanceScratch.reserve(batchCount);
@@ -1024,7 +1024,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.vertrenderoutline = _renderOutline->intVal();
 	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
 	if (_voxelNormShader.isActive()) {
@@ -1050,7 +1050,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		_voxelShaderVertData.opacity = opacity;
-		_voxelShaderVertData.useDrawInstances = 0;
+		_voxelShaderVertData.usedrawinstances = 0;
 		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
@@ -1102,7 +1102,7 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 	video::ScopedState scopedDepthWrite(video::State::DepthMask, false);
 	video::ScopedPolygonMode polygonMode(mode);
 	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-	_voxelShaderVertData.vertRenderoutline = _renderOutline->intVal();
+	_voxelShaderVertData.vertrenderoutline = _renderOutline->intVal();
 	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
 	if (_voxelNormOitShader.isActive()) {
@@ -1128,7 +1128,7 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		_voxelShaderVertData.locked = meshState->locked(idx);
 		_voxelShaderVertData.opacity = opacity;
-		_voxelShaderVertData.useDrawInstances = 0;
+		_voxelShaderVertData.usedrawinstances = 0;
 		core_assert_always(uploadVertUniforms(paletteChanged));
 
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
@@ -1355,8 +1355,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
 		_voxelShaderFragData.gamma = _gamma->floatVal();
 		_voxelShaderFragData.checkerboard = _checkerboard->intVal();
-		_voxelShaderFragData.debugShadow = _debugShadow->intVal();
-		_voxelShaderFragData.debugCascade = _debugCascade->intVal();
+		_voxelShaderFragData.debugshadow = _debugShadow->intVal();
+		_voxelShaderFragData.debugcascade = _debugCascade->intVal();
 		_voxelShaderFragData.tonemapping = _tonemapping->intVal();
 		_voxelShaderFragData.renderoutline = _renderOutline->intVal();
 		_voxelShaderFragData.shadowmap = _shadowMap->intVal();

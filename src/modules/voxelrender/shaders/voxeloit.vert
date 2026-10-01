@@ -25,7 +25,7 @@ void main(void) {
 	v_normal = (normalIndex > 0) ? normalize(v_nm0 * normal.x + v_nm1 * normal.y + v_nm2 * normal.z) : normal.xyz;
 	v_flags = 0u;
 
-	if (u_vert_renderoutline != 0) {
+	if (u_vertrenderoutline != 0) {
 		v_flags |= FLAGOUTLINE;
 		if ((a_flags & FLAGOUTLINE) != 0u) {
 			v_flags |= FLAGOUTLINEPULSE;

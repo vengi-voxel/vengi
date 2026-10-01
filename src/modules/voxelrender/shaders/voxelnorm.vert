@@ -21,7 +21,7 @@ void main(void) {
 	vec4 glowColor = u_glowcolor[materialColorIndex];
 	v_flags = 0u;
 
-	if (u_vert_renderoutline != 0) {
+	if (u_vertrenderoutline != 0) {
 		v_flags |= FLAGOUTLINE;
 		if ((a_flags & FLAGOUTLINE) != 0u) {
 			v_flags |= FLAGOUTLINEPULSE;

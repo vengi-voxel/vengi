@@ -11,36 +11,36 @@ layout(std140, binding = 0) uniform u_vert {
 	mat4 u_model;
 	int u_gray;
 	int u_locked;
-	int u_vert_renderoutline;
+	int u_vertrenderoutline;
 	int u_shownormals;
 	float u_opacity;
 	// 1 = read per-draw model/flags from the draw-instance SSBO (multi-draw batches).
 	// 0 = use u_model/u_gray/... (unique meshes; avoids a useless SSBO update per draw).
-	int u_useDrawInstances;
+	int u_usedrawinstances;
 };
 
 #ifdef USEDRAWPARAMETERS
 #include "_drawinstance.glsl"
 mat4 getModelMatrix() {
-	if (u_useDrawInstances != 0) {
+	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].model;
 	}
 	return u_model;
 }
 int getGrayFlag() {
-	if (u_useDrawInstances != 0) {
+	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].gray;
 	}
 	return u_gray;
 }
 int getLockedFlag() {
-	if (u_useDrawInstances != 0) {
+	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].locked;
 	}
 	return u_locked;
 }
 float getOpacity() {
-	if (u_useDrawInstances != 0) {
+	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].opacity;
 	}
 	return u_opacity;
