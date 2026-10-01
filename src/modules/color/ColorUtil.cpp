@@ -265,9 +265,17 @@ static float getDistanceHSB(const RGBA &rgba, RGBA rgba2) {
 	return getDistanceHSB(rgba2, hue, saturation, brightness);
 }
 
+float srgbToLinear(float c) {
+	const float v = core_max(c, 0.0f);
+	return (v <= 0.04045f) ? (v / 12.92f) : (float)pow((v + 0.055) / 1.055, 2.4);
+}
+
 double srgbToLinear(uint8_t c) {
-	double v = c / 255.0;
-	return (v <= 0.04045) ? (v / 12.92) : pow((v + 0.055) / 1.055, 2.4);
+	return (double)srgbToLinear(c / 255.0f);
+}
+
+glm::vec3 srgbToLinear(const glm::vec3 &srgb) {
+	return glm::vec3(srgbToLinear(srgb.x), srgbToLinear(srgb.y), srgbToLinear(srgb.z));
 }
 
 void rgbToXyz(uint8_t r, uint8_t g, uint8_t b, double &X, double &Y, double &Z) {

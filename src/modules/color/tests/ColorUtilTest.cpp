@@ -192,10 +192,21 @@ TEST_F(ColorUtilTest, testPrint) {
 }
 
 TEST_F(ColorUtilTest, testSrgbToLinear) {
-	EXPECT_NEAR(0.0, color::srgbToLinear(0), 0.0001);
-	EXPECT_NEAR(1.0, color::srgbToLinear(255), 0.0001);
+	EXPECT_NEAR(0.0, color::srgbToLinear((uint8_t)0), 0.0001);
+	EXPECT_NEAR(1.0, color::srgbToLinear((uint8_t)255), 0.0001);
 	// 127/255 = ~0.498. Linear approx ~0.2122
-	EXPECT_NEAR(0.2122, color::srgbToLinear(127), 0.001);
+	EXPECT_NEAR(0.2122, color::srgbToLinear((uint8_t)127), 0.001);
+
+	EXPECT_NEAR(0.0f, color::srgbToLinear(0.0f), 0.0001f);
+	EXPECT_NEAR(1.0f, color::srgbToLinear(1.0f), 0.0001f);
+	EXPECT_NEAR(0.0f, color::srgbToLinear(-0.5f), 0.0001f);
+	EXPECT_NEAR(0.04045f / 12.92f, color::srgbToLinear(0.04045f), 0.0001f);
+	EXPECT_NEAR((float)color::srgbToLinear((uint8_t)127), color::srgbToLinear(127.0f / 255.0f), 0.0001f);
+
+	const glm::vec3 linear = color::srgbToLinear(glm::vec3(0.0f, 127.0f / 255.0f, 1.0f));
+	EXPECT_NEAR(0.0f, linear.x, 0.0001f);
+	EXPECT_NEAR((float)color::srgbToLinear((uint8_t)127), linear.y, 0.0001f);
+	EXPECT_NEAR(1.0f, linear.z, 0.0001f);
 }
 
 TEST_F(ColorUtilTest, testRgbToXyz) {
