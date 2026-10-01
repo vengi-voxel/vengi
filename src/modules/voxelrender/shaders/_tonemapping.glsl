@@ -1,3 +1,6 @@
+#ifndef VENGITONEMAPPING
+#define VENGITONEMAPPING
+
 // MIT License
 //
 // Copyright (c) 2024 Missing Deadlines (Benjamin Wrensch)
@@ -137,6 +140,14 @@ vec3 toneReinhard(vec3 x) {
 	return x / (1.0 + x);
 }
 
+// IEC 61966-2-1 sRGB transfer function (sRGB -> linear).
+// Inverse of linearToSrgb: linear segment below 0.04045, gamma 2.4 segment above.
+vec3 srgbToLinear(vec3 c) {
+	vec3 lo = c / 12.92;
+	vec3 hi = pow((max(c, vec3(0.0)) + 0.055) / 1.055, vec3(2.4));
+	return mix(hi, lo, vec3(lessThanEqual(c, vec3(0.04045))));
+}
+
 // IEC 61966-2-1 sRGB transfer function (linear -> sRGB gamma encoding).
 // Piecewise: linear segment below 0.0031308, gamma 2.4 segment above.
 vec3 linearToSrgb(vec3 c) {
@@ -164,3 +175,5 @@ vec3 tonemapping(vec3 value, int mode) {
 	}
 	return clamp(value, 0.0, 1.0);
 }
+
+#endif

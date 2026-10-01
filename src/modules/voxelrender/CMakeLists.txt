@@ -24,6 +24,9 @@ set(SRCS_SHADERS
 	shaders/_sharedvert.glsl
 	shaders/_sharedfrag.glsl
 	shaders/_tonemapping.glsl
+	shaders/_random.glsl
+	shaders/_sampling.glsl
+	shaders/_brdf.glsl
 )
 foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")
