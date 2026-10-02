@@ -77,7 +77,7 @@ public:
 	/** @return true if any used palette entry has MaterialEmit set. */
 	bool hasAnyEmit() const;
 	/**
-	 * @brief Sets the MagicaVoxel material type and applies that type's property defaults when the type changes.
+	 * @brief Sets the material type and applies that type's property defaults when the type changes.
 	 */
 	void setMaterialType(uint8_t paletteColorIdx, MaterialType type);
 	bool setMaterialProperty(uint8_t paletteColorIdx, const core::String &name, float value);

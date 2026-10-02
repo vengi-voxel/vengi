@@ -29,7 +29,7 @@ Global: `g_palette`
 | `load(name)` | Load a palette from a file or built-in name. |
 | `match(r, g, b, skipIndex)` | Find the closest matching color in the palette. |
 | `material(index, property)` | Get a material property for a palette color. |
-| `materialType(index)` | Get the MagicaVoxel material type name for a palette color. |
+| `materialType(index)` | Get the material type name for a palette color. |
 | `name()` | Get the name of the palette. |
 | `new()` | Create a new empty palette. |
 | `reduce(targetColors)` | Reduce the palette to a target number of colors. |
@@ -39,7 +39,7 @@ Global: `g_palette`
 | `setColor(index, r, g, b, a)` | Set a color in the palette. |
 | `setColorName(index, name)` | Set the name of a color in the palette. |
 | `setMaterial(index, property, value)` | Set a material property for a palette color. |
-| `setMaterialType(index, type)` | Set the MagicaVoxel material type for a palette color and apply that type's property defaults. |
+| `setMaterialType(index, type)` | Set the material type for a palette color and apply that type's property defaults. |
 | `setName(name)` | Set the name of the palette. |
 | `setSize(count)` | Set the number of colors in the palette. |
 | `similar(index, count)` | Find similar colors in the palette. |
@@ -339,7 +339,7 @@ Get a material property for a palette color.
 
 ### materialType
 
-Get the MagicaVoxel material type name for a palette color.
+Get the material type name for a palette color.
 
 **Parameters:**
 
@@ -473,7 +473,7 @@ Set a material property for a palette color.
 
 ### setMaterialType
 
-Set the MagicaVoxel material type for a palette color and apply that type's property defaults.
+Set the material type for a palette color and apply that type's property defaults.
 
 **Parameters:**
 

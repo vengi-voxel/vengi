@@ -257,7 +257,7 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 						1.0f / mat->volume.attenuation_distance);
 	}
 
-	// emissiveFactor is the MagicaVoxel emit channel; emissive_strength scales HDR (>1) values.
+	// emissiveFactor is the emit channel; emissive_strength scales HDR (>1) values.
 	float emit = 0.0f;
 	if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
 		emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
@@ -1168,7 +1168,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				mat.pbr_specular_glossiness.glossiness_factor = 1.0f - roughness;
 			}
 
-			// KHR_materials_volume: attenuationDistance = 1 / MagicaVoxel attenuation
+			// KHR_materials_volume: attenuationDistance = 1 / attenuation
 			if (palMat.has(palette::MaterialProperty::MaterialAttenuation)) {
 				const float atten = palMat.value(palette::MaterialProperty::MaterialAttenuation);
 				mat.has_volume = true;

@@ -5220,7 +5220,7 @@ static int luaVoxel_palette_setmaterialproperty_jsonhelp(lua_State* s) {
 static int luaVoxel_palette_setmaterialtype_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "setMaterialType",
-		"summary": "Set the MagicaVoxel material type for a palette color and apply that type's property defaults.",
+		"summary": "Set the material type for a palette color and apply that type's property defaults.",
 		"parameters": [
 			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
 			{"name": "type", "type": "string", "description": "Diffuse, Metal, Glass, Emit, Blend, or Media (or 0-5)."}
@@ -5233,7 +5233,7 @@ static int luaVoxel_palette_setmaterialtype_jsonhelp(lua_State* s) {
 static int luaVoxel_palette_materialtype_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "materialType",
-		"summary": "Get the MagicaVoxel material type name for a palette color.",
+		"summary": "Get the material type name for a palette color.",
 		"parameters": [
 			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
 		],

@@ -55,7 +55,7 @@ TEST_F(OBJFormatTest, testVoxelizeUVSphereObj) {
 
 TEST_F(OBJFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
-	// MagicaVoxel-only properties are not representable in MTL.
+	// Some material properties are not representable in MTL.
 	core::Buffer<palette::MaterialProperty> ignoredMaterials;
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
