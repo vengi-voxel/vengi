@@ -66,6 +66,15 @@ private:
 		core_aligned_free(_buffer);
 		_buffer = newBuffer;
 	}
+
+	void destroyFrom(size_t newSize) {
+		// Counted loop so GCC can see a finite iteration count (avoids
+		// -Waggressive-loop-optimizations on the old while (_size--) shrink).
+		for (size_t i = _size; i > newSize; --i) {
+			_buffer[i - 1u].~TYPE();
+		}
+		_size = newSize;
+	}
 public:
 	using value_type = TYPE;
 
@@ -392,9 +401,8 @@ public:
 		while (size > _size) {
 			push_back(type);
 		}
-		while (size < _size) {
-			_buffer[_size - 1].~TYPE();
-			--_size;
+		if (size < _size) {
+			destroyFrom(size);
 		}
 	}
 
@@ -403,9 +411,8 @@ public:
 		while (size > _size) {
 			emplace_back(TYPE{});
 		}
-		while (size < _size) {
-			_buffer[_size - 1].~TYPE();
-			--_size;
+		if (size < _size) {
+			destroyFrom(size);
 		}
 	}
 

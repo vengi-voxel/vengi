@@ -130,6 +130,12 @@ TEST(DynamicArrayTest, testResize) {
 	EXPECT_EQ(4u, array.capacity()) << array;
 	ASSERT_EQ(3u, array.size()) << array;
 	EXPECT_EQ(1337, array[2]._bar) << array;
+	array.resize(1);
+	ASSERT_EQ(1u, array.size()) << array;
+	EXPECT_EQ(1, array[0]._bar) << array;
+	EXPECT_EQ(4u, array.capacity()) << array;
+	array.resize(0);
+	EXPECT_EQ(0u, array.size()) << array;
 }
 
 TEST(DynamicArrayTest, testErase) {
