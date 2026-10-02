@@ -4,26 +4,34 @@
 
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "io/CachingArchive.h"
+#include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "util/VarUtil.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelformat/private/mesh/lego/LegoUtil.h"
 
 namespace voxelformat {
 
 class LXFFormatTest : public AbstractFormatTest {
 protected:
-	scenegraph::SceneGraph loadLxfScene(const char *filename, const char *scaleValue) {
+	// Pin LDraw lookup to bundled data/tests/parts so CI without /usr/share/ldraw
+	// (Windows/macOS) and Linux with an official library resolve the same 3001.dat.
+	scenegraph::SceneGraph loadLxfScene(const char *filename, const char *scaleValue, size_t expectedVolumes = 1) {
 		util::ScopedVarChange scaleVar(cfg::VoxformatScale, scaleValue);
+		util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "");
 		scenegraph::SceneGraph sceneGraph;
-		testLoad(sceneGraph, filename, 1, true);
+		testLoad(sceneGraph, filename, expectedVolumes, true);
 		return sceneGraph;
 	}
 };
 
 TEST_F(LXFFormatTest, testLoadLXFML) {
-	scenegraph::SceneGraph sceneGraph = loadLxfScene("lxf-simple.lxfml", "0.01");
+	// 0.1 so the bundled 2x4 stub (80x24x40 LDU) voxelizes to a non-empty volume.
+	// Camera translation is LDD (40,40,40) * 25 LDU * scale.
+	scenegraph::SceneGraph sceneGraph = loadLxfScene("lxf-simple.lxfml", "0.1");
 	if (IsSkipped()) {
 		return;
 	}
@@ -48,9 +56,19 @@ TEST_F(LXFFormatTest, testLoadLXFML) {
 	ASSERT_NE(camera, nullptr);
 	const scenegraph::FrameTransform cameraTransform = sceneGraph.transformForFrame(*camera, 0);
 	EXPECT_EQ(camera->fieldOfView(), 80);
-	EXPECT_NEAR(camera->farPlane(), 0.69282035827636719f, 0.00001f);
-	EXPECT_VEC_NEAR(glm::vec3(10.0f, -10.0f, -10.0f), cameraTransform.worldTranslation(), 0.001f);
+	EXPECT_NEAR(camera->farPlane(), 6.9282035827636719f, 0.00001f);
+	EXPECT_VEC_NEAR(glm::vec3(100.0f, -100.0f, -100.0f), cameraTransform.worldTranslation(), 0.001f);
 	EXPECT_VEC_NEAR(glm::vec3(1.0f), cameraTransform.worldScale(), 0.001f);
+}
+
+TEST_F(LXFFormatTest, testRegisterLdrawSearchPathsFallback) {
+	util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "/nonexistent/ldraw-library");
+	io::MemoryArchivePtr mem = io::openMemoryArchive();
+	const uint8_t buf[] = {'0', ' ', 'B', 'r', 'i', 'c', 'k'};
+	mem->add("parts/3001.dat", buf, sizeof(buf));
+	io::CachingArchive cache(mem);
+	legoutil::registerLdrawSearchPaths(cache);
+	EXPECT_TRUE(cache.exists("3001.dat"));
 }
 
 TEST_F(LXFFormatTest, testLoadAmsterdamCanalStreet) {
@@ -69,9 +87,7 @@ TEST_F(LXFFormatTest, testLoadAmsterdamCanalStreet) {
 }
 
 TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
-	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
-	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "lxf-two-parts.lxfml", 2, true);
+	scenegraph::SceneGraph sceneGraph = loadLxfScene("lxf-two-parts.lxfml", "0.01", 2);
 	if (IsSkipped()) {
 		return;
 	}
@@ -102,9 +118,7 @@ TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
 }
 
 TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
-	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.1");
-	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "lxf-rot-y90.lxfml", 2, true);
+	scenegraph::SceneGraph sceneGraph = loadLxfScene("lxf-rot-y90.lxfml", "0.1", 2);
 	if (IsSkipped()) {
 		return;
 	}
@@ -119,7 +133,7 @@ TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 	ASSERT_NE(nullptr, reference);
 	const glm::ivec3 rotatedSize = rotated->region().getDimensionsInCells();
 	const glm::ivec3 referenceSize = reference->region().getDimensionsInCells();
-	// 3001 is longer along Z at identity; 90 degree Y rotation swaps X/Z extents (vengi Y-up)
+	// Bundled 3001 is a 2x4 (longer along X at identity); 90 degree Y rotation swaps X/Z (vengi Y-up)
 	EXPECT_GT(rotatedSize.z, rotatedSize.x);
 	EXPECT_GT(referenceSize.x, referenceSize.z);
 	EXPECT_GT(rotatedSize.z, referenceSize.z);

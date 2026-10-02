@@ -458,9 +458,11 @@ io::ArchivePtr openLookupArchive(const io::ArchivePtr &archive) {
 void registerLdrawSearchPaths(io::CachingArchive &cachedArchive) {
 	const core::String ldrawDir = core::getVar(cfg::VoxformatLDrawDir)->strVal();
 	const char *ldrawFilter = "*.dat,*.ldr";
+	// Official library first so it wins for a given filename. Always also register
+	// archive-relative parts/p/models so bundled test fixtures and sidecar parts
+	// still resolve when the configured LDraw dir is empty or incomplete.
 	if (!ldrawDir.empty()) {
 		cachedArchive.registerSearchDir(ldrawDir, ldrawFilter);
-		return;
 	}
 	cachedArchive.registerSearchDir("parts", ldrawFilter);
 	cachedArchive.registerSearchDir("p", ldrawFilter);
