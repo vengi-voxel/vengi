@@ -30,6 +30,7 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
+#include <glm/common.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <limits>
 
@@ -220,6 +221,36 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					uvDesc.generate_indices = true;
 					ufbxw_mesh_set_attribute(ws, wMesh, UFBXW_MESH_ATTRIBUTE_UV, 0, &uvDesc);
 				}
+
+				const palette::Palette &palette = sgNode.palette();
+				int palMatIdx = 0;
+				for (int pi = 0; pi < palette.colorCount(); ++pi) {
+					if (palette.material(pi).mask != palette::MaterialNone) {
+						palMatIdx = pi;
+						break;
+					}
+				}
+				const palette::Material &palMat = palette.material(palMatIdx);
+				const color::RGBA rgba = palette.color(palMatIdx);
+				ufbxw_material wMat = ufbxw_create_material(ws, UFBXW_MATERIAL_FBX_PHONG);
+				ufbxw_set_name(ws, wMat.id, sgNode.name().c_str());
+				ufbxw_set_vec3(ws, wMat.id, "DiffuseColor",
+							   {rgba.r / 255.0, rgba.g / 255.0, rgba.b / 255.0});
+				if (palMat.has(palette::MaterialProperty::MaterialRoughness)) {
+					ufbxw_set_real(ws, wMat.id, "ShininessExponent",
+								   (1.0 - (double)palMat.roughness) * 100.0);
+				}
+				if (palMat.has(palette::MaterialProperty::MaterialSpecular)) {
+					ufbxw_set_real(ws, wMat.id, "SpecularFactor", palMat.specular);
+				}
+				if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+					ufbxw_set_real(ws, wMat.id, "ReflectionFactor", palMat.indexOfRefraction);
+				}
+				if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
+					ufbxw_set_real(ws, wMat.id, "EmissiveFactor", palMat.emit);
+				}
+				ufbxw_node_set_material(ws, wNode, 0, wMat);
+				ufbxw_mesh_set_single_material(ws, wMesh, 0);
 			}
 		}
 
@@ -534,6 +565,15 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				if (ufbxMaterial->fbx.specular_factor.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialSpecular,
 										   ufbxMaterial->fbx.specular_factor.value_real);
+				}
+				if (ufbxMaterial->fbx.specular_exponent.has_value) {
+					const float exponent = (float)ufbxMaterial->fbx.specular_exponent.value_real;
+					const float roughness = 1.0f - glm::clamp(exponent / 100.0f, 0.0f, 1.0f);
+					mat->material.setValue(palette::MaterialProperty::MaterialRoughness, roughness);
+				}
+				if (ufbxMaterial->fbx.reflection_factor.has_value) {
+					mat->material.setValue(palette::MaterialProperty::MaterialIndexOfRefraction,
+										   ufbxMaterial->fbx.reflection_factor.value_real);
 				}
 				if (ufbxMaterial->fbx.emission_factor.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialEmit,

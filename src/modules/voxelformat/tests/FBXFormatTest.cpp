@@ -3,6 +3,8 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/collection/Buffer.h"
+#include "palette/Material.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/tests/TestHelper.h"
@@ -135,10 +137,24 @@ TEST_F(FBXFormatTest, testAnimationRoundTrip) {
 		<< "Too many animated nodes lost their keyframes";
 }
 
-// TODO: VOXELFORMAT: we currently don't have fbx material write support - and ufbx can't load ascii files
-TEST_F(FBXFormatTest, DISABLED_testMaterial) {
+// TODO: improve this
+TEST_F(FBXFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
-	testMaterial(sceneGraph, "test_material.fbx");
+	// FBX Phong cannot store all material properties; type is inferred on load.
+	core::Buffer<palette::MaterialProperty> ignoredMaterials;
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSp);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialDensity);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialPhase);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialEmit);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSpecular);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialIndexOfRefraction);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialRoughness);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMetal);
+	ignoredMaterials.push_back(palette::MaterialProperty::MaterialAttenuation);
+	testMaterial(sceneGraph, "test_material.fbx", ignoredMaterials, true);
 }
 
 } // namespace voxelformat
