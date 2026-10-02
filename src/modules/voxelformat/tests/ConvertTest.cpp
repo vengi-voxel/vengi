@@ -119,7 +119,8 @@ TEST_F(ConvertTest, testVXLToQb) {
 	QBFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot);
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot)) |
+		voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("rgb.vxl", src, "convert-rgb.qb", target, flags);
 }
 
@@ -253,7 +254,8 @@ TEST_F(ConvertTest, testQbToVXL) {
 	VXLFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot);
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot)) |
+		voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target, flags);
 }
 
@@ -325,21 +327,25 @@ TEST_F(ConvertTest, testVXLToVXR) {
 	// the palette of vxm contains one transparent entry that is used to indicate empty voxels - thus the palette has
 	// one entry less
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent);
+		(voxel::ValidateFlags::All &
+		 ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
+		voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 
 TEST_F(ConvertTest, testKV6ToKV6) {
 	KV6Format src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	const voxel::ValidateFlags flags =
+		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::OccupiedExact;
 	testConvert("test.kv6", src, "convert-test.kv6", target, flags);
 }
 
 TEST_F(ConvertTest, testKV6ToKV62) {
 	KV6Format src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	const voxel::ValidateFlags flags =
+		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::OccupiedExact;
 	testConvert("test2.kv6", src, "convert-test2.kv6", target, flags);
 }
 
@@ -353,8 +359,8 @@ TEST_F(ConvertTest, testQBToSLAB6Vox) {
 TEST_F(ConvertTest, testQBToKV6) {
 	QBFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors |
+									  voxel::ValidateFlags::IgnoreHollow | voxel::ValidateFlags::OccupiedDestSubset;
 	testConvert("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
 }
 
@@ -368,8 +374,8 @@ TEST_F(ConvertTest, testVengiToKV6) {
 TEST_F(ConvertTest, testKVXToKV6) {
 	KVXFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors |
+									  voxel::ValidateFlags::IgnoreHollow | voxel::ValidateFlags::OccupiedDestSubset;
 	testConvert("test.kvx", src, "convert-test.kv6", target, flags, 0.026f);
 }
 
@@ -392,8 +398,9 @@ TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
 	const voxel::ValidateFlags flags =
-		(voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow) &
-		~voxel::ValidateFlags::Pivot;
+		((voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow) &
+		 ~voxel::ValidateFlags::Pivot) |
+		voxel::ValidateFlags::OccupiedDestSubset;
 	testConvert("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
@@ -409,8 +416,9 @@ TEST_F(ConvertTest, testQBChrKnightToKVX) {
 TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) &
-									   ~(voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = ((voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) &
+									   ~(voxel::ValidateFlags::Palette)) |
+									  voxel::ValidateFlags::OccupiedDestSubset;
 	testConvert("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
@@ -428,8 +436,9 @@ TEST_F(ConvertTest, testVoxToKV6) {
 	// KV6 stores placement as a pivot only. VOX keeps AABB offset in translation
 	// (pivot 0); save bakes that into the KV6 pivot, so neither T nor pivot match.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation &
-		~voxel::ValidateFlags::Pivot & ~voxel::ValidateFlags::Animations;
+		(voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation &
+		 ~voxel::ValidateFlags::Pivot & ~voxel::ValidateFlags::Animations) |
+		voxel::ValidateFlags::OccupiedDestSubset;
 	testConvert("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 

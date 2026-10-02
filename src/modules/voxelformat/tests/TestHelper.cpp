@@ -20,10 +20,15 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
+#include <glm/common.hpp>
+#include <glm/gtx/hash.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/vec4.hpp>
 
 namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix) {
@@ -445,8 +450,102 @@ void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::
 	}
 }
 
+namespace {
+template<typename Fn>
+void visitOccupiedWorld(const scenegraph::SceneGraph &sceneGraph, Fn &&fn) {
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Model); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.volume() == nullptr) {
+			continue;
+		}
+		const glm::mat4 worldMat = sceneGraph.worldMatrix(node, 0);
+		voxelutil::visitVolume(*node.volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if (voxel::isAir(voxel.getMaterial())) {
+				return;
+			}
+			fn(glm::vec3(worldMat * glm::vec4((float)x, (float)y, (float)z, 1.0f)));
+		});
+	}
+}
+} // namespace
+
+bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs) {
+	bool first = true;
+	visitOccupiedWorld(sceneGraph, [&](const glm::vec3 &world) {
+		if (first) {
+			mins = maxs = world;
+			first = false;
+		} else {
+			mins = glm::min(mins, world);
+			maxs = glm::max(maxs, world);
+		}
+	});
+	return !first;
+}
+
+void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph::SceneGraph &dst, bool dstMayBeSubset,
+							 float aabbDelta) {
+	glm::vec3 srcMins(0.0f);
+	glm::vec3 srcMaxs(0.0f);
+	glm::vec3 dstMins(0.0f);
+	glm::vec3 dstMaxs(0.0f);
+	ASSERT_TRUE(occupiedWorldAABB(src, srcMins, srcMaxs));
+	ASSERT_TRUE(occupiedWorldAABB(dst, dstMins, dstMaxs));
+	EXPECT_NEAR(srcMins.x, dstMins.x, aabbDelta);
+	EXPECT_NEAR(srcMins.y, dstMins.y, aabbDelta);
+	EXPECT_NEAR(srcMins.z, dstMins.z, aabbDelta);
+	EXPECT_NEAR(srcMaxs.x, dstMaxs.x, aabbDelta);
+	EXPECT_NEAR(srcMaxs.y, dstMaxs.y, aabbDelta);
+	EXPECT_NEAR(srcMaxs.z, dstMaxs.z, aabbDelta);
+
+	core::DynamicArray<glm::ivec3> srcWorld;
+	core::DynamicArray<glm::ivec3> dstWorld;
+	visitOccupiedWorld(src, [&](const glm::vec3 &world) { srcWorld.push_back(glm::ivec3(glm::round(world))); });
+	visitOccupiedWorld(dst, [&](const glm::vec3 &world) { dstWorld.push_back(glm::ivec3(glm::round(world))); });
+	ASSERT_FALSE(srcWorld.empty());
+	ASSERT_FALSE(dstWorld.empty());
+
+	core::Set<glm::ivec3, 1031, glm::hash<glm::ivec3>> srcSet((int)srcWorld.size());
+	for (const glm::ivec3 &p : srcWorld) {
+		srcSet.insert(p);
+	}
+	int missingInSrc = 0;
+	for (const glm::ivec3 &p : dstWorld) {
+		if (!srcSet.has(p)) {
+			++missingInSrc;
+			if (missingInSrc <= 8) {
+				ADD_FAILURE() << "Destination world voxel " << p.x << ":" << p.y << ":" << p.z
+							  << " is missing in the source";
+			}
+		}
+	}
+	EXPECT_EQ(0, missingInSrc) << "Destination has occupied world cells that are empty in the source";
+	if (!dstMayBeSubset) {
+		core::Set<glm::ivec3, 1031, glm::hash<glm::ivec3>> dstSet((int)dstWorld.size());
+		for (const glm::ivec3 &p : dstWorld) {
+			dstSet.insert(p);
+		}
+		int missingInDst = 0;
+		for (const glm::ivec3 &p : srcWorld) {
+			if (!dstSet.has(p)) {
+				++missingInDst;
+				if (missingInDst <= 8) {
+					ADD_FAILURE() << "Source world voxel " << p.x << ":" << p.y << ":" << p.z
+								  << " is missing in the destination";
+				}
+			}
+		}
+		EXPECT_EQ(0, missingInDst) << "Source has occupied world cells that are empty in the destination";
+	}
+}
+
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
 						  ValidateFlags flags, float maxDelta) {
+	if ((flags & ValidateFlags::OccupiedDestSubset) == ValidateFlags::OccupiedDestSubset) {
+		occupiedWorldComparator(graph1, graph2, true);
+	} else if ((flags & ValidateFlags::OccupiedExact) == ValidateFlags::OccupiedExact) {
+		occupiedWorldComparator(graph1, graph2, false);
+	}
 	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
 		const scenegraph::SceneGraph::MergeResult &merged1 = graph1.merge();
 		core::ScopedPtr<voxel::RawVolume> v1(merged1.volume());

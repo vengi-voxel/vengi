@@ -89,36 +89,12 @@ TEST_F(VMaxFormatTest, testTransform) {
 			  sceneGraphFromVmax.size(scenegraph::SceneGraphNodeType::AllModels));
 	sceneGraphOfficial.updateTransforms();
 	sceneGraphFromVmax.updateTransforms();
-	auto occupiedWorldBounds = [](const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs) {
-		bool first = true;
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Model); iter != sceneGraph.end(); ++iter) {
-			const scenegraph::SceneGraphNode &node = *iter;
-			if (node.volume() == nullptr) {
-				continue;
-			}
-			const glm::mat4 worldMat = sceneGraph.worldMatrix(node, 0);
-			voxelutil::visitVolume(*node.volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
-				if (voxel::isAir(voxel.getMaterial())) {
-					return;
-				}
-				const glm::vec3 world = glm::vec3(worldMat * glm::vec4((float)x, (float)y, (float)z, 1.0f));
-				if (first) {
-					mins = maxs = world;
-					first = false;
-				} else {
-					mins = glm::min(mins, world);
-					maxs = glm::max(maxs, world);
-				}
-			});
-		}
-		return !first;
-	};
 	glm::vec3 officialMins(0.0f);
 	glm::vec3 officialMaxs(0.0f);
 	glm::vec3 vmaxMins(0.0f);
 	glm::vec3 vmaxMaxs(0.0f);
-	ASSERT_TRUE(occupiedWorldBounds(sceneGraphOfficial, officialMins, officialMaxs));
-	ASSERT_TRUE(occupiedWorldBounds(sceneGraphFromVmax, vmaxMins, vmaxMaxs));
+	ASSERT_TRUE(voxel::occupiedWorldAABB(sceneGraphOfficial, officialMins, officialMaxs));
+	ASSERT_TRUE(voxel::occupiedWorldAABB(sceneGraphFromVmax, vmaxMins, vmaxMaxs));
 	EXPECT_NEAR(officialMins.x, vmaxMins.x, 1.0f);
 	EXPECT_NEAR(officialMins.z, vmaxMins.z, 1.0f);
 	EXPECT_NEAR(officialMaxs.x, vmaxMaxs.x, 1.0f);

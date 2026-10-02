@@ -621,11 +621,7 @@ void AbstractFormatTest::testSaveLoadBakedPivot(const core::String &filename, Fo
 	EXPECT_VEC_NEAR(expectedPivot, dst->pivot(), 0.01f);
 	EXPECT_VEC_NEAR(glm::vec3(0.0f), dst->transform(0).worldTranslation(), 0.01f);
 	if (updateTransforms) {
-		const glm::mat4 srcMat = sceneGraph.worldMatrix(*src, 0);
-		const glm::mat4 dstMat = loaded.worldMatrix(*dst, 0);
-		const glm::vec3 srcWorld(srcMat * glm::vec4(src->region().getLowerCornerf(), 1.0f));
-		const glm::vec3 dstWorld(dstMat * glm::vec4(dst->region().getLowerCornerf(), 1.0f));
-		EXPECT_VEC_NEAR(srcWorld, dstWorld, 0.01f);
+		voxel::occupiedWorldComparator(sceneGraph, loaded, false);
 	}
 }
 

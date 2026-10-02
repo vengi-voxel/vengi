@@ -44,7 +44,14 @@
 #define CGLTF_FREE(ptr) core_free(ptr)
 #define CGLTF_IMPLEMENTATION
 #define CGLTF_WRITE_IMPLEMENTATION
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
 #include "../../external/cgltf_write.h"
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 // Note on `(char *)` casts in this file:
 // The cgltf API expects `char*` for string fields (like names, URIs, etc.) because it is originally

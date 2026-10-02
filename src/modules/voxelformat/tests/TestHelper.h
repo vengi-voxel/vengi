@@ -15,6 +15,7 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
+#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
 
 namespace glm {
@@ -61,6 +62,11 @@ enum class ValidateFlags {
 	SceneGraphModelsParent = 4096, // only compare the parent node of the models - but not the children - used for
 								   // formats that don't support multiple models or a scene graph
 
+	// Occupied world cells (translation + voxel - pivot * dims). Opt-in when a
+	// format encodes placement as pivot or baked TRS, so T/pivot fields differ.
+	OccupiedExact = 8192,		// src and dest occupied world cells must match
+	OccupiedDestSubset = 16384, // every dest occupied world cell exists in src (surface dest)
+
 	Transform = Animations | Scale | Pivot | Translation,
 	All = Palette | Color | Transform | SceneGraphModels | SceneGraphModelsParent, // no region here
 	Mesh = Color | Animations | Scale | Pivot | Translation | SceneGraphModels | SceneGraphModelsParent | IgnoreHollow,
@@ -81,6 +87,9 @@ void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta = 0.
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
+bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs);
+void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph::SceneGraph &dst, bool dstMayBeSubset,
+							 float aabbDelta = 0.01f);
 
 // this also allows you to skip some material properties, because a format might not support it.
 // ignoreType skips MaterialType (not expressible in stock glTF).
