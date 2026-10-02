@@ -54,7 +54,7 @@ TEST_F(MinecraftPaletteMapTest, testFindPaletteIndexLitFallback) {
 	EXPECT_EQ(48, findPaletteIndex("minecraft:waxed_weathered_copper_bulb,lit=false"));
 }
 
-TEST_F(MinecraftPaletteMapTest, DISABLED_testMaterialComplete) {
+TEST_F(MinecraftPaletteMapTest, testMaterialComplete) {
 	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 		const core::String &blockId = findPaletteName(i);
 		EXPECT_FALSE(blockId.empty()) << "Failed to find block id for " << i;

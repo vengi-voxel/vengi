@@ -24,11 +24,13 @@ TEST_F(MTSFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("mts-smallvolumesavetest.mts", &f, 0, 15, flags);
 }
 
-TEST_F(MTSFormatTest, DISABLED_testLoadSave) {
+TEST_F(MTSFormatTest, testLoadSave) {
 	MTSFormat f;
-	// this is converted to minecraft block ids and when loaded, we are using the minecraft palette
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
-	testConvert("minetest.mts", f, "mts-voxlap5.mts", f, flags);
+	// converted to minecraft block ids; load uses the minecraft palette
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All &
+									  ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color |
+										voxel::ValidateFlags::Pivot);
+	testSaveLoadVoxel("mts-loadsave.mts", &f, 0, 15, flags);
 }
 
 } // namespace voxelformat

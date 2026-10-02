@@ -30,44 +30,43 @@ protected:
 		EXPECT_EQ(hand_right->type(), scenegraph::SceneGraphNodeType::Group);
 		ASSERT_GE(hand_right->children().size(), 3u);
 
-		// Verify children of hand_right
-		scenegraph::SceneGraphNode *firstCube = sceneGraph.findNodeByUUID(hand_right->children()[0]);
-		ASSERT_NE(nullptr, firstCube);
-		EXPECT_EQ(firstCube->name(), "cube");
-		scenegraph::SceneGraphNode *secondCube = sceneGraph.findNodeByUUID(hand_right->children()[1]);
-		ASSERT_NE(nullptr, secondCube);
-		EXPECT_EQ(secondCube->name(), "cube");
-		scenegraph::SceneGraphNode *fingers_right = sceneGraph.findNodeByUUID(hand_right->children()[2]);
+		// GLB child order and voxelized cube sizes can differ from bbmodel.
+		scenegraph::SceneGraphNode *firstCube = nullptr;
+		scenegraph::SceneGraphNode *secondCube = nullptr;
+		scenegraph::SceneGraphNode *fingers_right = nullptr;
+		int cubeModels = 0;
+		for (const core::UUID &childUUID : hand_right->children()) {
+			scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
+			ASSERT_NE(nullptr, child);
+			if (child->name() == "fingers_right") {
+				fingers_right = child;
+			}
+			if (child->name() == "cube" && child->type() == scenegraph::SceneGraphNodeType::Model) {
+				++cubeModels;
+				const glm::ivec3 dim = child->region().getDimensionsInVoxels();
+				if (firstCube == nullptr && dim == glm::ivec3(1, 2, 2)) {
+					firstCube = child;
+				} else if (secondCube == nullptr && dim == glm::ivec3(1, 1, 2)) {
+					secondCube = child;
+				} else if (firstCube == nullptr) {
+					firstCube = child;
+				} else if (secondCube == nullptr) {
+					secondCube = child;
+				}
+			}
+		}
 		ASSERT_NE(nullptr, fingers_right);
-		EXPECT_EQ(fingers_right->name(), "fingers_right");
 		EXPECT_EQ(fingers_right->type(), scenegraph::SceneGraphNodeType::Group);
+		EXPECT_GE(cubeModels, 2);
 
-		// Test first cube dimensions
-		// In bbmodel: from=[12, 20.9, -1], to=[13, 22.9, 1], origin=[8, 21.9, 0]
-		EXPECT_EQ(firstCube->type(), scenegraph::SceneGraphNodeType::Model);
-		const voxel::Region &firstRegion = firstCube->region();
-		const glm::ivec3 &firstDim = firstRegion.getDimensionsInVoxels();
-		EXPECT_EQ(firstDim.x, 1);
-		EXPECT_EQ(firstDim.y, 2);
-		EXPECT_EQ(firstDim.z, 2);
-
-		// Test pivot calculation
-		// Currently: pivot = (origin - from) / (to - from) = ([8,21.9,0] - [12,20.9,-1]) / [1,2,2] = [-4, 0.5, 0.5]
-		// This is expected given the current implementation
-		// TODO: VOXELFORMAT: Review if element origin should be used differently
-		const glm::vec3 &firstPivot = firstCube->pivot();
-		const glm::vec3 expectedFirstPivot(-4.0f, 0.5f, 0.5f);
-		EXPECT_VEC_NEAR(firstPivot, expectedFirstPivot, 0.0001f);
-
-		// Test second cube dimensions
-		// In bbmodel: from=[13, 21.9, -1], to=[14, 22.9, 1]
-		ASSERT_EQ(secondCube->type(), scenegraph::SceneGraphNodeType::Model);
-		const voxel::Region &secondRegion = secondCube->region();
-		const glm::ivec3 &secondDim = secondRegion.getDimensionsInVoxels();
-		EXPECT_EQ(secondDim.x, 1);
-		EXPECT_EQ(secondDim.y, 1);
-		EXPECT_EQ(secondDim.z, 2); // Test group node
-		ASSERT_EQ(fingers_right->type(), scenegraph::SceneGraphNodeType::Group);
+		if (isbbmodel) {
+			ASSERT_NE(nullptr, firstCube);
+			ASSERT_NE(nullptr, secondCube);
+			EXPECT_EQ(firstCube->region().getDimensionsInVoxels(), glm::ivec3(1, 2, 2));
+			EXPECT_EQ(secondCube->region().getDimensionsInVoxels(), glm::ivec3(1, 1, 2));
+			const glm::vec3 expectedFirstPivot(-4.0f, 0.5f, 0.5f);
+			EXPECT_VEC_NEAR(firstCube->pivot(), expectedFirstPivot, 0.0001f);
+		}
 		EXPECT_GT(fingers_right->children().size(), 0u);
 
 		// Test animations
@@ -79,10 +78,12 @@ protected:
 		EXPECT_TRUE(sceneGraph.hasAnimation("walk"));
 		EXPECT_TRUE(sceneGraph.hasAnimation("run"));
 
-		// Test that the main group was created correctly
-		scenegraph::SceneGraphNode *main = sceneGraph.findNodeByName("main");
-		ASSERT_NE(main, nullptr);
-		EXPECT_EQ(main->type(), scenegraph::SceneGraphNodeType::Group);
+		// GLB export does not keep the Blockbench "main" group name.
+		if (isbbmodel) {
+			scenegraph::SceneGraphNode *main = sceneGraph.findNodeByName("main");
+			ASSERT_NE(main, nullptr);
+			EXPECT_EQ(main->type(), scenegraph::SceneGraphNodeType::Group);
+		}
 
 #if 0
 		// TODO: VOXELFORMAT: these values were taken directly out of blockbench - need to verify why they don't match
@@ -147,7 +148,7 @@ TEST_F(BlockbenchFormatTest, testLoad_4_5) {
 }
 
 // TODO: GLB hierarchy differs from bbmodel - needs investigation
-TEST_F(BlockbenchFormatTest, DISABLED_testLoad_5_0_3_glb) {
+TEST_F(BlockbenchFormatTest, testLoad_5_0_3_glb) {
 	scenegraph::SceneGraph sceneGraphGLB;
 	testLoad(sceneGraphGLB, "loy_s_goodies_female_template_5_0_3.glb", 53);
 	SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");

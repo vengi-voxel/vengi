@@ -3,8 +3,10 @@
  */
 
 #include "MinecraftPaletteMap.h"
+#include "color/ColorUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 
@@ -2341,7 +2343,35 @@ core::String findPaletteName(int palIdx) {
 			return palette[i].name;
 		}
 	}
-	return {};
+	if (palIdx < 0 || palIdx >= palette::PaletteMaxColors) {
+		return {};
+	}
+	// Unmapped built-in minecraft palette slots still need a block id on export.
+	// Use the closest already-mapped color so the reverse lookup is complete.
+	static palette::Palette mcPal;
+	static bool mcPalInit = false;
+	if (!mcPalInit) {
+		mcPal.minecraft();
+		mcPalInit = true;
+	}
+	const color::RGBA target = mcPal.color(palIdx);
+	int best = -1;
+	float bestDist = 1e9f;
+	for (int i = 0; i < (int)palette.size(); i++) {
+		const int mapped = palette[i].palIdx;
+		if (mapped < 0 || mapped >= palette::PaletteMaxColors) {
+			continue;
+		}
+		const float dist = color::getDistance(target, mcPal.color(mapped), color::Distance::HSB);
+		if (dist < bestDist) {
+			bestDist = dist;
+			best = i;
+		}
+	}
+	if (best == -1) {
+		return {};
+	}
+	return palette[best].name;
 }
 
 // minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
