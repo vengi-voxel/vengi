@@ -122,7 +122,7 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 }
 
 // https://github.com/vengi-voxel/vengi/issues/636
-TEST_F(VXLFormatTest, DISABLED_testLegsVXLAndHVAIssue636) {
+TEST_F(VXLFormatTest, testLegsVXLAndHVAIssue636) {
 	scenegraph::SceneGraph sceneGraph;
 	int expectedModels = 18;
 	testLoad(sceneGraph, "bug636/legs.vxl", expectedModels);
