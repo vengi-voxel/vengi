@@ -31,6 +31,14 @@ static bool relativePath(const core::String &dirPath, const core::String &fullPa
 		relative = normalized.substr(prefix.size());
 		return true;
 	}
+	// e.g. FilesystemArchive resolves relative search dirs against registered paths and returns
+	// absolute fullPath (normalized) values. Match the search directory as a path-component suffix.
+	const core::String needle = core::String("/") + prefix;
+	const size_t pos = normalized.rfind(needle.c_str());
+	if (pos != core::String::npos) {
+		relative = normalized.substr(pos + needle.size());
+		return true;
+	}
 	return false;
 }
 
@@ -54,7 +62,12 @@ void CachingArchive::registerSearchDirRecursive(const core::String &path, const 
 		}
 		core::String relative;
 		if (!priv::relativePath(path, entry.fullPath, relative)) {
-			continue;
+			// list() is already scoped to the search dir; fall back to the entry name so
+			// absolute fullPath values from e.g. FilesystemArchive are still cached.
+			if (entry.name.empty()) {
+				continue;
+			}
+			relative = entry.name;
 		}
 		const size_t slash = relative.find("/");
 		if (slash != core::String::npos) {
