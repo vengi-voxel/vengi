@@ -425,9 +425,11 @@ TEST_F(ConvertTest, testVengiToKVX) {
 TEST_F(ConvertTest, testVoxToKV6) {
 	VoxFormat src;
 	KV6Format target;
-	// KV6 is a single-volume format that doesn't store translation
+	// KV6 stores placement as a pivot only. VOX keeps AABB offset in translation
+	// (pivot 0); save bakes that into the KV6 pivot, so neither T nor pivot match.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation & ~voxel::ValidateFlags::Animations;
+		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Translation &
+		~voxel::ValidateFlags::Pivot & ~voxel::ValidateFlags::Animations;
 	testConvert("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 
