@@ -27,11 +27,11 @@ static bool relativePath(const core::String &dirPath, const core::String &fullPa
 		relative = core::string::extractFilenameWithExtension(normalized);
 		return true;
 	}
-	if (!core::string::startsWith(normalized, prefix)) {
-		return false;
+	if (core::string::startsWith(normalized, prefix)) {
+		relative = normalized.substr(prefix.size());
+		return true;
 	}
-	relative = normalized.substr(prefix.size());
-	return true;
+	return false;
 }
 
 } // namespace priv
