@@ -713,7 +713,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeUInt32(ysiz_d))
 	wrapBool(stream->writeUInt32(zsiz_h))
 
-	glm::vec3 pivot = node->pivot() * glm::vec3(region.getDimensionsInVoxels());
+	// KV6 only stores a pivot. Bake node translation into it so a scene-mode
+	// move (e.g. raising a model off the waterline) survives save/reload.
+	const glm::vec3 nodePivot =
+		priv::bakedNormalizedPivot(node->pivot(), priv::nodeTranslation(sceneGraph, *node), dim);
+	const glm::vec3 pivot = nodePivot * glm::vec3(region.getDimensionsInVoxels());
 	wrapBool(stream->writeFloat(pivot.x))
 	wrapBool(stream->writeFloat(pivot.z))
 	wrapBool(stream->writeFloat(pivot.y))

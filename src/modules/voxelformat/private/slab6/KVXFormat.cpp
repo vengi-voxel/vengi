@@ -105,17 +105,14 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	wrap(stream->readInt32(pivy_d))
 	wrap(stream->readInt32(pivz_h))
 
-	// For extra precision, this location has been shifted up by 8 bits.
-	pivx_w >>= 8;
-	pivy_d >>= 8;
-	pivz_h >>= 8;
-
-	pivz_h = zsiz_h - 1 - pivz_h;
+	const float pivx = (float)pivx_w / 256.0f;
+	const float pivy = (float)pivy_d / 256.0f;
+	const float pivz = (float)pivz_h / 256.0f;
 
 	glm::vec3 normalizedPivot;
-	normalizedPivot.x = (float)pivx_w / (float)xsiz_w;
-	normalizedPivot.y = (float)pivz_h / (float)zsiz_h;
-	normalizedPivot.z = (float)pivy_d / (float)ysiz_d;
+	normalizedPivot.x = pivx / (float)xsiz_w;
+	normalizedPivot.y = ((float)(zsiz_h - 1) - pivz) / (float)zsiz_h;
+	normalizedPivot.z = pivy / (float)ysiz_d;
 
 	/**
 	 * For compression purposes, I store the column pointers
@@ -244,14 +241,13 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeUInt32(dim.y))
 	Log::debug("Dimensions: %i:%i:%i", dim.x, dim.z, dim.y);
 
-	// convert normalized pivot to kvx voxel coordinates
-	const glm::vec3 &nodePivot = node->pivot();
-	// nodePivot is normalized [0,1] relative to dimensions
-	// kvx stores pivot in voxel coords shifted left by 8 bits
-	// swap y/z for kvx coordinate system
-	int32_t pivx_w = (int32_t)(nodePivot.x * (float)dim.x) << 8;
-	int32_t pivy_d = (int32_t)(nodePivot.z * (float)dim.z) << 8;
-	int32_t pivz_h = (int32_t)((float)(dim.y - 1) - nodePivot.y * (float)dim.y) << 8;
+	// KVX only stores a pivot. Bake node translation into it so a scene-mode
+	// move (e.g. raising a model off the waterline) survives save/reload.
+	const glm::vec3 nodePivot =
+		priv::bakedNormalizedPivot(node->pivot(), priv::nodeTranslation(sceneGraph, *node), dim);
+	int32_t pivx_w = (int32_t)glm::round(nodePivot.x * (float)dim.x * 256.0f);
+	int32_t pivy_d = (int32_t)glm::round(nodePivot.z * (float)dim.z * 256.0f);
+	int32_t pivz_h = (int32_t)glm::round(((float)(dim.y - 1) - nodePivot.y * (float)dim.y) * 256.0f);
 	wrapBool(stream->writeInt32(pivx_w))
 	wrapBool(stream->writeInt32(pivy_d))
 	wrapBool(stream->writeInt32(pivz_h))

@@ -57,4 +57,16 @@ TEST_F(SLABSharedTest, testRGBScaledColor) {
 	EXPECT_NEAR(rcolor2.b, color2.b, 4);
 }
 
+TEST_F(SLABSharedTest, testBakedNormalizedPivot) {
+	const glm::ivec3 dims(8, 8, 8);
+	EXPECT_VEC_NEAR(glm::vec3(0.0f), priv::bakedNormalizedPivot(glm::vec3(0.0f), glm::vec3(0.0f), dims), 0.0001f);
+	EXPECT_VEC_NEAR(glm::vec3(0.5f, 0.0f, 0.5f),
+					priv::bakedNormalizedPivot(glm::vec3(0.5f), glm::vec3(0.0f, 4.0f, 0.0f), dims), 0.0001f);
+	EXPECT_VEC_NEAR(glm::vec3(0.5f, 0.0f, 0.5f),
+					priv::bakedNormalizedPivot(glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f), dims), 0.0001f);
+	const glm::vec3 translation(4.0f, 8.0f, -2.0f);
+	EXPECT_VEC_NEAR(-translation / glm::vec3(dims),
+					priv::bakedNormalizedPivot(glm::vec3(0.0f), translation, dims), 0.0001f);
+}
+
 } // namespace voxelformat

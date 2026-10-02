@@ -581,6 +581,54 @@ void AbstractFormatTest::testSaveLoadCube(const core::String &filename, Format *
 	testSaveLoadVolumes(filename, original, format, flags, maxDelta);
 }
 
+void AbstractFormatTest::testSaveLoadBakedPivot(const core::String &filename, Format *format, const glm::vec3 &pivot,
+												const glm::vec3 &translation, const glm::vec3 &expectedPivot,
+												bool updateTransforms) {
+	SCOPED_TRACE(filename.c_str());
+	palette::Palette pal;
+	pal.magicaVoxel();
+	const voxel::Region region(0, 0, 0, 7, 7, 7);
+	voxel::RawVolume volume(region);
+	ASSERT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(pal, 1)));
+	ASSERT_TRUE(volume.setVoxel(7, 7, 7, voxel::createVoxel(pal, 2)));
+
+	scenegraph::SceneGraph sceneGraph;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&volume);
+		node.setPalette(pal);
+		node.setPivot(pivot);
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(translation);
+		node.setTransform(0, transform);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	if (updateTransforms) {
+		sceneGraph.updateTransforms();
+	}
+
+	const io::ArchivePtr archive = helper_archive();
+	ASSERT_TRUE(format->save(sceneGraph, filename, archive, testSaveCtx));
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format->load(filename, archive, loaded, testLoadCtx));
+	loaded.updateTransforms();
+
+	const scenegraph::SceneGraphNode *src = sceneGraph.firstModelNode();
+	const scenegraph::SceneGraphNode *dst = loaded.firstModelNode();
+	ASSERT_NE(nullptr, src);
+	ASSERT_NE(nullptr, dst);
+	EXPECT_VEC_NEAR(expectedPivot, dst->pivot(), 0.01f);
+	EXPECT_VEC_NEAR(glm::vec3(0.0f), dst->transform(0).worldTranslation(), 0.01f);
+	if (updateTransforms) {
+		const glm::mat4 srcMat = sceneGraph.worldMatrix(*src, 0);
+		const glm::mat4 dstMat = loaded.worldMatrix(*dst, 0);
+		const glm::vec3 srcWorld(srcMat * glm::vec4(src->region().getLowerCornerf(), 1.0f));
+		const glm::vec3 dstWorld(dstMat * glm::vec4(dst->region().getLowerCornerf(), 1.0f));
+		EXPECT_VEC_NEAR(srcWorld, dstWorld, 0.01f);
+	}
+}
+
 void AbstractFormatTest::testSaveLoadVolumes(const core::String &filename, const voxel::RawVolume &original,
 											 Format *format, voxel::ValidateFlags flags, float maxDelta) {
 	palette::Palette pal;

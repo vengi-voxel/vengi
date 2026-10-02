@@ -6,9 +6,31 @@
 #include "core/Log.h"
 #include "color/RGBA.h"
 #include "io/Stream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
+#include <glm/gtc/epsilon.hpp>
 
 namespace voxelformat {
 namespace priv {
+
+glm::vec3 nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+	const scenegraph::SceneGraphTransform &t = node.transform(0);
+	if (t.dirty()) {
+		// World or local was set but update() was not called yet (e.g. right after a VOX load).
+		const glm::vec3 &world = t.worldTranslation();
+		if (!glm::all(glm::epsilonEqual(world, glm::vec3(0.0f), 0.0001f))) {
+			return world;
+		}
+		return t.localTranslation();
+	}
+	return sceneGraph.transformForFrame(node, 0).worldTranslation();
+}
+
+glm::vec3 bakedNormalizedPivot(const glm::vec3 &normalizedPivot, const glm::vec3 &translation, const glm::ivec3 &dims) {
+	const glm::vec3 d(dims);
+	return normalizedPivot - translation / d;
+}
 
 SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
 	SLABVisibility vis = SLABVisibility::None;

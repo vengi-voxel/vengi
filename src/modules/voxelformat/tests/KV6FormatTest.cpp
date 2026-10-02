@@ -91,4 +91,29 @@ TEST_F(KV6FormatTest, testAnasplit) {
 	EXPECT_EQ(lengthof(modelRegions), compared);
 }
 
+TEST_F(KV6FormatTest, testSaveLoadTranslationBakedIntoPivot) {
+	KV6Format f;
+	const glm::vec3 translation(4.0f, 8.0f, -2.0f);
+	const glm::vec3 dims(8.0f);
+	testSaveLoadBakedPivot("kv6-translation-pivot.kv6", &f, glm::vec3(0.0f), translation, -translation / dims);
+}
+
+TEST_F(KV6FormatTest, testSaveLoadRaisedCenterPivot) {
+	KV6Format f;
+	testSaveLoadBakedPivot("kv6-raised-center-pivot.kv6", &f, glm::vec3(0.5f), glm::vec3(0.0f, 4.0f, 0.0f),
+						   glm::vec3(0.5f, 0.0f, 0.5f));
+}
+
+TEST_F(KV6FormatTest, testSaveLoadCenteredAabbTranslation) {
+	KV6Format f;
+	testSaveLoadBakedPivot("kv6-centered-aabb.kv6", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
+						   glm::vec3(0.5f, 0.0f, 0.5f));
+}
+
+TEST_F(KV6FormatTest, testSaveLoadDirtyWorldTranslation) {
+	KV6Format f;
+	testSaveLoadBakedPivot("kv6-dirty-translation.kv6", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
+						   glm::vec3(0.5f, 0.0f, 0.5f), false);
+}
+
 } // namespace voxelformat

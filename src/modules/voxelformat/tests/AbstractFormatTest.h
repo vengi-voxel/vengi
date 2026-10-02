@@ -87,6 +87,14 @@ protected:
 						   voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 	void testSaveLoadCube(const core::String &filename, Format *format,
 						  voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
+	/**
+	 * Formats that only store a pivot (not node translation) should bake the
+	 * translation into the pivot on save. @p updateTransforms is false to cover
+	 * a dirty world translation (e.g. VOX load then save-as).
+	 */
+	void testSaveLoadBakedPivot(const core::String &filename, Format *format, const glm::vec3 &pivot,
+								const glm::vec3 &translation, const glm::vec3 &expectedPivot,
+								bool updateTransforms = true);
 	void testConvert(const core::String &srcFilename, Format &srcFormat, const core::String &destFilename,
 							 Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All,
 							 float maxDelta = 0.001f);
