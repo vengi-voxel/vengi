@@ -172,11 +172,6 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
 }
 
-TEST_F(GLTFFormatTest, testMaterial) {
-	scenegraph::SceneGraph sceneGraph;
-	testMaterial(sceneGraph, "test_material.gltf");
-}
-
 TEST_F(GLTFFormatTest, testNodeProperties) {
 	GLTFFormat format;
 	palette::Palette palette;

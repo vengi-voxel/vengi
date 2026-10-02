@@ -39,8 +39,8 @@ TEST_F(VoxFormatTest, testLoad) {
 	testLoad("magicavoxel.vox");
 }
 
-TEST_F(VoxFormatTest, DISABLED_testTeardownLoad) {
-	testLoad("teardown.vox");
+TEST_F(VoxFormatTest, testTeardownLoad) {
+	testLoad("teardown.vox", 8);
 }
 
 TEST_F(VoxFormatTest, testLoadMaterials) {

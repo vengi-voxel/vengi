@@ -498,8 +498,7 @@ TEST_F(ConvertTest, testConvertMaterialVengiToVox) {
 	testMaterial(sceneGraph, "test_material_to_vengi.vox");
 }
 
-// TODO: MATERIAL: materials are not yet properly loaded back from gltf
-TEST_F(ConvertTest, DISABLED_testConvertMaterialVengiToGLTF) {
+TEST_F(ConvertTest, testConvertMaterialVengiToGLTF) {
 	scenegraph::SceneGraph sceneGraph;
 	testMaterial(sceneGraph, "test_material.gltf");
 }
