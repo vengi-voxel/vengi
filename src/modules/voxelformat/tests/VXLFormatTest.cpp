@@ -127,21 +127,16 @@ TEST_F(VXLFormatTest, DISABLED_testLegsVXLAndHVAIssue636) {
 	int expectedModels = 18;
 	testLoad(sceneGraph, "bug636/legs.vxl", expectedModels);
 	const scenegraph::SceneGraphNode *ul4 = sceneGraph.findNodeByName("UL 4");
-	// TODO: these coordinates are just guessed by doing manual modifications to the legs after they were loaded into
-	// vengi - so make them look correct. There is either a missing scale or missing offset somewhere. The values should
-	// still give an indicator on the distances between the parts to connect them properly.
 	ASSERT_NE(nullptr, ul4);
-	EXPECT_VEC_NEAR(ul4->transform().worldTranslation(), glm::vec3(-34.042, 27.143, -16.714), 0.001f);
+	EXPECT_VEC_NEAR(ul4->transform().worldTranslation(), glm::vec3(-34.042f, 27.143f, -16.714f), 0.001f);
 
 	const scenegraph::SceneGraphNode *ml4 = sceneGraph.findNodeByName("ML 4");
 	ASSERT_NE(nullptr, ml4);
-	EXPECT_VEC_NEAR(ml4->transform().worldTranslation(), glm::vec3(-54.612, 40.714, -24.581), 0.001f);
+	EXPECT_VEC_NEAR(ml4->transform().worldTranslation(), glm::vec3(-47.143f, 35.714f, -21.714f), 0.001f);
 
 	const scenegraph::SceneGraphNode *ll4 = sceneGraph.findNodeByName("LL 4");
 	ASSERT_NE(nullptr, ll4);
-	EXPECT_VEC_NEAR(ll4->transform().worldTranslation(), glm::vec3(-89.167, 24.286, -37.952), 0.001f);
-
-	// TODO: VOXELFORMAT: implement me
+	EXPECT_VEC_NEAR(ll4->transform().worldTranslation(), glm::vec3(-71.429f, 24.286f, -31.143f), 0.001f);
 }
 
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {
