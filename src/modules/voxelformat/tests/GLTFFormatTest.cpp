@@ -6,11 +6,15 @@
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "io/Stream.h"
-#include "palette/Material.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "util/VarUtil.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -170,15 +174,59 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 
 TEST_F(GLTFFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
-	// Stock glTF has no MagicaVoxel MaterialType, flux, density, media, phase, sp, or ldr.
-	core::Buffer<palette::MaterialProperty> ignoredMaterials;
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialLowDynamicRange);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialFlux);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSp);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialDensity);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialPhase);
-	testMaterial(sceneGraph, "test_material.gltf", ignoredMaterials, true);
+	testMaterial(sceneGraph, "test_material.gltf");
+}
+
+TEST_F(GLTFFormatTest, testNodeProperties) {
+	GLTFFormat format;
+	palette::Palette palette;
+	palette.nippon();
+
+	scenegraph::SceneGraph sceneGraph;
+	sceneGraph.node(0).setProperty(scenegraph::PropAuthor, "vengi");
+	sceneGraph.node(0).setProperty(scenegraph::PropTitle, "property-roundtrip");
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName("prop-node");
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(0)));
+		volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 1));
+		node.setVolume(volume);
+		node.setPalette(palette);
+		node.setProperty(scenegraph::PropAuthor, "node-author");
+		node.setProperty("custom", "value");
+		sceneGraph.emplace(core::move(node));
+	}
+
+	const core::String filename = "node-properties.gltf";
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	ASSERT_TRUE(format.save(sceneGraph, filename, archive, testSaveCtx));
+
+	{
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		ASSERT_TRUE(stream);
+		core::String json;
+		json.reserve((size_t)stream->size());
+		for (;;) {
+			char chunk[4096];
+			const int n = stream->read(chunk, sizeof(chunk));
+			if (n <= 0) {
+				break;
+			}
+			json.append(chunk, n);
+		}
+		EXPECT_NE(core::String::npos, json.find("VENGI_materials"));
+		EXPECT_NE(core::String::npos, json.find("VENGI_properties"));
+		EXPECT_NE(core::String::npos, json.find("extensionsUsed"));
+	}
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load(filename, archive, loaded, testLoadCtx));
+	EXPECT_EQ("vengi", loaded.node(0).property(scenegraph::PropAuthor));
+	EXPECT_EQ("property-roundtrip", loaded.node(0).property(scenegraph::PropTitle));
+	const scenegraph::SceneGraphNode *loadedNode = loaded.firstModelNode();
+	ASSERT_NE(nullptr, loadedNode);
+	EXPECT_EQ("node-author", loadedNode->property(scenegraph::PropAuthor));
+	EXPECT_EQ("value", loadedNode->property("custom"));
 }
 
 class VoxelizeLantern : public AbstractFormatTest, public ::testing::WithParamInterface<bool> {};

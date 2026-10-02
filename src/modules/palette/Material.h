@@ -72,7 +72,7 @@ struct Material {
 	float lowDynamicRange = 0.0f;
 	float density = 0.0f;
 	float sp = 0.0f;
-	float phase = 0.0f; // scattering asymmetry g: 0 isotropic, > 0 forward, < 0 backward
+	float phase = 0.0f; // Henyey-Greenstein - scattering asymmetry g: 0 isotropic, > 0 forward, < 0 backward
 	float media = 0.0f;
 
 	bool operator==(const Material &rhs) const;

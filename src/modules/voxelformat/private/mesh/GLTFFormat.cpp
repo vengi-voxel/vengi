@@ -26,10 +26,12 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
+#include "json/JSON.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
@@ -163,6 +165,203 @@ static scenegraph::InterpolationType gltfInterpolationToSceneGraph(cgltf_interpo
 	return scenegraph::InterpolationType::Linear;
 }
 
+static const char *EXT_VENGI_MATERIALS = "VENGI_materials";
+static const char *EXT_VENGI_PROPERTIES = "VENGI_properties";
+
+static const char *findExtensionData(const cgltf_extension *exts, cgltf_size count, const char *name) {
+	if (exts == nullptr || name == nullptr) {
+		return nullptr;
+	}
+	for (cgltf_size i = 0; i < count; ++i) {
+		if (exts[i].name != nullptr && core::String(exts[i].name) == name) {
+			return exts[i].data;
+		}
+	}
+	return nullptr;
+}
+
+// Stock glTF cannot represent MaterialType or flux/ldr/density/sp/phase/media.
+// Persist them in VENGI_materials so a glTF round-trip can restore the full material.
+static core::String materialToVengiExtensionJson(const palette::Material &palMat) {
+	json::Json vengi = json::Json::object();
+	vengi.set("type", palette::MaterialTypeName(palMat.type));
+	for (int i = (int)palette::MaterialProperty::MaterialMetal; i < (int)palette::MaterialProperty::MaterialMax; ++i) {
+		const palette::MaterialProperty prop = (palette::MaterialProperty)i;
+		if (palMat.has(prop)) {
+			vengi.set(palette::MaterialPropertyName(prop), palMat.value(prop));
+		}
+	}
+	return vengi.dump();
+}
+
+static bool applyVengiMaterialObject(const json::Json &vengi, palette::Material &palMat) {
+	if (!vengi.isObject()) {
+		return false;
+	}
+
+	// Extension payload is the authoritative snapshot: drop constructor/PBR defaults first
+	palMat = palette::Material();
+	palMat.mask = 0;
+	palMat.roughness = 0.0f;
+	palMat.indexOfRefraction = 0.0f;
+	palMat.type = palette::MaterialType::Diffuse;
+
+	const core::String typeName = vengi.strVal("type", "");
+	palette::MaterialType type = palette::MaterialType::Diffuse;
+	if (!typeName.empty() && palette::materialTypeFromName(typeName.c_str(), type)) {
+		palMat.type = type;
+	}
+	for (int i = (int)palette::MaterialProperty::MaterialMetal; i < (int)palette::MaterialProperty::MaterialMax; ++i) {
+		const palette::MaterialProperty prop = (palette::MaterialProperty)i;
+		const char *name = palette::MaterialPropertyName(prop);
+		if (vengi.contains(name)) {
+			palMat.setValue(prop, vengi.floatVal(name, 0.0f));
+		}
+	}
+	return true;
+}
+
+static bool applyVengiMaterialExtension(const cgltf_material *mat, palette::Material &palMat) {
+	if (mat == nullptr) {
+		return false;
+	}
+	const char *extData = findExtensionData(mat->extensions, mat->extensions_count, EXT_VENGI_MATERIALS);
+	if (extData != nullptr && extData[0] != '\0') {
+		const json::Json vengi = json::Json::parse(extData);
+		if (applyVengiMaterialObject(vengi, palMat)) {
+			return true;
+		}
+	}
+	// Older vengi exports stored the same snapshot in extras.vengi
+	if (mat->extras.data != nullptr && mat->extras.data[0] != '\0') {
+		const json::Json extras = json::Json::parse(mat->extras.data);
+		if (extras.isValid() && extras.contains("vengi")) {
+			return applyVengiMaterialObject(extras.get("vengi"), palMat);
+		}
+	}
+	return false;
+}
+
+static core::String propertiesToVengiExtensionJson(const scenegraph::SceneGraphNodeProperties &properties) {
+	json::Json obj = json::Json::object();
+	for (const auto &entry : properties) {
+		obj.set(entry->key.c_str(), entry->value);
+	}
+	return obj.dump();
+}
+
+static void applyVengiPropertiesJson(const json::Json &obj, scenegraph::SceneGraphNode &sgNode) {
+	if (!obj.isObject()) {
+		return;
+	}
+	for (auto it = obj.begin(); it != obj.end(); ++it) {
+		const core::String key = it.key();
+		if (key.empty()) {
+			continue;
+		}
+		const json::Json val = *it;
+		if (val.isString()) {
+			sgNode.setProperty(key, val.str());
+		} else {
+			sgNode.setProperty(key, val.dump());
+		}
+	}
+}
+
+static void applyVengiNodeProperties(const cgltf_extension *exts, cgltf_size count, scenegraph::SceneGraphNode &sgNode) {
+	const char *extData = findExtensionData(exts, count, EXT_VENGI_PROPERTIES);
+	if (extData == nullptr || extData[0] == '\0') {
+		return;
+	}
+	applyVengiPropertiesJson(json::Json::parse(extData), sgNode);
+}
+
+// cgltf_write does not emit unknown extensions, so we inject VENGI_* after writing.
+static void addExtensionUsed(json::Json &root, const char *name) {
+	if (root.contains("extensionsUsed")) {
+		json::Json used = root.get("extensionsUsed");
+		for (int i = 0; i < used.size(); ++i) {
+			if (used.get(i).str() == name) {
+				return;
+			}
+		}
+		used.push(name);
+		return;
+	}
+	json::Json used = json::Json::array();
+	used.push(name);
+	root.set("extensionsUsed", used);
+}
+
+static void setObjectExtension(json::Json &obj, const char *extName, const json::Json &payload) {
+	if (obj.contains("extensions") && obj.get("extensions").isObject()) {
+		json::Json exts = obj.get("extensions");
+		exts.set(extName, payload);
+		return;
+	}
+	json::Json exts = json::Json::object();
+	exts.set(extName, payload);
+	obj.set("extensions", exts);
+}
+
+static void injectArrayExtensions(json::Json &root, const char *arrayKey, const char *extName,
+								  const core::DynamicArray<core::String> &extJson, bool &used) {
+	if (!root.contains(arrayKey) || extJson.empty()) {
+		return;
+	}
+	json::Json arr = root.get(arrayKey);
+	if (!arr.isArray()) {
+		return;
+	}
+	const int n = core_min(arr.size(), (int)extJson.size());
+	for (int i = 0; i < n; ++i) {
+		if (extJson[i].empty()) {
+			continue;
+		}
+		json::Json payload = json::Json::parse(extJson[i].c_str());
+		if (!payload.isValid() || !payload.isObject()) {
+			continue;
+		}
+		json::Json item = arr.get(i);
+		setObjectExtension(item, extName, payload);
+		used = true;
+	}
+}
+
+static core::String injectVengiExtensions(const char *jsonBuf, const core::DynamicArray<core::String> &materialExtJson,
+										 const core::DynamicArray<core::String> &nodeExtJson,
+										 const core::String &sceneExtJson) {
+	if (jsonBuf == nullptr) {
+		return "";
+	}
+	json::Json root = json::Json::parse(jsonBuf);
+	if (!root.isValid() || !root.isObject()) {
+		return core::String(jsonBuf);
+	}
+	bool usedMats = false;
+	bool usedProps = false;
+	injectArrayExtensions(root, "materials", EXT_VENGI_MATERIALS, materialExtJson, usedMats);
+	injectArrayExtensions(root, "nodes", EXT_VENGI_PROPERTIES, nodeExtJson, usedProps);
+	if (!sceneExtJson.empty() && root.contains("scenes")) {
+		json::Json scenes = root.get("scenes");
+		if (scenes.isArray() && scenes.size() > 0) {
+			json::Json payload = json::Json::parse(sceneExtJson.c_str());
+			if (payload.isValid() && payload.isObject()) {
+				json::Json scene = scenes.get(0);
+				setObjectExtension(scene, EXT_VENGI_PROPERTIES, payload);
+				usedProps = true;
+			}
+		}
+	}
+	if (usedMats) {
+		addExtensionUsed(root, EXT_VENGI_MATERIALS);
+	}
+	if (usedProps) {
+		addExtensionUsed(root, EXT_VENGI_PROPERTIES);
+	}
+	return root.dump();
+}
+
 static cgltf_interpolation_type sceneGraphInterpolationToGltf(const scenegraph::SceneGraphKeyFrames &kfs) {
 	if (kfs.empty()) {
 		return cgltf_interpolation_type_linear;
@@ -276,6 +475,8 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 	if (mat->alpha_mode == cgltf_alpha_mode_blend) {
 		meshMat->transparency = 1.0f - mat->pbr_metallic_roughness.base_color_factor[3];
 	}
+
+	applyVengiMaterialExtension(mat, palMat);
 
 	return meshMat;
 }
@@ -458,6 +659,7 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			}
 			if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
 				applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
+				applyVengiNodeProperties(node->extensions, node->extensions_count, sceneGraph.node(nodeId));
 			} else {
 				nodeId = parent;
 			}
@@ -476,6 +678,7 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			nodeId = parent;
 		} else {
 			applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
+			applyVengiNodeProperties(node->extensions, node->extensions_count, sceneGraph.node(nodeId));
 		}
 	}
 
@@ -700,9 +903,12 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	int meshIdx = 0;
 	core::IProgress *progress = ctx.progress;
 
+	applyVengiNodeProperties(scene->extensions, scene->extensions_count, sceneGraph.node(0));
+
 	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
 		const cgltf_node *wrapper = scene->nodes[0];
 		nodeMap.put(wrapper, 0);
+		applyVengiNodeProperties(wrapper->extensions, wrapper->extensions_count, sceneGraph.node(0));
 		for (cgltf_size ci = 0; ci < wrapper->children_count; ++ci) {
 			addNode_r(data, wrapper->children[ci], filename, archive, sceneGraph, 0, nodeMap, progress, meshCount,
 					  meshIdx);
@@ -1061,6 +1267,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		gltfTextureSampler->wrap_t = cgltf_wrap_mode_repeat;
 	}
 
+	// Extension payloads are injected into the JSON after cgltf_write (cgltf does not emit unknown extensions)
+	core::DynamicArray<core::String> materialExtJson;
+	if (totalMaterialCount > 0) {
+		materialExtJson.resize(totalMaterialCount);
+	}
+	core::DynamicArray<core::String> nodeExtJson;
+	if (totalNodes > 0) {
+		nodeExtJson.resize(totalNodes);
+	}
+	core::String sceneExtJson;
+
 	// Set up per-color materials for each unique palette
 	int imgIdx = 0;
 	core::DynamicMap<uint64_t, int> paletteTextureIdx; // palHash -> texture index in gltfTextures
@@ -1178,6 +1395,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				mat.volume.attenuation_color[1] = fcolor.g;
 				mat.volume.attenuation_color[2] = fcolor.b;
 			}
+
+			materialExtJson[matIdx] = materialToVengiExtensionJson(palMat);
 		}
 	}
 
@@ -1469,6 +1688,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		{
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshes[info.meshExtIdx].nodeId);
 			setGltfNodeTRS(nodes[mi], graphNode.transform(0));
+			if (!graphNode.properties().empty()) {
+				nodeExtJson[mi] = propertiesToVengiExtensionJson(graphNode.properties());
+			}
 		}
 	}
 
@@ -1478,6 +1700,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		const scenegraph::SceneGraphNode &sgNode = sceneGraph.node(groupNodeIds[gi]);
 		nodes[gltfIdx].name = (char *)sgNode.name().c_str();
 		setGltfNodeTRS(nodes[gltfIdx], sgNode.transform(0));
+		if (!sgNode.properties().empty()) {
+			nodeExtJson[gltfIdx] = propertiesToVengiExtensionJson(sgNode.properties());
+		}
 	}
 
 	// Build children arrays
@@ -1569,6 +1794,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_memset(&gltfScene, 0, sizeof(gltfScene));
 	gltfScene.nodes = sceneNodes;
 	gltfScene.nodes_count = rootIdx;
+	if (!sceneGraph.node(0).properties().empty()) {
+		sceneExtJson = propertiesToVengiExtensionJson(sceneGraph.node(0).properties());
+	}
 
 	// Data
 	cgltf_data gltfData;
@@ -1985,10 +2213,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	char *jsonBuf = (char *)core_malloc(jsonSize);
 	cgltf_write(&writeOptions, jsonBuf, jsonSize, &gltfData);
-
-	bool success = writeGltfBuffer(filename, archive, isGlb, jsonBuf, jsonSize, buffer, bufferSize);
-
+	const core::String jsonOut = injectVengiExtensions(jsonBuf, materialExtJson, nodeExtJson, sceneExtJson);
 	core_free(jsonBuf);
+
+	bool success = writeGltfBuffer(filename, archive, isGlb, jsonOut.c_str(), jsonOut.size() + 1, buffer, bufferSize);
+
 	core_free(buffer);
 	core_free(bufferViews);
 	core_free(accessors);
