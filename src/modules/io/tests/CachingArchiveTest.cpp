@@ -4,6 +4,8 @@
 
 #include "io/CachingArchive.h"
 #include "core/ScopedPtr.h"
+#include "core/SharedPtr.h"
+#include "io/Archive.h"
 #include "io/MemoryArchive.h"
 #include "io/Stream.h"
 #include <gtest/gtest.h>
@@ -148,6 +150,79 @@ TEST_F(CachingArchiveTest, testFirstRegisteredWins) {
 	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("file.dat"));
 	ASSERT_TRUE(stream);
 	EXPECT_EQ(1, stream->size());
+}
+
+// Simulates FilesystemArchive: list() is scoped to a relative dir, but fullPath is absolute.
+class AbsolutePathArchive : public Archive {
+private:
+	MemoryArchivePtr _mem;
+	core::String _relDir;
+	core::String _absDir;
+
+public:
+	AbsolutePathArchive(const core::String &relDir, const core::String &absDir)
+		: _mem(openMemoryArchive()), _relDir(relDir), _absDir(absDir) {
+	}
+
+	void add(const core::String &fileName, const uint8_t *data, size_t size) {
+		_mem->add(_absDir + "/" + fileName, data, size);
+	}
+
+	bool exists(const core::String &file) const override {
+		return _mem->exists(file);
+	}
+
+	void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const override {
+		if (!basePath.empty() && basePath != _relDir && basePath != _relDir + "/") {
+			return;
+		}
+		ArchiveFiles absFiles;
+		_mem->list(_absDir, absFiles, filter);
+		for (FilesystemEntry entry : absFiles) {
+			const size_t slash = entry.fullPath.rfind('/');
+			entry.name = slash == core::String::npos ? entry.fullPath : entry.fullPath.substr(slash + 1);
+			out.push_back(entry);
+		}
+	}
+
+	SeekableReadStream *readStream(const core::String &filePath) override {
+		return _mem->readStream(filePath);
+	}
+
+	SeekableWriteStream *writeStream(const core::String &filePath) override {
+		return _mem->writeStream(filePath);
+	}
+};
+
+TEST_F(CachingArchiveTest, testAbsoluteFullPathRelativeSearchDir) {
+	uint8_t buf[] = {10, 20, 30};
+	auto archive = core::make_shared<AbsolutePathArchive>("bug636", "/home/user/project/bug636");
+	archive->add("legs.hva", buf, sizeof(buf));
+
+	CachingArchive cache(archive);
+	cache.registerSearchDir("bug636/", "*.hva");
+	EXPECT_TRUE(cache.exists("bug636/legs.hva"));
+	EXPECT_TRUE(cache.exists("legs.hva"));
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("bug636/legs.hva"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(3, stream->size());
+}
+
+// FilesystemArchive on Windows yields drive-letter fullPath values (often with backslashes).
+// sanitizePath/lexicallyNormal converts those to C:/... so the '/' needle still matches.
+TEST_F(CachingArchiveTest, testAbsoluteFullPathRelativeSearchDirWindows) {
+	uint8_t buf[] = {10, 20, 30};
+	auto archive = core::make_shared<AbsolutePathArchive>("bug636", "C:\\Users\\foo\\project\\bug636");
+	archive->add("legs.hva", buf, sizeof(buf));
+
+	CachingArchive cache(archive);
+	cache.registerSearchDir("bug636/", "*.hva");
+	EXPECT_TRUE(cache.exists("bug636/legs.hva"));
+	EXPECT_TRUE(cache.exists("bug636\\legs.hva"));
+	EXPECT_TRUE(cache.exists("legs.hva"));
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("bug636/legs.hva"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(3, stream->size());
 }
 
 } // namespace io
