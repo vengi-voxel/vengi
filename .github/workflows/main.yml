@@ -227,6 +227,11 @@ jobs:
           env:
             CC: gcc-12
             CXX: g++-12
+            # Keep software-GL memory low on CI runners (llvmpipe backs textures with RAM).
+            CL_SHADOWMAPSIZE: "64"
+            CL_SHADOWMAP: "false"
+            CL_MULTISAMPLESAMPLES: "0"
+            CL_BLOOM: "false"
           run: |
             mkdir build
             cd build
@@ -234,7 +239,7 @@ jobs:
             cmake --build . --target engine_codegen
             cmake --build . --target tests-voxedit
             ctest -N
-            xvfb-run -a ctest -V -R '^tests-voxedit$'
+            xvfb-run -a -s '-screen 0 800x600x24' ctest -V -R '^tests-voxedit$'
 
     linux:
         timeout-minutes: 60

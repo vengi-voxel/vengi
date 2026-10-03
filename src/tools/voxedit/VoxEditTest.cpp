@@ -12,6 +12,10 @@ public:
 				const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer)
 		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer) {
 		_showWindow = false;
+		// Keep framebuffer memory bounded for software-GL CI runners (default is fullscreen).
+		_fullScreenApplication = false;
+		_windowWidth = 800;
+		_windowHeight = 600;
 		_wantCrashLogs = false;
 		_persistUISettings = false;
 	}
