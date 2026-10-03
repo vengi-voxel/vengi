@@ -14,8 +14,8 @@ public:
 		_showWindow = false;
 		// Keep framebuffer memory bounded for software-GL CI runners (default is fullscreen).
 		_fullScreenApplication = false;
-		_windowWidth = 800;
-		_windowHeight = 600;
+		_windowWidth = 1600;
+		_windowHeight = 900;
 		_wantCrashLogs = false;
 		_persistUISettings = false;
 	}

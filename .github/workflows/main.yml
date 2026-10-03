@@ -232,6 +232,8 @@ jobs:
             CL_SHADOWMAP: "false"
             CL_MULTISAMPLESAMPLES: "0"
             CL_BLOOM: "false"
+            # Expire toasts quickly so they do not steal clicks from ImGui tests.
+            UI_NOTIFYDISMISS: "1"
           run: |
             mkdir build
             cd build
@@ -239,7 +241,7 @@ jobs:
             cmake --build . --target engine_codegen
             cmake --build . --target tests-voxedit
             ctest -N
-            xvfb-run -a -s '-screen 0 800x600x24' ctest -V -R '^tests-voxedit$'
+            xvfb-run -a -s '-screen 0 1600x900x24' ctest -V -R '^tests-voxedit$'
 
     linux:
         timeout-minutes: 60
