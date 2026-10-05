@@ -223,34 +223,60 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 				}
 
 				const palette::Palette &palette = sgNode.palette();
-				int palMatIdx = 0;
-				for (int pi = 0; pi < palette.colorCount(); ++pi) {
-					if (palette.material(pi).mask != palette::MaterialNone) {
-						palMatIdx = pi;
-						break;
+				int32_t colorToSlot[palette::PaletteMaxColors];
+				core_memset(colorToSlot, -1, sizeof(colorToSlot));
+				int32_t numSlots = 0;
+				const int numFaces = ni / 3;
+				for (int f = 0; f < numFaces; ++f) {
+					const uint8_t colorIndex = vertices[indices[f * 3]].colorIndex;
+					if (colorToSlot[colorIndex] == -1) {
+						colorToSlot[colorIndex] = numSlots++;
 					}
 				}
-				const palette::Material &palMat = palette.material(palMatIdx);
-				const color::RGBA rgba = palette.color(palMatIdx);
-				ufbxw_material wMat = ufbxw_create_material(ws, UFBXW_MATERIAL_FBX_PHONG);
-				ufbxw_set_name(ws, wMat.id, sgNode.name().c_str());
-				ufbxw_set_vec3(ws, wMat.id, "DiffuseColor",
-							   {rgba.r / 255.0, rgba.g / 255.0, rgba.b / 255.0});
-				if (palMat.has(palette::MaterialProperty::MaterialRoughness)) {
-					ufbxw_set_real(ws, wMat.id, "ShininessExponent",
-								   (1.0 - (double)palMat.roughness) * 100.0);
+
+				core::DynamicArray<uint8_t> slotToColor(numSlots);
+				for (int colorIndex = 0; colorIndex < palette::PaletteMaxColors; ++colorIndex) {
+					if (colorToSlot[colorIndex] != -1) {
+						slotToColor[colorToSlot[colorIndex]] = (uint8_t)colorIndex;
+					}
 				}
-				if (palMat.has(palette::MaterialProperty::MaterialSpecular)) {
-					ufbxw_set_real(ws, wMat.id, "SpecularFactor", palMat.specular);
+
+				for (int slot = 0; slot < numSlots; ++slot) {
+					const uint8_t colorIndex = slotToColor[slot];
+					const palette::Material &palMat = palette.material(colorIndex);
+					const color::RGBA rgba = palette.color(colorIndex);
+					ufbxw_material wMat = ufbxw_create_material(ws, UFBXW_MATERIAL_FBX_PHONG);
+
+					char materialName[32];
+					core::String::formatBuf(materialName, sizeof(materialName), "palette_%d", (int)colorIndex);
+					ufbxw_set_name(ws, wMat.id, materialName);
+					ufbxw_set_vec3(ws, wMat.id, "DiffuseColor",
+								   {rgba.r / 255.0, rgba.g / 255.0, rgba.b / 255.0});
+					ufbxw_set_real(ws, wMat.id, "SpecularFactor",
+								   palMat.has(palette::MaterialProperty::MaterialSpecular) ? palMat.specular : 0.0f);
+					if (palMat.has(palette::MaterialProperty::MaterialRoughness)) {
+						const double inverseRoughness = 10.0 * (1.0 - (double)palMat.roughness);
+						ufbxw_set_real(ws, wMat.id, "ShininessExponent", inverseRoughness * inverseRoughness);
+						ufbxw_add_real(ws, wMat.id, "roughness", UFBXW_PROP_TYPE_USER_NUMBER, palMat.roughness);
+					}
+					if (palMat.has(palette::MaterialProperty::MaterialMetal)) {
+						ufbxw_add_real(ws, wMat.id, "metalness", UFBXW_PROP_TYPE_USER_NUMBER, palMat.metal);
+					}
+					if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+						ufbxw_add_real(ws, wMat.id, "specular_IOR", UFBXW_PROP_TYPE_USER_NUMBER,
+									   palMat.indexOfRefraction);
+					}
+					if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
+						ufbxw_set_real(ws, wMat.id, "EmissiveFactor", palMat.emit);
+					}
+					ufbxw_node_set_material(ws, wNode, (size_t)slot, wMat);
 				}
-				if (palMat.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
-					ufbxw_set_real(ws, wMat.id, "ReflectionFactor", palMat.indexOfRefraction);
+
+				core::DynamicArray<int32_t> faceMaterials(numFaces);
+				for (int f = 0; f < numFaces; ++f) {
+					faceMaterials[f] = colorToSlot[vertices[indices[f * 3]].colorIndex];
 				}
-				if (palMat.has(palette::MaterialProperty::MaterialEmit)) {
-					ufbxw_set_real(ws, wMat.id, "EmissiveFactor", palMat.emit);
-				}
-				ufbxw_node_set_material(ws, wNode, 0, wMat);
-				ufbxw_mesh_set_single_material(ws, wMesh, 0);
+				ufbxw_mesh_set_face_material(ws, wMesh, ufbxw_copy_int_array(ws, faceMaterials.data(), numFaces));
 			}
 		}
 
@@ -585,6 +611,19 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				// if (ufbxMaterial->fbx.transparency_factor.has_value) {
 				// 	mat->transparency = 1.0f - ufbxMaterial->fbx.transparency_factor.value_real;
 				// }
+			}
+			// FBX Phong has no standard fields for these PBR properties.
+			if (ufbx_find_prop(&ufbxMaterial->props, "metalness") != nullptr) {
+				mat->material.setValue(palette::MaterialProperty::MaterialMetal,
+									   (float)ufbx_find_real(&ufbxMaterial->props, "metalness", 0.0));
+			}
+			if (ufbx_find_prop(&ufbxMaterial->props, "roughness") != nullptr) {
+				mat->material.setValue(palette::MaterialProperty::MaterialRoughness,
+									   (float)ufbx_find_real(&ufbxMaterial->props, "roughness", 0.0));
+			}
+			if (ufbx_find_prop(&ufbxMaterial->props, "specular_IOR") != nullptr) {
+				mat->material.setValue(palette::MaterialProperty::MaterialIndexOfRefraction,
+									   (float)ufbx_find_real(&ufbxMaterial->props, "specular_IOR", 0.0));
 			}
 		} else {
 			Log::debug("No material assigned for mesh");

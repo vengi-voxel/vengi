@@ -137,7 +137,6 @@ TEST_F(FBXFormatTest, testAnimationRoundTrip) {
 		<< "Too many animated nodes lost their keyframes";
 }
 
-// TODO: improve this
 TEST_F(FBXFormatTest, testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
 	// FBX Phong cannot store all material properties; type is inferred on load.
@@ -148,12 +147,6 @@ TEST_F(FBXFormatTest, testMaterial) {
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMedia);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialDensity);
 	ignoredMaterials.push_back(palette::MaterialProperty::MaterialPhase);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialEmit);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialSpecular);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialIndexOfRefraction);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialRoughness);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialMetal);
-	ignoredMaterials.push_back(palette::MaterialProperty::MaterialAttenuation);
 	testMaterial(sceneGraph, "test_material.fbx", ignoredMaterials, true);
 }
 
