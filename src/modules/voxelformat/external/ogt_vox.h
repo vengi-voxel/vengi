@@ -399,7 +399,7 @@
     typedef struct ogt_vox_instance
     {
         const char*            name;                   // name of the instance if there is one, will be NULL otherwise.
-        ogt_vox_transform      transform;              // orientation and position of this instance on first frame of the scene. This is relative to its group local transform if group_index is not 0
+        ogt_vox_transform      transform;              // base orientation and position of this instance (may differ from animation keyframes). This is relative to its group local transform if group_index is not 0
         uint32_t               model_index;            // index of the model used by this instance on the first frame of the scene. used to lookup the model in the scene's models[] array.
         uint32_t               layer_index;            // index of the layer used by this instance. used to lookup the layer in the scene's layers[] array.
         uint32_t               group_index;            // this will be the index of the group in the scene's groups[] array. If group is zero it will be the scene root group and the instance transform will be a world-space transform, otherwise the transform is relative to the group.
@@ -420,7 +420,7 @@
     typedef struct ogt_vox_group
     {
         const char*            name;                    // name of the group if there is one, will be NULL otherwise
-        ogt_vox_transform      transform;               // transform of this group relative to its parent group (if any), otherwise this will be relative to world-space.
+        ogt_vox_transform      transform;               // base transform of this group relative to its parent group (if any), otherwise world-space; may differ from animation keyframes.
         uint32_t               parent_group_index;      // if this group is parented to another group, this will be the index of its parent in the scene's groups[] array, otherwise this group will be the scene root group and this value will be k_invalid_group_index
         uint32_t               layer_index;             // which layer this group belongs to. used to lookup the layer in the scene's layers[] array.
         bool                   hidden;                  // whether this group is hidden or not.
@@ -497,13 +497,13 @@
     // sample the model index for a given instance at the given frame
     uint32_t          ogt_vox_sample_instance_model(const ogt_vox_instance* instance, uint32_t frame_index);
 
-    // samples the transform for an instance at a given frame.
+    // samples the animation transform for an instance at a given frame, or its base transform if no keyframes exist.
     //   ogt_vox_sample_instance_transform_global returns the transform in world space (aka global)
     //   ogt_vox_sample_instance_transform_local returns the transform relative to its parent group
     ogt_vox_transform ogt_vox_sample_instance_transform_global(const ogt_vox_instance* instance, uint32_t frame_index, const ogt_vox_scene* scene);
     ogt_vox_transform ogt_vox_sample_instance_transform_local(const ogt_vox_instance* instance, uint32_t frame_index);
 
-    // sample the transform for a group at a given frame
+    // samples the animation transform for a group at a given frame, or its base transform if no keyframes exist.
     //  ogt_vox_sample_group_transform_global returns the transform in world space (aka global)
     //  ogt_vox_sample_group_transform_local returns the transform relative to its parent group
     ogt_vox_transform ogt_vox_sample_group_transform_global(const ogt_vox_group* group, uint32_t frame_index, const ogt_vox_scene* scene);
@@ -1664,11 +1664,19 @@
                     //   _name:   string
                     //   _hidden: 0/1
                     //   _loop:   0/1
+                    //   _frm_r: base packed rotation (optional)
+                    //   _frm_t: base translation (optional)
                     _vox_file_read_dict(&dict, fp);
                     char node_name[NAME_MAX_LEN];
                     _vox_strcpy_static(node_name, _vox_dict_get_value_as_string(&dict, "_name", ""));
                     bool hidden = _vox_dict_get_value_as_bool(&dict, "_hidden", false);
                     bool loop = _vox_dict_get_value_as_bool(&dict, "_loop", false);
+                    // MagicaVoxel can store a base pose separately from the animation frames.
+                    // Decode it now: reading frame dictionaries below replaces dict's storage.
+                    const char* base_rotation = _vox_dict_get_value_as_string(&dict, "_frm_r");
+                    const char* base_translation = _vox_dict_get_value_as_string(&dict, "_frm_t");
+                    bool has_base_transform = base_rotation != NULL || base_translation != NULL;
+                    ogt_vox_transform base_transform = _vox_make_transform_from_dict_strings(base_rotation, base_translation);
 
                     // get other properties.
                     uint32_t child_node_id = 0, reserved_id = 0, layer_id = 0, num_frames = 0;
@@ -1701,7 +1709,7 @@
                         transform_node->node_type                   = k_nodetype_transform;
                         transform_node->u.transform.child_node_id   = child_node_id;
                         transform_node->u.transform.layer_id        = layer_id;
-                        transform_node->u.transform.transform       = keyframes[0].transform;
+                        transform_node->u.transform.transform       = has_base_transform ? base_transform : keyframes[0].transform;
                         transform_node->u.transform.hidden          = hidden;
                         transform_node->u.transform.num_keyframes   = num_frames;
                         transform_node->u.transform.keyframe_offset = keyframe_offset;
@@ -2615,7 +2623,7 @@
         _vox_sprintf(value_str, sizeof(value_str), "%f", value);
         _vox_file_write_dict_key_value(fp, key, value_str);
     }
-    static void _vox_file_write_dict_transform(_vox_file_writeable* fp, const ogt_vox_transform* transform) {
+    static void _vox_file_write_dict_transform(_vox_file_writeable* fp, const ogt_vox_transform* transform, const char* rotation_key = "_r", const char* translation_key = "_t") {
         char t_string[65];
         char r_string[65];
         t_string[0] = 0;
@@ -2623,8 +2631,8 @@
         uint8_t packed_rotation_bits = _vox_make_packed_rotation_from_transform(transform);
         _vox_sprintf(t_string, sizeof(t_string), "%i %i %i", (int32_t)transform->m30, (int32_t)transform->m31, (int32_t)transform->m32);
         _vox_sprintf(r_string, sizeof(r_string), "%u", packed_rotation_bits);
-        _vox_file_write_dict_key_value(fp, "_r", r_string);
-        _vox_file_write_dict_key_value(fp, "_t", t_string);
+        _vox_file_write_dict_key_value(fp, rotation_key, r_string);
+        _vox_file_write_dict_key_value(fp, translation_key, t_string);
     }
 
     static void _vox_file_write_chunk_nTRN(_vox_file_writeable* fp, uint32_t node_id, uint32_t child_node_id, const char* name, bool hidden, const ogt_vox_transform* transform, uint32_t layer_id, const ogt_vox_anim_transform* transform_anim)
@@ -2644,11 +2652,17 @@
         _vox_file_write_uint32(fp, node_id);
 
         // write the node dictionary
-        uint32_t node_dict_keyvalue_count = (name ? 1 : 0) + (hidden_string ? 1 : 0) + (loop_string ? 1 : 0);
+        // Preserve a distinct base pose without changing the animation keyframes. Emit both
+        // components, including identity/zero, so the reader does not fall back to frame zero.
+        bool write_base_transform = transform_anim->num_keyframes != 0 &&
+            memcmp(transform, &transform_anim->keyframes[0].transform, sizeof(ogt_vox_transform)) != 0;
+        uint32_t node_dict_keyvalue_count = (name ? 1 : 0) + (hidden_string ? 1 : 0) + (loop_string ? 1 : 0) + (write_base_transform ? 2 : 0);
         _vox_file_write_uint32(fp, node_dict_keyvalue_count);  // num key values
         _vox_file_write_dict_key_value(fp, "_name",   name);
         _vox_file_write_dict_key_value(fp, "_hidden", hidden_string);
         _vox_file_write_dict_key_value(fp, "_loop",   loop_string);
+        if (write_base_transform)
+            _vox_file_write_dict_transform(fp, transform, "_frm_r", "_frm_t");
 
         // write other properties.
         _vox_file_write_uint32(fp, child_node_id);

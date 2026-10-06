@@ -113,9 +113,26 @@ static glm::mat4 computeBakeMatrix(const glm::mat4 &ogtTransform, const glm::vec
 	return ogtTransform * shiftMatrix * pivotMatrix;
 }
 
+static ogt_vox_transform instanceTransform(const ogt_vox_instance &instance, uint32_t frameIdx,
+										 const ogt_vox_scene *scene) {
+	// A single frame can differ from MagicaVoxel's static base pose (_frm_t/_frm_r).
+	// Use the base pose for static nodes, and sample nodes with multiple animation frames.
+	ogt_vox_transform transform = instance.transform_anim.num_keyframes > 1
+		? ogt_vox_sample_instance_transform_local(&instance, frameIdx) : instance.transform;
+	uint32_t groupIdx = instance.group_index;
+	while (groupIdx != k_invalid_group_index) {
+		const ogt_vox_group &group = scene->groups[groupIdx];
+		const ogt_vox_transform groupTransform = group.transform_anim.num_keyframes > 1
+			? ogt_vox_sample_group_transform_local(&group, frameIdx) : group.transform;
+		transform = ogt_vox_transform_multiply(transform, groupTransform);
+		groupIdx = group.parent_group_index;
+	}
+	return transform;
+}
+
 glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
 								const ogt_vox_model *model) {
-	const ogt_vox_transform t = ogt_vox_sample_instance_transform_global(&instance, frameIdx, scene);
+	const ogt_vox_transform t = instanceTransform(instance, frameIdx, scene);
 	return computeBakeMatrix(ogtToMat(t), glm::vec3(ogtVolumePivot(model)));
 }
 
@@ -227,7 +244,7 @@ bool loadInstanceKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_insta
 		sceneGraphKeyFrame.frameIdx = 0;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.transform().setWorldMatrix(
-			ogtMatToVengi(ogtToMat(ogt_vox_sample_instance_transform_global(&ogtInstance, 0, scene))));
+			ogtMatToVengi(ogtToMat(instanceTransform(ogtInstance, 0, scene))));
 		kf.push_back(core::move(sceneGraphKeyFrame));
 		return node.setKeyFrames(kf);
 	}
@@ -243,7 +260,7 @@ bool loadInstanceKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_insta
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(
-			ogtMatToVengi(ogtToMat(ogt_vox_sample_instance_transform_global(&ogtInstance, frameIdx, scene))));
+			ogtMatToVengi(ogtToMat(instanceTransform(ogtInstance, frameIdx, scene))));
 		kf.push_back(core::move(sceneGraphKeyFrame));
 	}
 	return node.setKeyFrames(kf);
