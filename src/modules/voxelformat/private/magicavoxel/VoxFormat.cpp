@@ -403,6 +403,7 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 	uint32_t numKeyframes = 0;
 	ogt_instance.transform_anim.keyframes = saveKeyFrames(sceneGraph, node, ctx, numKeyframes);
 	ogt_instance.transform_anim.num_keyframes = numKeyframes;
+	ogt_instance.transform = numKeyframes > 0 ? ogt_instance.transform_anim.keyframes[0].transform : ogt_identity_transform;
 	ctx.instances.push_back(ogt_instance);
 }
 
@@ -480,6 +481,8 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				uint32_t numKeyframes = 0;
 				ogt_instance.transform_anim.keyframes = saveKeyFrames(sceneGraph, node, ctx, numKeyframes);
 				ogt_instance.transform_anim.num_keyframes = numKeyframes;
+				ogt_instance.transform = numKeyframes > 0
+					? ogt_instance.transform_anim.keyframes[0].transform : ogt_identity_transform;
 				ctx.instances.push_back(ogt_instance);
 				return;
 			}
