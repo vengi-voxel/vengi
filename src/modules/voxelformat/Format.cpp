@@ -316,6 +316,8 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 						  int emptyIndex) {
 	Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyIndex);
 	scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
+	core::Array<bool, palette::PaletteMaxColors> usedColors;
+	bool usageCollected = false;
 	for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		palette::Palette palette = node.palette();
@@ -344,16 +346,46 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 				Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
 							"them. We need to find a replacement for %i",
 							palette::PaletteMaxColors, emptyIndex);
-				uint8_t replacement = palette.findReplacement(emptyIndex, color::Distance::HSB);
-				Log::debug("Looking for a similar color in the palette: %d", replacement);
+				// A palette can be shared by several models. Only reuse slots that are unused
+				// throughout the scene, so every model keeps the same palette on export.
+				if (!usageCollected) {
+					usedColors.fill(false);
+					for (auto model = sceneGraph.beginModel(); model != sceneGraph.end(); ++model) {
+						voxelutil::visitVolume(*(*model).volume(), [&usedColors](int, int, int, const voxel::Voxel &voxel) {
+							usedColors[voxel.getColor()] = true;
+						});
+					}
+					usageCollected = true;
+				}
+				int unusedIndex = -1;
+				// Preserve the other palette entries when the reserved slot is already unused.
+				if (usedColors[emptyIndex]) {
+					for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+						if (i != emptyIndex && !usedColors[i]) {
+							unusedIndex = i;
+							break;
+						}
+					}
+				}
+				uint8_t replacement = (uint8_t)emptyIndex;
+				if (unusedIndex >= 0) {
+					replacement = (uint8_t)unusedIndex;
+					palette.setColor(replacement, palette.color(emptyIndex));
+					palette.setMaterial(replacement, palette.material(emptyIndex));
+					palette.setColorName(replacement, palette.colorName(emptyIndex));
+				} else if (usedColors[emptyIndex]) {
+					replacement = palette.findReplacement(emptyIndex, color::Distance::HSB);
+				}
 				if (replacement != emptyIndex) {
 					Log::debug("Replace %i with %i", emptyIndex, replacement);
 					voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-					auto func = [v, replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &) {
+					auto func = [v, replacement, pal = palette](int x, int y, int z, const voxel::Voxel &) {
 						v->setVoxel(x, y, z, voxel::createVoxel(pal, replacement));
 					};
 					voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitVoxelColor(emptyIndex));
 				}
+				palette.setColor(emptyIndex, color::RGBA(0, 0, 0, 0));
+				palette.setMaterial(emptyIndex, palette::Material());
 			}
 			node.setPalette(palette);
 		} else {

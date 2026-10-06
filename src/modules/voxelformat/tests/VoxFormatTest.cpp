@@ -345,6 +345,59 @@ TEST_F(VoxFormatTest, testOgtPivotConversion) {
 	EXPECT_NEAR(20.0f / 40.0f, pivot.z, 0.0001f);
 }
 
+TEST_F(VoxFormatTest, testFullPalettePreservesUsedColors) {
+	palette::Palette palette;
+	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		palette.setColor(i, color::RGBA((uint8_t)i, (uint8_t)(255 - i), 37, 255));
+	}
+	palette.setMaterial(0, palette::Material());
+	palette.setEmit(0, 0.75f);
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < 2; ++i) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName(i == 0 ? "first" : "second");
+		node.createVolume(voxel::Region(0, 0, 0, 1, 0, 0));
+		node.setPalette(palette);
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(palette, i));
+		node.volume()->setVoxel(1, 0, 0, voxel::createVoxel(palette, 255));
+		sceneGraph.emplace(core::move(node));
+	}
+	VoxFormat format;
+	io::ArchivePtr archive = helper_archive();
+	ASSERT_TRUE(format.save(sceneGraph, "full-palette.vox", archive, testSaveCtx));
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load("full-palette.vox", archive, loaded, testLoadCtx));
+	ASSERT_EQ(2u, loaded.size(scenegraph::SceneGraphNodeType::AllModels));
+	int checked = 0;
+	for (auto iter = loaded.beginModel(); iter != loaded.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		const int originalIndex = node.name() == "first" ? 0 : 1;
+		bool found = false;
+		for (int x = node.region().getLowerX(); x <= node.region().getUpperX(); ++x) {
+			const voxel::Voxel &voxel = node.volume()->voxel(x, 0, 0);
+			if (voxel::isAir(voxel.getMaterial())) {
+				continue;
+			}
+			const color::RGBA rgba = node.palette().color(voxel.getColor());
+			EXPECT_TRUE(rgba == palette.color(originalIndex) || rgba == palette.color(255));
+			if (rgba == palette.color(originalIndex)) {
+				found = true;
+				if (originalIndex == 0) {
+					EXPECT_FLOAT_EQ(0.75f, node.palette().material(voxel.getColor()).emit);
+				}
+			}
+		}
+		EXPECT_TRUE(found) << "Lost original palette color " << originalIndex;
+		++checked;
+	}
+	EXPECT_EQ(2, checked);
+	EXPECT_EQ(0, sceneGraph.firstModelNode()->volume()->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(palette.color(0), sceneGraph.firstPalette().color(0));
+}
+
 TEST_F(VoxFormatTest, testMatToOgtSnapsNonCardinalRotation) {
 	// 45-degree bases used to snap two columns onto the same axis and produce invalid _r packs.
 	const glm::quat q(glm::radians(glm::vec3(45.0f, 0.0f, 0.0f)));
