@@ -6,6 +6,8 @@ You can import palettes from a lot of different image, palette or [voxel volume 
 
 Each color entry can get [material](Material.md) properties.
 
+Formats such as MagicaVoxel VOX and XRAW or Sandbox VXM reserve a palette slot for empty voxels and can store only 255 voxel colors. When exporting a full 256-color palette, vengi moves the color in the reserved slot into a slot by any model, preserving its material. If all slots are used, that color is mapped to a similar color instead. Export does not modify the palette or voxels in the editor.
+
 The palette can usually be specified by the [cvar](Configuration.md) `palette` and can either be a full path to a png file or an identifier.
 If you decide to use the identifier - e.g. `nippon` the `palette` cvar is set to this value and the engine will automatically search
 all registered file system paths for a file named `palette-nippon.png`.
