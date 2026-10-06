@@ -608,8 +608,24 @@ void Mesh::optimize() {
 		_vecIndices.shrink(newSize);
 	}
 
-	meshopt_optimizeVertexFetch(_vecVertices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.data(),
-								_vecVertices.size(), sizeof(VoxelVertex));
+	// All vertex streams must use the same fetch remap to preserve their association.
+	const size_t vertexCount = _vecVertices.size();
+	IndexArray remap(vertexCount);
+	const size_t usedVertexCount =
+		meshopt_optimizeVertexFetchRemap(remap.data(), _vecIndices.data(), _vecIndices.size(), vertexCount);
+	meshopt_remapVertexBuffer(_vecVertices.data(), _vecVertices.data(), vertexCount, sizeof(VoxelVertex), remap.data());
+	if (!_normals.empty()) {
+		core_assert(_normals.size() == vertexCount);
+		meshopt_remapVertexBuffer(_normals.data(), _normals.data(), vertexCount, sizeof(glm::vec3), remap.data());
+		_normals.shrink(usedVertexCount);
+	}
+	if (!_uvs.empty()) {
+		core_assert(_uvs.size() == vertexCount);
+		meshopt_remapVertexBuffer(_uvs.data(), _uvs.data(), vertexCount, sizeof(glm::vec2), remap.data());
+		_uvs.shrink(usedVertexCount);
+	}
+	meshopt_remapIndexBuffer(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), remap.data());
+	_vecVertices.shrink(usedVertexCount);
 }
 
 } // namespace voxel
