@@ -18,6 +18,8 @@ General:
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
    - Fixed VoxelMax `vmaxb` loading and transforms
+   - Improved `kvx` and `kv6` pivot support
+   - Basic `fbx` material support
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
 
 VoxEdit:
