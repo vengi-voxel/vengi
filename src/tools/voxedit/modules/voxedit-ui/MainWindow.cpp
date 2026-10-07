@@ -28,6 +28,8 @@
 #include "ui/dearimgui/imgui_internal.h"
 #include "util/TextProcessor.h"
 #include "util/VersionCheck.h"
+#include "http/Http.h"
+#include "http/RequestAsync.h"
 #include "video/Texture.h"
 #include "voxedit-ui/TipOfTheDay.h"
 #include "voxedit-util/Config.h"
@@ -197,7 +199,19 @@ bool MainWindow::init() {
 	_popupAbout = core::getVar(cfg::VoxEditPopupAbout);
 	_popupRenameNode = core::getVar(cfg::VoxEditPopupRenameNode);
 
-	_isNewVersionAvailable = util::isNewVersionAvailable();
+	_isNewVersionAvailable = false;
+	{
+		http::Request request(util::releaseUrl(), http::RequestType::GET);
+		request.setTimeoutSecond(1);
+		request.setConnectTimeoutSecond(1);
+		http::requestAsync(core::move(request), [this](const http::Response &response) {
+			if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+				Log::debug("Version check failed (success=%i status=%i)", (int)response.success, response.statusCode);
+				return;
+			}
+			_isNewVersionAvailable = util::isNewVersionAvailable(response.body);
+		});
+	}
 	if (!initViewports()) {
 		return false;
 	}

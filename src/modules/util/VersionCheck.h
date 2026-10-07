@@ -9,7 +9,10 @@
 namespace util {
 
 core::String releaseUrl();
-bool isNewVersionAvailable(int timeout = 1);
+/**
+ * @brief Parse a GitHub releases/latest JSON body and compare against PROJECT_VERSION.
+ */
+bool isNewVersionAvailable(const core::String &responseBody);
 bool isNewerVersion(const core::String &versionLatest, const core::String &vengiVersion);
 
 }

@@ -6,8 +6,8 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "http/Request.h"
-#include "io/BufferedReadWriteStream.h"
+#include "http/Http.h"
+#include "http/RequestAsync.h"
 #include "io/File.h"
 #include "json/JSON.h"
 
@@ -16,28 +16,8 @@ namespace voxelui {
 static const char *SCRIPT_DIRS[] = {"scripts", "brushes", "selectionmodes"};
 static const char *SCRIPT_TYPES[] = {"generator", "brush", "selectionmode"};
 
-ScriptInfoList ScriptApi::query(const core::String &baseUrl) const {
+ScriptInfoList ScriptApi::parseScriptList(const core::String &body) {
 	ScriptInfoList list;
-	const core::String url = baseUrl + "/scripts";
-
-	http::Request request(url, http::RequestType::GET);
-	request.setUserAgent(app::App::getInstance()->fullAppname());
-
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("Failed to query script API at %s", url.c_str());
-		return list;
-	}
-	if (statusCode != 200) {
-		Log::error("Script API returned status %d", statusCode);
-		return list;
-	}
-
-	stream.seek(0);
-	core::String body;
-	stream.readString((int)stream.size(), body);
-
 	json::Json jsonResponse = json::Json::parse(body);
 	if (!jsonResponse.isValid() || !jsonResponse.isArray()) {
 		Log::error("Invalid JSON response from script API");
@@ -61,24 +41,15 @@ ScriptInfoList ScriptApi::query(const core::String &baseUrl) const {
 	return list;
 }
 
-bool ScriptApi::download(const io::FilesystemPtr &filesystem, const core::String &baseUrl, const ScriptInfo &info) const {
-	const core::String url = baseUrl + "/scripts/download/" + info.filename;
-
+static http::Request makeScriptRequest(const core::String &url) {
 	http::Request request(url, http::RequestType::GET);
 	request.setUserAgent(app::App::getInstance()->fullAppname());
+	return request;
+}
 
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("Failed to download script %s", info.filename.c_str());
-		return false;
-	}
-	if (statusCode != 200) {
-		Log::error("Script download returned status %d for %s", statusCode, info.filename.c_str());
-		return false;
-	}
-
-	core::String dir = scriptTypeToDir(info.type);
+static bool writeDownloadedScript(const io::FilesystemPtr &filesystem, const ScriptInfo &info,
+								  const core::String &body) {
+	core::String dir = ScriptApi::scriptTypeToDir(info.type);
 	if (dir.empty()) {
 		Log::error("Unknown script type: %s", info.type.c_str());
 		return false;
@@ -88,14 +59,42 @@ bool ScriptApi::download(const io::FilesystemPtr &filesystem, const core::String
 	const core::String fullDir = filesystem->homeWritePath(dir);
 	filesystem->sysCreateDir(fullDir);
 
-	stream.seek(0);
-	if (filesystem->homeWrite(targetPath, stream) <= 0) {
+	if (!filesystem->homeWrite(targetPath, body)) {
 		Log::error("Failed to write script to %s", targetPath.c_str());
 		return false;
 	}
 
 	Log::info("Installed script %s to %s", info.filename.c_str(), targetPath.c_str());
 	return true;
+}
+
+void ScriptApi::queryAsync(const core::String &baseUrl, ScriptListCallback &&callback) const {
+	const core::String url = baseUrl + "/scripts";
+	http::requestAsync(makeScriptRequest(url), [callback = core::move(callback)](const http::Response &response) mutable {
+		ScriptInfoList list;
+		if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+			Log::error("Failed to query script API at %s (status %d)", response.url.c_str(), response.statusCode);
+			callback(ScriptInfoList());
+			return;
+		}
+		callback(parseScriptList(response.body));
+	});
+}
+
+void ScriptApi::downloadAsync(const io::FilesystemPtr &filesystem, const core::String &baseUrl, const ScriptInfo &info,
+							  ScriptBoolCallback &&callback) const {
+	const core::String url = baseUrl + "/scripts/download/" + info.filename;
+	const ScriptInfo infoCopy = info;
+	http::requestAsync(makeScriptRequest(url),
+					   [filesystem, infoCopy, callback = core::move(callback)](const http::Response &response) mutable {
+						   if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+							   Log::error("Failed to download script %s (status %d)", infoCopy.filename.c_str(),
+										  response.statusCode);
+							   callback(false);
+							   return;
+						   }
+						   callback(writeDownloadedScript(filesystem, infoCopy, response.body));
+					   });
 }
 
 bool ScriptApi::uninstall(const io::FilesystemPtr &filesystem, const ScriptInfo &info) const {
@@ -143,27 +142,6 @@ core::String ScriptApi::detectScriptType(const core::String &luaSource) {
 	return "";
 }
 
-static core::String loadFromUrl(const core::String &url) {
-	http::Request request(url, http::RequestType::GET);
-	request.setUserAgent(app::App::getInstance()->fullAppname());
-
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("Failed to download script from %s", url.c_str());
-		return "";
-	}
-	if (statusCode != 200) {
-		Log::error("Script download returned status %d for %s", statusCode, url.c_str());
-		return "";
-	}
-
-	stream.seek(0);
-	core::String body;
-	stream.readString((int)stream.size(), body);
-	return body;
-}
-
 static core::String loadFromFile(const core::String &path) {
 	io::File f(path, io::FileMode::SysRead);
 	if (!f.validHandle()) {
@@ -173,14 +151,82 @@ static core::String loadFromFile(const core::String &path) {
 	return f.load();
 }
 
-bool ScriptApi::install(const io::FilesystemPtr &filesystem, const core::String &source) const {
+static bool installLuaSource(const io::FilesystemPtr &filesystem, const core::String &luaSource,
+							 const core::String &filename) {
+	if (luaSource.empty()) {
+		return false;
+	}
+
+	if (core::string::extractExtension(filename) != "lua") {
+		Log::error("Script file must have .lua extension: %s", filename.c_str());
+		return false;
+	}
+
+	const core::String type = ScriptApi::detectScriptType(luaSource);
+	if (type.empty()) {
+		Log::error("Could not detect script type for %s - must contain function main(), generate() or select()",
+				   filename.c_str());
+		return false;
+	}
+
+	const core::String dir = ScriptApi::scriptTypeToDir(type);
+	const core::String targetPath = core::string::path(dir, filename);
+	const core::String fullDir = filesystem->homeWritePath(dir);
+	filesystem->sysCreateDir(fullDir);
+
+	if (!filesystem->homeWrite(targetPath, luaSource)) {
+		Log::error("Failed to write script to %s", targetPath.c_str());
+		return false;
+	}
+
+	Log::info("Installed %s script %s to %s", type.c_str(), filename.c_str(), dir.c_str());
+	return true;
+}
+
+void ScriptApi::installAsync(const io::FilesystemPtr &filesystem, const core::String &source,
+							 ScriptBoolCallback &&callback) const {
+	if (core::string::startsWith(source, "http://") || core::string::startsWith(source, "https://")) {
+		const core::String filename = core::string::extractFilenameWithExtension(source);
+		http::requestAsync(makeScriptRequest(source),
+						   [filesystem, filename, callback = core::move(callback)](const http::Response &response) mutable {
+							   if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+								   Log::error("Failed to download script from %s (status %d)", response.url.c_str(),
+											  response.statusCode);
+								   callback(false);
+								   return;
+							   }
+							   callback(installLuaSource(filesystem, response.body, filename));
+						   });
+		return;
+	}
+
 	core::String luaSource;
 	core::String filename;
-
-	if (core::string::startsWith(source, "http://") || core::string::startsWith(source, "https://")) {
-		luaSource = loadFromUrl(source);
+	if (core::string::startsWith(source, "file://")) {
+		const core::String path = source.substr(7);
+		luaSource = loadFromFile(path);
+		filename = core::string::extractFilenameWithExtension(path);
+	} else {
+		luaSource = loadFromFile(source);
 		filename = core::string::extractFilenameWithExtension(source);
-	} else if (core::string::startsWith(source, "file://")) {
+	}
+	if (luaSource.empty()) {
+		Log::error("Failed to read script from: %s", source.c_str());
+		callback(false);
+		return;
+	}
+	callback(installLuaSource(filesystem, luaSource, filename));
+}
+
+bool ScriptApi::install(const io::FilesystemPtr &filesystem, const core::String &source) const {
+	if (core::string::startsWith(source, "http://") || core::string::startsWith(source, "https://")) {
+		Log::error("Use installAsync for http(s) script sources: %s", source.c_str());
+		return false;
+	}
+
+	core::String luaSource;
+	core::String filename;
+	if (core::string::startsWith(source, "file://")) {
 		const core::String path = source.substr(7);
 		luaSource = loadFromFile(path);
 		filename = core::string::extractFilenameWithExtension(path);
@@ -193,31 +239,7 @@ bool ScriptApi::install(const io::FilesystemPtr &filesystem, const core::String 
 		Log::error("Failed to read script from: %s", source.c_str());
 		return false;
 	}
-
-	if (core::string::extractExtension(filename) != "lua") {
-		Log::error("Script file must have .lua extension: %s", filename.c_str());
-		return false;
-	}
-
-	const core::String type = detectScriptType(luaSource);
-	if (type.empty()) {
-		Log::error("Could not detect script type for %s - must contain function main(), generate() or select()",
-				   filename.c_str());
-		return false;
-	}
-
-	const core::String dir = scriptTypeToDir(type);
-	const core::String targetPath = core::string::path(dir, filename);
-	const core::String fullDir = filesystem->homeWritePath(dir);
-	filesystem->sysCreateDir(fullDir);
-
-	if (!filesystem->homeWrite(targetPath, luaSource)) {
-		Log::error("Failed to write script to %s", targetPath.c_str());
-		return false;
-	}
-
-	Log::info("Installed %s script %s to %s", type.c_str(), filename.c_str(), dir.c_str());
-	return true;
+	return installLuaSource(filesystem, luaSource, filename);
 }
 
 bool ScriptApi::uninstallByFilename(const io::FilesystemPtr &filesystem, const core::String &filename) const {

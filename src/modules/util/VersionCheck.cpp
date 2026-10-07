@@ -58,29 +58,8 @@ core::String releaseUrl() {
 	return GitHubURL + "/releases/latest";
 }
 
-bool isNewVersionAvailable(int timeout) {
-	if (!http::Request::supported()) {
-		Log::error("Could not check for new version: HTTP requests are not supported");
-		return false;
-	}
-	io::BufferedReadWriteStream stream(512);
-
-	http::Request request(releaseUrl(), http::RequestType::GET);
-	if (timeout > 0) {
-		request.setTimeoutSecond(timeout);
-		request.setConnectTimeoutSecond(timeout);
-	}
-	if (!request.execute(stream)) {
-		Log::error("Could not check for new version: HTTP request failed");
-		return false;
-	}
-	stream.seek(0);
-	core::String response;
-	if (!stream.readString(stream.size(), response)) {
-		Log::error("Failed to read string");
-		return false;
-	}
-	json::Json release = json::Json::parse(response);
+bool isNewVersionAvailable(const core::String &responseBody) {
+	json::Json release = json::Json::parse(responseBody);
 	if (!release.contains("tag_name")) {
 		Log::warn("github response doesn't contain a tag_name node");
 		return false;
