@@ -198,6 +198,9 @@ TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
 }
 
 TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
+	CameraMovementExt setup;
+	setup.construct();
+	util::ScopedVarChange speed(cfg::ClientCameraMovementSpeed, "60");
 	const video::CameraMode modes[] = {video::CameraMode::Perspective, video::CameraMode::Orthogonal, video::CameraMode::Isometric};
 	const video::CameraRotationType rotations[] = {video::CameraRotationType::Target, video::CameraRotationType::Eye};
 	for (video::CameraMode mode : modes) {
@@ -267,14 +270,14 @@ TEST_F(CameraMovementTest, wheelZoomHasEqualRelativeResponse) {
 	}
 }
 
-TEST_F(CameraMovementTest, navigationSpeedAndSprintSettingsScaleResponse) {
+TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 	for (const char *button : {"move_left", "move_forward"}) {
 		float responses[3];
 		for (int run = 0; run < 3; ++run) {
 			CameraMovementExt m;
 			m.construct();
 			ASSERT_TRUE(m.init());
-			util::ScopedVarChange speed(cfg::GameModeMovementSpeed, run == 1 ? "120" : "60");
+			util::ScopedVarChange speed(cfg::ClientCameraMovementSpeed, run == 1 ? "120" : "60");
 			util::ScopedVarChange clipping(cfg::GameModeClipping, "false");
 			util::ScopedVarChange multiplier(cfg::GameModeSprintMultiplier, "3");
 			video::Camera camera;
@@ -302,7 +305,59 @@ TEST_F(CameraMovementTest, navigationSpeedAndSprintSettingsScaleResponse) {
 		}
 		ASSERT_GT(responses[0], 0.0f);
 		EXPECT_NEAR(responses[1] / responses[0], 2.0f, 0.001f);
-		EXPECT_NEAR(responses[2] / responses[0], 3.0f, 0.001f);
+		EXPECT_NEAR(responses[2] / responses[0], 1.0f, 0.001f);
+	}
+}
+
+TEST_F(CameraMovementTest, editorAndGameMovementSpeedsAreIndependent) {
+	CameraMovementExt setup;
+	setup.construct();
+	EXPECT_FLOAT_EQ(core::getVar(cfg::ClientCameraMovementSpeed)->floatVal(), 200.0f);
+	EXPECT_FLOAT_EQ(core::getVar(cfg::GameModeMovementSpeed)->floatVal(), 60.0f);
+	for (bool clipping : {false, true}) {
+		float response[4];
+		for (int run = 0; run < 4; ++run) {
+			CameraMovementExt m;
+			m.construct();
+			ASSERT_TRUE(m.init());
+			util::ScopedVarChange editorSpeed(cfg::ClientCameraMovementSpeed, run == 1 ? "400" : "200");
+			util::ScopedVarChange gameSpeed(cfg::GameModeMovementSpeed, run == 2 ? "120" : "60");
+			util::ScopedVarChange clippingSetting(cfg::GameModeClipping, clipping ? "true" : "false");
+			util::ScopedVarChange gravity(cfg::GameModeApplyGravity, "false");
+			video::Camera camera;
+			camera.setSize({1000, 800});
+			camera.setTargetDistance(100);
+			camera.update(0);
+			camera.setRotationType(video::CameraRotationType::Eye);
+			camera.setWorldPosition({8, 5, 8});
+			camera.update(0);
+			m.updateBodyPosition(camera);
+			scenegraph::SceneGraph graph;
+			prepareSceneGraph(graph);
+			m.update(0, &camera, graph, 0);
+			const float before = camera.worldPosition().x;
+			{
+				command::ScopedButtonCommand pressed("move_left", 10, 0);
+				auto advance = [&]() {
+					for (int frame = 1; frame <= 30; ++frame) {
+						m.update(frame / 60.0, &camera, graph, 0);
+						camera.update(0);
+					}
+				};
+				if (run == 3) {
+					command::ScopedButtonCommand sprint("sprint", 11, 0);
+					advance();
+				} else {
+					advance();
+				}
+			}
+			response[run] = glm::abs(camera.worldPosition().x - before);
+			m.shutdown();
+		}
+		ASSERT_GT(response[0], 0.0f);
+		EXPECT_NEAR(response[1] / response[0], clipping ? 1.0f : 2.0f, 0.001f);
+		EXPECT_NEAR(response[2] / response[0], clipping ? 2.0f : 1.0f, 0.001f);
+		EXPECT_NEAR(response[3] / response[0], clipping ? 3.0f : 1.0f, 0.001f);
 	}
 }
 

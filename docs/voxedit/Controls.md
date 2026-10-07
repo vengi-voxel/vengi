@@ -165,3 +165,14 @@ If the same modifier is bound both alone and in a combo (e.g. `shift` and `shift
 | `f22`                | F22                |
 | `f23`                | F23                |
 | `f24`                | F24                |
+
+## Navigation speed
+
+`cl_cammovementspeed` controls editor keyboard navigation without clipping. Its
+default is 200 screen pixels per second at the camera target plane. It also
+controls the relative scale rate of forward/backward navigation.
+
+Game mode uses `g_movementspeed` instead, with a default of 60 world units per
+second. Changing editor speed does not change game-mode speed or acceleration.
+`+sprint` applies `g_sprintmultiplier` only when clipping is enabled in game mode;
+editor navigation ignores sprint. Wheel zoom uses `cl_camzoomspeed` independently.

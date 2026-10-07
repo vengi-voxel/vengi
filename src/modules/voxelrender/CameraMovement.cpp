@@ -13,8 +13,10 @@
 namespace voxelrender {
 
 void CameraMovement::construct() {
-	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, N_("Movement speed"), N_("World units per second with clipping, screen pixels per second in editor navigation"));
+	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, N_("Movement speed"), N_("Movement speed in world units per second in game mode"));
 	_movementSpeed = core::Var::registerVar(gameModeMovementSpeed);
+	const core::VarDef editorMovementSpeed(cfg::ClientCameraMovementSpeed, 200.0f, N_("Editor movement speed"), N_("Editor camera movement speed in screen pixels per second"));
+	core::Var::registerVar(editorMovementSpeed);
 	const core::VarDef gameModeJumpVelocity(cfg::GameModeJumpVelocity, 7.0f, N_("Jump velocity"), N_("Jump velocity in game mode"));
 	_jumpVelocity = core::Var::registerVar(gameModeJumpVelocity);
 	const core::VarDef gameModeBodyHeight(cfg::GameModeBodyHeight, 2.0f, N_("Body height"), N_("Height of the body in game mode"));
@@ -60,13 +62,13 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 
 	_body.extents.y = _bodyHeight->floatVal();
-	const float baseSpeed = _movementSpeed->floatVal();
-	const float speed = _movement.sprint() ? baseSpeed * _sprintMultiplier->floatVal() : baseSpeed;
+	const bool clipping = _clipping->boolVal();
+	const float baseSpeed = clipping ? _movementSpeed->floatVal() : core::getVar(cfg::ClientCameraMovementSpeed)->floatVal();
+	const float speed = clipping && _movement.sprint() ? baseSpeed * _sprintMultiplier->floatVal() : baseSpeed;
 	if (_clipping->isDirty()) {
 		_clipping->markClean();
 		updateBodyPosition(*camera);
 	}
-	const bool clipping = _clipping->boolVal();
 	glm::vec3 camForward = camera->forward();
 	glm::vec3 camRight = camera->right();
 	if (clipping) {
