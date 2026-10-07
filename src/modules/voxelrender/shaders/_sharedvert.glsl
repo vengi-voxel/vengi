@@ -19,37 +19,73 @@ layout(std140, binding = 0) uniform u_vert {
 	int u_usedrawinstances;
 };
 
+#ifdef VULKAN
+// Per-draw model/flags. Lets the Vulkan backend keep the palette UBO stable
+// across unique-mesh draws and only push the per-draw fields (see
+// setUniformBufferPushOverlay / DrawInstanceData layout).
+layout(push_constant) uniform DrawPush {
+	mat4 model;
+	int gray;
+	int locked;
+	float opacity;
+	int _pad;
+} drawPush;
+#endif
+
 #ifdef USEDRAWPARAMETERS
 #include "_drawinstance.glsl"
 mat4 getModelMatrix() {
 	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].model;
 	}
+#ifdef VULKAN
+	return drawPush.model;
+#else
 	return u_model;
+#endif
 }
 int getGrayFlag() {
 	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].gray;
 	}
+#ifdef VULKAN
+	return drawPush.gray;
+#else
 	return u_gray;
+#endif
 }
 int getLockedFlag() {
 	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].locked;
 	}
+#ifdef VULKAN
+	return drawPush.locked;
+#else
 	return u_locked;
+#endif
 }
 float getOpacity() {
 	if (u_usedrawinstances != 0) {
 		return u_drawinstances[VENGIDRAWID].opacity;
 	}
+#ifdef VULKAN
+	return drawPush.opacity;
+#else
 	return u_opacity;
+#endif
 }
+#else
+#ifdef VULKAN
+mat4 getModelMatrix() { return drawPush.model; }
+int getGrayFlag() { return drawPush.gray; }
+int getLockedFlag() { return drawPush.locked; }
+float getOpacity() { return drawPush.opacity; }
 #else
 mat4 getModelMatrix() { return u_model; }
 int getGrayFlag() { return u_gray; }
 int getLockedFlag() { return u_locked; }
 float getOpacity() { return u_opacity; }
+#endif
 #endif
 
 $out vec3 v_pos;

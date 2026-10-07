@@ -60,6 +60,9 @@ const RenderStats &renderStatsTotals() {
 void beginFrameStats() {
 	s_frame = RenderStats {};
 	s_frame.frameNumber = s_totals.frameNumber + 1u;
+	// Show previous frame's CPU timings in UI until endFrameStats() overwrites
+	// them. Upload scopes accumulate into cpuUploadMs from 0 this frame; the
+	// display value is restored only for mid-frame UI reads via the side vars.
 	s_frame.cpuRenderMs = s_displayCpuRenderMs;
 	s_frame.cpuUploadMs = s_displayCpuUploadMs;
 	s_frameStartTicks = core::TimeProvider::highResTime();
@@ -76,6 +79,7 @@ void endFrameStats() {
 		const uint64_t now = core::TimeProvider::highResTime();
 		s_frame.cpuRenderMs = ticksToMs(now - s_frameStartTicks);
 	}
+	// Replace display-seeded upload with this frame's measured upload only.
 	s_frame.cpuUploadMs = s_uploadThisFrameMs;
 	s_displayCpuRenderMs = s_frame.cpuRenderMs;
 	s_displayCpuUploadMs = s_frame.cpuUploadMs;
@@ -172,6 +176,7 @@ void statsUploadScopeEnd() {
 		const uint64_t now = core::TimeProvider::highResTime();
 		const double dt = ticksToMs(now - s_uploadScopeStartTicks);
 		s_uploadThisFrameMs += dt;
+		// Keep UI field in sync during the frame (display seed + this frame so far).
 		s_frame.cpuUploadMs = s_displayCpuUploadMs + s_uploadThisFrameMs;
 		s_uploadScopeStartTicks = 0u;
 	}

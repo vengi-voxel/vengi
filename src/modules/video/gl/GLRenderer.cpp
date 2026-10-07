@@ -1629,6 +1629,17 @@ void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, i
 	useProgram(previousProgram);
 }
 
+void setProgramPushConstantSize(Id program, uint32_t size) {
+	(void)program;
+	(void)size;
+}
+
+void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
+	(void)buffer;
+	(void)fields;
+	(void)count;
+}
+
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 #if 0
 	// TODO: this is throwing a lot of GL_INVALID_VALUE errors

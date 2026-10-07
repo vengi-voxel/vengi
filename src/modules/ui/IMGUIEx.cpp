@@ -839,8 +839,21 @@ ImTextureID toImTextureID(video::Id handle) {
 	if (handle == video::InvalidId) {
 		return ImTextureID_Invalid;
 	}
-	// TODO: VULKAN: implement me
-	return ImTextureID_Invalid;
+	void *cached = video::getVulkanImGuiDescriptorSet(handle);
+	if (cached != nullptr) {
+		return (ImTextureID)(intptr_t)cached;
+	}
+	void *view = nullptr;
+	if (!video::getVulkanTextureHandles(handle, &view, nullptr) || view == nullptr) {
+		return ImTextureID_Invalid;
+	}
+	const VkDescriptorSet set =
+		ImGui_ImplVulkan_AddTexture((VkImageView)view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	if (set == VK_NULL_HANDLE) {
+		return ImTextureID_Invalid;
+	}
+	video::setVulkanImGuiDescriptorSet(handle, set);
+	return (ImTextureID)(intptr_t)set;
 }
 #else
 ImTextureID toImTextureID(video::Id handle) {

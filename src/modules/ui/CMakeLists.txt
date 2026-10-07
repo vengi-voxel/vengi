@@ -69,6 +69,10 @@ set(LIBS)
 if (USE_GL_RENDERER AND USE_OPENGLES)
 	list(APPEND DEFINITIONS -DIMGUI_IMPL_OPENGL_ES2)
 endif()
+if (USE_VK_RENDERER)
+	# Types from SDL's bundled Khronos headers; functions via ImGui_ImplVulkan_LoadFunctions().
+	list(APPEND DEFINITIONS -DIMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+endif()
 
 find_package(Freetype)
 if (FREETYPE_FOUND)
@@ -79,6 +83,12 @@ endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app ${LIBS})
 target_compile_definitions(${LIB} PUBLIC ${DEFINITIONS})
+if (USE_VK_RENDERER)
+	# imgui_impl_vulkan.cpp includes <vulkan/vulkan.h> for types only
+	# (IMGUI_IMPL_VULKAN_NO_PROTOTYPES). Use the Khronos headers bundled
+	# with SDL so we do not need the Vulkan SDK at link or compile time.
+	target_include_directories(${LIB} PRIVATE ${ROOT_DIR}/contrib/libs/sdl3/src/video/khronos)
+endif()
 if (APPLE)
 	target_link_libraries(${LIB} PRIVATE "-framework ApplicationServices")
 endif()
@@ -133,5 +143,8 @@ if (USE_IMGUITESTENGINE)
 	target_compile_definitions(${TEST_ENGINE} PUBLIC ${TEST_ENGINE_DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1 -DIMGUI_TEST_ENGINE_ENABLE_IMPLOT=1)
 	target_include_directories(${TEST_ENGINE} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui dearimgui/imgui_test_engine)
 	target_link_libraries(${TEST_ENGINE} PRIVATE ui-fonts)
+	if (USE_VK_RENDERER)
+		target_include_directories(${TEST_ENGINE} PRIVATE ${ROOT_DIR}/contrib/libs/sdl3/src/video/khronos)
+	endif()
 	set_target_properties(${TEST_ENGINE} PROPERTIES UNITY_BUILD OFF)
 endif()
