@@ -329,7 +329,6 @@ int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model
 			activateLineShader(camera, model);
 			video::ScopedBlendMode blend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
 										 video::BlendEquation::Add);
-			video::ScopedState depthTest(video::State::DepthTest, false);
 			video::ScopedState depthMask(video::State::DepthMask, false);
 			video::ScopedState cull(video::State::CullFace, false);
 			core_assert_always(_vbo[meshIndex].bind());
@@ -380,7 +379,6 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, cons
 		activateLineShader(camera, model);
 		video::ScopedBlendMode blend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
 									 video::BlendEquation::Add);
-		video::ScopedState depthTest(video::State::DepthTest, false);
 		video::ScopedState depthMask(video::State::DepthMask, false);
 		video::ScopedState cull(video::State::CullFace, false);
 		core_assert_always(_vbo[meshIndex].bind());
