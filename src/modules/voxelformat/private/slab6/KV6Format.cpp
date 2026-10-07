@@ -615,7 +615,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 		for (uint32_t y = 0; y < depth; ++y) {
 			for (int end = idx + state->xyoffsets[x][y]; idx < end; ++idx) {
 				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
-				const voxel::Voxel col = voxel::createVoxel(palette, vox.col, vox.normal);
+				const uint8_t normalIndex = vox.normal == 255 ? NO_NORMAL : vox.normal + NORMAL_PALETTE_OFFSET;
+				const voxel::Voxel col = voxel::createVoxel(palette, vox.col, normalIndex);
 				volume->setVoxel((int)x, (int)((height - 1) - vox.z), (int)y, col);
 			}
 		}

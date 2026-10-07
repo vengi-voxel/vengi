@@ -4,6 +4,9 @@
 
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "AbstractFormatTest.h"
+#include "io/MemoryArchive.h"
+#include "palette/NormalPalette.h"
+#include "voxel/RawVolume.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -17,6 +20,40 @@
 namespace voxelformat {
 
 class VXLFormatTest : public AbstractFormatTest {};
+
+TEST_F(VXLFormatTest, testNormalIndicesAndCoordinates) {
+	for (int normalType : {2, 4}) {
+		palette::NormalPalette palette;
+		if (normalType == 2) {
+			palette.tiberianSun();
+		} else {
+			palette.redAlert2();
+		}
+		scenegraph::SceneGraph graph;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 0, 0, 1, 0, 0));
+		node.setNormalPalette(palette);
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, NORMAL_PALETTE_OFFSET));
+		node.volume()->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, palette.size()));
+		graph.emplace(core::move(node));
+		graph.updateTransforms();
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		VXLFormat format;
+		ASSERT_TRUE(format.save(graph, "normals.vxl", archive, testSaveCtx));
+		scenegraph::SceneGraph loaded;
+		ASSERT_TRUE(format.load("normals.vxl", archive, loaded, testLoadCtx));
+		const scenegraph::SceneGraphNode *model = loaded.firstModelNode();
+		ASSERT_NE(nullptr, model);
+		EXPECT_EQ(NORMAL_PALETTE_OFFSET, model->volume()->voxel(0, 0, 0).getNormal());
+		EXPECT_EQ(palette.size(), model->volume()->voxel(1, 0, 0).getNormal());
+		ASSERT_TRUE(model->hasNormalPalette());
+		ASSERT_EQ(palette.size(), model->normalPalette().size());
+		for (size_t i = 0; i < palette.size(); ++i) {
+			const glm::vec3 original = palette.normal3f(i);
+			EXPECT_VEC_NEAR(original, model->normalPalette().normal3f(i), 0.00001f);
+		}
+	}
+}
 
 TEST_F(VXLFormatTest, testLoad) {
 	testLoad("cc.vxl");

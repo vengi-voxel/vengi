@@ -471,7 +471,8 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
 				maxNormalIndex = core_max(maxNormalIndex, normal);
-				const voxel::Voxel v = voxel::createVoxel(palette, color, normal);
+				const uint8_t normalIndex = normal < palette::NormalPaletteMaxNormals ? normal + NORMAL_PALETTE_OFFSET : NO_NORMAL;
+				const voxel::Voxel v = voxel::createVoxel(palette, color, normalIndex);
 				sampler.setVoxel(v);
 				sampler.movePositiveY();
 				++z;

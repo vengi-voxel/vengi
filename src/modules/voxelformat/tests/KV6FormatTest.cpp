@@ -4,6 +4,9 @@
 
 #include "voxelformat/private/slab6/KV6Format.h"
 #include "AbstractFormatTest.h"
+#include "io/MemoryArchive.h"
+#include "palette/NormalPalette.h"
+#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
@@ -13,6 +16,32 @@
 namespace voxelformat {
 
 class KV6FormatTest : public AbstractFormatTest {};
+
+TEST_F(KV6FormatTest, testNormalIndicesAndCoordinates) {
+	palette::NormalPalette palette;
+	palette.slab6();
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 2, 0, 0));
+	node.setNormalPalette(palette);
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, NORMAL_PALETTE_OFFSET));
+	node.volume()->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, palette.size()));
+	node.volume()->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42));
+	graph.emplace(core::move(node));
+	graph.updateTransforms();
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	KV6Format format;
+	ASSERT_TRUE(format.save(graph, "normals.kv6", archive, testSaveCtx));
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load("normals.kv6", archive, loaded, testLoadCtx));
+	const scenegraph::SceneGraphNode *model = loaded.firstModelNode();
+	ASSERT_NE(nullptr, model);
+	EXPECT_EQ(NORMAL_PALETTE_OFFSET, model->volume()->voxel(0, 0, 0).getNormal());
+	EXPECT_EQ(palette.size(), model->volume()->voxel(1, 0, 0).getNormal());
+	EXPECT_EQ(NO_NORMAL, model->volume()->voxel(2, 0, 0).getNormal());
+	ASSERT_TRUE(model->hasNormalPalette());
+	EXPECT_EQ(palette.hash(), model->normalPalette().hash());
+}
 
 TEST_F(KV6FormatTest, testLoad) {
 	scenegraph::SceneGraph sceneGraph;
