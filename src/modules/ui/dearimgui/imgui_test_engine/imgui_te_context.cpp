@@ -2045,7 +2045,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     // Another is window active test (in the case focus change has a side effect but also as we have yield an extra frame)
     if (item.Window == nullptr || !item.Window->WasActive)
     {
-        LogError("MouseMove: Window '%s' is not active (after aiming)", item.Window->Name);
+        LogError("MouseMove: Window '%s' is not active (after aiming)", item.Window ? item.Window->Name : "(null)");
         return;
     }
 

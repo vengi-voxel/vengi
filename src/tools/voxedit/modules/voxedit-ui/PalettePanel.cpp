@@ -538,8 +538,8 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 				const uint8_t selectedColorIdx = (uint8_t)selectedPaletteColorIdx;
 
 				ImDrawList *drawList = ImGui::GetWindowDrawList();
-				const ImDrawListFlags backupFlags = drawList->Flags;
-				drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
+				const ImDrawFlags backupFlags = drawList->Flags;
+				drawList->Flags &= ~ImDrawFlags_AALines;
 
 				const float windowPosX = ImGui::GetWindowPos().x;
 				const float contentRegionRightEdge =

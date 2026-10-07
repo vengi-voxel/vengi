@@ -1395,10 +1395,10 @@ bool MultiSelectComboItems(const char *label, core::String &value, const core::D
 
 	const ImU32 frameCol = ImGui::GetColorU32(ImGuiCol_FrameBg);
 	window->DrawList->AddRectFilled(bb.Min, previewBb.Max, frameCol, style.FrameRounding,
-									ImDrawFlags_RoundCornersLeft);
+									ImDrawFlags_RoundLeft);
 	const ImU32 arrowBgCol = ImGui::GetColorU32(ImGuiCol_Button);
 	window->DrawList->AddRectFilled(arrowBb.Min, arrowBb.Max, arrowBgCol, style.FrameRounding,
-									ImDrawFlags_RoundCornersRight);
+									ImDrawFlags_RoundRight);
 	ImGui::RenderFrameBorder(bb.Min, bb.Max, style.FrameRounding);
 	if (arrowBb.GetWidth() > 0.0f) {
 		const ImU32 arrowCol = ImGui::GetColorU32(ImGuiCol_Text);
@@ -1416,7 +1416,7 @@ bool MultiSelectComboItems(const char *label, core::String &value, const core::D
 
 	if (previewHovered || popupOpen) {
 		window->DrawList->AddRectFilled(bb.Min, previewBb.Max, ImGui::GetColorU32(ImGuiCol_FrameBgHovered),
-										style.FrameRounding, ImDrawFlags_RoundCornersLeft);
+										style.FrameRounding, ImDrawFlags_RoundLeft);
 	}
 
 	ImGui::PushClipRect(previewBb.Min, previewBb.Max, true);
@@ -1475,7 +1475,7 @@ bool MultiSelectComboItems(const char *label, core::String &value, const core::D
 
 	if (arrowHovered || popupOpen) {
 		window->DrawList->AddRectFilled(arrowBb.Min, arrowBb.Max, ImGui::GetColorU32(ImGuiCol_ButtonHovered),
-										style.FrameRounding, ImDrawFlags_RoundCornersRight);
+										style.FrameRounding, ImDrawFlags_RoundRight);
 		if (arrowBb.GetWidth() > 0.0f) {
 			ImGui::RenderArrow(window->DrawList,
 							   ImVec2(arrowBb.Min.x + style.FramePadding.y, arrowBb.Min.y + style.FramePadding.y),

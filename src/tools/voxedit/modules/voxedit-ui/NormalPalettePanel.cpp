@@ -194,8 +194,8 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			const float availableX = ImGui::GetContentRegionAvail().x;
 			const float contentRegionRightEdge = availableX + cursorPos.x;
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
-			const ImDrawListFlags backupFlags = drawList->Flags;
-			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
+			const ImDrawFlags backupFlags = drawList->Flags;
+			drawList->Flags &= ~ImDrawFlags_AALines;
 			const float frameHeight = ImGui::GetFrameHeight();
 
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
