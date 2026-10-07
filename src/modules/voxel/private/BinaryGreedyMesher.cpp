@@ -724,7 +724,7 @@ bool exceedsBinaryMesherRegion(const voxel::Region &region) {
  * @param ambientOcclusion Whether to calculate ambient occlusion
  */
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool ambientOcclusion) {
+							 const glm::ivec3 &translate, bool ambientOcclusion, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractBinaryGreedyMesh);
 
 	// Set the offset for the chunk mesh
@@ -744,6 +744,12 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &
 	const voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
 	voxel::RawVolume copy(copyRegion);
 	copy.copyInto(*volData, copyRegion);
+	if (!preserveVoxelNormals) {
+		Voxel *voxels = copy.voxels();
+		for (int i = 0; i < CS_P * CS_P * CS_P; ++i) {
+			voxels[i].setNormal(NO_NORMAL);
+		}
+	}
 	VoxelData voxels = copy.voxels();
 
 	// Extract opaque geometry (MeshType = 0)

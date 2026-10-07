@@ -38,6 +38,8 @@ struct SurfaceExtractionContext {
 	const bool ambientOcclusion; // used only for Cubic and Binary
 	const bool optimize;
 	const bool textureDedupe;	 // used only for GreedyTexture
+	// Cubic and Binary retain normal boundaries for rendering by default.
+	bool preserveVoxelNormals = true;
 
 	// used only for GreedyTexture
 	int textureWidth = 0;

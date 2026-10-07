@@ -16,6 +16,7 @@
 #include "video/ShapeBuilder.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -27,6 +28,73 @@
 namespace voxelformat {
 
 class MeshFormatTest : public AbstractFormatTest {};
+
+TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
+	class TestMesh : public MeshFormat {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			vertices = indices = normals = 0;
+			for (const ChunkMeshExt &entry : meshes) {
+				for (const voxel::Mesh &mesh : entry.mesh->mesh) {
+					vertices += mesh.getNoOfVertices();
+					indices += mesh.getNoOfIndices();
+					normals += mesh.getNormalVector().size();
+					for (const voxel::VoxelVertex &v : mesh.getVertexVector()) {
+						EXPECT_EQ(NO_NORMAL, v.normalIndex);
+					}
+				}
+			}
+			return true;
+		}
+	public:
+		size_t vertices = 0;
+		size_t indices = 0;
+		size_t normals = 0;
+	};
+	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	util::ScopedVarChange merge(cfg::VoxformatMergequads, "true");
+	util::ScopedVarChange reuse(cfg::VoxformatReusevertices, "true");
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 5, 1, 1));
+	palette::Palette pal;
+	pal.nippon();
+	node.setPalette(pal);
+	voxel::RawVolume *volume = node.volume();
+	graph.emplace(core::move(node));
+	graph.updateTransforms();
+	const voxel::SurfaceExtractionType types[] = {voxel::SurfaceExtractionType::Cubic, voxel::SurfaceExtractionType::Binary};
+	for (voxel::SurfaceExtractionType type : types) {
+		util::ScopedVarChange meshMode(cfg::VoxformatMeshMode, (int)type);
+		for (int withNormals = 0; withNormals <= 1; ++withNormals) {
+			util::ScopedVarChange exportNormals(cfg::VoxformatWithNormals, withNormals);
+			size_t vertices = 0;
+			size_t indices = 0;
+			for (int voxelNormals = 0; voxelNormals <= 1; ++voxelNormals) {
+				for (int x = 0; x <= 5; ++x) {
+					for (int y = 0; y <= 1; ++y) {
+						for (int z = 0; z <= 1; ++z) {
+							volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 42,
+								voxelNormals ? 1 + x % 2 : NO_NORMAL));
+						}
+					}
+				}
+				TestMesh format;
+				ASSERT_TRUE(format.saveGroups(graph, "mesh", {}, testSaveCtx));
+				ASSERT_GT(format.vertices, 0u);
+				EXPECT_EQ(withNormals ? format.vertices : 0u, format.normals);
+				if (voxelNormals == 0) {
+					vertices = format.vertices;
+					indices = format.indices;
+				} else {
+					EXPECT_EQ(vertices, format.vertices);
+					EXPECT_EQ(indices, format.indices);
+					EXPECT_EQ(2, volume->voxel(1, 0, 0).getNormal());
+				}
+			}
+		}
+	}
+}
 
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshTriCollection tinyTris;

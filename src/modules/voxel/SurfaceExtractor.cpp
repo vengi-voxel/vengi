@@ -62,15 +62,15 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 			const auto &regions = getBinaryMesherRegions(ctx.region);
 			for (const voxel::Region &r : regions) {
 				Log::debug("extract region %s", r.toString().c_str());
-				voxel::extractBinaryGreedyMesh(ctx.volume, r.getLowerCorner(), &ctx.mesh, ctx.translate + r.getLowerCorner(), ctx.ambientOcclusion);
+				voxel::extractBinaryGreedyMesh(ctx.volume, r.getLowerCorner(), &ctx.mesh, ctx.translate + r.getLowerCorner(), ctx.ambientOcclusion, ctx.preserveVoxelNormals);
 			}
 			ctx.mesh.setOffset(ctx.region.getLowerCorner());
 		} else {
-			voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region.getLowerCorner(), &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
+			voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region.getLowerCorner(), &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.preserveVoxelNormals);
 		}
 	} else {
 		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
-								ctx.reuseVertices);
+								ctx.reuseVertices, ctx.preserveVoxelNormals);
 	}
 	if (ctx.optimize) {
 		ctx.mesh.optimize();

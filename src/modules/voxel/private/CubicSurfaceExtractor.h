@@ -97,6 +97,6 @@ struct ChunkMesh;
  */
 void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
 					  const glm::ivec3 &translate, bool ambientOcclusion = true, bool mergeQuads = true,
-					  bool reuseVertices = true);
+					  bool reuseVertices = true, bool preserveVoxelNormals = true);
 
 } // namespace voxel

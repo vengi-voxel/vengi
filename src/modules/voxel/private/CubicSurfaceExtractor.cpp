@@ -403,7 +403,7 @@ static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 }
 
 void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-					  const glm::ivec3 &translate, bool ambientOcclusion, bool mergeQuads, bool reuseVertices) {
+					  const glm::ivec3 &translate, bool ambientOcclusion, bool mergeQuads, bool reuseVertices, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	const glm::ivec3& offset = region.getLowerCorner();
@@ -482,9 +482,9 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 				 *               [C]
 				 */
 
-				const Voxel& voxelCurrent          = volumeSampler3.voxel();
-				const Voxel& voxelLeft             = volumeSampler3.peekVoxel1nx0py0pz();
-				const Voxel& voxelBefore           = volumeSampler3.peekVoxel0px0py1nz();
+				Voxel voxelCurrent                 = volumeSampler3.voxel();
+				Voxel voxelLeft                    = volumeSampler3.peekVoxel1nx0py0pz();
+				Voxel voxelBefore                  = volumeSampler3.peekVoxel0px0py1nz();
 				const Voxel& voxelLeftBefore       = volumeSampler3.peekVoxel1nx0py1nz();
 				const Voxel& voxelRightBefore      = volumeSampler3.peekVoxel1px0py1nz();
 				const Voxel& voxelLeftBehind       = volumeSampler3.peekVoxel1nx0py1pz();
@@ -495,12 +495,19 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 				const Voxel& voxelAboveRightBefore = volumeSampler3.peekVoxel1px1py1nz();
 				const Voxel& voxelAboveLeftBehind  = volumeSampler3.peekVoxel1nx1py1pz();
 
-				const Voxel& voxelBelow            = volumeSampler3.peekVoxel0px1ny0pz();
+				Voxel voxelBelow                   = volumeSampler3.peekVoxel0px1ny0pz();
 				const Voxel& voxelBelowLeft        = volumeSampler3.peekVoxel1nx1ny0pz();
 				const Voxel& voxelBelowBefore      = volumeSampler3.peekVoxel0px1ny1nz();
 				const Voxel& voxelBelowLeftBefore  = volumeSampler3.peekVoxel1nx1ny1nz();
 				const Voxel& voxelBelowRightBefore = volumeSampler3.peekVoxel1px1ny1nz();
 				const Voxel& voxelBelowLeftBehind  = volumeSampler3.peekVoxel1nx1ny1pz();
+
+				if (!preserveVoxelNormals) {
+					voxelCurrent.setNormal(NO_NORMAL);
+					voxelLeft.setNormal(NO_NORMAL);
+					voxelBefore.setNormal(NO_NORMAL);
+					voxelBelow.setNormal(NO_NORMAL);
+				}
 
 				const VoxelType voxelCurrentMaterial          = voxelCurrent.getMaterial();
 				const VoxelType voxelLeftMaterial             = voxelLeft.getMaterial();

@@ -1496,6 +1496,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			regionExt.shiftUpperCorner(1, 1, 1);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(
 				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
+			// Export geometric normals without splitting geometry at voxel-normal boundaries.
+			ctx.preserveVoxelNormals = false;
 			voxel::extractSurface(ctx);
 			if (withNormals) {
 				Log::debug("Calculate normals");

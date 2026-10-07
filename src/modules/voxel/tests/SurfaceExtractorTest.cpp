@@ -52,6 +52,80 @@ protected:
 	}
 };
 
+TEST_F(SurfaceExtractorTest, testVoxelNormalPreservation) {
+	palette::Palette pal;
+	pal.nippon();
+	const SurfaceExtractionType types[] = {SurfaceExtractionType::Cubic, SurfaceExtractionType::Binary};
+	const bool aoModes[] = {false, true};
+	for (SurfaceExtractionType type : types) {
+		for (bool ao : aoModes) {
+			for (int pattern = 0; pattern < 4; ++pattern) {
+				SCOPED_TRACE((int)type);
+				SCOPED_TRACE(ao);
+				SCOPED_TRACE(pattern);
+				const Region region(0, 0, 0, 8, 5, 3);
+				RawVolume volume(region);
+				RawVolume withNormals(region);
+				for (int x = 1; x <= 6; ++x) {
+					for (int z = 1; z <= 2; ++z) {
+						for (int y = 1; y <= 4; ++y) {
+							if (y == 3 || (pattern == 3 && y == 2 && x > 3)) {
+								continue;
+							}
+							Voxel v = createVoxel(y == 4 ? VoxelType::Transparent : VoxelType::Generic,
+								pattern == 1 && x > 3 ? 43 : 42);
+							if (pattern == 2 && x > 3) {
+								v.setOutline();
+							}
+							volume.setVoxel(x, y, z, v);
+							v.setNormal(1 + x % 2);
+							withNormals.setVoxel(x, y, z, v);
+						}
+					}
+				}
+				ChunkMesh baseline;
+				auto baselineCtx = createContext(type, &volume, region, pal, baseline, glm::ivec3(0), true, true, ao);
+				extractSurface(baselineCtx);
+				ChunkMesh compact;
+				auto compactCtx = createContext(type, &withNormals, region, pal, compact, glm::ivec3(0), true, true, ao);
+				compactCtx.preserveVoxelNormals = false;
+				extractSurface(compactCtx);
+				ChunkMesh preserved;
+				auto preservedCtx = createContext(type, &withNormals, region, pal, preserved, glm::ivec3(0), true, true, ao);
+				ASSERT_TRUE(preservedCtx.preserveVoxelNormals);
+				extractSurface(preservedCtx);
+				for (int m = 0; m < ChunkMesh::Meshes; ++m) {
+					const Mesh &expected = baseline.mesh[m];
+					const Mesh &actual = compact.mesh[m];
+					ASSERT_GT(expected.getNoOfVertices(), 0u);
+					ASSERT_EQ(expected.getNoOfVertices(), actual.getNoOfVertices());
+					ASSERT_EQ(expected.getNoOfIndices(), actual.getNoOfIndices());
+					for (size_t i = 0; i < expected.getNoOfVertices(); ++i) {
+						const VoxelVertex &a = expected.getVertex(i);
+						const VoxelVertex &b = actual.getVertex(i);
+						EXPECT_EQ(a.position, b.position);
+						EXPECT_EQ(a.colorIndex, b.colorIndex);
+						EXPECT_EQ(a.info, b.info);
+						EXPECT_EQ(NO_NORMAL, b.normalIndex);
+					}
+					for (size_t i = 0; i < expected.getNoOfIndices(); ++i) {
+						EXPECT_EQ(expected.getIndexVector()[i], actual.getIndexVector()[i]);
+					}
+					if (pattern == 0) {
+						EXPECT_GT(preserved.mesh[m].getNoOfVertices(), actual.getNoOfVertices());
+						EXPECT_GT(preserved.mesh[m].getNoOfIndices(), actual.getNoOfIndices());
+					}
+					for (const VoxelVertex &v : preserved.mesh[m].getVertexVector()) {
+						EXPECT_NE(NO_NORMAL, v.normalIndex);
+					}
+				}
+				EXPECT_EQ(2, withNormals.voxel(1, 1, 1).getNormal());
+				EXPECT_EQ(1, withNormals.voxel(2, 1, 1).getNormal());
+			}
+		}
+	}
+}
+
 // https://github.com/vengi-voxel/vengi/issues/389
 // 63 vertices mesh object. When you import this one into Blender, then when manually merged (Mesh > Merge > By Distance
 // 0.0001m) will yield to 48 vertices. There are 15 pairs of overlapping vertices: index 52 and 56 are overlapping in
