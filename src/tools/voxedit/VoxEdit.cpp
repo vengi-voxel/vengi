@@ -340,6 +340,23 @@ app::AppState VoxEdit::onConstruct() {
 			_mainWindow->createNew(false);
 		}).setHelp(_("Create a new scene with ui interaction"));
 
+	command::Command::registerCommand("camera_zoom")
+		.addArg({"value", command::ArgType::Float, false, "", "Absolute orthographic zoom or perspective target distance"})
+		.setHandler([this](const command::CommandArgs &args) {
+			video::Camera *camera = _sceneMgr->activeCamera();
+			const float value = args.floatVal("value");
+			const float speed = core::getVar(cfg::ClientCameraZoomSpeed)->floatVal();
+			if (camera == nullptr || !std::isfinite(value) || value <= 0.0f || speed <= 0.0f) {
+				Log::error("camera_zoom needs an active camera and a positive finite value");
+				return;
+			}
+			const float current = camera->isOrthographic() ? camera->orthoZoom() : camera->targetDistance();
+			if (current > 0.0f) {
+				camera->zoom(glm::log(value / current) / speed);
+				camera->update(0.0);
+			}
+		}).setHelp(_("Set camera zoom for repeatable framing, respecting configured zoom limits"));
+
 	command::Command::registerCommand("camera_reset")
 		.setHandler([this] (const command::CommandArgs& args) {
 			if (_mainWindow == nullptr) {

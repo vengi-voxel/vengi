@@ -242,6 +242,8 @@ public:
 	 */
 	void turn(float radians);
 
+	/** @brief World-space scale of one pixel on the navigation target plane. */
+	float worldUnitsPerPixel() const;
 	void pan(int screenDeltaX, int screenDeltaY);
 
 	void rotate(float radians, const glm::vec3 &axis);

@@ -102,25 +102,25 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 	rotate(quat);
 }
 
+float Camera::worldUnitsPerPixel() const {
+	if (_type == CameraType::UI)
+		return 1.0f;
+	if (isOrthographic())
+		return _orthoZoom / PIXELS_PER_UNIT;
+	const float height = (float)core_max(1, _windowSize.y);
+	return 2.0f * _distance * glm::tan(glm::radians(_fieldOfView) * 0.5f) / height;
+}
+
 void Camera::pan(int screenDeltaX, int screenDeltaY) {
-	float zoomFactor = 1.0f;
-	if (_rotationType == CameraRotationType::Target) {
-		if (isOrthographic()) {
-			zoomFactor = _orthoZoom / PIXELS_PER_UNIT;
-		} else {
-			const float rad = glm::radians(_fieldOfView);
-			zoomFactor = (_distance * glm::tan(rad * 0.5f)) / (float)_windowSize.y;
-		}
-	}
+	const float zoomFactor = worldUnitsPerPixel();
 	const glm::vec3 r = right() * ((float)-screenDeltaX) * zoomFactor;
 	const glm::vec3 u = up() * ((float)screenDeltaY) * zoomFactor;
 	const glm::vec3 delta = r + u;
 
-	if (_rotationType == CameraRotationType::Target) {
-		setTarget(_target + delta);
-	} else {
+	// Keep the navigation target on the same plane in both rotation modes.
+	setTarget(_target + delta);
+	if (_rotationType == CameraRotationType::Eye)
 		setWorldPosition(_worldPos + delta);
-	}
 
 	_lerp = false;
 }
@@ -369,6 +369,7 @@ void Camera::resetZoom() {
 }
 
 void Camera::zoom(float value) {
+	const float previousDistance = _distance;
 	float *target;
 	if (isOrthographic()) {
 		target = &_orthoZoom;
@@ -384,6 +385,9 @@ void Camera::zoom(float value) {
 	const float maxZoom = core::getVar(cfg::ClientCameraMaxZoom)->floatVal();
 	const float minZoom = core::getVar(cfg::ClientCameraMinZoom)->floatVal();
 	*target = glm::clamp(*target, minZoom, maxZoom);
+	if (!isOrthographic() && _rotationType == CameraRotationType::Eye) {
+		setWorldPosition(_worldPos + forward() * (previousDistance - _distance));
+	}
 }
 
 void Camera::updateLerp(double deltaFrameSeconds) {

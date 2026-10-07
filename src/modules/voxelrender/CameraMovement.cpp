@@ -13,7 +13,7 @@
 namespace voxelrender {
 
 void CameraMovement::construct() {
-	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, N_("Movement speed"), N_("Movement speed in game mode"));
+	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, N_("Movement speed"), N_("World units per second with clipping, screen pixels per second in editor navigation"));
 	_movementSpeed = core::Var::registerVar(gameModeMovementSpeed);
 	const core::VarDef gameModeJumpVelocity(cfg::GameModeJumpVelocity, 7.0f, N_("Jump velocity"), N_("Jump velocity in game mode"));
 	_jumpVelocity = core::Var::registerVar(gameModeJumpVelocity);
@@ -78,14 +78,14 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 	if (_movement.moving()) {
 		glm::vec3 direction(0);
-		// In orthographic mode, forward/backward should zoom instead of move
-		const bool orthographic = camera->isOrthographic();
-		if (orthographic && !clipping) {
-			if (_movement.forward()) {
-				camera->zoom(-speed * _deltaSeconds);
-			}
-			if (_movement.backward()) {
-				camera->zoom(speed * _deltaSeconds);
+		if (!clipping) {
+			// Forward/backward dolly has the same relative scale response as orthographic zoom.
+			const int forward = (int)_movement.backward() - (int)_movement.forward();
+			const float height = (float)core_max(1, camera->size().y);
+			const float rate = 2.0f * glm::tan(glm::radians(camera->fieldOfView()) * 0.5f) * speed / height;
+			const float zoomSpeed = _zoomSpeed->floatVal();
+			if (forward != 0 && zoomSpeed > 0.0f) {
+				camera->zoom((float)forward * rate * (float)_deltaSeconds / zoomSpeed);
 			}
 		} else {
 			if (_movement.forward()) {
@@ -134,7 +134,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 				}
 			} else {
 				// In non-clipping mode, set velocity directly based on movement speed
-				_body.velocity = direction * speed;
+				_body.velocity = direction * speed * camera->worldUnitsPerPixel();
 			}
 		}
 	}
@@ -200,12 +200,7 @@ void CameraMovement::rotate(video::Camera &camera, float yaw, float pitch) {
 
 void CameraMovement::zoom(video::Camera &camera, float level) {
 	if (!_clipping->boolVal()) {
-		if (camera.isOrthographic()) {
-			camera.zoom(level);
-		} else {
-			float speed = level * (1.0f + _zoomSpeed->floatVal());
-			camera.move(glm::vec3(0.0f, 0.0f, speed));
-		}
+		camera.zoom(level);
 	}
 }
 

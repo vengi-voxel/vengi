@@ -36,6 +36,8 @@ protected:
 		core::Var::registerVar(clientMouseRotationSpeed);
 		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "", "");
 		core::Var::registerVar(clientCameraZoomSpeed);
+		core::Var::registerVar(core::VarDef(cfg::ClientCameraMinZoom, 0.001f, "", ""));
+		core::Var::registerVar(core::VarDef(cfg::ClientCameraMaxZoom, 1000.0f, "", ""));
 	}
 
 	bool isInsideSolid(const glm::vec3 &worldPos, const voxel::RawVolume *volume) const {
@@ -195,4 +197,113 @@ TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
 	EXPECT_GT(glm::length(camera.forward() - initialForward), 0.01f);
 }
 
-} // namespace voxedit
+TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
+	const video::CameraMode modes[] = {video::CameraMode::Perspective, video::CameraMode::Orthogonal, video::CameraMode::Isometric};
+	const video::CameraRotationType rotations[] = {video::CameraRotationType::Target, video::CameraRotationType::Eye};
+	for (video::CameraMode mode : modes) {
+		for (video::CameraRotationType rotation : rotations) {
+			for (float distance : {50.0f, 500.0f}) {
+				for (const char *button : {"move_left", "move_forward", "move_backward"}) {
+					CameraMovementExt m;
+					m.construct();
+					ASSERT_TRUE(m.init());
+					video::Camera camera;
+					camera.setSize({1000, 800});
+					camera.setTarget(glm::vec3(0));
+					camera.setWorldPosition({0, 0, distance});
+					camera.setTargetDistance(distance);
+					camera.setMode(mode);
+					if (camera.isOrthographic()) {
+						const float zoom = 2 * distance * glm::tan(glm::radians(45.0f) / 2) / (800 * camera.worldUnitsPerPixel());
+						camera.zoom(glm::log(zoom) / 0.1f);
+					}
+					camera.setRotationType(rotation);
+					camera.update(0);
+					const glm::vec3 landmark = camera.target() + camera.right() * 10.0f;
+					const glm::ivec2 before = camera.worldToScreen(landmark);
+					scenegraph::SceneGraph graph;
+					m.update(0, &camera, graph, 0);
+					{
+						command::ScopedButtonCommand pressed(button, 10, 0);
+						for (int frame = 1; frame <= 60; ++frame) {
+							m.update(frame / 60.0, &camera, graph, 0);
+							camera.update(0);
+						}
+					}
+					const glm::ivec2 after = camera.worldToScreen(landmark);
+					if (core::String(button) == "move_left") {
+						EXPECT_NEAR(after.x - before.x, 60, 1);
+					} else {
+						const float rate = 2 * glm::tan(glm::radians(45.0f) / 2) * 60 / 800;
+						const float sign = core::String(button) == "move_forward" ? 1 : -1;
+						const float initialPixels = 10 / (2 * distance * glm::tan(glm::radians(45.0f) / 2) / 800);
+						EXPECT_NEAR(glm::abs(after.x - 500), initialPixels * glm::exp(sign * rate), 1.1f);
+					}
+					m.shutdown();
+				}
+			}
+		}
+	}
+}
+
+TEST_F(CameraMovementTest, wheelZoomHasEqualRelativeResponse) {
+	for (video::CameraMode mode : {video::CameraMode::Perspective, video::CameraMode::Orthogonal}) {
+		for (video::CameraRotationType rotation : {video::CameraRotationType::Target, video::CameraRotationType::Eye}) {
+			CameraMovementExt m;
+			m.construct();
+			video::Camera camera;
+			camera.setSize({1000, 800});
+			camera.setWorldPosition({0, 0, 100});
+			camera.setTargetDistance(100);
+			camera.setMode(mode);
+			camera.setRotationType(rotation);
+			camera.update(0);
+			const glm::ivec2 before = camera.worldToScreen({10, 0, 0});
+			m.zoom(camera, -1);
+			camera.update(0);
+			const glm::ivec2 after = camera.worldToScreen({10, 0, 0});
+			EXPECT_NEAR(glm::abs(after.x - 500), glm::abs(before.x - 500) * glm::exp(0.1f), 1.1f);
+		}
+	}
+}
+
+TEST_F(CameraMovementTest, navigationSpeedAndSprintSettingsScaleResponse) {
+	for (const char *button : {"move_left", "move_forward"}) {
+		float responses[3];
+		for (int run = 0; run < 3; ++run) {
+			CameraMovementExt m;
+			m.construct();
+			ASSERT_TRUE(m.init());
+			util::ScopedVarChange speed(cfg::GameModeMovementSpeed, run == 1 ? "120" : "60");
+			util::ScopedVarChange clipping(cfg::GameModeClipping, "false");
+			util::ScopedVarChange multiplier(cfg::GameModeSprintMultiplier, "3");
+			video::Camera camera;
+			camera.setSize({1000, 800});
+			camera.setTarget(glm::vec3(0));
+			camera.setTargetDistance(100);
+			camera.update(0);
+			scenegraph::SceneGraph graph;
+			m.update(0, &camera, graph, 0);
+			const glm::vec3 before = camera.worldPosition();
+			{
+				command::ScopedButtonCommand pressed(button, 10, 0);
+				if (run == 2) {
+					command::ScopedButtonCommand sprint("sprint", 11, 0);
+					m.update(0.1, &camera, graph, 0);
+				} else {
+					m.update(0.1, &camera, graph, 0);
+				}
+			}
+			camera.update(0);
+			responses[run] = core::String(button) == "move_left"
+				? glm::distance(before, camera.worldPosition())
+				: glm::log(100.0f / camera.targetDistance());
+			m.shutdown();
+		}
+		ASSERT_GT(responses[0], 0.0f);
+		EXPECT_NEAR(responses[1] / responses[0], 2.0f, 0.001f);
+		EXPECT_NEAR(responses[2] / responses[0], 3.0f, 0.001f);
+	}
+}
+
+} // namespace voxelrender

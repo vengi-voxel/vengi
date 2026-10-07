@@ -450,4 +450,56 @@ TEST_F(CameraTest, testBillboard) {
 	EXPECT_NEAR(0.0f, up.z, 0.001f);
 }
 
+TEST_F(CameraTest, navigationPanTracksPixelsAcrossProjectionAndRotationModes) {
+	const CameraMode modes[] = {CameraMode::Perspective, CameraMode::Orthogonal, CameraMode::Isometric};
+	const CameraRotationType rotations[] = {CameraRotationType::Target, CameraRotationType::Eye};
+	for (CameraMode mode : modes) {
+		for (CameraRotationType rotation : rotations) {
+			for (float distance : {50.0f, 500.0f}) {
+				Camera camera;
+				camera.setRotationType(CameraRotationType::Target);
+				camera.setSize({1000, 800});
+				camera.setTarget(glm::vec3(0));
+				camera.setWorldPosition({0, 0, distance});
+				camera.setTargetDistance(distance);
+				camera.setMode(mode);
+				camera.update(0);
+				camera.setRotationType(rotation);
+				camera.update(0);
+				const glm::ivec2 before = camera.worldToScreen(glm::vec3(0));
+				camera.pan(40, -20);
+				camera.update(0);
+				const glm::ivec2 after = camera.worldToScreen(glm::vec3(0));
+				EXPECT_NEAR(after.x - before.x, 40, 1) << (int)mode << "/" << (int)rotation;
+				EXPECT_NEAR(after.y - before.y, -20, 1) << (int)mode << "/" << (int)rotation;
+				const glm::vec3 position = camera.worldPosition();
+				camera.setRotationType(CameraRotationType::Target);
+				camera.update(0);
+				EXPECT_LT(glm::distance(position, camera.worldPosition()), 0.001f);
+			}
+		}
+	}
+}
+
+TEST_F(CameraTest, perspectiveZoomMovesEyeWithoutChangingOrientation) {
+	Camera camera;
+	camera.setSize({1000, 800});
+	camera.setTarget(glm::vec3(0));
+	camera.setWorldPosition({0, 0, 100});
+	camera.setTargetDistance(100);
+	camera.setRotationType(CameraRotationType::Eye);
+	camera.update(0);
+	const glm::vec3 forward = camera.forward();
+	const glm::ivec2 before = camera.worldToScreen({10, 0, 0});
+	camera.zoom(-1);
+	camera.update(0);
+	const glm::ivec2 after = camera.worldToScreen({10, 0, 0});
+	EXPECT_GT(glm::abs(after.x - 500), glm::abs(before.x - 500));
+	EXPECT_NEAR(camera.worldPosition().z, camera.targetDistance(), 0.001f);
+	EXPECT_LT(glm::distance(forward, camera.forward()), 0.001f);
+	camera.zoom(1);
+	camera.update(0);
+	EXPECT_NEAR(camera.worldPosition().z, 100, 0.001f);
+}
+
 } // namespace video
