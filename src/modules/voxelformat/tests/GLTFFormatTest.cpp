@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "io/Stream.h"
+#include "io/MemoryArchive.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -22,6 +23,52 @@
 namespace voxelformat {
 
 class GLTFFormatTest : public AbstractFormatTest {};
+
+TEST_F(GLTFFormatTest, testSceneVoxelSize) {
+	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "24");
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	const char json[] = R"({
+		"asset":{"version":"2.0"},
+		"buffers":[{"uri":"scene.bin","byteLength":104}],
+		"bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":36},
+			{"buffer":0,"byteOffset":36,"byteLength":36},
+			{"buffer":0,"byteOffset":72,"byteLength":8},
+			{"buffer":0,"byteOffset":80,"byteLength":24}],
+		"accessors":[{"bufferView":0,"componentType":5126,"count":3,"type":"VEC3","min":[0,0,0],"max":[2,2,0]},
+			{"bufferView":1,"componentType":5126,"count":3,"type":"VEC3","min":[0,0,0],"max":[4,4,0]},
+			{"bufferView":2,"componentType":5126,"count":2,"type":"SCALAR","min":[0],"max":[1]},
+			{"bufferView":3,"componentType":5126,"count":2,"type":"VEC3"}],
+		"meshes":[{"primitives":[{"attributes":{"POSITION":0}}]},
+			{"primitives":[{"attributes":{"POSITION":1}}]}],
+		"nodes":[{"name":"parent","translation":[2,0,0],"children":[1]},
+			{"name":"small","mesh":0},{"name":"large","mesh":1,"translation":[10,0,0]}],
+		"scenes":[{"nodes":[0,2]}],"scene":0,
+		"animations":[{"name":"move","samplers":[{"input":2,"output":3}],
+			"channels":[{"sampler":0,"target":{"node":2,"path":"translation"}}]}]
+	})";
+	const float buffer[] = {0, 0, 0, 2, 0, 0, 0, 2, 0,
+		0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 1, 10, 0, 0, 12, 0, 0};
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("scene.gltf", (const uint8_t *)json, sizeof(json) - 1));
+	ASSERT_TRUE(archive->add("scene.bin", (const uint8_t *)buffer, sizeof(buffer)));
+	GLTFFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.loadGroups("scene.gltf", archive, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *small = graph.findNodeByName("small");
+	scenegraph::SceneGraphNode *large = graph.findNodeByName("large");
+	ASSERT_NE(nullptr, small);
+	ASSERT_NE(nullptr, large);
+	EXPECT_LE(small->region().getDimensionsInVoxels().x, 5);
+	EXPECT_GE(small->region().getDimensionsInVoxels().x, 4);
+	EXPECT_LE(large->region().getDimensionsInVoxels().x, 9);
+	EXPECT_GE(large->region().getDimensionsInVoxels().x, 8);
+	EXPECT_FLOAT_EQ(4.0f, small->transform(0).worldTranslation().x);
+	ASSERT_TRUE(large->setAnimation("move"));
+	EXPECT_FLOAT_EQ(20.0f, large->transform(0).localTranslation().x);
+	EXPECT_FLOAT_EQ(24.0f, large->transform(1).localTranslation().x);
+}
 
 TEST_F(GLTFFormatTest, testExportMesh) {
 	scenegraph::SceneGraph sceneGraph;

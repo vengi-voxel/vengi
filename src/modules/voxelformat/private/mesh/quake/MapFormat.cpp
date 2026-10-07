@@ -473,7 +473,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
 				core::ProgressRange range = steps.range(entity);
 				range.setText(name.c_str());
-				const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
+				const int nodeId = importMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 				if (nodeId == InvalidNodeId) {
 					Log::error("Voxelization failed");
 					return false;

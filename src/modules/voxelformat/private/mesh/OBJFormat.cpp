@@ -565,7 +565,7 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 		indexOffset += faceVertices;
 	}
 	mesh.materials = meshMaterialArray;
-	const int nodeId = voxelizeMesh(tinyShape.name.c_str(), sceneGraph, core::move(mesh), 0, true, progress);
+	const int nodeId = importMesh(tinyShape.name.c_str(), sceneGraph, core::move(mesh), 0, true, progress);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 		return false;

@@ -115,7 +115,7 @@ static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &
 
 static const float GLTF_FPS = 24.0f;
 
-static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGraphNode &sgNode) {
+static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGraphNode &sgNode, const glm::vec3 &inputScale) {
 	scenegraph::SceneGraphTransform transform;
 	if (node->has_matrix) {
 		transform.setLocalMatrix(glm::make_mat4(node->matrix));
@@ -132,6 +132,7 @@ static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGra
 			transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
 		}
 	}
+	transform.setLocalTranslation(transform.localTranslation() * inputScale);
 	sgNode.setTransform(0, transform);
 }
 
@@ -657,15 +658,15 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 				const core::String progressName =
 					core::String::format("%s (%i/%i)", meshName.c_str(), meshIdx + 1, meshCount);
 				++meshIdx;
-				nodeId = voxelizeMesh(progressName, sceneGraph, core::move(mesh), parent, false, &meshRange);
+				nodeId = importMesh(progressName, sceneGraph, core::move(mesh), parent, false, &meshRange);
 				if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
 					sceneGraph.node(nodeId).setName(meshName);
 				}
 			} else {
-				nodeId = voxelizeMesh(meshName, sceneGraph, core::move(mesh), parent, false, progress);
+				nodeId = importMesh(meshName, sceneGraph, core::move(mesh), parent, false, progress);
 			}
 			if (nodeId != InvalidNodeId && sceneGraph.hasNode(nodeId)) {
-				applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
+				applyCgltfNodeTransform(node, sceneGraph.node(nodeId), sceneInputScale());
 				applyVengiNodeProperties(node->extensions, node->extensions_count, sceneGraph.node(nodeId));
 			} else {
 				nodeId = parent;
@@ -684,7 +685,7 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 		if (nodeId == InvalidNodeId) {
 			nodeId = parent;
 		} else {
-			applyCgltfNodeTransform(node, sceneGraph.node(nodeId));
+			applyCgltfNodeTransform(node, sceneGraph.node(nodeId), sceneInputScale());
 			applyVengiNodeProperties(node->extensions, node->extensions_count, sceneGraph.node(nodeId));
 		}
 	}
@@ -758,7 +759,7 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 				case cgltf_animation_path_type_translation: {
 					float v[3] = {0};
 					cgltf_accessor_read_float(output, valueIndex, v, 3);
-					transform.setLocalTranslation(glm::vec3(v[0], v[1], v[2]));
+					transform.setLocalTranslation(glm::vec3(v[0], v[1], v[2]) * sceneInputScale());
 					break;
 				}
 				case cgltf_animation_path_type_rotation: {

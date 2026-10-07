@@ -678,10 +678,10 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		core::ProgressRange range(*progress, (float)meshIdx / (float)meshCount,
 								  (float)(meshIdx + 1) / (float)meshCount);
 		range.setText(name.c_str());
-		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true, &range);
+		nodeId = importMesh(name, sceneGraph, core::move(mesh), parent, true, &range);
 		++meshIdx;
 	} else {
-		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, true, progress);
+		nodeId = importMesh(name, sceneGraph, core::move(mesh), parent, true, progress);
 	}
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());

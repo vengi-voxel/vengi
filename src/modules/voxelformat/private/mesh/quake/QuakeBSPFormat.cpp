@@ -740,7 +740,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 	if (progress != nullptr) {
 		progress->setText(name.c_str());
 	}
-	return voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, progress) > 0;
+	return importMesh(name, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,

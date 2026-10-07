@@ -621,7 +621,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
 		root.setProperty(scenegraph::PropDescription, header.comment);
 	}
-	return voxelizeMesh(filename, sceneGraph, core::move(mesh), 0, true, progress);
+	return importMesh(filename, sceneGraph, core::move(mesh), 0, true, progress);
 }
 
 bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,

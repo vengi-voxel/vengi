@@ -22,6 +22,7 @@
 #include "voxelformat/tests/AbstractFormatTest.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <limits>
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
@@ -67,7 +68,7 @@ TEST_F(MeshFormatTest, testVoxelizeSkipsSubdivisionForVoxelSizedTris) {
 			return false;
 		}
 		int voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
-			return voxelizeMesh("tiny", sceneGraph, core::move(mesh), 0, false);
+			return importMesh("tiny", sceneGraph, core::move(mesh), 0, false);
 		}
 	};
 
@@ -115,6 +116,107 @@ TEST_F(MeshFormatTest, testColorAt) {
 		const color::RGBA color = colorAt(meshTri, meshMaterialArray, meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << color::print(pal.color(i)) << " vs "
 									   << color::print(color);
+	}
+}
+
+TEST_F(MeshFormatTest, testSceneVoxelSize) {
+	class TestMesh : public MeshFormat {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+		bool voxelizeGroups(const core::String &, const io::ArchivePtr &, scenegraph::SceneGraph &graph,
+							const LoadContext &ctx) override {
+			const glm::vec3 scale = getInputScale(glm::vec3(0), glm::vec3(14, 4, 0));
+			for (int i = 0; i < 2; ++i) {
+				Mesh mesh;
+				MeshTri tri;
+				const float size = i == 0 ? 2.0f : 4.0f;
+				tri.setVertices({0, 0, 0}, {size, 0, 0}, {0, size, 0});
+				tri.setColor(color::RGBA(255, 0, 0));
+				mesh.addTriangle(tri);
+				const int id = importMesh(i == 0 ? "small" : "large", graph, core::move(mesh), 0, false, ctx.progress);
+				if (id == InvalidNodeId) {
+					return false;
+				}
+				graph.node(id).setTranslation(glm::vec3(i * 10, 0, 0) * scale);
+			}
+			return true;
+		}
+	};
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	TestMesh format;
+	const int sizes[] = {28, 14, 0};
+	for (int size : sizes) {
+		util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, size);
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
+		const scenegraph::SceneGraphNode *small = graph.findNodeByName("small");
+		const scenegraph::SceneGraphNode *large = graph.findNodeByName("large");
+		ASSERT_NE(nullptr, small);
+		ASSERT_NE(nullptr, large);
+		const float scale = size == 28 ? 2.0f : 1.0f;
+		EXPECT_LE(small->region().getDimensionsInVoxels().x, (int)(2 * scale + 1));
+		EXPECT_LE(large->region().getDimensionsInVoxels().x, (int)(4 * scale + 1));
+		EXPECT_GE(small->region().getDimensionsInVoxels().x, (int)(2 * scale));
+		EXPECT_GE(large->region().getDimensionsInVoxels().x, (int)(4 * scale));
+		EXPECT_FLOAT_EQ(10 * scale, large->transform(0).worldTranslation().x);
+	}
+}
+
+TEST_F(MeshFormatTest, testSceneVoxelSizeTransformedBounds) {
+	class TestMesh : public MeshFormat {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+		bool voxelizeGroups(const core::String &, const io::ArchivePtr &, scenegraph::SceneGraph &graph,
+							const LoadContext &ctx) override {
+			Mesh mesh;
+			MeshTri tri;
+			tri.setVertices({0, 1, 0}, {1, 0, 0}, {2, 2, 0});
+			tri.setColor(color::RGBA(255, 0, 0));
+			mesh.addTriangle(tri);
+			inputScale = getInputScale(glm::vec3(0), glm::vec3(2, 2, 0));
+			const int id = importMesh("triangle", graph, core::move(mesh), 0, false, ctx.progress);
+			if (id == InvalidNodeId) {
+				return false;
+			}
+			graph.node(id).transform(0).setLocalOrientation(rotation);
+			graph.node(id).transform(0).setLocalScale(scale);
+			graph.node(id).setTranslation(glm::vec3(10, -5, 0) * inputScale);
+			return true;
+		}
+	public:
+		glm::quat rotation{1.0f, 0.0f, 0.0f, 0.0f};
+		glm::vec3 scale{1.0f};
+		glm::vec3 inputScale{1.0f};
+	};
+	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "20");
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	TestMesh format;
+	{
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
+		EXPECT_NEAR(format.inputScale.x, 10.0f, 0.0001f);
+	}
+	{
+		// The local AABB has a larger rotated extent than this triangle itself.
+		format.rotation = glm::angleAxis(glm::radians(45.0f), glm::vec3(0, 0, 1));
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
+		EXPECT_NEAR(format.inputScale.x, 20.0f / (3.0f / glm::sqrt(2.0f)), 0.0001f);
+	}
+	{
+		format.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		format.scale = glm::vec3(-2, 3, 1);
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
+		EXPECT_NEAR(format.inputScale.x, 20.0f / 6.0f, 0.0001f);
 	}
 }
 
@@ -180,7 +282,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 					return false;
 				}
 				void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
-					voxelizeMesh("test", sceneGraph, core::move(mesh));
+					importMesh("test", sceneGraph, core::move(mesh));
 					sceneGraph.updateTransforms();
 				}
 			};
@@ -244,7 +346,7 @@ TEST_F(MeshFormatTest, testVoxelizeChunked) {
 			return false;
 		}
 		void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
-			voxelizeMesh("test", sceneGraph, core::move(mesh));
+			importMesh("test", sceneGraph, core::move(mesh));
 			sceneGraph.updateTransforms();
 		}
 	};

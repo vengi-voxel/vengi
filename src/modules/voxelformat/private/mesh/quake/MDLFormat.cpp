@@ -364,8 +364,8 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			mesh.materials = materials;
 			core::ProgressRange range = steps.range(frameIdx++);
 			range.setText(frame.name.c_str());
-			const int nodeId = voxelizeMesh(frame.name, sceneGraph, core::move(mesh), 0, true, &range);
-			if (!first && nodeId != -1) {
+			const int nodeId = importMesh(frame.name, sceneGraph, core::move(mesh), 0, true, &range);
+			if (!first && nodeId != InvalidNodeId) {
 				sceneGraph.node(nodeId).setVisible(false);
 			}
 			first = false;

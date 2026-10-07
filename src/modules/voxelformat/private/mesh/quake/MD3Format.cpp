@@ -257,7 +257,7 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 	if (progress != nullptr) {
 		progress->setText(nodeName.c_str());
 	}
-	const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), 0, true, progress);
+	const int nodeId = importMesh(nodeName, sceneGraph, core::move(mesh), 0, true, progress);
 
 	// advance the surface offset for the next surface
 	surfaceStart = surfaceStart + surfHdr.ofsEnd;

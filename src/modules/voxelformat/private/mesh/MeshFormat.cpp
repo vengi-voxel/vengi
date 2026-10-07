@@ -38,6 +38,7 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <array>
+#include <limits>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -93,7 +94,13 @@ glm::vec3 MeshFormat::getScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) {
+glm::vec3 MeshFormat::getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) const {
+	if (_collectInputBounds) {
+		return glm::vec3(1.0f);
+	}
+	if (_useSceneInputScale) {
+		return _sceneInputScale;
+	}
 	const int voxelSize = core::getVar(cfg::VoxformatVoxelSize)->intVal();
 	if (voxelSize > 0) {
 		const glm::vec3 meshSize = meshMaxs - meshMins;
@@ -1018,11 +1025,84 @@ void MeshFormat::ChunkMeshExt::visitByMaterial(
 	}
 }
 
+void MeshFormat::InputBounds::calculateAABB(const glm::mat4 &matrix, glm::vec3 &worldMins,
+										  glm::vec3 &worldMaxs) const {
+	// Each output axis must depend on at most one input axis for transforming
+	// only the two local extrema to preserve exact bounds. Do not use an epsilon:
+	// even small rotations can mix axes significantly for very large meshes.
+	bool axisAligned = true;
+	for (int row = 0; row < 3 && axisAligned; ++row) {
+		int components = 0;
+		for (int col = 0; col < 3; ++col) {
+			components += matrix[col][row] != 0.0f ? 1 : 0;
+		}
+		axisAligned = components <= 1;
+	}
+	if (axisAligned) {
+		const glm::vec3 a(matrix * glm::vec4(mins - origin, 1.0f));
+		const glm::vec3 b(matrix * glm::vec4(maxs - origin, 1.0f));
+		worldMins = glm::min(worldMins, glm::min(a, b));
+		worldMaxs = glm::max(worldMaxs, glm::max(a, b));
+		return;
+	}
+	for (const glm::vec3 &vertex : vertices) {
+		const glm::vec3 pos(matrix * glm::vec4(vertex - origin, 1.0f));
+		worldMins = glm::min(worldMins, pos);
+		worldMaxs = glm::max(worldMaxs, pos);
+	}
+}
+
+bool MeshFormat::calculateInputBounds(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins,
+									glm::vec3 &maxs) const {
+	mins = glm::vec3(std::numeric_limits<float>::max());
+	maxs = glm::vec3(std::numeric_limits<float>::lowest());
+	bool hasBounds = false;
+	for (const InputBounds &bounds : _inputBounds) {
+		if (!sceneGraph.hasNode(bounds.nodeId)) {
+			continue;
+		}
+		const glm::mat4 &matrix = sceneGraph.node(bounds.nodeId).transform(0).worldMatrix();
+		bounds.calculateAABB(matrix, mins, maxs);
+		hasBounds = true;
+	}
+	return hasBounds;
+}
+
+bool MeshFormat::prepareInputScale(const core::String &filename, const io::ArchivePtr &archive,
+								 const LoadContext &ctx) {
+	// Measure geometry in scene space before voxelizing. Keep only positions
+	// until the hierarchy is known, then release them before the real import.
+	scenegraph::SceneGraph boundsGraph;
+	_collectInputBounds = true;
+	const bool loaded = voxelizeGroups(filename, archive, boundsGraph, ctx);
+	_collectInputBounds = false;
+	if (!loaded) {
+		_inputBounds.release();
+		return false;
+	}
+	boundsGraph.updateTransforms();
+	glm::vec3 mins, maxs;
+	const bool hasBounds = calculateInputBounds(boundsGraph, mins, maxs);
+	_inputBounds.release();
+	if (hasBounds) {
+		_sceneInputScale = getInputScale(mins, maxs);
+		_useSceneInputScale = true;
+	}
+	return true;
+}
+
 bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	ctx.setProgressText(filename.c_str());
 	ctx.setProgress(0.0f);
-	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx);
+	const bool measureBounds = core::getVar(cfg::VoxformatVoxelSize)->intVal() > 0;
+	core::ProgressRange boundsRange(ctx.progressRef(), 0.0f, 0.15f);
+	core::ProgressRange voxelRange(ctx.progressRef(), measureBounds ? 0.15f : 0.0f, 1.0f);
+	if (measureBounds && !prepareInputScale(filename, archive, ctx.nested(boundsRange))) {
+		return false;
+	}
+	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx.nested(voxelRange));
+	_useSceneInputScale = false;
 	sceneGraph.updateTransforms();
 	ctx.setProgress(1.0f);
 	return retVal;
@@ -1102,6 +1182,43 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 			indices.push_back(p[idx2]);
 		}
 	}
+}
+
+int MeshFormat::collectInputBounds(const core::UUID &uuid, const core::String &name,
+								  scenegraph::SceneGraph &sceneGraph, const Mesh &mesh, int parent, bool resetOrigin) const {
+	glm::vec3 mins, maxs;
+	if (!mesh.calculateAABB(mins, maxs)) {
+		return InvalidNodeId;
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
+	node.setName(name);
+	const glm::vec3 origin = resetOrigin ? glm::floor(mins) : glm::vec3(0.0f);
+	// Let importers attach properties and transforms without allocating a full volume.
+	node.createVolume(voxel::Region(glm::ivec3(0), glm::ivec3(0)));
+	node.transform(0).setLocalTranslation(origin);
+	const int nodeId = sceneGraph.emplace(core::move(node), parent);
+	if (nodeId == InvalidNodeId) {
+		return nodeId;
+	}
+	InputBounds bounds;
+	bounds.nodeId = nodeId;
+	bounds.origin = origin;
+	bounds.mins = mins;
+	bounds.maxs = maxs;
+	bounds.vertices.reserve(mesh.vertices.size());
+	for (const MeshVertex &vertex : mesh.vertices) {
+		bounds.vertices.push_back(vertex.pos);
+	}
+	_inputBounds.push_back(core::move(bounds));
+	return nodeId;
+}
+
+int MeshFormat::importMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+						  Mesh &&mesh, int parent, bool resetOrigin, core::IProgress *progress) const {
+	if (_collectInputBounds) {
+		return collectInputBounds(uuid, name, sceneGraph, mesh, parent, resetOrigin);
+	}
+	return voxelizeMesh(uuid, name, sceneGraph, core::move(mesh), parent, resetOrigin, progress);
 }
 
 int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin, core::IProgress *progress) const {

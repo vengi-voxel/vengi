@@ -709,7 +709,7 @@ bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, 
 	Mesh &mesh = bbElement.mesh;
 	mesh.materials = meshMaterialArray;
 	const int nodeIdx =
-		voxelizeMesh(bbElement.uuid, bbElement.name, sceneGraph, core::move(mesh), parent, true, progress);
+		importMesh(bbElement.uuid, bbElement.name, sceneGraph, core::move(mesh), parent, true, progress);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}

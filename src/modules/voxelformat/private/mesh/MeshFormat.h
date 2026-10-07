@@ -83,7 +83,28 @@ protected:
 	 */
 	bool _weightedAverage = true;
 
+private:
+	struct InputBounds {
+		int nodeId;
+		glm::vec3 origin;
+		glm::vec3 mins;
+		glm::vec3 maxs;
+		core::DynamicArray<glm::vec3> vertices;
+		void calculateAABB(const glm::mat4 &matrix, glm::vec3 &worldMins, glm::vec3 &worldMaxs) const;
+	};
+	mutable core::DynamicArray<InputBounds> _inputBounds;
+	bool _collectInputBounds = false;
+	bool _useSceneInputScale = false;
+	glm::vec3 _sceneInputScale{1.0f};
 
+	int collectInputBounds(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+						   const Mesh &mesh, int parent, bool resetOrigin) const;
+	bool calculateInputBounds(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs) const;
+	bool prepareInputScale(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx);
+	int voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh,
+					 int parent, bool resetOrigin, core::IProgress *progress) const;
+
+protected:
 	struct ChunkMeshExt {
 		ChunkMeshExt() = default;
 		ChunkMeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
@@ -111,7 +132,10 @@ protected:
 	}
 
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
-	static glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs);
+	glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) const;
+	glm::vec3 sceneInputScale() const {
+		return _useSceneInputScale ? _sceneInputScale : glm::vec3(1.0f);
+	}
 	bool savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 const io::ArchivePtr &archive, const glm::vec3 &scale = glm::vec3(1.0f),
 							 bool withColor = true) const;
@@ -144,11 +168,14 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
-	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0,
+	/**
+	 * Import a mesh, collecting bounds during measurement and voxelizing during the actual import.
+	 */
+	int importMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0,
 					 bool resetOrigin = true, core::IProgress *progress = nullptr) const {
-		return voxelizeMesh(core::UUID(), name, sceneGraph, core::move(mesh), parent, resetOrigin, progress);
+		return importMesh(core::UUID(), name, sceneGraph, core::move(mesh), parent, resetOrigin, progress);
 	}
-	int voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh,
+	int importMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh,
 					 int parent = 0, bool resetOrigin = true, core::IProgress *progress = nullptr) const;
 
 	/**

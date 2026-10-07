@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "io/MemoryArchive.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -15,6 +16,29 @@
 namespace voxelformat {
 
 class OBJFormatTest : public AbstractFormatTest {};
+
+TEST_F(OBJFormatTest, testSceneVoxelSize) {
+	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "28");
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	const char obj[] = "o small\nv 0 0 0\nv 2 0 0\nv 0 2 0\nf 1 2 3\n"
+		"o large\nv 10 0 0\nv 14 0 0\nv 10 4 0\nf 4 5 6\n";
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("scene.obj", (const uint8_t *)obj, sizeof(obj) - 1));
+	OBJFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.loadGroups("scene.obj", archive, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *small = graph.findNodeByName("small");
+	const scenegraph::SceneGraphNode *large = graph.findNodeByName("large");
+	ASSERT_NE(nullptr, small);
+	ASSERT_NE(nullptr, large);
+	EXPECT_LE(small->region().getDimensionsInVoxels().x, 5);
+	EXPECT_GE(small->region().getDimensionsInVoxels().x, 4);
+	EXPECT_LE(large->region().getDimensionsInVoxels().x, 9);
+	EXPECT_GE(large->region().getDimensionsInVoxels().x, 8);
+	EXPECT_FLOAT_EQ(20.0f, large->transform(0).worldTranslation().x);
+}
 
 TEST_F(OBJFormatTest, testVoxelize) {
 	testLoad("cube.obj", 6);

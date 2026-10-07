@@ -640,7 +640,7 @@ bool LXFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 		const core::String nodeName = createGroupNode ? partFile : modelName;
 		range.setText(nodeName.c_str());
-		const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(brickMesh), parentNodeId, true, &range);
+		const int nodeId = importMesh(nodeName, sceneGraph, core::move(brickMesh), parentNodeId, true, &range);
 		if (firstModelNodeId == InvalidNodeId) {
 			firstModelNodeId = nodeId;
 		}

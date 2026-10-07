@@ -1276,7 +1276,7 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				   (int)mesh.vertices.size(), (int)mesh.polygons.size());
 
 		range.setText(obj.name.c_str());
-		const int nodeId = voxelizeMesh(obj.name, sceneGraph, core::move(mesh), 0, true, &range);
+		const int nodeId = importMesh(obj.name, sceneGraph, core::move(mesh), 0, true, &range);
 		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			node.setProperty("type", obj.type);

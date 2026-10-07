@@ -1424,7 +1424,7 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		core::ProgressRange elementRange(ctx.progressRef(),
 										 (float)elementIdx / (float)elements.size(),
 										 (float)(elementIdx + 1) / (float)elements.size());
-		const int nodeId = voxelizeMesh(elem.name, sceneGraph, core::move(mesh), parentGroupId, true, &elementRange);
+		const int nodeId = importMesh(elem.name, sceneGraph, core::move(mesh), parentGroupId, true, &elementRange);
 		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			node.setProperty("osm:id", core::string::toString(elem.id));

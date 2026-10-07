@@ -879,7 +879,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)mesh3ds.faces.size());
 			core::ProgressRange range = steps.range(meshIdx++);
 			range.setText(nodeName.c_str());
-			const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), parent, true, &range);
+			const int nodeId = importMesh(nodeName, sceneGraph, core::move(mesh), parent, true, &range);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}

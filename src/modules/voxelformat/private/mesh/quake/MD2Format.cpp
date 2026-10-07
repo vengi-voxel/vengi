@@ -197,7 +197,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		mesh.addTriangle(meshTri);
 	}
 
-	return voxelizeMesh(filename, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId;
+	return importMesh(filename, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId;
 }
 
 #undef wrap

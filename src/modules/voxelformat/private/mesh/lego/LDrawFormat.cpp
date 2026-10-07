@@ -157,7 +157,7 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 			if (!mesh.vertices.empty()) {
 				core::ProgressRange range = steps.range(voxelizeIdx++);
 				range.setText(name.c_str());
-				nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
+				nodeId = importMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 				if (nodeId == InvalidNodeId) {
 					continue;
 				}
@@ -170,7 +170,7 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 				range.setText(ref.filename.c_str());
 				Mesh brickMesh;
 				if (legoutil::resolveSubFile(cachedArchive, ref, colors, brickMesh, 0) && !brickMesh.vertices.empty()) {
-					voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
+					importMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
 				}
 			}
 
@@ -217,7 +217,7 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 	if (!mesh.vertices.empty()) {
 		core::ProgressRange range = steps.range(voxelizeIdx++);
 		range.setText(name.c_str());
-		nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
+		nodeId = importMesh(name, sceneGraph, core::move(mesh), 0, true, &range);
 		if (nodeId == InvalidNodeId) {
 			Log::error("Failed to voxelize LDraw mesh from %s", filename.c_str());
 			return false;
@@ -231,7 +231,7 @@ bool LDrawFormat::voxelizeGroups(const core::String &filename, const io::Archive
 		range.setText(ref.filename.c_str());
 		Mesh brickMesh;
 		if (legoutil::resolveSubFile(cachedArchive, ref, colors, brickMesh, 0) && !brickMesh.vertices.empty()) {
-			voxelizeMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
+			importMesh(ref.filename, sceneGraph, core::move(brickMesh), nodeId, true, &range);
 		} else if (brickMesh.vertices.empty()) {
 			Log::warn("No geometry resolved for sub-file reference: %s", ref.filename.c_str());
 		}

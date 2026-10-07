@@ -203,3 +203,12 @@ voxconvert -set voxformat_gmlregion "548000 5930000 0 548500 5930500 100" --inpu
 Only objects whose geometry is **fully contained** within the specified region are imported. Objects that are partially or fully outside the region are skipped. The region filter is only applied when the estimated voxel size exceeds the threshold - for smaller datasets, all objects are imported regardless of the cvar value.
 
 For more details on configuration, see [Configuration.md](Configuration.md).
+
+### Scene size
+
+`voxformat_voxelsize` sets the longest axis of the imported mesh scene in voxels.
+All meshes use the same uniform scale, preserving their relative sizes and spacing.
+The scene bounds include node transforms in the initial pose, not the full animated
+motion range. Importing with this option measures the hierarchy and mesh positions
+before voxelization, which requires an additional parsing pass. A value of `0`
+uses the `voxformat_scale` settings instead.
