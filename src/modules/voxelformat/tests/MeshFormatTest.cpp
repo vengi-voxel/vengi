@@ -6,9 +6,19 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"
+#include "core/ScopedPtr.h"
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/MemoryArchive.h"
+#include "voxelformat/private/mesh/OBJFormat.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/FBXFormat.h"
+#include "voxelformat/private/mesh/PLYFormat.h"
+#include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/FormatConfig.h"
+#include "voxelformat/external/cgltf.h"
+#include "voxelformat/external/ufbx.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -93,6 +103,172 @@ TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
 				}
 			}
 		}
+	}
+}
+
+TEST_F(MeshFormatTest, testExportVoxelNormals) {
+	class TestMesh : public MeshFormat {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			vertices = 0;
+			for (const ChunkMeshExt &entry : meshes) {
+				for (const voxel::Mesh &mesh : entry.mesh->mesh) {
+					vertices += mesh.getNoOfVertices();
+					EXPECT_EQ(mesh.getNoOfVertices(), mesh.getNormalVector().size());
+					for (size_t i = 0; i < mesh.getNoOfVertices(); ++i) {
+						const uint8_t index = mesh.getVertex(i).normalIndex;
+						const glm::vec3 &normal = mesh.getNormalVector()[i];
+						EXPECT_NEAR(1.0f, glm::length(normal), 0.0001f);
+						if (index > NO_NORMAL && index < palette.size()) {
+							const glm::vec3 expected = glm::normalize(palette.normal3f(index));
+							EXPECT_NEAR(1.0f, glm::dot(expected, normal), 0.0001f);
+							++stored;
+						} else {
+							++fallback;
+						}
+					}
+				}
+			}
+			return true;
+		}
+	public:
+		palette::NormalPalette palette;
+		size_t vertices = 0;
+		size_t stored = 0;
+		size_t fallback = 0;
+	};
+	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
+	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
+	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	const glm::vec3 values[] = {glm::vec3(0), glm::normalize(glm::vec3(1, 2, 3)), glm::normalize(glm::vec3(-2, 1, 3))};
+	palette::NormalPalette palette;
+	palette.loadNormalMap(values, 3);
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 7, 1, 1));
+	node.setNormalPalette(palette);
+	for (int x = 0; x <= 7; ++x) {
+		for (int y = 0; y <= 1; ++y) {
+			for (int z = 0; z <= 1; ++z) {
+				// Includes missing and out-of-range palette indices.
+				node.volume()->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 42, x % 4 == 3 ? 255 : x % 4));
+			}
+		}
+	}
+	const int id = graph.emplace(core::move(node));
+	scenegraph::SceneGraphNode reference(scenegraph::SceneGraphNodeType::ModelReference);
+	ASSERT_TRUE(reference.setReference(graph.node(id)));
+	graph.emplace(core::move(reference));
+	graph.updateTransforms();
+	for (voxel::SurfaceExtractionType type : {voxel::SurfaceExtractionType::Cubic, voxel::SurfaceExtractionType::Binary}) {
+		util::ScopedVarChange meshMode(cfg::VoxformatMeshMode, (int)type);
+		TestMesh format;
+		format.palette = palette;
+		ASSERT_TRUE(format.saveGroups(graph, "mesh.obj", {}, testSaveCtx));
+		EXPECT_GT(format.stored, 0u);
+		EXPECT_GT(format.fallback, 0u);
+		EXPECT_EQ(255, graph.node(id).volume()->voxel(3, 0, 0).getNormal());
+	}
+	TestMesh unsupported;
+	unsupported.palette = palette;
+	ASSERT_TRUE(unsupported.saveGroups(graph, "mesh.stl", {}, testSaveCtx));
+	EXPECT_EQ(0u, unsupported.stored);
+	EXPECT_GT(unsupported.fallback, 0u);
+}
+
+TEST_F(MeshFormatTest, testVoxelNormalWriters) {
+	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
+	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
+	util::ScopedVarChange meshMode(cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::Cubic);
+	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	util::ScopedVarChange materials(cfg::VoxformatWithMaterials, "true");
+	for (int withTexCoords = 0; withTexCoords <= 1; ++withTexCoords) {
+		util::ScopedVarChange texture(cfg::VoxformatWithtexcoords, withTexCoords);
+		util::ScopedVarChange transform(cfg::VoxformatTransform, "true");
+		util::ScopedVarChange quads(cfg::VoxformatQuads, "false");
+		palette::NormalPalette palette;
+		const glm::vec3 values[] = {glm::vec3(0), glm::normalize(glm::vec3(1, 2, 3))};
+		palette.loadNormalMap(values, 2);
+		const glm::vec3 expected = glm::normalize(palette.normal3f(1) / glm::vec3(2, 3, 4));
+		scenegraph::SceneGraph graph;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 0, 0, 0, 0, 0));
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, 1));
+		node.setNormalPalette(palette);
+		node.transform(0).setLocalScale(glm::vec3(2, 3, 4));
+		graph.emplace(core::move(node));
+		graph.updateTransforms();
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		OBJFormat obj;
+		PLYFormat ply;
+		GLTFFormat gltf;
+		FBXFormat fbx;
+		ASSERT_TRUE(obj.saveGroups(graph, "mesh.obj", archive, testSaveCtx));
+		ASSERT_TRUE(ply.saveGroups(graph, "mesh.ply", archive, testSaveCtx));
+		ASSERT_TRUE(gltf.saveGroups(graph, "mesh.glb", archive, testSaveCtx));
+		ASSERT_TRUE(fbx.saveGroups(graph, "mesh.fbx", archive, testSaveCtx));
+		for (const char *filename : {"mesh.obj", "mesh.ply"}) {
+			core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+			ASSERT_TRUE(stream);
+			core::String line;
+			bool found = false;
+			while (stream->readLine(line)) {
+				float x, y, z;
+				if (core::String(filename) == "mesh.obj") {
+					if (SDL_sscanf(line.c_str(), "vn %f %f %f", &x, &y, &z) != 3) {
+						continue;
+					}
+				} else {
+					float px, py, pz;
+					if (SDL_sscanf(line.c_str(), "%f %f %f %f %f %f", &px, &py, &pz, &x, &y, &z) != 6) {
+						continue;
+					}
+				}
+				EXPECT_NEAR(1.0f, glm::dot(expected, glm::vec3(x, y, z)), 0.0002f);
+				found = true;
+			}
+			EXPECT_TRUE(found) << filename;
+		}
+		core::ScopedPtr<io::SeekableReadStream> glbStream(archive->readStream("mesh.glb"));
+		core::Buffer<uint8_t> glb((size_t)glbStream->size());
+		ASSERT_EQ((int)glb.size(), glbStream->read(glb.data(), glb.size()));
+		cgltf_options options{};
+		cgltf_data *data = nullptr;
+		ASSERT_EQ(cgltf_result_success, cgltf_parse(&options, glb.data(), glb.size(), &data));
+		ASSERT_EQ(cgltf_result_success, cgltf_load_buffers(&options, data, nullptr));
+		EXPECT_EQ(cgltf_result_success, cgltf_validate(data));
+		ASSERT_GT(data->meshes_count, 0u);
+		const cgltf_accessor *accessor = cgltf_find_accessor(&data->meshes[0].primitives[0], cgltf_attribute_type_normal, 0);
+		ASSERT_NE(nullptr, accessor);
+		for (cgltf_size i = 0; i < accessor->count; ++i) {
+			float normal[3];
+			ASSERT_TRUE(cgltf_accessor_read_float(accessor, i, normal, 3));
+			// glTF keeps the node transform, so the normals stay in local space.
+			EXPECT_NEAR(1.0f, glm::dot(glm::normalize(palette.normal3f(1)), glm::vec3(normal[0], normal[1], normal[2])), 0.0001f);
+		}
+		cgltf_free(data);
+		core::ScopedPtr<io::SeekableReadStream> fbxStream(archive->readStream("mesh.fbx"));
+		core::Buffer<uint8_t> buffer((size_t)fbxStream->size());
+		ASSERT_EQ((int)buffer.size(), fbxStream->read(buffer.data(), buffer.size()));
+		ufbx_load_opts opts{};
+		ufbx_error error{};
+		ufbx_scene *scene = ufbx_load_memory(buffer.data(), buffer.size(), &opts, &error);
+		ASSERT_NE(nullptr, scene);
+		ASSERT_GT(scene->meshes.count, 0u);
+		const ufbx_vertex_vec3 &fbxNormals = scene->meshes.data[0]->vertex_normal;
+		ASSERT_TRUE(fbxNormals.exists);
+		for (size_t i = 0; i < fbxNormals.values.count; ++i) {
+			const ufbx_vec3 &normal = fbxNormals.values.data[i];
+			EXPECT_NEAR(1.0f, glm::dot(expected, glm::vec3(normal.x, normal.y, normal.z)), 0.0001f);
+		}
+		ufbx_free_scene(scene);
+		const FormatVarMeta *meta = FormatConfig::findVarMeta(cfg::VoxformatWithVoxelNormals);
+		ASSERT_NE(nullptr, meta);
+		EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, OBJFormat::format()));
+		EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, GLTFFormat::format()));
+		EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, FBXFormat::format()));
+		EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, PLYFormat::format()));
+		EXPECT_FALSE(FormatConfig::appliesTo(*meta, true, STLFormat::format()));
 	}
 }
 

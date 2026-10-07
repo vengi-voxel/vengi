@@ -71,6 +71,8 @@ using FormatDescriptionMagics = core::Vector<Magic, MAX_FORMATDESCRIPTION_MAGICS
 // the format is a RGB(A) format and no palette based format - this is used
 // for formats where we create palettes from the RGB values.
 #define VOX_FORMAT_FLAG_RGB (1 << 12)
+// the mesh writer supports per-vertex normals
+#define VOX_FORMAT_FLAG_NORMALS (1 << 13)
 
 struct FormatDescription {
 	core::String name;				  /**< the name of the format */

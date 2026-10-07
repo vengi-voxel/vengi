@@ -165,5 +165,6 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
 | `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
 | `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 | true/false   |
-| `voxformat_withnormals`       | Export smoothed normals for cubic surface meshes (marching cubes always uses normals)    | true/false   |
+| `voxformat_withnormals`       | Export vertex normals to OBJ, glTF/GLB, FBX and PLY    | true/false   |
+| `voxformat_withvoxelnormals`  | Use stored voxel normals with Cubic/Binary extraction when exporting normals; may increase vertex count | true/false |
 | `voxformat_withtexcoords`     | Export texture coordinates                                                               | true/false   |

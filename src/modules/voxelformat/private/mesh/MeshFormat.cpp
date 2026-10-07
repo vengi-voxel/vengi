@@ -3,6 +3,7 @@
  */
 
 #include "MeshFormat.h"
+#include "voxelformat/VolumeFormat.h"
 #include "app/App.h"
 #include "app/ForParallel.h"
 #include "core/ConfigVar.h"
@@ -994,6 +995,19 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	}
 }
 
+glm::mat3 MeshFormat::ChunkMeshExt::normalMatrix(
+		const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) const {
+	glm::mat3 matrix(1.0f);
+	if (applyTransform) {
+		matrix = glm::mat3(transform.worldMatrix());
+	}
+	matrix = glm::mat3(glm::vec3(scale.x, 0, 0), glm::vec3(0, scale.y, 0), glm::vec3(0, 0, scale.z)) * matrix;
+	if (glm::determinant(matrix) == 0.0f) {
+		return glm::mat3(1.0f);
+	}
+	return glm::transpose(glm::inverse(matrix));
+}
+
 MeshFormat::ChunkMeshExt::ChunkMeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGraphNode &node, bool _applyTransform)
 	: mesh(_mesh), name(node.name()), applyTransform(_applyTransform), size(node.region().getDimensionsInVoxels()),
 	  pivot(node.pivot()), nodeId(node.id()) {
@@ -1475,8 +1489,12 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	meshes.resize(modelNodeIds.size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
-	app::for_parallel(0, (int)modelNodeIds.size(), [&sceneGraph, type, &meshes, &modelNodeIds] (int start, int end) {
+	const io::FormatDescription *desc = io::getDescription(filename, 0, voxelSave());
+	const bool supportsNormals = desc && (desc->flags & VOX_FORMAT_FLAG_NORMALS);
+	app::for_parallel(0, (int)modelNodeIds.size(), [&sceneGraph, type, &meshes, &modelNodeIds, supportsNormals] (int start, int end) {
 		const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
+		const bool withVoxelNormals = supportsNormals && withNormals && core::getVar(cfg::VoxformatWithVoxelNormals)->boolVal() &&
+			(type == voxel::SurfaceExtractionType::Cubic || type == voxel::SurfaceExtractionType::Binary);
 		const bool optimizeMesh = core::getVar(cfg::VoxformatOptimize)->boolVal();
 		const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
@@ -1496,12 +1514,32 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			regionExt.shiftUpperCorner(1, 1, 1);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(
 				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
-			// Export geometric normals without splitting geometry at voxel-normal boundaries.
-			ctx.preserveVoxelNormals = false;
+			const scenegraph::SceneGraphNode *normalNode = &node;
+			if (node.isReferenceNode()) {
+				normalNode = sceneGraph.findNodeByUUID(node.referenceUUID());
+			}
+			const palette::NormalPalette *normalPalette = withVoxelNormals && normalNode && normalNode->hasNormalPalette()
+				? &normalNode->normalPalette() : nullptr;
+			ctx.preserveVoxelNormals = normalPalette && normalPalette->size() > 0;
 			voxel::extractSurface(ctx);
 			if (withNormals) {
 				Log::debug("Calculate normals");
 				mesh->calculateNormals();
+				if (ctx.preserveVoxelNormals) {
+					for (voxel::Mesh &part : mesh->mesh) {
+						voxel::NormalArray &normals = part.getNormalVector();
+						for (size_t j = 0; j < part.getNoOfVertices(); ++j) {
+							const uint8_t index = part.getVertex(j).normalIndex;
+							if (index == NO_NORMAL || index >= normalPalette->size()) {
+								continue;
+							}
+							const glm::vec3 normal = normalPalette->normal3f(index);
+							if (glm::dot(normal, normal) > 0.0f) {
+								normals[j] = glm::normalize(normal);
+							}
+						}
+					}
+				}
 			}
 
 			meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));

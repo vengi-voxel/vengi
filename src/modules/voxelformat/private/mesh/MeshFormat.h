@@ -21,6 +21,10 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "core/IProgress.h"
 
+namespace scenegraph {
+class SceneGraphTransform;
+}
+
 namespace voxelformat {
 
 struct PointCloudVertex {
@@ -117,6 +121,7 @@ protected:
 		glm::vec3 pivot{0.0f};
 		int nodeId = -1;
 
+		glm::mat3 normalMatrix(const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) const;
 		void visitByMaterial(int materialIndex, const std::function<void(const voxel::Mesh &, voxel::IndexType,
 																		voxel::IndexType, voxel::IndexType)> &callback) const;
 	};

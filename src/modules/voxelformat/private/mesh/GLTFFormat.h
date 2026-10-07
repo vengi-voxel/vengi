@@ -49,7 +49,7 @@ public:
 									   "", // model/gltf+json, model/gltf-binary
 									   {"gltf", "glb", "vrm"},
 									   {},
-									   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+									   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_NORMALS | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

@@ -159,6 +159,7 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					continue;
 				}
 				const voxel::VoxelVertex *vertices = vmesh->getRawVertexData();
+				const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
 				const voxel::IndexType *indices = vmesh->getRawIndexData();
 
 				ufbxw_mesh wMesh = ufbxw_create_mesh(ws);
@@ -176,6 +177,14 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					verts[j] = {pos.x, pos.y, pos.z};
 				}
 				ufbxw_mesh_set_vertices(ws, wMesh, ufbxw_copy_vec3_array(ws, verts.data(), nv));
+				if (!vmesh->getNormalVector().empty()) {
+					core::DynamicArray<ufbxw_vec3> normals(nv);
+					for (int j = 0; j < nv; ++j) {
+						const glm::vec3 normal = glm::normalize(normalMatrix * vmesh->getNormalVector()[j]);
+						normals[j] = {normal.x, normal.y, normal.z};
+					}
+					ufbxw_mesh_set_normals(ws, wMesh, ufbxw_copy_vec3_array(ws, normals.data(), nv), UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+				}
 
 				core::DynamicArray<int32_t> triIndices(ni);
 				for (int j = 0; j < ni; ++j) {

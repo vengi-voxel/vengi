@@ -167,6 +167,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
 			const palette::Palette &palette = graphNode.palette();
 
 			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
@@ -267,7 +268,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			}
 			if (withNormals) {
 				for (int j = 0; j < nv; ++j) {
-					const glm::vec3 &norm = normals[j];
+					const glm::vec3 norm = glm::normalize(normalMatrix * normals[j]);
 					stream->writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
 				}
 			}

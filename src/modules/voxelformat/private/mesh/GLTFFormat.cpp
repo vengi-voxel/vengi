@@ -946,6 +946,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 	(void)quad; // glTF only supports triangles
 
+	const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 	const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
 
 	// Count total meshes
@@ -998,7 +999,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			info.useGreedyTexture =
 				withTexCoords && meshExt.texture && meshExt.texture->isLoaded() && !mesh->getUVVector().empty();
 			info.hasTexture = info.useGreedyTexture || withTexCoords;
-			info.floatsPerVertex = 3 + (withColor ? 4 : 0) + (info.hasTexture ? 2 : 0); // pos(3) [+ color(4)] [+ uv(2)]
+			info.floatsPerVertex = 3 + (withColor ? 4 : 0) + (info.hasTexture ? 2 : 0) + (withNormals ? 3 : 0); // pos(3) [+ color(4)] [+ uv(2)]
 			info.perColorMaterials = withMaterials && !info.useGreedyTexture && info.hasTexture;
 			info.vertexOffset = bufferSize;
 			info.vertexSize = info.vertexCount * info.floatsPerVertex * sizeof(float);
@@ -1077,6 +1078,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			vBuf[j * stride + off++] = pos.x;
 			vBuf[j * stride + off++] = pos.y;
 			vBuf[j * stride + off++] = pos.z;
+			if (withNormals) {
+				const glm::vec3 normal = glm::normalize(mesh->getNormalVector()[j] / scale);
+				const int normalOffset = j * stride + stride - 3;
+				vBuf[normalOffset] = normal.x;
+				vBuf[normalOffset + 1] = normal.y;
+				vBuf[normalOffset + 2] = normal.z;
+			}
 			if (withColor) {
 				const color::RGBA rgba = palette.color(vertices[j].colorIndex);
 				vBuf[j * stride + off++] = (float)rgba.r / 255.0f;
@@ -1193,7 +1201,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	// For perColorMaterials meshes, we still need the vertex BVs but replace the single index BV+acc
 	// with N per-color index BV+accs. The original index BV is not needed for those meshes.
 	// So: vertex BVs/accs stay the same, but index BVs/accs change.
-	int vertexBVCount = totalMeshes + (withColor ? totalMeshes : 0) + texturedMeshCount;
+	int vertexBVCount = (withNormals ? 2 : 1) * totalMeshes + (withColor ? totalMeshes : 0) + texturedMeshCount;
 	int indexBVCount = 0;
 	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
 		if (meshInfos[mi].perColorMaterials) {
@@ -1219,7 +1227,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_memset(gltfMeshes, 0, totalMeshes * sizeof(cgltf_mesh));
 	cgltf_primitive *primitives = (cgltf_primitive *)core_malloc(totalPrimitives * sizeof(cgltf_primitive));
 	core_memset(primitives, 0, totalPrimitives * sizeof(cgltf_primitive));
-	int maxAttrsPerPrimitive = 3; // POSITION, COLOR_0, TEXCOORD_0
+	int maxAttrsPerPrimitive = 4; // POSITION, COLOR_0, TEXCOORD_0, NORMAL
 	cgltf_attribute *attributes =
 		(cgltf_attribute *)core_malloc(totalPrimitives * maxAttrsPerPrimitive * sizeof(cgltf_attribute));
 	core_memset(attributes, 0, totalPrimitives * maxAttrsPerPrimitive * sizeof(cgltf_attribute));
@@ -1486,6 +1494,22 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			++accIdx;
 		}
 
+		int normalAccIdx = -1;
+		if (withNormals) {
+			bufferViews[bvIdx].buffer = &gltfBuffer;
+			bufferViews[bvIdx].offset = info.vertexOffset;
+			bufferViews[bvIdx].size = info.vertexSize;
+			bufferViews[bvIdx].stride = strideBytes;
+			bufferViews[bvIdx].type = cgltf_buffer_view_type_vertices;
+			accessors[accIdx].buffer_view = &bufferViews[bvIdx];
+			accessors[accIdx].component_type = cgltf_component_type_r_32f;
+			accessors[accIdx].type = cgltf_type_vec3;
+			accessors[accIdx].count = info.vertexCount;
+			accessors[accIdx].offset = (stride - 3) * sizeof(float);
+			normalAccIdx = accIdx++;
+			++bvIdx;
+		}
+
 		// Index buffer view(s) and accessor(s)
 		int firstPrimIdx = primIdx;
 		if (info.perColorMaterials) {
@@ -1517,6 +1541,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				attributes[attrBase + 0].type = cgltf_attribute_type_position;
 				attributes[attrBase + 0].data = &accessors[posAccIdx];
 				int attrCount = 1;
+				if (normalAccIdx >= 0) {
+					attributes[attrBase + attrCount].name = (char *)"NORMAL";
+					attributes[attrBase + attrCount].type = cgltf_attribute_type_normal;
+					attributes[attrBase + attrCount].data = &accessors[normalAccIdx];
+					++attrCount;
+				}
 				if (withColor && colAccIdx >= 0) {
 					attributes[attrBase + attrCount].name = (char *)"COLOR_0";
 					attributes[attrBase + attrCount].type = cgltf_attribute_type_color;
@@ -1559,6 +1589,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			attributes[attrBase + 0].type = cgltf_attribute_type_position;
 			attributes[attrBase + 0].data = &accessors[posAccIdx];
 			int attrCount = 1;
+			if (normalAccIdx >= 0) {
+				attributes[attrBase + attrCount].name = (char *)"NORMAL";
+				attributes[attrBase + attrCount].type = cgltf_attribute_type_normal;
+				attributes[attrBase + attrCount].data = &accessors[normalAccIdx];
+				++attrCount;
+			}
 			if (withColor && colAccIdx >= 0) {
 				attributes[attrBase + attrCount].name = (char *)"COLOR_0";
 				attributes[attrBase + attrCount].type = cgltf_attribute_type_color;

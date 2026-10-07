@@ -665,6 +665,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		return false;
 	}
 	// if no transform are applied, and no scale is wanted, we can just export integers
+	const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
 	const bool exportIntegers = glm::all(glm::equal(scale, glm::vec3(1.0f))) && !applyTransform;
 	int elementsCnt = 0;
@@ -703,6 +704,9 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		stream->writeStringFormat(false, "property float z\n");
 		stream->writeStringFormat(false, "property float y\n");
 	}
+	if (withNormals) {
+		stream->writeStringFormat(false, "property float nx\nproperty float ny\nproperty float nz\n");
+	}
 	if (withTexCoords) {
 		stream->writeStringFormat(false, "property float s\n");
 		stream->writeStringFormat(false, "property float t\n");
@@ -740,6 +744,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
 			const palette::Palette &palette = graphNode.palette();
 
 			for (int j = 0; j < nv; ++j) {
@@ -755,6 +760,10 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				} else {
 					pos *= scale;
 					stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
+				}
+				if (withNormals) {
+					const glm::vec3 normal = glm::normalize(normalMatrix * mesh.getNormalVector()[j]);
+					stream->writeStringFormat(false, " %f %f %f", normal.x, normal.y, normal.z);
 				}
 				if (withTexCoords) {
 					const glm::vec2 &uv = paletteUV(v.colorIndex);

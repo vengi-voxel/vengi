@@ -212,3 +212,20 @@ The scene bounds include node transforms in the initial pose, not the full anima
 motion range. Importing with this option measures the hierarchy and mesh positions
 before voxelization, which requires an additional parsing pass. A value of `0`
 uses the `voxformat_scale` settings instead.
+
+### Exporting normals
+
+`voxformat_withnormals` exports vertex normals to OBJ, glTF/GLB, FBX and PLY.
+By default these normals are calculated from the extracted geometry, and stored
+voxel normals do not prevent compact mesh merging.
+
+Enable `voxformat_withvoxelnormals` as well to export normals from the model's
+normal palette with Cubic or Binary extraction. Normal boundaries are preserved,
+which can increase the vertex and triangle counts. Voxels without a valid normal
+use geometric normals instead. Models without a normal palette, Marching Cubes
+and Greedy Texture extraction also use geometric normals. Source voxels and their
+normal palettes are unchanged.
+
+```sh
+voxconvert -set voxformat_withnormals true -set voxformat_withvoxelnormals true --input model.vengi --output model.glb
+```

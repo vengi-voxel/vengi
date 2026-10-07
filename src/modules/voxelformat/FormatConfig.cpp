@@ -20,6 +20,7 @@
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
@@ -102,8 +103,12 @@ bool FormatConfig::init() {
 										  N_("Export with vertex colors"), core::CV_NOPERSIST);
 	core::registerVar(voxformatWithColor);
 	const core::VarDef voxformatWithNormals(cfg::VoxformatWithNormals, false, N_("Normals"),
-											N_("Export smoothed normals for cubic meshes"), core::CV_NOPERSIST);
+											N_("Export vertex normals"), core::CV_NOPERSIST);
 	core::registerVar(voxformatWithNormals);
+	const core::VarDef voxformatWithVoxelNormals(cfg::VoxformatWithVoxelNormals, false, N_("Voxel normals"),
+		N_("Use stored voxel normals when exporting normals with Cubic or Binary extraction. May increase vertex count."),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatWithVoxelNormals);
 	const core::VarDef voxformatColorAsFloat(
 		cfg::VoxformatColorAsFloat, true, N_("Vertex colors as float"),
 		N_("Export with vertex colors as float values (if vertex colors are exported)"), core::CV_NOPERSIST);
@@ -335,7 +340,10 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatPointCloud, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatQuads, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatWithColor, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
-	{cfg::VoxformatWithNormals, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatWithNormals, FormatCVarFlag_Save | FormatCVarFlag_Mesh,
+	 {&OBJFormat::format(), &GLTFFormat::format(), &FBXFormat::format(), &PLYFormat::format()}, {}},
+	{cfg::VoxformatWithVoxelNormals, FormatCVarFlag_Save | FormatCVarFlag_Mesh,
+	 {&OBJFormat::format(), &GLTFFormat::format(), &FBXFormat::format(), &PLYFormat::format()}, {}},
 	{cfg::VoxformatColorAsFloat, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatWithtexcoords, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
