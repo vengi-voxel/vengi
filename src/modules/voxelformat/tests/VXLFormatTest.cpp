@@ -55,6 +55,42 @@ TEST_F(VXLFormatTest, testNormalIndicesAndCoordinates) {
 	}
 }
 
+TEST_F(VXLFormatTest, testRemapNormalPalettes) {
+	for (const char *name : palette::NormalPalette::builtIn) {
+		palette::NormalPalette palette;
+		ASSERT_TRUE(palette.load(name));
+		scenegraph::SceneGraph graph;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 0, 0, (int)palette.size() - 1, 0, 0));
+		node.setNormalPalette(palette);
+		for (size_t i = 0; i < palette.size(); ++i) {
+			node.volume()->setVoxel(i, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, i + NORMAL_PALETTE_OFFSET));
+		}
+		graph.emplace(core::move(node));
+		graph.updateTransforms();
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		VXLFormat format;
+		ASSERT_TRUE(format.save(graph, "remap.vxl", archive, testSaveCtx));
+		scenegraph::SceneGraph loaded;
+		ASSERT_TRUE(format.load("remap.vxl", archive, loaded, testLoadCtx));
+		const scenegraph::SceneGraphNode *model = loaded.firstModelNode();
+		ASSERT_NE(nullptr, model);
+		ASSERT_TRUE(model->hasNormalPalette());
+		const palette::NormalPalette &target = model->normalPalette();
+		for (size_t i = 0; i < palette.size(); ++i) {
+			const uint8_t index = model->volume()->voxel(i, 0, 0).getNormal();
+			ASSERT_NE(NO_NORMAL, index);
+			ASSERT_LE(index, target.size());
+			const glm::vec3 sourceNormal = glm::normalize(palette.normal3f(i));
+			const glm::vec3 writtenNormal = glm::normalize(target.normal3f(index - NORMAL_PALETTE_OFFSET));
+			EXPECT_GE(glm::dot(sourceNormal, writtenNormal), glm::cos(glm::radians(20.0f))) << name << " " << i;
+			if (palette.hash() == target.hash()) {
+				EXPECT_EQ(i + NORMAL_PALETTE_OFFSET, index);
+			}
+		}
+	}
+}
+
 TEST_F(VXLFormatTest, testLoad) {
 	testLoad("cc.vxl");
 }

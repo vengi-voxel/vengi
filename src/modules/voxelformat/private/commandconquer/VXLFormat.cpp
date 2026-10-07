@@ -49,7 +49,7 @@ namespace voxelformat {
 	}
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, int x,
-									int y, int z, uint8_t skipCount, uint8_t voxelCount) const {
+									int y, int z, uint8_t skipCount, uint8_t voxelCount, const uint8_t *normalRemap) const {
 	Log::trace("skipCount: %i voxelCount: %i for (x/y/z: %i:%i:%i)", skipCount, voxelCount, x, y, z);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -60,7 +60,7 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	for (uint8_t i = 0; i < voxelCount; ++i) {
 		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		wrapBool(stream.writeUInt8(voxel.getNormal() == NO_NORMAL ? 0 : voxel.getNormal() - NORMAL_PALETTE_OFFSET))
+		wrapBool(stream.writeUInt8(normalRemap[voxel.getNormal()]))
 		sampler.movePositiveY();
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
@@ -123,6 +123,22 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	}
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
+	uint8_t normalRemap[256]{};
+	if (node.hasNormalPalette()) {
+		palette::NormalPalette target;
+		if (node.normalPalette().size() == 36 || node.normalPalette().isTiberianSun()) {
+			target.tiberianSun();
+		} else {
+			target.redAlert2();
+		}
+		uint8_t paletteRemap[palette::NormalPaletteMaxNormals];
+		node.normalPalette().createRemap(target, paletteRemap);
+		for (int i = 0; i < palette::NormalPaletteMaxNormals; ++i) {
+			if (paletteRemap[i] != 255) {
+				normalRemap[i + NORMAL_PALETTE_OFFSET] = paletteRemap[i];
+			}
+		}
+	}
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	const int64_t spanDataOffset = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
@@ -139,7 +155,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalRemap))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -148,7 +164,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalRemap))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
