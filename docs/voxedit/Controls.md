@@ -176,3 +176,10 @@ Game mode uses `g_movementspeed` instead, with a default of 60 world units per
 second. Changing editor speed does not change game-mode speed or acceleration.
 `+sprint` applies `g_sprintmultiplier` only when clipping is enabled in game mode;
 editor navigation ignores sprint. Wheel zoom uses `cl_camzoomspeed` independently.
+
+## Viewport HUD
+
+Enable `ve_viewporthud` to display brush status and workflow hints. In a layout
+with multiple viewports, the HUD appears only in the hovered viewport and stays
+in the last hovered viewport when the pointer leaves. It remains anchored to the
+lower-left corner of that viewport, including while interacting with its controls.

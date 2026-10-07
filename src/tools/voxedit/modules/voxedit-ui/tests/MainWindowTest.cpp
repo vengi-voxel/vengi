@@ -47,6 +47,64 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	// viewport tests are registered at init phase
 
 	// main window itself
+	IM_REGISTER_TEST(engine, testCategory(), "viewport hud follows hovered viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(resetScene(ctx, _sceneMgr));
+		util::ScopedVarChange hudEnabled(cfg::VoxEditViewportHud, "true");
+		util::ScopedVarChange count(cfg::VoxEditViewports, "3");
+		util::ScopedVarChange overlap(cfg::VoxEditAddNodeIgnoreOverlap, "false");
+		util::ScopedVarChange addNode(cfg::VoxEditAddNode, "false");
+		ScopedViewMode mode(ctx, ViewMode::All);
+		IM_CHECK_EQ(_viewports.size(), 3u);
+		for (Viewport *viewport : _viewports) {
+			if (!viewport->isSceneMode()) {
+				viewport->toggleScene();
+			}
+		}
+		ctx->Yield(3);
+		for (Viewport *viewport : _viewports) {
+			const core::String name = Viewport::viewportId(viewport->id());
+			ctx->UndockWindow(name.c_str());
+			ctx->WindowResize(name.c_str(), ImVec2(480, 450));
+			ctx->WindowMove(name.c_str(), ImVec2(20 + viewport->id() * 500, 200));
+		}
+		_sceneMgr->setAddNodeModeActive(true);
+		ctx->Yield(3);
+		for (Viewport *viewport : _viewports) {
+			IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewport->id()));
+			ctx->Yield(2);
+			IM_CHECK_EQ(hoveredViewport(), viewport);
+			IM_CHECK_EQ(activeViewport(), viewport);
+			ImGuiWindow *hud = ImGui::FindWindowByName("##viewporthud");
+			IM_CHECK(hud != nullptr && hud->Active);
+			IM_CHECK_EQ(hud->BeginCount, 1);
+			ImGuiWindow *view = ImGui::FindWindowByName(Viewport::viewportId(viewport->id()).c_str());
+			IM_CHECK(view != nullptr);
+			IM_CHECK(view->Rect().Contains(hud->Rect()));
+			const ImVec2 hudPos = hud->Pos;
+			IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewport->id(), ImVec2(20, 0)));
+			ctx->Yield(2);
+			IM_CHECK_EQ(hud->Pos.x, hudPos.x);
+			IM_CHECK_EQ(hud->Pos.y, hudPos.y);
+			ctx->SetRef("##viewporthud");
+			ctx->ItemClick("Allow overlap");
+			ctx->Yield(2);
+			IM_CHECK(core::getVar(cfg::VoxEditAddNodeIgnoreOverlap)->boolVal());
+			IM_CHECK_EQ(activeViewport(), viewport);
+			IM_CHECK_EQ(hud->BeginCount, 1);
+			ctx->ItemClick("Allow overlap");
+			ctx->MouseMoveToPos(ImVec2(0, 0));
+			ctx->Yield(2);
+			IM_CHECK(hoveredViewport() == nullptr);
+			IM_CHECK_EQ(activeViewport(), viewport);
+			IM_CHECK(hud->Active);
+			IM_CHECK_EQ(hud->Pos.x, hudPos.x);
+			IM_CHECK_EQ(hud->Pos.y, hudPos.y);
+		}
+		_sceneMgr->setAddNodeModeActive(false);
+		ctx->Yield(2);
+		IM_CHECK(!ImGui::FindWindowByName("##viewporthud")->Active);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		IM_CHECK(focusWindow(ctx, id));

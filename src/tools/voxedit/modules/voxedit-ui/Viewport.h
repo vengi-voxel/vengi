@@ -194,6 +194,7 @@ public:
 
 	bool isHovered() const;
 	bool isVisible() const;
+	void renderHud();
 	void setEnableBloom(bool enable);
 	/**
 	 * Update the ui

@@ -427,6 +427,13 @@ void MainWindow::mainWidget(double nowSeconds) {
 		_viewports[i]->setEnableBloom(bloomCvar && (_viewports.size() == 1 || _viewports[i] == bloomViewport));
 		_viewports[i]->update(nowSeconds, &listener);
 	}
+	// Select the HUD after all viewport images have updated their hover state.
+	if (Viewport *hovered = hoveredViewport()) {
+		_lastHoveredViewport = hovered;
+	}
+	if (Viewport *active = activeViewport()) {
+		active->renderHud();
+	}
 #if USE_YOCTO
 	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
 #endif

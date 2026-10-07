@@ -447,10 +447,6 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		if (_viewportHud->boolVal()) {
-			viewporthud::render(_sceneMgr, isSceneMode(), ImGui::GetWindowPos(), contentSize, headerSize);
-		}
-
 		if (_sceneMgr->isLoading()) {
 			renderCenteredProgress(_("Loading"), _sceneMgr->loadingProgress(), _sceneMgr->loadingProgressText());
 		} else if (_sceneMgr->isSceneJobRunning()) {
@@ -467,6 +463,15 @@ void Viewport::renderViewport() {
 		dragAndDrop(headerSize);
 	}
 	renderSceneJobQueue(*_sceneMgr.get());
+}
+
+void Viewport::renderHud() {
+	if (!_visible || !_viewportHud->boolVal()) {
+		return;
+	}
+	const ImVec2 contentSize(_camera.size().x, _camera.size().y);
+	const float headerSize = _size.y - contentSize.y;
+	viewporthud::render(_sceneMgr, isSceneMode(), _pos, contentSize, headerSize);
 }
 
 bool Viewport::isGameMode() const {
