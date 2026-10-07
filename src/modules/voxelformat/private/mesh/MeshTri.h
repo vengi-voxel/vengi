@@ -82,7 +82,7 @@ inline void subdivide(const MESHTRI &in, MESHTRI out[4]) {
 		MESHTRI{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, in.materialIdx, {midc[0], midc[1], midc[2]}};
 }
 
-inline color::RGBA colorAt(const MeshTri &tri, const MeshMaterialArray &meshMaterialArray, const glm::vec2 &uv, bool originUpperLeft = false) {
+inline color::RGBA colorAt(const MeshTri &tri, const MeshMaterialArray &meshMaterialArray, const glm::vec2 &uv, bool originUpperLeft = false, const glm::vec3 *weights = nullptr) {
 	MeshMaterial* material;
 	if (tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size()) {
 		material = meshMaterialArray[tri.materialIdx].get();
@@ -94,7 +94,14 @@ inline color::RGBA colorAt(const MeshTri &tri, const MeshMaterialArray &meshMate
 		return rgba;
 	}
 
-	const auto mixColors = [](const color::RGBA &a, const color::RGBA &b, const color::RGBA &c) {
+	const auto mixColors = [weights](const color::RGBA &a, const color::RGBA &b, const color::RGBA &c) {
+		if (weights) {
+			return color::RGBA(
+				(uint8_t)glm::round(a.r * weights->x + b.r * weights->y + c.r * weights->z),
+				(uint8_t)glm::round(a.g * weights->x + b.g * weights->y + c.g * weights->z),
+				(uint8_t)glm::round(a.b * weights->x + b.b * weights->y + c.b * weights->z),
+				(uint8_t)glm::round(a.a * weights->x + b.a * weights->y + c.a * weights->z));
+		}
 		return color::RGBA::mix(color::RGBA::mix(a, b), c);
 	};
 

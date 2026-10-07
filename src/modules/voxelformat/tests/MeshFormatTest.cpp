@@ -167,60 +167,73 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 }
 
 TEST_F(MeshFormatTest, testVoxelizeColor) {
-	class TestMesh : public MeshFormat {
-	public:
-		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
-			return false;
+	for (int mode = 0; mode <= 1; ++mode) {
+		for (int createPalette = mode == 0 ? 1 : 0; createPalette <= 1; ++createPalette) {
+			SCOPED_TRACE(mode);
+			SCOPED_TRACE(createPalette);
+			util::ScopedVarChange modeVar(cfg::VoxformatVoxelizeMode, mode == 0 ? "0" : "1");
+			util::ScopedVarChange paletteVar(cfg::VoxelCreatePalette, createPalette ? "true" : "false");
+			class TestMesh : public MeshFormat {
+			public:
+				bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+								const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+					return false;
+				}
+				void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
+					voxelizeMesh("test", sceneGraph, core::move(mesh));
+					sceneGraph.updateTransforms();
+				}
+			};
+
+			TestMesh testMesh;
+			Mesh mesh;
+			video::ShapeBuilder b;
+			scenegraph::SceneGraph sceneGraph;
+
+			palette::Palette pal;
+			if (createPalette) {
+				pal.nippon();
+			} else {
+				pal = voxel::getPalette();
+			}
+			ASSERT_GT(pal.colorCount(), 202);
+			const color::RGBA nipponRed = pal.color(37);
+			const color::RGBA nipponBlue = pal.color(202);
+			const float size = 10.0f;
+			b.setPosition({size, 0.0f, size});
+			b.setColor(color::fromRGBA(nipponRed));
+			b.pyramid({size, size, size});
+
+			const video::ShapeBuilder::Indices &indices = b.getIndices();
+			const video::ShapeBuilder::Vertices &vertices = b.getVertices();
+
+			// color of the tip is green
+			video::ShapeBuilder::Colors colors = b.getColors();
+			const color::RGBA nipponGreen = pal.color(145);
+			colors[0] = color::fromRGBA(nipponGreen);
+			colors[1] = color::fromRGBA(nipponBlue);
+
+			const int n = (int)indices.size();
+			for (int i = 0; i < n; i += 3) {
+				voxelformat::MeshTri meshTri;
+				meshTri.setVertices(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+				meshTri.setColor(color::getRGBA(colors[indices[i]]),
+								 color::getRGBA(colors[indices[i + 1]]),
+								 color::getRGBA(colors[indices[i + 2]]));
+				mesh.addTriangle(meshTri);
+			}
+			testMesh.voxelize(sceneGraph, core::move(mesh));
+			scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
+			ASSERT_NE(nullptr, node);
+			const voxel::RawVolume *v = node->volume();
+			const palette::Palette &nodePal = node->palette();
+			EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(0, 0, 0).getColor()), 0.06f);
+			EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.06f);
+			EXPECT_COLOR_NEAR(nipponBlue, nodePal.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
+			EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
+			EXPECT_COLOR_NEAR(nipponGreen, nodePal.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
 		}
-		void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
-			voxelizeMesh("test", sceneGraph, core::move(mesh));
-			sceneGraph.updateTransforms();
-		}
-	};
-
-	TestMesh testMesh;
-	Mesh mesh;
-	video::ShapeBuilder b;
-	scenegraph::SceneGraph sceneGraph;
-
-	palette::Palette pal;
-	pal.nippon();
-	const color::RGBA nipponRed = pal.color(37);
-	const color::RGBA nipponBlue = pal.color(202);
-	const float size = 10.0f;
-	b.setPosition({size, 0.0f, size});
-	b.setColor(color::fromRGBA(nipponRed));
-	b.pyramid({size, size, size});
-
-	const video::ShapeBuilder::Indices &indices = b.getIndices();
-	const video::ShapeBuilder::Vertices &vertices = b.getVertices();
-
-	// color of the tip is green
-	video::ShapeBuilder::Colors colors = b.getColors();
-	const color::RGBA nipponGreen = pal.color(145);
-	colors[0] = color::fromRGBA(nipponGreen);
-	colors[1] = color::fromRGBA(nipponBlue);
-
-	const int n = (int)indices.size();
-	for (int i = 0; i < n; i += 3) {
-		voxelformat::MeshTri meshTri;
-		meshTri.setVertices(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
-		meshTri.setColor(color::getRGBA(colors[indices[i]]),
-						 color::getRGBA(colors[indices[i + 1]]),
-						 color::getRGBA(colors[indices[i + 2]]));
-		mesh.addTriangle(meshTri);
 	}
-	testMesh.voxelize(sceneGraph, core::move(mesh));
-	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
-	ASSERT_NE(nullptr, node);
-	const voxel::RawVolume *v = node->volume();
-	const palette::Palette &nodePal = node->palette();
-	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(0, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponBlue, nodePal.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponGreen, nodePal.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
 }
 
 TEST_F(MeshFormatTest, testVoxelizeChunked) {

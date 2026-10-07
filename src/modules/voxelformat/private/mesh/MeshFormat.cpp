@@ -389,7 +389,10 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 						// to avoid dropping valid voxels.
 						uv = meshTri.centerUV();
 					}
-					func(meshTri, uv, itrisMins.x + x, itrisMins.y + y, itrisMins.z + z);
+					// Clamp projected weights for cells intersecting a triangle edge.
+					glm::vec3 weights = glm::max(meshTri.calculateBarycentric(center), glm::vec3(0.0f));
+					weights /= weights.x + weights.y + weights.z;
+					func(meshTri, uv, weights, itrisMins.x + x, itrisMins.y + y, itrisMins.z + z);
 				}
 			}
 		}
@@ -471,8 +474,8 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 			reportTriProgress(&paletteRange, triIdx++, (int)tris.size());
 			voxelizeTriangle(
 				trisMins, meshTri,
-				[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-					const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+				[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, const glm::vec3 &weights, int x, int y, int z) {
+					const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv, false, &weights));
 					const palette::Material *newMat = tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr;
 					auto iter = colorMaterials.find(rgba);
 					if (iter == colorMaterials.end() || (newMat && (!iter->value || newMat->mask > iter->value->mask))) {
@@ -556,11 +559,11 @@ int MeshFormat::voxelizeNodeChunked(const core::String &name, scenegraph::SceneG
 
 				for (int triIdx : triIter->value) {
 					const voxelformat::MeshTri &meshTri = tris[triIdx];
-					auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+					auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, const glm::vec3 &weights, int x, int y, int z) {
 						if (!chunkRegion.containsPoint(x, y, z)) {
 							return;
 						}
-						const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+						const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv, false, &weights));
 						if (color.a <= AlphaThreshold) {
 							return;
 						}
@@ -737,8 +740,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 #if 1
 				voxelizeTriangle(
 					trisMins, meshTri,
-					[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-						const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+					[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, const glm::vec3 &weights, int x, int y, int z) {
+						const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv, false, &weights));
 						const palette::Material *newMat = tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr;
 						auto iter = colorMaterials.find(rgba);
 						if (iter == colorMaterials.end()) {
@@ -769,8 +772,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		const int triCount = (int)tris.size();
 		for (const voxelformat::MeshTri &meshTri : tris) {
 			reportTriProgress(&voxelRange, triIdx++, triCount);
-			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-				const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, const glm::vec3 &weights, int x, int y, int z) {
+				const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv, false, &weights));
 				const glm::vec3 &normal = tri.normal();
 				int normalIdx = normalLookup.getClosestMatch(normal);
 				if (normalIdx == palette::PaletteNormalNotFound) {

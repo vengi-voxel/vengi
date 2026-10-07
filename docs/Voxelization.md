@@ -62,7 +62,7 @@ A faster voxelization algorithm optimized for speed and memory efficiency. This 
 
 1. **Direct Voxelization:** Each triangle is directly rasterized into the voxel grid without subdivision.
 
-2. **Per-Triangle Processing:** Colors and normals are sampled directly from the triangle's UV coordinates and interpolated normals.
+2. **Per-Triangle Processing:** Texture colors are sampled using the triangle's UV coordinates. Vertex colors are interpolated at each voxel using barycentric weights, clamped at triangle edges. Palette generation and voxel assignment use the same color samples. Each triangle supplies its face normal.
 
 3. **Memory Efficient:** Doesn't create temporary subdivision data, keeping memory usage lower.
 
