@@ -171,6 +171,28 @@ int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
 	return closestIndex;
 }
 
+void NormalPalette::createRemap(const NormalPalette &target, uint8_t *remap) const {
+	for (int i = 0; i < NormalPaletteMaxNormals; ++i) {
+		remap[i] = 255;
+		if (i >= _size) {
+			continue;
+		}
+		if (i < (int)target.size() && normal(i) == target.normal(i)) {
+			remap[i] = (uint8_t)i;
+			continue;
+		}
+		const glm::vec3 source = glm::normalize(normal3f(i));
+		float maxDot = -2.0f;
+		for (int j = 0; j < (int)target.size(); ++j) {
+			const float dot = glm::dot(source, glm::normalize(target.normal3f(j)));
+			if (dot > maxDot) {
+				maxDot = dot;
+				remap[i] = (uint8_t)j;
+			}
+		}
+	}
+}
+
 void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
 	_normals[index] = toRGBA(normal);
 	_size = core_max(index, _size);
