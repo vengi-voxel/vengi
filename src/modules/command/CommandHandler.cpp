@@ -71,6 +71,12 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 			}
 			continue;
 		}
+		if (command::Command::getCommand(cmd) != nullptr) {
+			// A registered command already reported why execution failed (e.g. its usage).
+			// Do not treat invalid arguments as an unknown command or a variable assignment.
+			n = -1;
+			continue;
+		}
 		const core::VarPtr& c = core::findVar(cmd);
 		if (!c) {
 			Log::info("unknown command: %s in binding context %i", cmd.c_str(), (int)core::bindingContext());
