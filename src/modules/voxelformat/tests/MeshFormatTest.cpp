@@ -20,6 +20,7 @@
 #include "voxelformat/external/cgltf.h"
 #include "voxelformat/external/ufbx.h"
 #include "palette/Palette.h"
+#include "palette/NormalPaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -119,8 +120,8 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 						const uint8_t index = mesh.getVertex(i).normalIndex;
 						const glm::vec3 &normal = mesh.getNormalVector()[i];
 						EXPECT_NEAR(1.0f, glm::length(normal), 0.0001f);
-						if (index > NO_NORMAL && index < palette.size()) {
-							const glm::vec3 expected = glm::normalize(palette.normal3f(index));
+						if (index > NO_NORMAL && (size_t)(index - NORMAL_PALETTE_OFFSET) < palette.size()) {
+							const glm::vec3 expected = glm::normalize(palette.normal3f(index - NORMAL_PALETTE_OFFSET));
 							EXPECT_NEAR(1.0f, glm::dot(expected, normal), 0.0001f);
 							++stored;
 						} else {
@@ -140,9 +141,9 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
 	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
 	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
-	const glm::vec3 values[] = {glm::vec3(0), glm::normalize(glm::vec3(1, 2, 3)), glm::normalize(glm::vec3(-2, 1, 3))};
+	const glm::vec3 values[] = {glm::normalize(glm::vec3(1, 2, 3)), glm::normalize(glm::vec3(-2, 1, 3))};
 	palette::NormalPalette palette;
-	palette.loadNormalMap(values, 3);
+	palette.loadNormalMap(values, 2);
 	scenegraph::SceneGraph graph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.createVolume(voxel::Region(0, 0, 0, 7, 1, 1));
@@ -187,9 +188,9 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 		util::ScopedVarChange transform(cfg::VoxformatTransform, "true");
 		util::ScopedVarChange quads(cfg::VoxformatQuads, "false");
 		palette::NormalPalette palette;
-		const glm::vec3 values[] = {glm::vec3(0), glm::normalize(glm::vec3(1, 2, 3))};
-		palette.loadNormalMap(values, 2);
-		const glm::vec3 expected = glm::normalize(palette.normal3f(1) / glm::vec3(2, 3, 4));
+		const glm::vec3 values[] = {glm::normalize(glm::vec3(1, 2, 3))};
+		palette.loadNormalMap(values, 1);
+		const glm::vec3 expected = glm::normalize(palette.normal3f(0) / glm::vec3(2, 3, 4));
 		scenegraph::SceneGraph graph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.createVolume(voxel::Region(0, 0, 0, 0, 0, 0));
@@ -244,7 +245,7 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 			float normal[3];
 			ASSERT_TRUE(cgltf_accessor_read_float(accessor, i, normal, 3));
 			// glTF keeps the node transform, so the normals stay in local space.
-			EXPECT_NEAR(1.0f, glm::dot(glm::normalize(palette.normal3f(1)), glm::vec3(normal[0], normal[1], normal[2])), 0.0001f);
+			EXPECT_NEAR(1.0f, glm::dot(glm::normalize(palette.normal3f(0)), glm::vec3(normal[0], normal[1], normal[2])), 0.0001f);
 		}
 		cgltf_free(data);
 		core::ScopedPtr<io::SeekableReadStream> fbxStream(archive->readStream("mesh.fbx"));

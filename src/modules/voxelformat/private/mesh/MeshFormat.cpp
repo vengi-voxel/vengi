@@ -258,6 +258,8 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			int normalIdx = normalLookup.getClosestMatch(meshTri.normal());
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;
+			} else {
+				normalIdx += NORMAL_PALETTE_OFFSET;
 			}
 
 			const glm::ivec3 p(c);
@@ -313,6 +315,8 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			int normalIdx = normalLookup.getClosestMatch(normal);
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;
+			} else {
+				normalIdx += NORMAL_PALETTE_OFFSET;
 			}
 			for (int x = mins.x; x < maxs.x; x++) {
 				if (!region.containsPointInX(x + sideDelta.x)) {
@@ -786,6 +790,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 				int normalIdx = normalLookup.getClosestMatch(normal);
 				if (normalIdx == palette::PaletteNormalNotFound) {
 					normalIdx = NO_NORMAL;
+				} else {
+					normalIdx += NORMAL_PALETTE_OFFSET;
 				}
 				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIdx);
 				wrapper.setVoxel(x, y, z, voxel);
@@ -1530,10 +1536,10 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 						voxel::NormalArray &normals = part.getNormalVector();
 						for (size_t j = 0; j < part.getNoOfVertices(); ++j) {
 							const uint8_t index = part.getVertex(j).normalIndex;
-							if (index == NO_NORMAL || index >= normalPalette->size()) {
+							if (index == NO_NORMAL || (size_t)(index - NORMAL_PALETTE_OFFSET) >= normalPalette->size()) {
 								continue;
 							}
-							const glm::vec3 normal = normalPalette->normal3f(index);
+							const glm::vec3 normal = normalPalette->normal3f(index - NORMAL_PALETTE_OFFSET);
 							if (glm::dot(normal, normal) > 0.0f) {
 								normals[j] = glm::normalize(normal);
 							}
