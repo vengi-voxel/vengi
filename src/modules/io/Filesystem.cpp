@@ -588,7 +588,8 @@ bool Filesystem::homeWrite(const core::String &filename, const core::String &str
 
 bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, size_t length) {
 	io::File f(filename, FileMode::SysWrite);
-	if (!sysCreateDir(f.dir())) {
+	const core::String dir = f.dir();
+	if (!dir.empty() && !sysCreateDir(dir)) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
 	}
@@ -598,7 +599,8 @@ bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, 
 
 long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) {
 	io::File f(filename, FileMode::SysWrite);
-	if (!sysCreateDir(f.dir())) {
+	const core::String dir = f.dir();
+	if (!dir.empty() && !sysCreateDir(dir)) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
 	}
