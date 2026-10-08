@@ -120,6 +120,31 @@ protected:
 
 };
 
+TEST_F(ModifierTest, testNormalPaintPaletteIndices) {
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 1, 0, 0));
+	const voxel::Voxel original(voxel::VoxelType::Generic, 3, 42);
+	node.volume()->setVoxel(0, 0, 0, original);
+	node.volume()->setVoxel(1, 0, 0, original);
+	for (uint8_t paletteIndex : {0, 7, 254}) {
+		modifier.normalBrush().setStrokeMode();
+		modifier.setNormalColorIndex(paletteIndex);
+		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::NormalPaint, BrushType::Normal);
+		ASSERT_TRUE(modifier.execute(graph, node));
+		modifier.endBrush();
+		EXPECT_EQ(paletteIndex + NORMAL_PALETTE_OFFSET, node.volume()->voxel(0, 0, 0).getNormal());
+		EXPECT_EQ(original.getColor(), node.volume()->voxel(0, 0, 0).getColor());
+		EXPECT_EQ(original, node.volume()->voxel(1, 0, 0));
+	}
+	modifier.shutdown();
+}
+
 TEST_F(ModifierTest, testModifierAction) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());

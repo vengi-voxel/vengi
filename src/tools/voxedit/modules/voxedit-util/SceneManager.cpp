@@ -4452,15 +4452,39 @@ void SceneManager::construct() {
 		.setHandler([this] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-			if (node == nullptr) {
+			if (node == nullptr || !node->isModelNode()) {
 				return;
 			}
 			const core::String &name = args.str("name");
 			palette::NormalPalette normalPalette;
-			if (normalPalette.load(name.c_str())) {
-				node->setNormalPalette(normalPalette);
-				_mementoHandler->markNormalPaletteChange(sceneGraph(), *node);
+			if (!normalPalette.load(name.c_str())) {
+				return;
 			}
+			memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "normal palette");
+			voxel::RawVolumeWrapper wrapper(node->volume());
+			if (node->hasNormalPalette()) {
+				uint8_t remap[palette::NormalPaletteMaxNormals];
+				node->normalPalette().createRemap(normalPalette, remap);
+				voxelutil::visitVolumeParallel(wrapper, [&](int x, int y, int z, voxel::Voxel voxel) {
+					if (voxel.getNormal() == NO_NORMAL) {
+						return;
+					}
+					const uint8_t index = remap[voxel.getNormal() - NORMAL_PALETTE_OFFSET];
+					if (index == palette::NO_NORMAL_REMAP_FOUND) {
+						voxel.setNormal(NO_NORMAL);
+						voxel.setNormalReset();
+					} else {
+						voxel.setNormal(index + NORMAL_PALETTE_OFFSET);
+					}
+					wrapper.setVoxel(x, y, z, voxel);
+				});
+			}
+			if (wrapper.dirtyRegion().isValid()) {
+				modified(nodeId, wrapper.dirtyRegion());
+			}
+			node->setNormalPalette(normalPalette);
+			_mementoHandler->markNormalPaletteChange(sceneGraph(), *node);
+			markDirty();
 		}).setHelp(_("Change the normal palette"));
 
 	command::Command::registerCommand("loadpalette")

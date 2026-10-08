@@ -14,6 +14,7 @@ namespace palette {
 
 static const int NormalPaletteMaxNormals = 255;
 static const int PaletteNormalNotFound = -1;
+static constexpr uint8_t NO_NORMAL_REMAP_FOUND = 255;
 
 /**
  * @brief Some voxel formats are also storing normals in a palette. This is e.g.
@@ -35,7 +36,7 @@ public:
 
 	int getClosestMatch(const glm::vec3 &normal) const;
 	/** Map palette indices to target indices. The buffer needs NormalPaletteMaxNormals entries.
-	 * Missing entries map to 255. Identical entries at the same index retain their index.
+	 * Missing entries map to NO_NORMAL_REMAP_FOUND. Identical entries at the same index retain their index.
 	 */
 	void createRemap(const NormalPalette &target, uint8_t *remap) const;
 	void loadNormalMap(const color::RGBA *normals, int size);

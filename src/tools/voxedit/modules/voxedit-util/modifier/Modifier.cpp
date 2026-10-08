@@ -329,7 +329,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	preExecuteBrush(volume);
 	const voxel::Voxel cursorVoxel = _brushContext.cursorVoxel;
 	if (_brushContext.modifierType == ModifierType::NormalPaint) {
-		_brushContext.cursorVoxel.setNormal(_brushContext.normalIndex);
+		_brushContext.cursorVoxel.setNormal(_brushContext.normalIndex + NORMAL_PALETTE_OFFSET);
 	}
 	executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
 	_brushContext.cursorVoxel = cursorVoxel; // set back the original voxel

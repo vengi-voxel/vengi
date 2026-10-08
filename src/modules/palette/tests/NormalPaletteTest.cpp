@@ -23,10 +23,10 @@ TEST_F(NormalPaletteTest, testRemap) {
 	EXPECT_EQ(2, remap[0]);
 	EXPECT_EQ(0, remap[1]);
 	EXPECT_EQ(3, remap[2]);
-	EXPECT_EQ(255, remap[3]);
+	EXPECT_EQ(NO_NORMAL_REMAP_FOUND, remap[3]);
 	NormalPalette empty;
 	source.createRemap(empty, remap);
-	EXPECT_EQ(255, remap[0]);
+	EXPECT_EQ(NO_NORMAL_REMAP_FOUND, remap[0]);
 	for (const char *name : NormalPalette::builtIn) {
 		ASSERT_TRUE(source.load(name));
 		source.createRemap(source, remap);

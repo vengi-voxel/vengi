@@ -38,3 +38,13 @@ Right-click on a color to open the context menu:
 * **Reduce to Selected**: Reduce the palette to only the selected colors.
 * **Randomize Selected Colors**: Assign random colors to the selected slots.
 * **Name**: Rename the color.
+
+## Normal Palette
+
+The Normals panel selects directions for normal painting. Manual painting changes
+only the painted voxels; automatic painting calculates directions from nearby voxels.
+
+Changing the normal palette maps existing voxel normals to the closest directions
+in the new palette. This can introduce approximation because palettes contain different
+directions. Undo restores both the previous palette and the previous normal indices.
+Changing the color palette preserves voxel normals.

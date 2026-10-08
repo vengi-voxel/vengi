@@ -134,7 +134,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 		uint8_t paletteRemap[palette::NormalPaletteMaxNormals];
 		node.normalPalette().createRemap(target, paletteRemap);
 		for (int i = 0; i < palette::NormalPaletteMaxNormals; ++i) {
-			if (paletteRemap[i] != 255) {
+			if (paletteRemap[i] != palette::NO_NORMAL_REMAP_FOUND) {
 				normalRemap[i + NORMAL_PALETTE_OFFSET] = paletteRemap[i];
 			}
 		}

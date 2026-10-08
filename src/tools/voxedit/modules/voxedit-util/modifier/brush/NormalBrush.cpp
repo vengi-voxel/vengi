@@ -28,7 +28,7 @@ void NormalBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		};
 		voxelutil::visitVolumeParallel(wrapper, region, func);
 	} else {
-		int normalIndex = ctx.normalIndex;
+		const int normalIndex = ctx.normalIndex + NORMAL_PALETTE_OFFSET;
 		auto func = [&](int x, int y, int z, voxel::Voxel voxel) {
 			voxel.setNormal(normalIndex);
 			wrapper.setVoxel(x, y, z, voxel);

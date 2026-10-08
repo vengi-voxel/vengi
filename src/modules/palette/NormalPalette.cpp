@@ -173,7 +173,7 @@ int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
 
 void NormalPalette::createRemap(const NormalPalette &target, uint8_t *remap) const {
 	for (int i = 0; i < NormalPaletteMaxNormals; ++i) {
-		remap[i] = 255;
+		remap[i] = NO_NORMAL_REMAP_FOUND;
 		if (i >= _size) {
 			continue;
 		}

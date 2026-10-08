@@ -171,6 +171,57 @@ protected:
 	}
 };
 
+TEST_F(SceneManagerTest, testColorPaletteRemapPreservesNormals) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 1, 0, 0)));
+	const int nodeId = _sceneMgr->activeNode();
+	palette::NormalPalette normals;
+	normals.redAlert2();
+	_sceneMgr->sceneGraph().node(nodeId).setNormalPalette(normals);
+	ASSERT_TRUE(testVolume()->setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 3, 1)));
+	ASSERT_TRUE(testVolume()->setVoxel(1, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 4, normals.size())));
+	palette::Palette colors;
+	colors.setColor(0, color::RGBA(255, 0, 0));
+	colors.setColor(1, color::RGBA(0, 0, 255));
+	ASSERT_TRUE(_sceneMgr->setActivePalette(colors, true));
+	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getNormal());
+	EXPECT_EQ(normals.size(), testVolume()->voxel(1, 0, 0).getNormal());
+	EXPECT_EQ(normals.hash(), _sceneMgr->sceneGraph().node(nodeId).normalPalette().hash());
+}
+
+TEST_F(SceneManagerTest, testLoadNormalPaletteRemapsAndUndoRedo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 2, 0, 0)));
+	const int nodeId = _sceneMgr->activeNode();
+	palette::NormalPalette source;
+	source.slab6();
+	_sceneMgr->sceneGraph().node(nodeId).setNormalPalette(source);
+	const voxel::Voxel original(voxel::VoxelType::Generic, 3, NORMAL_PALETTE_OFFSET, voxel::FlagOutline);
+	ASSERT_TRUE(testVolume()->setVoxel(0, 0, 0, original));
+	ASSERT_TRUE(testVolume()->setVoxel(1, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 4, NO_NORMAL)));
+	ASSERT_TRUE(_sceneMgr->mementoHandler().markModification(_sceneMgr->sceneGraph(),
+		_sceneMgr->sceneGraph().node(nodeId), testVolume()->region()));
+
+	palette::NormalPalette target;
+	target.redAlert2();
+	uint8_t remap[palette::NormalPaletteMaxNormals];
+	source.createRemap(target, remap);
+	ASSERT_NE(0, remap[0]);
+	ASSERT_EQ(1, command::executeCommands("loadnormalpalette built-in:redalert2"));
+	EXPECT_EQ(target.hash(), _sceneMgr->sceneGraph().node(nodeId).normalPalette().hash());
+	const voxel::Voxel changed = testVolume()->voxel(0, 0, 0);
+	EXPECT_EQ(remap[0] + NORMAL_PALETTE_OFFSET, changed.getNormal());
+	EXPECT_EQ(original.getColor(), changed.getColor());
+	EXPECT_EQ(original.getFlags(), changed.getFlags());
+	EXPECT_EQ(NO_NORMAL, testVolume()->voxel(1, 0, 0).getNormal());
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(2, 0, 0).getMaterial()));
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(source.hash(), _sceneMgr->sceneGraph().node(nodeId).normalPalette().hash());
+	EXPECT_EQ(original, testVolume()->voxel(0, 0, 0));
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(target.hash(), _sceneMgr->sceneGraph().node(nodeId).normalPalette().hash());
+	EXPECT_EQ(changed, testVolume()->voxel(0, 0, 0));
+}
+
 TEST_F(SceneManagerTest, testNewScene) {
 	EXPECT_TRUE(_sceneMgr->newScene(true, "newscene", voxel::Region{0, 1}));
 }

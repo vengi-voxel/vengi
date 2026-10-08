@@ -57,7 +57,7 @@ TEST_F(NormalBrushTest, testExecuteSingleManual) {
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
 
 	const voxel::Voxel voxel = wrapper.voxel(brushContext.cursorPosition);
-	EXPECT_EQ((int)voxel.getNormal(), (int)normalIndex) << "Voxel normal was not changed by the normal brush";
+	EXPECT_EQ((int)voxel.getNormal(), (int)normalIndex + NORMAL_PALETTE_OFFSET) << "Voxel normal was not changed by the normal brush";
 	EXPECT_EQ((int)voxel.getColor(), (int)existingColorIndex) << "Voxel color was changed by the normal brush";
 
 	// verify adjacent voxels were not affected
