@@ -261,12 +261,12 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
 		executeViewportClick();
 
-		// find any voxel that had its normal changed to the expected value
+		// Stored normals include an offset because NO_NORMAL reserves index zero.
 		node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		bool foundPaintedNormal = false;
 		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
-			if (v.getNormal() == expectedNormal) {
+			if (v.getNormal() == expectedNormal + NORMAL_PALETTE_OFFSET) {
 				foundPaintedNormal = true;
 			}
 		});
