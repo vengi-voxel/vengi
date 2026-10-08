@@ -292,7 +292,10 @@ inline uint8_t Modifier::normalColorIndex() const {
 }
 
 inline void Modifier::setNormalColorIndex(uint8_t paletteIndex) {
-	_brushContext.normalIndex = paletteIndex;
+	if (_brushContext.normalIndex != paletteIndex) {
+		_brushContext.normalIndex = paletteIndex;
+		_normalBrush.markDirty();
+	}
 }
 
 inline math::Axis Modifier::lockedAxis() const {

@@ -19,6 +19,7 @@
 
 namespace palette {
 class Palette;
+class NormalPalette;
 }
 
 namespace voxel {
@@ -73,6 +74,7 @@ struct ModifierRendererContext {
 	core::Buffer<glm::vec3> outlineMirrorPreviewPoints;
 	color::RGBA outlinePreviewColor{0};
 	palette::Palette *palette = nullptr;
+	palette::NormalPalette *normalPalette = nullptr;
 	bool useSimplePreview = false;
 	bool showOutlinePreview = false;
 	bool brushActive = false;

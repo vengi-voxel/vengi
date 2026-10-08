@@ -53,7 +53,7 @@ private:
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region);
-	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette);
+	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, palette::NormalPalette *normalPalette = nullptr);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
 	void updateBrushOutline(int idx, const voxel::Region &region, color::RGBA color);
 	void updateBrushPolylineOutline(int idx, const core::Buffer<glm::vec3> &points, color::RGBA color);

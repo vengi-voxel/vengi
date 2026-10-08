@@ -147,7 +147,7 @@ static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggest
 }
 
 bool PreviewManager::previewNeedsExistingVolume(const Modifier &modifier) const {
-	if (modifier.isMode(ModifierType::Paint)) {
+	if (modifier.isMode(ModifierType::Paint) || modifier.isMode(ModifierType::NormalPaint)) {
 		return true;
 	}
 	const BrushType brushType = modifier.brushType();
@@ -255,11 +255,17 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
+			if (modifierType == ModifierType::NormalPaint) {
+				mirrorDummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
+			}
 			modifier.executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel, {}, true);
 		}
 		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setUnownedVolume(_previewVolume);
+		if (modifierType == ModifierType::NormalPaint) {
+			dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
+		}
 		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
 
 		// For selection brushes: remove voxels without FlagOutline from the preview
@@ -273,7 +279,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			}
 		}
 		// Paint: keep only voxels that actually changed color/material.
-		if (modifier.brushType() == BrushType::Paint && existingVolume != nullptr) {
+		if ((modifier.brushType() == BrushType::Paint || modifierType == ModifierType::NormalPaint) && existingVolume != nullptr) {
 			stripUnchangedVoxels(_previewVolume, existingVolume);
 			if (_previewMirrorVolume) {
 				stripUnchangedVoxels(_previewMirrorVolume, existingVolume);

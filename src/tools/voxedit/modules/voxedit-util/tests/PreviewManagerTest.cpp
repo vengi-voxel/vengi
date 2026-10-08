@@ -9,6 +9,9 @@
 #include "command/Command.h"
 #include "core/SharedPtr.h"
 #include "palette/Palette.h"
+#include "palette/NormalPalette.h"
+#include "memento/MementoHandler.h"
+#include "voxel/VoxelNormalUtil.h"
 #include "voxelrender/RenderContext.h"
 #include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
@@ -90,6 +93,64 @@ protected:
 		modifier.render(renderContext, camera, palette);
 	}
 };
+
+TEST_F(PreviewManagerTest, testNormalPreview) {
+	for (NormalBrush::PaintMode mode : {NormalBrush::PaintMode::Manual, NormalBrush::PaintMode::Auto}) {
+		auto renderer = core::make_shared<TrackingModifierRenderer>();
+		SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+						 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+		mgr.construct();
+		ASSERT_TRUE(mgr.init());
+		ASSERT_TRUE(mgr.newScene(true, "normals", voxel::Region(-1, 1)));
+		scenegraph::SceneGraphNode &node = mgr.sceneGraph().node(mgr.activeNode());
+		palette::NormalPalette normals;
+		normals.tiberianSun();
+		node.setNormalPalette(normals);
+		const voxel::Voxel original(voxel::VoxelType::Generic, 3, 42);
+		for (int z = -1; z <= 1; ++z) {
+			for (int y = -1; y <= 1; ++y) {
+				for (int x = -1; x <= 1; ++x) {
+					node.volume()->setVoxel(x, y, z, original);
+				}
+			}
+		}
+		ModifierEx modifier(&mgr, renderer);
+		modifier.construct();
+		ASSERT_TRUE(modifier.init());
+		modifier.normalBrush().setStrokeMode();
+		modifier.normalBrush().setPaintMode(mode);
+		modifier.setNormalColorIndex(7);
+		const glm::ivec3 pos(1, 0, 0);
+		prepare(modifier, pos, pos, ModifierType::NormalPaint, BrushType::Normal);
+		uint8_t expected = 7 + NORMAL_PALETTE_OFFSET;
+		if (mode == NormalBrush::PaintMode::Auto) {
+			voxel::RawVolume::Sampler sampler(node.volume());
+			sampler.setPosition(pos);
+			expected = normals.getClosestMatch(voxel::calculateNormal(sampler, voxel::Connectivity::TwentySixConnected)) + NORMAL_PALETTE_OFFSET;
+		}
+		const bool canUndo = mgr.mementoHandler().canUndo();
+		triggerPreviewUpdate(modifier, node.palette());
+		ASSERT_NE(nullptr, modifier.previewVolume());
+		EXPECT_EQ(expected, modifier.previewVolume()->voxel(pos).getNormal());
+		EXPECT_EQ(original.getColor(), modifier.previewVolume()->voxel(pos).getColor());
+		EXPECT_EQ(&node.normalPalette(), renderer->lastContext.normalPalette);
+		EXPECT_EQ(original, node.volume()->voxel(pos));
+		EXPECT_EQ(original, node.volume()->voxel(0, 0, 0));
+		EXPECT_EQ(canUndo, mgr.mementoHandler().canUndo());
+		if (mode == NormalBrush::PaintMode::Manual) {
+			modifier.setNormalColorIndex(0);
+			triggerPreviewUpdate(modifier, node.palette());
+			ASSERT_NE(nullptr, modifier.previewVolume());
+			EXPECT_EQ(NORMAL_PALETTE_OFFSET, modifier.previewVolume()->voxel(pos).getNormal());
+			expected = NORMAL_PALETTE_OFFSET;
+		}
+		ASSERT_TRUE(modifier.execute(mgr.sceneGraph(), node));
+		EXPECT_EQ(expected, node.volume()->voxel(pos).getNormal());
+		modifier.endBrush();
+		modifier.shutdown();
+		mgr.shutdown();
+	}
+}
 
 TEST_F(PreviewManagerTest, testPreviewShapeAABB) {
 	auto renderer = core::make_shared<TrackingModifierRenderer>();

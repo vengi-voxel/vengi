@@ -157,10 +157,10 @@ void ModifierRenderer::clear() {
 	}
 }
 
-void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
+void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, palette::NormalPalette *normalPalette) {
 	// Note: We don't delete the returned old volume because ownership stays with the caller (Modifier)
 	// The caller manages the volume lifetime via ScopedPtr
-	(void)_volumeRenderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
+	(void)_volumeRenderer.setVolume(_meshState, idx, volume, palette, normalPalette, true);
 	if (volume != nullptr) {
 		_volumeRenderer.scheduleRegionExtraction(_meshState, idx, volume->region());
 	}
@@ -348,8 +348,8 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 					_aabbMeshes[i] = -1;
 				}
 			}
-			updateBrushVolume(0, ctx.previewVolume, ctx.palette);
-			updateBrushVolume(1, ctx.previewMirrorVolume, ctx.palette);
+			updateBrushVolume(0, ctx.previewVolume, ctx.palette, ctx.normalPalette);
+			updateBrushVolume(1, ctx.previewMirrorVolume, ctx.palette, ctx.normalPalette);
 		}
 	} else {
 		clear();

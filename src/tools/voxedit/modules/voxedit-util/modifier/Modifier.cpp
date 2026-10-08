@@ -680,6 +680,9 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 	}
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID())) {
 		ctx.activeRegion = node->region();
+		if (isMode(ModifierType::NormalPaint)) {
+			ctx.normalPalette = &node->normalPalette();
+		}
 	}
 
 	// Handle brush preview with deferred updates
