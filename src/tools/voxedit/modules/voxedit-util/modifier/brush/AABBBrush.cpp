@@ -273,8 +273,8 @@ void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 	if (ctx.cursorPosition != _lastCursorPos) {
 		_lastCursorPos = ctx.cursorPosition;
 		// we have to update the preview each time we move the cursor if the brush
-		// is either spanning an aabb or has a radius set in stroke mode
-		if (_boxMode || radius() > 0) {
+		// is either spanning an aabb or follows the cursor in stroke mode
+		if (_boxMode || anyStrokeMode()) {
 			markDirty();
 		}
 	}

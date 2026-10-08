@@ -5,6 +5,8 @@
 #include "voxedit-util/SceneManager.h"
 #include "memento/MementoHandler.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/ModifierButton.h"
+#include "core/BindingContext.h"
 #include "voxedit-util/Config.h"
 #include "AbstractSceneManagerTest.h"
 #include "command/CommandHandler.h"
@@ -1402,6 +1404,77 @@ TEST_F(SceneManagerTest, testRemoveColors) {
 	EXPECT_TRUE(_sceneMgr->nodeRemoveColor(_sceneMgr->sceneGraph().uuid(nodeId), targetVoxel.getColor()));
 	EXPECT_NE(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
+}
+
+TEST_F(SceneManagerTest, testTraceClearsPreviousNormal) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "trace_normal", voxel::Region(-3, 3)));
+	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	volume->setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 1, 8));
+	volume->setVoxel(1, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 1));
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setBrushType(BrushType::Shape);
+	modifier.shapeBrush().setStrokeMode();
+	video::Camera camera;
+	camera.setNearPlane(0.1f);
+	camera.setFarPlane(30.0f);
+	camera.setFieldOfView(45.0f);
+	camera.setSize(glm::ivec2(800, 600));
+	_sceneMgr->setActiveCamera(&camera, false);
+	_sceneMgr->setMousePos(400, 300);
+	for (int x = 0; x < 2; ++x) {
+		camera.setWorldPosition(glm::vec3(x + 0.5f, 0.5f, 10.0f));
+		camera.lookAt(glm::vec3(x + 0.5f, 0.5f, 0.0f), glm::vec3(0, 1, 0));
+		camera.update(0.0);
+		ASSERT_TRUE(_sceneMgr->trace(false, true, glm::mat4(1.0f)));
+		ASSERT_TRUE(sceneMgr()->getPickResult().didHit);
+		EXPECT_EQ(glm::ivec3(x, 0, 0), sceneMgr()->getPickResult().hitVoxel);
+		EXPECT_EQ(x == 0 ? 8 : NO_NORMAL, _sceneMgr->hitCursorVoxel().getNormal());
+	}
+}
+
+TEST_F(SceneManagerTest, testTemporaryEraseUsesViewportTransform) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "erase_transform", voxel::Region(-3, 3)));
+	const glm::ivec3 target(0, 0, 0);
+	const glm::ivec3 adjacent(1, 0, 0);
+	ASSERT_TRUE(testSetVoxel(target, 1));
+	ASSERT_TRUE(testSetVoxel(adjacent, 2));
+	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setModifierType(ModifierType::Place);
+	modifier.shapeBrush().setStrokeMode();
+
+	video::Camera camera;
+	camera.setNearPlane(0.1f);
+	camera.setFarPlane(30.0f);
+	camera.setFieldOfView(45.0f);
+	camera.setSize(glm::ivec2(800, 600));
+	camera.setWorldPosition(glm::vec3(40.5f, 0.5f, 10.0f));
+	camera.lookAt(glm::vec3(40.5f, 0.5f, 0.0f), glm::vec3(0, 1, 0));
+	camera.update(0.0);
+	_sceneMgr->setActiveCamera(&camera, false);
+	_sceneMgr->setMousePos(400, 300);
+	const glm::mat4 invModel = glm::translate(glm::vec3(-40.0f, 0, 0));
+	ASSERT_TRUE(_sceneMgr->trace(false, true, invModel));
+	ASSERT_TRUE(sceneMgr()->getPickResult().didHit);
+	EXPECT_EQ(target, sceneMgr()->getPickResult().hitVoxel);
+
+	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
+	ModifierButton erase(_sceneMgr.get(), ModifierType::Erase);
+	ASSERT_TRUE(erase.handleDown(1, 0.0));
+	EXPECT_TRUE(voxel::isAir(volume->voxel(target).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume->voxel(adjacent).getMaterial()));
+	EXPECT_EQ(ModifierType::Erase, modifier.modifierType());
+
+	// Every dab while held must keep erasing, even when Place was selected before pressing.
+	modifier.setCursorPosition(adjacent, voxel::FaceNames::PositiveZ);
+	erase.execute(true);
+	EXPECT_TRUE(voxel::isAir(volume->voxel(adjacent).getMaterial()));
+	EXPECT_EQ(ModifierType::Erase, modifier.modifierType());
+	EXPECT_TRUE(erase.handleUp(1, 0.0));
+	EXPECT_EQ(ModifierType::Place, modifier.modifierType());
+	_sceneMgr->setActiveCamera(nullptr, false);
 }
 
 TEST_F(SceneManagerTest, testMouseRayTrace) {

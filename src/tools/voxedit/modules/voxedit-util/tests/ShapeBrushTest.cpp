@@ -109,6 +109,70 @@ protected:
 	}
 };
 
+TEST_F(ShapeBrushTest, testZeroRadiusStroke) {
+	TestShapeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setStrokeMode();
+	brush.setRadius(2);
+	brush.setShapeType(ShapeType::Cone);
+	brush.setRadius(0);
+	EXPECT_EQ(brush.shapeType(), ShapeType::Box);
+	EXPECT_TRUE(brush.isSimplePreview());
+	BrushContext ctx;
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	brush.update(ctx, 0.0);
+	brush.markClean();
+	ctx.cursorPosition = glm::ivec3(1, 2, 3);
+	brush.update(ctx, 0.1);
+	EXPECT_TRUE(brush.dirty());
+	EXPECT_EQ(brush.calcRegion(ctx), voxel::Region(ctx.cursorPosition, ctx.cursorPosition));
+	brush.setRadius(2);
+	EXPECT_EQ(brush.shapeType(), ShapeType::Cone);
+	brush.setRadius(0);
+	brush.setBoxMode();
+	brush.setShapeType(ShapeType::Ellipse);
+	EXPECT_EQ(brush.shapeType(), ShapeType::Ellipse);
+	brush.shutdown();
+}
+
+TEST_F(ShapeBrushTest, testStrokeFacePreview) {
+	TestShapeBrush brush;
+	ASSERT_TRUE(brush.init());
+	brush.setStrokeMode();
+	brush.setRadius(2);
+	brush.setShapeType(ShapeType::Cone);
+	BrushContext ctx;
+	ctx.cursorPosition = glm::ivec3(0);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	ctx.preview = true;
+	brush.update(ctx, 0.0);
+	brush.markClean();
+	brush.update(ctx, 0.1);
+	EXPECT_FALSE(brush.dirty());
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	brush.update(ctx, 0.2);
+	EXPECT_TRUE(brush.dirty());
+
+	// The cone must follow the current face even before a stroke begins.
+	voxel::RawVolume volume(voxel::Region(glm::ivec3(-3), glm::ivec3(3)));
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place);
+	brush.preExecute(ctx, wrapper.volume());
+	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, ctx));
+	EXPECT_FALSE(voxel::isAir(volume.voxel(2, -2, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 0).getMaterial()));
+	brush.setBoxMode();
+	brush.update(ctx, 0.3);
+	brush.markClean();
+	ctx.cursorFace = voxel::FaceNames::NegativeZ;
+	brush.update(ctx, 0.4);
+	EXPECT_FALSE(brush.dirty());
+	brush.shutdown();
+}
+
 TEST_F(ShapeBrushTest, testDefaultBrushModes) {
 	NormalBrush normal;
 	PaintBrush paint;

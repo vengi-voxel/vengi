@@ -25,6 +25,31 @@ TEST_F(ModifierVolumeWrapperTest, testPlace) {
 	ASSERT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial()));
 }
 
+TEST_F(ModifierVolumeWrapperTest, testPlaceIntoAirWithStaleNormal) {
+	for (ModifierType type : {ModifierType::Place, ModifierType::Override}) {
+		voxel::RawVolume volume(voxel::Region(-1, 1));
+		volume.setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Air, 0, 8));
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&volume);
+		ModifierVolumeWrapper wrapper(node, type);
+		ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 2)));
+		EXPECT_EQ(NO_NORMAL, volume.voxel(0, 0, 0).getNormal());
+	}
+}
+
+TEST_F(ModifierVolumeWrapperTest, testEraseAndReplaceNormalVoxel) {
+	voxel::RawVolume volume(voxel::Region(-1, 1));
+	volume.setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 1, 8));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	ModifierVolumeWrapper erase(node, ModifierType::Erase);
+	ASSERT_TRUE(erase.setVoxel(0, 0, 0, {}));
+	EXPECT_EQ(NO_NORMAL, volume.voxel(0, 0, 0).getNormal());
+	ModifierVolumeWrapper place(node, ModifierType::Place);
+	ASSERT_TRUE(place.setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 2)));
+	EXPECT_EQ(NO_NORMAL, volume.voxel(0, 0, 0).getNormal());
+}
+
 TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 0, 0, voxel::FlagOutline));
@@ -54,6 +79,22 @@ TEST_F(ModifierVolumeWrapperTest, testErase) {
 	ASSERT_TRUE(wrapper.dirtyRegion().isValid());
 	ASSERT_EQ(wrapper.dirtyRegion(), voxel::Region(0, 0));
 	ASSERT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
+}
+
+TEST_F(ModifierVolumeWrapperTest, testEraseNormal) {
+	voxel::RawVolume volume(voxel::Region(-1, 1));
+	const voxel::Voxel original(voxel::VoxelType::Transparent, 3, 42, voxel::FlagOutline, 5);
+	volume.setVoxel(0, 0, 0, original);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	ModifierVolumeWrapper wrapper(node, ModifierType::NormalPaint | ModifierType::Erase);
+	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, {}));
+	voxel::Voxel cleared = original;
+	cleared.setNormal(NO_NORMAL);
+	EXPECT_EQ(cleared, volume.voxel(0, 0, 0));
+	EXPECT_EQ(voxel::Region(0, 0), wrapper.dirtyRegion());
+	EXPECT_FALSE(wrapper.setVoxel(1, 0, 0, original));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(1, 0, 0).getMaterial()));
 }
 
 TEST_F(ModifierVolumeWrapperTest, testPaint) {

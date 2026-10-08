@@ -147,7 +147,8 @@ static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggest
 }
 
 bool PreviewManager::previewNeedsExistingVolume(const Modifier &modifier) const {
-	if (modifier.isMode(ModifierType::Paint) || modifier.isMode(ModifierType::NormalPaint)) {
+	if (modifier.brushType() == BrushType::Normal || modifier.isMode(ModifierType::Paint) ||
+		modifier.isMode(ModifierType::NormalPaint)) {
 		return true;
 	}
 	const BrushType brushType = modifier.brushType();
@@ -182,10 +183,11 @@ bool PreviewManager::isSimplePreview(const Brush *brush, const voxel::Region &re
 void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palette &activePalette,
 											  voxel::RawVolume *activeVolume,
 											  scenegraph::SceneGraph &sceneGraph) {
-	// even in erase mode we want the preview to create the models, not wipe them
+	// Voxel erase previews show the affected geometry; normal erase previews keep it and clear its normals.
 	const BrushContext &brushContext = modifier.brushContext();
+	const bool normalPaint = modifier.brushType() == BrushType::Normal || modifier.isMode(ModifierType::NormalPaint);
 	ModifierType modifierType = brushContext.modifierType;
-	if (modifierType == ModifierType::Erase) {
+	if (modifierType == ModifierType::Erase && modifier.brushType() != BrushType::Normal) {
 		modifierType = ModifierType::Place;
 	}
 	voxel::Voxel voxel = brushContext.cursorVoxel;
@@ -255,7 +257,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
-			if (modifierType == ModifierType::NormalPaint) {
+			if (normalPaint) {
 				mirrorDummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
 			}
 			modifier.executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel, {}, true);
@@ -263,7 +265,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setUnownedVolume(_previewVolume);
-		if (modifierType == ModifierType::NormalPaint) {
+		if (normalPaint) {
 			dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
 		}
 		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
@@ -279,7 +281,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			}
 		}
 		// Paint: keep only voxels that actually changed color/material.
-		if ((modifier.brushType() == BrushType::Paint || modifierType == ModifierType::NormalPaint) && existingVolume != nullptr) {
+		if ((modifier.brushType() == BrushType::Paint || normalPaint) && existingVolume != nullptr) {
 			stripUnchangedVoxels(_previewVolume, existingVolume);
 			if (_previewMirrorVolume) {
 				stripUnchangedVoxels(_previewMirrorVolume, existingVolume);

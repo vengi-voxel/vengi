@@ -173,6 +173,7 @@ protected:
 
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
+	glm::mat4 _lastTraceInvModel{1.0f};
 
 	// model animation speed
 	double _frameAnimationSpeed = 0.0;
@@ -745,7 +746,8 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool sceneMode, bool force = false, const glm::mat4 &invModel = glm::mat4(1.0f));
+	bool trace(bool sceneMode, bool force = false);
+	bool trace(bool sceneMode, bool force, const glm::mat4 &invModel);
 	void resetLastTrace();
 
 	void startLocalServer(int port, const core::String &iface);

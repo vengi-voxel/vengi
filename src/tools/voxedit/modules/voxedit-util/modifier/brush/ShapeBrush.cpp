@@ -26,7 +26,7 @@ void ShapeBrush::construct() {
 }
 
 ShapeType ShapeBrush::shapeType() const {
-	return _shapeType;
+	return anyStrokeMode() && radius() == 0 ? ShapeType::Box : _shapeType;
 }
 
 void ShapeBrush::setShapeType(ShapeType type) {
@@ -65,13 +65,23 @@ math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm
 	return math::Axis::None;
 }
 
+void ShapeBrush::update(const BrushContext &ctx, double nowSeconds) {
+	Super::update(ctx, nowSeconds);
+	if (_lastCursorFace != ctx.cursorFace) {
+		_lastCursorFace = ctx.cursorFace;
+		if (anyStrokeMode()) {
+			markDirty();
+		}
+	}
+}
+
 void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;
 	int depth = 0;
-	voxel::FaceNames face = _aabbFace;
+	voxel::FaceNames face = anyStrokeMode() ? ctx.cursorFace : _aabbFace;
 	if (face == voxel::FaceNames::Max) {
 		face = voxel::FaceNames::PositiveX;
 	}
@@ -92,7 +102,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			return;
 		}
 	}
-	switch (_shapeType) {
+	switch (shapeType()) {
 	case ShapeType::Box:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);
 		break;

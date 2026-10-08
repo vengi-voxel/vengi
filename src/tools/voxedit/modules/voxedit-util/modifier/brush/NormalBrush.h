@@ -44,7 +44,7 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	NormalBrush() : Super(BrushType::Normal, ModifierType::NormalPaint, ModifierType::NormalPaint) {
+	NormalBrush() : Super(BrushType::Normal, ModifierType::Place, ModifierType::Place | ModifierType::Erase) {
 		setStrokeMode();
 	}
 	virtual ~NormalBrush() = default;

@@ -91,7 +91,7 @@ void ModifierButton::execute(bool continuous) {
 		++nodes;
 	};
 	_sceneMgr->nodeForeachGroup(func);
-	if (_oldType != ModifierType::None) {
+	if (!continuous && _oldType != ModifierType::None) {
 		modifier.setModifierType(_oldType);
 		_sceneMgr->trace(false, true);
 		_oldType = ModifierType::None;

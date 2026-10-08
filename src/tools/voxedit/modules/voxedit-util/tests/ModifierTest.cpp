@@ -123,6 +123,49 @@ protected:
 
 };
 
+TEST_F(ModifierTest, testNormalBrushDoesNotChangePlacementNormal) {
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 3, 0, 0));
+	const voxel::Voxel original(voxel::VoxelType::Generic, 3);
+	for (uint8_t normal : {NO_NORMAL, 42}) {
+		node.volume()->setVoxel(0, 0, 0, original);
+		modifier.normalBrush().setStrokeMode();
+		modifier.normalBrush().setPaintMode(NormalBrush::PaintMode::Manual);
+		modifier.setNormalColorIndex(7);
+		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Place, BrushType::Normal);
+		const voxel::Voxel cursor(voxel::VoxelType::Generic, 1, normal);
+		modifier.setCursorVoxel(cursor);
+		ASSERT_TRUE(modifier.execute(graph, node));
+		modifier.endBrush();
+		EXPECT_EQ(7 + NORMAL_PALETTE_OFFSET, node.volume()->voxel(0, 0, 0).getNormal());
+		EXPECT_EQ(cursor, modifier.cursorVoxel());
+
+		modifier.setBrushType(BrushType::Shape);
+		EXPECT_EQ(NO_NORMAL, modifier.cursorVoxel().getNormal());
+		EXPECT_EQ(NO_NORMAL, modifier.normalColorIndex());
+		modifier.shapeBrush().setStrokeMode();
+		modifier.shapeBrush().setRadius(0);
+		modifier.setModifierType(ModifierType::Place);
+		const glm::ivec3 pos(normal == NO_NORMAL ? 1 : 2, 0, 0);
+		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
+		ASSERT_TRUE(modifier.beginBrush());
+		ASSERT_TRUE(modifier.execute(graph, node));
+		modifier.endBrush();
+		voxel::Voxel placed(cursor);
+		placed.setNormal(NO_NORMAL);
+		EXPECT_EQ(placed, node.volume()->voxel(pos));
+	}
+	modifier.setCursorVoxel(original);
+	EXPECT_EQ(original, modifier.cursorVoxel());
+	modifier.shutdown();
+}
+
 TEST_F(ModifierTest, testNormalPaintPaletteIndices) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
@@ -138,12 +181,43 @@ TEST_F(ModifierTest, testNormalPaintPaletteIndices) {
 	for (uint8_t paletteIndex : {0, 7, 254}) {
 		modifier.normalBrush().setStrokeMode();
 		modifier.setNormalColorIndex(paletteIndex);
-		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::NormalPaint, BrushType::Normal);
+		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Place, BrushType::Normal);
+		EXPECT_EQ(ModifierType::Place, modifier.modifierType());
+		EXPECT_TRUE(modifier.modifierTypeRequiresExistingVoxel());
 		ASSERT_TRUE(modifier.execute(graph, node));
 		modifier.endBrush();
 		EXPECT_EQ(paletteIndex + NORMAL_PALETTE_OFFSET, node.volume()->voxel(0, 0, 0).getNormal());
 		EXPECT_EQ(original.getColor(), node.volume()->voxel(0, 0, 0).getColor());
 		EXPECT_EQ(original, node.volume()->voxel(1, 0, 0));
+	}
+	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testNormalErase) {
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(0, 0, 0, 2, 0, 0));
+	const voxel::Voxel original(voxel::VoxelType::Transparent, 3, 42, voxel::FlagOutline, 5);
+	for (NormalBrush::PaintMode mode : {NormalBrush::PaintMode::Manual, NormalBrush::PaintMode::Auto}) {
+		node.volume()->setVoxel(0, 0, 0, original);
+		node.volume()->setVoxel(1, 0, 0, original);
+		modifier.normalBrush().setStrokeMode();
+		modifier.normalBrush().setPaintMode(mode);
+		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Erase, BrushType::Normal);
+		ASSERT_EQ(ModifierType::Erase, modifier.modifierType());
+		EXPECT_TRUE(modifier.modifierTypeRequiresExistingVoxel());
+		ASSERT_TRUE(modifier.execute(graph, node));
+		modifier.endBrush();
+		voxel::Voxel cleared = original;
+		cleared.setNormal(NO_NORMAL);
+		EXPECT_EQ(cleared, node.volume()->voxel(0, 0, 0));
+		EXPECT_EQ(original, node.volume()->voxel(1, 0, 0));
+		EXPECT_TRUE(voxel::isAir(node.volume()->voxel(2, 0, 0).getMaterial()));
 	}
 	modifier.shutdown();
 }

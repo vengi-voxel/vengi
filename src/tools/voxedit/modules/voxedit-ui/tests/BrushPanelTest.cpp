@@ -255,6 +255,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 
 		// set a specific normal index on the modifier (the value the normal brush will paint)
+		IM_CHECK(focusWindow(ctx, toolbarId));
+		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Place));
 		const uint8_t expectedNormal = 7;
 		modifier.setNormalColorIndex(expectedNormal);
 
@@ -271,6 +273,86 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 			}
 		});
 		IM_CHECK(foundPaintedNormal);
+
+		const int originalVoxelCount = voxelutil::countVoxels(*node->volume());
+		IM_CHECK(focusWindow(ctx, toolbarId));
+		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Erase));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+		allNoNormal = true;
+		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
+			if (v.getNormal() != NO_NORMAL) {
+				allNoNormal = false;
+			}
+		});
+		IM_CHECK(allNoNormal);
+		IM_CHECK_EQ(voxelutil::countVoxels(*node->volume()), originalVoxelCount);
+
+		// Paint a normal again, then switch brushes without resetting the scene.
+		IM_CHECK(focusWindow(ctx, toolbarId));
+		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Place));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+		IM_CHECK(focusWindow(ctx, toolbarId));
+		ctx->ItemClick("brushes/###button1");
+		IM_CHECK(modifier.brushType() == BrushType::Shape);
+		IM_CHECK_EQ(modifier.cursorVoxel().getNormal(), NO_NORMAL);
+		IM_CHECK_EQ(modifier.normalColorIndex(), NO_NORMAL);
+		modifier.shapeBrush().setStrokeMode();
+		modifier.shapeBrush().setRadius(0);
+		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Erase));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+		IM_CHECK(focusWindow(ctx, toolbarId));
+		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Place));
+		IM_CHECK(centerOnViewport(ctx, _ctx.sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+		ctx->Yield(3);
+		IM_CHECK_EQ(voxelutil::countVoxels(*node->volume()), originalVoxelCount);
+		allNoNormal = true;
+		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
+			if (v.getNormal() != NO_NORMAL) {
+				allNoNormal = false;
+			}
+		});
+		IM_CHECK(allNoNormal);
+		IM_CHECK_EQ(_ctx.sceneMgr->hitCursorVoxel().getNormal(), NO_NORMAL);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "shape drawing methods")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
+		ShapeBrush &brush = _ctx.sceneMgr->modifier().shapeBrush();
+		brush.setStrokeMode();
+		brush.setRadius(0);
+		ctx->Yield();
+		for (int i = 1; i < (int)ShapeType::Max; ++i) {
+			const core::String buttonId = core::String::format("shapes/###button%d", i);
+			IM_CHECK((ctx->ItemInfo(buttonId.c_str()).ItemFlags & ImGuiItemFlags_Disabled) != 0);
+		}
+		command::executeCommands("shapeellipse");
+		IM_CHECK_EQ((int)brush.shapeType(), (int)ShapeType::Box);
+		ctx->ItemClick("Increase radius");
+		IM_CHECK_EQ(brush.radius(), 2);
+		ctx->ItemClick("+##radius");
+		IM_CHECK_EQ(brush.radius(), 3);
+		ctx->ItemClick("-##radius");
+		IM_CHECK_EQ(brush.radius(), 2);
+		ctx->ItemOpen("Advanced");
+		ctx->ItemClick("Apply once per voxel per stroke");
+		IM_CHECK(brush.strokeNoOverlap());
+		ctx->ItemClick("Drag shape");
+		IM_CHECK(brush.boxMode());
+		ctx->ItemClick("Center");
+		IM_CHECK(brush.centerMode());
+		ctx->ItemClick("Stroke");
+		IM_CHECK(brush.strokeNoOverlap());
+		IM_CHECK_EQ(brush.radius(), 2);
+		ctx->ItemClick("Drag shape");
+		IM_CHECK(brush.centerMode());
+		ctx->ItemClick("Corner");
+		IM_CHECK(brush.boxMode());
+		ctx->ItemClick("Stroke");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush type toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -279,6 +361,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 
 		voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
 		ShapeBrush &brush = modifier.shapeBrush();
+		brush.setRadius(2);
+		ctx->Yield();
 
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const core::String buttonId = core::String::format("shapes/###button%d", i);

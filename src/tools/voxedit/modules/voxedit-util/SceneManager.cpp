@@ -6275,6 +6275,11 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 void SceneManager::updateDirtyRendererStates() {
 }
 
+bool SceneManager::trace(bool sceneMode, bool force) {
+	// Modifier shortcuts must retrace in the same coordinate space as the viewport.
+	return trace(sceneMode, force, _lastTraceInvModel);
+}
+
 bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) {
 	if (_modifier->isLocked()) {
 		return false;
@@ -6376,6 +6381,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 		return false;
 	}
 	math::Ray ray = camera->mouseRay(_mouseCursor);
+	_lastTraceInvModel = invModel;
 	ray.origin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
 	ray.direction = glm::normalize(glm::vec3(invModel * glm::vec4(ray.direction, 0.0f)));
 	const float rayLength = camera->farPlane();

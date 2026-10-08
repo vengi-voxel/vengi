@@ -20,6 +20,8 @@ public:
 	void update(BrushPanelContext &ctx, command::CommandExecutionListener &listener);
 
 private:
+	bool _strokeNoOverlap = false;
+	bool _startFromCenter = false;
 	void addShapes(BrushPanelContext &ctx, command::CommandExecutionListener &listener);
 };
 

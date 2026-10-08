@@ -292,10 +292,12 @@ voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volum
 
 void Modifier::setHitCursorVoxel(const voxel::Voxel &voxel) {
 	_brushContext.hitCursorVoxel = voxel;
+	_brushContext.hitCursorVoxel.setNormal(voxel.getNormal());
 }
 
 void Modifier::setVoxelAtCursor(const voxel::Voxel &voxel) {
 	_brushContext.voxelAtCursor = voxel;
+	_brushContext.voxelAtCursor.setNormal(voxel.getNormal());
 }
 
 void Modifier::lock() {
@@ -397,7 +399,11 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	if (!brush) {
 		return false;
 	}
-	ModifierVolumeWrapper wrapper(node, modifierType, _selectBrush.box3D().selectionRegion());
+	ModifierType volumeModifierType = modifierType;
+	if (brush->type() == BrushType::Normal) {
+		volumeModifierType = ModifierType::NormalPaint | (modifierType & ModifierType::Erase);
+	}
+	ModifierVolumeWrapper wrapper(node, volumeModifierType, _selectBrush.box3D().selectionRegion());
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 	const bool prevPreview = _brushContext.preview;
@@ -581,7 +587,7 @@ void Modifier::brushApply() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return isMode(ModifierType::ExistingVoxelMask);
+	return _brushType == BrushType::Normal || isMode(ModifierType::ExistingVoxelMask);
 }
 
 BrushType Modifier::setBrushType(BrushType type) {
@@ -594,6 +600,10 @@ BrushType Modifier::setBrushType(BrushType type) {
 	commit();
 	resetPreview();
 
+	if (type != BrushType::Normal) {
+		_brushContext.normalIndex = NO_NORMAL;
+		_brushContext.cursorVoxel.setNormal(NO_NORMAL);
+	}
 	_brushType = type;
 	Brush *newBrush = currentBrush();
 	if (newBrush) {
@@ -612,8 +622,12 @@ void Modifier::setGridResolution(int gridSize) {
 }
 
 ModifierType Modifier::setModifierType(ModifierType type) {
+	const ModifierType oldType = _brushContext.modifierType;
 	if (_brushType != BrushType::None) {
 		_brushContext.modifierType = currentBrush()->modifierType(type);
+		if (oldType != _brushContext.modifierType) {
+			currentBrush()->markDirty();
+		}
 	} else {
 		_brushContext.modifierType = type;
 	}
@@ -680,7 +694,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 	}
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID())) {
 		ctx.activeRegion = node->region();
-		if (isMode(ModifierType::NormalPaint)) {
+		if (_brushType == BrushType::Normal || isMode(ModifierType::NormalPaint)) {
 			ctx.normalPalette = &node->normalPalette();
 		}
 	}

@@ -95,15 +95,18 @@ public:
 			// Preserve the FlagOutline (selection) flag when modifying voxels
 			const uint8_t existingFlags = _currentVoxel->getFlags();
 			if (_volume->_erase) {
-				if (_volume->_normalPaint) {
-					_currentVoxel->setNormal(NO_NORMAL);
-				} else {
+				if (!_volume->_normalPaint) {
 					*_currentVoxel = {};
 				}
+				_currentVoxel->setNormal(NO_NORMAL);
 			} else {
 				if (_volume->_normalPaint) {
 					_currentVoxel->setNormal(voxel.getNormal());
 				} else {
+					// Empty cells must not pass a previous voxel's normal to new geometry.
+					if (voxel::isAir(_currentVoxel->getMaterial())) {
+						_currentVoxel->setNormal(NO_NORMAL);
+					}
 					*_currentVoxel = voxel;
 				}
 			}
@@ -124,10 +127,10 @@ public:
 	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType,
 						  const voxel::Region &box3DSelectionRegion = voxel::Region::InvalidRegion)
 		: Super(node.volume()), _modifierType(modifierType), _node(node) {
-		_erase = _modifierType == ModifierType::Erase;
+		_erase = (_modifierType & ModifierType::Erase) != ModifierType::None;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;
-		_normalPaint = _modifierType == ModifierType::NormalPaint;
+		_normalPaint = (_modifierType & ModifierType::NormalPaint) != ModifierType::None;
 		_hasSelection = _node.hasSelection();
 		_box3DSelectionRegion = box3DSelectionRegion;
 	}

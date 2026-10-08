@@ -47,7 +47,7 @@ TEST_F(NormalBrushTest, testExecuteSingleManual) {
 	scenegraph::SceneGraph sceneGraph;
 	const int nodeId = prepareSceneGraph(sceneGraph);
 	ASSERT_NE(nodeId, InvalidNodeId);
-	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), brush.modifierType());
+	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), ModifierType::NormalPaint);
 
 	BrushContext brushContext;
 	prepareBrushContext(brushContext);

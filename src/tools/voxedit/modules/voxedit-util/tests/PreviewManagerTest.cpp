@@ -129,7 +129,7 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 		modifier.normalBrush().setPaintMode(mode);
 		modifier.setNormalColorIndex(7);
 		const glm::ivec3 pos(1, 0, 0);
-		prepare(modifier, pos, pos, ModifierType::NormalPaint, BrushType::Normal);
+		prepare(modifier, pos, pos, ModifierType::Place, BrushType::Normal);
 		uint8_t expected = 7 + NORMAL_PALETTE_OFFSET;
 		if (mode == NormalBrush::PaintMode::Auto) {
 			voxel::RawVolume::Sampler sampler(node.volume());
@@ -155,9 +155,50 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 		ASSERT_TRUE(modifier.execute(mgr.sceneGraph(), node));
 		EXPECT_EQ(expected, node.volume()->voxel(pos).getNormal());
 		modifier.endBrush();
+		modifier.setModifierType(ModifierType::Erase);
+		triggerPreviewUpdate(modifier, node.palette());
+		ASSERT_NE(nullptr, modifier.previewVolume());
+		voxel::Voxel cleared = original;
+		cleared.setNormal(NO_NORMAL);
+		EXPECT_EQ(cleared, modifier.previewVolume()->voxel(pos));
+		EXPECT_EQ(expected, node.volume()->voxel(pos).getNormal());
+		ASSERT_TRUE(modifier.execute(mgr.sceneGraph(), node));
+		EXPECT_EQ(cleared, node.volume()->voxel(pos));
+		EXPECT_EQ(original, node.volume()->voxel(0, 0, 0));
+		modifier.endBrush();
 		modifier.shutdown();
 		mgr.shutdown();
 	}
+}
+
+TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
+	auto renderer = core::make_shared<TrackingModifierRenderer>();
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
+	ASSERT_TRUE(mgr.init());
+	mgr.newScene(true, "test", voxel::Region(-10, 10));
+	ModifierEx modifier(&mgr, renderer);
+	modifier.construct();
+	ASSERT_TRUE(modifier.init());
+	modifier.setBrushType(BrushType::Shape);
+	modifier.shapeBrush().setStrokeMode();
+	modifier.shapeBrush().setRadius(0);
+	modifier.setModifierType(ModifierType::Place);
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	modifier.setGridResolution(1);
+	palette::Palette palette;
+	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	for (int i = 0; i < 3; ++i) {
+		const glm::ivec3 pos(i, 0, 0);
+		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
+		triggerPreviewUpdate(modifier, palette);
+		const BrushPreview &preview = modifier.brushPreview();
+		EXPECT_TRUE(preview.useSimplePreview);
+		EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(pos, pos));
+	}
+	modifier.shutdown();
+	mgr.shutdown();
 }
 
 TEST_F(PreviewManagerTest, testPreviewShapeAABB) {

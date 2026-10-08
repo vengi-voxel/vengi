@@ -33,6 +33,7 @@ namespace voxedit {
 class ShapeBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
+	voxel::FaceNames _lastCursorFace = voxel::FaceNames::Max;
 
 protected:
 	/**
@@ -77,9 +78,10 @@ public:
 	virtual ~ShapeBrush() = default;
 	void construct() override;
 	void reset() override;
+	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool isSimplePreview() const override {
-		return _shapeType == ShapeType::Box;
+		return shapeType() == ShapeType::Box;
 	}
 
 	/**

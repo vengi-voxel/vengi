@@ -15,7 +15,7 @@ namespace voxedit {
 
 void NormalBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &region) {
-	if (_paintMode == PaintMode::Auto) {
+	if (_paintMode == PaintMode::Auto && (wrapper.modifierType() & ModifierType::Erase) == ModifierType::None) {
 		const voxel::RawVolume *source = wrapper.volume();
 		if (ctx.preview) {
 			source = sceneGraph.resolveVolume(sceneGraph.node(sceneGraph.activeNode()));
