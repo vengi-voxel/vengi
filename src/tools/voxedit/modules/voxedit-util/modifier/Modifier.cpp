@@ -695,6 +695,11 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 		}
 	}
 
+	if (_brushType == BrushType::Normal && !core::getVar(cfg::RenderNormals)->boolVal()) {
+		ctx.brushActive = false;
+		brush->markDirty();
+	}
+
 	if (ctx.brushActive) {
 		if (brush->dirty()) {
 			// Clear stale preview so the old position does not keep
