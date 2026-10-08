@@ -61,6 +61,8 @@ protected:
 		core::Var::registerVar(clientMouseRotationSpeed);
 		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "", "", core::CV_NONE);
 		core::Var::registerVar(clientCameraZoomSpeed);
+		const core::VarDef renderNormals(cfg::RenderNormals, true, "", "", core::CV_NOPERSIST);
+		core::Var::registerVar(renderNormals);
 	}
 
 	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,
