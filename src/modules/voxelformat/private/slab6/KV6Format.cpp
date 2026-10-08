@@ -673,6 +673,13 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	int32_t xoffsets[256]{};
 	uint16_t xyoffsets[256][256]{}; // our z
 
+	uint8_t normalRemap[palette::NormalPaletteMaxNormals];
+	if (node->hasNormalPalette()) {
+		palette::NormalPalette target;
+		target.slab6();
+		node->normalPalette().createRemap(target, normalRemap);
+	}
+
 	constexpr uint32_t MAXVOXS = 64 * 64 * 256;
 	core::Buffer<priv::VoxtypeKV6> voxdata;
 	voxdata.reserve(MAXVOXS);
@@ -693,7 +700,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			if (!node->hasNormalPalette() || voxel.getNormal() == NO_NORMAL) {
 				vd.normal = priv::calculateDir(node->volume(), x, y, z, voxel);
 			} else {
-				vd.normal = voxel.getNormal() - NORMAL_PALETTE_OFFSET;
+				vd.normal = normalRemap[voxel.getNormal() - NORMAL_PALETTE_OFFSET];
 			}
 			voxdata.push_back(vd);
 		},
