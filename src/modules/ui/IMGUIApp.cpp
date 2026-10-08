@@ -34,6 +34,7 @@
 #include "core/Var.h"
 #ifndef USE_VK_RENDERER
 #include "dearimgui/backends/imgui_impl_opengl3.h"
+#include "video/gl/flextGL.h"
 #else
 #include "dearimgui/backends/imgui_impl_vulkan.h"
 #endif
@@ -401,6 +402,8 @@ app::AppState IMGUIApp::onInit() {
 #else
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
 	ImGui_ImplOpenGL3_Init(nullptr);
+	// The backend defaults to lower-left, while vengi can use upper-left clip coordinates.
+	ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
 #endif
 
 	ImGui::GetIO().ConfigColorEditFlags = ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueBar;
