@@ -6,6 +6,7 @@
 #include "BrushPanelCommon.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
+#include "core/ConfigVar.h"
 #include "ui/IMGUIEx.h"
 #include "ui/Style.h"
 #include "voxedit-util/Config.h"
@@ -177,6 +178,9 @@ static void renderBrushHud(const SceneManagerPtr &sceneMgr) {
 		} else {
 			ImGui::TextDisabled("%s", lines[i].text);
 		}
+	}
+	if (brushType == BrushType::Normal) {
+		ImGui::CheckboxVar(cfg::RenderNormals);
 	}
 }
 
