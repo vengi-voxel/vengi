@@ -3,6 +3,11 @@
  */
 
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/SelectBrush.h"
+#include "voxedit-util/modifier/brush/PlaneBrush.h"
+#include "voxedit-util/modifier/brush/TextureBrush.h"
+#include "voxedit-util/modifier/brush/PaintBrush.h"
+#include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -22,6 +27,7 @@ protected:
 
 	void ellipse(const glm::ivec2 &mins2, const glm::ivec2 &maxs2) {
 		TestShapeBrush brush;
+		brush.setBoxMode();
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
 		brush.setShapeType(ShapeType::Ellipse);
@@ -78,6 +84,7 @@ protected:
 
 	void testMirror(math::Axis axis, const glm::ivec3 &expectedMins, const glm::ivec3 &expectedMaxs) {
 		ShapeBrush brush;
+		brush.setBoxMode();
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
 		const glm::ivec3 regMins(-2);
@@ -102,8 +109,39 @@ protected:
 	}
 };
 
+TEST_F(ShapeBrushTest, testDefaultBrushModes) {
+	NormalBrush normal;
+	PaintBrush paint;
+	TextureBrush texture(nullptr);
+	PlaneBrush plane;
+	SelectBrush select(nullptr);
+	EXPECT_TRUE(normal.strokeMode());
+	EXPECT_TRUE(paint.strokeMode());
+	EXPECT_TRUE(texture.boxMode());
+	EXPECT_TRUE(plane.boxMode());
+	EXPECT_TRUE(select.boxMode());
+}
+
+TEST_F(ShapeBrushTest, testDefaultStroke) {
+	ShapeBrush brush;
+	ASSERT_TRUE(brush.init());
+	EXPECT_TRUE(brush.strokeMode());
+	BrushContext ctx;
+	ctx.cursorPosition = glm::ivec3(2, 3, 4);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	EXPECT_EQ(voxel::Region(ctx.cursorPosition, ctx.cursorPosition), brush.calcRegion(ctx));
+	brush.reset();
+	EXPECT_TRUE(brush.strokeMode());
+	brush.setBoxMode();
+	brush.onSceneChange();
+	brush.reset();
+	EXPECT_TRUE(brush.boxMode());
+	brush.shutdown();
+}
+
 TEST_F(ShapeBrushTest, testCenterPositive) {
 	ShapeBrush brush;
+	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -119,6 +157,7 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 
 TEST_F(ShapeBrushTest, testCenterNegative) {
 	ShapeBrush brush;
+	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -131,6 +170,7 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 
 TEST_F(ShapeBrushTest, testModifierStartStop) {
 	ShapeBrush brush;
+	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	EXPECT_TRUE(brush.beginBrush(brushContext));
@@ -142,6 +182,7 @@ TEST_F(ShapeBrushTest, testModifierStartStop) {
 
 TEST_F(ShapeBrushTest, testModifierDim) {
 	ShapeBrush brush;
+	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	prepare(brush, brushContext, glm::ivec3(-1), glm::ivec3(1));
@@ -165,6 +206,7 @@ TEST_F(ShapeBrushTest, testModifierActionMirrorAxisZ) {
 
 TEST_P(BrushTestParamTest, testShapeBrush) {
 	ShapeBrush brush;
+	brush.setBoxMode();
 	testPlaceAndOverride(brush);
 }
 
@@ -174,6 +216,7 @@ TEST_F(ShapeBrushTest, testEllipse) {
 
 TEST_F(ShapeBrushTest, testTorus) {
 	TestShapeBrush brush;
+	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setShapeType(ShapeType::Torus);

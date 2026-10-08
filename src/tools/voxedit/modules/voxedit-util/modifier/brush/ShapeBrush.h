@@ -72,6 +72,7 @@ protected:
 
 public:
 	ShapeBrush() : Super(BrushType::Shape) {
+		setStrokeMode();
 	}
 	virtual ~ShapeBrush() = default;
 	void construct() override;

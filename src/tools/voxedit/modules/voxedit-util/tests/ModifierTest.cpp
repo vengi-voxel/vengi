@@ -92,6 +92,9 @@ protected:
 
 	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,
 				 BrushType brushType) {
+		if (brushType == BrushType::Shape) {
+			modifier.shapeBrush().setBoxMode();
+		}
 		modifier.setBrushType(brushType);
 		modifier.setModifierType(modifierType);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));

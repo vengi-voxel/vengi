@@ -45,6 +45,7 @@ protected:
 
 public:
 	NormalBrush() : Super(BrushType::Normal, ModifierType::NormalPaint, ModifierType::NormalPaint) {
+		setStrokeMode();
 	}
 	virtual ~NormalBrush() = default;
 

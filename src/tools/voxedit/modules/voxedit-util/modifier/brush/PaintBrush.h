@@ -133,6 +133,7 @@ protected:
 
 public:
 	PaintBrush() : Super(BrushType::Paint, ModifierType::Paint, ModifierType::Paint) {
+		setStrokeMode();
 	}
 	virtual ~PaintBrush() = default;
 
