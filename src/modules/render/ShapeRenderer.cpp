@@ -52,7 +52,7 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	if (meshIndex < 0) {
 		return false;
 	}
-	if (_currentMeshIndex < (uint32_t)meshIndex) {
+	if ((uint32_t)meshIndex >= _currentMeshIndex) {
 		return false;
 	}
 	_vbo[meshIndex].shutdown();
@@ -60,9 +60,6 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	_indexIndex[meshIndex] = -1;
 	_lineMesh[meshIndex] = false;
 	_primitives[meshIndex] = video::Primitive::Triangles;
-	if (meshIndex > 0 && (uint32_t)meshIndex == _currentMeshIndex) {
-		--_currentMeshIndex;
-	}
 	return true;
 }
 
@@ -223,7 +220,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder &shapeBuilder) {
 	_lineMesh[meshIndex] = lines;
 	_primitives[meshIndex] = lines ? video::Primitive::Triangles : shapeBuilder.primitive();
 
-	++_currentMeshIndex;
+	_currentMeshIndex = core_max(_currentMeshIndex, meshIndex + 1);
 	return meshIndex;
 }
 
