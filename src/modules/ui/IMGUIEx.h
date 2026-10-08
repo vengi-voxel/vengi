@@ -37,6 +37,11 @@ IMGUI_API void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0 = I
 					 const ImVec2 &uv1 = ImVec2(1, 1), const ImVec4 &tintColor = ImVec4(1, 1, 1, 1),
 					 const ImVec4 &borderColor = ImVec4());
 IMGUI_API bool ImageButton(const char *str_id, video::Id handle, const ImVec2 &size);
+/** Draggable integer input with decrement and increment buttons. Ctrl-click to type. Width includes both buttons. */
+IMGUI_API bool InputIntWithButtons(const char *label, int *value, int step = 1, int stepFast = 100,
+                                  ImGuiInputTextFlags flags = 0);
+/** Slider bounds also limit the buttons. Set clampMax to false to allow stepping above the maximum. */
+IMGUI_API bool SliderIntWithButtons(const char *label, int *value, int min, int max, bool clampMax = true);
 IMGUI_API bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec2(const char *label, glm::vec2 &vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0);

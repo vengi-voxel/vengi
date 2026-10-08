@@ -80,7 +80,7 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 		drawList->AddRectFilled(v1, v2, col);
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
 	}
-	ImGui::InputInt("##colorstampbrush", &_stampPaletteIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputIntWithButtons("##colorstampbrush", &_stampPaletteIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			_stampPaletteIndex = *(const uint8_t *)payload->Data;

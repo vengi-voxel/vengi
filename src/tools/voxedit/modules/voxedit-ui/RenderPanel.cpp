@@ -57,7 +57,7 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	if (ImGui::BeginIconMenu(ICON_LC_GAUGE, _("Quality"))) {
 		ImGui::PushItemWidth(itemWidth);
 		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
-		changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
+		changed += ImGui::InputIntWithButtons(_("Samples"), &params.samples, 16, 4096);
 		ImGui::TooltipTextUnformatted(_("Per-pixel samples. Higher values reduce noise but take longer."));
 		changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
 		ImGui::TooltipTextUnformatted(_("Maximum light bounces. Increase for glass and volumes."));
@@ -74,7 +74,7 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 
 	if (ImGui::BeginIconMenu(ICON_LC_IMAGE, _("Output"))) {
 		ImGui::PushItemWidth(itemWidth);
-		changed += ImGui::InputInt(_("Dimensions"), &params.resolution);
+		changed += ImGui::InputIntWithButtons(_("Dimensions"), &params.resolution);
 		ImGui::TooltipTextUnformatted(_("Output image size in pixels (square)"));
 		changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
 		ImGui::TooltipTextUnformatted(_("Apply a linear filter to the image pixels"));

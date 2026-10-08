@@ -109,7 +109,7 @@ void BrushPanelText::update(BrushPanelContext &ctx, command::CommandExecutionLis
 
 	ImGui::SetNextItemWidth(ImGui::Size(10.0f));
 	int size = brush.size();
-	if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL, &size)) {
+	if (ImGui::InputIntWithButtons(ICON_LC_MOVE_VERTICAL, &size)) {
 		brush.setSize(size);
 	}
 	ImGui::TooltipTextUnformatted(_("Font size"));
@@ -117,13 +117,13 @@ void BrushPanelText::update(BrushPanelContext &ctx, command::CommandExecutionLis
 
 	ImGui::SetNextItemWidth(ImGui::Size(10.0f));
 	int spacing = brush.spacing();
-	if (ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &spacing)) {
+	if (ImGui::InputIntWithButtons(ICON_LC_MOVE_HORIZONTAL "##textinput", &spacing)) {
 		brush.setSpacing(spacing);
 	}
 	ImGui::TooltipTextUnformatted(_("Horizontal spacing"));
 
 	int thickness = brush.thickness();
-	if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &thickness)) {
+	if (ImGui::InputIntWithButtons(ICON_LC_EXPAND "##textinput", &thickness)) {
 		brush.setThickness(thickness);
 	}
 	ImGui::TooltipTextUnformatted(_("Thickness"));

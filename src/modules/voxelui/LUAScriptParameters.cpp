@@ -31,7 +31,7 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
 						str = core::string::toString(val);
 					}
-				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
+				} else if (ImGui::InputIntWithButtons(p.name.c_str(), &val)) {
 					str = core::string::toString(val);
 				}
 				break;
@@ -91,7 +91,7 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette->color(val)));
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
 				}
-				if (ImGui::InputInt(p.name.c_str(), &val)) {
+				if (ImGui::InputIntWithButtons(p.name.c_str(), &val)) {
 					if (!palette || (val >= 0 && val < palette->colorCount())) {
 						str = core::string::toString(val);
 					}

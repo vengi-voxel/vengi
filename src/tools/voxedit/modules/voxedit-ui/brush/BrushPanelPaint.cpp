@@ -48,7 +48,7 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 	}
 	if (paintMode == PaintBrush::PaintMode::Variation) {
 		int variationChance = brush.variationChance();
-		if (ImGui::InputInt(_("Variation chance (1 in N)"), &variationChance)) {
+		if (ImGui::InputIntWithButtons(_("Variation chance (1 in N)"), &variationChance)) {
 			brush.setVariationChance(variationChance);
 		}
 		ImGui::TooltipTextUnformatted(_("Each voxel has a 1 in N chance to be varied"));

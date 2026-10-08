@@ -128,36 +128,18 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		if (preserve) {
 			int trimPerStep = brush.trimPerStep();
 			ImGui::TextUnformatted(_("Trim per step"));
-			if (ImGui::Button("-##sculpt_trim")) {
-				brush.setTrimPerStep(trimPerStep - 1);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::SliderInt("##sculpt_trim_slider", &trimPerStep, 1, SculptBrush::MaxTrimPerStep)) {
+			ImGui::SetNextItemWidth(-1);
+			if (ImGui::SliderIntWithButtons("##sculpt_trim_slider", &trimPerStep, 1, SculptBrush::MaxTrimPerStep)) {
 				brush.setTrimPerStep(trimPerStep);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("+##sculpt_trim")) {
-				brush.setTrimPerStep(trimPerStep + 1);
 				executeSculptBrush(ctx);
 			}
 		}
 	} else if (currentMode == SculptMode::SmoothGaussian) {
 		int kernelSize = brush.kernelSize();
 		ImGui::TextUnformatted(_("Kernel size"));
-		if (ImGui::Button("-##sculpt_kernel")) {
-			brush.setKernelSize(kernelSize - 1);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##sculpt_kernel_slider", &kernelSize, 1, SculptBrush::MaxKernelSize)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##sculpt_kernel_slider", &kernelSize, 1, SculptBrush::MaxKernelSize)) {
 			brush.setKernelSize(kernelSize);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##sculpt_kernel")) {
-			brush.setKernelSize(kernelSize + 1);
 			executeSculptBrush(ctx);
 		}
 		float sigma = brush.sigma();
@@ -191,18 +173,9 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 
 		int clearDepth = brush.smoothWallClearDepth();
 		ImGui::TextUnformatted(_("Clear depth"));
-		if (ImGui::Button("-##smoothwall_clear")) {
-			brush.setSmoothWallClearDepth(clearDepth - 1);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##smoothwall_clear_slider", &clearDepth, 0, SculptBrush::MaxSmoothWallClearDepth)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##smoothwall_clear_slider", &clearDepth, 0, SculptBrush::MaxSmoothWallClearDepth)) {
 			brush.setSmoothWallClearDepth(clearDepth);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##smoothwall_clear")) {
-			brush.setSmoothWallClearDepth(clearDepth + 1);
 			executeSculptBrush(ctx);
 		}
 		ImGui::SetItemTooltipUnformatted(_("How many voxels above the smoothed surface to clear (0 = none)"));
@@ -293,35 +266,17 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		if (cfg.tile != voxelutil::ReskinTile::Stretch) {
 			int offsetU = cfg.offsetU;
 			ImGui::TextUnformatted(_("Offset U"));
-			if (ImGui::Button("-##reskin_ou")) {
-				brush.setReskinOffsetU(offsetU - 1);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::SliderInt("##reskin_ou_slider", &offsetU, -32, 32)) {
+			ImGui::SetNextItemWidth(-1);
+			if (ImGui::SliderIntWithButtons("##reskin_ou_slider", &offsetU, -32, 32)) {
 				brush.setReskinOffsetU(offsetU);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("+##reskin_ou")) {
-				brush.setReskinOffsetU(offsetU + 1);
 				executeSculptBrush(ctx);
 			}
 
 			int offsetV = cfg.offsetV;
 			ImGui::TextUnformatted(_("Offset V"));
-			if (ImGui::Button("-##reskin_ov")) {
-				brush.setReskinOffsetV(offsetV - 1);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::SliderInt("##reskin_ov_slider", &offsetV, -32, 32)) {
+			ImGui::SetNextItemWidth(-1);
+			if (ImGui::SliderIntWithButtons("##reskin_ov_slider", &offsetV, -32, 32)) {
 				brush.setReskinOffsetV(offsetV);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("+##reskin_ov")) {
-				brush.setReskinOffsetV(offsetV + 1);
 				executeSculptBrush(ctx);
 			}
 		}
@@ -329,37 +284,19 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		// Surface offset and skin depth
 		int surfaceOffset = cfg.zOffset;
 		ImGui::TextUnformatted(_("Surface offset"));
-		if (ImGui::Button("-##reskin_so")) {
-			brush.setReskinZOffset(surfaceOffset - 1);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth,
-							 SculptBrush::MaxReskinDepth)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth,
+									  SculptBrush::MaxReskinDepth)) {
 			brush.setReskinZOffset(surfaceOffset);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##reskin_so")) {
-			brush.setReskinZOffset(surfaceOffset + 1);
 			executeSculptBrush(ctx);
 		}
 		ImGui::SetItemTooltipUnformatted(_("Positive = skin floats above surface, negative = sinks below"));
 
 		int skinDepth = cfg.skinDepth;
 		ImGui::TextUnformatted(_("Skin layers"));
-		if (ImGui::Button("-##reskin_sd")) {
-			brush.setReskinSkinDepth(skinDepth - 1);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##reskin_sd_slider", &skinDepth, 1, SculptBrush::MaxReskinDepth)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##reskin_sd_slider", &skinDepth, 1, SculptBrush::MaxReskinDepth)) {
 			brush.setReskinSkinDepth(skinDepth);
-			executeSculptBrush(ctx);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##reskin_sd")) {
-			brush.setReskinSkinDepth(skinDepth + 1);
 			executeSculptBrush(ctx);
 		}
 
@@ -372,16 +309,9 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 	} else if (currentMode == SculptMode::ExtendPlane) {
 		int radius = brush.brushRadius();
 		ImGui::TextUnformatted(_("Brush radius"));
-		if (ImGui::Button("-##extend_radius")) {
-			brush.setBrushRadius(radius - 1);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##extend_radius_slider", &radius, 1, SculptBrush::MaxBrushRadius)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##extend_radius_slider", &radius, 1, SculptBrush::MaxBrushRadius)) {
 			brush.setBrushRadius(radius);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##extend_radius")) {
-			brush.setBrushRadius(radius + 1);
 		}
 		bool extendOnly = brush.extendOnly();
 		if (ImGui::Checkbox(_("Extend only"), &extendOnly)) {
@@ -396,16 +326,9 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			_("Do not place any voxels - only carve away the voxels above the plane (set the Remove above depth)"));
 		int removeDepth = brush.removeAboveDepth();
 		ImGui::TextUnformatted(_("Remove above"));
-		if (ImGui::Button("-##remove_depth")) {
-			brush.setRemoveAboveDepth(removeDepth - 1);
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderInt("##remove_depth_slider", &removeDepth, 0, SculptBrush::MaxRemoveAboveDepth)) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##remove_depth_slider", &removeDepth, 0, SculptBrush::MaxRemoveAboveDepth)) {
 			brush.setRemoveAboveDepth(removeDepth);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##remove_depth")) {
-			brush.setRemoveAboveDepth(removeDepth + 1);
 		}
 		ImGui::TooltipTextUnformatted(_("Perpendicular depth of voxels to remove above the plane (0 = no removal)"));
 	} else if (currentMode != SculptMode::Flatten && currentMode != SculptMode::BridgeGap &&
@@ -423,18 +346,9 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		int iterations = brush.iterations();
 		if (needsFace) {
 			ImGui::TextUnformatted(_("Iterations"));
-			if (ImGui::Button("-##sculpt_iter")) {
-				brush.setIterations(iterations - 1);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::SliderInt("##sculpt_iter_slider", &iterations, 1, maxIter)) {
+			ImGui::SetNextItemWidth(-1);
+			if (ImGui::SliderIntWithButtons("##sculpt_iter_slider", &iterations, 1, maxIter)) {
 				brush.setIterations(iterations);
-				executeSculptBrush(ctx);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("+##sculpt_iter")) {
-				brush.setIterations(iterations + 1);
 				executeSculptBrush(ctx);
 			}
 		} else {

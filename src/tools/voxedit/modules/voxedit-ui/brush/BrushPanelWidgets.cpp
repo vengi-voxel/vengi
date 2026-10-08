@@ -75,7 +75,7 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 void aabbBrushModeOptions(AABBBrush &brush) {
 	if (brush.anyStrokeMode()) {
 		int radius = brush.radius();
-		if (ImGui::InputInt(_("Radius"), &radius)) {
+		if (ImGui::InputIntWithButtons(_("Radius"), &radius)) {
 			brush.setRadius(radius);
 		}
 		ImGui::TooltipTextUnformatted(_("Use a radius around the current voxel - 0 for spanning a box"));

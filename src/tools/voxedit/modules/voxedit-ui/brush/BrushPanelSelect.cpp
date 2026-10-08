@@ -177,26 +177,12 @@ void BrushPanelSelect::handleSelectPaint(BrushPanelContext &ctx) {
 	ImGui::SeparatorText(_("Brush selection"));
 	static constexpr int MaxPaintRadius = 32;
 	int rad = brush.radius();
-	const float btnW = ImGui::GetFrameHeight();
-	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	ImGui::TextUnformatted(_("Radius"));
 	ImGui::TooltipTextUnformatted(_("Radius of the round selection brush. Hold the mouse button and drag to select."));
-	ImGui::PushID("paintradius");
-	if (ImGui::Button("-", ImVec2(btnW, 0))) {
-		rad = glm::max(rad - 1, 0);
+	ImGui::SetNextItemWidth(-1);
+	if (ImGui::SliderIntWithButtons("##paintradius", &rad, 0, MaxPaintRadius)) {
 		brush.setRadius(rad);
 	}
-	ImGui::SameLine(0, spacing);
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-	if (ImGui::SliderInt("##paintradius", &rad, 0, MaxPaintRadius)) {
-		brush.setRadius(rad);
-	}
-	ImGui::SameLine(0, spacing);
-	if (ImGui::Button("+", ImVec2(btnW, 0))) {
-		rad = glm::min(rad + 1, MaxPaintRadius);
-		brush.setRadius(rad);
-	}
-	ImGui::PopID();
 	bool growRegion = brush.paint().growRegion();
 	if (ImGui::Checkbox(_("Grow region"), &growRegion)) {
 		brush.paint().setGrowRegion(growRegion);
@@ -219,27 +205,13 @@ void BrushPanelSelect::handleSelectFuzzyColor(BrushPanelContext &ctx) {
 void BrushPanelSelect::handleSelectFlatSurface(BrushPanelContext &ctx) {
 	select::FlatSurface &flatSurface = ctx.sceneMgr->modifier().selectBrush().flatSurface();
 	int deviation = flatSurface.deviation();
-	const float btnW = ImGui::GetFrameHeight();
-	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 	ImGui::TextUnformatted(_("Surface deviation"));
 	ImGui::TooltipTextUnformatted(
 		_("How many voxels above or below the clicked face the fill may deviate from the start position"));
-	ImGui::PushID("flatdeviation");
-	if (ImGui::Button("-", ImVec2(btnW, 0))) {
-		deviation = glm::max(deviation - 1, 0);
+	ImGui::SetNextItemWidth(-1);
+	if (ImGui::SliderIntWithButtons("##flatdeviation", &deviation, 0, select::FlatSurface::MaxDeviation)) {
 		flatSurface.setDeviation(deviation);
 	}
-	ImGui::SameLine(0, spacing);
-	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - btnW - spacing);
-	if (ImGui::SliderInt("##flatdeviation", &deviation, 0, select::FlatSurface::MaxDeviation)) {
-		flatSurface.setDeviation(deviation);
-	}
-	ImGui::SameLine(0, spacing);
-	if (ImGui::Button("+", ImVec2(btnW, 0))) {
-		deviation = glm::min(deviation + 1, select::FlatSurface::MaxDeviation);
-		flatSurface.setDeviation(deviation);
-	}
-	ImGui::PopID();
 }
 
 void BrushPanelSelect::handleSelectLasso(command::CommandExecutionListener &listener) {

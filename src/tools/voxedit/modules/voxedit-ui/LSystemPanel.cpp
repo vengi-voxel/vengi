@@ -129,7 +129,7 @@ void LSystemPanel::update(const char *id) {
 		ImGui::TooltipTextUnformatted(_("The initial width of the segments"));
 		ImGui::InputFloat(_("Width increment"), &_conf.widthIncrement);
 		ImGui::TooltipTextUnformatted(_("The amount to increment/decrement the width"));
-		ImGui::InputInt(_("Iterations"), &_conf.iterations);
+		ImGui::InputIntWithButtons(_("Iterations"), &_conf.iterations);
 		ImGui::TooltipTextUnformatted(_("The number of iterations to run"));
 		ImGui::InputFloat(_("Leaves radius"), &_conf.leafRadius);
 		ImGui::TooltipTextUnformatted(_("The radius of the leaves"));

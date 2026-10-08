@@ -32,7 +32,7 @@ void BrushPanelShape::addShapes(BrushPanelContext &ctx, command::CommandExecutio
 
 	if (currentSelectedShapeType == ShapeType::Circle || currentSelectedShapeType == ShapeType::Torus) {
 		int thickness = modifier.shapeBrush().thickness();
-		if (ImGui::InputInt(_("Thickness"), &thickness)) {
+		if (ImGui::InputIntWithButtons(_("Thickness"), &thickness)) {
 			modifier.shapeBrush().setThickness(thickness);
 		}
 	}
@@ -61,18 +61,9 @@ void BrushPanelShape::update(BrushPanelContext &ctx, command::CommandExecutionLi
 	if (brush.anyStrokeMode()) {
 		int radius = brush.radius();
 		ImGui::TextUnformatted(_("Brush radius"));
-		if (ImGui::Button("-##radius")) {
-			brush.setRadius(glm::max(0, radius - 1));
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(glm::max(60.0f, ImGui::GetContentRegionAvail().x - 40.0f));
-		radius = brush.radius();
-		if (ImGui::SliderInt("##radius", &radius, 0, glm::max(32, radius))) {
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::SliderIntWithButtons("##radius", &radius, 0, glm::max(32, radius), false)) {
 			brush.setRadius(radius);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+##radius")) {
-			brush.setRadius(brush.radius() + 1);
 		}
 		ImGui::TextWrappedUnformatted(_("Hold and drag to draw with the selected shape."));
 		if (brush.radius() == 0) {

@@ -32,13 +32,13 @@ void BrushPanelLine::update(BrushPanelContext &ctx, command::CommandExecutionLis
 									"segments commit when you apply or leave the brush"));
 
 	int thickness = brush.thickness();
-	if (ImGui::InputInt(_("Thickness"), &thickness)) {
+	if (ImGui::InputIntWithButtons(_("Thickness"), &thickness)) {
 		brush.setThickness(thickness);
 	}
 
 	if (!bezier) {
 		int sag = brush.sag();
-		if (ImGui::InputInt(_("Sag"), &sag)) {
+		if (ImGui::InputIntWithButtons(_("Sag"), &sag)) {
 			brush.setSag(sag);
 		}
 		ImGui::TooltipTextUnformatted(_("Downward sag in voxels for rope/cable effect"));

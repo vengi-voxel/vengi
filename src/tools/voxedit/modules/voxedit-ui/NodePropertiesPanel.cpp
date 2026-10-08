@@ -47,7 +47,7 @@ bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeC
 		}
 	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
 		int ivalue = core::string::toInt(value);
-		if (ImGui::InputInt("##val", &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputIntWithButtons("##val", &ivalue, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			_sceneMgr->nodeSetProperty(node.uuid(), key, core::string::toString(ivalue));
 		}
 	} else {

@@ -25,7 +25,14 @@ static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *to
 
 	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, toolbarId), false);
 
-	const core::String buttonId = core::String::format("brushes/###button%d", (int)type);
+	int buttonIndex = (int)type;
+	if (type > BrushType::Normal && !core::getVar(cfg::VoxEditShowNormalPalette)->boolVal()) {
+		--buttonIndex;
+	}
+	if (type > BrushType::Script) {
+		--buttonIndex;
+	}
+	const core::String buttonId = core::String::format("brushes/###button%d", buttonIndex);
 	ctx->ItemClick(buttonId.c_str());
 	ctx->Yield();
 
@@ -332,12 +339,24 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		}
 		command::executeCommands("shapeellipse");
 		IM_CHECK_EQ((int)brush.shapeType(), (int)ShapeType::Box);
+		IM_CHECK((ctx->ItemInfo("##radius/-").ItemFlags & ImGuiItemFlags_Disabled) != 0);
+		const ImGuiTestItemInfo decrement = ctx->ItemInfo("##radius/-");
+		const ImGuiTestItemInfo slider = ctx->ItemInfo("#####radius");
+		const ImGuiTestItemInfo increment = ctx->ItemInfo("##radius/+");
+		IM_CHECK(decrement.RectFull.Max.x <= slider.RectFull.Min.x);
+		IM_CHECK(slider.RectFull.Max.x <= increment.RectFull.Min.x);
 		ctx->ItemClick("Increase radius");
 		IM_CHECK_EQ(brush.radius(), 2);
-		ctx->ItemClick("+##radius");
+		ctx->ItemClick("##radius/+");
 		IM_CHECK_EQ(brush.radius(), 3);
-		ctx->ItemClick("-##radius");
+		ctx->ItemClick("##radius/-");
 		IM_CHECK_EQ(brush.radius(), 2);
+		brush.setRadius(32);
+		ctx->Yield();
+		ctx->ItemClick("##radius/+");
+		IM_CHECK_EQ(brush.radius(), 33);
+		brush.setRadius(2);
+		ctx->Yield();
 		ctx->ItemOpen("Advanced");
 		ctx->ItemClick("Apply once per voxel per stroke");
 		IM_CHECK(brush.strokeNoOverlap());
@@ -412,9 +431,21 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		ctx->Yield();
 		IM_CHECK(brush.bezier() != bezBefore);
 
-		ctx->ItemInputValue("Thickness", 3);
+		ctx->ItemInputValue("###Thickness", 3);
+		ctx->ItemDragWithDelta("###Thickness", ImVec2(10, 0));
+		IM_CHECK(brush.thickness() > 3);
+		ctx->ItemInputValue("###Thickness", 3);
 		ctx->Yield();
 		IM_CHECK_EQ(brush.thickness(), 3);
+		ctx->ItemClick("Thickness/+");
+		IM_CHECK_EQ(brush.thickness(), 4);
+		ctx->ItemClick("Thickness/-");
+		IM_CHECK_EQ(brush.thickness(), 3);
+		ctx->KeyDown(ImGuiMod_Ctrl);
+		ctx->ItemClick("Thickness/+");
+		ctx->KeyUp(ImGuiMod_Ctrl);
+		IM_CHECK_EQ(brush.thickness(), 64);
+		ctx->ItemInputValue("###Thickness", 3);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "text brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {

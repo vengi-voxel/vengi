@@ -25,6 +25,8 @@
 #ifdef USE_VK_RENDERER
 #include "dearimgui/backends/imgui_impl_vulkan.h"
 #endif
+#include <limits.h>
+#include <stdint.h>
 #include <glm/common.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
@@ -115,7 +117,7 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		if constexpr (isFloat) {
 			modified |= ImGui::InputFloat("", &vec.x, step, step_fast, format, flags);
 		} else {
-			modified |= ImGui::InputInt("", &vec.x, step, step_fast, flags);
+			modified |= ImGui::InputIntWithButtons("", &vec.x, step, step_fast, flags);
 		}
 		ImGui::PopID();
 
@@ -128,7 +130,7 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		if constexpr (isFloat) {
 			modified |= ImGui::InputFloat("", &vec.y, step, step_fast, format, flags);
 		} else {
-			modified |= ImGui::InputInt("", &vec.y, step, step_fast, flags);
+			modified |= ImGui::InputIntWithButtons("", &vec.y, step, step_fast, flags);
 		}
 		ImGui::PopID();
 
@@ -141,7 +143,7 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		if constexpr (isFloat) {
 			modified |= ImGui::InputFloat("", &vec.z, step, step_fast, format, flags);
 		} else {
-			modified |= ImGui::InputInt("", &vec.z, step, step_fast, flags);
+			modified |= ImGui::InputIntWithButtons("", &vec.z, step, step_fast, flags);
 		}
 		ImGui::PopID();
 
@@ -186,32 +188,72 @@ static bool SliderVarInt(const char* label, const core::VarPtr& var, const char*
 	return false;
 }
 
-static bool SliderIntMinMax(const char *id, int *val, int lo, int hi) {
+static bool IntegerWithButtons(const char *label, int *value, int step, int stepFast, ImGuiInputTextFlags flags,
+                        bool slider, int min, int max, bool clampMax) {
+	if (!slider && step <= 0) {
+		return ImGui::InputInt(label, value, 0, 0, flags);
+	}
+	const float width = ImGui::CalcItemWidth();
+	const float buttonWidth = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	const int increment = ImGui::GetIO().KeyCtrl && stepFast > 0 ? stepFast : step;
+	const bool readOnly = !slider && (flags & ImGuiInputTextFlags_ReadOnly) != 0;
 	bool changed = false;
-	ui::ScopedID idScope(id);
-	ImGui::BeginDisabled(*val <= lo);
-	if (ImGui::Button("-")) {
-		*val = glm::max(*val - 1, lo);
-		changed = true;
+	ImGui::BeginGroup();
+	{
+		ui::ScopedID id(label);
+		ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+		ImGui::BeginDisabled(readOnly || (*value <= min));
+		if (ImGui::Button("-", ImVec2(buttonWidth, 0))) {
+			const int64_t next = (int64_t)*value - increment;
+			*value = (int)glm::max(next, (int64_t)min);
+			changed = true;
+		}
+		ImGui::EndDisabled();
+		ImGui::PopItemFlag();
 	}
-	ImGui::EndDisabled();
-	ImGui::SameLine();
-	const float buttonWidth = ImGui::CalcTextSize("+").x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
-	ImGui::SetNextItemWidth(-(buttonWidth));
-	if (ImGui::SliderInt("", val, lo, hi)) {
-		changed = true;
+	ImGui::SameLine(0, spacing);
+	ImGui::SetNextItemWidth(glm::max(1.0f, width - 2.0f * (buttonWidth + spacing)));
+	// Keep the original input ID while rendering the label after the increment button.
+	const core::String inputLabel = core::String::format("###%s", label);
+	if (slider) {
+		changed |= ImGui::SliderInt(inputLabel.c_str(), value, min, max);
+	} else if (readOnly) {
+		ImGui::InputInt(inputLabel.c_str(), value, 0, 0, flags);
+	} else {
+		changed |= ImGui::DragInt(inputLabel.c_str(), value, (float)step);
 	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(*val >= hi);
-	if (ImGui::Button("+")) {
-		*val = glm::min(*val + 1, hi);
-		changed = true;
+	ImGui::SameLine(0, spacing);
+	{
+		ui::ScopedID id(label);
+		ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+		ImGui::BeginDisabled(readOnly || (clampMax && *value >= max));
+		if (ImGui::Button("+", ImVec2(buttonWidth, 0))) {
+			const int64_t next = (int64_t)*value + increment;
+			*value = (int)glm::min(next, (int64_t)(clampMax ? max : INT_MAX));
+			changed = true;
+		}
+		ImGui::EndDisabled();
+		ImGui::PopItemFlag();
 	}
-	ImGui::EndDisabled();
+	const char *labelEnd = ImGui::FindRenderedTextEnd(label);
+	if (labelEnd != label) {
+		ImGui::SameLine(0, spacing);
+		ImGui::TextUnformatted(label, labelEnd);
+	}
+	ImGui::EndGroup();
 	return changed;
 }
 
 } // namespace _priv
+
+bool InputIntWithButtons(const char *label, int *value, int step, int stepFast, ImGuiInputTextFlags flags) {
+	return _priv::IntegerWithButtons(label, value, step, stepFast, flags, false, INT_MIN, INT_MAX, false);
+}
+
+bool SliderIntWithButtons(const char *label, int *value, int min, int max, bool clampMax) {
+	return _priv::IntegerWithButtons(label, value, 1, 0, 0, true, min, max, clampMax);
+}
 
 bool ComboVar(const core::VarPtr &var) {
 	const core::DynamicArray<core::String> &values = var->validValues();
@@ -473,13 +515,13 @@ bool AxisSliders(glm::ivec3 &vec, int mins, int maxs) {
 	bool changed = false;
 	ImGui::AxisButtonX();
 	ImGui::SameLine();
-	changed |= _priv::SliderIntMinMax("##x", &vec.x, mins, maxs);
+	changed |= SliderIntWithButtons("##x", &vec.x, mins, maxs);
 	ImGui::AxisButtonY();
 	ImGui::SameLine();
-	changed |= _priv::SliderIntMinMax("##y", &vec.y, mins, maxs);
+	changed |= SliderIntWithButtons("##y", &vec.y, mins, maxs);
 	ImGui::AxisButtonZ();
 	ImGui::SameLine();
-	changed |= _priv::SliderIntMinMax("##z", &vec.z, mins, maxs);
+	changed |= SliderIntWithButtons("##z", &vec.z, mins, maxs);
 	return changed;
 }
 
@@ -542,7 +584,7 @@ bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
 	// ui::ScopedStyle style;
 	// ImGui::AxisStyleText(style, axis);
 	ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
-	return ImGui::InputInt(name, value, step);
+	return ImGui::InputIntWithButtons(name, value, step);
 }
 
 bool AxisCheckboxFlags(math::Axis axis, const char *name, math::Axis* value) {
@@ -587,7 +629,7 @@ bool InputFloat(const char *label, float &v, const char *format, ImGuiInputTextF
 bool InputVarInt(const core::VarPtr &var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	const core::String label = _priv::varLabel(var);
 	int v = var->intVal();
-	if (InputInt(label.c_str(), &v, step, step_fast, extra_flags)) {
+	if (InputIntWithButtons(label.c_str(), &v, step, step_fast, extra_flags)) {
 		if (var->setVal(v)) {
 			return true;
 		}
