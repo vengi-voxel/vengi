@@ -24,7 +24,7 @@ namespace brushpanel {
 bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener,
 						   Brush &brush);
 void addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush);
-void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
+void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush, bool showAllModes = true);
 void aabbBrushModeOptions(AABBBrush &brush);
 void addBrushClampingOption(Brush &brush);
 

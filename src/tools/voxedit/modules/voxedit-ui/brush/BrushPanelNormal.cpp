@@ -3,6 +3,7 @@
  */
 
 #include "BrushPanelNormal.h"
+#include "BrushPanelWidgets.h"
 #include "app/I18N.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
@@ -14,6 +15,8 @@ namespace voxedit {
 void BrushPanelNormal::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	NormalBrush &brush = modifier.normalBrush();
+	brushpanel::aabbBrushOptions(listener, brush, false);
+	brushpanel::aabbBrushModeOptions(brush);
 	if (!ctx.renderNormals->boolVal()) {
 		ImGui::TextWrappedUnformatted(_("Enable normal rendering to see your changes"));
 	}

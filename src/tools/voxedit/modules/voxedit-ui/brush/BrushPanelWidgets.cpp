@@ -46,7 +46,7 @@ void addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush) 
 	ImGui::PopID();
 }
 
-void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
+void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush, bool showAllModes) {
 	addMirrorPlanes(listener, brush);
 	ImGui::Separator();
 
@@ -57,6 +57,10 @@ void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &br
 	const bool stroke = brush.strokeMode();
 	core::String toggleStrokeCmd = "set" + brush.name().toLower() + "brushstroke";
 	ImGui::CommandRadioButton(_("Stroke"), toggleStrokeCmd, stroke, &listener);
+
+	if (!showAllModes) {
+		return;
+	}
 
 	const bool strokeNoOverlap = brush.strokeNoOverlap();
 	core::String toggleStrokeNoOverlapCmd = "set" + brush.name().toLower() + "brushstrokenooverlap";
