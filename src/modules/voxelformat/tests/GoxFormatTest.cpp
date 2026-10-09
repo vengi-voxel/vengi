@@ -4,6 +4,8 @@
 
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "AbstractFormatTest.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -123,6 +125,26 @@ TEST_F(GoxFormatTest, testForkLayerAndCameraRoundtrip) {
 	EXPECT_EQ("2", cam.property("mode"));
 	EXPECT_FLOAT_EQ(3.5f, cam.propertyf("standing_h"));
 	EXPECT_FLOAT_EQ(1.25f, cam.propertyf("crouch_h"));
+}
+
+TEST_F(GoxFormatTest, testRejectsBlockIndexAtEnd) {
+	// With no BL16 chunks, index zero is already past the available blocks.
+	io::BufferedReadWriteStream file;
+	file.write("GOX ", 4);
+	file.writeUInt32(2);
+	file.write("LAYR", 4);
+	file.writeUInt32(20);
+	file.writeUInt32(1); // block count
+	file.writeUInt32(0); // invalid block index
+	file.writeInt32(0);
+	file.writeInt32(0);
+	file.writeInt32(0);
+	file.writeUInt32(0); // CRC
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("invalid.gox", file.getBuffer(), file.size()));
+	GoxFormat format;
+	scenegraph::SceneGraph graph;
+	EXPECT_FALSE(format.load("invalid.gox", archive, graph, testLoadCtx));
 }
 
 } // namespace voxelformat
