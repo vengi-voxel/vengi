@@ -318,8 +318,8 @@ BPListTrailer BinaryPList::parseTrailer(io::SeekableReadStream &stream) {
 		Log::error("Failed to seek back to the original stream position");
 		return trailer;
 	}
-	if (trailer.numObjects <= 0 || trailer.objectRefSize == 0 || trailer.offsetIntSize == 0 ||
-		trailer.topObject >= trailer.numObjects) {
+	if (trailer.numObjects <= 0 || trailer.objectRefSize == 0 || trailer.objectRefSize > 8 ||
+		trailer.offsetIntSize == 0 || trailer.offsetIntSize > 8 || trailer.topObject >= trailer.numObjects) {
 		Log::error("Header validation failed");
 		return trailer;
 	}
@@ -335,22 +335,20 @@ bool BinaryPList::readObject(io::SeekableReadStream &stream, BPListFormats &obje
 }
 
 uint64_t BinaryPList::readSizedInt(io::SeekableReadStream &stream, uint8_t numberBytes) {
-	if (numberBytes == 1) {
-		uint8_t data;
-		stream.readUInt8(data);
-		return data;
-	} else if (numberBytes == 2) {
-		uint16_t data;
-		stream.readUInt16BE(data);
-		return data;
-	} else if (numberBytes == 4) {
-		uint32_t data;
-		stream.readUInt32BE(data);
-		return data;
+	// Offset-table entries and object references use a byte count, not a power of two.
+	if (numberBytes == 0 || numberBytes > sizeof(uint64_t)) {
+		Log::error("Invalid integer byte count: %u", (unsigned int)numberBytes);
+		return UINT64_MAX;
 	}
-	core_assert_msg(numberBytes == 8, "Invalid number of bytes: %i", (int)numberBytes);
-	uint64_t data;
-	stream.readUInt64BE(data);
+	uint64_t data = 0;
+	for (uint8_t i = 0; i < numberBytes; ++i) {
+		uint8_t byte;
+		if (stream.readUInt8(byte) != 0) {
+			Log::error("Failed to read %u-byte integer", (unsigned int)numberBytes);
+			return UINT64_MAX;
+		}
+		data = (data << 8) | byte;
+	}
 	return data;
 }
 
