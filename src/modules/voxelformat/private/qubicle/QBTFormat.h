@@ -35,7 +35,7 @@ private:
 
 	bool skipNode(io::SeekableReadStream &stream);
 	bool loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-					palette::Palette &palette, Header &state);
+					palette::Palette &palette, Header &state, int *nodeId = nullptr);
 	bool loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
 					  palette::Palette &palette, Header &state, const LoadContext &ctx);
 	bool loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,

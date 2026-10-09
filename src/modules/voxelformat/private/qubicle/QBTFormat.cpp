@@ -179,18 +179,41 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	const glm::ivec3 offset = glm::round(transform.localTranslation());
+	scenegraph::SceneGraphTransform transform = node.transform(keyFrameIdx);
+	const scenegraph::SceneGraphNode *parent = sceneGraph.parentNode(node);
+	glm::mat4 localMatrix = transform.calculateLocalMatrix();
+	// QBT model nodes have no transform fields. Fold group transforms into
+	// descendant matrices, stopping at the nearest compound or the root.
+	while (parent != nullptr && parent->type() == scenegraph::SceneGraphNodeType::Group) {
+		localMatrix = parent->transform(keyFrameIdx).calculateLocalMatrix() * localMatrix;
+		parent = sceneGraph.parentNode(*parent);
+	}
+	transform.setLocalMatrix(localMatrix);
+	const glm::vec3 scale = transform.localScale();
+	for (int axis = 0; axis < 3; ++axis) {
+		if (!(scale[axis] >= 1.0f && (double)scale[axis] <= (double)UINT32_MAX) ||
+			scale[axis] != glm::floor(scale[axis])) {
+			Log::error("QBT requires positive integer local scale");
+			return false;
+		}
+	}
+	const glm::vec3 pivot = node.pivot() * glm::vec3(size) - glm::vec3(mins);
+	glm::vec3 translation = transform.localTranslation() - scale * pivot;
+	if (parent != nullptr && parent->isAnyModelNode()) {
+		// Child positions in QBT are relative to the parent's grid origin.
+		const voxel::Region &parentRegion = sceneGraph.resolveRegion(*parent);
+		translation += parent->pivot() * glm::vec3(parentRegion.getDimensionsInVoxels()) - glm::vec3(parentRegion.getLowerCorner());
+	}
+	const glm::ivec3 offset = glm::round(translation);
 	wrapSave(stream.writeInt32(offset.x));
 	wrapSave(stream.writeInt32(offset.y));
 	wrapSave(stream.writeInt32(offset.z));
 
-	const glm::uvec3 localScale{1};
+	const glm::uvec3 localScale(scale);
 	wrapSave(stream.writeUInt32(localScale.x));
 	wrapSave(stream.writeUInt32(localScale.y));
 	wrapSave(stream.writeUInt32(localScale.z));
 
-	const glm::vec3 &pivot = node.pivot();
 	wrapSave(stream.writeFloat(pivot.x));
 	wrapSave(stream.writeFloat(pivot.y));
 	wrapSave(stream.writeFloat(pivot.z));
@@ -293,12 +316,19 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
+	const glm::vec3 globalScale = root.transform(0).localScale();
+	if (glm::any(glm::isnan(globalScale)) || glm::any(glm::isinf(globalScale)) ||
+		glm::any(glm::lessThanEqual(globalScale, glm::vec3(0.0f)))) {
+		Log::error("Invalid QBT global scale");
+		return false;
+	}
+
 	wrapSave(stream->writeUInt32(FourCC('Q', 'B', ' ', '2')))
 	wrapSave(stream->writeUInt8(1));	   // version
 	wrapSave(stream->writeUInt8(0));	   // version
-	wrapSave(stream->writeFloat(1.0f)); // globalscale
-	wrapSave(stream->writeFloat(1.0f)); // globalscale
-	wrapSave(stream->writeFloat(1.0f)); // globalscale
+	wrapSave(stream->writeFloat(globalScale.x)); // globalscale
+	wrapSave(stream->writeFloat(globalScale.y)); // globalscale
+	wrapSave(stream->writeFloat(globalScale.z)); // globalscale
 	const bool colorMap = core::getVar(cfg::VoxformatQBTPaletteMode)->boolVal();
 	if (colorMap) {
 		const palette::Palette &palette = sceneGraph.firstPalette();
@@ -340,11 +370,8 @@ bool QBTFormat::skipNode(io::SeekableReadStream &stream) {
  */
 bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
 							 palette::Palette &palette, Header &state, const LoadContext &ctx) {
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
-	node.setName("Compound");
-	int nodeId = sceneGraph.emplace(core::move(node), parent);
-
-	if (!loadMatrix(stream, sceneGraph, nodeId, palette, state)) {
+	int nodeId = InvalidNodeId;
+	if (!loadMatrix(stream, sceneGraph, parent, palette, state, &nodeId)) {
 		return false;
 	}
 	const bool mergeCompounds = core::getVar(cfg::VoxformatQBTMergeCompounds)->boolVal();
@@ -393,7 +420,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGr
  * voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
 bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-						   palette::Palette &palette, Header &state) {
+						   palette::Palette &palette, Header &state, int *nodeId) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -402,17 +429,24 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	wrap(stream.readInt32(translation.x))
 	wrap(stream.readInt32(translation.y))
 	wrap(stream.readInt32(translation.z))
-	transform.setWorldTranslation(translation);
 
 	glm::uvec3 localScale;
 	wrap(stream.readUInt32(localScale.x))
 	wrap(stream.readUInt32(localScale.y))
 	wrap(stream.readUInt32(localScale.z))
+	if (glm::any(glm::equal(localScale, glm::uvec3(0)))) {
+		Log::error("Invalid QBT local scale");
+		return false;
+	}
 
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x))
 	wrap(stream.readFloat(pivot.y))
 	wrap(stream.readFloat(pivot.z))
+	if (glm::any(glm::isnan(pivot)) || glm::any(glm::isinf(pivot))) {
+		Log::error("Invalid QBT pivot");
+		return false;
+	}
 
 	glm::uvec3 size;
 	wrap(stream.readUInt32(size.x))
@@ -477,11 +511,22 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume.release());
 	node.setName(name);
-	node.setPivot(pivot);
+	node.setPivot(pivot / glm::vec3(size));
 	node.setPalette(palette);
+	// Vengi translates at the pivot; QBT positions the unpivoted grid.
+	glm::vec3 localTranslation = glm::vec3(translation) + glm::vec3(localScale) * pivot;
+	const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parent);
+	if (parentNode.isAnyModelNode()) {
+		localTranslation -= parentNode.pivot() * glm::vec3(parentNode.region().getDimensionsInVoxels());
+	}
+	transform.setLocalTranslation(localTranslation);
+	transform.setLocalScale(glm::vec3(localScale));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
+	if (nodeId != nullptr) {
+		*nodeId = id;
+	}
 	return id != InvalidNodeId;
 }
 
@@ -610,6 +655,11 @@ bool QBTFormat::loadHeader(io::SeekableReadStream &stream, Header &state) {
 	wrap(stream.readFloat(state.globalScale.x));
 	wrap(stream.readFloat(state.globalScale.y));
 	wrap(stream.readFloat(state.globalScale.z));
+	if (glm::any(glm::isnan(state.globalScale)) || glm::any(glm::isinf(state.globalScale)) ||
+		glm::any(glm::lessThanEqual(state.globalScale, glm::vec3(0.0f)))) {
+		Log::error("Invalid QBT global scale");
+		return false;
+	}
 	Log::debug("QBT with version %u.%u", state.versionMajor, state.versionMinor);
 	return true;
 }
@@ -690,6 +740,10 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	Header state;
 	wrapBool(loadHeader(*stream, state))
+	scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
+	scenegraph::SceneGraphTransform rootTransform;
+	rootTransform.setLocalScale(state.globalScale);
+	root.setTransform(0, rootTransform);
 
 	while (stream->remaining() > 0) {
 		char buf[8];
