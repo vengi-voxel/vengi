@@ -49,7 +49,10 @@ TEST_F(QBCLFormatTest, testLoadCrabby) {
 	scenegraph::SceneGraph voxsceneGraph;
 	testLoad(voxsceneGraph, "crabby.vox", 2);
 	// QBCL preserves the author's pivot; the VOX export bakes it into placement.
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent | voxel::ValidateFlags::Transform) | voxel::ValidateFlags::OccupiedExact;
+	const voxel::ValidateFlags flags =
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent |
+									 voxel::ValidateFlags::Transform)) |
+		voxel::ValidateFlags::OccupiedExact;
 	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, flags);
 }
 
