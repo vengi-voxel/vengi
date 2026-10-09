@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
+#include "voxel/Morton.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/voxelmax/VMaxFormat.h"
 #include "voxelformat/tests/TestHelper.h"
@@ -484,6 +485,18 @@ TEST_F(VMaxFormatTest, testPaletteSettingsColorsWithoutPng) {
 	EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
 }
 
+TEST_F(VMaxFormatTest, testLegacyTcDoesNotMakeOpaqueMaterialGlass) {
+	VMaxFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.load("opaque-tc.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const voxel::Voxel &v = node->volume()->voxel(0, 0, 0);
+	EXPECT_EQ(voxel::VoxelType::Generic, v.getMaterial());
+	EXPECT_EQ(255, node->palette().color(v.getColor()).a);
+	EXPECT_EQ(palette::MaterialType::Diffuse, node->palette().material(v.getColor()).type);
+}
+
 TEST_F(VMaxFormatTest, testEmbeddedDispersionMaterial) {
 	const io::ArchivePtr archive = regressionArchive();
 	io::MemoryArchivePtr files = io::openMemoryArchive();
@@ -496,6 +509,55 @@ TEST_F(VMaxFormatTest, testEmbeddedDispersionMaterial) {
 	const palette::Material &material = node->palette().material(node->volume()->voxel(0, 0, 0).getColor());
 	EXPECT_EQ(palette::MaterialType::Glass, material.type);
 	EXPECT_NEAR(1.5f, material.indexOfRefraction, 0.001f);
+	EXPECT_NEAR(1.0f, material.roughness, 0.001f);
+	EXPECT_NEAR(0.2f, material.attenuation, 0.001f);
+	EXPECT_EQ(voxel::VoxelType::Transparent, node->volume()->voxel(0, 0, 0).getMaterial());
+}
+
+TEST_F(VMaxFormatTest, testEmissionNormalizesSliderRangeAndRetainsColor) {
+	VMaxFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.load("emission-range.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	glm::vec4 colors[palette::PaletteMaxColors], emissions[palette::PaletteMaxColors];
+	node->palette().toVec4f(colors, emissions);
+	const float expected[] = {0.14f, 1.0f, 1.0f, 0.0f, 0.0f};
+	EXPECT_EQ(5, voxelutil::countVoxels(*node->volume()));
+	for (int count = 0; count < 5; ++count) {
+		uint8_t x, y, z;
+		voxel::mortonIndexToCoord((uint32_t)count, x, y, z);
+		const voxel::Voxel &v = node->volume()->voxel(x, z, y);
+		const uint8_t index = v.getColor();
+		EXPECT_NEAR(expected[count], node->palette().material(index).emit, 0.0001f);
+		// The source color is green. Strength must scale green without adding red or blue.
+		EXPECT_VEC_NEAR(glm::vec3(0.0f, expected[count], 0.0f), glm::vec3(emissions[index]), 0.0001f);
+	}
+}
+
+TEST_F(VMaxFormatTest, testEmissionPreservesStrengthAndSurfaceProperties) {
+	VMaxFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.load("emission.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	int count = 0;
+	voxelutil::visitVolume(*node->volume(), [&](int, int, int, const voxel::Voxel &v) {
+		if (voxel::isAir(v.getMaterial())) {
+			return;
+		}
+		const palette::Material &material = node->palette().material(v.getColor());
+		EXPECT_NEAR(0.5f, material.metal, 0.001f);
+		EXPECT_NEAR(0.75f, material.roughness, 0.001f);
+		EXPECT_NEAR(1.7f, material.indexOfRefraction, 0.001f);
+		EXPECT_NEAR(0.3f, material.attenuation, 0.001f);
+		const float strengths[] = {0.0125f, 0.125f, 0.0f};
+		EXPECT_NEAR(strengths[count], material.emit, 0.001f);
+		EXPECT_EQ(count < 2 ? palette::MaterialType::Emit : palette::MaterialType::Glass, material.type);
+		EXPECT_EQ(voxel::VoxelType::Transparent, v.getMaterial());
+		++count;
+	});
+	EXPECT_EQ(3, count);
 }
 
 TEST_F(VMaxFormatTest, testSceneDoesNotSilentlySkipInvalidObject) {

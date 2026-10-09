@@ -181,12 +181,14 @@ private:
 	struct VmaxMaterial {
 		core::String name;
 		double transmission = 0.0;
+		double absorption = 0.0;
 		double ior = 0.0;
 		double roughness = 0.0;
 		double metalness = 0.0;
 		double emission = 0.0;
 		bool enableShadows = true;
 		bool hasTransmission = false;
+		bool hasAbsorption = false;
 		bool hasIor = false;
 		bool hasRoughness = false;
 		bool hasMetalness = false;

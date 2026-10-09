@@ -744,16 +744,16 @@ bool VMaxFormat::parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &
 	if (shadows.isBoolean()) {
 		material.enableShadows = shadows.asBoolean();
 	}
-	if (vmaxPlistNumber(node.getDictEntry("tc"), value)) {
-		material.transmission = value;
-		material.hasTransmission = true;
-	}
 	const util::BinaryPList &dispersion = node.getDictEntry("md");
 	const util::BinaryPList &medium = dispersion.isDict() ? dispersion : node.getDictEntry("medium");
 	if (medium.isDict()) {
 		if (vmaxPlistNumber(medium.getDictEntry("t"), value)) {
 			material.transmission = value;
 			material.hasTransmission = true;
+		}
+		if (vmaxPlistNumber(medium.getDictEntry("a"), value)) {
+			material.absorption = value;
+			material.hasAbsorption = true;
 		}
 		if (vmaxPlistNumber(medium.getDictEntry("i"), value)) {
 			material.ior = value;
@@ -765,20 +765,39 @@ bool VMaxFormat::parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &
 }
 
 void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palIdx, const VmaxMaterial &material) const {
-	if (material.hasMetalness) {
-		palette.setMetal(palIdx, (float)glm::clamp((material.metalness - 0.1) / 0.8, 0.0, 1.0));
-	}
-	if (material.hasRoughness) {
-		palette.setRoughness(palIdx, (float)glm::clamp((material.roughness - 0.1) / 0.8, 0.0, 1.0));
+	// Assign the type without applying UI defaults, which would erase authored values.
+	palette::Material resolved = palette.material(palIdx);
+	if (material.hasEmission) {
+		// VoxelMax's 0-100 emission slider stores sic in 0-20. Normalize to
+		// vengi's 0-1 factor, retaining the relative strength of material layers.
+		resolved.setValue(palette::MaterialEmit, (float)glm::clamp(material.emission / 20.0, 0.0, 1.0));
 	}
 	if (material.hasEmission && material.emission > 0.0) {
-		palette.setEmit(palIdx, (float)material.emission);
-		palette.setMaterialType(palIdx, palette::MaterialType::Emit);
+		resolved.type = palette::MaterialType::Emit;
 	} else if (material.hasTransmission && material.transmission > 0.0) {
-		palette.setMaterialType(palIdx, palette::MaterialType::Glass);
-		if (material.hasIor) {
-			palette.setIndexOfRefraction(palIdx, (float)material.ior);
-		}
+		resolved.type = palette::MaterialType::Glass;
+	} else if (material.hasEmission || material.hasTransmission) {
+		resolved.type = palette::MaterialType::Diffuse;
+	}
+	if (material.hasMetalness) {
+		resolved.setValue(palette::MaterialMetal, (float)glm::clamp((material.metalness - 0.1) / 0.8, 0.0, 1.0));
+	}
+	if (material.hasRoughness) {
+		resolved.setValue(palette::MaterialRoughness, (float)glm::clamp((material.roughness - 0.1) / 0.8, 0.0, 1.0));
+	}
+	if (material.hasIor) {
+		resolved.setValue(palette::MaterialIndexOfRefraction, (float)material.ior);
+	}
+	if (material.hasAbsorption) {
+		resolved.setValue(palette::MaterialAttenuation, (float)material.absorption);
+	}
+	palette.setMaterial(palIdx, resolved);
+	if (material.hasTransmission && material.transmission > 0.0) {
+		// Approximate optical transmission with blending
+		color::RGBA color = palette.color(palIdx);
+		const uint8_t alpha = (uint8_t)glm::round(255.0 * (1.0 - 0.5 * glm::clamp(material.transmission, 0.0, 1.0)));
+		color.a = core_min(color.a, alpha);
+		palette.setColor(palIdx, color);
 	}
 }
 
@@ -829,7 +848,11 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 		const VmaxMaterial &a = layers.layers[firstLayer];
 		const VmaxMaterial &b = layers.layers[i];
 		if (glm::abs(a.roughness - b.roughness) > 1.0e-4 || glm::abs(a.metalness - b.metalness) > 1.0e-4 ||
-			glm::abs(a.emission - b.emission) > 1.0e-4 || glm::abs(a.transmission - b.transmission) > 1.0e-4) {
+			glm::abs(a.emission - b.emission) > 1.0e-4 || glm::abs(a.transmission - b.transmission) > 1.0e-4 ||
+			glm::abs(a.ior - b.ior) > 1.0e-4 || glm::abs(a.absorption - b.absorption) > 1.0e-4 ||
+			a.hasEmission != b.hasEmission || a.hasTransmission != b.hasTransmission ||
+			a.hasMetalness != b.hasMetalness || a.hasRoughness != b.hasRoughness ||
+			a.hasIor != b.hasIor || a.hasAbsorption != b.hasAbsorption) {
 			layersMatch = false;
 			break;
 		}
