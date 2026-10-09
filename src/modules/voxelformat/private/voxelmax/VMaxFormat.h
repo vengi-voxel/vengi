@@ -23,7 +23,7 @@ namespace voxelformat {
  * sits next to `scene.json` loads the whole package, not that single leftover object.
  *
  * up to 2040 materials
- * 256x256x256 working area
+ * up to 512x512x512 working area
  * unlimited history
  * z points upwards. scene.json t_r is SceneKit axis-angle (xyz + radians), not a quaternion.
  * Volume voxels and node TRS remap (x, y, z_up) to vengi (x, z_up, y).
@@ -33,7 +33,7 @@ namespace voxelformat {
  *
  * scene.json gives the scene nodes hierarchy, groups and volumes.
  * palette.png holds colors. palette.settings.vmaxpsb (and older vmaxb pal dict)
- * stores 8 layer materials (mi/sic/mc/rc/medium/sh) plus optional MagicaVoxel voxmats.
+ * stores 8 layer materials (mi/sic/mc/rc/tc/md/sh) plus optional MagicaVoxel voxmats.
  * each material(max 8) of an object is rendered as a separate sub-mesh and the position of those are offset by the
  * pivot given by the combination e_c and , t_al, t_pf, t_pa, t_po
  *
@@ -182,7 +182,6 @@ private:
 		core::String name;
 		double transmission = 0.0;
 		double ior = 0.0;
-		double anisotropy = 0.0;
 		double roughness = 0.0;
 		double metalness = 0.0;
 		double emission = 0.0;
@@ -198,27 +197,6 @@ private:
 		VmaxMaterial layers[8];
 		bool present[8]{false, false, false, false, false, false, false, false};
 		int activeLayer = 0; // voxel byte 0-7 from ali
-	};
-
-	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
-
-	struct VolumeExtent {
-		int o = 0; // chunkExtent.order: chunkOrder = t >> o (32^3 => 5)
-		int min[3] {0, 0, 0};
-		int max[3] {0, 0, 0};
-	};
-
-	struct VolumeStats {
-		int count = 0;
-		int scount = 0;
-		// a snapshot doesn't start from 0, that's why you need stats.min
-		int min[4]{0, 0, 0, 0}; // morton32, x, y, z and sum
-		int max[4]{0, 0, 0, 0}; // morton32, x, y, z and sum
-		int emin = 0;			// extent in case the workarea is less than 256^3
-		int emax = 0;
-		int smin[4]{0, 0, 0, 0}; // s means selected
-		int smax[4]{0, 0, 0, 0};
-		VolumeExtent extent;
 	};
 
 	// scene.json camera
@@ -280,14 +258,6 @@ private:
 		core::String lcolor = "#FFFFFFFF";	   //
 	};
 
-	struct VolumeId {
-		int mortonChunkIdx = 0;
-		int idTimeline = 0;
-		SnapshotType type = SnapshotType::UndoRestore;
-	};
-
-	VolumeStats parseStats(const util::BinaryPList &snapshot) const;
-	VolumeId parseId(const util::BinaryPList &snapshot) const;
 	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
 							 const glm::vec3 &t_s) const;
 	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,

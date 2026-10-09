@@ -25,7 +25,11 @@
 
 namespace voxelformat {
 
-class VMaxFormatTest : public AbstractFormatTest {};
+class VMaxFormatTest : public AbstractFormatTest {
+protected:
+	core::ScopedPtr<io::SeekableReadStream> _regressionStream;
+	io::ArchivePtr regressionArchive();
+};
 
 TEST_F(VMaxFormatTest, testLoad) {
 	ASSERT_TRUE(io::isA("0voxel.vmax.zip", voxelformat::voxelLoad()));
@@ -36,9 +40,9 @@ TEST_F(VMaxFormatTest, testLoadPaletteMaterials) {
 	palette::Palette palette;
 	ASSERT_GT(helper_loadPalette("1voxel.vmax.zip", helper_filesystemarchive(), f, palette), 0);
 	EXPECT_EQ("Palette #1", palette.name());
-	EXPECT_NEAR(0.1f, palette.material(36).metal, 0.001f);
-	EXPECT_NEAR(0.9f, palette.material(36).roughness, 0.001f);
-	EXPECT_FALSE(palette.material(36).has(palette::MaterialEmit));
+	EXPECT_NEAR(0.0f, palette.material(35).metal, 0.001f);
+	EXPECT_NEAR(1.0f, palette.material(35).roughness, 0.001f);
+	EXPECT_FALSE(palette.material(35).has(palette::MaterialEmit));
 }
 
 TEST_F(VMaxFormatTest, testLoadAppliesLayerMaterialToVoxelColor) {
@@ -55,8 +59,8 @@ TEST_F(VMaxFormatTest, testLoadAppliesLayerMaterialToVoxelColor) {
 		}
 	});
 	ASSERT_EQ(1, voxels);
-	EXPECT_NEAR(0.1f, node->palette().material(palIdx).metal, 0.001f);
-	EXPECT_NEAR(0.9f, node->palette().material(palIdx).roughness, 0.001f);
+	EXPECT_NEAR(0.0f, node->palette().material(palIdx).metal, 0.001f);
+	EXPECT_NEAR(1.0f, node->palette().material(palIdx).roughness, 0.001f);
 }
 
 TEST_F(VMaxFormatTest, testTransform) {
@@ -326,6 +330,195 @@ TEST_F(VMaxFormatTest, testLoadVmaxDirectoryPackage) {
 	ASSERT_NE(nullptr, node);
 	EXPECT_EQ("dir-package", node->name());
 	EXPECT_EQ(1, voxelutil::countVoxels(*node->volume()));
+}
+
+// vmax-regression.zip contains raw binary plists with minimal chunk stats,
+// a 255-color zero-based table plus transparent terminator, and two materials.
+io::ArchivePtr VMaxFormatTest::regressionArchive() {
+	io::ArchivePtr fs = helper_filesystemarchive();
+	_regressionStream = fs->readStream("vmax-regression.zip");
+	if (!_regressionStream) {
+		ADD_FAILURE() << "Missing vmax-regression.zip";
+		return io::openMemoryArchive();
+	}
+	return io::openZipArchive(_regressionStream);
+}
+
+TEST_F(VMaxFormatTest, testLatestSnapshotReplacesWholeChunk) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("latest.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ(1, voxelutil::countVoxels(*node->volume()));
+	EXPECT_EQ(color::RGBA(2, 253, 6, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
+	graph.updateTransforms();
+	EXPECT_FLOAT_EQ(1.0f, node->transform(0).worldTranslation().x);
+}
+
+TEST_F(VMaxFormatTest, testLatestEmptySnapshotDeletesChunk) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	// Loading empty storage succeeds without reviving the previous chunk.
+	EXPECT_TRUE(f.load("empty.vmaxb", regressionArchive(), graph, testLoadCtx));
+	EXPECT_EQ(nullptr, graph.firstModelNode());
+}
+
+TEST_F(VMaxFormatTest, testOneBasedColorIndices) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("colors.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
+	EXPECT_EQ(color::RGBA(254, 1, 250, 255), node->palette().color(node->volume()->voxel(1, 0, 0).getColor()));
+}
+
+TEST_F(VMaxFormatTest, testSameColorOnDifferentSelectedMaterialLayers) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("materials.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const uint8_t first = node->volume()->voxel(0, 0, 0).getColor();
+	const uint8_t second = node->volume()->voxel(1, 0, 0).getColor();
+	EXPECT_NE(first, second);
+	EXPECT_EQ(node->palette().color(first), node->palette().color(second));
+	EXPECT_NEAR(0.0f, node->palette().material(first).metal, 0.001f);
+	EXPECT_NEAR(1.0f, node->palette().material(first).roughness, 0.001f);
+	EXPECT_NEAR(1.0f, node->palette().material(second).metal, 0.001f);
+	EXPECT_NEAR(0.0f, node->palette().material(second).roughness, 0.001f);
+}
+
+TEST_F(VMaxFormatTest, testMaterialCombinationsExceedPaletteCapacity) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("many-materials.vmaxb", regressionArchive(), graph, testLoadCtx));
+	EXPECT_EQ(2, graph.size(scenegraph::SceneGraphNodeType::Model));
+	int count = 0;
+	for (auto it = graph.begin(scenegraph::SceneGraphNodeType::Model); it != graph.end(); ++it) {
+		count += voxelutil::countVoxels(*(*it).volume());
+		EXPECT_LE((*it).palette().colorCount(), 256);
+		voxelutil::visitVolume(*(*it).volume(), [&](int, int, int, const voxel::Voxel &v) {
+			if (!voxel::isAir(v.getMaterial())) {
+				EXPECT_EQ(255, (*it).palette().color(v.getColor()).a);
+			}
+		});
+	}
+	EXPECT_EQ(510, count);
+}
+
+TEST_F(VMaxFormatTest, testWorkAreaHidesStoredVoxels) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("workarea.vmaxb", regressionArchive(), graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ(1, voxelutil::countVoxels(*node->volume()));
+	graph.updateTransforms();
+	EXPECT_FLOAT_EQ(1.0f, node->transform(0).worldTranslation().x);
+}
+
+TEST_F(VMaxFormatTest, test512Workspace) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("large.vmaxb", regressionArchive(), graph, testLoadCtx));
+	graph.updateTransforms();
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_FLOAT_EQ(256.0f, node->transform(0).worldTranslation().x);
+}
+
+TEST_F(VMaxFormatTest, testLegacyColorAndMaterialChunks) {
+	VMaxFormat f;
+	const io::ArchivePtr archive = regressionArchive();
+	for (const char *name : {"legacy0.vmaxb", "legacy1.vmaxb", "legacy-latest.vmaxb"}) {
+		SCOPED_TRACE(name);
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(f.load(name, archive, graph, testLoadCtx));
+		const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+		ASSERT_NE(nullptr, node);
+		EXPECT_EQ(core::String(name) == "legacy0.vmaxb" ? 2 : 1, voxelutil::countVoxels(*node->volume()));
+		if (core::String(name) == "legacy1.vmaxb") {
+			const uint8_t index = node->volume()->voxel(0, 0, 0).getColor();
+			EXPECT_NEAR(1.0f, node->palette().material(index).metal, 0.001f);
+			graph.updateTransforms();
+			EXPECT_FLOAT_EQ(33.0f, node->transform(0).worldTranslation().x);
+		}
+	}
+}
+
+TEST_F(VMaxFormatTest, testRejectsInvalidContents) {
+	VMaxFormat f;
+	const io::ArchivePtr archive = regressionArchive();
+	for (const char *name : {"bad-offset.vmaxb", "bad-order.vmaxb", "bad-chunk.vmaxb", "odd-data.vmaxb",
+							 "overflow-data.vmaxb", "legacy-bad-count.vmaxb", "short-stats.vmaxb", "invalid.vmaxb"}) {
+		SCOPED_TRACE(name);
+		scenegraph::SceneGraph graph;
+		EXPECT_FALSE(f.load(name, archive, graph, testLoadCtx));
+		EXPECT_EQ(nullptr, graph.firstModelNode());
+	}
+}
+
+TEST_F(VMaxFormatTest, testExtractIndexedStandalonePalette) {
+	const io::ArchivePtr archive = regressionArchive();
+	io::MemoryArchivePtr files = io::openMemoryArchive();
+	ASSERT_TRUE(addArchiveFile(archive, "colors.vmaxb", files, "contents1.vmaxb"));
+	ASSERT_TRUE(addArchiveFile(archive, "palette.png", files, "palette1.png"));
+	VMaxFormat f;
+	palette::Palette palette;
+	ASSERT_GT(f.loadPalette("contents1.vmaxb", files, palette, testLoadCtx), 0);
+	EXPECT_EQ(color::RGBA(0, 255, 0, 255), palette.color(0));
+}
+
+TEST_F(VMaxFormatTest, testPaletteSettingsColorsWithoutPng) {
+	const io::ArchivePtr archive = regressionArchive();
+	io::MemoryArchivePtr files = io::openMemoryArchive();
+	ASSERT_TRUE(addArchiveFile(archive, "colors.vmaxb", files, "contents.vmaxb"));
+	ASSERT_TRUE(addArchiveFile(archive, "palette.settings.vmaxpsb", files, "palette.settings.vmaxpsb"));
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("contents.vmaxb", files, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
+}
+
+TEST_F(VMaxFormatTest, testEmbeddedDispersionMaterial) {
+	const io::ArchivePtr archive = regressionArchive();
+	io::MemoryArchivePtr files = io::openMemoryArchive();
+	ASSERT_TRUE(addArchiveFile(archive, "dispersion.vmaxb", files, "contents.vmaxb"));
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("contents.vmaxb", files, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const palette::Material &material = node->palette().material(node->volume()->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(palette::MaterialType::Glass, material.type);
+	EXPECT_NEAR(1.5f, material.indexOfRefraction, 0.001f);
+}
+
+TEST_F(VMaxFormatTest, testSceneDoesNotSilentlySkipInvalidObject) {
+	const io::ArchivePtr archive = regressionArchive();
+	io::MemoryArchivePtr files = io::openMemoryArchive();
+	ASSERT_TRUE(addArchiveFile(archive, "colors.vmaxb", files, "contents.vmaxb"));
+	ASSERT_TRUE(addArchiveFile(archive, "palette.png", files, "palette.png"));
+	const core::String json = "{\"objects\":[{\"data\":\"contents.vmaxb\",\"pal\":\"palette.png\"},"
+		"{\"data\":\"missing.vmaxb\",\"pal\":\"palette.png\"}]}";
+	ASSERT_TRUE(files->add("scene.vmax/scene.json", (const uint8_t *)json.c_str(), json.size()));
+	ASSERT_TRUE(addArchiveFile(archive, "colors.vmaxb", files, "scene.vmax/contents.vmaxb"));
+	ASSERT_TRUE(addArchiveFile(archive, "palette.png", files, "scene.vmax/palette.png"));
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	EXPECT_FALSE(f.load("scene.vmax", files, graph, testLoadCtx));
+}
+
+TEST_F(VMaxFormatTest, testDenseChunk) {
+	VMaxFormat f;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(f.load("dense.vmaxb", regressionArchive(), graph, testLoadCtx));
+	ASSERT_NE(nullptr, graph.firstModelNode());
+	EXPECT_EQ(32768, voxelutil::countVoxels(*graph.firstModelNode()->volume()));
 }
 
 } // namespace voxelformat

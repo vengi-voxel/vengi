@@ -9,6 +9,7 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/Map.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/LZFSEReadStream.h"
@@ -22,11 +23,9 @@
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Morton.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include "voxelutil/VolumeMerger.h"
 #include "json/JSON.h"
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -87,10 +86,6 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-namespace vmax {
-constexpr int MaxVolumeSize = 256u;
-} // namespace vmax
-
 // VoxelMax volumes are Z-up. Morton decode already stores (x, z_up, y).
 static glm::vec3 vmaxToVengi(const glm::vec3 &v) {
 	return glm::vec3(v.x, v.z, v.y);
@@ -124,6 +119,19 @@ static core::String vmaxJoin(const core::String &dir, const core::String &name) 
 		return name;
 	}
 	return core::string::path(dir, name);
+}
+
+static util::BinaryPList vmaxReadPlist(io::SeekableReadStream &stream) {
+	char magic[8];
+	const int64_t start = stream.pos();
+	if (stream.read(magic, sizeof(magic)) != sizeof(magic) || stream.seek(start) == -1) {
+		return {};
+	}
+	if (core_memcmp(magic, "bplist00", sizeof(magic)) == 0) {
+		return util::BinaryPList::parse(stream);
+	}
+	io::LZFSEReadStream decoded(stream);
+	return util::BinaryPList::parse(decoded);
 }
 
 static bool vmaxPlistNumber(const util::BinaryPList &value, double &out) {
@@ -344,21 +352,21 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 		const VMaxObject &obj = scene.objects[i];
 		if (obj.data.empty()) {
 			Log::error("Scene object %i has no contents path", (int)i);
-			continue;
+			return false;
 		}
-		if (obj.pal.empty()) {
-			Log::error("Failed to load object %s: empty palette path", obj.n.c_str());
-			continue;
-		}
+
 		palette::Palette vmaxPalette;
 		VmaxLayerMaterials layers;
 		if (!loadPaletteFromArchive(archive, obj.pal, vmaxPalette, ctx, layers)) {
-			Log::error("Failed to load palette %s for object %s", obj.pal.c_str(), obj.n.c_str());
-			continue;
+			core::ScopedPtr<io::SeekableReadStream> contents(archive->readStream(obj.data));
+			if (!contents || !loadPaletteFromVmaxb(*contents, vmaxPalette, layers)) {
+				Log::error("Failed to load palette for object %s", obj.n.c_str());
+				return false;
+			}
 		}
 		if (!loadObjectFromArchive(obj.data, archive, sceneGraph, ctx, obj, vmaxPalette, layers)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
-			continue;
+			return false;
 		}
 		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
 	}
@@ -419,57 +427,6 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 	return loadScenePackage(zipArchive, "", sceneGraph, ctx);
 }
 
-VMaxFormat::VolumeStats VMaxFormat::parseStats(const util::BinaryPList &snapshot) const {
-	VolumeStats volumeStats;
-	const util::BinaryPList &stats = snapshot.getDictEntry("st");
-	const util::BinaryPList &extent = stats.getDictEntry("extent");
-	volumeStats.count = (int)stats.getDictEntry("count").asInt();
-	volumeStats.scount = (int)stats.getDictEntry("scount").asInt();
-	const util::PListArray &statsMins = stats.getDictEntry("min").asArray();
-	const util::PListArray &statsMaxs = stats.getDictEntry("max").asArray();
-	const util::PListArray &statsSmins = stats.getDictEntry("smin").asArray();
-	const util::PListArray &statsSmaxs = stats.getDictEntry("smax").asArray();
-	for (int i = 0; i < 4; ++i) {
-		volumeStats.min[i] = (int)statsMins[i].asInt();
-		volumeStats.max[i] = (int)statsMaxs[i].asInt();
-		volumeStats.smin[i] = (int)statsSmins[i].asInt();
-		volumeStats.smax[i] = (int)statsSmaxs[i].asInt();
-	}
-	// emin/emax are work-area extent when smaller than 256^3, not extent.r
-	volumeStats.extent.o = (int)extent.getDictEntry("o").asInt();
-	// const util::BinaryPList &regionBounds = extent.getDictEntry("r");
-	// const util::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
-	// const util::PListArray &extentMaxs = regionBounds.getDictEntry("max").asArray();
-	// for (int i = 0; i < 3; ++i) {
-	// 	volumeStats.extent.min[i] = (int)extentMins[i].asInt();
-	// 	volumeStats.extent.max[i] = (int)extentMaxs[i].asInt();
-	// }
-
-	return volumeStats;
-}
-
-VMaxFormat::VolumeId VMaxFormat::parseId(const util::BinaryPList &snapshot) const {
-	VolumeId volumeId;
-	const util::BinaryPList &identifier = snapshot.getDictEntry("id");
-	const util::BinaryPList &identifierC = identifier.getDictEntry("c");
-	const util::BinaryPList &identifierS = identifier.getDictEntry("s");
-	const util::BinaryPList &identifierT = identifier.getDictEntry("t");
-
-	if (identifierC.isInt()) {
-		volumeId.mortonChunkIdx = (int)identifierC.asInt();
-	}
-	if (identifierS.isInt()) {
-		volumeId.idTimeline = (int)identifierS.asInt();
-	}
-	if (identifierT.isInt()) {
-		volumeId.type = (SnapshotType)identifierT.asUInt8();
-	}
-
-	Log::debug("identifier: c(%i), s(%i), t(%i)", volumeId.mortonChunkIdx, volumeId.idTimeline, (int)volumeId.type);
-
-	return volumeId;
-}
-
 bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 									   const VMaxObject &obj, const palette::Palette &palette,
@@ -492,34 +449,10 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream* data, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 							const VMaxObject &obj, const palette::Palette &palette, const VmaxLayerMaterials &layers) const {
-	io::LZFSEReadStream stream(*data);
-
-	// io::filesystem()->write(filename + ".plist", stream);
-	// stream.seek(0);
-
-	util::BinaryPList plist = util::BinaryPList::parse(stream);
+	const util::BinaryPList plist = vmaxReadPlist(*data);
 	if (!plist.isDict()) {
 		Log::error("Expected a bplist dict");
 		return false;
-	}
-
-	const util::PListDict &dict = plist.asDict();
-	auto snapshots = dict.find("snapshots");
-	if (snapshots == dict.end()) {
-		Log::error("No 'snapshots' node found in bplist");
-		if (dict.hasKey("chunks") || dict.hasKey("voxels")) {
-			Log::error("File uses obsolete VoxelMax chunks/voxels storage");
-		}
-		return false;
-	}
-	if (!snapshots->value.isArray()) {
-		Log::error("Node 'snapshots' has unexpected type");
-		return false;
-	}
-	const util::PListArray &snapshotsArray = snapshots->value.asArray();
-	if (snapshotsArray.empty()) {
-		Log::debug("Node 'snapshots' is empty");
-		return true;
 	}
 
 	palette::Palette pal = palette;
@@ -538,149 +471,216 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		}
 		applyVmaxPaletteSettings(embeddedPal, pal, objectLayers);
 	}
-	uint8_t assignedLayer[256];
-	core_memset(assignedLayer, 0xFF, sizeof(assignedLayer));
+	struct VoxelData {
+		glm::ivec3 position;
+		uint8_t material;
+		uint8_t color;
+	};
+	core::DynamicArray<VoxelData> voxels;
+	int order = 8;
+	const util::BinaryPList &eo = plist.getDictEntry("eo");
+	if (eo.isInt() && eo.asInt() >= 5 && eo.asInt() <= 9) {
+		order = (int)eo.asInt();
+	}
+	glm::ivec3 workMin(0), workMax((1 << order) - 1);
+	const util::BinaryPList &vp = plist.getDictEntry("tools").getDictEntry("vp");
+	if (vp.isDict()) {
+		const util::BinaryPList &lo = vp.getDictEntry("min");
+		const util::BinaryPList &hi = vp.getDictEntry("max");
+		if (!lo.isArray() || !hi.isArray() || lo.size() != 3 || hi.size() != 3) {
+			Log::error("Invalid VoxelMax work area");
+			return false;
+		}
+		for (int axis = 0; axis < 3; ++axis) {
+			if (!lo.asArray()[axis].isInt() || !hi.asArray()[axis].isInt()) {
+				return false;
+			}
+			workMin[axis] = (int)lo.asArray()[axis].asInt();
+			workMax[axis] = (int)hi.asArray()[axis].asInt();
+			if (workMin[axis] < 0 || workMax[axis] > 511 || workMin[axis] > workMax[axis]) {
+				return false;
+			}
+		}
+	}
+	const auto decode = [&](const util::BinaryPList &bytes, const glm::ivec3 &base, int offset, int stride) {
+		if (!bytes.isData() || bytes.size() % stride != 0 || offset < 0 ||
+			(size_t)offset + bytes.size() / stride > 32768u) {
+			Log::error("Invalid VoxelMax chunk data or Morton offset");
+			return false;
+		}
+		const util::PListByteArray &ds = bytes.asData();
+		// DynamicArray grows in fixed increments. Reserve geometrically before
+		// appending a chunk to avoid repeatedly copying a large object's voxels.
+		const size_t required = voxels.size() + ds.size() / stride;
+		if (required > voxels.capacity()) {
+			voxels.reserve(core_max(required, voxels.capacity() * 2));
+		}
+		for (size_t slot = 0; slot < ds.size() / stride; ++slot) {
+			const uint8_t color = ds[slot * stride + stride - 1];
+			if (color == 0) {
+				continue;
+			}
+			uint8_t x, y, z;
+			voxel::mortonIndexToCoord((uint32_t)(offset + slot), x, y, z);
+			const glm::ivec3 position = base + glm::ivec3(x, y, z);
+			if (glm::any(glm::lessThan(position, workMin)) || glm::any(glm::greaterThan(position, workMax))) {
+				continue;
+			}
+			voxels.push_back({glm::ivec3(position.x, position.z, position.y),
+							  (uint8_t)(stride == 2 ? ds[slot * stride] & 7 : 0), (uint8_t)(color - 1)});
+		}
+		return true;
+	};
 
+	const util::BinaryPList &version = plist.getDictEntry("v");
+	const util::BinaryPList &legacyChunks = plist.getDictEntry("chunks");
+	const util::BinaryPList &snapshots = plist.getDictEntry("snapshots");
+	// Some standalone contents omit the version; accept their snapshots as modern storage.
+	if ((version.isInt() && version.asInt() < 4) || (!snapshots.valid() && legacyChunks.valid())) {
+		const util::BinaryPList &legacyVoxels = plist.getDictEntry("voxels");
+		if (!legacyChunks.isData() || legacyChunks.size() % 16 != 0 || !legacyVoxels.isArray() ||
+			legacyVoxels.size() != legacyChunks.size() / 16) {
+			Log::error("Invalid legacy VoxelMax chunks/voxels storage");
+			return false;
+		}
+		io::MemoryReadStream records(legacyChunks.asData().data(), legacyChunks.size());
+		struct LegacyChunk {
+			glm::ivec3 base;
+			int stride;
+		};
+		core::DynamicArray<LegacyChunk> chunks;
+		for (size_t i = 0; i < legacyVoxels.size(); ++i) {
+			int32_t origin[3], flag;
+			for (int axis = 0; axis < 3; ++axis) {
+				wrap(records.readInt32(origin[axis]))
+			}
+			wrap(records.readInt32(flag))
+			glm::ivec3 base;
+			for (int axis = 0; axis < 3; ++axis) {
+				// Floor division, including negative chunk origins.
+				const int value = origin[axis];
+				base[axis] = (value / 32 - (value % 32 < 0 ? 1 : 0)) * 32;
+			}
+			chunks.push_back({base, version.asInt() >= 1 && flag == 1 ? 2 : 1});
+		}
+		for (size_t i = 0; i < chunks.size(); ++i) {
+			bool replaced = false;
+			for (size_t j = i + 1; j < chunks.size(); ++j) {
+				if (chunks[i].base == chunks[j].base) {
+					replaced = true;
+					break;
+				}
+			}
+			if (!replaced && !decode(legacyVoxels.asArray()[i], chunks[i].base, 0, chunks[i].stride)) {
+				return false;
+			}
+		}
+	} else {
+		if (!snapshots.isArray()) {
+			Log::error("Expected VoxelMax snapshots");
+			return false;
+		}
+		core::Map<uint32_t, size_t> latest;
+		for (size_t i = 0; i < snapshots.size(); ++i) {
+			const util::BinaryPList &storage = snapshots.asArray()[i].getDictEntry("s");
+			const util::BinaryPList &cid = storage.getDictEntry("id").getDictEntry("c");
+			// 512^3 workspaces have 16^3 chunks, encoded as Morton IDs 0..4095.
+			if (!cid.isInt() || cid.asInt() >= 4096u) {
+				Log::error("Invalid VoxelMax chunk identifier");
+				return false;
+			}
+			latest.put((uint32_t)cid.asInt(), i);
+		}
+		for (size_t i = 0; i < snapshots.size(); ++i) {
+			if (stopExecution()) {
+				return false;
+			}
+			const util::BinaryPList &storage = snapshots.asArray()[i].getDictEntry("s");
+			const uint32_t cid = (uint32_t)storage.getDictEntry("id").getDictEntry("c").asInt();
+			if (latest.find(cid)->value != i) {
+				continue;
+			}
+			const util::BinaryPList &stats = storage.getDictEntry("st");
+			const util::BinaryPList &mins = stats.getDictEntry("min");
+			const util::BinaryPList &chunkOrder = stats.getDictEntry("extent").getDictEntry("o");
+			if (!mins.isArray() || mins.size() != 4 || !mins.asArray()[3].isInt() ||
+				mins.asArray()[3].asInt() >= 32768u || !chunkOrder.isInt() || chunkOrder.asInt() != 5) {
+				Log::error("Invalid VoxelMax snapshot stats");
+				return false;
+			}
+			uint8_t x, y, z;
+			voxel::mortonIndexToCoord(cid, x, y, z);
+			if (!decode(storage.getDictEntry("ds"), glm::ivec3(x, y, z) * 32, (int)mins.asArray()[3].asInt(), 2)) {
+				return false;
+			}
+		}
+	}
+	if (voxels.empty()) {
+		return true;
+	}
+
+	// Each used (layer,color) pair needs its own palette entry. Split only when
+	// the 256-entry vengi palette fills up, preserving all 8 * 255 combinations.
+	int entries[8][256];
+	core_memset(entries, 0xFF, sizeof(entries));
+	int combinations = 0;
+	for (const VoxelData &v : voxels) {
+		if (entries[v.material][v.color] == -1) {
+			entries[v.material][v.color] = combinations++;
+		}
+	}
 	int parent = sceneGraph.root().id();
 	if (obj.pid.isValid()) {
 		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByUUID(obj.pid)) {
 			parent = parentNode->id();
 		}
 	}
-
-	// Merge 32^3 chunks with voxelutil, not SceneGraph::merge. Chunk palettes
-	// diverge while layer materials are applied, so SceneGraph takes SparseVolume
-	// + DynamicMap instead of the dense same-palette path. mergeAndCrop keeps the
-	// solid AABB and copies with parallel mergeVolumes.
-	struct ChunkVolumes {
-		core::Buffer<voxel::RawVolume *> volumes;
-		~ChunkVolumes() {
-			for (voxel::RawVolume *volume : volumes) {
-				delete volume;
-			}
-		}
-	};
-	ChunkVolumes chunks;
-	chunks.volumes.reserve(snapshotsArray.size());
-	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
-		Log::debug("Load snapshot %i of %i", (int)i, (int)snapshotsArray.size());
-		const util::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
-		if (snapshot.empty()) {
-			Log::error("Node 'snapshots' child %i doesn't contain node 's'", (int)i);
-			return false;
-		}
-
-		// const util::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
-		const util::BinaryPList &dsData = snapshot.getDictEntry("ds");
-		// const util::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
-		const VolumeId &volumeId = parseId(snapshot);
-		const VolumeStats &volumeStats = parseStats(snapshot);
-		const VolumeExtent &extent = volumeStats.extent;
-
-		Log::debug("volumestats.extent: mins(%i, %i, %i), maxs(%i, %i, %i)", extent.min[0], extent.min[1],
-				   extent.min[2], extent.max[0], extent.max[1], extent.max[2]);
-
-		const int maxChunkSize = 1 << extent.o;
-		const int maxVolumeChunks = vmax::MaxVolumeSize / maxChunkSize;
-		const int maxChunks = maxVolumeChunks * maxVolumeChunks * maxVolumeChunks;
-
-		if (volumeId.mortonChunkIdx > maxChunks) {
-			Log::error("identifier: c(%i) is out of range", volumeId.mortonChunkIdx);
-			return false;
-		}
-
-		const size_t dsSize = dsData.size();
-		if (dsSize == 0u) {
-			Log::error("Node 'ds' is empty");
-			return false;
-		}
-
-		io::MemoryReadStream dsStream(dsData.asData().data(), dsSize);
-		Log::debug("Found voxel data with size %i", (int)dsStream.size());
-
-		// search the chunk world position by getting the morton index for the snapshot id
-		uint8_t chunkX, chunkY, chunkZ;
-		// y and z are swapped here
-		if (!voxel::mortonIndexToCoord(volumeId.mortonChunkIdx, chunkX, chunkZ, chunkY)) {
-			Log::error("Failed to lookup chunk position for morton index %i", volumeId.mortonChunkIdx);
-			return false;
-		}
-
-		// now loop over the 'voxels' array and create a volume from it
-		const voxel::Region region(0, maxChunkSize - 1);
-		voxel::RawVolume *v = new voxel::RawVolume(region);
-		chunks.volumes.push_back(v);
-
-		const int mortonStartIdx = volumeStats.min[3];
-		uint8_t chunkOffsetX, chunkOffsetY, chunkOffsetZ;
-		// y and z are swapped here
-		if (!voxel::mortonIndexToCoord(mortonStartIdx, chunkOffsetX, chunkOffsetZ, chunkOffsetY)) {
-			Log::error("Failed to get chunk offset from morton index %i", mortonStartIdx);
-			return false;
-		}
-		Log::debug("chunkOffset: %i, %i, %i", chunkOffsetX, chunkOffsetY, chunkOffsetZ);
-		uint32_t mortonIdx = 0;
-		voxel::RawVolumeWrapper wrapper(v);
-
-		Log::debug("start voxel: %i", volumeStats.scount);
-		Log::debug("amount of voxels: %i", volumeStats.count);
-		while (!dsStream.eos()) {
-			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
-			// with option to add more in the future up to 128
-			uint8_t material;
-			// palette index 0 means air
-			uint8_t palIdx;
-			wrap(dsStream.readUInt8(material))
-			wrap(dsStream.readUInt8(palIdx))
-			if (palIdx == 0) {
-				++mortonIdx;
-				continue;
-			}
-			const uint8_t layer = material & 7;
-			if (objectLayers.present[layer]) {
-				if (assignedLayer[palIdx] == 0xFF) {
-					assignedLayer[palIdx] = layer;
-					applyVmaxLayerMaterial(pal, palIdx, objectLayers.layers[layer]);
-				} else if (assignedLayer[palIdx] != layer) {
-					Log::debug("Palette index %u used on VoxelMax layers %u and %u", palIdx,
-							   assignedLayer[palIdx], layer);
+	for (int part = 0; part < (combinations + 255) / 256; ++part) {
+		palette::Palette partPalette;
+		partPalette.setName(pal.name());
+		glm::ivec3 mins(512), maxs(-1);
+		for (int layer = 0; layer < 8; ++layer) {
+			for (int color = 0; color < 255; ++color) {
+				const int entry = entries[layer][color];
+				if (entry < 0 || entry / 256 != part) {
+					continue;
+				}
+				const uint8_t index = (uint8_t)(entry % 256);
+				partPalette.setColor(index, pal.color((uint8_t)color));
+				partPalette.setMaterial(index, pal.material((uint8_t)color));
+				if (objectLayers.present[layer]) {
+					applyVmaxLayerMaterial(partPalette, index, objectLayers.layers[layer]);
 				}
 			}
-			uint8_t x, y, z;
-			// the voxels are stored in morton order - use the index to find the voxel position
-			// y and z are swapped here
-			if (!voxel::mortonIndexToCoord(mortonStartIdx + mortonIdx, x, z, y)) {
-				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
-				return false;
-			}
-			++mortonIdx;
-			if (!wrapper.setVoxel(x, y, z,
-								  voxel::createVoxel(pal, palIdx))) {
-				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", x, y,
-						  z, mortonIdx);
+		}
+		for (const VoxelData &v : voxels) {
+			if (entries[v.material][v.color] / 256 == part) {
+				mins = glm::min(mins, v.position);
+				maxs = glm::max(maxs, v.position);
 			}
 		}
-		const glm::ivec3 mins(chunkX * maxChunkSize, chunkY * maxChunkSize, chunkZ * maxChunkSize);
-		v->translate(mins);
+		partPalette.setSize(core_min(256, combinations - part * 256));
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), maxs - mins));
+		for (const VoxelData &v : voxels) {
+			const int entry = entries[v.material][v.color];
+			if (entry / 256 == part) {
+				volume->setVoxel(v.position - mins, voxel::createVoxel(partPalette, (uint8_t)(entry % 256)));
+			}
+		}
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, part == 0 ? obj.id : core::UUID());
+		node.setName(part == 0 ? obj.n : core::String::format("%s-%i", obj.n.c_str(), part + 1));
+		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(mins));
+		if (obj.pid.isValid()) {
+			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
+		}
+		node.setVisible(!obj.h);
+		node.setVolume(volume);
+		node.setPalette(partPalette);
+		if (sceneGraph.emplace(core::move(node), parent) == InvalidNodeId) {
+			return false;
+		}
 	}
-	voxel::RawVolume *volume = voxelutil::mergeAndCrop(chunks.volumes);
-	if (volume == nullptr) {
-		Log::error("No volumes found in the scene graph");
-		return false;
-	}
-	const glm::ivec3 volumeMins = volume->region().getLowerCorner();
-	volume->translate(-volumeMins);
-
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, obj.id);
-	node.setName(obj.n);
-	applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(volumeMins));
-	if (obj.pid.isValid()) {
-		node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
-	}
-	node.setVisible(!obj.h);
-	node.setVolume(volume);
-	node.setPalette(pal);
-	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
+	return true;
 }
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
@@ -744,7 +744,12 @@ bool VMaxFormat::parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &
 	if (shadows.isBoolean()) {
 		material.enableShadows = shadows.asBoolean();
 	}
-	const util::BinaryPList &medium = node.getDictEntry("medium");
+	if (vmaxPlistNumber(node.getDictEntry("tc"), value)) {
+		material.transmission = value;
+		material.hasTransmission = true;
+	}
+	const util::BinaryPList &dispersion = node.getDictEntry("md");
+	const util::BinaryPList &medium = dispersion.isDict() ? dispersion : node.getDictEntry("medium");
 	if (medium.isDict()) {
 		if (vmaxPlistNumber(medium.getDictEntry("t"), value)) {
 			material.transmission = value;
@@ -754,19 +759,17 @@ bool VMaxFormat::parseVmaxMaterial(const util::BinaryPList &node, VmaxMaterial &
 			material.ior = value;
 			material.hasIor = true;
 		}
-		if (vmaxPlistNumber(medium.getDictEntry("a"), value)) {
-			material.anisotropy = value;
-		}
+
 	}
 	return layer >= 0 && layer < 8;
 }
 
 void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palIdx, const VmaxMaterial &material) const {
 	if (material.hasMetalness) {
-		palette.setMetal(palIdx, (float)material.metalness);
+		palette.setMetal(palIdx, (float)glm::clamp((material.metalness - 0.1) / 0.8, 0.0, 1.0));
 	}
 	if (material.hasRoughness) {
-		palette.setRoughness(palIdx, (float)material.roughness);
+		palette.setRoughness(palIdx, (float)glm::clamp((material.roughness - 0.1) / 0.8, 0.0, 1.0));
 	}
 	if (material.hasEmission && material.emission > 0.0) {
 		palette.setEmit(palIdx, (float)material.emission);
@@ -846,7 +849,7 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 			if (usage[i] == 0) {
 				continue;
 			}
-			applyVmaxLayerMaterial(palette, (uint8_t)i, layers.layers[applyLayer]);
+			applyVmaxLayerMaterial(palette, (uint8_t)(i - 1), layers.layers[applyLayer]);
 		}
 	}
 
@@ -864,8 +867,8 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 		if (!idNode.isInt()) {
 			continue;
 		}
-		const int palIdx = (int)idNode.asInt();
-		if (palIdx <= 0 || palIdx >= palette::PaletteMaxColors) {
+		const int palIdx = (int)idNode.asInt() - 1;
+		if (palIdx < 0 || palIdx >= 255) {
 			continue;
 		}
 		const util::BinaryPList &tp = entry.getDictEntry("tp");
@@ -927,8 +930,7 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 
 bool VMaxFormat::loadPaletteFromVmaxb(io::SeekableReadStream &stream, palette::Palette &palette,
 									  VmaxLayerMaterials &layers) const {
-	io::LZFSEReadStream lzfse(stream);
-	const util::BinaryPList plist = util::BinaryPList::parse(lzfse);
+	const util::BinaryPList plist = vmaxReadPlist(stream);
 	const util::BinaryPList &embeddedPal = plist.getDictEntry("pal");
 	if (!embeddedPal.isDict()) {
 		return false;
@@ -957,6 +959,18 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	}
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(paletteName));
 	if (!stream) {
+		const core::String settingsName = core::string::stripExtension(paletteName) + ".settings.vmaxpsb";
+		core::ScopedPtr<io::SeekableReadStream> settingsStream(archive->readStream(settingsName));
+		if (settingsStream) {
+			const util::BinaryPList settings = vmaxReadPlist(*settingsStream);
+			const util::BinaryPList &colors = settings.getDictEntry("colors");
+			image::ImagePtr image = image::createEmptyImage(settingsName);
+			if (colors.isData() && !colors.empty() && colors.size() % 4 == 0 && colors.size() <= 255 * 4 &&
+				image->loadRGBA(colors.asData().data(), (int)(colors.size() / 4), 1) && palette.load(image)) {
+				applyVmaxPaletteSettings(settings, palette, layers);
+				return true;
+			}
+		}
 		Log::error("Failed to load %s", paletteName.c_str());
 		return false;
 	}
@@ -999,10 +1013,15 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
-	const core::String &paletteName = "palette.png";
+	core::String paletteName = core::string::extractExtension(filename) == "vmaxb" ? vmaxPaletteFileForContents(filename) : "palette.png";
 	VmaxLayerMaterials layers;
 	core::String packageDir;
 	if (vmaxIsPackage(archive, filename, packageDir)) {
+		VMaxScene scene;
+		if (loadSceneJson(archive, scene, vmaxJoin(packageDir, "scene.json")) && !scene.objects.empty() &&
+			!scene.objects[0].pal.empty()) {
+			paletteName = scene.objects[0].pal;
+		}
 		if (loadPaletteFromArchive(archive, vmaxJoin(packageDir, paletteName), palette, ctx, layers)) {
 			return palette.colorCount();
 		}
@@ -1020,6 +1039,10 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
 	if (zipArchive) {
 		Log::debug("Found zip archive %s", filename.c_str());
+		VMaxScene scene;
+		if (loadSceneJson(zipArchive, scene, "scene.json") && !scene.objects.empty() && !scene.objects[0].pal.empty()) {
+			paletteName = scene.objects[0].pal;
+		}
 		if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx, layers)) {
 			Log::error("Failed to load palette from %s", paletteName.c_str());
 			return 0u;

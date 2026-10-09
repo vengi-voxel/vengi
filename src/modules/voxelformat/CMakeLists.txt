@@ -265,6 +265,7 @@ set(TEST_SRCS
 	tests/vox_glasses.h
 )
 set(TEST_FILES
+	"tests/vmax-regression.zip"
 	"tests/0voxel.vmax.zip"
 	"tests/1voxel.vmax.zip"
 	"tests/2voxel.vmax.zip"
