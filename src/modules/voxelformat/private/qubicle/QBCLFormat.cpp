@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "scenegraph/SceneGraphAnimation.h"
 #include "voxelformat/FormatThumbnail.h"
 #include "QBCLFormat.h"
 #include "core/Assert.h"
@@ -12,6 +13,8 @@
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/Base64.h"
+#include "io/MemoryReadStream.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
@@ -144,7 +147,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 							const scenegraph::SceneGraphNode &node) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const scenegraph::SceneGraphTransform &transform = node.transform(0);
-	const glm::ivec3 &translation = transform.localTranslation();
+	const glm::vec3 translation = transform.localTranslation() - node.pivot() * glm::vec3(region.getDimensionsInVoxels()) + glm::vec3(region.getLowerCorner());
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -253,10 +256,18 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sc
 	wrapSave(stream.writeBool(node.visible()))
 	wrapSave(stream.writeBool(true)) // unknown
 	wrapSave(stream.writeBool(node.locked()))
-	const glm::mat3x3 &mat = sceneGraph.transformForFrame(node, 0).worldMatrix();
-	for (int col = 0; col < 3; ++col) {
-		for (int row = 0; row < 3; ++row) {
-			wrapSave(stream.writeFloat(mat[col][row]))
+	const core::String modelData = node.property("qbcl_model_data");
+	if (!modelData.empty()) {
+		io::BufferedReadWriteStream decoded;
+		if (!io::Base64::decode(decoded, modelData) || decoded.size() != 36 ||
+			stream.write(decoded.getBuffer(), 36) != 36) {
+			return false;
+		}
+	} else {
+		// This block's semantics are unknown. Use Qubicle's default rather than
+		// interpreting the bytes as a matrix (the first three integers are 1).
+		for (int i = 0; i < 9; ++i) {
+			wrapSave(stream.writeUInt32(i < 3 ? 1 : 0))
 		}
 	}
 	wrapSave(stream.writeUInt32(children));
@@ -413,7 +424,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 	palette::PaletteLookup palLookup(palette);
 
-	while (!zipStream.eos()) {
+	const uint64_t columns = (uint64_t)size.x * size.z;
+	while (index < columns) {
 		int y = 0;
 		uint16_t rleEntries;
 		wrap(zipStream.readUInt16(rleEntries))
@@ -430,6 +442,10 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 			if (mask == qbcl::RLE_FLAG) {
 				uint8_t rleLength = red;
+				if (rleLength == 0 || y + rleLength > (int)size.y || i + 1 >= rleEntries) {
+					Log::error("Invalid QBCL voxel run");
+					return false;
+				}
 				uint8_t alpha;
 				wrap(zipStream.readUInt8(red))
 				wrap(zipStream.readUInt8(green))
@@ -453,11 +469,14 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 							sampler.setVoxel(voxel);
 							sampler.movePositiveY();
 						}
-						y += rleLength;
 					}
+					y += rleLength;
 				}
 				// we've read another color value for the rle values
 				++i;
+			} else if (y >= (int)size.y) {
+				Log::error("QBCL column exceeds matrix height");
+				return false;
 			} else if (mask == 0) {
 				++y;
 			} else {
@@ -476,7 +495,15 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 			}
 		}
 
+		if (y != (int)size.y) {
+			Log::error("QBCL column has %i voxels, expected %u", y, size.y);
+			return false;
+		}
 		index++;
+	}
+	if (!zipStream.eos()) {
+		Log::error("Trailing QBCL voxel columns");
+		return false;
 	}
 
 	if (header.loadPalette) {
@@ -496,17 +523,24 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	// the pivot is given in voxel coordinates
-	// node.setPivot(pivot / glm::vec3(size)); // TODO: VOXELFORMAT:
+	node.setPivot(pivot / glm::vec3(size));
+	// Vengi stores translation at the pivot; QBCL stores the grid origin.
+	transform.setLocalTranslation(glm::vec3(translation) + pivot);
+	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
-	return id != -1;
+	return id != InvalidNodeId;
 }
 
 bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
 						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader,
 						   const LoadContext &ctx) {
-	const size_t skip = 3 * 3 * sizeof(float);
-	stream.skip((int64_t)skip); // TODO: VOXELFORMAT: rotation matrix?
+	uint8_t modelBytes[36];
+	if (stream.read(modelBytes, sizeof(modelBytes)) != sizeof(modelBytes)) {
+		return false;
+	}
+	io::MemoryReadStream modelStream(modelBytes, sizeof(modelBytes));
+	const core::String modelData = io::Base64::encode(modelStream);
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
@@ -517,7 +551,21 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream 
 	}
 	node.setVisible(nodeHeader.visible);
 	node.setLocked(nodeHeader.locked);
-	int nodeId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
+	node.setProperty("qbcl_model_data", modelData);
+	int nodeId;
+	if (parent == InvalidNodeId) {
+		scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
+		root.setProperty("qbcl_model_data", modelData);
+		root.setName(node.name());
+		root.setVisible(nodeHeader.visible);
+		root.setLocked(nodeHeader.locked);
+		nodeId = root.id();
+	} else {
+		nodeId = sceneGraph.emplace(core::move(node), parent);
+		if (nodeId == InvalidNodeId) {
+			return false;
+		}
+	}
 	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
 		ctx.report("node", (int)i, (int)childCount);
@@ -569,7 +617,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream 
 	nodeHeader.locked = stream.readBool();
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
-		core_assert(parent != -1);
+		core_assert(parent != InvalidNodeId);
 		Log::debug("Found matrix");
 		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
 			Log::error("Failed to load matrix %s", name.c_str());
@@ -586,7 +634,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream 
 		Log::debug("Model of size %u loaded", unknown);
 		break;
 	case qbcl::NODE_TYPE_COMPOUND:
-		core_assert(parent != -1);
+		core_assert(parent != InvalidNodeId);
 		Log::debug("Found compound");
 		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader, ctx)) {
 			Log::error("Failed to load compound %s", name.c_str());
@@ -644,7 +692,7 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	wrapBool(readHeader(*stream, header))
 
 	palette::Palette palCopy = palette;
-	wrapBool(readNodes(filename, *stream, sceneGraph, -1, palCopy, header, ctx))
+	wrapBool(readNodes(filename, *stream, sceneGraph, InvalidNodeId, palCopy, header, ctx))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty(scenegraph::PropTitle, header.title);
