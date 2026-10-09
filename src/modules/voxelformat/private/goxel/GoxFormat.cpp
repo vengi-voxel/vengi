@@ -311,7 +311,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			delete modelVolume;
 			return false;
 		}
-		if (index > state.images.size()) {
+		if (index >= state.images.size()) {
 			Log::error("Index out of bounds: %u", index);
 			delete modelVolume;
 			return false;
