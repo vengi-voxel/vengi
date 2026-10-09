@@ -965,8 +965,12 @@ app::AppState IMGUIApp::onRunning() {
 	// Update and Render additional Platform Windows
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		ImGui::UpdatePlatformWindows();
+		// SDL creates secondary GL contexts with the default lower-left clip origin.
+		// Clip control is context state, even when the contexts share GL resources.
+		ImGui_ImplOpenGL3_SetClipOrigin(GL_LOWER_LEFT);
 		ImGui::RenderPlatformWindowsDefault();
 		video::activateContext(_window, _rendererContext);
+		ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
 	}
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
