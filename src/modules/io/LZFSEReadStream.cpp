@@ -18,7 +18,7 @@ LZFSEReadStream::LZFSEReadStream(io::SeekableReadStream &readStream, int size) {
 	size_t extractedSize = 0;
 	while (1) {
 		extractedSize = lzfse_decode_buffer(_extractedBuffer, extractedBufferSize, s.getBuffer(), s.size(), auxBuffer);
-		if (extractedSize == 0 || extractedSize == extractedBufferSize) {
+		if (extractedSize == extractedBufferSize && extractedSize != 0) {
 			extractedBufferSize <<= 1;
 			_extractedBuffer = (uint8_t *)core_realloc(_extractedBuffer, extractedBufferSize);
 			continue;
