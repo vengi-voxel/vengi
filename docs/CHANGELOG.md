@@ -17,14 +17,18 @@ General:
    - Added support for Sandbox `vxm` version 13 and `vxa` version 10
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
-   - Fixed VoxelMax `vmaxb` loading and transforms
+   - Fixed VoxelMax `vmaxb` loading and transforms as well as colors and materials
    - Improved `kvx` and `kv6` pivot support
    - Basic `fbx` material support
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
+   - Improved `qb`, `qbt` and `qbcl` pivot support
+   - Added support for Ace Of Spades `aos` map support
+   - Fixed Goxel `gox` index out of bounds read
 
 VoxEdit:
 
    - Improved line rendering quality for the viewport
+   - Fixed and improved normal painting
 
 PalConvert:
 
