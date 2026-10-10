@@ -912,6 +912,9 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	core::IProgress *progress = ctx.progress;
 
 	applyVengiNodeProperties(scene->extensions, scene->extensions_count, sceneGraph.node(0));
+	if (scene->name) {
+		sceneGraph.node(0).setName(scene->name);
+	}
 
 	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
 		const cgltf_node *wrapper = scene->nodes[0];
@@ -1838,6 +1841,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core_memset(&gltfScene, 0, sizeof(gltfScene));
 	gltfScene.nodes = sceneNodes;
 	gltfScene.nodes_count = rootIdx;
+	gltfScene.name = (char *)sceneGraph.root().name().c_str();
 	if (!sceneGraph.node(0).properties().empty()) {
 		sceneExtJson = propertiesToVengiExtensionJson(sceneGraph.node(0).properties());
 	}
