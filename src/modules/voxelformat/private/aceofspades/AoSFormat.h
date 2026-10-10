@@ -24,7 +24,7 @@ public:
 					   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"AceOfSpades Workshop", "", {"aos"}, {},
+		static io::FormatDescription f{"AceOfSpades Workshop", "", {"aos"}, {{'V', 'X', 'L', '\0'}, {'U', 'G', 'C', '\0'}},
 			VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
 		return f;
 	}

@@ -1133,7 +1133,16 @@ const jsonData = {
       "extensions": [
         "aos"
       ],
-      "magics": [],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x56584C00"
+        },
+        {
+          "type": "bytes",
+          "value": "0x55474300"
+        }
+      ],
       "mimetype": "application/x-aceofspades-workshop",
       "animation": false,
       "load": true,

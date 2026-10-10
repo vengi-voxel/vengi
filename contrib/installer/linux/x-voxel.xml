@@ -384,6 +384,18 @@
 	<mime-type type="application/x-aceofspades-workshop">
 		<comment>AceOfSpades Workshop</comment>
 		<glob pattern="*.aos"/>
+		<magic priority="50">
+			<match type="byte" offset="0" value="0x56"/>
+			<match type="byte" offset="1" value="0x58"/>
+			<match type="byte" offset="2" value="0x4c"/>
+			<match type="byte" offset="3" value="0x0"/>
+		</magic>
+		<magic priority="50">
+			<match type="byte" offset="0" value="0x55"/>
+			<match type="byte" offset="1" value="0x47"/>
+			<match type="byte" offset="2" value="0x43"/>
+			<match type="byte" offset="3" value="0x0"/>
+		</magic>
 	</mime-type>
 	<mime-type type="text/plain">
 		<comment>Qubicle Exchange</comment>
