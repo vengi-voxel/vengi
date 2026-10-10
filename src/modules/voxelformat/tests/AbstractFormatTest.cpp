@@ -263,7 +263,7 @@ void AbstractFormatTest::testRGBSmall(const core::String &filename) {
 
 void AbstractFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 	const core::String formatExt = core::string::extractExtension(filename);
-	const core::String saveFilename = "test." + formatExt;
+	const core::String saveFilename = "rgb-small-roundtrip." + formatExt;
 	testRGBSmallSaveLoad(filename, saveFilename);
 }
 
