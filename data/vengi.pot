@@ -508,7 +508,7 @@ msgstr ""
 msgid "Error: You must select a file type!"
 msgstr ""
 
-msgid "Change the ui colors - [0-3]"
+msgid "Change the ui color theme"
 msgstr ""
 
 msgid "UI style"
@@ -718,6 +718,18 @@ msgstr ""
 msgid "Classic"
 msgstr ""
 
+msgid "Dark Pastel"
+msgstr ""
+
+msgid "Rose Quartz"
+msgstr ""
+
+msgid "Gruvbox Hard"
+msgstr ""
+
+msgid "Dracula"
+msgstr ""
+
 msgid "Enable sending anonymous metrics"
 msgstr ""
 
@@ -817,14 +829,15 @@ msgstr ""
 msgid "Multisample buffers"
 msgstr ""
 
-msgid "The number of multisample buffers to use for the default framebuffer"
+msgid "Window backbuffer MSAA buffers. 0 disables window MSAA."
 msgstr ""
 
 msgid "Multisample samples"
 msgstr ""
 
 msgid ""
-"The number of samples to use for multisampling in the default framebuffer"
+"Scene viewport sample count. Also used for the window if "
+"cl_multisamplebuffers is > 0."
 msgstr ""
 
 msgid "Enable high DPI mode"
@@ -923,7 +936,7 @@ msgstr ""
 msgid "Render voxel normals"
 msgstr ""
 
-msgid "Enable or disable tone mapping"
+msgid "None, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
 msgstr ""
 
 msgid "Tone mapping"
@@ -1108,7 +1121,15 @@ msgstr ""
 msgid "Export with vertex colors"
 msgstr ""
 
-msgid "Export smoothed normals for cubic meshes"
+msgid "Export vertex normals"
+msgstr ""
+
+msgid "Voxel normals"
+msgstr ""
+
+msgid ""
+"Use stored voxel normals when exporting normals with Cubic or Binary "
+"extraction. May increase vertex count."
 msgstr ""
 
 msgid "Vertex colors as float"
@@ -1164,8 +1185,8 @@ msgid "Voxel size"
 msgstr ""
 
 msgid ""
-"The number of voxels on the largest axis (0 = disabled, use scale cvars "
-"instead). This only works for single mesh imports."
+"The number of voxels on the largest scene axis (0 = disabled, use scale "
+"cvars instead)."
 msgstr ""
 
 msgid "Palette mode"
@@ -1514,7 +1535,13 @@ msgstr ""
 msgid "Movement speed"
 msgstr ""
 
-msgid "Movement speed in game mode"
+msgid "Movement speed in world units per second in game mode"
+msgstr ""
+
+msgid "Editor camera movement speed in screen pixels per second"
+msgstr ""
+
+msgid "Editor movement speed"
 msgstr ""
 
 msgid "Jump velocity"
@@ -1584,6 +1611,24 @@ msgid "Front"
 msgstr ""
 
 msgid "Right"
+msgstr ""
+
+msgid "AgX"
+msgstr ""
+
+msgid "AgX Golden"
+msgstr ""
+
+msgid "AgX Punchy"
+msgstr ""
+
+msgid "ACES"
+msgstr ""
+
+msgid "Hable"
+msgstr ""
+
+msgid "Reinhard"
 msgstr ""
 
 msgid "Map colors to palette"
@@ -1818,6 +1863,10 @@ msgid "Resume playback of a recorded editing session"
 msgstr ""
 
 msgid "Create a new scene with ui interaction"
+msgstr ""
+
+msgid ""
+"Set camera zoom for repeatable framing, respecting configured zoom limits"
 msgstr ""
 
 msgid "Reset cameras in viewports"
@@ -4233,6 +4282,42 @@ msgstr ""
 msgid "Selection actions"
 msgstr ""
 
+msgid "Draw with"
+msgstr ""
+
+msgid "Stroke"
+msgstr ""
+
+msgid "Drag shape"
+msgstr ""
+
+msgid "Shape"
+msgstr ""
+
+msgid "Hold and drag to draw with the selected shape."
+msgstr ""
+
+msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
+msgstr ""
+
+msgid "Increase radius"
+msgstr ""
+
+msgid "Start from"
+msgstr ""
+
+msgid "Corner"
+msgstr ""
+
+msgid "Drag to define the shape's size."
+msgstr ""
+
+msgid "Mirror"
+msgstr ""
+
+msgid "Apply once per voxel per stroke"
+msgstr ""
+
 msgid "Use selection"
 msgstr ""
 
@@ -4303,9 +4388,6 @@ msgid "Off"
 msgstr ""
 
 msgid "Box"
-msgstr ""
-
-msgid "Stroke"
 msgstr ""
 
 msgid "No overlap"

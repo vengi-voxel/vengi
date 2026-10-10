@@ -259,7 +259,7 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 .PP
-\fBvoxformat_voxelsize\fP: The number of voxels on the largest axis (0 = disabled, use scale cvars instead). This only works for single mesh imports.
+\fBvoxformat_voxelsize\fP: The number of voxels on the largest scene axis (0 = disabled, use scale cvars instead).
 .PP
 \fBvoxformat_vxllodhva\fP: Load the hva for animations
 .PP
@@ -267,9 +267,11 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_withmaterials\fP: Try to export material properties if the formats support it
 .PP
-\fBvoxformat_withnormals\fP: Export smoothed normals for cubic meshes
+\fBvoxformat_withnormals\fP: Export vertex normals
 .PP
 \fBvoxformat_withtexcoords\fP: Export with uv coordinates of the palette image
+.PP
+\fBvoxformat_withvoxelnormals\fP: Use stored voxel normals when exporting normals with Cubic or Binary extraction. May increase vertex count.
 
 .SH ORDER OF EXECUTION
 
