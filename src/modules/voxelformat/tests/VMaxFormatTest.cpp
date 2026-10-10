@@ -395,7 +395,7 @@ TEST_F(VMaxFormatTest, testMaterialCombinationsExceedPaletteCapacity) {
 	VMaxFormat f;
 	scenegraph::SceneGraph graph;
 	ASSERT_TRUE(f.load("many-materials.vmaxb", regressionArchive(), graph, testLoadCtx));
-	EXPECT_EQ(2, graph.size(scenegraph::SceneGraphNodeType::Model));
+	EXPECT_EQ(2u, graph.size(scenegraph::SceneGraphNodeType::Model));
 	int count = 0;
 	for (auto it = graph.begin(scenegraph::SceneGraphNodeType::Model); it != graph.end(); ++it) {
 		count += voxelutil::countVoxels(*(*it).volume());
@@ -468,7 +468,7 @@ TEST_F(VMaxFormatTest, testExtractIndexedStandalonePalette) {
 	ASSERT_TRUE(addArchiveFile(archive, "palette.png", files, "palette1.png"));
 	VMaxFormat f;
 	palette::Palette palette;
-	ASSERT_GT(f.loadPalette("contents1.vmaxb", files, palette, testLoadCtx), 0);
+	ASSERT_GT(f.loadPalette("contents1.vmaxb", files, palette, testLoadCtx), 0u);
 	EXPECT_EQ(color::RGBA(0, 255, 0, 255), palette.color(0));
 }
 
