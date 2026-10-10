@@ -1108,6 +1108,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>AceOfSpades Workshop</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-aceofspades-workshop</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>aos</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Qubicle Exchange</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

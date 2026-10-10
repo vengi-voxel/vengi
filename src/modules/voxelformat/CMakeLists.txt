@@ -76,6 +76,7 @@ set(SRCS
 	FormatThumbnail.h
 	VolumeFormat.h VolumeFormat.cpp
 
+	private/aceofspades/AoSFormat.h          private/aceofspades/AoSFormat.cpp
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
 	private/anivoxel/AniVoxelFormat.h        private/anivoxel/AniVoxelFormat.cpp
@@ -187,6 +188,7 @@ set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
 	tests/AnimaToonFormatTest.cpp
 	tests/AniVoxelFormatTest.cpp
+	tests/AoSFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
 	tests/Autodesk3DSFormatTest.cpp

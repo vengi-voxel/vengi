@@ -22,6 +22,7 @@
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
+#include "voxelformat/private/aceofspades/AoSFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
 #include "voxelformat/private/anivoxel/AniVoxelFormat.h"
 #include "voxelformat/private/benvoxel/BenVoxelFormat.h"
@@ -153,6 +154,7 @@ const io::FormatDescription *voxelFormats() {
 												 KV6Format::format(),
 												 VXLFormat::format(),
 												 AoSVXLFormat::format(),
+												 AoSFormat::format(),
 												 QEFFormat::format(),
 												 CSMFormat::format(),
 												 CSMFormat::formatNVM(),
@@ -258,6 +260,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<VXTFormat>();
 		} else if (io::isA(VXLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXLFormat>();
+		} else if (io::isA(AoSFormat::format(), desc, ext, magic)) {
+			return core::make_shared<AoSFormat>();
 		} else if (io::isA(AoSVXLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AoSVXLFormat>();
 		} else if (io::isA(CSMFormat::formatNVM(), desc, ext, magic) || isA(CSMFormat::format(), desc, ext, magic)) {

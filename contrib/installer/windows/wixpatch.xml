@@ -232,6 +232,9 @@
 		<RegistryKey Root="HKCR" Key=".vxl">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".aos">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".qef">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -936,6 +939,15 @@
 		<RegistryValue Root="HKCR" Key=".vxl\OpenWithProgids" Name="vengi-voxedit.vxl" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vxl" Description="Tiberian Sun" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vxl" ContentType="application/x-tiberian-sun">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".aos" Value="vengi-voxedit.aos" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".aos" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".aos\OpenWithProgids" Name="vengi-voxedit.aos" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.aos" Description="AceOfSpades Workshop" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="aos" ContentType="application/x-aceofspades-workshop">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

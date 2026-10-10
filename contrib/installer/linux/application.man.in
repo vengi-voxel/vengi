@@ -30,6 +30,8 @@ AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)
 .TP
+AceOfSpades Workshop (*.aos)
+.TP
 AnimaToon (*.scn)
 .TP
 anivoxel (*.voxa)

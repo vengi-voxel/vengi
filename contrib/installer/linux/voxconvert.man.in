@@ -369,6 +369,8 @@ AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)
 .TP
+AceOfSpades Workshop (*.aos)
+.TP
 AnimaToon (*.scn)
 .TP
 anivoxel (*.voxa)
@@ -508,6 +510,8 @@ Wavefront Object (*.obj)
 AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)
+.TP
+AceOfSpades Workshop (*.aos)
 .TP
 BenVoxel (*.ben.json, *.ben)
 .TP

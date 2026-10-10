@@ -381,6 +381,10 @@
 		<comment>AceOfSpades</comment>
 		<glob pattern="*.vxl"/>
 	</mime-type>
+	<mime-type type="application/x-aceofspades-workshop">
+		<comment>AceOfSpades Workshop</comment>
+		<glob pattern="*.aos"/>
+	</mime-type>
 	<mime-type type="text/plain">
 		<comment>Qubicle Exchange</comment>
 		<glob pattern="*.qef"/>

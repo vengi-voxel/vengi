@@ -1129,6 +1129,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "AceOfSpades Workshop",
+      "extensions": [
+        "aos"
+      ],
+      "magics": [],
+      "mimetype": "application/x-aceofspades-workshop",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "Qubicle Exchange",
       "extensions": [
         "qef"
