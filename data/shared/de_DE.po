@@ -543,8 +543,8 @@ msgstr "Fehler: Sie müssen eine Datei auswählen!"
 msgid "Error: You must select a file type!"
 msgstr "Fehler: Sie müssen einen Dateitypen auswählen!"
 
-msgid "Change the ui colors - [0-3]"
-msgstr "Die UI-Farben ändern - [0-3]"
+msgid "Change the ui color theme"
+msgstr "Das UI-Farbschema ändern"
 
 msgid "UI style"
 msgstr "UI-Stil"
@@ -759,6 +759,18 @@ msgstr "Hell"
 msgid "Classic"
 msgstr "Klassisch"
 
+msgid "Dark Pastel"
+msgstr "Dunkles Pastell"
+
+msgid "Rose Quartz"
+msgstr ""
+
+msgid "Gruvbox Hard"
+msgstr ""
+
+msgid "Dracula"
+msgstr ""
+
 msgid "Enable sending anonymous metrics"
 msgstr "Senden anonymer Metriken aktivieren"
 
@@ -858,15 +870,16 @@ msgstr "Alle Bilder im Texturpool anzeigen"
 msgid "Multisample buffers"
 msgstr "Multisample-Buffer"
 
-msgid "The number of multisample buffers to use for the default framebuffer"
-msgstr "Anzahl der Multisample-Puffer für den Standard-Framebuffer"
+msgid "Window backbuffer MSAA buffers. 0 disables window MSAA."
+msgstr ""
 
 msgid "Multisample samples"
 msgstr "Multisample-Samples"
 
 msgid ""
-"The number of samples to use for multisampling in the default framebuffer"
-msgstr "Anzahl der Samples für Multisampling im Standard-Framebuffer"
+"Scene viewport sample count. Also used for the window if "
+"cl_multisamplebuffers is > 0."
+msgstr ""
 
 msgid "Enable high DPI mode"
 msgstr "High-DPI-Modus aktivieren"
@@ -964,8 +977,8 @@ msgstr "Normalen"
 msgid "Render voxel normals"
 msgstr "Voxelnormalen rendern"
 
-msgid "Enable or disable tone mapping"
-msgstr "Tone Mapping aktivieren oder deaktivieren"
+msgid "None, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
+msgstr ""
 
 msgid "Tone mapping"
 msgstr "Tonemapping"
@@ -1164,8 +1177,16 @@ msgstr "Vertexfarben"
 msgid "Export with vertex colors"
 msgstr "Exportiere mit Vertexfarben"
 
-msgid "Export smoothed normals for cubic meshes"
-msgstr "Exportiere geglättete Normalen für kubische Meshes"
+msgid "Export vertex normals"
+msgstr "Vertexnormalen exportieren"
+
+msgid "Voxel normals"
+msgstr "Voxelnormalen"
+
+msgid ""
+"Use stored voxel normals when exporting normals with Cubic or Binary "
+"extraction. May increase vertex count."
+msgstr ""
 
 msgid "Vertex colors as float"
 msgstr "Vertexfarben als Fließkommazahlen"
@@ -1222,11 +1243,9 @@ msgid "Voxel size"
 msgstr "Voxelgröße"
 
 msgid ""
-"The number of voxels on the largest axis (0 = disabled, use scale cvars "
-"instead). This only works for single mesh imports."
-msgstr ""
-"Anzahl Voxel auf der längsten Achse (0 = deaktiviert, dann Scale-CVars). Nur "
-"für Einzel-Mesh-Importe."
+"The number of voxels on the largest scene axis (0 = disabled, use scale "
+"cvars instead)."
+msgstr "Anzahl der Voxel auf der längsten Szenenachse (0 = deaktiviert, stattdessen Scale-CVars verwenden)."
 
 msgid "Palette mode"
 msgstr "Palettenmodus"
@@ -1598,8 +1617,14 @@ msgstr "Herausnehmen"
 msgid "Movement speed"
 msgstr "Bewegungsgeschwindigkeit"
 
-msgid "Movement speed in game mode"
-msgstr "Bewegungsgeschwindigkeit im Spielmodus"
+msgid "Movement speed in world units per second in game mode"
+msgstr "Bewegungsgeschwindigkeit in Welteinheiten pro Sekunde im Spielmodus"
+
+msgid "Editor camera movement speed in screen pixels per second"
+msgstr ""
+
+msgid "Editor movement speed"
+msgstr "Bewegungsgeschwindigkeit im Editor"
 
 msgid "Jump velocity"
 msgstr "Sprunggeschwindigkeit"
@@ -1669,6 +1694,24 @@ msgstr "Front"
 
 msgid "Right"
 msgstr "Rechts"
+
+msgid "AgX"
+msgstr ""
+
+msgid "AgX Golden"
+msgstr ""
+
+msgid "AgX Punchy"
+msgstr ""
+
+msgid "ACES"
+msgstr ""
+
+msgid "Hable"
+msgstr "Hable"
+
+msgid "Reinhard"
+msgstr ""
 
 msgid "Map colors to palette"
 msgstr "Mappe Farben auf Palette"
@@ -1909,6 +1952,10 @@ msgstr "Wiedergabe einer aufgezeichneten Bearbeitungssitzung fortsetzen"
 
 msgid "Create a new scene with ui interaction"
 msgstr "Eine neue Szene mit UI-Interaktion erstellen"
+
+msgid ""
+"Set camera zoom for repeatable framing, respecting configured zoom limits"
+msgstr ""
 
 msgid "Reset cameras in viewports"
 msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
@@ -3286,7 +3333,7 @@ msgstr ""
 
 #, c-format
 msgid "Draw calls: %<PRIu64>"
-msgstr "Draw Calls: %i"
+msgstr "Draw Calls: %<PRIu64>"
 
 #, c-format
 msgid "Pipeline binds: %<PRIu64>"
@@ -4456,6 +4503,42 @@ msgstr "Klicken und ziehen, um ein Auswahlpolygon zu zeichnen"
 msgid "Selection actions"
 msgstr "Auswahlaktionen"
 
+msgid "Draw with"
+msgstr ""
+
+msgid "Stroke"
+msgstr "Strich"
+
+msgid "Drag shape"
+msgstr ""
+
+msgid "Shape"
+msgstr ""
+
+msgid "Hold and drag to draw with the selected shape."
+msgstr "Gedrückt halten und ziehen, um mit der ausgewählten Form zu zeichnen."
+
+msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
+msgstr ""
+
+msgid "Increase radius"
+msgstr "Radius vergrößern"
+
+msgid "Start from"
+msgstr "Ausgangspunkt"
+
+msgid "Corner"
+msgstr ""
+
+msgid "Drag to define the shape's size."
+msgstr ""
+
+msgid "Mirror"
+msgstr "Spiegelung"
+
+msgid "Apply once per voxel per stroke"
+msgstr ""
+
 msgid "Use selection"
 msgstr "Auswahl verwenden"
 
@@ -4527,9 +4610,6 @@ msgstr "Aus"
 
 msgid "Box"
 msgstr "Box"
-
-msgid "Stroke"
-msgstr "Strich"
 
 msgid "No overlap"
 msgstr "Keine Überlappung"
