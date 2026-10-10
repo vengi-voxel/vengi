@@ -533,10 +533,14 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 	};
 
 	const util::BinaryPList &version = plist.getDictEntry("v");
+	if (version.valid() && (!version.isInt() || version.asInt() > 4u)) {
+		Log::error("Unsupported VoxelMax contents version");
+		return false;
+	}
 	const util::BinaryPList &legacyChunks = plist.getDictEntry("chunks");
 	const util::BinaryPList &snapshots = plist.getDictEntry("snapshots");
 	// Some standalone contents omit the version; accept their snapshots as modern storage.
-	if ((version.isInt() && version.asInt() < 4) || (!snapshots.valid() && legacyChunks.valid())) {
+	if ((version.valid() && version.isInt() && version.asInt() < 4) || (!snapshots.valid() && legacyChunks.valid())) {
 		const util::BinaryPList &legacyVoxels = plist.getDictEntry("voxels");
 		if (!legacyChunks.isData() || legacyChunks.size() % 16 != 0 || !legacyVoxels.isArray() ||
 			legacyVoxels.size() != legacyChunks.size() / 16) {
@@ -585,7 +589,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			const util::BinaryPList &storage = snapshots.asArray()[i].getDictEntry("s");
 			const util::BinaryPList &cid = storage.getDictEntry("id").getDictEntry("c");
 			// 512^3 workspaces have 16^3 chunks, encoded as Morton IDs 0..4095.
-			if (!cid.isInt() || cid.asInt() >= 4096u) {
+			if (!cid.valid() || !cid.isInt() || cid.asInt() >= 4096u) {
 				Log::error("Invalid VoxelMax chunk identifier");
 				return false;
 			}
@@ -601,6 +605,18 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 				continue;
 			}
 			const util::BinaryPList &stats = storage.getDictEntry("st");
+			const util::BinaryPList &count = stats.getDictEntry("count");
+			const util::BinaryPList &selectedCount = stats.getDictEntry("scount");
+			if ((count.valid() && (!count.isInt() || count.asInt() > 32768u)) ||
+				(selectedCount.valid() && (!selectedCount.isInt() || selectedCount.asInt() > 32768u))) {
+				Log::error("Invalid VoxelMax snapshot voxel count");
+				return false;
+			}
+			// Empty chunks have no payload. Their min/max can contain sentinel values,
+			// and VoxelMax's writer omits ds when the storage pointer is null.
+			if (count.valid() && count.isInt() && count.asInt() == 0u) {
+				continue;
+			}
 			const util::BinaryPList &mins = stats.getDictEntry("min");
 			const util::BinaryPList &chunkOrder = stats.getDictEntry("extent").getDictEntry("o");
 			if (!mins.isArray() || mins.size() != 4 || !mins.asArray()[3].isInt() ||
@@ -608,9 +624,20 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 				Log::error("Invalid VoxelMax snapshot stats");
 				return false;
 			}
+			const util::BinaryPList &bytes = storage.getDictEntry("ds");
+			const util::BinaryPList &maxs = stats.getDictEntry("max");
+			// count is the number of occupied voxels, not the length of ds: the
+			// Morton span includes air between min and max. Keep accepting older
+			// standalone files with minimal stats, but validate max when supplied.
+			if (maxs.valid() && (!maxs.isArray() || maxs.size() != 4 || !maxs.asArray()[3].isInt() ||
+				maxs.asArray()[3].asInt() >= 32768u || maxs.asArray()[3].asInt() < mins.asArray()[3].asInt() ||
+				!bytes.isData() || bytes.size() != (maxs.asArray()[3].asInt() - mins.asArray()[3].asInt() + 1u) * 2u)) {
+				Log::error("Invalid VoxelMax snapshot Morton span");
+				return false;
+			}
 			uint8_t x, y, z;
 			voxel::mortonIndexToCoord(cid, x, y, z);
-			if (!decode(storage.getDictEntry("ds"), glm::ivec3(x, y, z) * 32, (int)mins.asArray()[3].asInt(), 2)) {
+			if (!decode(bytes, glm::ivec3(x, y, z) * 32, (int)mins.asArray()[3].asInt(), 2)) {
 				return false;
 			}
 		}

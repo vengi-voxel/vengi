@@ -30,6 +30,7 @@ class VMaxFormatTest : public AbstractFormatTest {
 protected:
 	core::ScopedPtr<io::SeekableReadStream> _regressionStream;
 	io::ArchivePtr regressionArchive();
+	io::ArchivePtr versionsArchive();
 };
 
 TEST_F(VMaxFormatTest, testLoad) {
@@ -581,6 +582,77 @@ TEST_F(VMaxFormatTest, testDenseChunk) {
 	ASSERT_TRUE(f.load("dense.vmaxb", regressionArchive(), graph, testLoadCtx));
 	ASSERT_NE(nullptr, graph.firstModelNode());
 	EXPECT_EQ(32768, voxelutil::countVoxels(*graph.firstModelNode()->volume()));
+}
+
+io::ArchivePtr VMaxFormatTest::versionsArchive() {
+	_regressionStream = helper_filesystemarchive()->readStream("vmax-versions.zip");
+	if (!_regressionStream) {
+		ADD_FAILURE() << "Missing vmax-versions.zip";
+		return io::openMemoryArchive();
+	}
+	return io::openZipArchive(_regressionStream);
+}
+
+TEST_F(VMaxFormatTest, testKnownContentsVersions) {
+	VMaxFormat format;
+	const io::ArchivePtr archive = versionsArchive();
+	for (int version = 0; version < 4; ++version) {
+		for (const char *encoding : {"color", "extended"}) {
+			const core::String name = core::String::format("version%i-%s.vmaxb", version, encoding);
+			SCOPED_TRACE(name.c_str());
+			scenegraph::SceneGraph graph;
+			ASSERT_TRUE(format.load(name, archive, graph, testLoadCtx));
+			const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+			ASSERT_NE(nullptr, node);
+			EXPECT_EQ(2, voxelutil::countVoxels(*node->volume()));
+			EXPECT_EQ(color::RGBA(255, 0, 0, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
+			EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(1, 0, 0).getColor()));
+			graph.updateTransforms();
+			EXPECT_VEC_NEAR(glm::vec3(32.0f, 96.0f, 64.0f), node->transform(0).worldTranslation(), 0.001f);
+		}
+	}
+}
+
+TEST_F(VMaxFormatTest, testSnapshotSpanIncludesAir) {
+	VMaxFormat format;
+	const io::ArchivePtr archive = versionsArchive();
+	for (const char *name : {"version4.vmaxb", "unversioned-snapshots.vmaxb"}) {
+		SCOPED_TRACE(name);
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.load(name, archive, graph, testLoadCtx));
+		const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+		ASSERT_NE(nullptr, node);
+		EXPECT_EQ(2, voxelutil::countVoxels(*node->volume()));
+		// Morton 9 is (3,0,0), Morton 12 is (2,0,1). Cropping removes (2,0,0).
+		EXPECT_EQ(color::RGBA(255, 0, 0, 255), node->palette().color(node->volume()->voxel(1, 0, 0).getColor()));
+		EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(0, 1, 0).getColor()));
+		graph.updateTransforms();
+		EXPECT_VEC_NEAR(glm::vec3(2.0f, 0.0f, 0.0f), node->transform(0).worldTranslation(), 0.001f);
+	}
+}
+
+TEST_F(VMaxFormatTest, testEmptySnapshotWithoutPayloadReplacesChunk) {
+	VMaxFormat format;
+	const io::ArchivePtr archive = versionsArchive();
+	for (const char *name : {"empty-without-data.vmaxb", "empty-with-stale-data.vmaxb"}) {
+		SCOPED_TRACE(name);
+		scenegraph::SceneGraph graph;
+		EXPECT_TRUE(format.load(name, archive, graph, testLoadCtx));
+		EXPECT_EQ(nullptr, graph.firstModelNode());
+	}
+}
+
+TEST_F(VMaxFormatTest, testRejectsInconsistentSnapshotStatsAndUnknownVersions) {
+	VMaxFormat format;
+	const io::ArchivePtr archive = versionsArchive();
+	for (const char *name : {"negative-count", "oversize-count", "string-count", "negative-selected-count",
+							 "reversed-span", "oversize-span", "short-max", "string-max", "short-data", "long-data",
+							 "missing-nonempty-data", "missing-chunk-id", "invalid-version--1", "invalid-version-5", "invalid-version-4"}) {
+		SCOPED_TRACE(name);
+		scenegraph::SceneGraph graph;
+		EXPECT_FALSE(format.load(core::String(name) + ".vmaxb", archive, graph, testLoadCtx));
+		EXPECT_EQ(nullptr, graph.firstModelNode());
+	}
 }
 
 } // namespace voxelformat

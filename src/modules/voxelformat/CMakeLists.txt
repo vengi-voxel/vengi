@@ -268,6 +268,7 @@ set(TEST_SRCS
 )
 set(TEST_FILES
 	"tests/vmax-regression.zip"
+	"tests/vmax-versions.zip"
 	"tests/0voxel.vmax.zip"
 	"tests/1voxel.vmax.zip"
 	"tests/2voxel.vmax.zip"
