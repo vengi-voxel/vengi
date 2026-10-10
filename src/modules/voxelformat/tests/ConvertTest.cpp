@@ -190,22 +190,22 @@ TEST_F(ConvertTest, testGoxToQb) {
 TEST_F(ConvertTest, testQBCLToQb) {
 	QBCLFormat src;
 	QBFormat target;
-	// qb doesn't store a pivot
+	// QB bakes the pivot into its integer grid origin. Compare world cells instead of translation.
 	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
 	const voxel::ValidateFlags flags =
-		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
-		voxel::ValidateFlags::PaletteColorOrderDiffers;
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
+		voxel::ValidateFlags::PaletteColorOrderDiffers | voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbtToQb) {
 	QBTFormat src;
 	QBFormat target;
-	// qb doesn't store a pivot
+	// QB bakes the pivot into its integer grid origin. Compare world cells instead of translation.
 	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
 	const voxel::ValidateFlags flags =
-		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
-		voxel::ValidateFlags::PaletteColorOrderDiffers;
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Palette | voxel::ValidateFlags::SceneGraphModelsParent)) |
+		voxel::ValidateFlags::PaletteColorOrderDiffers | voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
 }
 
@@ -213,9 +213,10 @@ TEST_F(ConvertTest, testKV6ToQb) {
 	KV6Format src;
 	QBFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	// qb doesn't store a pivot
+	// QB bakes the pivot into the grid origin; compare occupied world cells.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors & ~(voxel::ValidateFlags::Pivot);
+		(voxel::ValidateFlags::AllPaletteMinMatchingColors & ~voxel::ValidateFlags::Transform) |
+		voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("test.kv6", src, "convert-test.qb", target, flags);
 }
 
@@ -269,9 +270,10 @@ TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
 	// the palette color amount differs, because qubicle is a rgba format and only stores used colors
-	// qb doesn't store a pivot
+	// QB bakes the pivot into the grid origin; compare occupied world cells.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Palette)) |
+		voxel::ValidateFlags::OccupiedExact;
 	testLoadSaveAndLoadSceneGraph("test.vxm", src, "convert-test.qb", target, flags);
 }
 
@@ -291,9 +293,10 @@ TEST_F(ConvertTest, testVXRToQb) {
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
-	// qb doesn't store a pivot
+	// QB bakes the pivot into the grid origin; compare occupied world cells.
 	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+		(voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Palette)) |
+		voxel::ValidateFlags::OccupiedExact;
 	testConvert("test.kvx", src, "convert-test.qb", target, flags);
 }
 

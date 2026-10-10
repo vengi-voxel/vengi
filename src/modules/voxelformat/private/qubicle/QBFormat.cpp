@@ -170,8 +170,9 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 	}
 
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	const glm::ivec3 &offset = glm::round(transform.worldTranslation());
+	// QB stores the grid origin, whereas vengi translation locates the pivot.
+	const glm::mat4 worldMatrix = sceneGraph.worldMatrix(node, keyFrameIdx);
+	const glm::ivec3 offset = glm::round(glm::vec3(worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f)));
 	if (leftHanded) {
 		wrapSave(stream.writeInt32(offset.x));
 		wrapSave(stream.writeInt32(offset.y));
