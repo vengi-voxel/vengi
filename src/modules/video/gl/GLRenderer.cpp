@@ -1757,6 +1757,59 @@ void finish() {
 	checkError();
 }
 
+
+Id createTimerQuery() {
+#if USE_OPENGLES
+	return InvalidId;
+#else
+	const GLVersion &version = glState().glVersion;
+	if (version.majorVersion < 3 || (version.majorVersion == 3 && version.minorVersion < 3) ||
+		glGenQueries == nullptr || glDeleteQueries == nullptr || glBeginQuery == nullptr || glEndQuery == nullptr ||
+		glGetQueryObjectui64v == nullptr) {
+		return InvalidId;
+	}
+	GLint bits = 0;
+	glGetQueryiv(GL_TIME_ELAPSED, GL_QUERY_COUNTER_BITS, &bits);
+	checkError();
+	if (bits == 0) {
+		return InvalidId;
+	}
+	Id query = InvalidId;
+	glGenQueries(1, &query);
+	checkError();
+	return query;
+#endif
+}
+
+void deleteTimerQuery(Id &query) {
+	if (query == InvalidId) {
+		return;
+	}
+	glDeleteQueries(1, &query);
+	checkError();
+	query = InvalidId;
+}
+
+void beginTimerQuery(Id query) {
+	core_assert(query != InvalidId);
+	syncState();
+	glBeginQuery(GL_TIME_ELAPSED, query);
+	checkError();
+}
+
+void endTimerQuery() {
+	glEndQuery(GL_TIME_ELAPSED);
+	checkError();
+}
+
+uint64_t timerQueryResult(Id query) {
+	core_assert(query != InvalidId);
+	GLuint64 elapsed = 0;
+	glGetQueryObjectui64v(query, GL_QUERY_RESULT, &elapsed);
+	checkError();
+	return (uint64_t)elapsed;
+}
+
 static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttachment, int width, int height) {
 	statsBlit();
 	syncState();

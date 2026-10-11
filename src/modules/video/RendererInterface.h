@@ -675,4 +675,15 @@ void syncPendingState();
  */
 void finish();
 
+/** @brief Create a GPU elapsed-time query, or return InvalidId if unsupported. */
+Id createTimerQuery();
+/** @brief Delete a timer query and reset its handle to InvalidId. */
+void deleteTimerQuery(Id &query);
+/** @brief Begin measuring GPU elapsed time. Queries must not be nested. */
+void beginTimerQuery(Id query);
+/** @brief End the active GPU elapsed-time measurement. */
+void endTimerQuery();
+/** @brief Wait for a completed query and return its GPU elapsed time in nanoseconds. */
+uint64_t timerQueryResult(Id query);
+
 } // namespace video

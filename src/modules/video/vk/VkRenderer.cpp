@@ -407,6 +407,24 @@ void flush() {
 void finish() {
 }
 
+Id createTimerQuery() {
+	return InvalidId;
+}
+
+void deleteTimerQuery(Id &query) {
+	query = InvalidId;
+}
+
+void beginTimerQuery(Id query) {
+}
+
+void endTimerQuery() {
+}
+
+uint64_t timerQueryResult(Id query) {
+	return 0;
+}
+
 void traceVideoBegin(const char *name) {
 	core::traceBegin(name);
 }
