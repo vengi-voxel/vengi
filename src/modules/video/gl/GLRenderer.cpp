@@ -3041,6 +3041,7 @@ static void handleVSync() {
 }
 
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
+	glState() = _priv::GLState{};
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glState().glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glState().glVersion.minorVersion);
 	Log::debug("got gl context: %i.%i", glState().glVersion.majorVersion, glState().glVersion.minorVersion);
@@ -3130,6 +3131,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	// default state
 	// https://www.glprogramming.com/red/appendixb.html
 	rs.states.set(core::enumVal(video::State::DepthMask), true);
+	rs.pendingStates.set(core::enumVal(video::State::DepthMask), true);
 	glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
 	if (rs.smoothedLineWidth.x < 0.0f) {
 #ifdef USE_OPENGLES
