@@ -1802,6 +1802,20 @@ void endTimerQuery() {
 	checkError();
 }
 
+bool timerQueryAvailable(Id query) {
+#if USE_OPENGLES
+	return false;
+#else
+	if (query == InvalidId) {
+		return false;
+	}
+	GLuint available = GL_FALSE;
+	glGetQueryObjectuiv(query, GL_QUERY_RESULT_AVAILABLE, &available);
+	checkError();
+	return available == GL_TRUE;
+#endif
+}
+
 uint64_t timerQueryResult(Id query) {
 	core_assert(query != InvalidId);
 	GLuint64 elapsed = 0;

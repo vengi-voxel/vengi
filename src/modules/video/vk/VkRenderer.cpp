@@ -421,6 +421,10 @@ void beginTimerQuery(Id query) {
 void endTimerQuery() {
 }
 
+bool timerQueryAvailable(Id query) {
+	return false;
+}
+
 uint64_t timerQueryResult(Id query) {
 	return 0;
 }

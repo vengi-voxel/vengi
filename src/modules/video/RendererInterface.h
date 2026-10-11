@@ -683,6 +683,8 @@ void deleteTimerQuery(Id &query);
 void beginTimerQuery(Id query);
 /** @brief End the active GPU elapsed-time measurement. */
 void endTimerQuery();
+/** @brief Check whether a query result is ready without waiting for the GPU. */
+bool timerQueryAvailable(Id query);
 /** @brief Wait for a completed query and return its GPU elapsed time in nanoseconds. */
 uint64_t timerQueryResult(Id query);
 
