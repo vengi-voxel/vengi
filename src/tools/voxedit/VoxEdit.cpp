@@ -867,8 +867,11 @@ app::AppState VoxEdit::onRunning() {
 		clearWindowProgress();
 	}
 
-	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
-	if (viewport) {
+	const bool renderHovered = _mainWindow->isRenderPanelHovered();
+	const voxedit::Viewport *viewport = renderHovered ? nullptr : _mainWindow->hoveredViewport();
+	if (renderHovered) {
+		core::setBindingContext(core::BindingContext::Context1);
+	} else if (viewport) {
 		int ctx = 0;
 		if (viewport->isGameMode()) {
 			ctx |= (int)core::BindingContext::Context3;
