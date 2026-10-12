@@ -20,11 +20,7 @@ float nextRand() {
 	return float(pcgNext()) * (1.0 / 4294967296.0);
 }
 
-// Nested PCG hashes mix x, y, and frame independently. A linear combination
-// (x * A + y * B + frame * C) leaves adjacent pixels with nearby LCG states, so
-// the first draws are spatially correlated unless dummy pcgNext() steps scramble
-// them. Hashing the seed makes those warmup calls unnecessary. This PCG variant
-// also does not need an odd state (| 1u).
+// Hash pixel coordinates and frame separately to decorrelate neighboring seeds.
 void seedRng(ivec2 pixel, uint frame) {
 	g_rng = pcgHash(uint(pixel.x) + pcgHash(uint(pixel.y) + pcgHash(frame)));
 }

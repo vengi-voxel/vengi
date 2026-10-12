@@ -1,5 +1,7 @@
 #include "_sampling.glsl"
 
+// Schlick's Fresnel approximation (1994).
+// https://doi.org/10.1111/1467-8659.1330233
 vec3 fresnelSchlick(float cosTheta, vec3 f0) {
 	return f0 + (1.0 - f0) * pow(1.0 - cosTheta, 5.0);
 }
@@ -9,6 +11,8 @@ float fresnelDielectric(float cosTheta, float eta) {
 	return fresnelSchlick(cosTheta, vec3(a * a)).x;
 }
 
+// Trowbridge-Reitz (GGX) normal distribution and Smith masking-shadowing below.
+// https://pbr-book.org/4ed/Reflection_Models/Roughness_Using_Microfacet_Theory
 float D_GGX(float NdotH, float a) {
 	float a2 = a * a;
 	float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
@@ -26,6 +30,7 @@ float G_Smith(float NdotV, float NdotL, float a) {
 }
 
 // Heitz, "Sampling the GGX Distribution of Visible Normals", JCGT 2018.
+// https://jcgt.org/published/0007/04/01/
 vec3 sampleGGXVNDF(vec3 Ve, float roughness) {
 	float a = max(roughness * roughness, 0.001);
 	vec3 Vh = normalize(vec3(a * Ve.x, a * Ve.y, max(Ve.z, 1e-6)));

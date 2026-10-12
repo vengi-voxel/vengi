@@ -7,9 +7,8 @@ void buildONB(vec3 n, out vec3 t, out vec3 b) {
 	b = cross(n, t);
 }
 
-// Cosine-weighted hemisphere sampling via Malley's method.
-// Reference: Shirley & Chiu, "A Low Distortion Map Between Disk and Square", 1997.
-// Used to importance-sample diffuse BRDFs: pdf = cos(theta) / PI.
+// Malley's method: project a uniform disk sample to a cosine-weighted hemisphere.
+// https://pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions
 vec3 cosineSampleHemi(vec3 n) {
 	float r1 = nextRand();
 	float r2 = nextRand();
@@ -32,7 +31,7 @@ vec3 sampleCone(vec3 dir, float cosMax) {
 	return normalize(t * (cos(phi) * sinT) + b * (sin(phi) * sinT) + dir * cosT);
 }
 
-// Uniform point inside a unit sphere. Cube sampling with radius^(1/3) CDF inversion.
+// Cube-derived direction with a radius sampled by inverse CDF; directions are not uniform.
 vec3 randomInSphere() {
 	vec3 v = vec3(nextRand(), nextRand(), nextRand()) * 2.0 - 1.0;
 	return v * pow(nextRand(), 1.0 / 3.0) / max(length(v), 1e-4);
@@ -40,7 +39,7 @@ vec3 randomInSphere() {
 
 // Henyey-Greenstein phase function sampling.
 // g01 is remapped from [0,1] to [-0.95, 0.95]; g=0 is isotropic, g>0 forward-scattering.
-// Reference: Henyey & Greenstein, "Diffuse radiation in the galaxy", ApJ 1941.
+// https://pbr-book.org/4ed/Volume_Scattering/Phase_Functions
 vec3 samplePhaseFunction(vec3 wo, float g01) {
 	float g = clamp(g01 * 2.0 - 1.0, -0.95, 0.95);
 	float u = nextRand();
