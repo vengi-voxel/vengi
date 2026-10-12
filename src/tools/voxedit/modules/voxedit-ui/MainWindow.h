@@ -41,9 +41,7 @@
 #include "engine-config.h"
 #include "voxedit-util/Config.h"
 
-#if USE_YOCTO
 #include "voxedit-ui/RenderPanel.h"
-#endif
 #include "voxelrender/RenderUtil.h"
 
 namespace voxedit {
@@ -86,9 +84,7 @@ private:
 	video::TexturePoolPtr _texturePool;
 	SceneManagerPtr _sceneMgr;
 
-#if USE_YOCTO
 	RenderPanel _renderPanel;
-#endif
 	LSystemPanel _lsystemPanel;
 	BrushPanel _brushPanel;
 	SceneGraphPanel _sceneGraphPanel;
@@ -198,10 +194,8 @@ public:
 	Viewport *hoveredViewport();
 	Viewport *visibleViewport();
 	Viewport *activeViewport() const;
-#if USE_YOCTO
 	bool isRenderPanelHovered() const;
 	void syncActiveCamera();
-#endif
 	/**
 	 * @brief Checks if any of the viewports is in edit mode
 	 */

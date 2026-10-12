@@ -34,9 +34,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
 	_optionsPanel.registerUITests(engine, TITLE_OPTIONS);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
-#if USE_YOCTO
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
-#endif
 	_voxBoxBrowserPanel.registerUITests(engine, TITLE_VOXBOX_BROWSER);
 	_sceneDebugPanel.registerUITests(engine, TITLE_SCENEDEBUGPANEL);
 	_sceneGraphPanel.registerUITests(engine, TITLE_SCENEGRAPH);

@@ -249,7 +249,6 @@ void RenderPanel::ensureTraceCamera(const scenegraph::SceneGraph &sceneGraph) {
 
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(RenderPanel);
-#if USE_YOCTO
 	static ui::ScopedPanel panel(cfg::VoxEditShowRender);
 	const core::String &title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
 	ui::ScopedPanel::Scope scope =
@@ -288,10 +287,6 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 		_sceneMgr->setActiveCamera(&_camera, false);
 		updateCameraInput(headerSize);
 	}
-#else
-	(void)id;
-	(void)sceneGraph;
-#endif
 }
 
 void RenderPanel::updateCameraInput(float headerSize) {

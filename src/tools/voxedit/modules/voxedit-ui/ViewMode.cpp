@@ -56,9 +56,7 @@ void applyViewModePanelCvars(ViewMode viewMode) {
 	core::getVar(cfg::VoxEditShowNetwork)->setVal((flags & VIEWMODE_FLAG_NETWORKPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowGameMode)->setVal((flags & VIEWMODE_FLAG_GAMEMODEPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowAssets)->setVal((flags & VIEWMODE_FLAG_ASSETPANEL) != 0u);
-#if USE_YOCTO
 	core::getVar(cfg::VoxEditShowRender)->setVal((flags & VIEWMODE_FLAG_RENDERPANEL) != 0u);
-#endif
 	const bool animations = (flags & VIEWMODE_FLAG_ANIMATIONS) != 0u;
 	core::getVar(cfg::VoxEditShowAnimationSettings)->setVal(animations);
 	core::getVar(cfg::VoxEditShowAnimationTimeline)->setVal(animations);

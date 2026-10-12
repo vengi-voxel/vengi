@@ -840,9 +840,7 @@ bool VoxEdit::allowedToQuit() {
 }
 
 void VoxEdit::onRenderUI() {
-#if USE_YOCTO
 	_mainWindow->syncActiveCamera();
-#endif
 	if (_sceneMgr->update(_nowSeconds)) {
 		_mainWindow->onNewScene();
 	}

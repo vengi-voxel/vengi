@@ -3847,10 +3847,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditShowGameMode);
 	const core::VarDef voxEditShowAssets(cfg::VoxEditShowAssets, true, N_("Assets"), N_("Show the asset panels"));
 	core::Var::registerVar(voxEditShowAssets);
-#if USE_YOCTO
 	const core::VarDef voxEditShowRender(cfg::VoxEditShowRender, true, N_("Render"), N_("Show the render panel"));
 	core::Var::registerVar(voxEditShowRender);
-#endif
 	const core::VarDef voxEditShowAnimationSettings(cfg::VoxEditShowAnimationSettings, true, N_("Animation"), N_("Show the animation settings panel"));
 	core::Var::registerVar(voxEditShowAnimationSettings);
 	const core::VarDef voxEditShowAnimationTimeline(cfg::VoxEditShowAnimationTimeline, true, N_("Animation timeline"), N_("Show the animation timeline panel"));

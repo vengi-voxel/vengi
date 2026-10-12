@@ -33,9 +33,7 @@ constexpr const char *VoxEditShowScript = "ve_showscript";
 constexpr const char *VoxEditShowNetwork = "ve_shownetwork";
 constexpr const char *VoxEditShowGameMode = "ve_showgamemode";
 constexpr const char *VoxEditShowAssets = "ve_showassets";
-#if USE_YOCTO
 constexpr const char *VoxEditShowRender = "ve_showrender";
-#endif
 constexpr const char *VoxEditShowAnimationSettings = "ve_showanimationsettings";
 constexpr const char *VoxEditShowAnimationTimeline = "ve_showanimationtimeline";
 constexpr const char *VoxEditShowScene = "ve_showscene";

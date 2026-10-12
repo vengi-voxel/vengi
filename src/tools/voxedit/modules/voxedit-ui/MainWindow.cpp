@@ -111,9 +111,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem,
 					   palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer)
 	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
-#if USE_YOCTO
 	  _renderPanel(app, _sceneMgr),
-#endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
 	  _modelAssetPanel(app, _sceneMgr, collectionMgr, texturePool),
@@ -210,9 +208,7 @@ bool MainWindow::init() {
 		_popupWelcome->setVal("true");
 	}
 
-#if USE_YOCTO
 	_renderPanel.init();
-#endif
 	_sceneSettingsPanel.init();
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
@@ -260,9 +256,7 @@ void MainWindow::shutdown() {
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		_viewports[i]->shutdown();
 	}
-#if USE_YOCTO
 	_renderPanel.shutdown();
-#endif
 	_lsystemPanel.shutdown();
 	_nodeInspectorPanel.shutdown();
 	_nodePropertiesPanel.shutdown();
@@ -385,9 +379,7 @@ void MainWindow::leftWidget() {
 // main space
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
-#if USE_YOCTO
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
-#endif
 	for (int i = 0; i < cfg::MaxViewports; ++i) {
 		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
 	}
@@ -434,9 +426,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 	if (Viewport *active = activeViewport()) {
 		active->renderHud();
 	}
-#if USE_YOCTO
 	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
-#endif
 	_optionsPanel.update(TITLE_OPTIONS);
 	_scriptBrowserPanel.update(TITLE_SCRIPT_BROWSER, &listener);
 	_voxBoxBrowserPanel.update(TITLE_VOXBOX_BROWSER, &listener);
@@ -489,35 +479,22 @@ void MainWindow::rightWidget() {
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	_mementoPanel.update(TITLE_MEMENTO, listener);
-#if USE_YOCTO
-	{
-		video::Camera *camera = nullptr;
-		if (_renderPanel.isHovered()) {
-			camera = &_renderPanel.camera();
-		} else if (Viewport *hovered = hoveredViewport()) {
-			camera = &hovered->camera();
-		} else if (Viewport *visible = visibleViewport()) {
-			camera = &visible->camera();
-		} else {
-			camera = &_renderPanel.camera();
-		}
-		_cameraPanel.update(TITLE_CAMERA, *camera, listener);
-		_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
-		_sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
-
-		// bottom
-		_sceneGraphPanel.update(*camera, TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
+	video::Camera *camera = nullptr;
+	if (_renderPanel.isHovered()) {
+		camera = &_renderPanel.camera();
+	} else if (Viewport *hovered = hoveredViewport()) {
+		camera = &hovered->camera();
+	} else if (Viewport *visible = visibleViewport()) {
+		camera = &visible->camera();
+	} else {
+		camera = &_renderPanel.camera();
 	}
-#else
-	if (_lastHoveredViewport != nullptr) {
-		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
-	}
+	_cameraPanel.update(TITLE_CAMERA, *camera, listener);
 	_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
 	_sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 
 	// bottom
-	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
-#endif
+	_sceneGraphPanel.update(*camera, TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_scriptPanel.update(TITLE_SCRIPT, listener);
 	_networkPanel.update(TITLE_NETWORK, listener);
@@ -1306,11 +1283,9 @@ bool MainWindow::isAnyEditMode() const {
 }
 
 Viewport *MainWindow::hoveredViewport() {
-#if USE_YOCTO
 	if (_renderPanel.isHovered()) {
 		return nullptr;
 	}
-#endif
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		if (_viewports[i]->isHovered()) {
 			return _viewports[i];
@@ -1331,7 +1306,6 @@ Viewport *MainWindow::visibleViewport() {
 	return nullptr;
 }
 
-#if USE_YOCTO
 bool MainWindow::isRenderPanelHovered() const {
 	return _renderPanel.isHovered();
 }
@@ -1341,7 +1315,6 @@ void MainWindow::syncActiveCamera() {
 		_sceneMgr->setActiveCamera(&_renderPanel.camera(), false);
 	}
 }
-#endif
 
 bool MainWindow::saveScreenshot(const core::String &file, const core::String &viewportId) {
 	if (viewportId.empty()) {

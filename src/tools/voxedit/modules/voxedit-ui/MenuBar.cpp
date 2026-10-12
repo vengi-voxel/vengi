@@ -207,9 +207,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CheckboxVar(cfg::VoxEditShowNetwork);
 			ImGui::CheckboxVar(cfg::VoxEditShowGameMode);
 			ImGui::CheckboxVar(cfg::VoxEditShowAssets);
-#if USE_YOCTO
 			ImGui::CheckboxVar(cfg::VoxEditShowRender);
-#endif
 			ImGui::CheckboxVar(cfg::UIShowConsole);
 			ImGui::CheckboxVar(cfg::VoxEditShowHelp);
 			ImGui::Separator();
