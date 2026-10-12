@@ -196,7 +196,12 @@ public:
 	void update(double nowSeconds);
 	QuitDisallowReason allowToQuit();
 	Viewport *hoveredViewport();
+	Viewport *visibleViewport();
 	Viewport *activeViewport() const;
+#if USE_YOCTO
+	bool isRenderPanelHovered() const;
+	void syncActiveCamera();
+#endif
 	/**
 	 * @brief Checks if any of the viewports is in edit mode
 	 */

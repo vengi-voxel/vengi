@@ -489,6 +489,26 @@ void MainWindow::rightWidget() {
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	_mementoPanel.update(TITLE_MEMENTO, listener);
+#if USE_YOCTO
+	{
+		video::Camera *camera = nullptr;
+		if (_renderPanel.isHovered()) {
+			camera = &_renderPanel.camera();
+		} else if (Viewport *hovered = hoveredViewport()) {
+			camera = &hovered->camera();
+		} else if (Viewport *visible = visibleViewport()) {
+			camera = &visible->camera();
+		} else {
+			camera = &_renderPanel.camera();
+		}
+		_cameraPanel.update(TITLE_CAMERA, *camera, listener);
+		_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
+		_sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
+
+		// bottom
+		_sceneGraphPanel.update(*camera, TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
+	}
+#else
 	if (_lastHoveredViewport != nullptr) {
 		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 	}
@@ -497,6 +517,7 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
+#endif
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_scriptPanel.update(TITLE_SCRIPT, listener);
 	_networkPanel.update(TITLE_NETWORK, listener);
@@ -1285,6 +1306,11 @@ bool MainWindow::isAnyEditMode() const {
 }
 
 Viewport *MainWindow::hoveredViewport() {
+#if USE_YOCTO
+	if (_renderPanel.isHovered()) {
+		return nullptr;
+	}
+#endif
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		if (_viewports[i]->isHovered()) {
 			return _viewports[i];
@@ -1292,6 +1318,30 @@ Viewport *MainWindow::hoveredViewport() {
 	}
 	return nullptr;
 }
+
+Viewport *MainWindow::visibleViewport() {
+	if (_lastHoveredViewport != nullptr && _lastHoveredViewport->isVisible()) {
+		return _lastHoveredViewport;
+	}
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		if (_viewports[i]->isVisible()) {
+			return _viewports[i];
+		}
+	}
+	return nullptr;
+}
+
+#if USE_YOCTO
+bool MainWindow::isRenderPanelHovered() const {
+	return _renderPanel.isHovered();
+}
+
+void MainWindow::syncActiveCamera() {
+	if (_renderPanel.isHovered()) {
+		_sceneMgr->setActiveCamera(&_renderPanel.camera(), false);
+	}
+}
+#endif
 
 bool MainWindow::saveScreenshot(const core::String &file, const core::String &viewportId) {
 	if (viewportId.empty()) {

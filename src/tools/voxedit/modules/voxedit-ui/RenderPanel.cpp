@@ -4,17 +4,28 @@
 
 #include "RenderPanel.h"
 #include "core/SharedPtr.h"
+#include "core/Trace.h"
+#include "core/GLM.h"
 #include "io/FileStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedPanel.h"
+#include "ui/dearimgui/ImGuizmo.h"
+#include "video/Camera.h"
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/Region.h"
 #include "voxelpathtracer/PathTracer.h"
 #include "voxelpathtracer/PathTracerState.h"
+#include "voxelrender/RenderUtil.h"
+#include <glm/gtc/type_ptr.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace voxedit {
 
@@ -170,26 +181,127 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 	}
 }
 
+void RenderPanel::renderCameraManipulator(video::Camera &camera, float headerSize, bool sceneMode) {
+	if (camera.size().x <= 0 || camera.size().y <= 0) {
+		return;
+	}
+	ImVec2 position = ImGui::GetWindowPos();
+	const ImVec2 size = ImVec2(128, 128);
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
+	position.x += contentRegionWidth - size.x;
+	position.y += headerSize;
+	const ImU32 backgroundColor = 0;
+	const float length = camera.targetDistance();
+
+	glm::mat4 viewMatrix = camera.viewMatrix();
+	float *viewPtr = glm::value_ptr(viewMatrix);
+
+	ImGuizmo::PushID("pathtracer");
+	ImGuizmo::SetDrawlist();
+	ImGuizmo::SetWindow();
+	ImGuizmo::SetOrthographic(camera.isOrthographic());
+	if (sceneMode) {
+		ImGuizmo::ViewManipulate(viewPtr, length, position, size, backgroundColor);
+	} else {
+		const float *projPtr = glm::value_ptr(camera.projectionMatrix());
+		const ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)0;
+		glm::mat4 transformMatrix = glm::mat4(1.0f);
+		float *matrixPtr = glm::value_ptr(transformMatrix);
+		const ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
+		ImGuizmo::ViewManipulate(viewPtr, projPtr, operation, mode, matrixPtr, length, position, size, backgroundColor);
+	}
+	ImGuizmo::PopID();
+	if (viewMatrix != camera.viewMatrix()) {
+		glm::vec3 scale;
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
+		camera.setOrientation(orientation);
+		camera.update(0.0);
+	}
+}
+
+void RenderPanel::ensureTraceCamera(const scenegraph::SceneGraph &sceneGraph) {
+	if (_camera.size().x > 0 && _camera.size().y > 0) {
+		return;
+	}
+	if (const video::Camera *src = _sceneMgr->activeCamera()) {
+		if (src->size().x > 0 && src->size().y > 0) {
+			_camera = *src;
+			return;
+		}
+	}
+	voxel::Region region = sceneGraph.sceneRegion();
+	if (!region.isValid()) {
+		region = voxel::Region(0, 0, 0, 31, 31, 31);
+	}
+	if (_camera.size().x <= 0 || _camera.size().y <= 0) {
+		_camera.setSize(glm::ivec2(512, 512));
+	}
+	_camera.setMode(video::CameraMode::Perspective);
+	const glm::vec3 dim = glm::vec3(region.getDimensionsInVoxels());
+	const float farPlane = glm::max(32.0f, glm::length(dim) * 4.0f);
+	voxelrender::configureCamera(_camera, region, voxelrender::SceneCameraMode::Free, farPlane);
+}
+
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(RenderPanel);
 #if USE_YOCTO
 	static ui::ScopedPanel panel(cfg::VoxEditShowRender);
 	const core::String &title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
 	ui::ScopedPanel::Scope scope =
-		panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar);
+		panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar |
+						ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	_hovered = false;
 	if (!scope) {
 		_pathTracer.stop();
 		return;
 	}
 	renderMenuBar(sceneGraph);
+
+	ensureTraceCamera(sceneGraph);
+
+	const ImVec2 cursorPos = ImGui::GetCursorPos();
+	const float headerSize = cursorPos.y;
+	const ImVec2 contentSize = ImGui::GetContentRegionAvail();
+	if (contentSize.x > 0.0f && contentSize.y > 0.0f) {
+		_camera.setSize(glm::ivec2((int)contentSize.x, (int)contentSize.y));
+	}
+	if (_camera.size().x > 0 && _camera.size().y > 0) {
+		_camera.update(0.0);
+	}
+
 	// TODO: allow to change the current scene camera like in the scene view in the Viewport class
 	if (_texture->isLoaded()) {
+		ImGui::SetCursorPos(cursorPos);
 		ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
+	}
+
+	renderCameraManipulator(_camera, headerSize, true);
+
+	_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
+									  ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_DockHierarchy);
+	if (_hovered) {
+		_sceneMgr->setActiveCamera(&_camera, false);
+		updateCameraInput(headerSize);
 	}
 #else
 	(void)id;
 	(void)sceneGraph;
 #endif
+}
+
+void RenderPanel::updateCameraInput(float headerSize) {
+	if (ImGuizmo::IsViewManipulateHovered()) {
+		return;
+	}
+	const ImVec2 windowPos = ImGui::GetWindowPos();
+	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
+	_sceneMgr->setMousePos(mouseX, mouseY);
 }
 
 void RenderPanel::shutdown() {
