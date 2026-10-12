@@ -25,7 +25,7 @@ set(SRCS
 	SceneDebugPanel.h SceneDebugPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
 	SceneGraphUtil.h
-	SceneSettingsPanel.h SceneSettingsPanel.cpp
+	SceneSettingsPanel.h SceneSettingsPanel.cpp SunAngleSettings.h
 	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
 	BrushPanelCommon.h

@@ -66,6 +66,13 @@ void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->ItemClick("sunangle/Preset: Morning");
 		ctx->Yield();
 		IM_CHECK_STR_EQ(_sunAngle->strVal().c_str(), "15.00 45.00 0.00");
+		ctx->ComboClick("Shading Mode/Unlit (Pure Colors)");
+		ctx->Yield();
+		const core::String previousAngle = _sunAngle->strVal();
+		changeSlider(ctx, "sunangle/Azimuth", true);
+		ctx->Yield();
+		IM_CHECK_STR_EQ(_sunAngle->strVal().c_str(), previousAngle.c_str());
+
 	};
 }
 
