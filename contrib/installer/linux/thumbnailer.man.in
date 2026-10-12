@@ -73,6 +73,18 @@ Create a fallback thumbnail if an error occurs
 \fB\--use-scene-camera|-c\fR
 Use a camera that is available in the scene. Not all formats are supporting this feature.
 
+.TP
+\fB\--pathtracer\fR
+Render with the GPU pathtracer instead of the forward renderer. Embedded format screenshots are ignored.
+
+.TP
+\fB\--quality default|preview|high\fR
+Pathtracer quality. Only used with \fB--pathtracer\fR. \fIdefault\fR uses 256 samples and 4 bounces, \fIpreview\fR uses 16 samples and 2 bounces, \fIhigh\fR uses 1024 samples and 8 bounces with rounded edges and bloom.
+
+.TP
+\fB\--samples n\fR
+Override the pathtracer sample count from the selected quality. Only used with \fB--pathtracer\fR.
+
 .SH CONFIG VARS
 
 .PP

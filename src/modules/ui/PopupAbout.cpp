@@ -96,7 +96,6 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", urlIconWidth);
 					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", urlIconWidth);
 					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", urlIconWidth);
-					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", urlIconWidth);
 #if defined(USE_DEFLATE)
 					ImGui::Text("libdeflate");
 #elif defined(USE_ZLIB)

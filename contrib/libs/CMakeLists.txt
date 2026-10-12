@@ -40,7 +40,6 @@ if (UNITTESTS)
 	add_subdirectory(gtest)
 endif()
 add_subdirectory(simplecpp)
-add_subdirectory(yocto)
 
 find_package(PkgConfig)
 if (NOT PkgConfig_FOUND)

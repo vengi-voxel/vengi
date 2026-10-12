@@ -17,6 +17,7 @@
 #include "voxel/Face.h"
 #include "voxelformat/FormatConfig.h"
 #include "engine-git.h"
+#include "voxelpathtracer/PathTracerState.h"
 #include "voxelrender/RenderUtil.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -72,6 +73,17 @@ app::AppState Thumbnailer::onConstruct() {
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
 	registerArg("--image").setDescription("Create a simple 2d side view image of the scene - doesn't take any camera settings or lighting settings into account").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--pathtracer")
+		.setDescription("Render with the GPU pathtracer instead of the forward renderer")
+		.addFlag(ARGUMENT_FLAG_BOOL);
+	Argument &qualityArg = registerArg("--quality")
+							   .setDefaultValue(voxelpathtracer::PathTracerQualityArgs[(int)voxelpathtracer::PathTracerQuality::Default])
+							   .setDescription("Pathtracer quality (default, preview, high). Only used with --pathtracer");
+	for (int i = 0; i < (int)voxelpathtracer::PathTracerQuality::Max; ++i) {
+		qualityArg.addValidValue(voxelpathtracer::PathTracerQualityArgs[i]);
+	}
+	registerArg("--samples")
+		.setDescription("Override pathtracer sample count. Only used with --pathtracer");
 	Argument &cameraMode =
 		registerArg("--camera-mode")
 			.setDefaultValue(voxelrender::SceneCameraModeStr[(int)voxelrender::SceneCameraMode::Free])
@@ -162,9 +174,22 @@ app::AppState Thumbnailer::onRunning() {
 		ctx.sunAzimuth = core::string::toFloat(getArgVal("--sunazimuth"));
 	}
 
+	const bool pathTracer = hasArg("--pathtracer");
+	voxelpathtracer::PathTracerQuality quality = voxelpathtracer::PathTracerQuality::Default;
+	const core::String qualityName =
+		getArgVal("--quality", voxelpathtracer::PathTracerQualityArgs[(int)voxelpathtracer::PathTracerQuality::Default]);
+	if (!voxelpathtracer::pathTracerQualityFromName(qualityName, quality)) {
+		Log::warn("Unknown pathtracer quality '%s', using default", qualityName.c_str());
+		quality = voxelpathtracer::PathTracerQuality::Default;
+	}
+	const int samples = hasArg("--samples") ? core::string::toInt(getArgVal("--samples")) : -1;
+	if ((hasArg("--quality") || hasArg("--samples")) && !pathTracer) {
+		Log::warn("--quality and --samples only apply when --pathtracer is set");
+	}
+
 	const int renderTurntableLoops = hasArg("--turntable") ? getArgVal("--turntable", "16").toInt() : 0;
 	if (renderTurntableLoops > 0) {
-		volumeTurntable(infile, _outfile, ctx, renderTurntableLoops);
+		volumeTurntable(infile, _outfile, ctx, renderTurntableLoops, pathTracer, quality, samples);
 	} else {
 		const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 		if (!archive) {
@@ -178,7 +203,8 @@ app::AppState Thumbnailer::onRunning() {
 			frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
 			isometric2d = hasArg("--isometric");
 		}
-		const image::ImagePtr &image = volumeThumbnail(infile, archive, ctx, frontFace, isometric2d);
+		const image::ImagePtr &image =
+			volumeThumbnail(infile, archive, ctx, frontFace, isometric2d, pathTracer, quality, samples);
 		saveImage(image);
 	}
 

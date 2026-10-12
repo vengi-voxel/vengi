@@ -227,6 +227,9 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--turntable|-t", "Render in different angles (16 by default)");
 		addManPageOption("--fallback|-f", "Create a fallback thumbnail if an error occurs");
 		addManPageOption("--use-scene-camera|-c", "Use a camera that is available in the scene. Not all formats are supporting this feature.");
+		addManPageOption("--pathtracer", "Render with the GPU pathtracer instead of the forward renderer. Embedded format screenshots are ignored.");
+		addManPageOption("--quality default|preview|high", "Pathtracer quality. Only used with \\fB--pathtracer\\fR. \\fIdefault\\fR uses 256 samples and 4 bounces, \\fIpreview\\fR uses 16 samples and 2 bounces, \\fIhigh\\fR uses 1024 samples and 8 bounces with rounded edges and bloom.");
+		addManPageOption("--samples n", "Override the pathtracer sample count from the selected quality. Only used with \\fB--pathtracer\\fR.");
 		palette::FormatConfig::init();
 		voxelformat::FormatConfig::init();
 		printManPageVars();

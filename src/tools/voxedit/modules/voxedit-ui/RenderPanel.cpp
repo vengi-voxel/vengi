@@ -3,10 +3,12 @@
  */
 
 #include "RenderPanel.h"
+#include "SunAngleSettings.h"
+#include "core/ArrayLength.h"
 #include "core/SharedPtr.h"
-#include "core/Trace.h"
 #include "core/GLM.h"
 #include "io/FileStream.h"
+#include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -20,6 +22,7 @@
 #include "voxel/Region.h"
 #include "voxelpathtracer/PathTracer.h"
 #include "voxelpathtracer/PathTracerState.h"
+#include "VoxelpathtracerShaderConstants.h"
 #include "voxelrender/RenderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -29,113 +32,133 @@
 
 namespace voxedit {
 
+namespace {
+
+static const char *BackgroundItems[] = {"Sky", "Solid", "Transparent"};
+
+} // namespace
+
 bool RenderPanel::init() {
-	_texture = video::createEmptyTexture("pathtracer");
-	return true;
+	_sunAngle = core::getVar(cfg::VoxEditSunAngle);
+	return _pathTracer.init();
+}
+
+void RenderPanel::applySceneSun() {
+	if (!_sunAngle) {
+		return;
+	}
+	glm::vec3 sunAngle(35.0f, 135.0f, 0.0f);
+	_sunAngle->vec3Val(&sunAngle[0]);
+	voxelpathtracer::PathTracerState &state = _pathTracer.state();
+	voxelpathtracer::PathTracerParams &params = state.params;
+	if (glm::abs(params.sunElevation - sunAngle.x) > 0.01f || glm::abs(params.sunAzimuth - sunAngle.y) > 0.01f) {
+		params.sunElevation = sunAngle.x;
+		params.sunAzimuth = sunAngle.y;
+		_pathTracer.resetAccumulation();
+	}
 }
 
 void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
-	voxelpathtracer::PathTracerState &state = _pathTracer.state();
-	voxelpathtracer::PathTracerParams &params = state.params;
+	voxelpathtracer::PathTracerState &pstate = _pathTracer.state();
+	voxelpathtracer::PathTracerParams &state = pstate.params;
 	int changed = 0;
 
 	const float itemWidth = ImGui::GetFontSize() * 10.0f;
 
-	if (ImGui::BeginIconMenu(ICON_LC_SPARKLES, _("Presets"))) {
+	if (ImGui::BeginIconMenu(ICON_LC_SPARKLES, _("Quality presets"))) {
 		if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Reset all"))) {
-			params = voxelpathtracer::PathTracerParams();
+			voxelpathtracer::applyPathTracerQuality(state, voxelpathtracer::PathTracerQuality::Default);
 			++changed;
 		}
 		ImGui::TooltipTextUnformatted(_("Restore default path tracer settings"));
 		if (ImGui::IconMenuItem(ICON_LC_SPARKLES, _("High quality"))) {
-			params = voxelpathtracer::PathTracerParams();
-			params.sampler = yocto::trace_sampler_type::path;
-			params.samples = 1024;
-			params.bounces = 64;
+			voxelpathtracer::applyPathTracerQuality(state, voxelpathtracer::PathTracerQuality::High);
 			++changed;
 		}
-		ImGui::TooltipTextUnformatted(_("Path tracing with high sample and bounce counts"));
-		if (ImGui::IconMenuItem(ICON_LC_BOX, _("Geometry preview"))) {
-			params = voxelpathtracer::PathTracerParams();
-			params.sampler = yocto::trace_sampler_type::eyelight;
-			params.samples = 16;
+		ImGui::TooltipTextUnformatted(_("Path tracing with high sample and bounce counts, voxel edge, and bloom"));
+		if (ImGui::IconMenuItem(ICON_LC_BOX, _("Preview"))) {
+			voxelpathtracer::applyPathTracerQuality(state, voxelpathtracer::PathTracerQuality::Preview);
 			++changed;
 		}
-		ImGui::TooltipTextUnformatted(_("Fast eyelight preview for checking geometry"));
+		ImGui::TooltipTextUnformatted(_("Fast preview for checking lighting and materials"));
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::BeginIconMenu(ICON_LC_GAUGE, _("Quality"))) {
 		ImGui::PushItemWidth(itemWidth);
-		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
-		changed += ImGui::InputIntWithButtons(_("Samples"), &params.samples, 16, 4096);
+		changed += ImGui::InputIntWithButtons(_("Samples"), &state.samples, 16, 4096);
 		ImGui::TooltipTextUnformatted(_("Per-pixel samples. Higher values reduce noise but take longer."));
-		changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
-		ImGui::TooltipTextUnformatted(_("Maximum light bounces. Increase for glass and volumes."));
-		changed += ImGui::SliderFloat(_("Clamp"), &params.clamp, 10, 1000);
-		ImGui::TooltipTextUnformatted(_("Remove high-energy fireflies"));
-		ImGui::Separator();
-		changed += ImGui::SliderInt(_("Preview ratio"), &params.pratio, 1, 64);
-		ImGui::TooltipTextUnformatted(_("Lower resolution ratio used while samples accumulate"));
-		changed += ImGui::SliderInt(_("Batch"), &params.batch, 1, 16);
-		ImGui::TooltipTextUnformatted(_("Samples computed per update step"));
+		changed += ImGui::SliderInt(_("Bounces"), &state.bounces, 1, shader::VoxelpathtracerShaderConstants::getMaxBounces());
+		ImGui::TooltipTextUnformatted(_("Maximum light bounces. Increase for glass."));
+		changed += ImGui::SliderInt(_("Samples per pass"), &state.samplesThisPass, 1,
+									shader::VoxelpathtracerShaderConstants::getMaxSamplesThisPass());
+		ImGui::TooltipTextUnformatted(_("Samples computed per frame"));
+		changed += ImGui::SliderFloat(_("Voxel edge"), &state.voxelEdge, 0.0f, 1.0f);
+		ImGui::TooltipTextUnformatted(_("Fillet exposed voxel corners. 0 is a hard cube."));
+		changed += ImGui::SliderFloat(_("Render scale"), &state.renderScale, 0.25f, 1.0f);
+		ImGui::TooltipTextUnformatted(_("Trace at a fraction of the output resolution, then upsample."));
 		ImGui::PopItemWidth();
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::BeginIconMenu(ICON_LC_IMAGE, _("Output"))) {
 		ImGui::PushItemWidth(itemWidth);
-		changed += ImGui::InputIntWithButtons(_("Dimensions"), &params.resolution);
+		changed += ImGui::InputIntWithButtons(_("Dimensions"), &state.resolution);
 		ImGui::TooltipTextUnformatted(_("Output image size in pixels (square)"));
-		changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
-		ImGui::TooltipTextUnformatted(_("Apply a linear filter to the image pixels"));
-		changed += ImGui::Checkbox(_("Denoise"), &params.denoise);
-		ImGui::Separator();
 		ImGui::SliderFloat(_("Exposure"), &state.exposure, -5.0f, 5.0f);
 		ImGui::TooltipTextUnformatted(_("Exposure compensation in stops for tonemapping."));
-		ImGui::Checkbox(_("Filmic"), &state.filmic);
-		ImGui::TooltipTextUnformatted(_("Use filmic tonemapping for softer highlight rolloff."));
+		changed += ImGui::Combo(_("Tone mapping"), &state.toneMapping, voxelrender::ToneMappingItems,
+								voxelrender::ToneMappingMax);
+		ImGui::SliderFloat(_("Contrast"), &state.contrast, 0.5f, 1.5f);
+		ImGui::SliderFloat(_("Saturation"), &state.saturation, 0.0f, 2.0f);
+		ImGui::SliderFloat(_("Vignette"), &state.vignette, 0.0f, 1.0f);
+		changed += ImGui::SliderFloat(_("Bloom"), &state.bloom, 0.0f, 2.0f);
+		ImGui::TooltipTextUnformatted(_("Threshold blur of bright emit and sun highlights."));
 		ImGui::PopItemWidth();
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::BeginIconMenu(ICON_LC_CAMERA, _("Camera"))) {
 		ImGui::PushItemWidth(itemWidth);
-		if (!state.scene.camera_names.empty()) {
-			changed += ImGui::ComboItems(_("Camera"), &params.camera, state.scene.camera_names);
-		}
+		changed += ImGui::Checkbox(_("Depth of field"), &state.depthOfField);
 		changed += ImGui::SliderFloat(_("Aperture"), &state.aperture, 0.0f, 0.5f);
 		ImGui::TooltipTextUnformatted(_("Lens aperture for depth of field. 0 means pinhole (no DOF)."));
+		changed += ImGui::SliderFloat(_("Focus distance"), &state.focusDistance, 1.0f, 256.0f);
 		ImGui::PopItemWidth();
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Lighting"))) {
+		if (sunAngleSettings(_sunAngle, true)) {
+			applySceneSun();
+			++changed;
+		}
+		ImGui::Separator();
 		ImGui::PushItemWidth(itemWidth);
 		changed += ImGui::SliderFloat(_("Sun intensity"), &state.sunIntensity, 0.0f, 10.0f);
-		changed += ImGui::SliderFloat(_("Sun area"), &state.sunArea, 0.0f, 5.0f);
-		ImGui::TooltipTextUnformatted(_("Sun disk size. 1.0 is about 43.5 degrees."));
-		changed += ImGui::SliderAngle(_("Sun elevation"), &state.sunElevation, 0.0f, 90.0f);
-		changed += ImGui::SliderAngle(_("Sun azimuth"), &state.sunAzimuth, 0.0f, 360.0f);
-		changed += ImGui::Checkbox(_("Sun disk"), &state.sunDisk);
-		ImGui::TooltipTextUnformatted(_("Show visible sun disk in the sky."));
+		changed += ImGui::SliderFloat(_("Sun softness"), &state.sunSoftness, 0.05f, 20.0f);
+		ImGui::TooltipTextUnformatted(_("Sun disk size in degrees."));
+		changed += ImGui::ColorEdit3(_("Sun color"), &state.sunColor.x);
+		changed += ImGui::ColorEdit3(_("Sky top"), &state.skyTop.x);
+		changed += ImGui::ColorEdit3(_("Sky horizon"), &state.skyHorizon.x);
+		changed += ImGui::SliderFloat(_("Sky intensity"), &state.skyIntensity, 0.0f, 4.0f);
 		ImGui::Separator();
-		changed += ImGui::Checkbox(_("Hide environment"), &params.envhidden);
-		ImGui::TooltipTextUnformatted(_("Removes the environment map from the camera rays."));
+		changed += ImGui::Checkbox(_("Floor"), &state.floorEnabled);
+		changed += ImGui::ColorEdit3(_("Floor color"), &state.floorColor.x);
+		changed += ImGui::SliderFloat(_("Floor Y"), &state.floorY, -256.0f, 256.0f);
+		ImGui::Separator();
+		changed += ImGui::Combo(_("Background"), &state.background, BackgroundItems, lengthof(BackgroundItems));
+		changed += ImGui::ColorEdit3(_("Background color"), &state.backgroundColor.x);
+		changed += ImGui::SliderFloat(_("Fog density"), &state.fogDensity, 0.0f, 0.05f);
+		changed += ImGui::ColorEdit3(_("Fog color"), &state.fogColor.x);
+		changed += ImGui::SliderFloat(_("Atmosphere"), &state.atmosphere, 0.0f, 0.05f);
+		ImGui::TooltipTextUnformatted(_("World haze that brightens toward the sun."));
 		ImGui::PopItemWidth();
 		ImGui::EndMenu();
 	}
 
-	if (ImGui::BeginIconMenu(ICON_LC_WRENCH, _("Advanced"))) {
-		changed += ImGui::Checkbox(_("No caustics"), &params.nocaustics);
-		ImGui::TooltipTextUnformatted(_("Removes certain paths that cause caustics"));
-		changed += ImGui::Checkbox(_("High Quality BVH"), &params.highqualitybvh);
-		ImGui::TooltipTextUnformatted(_("High quality bounding volume hierarchy"));
-		ImGui::EndMenu();
-	}
-
 	if (changed > 0) {
-		_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
+		_pathTracer.resetAccumulation();
 	}
 }
 
@@ -145,37 +168,26 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 			renderSettings(sceneGraph);
 			ImGui::EndMenu();
 		}
-		if (_image && _image->isLoaded()) {
+		if (_currentSample > 0) {
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save image"))) {
+				const image::ImagePtr snapshot = _pathTracer.image();
+				if (!snapshot || !snapshot->isLoaded()) {
+					ImGui::EndMenuBar();
+					return;
+				}
 				_app->saveDialog(
 					[=](const core::String &file, const io::FormatDescription *desc) {
 						const io::FilePtr &filePtr = _app->filesystem()->open(file, io::FileMode::SysWrite);
 						io::FileStream stream(filePtr);
-						image::writePNG(_image, stream);
+						image::writePNG(snapshot, stream);
 					},
 					{}, io::format::images(), "render.png");
 			}
 		}
-		if (_pathTracer.started()) {
-			if (ImGui::IconMenuItem(ICON_LC_REFRESH_CW, _("Sync camera"))) {
-				_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
-			}
-			ImGui::TooltipTextUnformatted(_("Restart with the current viewport camera"));
-			if (ImGui::IconMenuItem(ICON_LC_CIRCLE_STOP, _("Stop path tracer"))) {
-				_pathTracer.stop();
-			}
-			const voxelpathtracer::PathTracerState &state = _pathTracer.state();
-			const voxelpathtracer::PathTracerParams &params = state.params;
-			ImGui::Text(_("Sample %i / %i"), _currentSample, params.samples);
-			_pathTracer.update(&_currentSample);
-			_image = _pathTracer.image();
-			if (_image->isLoaded()) {
-				_texture->upload(_image);
-			}
-		} else {
-			if (ImGui::IconMenuItem(ICON_LC_PLAY, _("Start path tracer"))) {
-				_pathTracer.start(sceneGraph, _sceneMgr->activeCamera());
-			}
+		const voxelpathtracer::PathTracerState &state = _pathTracer.state();
+		ImGui::Text(_("Sample %i / %i"), _currentSample, state.params.samples);
+		if (state.volumeTruncated) {
+			ImGui::TextUnformatted(_("Volume truncated to GPU 3D texture / memory limits"));
 		}
 		ImGui::EndMenuBar();
 	}
@@ -257,9 +269,12 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 	_hovered = false;
 	if (!scope) {
 		_pathTracer.stop();
+		_sceneReady = false;
 		return;
 	}
+
 	renderMenuBar(sceneGraph);
+	applySceneSun();
 
 	ensureTraceCamera(sceneGraph);
 
@@ -273,10 +288,26 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 		_camera.update(0.0);
 	}
 
-	// TODO: allow to change the current scene camera like in the scene view in the Viewport class
-	if (_texture->isLoaded()) {
+	if (_sceneMgr->isLoading()) {
+		_sceneReady = false;
+	} else {
+		const uint64_t stamp = _sceneMgr->calculateHash();
+		if (!_sceneReady || stamp != _sceneStamp) {
+			if (_pathTracer.start(sceneGraph, &_camera)) {
+				_sceneReady = true;
+				_sceneStamp = stamp;
+			}
+		} else {
+			_pathTracer.applyCamera(&_camera);
+		}
+	}
+
+	_pathTracer.update(&_currentSample);
+	const video::TexturePtr texture = _pathTracer.texture();
+	if (texture && texture->isLoaded() && contentSize.x > 0.0f && contentSize.y > 0.0f) {
+		const glm::vec4 &uv = video::framebufferUV();
 		ImGui::SetCursorPos(cursorPos);
-		ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
+		ImGui::Image(texture->handle(), contentSize, glm::vec2(uv.x, uv.y), glm::vec2(uv.z, uv.w));
 	}
 
 	renderCameraManipulator(_camera, headerSize, true);
@@ -300,9 +331,7 @@ void RenderPanel::updateCameraInput(float headerSize) {
 }
 
 void RenderPanel::shutdown() {
-	if (_texture) {
-		_texture->shutdown();
-	}
+	_pathTracer.shutdown();
 }
 
 } // namespace voxedit

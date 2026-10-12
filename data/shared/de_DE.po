@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vengi\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-19 12:00+0200\n"
+"PO-Revision-Date: 2026-10-14 10:57+0200\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1245,7 +1245,9 @@ msgstr "Voxelgröße"
 msgid ""
 "The number of voxels on the largest scene axis (0 = disabled, use scale "
 "cvars instead)."
-msgstr "Anzahl der Voxel auf der längsten Szenenachse (0 = deaktiviert, stattdessen Scale-CVars verwenden)."
+msgstr ""
+"Anzahl der Voxel auf der längsten Szenenachse (0 = deaktiviert, stattdessen "
+"Scale-CVars verwenden)."
 
 msgid "Palette mode"
 msgstr "Palettenmodus"
@@ -3153,71 +3155,62 @@ msgstr ""
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
 
-msgid "Presets"
-msgstr ""
+msgid "Quality presets"
+msgstr "Qualitätsvorgaben"
 
 msgid "Reset all"
 msgstr "Alles zurücksetzen"
 
 msgid "Restore default path tracer settings"
-msgstr ""
+msgstr "Standard-Einstellungen des Pfadtracers wiederherstellen"
 
-msgid "Path tracing with high sample and bounce counts"
-msgstr ""
+msgid "Path tracing with high sample and bounce counts, voxel edge, and bloom"
+msgstr "Pfadtracing mit hoher Sample- und Bounce-Anzahl, Voxelkanten und Bloom"
 
-msgid "Geometry preview"
-msgstr "Geometrie-Vorschau"
+msgid "Preview"
+msgstr "Vorschau"
 
-msgid "Fast eyelight preview for checking geometry"
-msgstr ""
+msgid "Fast preview for checking lighting and materials"
+msgstr "Schnelle Vorschau zur Prüfung von Beleuchtung und Materialien"
 
 msgid "Quality"
 msgstr "Qualität"
-
-msgid "Tracer"
-msgstr "Tracer"
 
 msgid "Samples"
 msgstr "Samples"
 
 msgid "Per-pixel samples. Higher values reduce noise but take longer."
-msgstr ""
+msgstr "Samples pro Pixel. Höhere Werte reduzieren Rauschen, dauern aber länger."
 
 msgid "Bounces"
 msgstr "Bounces"
 
-msgid "Maximum light bounces. Increase for glass and volumes."
-msgstr ""
+msgid "Maximum light bounces. Increase for glass."
+msgstr "Maximale Lichtreflexionen. Für Glas erhöhen."
 
-msgid "Clamp"
-msgstr "Clamp"
+msgid "Samples per pass"
+msgstr "Samples pro Durchlauf"
 
-msgid "Remove high-energy fireflies"
-msgstr "Hochenergetische Glühwürmchen entfernen"
+msgid "Samples computed per frame"
+msgstr "Pro Frame berechnete Samples"
 
-msgid "Preview ratio"
-msgstr "Vorschauverhältnis"
+msgid "Voxel edge"
+msgstr "Voxelkante"
 
-msgid "Lower resolution ratio used while samples accumulate"
-msgstr ""
+msgid "Fillet exposed voxel corners. 0 is a hard cube."
+msgstr "Abrunden freiliegender Voxelkanten. 0 ist ein harter Würfel."
 
-msgid "Batch"
-msgstr "Stapel"
+msgid "Render scale"
+msgstr "Render-Skalierung"
 
-msgid "Samples computed per update step"
-msgstr ""
+msgid "Trace at a fraction of the output resolution, then upsample."
+msgstr "Mit einem Bruchteil der Ausgabeauflösung tracen, dann hochskalieren."
 
 msgid "Dimensions"
 msgstr "Dimensionen"
 
 msgid "Output image size in pixels (square)"
-msgstr ""
-
-msgid "Apply a linear filter to the image pixels"
-msgstr "Wendet einen linearen Filter auf die Bildpixel an"
-
-msgid "Denoise"
-msgstr "Rauschunterdrückung"
+msgstr "Ausgabegröße in Pixeln (quadratisch)"
 
 msgid "Exposure"
 msgstr "Belichtung"
@@ -3225,11 +3218,17 @@ msgstr "Belichtung"
 msgid "Exposure compensation in stops for tonemapping."
 msgstr "Belichtungskompensation in Blendenstufen für Tonemapping."
 
-msgid "Filmic"
-msgstr "Filmic"
+msgid "Contrast"
+msgstr "Kontrast"
 
-msgid "Use filmic tonemapping for softer highlight rolloff."
-msgstr "Filmisches Tonemapping für weicheren Highlight-Übergang verwenden."
+msgid "Vignette"
+msgstr "Vignette"
+
+msgid "Threshold blur of bright emit and sun highlights."
+msgstr "Weichzeichner für helle Emit- und Sonnenlichter."
+
+msgid "Depth of field"
+msgstr "Tiefenschärfe"
 
 msgid "Aperture"
 msgstr "Blende"
@@ -3237,47 +3236,59 @@ msgstr "Blende"
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
 msgstr "Blende für Tiefenschärfe. 0 = Lochkamera (kein DOF)."
 
+msgid "Focus distance"
+msgstr "Fokusabstand"
+
 msgid "Lighting"
-msgstr ""
+msgstr "Beleuchtung"
 
 msgid "Sun intensity"
 msgstr "Sonnenintensität"
 
-msgid "Sun area"
-msgstr "Sonnenfläche"
+msgid "Sun softness"
+msgstr "Sonnenweichheit"
 
-msgid "Sun disk size. 1.0 is about 43.5 degrees."
-msgstr "Sonnenscheibengröße. 1,0 entspricht etwa 43,5 Grad."
+msgid "Sun disk size in degrees."
+msgstr "Größe der Sonnenscheibe in Grad."
 
-msgid "Sun elevation"
-msgstr "Sonnenhöhe"
+msgid "Sun color"
+msgstr "Sonnenfarbe"
 
-msgid "Sun azimuth"
-msgstr "Sonnenazimut"
+msgid "Sky top"
+msgstr "Himmel oben"
 
-msgid "Sun disk"
-msgstr "Sonnenscheibe"
+msgid "Sky horizon"
+msgstr "Himmel Horizont"
 
-msgid "Show visible sun disk in the sky."
-msgstr "Sichtbare Sonnenscheibe am Himmel anzeigen."
+msgid "Sky intensity"
+msgstr "Himmelintensität"
 
-msgid "Hide environment"
-msgstr "Umgebung ausblenden"
+msgid "Floor"
+msgstr "Boden"
 
-msgid "Removes the environment map from the camera rays."
-msgstr "Entfernt die Umgebungskarte von den Kamerarays."
+msgid "Floor color"
+msgstr "Bodenfarbe"
 
-msgid "No caustics"
-msgstr "Keine Kaustiken"
+msgid "Floor Y"
+msgstr "Boden-Y"
 
-msgid "Removes certain paths that cause caustics"
-msgstr "Entfernt bestimmte Pfade, die Kaustiken verursachen"
+msgid "Background"
+msgstr "Hintergrund"
 
-msgid "High Quality BVH"
-msgstr "Hochwertige BVH"
+msgid "Background color"
+msgstr "Hintergrundfarbe"
 
-msgid "High quality bounding volume hierarchy"
-msgstr "Hochwertige Bounding Volume Hierarchy"
+msgid "Fog density"
+msgstr "Nebeldichte"
+
+msgid "Fog color"
+msgstr "Nebelfarbe"
+
+msgid "Atmosphere"
+msgstr "Atmosphäre"
+
+msgid "World haze that brightens toward the sun."
+msgstr "Weltdunst, der zur Sonne hin aufhellt."
 
 msgid "Settings"
 msgstr "Einstellungen"
@@ -3285,21 +3296,12 @@ msgstr "Einstellungen"
 msgid "Save image"
 msgstr "Bild speichern"
 
-msgid "Sync camera"
-msgstr "Kamera synchronisieren"
-
-msgid "Restart with the current viewport camera"
-msgstr ""
-
-msgid "Stop path tracer"
-msgstr "Pfadverfolgung stoppen"
-
 #, c-format
 msgid "Sample %i / %i"
-msgstr "Beispiel %i / %i"
+msgstr "Sample %i / %i"
 
-msgid "Start path tracer"
-msgstr "Pfadverfolgung starten"
+msgid "Volume truncated to GPU 3D texture / memory limits"
+msgstr "Volumen auf GPU-3D-Textur-/Speichergrenzen gekürzt"
 
 msgid "Render"
 msgstr "Render"
@@ -3517,36 +3519,6 @@ msgstr "Richtungsbeleuchtung, die je nach Oberflächenwinkel variiert"
 msgid "Diffuse color is disabled in Unlit mode"
 msgstr "Diffuse Farbe ist im Unlit-Modus deaktiviert"
 
-msgid "Sun angle"
-msgstr "Sonnenwinkel"
-
-msgid "Controls the direction of the sun for shadow casting"
-msgstr "Steuert die Richtung der Sonne für Schattenwerfen"
-
-msgid "Sun angle is only used in Shadows mode"
-msgstr "Sonnenwinkel wird nur im Schattenmodus verwendet"
-
-msgid "Elevation"
-msgstr "Höhenlage"
-
-msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
-msgstr "Sonnenelevationswinkel (Pitch): -90 (unten) bis +90 (oben)"
-
-msgid "Azimuth"
-msgstr "Azimut"
-
-msgid "Sun azimuth angle (yaw): 0 (North) to 360"
-msgstr "Sonnenazimutwinkel (Yaw): 0 (Norden) bis 360"
-
-msgid "Preset: Noon"
-msgstr "Voreinstellung: Mittag"
-
-msgid "Preset: Evening"
-msgstr "Voreinstellung: Abend"
-
-msgid "Preset: Morning"
-msgstr "Voreinstellung: Morgen"
-
 msgid "Scene settings"
 msgstr "Szene-Einstellungen"
 
@@ -3607,6 +3579,36 @@ msgstr "Befehl: %s (%s)"
 #, c-format
 msgid "FPS: %.2f"
 msgstr "FPS: %.2f"
+
+msgid "Sun angle"
+msgstr "Sonnenwinkel"
+
+msgid "Controls the direction of the sun for shadow casting"
+msgstr "Steuert die Richtung der Sonne für Schattenwerfen"
+
+msgid "Sun angle is only used in Shadows mode"
+msgstr "Sonnenwinkel wird nur im Schattenmodus verwendet"
+
+msgid "Elevation"
+msgstr "Höhenlage"
+
+msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
+msgstr "Sonnenelevationswinkel (Pitch): -90 (unten) bis +90 (oben)"
+
+msgid "Azimuth"
+msgstr "Azimut"
+
+msgid "Sun azimuth angle (yaw): 0 (North) to 360"
+msgstr "Sonnenazimutwinkel (Yaw): 0 (Norden) bis 360"
+
+msgid "Preset: Noon"
+msgstr "Voreinstellung: Mittag"
+
+msgid "Preset: Evening"
+msgstr "Voreinstellung: Abend"
+
+msgid "Preset: Morning"
+msgstr "Voreinstellung: Morgen"
 
 msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "

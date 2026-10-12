@@ -2,434 +2,739 @@
  * @file
  */
 
-#include "color/ColorUtil.h"
 #include "PathTracer.h"
+#include "PathTracerScene.h"
+#include "VoxelpathtracerBloomShader.h"
+#include "VoxelpathtracerDisplayShader.h"
+#include "VoxelpathtracerShader.h"
+#include "VoxelpathtracerShaderConstants.h"
+#include "color/ColorUtil.h"
+#include "core/Common.h"
+#include "core/GLM.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
-#include "core/Var.h"
+#include "core/StandardLib.h"
+#include "core/Trace.h"
+#include "core/collection/Buffer.h"
 #include "image/Image.h"
-#include "io/Stream.h"
 #include "palette/Palette.h"
-#include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphNodeProperties.h"
-#include "video/Camera.h"
-#include "voxel/ChunkMesh.h"
-#include "voxel/Mesh.h"
-#include "voxel/RawVolume.h"
-#include "voxel/SurfaceExtractor.h"
+#include "video/Renderer.h"
+#include "video/ScopedState.h"
+#include "video/Shader.h"
+#include "voxel/Region.h"
 #include "voxelrender/RenderUtil.h"
-#include "PathTracerState.h"
-
-#define PATHTRACER_TEXTURES 0
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/vec4.hpp>
 
 namespace voxelpathtracer {
 
-namespace priv {
+namespace {
 
-static inline yocto::vec3f toVec3f(const glm::vec3 &in) {
-	return yocto::vec3f{in.x, in.y, in.z};
+static constexpr int MaxSamplesThisPass = shader::VoxelpathtracerShaderConstants::getMaxSamplesThisPass();
+
+static void shutdownTexture(video::TexturePtr &tex) {
+	if (tex) {
+		tex->shutdown();
+		tex = nullptr;
+	}
 }
 
-static inline yocto::vec4f toColor(const glm::vec4 &in, float ambientOcclusion_unused) {
-	return yocto::vec4f{in.r, in.g, in.b, in.a};
+static video::TextureConfig nearestTextureConfig(video::TextureType type, video::TextureFormat format) {
+	video::TextureConfig cfg;
+	cfg.type(type);
+	cfg.format(format);
+	cfg.filter(video::TextureFilter::Nearest);
+	cfg.wrap(video::TextureWrap::ClampToEdge);
+	return cfg;
 }
 
-/**
- * Simplified read stream that knows how image::Image::loadRGBA() works.
- *
- * @code
- * YoctoImageReadStream stream(img);
- * target.loadRGBA(stream, img.width, img.height);
- * @endcode
- */
-class YoctoImageReadStream : public io::ReadStream {
-private:
-	const yocto::image_data &_img;
-	bool _eos = false;
-
-public:
-	YoctoImageReadStream(const yocto::image_data &img) : _img(img) {
-	}
-
-	// the complete image is read with one call!!
-	int read(void *dataPtr, size_t dataSize) override {
-		const size_t actualSize =  (size_t)_img.width * (size_t)_img.height * sizeof(yocto::vec4b);
-		if (dataSize != actualSize) {
-			Log::error("Expected to read %d bytes, but got %d", (int)actualSize, (int)dataSize);
-			return -1;
-		}
-		uint8_t *buf = (uint8_t *)dataPtr;
-		for (int i = 0; i < _img.height; i++) {
-			for (int j = 0; j < _img.width; j++) {
-				const yocto::vec4b &v = yocto::float_to_byte(_img[{j, i}]);
-				memcpy(buf, &v, sizeof(v));
-				buf += sizeof(v);
-			}
-		}
-		_eos = true;
-		Log::debug("Loaded %d bytes from the image with size %dx%d", (int)dataSize, _img.width, _img.height);
-		return (int)dataSize;
-	}
-
-	bool eos() const override {
-		return _eos;
-	}
+struct FullscreenPassState {
+	video::ScopedState depthTest{video::State::DepthTest, false};
+	video::ScopedState depthMask{video::State::DepthMask, false};
+	video::ScopedState cullFace{video::State::CullFace, false};
+	video::ScopedState blend{video::State::Blend, false};
 };
 
-} // namespace priv
+static_assert((int)palette::MaterialType::Diffuse == shader::VoxelpathtracerShaderConstants::getMaterialDiffuse());
+static_assert((int)palette::MaterialType::Metal == shader::VoxelpathtracerShaderConstants::getMaterialMetal());
+static_assert((int)palette::MaterialType::Glass == shader::VoxelpathtracerShaderConstants::getMaterialGlass());
+static_assert((int)palette::MaterialType::Emit == shader::VoxelpathtracerShaderConstants::getMaterialEmit());
+static_assert((int)palette::MaterialType::Blend == shader::VoxelpathtracerShaderConstants::getMaterialBlend());
+static_assert((int)palette::MaterialType::Media == shader::VoxelpathtracerShaderConstants::getMaterialMedia());
 
-PathTracer::PathTracer() : _state(new PathTracerState()) {
+static glm::vec3 sunDirection(const PathTracerParams &params) {
+	return voxelrender::sunDirectionFromAngle(glm::vec3(params.sunElevation, params.sunAzimuth, 0.0f));
 }
+
+static constexpr int MaterialRows = shader::VoxelpathtracerShaderConstants::getMaterialRows();
+static_assert(sizeof(GpuEmitLight) == 8u * sizeof(float));
+
+static int maxTextureAxis() {
+	const int brickSize = pathTracerBrickSize();
+	int glMax = video::limiti(video::Limit::Max3DTextureSize);
+	if (glMax < brickSize) {
+		// GLES3 requires at least 256; desktop drivers typically report 2048.
+		glMax = 2048;
+	}
+	return glMax;
+}
+
+} // namespace
 
 PathTracer::~PathTracer() {
 	stop();
-	delete _state;
+	shutdown();
 }
 
-bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-						 const voxel::Mesh &mesh, bool opaque) {
-	const voxel::IndexArray &indices = mesh.getIndexVector();
-	if (indices.empty()) {
+bool PathTracer::init() {
+	return initGpu();
+}
+
+void PathTracer::shutdown() {
+	shutdownGpu();
+}
+
+bool PathTracer::initGpu() {
+	core_trace_scoped(PathTracerInitGpu);
+	if (_initialized) {
 		return true;
 	}
-	core_assert((int)indices.size() % 3 == 0);
-	const int tris = (int)indices.size() / 3;
-	yocto::shape_data shapes[palette::PaletteMaxColors];
-	const voxel::VertexArray &vertices = mesh.getVertexVector();
-	const voxel::NormalArray &normals = mesh.getNormalVector();
-	const bool useNormals = normals.size() == vertices.size();
-
-	const palette::Palette &palette = sceneGraph.resolvePalette(node);
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	const voxel::Region &region = sceneGraph.resolveRegion(node);
-	const glm::vec3 size(region.getDimensionsInVoxels());
-	const glm::vec3 &pivot = node.pivot();
-	const glm::vec3 objPivot = pivot * size;
-	for (int i = 0; i < tris; i++) {
-		const voxel::VoxelVertex &vertex0 = vertices[indices[i * 3 + 0]];
-		const voxel::VoxelVertex &vertex1 = vertices[indices[i * 3 + 1]];
-		const voxel::VoxelVertex &vertex2 = vertices[indices[i * 3 + 2]];
-
-		const glm::vec3 pos0 = transform.apply(vertex0.position, objPivot);
-		const glm::vec3 pos1 = transform.apply(vertex1.position, objPivot);
-		const glm::vec3 pos2 = transform.apply(vertex2.position, objPivot);
-		// uv is the same for all three vertices
-		yocto::shape_data *shape = &shapes[vertex0.colorIndex];
-
-		shape->positions.push_back(priv::toVec3f(pos0));
-		shape->positions.push_back(priv::toVec3f(pos1));
-		shape->positions.push_back(priv::toVec3f(pos2));
-		const color::RGBA rgba = palette.color(vertex0.colorIndex);
-		const glm::vec4 &color = color::fromRGBA(rgba);
-		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
-		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
-		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
-#if PATHTRACER_TEXTURES
-		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette.colorCount(), 1);
-		shape->texcoords.push_back({uv[0], uv[1]});
-		shape->texcoords.push_back({uv[0], uv[1]});
-		shape->texcoords.push_back({uv[0], uv[1]});
-#endif
-		if (useNormals) {
-			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 0]]));
-			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 1]]));
-			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 2]]));
-		}
-
-		const int offsetStart = (int)shape->triangles.size() * 3;
-		const yocto::vec3i vidx{offsetStart + 0, offsetStart + 1, offsetStart + 2};
-		shape->triangles.push_back(vidx);
+	shader::VoxelpathtracerShader &traceShader = shader::VoxelpathtracerShader::getInstance();
+	shader::VoxelpathtracerDisplayShader &displayShader = shader::VoxelpathtracerDisplayShader::getInstance();
+	if (!traceShader.setup()) {
+		Log::error("Failed to init pathtracer shader");
+		return false;
 	}
-	// const glm::vec3 &mins = mesh.getOffset();
-	_state->scene.shapes.reserve(palette.colorCount());
-	for (int i = 0; i < palette.colorCount(); ++i) {
-		yocto::shape_data &shape = shapes[i];
-		if (shape.triangles.empty()) {
-			continue;
-		}
-		_state->scene.shapes.push_back(shape);
-
-		yocto::instance_data instance_data;
-		// instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
-		instance_data.material = _state->scene.materials.size() + i;
-		instance_data.shape = (int)_state->scene.shapes.size() - 1;
-		_state->scene.instances.push_back(instance_data);
+	if (!displayShader.setup()) {
+		Log::error("Failed to init pathtracer display shader");
+		traceShader.shutdown();
+		return false;
 	}
 
+	if (!shader::VoxelpathtracerBloomShader::getInstance().setup()) {
+		displayShader.shutdown();
+		traceShader.shutdown();
+		return false;
+	}
+	_bufferIndex = _vbo.createFullscreenQuad();
+	_texIndex = _vbo.createFullscreenTextureBufferForFramebuffer();
+	core_assert_always(_vbo.addAttribute(traceShader.getPosAttribute(_bufferIndex, &glm::vec2::x)));
+	core_assert_always(_vbo.addAttribute(traceShader.getTexcoordAttribute(_texIndex, &glm::vec2::x)));
+	core_memset(&_paramsUniforms, 0, sizeof(_paramsUniforms));
+	core_memset(&_displayUniforms, 0, sizeof(_displayUniforms));
+	shader::VoxelpathtracerBloomData::FilterData filter{};
+	if (!_paramsUbo.create(_paramsUniforms) || !_displayUbo.create(_displayUniforms) || !_bloomUbo.create(filter)) {
+		Log::error("Failed to create pathtracer uniform buffers");
+		_paramsUbo.shutdown();
+		_displayUbo.shutdown();
+		_bloomUbo.shutdown();
+		shader::VoxelpathtracerBloomShader::getInstance().shutdown();
+		_vbo.shutdown();
+		displayShader.shutdown();
+		traceShader.shutdown();
+		return false;
+	}
+	_initialized = true;
 	return true;
 }
 
-void PathTracer::addCamera(const scenegraph::SceneGraphNodeCamera &node) {
-	addCamera(node.name().c_str(), voxelrender::toCamera({}, node));
+void PathTracer::shutdownGpu() {
+	if (!_initialized) {
+		return;
+	}
+	_accum[0].shutdown();
+	_accum[1].shutdown();
+	_displayFbo.shutdown();
+	_bloomFbo.shutdown();
+	_bloomDirty = true;
+	_displayDirty = true;
+	shutdownTexture(_bricksTex);
+	shutdownTexture(_indirectionTex);
+	shutdownTexture(_paletteTex);
+	shutdownTexture(_materialTex);
+	shutdownTexture(_emitTex);
+	_lightCount = 0;
+	_emitterLuminance = 0.0f;
+	_bricksPerRow = 1;
+	_vbo.shutdown();
+	_bufferIndex = -1;
+	_texIndex = -1;
+	_paramsUbo.shutdown();
+	_displayUbo.shutdown();
+	_bloomUbo.shutdown();
+	shader::VoxelpathtracerBloomShader::getInstance().shutdown();
+	shader::VoxelpathtracerShader::getInstance().shutdown();
+	shader::VoxelpathtracerDisplayShader::getInstance().shutdown();
+	_initialized = false;
+	_targetResolution = 0;
 }
 
-void PathTracer::addCamera(const char *name, const video::Camera &cam) {
-	yocto::scene_data &scene = _state->scene;
-	scene.camera_names.emplace_back(name);
-	yocto::camera_data &camera = scene.cameras.emplace_back();
+int PathTracer::outputResolution() const {
+	const float scale = glm::clamp(_state.params.renderScale, 0.25f, 1.0f);
+	return core_max(1, (int)((float)core_max(1, _state.params.resolution) * scale + 0.5f));
+}
 
-	const yocto::vec3f &from = priv::toVec3f(cam.eye());
-	const yocto::vec3f &to = priv::toVec3f(cam.target());
-	const yocto::vec3f &up = priv::toVec3f(cam.up());
-	camera.frame = yocto::lookat_frame(from, to, up);
-	camera.aspect = (float)cam.size().x / (float)cam.size().y;
-	camera.aperture = _state->aperture;
+void PathTracer::uploadEmitLights(const GpuEmitLight *lights, int count) {
+	// u_lights RGBA32F, width=2, height=count: position and precomputed radiance.
+	shutdownTexture(_emitTex);
+	_lightCount = core_max(0, count);
+	const int height = core_max(1, _lightCount);
+	GpuEmitLight dummy;
+	core_memset(&dummy, 0, sizeof(dummy));
+	const GpuEmitLight *data = (lights != nullptr && _lightCount > 0) ? lights : &dummy;
+	const video::TextureConfig cfg = nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA32F);
+	_emitTex = core::make_shared<video::Texture>(cfg, 2, height, "pathtracer-emit");
+	_emitTex->upload(2, height, (const uint8_t *)data);
+}
 
-	camera.orthographic = cam.isOrthographic();
-	if (camera.orthographic) {
-		camera.film = cam.size().x;
-		if (cam.rotationType() == video::CameraRotationType::Target) {
-			camera.focus = cam.targetDistance();
-		} else {
-			camera.focus = cam.farPlane();
+void PathTracer::drawFullscreen(video::FrameBuffer &target) {
+	target.bind(false);
+	core_assert_always(_vbo.bind());
+	video::drawArrays(video::Primitive::Triangles, 6);
+	_vbo.unbind();
+	target.unbind();
+}
+
+bool PathTracer::ensureTargets(int resolution) {
+	if (resolution < 1) {
+		resolution = 1;
+	}
+	if (_targetResolution == resolution && _accum[0].handle() != video::InvalidId) {
+		return true;
+	}
+
+	_accum[0].shutdown();
+	_accum[1].shutdown();
+	_displayFbo.shutdown();
+	_bloomFbo.shutdown();
+	_bloomDirty = true;
+	_displayDirty = true;
+
+	video::TextureConfig hdrCfg;
+	hdrCfg.filter(video::TextureFilter::Nearest);
+	hdrCfg.wrap(video::TextureWrap::ClampToEdge);
+
+	video::TextureFormat hdrFormats[2] = {video::TextureFormat::RGBA32F, video::TextureFormat::RGBA16F};
+	bool accumOk = false;
+	for (int i = 0; i < 2; ++i) {
+		_accum[0].shutdown();
+		_accum[1].shutdown();
+		hdrCfg.format(hdrFormats[i]);
+		video::FrameBufferConfig accumCfg;
+		accumCfg.dimension(glm::ivec2(resolution, resolution));
+		accumCfg.addTextureAttachment(hdrCfg, video::FrameBufferAttachment::Color0);
+		if (_accum[0].init(accumCfg) && _accum[1].init(accumCfg)) {
+			accumOk = true;
+			if (i == 1) {
+				Log::warn("Pathtracer accumulation falling back to RGBA16F");
+			}
+			break;
 		}
-		camera.lens = camera.film / camera.focus;
+	}
+	if (!accumOk) {
+		Log::error("Failed to create pathtracer accumulation targets");
+		return false;
+	}
+
+	video::FrameBufferConfig displayCfg;
+	displayCfg.dimension(glm::ivec2(resolution, resolution));
+	displayCfg.colorTexture(true);
+	displayCfg.colorTextureFormat(video::TextureFormat::RGBA);
+	if (!_displayFbo.init(displayCfg)) {
+		Log::error("Failed to create pathtracer display target");
+		return false;
+	}
+
+	_targetResolution = resolution;
+	_writeAccum = 0;
+	return true;
+}
+
+void PathTracer::setupTraceCamera(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
+	if (camera != nullptr) {
+		_traceCamera = *camera;
 	} else {
-		camera.film = 0.036f;
-		float distance = camera.film / (2.0f * glm::tan(cam.fieldOfView() / 2.0f));
-		if (camera.aspect > 1.0f) {
-			distance /= camera.aspect;
+		_traceCamera.setSize(glm::ivec2(outputResolution()));
+		_traceCamera.setMode(video::CameraMode::Perspective);
+		_traceCamera.setType(video::CameraType::Free);
+		const voxel::Region &sceneRegion = sceneGraph.sceneRegion();
+		const glm::vec3 dim = glm::vec3(sceneRegion.getDimensionsInVoxels());
+		const float farPlane = glm::max(32.0f, glm::length(dim) * 4.0f);
+		voxelrender::configureCamera(_traceCamera, sceneRegion, voxelrender::SceneCameraMode::Free, farPlane);
+	}
+	_traceCamera.setSize(glm::ivec2(outputResolution()));
+	_traceCamera.update(0.0);
+}
+
+bool PathTracer::createEmptyGpuScene() {
+	_hasVolume = false;
+	Log::debug("Pathtracer scene has no visible voxels");
+	const int brickSize = pathTracerBrickSize();
+	uint32_t emptyIndirection = 0;
+	video::TextureConfig indCfg = nearestTextureConfig(video::TextureType::Texture3D, video::TextureFormat::R32U);
+	indCfg.layers(1);
+	_indirectionTex = core::make_shared<video::Texture>(indCfg, 1, 1, "pathtracer-indirection");
+	_indirectionTex->upload((const uint8_t *)&emptyIndirection, 1);
+	const size_t emptyBrickBytes = (size_t)brickSize * (size_t)brickSize * (size_t)brickSize * sizeof(uint32_t);
+	uint32_t *emptyBricks = (uint32_t *)core_malloc(emptyBrickBytes);
+	if (emptyBricks == nullptr) {
+		Log::error("Failed to allocate empty pathtracer brick atlas");
+		return false;
+	}
+	core_memset(emptyBricks, 0, emptyBrickBytes);
+	video::TextureConfig brickCfg = indCfg;
+	brickCfg.layers(brickSize);
+	_bricksTex = core::make_shared<video::Texture>(brickCfg, brickSize, brickSize, "pathtracer-bricks");
+	_bricksTex->upload((const uint8_t *)emptyBricks, brickSize);
+	core_free(emptyBricks);
+	_bricksPerRow = 1;
+	const video::TextureConfig palCfg = nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA);
+	_paletteTex = core::make_shared<video::Texture>(palCfg, 1, 1, "pathtracer-palette");
+	uint8_t pal[4] = {0, 0, 0, 0};
+	_paletteTex->upload(1, 1, pal);
+	video::TextureConfig matCfg = palCfg;
+	matCfg.format(video::TextureFormat::RGBA32F);
+	_materialTex = core::make_shared<video::Texture>(matCfg, MaterialRows, 1, "pathtracer-materials");
+	GpuMaterial emptyMat;
+	core_memset(&emptyMat, 0, sizeof(emptyMat));
+	_materialTex->upload(MaterialRows, 1, (const uint8_t *)&emptyMat);
+	_volumeMin = glm::ivec3(0);
+	_volumeSize = glm::ivec3(1);
+	uploadEmitLights(nullptr, 0);
+	return true;
+}
+
+bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materialCount) {
+	const int brickSize = pathTracerBrickSize();
+	const int voxelsPerBrick = pathTracerVoxelsPerBrick();
+	const size_t atlasVoxels = (size_t)volume.atlasSize.x * (size_t)volume.atlasSize.y * (size_t)volume.atlasSize.z;
+	uint32_t *atlas = (uint32_t *)core_malloc(core_max((size_t)1, atlasVoxels) * sizeof(uint32_t));
+	if (atlas == nullptr) {
+		Log::error("Failed to allocate pathtracer brick atlas");
+		return false;
+	}
+	core_memset(atlas, 0, core_max((size_t)1, atlasVoxels) * sizeof(uint32_t));
+	for (int brickIndex = 0; brickIndex < volume.brickCount; ++brickIndex) {
+		const int bx = brickIndex % volume.bricksPerRow;
+		const int by = brickIndex / volume.bricksPerRow;
+		const uint32_t *src = volume.bricks + (size_t)brickIndex * (size_t)voxelsPerBrick;
+		for (int lz = 0; lz < brickSize; ++lz) {
+			for (int ly = 0; ly < brickSize; ++ly) {
+				for (int lx = 0; lx < brickSize; ++lx) {
+					const int ax = bx * brickSize + lx;
+					const int ay = by * brickSize + ly;
+					atlas[volumeOffset(ax, ay, lz, volume.atlasSize)] = src[(lz * brickSize + ly) * brickSize + lx];
+				}
+			}
 		}
-		if (cam.rotationType() == video::CameraRotationType::Target) {
-			camera.focus = cam.targetDistance();
-		} else {
-			camera.focus = cam.farPlane();
+	}
+
+	uint16_t *compactAtlas = compactGpuVoxelIndices(atlas, atlasVoxels, materialCount);
+	const video::TextureFormat brickFormat =
+		compactAtlas != nullptr ? video::TextureFormat::R16U : video::TextureFormat::R32U;
+	video::TextureConfig brickCfg = nearestTextureConfig(video::TextureType::Texture3D, brickFormat);
+	brickCfg.alignment(compactAtlas != nullptr ? 2 : 4);
+	brickCfg.layers(volume.atlasSize.z);
+	_bricksTex =
+		core::make_shared<video::Texture>(brickCfg, volume.atlasSize.x, volume.atlasSize.y, "pathtracer-bricks");
+	_bricksTex->upload(compactAtlas != nullptr ? (const uint8_t *)compactAtlas : (const uint8_t *)atlas,
+					   volume.atlasSize.z);
+	core_free(compactAtlas);
+	core_free(atlas);
+
+	const size_t coarseCount = (size_t)volume.coarseSize.x * (size_t)volume.coarseSize.y * (size_t)volume.coarseSize.z;
+	const bool compactIndirection = volume.brickCount + (int)BrickIdBias <= (int)UINT16_MAX;
+	video::TextureConfig indCfg = nearestTextureConfig(
+		video::TextureType::Texture3D, compactIndirection ? video::TextureFormat::R16U : video::TextureFormat::R32U);
+	indCfg.alignment(compactIndirection ? 2 : 4);
+	indCfg.layers(volume.coarseSize.z);
+	_indirectionTex =
+		core::make_shared<video::Texture>(indCfg, volume.coarseSize.x, volume.coarseSize.y, "pathtracer-indirection");
+	if (compactIndirection) {
+		uint16_t *compact = (uint16_t *)core_malloc(coarseCount * sizeof(uint16_t));
+		if (compact == nullptr) {
+			Log::error("Failed to allocate pathtracer indirection upload");
+			return false;
 		}
-		camera.lens = camera.focus * distance / (camera.focus + distance);
+		for (size_t i = 0; i < coarseCount; ++i) {
+			compact[i] = (uint16_t)volume.indirection[i];
+		}
+		_indirectionTex->upload((const uint8_t *)compact, volume.coarseSize.z);
+		core_free(compact);
+	} else {
+		_indirectionTex->upload((const uint8_t *)volume.indirection, volume.coarseSize.z);
 	}
+	_bricksPerRow = volume.bricksPerRow;
+	return true;
 }
 
-static yocto::material_type mapMaterialType(palette::MaterialType type) {
-	// https://xelatihy.github.io/yocto-gl/yocto/yocto_scene/#materials
-	switch (type) {
-	case palette::MaterialType::Diffuse:
-		return yocto::material_type::matte;
-	case palette::MaterialType::Emit:
-		return yocto::material_type::matte;
-	case palette::MaterialType::Metal:
-		return yocto::material_type::reflective;
-	case palette::MaterialType::Glass:
-		return yocto::material_type::refractive;
-	case palette::MaterialType::Blend:
-		return yocto::material_type::transparent;
-	case palette::MaterialType::Media:
-		return yocto::material_type::volumetric;
+bool PathTracer::uploadMaterialAtlas(const GpuMaterialAtlas &atlas, const SparseGpuVolume &volume) {
+	GpuEmitLight *emitLights = (GpuEmitLight *)core_malloc((size_t)MaxEmitLights * sizeof(GpuEmitLight));
+	int emitCount = 0;
+	if (emitLights != nullptr && atlas.materials != nullptr && atlas.albedoRgba != nullptr) {
+		gatherSceneEmitLights(volume, atlas.materialCount, atlas.materials, atlas.albedoRgba, emitLights, emitCount,
+							  _emitterLuminance);
+		uploadEmitLights(emitLights, emitCount);
+		core_free(emitLights);
+	} else {
+		uploadEmitLights(nullptr, 0);
 	}
-	return yocto::material_type::matte;
-}
 
-static void setupMaterial(yocto::scene_data &scene, const palette::Palette &palette, int i) {
-	const palette::Material &ownMaterial = palette.material(i);
+	shutdownTexture(_paletteTex);
+	shutdownTexture(_materialTex);
 
-	yocto::material_data material;
-	material.type = mapMaterialType(ownMaterial.type);
-	const glm::vec4 color = color::fromRGBA(palette.color(i));
-	material.color = priv::toVec3f(color);
-	if (ownMaterial.has(palette::MaterialProperty::MaterialEmit)) {
-		const glm::vec4 emitColor = color::fromRGBA(palette.emitColor(i));
-		material.emission = priv::toVec3f(emitColor) * ownMaterial.value(palette::MaterialProperty::MaterialEmit);
+	const int albedoWidth = core_max(1, atlas.materialCount);
+	const video::TextureConfig palCfg = nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA);
+	// u_palette: flat RGBA8 albedo row, x = materialId - 1. See fetchPalette in shaders/_struct.glsl.
+	_paletteTex = core::make_shared<video::Texture>(palCfg, albedoWidth, 1, "pathtracer-palette");
+	if (atlas.albedoRgba != nullptr && atlas.materialCount > 0) {
+		_paletteTex->upload(albedoWidth, 1, atlas.albedoRgba);
+	} else {
+		uint8_t empty[4] = {0, 0, 0, 0};
+		_paletteTex->upload(1, 1, empty);
 	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialMetal)) {
-		material.metallic = ownMaterial.value(palette::MaterialProperty::MaterialMetal);
-	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialRoughness)) {
-		material.roughness = ownMaterial.value(palette::MaterialProperty::MaterialRoughness);
-	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
-		material.ior = ownMaterial.value(palette::MaterialProperty::MaterialIndexOfRefraction);
-	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialPhase)) {
-		material.scanisotropy = ownMaterial.value(palette::MaterialProperty::MaterialPhase);
-	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialDensity)) {
-		material.trdepth = ownMaterial.value(palette::MaterialProperty::MaterialDensity);
-	}
-	if (ownMaterial.has(palette::MaterialProperty::MaterialMedia)) {
-		material.scattering = priv::toVec3f(color) * ownMaterial.value(palette::MaterialProperty::MaterialMedia);
-	}
-	material.opacity = color.a;
-#if PATHTRACER_TEXTURES
-	#error "TODO: add texture support"
-#endif
-	scene.materials.push_back(material);
-}
 
-#if PATHTRACER_TEXTURES
-static int addEmissiveTexture(yocto::scene_data &scene, const palette::Palette &palette) {
-	yocto::texture_data texture;
-	texture.height = 1;
-	texture.width = palette::PaletteMaxColors;
-	for (int i = 0; i < palette.colorCount(); ++i) {
-		const color::RGBA color = palette.emitColor(i);
-		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
+	video::TextureConfig matCfg = nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA32F);
+	matCfg.alignment(4);
+	const int materialHeight = core_max(1, atlas.materialCount);
+	_materialTex = core::make_shared<video::Texture>(matCfg, MaterialRows, materialHeight, "pathtracer-materials");
+	if (atlas.materials != nullptr && atlas.materialCount > 0) {
+		_materialTex->upload(MaterialRows, materialHeight, (const uint8_t *)atlas.materials);
+	} else {
+		GpuMaterial emptyMat;
+		core_memset(&emptyMat, 0, sizeof(emptyMat));
+		_materialTex->upload(MaterialRows, 1, (const uint8_t *)&emptyMat);
 	}
-	for (int i = palette.colorCount(); i < texture.width; ++i) {
-		texture.pixelsb.push_back({});
-	}
-	scene.textures.push_back(texture);
-	return scene.textures.size() - 1;
+	return true;
 }
-
-static int addPaletteTexture(yocto::scene_data &scene, const palette::Palette &palette) {
-	yocto::texture_data texture;
-	texture.height = 1;
-	texture.width = palette::PaletteMaxColors;
-	for (int i = 0; i < palette.colorCount(); ++i) {
-		const color::RGBA color = palette.color(i);
-		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
-	}
-	for (int i = palette.colorCount(); i < texture.width; ++i) {
-		texture.pixelsb.push_back({});
-	}
-	scene.textures.push_back(texture);
-	return scene.textures.size() - 1;
-}
-#endif
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
-	_state->scene = {};
-	_state->lights = {};
+	core_trace_scoped(PathTracerCreateScene);
+	_state.cameraNames.clear();
+	_state.volumeTruncated = false;
+	_hasVolume = false;
 
-	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
-	voxel::ChunkMesh mesh(65536, 65536, true);
-	for (const auto &e : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &node = e->value;
-		if (!node.isAnyModelNode()) {
-			continue;
-		}
-		if (!node.visible()) {
-			continue;
-		}
-		const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
-		if (v == nullptr) {
-			continue;
-		}
+	shutdownTexture(_bricksTex);
+	shutdownTexture(_indirectionTex);
+	shutdownTexture(_paletteTex);
+	shutdownTexture(_materialTex);
+	shutdownTexture(_emitTex);
+	_lightCount = 0;
+	_emitterLuminance = 0.0f;
+	_bricksPerRow = 1;
 
-		const voxel::Region &region = v->region();
+	setupTraceCamera(sceneGraph, camera);
 
-		const palette::Palette &palette = sceneGraph.resolvePalette(node);
-		voxel::SurfaceExtractionContext ctx =
-			voxel::createContext(type, v, region, palette, mesh, region.getLowerCorner(), true, true, false, true);
+	core::Buffer<const palette::Palette *> palettes;
+	collectScenePalettes(sceneGraph, palettes);
 
-		voxel::extractSurface(ctx);
-
-		if (!addNode(sceneGraph, node, mesh.mesh[0], true)) {
-			return false;
-		}
-		if (!addNode(sceneGraph, node, mesh.mesh[1], false)) {
-			return false;
-		}
-
-#if PATHTRACER_TEXTURES
-		const int paletteTextureIdx = addPaletteTexture(_state->scene, palette);
-		const int emissiveTextureIdx = addEmissiveTexture(_state->scene, palette);
-#endif
-		for (int i = 0; i < palette.colorCount(); ++i) {
-			setupMaterial(_state->scene, palette, i);
-		}
+	const voxel::Region worldRegion = sceneGraph.sceneRegion(0, true);
+	if (palettes.empty() || !worldRegion.isValid()) {
+		return createEmptyGpuScene();
 	}
 
-	if (camera) {
-		addCamera("default", *camera);
+	const glm::ivec3 worldMin = worldRegion.getLowerCorner();
+	const int textureAxis = maxTextureAxis();
+	bool truncated = false;
+	_volumeSize = clampVolumeSize(worldRegion.getDimensionsInVoxels(), textureAxis, truncated);
+	if (truncated) {
+		_state.volumeTruncated = true;
+		Log::warn("Pathtracer volume truncated to %ix%ix%i (indirection grid / texture limits)", _volumeSize.x,
+				  _volumeSize.y, _volumeSize.z);
 	}
 
-	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
-		addCamera(scenegraph::toCameraNode(node));
+	const size_t transmissiveCount = (size_t)palettes.size() * palette::PaletteMaxColors;
+	uint8_t *transmissive = (uint8_t *)core_malloc(transmissiveCount);
+	if (transmissive == nullptr) {
+		Log::error("Failed to allocate pathtracer transmissive flags");
+		return false;
 	}
+	core_memset(transmissive, 0, transmissiveCount);
 
-	if (_state->scene.cameras.size() <= 1) {
-		yocto::add_camera(_state->scene);
+	SparseGpuVolume sparse;
+	if (!buildSparseGpuVolume(sceneGraph, palettes, worldMin, _volumeSize, textureAxis, sparse, transmissive)) {
+		core_free(transmissive);
+		return false;
 	}
-
-	const scenegraph::SceneGraphNode &root = sceneGraph.root();
-	const core::String &sunIntensity = root.property(scenegraph::PropSunIntensity);
-	if (!sunIntensity.empty()) {
-		_state->sunIntensity = core::string::toFloat(sunIntensity);
-		_state->sunArea = root.propertyf(scenegraph::PropSunArea);
-		_state->sunElevation = glm::radians(root.propertyf(scenegraph::PropSunElevation));
-		_state->sunAzimuth = glm::radians(root.propertyf(scenegraph::PropSunAzimuth));
-		_state->sunDisk = root.property(scenegraph::PropSunDisk) == "true";
+	if (sparse.bricksTruncated) {
+		_state.volumeTruncated = true;
 	}
+	GpuMaterialAtlas materialAtlas;
+	if (!buildDenseMaterialAtlas(sparse, palettes, transmissive, materialAtlas)) {
+		core_free(transmissive);
+		freeSparseGpuVolume(sparse);
+		return false;
+	}
+	core_free(transmissive);
+	if (!uploadSparseVolume(sparse, (size_t)materialAtlas.materialCount)) {
+		freeGpuMaterialAtlas(materialAtlas);
+		freeSparseGpuVolume(sparse);
+		return false;
+	}
+	if (!uploadMaterialAtlas(materialAtlas, sparse)) {
+		freeGpuMaterialAtlas(materialAtlas);
+		freeSparseGpuVolume(sparse);
+		return false;
+	}
+	freeGpuMaterialAtlas(materialAtlas);
+	freeSparseGpuVolume(sparse);
 
-	_state->scene.texture_names.emplace_back("sky");
-	yocto::texture_data &texture = _state->scene.textures.emplace_back();
-	texture = yocto::image_to_texture(
-		yocto::make_sunsky(1024, 512, _state->sunElevation, 3, _state->sunDisk, _state->sunIntensity, _state->sunArea));
-	_state->scene.environment_names.emplace_back("sky");
-	yocto::environment_data &environment = _state->scene.environments.emplace_back();
-	environment.emission = {1, 1, 1};
-	environment.emission_tex = (int)_state->scene.textures.size() - 1;
-	environment.frame = yocto::rotation_frame({0, 1, 0}, _state->sunAzimuth);
-
+	_volumeMin = worldMin;
+	_hasVolume = true;
+	_floorY = _state.params.floorEnabled ? _state.params.floorY : (float)worldMin.y;
 	return true;
+}
+
+void PathTracer::tracePass(int samples) {
+	core_trace_scoped(PathTracerTracePass);
+	shader::VoxelpathtracerShader &shader = shader::VoxelpathtracerShader::getInstance();
+	video::ScopedShader scoped(shader);
+	FullscreenPassState passState;
+
+	const int readAccum = 1 - _writeAccum;
+	core_assert_always(video::bindTexture(shader.getBoundBricksTexUnit(), _bricksTex));
+	core_assert_always(video::bindTexture(shader.getBoundIndirectionTexUnit(), _indirectionTex));
+	core_assert_always(video::bindTexture(shader.getBoundPaletteTexUnit(), _paletteTex));
+	core_assert_always(video::bindTexture(shader.getBoundMaterialsTexUnit(), _materialTex));
+	core_assert_always(video::bindTexture(shader.getBoundAccumulationTextureTexUnit(), _accum[readAccum].texture()));
+	core_assert_always(video::bindTexture(shader.getBoundLightsTexUnit(), _emitTex));
+
+	const PathTracerParams &params = _state.params;
+	const glm::mat4 invViewProj = glm::inverse(_traceCamera.viewProjectionMatrix());
+	const float elevScale = glm::clamp((_state.params.sunElevation + 6.0f) / 12.0f, 0.1f, 1.0f);
+	const glm::vec3 sunColor = color::srgbToLinear(params.sunColor) * (params.sunIntensity * elevScale);
+	const float sunCosAngle = glm::cos(glm::radians(glm::max(params.sunSoftness, 0.05f)));
+
+	_paramsUniforms.invviewproj = invViewProj;
+	for (int sample = 0; sample < samples; ++sample) {
+		const glm::uvec2 point = cameraSobolPoint((uint32_t)(_state.currentSample + sample));
+		const uint32_t seedHash = sampleSeedHash((uint32_t)(_state.currentSample + sample));
+		// Split the integer hash into two exactly representable 16-bit float values.
+		_paramsUniforms.camerasamples[sample] = glm::vec4((float)(point.x >> 8u), (float)(point.y >> 8u),
+														  (float)(seedHash & 0xffffu), (float)(seedHash >> 16u));
+	}
+	_paramsUniforms.camerapos = _traceCamera.eye();
+	_paramsUniforms.cameraright = _traceCamera.right();
+	_paramsUniforms.cameraup = _traceCamera.up();
+	_paramsUniforms.cameraforward = _traceCamera.forward();
+	_paramsUniforms.sundir = sunDirection(params);
+	_paramsUniforms.suncolor = sunColor;
+	_paramsUniforms.skytop = color::srgbToLinear(params.skyTop) * params.skyIntensity;
+	_paramsUniforms.skyhorizon = color::srgbToLinear(params.skyHorizon) * params.skyIntensity;
+	_paramsUniforms.floorcolor = color::srgbToLinear(params.floorColor);
+	const float skyPower = buildSkyDistribution(_paramsUniforms.skytop, _paramsUniforms.skyhorizon,
+												_paramsUniforms.floorcolor * 0.25f, _paramsUniforms.skybands);
+	const float sunPower = glm::dot(sunColor, glm::vec3(0.2126f, 0.7152f, 0.0722f));
+	_paramsUniforms.skySamplingProbability = skyPower > 0.0f ? skyPower / (skyPower + sunPower) : 0.0f;
+	_paramsUniforms.inverseEmitterLuminance = _emitterLuminance > 0.0f ? 1.0f / _emitterLuminance : 0.0f;
+	_paramsUniforms.bgcolor = color::srgbToLinear(params.backgroundColor);
+	_paramsUniforms.fogcolor = color::srgbToLinear(params.fogColor);
+	_paramsUniforms.resolution = glm::vec2((float)_targetResolution, (float)_targetResolution);
+	_paramsUniforms.suncosangle = sunCosAngle;
+	_paramsUniforms.floory = _floorY;
+	_paramsUniforms.fogdensity = params.fogDensity;
+	_paramsUniforms.aperture = params.depthOfField ? params.aperture : 0.0f;
+	_paramsUniforms.focusdistance = params.focusDistance > 0.0f ? params.focusDistance : _traceCamera.targetDistance();
+	_paramsUniforms.volumeactive = _hasVolume ? 1 : 0;
+	_paramsUniforms.ortho = _traceCamera.isOrthographic() ? 1 : 0;
+	_paramsUniforms.frame = _state.currentSample;
+	_paramsUniforms.samplesPerPass = samples;
+	_paramsUniforms.floorenabled = params.floorEnabled ? 1 : 0;
+	_paramsUniforms.bgmode = params.background;
+	_paramsUniforms.bounces = params.bounces;
+	_paramsUniforms.edgeradius = glm::clamp(params.voxelEdge, 0.0f, 1.0f);
+	_paramsUniforms.atmosphere = glm::max(params.atmosphere, 0.0f);
+	_paramsUniforms.lightcount = _lightCount;
+	_paramsUniforms.volumemin = _volumeMin;
+	_paramsUniforms.volumesize = _volumeSize;
+	_paramsUniforms.bricksperrow = _bricksPerRow;
+	core_assert_always(_paramsUbo.update(_paramsUniforms));
+	core_assert_always(shader.setParams(_paramsUbo.getParamsUniformBuffer()));
+	drawFullscreen(_accum[_writeAccum]);
+
+	_state.currentSample += samples;
+	_writeAccum = readAccum;
+	_displayDirty = true;
+	_bloomDirty = true;
+}
+
+bool PathTracer::bloomPass(float exposure) {
+	if (_bloomFbo.handle() == video::InvalidId) {
+		video::FrameBufferConfig config;
+		config.dimension(glm::ivec2(_targetResolution));
+		config.colorTexture(true);
+		config.colorTextureFormat(video::TextureFormat::RGBA32F);
+		if (!_bloomFbo.init(config)) {
+			return false;
+		}
+		_bloomDirty = true;
+	}
+	if (!_bloomDirty) {
+		return true;
+	}
+	shader::VoxelpathtracerBloomShader &shader = shader::VoxelpathtracerBloomShader::getInstance();
+	video::ScopedShader scoped(shader);
+	FullscreenPassState passState;
+	core_assert_always(video::bindTexture(shader.getBoundTextureTexUnit(), _accum[1 - _writeAccum].texture()));
+	shader::VoxelpathtracerBloomData::FilterData filter{};
+	filter.resolution = glm::vec2((float)_targetResolution);
+	filter.exposure = exposure;
+	core_assert_always(_bloomUbo.update(filter));
+	core_assert_always(shader.setFilter(_bloomUbo.getFilterUniformBuffer()));
+	drawFullscreen(_bloomFbo);
+	_bloomDirty = false;
+	return true;
+}
+
+void PathTracer::displayPass() {
+	core_trace_scoped(PathTracerDisplayPass);
+	shader::VoxelpathtracerDisplayData::DisplayData nextDisplay{};
+	const PathTracerParams &params = _state.params;
+	nextDisplay.screensize = glm::vec2((float)_targetResolution, (float)_targetResolution);
+	nextDisplay.exposure = params.exposure;
+	nextDisplay.contrast = params.contrast;
+	nextDisplay.saturation = params.saturation;
+	nextDisplay.vignette = params.vignette;
+	nextDisplay.tonemapmode = params.toneMapping;
+	nextDisplay.checkerboard = params.background == PathTracerBackgroundTransparent ? 1 : 0;
+	nextDisplay.bloomstrength = glm::clamp(params.bloom, 0.0f, 2.0f);
+	if (!_displayDirty && nextDisplay.screensize == _displayUniforms.screensize &&
+		nextDisplay.exposure == _displayUniforms.exposure && nextDisplay.contrast == _displayUniforms.contrast &&
+		nextDisplay.saturation == _displayUniforms.saturation && nextDisplay.vignette == _displayUniforms.vignette &&
+		nextDisplay.tonemapmode == _displayUniforms.tonemapmode &&
+		nextDisplay.checkerboard == _displayUniforms.checkerboard &&
+		nextDisplay.bloomstrength == _displayUniforms.bloomstrength) {
+		return;
+	}
+	_bloomDirty |= nextDisplay.exposure != _displayUniforms.exposure;
+	nextDisplay.bloomprecomputed = nextDisplay.bloomstrength > 1e-4f && bloomPass(nextDisplay.exposure) ? 1 : 0;
+	_displayUniforms = nextDisplay;
+	shader::VoxelpathtracerDisplayShader &shader = shader::VoxelpathtracerDisplayShader::getInstance();
+	video::ScopedShader scoped(shader);
+	FullscreenPassState passState;
+	const int readAccum = 1 - _writeAccum;
+	core_assert_always(video::bindTexture(shader.getBoundTextureTexUnit(), _accum[readAccum].texture()));
+	core_assert_always(video::bindTexture(shader.getBoundBloomTextureTexUnit(), _displayUniforms.bloomprecomputed != 0
+																					? _bloomFbo.texture()
+																					: _accum[readAccum].texture()));
+	core_assert_always(_displayUbo.update(_displayUniforms));
+	core_assert_always(shader.setDisplay(_displayUbo.getDisplayUniformBuffer()));
+	drawFullscreen(_displayFbo);
+	_displayDirty = false;
+}
+
+void PathTracer::resetAccumulation() {
+	if (!initGpu()) {
+		return;
+	}
+	if (!ensureTargets(outputResolution())) {
+		return;
+	}
+	_state.currentSample = 0;
+	_writeAccum = 0;
+	_state.started = true;
+}
+
+bool PathTracer::cameraPoseChanged(const video::Camera &camera) const {
+	if (!glm::equal(camera.viewProjectionMatrix(), _traceCamera.viewProjectionMatrix())) {
+		return true;
+	}
+	return camera.isOrthographic() != _traceCamera.isOrthographic();
+}
+
+void PathTracer::applyCamera(const video::Camera *camera) {
+	if (camera == nullptr) {
+		return;
+	}
+	video::Camera cam = *camera;
+	const int resolution = outputResolution();
+	cam.setSize(glm::ivec2(resolution));
+	cam.update(0.0);
+	const bool changed = cameraPoseChanged(cam);
+	_traceCamera = cam;
+	if (changed) {
+		resetAccumulation();
+	}
 }
 
 bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
-	Log::debug("Create scene");
-	createScene(sceneGraph, camera);
-	_state->bvh = yocto::make_trace_bvh(_state->scene, _state->params);
-	_state->lights = yocto::make_trace_lights(_state->scene, _state->params);
-	_state->state = yocto::make_trace_state(_state->scene, _state->params);
-	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
-	_state->started = true;
+	if (!initGpu()) {
+		return false;
+	}
+	Log::debug("Create pathtracer scene");
+	if (!createScene(sceneGraph, camera)) {
+		return false;
+	}
+	if (!ensureTargets(outputResolution())) {
+		return false;
+	}
+	_state.currentSample = 0;
+	_writeAccum = 0;
+	_state.started = true;
 	Log::debug("Started pathtracer");
 	return true;
 }
 
 bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
-	if (!started()) {
-		return false;
-	}
 	Log::debug("Restart pathtracer");
 	stop();
 	return start(sceneGraph, camera);
 }
 
 bool PathTracer::stop() {
-	yocto::trace_cancel(_state->context);
-	_state->started = false;
+	_state.started = false;
 	return true;
 }
 
 bool PathTracer::started() const {
-	return _state->started;
+	return _state.started;
+}
+
+bool PathTracer::hasVolume() const {
+	return _hasVolume;
 }
 
 bool PathTracer::update(int *currentSample) {
-	if (!_state->started) {
-		if (currentSample) {
-			*currentSample = 0;
+	if (!_state.started) {
+		if (currentSample != nullptr) {
+			*currentSample = _state.currentSample;
 		}
 		return true;
 	}
-	if (yocto::trace_done(_state->context)) {
-		if (_state->state.samples >= _state->params.samples) {
-			_state->started = false;
-			return true;
+	if (_state.currentSample >= _state.params.samples) {
+		_state.started = false;
+		if (currentSample != nullptr) {
+			*currentSample = _state.currentSample;
 		}
-		if (currentSample) {
-			*currentSample = _state->state.samples;
-		}
-		Log::debug("PathTracer sample: %i", _state->state.samples);
-		yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+		return true;
+	}
+
+	const int remaining = _state.params.samples - _state.currentSample;
+	const int samples = core_min(remaining, core_max(1, core_min(MaxSamplesThisPass, _state.params.samplesThisPass)));
+	tracePass(samples);
+	if (currentSample != nullptr) {
+		*currentSample = _state.currentSample;
+	}
+	if (_state.currentSample >= _state.params.samples) {
+		_state.started = false;
+		return true;
 	}
 	return false;
 }
 
-image::ImagePtr PathTracer::image() {
-	yocto::image_data hdr = yocto::get_image(_state->state);
-	yocto::image_data image = yocto::tonemap_image(hdr, _state->exposure, _state->filmic);
-
-	priv::YoctoImageReadStream stream(image);
-	image::ImagePtr i = image::createEmptyImage("pathtracer");
-	if (!i->loadRGBA(stream, image.width, image.height)) {
-		return {};
+video::TexturePtr PathTracer::texture() {
+	if (_displayFbo.handle() == video::InvalidId) {
+		return video::TexturePtr();
 	}
-	return i;
+	displayPass();
+	return _displayFbo.texture();
+}
+
+image::ImagePtr PathTracer::image() {
+	if (!texture()) {
+		return image::ImagePtr();
+	}
+	return _displayFbo.image("pathtracer");
 }
 
 } // namespace voxelpathtracer

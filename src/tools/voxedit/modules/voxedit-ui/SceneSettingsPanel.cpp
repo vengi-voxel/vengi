@@ -85,7 +85,6 @@ void SceneSettingsPanel::update(const char *id, command::CommandExecutionListene
 				_rendershadow->setVal(true);
 				_ambientColor->setVal("0.3 0.3 0.3");
 				_diffuseColor->setVal("0.7 0.7 0.7");
-				_sunAngle->setVal("45.0 135.0 0.0");
 				break;
 			}
 		}

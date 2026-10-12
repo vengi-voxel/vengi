@@ -3024,7 +3024,7 @@ msgstr ""
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr ""
 
-msgid "Presets"
+msgid "Quality presets"
 msgstr ""
 
 msgid "Reset all"
@@ -3033,19 +3033,16 @@ msgstr ""
 msgid "Restore default path tracer settings"
 msgstr ""
 
-msgid "Path tracing with high sample and bounce counts"
+msgid "Path tracing with high sample and bounce counts, voxel edge, and bloom"
 msgstr ""
 
-msgid "Geometry preview"
+msgid "Preview"
 msgstr ""
 
-msgid "Fast eyelight preview for checking geometry"
+msgid "Fast preview for checking lighting and materials"
 msgstr ""
 
 msgid "Quality"
-msgstr ""
-
-msgid "Tracer"
 msgstr ""
 
 msgid "Samples"
@@ -3057,25 +3054,25 @@ msgstr ""
 msgid "Bounces"
 msgstr ""
 
-msgid "Maximum light bounces. Increase for glass and volumes."
+msgid "Maximum light bounces. Increase for glass."
 msgstr ""
 
-msgid "Clamp"
+msgid "Samples per pass"
 msgstr ""
 
-msgid "Remove high-energy fireflies"
+msgid "Samples computed per frame"
 msgstr ""
 
-msgid "Preview ratio"
+msgid "Voxel edge"
 msgstr ""
 
-msgid "Lower resolution ratio used while samples accumulate"
+msgid "Fillet exposed voxel corners. 0 is a hard cube."
 msgstr ""
 
-msgid "Batch"
+msgid "Render scale"
 msgstr ""
 
-msgid "Samples computed per update step"
+msgid "Trace at a fraction of the output resolution, then upsample."
 msgstr ""
 
 msgid "Dimensions"
@@ -3084,22 +3081,22 @@ msgstr ""
 msgid "Output image size in pixels (square)"
 msgstr ""
 
-msgid "Apply a linear filter to the image pixels"
-msgstr ""
-
-msgid "Denoise"
-msgstr ""
-
 msgid "Exposure"
 msgstr ""
 
 msgid "Exposure compensation in stops for tonemapping."
 msgstr ""
 
-msgid "Filmic"
+msgid "Contrast"
 msgstr ""
 
-msgid "Use filmic tonemapping for softer highlight rolloff."
+msgid "Vignette"
+msgstr ""
+
+msgid "Threshold blur of bright emit and sun highlights."
+msgstr ""
+
+msgid "Depth of field"
 msgstr ""
 
 msgid "Aperture"
@@ -3108,46 +3105,59 @@ msgstr ""
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
 msgstr ""
 
+msgid "Focus distance"
+msgstr ""
+
 msgid "Lighting"
 msgstr ""
 
 msgid "Sun intensity"
 msgstr ""
 
-msgid "Sun area"
+msgid "Sun softness"
 msgstr ""
 
-msgid "Sun disk size. 1.0 is about 43.5 degrees."
+msgid "Sun disk size in degrees."
 msgstr ""
 
-msgid "Sun elevation"
+msgid "Sun color"
 msgstr ""
 
-msgid "Sun azimuth"
+msgid "Sky top"
 msgstr ""
 
-msgid "Sun disk"
+msgid "Sky horizon"
 msgstr ""
 
-msgid "Show visible sun disk in the sky."
+msgid "Sky intensity"
 msgstr ""
 
-msgid "Hide environment"
+msgid "Floor"
 msgstr ""
 
-msgid "Removes the environment map from the camera rays."
+msgid "Floor color"
 msgstr ""
 
-msgid "No caustics"
+msgid "Floor Y"
 msgstr ""
 
-msgid "Removes certain paths that cause caustics"
+msgid "Background"
 msgstr ""
 
-msgid "High Quality BVH"
+msgid "Background color"
 msgstr ""
 
-msgid "High quality bounding volume hierarchy"
+msgid "Fog density"
+msgstr ""
+
+msgid "Fog color"
+msgstr ""
+
+msgid "Atmosphere"
+msgstr ""
+
+msgid ""
+"World scatter with sun-forward phase, similar to MagicaVoxel atmosphere."
 msgstr ""
 
 msgid "Settings"
@@ -3156,20 +3166,11 @@ msgstr ""
 msgid "Save image"
 msgstr ""
 
-msgid "Sync camera"
-msgstr ""
-
-msgid "Restart with the current viewport camera"
-msgstr ""
-
-msgid "Stop path tracer"
-msgstr ""
-
 #, c-format
 msgid "Sample %i / %i"
 msgstr ""
 
-msgid "Start path tracer"
+msgid "Volume truncated to GPU 3D texture / memory limits"
 msgstr ""
 
 msgid "Render"
@@ -3386,36 +3387,6 @@ msgstr ""
 msgid "Diffuse color is disabled in Unlit mode"
 msgstr ""
 
-msgid "Sun angle"
-msgstr ""
-
-msgid "Controls the direction of the sun for shadow casting"
-msgstr ""
-
-msgid "Sun angle is only used in Shadows mode"
-msgstr ""
-
-msgid "Elevation"
-msgstr ""
-
-msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
-msgstr ""
-
-msgid "Azimuth"
-msgstr ""
-
-msgid "Sun azimuth angle (yaw): 0 (North) to 360"
-msgstr ""
-
-msgid "Preset: Noon"
-msgstr ""
-
-msgid "Preset: Evening"
-msgstr ""
-
-msgid "Preset: Morning"
-msgstr ""
-
 msgid "Scene settings"
 msgstr ""
 
@@ -3475,6 +3446,36 @@ msgstr ""
 
 #, c-format
 msgid "FPS: %.2f"
+msgstr ""
+
+msgid "Sun angle"
+msgstr ""
+
+msgid "Controls the direction of the sun for shadow casting"
+msgstr ""
+
+msgid "Sun angle is only used in Shadows mode"
+msgstr ""
+
+msgid "Elevation"
+msgstr ""
+
+msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
+msgstr ""
+
+msgid "Azimuth"
+msgstr ""
+
+msgid "Sun azimuth angle (yaw): 0 (North) to 360"
+msgstr ""
+
+msgid "Preset: Noon"
+msgstr ""
+
+msgid "Preset: Evening"
+msgstr ""
+
+msgid "Preset: Morning"
 msgstr ""
 
 msgid ""

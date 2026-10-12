@@ -102,3 +102,4 @@ nav:
       - Basic: Basics.md
       - Visual Tests: VisualTests.md
       - Shader integration: ShaderTool.md
+      - Path tracer: PathTracer.md

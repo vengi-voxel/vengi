@@ -99,7 +99,7 @@ detail message line 2
 | voxelfont        | TTF font to voxel                                                          |
 | voxelformat      | Several volume and mesh based file formats to load or generate voxels      |
 | voxelgenerator   | LUA generator, space colonization, tree- and shape generators              |
-| voxelpathtracer  | Path tracer                                                                |
+| voxelpathtracer  | GPU voxel path tracer                                                       |
 | voxelrender      | Voxel renderer                                                             |
 | voxelui          | Lua and file dialog panels                                                 |
 | voxelutil        | Pathfinding, raycasting, image and general util functions                  |

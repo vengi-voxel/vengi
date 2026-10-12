@@ -29,6 +29,11 @@ VoxEdit:
 
    - Improved line rendering quality for the viewport
    - Fixed and improved normal painting
+   - Replaced the CPU Yocto pathtracer with a GPU voxel pathtracer
+
+Thumbnailer:
+
+   - Added `--pathtracer` with `--quality` (`default`, `preview`, `high`) and `--samples` for GPU pathtraced thumbnails
 
 PalConvert:
 

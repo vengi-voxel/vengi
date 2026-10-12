@@ -5,10 +5,8 @@
 #pragma once
 
 #include "core/Var.h"
-#include "image/Image.h"
 #include "ui/Panel.h"
 #include "video/Camera.h"
-#include "video/Texture.h"
 #include "voxelpathtracer/PathTracer.h"
 #include <stdint.h>
 
@@ -25,15 +23,15 @@ class RenderPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	voxelpathtracer::PathTracer _pathTracer;
-	video::TexturePtr _texture;
-	image::ImagePtr _image;
 	SceneManagerPtr _sceneMgr;
 	video::Camera _camera;
 	int _currentSample = 0;
+	bool _sceneReady = false;
 	bool _hovered = false;
 	uint64_t _sceneStamp = 0;
 	core::VarPtr _sunAngle;
 
+	void applySceneSun();
 	void renderSettings(const scenegraph::SceneGraph &sceneGraph);
 	void renderMenuBar(const scenegraph::SceneGraph &sceneGraph);
 	void renderCameraManipulator(video::Camera &camera, float headerSize, bool sceneMode);
