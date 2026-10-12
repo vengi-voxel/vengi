@@ -153,7 +153,6 @@ private:
 	 */
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportInput(float headerSize);
-	bool isFixedCamera() const;
 	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
 	void renderCursor();
@@ -188,6 +187,7 @@ public:
 	void toggleScene();
 	bool isSceneMode() const;
 	bool isGameMode() const;
+	bool isFixedCamera() const;
 
 	video::Camera &camera();
 	const video::Camera &camera() const;
