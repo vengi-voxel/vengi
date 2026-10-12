@@ -9,11 +9,13 @@
 
 namespace voxelpathtracer {
 
+using PathTracerParams = yocto::trace_params;
+
 struct PathTracerState {
 	yocto::trace_context context;
 	yocto::scene_data scene;
 	yocto::trace_bvh bvh;
-	yocto::trace_params params;
+	PathTracerParams params;
 	yocto::trace_lights lights;
 	yocto::trace_state state;
 	bool started = false;

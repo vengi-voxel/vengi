@@ -25,19 +25,19 @@ bool RenderPanel::init() {
 
 void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	voxelpathtracer::PathTracerState &state = _pathTracer.state();
-	yocto::trace_params &params = state.params;
+	voxelpathtracer::PathTracerParams &params = state.params;
 	int changed = 0;
 
 	const float itemWidth = ImGui::GetFontSize() * 10.0f;
 
 	if (ImGui::BeginIconMenu(ICON_LC_SPARKLES, _("Presets"))) {
 		if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Reset all"))) {
-			params = yocto::trace_params();
+			params = voxelpathtracer::PathTracerParams();
 			++changed;
 		}
 		ImGui::TooltipTextUnformatted(_("Restore default path tracer settings"));
 		if (ImGui::IconMenuItem(ICON_LC_SPARKLES, _("High quality"))) {
-			params = yocto::trace_params();
+			params = voxelpathtracer::PathTracerParams();
 			params.sampler = yocto::trace_sampler_type::path;
 			params.samples = 1024;
 			params.bounces = 64;
@@ -45,7 +45,7 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 		}
 		ImGui::TooltipTextUnformatted(_("Path tracing with high sample and bounce counts"));
 		if (ImGui::IconMenuItem(ICON_LC_BOX, _("Geometry preview"))) {
-			params = yocto::trace_params();
+			params = voxelpathtracer::PathTracerParams();
 			params.sampler = yocto::trace_sampler_type::eyelight;
 			params.samples = 16;
 			++changed;
@@ -154,7 +154,7 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 				_pathTracer.stop();
 			}
 			const voxelpathtracer::PathTracerState &state = _pathTracer.state();
-			const yocto::trace_params &params = state.params;
+			const voxelpathtracer::PathTracerParams &params = state.params;
 			ImGui::Text(_("Sample %i / %i"), _currentSample, params.samples);
 			_pathTracer.update(&_currentSample);
 			_image = _pathTracer.image();

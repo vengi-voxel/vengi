@@ -13,7 +13,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "settings inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
-		yocto::trace_params &params = state.params;
+		voxelpathtracer::PathTracerParams &params = state.params;
 
 		ctx->MenuAction(ImGuiTestAction_Open, "Settings/Output");
 		const int oldResolution = params.resolution;
@@ -29,7 +29,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "presets")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
-		yocto::trace_params &params = state.params;
+		voxelpathtracer::PathTracerParams &params = state.params;
 
 		ctx->MenuClick("Settings/Presets/High quality");
 		ctx->Yield();
@@ -42,7 +42,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		ctx->MenuClick("Settings/Presets/Reset all");
 		ctx->Yield();
-		yocto::trace_params defaults;
+		voxelpathtracer::PathTracerParams defaults;
 		IM_CHECK_EQ(params.samples, defaults.samples);
 		IM_CHECK_EQ(params.bounces, defaults.bounces);
 	};
