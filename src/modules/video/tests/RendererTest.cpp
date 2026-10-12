@@ -73,4 +73,4 @@ TEST_F(RendererTest, testIntegerTextureConfigForcesNearest) {
 	EXPECT_FLOAT_EQ(0.0f, cfg.maxAnisotropy());
 }
 
-}
+} // namespace video
