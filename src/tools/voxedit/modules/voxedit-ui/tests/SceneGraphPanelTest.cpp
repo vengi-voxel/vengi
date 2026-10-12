@@ -121,12 +121,12 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// duplicate node to have multiple nodes
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
-		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), (size_t)2);
 
 		// merge visible
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Merge visible");
 		ctx->Yield();
-		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 1);
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), (size_t)1);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -169,7 +169,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// duplicate node to have multiple nodes
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
-		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), (size_t)2);
 		const int secondNodeId = sceneGraph.activeNode();
 
 		// hide others
