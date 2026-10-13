@@ -55,9 +55,10 @@ set(SRCS
 	IEventObserver.h
 )
 # Select renderer backend. Pass -DVIDEO_RENDERER=VK on the cmake command line to use Vulkan.
-if(NOT DEFINED CACHE{VIDEO_RENDERER})
-	set(VIDEO_RENDERER "GL" CACHE STRING "Select renderer backend (GL or VK)")
+if(NOT VIDEO_RENDERER)
+	set(VIDEO_RENDERER "GL")
 endif()
+set(VIDEO_RENDERER "${VIDEO_RENDERER}" CACHE STRING "Select renderer backend (GL or VK)" FORCE)
 set_property(CACHE VIDEO_RENDERER PROPERTY STRINGS GL VK)
 if(NOT VIDEO_RENDERER STREQUAL "GL" AND NOT VIDEO_RENDERER STREQUAL "VK")
 	message(FATAL_ERROR "VIDEO_RENDERER must be one of: GL, VK (got '${VIDEO_RENDERER}')")
@@ -76,13 +77,17 @@ if (RENDERER STREQUAL "GL")
 	set(USE_GL_RENDERER ON CACHE BOOL "Use opengl renderer" FORCE)
 	set(USE_VK_RENDERER OFF CACHE BOOL "Use vulkan renderer" FORCE)
 elseif (RENDERER STREQUAL "VK")
-	find_package(Vulkan REQUIRED)
-	target_link_libraries(${LIB} PRIVATE Vulkan::Vulkan)
+	# flextVk loads libvulkan at runtime via SDL_LoadObject (same as flextGL
+	# for OpenGL). Do not link Vulkan::Vulkan / libvulkan.
 	if (APPLE)
 		target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
 	endif()
 	set(USE_VK_RENDERER ON CACHE BOOL "Use vulkan renderer" FORCE)
 	set(USE_GL_RENDERER OFF CACHE BOOL "Use opengl renderer" FORCE)
+	set(USE_SPIRV ON CACHE BOOL "Enable SPIR-V shader compilation (required for Vulkan)" FORCE)
+	if (NOT GLSLANG_EXECUTABLE)
+		message(FATAL_ERROR "Vulkan renderer requires glslangValidator for SPIR-V shader compilation")
+	endif()
 endif()
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
