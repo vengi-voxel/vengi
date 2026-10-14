@@ -2115,6 +2115,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
+    Wayland_UpdateImplicitGrabSerial(seat, serial);
+
     SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
     if (!window) {
         // Not a surface owned by SDL.
@@ -2228,6 +2230,9 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
+
+    // The spec says that data offers are no longer valid when keyboard focus is lost.
+    Wayland_DataDeviceSetSelectionOffer(seat->data_device, NULL);
 }
 
 static bool keyboard_input_get_text(char text[8], const SDL_WaylandSeat *seat, uint32_t key, bool down, bool *handled_by_ime)
@@ -2699,7 +2704,7 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         data_offer->offer = id;
         data_offer->data_device = data_device;
         data_offer->read_fd = -1;
-        WAYLAND_wl_list_init(&(data_offer->mimes));
+        WAYLAND_wl_array_init(&(data_offer->mimes));
         wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -2997,7 +3002,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
         primary_selection_device->seat->display->current_primary_selection_seat = primary_selection_device->seat;
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
-        WAYLAND_wl_list_init(&(primary_selection_offer->mimes));
+        WAYLAND_wl_array_init(&(primary_selection_offer->mimes));
         zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
         zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
     }
@@ -3909,8 +3914,6 @@ void Wayland_UpdateImplicitGrabSerial(SDL_WaylandSeat *seat, Uint32 serial)
     if (serial > seat->last_implicit_grab_serial) {
         seat->last_implicit_grab_serial = serial;
         seat->display->last_implicit_grab_seat = seat;
-        Wayland_DataDeviceSetSerial(seat->data_device, serial);
-        Wayland_PrimarySelectionDeviceSetSerial(seat->primary_selection_device, serial);
     }
 }
 

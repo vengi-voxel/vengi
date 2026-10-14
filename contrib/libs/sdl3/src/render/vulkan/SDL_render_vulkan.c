@@ -954,7 +954,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         imageCreateInfo.queueFamilyIndexCount = 0;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        if (VULKAN_VkFormatGetNumPlanes(format) > 0) {
+        if (VULKAN_VkFormatGetNumPlanes(format) > 1) {
             // We'll take image views with a different format
             imageCreateInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
         }
@@ -1070,6 +1070,9 @@ static VkResult VULKAN_AllocateImageView(VULKAN_RenderData *rendererData, VkImag
     } else {
         aspectMask = (VkImageAspectFlags)(VK_IMAGE_ASPECT_PLANE_0_BIT << plane);
     }
+
+    // We're only going to use image views for sampling and rendering
+    imageUsage &= (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
     VkImageViewCreateInfo imageViewCreateInfo = { 0 };
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2551,6 +2554,27 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
     }
 
+    VkCompositeAlphaFlagsKHR compositeAlphaFlag = 0;
+
+    // Default to opaque, if available, followed by inherit, and overwrite with a value that supports transparency, if necessary.
+    if (rendererData->surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+        compositeAlphaFlag = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    } else if (rendererData->surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+        compositeAlphaFlag = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    }
+
+    if ((renderer->window->flags & SDL_WINDOW_TRANSPARENT) || !compositeAlphaFlag) {
+        if (rendererData->surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+        } else if (rendererData->surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+        } else if (rendererData->surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+            compositeAlphaFlag = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "SDL_WINDOW_TRANSPARENT flag set, but no suitable swapchain composite alpha value supported!");
+        }
+    }
+
     VkSwapchainCreateInfoKHR swapchainCreateInfo = { 0 };
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.surface = rendererData->surface;
@@ -2566,28 +2590,10 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     }
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.preTransform = rendererData->swapChainPreTransform;
-    swapchainCreateInfo.compositeAlpha = (renderer->window->flags & SDL_WINDOW_TRANSPARENT) ? (VkCompositeAlphaFlagBitsKHR)0 : VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainCreateInfo.compositeAlpha = compositeAlphaFlag;
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = rendererData->swapchain;
-    if (!(renderer->window->flags & SDL_WINDOW_TRANSPARENT)) {
-        // Set the first supported swap chain composite mode
-        // Android doesn't support VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, for example
-        const VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[] = {
-            VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-            VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
-        };
-        for (uint32_t i = 0; i < SDL_arraysize(compositeAlphaFlags); ++i) {
-            if (rendererData->surfaceCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i]) {
-                swapchainCreateInfo.compositeAlpha = compositeAlphaFlags[i];
-                break;
-            }
-        }
-        if (!swapchainCreateInfo.compositeAlpha) {
-            // Fall back to VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, unsupported but better than nothing
-            swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        }
-    }
     result = vkCreateSwapchainKHR(rendererData->device, &swapchainCreateInfo, NULL, &rendererData->swapchain);
 
     if (swapchainCreateInfo.oldSwapchain != VK_NULL_HANDLE) {
@@ -3004,6 +3010,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     int numImages = VULKAN_GetFormatImageCount(texture->format);
     int numImageViews = VULKAN_GetFormatImageViewCount(texture->format);
     VkFormat textureFormat = VULKAN_GetVkImageFormat(texture->format, renderer->output_colorspace);
+    VkFormat chromaFormat = textureFormat;
     uint32_t width = texture->w;
     uint32_t height = texture->h;
     uint32_t chromaWidth = width;
@@ -3180,18 +3187,29 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
     usage |= (VkImageUsageFlags)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER, 0);
 
-    static const char *imageCreateProperties[] = {
+    const char *imageCreateProperties[] = {
         SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER,
         SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER,
         SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER
     };
     SDL_COMPILE_TIME_ASSERT(imageCreateProperties, SDL_arraysize(imageCreateProperties) == SDL_VULKAN_NUM_TEXTURE_BINDINGS);
 
+    if (numImageViews == 2 &&
+        SDL_HasProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER)) {
+        numImages = 2;
+        chromaWidth = (width / 2);
+        chromaHeight = (height / 2);
+        textureFormat = VULKAN_GetVkImageViewFormat(texture->format, 0, renderer->output_colorspace);
+        chromaFormat = VULKAN_GetVkImageViewFormat(texture->format, 1, renderer->output_colorspace);
+        imageCreateProperties[1] = SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER;
+    }
+
     VkSamplerYcbcrConversionKHR samplerYcbcrConversion = (textureData->yuvPipeline ? textureData->yuvPipeline->samplerYcbcrConversion : VK_NULL_HANDLE);
     for (int i = 0; i < numImages; ++i) {
         uint32_t imageWidth = (i == 0 ? width : chromaWidth);
         uint32_t imageHeight = (i == 0 ? height : chromaHeight);
-        result = VULKAN_AllocateImage(rendererData, create_props, imageCreateProperties[i], imageWidth, imageHeight, textureFormat, usage, samplerYcbcrConversion, external, &textureData->images[i]);
+        VkFormat imageFormat = (i == 0 ? textureFormat : chromaFormat);
+        result = VULKAN_AllocateImage(rendererData, create_props, imageCreateProperties[i], imageWidth, imageHeight, imageFormat, usage, samplerYcbcrConversion, external, &textureData->images[i]);
         if (result != VK_SUCCESS) {
             SET_ERROR_CODE("VULKAN_AllocateImage()", result);
             return false;
@@ -3231,12 +3249,17 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         }
     }
 
-    static const char *imageProperties[] = {
+    const char *imageProperties[] = {
         SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER,
         SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER,
         SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER
     };
     SDL_COMPILE_TIME_ASSERT(imageProperties, SDL_arraysize(imageProperties) == SDL_VULKAN_NUM_TEXTURE_BINDINGS);
+
+    if (numImageViews == 2 &&
+        SDL_HasProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER)) {
+        imageProperties[1] = SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_NUMBER;
+    }
 
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     for (int i = 0; i < numImages; ++i) {
@@ -3407,7 +3430,7 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     if (textureData->numImageViews == 2) {
         // NV12/NV21 data
-        int UVbpp = (int)VULKAN_GetBytesPerPixel(textureData->images[0].format, 1);
+        int UVbpp = (int)VULKAN_GetBytesPerPixel(textureData->images[textureData->numImages - 1].format, 1);
         int Ypitch = srcPitch;
         int UVpitch = (srcPitch + (UVbpp - 1)) & ~(UVbpp - 1);
         const Uint8 *plane0 = (const Uint8 *)srcPixels;
@@ -3508,8 +3531,14 @@ static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         return false;
     }
 
-    if (!VULKAN_UpdateTextureInternal(rendererData, textureData->images[0].image, textureData->images[0].format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, UVplane, UVpitch, &textureData->images[0].imageLayout)) {
-        return false;
+    if (textureData->numImages == 2) {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->images[1].image, textureData->images[1].format, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, UVplane, UVpitch, &textureData->images[1].imageLayout)) {
+            return false;
+        }
+    } else {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->images[0].image, textureData->images[0].format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, UVplane, UVpitch, &textureData->images[0].imageLayout)) {
+            return false;
+        }
     }
     return true;
 }

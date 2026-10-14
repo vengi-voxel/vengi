@@ -419,8 +419,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * create a software renderer, but they are intended to be used with an
  * SDL_Window as the final destination and not an SDL_Surface.
  *
- * \param surface the SDL_Surface structure representing the surface where
- *                rendering is done.
+ * \param surface the surface where rendering is done, may be NULL.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -429,8 +428,44 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DestroyRenderer
+ * \sa SDL_SetSoftwareRendererSurface
+ * \sa SDL_SetSoftwareRendererWindow
  */
 extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
+
+/**
+ * Associate a software renderer with a window.
+ *
+ * \param renderer the rendering context.
+ * \param window the window where rendering is displayed.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererWindow(SDL_Renderer *renderer, SDL_Window *window);
+
+/**
+ * Associate a software renderer with a surface.
+ *
+ * \param renderer the rendering context.
+ * \param surface the surface where rendering is done.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 /**
  * Get the renderer associated with a window.
@@ -804,8 +839,11 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage associated
  *   with the texture, if you want to wrap an existing texture. For NV12 style
- *   textures this is the single two plane VkImage holding both the Y and UV
+ *   textures this can be a single two plane VkImage holding both the Y and UV
  *   planes, and for YUV style textures it is the VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER`: the VkImage
+ *   associated with the UV plane of an NV12 texture, if you want to wrap an
+ *   existing texture.
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated
  *   with the U plane of a YUV texture, if you want to wrap an existing
  *   texture.
@@ -888,6 +926,7 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER      "SDL.texture.create.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER           "SDL.texture.create.vulkan.texture"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER         "SDL.texture.create.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER        "SDL.texture.create.vulkan.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER         "SDL.texture.create.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_LAYOUT_NUMBER            "SDL.texture.create.vulkan.layout"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER             "SDL.texture.create.vulkan.usage"
@@ -957,6 +996,8 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  *   texture. For NV12 style textures this is the single two plane VkImage
  *   holding both the Y and UV planes, and for YUV style textures it is the
  *   VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_NUMBER`: the VkImage associated with
+ *   the UV plane of an NV12 texture, if it was created with separate planes.
  * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated with
  *   the U plane of a YUV texture
  * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER`: the VkImage associated with
@@ -1043,6 +1084,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_NUMBER           "SDL.texture.vulkan.texture_uv"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER            "SDL.texture.vulkan.texture_u"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER            "SDL.texture.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
