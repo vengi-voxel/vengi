@@ -70,7 +70,8 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	camera.setAngles(angles[0], angles[1], angles[2]);
 	camera.setTarget(center);
 	camera.setTargetDistance(distance);
-	camera.setFarPlane(farPlane);
+	const float neededFar = distance + glm::length(size);
+	camera.setFarPlane(core_max(farPlane, neededFar));
 	if (mode != SceneCameraMode::Free) {
 		camera.setOmega({0.0f, 0.0f, 0.0f});
 	}
