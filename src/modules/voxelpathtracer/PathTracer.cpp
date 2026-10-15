@@ -375,10 +375,10 @@ bool PathTracer::uploadMaterialAtlas(const GpuMaterialAtlas &atlas, const Sparse
 		gatherSceneEmitLights(volume, atlas.materialCount, atlas.materials, atlas.albedoRgba, emitLights, emitCount,
 							  _emitterLuminance);
 		uploadEmitLights(emitLights, emitCount);
-		core_free(emitLights);
 	} else {
 		uploadEmitLights(nullptr, 0);
 	}
+	core_free(emitLights);
 
 	shutdownTexture(_paletteTex);
 	shutdownTexture(_materialTex);
