@@ -13,6 +13,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
 #include "voxel/Morton.h"
@@ -653,6 +654,54 @@ TEST_F(VMaxFormatTest, testRejectsInconsistentSnapshotStatsAndUnknownVersions) {
 		EXPECT_FALSE(format.load(core::String(name) + ".vmaxb", archive, graph, testLoadCtx));
 		EXPECT_EQ(nullptr, graph.firstModelNode());
 	}
+}
+
+TEST_F(VMaxFormatTest, testLegacyEulerFallbackAndCameraMetadata) {
+	io::ArchivePtr fs = helper_filesystemarchive();
+	core::ScopedPtr<io::SeekableReadStream> zipStream(fs->readStream("1voxel.vmax.zip"));
+	ASSERT_NE(nullptr, (io::SeekableReadStream *)zipStream);
+	io::ArchivePtr zip = io::openZipArchive(zipStream);
+	ASSERT_NE(nullptr, zip.get());
+
+	const core::String parentId = "11111111-1111-1111-1111-111111111111";
+	const core::String childId = "22222222-2222-2222-2222-222222222222";
+	// Child listed before parent; rotation only via legacy t_a (90 deg around X).
+	const core::String sceneJson = core::String::format(
+		"{\"v\":4,\"ao\":\"%s\",\"background\":\"#112233FF\",\"lint\":0.75,\"lcolor\":\"#FFEEDDFF\","
+		"\"cam\":{\"da\":0,\"ha\":0.5,\"wa\":1.0,\"lda\":0,\"lha\":0.25,\"lwa\":0.5,\"o\":[1,2,3],\"px\":4,\"py\":5,\"z\":256},"
+		"\"objects\":["
+		"{\"id\":\"%s\",\"pid\":\"%s\",\"data\":\"contents.vmaxb\",\"pal\":\"palette.png\",\"n\":\"child\","
+		"\"hist\":\"history.vmaxhb\",\"ind\":[1,2,3],\"s\":true,\"t_a\":[1.5707964,0,0],\"t_p\":[0,0,0],\"t_s\":[1,1,1]},"
+		"{\"id\":\"%s\",\"data\":\"contents.vmaxb\",\"pal\":\"palette.png\",\"n\":\"parent\","
+		"\"ind\":[0,0,0],\"s\":false,\"t_r\":[0,0,0,0],\"t_p\":[10,0,0],\"t_s\":[1,1,1]}"
+		"]}",
+		childId.c_str(), childId.c_str(), parentId.c_str(), parentId.c_str());
+
+	io::MemoryArchivePtr contents = io::openMemoryArchive();
+	ASSERT_TRUE(addArchiveFile(zip, "contents.vmaxb", contents, "scene.vmax/contents.vmaxb"));
+	ASSERT_TRUE(addArchiveFile(zip, "palette.png", contents, "scene.vmax/palette.png"));
+	ASSERT_TRUE(contents->add("scene.vmax/scene.json", (const uint8_t *)sceneJson.c_str(), sceneJson.size()));
+
+	VMaxFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("scene.vmax", contents, sceneGraph, testLoadCtx));
+	sceneGraph.updateTransforms();
+
+	EXPECT_EQ(1u, sceneGraph.size(scenegraph::SceneGraphNodeType::Camera));
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
+	EXPECT_EQ("#112233FF", root.property("background"));
+	EXPECT_NEAR(0.75f, root.propertyf(scenegraph::PropSunIntensity), 0.001f);
+	EXPECT_EQ("#FFEEDDFF", root.property(scenegraph::PropSunColor));
+
+	const scenegraph::SceneGraphNode *parent = sceneGraph.findNodeByUUID(core::UUID(parentId));
+	const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(core::UUID(childId));
+	ASSERT_NE(nullptr, parent);
+	ASSERT_NE(nullptr, child);
+	EXPECT_EQ(parent->id(), sceneGraph.parentId(*child));
+	EXPECT_EQ(childId, sceneGraph.activeNodeUUID().str());
+	EXPECT_EQ("1:2:3", child->property("vmax_ind"));
+	EXPECT_EQ("history.vmaxhb", child->property("vmax_hist"));
+	EXPECT_GT(glm::angle(child->transform(0).localOrientation()), 1.0f);
 }
 
 } // namespace voxelformat

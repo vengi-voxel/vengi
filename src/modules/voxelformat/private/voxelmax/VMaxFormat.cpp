@@ -4,6 +4,7 @@
 
 #include "VMaxFormat.h"
 #include "core/Common.h"
+#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -20,6 +21,8 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Morton.h"
 #include "voxel/RawVolume.h"
@@ -121,17 +124,55 @@ static core::String vmaxJoin(const core::String &dir, const core::String &name) 
 	return core::string::path(dir, name);
 }
 
+// Try LZFSE first (VoxelMax decoder rule), then fall back to raw bplist.
+// Uncompressed files usually start with bplist00; compressed LZFSE blocks use bvx2.
 static util::BinaryPList vmaxReadPlist(io::SeekableReadStream &stream) {
 	char magic[8];
 	const int64_t start = stream.pos();
 	if (stream.read(magic, sizeof(magic)) != sizeof(magic) || stream.seek(start) == -1) {
 		return {};
 	}
-	if (core_memcmp(magic, "bplist00", sizeof(magic)) == 0) {
-		return util::BinaryPList::parse(stream);
+	if (core_memcmp(magic, "bplist00", sizeof(magic)) != 0) {
+		io::LZFSEReadStream decoded(stream);
+		if (decoded.size() > 0) {
+			const util::BinaryPList plist = util::BinaryPList::parse(decoded);
+			if (plist.valid()) {
+				return plist;
+			}
+		}
+		if (stream.seek(start) == -1) {
+			return {};
+		}
 	}
-	io::LZFSEReadStream decoded(stream);
-	return util::BinaryPList::parse(decoded);
+	return util::BinaryPList::parse(stream);
+}
+
+static glm::vec4 vmaxEulerToAxisAngle(const glm::vec3 &euler) {
+	const glm::quat q(euler);
+	const float angle = glm::angle(q);
+	if (glm::abs(angle) <= 1.0e-8f) {
+		return glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	}
+	return glm::vec4(glm::axis(q), angle);
+}
+
+static void vmaxParseAxisAngleOrEuler(const json::Json &obj, glm::vec4 &t_r) {
+	if (obj.contains("t_r") && obj.get("t_r").isArray()) {
+		const json::Json &arr = obj.get("t_r");
+		for (int i = 0; i < 4 && i < (int)arr.size(); ++i) {
+			t_r[i] = arr.get(i).floatVal();
+		}
+		return;
+	}
+	// Legacy SceneKit Euler radians fallback when t_r is absent.
+	if (obj.contains("t_a") && obj.get("t_a").isArray()) {
+		const json::Json &arr = obj.get("t_a");
+		glm::vec3 euler(0.0f);
+		for (int i = 0; i < 3 && i < (int)arr.size(); ++i) {
+			euler[i] = arr.get(i).floatVal();
+		}
+		t_r = vmaxEulerToAxisAngle(euler);
+	}
 }
 
 static bool vmaxPlistNumber(const util::BinaryPList &value, double &out) {
@@ -207,6 +248,113 @@ void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm
 	node.setTransform(keyFrameIdx, transform);
 }
 
+void VMaxFormat::applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const {
+	scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
+	root.setProperty(scenegraph::PropSunIntensity, scene.lint);
+	root.setProperty(scenegraph::PropSunColor, scene.lcolor);
+	root.setProperty(scenegraph::PropSunElevation, scene.cam.lha);
+	root.setProperty(scenegraph::PropSunAzimuth, scene.cam.lwa);
+	root.setProperty("background", scene.background);
+	root.setProperty("vmax_v", (uint32_t)scene.v);
+	root.setProperty("vmax_sat", scene.sat);
+	root.setProperty("vmax_cont", scene.cont);
+	root.setProperty("vmax_tint", scene.tint);
+	root.setProperty("vmax_temp", scene.temp);
+	root.setProperty("vmax_aint", scene.aint);
+	root.setProperty("vmax_eint", scene.eint);
+	root.setProperty("vmax_shadowint", scene.shadowint);
+	root.setProperty("vmax_bloomint", scene.bloomint);
+	root.setProperty("vmax_bloomthr", scene.bloomthr);
+	root.setProperty("vmax_bloombrad", scene.bloombrad);
+	root.setProperty("vmax_outlineint", scene.outlineint);
+	root.setProperty("vmax_outlinesz", scene.outlinesz);
+	root.setProperty("vmax_ssr", scene.ssr);
+	root.setProperty("vmax_nrn", scene.nrn);
+	if (!scene.af.empty()) {
+		root.setProperty("vmax_af", scene.af);
+	}
+}
+
+void VMaxFormat::addSceneCamera(scenegraph::SceneGraph &sceneGraph, const VMaxCamera &cam) const {
+	// Stick camera: look-at o with pan (px,py), orbit by wa/ha/da (radians), distance z.
+	// MagicaVoxel-style view matrix after Z-up remap; yaw sign matches their (pitch,-yaw,roll).
+	const glm::vec3 target = vmaxToVengi(cam.o) + glm::vec3(cam.px, 0.0f, cam.py);
+	const glm::quat quat(glm::vec3(cam.ha, -cam.wa, cam.da));
+	const float distance = cam.z > 0.0f ? cam.z : 512.0f;
+	const glm::vec3 forward = glm::conjugate(quat) * glm::forward();
+	const glm::vec3 position = target - forward * distance;
+	const glm::mat4 viewMatrix = glm::translate(glm::mat4_cast(quat), -position);
+
+	scenegraph::SceneGraphNodeCamera camNode;
+	camNode.setName("Camera");
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldMatrix(viewMatrix);
+	camNode.setTransform(0, transform);
+	camNode.setPerspective();
+	camNode.setFieldOfView(45);
+	camNode.setNearPlane(0.1f);
+	camNode.setFarPlane(core_max(distance * 4.0f, 256.0f));
+	camNode.setProperty("vmax_wa", cam.wa);
+	camNode.setProperty("vmax_ha", cam.ha);
+	camNode.setProperty("vmax_da", cam.da);
+	camNode.setProperty("vmax_z", distance);
+	sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
+}
+
+void VMaxFormat::reparentByParentUUID(scenegraph::SceneGraph &sceneGraph) const {
+	// Objects may reference a parent that appears later in scene.json; fix after all nodes exist.
+	core::DynamicArray<int> nodeIds;
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::All); iter != sceneGraph.end(); ++iter) {
+		nodeIds.push_back((*iter).id());
+	}
+	for (int nodeId : nodeIds) {
+		if (!sceneGraph.hasNode(nodeId)) {
+			continue;
+		}
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		const core::String &parentUUID = node.property(scenegraph::PropParentUUID);
+		if (parentUUID.empty()) {
+			continue;
+		}
+		scenegraph::SceneGraphNode *parent = sceneGraph.findNodeByUUID(core::UUID(parentUUID));
+		if (parent == nullptr) {
+			Log::warn("Could not reparent node %s to %s", node.uuid().str().c_str(), parentUUID.c_str());
+			continue;
+		}
+		if (sceneGraph.parentId(node) == parent->id()) {
+			continue;
+		}
+		if (!sceneGraph.changeParent(node.id(), parent->id(), scenegraph::NodeMoveFlag::None)) {
+			Log::warn("Failed to reparent node %s", node.uuid().str().c_str());
+		}
+	}
+}
+
+void VMaxFormat::applyActiveNode(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const {
+	if (!scene.ao.empty()) {
+		const core::UUID id(scene.ao);
+		if (id.isValid() && sceneGraph.setActiveNode(id)) {
+			return;
+		}
+	}
+	if (!scene.ag.empty()) {
+		const core::UUID id(scene.ag);
+		if (id.isValid() && sceneGraph.setActiveNode(id)) {
+			return;
+		}
+	}
+	for (const VMaxObject &obj : scene.objects) {
+		if (obj.s && obj.id.isValid() && sceneGraph.setActiveNode(obj.id)) {
+			return;
+		}
+	}
+	for (const VMaxGroup &group : scene.groups) {
+		if (group.s && group.id.isValid() && sceneGraph.setActiveNode(group.id)) {
+			return;
+		}
+	}
+}
+
 bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 							   const core::String &sceneJsonPath) const {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(sceneJsonPath));
@@ -223,6 +371,8 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 		return false;
 	}
 
+	jsonString(json, ao, scene);
+	jsonString(json, ag, scene);
 	jsonString(json, af, scene);
 	jsonFloat(json, aint, scene);
 	jsonFloat(json, eint, scene);
@@ -242,6 +392,20 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 	jsonBool(json, nrn, scene);
 	jsonBool(json, ssr, scene);
 	jsonFloat(json, lint, scene);
+
+	if (json.contains("cam") && json.get("cam").isObject()) {
+		const json::Json cam = json.get("cam");
+		jsonFloat(cam, da, scene.cam);
+		jsonFloat(cam, ha, scene.cam);
+		jsonFloat(cam, wa, scene.cam);
+		jsonFloat(cam, lda, scene.cam);
+		jsonFloat(cam, lha, scene.cam);
+		jsonFloat(cam, lwa, scene.cam);
+		jsonFloat(cam, px, scene.cam);
+		jsonFloat(cam, py, scene.cam);
+		jsonFloat(cam, z, scene.cam);
+		jsonVec(cam, o, scene.cam);
+	}
 
 	if (!json.contains("objects") || !json.get("objects").isArray()) {
 		Log::error("Failed to parse the scene json - expected an array of objects");
@@ -268,7 +432,7 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 		jsonVec(obj, e_ma, o);
 		jsonVec(obj, t_p, o);
 		jsonVec(obj, t_s, o);
-		jsonVec(obj, t_r, o);
+		vmaxParseAxisAngleOrEuler(obj, o.t_r);
 		if (o.n.empty() && !o.data.empty()) {
 			o.n = core::string::extractFilename(o.data);
 		}
@@ -289,7 +453,7 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 			jsonVec(obj, e_ma, o);
 			jsonVec(obj, t_p, o);
 			jsonVec(obj, t_s, o);
-			jsonVec(obj, t_r, o);
+			vmaxParseAxisAngleOrEuler(obj, o.t_r);
 			scene.groups.push_back(o);
 		}
 	}
@@ -306,6 +470,8 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
 	Log::debug("Load %i scene groups", (int)scene.groups.size());
+	applySceneMetadata(sceneGraph, scene);
+	addSceneCamera(sceneGraph, scene.cam);
 	for (VMaxObject &obj : scene.objects) {
 		obj.data = vmaxJoin(packageDir, obj.data);
 		obj.pal = vmaxJoin(packageDir, obj.pal);
@@ -320,27 +486,14 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 		node.setName(obj.name);
 		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s);
 		node.setVisible(!obj.h);
+		node.setProperty("vmax_selected", obj.s);
+		if (obj.pid.isValid()) {
+			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
+		}
 		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 			const core::String uuidStr = obj.id.str();
 			Log::error("Failed to add group %s to the scene graph", uuidStr.c_str());
 			return false;
-		}
-	}
-	for (const VMaxGroup &obj : scene.groups) {
-		if (!obj.pid.isValid()) {
-			continue;
-		}
-		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(obj.id);
-		scenegraph::SceneGraphNode *parent = sceneGraph.findNodeByUUID(obj.pid);
-		if (node == nullptr || parent == nullptr) {
-			const core::String uuidStr = obj.id.str();
-			const core::String parentStr = obj.pid.str();
-			Log::warn("Could not parent group %s to %s", uuidStr.c_str(), parentStr.c_str());
-			continue;
-		}
-		if (!sceneGraph.changeParent(node->id(), parent->id(), scenegraph::NodeMoveFlag::None)) {
-			const core::String uuidStr = obj.id.str();
-			Log::warn("Failed to reparent group %s", uuidStr.c_str());
 		}
 	}
 	ctx.report("group", (int)scene.groups.size(), (int)scene.groups.size());
@@ -371,6 +524,8 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
 	}
 	ctx.report("object", (int)scene.objects.size(), (int)scene.objects.size());
+	reparentByParentUUID(sceneGraph);
+	applyActiveNode(sceneGraph, scene);
 	return true;
 }
 
@@ -699,6 +854,13 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(mins));
 		if (obj.pid.isValid()) {
 			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
+		}
+		if (part == 0) {
+			node.setProperty("vmax_ind", core::String::format("%g:%g:%g", obj.ind.x, obj.ind.y, obj.ind.z));
+			node.setProperty("vmax_selected", obj.s);
+			if (!obj.hist.empty()) {
+				node.setProperty("vmax_hist", obj.hist);
+			}
 		}
 		node.setVisible(!obj.h);
 		node.setVolume(volume);
@@ -1051,7 +1213,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	if (!settingsName.empty()) {
 		core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream(settingsName));
 		if (paletteSettingsStream) {
-			const util::BinaryPList &plist = util::BinaryPList::parse(*paletteSettingsStream);
+			const util::BinaryPList plist = vmaxReadPlist(*paletteSettingsStream);
 			applyVmaxPaletteSettings(plist, palette, layers);
 		}
 	} else {

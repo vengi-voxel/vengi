@@ -244,7 +244,9 @@ private:
 		float lint = 0.5f;		 //
 		float aint = 0.25f;		 //
 		float eint = 0.5f;		 //
-		core::String af = "t";	 //
+		core::String ao;		 // active object uuid
+		core::String ag;		 // active group uuid
+		core::String af = "t";	 // active face
 		float bloombrad = 4.0f;	 //
 		float bloomint = 0.6f;	 //
 		float bloomthr = 1.0f;	 //
@@ -264,6 +266,10 @@ private:
 							 const glm::vec3 &t_s) const;
 	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
 							 const glm::vec3 &t_s, const glm::vec3 &volumeMins) const;
+	void applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const;
+	void addSceneCamera(scenegraph::SceneGraph &sceneGraph, const VMaxCamera &cam) const;
+	void reparentByParentUUID(scenegraph::SceneGraph &sceneGraph) const;
+	void applyActiveNode(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const;
 
 	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene, const core::String &sceneJsonPath) const;
 	bool loadScenePackage(const io::ArchivePtr &archive, const core::String &packageDir,
