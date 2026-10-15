@@ -2,13 +2,12 @@
  * @file
  */
 
-#include "voxelformat/FormatThumbnail.h"
 #include "Thumbnailer.h"
 #include "Shared.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
-#include <glm/trigonometric.hpp>
+#include "engine-git.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FileStream.h"
@@ -16,14 +15,15 @@
 #include "io/FilesystemArchive.h"
 #include "voxel/Face.h"
 #include "voxelformat/FormatConfig.h"
-#include "engine-git.h"
+#include "voxelformat/FormatThumbnail.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "voxelrender/RenderUtil.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/trigonometric.hpp>
 
 Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider) {
+	: Super(filesystem, timeProvider, 2) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_wantCrashLogs = true;
