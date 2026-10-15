@@ -281,6 +281,25 @@ bool FormatConfig::init() {
 		N_("Put Minecraft water voxels into a dedicated transparent volume as a child of each region"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatMCSeparateWater);
+	const core::VarDef voxformatMCMergeRegions(
+		cfg::VoxformatMCMergeRegions, true, N_("Merge MC regions"),
+		N_("Merge each Minecraft region file into one volume on level.dat / mcworld load. "
+		   "Disable to keep per-chunk volumes (faster and less memory for large maps and thumbnails)"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatMCMergeRegions);
+	const core::VarDef voxformatMCLoadRadius(
+		cfg::VoxformatMCLoadRadius, -1, -1, 64, N_("MC load radius"),
+		N_("Minecraft region files to load around spawn for level.dat / mcworld. "
+		   "-1 = all regions, 0 = spawn region only, N = Chebyshev distance in region units (512 blocks)"),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatMCLoadRadius);
+	const core::VarDef voxformatMCLoadRegion(
+		cfg::VoxformatMCLoadRegion, "", N_("MC load region"),
+		N_("Optional block AABB filter for Minecraft level.dat / mcworld import. "
+		   "Format: 'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are loaded. "
+		   "Combined with voxformat_mcloadradius when both are set."),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformatMCLoadRegion);
 	const core::VarDef voxformatMeshSimplify(cfg::VoxformatMeshSimplify, false, N_("Simplify"),
 											 N_("Simplify the mesh when voxelizing a mesh format"), core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshSimplify);
@@ -391,6 +410,9 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatSkinAddGroups, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
 	{cfg::VoxformatSkinMergeFaces, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
 	{cfg::VoxformatMCSeparateWater, FormatCVarFlag_Load, {&MCRFormat::format(), &DatFormat::format(), &MCWorldFormat::format(), &SchematicFormat::format()}, {}},
+	{cfg::VoxformatMCMergeRegions, FormatCVarFlag_Load, {&DatFormat::format(), &MCWorldFormat::format()}, {}},
+	{cfg::VoxformatMCLoadRadius, FormatCVarFlag_Load, {&DatFormat::format(), &MCWorldFormat::format()}, {}},
+	{cfg::VoxformatMCLoadRegion, FormatCVarFlag_Load, {&DatFormat::format(), &MCWorldFormat::format()}, {}},
 	{cfg::VoxformatVXLLoadHVA, FormatCVarFlag_Load, {&VXLFormat::format()}, {}},
 	{cfg::VoxformatMVApplyTransform, FormatCVarFlag_Load, {&VoxFormat::format()}, {}},
 	{cfg::VoxformatQBTMergeCompounds, FormatCVarFlag_Load, {&QBTFormat::format()}, {}},

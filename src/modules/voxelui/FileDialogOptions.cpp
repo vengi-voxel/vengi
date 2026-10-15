@@ -38,9 +38,12 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 		return false;
 	}
 
-	// maybe we've manually specified a file extension that is different from the
-	// given description - in that case we try to detect it.
-	if (desc == nullptr || !desc->matchesExtension(core::string::extractExtension(entry.name))) {
+	// Resolve a concrete format when the filter is a group/all pseudo-entry, or when the
+	// selected filter's extensions don't match the picked filename (manual extension).
+	const bool needConcreteFormat =
+		desc == nullptr || (desc->flags & (FORMAT_FLAG_GROUP | FORMAT_FLAG_ALL)) != 0u ||
+		!desc->matchesExtension(core::string::extractExtension(entry.name));
+	if (needConcreteFormat) {
 		const io::FormatDescription *formats;
 		if (mode == video::OpenFileMode::Save) {
 			if (_palette) {

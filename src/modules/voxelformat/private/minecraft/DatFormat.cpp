@@ -6,7 +6,6 @@
 #include "MCRFormat.h"
 #include "NamedBinaryTag.h"
 #include "app/Async.h"
-#include "color/Color.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -23,14 +22,60 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
-#include <glm/common.hpp>
+#include <SDL3/SDL_stdinc.h>
 
 namespace voxelformat {
 namespace priv {
+
+static constexpr int RegionBlockSize = 512;
+
+static int blockToRegionCoord(int block) {
+	return block < 0 ? (block - (RegionBlockSize - 1)) / RegionBlockSize : block / RegionBlockSize;
+}
+
+static bool parseRegionFileCoords(const core::String &name, int &rx, int &rz) {
+	char type = '\0';
+	if (SDL_sscanf(name.c_str(), "r.%i.%i.mc%c", &rx, &rz, &type) != 3) {
+		return false;
+	}
+	return type == 'a' || type == 'r';
+}
+
+static bool parseLoadRegionAABB(const core::String &value, voxel::Region &out) {
+	if (value.empty()) {
+		return false;
+	}
+	int minX = 0;
+	int minY = 0;
+	int minZ = 0;
+	int maxX = 0;
+	int maxY = 0;
+	int maxZ = 0;
+	if (SDL_sscanf(value.c_str(), "%i %i %i %i %i %i", &minX, &minY, &minZ, &maxX, &maxY, &maxZ) != 6) {
+		Log::warn("Ignoring invalid voxformat_mcloadregion value: '%s'", value.c_str());
+		return false;
+	}
+	out = voxel::Region(minX, minY, minZ, maxX, maxY, maxZ);
+	if (!out.isValid()) {
+		Log::warn("Ignoring invalid voxformat_mcloadregion AABB: '%s'", value.c_str());
+		return false;
+	}
+	return true;
+}
+
+static bool regionFileIntersectsAABB(int rx, int rz, const voxel::Region &aabb) {
+	const int minX = rx * RegionBlockSize;
+	const int minZ = rz * RegionBlockSize;
+	const int maxX = minX + RegionBlockSize - 1;
+	const int maxZ = minZ + RegionBlockSize - 1;
+	const voxel::Region fileRegion(minX, aabb.getLowerY(), minZ, maxX, aabb.getUpperY(), maxZ);
+	return voxel::intersects(fileRegion, aabb);
+}
 
 static voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &volumes) {
 	if (volumes.empty()) {
@@ -52,30 +97,40 @@ static voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume 
 }
 
 struct RegionLoadResult {
-	scenegraph::SceneGraphNode *terrain = nullptr;
-	scenegraph::SceneGraphNode *water = nullptr;
+	scenegraph::SceneGraph sceneGraph;
+	bool ok = false;
 };
 
 static RegionLoadResult loadRegionNode(const core::String &regionFilename, const io::ArchivePtr &archive,
 									   const LoadContext &regionCtx) {
 	RegionLoadResult result;
 	MCRFormat mcrFormat;
-	scenegraph::SceneGraph newSceneGraph;
-	if (!mcrFormat.load(regionFilename, archive, newSceneGraph, regionCtx)) {
+	if (!mcrFormat.load(regionFilename, archive, result.sceneGraph, regionCtx)) {
 		Log::debug("Could not load %s", regionFilename.c_str());
 		return result;
 	}
+
+	const bool mergeRegions = core::getVar(cfg::VoxformatMCMergeRegions)->boolVal();
+	if (!mergeRegions) {
+		result.ok = result.sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 0;
+		return result;
+	}
+
 	const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
+	scenegraph::SceneGraph mergedGraph;
 	if (!separateWater) {
-		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+		const scenegraph::SceneGraph::MergeResult &merged = result.sceneGraph.merge();
 		if (!merged.hasVolume()) {
-			return result;
+			return RegionLoadResult{};
 		}
-		result.terrain = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-		result.terrain->setVolume(merged.volume());
-		result.terrain->setPalette(merged.palette);
-		result.terrain->setNormalPalette(merged.normalPalette);
-		result.terrain->setName(core::string::extractFilenameWithExtension(regionFilename));
+		scenegraph::SceneGraphNode terrain(scenegraph::SceneGraphNodeType::Model);
+		terrain.setVolume(merged.volume());
+		terrain.setPalette(merged.palette);
+		terrain.setNormalPalette(merged.normalPalette);
+		terrain.setName(core::string::extractFilenameWithExtension(regionFilename));
+		mergedGraph.emplace(core::move(terrain));
+		result.sceneGraph = core::move(mergedGraph);
+		result.ok = true;
 		return result;
 	}
 
@@ -85,7 +140,7 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 	palette::Palette waterPalette;
 	palette::NormalPalette normalPalette;
 	bool hasTerrainPalette = false;
-	newSceneGraph.visitChildren(newSceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+	result.sceneGraph.visitChildren(result.sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
 		if (!node.isAnyModelNode() || node.volume() == nullptr) {
 			return;
 		}
@@ -107,24 +162,32 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 	voxel::RawVolume *terrain = mergeAndCrop(terrainVols);
 	voxel::RawVolume *water = mergeAndCrop(waterVols);
 	if (terrain == nullptr && water == nullptr) {
-		return result;
+		return RegionLoadResult{};
 	}
 
 	const core::String regionName = core::string::extractFilenameWithExtension(regionFilename);
+	int terrainParent = mergedGraph.root().id();
 	if (terrain != nullptr) {
-		result.terrain = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-		result.terrain->setVolume(terrain);
-		result.terrain->setPalette(hasTerrainPalette ? terrainPalette : waterPalette);
-		result.terrain->setNormalPalette(normalPalette);
-		result.terrain->setName(regionName);
+		scenegraph::SceneGraphNode terrainNode(scenegraph::SceneGraphNodeType::Model);
+		terrainNode.setVolume(terrain);
+		terrainNode.setPalette(hasTerrainPalette ? terrainPalette : waterPalette);
+		terrainNode.setNormalPalette(normalPalette);
+		terrainNode.setName(regionName);
+		terrainParent = mergedGraph.emplace(core::move(terrainNode));
+		if (terrainParent == InvalidNodeId) {
+			terrainParent = mergedGraph.root().id();
+		}
 	}
 	if (water != nullptr) {
 		const palette::Palette &srcPal = hasTerrainPalette ? terrainPalette : waterPalette;
-		result.water = new scenegraph::SceneGraphNode(MCRFormat::createWaterNode(water, srcPal));
-		if (result.terrain == nullptr) {
-			result.water->setName(regionName);
+		scenegraph::SceneGraphNode waterNode = MCRFormat::createWaterNode(water, srcPal);
+		if (terrain == nullptr) {
+			waterNode.setName(regionName);
 		}
+		mergedGraph.emplace(core::move(waterNode), terrainParent);
 	}
+	result.sceneGraph = core::move(mergedGraph);
+	result.ok = true;
 	return result;
 }
 
@@ -168,6 +231,18 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 		Log::debug("Minecraft version: (data: %i, name: %s, series: %s)", version,
 				   versionName ? versionName->c_str() : "-", versionSeries ? versionSeries->c_str() : "-");
 	}
+
+	const int spawnX = data.get("SpawnX").int32(0);
+	const int spawnY = data.get("SpawnY").int32(0);
+	const int spawnZ = data.get("SpawnZ").int32(0);
+	const int spawnRegionX = blockToRegionCoord(spawnX);
+	const int spawnRegionZ = blockToRegionCoord(spawnZ);
+	const int loadRadius = core::getVar(cfg::VoxformatMCLoadRadius)->intVal();
+	voxel::Region loadAABB = voxel::Region::InvalidRegion;
+	const bool hasLoadAABB = parseLoadRegionAABB(core::getVar(cfg::VoxformatMCLoadRegion)->strVal(), loadAABB);
+	Log::debug("Spawn %i:%i:%i (region %i:%i), load radius %i, aabb filter %s", spawnX, spawnY, spawnZ, spawnRegionX,
+			   spawnRegionZ, loadRadius, hasLoadAABB ? "on" : "off");
+
 	io::ArchiveFiles entities;
 	const core::String baseName = core::string::extractDir(filename);
 	archive->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr");
@@ -176,23 +251,46 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 		return false;
 	}
 
-	const int regionCount = (int)entities.size();
-	core::DynamicArray<RegionLoadResult> nodes;
-	nodes.resize(regionCount);
-	Log::info("Found %i region files", regionCount);
-
-	core::AtomicInt regionsDone{0};
-	app::for_parallel(0, regionCount, [&nodes, &entities, &baseName, &archive, &loadctx, &regionsDone,
-									   regionCount](int start, int end) {
-		for (int i = start; i < end; ++i) {
-			const io::FilesystemEntry &e = entities[i];
-			if (e.type != io::FilesystemEntry::Type::file) {
-				regionsDone.increment();
+	io::ArchiveFiles filtered;
+	filtered.reserve(entities.size());
+	for (const io::FilesystemEntry &e : entities) {
+		if (e.type != io::FilesystemEntry::Type::file) {
+			continue;
+		}
+		int rx = 0;
+		int rz = 0;
+		if (!parseRegionFileCoords(e.name, rx, rz)) {
+			Log::debug("Skip region file with unexpected name: %s", e.name.c_str());
+			continue;
+		}
+		if (loadRadius >= 0) {
+			const int dx = rx > spawnRegionX ? rx - spawnRegionX : spawnRegionX - rx;
+			const int dz = rz > spawnRegionZ ? rz - spawnRegionZ : spawnRegionZ - rz;
+			if (core_max(dx, dz) > loadRadius) {
 				continue;
 			}
+		}
+		if (hasLoadAABB && !regionFileIntersectsAABB(rx, rz, loadAABB)) {
+			continue;
+		}
+		filtered.push_back(e);
+	}
+	if (filtered.empty()) {
+		Log::error("No Minecraft region files left after applying load filters (radius=%i)", loadRadius);
+		return false;
+	}
+
+	const int regionCount = (int)filtered.size();
+	core::DynamicArray<RegionLoadResult> nodes;
+	nodes.resize(regionCount);
+	Log::info("Found %i region files (%i after filter)", (int)entities.size(), regionCount);
+
+	core::AtomicInt regionsDone{0};
+	app::for_parallel(0, regionCount, [&nodes, &filtered, &baseName, &archive, &loadctx, &regionsDone,
+									   regionCount](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const io::FilesystemEntry &e = filtered[i];
 			const core::String &regionFilename = core::string::path(baseName, "region", e.name);
-			// Nested MCR progress would race across parallel regions; report by completed
-			// region count on the shared parent sink instead.
 			LoadContext regionCtx;
 			nodes[i] = loadRegionNode(regionFilename, archive, regionCtx);
 			const int completed = regionsDone.increment() + 1;
@@ -203,29 +301,10 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	Log::debug("Scheduled %i regions", (int)nodes.size());
 	int nodesAdded = 0;
 	for (RegionLoadResult &loaded : nodes) {
-		if (loaded.terrain == nullptr && loaded.water == nullptr) {
+		if (!loaded.ok) {
 			continue;
 		}
-		int parentId = rootNode;
-		if (loaded.terrain != nullptr) {
-			parentId = sceneGraph.emplace(core::move(*loaded.terrain), rootNode);
-			delete loaded.terrain;
-			loaded.terrain = nullptr;
-			if (parentId == InvalidNodeId) {
-				parentId = rootNode;
-			} else {
-				++nodesAdded;
-			}
-		}
-		if (loaded.water != nullptr) {
-			const int waterId = sceneGraph.emplace(core::move(*loaded.water), parentId);
-			delete loaded.water;
-			loaded.water = nullptr;
-			if (waterId != InvalidNodeId) {
-				++nodesAdded;
-			}
-		}
-		Log::debug("... loaded %i", nodesAdded);
+		nodesAdded += scenegraph::addSceneGraphNodes(sceneGraph, loaded.sceneGraph, rootNode);
 	}
 
 	return nodesAdded > 0;

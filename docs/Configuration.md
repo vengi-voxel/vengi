@@ -150,6 +150,10 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_skinapplytransform`| Apply transforms to Minecraft skins                                                      | true/false   |
 | `voxformat_skinmergefaces`    | Merge faces of Minecraft skins into a single volume                                      | true/false   |
 | `voxformat_mcseparatewater`   | Put Minecraft water into a dedicated transparent volume as a child of each region        | true/false   |
+| `voxformat_mcmergeregions`    | Merge each Minecraft region file into one volume on `level.dat` / `mcworld` load. Disable to keep per-chunk volumes | true/false   |
+| `voxformat_mcloadradius`      | Minecraft region files to load around spawn for `level.dat` / `mcworld`. `-1` = all, `0` = spawn region only, `N` = Chebyshev distance in region units (512 blocks) | -1 |
+| `voxformat_mcloadregion`      | Optional block AABB filter for Minecraft `level.dat` / `mcworld` import (`minX minY minZ maxX maxY maxZ`). Only region files intersecting this box are loaded | |
+
 | `voxformat_targetcolors`      | Target number of colors after voxelization (0 = no limit)                                | 0            |
 | `voxformat_texturepath`       | Additional search path for textures when importing mesh formats                          |              |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
