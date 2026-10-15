@@ -13,7 +13,9 @@ namespace litematic {
 
 static bool readLitematicBlockStates(const glm::ivec3 &size, int nbtPaletteSize,
 									 const priv::NamedBinaryTag &blockStates, scenegraph::SceneGraphNode &node,
-									 const schematic::SchematicPalette &mcpal, const schematic::SchematicWaterPalette &waterPal) {
+									 const schematic::SchematicPalette &mcpal,
+									 const schematic::SchematicWaterPalette &waterPal,
+									 const schematic::SchematicInvisiblePalette &invisiblePal) {
 	const core::Buffer<int64_t> *data = blockStates.longArray();
 	if (data == nullptr) {
 		Log::error("Invalid BlockStates - expected long array");
@@ -29,7 +31,7 @@ static bool readLitematicBlockStates(const glm::ivec3 &size, int nbtPaletteSize,
 	voxel::RawVolume *v = node.volume();
 	const palette::Palette &palette = node.palette();
 	core::AtomicBool success{true};
-	app::for_parallel(0, size.y, [bits, size, data, &mcpal, &waterPal, v, &palette, &success](int start, int end) {
+	app::for_parallel(0, size.y, [bits, size, data, &mcpal, &waterPal, &invisiblePal, v, &palette, &success](int start, int end) {
 		voxel::RawVolume::Sampler sampler(v);
 		sampler.setPosition(0, start, 0);
 		const uint64_t mask = (1 << bits) - 1;
@@ -65,7 +67,8 @@ static bool readLitematicBlockStates(const glm::ivec3 &size, int nbtPaletteSize,
 					}
 					const int colorIdx = mcpal[id];
 					const bool water = schematic::schematicPaletteEntryIsWater(waterPal, (int)id);
-					sampler3.setVoxel(schematic::createSchematicVoxel(palette, (uint8_t)colorIdx, water));
+					const bool invisible = schematic::schematicPaletteEntryIsInvisible(invisiblePal, (int)id);
+					sampler3.setVoxel(schematic::createSchematicVoxel(palette, (uint8_t)colorIdx, water, invisible));
 					sampler3.movePositiveX();
 				}
 				sampler2.movePositiveY();
@@ -108,12 +111,15 @@ bool loadGroupsPalette(const priv::NamedBinaryTag &schematic, scenegraph::SceneG
 			const priv::NBTList &blockStatePaletteNbt = *blockStatesPalette.list();
 			schematic::SchematicPalette mcpal;
 			schematic::SchematicWaterPalette waterPal;
+			schematic::SchematicInvisiblePalette invisiblePal;
 			mcpal.resize(blockStatePaletteNbt.size());
 			waterPal.resize(blockStatePaletteNbt.size());
+			invisiblePal.resize(blockStatePaletteNbt.size());
 			int paletteSize = 0;
 			for (const auto &palNbt : blockStatePaletteNbt) {
 				const priv::NamedBinaryTag &materialName = palNbt.get("Name");
-				schematic::setSchematicPaletteEntry(mcpal, waterPal, paletteSize++, materialName.string()->c_str());
+				schematic::setSchematicPaletteEntry(mcpal, waterPal, invisiblePal, paletteSize++,
+												   materialName.string()->c_str());
 			}
 			const int n = (int)blockStatePaletteNbt.size();
 
@@ -126,7 +132,7 @@ bool loadGroupsPalette(const priv::NamedBinaryTag &schematic, scenegraph::SceneG
 			node.setPalette(palette);
 			node.setName(name);
 			node.createVolume(region);
-			if (!readLitematicBlockStates(size, n, blockStates, node, mcpal, waterPal)) {
+			if (!readLitematicBlockStates(size, n, blockStates, node, mcpal, waterPal, invisiblePal)) {
 				Log::error("Failed to read 'BlockStates'");
 				return false;
 			}

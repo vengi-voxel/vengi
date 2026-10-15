@@ -139,6 +139,64 @@ scenegraph::SceneGraphNode MCRFormat::createWaterNode(voxel::RawVolume *water, c
 	return waterNode;
 }
 
+voxel::RawVolume *MCRFormat::extractInvisibleVolume(voxel::RawVolume *terrain) {
+	if (terrain == nullptr) {
+		return nullptr;
+	}
+	const voxel::Region region = terrain->region();
+	voxel::RawVolume *invisible = new voxel::RawVolume(region);
+	core::AtomicInt hasInvisible{0};
+	app::for_parallel(region.getLowerY(), region.getUpperY() + 1,
+					  [terrain, invisible, &region, &hasInvisible](int start, int end) {
+						  voxel::RawVolume::Sampler terrainSampler(terrain);
+						  voxel::RawVolume::Sampler invisibleSampler(invisible);
+						  terrainSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
+						  invisibleSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
+						  for (int y = start; y < end; ++y) {
+							  voxel::RawVolume::Sampler terrain2 = terrainSampler;
+							  voxel::RawVolume::Sampler invisible2 = invisibleSampler;
+							  for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+								  voxel::RawVolume::Sampler terrain3 = terrain2;
+								  voxel::RawVolume::Sampler invisible3 = invisible2;
+								  for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+									  const voxel::Voxel voxel = terrain3.voxel();
+									  if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+										  invisible3.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxel.getColor(),
+																				 voxel.getNormal(), 0u, voxel.getBoneIdx()));
+										  terrain3.setVoxel(voxel::Voxel());
+										  hasInvisible.increment();
+									  }
+									  terrain3.movePositiveX();
+									  invisible3.movePositiveX();
+								  }
+								  terrain2.movePositiveZ();
+								  invisible2.movePositiveZ();
+							  }
+							  terrainSampler.movePositiveY();
+							  invisibleSampler.movePositiveY();
+						  }
+					  });
+	if ((int)hasInvisible == 0) {
+		delete invisible;
+		return nullptr;
+	}
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(invisible)) {
+		delete invisible;
+		return cropped;
+	}
+	return invisible;
+}
+
+scenegraph::SceneGraphNode MCRFormat::createInvisibleNode(voxel::RawVolume *volume, const palette::Palette &palette) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setName(InvisibleNodeName);
+	node.setProperty("mctype", "invisible");
+	node.setVolume(volume);
+	node.setPalette(palette);
+	node.setVisible(false);
+	return node;
+}
+
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \
 		if ((expression) != 0) {                                                                                       \
@@ -252,14 +310,15 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			voxel::RawVolume *water = nullptr;
 			if (separateWater) {
 				water = extractWaterVolume(volumes[i]);
-				if (water != nullptr) {
-					if (voxel::RawVolume *cropped = voxelutil::cropVolume(volumes[i])) {
-						delete volumes[i];
-						volumes[i] = cropped;
-					} else if (volumes[i]->isEmpty(volumes[i]->region())) {
-						delete volumes[i];
-						volumes[i] = nullptr;
-					}
+			}
+			voxel::RawVolume *invisible = extractInvisibleVolume(volumes[i]);
+			if (water != nullptr || invisible != nullptr) {
+				if (voxel::RawVolume *cropped = voxelutil::cropVolume(volumes[i])) {
+					delete volumes[i];
+					volumes[i] = cropped;
+				} else if (volumes[i]->isEmpty(volumes[i]->region())) {
+					delete volumes[i];
+					volumes[i] = nullptr;
 				}
 			}
 			int parentId = 0;
@@ -278,6 +337,14 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 				const int waterId = sceneGraph.emplace(createWaterNode(water, palette), parentId);
 				if (waterId != InvalidNodeId) {
 					++added;
+				}
+			}
+			if (invisible != nullptr) {
+				const int invisibleId = sceneGraph.emplace(createInvisibleNode(invisible, palette), parentId);
+				if (invisibleId != InvalidNodeId) {
+					++added;
+				} else {
+					delete invisible;
 				}
 			}
 		}
@@ -383,7 +450,11 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 	// `palette`. Skip PaletteLookup (1M uint16_t memset) unless a remap palette was provided on secPal.
 	const bool samePalette = secPal.mcpal.colorCount() == 0 || palette.hash() == secPal.mcpal.hash();
 	const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
-	auto createBlockVoxel = [&palette, separateWater](uint8_t palColIdx, bool water) {
+	// FlagOutline marks invisible MC blocks until extractInvisibleVolume() peels them off.
+	auto createBlockVoxel = [&palette, separateWater](uint8_t palColIdx, bool water, bool invisible) {
+		if (invisible) {
+			return voxel::createVoxel(voxel::VoxelType::Generic, palColIdx, NO_NORMAL, voxel::FlagOutline);
+		}
 		if (separateWater && water) {
 			return voxel::createVoxel(voxel::VoxelType::Transparent, palColIdx);
 		}
@@ -421,7 +492,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 							const uint8_t palColIdx =
 								samePalette ? (uint8_t)color
 											: palLookup->findClosestIndex(secPal.mcpal.color(color));
-							const voxel::Voxel voxel = createBlockVoxel(palColIdx, isLegacyWaterId(color));
+							const voxel::Voxel voxel = createBlockVoxel(palColIdx, isLegacyWaterId(color), false);
 							sampler3.setVoxel(voxel);
 							hasBlocks = true;
 						}
@@ -448,6 +519,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 		constexpr int blockCount = MAX_SIZE * MAX_SIZE * MAX_SIZE;
 		uint8_t blocks[blockCount];
 		uint8_t waterFlags[blockCount]{};
+		uint8_t invisibleFlags[blockCount]{};
 		int bsCnt = 0;
 		size_t bitCnt = 0;
 		if (dataVersion < 2529) {
@@ -461,6 +533,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 						blocks[i] = secPal.pal[blockIndex];
 						if (blockIndex < secPal.isWater.size()) {
 							waterFlags[i] = secPal.isWater[blockIndex];
+						}
+						if (blockIndex < secPal.isInvisible.size()) {
+							invisibleFlags[i] = secPal.isInvisible[blockIndex];
 						}
 						hasBlocks = true;
 					} else {
@@ -482,6 +557,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 						blocks[i] = secPal.pal[blockIndex];
 						if (blockIndex < secPal.isWater.size()) {
 							waterFlags[i] = secPal.isWater[blockIndex];
+						}
+						if (blockIndex < secPal.isInvisible.size()) {
+							invisibleFlags[i] = secPal.isInvisible[blockIndex];
 						}
 						hasBlocks = true;
 					} else {
@@ -507,6 +585,9 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 						blocks[i] = secPal.pal[blockIndex];
 						if (blockIndex < secPal.isWater.size()) {
 							waterFlags[i] = secPal.isWater[blockIndex];
+						}
+						if (blockIndex < secPal.isInvisible.size()) {
+							invisibleFlags[i] = secPal.isInvisible[blockIndex];
 						}
 						if (blocks[i] != 0) {
 							hasBlocks = true;
@@ -535,7 +616,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 							const uint8_t palColIdx =
 								samePalette ? color
 											: palLookup->findClosestIndex(secPal.mcpal.color(color));
-							const voxel::Voxel voxel = createBlockVoxel(palColIdx, waterFlags[i] != 0);
+							const voxel::Voxel voxel =
+								createBlockVoxel(palColIdx, waterFlags[i] != 0, invisibleFlags[i] != 0);
 							sampler3.setVoxel(voxel);
 						}
 						sampler3.movePositiveX();
@@ -556,7 +638,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			const uint8_t palColIdx =
 				samePalette ? color : palLookup->findClosestIndex(secPal.mcpal.color(color));
 			const bool water = !secPal.isWater.empty() && secPal.isWater[0] != 0;
-			const voxel::Voxel voxel = createBlockVoxel(palColIdx, water);
+			const bool invisible = !secPal.isInvisible.empty() && secPal.isInvisible[0] != 0;
+			const voxel::Voxel voxel = createBlockVoxel(palColIdx, water, invisible);
 			auto fn = [&] (int start, int end) {
 				voxel::RawVolume::Sampler sampler(v);
 				sampler.setPosition(0, start, 0);
@@ -753,6 +836,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	}
 	sectionPal.pal.resize(paletteCount);
 	sectionPal.isWater.resize(paletteCount);
+	sectionPal.isInvisible.resize(paletteCount);
 	if (paletteCount <= 1u) {
 		sectionPal.numBits = 0u;
 	} else {
@@ -773,6 +857,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 		}
 		sectionPal.pal[paletteEntry] = (uint8_t)findPaletteIndex(state, 1);
 		sectionPal.isWater[paletteEntry] = isWaterBlock(state) ? 1 : 0;
+		sectionPal.isInvisible[paletteEntry] = isInvisibleBlock(state) ? 1 : 0;
 		++paletteEntry;
 	}
 	return true;

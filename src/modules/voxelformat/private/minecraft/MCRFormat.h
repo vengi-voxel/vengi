@@ -77,6 +77,7 @@ protected:
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
 		core::Buffer<uint8_t> isWater;
+		core::Buffer<uint8_t> isInvisible;
 		uint32_t numBits = 0u;
 		palette::Palette mcpal;
 	};
@@ -88,6 +89,7 @@ protected:
 
 public:
 	static constexpr const char *WaterNodeName = "Water";
+	static constexpr const char *InvisibleNodeName = "Invisible";
 
 	/**
 	 * @brief Move transparent water voxels out of @p terrain into a cropped water volume.
@@ -96,6 +98,13 @@ public:
 	static voxel::RawVolume *extractWaterVolume(voxel::RawVolume *terrain);
 	static void applyWaterTransparency(palette::Palette &palette, const voxel::RawVolume *water);
 	static scenegraph::SceneGraphNode createWaterNode(voxel::RawVolume *water, const palette::Palette &palette);
+
+	/**
+	 * @brief Move voxels flagged during load as invisible Minecraft blocks into a cropped volume.
+	 * @return volume or @c nullptr if none. Caller owns the result.
+	 */
+	static voxel::RawVolume *extractInvisibleVolume(voxel::RawVolume *terrain);
+	static scenegraph::SceneGraphNode createInvisibleNode(voxel::RawVolume *volume, const palette::Palette &palette);
 
 private:
 	static constexpr int VERSION_GZIP = 1;

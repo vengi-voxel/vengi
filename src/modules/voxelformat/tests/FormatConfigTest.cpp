@@ -14,6 +14,9 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/minecraft/DatFormat.h"
+#include "voxelformat/private/minecraft/MCRFormat.h"
+#include "voxelformat/private/minecraft/MCWorldFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include <gtest/gtest.h>
 #include <string.h>
@@ -125,6 +128,27 @@ TEST_F(FormatConfigTest, testAppliesToGenericSave) {
 	EXPECT_TRUE(FormatConfig::appliesTo(*merge, true, VoxFormat::format()));
 	EXPECT_TRUE(FormatConfig::appliesTo(*merge, true, GLTFFormat::format()));
 	EXPECT_FALSE(FormatConfig::appliesTo(*merge, false, VoxFormat::format()));
+}
+
+TEST_F(FormatConfigTest, testAppliesToMinecraftDatLoad) {
+	const FormatVarMeta *mergeRegions = FormatConfig::findVarMeta(cfg::VoxformatMCMergeRegions);
+	ASSERT_NE(mergeRegions, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*mergeRegions, false, DatFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*mergeRegions, false, MCWorldFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*mergeRegions, false, MCRFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*mergeRegions, true, DatFormat::format()));
+
+	const FormatVarMeta *loadRadius = FormatConfig::findVarMeta(cfg::VoxformatMCLoadRadius);
+	ASSERT_NE(loadRadius, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*loadRadius, false, DatFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*loadRadius, false, MCWorldFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*loadRadius, false, MCRFormat::format()));
+
+	const FormatVarMeta *loadRegion = FormatConfig::findVarMeta(cfg::VoxformatMCLoadRegion);
+	ASSERT_NE(loadRegion, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*loadRegion, false, DatFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*loadRegion, false, MCWorldFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*loadRegion, false, MCRFormat::format()));
 }
 
 TEST_F(FormatConfigTest, testFormatNamesExist) {

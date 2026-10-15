@@ -31,6 +31,19 @@ TEST_F(MinecraftPaletteMapTest, testIsWaterBlock) {
 	EXPECT_FALSE(isLegacyWaterId(10));
 }
 
+TEST_F(MinecraftPaletteMapTest, testIsInvisibleBlock) {
+	EXPECT_TRUE(isInvisibleBlock("minecraft:barrier"));
+	EXPECT_TRUE(isInvisibleBlock("minecraft:light"));
+	EXPECT_TRUE(isInvisibleBlock("minecraft:light[level=15]"));
+	EXPECT_TRUE(isInvisibleBlock("minecraft:structure_void"));
+	EXPECT_TRUE(isInvisibleBlock("minecraft:invisible_bedrock"));
+	EXPECT_TRUE(isInvisibleBlock("minecraft:client_request_placeholder_block"));
+	EXPECT_FALSE(isInvisibleBlock("minecraft:air"));
+	EXPECT_FALSE(isInvisibleBlock("minecraft:stone"));
+	EXPECT_FALSE(isInvisibleBlock("minecraft:command_block"));
+	EXPECT_FALSE(isInvisibleBlock("minecraft:structure_block"));
+}
+
 TEST_F(MinecraftPaletteMapTest, testStripBlockId) {
 	McBlock block;
 	block =

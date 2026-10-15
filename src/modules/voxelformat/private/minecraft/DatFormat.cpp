@@ -118,26 +118,13 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 
 	const bool separateWater = core::getVar(cfg::VoxformatMCSeparateWater)->boolVal();
 	scenegraph::SceneGraph mergedGraph;
-	if (!separateWater) {
-		const scenegraph::SceneGraph::MergeResult &merged = result.sceneGraph.merge();
-		if (!merged.hasVolume()) {
-			return RegionLoadResult{};
-		}
-		scenegraph::SceneGraphNode terrain(scenegraph::SceneGraphNodeType::Model);
-		terrain.setVolume(merged.volume());
-		terrain.setPalette(merged.palette);
-		terrain.setNormalPalette(merged.normalPalette);
-		terrain.setName(core::string::extractFilenameWithExtension(regionFilename));
-		mergedGraph.emplace(core::move(terrain));
-		result.sceneGraph = core::move(mergedGraph);
-		result.ok = true;
-		return result;
-	}
 
 	core::Buffer<const voxel::RawVolume *> terrainVols;
 	core::Buffer<const voxel::RawVolume *> waterVols;
+	core::Buffer<const voxel::RawVolume *> invisibleVols;
 	palette::Palette terrainPalette;
 	palette::Palette waterPalette;
+	palette::Palette invisiblePalette;
 	palette::NormalPalette normalPalette;
 	bool hasTerrainPalette = false;
 	result.sceneGraph.visitChildren(result.sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
@@ -145,9 +132,25 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 			return;
 		}
 		if (node.name() == MCRFormat::WaterNodeName) {
-			waterVols.push_back(node.volume());
-			if (waterPalette.colorCount() == 0) {
-				waterPalette = node.palette();
+			if (separateWater) {
+				waterVols.push_back(node.volume());
+				if (waterPalette.colorCount() == 0) {
+					waterPalette = node.palette();
+				}
+			} else {
+				terrainVols.push_back(node.volume());
+				if (!hasTerrainPalette) {
+					terrainPalette = node.palette();
+					normalPalette = node.normalPalette();
+					hasTerrainPalette = true;
+				}
+			}
+			return;
+		}
+		if (node.name() == MCRFormat::InvisibleNodeName) {
+			invisibleVols.push_back(node.volume());
+			if (invisiblePalette.colorCount() == 0) {
+				invisiblePalette = node.palette();
 			}
 			return;
 		}
@@ -160,8 +163,9 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 	});
 
 	voxel::RawVolume *terrain = mergeAndCrop(terrainVols);
-	voxel::RawVolume *water = mergeAndCrop(waterVols);
-	if (terrain == nullptr && water == nullptr) {
+	voxel::RawVolume *water = separateWater ? mergeAndCrop(waterVols) : nullptr;
+	voxel::RawVolume *invisible = mergeAndCrop(invisibleVols);
+	if (terrain == nullptr && water == nullptr && invisible == nullptr) {
 		return RegionLoadResult{};
 	}
 
@@ -170,7 +174,8 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 	if (terrain != nullptr) {
 		scenegraph::SceneGraphNode terrainNode(scenegraph::SceneGraphNodeType::Model);
 		terrainNode.setVolume(terrain);
-		terrainNode.setPalette(hasTerrainPalette ? terrainPalette : waterPalette);
+		terrainNode.setPalette(hasTerrainPalette ? terrainPalette
+												: (waterPalette.colorCount() > 0 ? waterPalette : invisiblePalette));
 		terrainNode.setNormalPalette(normalPalette);
 		terrainNode.setName(regionName);
 		terrainParent = mergedGraph.emplace(core::move(terrainNode));
@@ -185,6 +190,16 @@ static RegionLoadResult loadRegionNode(const core::String &regionFilename, const
 			waterNode.setName(regionName);
 		}
 		mergedGraph.emplace(core::move(waterNode), terrainParent);
+	}
+	if (invisible != nullptr) {
+		const palette::Palette &srcPal =
+			hasTerrainPalette ? terrainPalette
+							  : (invisiblePalette.colorCount() > 0 ? invisiblePalette : waterPalette);
+		scenegraph::SceneGraphNode invisibleNode = MCRFormat::createInvisibleNode(invisible, srcPal);
+		if (terrain == nullptr && water == nullptr) {
+			invisibleNode.setName(regionName);
+		}
+		mergedGraph.emplace(core::move(invisibleNode), terrainParent);
 	}
 	result.sceneGraph = core::move(mergedGraph);
 	result.ok = true;

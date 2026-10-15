@@ -78,5 +78,10 @@ bool isWaterBlock(const core::String &name);
  * @brief Pre-flattening block ids 8 (flowing water) and 9 (still water)
  */
 bool isLegacyWaterId(int id);
+/**
+ * @brief Intentionally invisible Minecraft blocks (see https://minecraft.wiki/w/Invisible_blocks).
+ * Air variants are excluded - they are already skipped as empty voxels.
+ */
+bool isInvisibleBlock(const core::String &name);
 
 } // namespace voxelformat

@@ -36,16 +36,20 @@ glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core::String
 	return glm::ivec3(x, y, z);
 }
 
-void setSchematicPaletteEntry(SchematicPalette &colors, SchematicWaterPalette &water, int idx,
-							  const core::String &blockName) {
+void setSchematicPaletteEntry(SchematicPalette &colors, SchematicWaterPalette &water, SchematicInvisiblePalette &invisible,
+							  int idx, const core::String &blockName) {
 	if (idx >= (int)colors.size()) {
 		colors.resize(idx + 1);
 	}
 	if (idx >= (int)water.size()) {
 		water.resize(idx + 1);
 	}
+	if (idx >= (int)invisible.size()) {
+		invisible.resize(idx + 1);
+	}
 	colors[idx] = findPaletteIndex(blockName, 1);
 	water[idx] = isWaterBlock(blockName) ? 1u : 0u;
+	invisible[idx] = isInvisibleBlock(blockName) ? 1u : 0u;
 }
 
 bool schematicPaletteEntryIsWater(const SchematicWaterPalette &water, int paletteIdx) {
@@ -55,7 +59,17 @@ bool schematicPaletteEntryIsWater(const SchematicWaterPalette &water, int palett
 	return water[paletteIdx] != 0u;
 }
 
-voxel::Voxel createSchematicVoxel(const palette::Palette &palette, uint8_t colorIdx, bool water) {
+bool schematicPaletteEntryIsInvisible(const SchematicInvisiblePalette &invisible, int paletteIdx) {
+	if (paletteIdx < 0 || paletteIdx >= (int)invisible.size()) {
+		return false;
+	}
+	return invisible[paletteIdx] != 0u;
+}
+
+voxel::Voxel createSchematicVoxel(const palette::Palette &palette, uint8_t colorIdx, bool water, bool invisible) {
+	if (invisible) {
+		return voxel::createVoxel(voxel::VoxelType::Generic, colorIdx, NO_NORMAL, voxel::FlagOutline);
+	}
 	if (core::getVar(cfg::VoxformatMCSeparateWater)->boolVal() && water) {
 		return voxel::createVoxel(voxel::VoxelType::Transparent, colorIdx);
 	}

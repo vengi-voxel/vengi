@@ -74,6 +74,7 @@ General:
    - Added progress bar support
    - Optional Minecraft map import that puts water into dedicated transparent child volumes (`voxformat_mcseparatewater`)
    - Minecraft `level.dat` / `mcworld` load filters: spawn region radius (`voxformat_mcloadradius`) and optional block AABB (`voxformat_mcloadregion`); optional per-chunk nodes via `voxformat_mcmergeregions=false`
+   - Minecraft invisible blocks (`barrier`, `light`, `structure_void`, ...) are loaded into a hidden `Invisible` child node by default
    - Transparent voxels are composited with weighted blended order-independent transparency (no per-frame triangle sort)
 
 VoxEdit:

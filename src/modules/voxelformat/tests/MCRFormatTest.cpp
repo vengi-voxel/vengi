@@ -112,6 +112,27 @@ TEST_F(MCRFormatTest, testExtractWaterVolume) {
 	delete water;
 }
 
+TEST_F(MCRFormatTest, testExtractInvisibleVolume) {
+	const voxel::Region region(0, 0, 0, 3, 3, 3);
+	voxel::RawVolume terrain(region);
+	terrain.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 5));
+	terrain.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 38, NO_NORMAL, voxel::FlagOutline));
+	voxel::RawVolume *invisible = MCRFormat::extractInvisibleVolume(&terrain);
+	ASSERT_NE(invisible, nullptr);
+	EXPECT_TRUE(voxel::isAir(terrain.voxel(2, 2, 2).getMaterial()));
+	EXPECT_EQ(5u, terrain.voxel(1, 1, 1).getColor());
+	EXPECT_EQ(voxel::VoxelType::Generic, invisible->voxel(2, 2, 2).getMaterial());
+	EXPECT_EQ(38u, invisible->voxel(2, 2, 2).getColor());
+	EXPECT_EQ(0u, invisible->voxel(2, 2, 2).getFlags());
+	delete invisible;
+
+	palette::Palette pal;
+	pal.minecraft();
+	scenegraph::SceneGraphNode node = MCRFormat::createInvisibleNode(new voxel::RawVolume(region), pal);
+	EXPECT_EQ(MCRFormat::InvisibleNodeName, node.name());
+	EXPECT_FALSE(node.visible());
+}
+
 TEST_F(MCRFormatTest, testLoad110) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "minecraft_110.mca", 1024);

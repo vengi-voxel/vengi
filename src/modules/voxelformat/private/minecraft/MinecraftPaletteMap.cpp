@@ -2439,6 +2439,14 @@ bool isLegacyWaterId(int id) {
 	return id == 8 || id == 9;
 }
 
+bool isInvisibleBlock(const core::String &name) {
+	const McBlock block = parseBlock(name);
+	// https://minecraft.wiki/w/Invisible_blocks - air variants are not placed as voxels
+	return block.blockId == "minecraft:barrier" || block.blockId == "minecraft:light" ||
+		   block.blockId == "minecraft:structure_void" || block.blockId == "minecraft:invisible_bedrock" ||
+		   block.blockId == "minecraft:client_request_placeholder_block";
+}
+
 int findPaletteIndex(const core::String &name, int defaultValue) {
 	const McPaletteMap &map = getPaletteMap();
 	const McBlock block = parseBlock(name);
