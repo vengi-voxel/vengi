@@ -21,7 +21,6 @@ namespace voxelpathtracer {
 
 namespace {
 
-constexpr int BrickSize = shader::VoxelpathtracerShaderConstants::getBrickSize();
 constexpr int VoxelsPerBrick = BrickSize * BrickSize * BrickSize;
 // Knuth multiplicative hash: 2^32 / phi. Mixes the emit-voxel counter so overflow
 // replacements are spread instead of clustering at the start of the light list.

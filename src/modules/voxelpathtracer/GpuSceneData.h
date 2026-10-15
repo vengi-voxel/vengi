@@ -23,6 +23,8 @@ struct Material;
 
 namespace voxelpathtracer {
 
+constexpr int BrickSize = shader::VoxelpathtracerShaderConstants::getBrickSize();
+
 /** @brief PCG RXS-M-XS hash matching the shader RNG seed permutation. */
 uint32_t sampleSeedHash(uint32_t sampleIndex);
 

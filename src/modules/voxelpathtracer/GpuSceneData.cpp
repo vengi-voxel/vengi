@@ -15,7 +15,6 @@
 namespace voxelpathtracer {
 
 namespace {
-constexpr int BrickSize = shader::VoxelpathtracerShaderConstants::getBrickSize();
 // Memory budget for the coarse indirection grid (sized as 32-bit cells).
 constexpr size_t MaxIndirectionBytes = 512ull * 1024ull * 1024ull;
 } // namespace
