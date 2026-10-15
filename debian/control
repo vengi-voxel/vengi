@@ -37,7 +37,7 @@ Package: vengi-voxedit
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
-Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-palconvert
+Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-palconvert, ldraw-parts-free
 Description: Voxel editor
  Voxel editor that supports many different formats. It features a lot of
  tools to modify, create and animate voxel models.
@@ -45,7 +45,7 @@ Description: Voxel editor
 Package: vengi-thumbnailer
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-voxconvert, vengi-palconvert
+Recommends: vengi-voxedit, vengi-voxconvert, vengi-palconvert, ldraw-parts-free
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
  Thumbnailer for voxel models that supports many different formats. It can
@@ -54,7 +54,7 @@ Description: Thumbnailer for voxel models
 Package: vengi-voxconvert
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-thumbnailer, vengi-palconvert
+Recommends: vengi-voxedit, vengi-thumbnailer, vengi-palconvert, ldraw-parts-free
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Convert, export or modify voxel volumes
  Command line tool to convert, export or modify voxel volumes. It supports
