@@ -74,7 +74,7 @@ video::Camera thumbnailCamera(const scenegraph::SceneGraph &sceneGraph, const vo
 				break;
 			}
 		}
-		voxelrender::configureCamera(camera, sceneGraph.sceneRegion(), cameraMode, ctx.farPlane,
+		voxelrender::configureCamera(camera, sceneGraph.sceneRegion(0, true), cameraMode, ctx.farPlane,
 									 {ctx.pitch, ctx.yaw, ctx.roll});
 		if (ctx.useWorldPosition) {
 			camera.setRotationType(video::CameraRotationType::Eye);
