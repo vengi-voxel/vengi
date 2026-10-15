@@ -383,7 +383,10 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 
 const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic,
 											const io::FormatDescription *descriptions) {
-	if (fileDesc.desc.valid()) {
+	// Group / "All supported" entries are file-dialog filters, not concrete loaders.
+	// Also re-resolve when the selected filter does not match the picked filename.
+	if (fileDesc.desc.valid() && (fileDesc.desc.flags & (FORMAT_FLAG_GROUP | FORMAT_FLAG_ALL)) == 0u &&
+		fileDesc.desc.matchesExtension(core::string::extractExtension(fileDesc.name))) {
 		return &fileDesc.desc;
 	}
 	const core::String filename = fileDesc.name;

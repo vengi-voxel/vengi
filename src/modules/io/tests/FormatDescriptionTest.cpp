@@ -88,4 +88,31 @@ TEST_F(FormatDescriptionTest, testConvertToFilePattern) {
 	ASSERT_EQ("Name (*.ext1,*.ext2)", convertToFilePattern(desc2));
 }
 
+TEST_F(FormatDescriptionTest, testGetDescriptionResolvesGroupFilter) {
+	const FormatDescription formats[] = {
+		{"Minecraft region", "", {"mca", "mcr"}, {}, 0u},
+		{"Minecraft level dat", "", {"dat"}, {}, 0u},
+		{"Minecraft schematic", "", {"schematic", "schem", "nbt", "litematic"}, {}, 0u},
+		FormatDescription::END
+	};
+	core::DynamicArray<io::FormatDescription> groups;
+	createGroupPatterns(formats, groups);
+	ASSERT_FALSE(groups.empty());
+	ASSERT_EQ("Minecraft", groups[0].name);
+	ASSERT_TRUE((groups[0].flags & FORMAT_FLAG_GROUP) != 0u);
+
+	io::FileDescription fileDesc;
+	fileDesc.set("world/r.0.0.mca", &groups[0]);
+	const io::FormatDescription *resolved = getDescription(fileDesc, 0u, formats);
+	ASSERT_NE(nullptr, resolved);
+	EXPECT_EQ("Minecraft region", resolved->name);
+
+	const FormatDescription concrete = formats[0];
+	fileDesc.set("world/r.0.0.mca", &concrete);
+	resolved = getDescription(fileDesc, 0u, formats);
+	ASSERT_NE(nullptr, resolved);
+	EXPECT_EQ(&fileDesc.desc, resolved);
+	EXPECT_EQ("Minecraft region", resolved->name);
+}
+
 }
