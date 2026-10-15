@@ -398,6 +398,31 @@ TEST_F(PathTracerTest, testStartReplacesLoadedScene) {
 	ASSERT_TRUE(pathTracer.stop());
 }
 
+TEST_F(PathTracerTest, testPrepareGpuSceneThenStartPrepared) {
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(loadHmec(_testApp->filesystem(), sceneGraph)) << "Could not load hmec.vxl";
+
+	voxelpathtracer::PreparedGpuScene prepared =
+		voxelpathtracer::prepareGpuScene(sceneGraph, voxelpathtracer::PathTracer::maxTextureAxis());
+	ASSERT_TRUE(prepared.success);
+	EXPECT_FALSE(prepared.empty);
+	EXPECT_GT(prepared.sparse.brickCount, 0);
+
+	voxelpathtracer::PathTracer pathTracer;
+	pathTracer.state().params.resolution = 64;
+	pathTracer.state().params.samples = 2;
+	pathTracer.state().params.samplesThisPass = 1;
+	pathTracer.state().params.bounces = 2;
+	ASSERT_TRUE(pathTracer.startPrepared(core::move(prepared), sceneGraph));
+	EXPECT_TRUE(pathTracer.hasVolume());
+	EXPECT_TRUE(pathTracer.started());
+	ASSERT_TRUE(pathTracer.stop());
+	EXPECT_FALSE(pathTracer.started());
+	ASSERT_TRUE(pathTracer.resume());
+	EXPECT_TRUE(pathTracer.started());
+	ASSERT_TRUE(pathTracer.stop());
+}
+
 TEST_F(PathTracerTest, testGpuDisplayTextureSupportsExportAndResize) {
 	scenegraph::SceneGraph sceneGraph;
 	voxelpathtracer::PathTracer pathTracer;

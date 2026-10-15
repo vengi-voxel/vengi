@@ -69,7 +69,9 @@ static glm::vec3 sunDirection(const PathTracerParams &params) {
 static constexpr int MaterialRows = shader::VoxelpathtracerShaderConstants::getMaterialRows();
 static_assert(sizeof(GpuEmitLight) == 8u * sizeof(float));
 
-static int maxTextureAxis() {
+} // namespace
+
+int PathTracer::maxTextureAxis() {
 	const int brickSize = pathTracerBrickSize();
 	int glMax = video::limiti(video::Limit::Max3DTextureSize);
 	if (glMax < brickSize) {
@@ -78,8 +80,6 @@ static int maxTextureAxis() {
 	}
 	return glMax;
 }
-
-} // namespace
 
 PathTracer::~PathTracer() {
 	stop();
@@ -408,10 +408,9 @@ bool PathTracer::uploadMaterialAtlas(const GpuMaterialAtlas &atlas, const Sparse
 	return true;
 }
 
-bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
-	core_trace_scoped(PathTracerCreateScene);
+bool PathTracer::uploadPreparedScene(PreparedGpuScene &prepared) {
 	_state.cameraNames.clear();
-	_state.volumeTruncated = false;
+	_state.volumeTruncated = prepared.volumeTruncated;
 	_hasVolume = false;
 
 	shutdownTexture(_bricksTex);
@@ -423,66 +422,32 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	_emitterLuminance = 0.0f;
 	_bricksPerRow = 1;
 
-	setupTraceCamera(sceneGraph, camera);
-
-	core::Buffer<const palette::Palette *> palettes;
-	collectScenePalettes(sceneGraph, palettes);
-
-	const voxel::Region worldRegion = sceneGraph.sceneRegion(0, true);
-	if (palettes.empty() || !worldRegion.isValid()) {
+	if (!prepared.success) {
+		return false;
+	}
+	if (prepared.empty) {
 		return createEmptyGpuScene();
 	}
 
-	const glm::ivec3 worldMin = worldRegion.getLowerCorner();
-	const int textureAxis = maxTextureAxis();
-	bool truncated = false;
-	_volumeSize = clampVolumeSize(worldRegion.getDimensionsInVoxels(), textureAxis, truncated);
-	if (truncated) {
-		_state.volumeTruncated = true;
-		Log::warn("Pathtracer volume truncated to %ix%ix%i (indirection grid / texture limits)", _volumeSize.x,
-				  _volumeSize.y, _volumeSize.z);
+	if (!uploadSparseVolume(prepared.sparse, (size_t)prepared.materials.materialCount)) {
+		return false;
+	}
+	if (!uploadMaterialAtlas(prepared.materials, prepared.sparse)) {
+		return false;
 	}
 
-	const size_t transmissiveCount = (size_t)palettes.size() * palette::PaletteMaxColors;
-	uint8_t *transmissive = (uint8_t *)core_malloc(transmissiveCount);
-	if (transmissive == nullptr) {
-		Log::error("Failed to allocate pathtracer transmissive flags");
-		return false;
-	}
-	core_memset(transmissive, 0, transmissiveCount);
-
-	SparseGpuVolume sparse;
-	if (!buildSparseGpuVolume(sceneGraph, palettes, worldMin, _volumeSize, textureAxis, sparse, transmissive)) {
-		core_free(transmissive);
-		return false;
-	}
-	if (sparse.bricksTruncated) {
-		_state.volumeTruncated = true;
-	}
-	GpuMaterialAtlas materialAtlas;
-	if (!buildDenseMaterialAtlas(sparse, palettes, transmissive, materialAtlas)) {
-		core_free(transmissive);
-		freeSparseGpuVolume(sparse);
-		return false;
-	}
-	core_free(transmissive);
-	if (!uploadSparseVolume(sparse, (size_t)materialAtlas.materialCount)) {
-		freeGpuMaterialAtlas(materialAtlas);
-		freeSparseGpuVolume(sparse);
-		return false;
-	}
-	if (!uploadMaterialAtlas(materialAtlas, sparse)) {
-		freeGpuMaterialAtlas(materialAtlas);
-		freeSparseGpuVolume(sparse);
-		return false;
-	}
-	freeGpuMaterialAtlas(materialAtlas);
-	freeSparseGpuVolume(sparse);
-
-	_volumeMin = worldMin;
+	_volumeMin = prepared.worldMin;
+	_volumeSize = prepared.volumeSize;
 	_hasVolume = true;
-	_floorY = _state.params.floorEnabled ? _state.params.floorY : (float)worldMin.y;
+	_floorY = _state.params.floorEnabled ? _state.params.floorY : (float)prepared.worldMin.y;
 	return true;
+}
+
+bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
+	core_trace_scoped(PathTracerCreateScene);
+	setupTraceCamera(sceneGraph, camera);
+	PreparedGpuScene prepared = prepareGpuScene(sceneGraph, maxTextureAxis());
+	return uploadPreparedScene(prepared);
 }
 
 void PathTracer::tracePass(int samples) {
@@ -675,6 +640,27 @@ bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, const video::Ca
 	return true;
 }
 
+bool PathTracer::startPrepared(PreparedGpuScene &&prepared, const scenegraph::SceneGraph &sceneGraph,
+							   const video::Camera *camera) {
+	if (!initGpu()) {
+		return false;
+	}
+	Log::debug("Upload prepared pathtracer scene");
+	setupTraceCamera(sceneGraph, camera);
+	if (!uploadPreparedScene(prepared)) {
+		return false;
+	}
+	prepared.free();
+	if (!ensureTargets(outputResolution())) {
+		return false;
+	}
+	_state.currentSample = 0;
+	_writeAccum = 0;
+	_state.started = true;
+	Log::debug("Started pathtracer from prepared scene");
+	return true;
+}
+
 bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
 	Log::debug("Restart pathtracer");
 	stop();
@@ -683,6 +669,14 @@ bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph, const video::
 
 bool PathTracer::stop() {
 	_state.started = false;
+	return true;
+}
+
+bool PathTracer::resume() {
+	if (!_initialized) {
+		return false;
+	}
+	_state.started = true;
 	return true;
 }
 

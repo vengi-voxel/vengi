@@ -1310,6 +1310,14 @@ bool MainWindow::isRenderPanelHovered() const {
 	return _renderPanel.isHovered();
 }
 
+bool MainWindow::isRenderPanelPreparing() const {
+	return _renderPanel.isPreparing();
+}
+
+float MainWindow::renderPanelPrepProgress() const {
+	return _renderPanel.prepProgress();
+}
+
 void MainWindow::syncActiveCamera() {
 	if (_renderPanel.isHovered()) {
 		_sceneMgr->setActiveCamera(&_renderPanel.camera(), false);

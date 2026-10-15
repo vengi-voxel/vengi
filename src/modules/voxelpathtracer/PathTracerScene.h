@@ -79,4 +79,34 @@ void gatherSceneEmitLights(const SparseGpuVolume &volume, int materialCount, con
 						   const uint8_t *albedoRgba, GpuEmitLight *emitLights, int &emitCount,
 						   float &emitterLuminance);
 
+/**
+ * @brief CPU-side pathtracer scene ready for GL upload on the main thread.
+ * Owns sparse volume and material atlas allocations; movable, not copyable.
+ */
+struct PreparedGpuScene {
+	SparseGpuVolume sparse;
+	GpuMaterialAtlas materials;
+	glm::ivec3 worldMin{0};
+	glm::ivec3 volumeSize{0};
+	bool empty = true;
+	bool volumeTruncated = false;
+	bool success = false;
+
+	PreparedGpuScene() = default;
+	~PreparedGpuScene();
+	PreparedGpuScene(const PreparedGpuScene &) = delete;
+	PreparedGpuScene &operator=(const PreparedGpuScene &) = delete;
+	PreparedGpuScene(PreparedGpuScene &&other) noexcept;
+	PreparedGpuScene &operator=(PreparedGpuScene &&other) noexcept;
+
+	void free();
+};
+
+/**
+ * @brief Build sparse bricks and material atlas without touching the GPU.
+ * Safe to call from a worker thread when @p sceneGraph is exclusively owned.
+ * @param[in] maxTextureAxis Value from @c pathTracerMaxTextureAxis() (capture on the GL thread).
+ */
+PreparedGpuScene prepareGpuScene(const scenegraph::SceneGraph &sceneGraph, int maxTextureAxis);
+
 } // namespace voxelpathtracer

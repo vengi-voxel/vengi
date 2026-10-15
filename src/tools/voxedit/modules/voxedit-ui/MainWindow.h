@@ -195,6 +195,8 @@ public:
 	Viewport *visibleViewport();
 	Viewport *activeViewport() const;
 	bool isRenderPanelHovered() const;
+	bool isRenderPanelPreparing() const;
+	float renderPanelPrepProgress() const;
 	void syncActiveCamera();
 	/**
 	 * @brief Checks if any of the viewports is in edit mode

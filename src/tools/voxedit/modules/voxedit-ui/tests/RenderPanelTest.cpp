@@ -154,7 +154,11 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "gpu preview")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
-		ctx->Yield(2);
+		for (int i = 0; i < 120 && (isPreparing() || !_sceneReady); ++i) {
+			ctx->Yield();
+		}
+		IM_CHECK(!_prepFuture.valid());
+		IM_CHECK(_sceneReady);
 		const video::TexturePtr preview = _pathTracer.texture();
 		IM_CHECK(preview != nullptr);
 		IM_CHECK(preview->isLoaded());

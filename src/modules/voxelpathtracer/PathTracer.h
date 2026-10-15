@@ -74,6 +74,7 @@ private:
 	bool createEmptyGpuScene();
 	bool uploadSparseVolume(const SparseGpuVolume &volume, size_t materialCount);
 	bool uploadMaterialAtlas(const GpuMaterialAtlas &atlas, const SparseGpuVolume &volume);
+	bool uploadPreparedScene(PreparedGpuScene &prepared);
 	bool ensureTargets(int resolution);
 	int outputResolution() const;
 	void uploadEmitLights(const GpuEmitLight *lights, int count);
@@ -97,12 +98,23 @@ public:
 	void shutdown();
 
 	bool start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);
+	/**
+	 * @brief Upload a CPU-prepared scene and start sampling.
+	 * Call on the GL thread after @c prepareGpuScene() finishes on a worker.
+	 */
+	bool startPrepared(PreparedGpuScene &&prepared, const scenegraph::SceneGraph &sceneGraph,
+					   const video::Camera *camera = nullptr);
 	bool restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);
 	bool stop();
+	/** @brief Continue sampling after @c stop() without rebuilding the GPU scene. */
+	bool resume();
 	bool started() const;
 	bool hasVolume() const;
 	void applyCamera(const video::Camera *camera);
 	void resetAccumulation();
+
+	/** @brief GL_MAX_3D_TEXTURE_SIZE clamped for pathtracer brick atlases. Call on the GL thread. */
+	static int maxTextureAxis();
 
 	/**
 	 * @brief Render one batch of samples. Call until rendering completes or stop() is called.

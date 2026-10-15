@@ -4,16 +4,20 @@
 
 #include "RenderPanel.h"
 #include "SunAngleSettings.h"
+#include "app/Async.h"
 #include "core/ArrayLength.h"
-#include "core/SharedPtr.h"
 #include "core/GLM.h"
+#include "core/ProgressScope.h"
+#include "core/SharedPtr.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedPanel.h"
+#include "ui/ScopedStyle.h"
 #include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
 #include "video/Texture.h"
@@ -259,6 +263,124 @@ void RenderPanel::ensureTraceCamera(const scenegraph::SceneGraph &sceneGraph) {
 	voxelrender::configureCamera(_camera, region, voxelrender::SceneCameraMode::Free, farPlane);
 }
 
+void RenderPanel::renderPrepProgress() {
+	const ImVec2 windowSize = ImGui::GetWindowSize();
+	const float barWidth = ImGui::GetFontSize() * 24.0f;
+	const float barHeight = ImGui::GetFrameHeight();
+	const float spacing = ImGui::GetStyle().ItemSpacing.y;
+	const char *title = _("Preparing render");
+
+	ImVec2 titleSize;
+	{
+		ui::ScopedStyle style;
+		style.pushFontSize(imguiApp()->bigFontSize());
+		titleSize = ImGui::CalcTextSize(title);
+	}
+	const float blockHeight = titleSize.y + spacing + barHeight;
+	const float startY = (windowSize.y - blockHeight) * 0.5f;
+
+	{
+		ui::ScopedStyle style;
+		style.pushFontSize(imguiApp()->bigFontSize());
+		ImGui::SetCursorPosX((windowSize.x - titleSize.x) * 0.5f);
+		ImGui::SetCursorPosY(startY);
+		ImGui::TextUnformatted(title);
+	}
+
+	ImGui::SetCursorPosX((windowSize.x - barWidth) * 0.5f);
+	ImGui::SetCursorPosY(startY + titleSize.y + spacing);
+	const float progress = _prepProgress.progress();
+	const core::String progressText = _prepProgress.text();
+	char overlay[96];
+	if (progressText.empty()) {
+		core::String::formatBuf(overlay, sizeof(overlay), "%.0f%%", (double)(progress * 100.0f));
+	} else {
+		core::String::formatBuf(overlay, sizeof(overlay), "%s %.0f%%", progressText.c_str(),
+								(double)(progress * 100.0f));
+	}
+	ImGui::ProgressBar(progress, ImVec2(barWidth, 0.0f), overlay);
+}
+
+void RenderPanel::cancelScenePrep() {
+	if (_prepFuture.valid()) {
+		_prepFuture.wait();
+		_prepFuture = {};
+	}
+	_prepProgress.reset();
+	_prepStamp = 0;
+}
+
+bool RenderPanel::pollScenePrep(const scenegraph::SceneGraph &sceneGraph) {
+	if (!_prepFuture.valid()) {
+		return false;
+	}
+	if (!_prepFuture.ready()) {
+		return true;
+	}
+
+	voxelpathtracer::PreparedGpuScene prepared = _prepFuture.get();
+	_prepFuture = {};
+	const uint64_t finishedStamp = _prepStamp;
+	_prepStamp = 0;
+	_prepProgress.reset();
+
+	const uint64_t stamp = _sceneMgr->calculateHash();
+	if (finishedStamp != stamp) {
+		prepared.free();
+		return false;
+	}
+	if (!_pathTracer.startPrepared(core::move(prepared), sceneGraph, &_camera)) {
+		_sceneReady = false;
+		return false;
+	}
+	_sceneReady = true;
+	_sceneStamp = stamp;
+	return false;
+}
+
+void RenderPanel::startScenePrep(const scenegraph::SceneGraph &sceneGraph, uint64_t stamp) {
+	if (_prepFuture.valid()) {
+		return;
+	}
+
+	// Shared snapshot: app::async stores the lambda in core::Function, which must be copyable.
+	core::SharedPtr<scenegraph::SceneGraph> snapshot = core::make_shared<scenegraph::SceneGraph>();
+	scenegraph::copySceneGraph(*snapshot.get(), sceneGraph);
+	const int maxTextureAxis = voxelpathtracer::PathTracer::maxTextureAxis();
+	_prepStamp = stamp;
+	_prepProgress.reset();
+	_prepProgress.setText(_("Preparing"));
+	core::SharedProgress *progress = &_prepProgress;
+	_prepFuture = app::async([snapshot, maxTextureAxis, progress]() {
+		core::ProgressScope scope(*progress);
+		return voxelpathtracer::prepareGpuScene(*snapshot.get(), maxTextureAxis);
+	});
+}
+
+void RenderPanel::updateSceneState(const scenegraph::SceneGraph &sceneGraph) {
+	if (_sceneMgr->isLoading()) {
+		cancelScenePrep();
+		_pathTracer.stop();
+		_sceneReady = false;
+		return;
+	}
+
+	const uint64_t stamp = _sceneMgr->calculateHash();
+	if (pollScenePrep(sceneGraph)) {
+		return;
+	}
+
+	if (!_sceneReady || stamp != _sceneStamp) {
+		startScenePrep(sceneGraph, stamp);
+		return;
+	}
+
+	if (!_pathTracer.started()) {
+		_pathTracer.resume();
+	}
+	_pathTracer.applyCamera(&_camera);
+}
+
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(RenderPanel);
 	static ui::ScopedPanel panel(cfg::VoxEditShowRender);
@@ -268,8 +390,18 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 						ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	_hovered = false;
 	if (!scope) {
+		// Finish an in-flight upload on the GL thread, but do not start new prep while hidden.
+		pollScenePrep(sceneGraph);
 		_pathTracer.stop();
-		_sceneReady = false;
+		if (!_sceneMgr->isLoading()) {
+			const uint64_t stamp = _sceneMgr->calculateHash();
+			if (_sceneReady && stamp != _sceneStamp) {
+				_sceneReady = false;
+			}
+		} else {
+			cancelScenePrep();
+			_sceneReady = false;
+		}
 		return;
 	}
 
@@ -288,18 +420,11 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 		_camera.update(0.0);
 	}
 
-	if (_sceneMgr->isLoading()) {
-		_sceneReady = false;
-	} else {
-		const uint64_t stamp = _sceneMgr->calculateHash();
-		if (!_sceneReady || stamp != _sceneStamp) {
-			if (_pathTracer.start(sceneGraph, &_camera)) {
-				_sceneReady = true;
-				_sceneStamp = stamp;
-			}
-		} else {
-			_pathTracer.applyCamera(&_camera);
-		}
+	updateSceneState(sceneGraph);
+
+	if (isPreparing()) {
+		renderPrepProgress();
+		return;
 	}
 
 	_pathTracer.update(&_currentSample);
@@ -331,6 +456,7 @@ void RenderPanel::updateCameraInput(float headerSize) {
 }
 
 void RenderPanel::shutdown() {
+	cancelScenePrep();
 	_pathTracer.shutdown();
 }
 

@@ -863,6 +863,8 @@ app::AppState VoxEdit::onRunning() {
 		setWindowProgress(_sceneMgr->loadingProgress());
 	} else if (_sceneMgr->isSceneJobRunning()) {
 		setWindowProgress(_sceneMgr->sceneJobProgress());
+	} else if (_mainWindow->isRenderPanelPreparing()) {
+		setWindowProgress(_mainWindow->renderPanelPrepProgress());
 	} else {
 		clearWindowProgress();
 	}

@@ -6,6 +6,7 @@
 #include "VoxelpathtracerShaderConstants.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ProgressScope.h"
 #include "core/StandardLib.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -405,6 +406,101 @@ void gatherSceneEmitLights(const SparseGpuVolume &volume, int materialCount, con
 		}
 	}
 	emitterLuminance = buildEmitterAliasTable(emitLights, emitCount);
+}
+
+PreparedGpuScene::~PreparedGpuScene() {
+	free();
+}
+
+PreparedGpuScene::PreparedGpuScene(PreparedGpuScene &&other) noexcept {
+	*this = core::move(other);
+}
+
+PreparedGpuScene &PreparedGpuScene::operator=(PreparedGpuScene &&other) noexcept {
+	if (this != &other) {
+		free();
+		sparse = other.sparse;
+		other.sparse = SparseGpuVolume{};
+		materials = other.materials;
+		other.materials = GpuMaterialAtlas{};
+		worldMin = other.worldMin;
+		volumeSize = other.volumeSize;
+		empty = other.empty;
+		volumeTruncated = other.volumeTruncated;
+		success = other.success;
+		other.empty = true;
+		other.volumeTruncated = false;
+		other.success = false;
+	}
+	return *this;
+}
+
+void PreparedGpuScene::free() {
+	freeSparseGpuVolume(sparse);
+	freeGpuMaterialAtlas(materials);
+	worldMin = glm::ivec3(0);
+	volumeSize = glm::ivec3(0);
+	empty = true;
+	volumeTruncated = false;
+	success = false;
+}
+
+PreparedGpuScene prepareGpuScene(const scenegraph::SceneGraph &sceneGraph, int maxTextureAxis) {
+	PreparedGpuScene out;
+	core::IProgress &progress = core::currentProgress();
+	progress.setText("Building scene");
+	progress.setProgress(0.0f);
+
+	core::Buffer<const palette::Palette *> palettes;
+	collectScenePalettes(sceneGraph, palettes);
+
+	const voxel::Region worldRegion = sceneGraph.sceneRegion(0, true);
+	if (palettes.empty() || !worldRegion.isValid()) {
+		out.empty = true;
+		out.success = true;
+		progress.setProgress(1.0f);
+		return out;
+	}
+
+	out.empty = false;
+	out.worldMin = worldRegion.getLowerCorner();
+	bool truncated = false;
+	out.volumeSize = clampVolumeSize(worldRegion.getDimensionsInVoxels(), maxTextureAxis, truncated);
+	out.volumeTruncated = truncated;
+	if (truncated) {
+		Log::warn("Pathtracer volume truncated to %ix%ix%i (indirection grid / texture limits)", out.volumeSize.x,
+				  out.volumeSize.y, out.volumeSize.z);
+	}
+
+	const size_t transmissiveCount = (size_t)palettes.size() * palette::PaletteMaxColors;
+	uint8_t *transmissive = (uint8_t *)core_malloc(transmissiveCount);
+	if (transmissive == nullptr) {
+		Log::error("Failed to allocate pathtracer transmissive flags");
+		return out;
+	}
+	core_memset(transmissive, 0, transmissiveCount);
+
+	progress.setProgress(0.05f);
+	if (!buildSparseGpuVolume(sceneGraph, palettes, out.worldMin, out.volumeSize, maxTextureAxis, out.sparse,
+							  transmissive)) {
+		core_free(transmissive);
+		return out;
+	}
+	if (out.sparse.bricksTruncated) {
+		out.volumeTruncated = true;
+	}
+
+	progress.setText("Building materials");
+	progress.setProgress(0.85f);
+	if (!buildDenseMaterialAtlas(out.sparse, palettes, transmissive, out.materials)) {
+		core_free(transmissive);
+		out.free();
+		return out;
+	}
+	core_free(transmissive);
+	out.success = true;
+	progress.setProgress(1.0f);
+	return out;
 }
 
 } // namespace voxelpathtracer
