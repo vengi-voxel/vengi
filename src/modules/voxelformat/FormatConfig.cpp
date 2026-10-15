@@ -305,7 +305,7 @@ bool FormatConfig::init() {
 	core::registerVar(voxformatMeshSimplify);
 	const core::VarDef voxformatMeshSimplifyRatio(
 		cfg::VoxformatMeshSimplifyRatio, 0.8f, 0.0f, 1.0f, N_("Mesh simplify ratio"),
-		N_("Target fraction of triangle indices to keep when applying mesh optimization (0 = disable simplification)"),
+		N_("Target fraction of triangle indices to keep when simplifying meshes on import or export (0 or 1 = disable)"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshSimplifyRatio);
 	const core::VarDef voxformatGMLRegion(
@@ -355,7 +355,7 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatAmbientocclusion, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatTransform, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatOptimize, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
-	{cfg::VoxformatMeshSimplifyRatio, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatMeshSimplifyRatio, FormatCVarFlag_Load | FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatPointCloud, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatQuads, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatWithColor, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},

@@ -14,6 +14,7 @@
 #include "core/StringUtil.h"
 #include "core/UUID.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Atomic.h"
@@ -1352,19 +1353,52 @@ size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray
 	if (!core::getVar(cfg::VoxformatMeshSimplify)->boolVal()) {
 		return indices.size();
 	}
-	voxel::IndexArray simplifiedIndices;
-	simplifiedIndices.resize(indices.size());
-	const float targetError = 1e-2f;
-	float resultError = 0;
-	const size_t maxIndices = meshopt_simplifySloppy(simplifiedIndices.data(), indices.data(), indices.size(),
-													 &vertices.data()->pos[0], vertices.size(), sizeof(MeshVertex),
-													 simplifiedIndices.size(), targetError, &resultError);
-	Log::debug("Simplified mesh - reducing indices from %i to %i: result error %f", (int)indices.size(),
-			   (int)maxIndices, resultError);
-	if (maxIndices < indices.size()) {
-		indices = core::move(simplifiedIndices);
+	const float simplifyRatio = core::getVar(cfg::VoxformatMeshSimplifyRatio)->floatVal();
+	if (simplifyRatio <= 0.0f || simplifyRatio >= 1.0f || indices.size() < 9u || vertices.empty()) {
+		return indices.size();
 	}
-	return maxIndices;
+
+	const size_t oldIndexCount = indices.size();
+	const size_t vertexCount = vertices.size();
+	const size_t targetIndexCount = core_max((size_t)3, (size_t)((float)oldIndexCount * simplifyRatio));
+	const float targetError = 1e-2f;
+	// Attribute-aware path preserves colors/UVs/materials better than sloppy for voxelization.
+	constexpr size_t attributeCount = 7;
+	constexpr size_t attributeStride = attributeCount * sizeof(float);
+	static const float attributeWeights[attributeCount] = {
+		10.0f, 10.0f, 10.0f, 5.0f, // rgba
+		4.0f,  4.0f,			   // uv
+		8.0f					   // material
+	};
+	core::Buffer<float> attributes(vertexCount * attributeCount);
+	for (size_t i = 0; i < vertexCount; ++i) {
+		const MeshVertex &vertex = vertices[i];
+		attributes[i * attributeCount + 0] = (float)vertex.color.r / 255.0f;
+		attributes[i * attributeCount + 1] = (float)vertex.color.g / 255.0f;
+		attributes[i * attributeCount + 2] = (float)vertex.color.b / 255.0f;
+		attributes[i * attributeCount + 3] = (float)vertex.color.a / 255.0f;
+		attributes[i * attributeCount + 4] = vertex.uv.x;
+		attributes[i * attributeCount + 5] = vertex.uv.y;
+		attributes[i * attributeCount + 6] = (float)vertex.materialIdx;
+	}
+
+	voxel::IndexArray simplifiedIndices;
+	simplifiedIndices.resize(oldIndexCount);
+	const unsigned int options =
+		meshopt_SimplifyLockBorder | meshopt_SimplifyErrorClamped | meshopt_SimplifyPermissive;
+	float resultError = 0.0f;
+	const size_t maxIndices = meshopt_simplifyWithAttributes(
+		simplifiedIndices.data(), indices.data(), oldIndexCount, &vertices.data()->pos[0], vertexCount,
+		sizeof(MeshVertex), attributes.data(), attributeStride, attributeWeights, attributeCount, nullptr,
+		targetIndexCount, targetError, options, &resultError);
+	Log::debug("Simplified mesh - reducing indices from %i to %i (target %i): result error %f", (int)oldIndexCount,
+			   (int)maxIndices, (int)targetIndexCount, resultError);
+	if (maxIndices < oldIndexCount && maxIndices >= 3u) {
+		simplifiedIndices.resize(maxIndices);
+		indices = core::move(simplifiedIndices);
+		return maxIndices;
+	}
+	return oldIndexCount;
 }
 
 void MeshFormat::simplifyPointCloud(PointCloud &vertices) const {

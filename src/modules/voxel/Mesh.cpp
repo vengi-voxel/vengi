@@ -597,7 +597,8 @@ void Mesh::optimize() {
 		const size_t targetIndexCount =
 			core_max((size_t)3, (size_t)((float)oldIndexCount * simplifyRatio));
 		const float targetError = 0.02f;
-		const unsigned int options = meshopt_SimplifyLockBorder;
+		const unsigned int options =
+			meshopt_SimplifyLockBorder | meshopt_SimplifyErrorClamped | meshopt_SimplifyPermissive;
 		float resultError = 0.0f;
 		const size_t newSize = meshopt_simplifyWithAttributes(
 			_vecIndices.data(), oldIndices.data(), oldIndexCount, &_vecVertices.data()->position.x, vertexCount,

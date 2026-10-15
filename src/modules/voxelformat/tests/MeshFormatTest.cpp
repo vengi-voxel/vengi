@@ -716,4 +716,65 @@ TEST_F(MeshFormatTest, testSaveWithNodeIdHole) {
 	ASSERT_TRUE(helper_saveSceneGraph(sceneGraph, "test-nodeid-hole.obj"));
 }
 
+TEST_F(MeshFormatTest, testSimplifyRespectsRatioAndKeepsColors) {
+	class TestMesh : public MeshFormat {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+
+	public:
+		size_t runSimplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) {
+			return simplify(indices, vertices);
+		}
+	};
+
+	util::ScopedVarChange enable(cfg::VoxformatMeshSimplify, "true");
+	util::ScopedVarChange ratio(cfg::VoxformatMeshSimplifyRatio, "0.5");
+
+	Mesh mesh;
+	constexpr int gridSize = 8;
+	for (int z = 0; z <= gridSize; ++z) {
+		for (int x = 0; x <= gridSize; ++x) {
+			MeshVertex vertex;
+			vertex.pos = glm::vec3((float)x, 0.0f, (float)z);
+			vertex.color = (x < gridSize / 2) ? color::RGBA(255, 0, 0, 255) : color::RGBA(0, 0, 255, 255);
+			vertex.uv = glm::vec2((float)x / (float)gridSize, (float)z / (float)gridSize);
+			vertex.materialIdx = (x < gridSize / 2) ? 0 : 1;
+			mesh.vertices.push_back(vertex);
+		}
+	}
+	for (int z = 0; z < gridSize; ++z) {
+		for (int x = 0; x < gridSize; ++x) {
+			const voxel::IndexType i0 = (voxel::IndexType)(z * (gridSize + 1) + x);
+			const voxel::IndexType i1 = i0 + 1;
+			const voxel::IndexType i2 = (voxel::IndexType)((z + 1) * (gridSize + 1) + x + 1);
+			const voxel::IndexType i3 = (voxel::IndexType)((z + 1) * (gridSize + 1) + x);
+			mesh.indices.push_back(i0);
+			mesh.indices.push_back(i1);
+			mesh.indices.push_back(i2);
+			mesh.indices.push_back(i0);
+			mesh.indices.push_back(i2);
+			mesh.indices.push_back(i3);
+		}
+	}
+
+	const size_t before = mesh.indices.size();
+	ASSERT_GE(before, 9u);
+	TestMesh format;
+	const size_t after = format.runSimplify(mesh.indices, mesh.vertices);
+	EXPECT_LT(after, before);
+	EXPECT_EQ(after, mesh.indices.size());
+
+	bool hasRed = false;
+	bool hasBlue = false;
+	for (size_t i = 0; i < mesh.indices.size(); ++i) {
+		const color::RGBA c = mesh.vertices[mesh.indices[i]].color;
+		hasRed |= (c.r > 200 && c.b < 50);
+		hasBlue |= (c.b > 200 && c.r < 50);
+	}
+	EXPECT_TRUE(hasRed);
+	EXPECT_TRUE(hasBlue);
+}
+
 } // namespace voxelformat
