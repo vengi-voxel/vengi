@@ -245,9 +245,9 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "normal brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// Normal brush button is only visible in ViewMode::All
+		// Normal brush button is only visible when the normal palette panel is shown
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 
 		// activeBrush creates a new scene internally, so fill afterwards
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Normal));

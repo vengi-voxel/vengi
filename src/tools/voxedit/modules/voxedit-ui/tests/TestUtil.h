@@ -110,4 +110,13 @@ void dragFromTo(ImGuiTestContext *ctx, const ImVec2 &from, const ImVec2 &to);
  */
 bool toggleMenuCheckbox(ImGuiTestContext *ctx, const char *menuPath, const char *cvarName);
 
+/**
+ * @brief Ensures a View-menu panel is visible by enabling its checkbox if needed.
+ *
+ * Focuses the main app window (###app), clicks @p menuPath (e.g. "View/L-System") when the
+ * cvar is off, then verifies the cvar is true. Prefer this over early-returning when a panel
+ * is hidden after prepareUITest / Default view mode.
+ */
+bool ensurePanelVisible(ImGuiTestContext *ctx, const char *menuPath, const char *cvarName);
+
 } // namespace voxedit

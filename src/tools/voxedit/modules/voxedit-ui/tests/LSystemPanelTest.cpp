@@ -14,9 +14,7 @@ namespace voxedit {
 void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "default rule")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 		IM_CHECK(volume != nullptr);
@@ -30,9 +28,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "template selection")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// verify the Templates combo exists and has entries
@@ -47,9 +43,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemInputValue("Angle", 45.0f);
@@ -64,9 +58,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "add delete rule")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const int rulesBefore = (int)_conf.rules.size();
@@ -77,9 +69,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "adopt dimensions")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemClick("Adopt Dimensions");
@@ -88,9 +78,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "cancel generation")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemInputValue("Iterations", 5);
@@ -106,9 +94,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste rules")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
-			return;
-		}
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// copy current rules to clipboard

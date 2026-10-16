@@ -3,11 +3,11 @@
  */
 
 #include "../NodePropertiesPanel.h"
-#include "../ViewMode.h"
 #include "TestUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IconsLucide.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -15,7 +15,7 @@ namespace voxedit {
 void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "check existance")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Node properties", cfg::VoxEditShowNodeProperties));
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 		IM_CHECK(window->Active);
@@ -23,7 +23,6 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 
 	IM_REGISTER_TEST(engine, testCategory(), "no existance")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 		IM_CHECK(!window->Active);
@@ -31,7 +30,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 
 	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Node properties", cfg::VoxEditShowNodeProperties));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("##nodeproperties/##newpropertykey", "Key");
@@ -41,7 +40,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 
 	IM_REGISTER_TEST(engine, testCategory(), "add and remove property")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Node properties", cfg::VoxEditShowNodeProperties));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -67,7 +66,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 
 	IM_REGISTER_TEST(engine, testCategory(), "boolean property")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Node properties", cfg::VoxEditShowNodeProperties));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -89,7 +88,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 
 	IM_REGISTER_TEST(engine, testCategory(), "edit existing property")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::All);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Node properties", cfg::VoxEditShowNodeProperties));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -100,12 +99,12 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 		ctx->ItemInputValue("##nodeproperties/##newpropertyvalue", "original");
 		ctx->ItemClick("##nodeproperties/###nodepropertyadd");
 		ctx->Yield();
+
 		IM_CHECK(node.property("EditMe") == "original");
 
-		// edit the value via the ##val input
-		ctx->ItemInputValue("##nodeproperties/EditMe/##val", "modified");
+		ctx->ItemInputValue("##nodeproperties/EditMe/##val", "changed");
 		ctx->Yield();
-		IM_CHECK(node.property("EditMe") == "modified");
+		IM_CHECK(node.property("EditMe") == "changed");
 	};
 }
 

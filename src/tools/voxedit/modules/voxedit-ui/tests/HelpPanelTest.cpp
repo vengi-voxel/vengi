@@ -4,7 +4,6 @@
 
 #include "../HelpPanel.h"
 #include "TestUtil.h"
-#include "core/Var.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -12,8 +11,9 @@ namespace voxedit {
 
 void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	auto ensureVisible = [=](ImGuiTestContext *ctx) -> bool {
-		core::getVar(cfg::VoxEditShowHelp)->setVal(true);
-		ctx->Yield();
+		if (!ensurePanelVisible(ctx, "View/Help", cfg::VoxEditShowHelp)) {
+			return false;
+		}
 		return focusWindow(ctx, id);
 	};
 

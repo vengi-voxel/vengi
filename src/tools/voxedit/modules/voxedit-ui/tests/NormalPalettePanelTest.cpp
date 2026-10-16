@@ -3,9 +3,9 @@
  */
 
 #include "../NormalPalettePanel.h"
-#include "../ViewMode.h"
 #include "TestUtil.h"
 #include "command/CommandHandler.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -13,7 +13,7 @@ namespace voxedit {
 void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "check existance")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 		IM_CHECK(window->Active);
@@ -21,7 +21,6 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "no existance")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 		IM_CHECK(!window->Active);
@@ -29,7 +28,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Tiberian Sun");
 		ctx->MenuClick("File/Red Alert 2");
@@ -41,7 +40,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		// load a template model so there are voxels to calculate normals for
 		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// remove all normals first
@@ -56,7 +55,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	// export normal palette
 	IM_REGISTER_TEST(engine, testCategory(), "export normal palette")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Export");
 		ctx->Yield();
@@ -66,7 +65,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	// change longitude and latitude and verify values change
 	IM_REGISTER_TEST(engine, testCategory(), "longitude latitude")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const glm::vec3 beforeLon = _targetNormal;
@@ -88,7 +87,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "flip buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const glm::vec3 before = _targetNormal;
@@ -104,7 +103,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "rotate buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const glm::vec3 before = _targetNormal;
@@ -120,7 +119,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "direct normal input")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
+		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// InputFloat3 "Normal" has 3 sub-inputs accessible via $$0, $$1, $$2

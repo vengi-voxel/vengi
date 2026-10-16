@@ -300,4 +300,20 @@ bool toggleMenuCheckbox(ImGuiTestContext *ctx, const char *menuPath, const char 
 	return true;
 }
 
+bool ensurePanelVisible(ImGuiTestContext *ctx, const char *menuPath, const char *cvarName) {
+	core::VarPtr var = core::getVar(cvarName);
+	IM_CHECK_RETV(var, false);
+	if (var->boolVal()) {
+		return true;
+	}
+	ImGuiWindow *appWindow = ImGui::FindWindowByName("###app");
+	IM_CHECK_RETV(appWindow != nullptr, false);
+	ctx->WindowFocus(appWindow->ID);
+	ctx->SetRef(appWindow);
+	ctx->MenuClick(menuPath);
+	ctx->Yield(2);
+	IM_CHECK_RETV(var->boolVal(), false);
+	return true;
+}
+
 } // namespace voxedit
