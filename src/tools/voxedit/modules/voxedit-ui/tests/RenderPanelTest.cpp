@@ -8,6 +8,7 @@
 #include "TestUtil.h"
 #include "command/CommandHandler.h"
 #include "core/GLM.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include <glm/geometric.hpp>
@@ -17,16 +18,31 @@
 namespace voxedit {
 
 void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	auto prepareRenderPanel = [=](ImGuiTestContext *ctx) -> bool {
+		voxelpathtracer::PathTracerParams &params = _pathTracer.state().params;
+		params = voxelpathtracer::PathTracerParams();
+		params.resolution = 64;
+		voxelpathtracer::applyPathTracerQuality(params, voxelpathtracer::PathTracerQuality::Preview);
+		IM_CHECK_RETV(prepareUITest(ctx), false);
+		IM_CHECK_RETV(ensurePanelVisible(ctx, "View/Render", cfg::VoxEditShowRender), false);
+		IM_CHECK_RETV(focusWindow(ctx, TITLE_RENDER), false);
+		for (int i = 0; i < 120 && (isPreparing() || !_sceneReady); ++i) {
+			ctx->Yield();
+		}
+		IM_CHECK_RETV(!_prepFuture.valid(), false);
+		IM_CHECK_RETV(_sceneReady, false);
+		return true;
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "settings inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		IM_CHECK(prepareRenderPanel(ctx));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		voxelpathtracer::PathTracerParams &params = state.params;
 
 		ctx->MenuAction(ImGuiTestAction_Open, "Settings/Output");
 		const int oldResolution = params.resolution;
-		ctx->ItemInputValue("//$FOCUSED/Dimensions", oldResolution + 128);
-		IM_CHECK(params.resolution == oldResolution + 128);
+		ctx->ItemInputValue("//$FOCUSED/Dimensions", oldResolution + 16);
+		IM_CHECK(params.resolution == oldResolution + 16);
 
 		ctx->MenuAction(ImGuiTestAction_Open, "Settings/Quality");
 		const int oldSamples = params.samples;
@@ -35,8 +51,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "presets")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		IM_CHECK(prepareRenderPanel(ctx));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		voxelpathtracer::PathTracerParams &params = state.params;
 
@@ -57,8 +72,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "hovered after focus")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		IM_CHECK(prepareRenderPanel(ctx));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);
 		ctx->MouseMoveToPos(window->Rect().GetCenter());
@@ -67,8 +81,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera persists without viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		IM_CHECK(prepareRenderPanel(ctx));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);
 		ctx->MouseMoveToPos(window->Rect().GetCenter());
@@ -85,13 +98,15 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera independent of viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(prepareRenderPanel(ctx));
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK(viewportId != -1);
 		Viewport *vp = viewportById(_app, viewportId);
 		IM_CHECK(vp != nullptr);
 		const core::String vid = Viewport::viewportId(viewportId);
 
+		// Window operations need root references after prepareRenderPanel selected the render window.
+		ctx->SetRef("");
 		ctx->DockClear(TITLE_RENDER, vid.c_str(), nullptr);
 		ctx->WindowResize(TITLE_RENDER, ImVec2(400, 400));
 		ctx->WindowMove(TITLE_RENDER, ImVec2(40, 40));
@@ -101,6 +116,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		ctx->Yield();
+		IM_CHECK(vp->isVisible());
 		IM_CHECK(_camera.size().x > 0);
 		const glm::quat renderBefore = _camera.quaternion();
 
@@ -113,7 +129,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "wasd moves render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(prepareRenderPanel(ctx));
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK(viewportId != -1);
 		Viewport *vp = viewportById(_app, viewportId);
@@ -138,8 +154,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shared sun angles")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		IM_CHECK(prepareRenderPanel(ctx));
 		_sunAngle->setVal("40.0 180.0 0.0");
 		ctx->Yield(2);
 		auto &params = _pathTracer.state().params;
@@ -160,13 +175,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "gpu preview")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
-		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
-		for (int i = 0; i < 120 && (isPreparing() || !_sceneReady); ++i) {
-			ctx->Yield();
-		}
-		IM_CHECK(!_prepFuture.valid());
-		IM_CHECK(_sceneReady);
+		IM_CHECK(prepareRenderPanel(ctx));
 		const video::TexturePtr preview = _pathTracer.texture();
 		IM_CHECK(preview != nullptr);
 		IM_CHECK(preview->isLoaded());
@@ -181,9 +190,58 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(displaysPreview);
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "mouse rotate render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx));
+	IM_REGISTER_TEST(engine, testCategory(), "resume prepared scene after hiding")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareRenderPanel(ctx));
+		const uint64_t stamp = _sceneStamp;
+		const video::TexturePtr texture = _pathTracer.texture();
+		core::getVar(cfg::VoxEditShowRender)->setVal(false);
+		ctx->Yield(3);
+		IM_CHECK(_sceneReady);
+		IM_CHECK(!_prepFuture.valid());
+		IM_CHECK(!_pathTracer.started());
+
+		IM_CHECK(ensurePanelVisible(ctx, "View/Render", cfg::VoxEditShowRender));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+		ctx->Yield(2);
+		IM_CHECK(_sceneReady);
+		IM_CHECK(!_prepFuture.valid());
+		IM_CHECK_EQ(_sceneStamp, stamp);
+		IM_CHECK(_pathTracer.texture() == texture);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "defer uploads and reject stale scenes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		for (int replaceScene = 0; replaceScene < 2; ++replaceScene) {
+			IM_CHECK(prepareRenderPanel(ctx));
+			core::getVar(cfg::VoxEditShowRender)->setVal(false);
+			ctx->Yield();
+			_sceneReady = false;
+			startScenePrep(_sceneMgr->sceneGraph(), _sceneMgr->calculateHash());
+			for (int i = 0; i < 120 && !_prepFuture.ready(); ++i) {
+				ctx->Yield();
+			}
+			ctx->Yield(2);
+			IM_CHECK(_prepFuture.valid());
+			IM_CHECK(_prepFuture.ready());
+			IM_CHECK(!_sceneReady);
+			IM_CHECK(!_pathTracer.started());
+
+			if (replaceScene) {
+				IM_CHECK(_sceneMgr->newScene(true, "replacement", voxel::Region(0, 1)));
+				IM_CHECK_NE(_prepStamp, _sceneMgr->calculateHash());
+			}
+			IM_CHECK(ensurePanelVisible(ctx, "View/Render", cfg::VoxEditShowRender));
+			IM_CHECK(focusWindow(ctx, TITLE_RENDER));
+			for (int i = 0; i < 120 && (isPreparing() || !_sceneReady); ++i) {
+				ctx->Yield();
+			}
+			IM_CHECK(!_prepFuture.valid());
+			IM_CHECK(_sceneReady);
+			IM_CHECK_EQ(_sceneStamp, _sceneMgr->calculateHash());
+		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "mouse rotate render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareRenderPanel(ctx));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);
 		const ImVec2 center = window->Rect().GetCenter();

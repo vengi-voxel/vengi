@@ -359,7 +359,6 @@ void RenderPanel::startScenePrep(const scenegraph::SceneGraph &sceneGraph, uint6
 
 void RenderPanel::updateSceneState(const scenegraph::SceneGraph &sceneGraph) {
 	if (_sceneMgr->isLoading()) {
-		cancelScenePrep();
 		_pathTracer.stop();
 		_sceneReady = false;
 		return;
@@ -390,18 +389,8 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 						ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	_hovered = false;
 	if (!scope) {
-		// Finish an in-flight upload on the GL thread, but do not start new prep while hidden.
-		pollScenePrep(sceneGraph);
+		// Keep the prepared scene and defer uploads until the panel is visible again.
 		_pathTracer.stop();
-		if (!_sceneMgr->isLoading()) {
-			const uint64_t stamp = _sceneMgr->calculateHash();
-			if (_sceneReady && stamp != _sceneStamp) {
-				_sceneReady = false;
-			}
-		} else {
-			cancelScenePrep();
-			_sceneReady = false;
-		}
 		return;
 	}
 

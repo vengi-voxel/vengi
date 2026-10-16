@@ -3162,6 +3162,7 @@ void SceneManager::resetSceneState() {
 	// therefore we first "select" the root node, then switch back to the first model node.
 	_sceneGraph.setActiveNode(_sceneGraph.root().id());
 	nodeActivate(nodeId);
+	setCurrentFrame(0);
 	_mementoHandler->clearStates();
 	Log::debug("New volume for node %i", nodeId);
 	_mementoHandler->markInitialSceneState(_sceneGraph);

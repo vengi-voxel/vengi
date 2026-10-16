@@ -20,6 +20,6 @@ Sun elevation, azimuth and the **Preset: Noon / Evening / Morning** sun shortcut
 
 Empty space is cheap: only filled 8x8x8 regions are stored. On a typical desktop GPU you can expect on the order of **tens of millions of solid voxels** inside a bounding box of roughly **2000^3** voxels (higher if your driver reports a larger 3D texture limit). Very large boxes may still be truncated; the menu bar then warns that the volume was clipped to GPU limits. At most **4096** emissive voxels are used for light sampling.
 
-For a faster preview, use fewer samples, disable rounded edges or lower the render scale. A scale of 0.5 traces about one quarter of the pixels. Glass, media and rounded edges can take longer to render. A completed preview is reused until its image or display settings change.
+For a faster preview, use fewer samples, disable rounded edges or lower the render scale. A scale of 0.5 traces about one quarter of the pixels. Glass, media and rounded edges can take longer to render. A completed preview is reused until its image or display settings change. Hiding the Render viewport pauses sampling and defers GPU uploads. Reopening it reuses the prepared scene if the scene has not changed.
 
 See [Path tracer](../../PathTracer.md) for a full artist-oriented overview of limits and settings, plus algorithm references and benchmarks for developers.

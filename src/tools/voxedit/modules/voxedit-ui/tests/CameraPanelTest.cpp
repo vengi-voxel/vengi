@@ -55,14 +55,14 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
-		// farplane and nearplane inputs should exist in the camera properties table
-		const ImGuiTestItemInfo farInfo = ctx->ItemInfo("##camera_props/Farplane", ImGuiTestOpFlags_NoError);
+		// Table InputFloat uses the row index and the hidden input label.
+		const ImGuiTestItemInfo farInfo = ctx->ItemInfo("##camera_props/$$1/##input", ImGuiTestOpFlags_NoError);
 		IM_CHECK(farInfo.ID != 0);
 
-		const ImGuiTestItemInfo nearInfo = ctx->ItemInfo("##camera_props/Nearplane", ImGuiTestOpFlags_NoError);
+		const ImGuiTestItemInfo nearInfo = ctx->ItemInfo("##camera_props/$$2/##input", ImGuiTestOpFlags_NoError);
 		IM_CHECK(nearInfo.ID != 0);
 
-		const ImGuiTestItemInfo fovInfo = ctx->ItemInfo("##camera_props/FOV", ImGuiTestOpFlags_NoError);
+		const ImGuiTestItemInfo fovInfo = ctx->ItemInfo("##camera_props/$$5/##input", ImGuiTestOpFlags_NoError);
 		IM_CHECK(fovInfo.ID != 0);
 	};
 }

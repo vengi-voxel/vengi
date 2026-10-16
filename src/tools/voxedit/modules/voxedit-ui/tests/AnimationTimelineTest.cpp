@@ -12,6 +12,25 @@
 namespace voxedit {
 
 void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "label width shrinks after rename")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+		const core::UUID nodeUUID = _sceneMgr->activeNodeUUID();
+		IM_CHECK(_sceneMgr->nodeRename(nodeUUID, "node"));
+		ctx->Yield(2);
+		ctx->SetRef(ctx->WindowInfo("##sequencer_child_wrapper").ID);
+		const float originalX = ctx->ItemInfo("sequencer/currentframeselector").RectFull.Min.x;
+
+		IM_CHECK(_sceneMgr->nodeRename(nodeUUID, "a much wider animation timeline label"));
+		ctx->Yield(2);
+		IM_CHECK(ctx->ItemInfo("sequencer/currentframeselector").RectFull.Min.x > originalX);
+
+		IM_CHECK(_sceneMgr->nodeRename(nodeUUID, "node"));
+		ctx->Yield(2);
+		IM_CHECK_EQ(ctx->ItemInfo("sequencer/currentframeselector").RectFull.Min.x, originalX);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "create keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();

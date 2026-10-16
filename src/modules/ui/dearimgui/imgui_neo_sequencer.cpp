@@ -49,6 +49,9 @@ struct ImGuiNeoSequencerInternalData {
 	FrameIndexType OffsetFrame = 0; // Offset from start
 
 	float ValuesWidth = 32.0f; // Width of biggest label in timeline, used for offset of timeline
+	// Remeasured each frame from current labels; applied in EndNeoSequencer so stale wide
+	// labels from previous scenes cannot permanently shrink the timeline work area.
+	float ValuesWidthMeasured = 32.0f;
 
 	float FilledHeight = 0.0f; // Height of whole sequencer
 
@@ -626,7 +629,7 @@ static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 		}
 	}
 	const float width = groupBB.Max.x - arrowBB.Min.x;
-	context.ValuesWidth = ImMax(context.ValuesWidth, width); // Make left panel wide enough
+	context.ValuesWidthMeasured = ImMax(context.ValuesWidthMeasured, width); // Make left panel wide enough
 	return addGroupRes && addArrowRes;
 }
 
@@ -644,7 +647,7 @@ static bool TimelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
 		}
 	}
 	const float width = groupBB.Max.x - groupBB.Min.x;
-	context.ValuesWidth = ImMax(context.ValuesWidth, width);
+	context.ValuesWidthMeasured = ImMax(context.ValuesWidthMeasured, width);
 
 	return addGroupRes;
 }
@@ -696,6 +699,7 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 	GNeoSeq->CurrentSequencer = sequencer;
 	ImGuiNeoSequencerInternalData &context = *sequencer;
 	context.Id = id;
+	context.ValuesWidthMeasured = 32.0f;
 
 	ImVec2 realSize = ImFloor(size);
 	if (realSize.x <= 0.0f)
@@ -793,6 +797,8 @@ void EndNeoSequencer() {
 	}
 
 	RenderCurrentFrame(context);
+
+	context.ValuesWidth = context.ValuesWidthMeasured;
 
 	GNeoSeq->InSequencer = false;
 	GNeoSeq->CurrentSequencer = nullptr;

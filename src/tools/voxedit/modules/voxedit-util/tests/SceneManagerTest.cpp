@@ -225,7 +225,9 @@ TEST_F(SceneManagerTest, testLoadNormalPaletteRemapsAndUndoRedo) {
 }
 
 TEST_F(SceneManagerTest, testNewScene) {
+	_sceneMgr->setCurrentFrame(42);
 	EXPECT_TRUE(_sceneMgr->newScene(true, "newscene", voxel::Region{0, 1}));
+	EXPECT_EQ(0, (int)_sceneMgr->currentFrame());
 }
 
 TEST_F(SceneManagerTest, testNodeCropAsyncMatchesSync) {
