@@ -185,6 +185,10 @@ public:
 	void showCvarDialog();
 	void showFPSDialog();
 	void showCommandDialog();
+	/** @brief Close floating app dialogs (bindings, textures, cvars, ...) and clear their transient state. */
+	virtual void closeTransientDialogs();
+	/** @brief Reload the active keymap defaults on the next frame. */
+	void requestResetKeybindings();
 	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
@@ -210,6 +214,10 @@ inline void IMGUIApp::showFPSDialog() {
 
 inline void IMGUIApp::showCommandDialog() {
 	_showCommandDialog = true;
+}
+
+inline void IMGUIApp::requestResetKeybindings() {
+	_resetKeybindings = true;
 }
 
 inline int IMGUIApp::bigFontSize() const {

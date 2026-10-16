@@ -8,6 +8,7 @@
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "ui/IMGUIApp.h"
+#include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-ui/WindowTitles.h"
@@ -18,6 +19,40 @@
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
+
+bool prepareUITest(ImGuiTestContext *ctx, MainWindow *mainWindow, const SceneManagerPtr &sceneMgr, bool withNewScene) {
+	IM_CHECK_RETV(mainWindow != nullptr, false);
+	IM_CHECK_RETV(sceneMgr, false);
+
+	ui::IMGUIApp *app = imguiApp();
+	IM_CHECK_RETV(app != nullptr, false);
+
+	app->closeTransientDialogs();
+	app->requestResetKeybindings();
+	ctx->PopupCloseAll();
+
+	core::getVar(cfg::VoxEditViewMode)->setVal((int)ViewMode::Default);
+	mainWindow->requestResetDockLayout();
+
+	// Keymap reload and dock rebuild both happen on subsequent frames.
+	bool layoutReady = false;
+	for (int i = 0; i < 60; ++i) {
+		ctx->Yield();
+		if (ImGui::FindWindowByName(TITLE_PALETTE) != nullptr &&
+			ImGui::FindWindowByName(TITLE_SCENEGRAPH) != nullptr) {
+			layoutReady = true;
+			break;
+		}
+	}
+	IM_CHECK_RETV(layoutReady, false);
+	ctx->Yield(2);
+
+	IM_CHECK_RETV(waitForSceneJob(ctx, sceneMgr), false);
+	if (withNewScene) {
+		IM_CHECK_RETV(resetScene(ctx, sceneMgr), false);
+	}
+	return true;
+}
 
 bool waitForSceneJob(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int maxYields) {
 	for (int i = 0; i < maxYields; ++i) {

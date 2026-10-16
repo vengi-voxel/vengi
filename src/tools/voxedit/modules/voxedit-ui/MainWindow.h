@@ -73,6 +73,7 @@ private:
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
 	bool _isNewVersionAvailable = false;
+	bool _requestResetDockLayout = false;
 	uint32_t _currentTip = 0;
 
 	core::String _currentNodeName;
@@ -183,6 +184,8 @@ public:
 	void toggleScene();
 	void resetCamera();
 	void setCameraMode(voxelrender::SceneCameraMode mode);
+	/** @brief Rebuild the default dock layout on the next frame (same as View/Reset layout). */
+	void requestResetDockLayout();
 	/**
 	 * called directly after the scene manager has finished loading a new scene
 	 * @sa afterLoad()

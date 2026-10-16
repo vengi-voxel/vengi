@@ -339,6 +339,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog delete")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -362,6 +363,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change binding")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -404,6 +406,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -428,6 +431,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog 3dsmax keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();

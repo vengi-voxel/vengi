@@ -1208,7 +1208,9 @@ void MainWindow::update(double nowSeconds) {
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
 	command::CommandExecutionListener &listener = _app->commandListener();
-	if (_menuBar.update(_app, listener)) {
+	const bool resetDockLayout = _menuBar.update(_app, listener) || _requestResetDockLayout;
+	_requestResetDockLayout = false;
+	if (resetDockLayout) {
 		applyViewModePanelCvars((ViewMode)_viewMode->intVal());
 		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
@@ -1322,6 +1324,10 @@ void MainWindow::syncActiveCamera() {
 	if (_renderPanel.isHovered()) {
 		_sceneMgr->setActiveCamera(&_renderPanel.camera(), false);
 	}
+}
+
+void MainWindow::requestResetDockLayout() {
+	_requestResetDockLayout = true;
 }
 
 bool MainWindow::saveScreenshot(const core::String &file, const core::String &viewportId) {

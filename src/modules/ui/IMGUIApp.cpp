@@ -585,6 +585,16 @@ void IMGUIApp::renderBindingsDialog() {
 						   _uiKeyMaps, _uiKeyMap, _resetKeybindings, _lastExecutedCommand);
 }
 
+void IMGUIApp::closeTransientDialogs() {
+	_showBindingsDialog = false;
+	_showTexturesDialog = false;
+	_showCvarDialog = false;
+	_showFPSDialog = false;
+	_showCommandDialog = false;
+	_showFileDialog = false;
+	_bindingsDialog.reset();
+}
+
 void IMGUIApp::renderFPSDialog() {
 	if (ImGui::Begin(_("FPS"), &_showFPSDialog)) {
 		static bool paused = false;

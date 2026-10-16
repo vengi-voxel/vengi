@@ -17,10 +17,20 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class Viewport;
+class MainWindow;
 
 int voxelCount(const SceneManagerPtr &sceneMgr, int node = InvalidNodeId);
 void executeViewportClick();
 bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, const ImVec2 &offset);
+
+/**
+ * @brief Restore a known UI baseline before a test runs.
+ *
+ * Closes floating dialogs/popups, resets the dock layout and view mode, reloads default
+ * keybindings, yields until the main panels exist again, and optionally creates a fresh scene.
+ */
+bool prepareUITest(ImGuiTestContext *ctx, MainWindow *mainWindow, const SceneManagerPtr &sceneMgr,
+				   bool withNewScene = true);
 
 bool resetScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr);
 bool waitForSceneJob(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int maxYields = 2000);
