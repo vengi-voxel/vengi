@@ -30,8 +30,8 @@ static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext
 
 void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -67,8 +67,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu bake and stamp")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -86,8 +86,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu add nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -114,6 +114,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu merge visible locked")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		IM_CHECK(newFilledScene(ctx, _sceneMgr, "scenegraphmerge"));
 
@@ -130,6 +131,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -148,6 +150,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "group node")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -160,8 +163,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu hide show")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -190,8 +193,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu lock unlock")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -207,8 +210,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu center origin")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -238,8 +241,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toolbar show hide all")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -253,8 +256,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node visible toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();
@@ -275,8 +278,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node locked toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();
@@ -293,8 +296,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "filter by name")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// add >10 nodes so the filter UI appears
 		for (int i = 0; i < 11; ++i) {
@@ -314,8 +317,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "filter by type")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// add >10 nodes so the filter UI appears
 		for (int i = 0; i < 11; ++i) {
@@ -336,8 +339,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop node reorder")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int firstNodeId = sceneGraph.activeNode();
@@ -374,8 +377,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "per-node color editor")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int nodeId = sceneGraph.activeNode();

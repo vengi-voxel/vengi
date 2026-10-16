@@ -3,12 +3,14 @@
  */
 
 #include "../VoxBoxBrowserPanel.h"
+#include "TestUtil.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void VoxBoxBrowserPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "login required")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		_api.logout();
 		_varApiKey->setVal("");
 		_useApiKey = false;
@@ -25,6 +27,7 @@ void VoxBoxBrowserPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "switch to api key")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		_api.logout();
 		_varApiKey->setVal("");
 		_useApiKey = false;

@@ -180,6 +180,9 @@ public:
 #endif
 
 	const video::TexturePoolPtr &texturePool() const;
+	const SceneManagerPtr &sceneManager() const {
+		return _sceneMgr;
+	}
 
 	void toggleScene();
 	void resetCamera();

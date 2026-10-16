@@ -14,6 +14,7 @@ namespace voxedit {
 
 void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "toggle visibility")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		ctx->Yield();
@@ -29,6 +30,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select categories")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
@@ -36,6 +38,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cycle meshers")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##Knight"));
 
 		setVisible(true);
@@ -66,6 +69,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "display toggles")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::Display;
@@ -120,6 +124,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rendering toggles")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##Knight"));
 
 		setVisible(true);
@@ -170,6 +175,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "search filter")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::AllVariables;
@@ -186,6 +192,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "category switching")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		IM_CHECK(focusWindow(ctx, id));
@@ -205,6 +212,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "editor settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::Editor;
@@ -224,6 +232,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "input settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::Input;
@@ -243,6 +252,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "renderer settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::Renderer;
@@ -265,6 +275,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "format options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::MeshExport;
@@ -287,6 +298,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ui settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::UserInterface;
@@ -308,6 +320,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "metrics settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::Metrics;
@@ -320,6 +333,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "advanced variables")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		_filter = "";
 		_selectedCategory = OptionCategory::AllVariables;

@@ -3,6 +3,7 @@
  */
 
 #include "../AnimationPanel.h"
+#include "TestUtil.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -10,6 +11,7 @@ namespace voxedit {
 
 void AnimationPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create, select and delete animation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		const size_t animations = _sceneMgr->sceneGraph().animations().size();
 		ctx->ItemClick("###Add new animation");
@@ -26,6 +28,7 @@ void AnimationPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy from existing animation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		const size_t animations = _sceneMgr->sceneGraph().animations().size();
 		IM_CHECK(animations >= 1);

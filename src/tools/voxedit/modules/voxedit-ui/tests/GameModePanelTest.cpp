@@ -3,6 +3,7 @@
  */
 
 #include "../GameModePanel.h"
+#include "TestUtil.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -10,6 +11,7 @@ namespace voxedit {
 
 void GameModePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "togglegamemode")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		const bool initialState = _gameModeEnabled;
 		ctx->ItemClick("//###gamemodepanel/###Enable");
@@ -19,6 +21,7 @@ void GameModePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "preset minecraft")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		// enable game mode first
 		if (!_gameModeEnabled) {
@@ -33,6 +36,7 @@ void GameModePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "preset ace of spades")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		if (!_gameModeEnabled) {
 			ctx->ItemClick("//###gamemodepanel/###Enable");
@@ -45,6 +49,7 @@ void GameModePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "preset teardown")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		if (!_gameModeEnabled) {
 			ctx->ItemClick("//###gamemodepanel/###Enable");
@@ -57,6 +62,7 @@ void GameModePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "float inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		if (!_gameModeEnabled) {
 			ctx->ItemClick("//###gamemodepanel/###Enable");

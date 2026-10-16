@@ -12,6 +12,7 @@ namespace voxedit {
 
 void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "check existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
@@ -19,6 +20,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "no existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
@@ -26,6 +28,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Tiberian Sun");
@@ -36,7 +39,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	// auto normals and remove all normals afterwards
 	IM_REGISTER_TEST(engine, testCategory(), "auto normals")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// load a template model so there are voxels to calculate normals for
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
@@ -52,7 +55,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	// export normal palette
 	IM_REGISTER_TEST(engine, testCategory(), "export normal palette")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Export");
@@ -62,7 +65,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	// change longitude and latitude and verify values change
 	IM_REGISTER_TEST(engine, testCategory(), "longitude latitude")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -84,7 +87,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "flip buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -100,7 +103,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rotate buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -116,7 +119,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "direct normal input")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::RedAlert2);
 		IM_CHECK(focusWindow(ctx, id));
 

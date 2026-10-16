@@ -22,10 +22,10 @@ namespace voxedit {
 
 void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	IM_REGISTER_TEST(engine, testCategory(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		resetCamera();
 		ctx->Yield();
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
@@ -40,10 +40,10 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toggle rendering options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 		ctx->Yield();
 
@@ -75,10 +75,10 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toggle rendering combinations")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 		ctx->Yield();
 
@@ -220,7 +220,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toggle scene mode")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -251,7 +251,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "recent colors select")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		// ensure this viewport is in edit mode
@@ -262,6 +262,13 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 
 		const core::String vid = Viewport::viewportId(_id);
 		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
+		// Recent-color buttons need enough menu-bar width after a dock layout reset
+		// (camera combos and view toggles consume a large part of the bar).
+		ctx->UndockWindow(vid.c_str());
+		ctx->WindowResize(vid.c_str(), ImVec2(1600.0f, 700.0f));
+		ctx->Yield(3);
+		window = ImGui::FindWindowByName(vid.c_str());
 		IM_CHECK(window != nullptr);
 		ctx->WindowFocus(window->ID);
 		ctx->Yield();
@@ -290,6 +297,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 
 		// click the second recent color (index 1) to select it
 		ctx->SetRef(window);
+		IM_CHECK(ctx->ItemExists("##MenuBar/##recentcol1"));
 		ctx->ItemClick("##MenuBar/##recentcol1");
 		ctx->Yield(3);
 
@@ -301,7 +309,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scene mode with nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -331,7 +339,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera projection combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -347,7 +355,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -390,7 +398,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "screenshot menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -408,7 +416,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "video recording toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
@@ -426,7 +434,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera node frame change")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		ctx->Yield(2);
 

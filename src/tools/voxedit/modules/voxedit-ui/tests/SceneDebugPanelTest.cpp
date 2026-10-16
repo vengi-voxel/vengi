@@ -3,6 +3,7 @@
  */
 
 #include "../SceneDebugPanel.h"
+#include "TestUtil.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "voxedit-util/ISceneRenderer.h"
@@ -12,12 +13,14 @@ namespace voxedit {
 
 void SceneDebugPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "stats display")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cull checkboxes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		setVisible(true);
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));

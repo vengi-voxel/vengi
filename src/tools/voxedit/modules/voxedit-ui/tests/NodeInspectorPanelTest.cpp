@@ -14,6 +14,7 @@ namespace voxedit {
 
 void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "transform")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->Yield();
@@ -37,6 +38,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "sizes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange scoped(cfg::VoxEditRegionSizes, "3 3 3,2 2 2,1 1 1");
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
@@ -51,6 +53,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "region size add reset")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange scoped(cfg::VoxEditRegionSizes, "");
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
@@ -61,6 +64,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scene options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -70,7 +74,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scene options auto keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -95,7 +99,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "transform tools with verification")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -115,8 +119,8 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ik constraints")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -148,7 +152,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "interpolation settings")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -160,6 +164,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "color histogram")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newFilledScene(ctx, _sceneMgr, "histogramtest", voxel::Region(0, 7)));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));

@@ -3,6 +3,7 @@
  */
 
 #include "../StatusBar.h"
+#include "TestUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -10,6 +11,7 @@ namespace voxedit {
 
 void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "toggle settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		const struct {
 			const char *cvarName;
@@ -26,6 +28,7 @@ void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "no grid size input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		// Grid size moved to the Tools panel Cursor section
 		IM_CHECK(!ctx->ItemExists("Grid size"));

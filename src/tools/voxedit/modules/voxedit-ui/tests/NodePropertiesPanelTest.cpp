@@ -14,6 +14,7 @@ namespace voxedit {
 
 void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "check existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
@@ -21,6 +22,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "no existance")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
@@ -28,6 +30,7 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
@@ -37,9 +40,9 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add and remove property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
@@ -63,9 +66,9 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "boolean property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
@@ -85,9 +88,9 @@ void NodePropertiesPanel::registerUITests(ImGuiTestEngine *engine, const char *i
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "edit existing property")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());

@@ -10,7 +10,7 @@ namespace voxedit {
 
 void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "shading")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -23,7 +23,7 @@ void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shading modes toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// switch to unlit
@@ -46,7 +46,7 @@ void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "sun presets")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// enable shadows mode for sun presets to work

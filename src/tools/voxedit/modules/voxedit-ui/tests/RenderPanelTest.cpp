@@ -18,6 +18,7 @@ namespace voxedit {
 
 void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "settings inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		voxelpathtracer::PathTracerParams &params = state.params;
@@ -34,6 +35,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "presets")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		voxelpathtracer::PathTracerParams &params = state.params;
@@ -55,6 +57,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "hovered after focus")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);
@@ -64,6 +67,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera persists without viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);
@@ -81,6 +85,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera independent of viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK(viewportId != -1);
 		Viewport *vp = viewportById(_app, viewportId);
@@ -108,6 +113,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "wasd moves render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK(viewportId != -1);
 		Viewport *vp = viewportById(_app, viewportId);
@@ -132,6 +138,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shared sun angles")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		_sunAngle->setVal("40.0 180.0 0.0");
 		ctx->Yield(2);
@@ -153,6 +160,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "gpu preview")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		for (int i = 0; i < 120 && (isPreparing() || !_sceneReady); ++i) {
 			ctx->Yield();
@@ -174,6 +182,7 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "mouse rotate render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, TITLE_RENDER));
 		ImGuiWindow *window = ImGui::FindWindowByName(TITLE_RENDER);
 		IM_CHECK(window != nullptr);

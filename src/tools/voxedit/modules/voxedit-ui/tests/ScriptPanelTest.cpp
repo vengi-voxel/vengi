@@ -33,6 +33,7 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// Default view mode enables ve_showscript; ScopedViewMode restores Default after other modes.
 	IM_REGISTER_TEST(engine, testCategory(), "create and save")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(createAndSelectScript(ctx, "test.lua"));
@@ -44,6 +45,7 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "execute script")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(createAndSelectScript(ctx, "test_run.lua"));
@@ -52,6 +54,7 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "reload scripts")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(createAndSelectScript(ctx, "test_reload.lua"));
@@ -64,6 +67,7 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "script editor edit menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::Default);
 		IM_CHECK(core::getVar(cfg::VoxEditShowScript)->boolVal());
 		IM_CHECK(createAndSelectScript(ctx, "test_editor.lua"));

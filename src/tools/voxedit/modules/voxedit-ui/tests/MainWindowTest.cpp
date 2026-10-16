@@ -46,7 +46,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// main window itself
 	IM_REGISTER_TEST(engine, testCategory(), "viewport hud follows hovered viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange hudEnabled(cfg::VoxEditViewportHud, "true");
 		util::ScopedVarChange count(cfg::VoxEditViewports, "3");
 		util::ScopedVarChange overlap(cfg::VoxEditAddNodeIgnoreOverlap, "false");
@@ -104,6 +104,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		_sceneMgr->markDirty();
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
@@ -118,7 +119,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -128,7 +129,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -138,6 +139,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "tip of the day")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/Tip of the day");
 		ctx->Yield();
@@ -149,6 +151,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "welcome screen")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/Welcome screen");
 		ctx->Yield();
@@ -157,6 +160,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "welcome screen options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/Welcome screen");
 		ctx->Yield();
@@ -171,8 +175,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "resize node popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
-
+		IM_CHECK(prepareUITest(ctx));
 		// open the resize popup via the scene graph context menu
 		IM_CHECK(focusWindow(ctx, TITLE_SCENEGRAPH));
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -201,6 +204,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rescale node popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newFilledScene(ctx, _sceneMgr, "rescalenodetest"));
 
 		// open the rescale popup via the scene graph context menu
@@ -226,6 +230,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "extensions download scripts")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Extensions/Download scripts...");
 		ctx->Yield();
@@ -233,6 +238,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "extensions voxbox browser")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Extensions/VoxBox Browser...");
 		ctx->Yield();
@@ -240,6 +246,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "about screen")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Help/About");
 		ctx->Yield();
@@ -255,7 +262,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "record start")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Record/Start recording");
 		ctx->Yield();
@@ -271,7 +278,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(!_sceneMgr->isRecording());
 
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// playback the recorded file
@@ -289,7 +295,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Select/None");
 		ctx->Yield();
@@ -302,14 +308,14 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file save")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Save");
 		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file load dialog")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Load");
 		ctx->Yield();
@@ -319,7 +325,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file save as")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Save as");
 		ctx->Yield();
@@ -327,7 +333,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const core::String suggestedFilename = _sceneMgr->getSuggestedFilename();
 		IM_CHECK(core::string::endsWith(suggestedFilename, "uitest.vengi"));
 		// load the saved file and verify the name is still correct
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		io::FileDescription fd;
 		fd.set(suggestedFilename);
 		IM_CHECK(_sceneMgr->load(fd));
@@ -339,7 +344,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog delete")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -363,7 +368,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change binding")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -406,7 +411,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog change keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -431,7 +436,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog 3dsmax keymap")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(prepareUITest(ctx, this, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Bindings");
 		ctx->Yield();
@@ -472,7 +477,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node settings popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -498,8 +503,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model unreference popup")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
-
+		IM_CHECK(prepareUITest(ctx));
 		// create a reference node
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		command::executeCommands("modelref");
@@ -533,6 +537,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "failed to save popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// trigger the failed to save popup
@@ -551,6 +556,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "volume split suggestion popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// trigger the volume split popup
@@ -566,6 +572,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "minecraft mapping popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		_popupMinecraftMapping->setVal(true);
 		ctx->Yield(3);
@@ -580,6 +587,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "view menu panel visibility")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		core::getVar(cfg::VoxEditShowPalette)->setVal(true);
 		core::getVar(cfg::VoxEditShowScene)->setVal(true);

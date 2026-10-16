@@ -13,11 +13,11 @@ namespace voxedit {
 
 void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "default rule")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 		IM_CHECK(volume != nullptr);
 
@@ -29,11 +29,11 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "template selection")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// verify the Templates combo exists and has entries
 		if (!_templates.empty()) {
@@ -46,11 +46,11 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemInputValue("Angle", 45.0f);
 		IM_CHECK_EQ((int)glm::degrees(_conf.angle), 45);
@@ -63,11 +63,11 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add delete rule")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		const int rulesBefore = (int)_conf.rules.size();
 		ctx->ItemClick("Add Rule###Add Rule");
@@ -76,22 +76,22 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "adopt dimensions")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemClick("Adopt Dimensions");
 		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cancel generation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		ctx->ItemInputValue("Iterations", 5);
 		ctx->ItemClick("###Ok");
@@ -105,11 +105,11 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste rules")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (!core::getVar(cfg::VoxEditShowLSystem)->boolVal()) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// copy current rules to clipboard
 		ctx->MenuClick("Edit/Copy");

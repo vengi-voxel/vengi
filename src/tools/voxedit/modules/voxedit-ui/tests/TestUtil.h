@@ -17,7 +17,6 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class Viewport;
-class MainWindow;
 
 int voxelCount(const SceneManagerPtr &sceneMgr, int node = InvalidNodeId);
 void executeViewportClick();
@@ -28,9 +27,9 @@ bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &scen
  *
  * Closes floating dialogs/popups, resets the dock layout and view mode, reloads default
  * keybindings, yields until the main panels exist again, and optionally creates a fresh scene.
+ * Locates MainWindow via the panel registry.
  */
-bool prepareUITest(ImGuiTestContext *ctx, MainWindow *mainWindow, const SceneManagerPtr &sceneMgr,
-				   bool withNewScene = true);
+bool prepareUITest(ImGuiTestContext *ctx, bool withNewScene = true);
 
 bool resetScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr);
 bool waitForSceneJob(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int maxYields = 2000);

@@ -20,12 +20,14 @@
 
 namespace voxedit {
 
-bool prepareUITest(ImGuiTestContext *ctx, MainWindow *mainWindow, const SceneManagerPtr &sceneMgr, bool withNewScene) {
-	IM_CHECK_RETV(mainWindow != nullptr, false);
-	IM_CHECK_RETV(sceneMgr, false);
-
+bool prepareUITest(ImGuiTestContext *ctx, bool withNewScene) {
 	ui::IMGUIApp *app = imguiApp();
 	IM_CHECK_RETV(app != nullptr, false);
+
+	MainWindow *mainWindow = (MainWindow *)app->findPanel("main");
+	IM_CHECK_RETV(mainWindow != nullptr, false);
+	const SceneManagerPtr &sceneMgr = mainWindow->sceneManager();
+	IM_CHECK_RETV(sceneMgr, false);
 
 	app->closeTransientDialogs();
 	app->requestResetKeybindings();
@@ -264,6 +266,7 @@ bool newFilledScene(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, cons
 
 int prepareBrushViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, ui::IMGUIApp *app,
 						 const char *sceneName, const voxel::Region &region) {
+	IM_CHECK_RETV(prepareUITest(ctx, true), false);
 	IM_CHECK_RETV(newFilledScene(ctx, sceneMgr, sceneName, region), -1);
 	IM_CHECK_RETV(activateViewportEditMode(ctx, app), -1);
 	const int viewportId = viewportEditMode(ctx, app);

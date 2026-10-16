@@ -20,6 +20,7 @@ namespace voxedit {
 
 void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "scenetools")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		int buttonIdx = 0;
@@ -37,6 +38,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "edittools")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		int buttonIdx = 0;
@@ -54,7 +56,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "crop button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -73,7 +75,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "fillhollow button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		// fill + hollow to create a shell, then click fillhollow button
@@ -97,7 +99,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "hollow button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		IM_CHECK(focusWindow(ctx, id));
@@ -118,7 +120,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rotate buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -138,7 +140,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "flip buttons")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -157,7 +159,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "move button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -177,7 +179,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cursor inputs")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -187,7 +189,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "split objects button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -205,7 +207,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scale down button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		IM_CHECK(focusWindow(ctx, id));
@@ -226,7 +228,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "scale up button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		IM_CHECK(focusWindow(ctx, id));
@@ -247,6 +249,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "gizmo settings")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -264,7 +267,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "color to model button")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		// place voxels with two different colors
@@ -284,6 +287,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cursor details slider")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -294,6 +298,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "grid size input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemOpen("**/Grid size");
@@ -327,6 +332,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "resize to selection")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(newFilledScene(ctx, _sceneMgr, "toolsresizesel", voxel::Region(0, 31)));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 

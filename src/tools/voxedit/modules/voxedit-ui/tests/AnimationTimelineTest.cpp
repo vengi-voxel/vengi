@@ -13,6 +13,7 @@ namespace voxedit {
 
 void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
 		IM_CHECK(node != nullptr);
@@ -32,7 +33,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "create select and move")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -76,7 +77,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "create select and delete")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -108,7 +109,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag frame pointer")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
@@ -135,7 +136,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add keyframe to all nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -170,6 +171,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "loop toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		const bool before = _loop;
@@ -180,6 +182,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "fps input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("FPS", 30);
@@ -187,7 +190,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "crop frames")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		_endFrame = 200;
@@ -199,7 +202,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "play pause toggle")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		// add a keyframe so maxFrame > 0
@@ -223,7 +226,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "switch node from timeline")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -270,7 +273,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "keyframe context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 

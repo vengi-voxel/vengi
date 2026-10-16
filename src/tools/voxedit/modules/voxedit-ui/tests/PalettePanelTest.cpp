@@ -34,6 +34,7 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		for (int i = lengthof(palette::Palette::builtIn) - 1; i >= 0; --i) {
@@ -53,6 +54,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "lospec")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -68,6 +70,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -92,6 +95,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color ctrl")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -124,6 +128,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// multi select with shift+click
 	IM_REGISTER_TEST(engine, testCategory(), "multi select shift click")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -147,6 +152,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "multi select ctrl click")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -171,6 +177,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// set color name via context menu
 	IM_REGISTER_TEST(engine, testCategory(), "set color name")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -200,6 +207,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// test palette tools menu features
 	IM_REGISTER_TEST(engine, testCategory(), "tools menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -284,6 +292,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu duplicate remove")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -315,6 +324,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "load palette popup")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -341,6 +351,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu remove color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -377,6 +388,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	// test palette modify sub-menu
 	IM_REGISTER_TEST(engine, testCategory(), "tools modify")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -430,6 +442,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "randomize selected colors")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -465,6 +478,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "import export palette")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
@@ -475,6 +489,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "material property sliders")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();
@@ -501,6 +516,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
@@ -530,6 +546,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "closest color match")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		ctx->Yield();

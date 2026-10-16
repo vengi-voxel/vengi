@@ -12,11 +12,11 @@ namespace voxedit {
 
 void ImageAssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "drag drop image")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		if (_texturePool->cache().empty()) {
 			ctx->LogInfo("No images found in asset panel");
 			return;
 		}
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 		IM_CHECK(volume != nullptr);
 

@@ -3,6 +3,7 @@
  */
 
 #include "../HelpPanel.h"
+#include "TestUtil.h"
 #include "core/Var.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -29,6 +30,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "history navigation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 
 		// Click Home if the button is available
@@ -46,6 +48,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "markdown rendering")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		setMarkdown("# Test Heading\n\nSome **bold** text and a [link](http://example.com).");
 		ctx->Yield(3);
@@ -53,6 +56,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "back and forward")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		// reset to home
 		init();
@@ -91,6 +95,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "internal link navigation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		init();
 		ctx->Yield();
@@ -116,6 +121,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "markdown table links")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		init();
 		ctx->Yield();
@@ -129,6 +135,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "markdown scripting api table links")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		init();
 		ctx->Yield();
@@ -144,6 +151,7 @@ void HelpPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "markdown with images")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(ensureVisible(ctx));
 		init();
 		ctx->Yield();

@@ -92,6 +92,7 @@ static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const ch
 
 void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		const bool normalPaletteMode = core::getVar(cfg::VoxEditShowNormalPalette)->boolVal();
@@ -114,6 +115,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
 		// fill a flat layer of voxels so the camera ray will reliably hit something
@@ -138,6 +140,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select color actions")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
 		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
@@ -190,14 +193,17 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(runBrushModifiers(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "plane brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(runBrushModifiers(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Plane));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Paint));
 		// fill to create existing voxels that paint brush can operate on
 		command::executeCommands("fill");
@@ -209,6 +215,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "stamp brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Stamp));
 		// use selection as stamp source
 		command::executeCommands("fill");
@@ -239,6 +246,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 
 	IM_REGISTER_TEST(engine, testCategory(), "normal brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// Normal brush button is only visible in ViewMode::All
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 
 		// activeBrush creates a new scene internally, so fill afterwards
@@ -327,6 +335,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape drawing methods")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 		ShapeBrush &brush = _ctx.sceneMgr->modifier().shapeBrush();
@@ -375,6 +384,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush type toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Shape));
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
@@ -392,6 +402,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Paint));
 		command::executeCommands("fill");
 		ctx->Yield(3);
@@ -415,6 +426,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "line brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Line));
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
@@ -449,6 +461,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "text brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Text));
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
@@ -465,6 +478,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "sculpt brush mode combo")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Sculpt));
 
 		// sculpt brush needs a selection to show controls
@@ -488,6 +502,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Select));
 
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
@@ -508,6 +523,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "ruler brush controls")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Ruler));
 		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
 
@@ -526,7 +542,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	IM_REGISTER_TEST(engine, testCategory(), "script brush rescan")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// BrushType::Script has no fixed toolbar button (skipped in BrushPanel); lua scripts
 		// appear as separate buttons. Activate via command so the script settings show Rescan.
-		IM_CHECK(resetScene(ctx, _ctx.sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		command::executeCommands("brushscript");
 		ctx->Yield();
@@ -537,6 +553,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "transform brush mode toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Transform));
 		// transform brush needs a selection
 		command::executeCommands("fill");

@@ -14,9 +14,9 @@ namespace voxedit {
 void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	// History is off in Default/Simple/RedAlert2; only ViewMode::All enables ve_showmemento.
 	IM_REGISTER_TEST(engine, testCategory(), "undo redo navigation")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(core::getVar(cfg::VoxEditShowMemento)->boolVal());
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		const int initialSize = (int)mementoHandler.stateSize();
 		IM_CHECK(initialSize > 0);
@@ -42,9 +42,9 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "state list display")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(core::getVar(cfg::VoxEditShowMemento)->boolVal());
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		// create some undo states
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
@@ -75,9 +75,9 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "click history entry")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		ScopedViewMode viewMode(ctx, ViewMode::All);
 		IM_CHECK(core::getVar(cfg::VoxEditShowMemento)->boolVal());
-		IM_CHECK(resetScene(ctx, _sceneMgr));
 
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);

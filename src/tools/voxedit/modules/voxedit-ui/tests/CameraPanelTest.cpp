@@ -11,6 +11,7 @@ namespace voxedit {
 
 void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create camera node")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
 		const size_t beforeCamera = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("##camera_props/Position/$$0/$$0", 0.0f);
@@ -22,15 +23,14 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "reset camera")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("toolbar/###button0");
 		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "activate camera")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
-
+		IM_CHECK(prepareUITest(ctx));
 		// add a camera node first
 		const size_t before = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
 		IM_CHECK(focusWindow(ctx, id));
@@ -44,7 +44,7 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "projection combo")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 		// the projection combo should exist
 		const ImGuiTestItemInfo info = ctx->ItemInfo("###cameraproj", ImGuiTestOpFlags_NoError);
@@ -52,7 +52,7 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera properties")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(resetScene(ctx, _sceneMgr));
+		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(focusWindow(ctx, id));
 
 		// farplane and nearplane inputs should exist in the camera properties table
