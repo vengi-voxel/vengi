@@ -37,7 +37,9 @@ struct SparseGpuVolume {
 	uint32_t *bricks = nullptr;
 	glm::ivec3 *brickCoords = nullptr;
 	int brickCount = 0;
+	/** @brief Brick atlas grid size in bricks (X = row, Y = col, Z = layers). */
 	int bricksPerRow = 1;
+	int bricksPerCol = 1;
 	glm::ivec3 atlasSize{0};
 	bool bricksTruncated = false;
 };
@@ -60,7 +62,7 @@ void collectScenePalettes(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 
 /**
  * @brief Rasterize visible models into a sparse brick pool.
- * @param[in] maxTextureAxis GL_MAX_3D_TEXTURE_SIZE style limit for the brick atlas.
+ * @param[in] maxTextureAxis @c Limit::Max3DTextureSize style limit for the brick atlas.
  * @param[in,out] transmissive Temporary palette*color flags for alpha/glass classification.
  * Bricks still store temporary (slot,color) indices until buildDenseMaterialAtlas().
  */

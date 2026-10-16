@@ -67,7 +67,7 @@ glm::ivec3 clampVolumeSize(glm::ivec3 size, int maxAxis, bool &truncated) {
 	size = glm::max(size, glm::ivec3(BrickSize));
 
 	glm::ivec3 coarse(size.x / BrickSize, size.y / BrickSize, size.z / BrickSize);
-	// Indirection is a 3D texture sized in bricks; maxAxis is GL_MAX_3D_TEXTURE_SIZE.
+	// Indirection is a 3D texture sized in bricks; maxAxis is @c Limit::Max3DTextureSize.
 	const int maxCoarseAxis = core_max(1, maxAxis);
 	if (coarse.x > maxCoarseAxis || coarse.y > maxCoarseAxis || coarse.z > maxCoarseAxis) {
 		truncated = true;

@@ -156,6 +156,7 @@ void PathTracer::shutdownGpu() {
 	_lightCount = 0;
 	_emitterLuminance = 0.0f;
 	_bricksPerRow = 1;
+	_bricksPerCol = 1;
 	_vbo.shutdown();
 	_bufferIndex = -1;
 	_texIndex = -1;
@@ -288,6 +289,7 @@ bool PathTracer::createEmptyGpuScene() {
 	_bricksTex->upload((const uint8_t *)emptyBricks, brickSize);
 	core_free(emptyBricks);
 	_bricksPerRow = 1;
+	_bricksPerCol = 1;
 	const video::TextureConfig palCfg = nearestTextureConfig(video::TextureType::Texture2D, video::TextureFormat::RGBA);
 	_paletteTex = core::make_shared<video::Texture>(palCfg, 1, 1, "pathtracer-palette");
 	uint8_t pal[4] = {0, 0, 0, 0};
@@ -314,16 +316,20 @@ bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materi
 		return false;
 	}
 	core_memset(atlas, 0, core_max((size_t)1, atlasVoxels) * sizeof(uint32_t));
+	const int bricksPerCol = core_max(1, volume.bricksPerCol);
 	for (int brickIndex = 0; brickIndex < volume.brickCount; ++brickIndex) {
 		const int bx = brickIndex % volume.bricksPerRow;
-		const int by = brickIndex / volume.bricksPerRow;
+		const int tmp = brickIndex / volume.bricksPerRow;
+		const int by = tmp % bricksPerCol;
+		const int bz = tmp / bricksPerCol;
 		const uint32_t *src = volume.bricks + (size_t)brickIndex * (size_t)voxelsPerBrick;
 		for (int lz = 0; lz < brickSize; ++lz) {
 			for (int ly = 0; ly < brickSize; ++ly) {
 				for (int lx = 0; lx < brickSize; ++lx) {
 					const int ax = bx * brickSize + lx;
 					const int ay = by * brickSize + ly;
-					atlas[volumeOffset(ax, ay, lz, volume.atlasSize)] = src[(lz * brickSize + ly) * brickSize + lx];
+					const int az = bz * brickSize + lz;
+					atlas[volumeOffset(ax, ay, az, volume.atlasSize)] = src[(lz * brickSize + ly) * brickSize + lx];
 				}
 			}
 		}
@@ -365,6 +371,7 @@ bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materi
 		_indirectionTex->upload((const uint8_t *)volume.indirection, volume.coarseSize.z);
 	}
 	_bricksPerRow = volume.bricksPerRow;
+	_bricksPerCol = bricksPerCol;
 	return true;
 }
 
@@ -421,6 +428,7 @@ bool PathTracer::uploadPreparedScene(PreparedGpuScene &prepared) {
 	_lightCount = 0;
 	_emitterLuminance = 0.0f;
 	_bricksPerRow = 1;
+	_bricksPerCol = 1;
 
 	if (!prepared.success) {
 		return false;
@@ -513,6 +521,7 @@ void PathTracer::tracePass(int samples) {
 	_paramsUniforms.volumemin = _volumeMin;
 	_paramsUniforms.volumesize = _volumeSize;
 	_paramsUniforms.bricksperrow = _bricksPerRow;
+	_paramsUniforms.brickspercol = _bricksPerCol;
 	core_assert_always(_paramsUbo.update(_paramsUniforms));
 	core_assert_always(shader.setParams(_paramsUbo.getParamsUniformBuffer()));
 	drawFullscreen(_accum[_writeAccum]);

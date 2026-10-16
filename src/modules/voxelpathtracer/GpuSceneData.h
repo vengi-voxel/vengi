@@ -46,7 +46,7 @@ int padToBrick(int v);
 
 /**
  * @brief Clamp and pad the scene AABB to indirection-grid and texture-size limits.
- * @param[in] maxTextureAxis GL_MAX_3D_TEXTURE_SIZE for the indirection and brick-atlas textures.
+ * @param[in] maxTextureAxis @c Limit::Max3DTextureSize for the indirection and brick-atlas textures.
  * @param[out] truncated Set when the input was shrunk to fit.
  */
 glm::ivec3 clampVolumeSize(glm::ivec3 size, int maxTextureAxis, bool &truncated);

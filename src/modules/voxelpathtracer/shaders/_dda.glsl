@@ -1,6 +1,6 @@
 // Voxel traversal with sparse brick pool + empty-block skipping.
 // u_indirection: values < 4 are log2 empty-skip levels; values >= 4 are brickId + 4.
-// u_bricks: XY atlas of 8^3 bricks (depth = BrickSize), u_bricksperrow bricks per row.
+// u_bricks: 3D atlas of 8^3 bricks packed X then Y then Z (u_bricksperrow x u_brickspercol x layers).
 
 uint fetchVoxelIndex(ivec3 cell) {
 	ivec3 brick = cell / BrickSize;
@@ -11,8 +11,10 @@ uint fetchVoxelIndex(ivec3 cell) {
 	int brickIndex = int(entry - 4u);
 	ivec3 local = cell - brick * BrickSize;
 	int bx = brickIndex % u_bricksperrow;
-	int by = brickIndex / u_bricksperrow;
-	ivec3 coord = ivec3(bx * BrickSize + local.x, by * BrickSize + local.y, local.z);
+	int tmp = brickIndex / u_bricksperrow;
+	int by = tmp % u_brickspercol;
+	int bz = tmp / u_brickspercol;
+	ivec3 coord = ivec3(bx * BrickSize + local.x, by * BrickSize + local.y, bz * BrickSize + local.z);
 	return texelFetch(u_bricks, coord, 0).r;
 }
 

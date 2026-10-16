@@ -49,6 +49,7 @@ private:
 	int _lightCount = 0;
 	float _emitterLuminance = 0.0f;
 	int _bricksPerRow = 1;
+	int _bricksPerCol = 1;
 	video::FrameBuffer _accum[2];
 	video::FrameBuffer _displayFbo;
 	video::FrameBuffer _bloomFbo;
@@ -113,7 +114,7 @@ public:
 	void applyCamera(const video::Camera *camera);
 	void resetAccumulation();
 
-	/** @brief GL_MAX_3D_TEXTURE_SIZE clamped for pathtracer brick atlases. Call on the GL thread. */
+	/** @brief @c Limit::Max3DTextureSize clamped for pathtracer brick atlases. Call on the renderer thread. */
 	static int maxTextureAxis();
 
 	/**

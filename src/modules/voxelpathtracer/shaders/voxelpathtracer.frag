@@ -43,6 +43,7 @@ layout(std140, binding = 0) uniform u_params {
 	ivec3 u_volumemin;
 	ivec3 u_volumesize;
 	int u_bricksperrow;
+	int u_brickspercol;
 };
 
 layout(location = 0) $out vec4 o_fragcolor;

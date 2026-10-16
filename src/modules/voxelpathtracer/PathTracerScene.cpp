@@ -133,13 +133,14 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 		}
 	}
 
-	const int bricksPerRow = core_max(1, maxTextureAxis / BrickSize);
-	const int maxBrickRows = core_max(1, maxTextureAxis / BrickSize);
-	const int maxBricks = bricksPerRow * maxBrickRows;
+	// Pack bricks in a 3D atlas (X then Y then Z) so the full @c Limit::Max3DTextureSize cube is usable.
+	const int maxBricksPerAxis = core_max(1, maxTextureAxis / BrickSize);
+	const int maxBricks = maxBricksPerAxis * maxBricksPerAxis * maxBricksPerAxis;
 	if (occupiedBricks > maxBricks) {
 		out.bricksTruncated = true;
 		occupiedBricks = maxBricks;
-		Log::warn("Pathtracer brick pool truncated to %i bricks (atlas %ix%i)", maxBricks, bricksPerRow, maxBrickRows);
+		Log::warn("Pathtracer brick pool truncated to %i bricks (atlas %ix%ix%i bricks)", maxBricks, maxBricksPerAxis,
+				  maxBricksPerAxis, maxBricksPerAxis);
 	}
 
 	uint32_t *brickIndexOfCell = (uint32_t *)core_malloc(coarseCount * sizeof(uint32_t));
@@ -247,11 +248,15 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 
 	if (out.brickCount <= 0) {
 		out.bricksPerRow = 1;
+		out.bricksPerCol = 1;
 		out.atlasSize = glm::ivec3(BrickSize, BrickSize, BrickSize);
 	} else {
-		out.bricksPerRow = bricksPerRow;
-		const int brickRows = (out.brickCount + bricksPerRow - 1) / bricksPerRow;
-		out.atlasSize = glm::ivec3(bricksPerRow * BrickSize, brickRows * BrickSize, BrickSize);
+		// Compact grid: fill X, then Y, then Z within the max-per-axis cube.
+		out.bricksPerRow = core_min(out.brickCount, maxBricksPerAxis);
+		out.bricksPerCol = core_min((out.brickCount + out.bricksPerRow - 1) / out.bricksPerRow, maxBricksPerAxis);
+		const int bricksPerSlice = out.bricksPerRow * out.bricksPerCol;
+		const int brickLayers = (out.brickCount + bricksPerSlice - 1) / bricksPerSlice;
+		out.atlasSize = glm::ivec3(out.bricksPerRow * BrickSize, out.bricksPerCol * BrickSize, brickLayers * BrickSize);
 	}
 	return true;
 }
