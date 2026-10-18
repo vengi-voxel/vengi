@@ -58,6 +58,41 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/trigonometric.hpp>
 
+namespace {
+
+/**
+ * Warn when @p ext is claimed by more than one save format and the user did not pick one.
+ * @return The first matching description (what saveFormat picks by default), or nullptr.
+ */
+const io::FormatDescription *warnAmbiguousOutputExtension(const core::String &ext) {
+	const io::FormatDescription *first = nullptr;
+	core::String names;
+	int count = 0;
+	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+		if (!desc->matchesExtension(ext)) {
+			continue;
+		}
+		if (first == nullptr) {
+			first = desc;
+		}
+		if (!names.empty()) {
+			names += ", ";
+		}
+		names += "'";
+		names += desc->name;
+		names += "'";
+		++count;
+	}
+	if (count > 1 && first != nullptr) {
+		Log::warn("Output extension '.%s' matches multiple formats: %s", ext.c_str(), names.c_str());
+		Log::warn("Using '%s'. Pass --output-format <name> to choose (substring or fuzzy match is ok)",
+				  first->name.c_str());
+	}
+	return first;
+}
+
+} // namespace
+
 VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
@@ -78,6 +113,10 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
 	registerArg("--filter-property").setDescription("Model filter by property. For example 'name:foo'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--output-format")
+		.setDescription(
+			"Force the output format when several formats share an extension. Accepts a full name, substring "
+			"(e.g. trench), or a close misspelling (e.g. AceOfSpads)");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--wildcard")
 		.setShort("-w")
@@ -695,7 +734,22 @@ app::AppState VoxConvert::onInit() {
 				saveCtx.thumbnailCreator = fn;
 				Log::info("Using thumbnail with size %i x %i", thumbnail->width(), thumbnail->height());
 			}
-			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, fsArchive, saveCtx)) {
+			const io::FormatDescription *outDesc = nullptr;
+			const core::String &ext = core::string::extractExtension(outfile);
+			if (hasArg("--output-format")) {
+				const core::String &formatName = getArgVal("--output-format");
+				outDesc = io::resolveFormatDescription(voxelformat::voxelSave(), formatName, ext);
+				if (outDesc == nullptr) {
+					Log::error("Unknown or unsupported save format '%s' for extension '%s'", formatName.c_str(),
+							   ext.c_str());
+					Log::error("Use --print-formats for the list of names, or try a substring like 'magica' / 'ace'");
+					return app::AppState::InitFailure;
+				}
+				Log::info("Using output format '%s'", outDesc->name.c_str());
+			} else {
+				warnAmbiguousOutputExtension(ext);
+			}
+			if (!voxelformat::saveFormat(sceneGraph, outfile, outDesc, fsArchive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());
 				return app::AppState::InitFailure;
 			}
@@ -808,6 +862,18 @@ static bool hasUniqueModelNames(const scenegraph::SceneGraph &sceneGraph) {
 void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGraph, const core::String &inputfile,
 											   const core::String &ext) {
 	Log::info("Export models into single objects");
+	const io::FormatDescription *outDesc = nullptr;
+	if (hasArg("--output-format")) {
+		const core::String &formatName = getArgVal("--output-format");
+		outDesc = io::resolveFormatDescription(voxelformat::voxelSave(), formatName, ext);
+		if (outDesc == nullptr) {
+			Log::error("Unknown or unsupported save format '%s' for extension '%s'", formatName.c_str(), ext.c_str());
+			return;
+		}
+		Log::info("Using output format '%s'", outDesc->name.c_str());
+	} else {
+		warnAmbiguousOutputExtension(ext);
+	}
 	int id = 0;
 	voxelformat::SaveContext saveCtx;
 	saveCtx.progress = progressSink();
@@ -826,7 +892,7 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGrap
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String &filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);
 		const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
-		if (voxelformat::saveFormat(newSceneGraph, filename, nullptr, archive, saveCtx)) {
+		if (voxelformat::saveFormat(newSceneGraph, filename, outDesc, archive, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
 			Log::error(" .. %s", filename.c_str());
