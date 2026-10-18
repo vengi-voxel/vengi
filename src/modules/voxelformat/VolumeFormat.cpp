@@ -39,6 +39,7 @@
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/kenshape/KenShapeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/magicavoxel/TrenchblocksFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
 #include "voxelformat/private/mesh/Autodesk3DSFormat.h"
 #include "voxelformat/private/mesh/BlockbenchFormat.h"
@@ -99,6 +100,7 @@ const io::FormatDescription *voxelFormats() {
 												 QBFormat::format(),
 												 BenVoxelFormat::format(),
 												 VoxFormat::format(),
+												 TrenchblocksFormat::format(),
 												 AniVoxelFormat::format(),
 												 QBTFormat::format(),
 												 QBCLFormat::format(),
@@ -206,6 +208,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<VENGIFormat>();
 		} else if (io::isA(QBFormat::format(), desc, ext, magic)) {
 			return core::make_shared<QBFormat>();
+		} else if (io::isA(TrenchblocksFormat::format(), desc, ext, magic)) {
+			return core::make_shared<TrenchblocksFormat>();
 		} else if (io::isA(VoxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VoxFormat>();
 		} else if (io::isA(SLAB6VoxFormat::format(), desc, ext, magic)) {

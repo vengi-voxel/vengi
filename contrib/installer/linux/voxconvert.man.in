@@ -497,6 +497,8 @@ Teardown bin (*.bin)
 .TP
 Tiberian Sun (*.vxl)
 .TP
+Trenchblocks (*.vox)
+.TP
 UFO:Alien Invasion (*.bsp)
 .TP
 Veloren terrain (*.dat)
@@ -584,6 +586,8 @@ Standard Triangle Language (*.stl)
 StarMade Template (*.smtpl)
 .TP
 Tiberian Sun (*.vxl)
+.TP
+Trenchblocks (*.vox)
 .TP
 Veloren terrain (*.dat)
 .TP

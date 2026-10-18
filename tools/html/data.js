@@ -300,6 +300,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Trenchblocks",
+      "extensions": [
+        "vox"
+      ],
+      "magics": [],
+      "mimetype": "application/x-trenchblocks",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "anivoxel",
       "extensions": [
         "voxa"

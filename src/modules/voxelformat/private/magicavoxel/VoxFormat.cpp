@@ -3,6 +3,7 @@
  */
 
 #include "VoxFormat.h"
+#include "TrenchblocksFormat.h"
 #include "color/ColorUtil.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -319,7 +320,9 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	printDetails(scene);
 	loadPaletteFromScene(scene, palette);
-	if (!loadScene(scene, sceneGraph, palette, ctx)) {
+	const bool loaded = TrenchblocksFormat::isTrenchblocksScene(scene)
+		? TrenchblocksFormat::loadScene(scene, sceneGraph) : loadScene(scene, sceneGraph, palette, ctx);
+	if (!loaded) {
 		ogt_vox_destroy_scene(scene);
 		return false;
 	}

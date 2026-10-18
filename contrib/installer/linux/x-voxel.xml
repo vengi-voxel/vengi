@@ -28,6 +28,10 @@
 			<match type="string" offset="0" value="VOX "/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-trenchblocks">
+		<comment>Trenchblocks</comment>
+		<glob pattern="*.vox"/>
+	</mime-type>
 	<mime-type type="application/x-anivoxel">
 		<comment>anivoxel</comment>
 		<glob pattern="*.voxa"/>

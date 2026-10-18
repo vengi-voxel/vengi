@@ -105,6 +105,7 @@ set(SRCS
 	private/image/PNGFormat.h                private/image/PNGFormat.cpp
 	private/kenshape/KenShapeFormat.h        private/kenshape/KenShapeFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
+	private/magicavoxel/TrenchblocksFormat.h   private/magicavoxel/TrenchblocksFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
 	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
@@ -249,6 +250,7 @@ set(TEST_SRCS
 	tests/VCdxFormatTest.cpp
 	tests/VelorenTerrainFormatTest.cpp
 	tests/VolumeFormatTest.cpp
+	tests/TrenchblocksFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/VXBFormatTest.cpp
 	tests/VXLFormatTest.cpp

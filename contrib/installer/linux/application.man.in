@@ -150,6 +150,8 @@ Teardown bin (*.bin)
 .TP
 Tiberian Sun (*.vxl)
 .TP
+Trenchblocks (*.vox)
+.TP
 UFO:Alien Invasion (*.bsp)
 .TP
 Veloren terrain (*.dat)
