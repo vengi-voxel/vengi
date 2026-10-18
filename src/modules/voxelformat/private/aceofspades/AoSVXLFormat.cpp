@@ -195,11 +195,13 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 void AoSVXLFormat::loadMetadataTxt(scenegraph::SceneGraphNode &node, const core::String &filename,
 								   const io::ArchivePtr &archive) const {
-	if (!archive->exists(filename + ".txt")) {
+	// pyspades / saveMetadataTxt use mapname.txt next to mapname.vxl
+	const core::String metadataFilename = core::string::replaceExtension(filename, ".txt");
+	if (!archive->exists(metadataFilename)) {
 		Log::debug("No metadata file found for %s", filename.c_str());
 		return;
 	}
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename + ".txt"));
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(metadataFilename));
 	if (!stream) {
 		Log::debug("No metadata file found for %s", filename.c_str());
 		return;
