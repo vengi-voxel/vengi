@@ -5,8 +5,10 @@
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "AbstractFormatTest.h"
 #include "io/Archive.h"
+#include "io/MemoryArchive.h"
 #include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "voxelformat/private/aceofspades/AoSFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
@@ -129,6 +131,58 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	scenegraph::SceneGraph sceneGraphLoad;
 	EXPECT_TRUE(f.load(filename, archive, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), 1u);
+}
+
+TEST_F(AoSVXLFormatTest, testCrop) {
+	AoSVXLFormat vxl;
+	AoSFormat aos;
+	for (Format *format : {(Format *)&vxl, (Format *)&aos}) {
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		scenegraph::SceneGraph graph;
+		graph.node(0).setProperty(scenegraph::PropTitle, "Cropped map");
+		const glm::ivec3 mins(-3, 7, -9);
+		const glm::vec3 translation(10, 20, 30);
+		const color::RGBA red(255, 0, 0, 255);
+		const color::RGBA blue(0, 0, 255, 255);
+		scenegraph::SceneGraphNode terrain(scenegraph::SceneGraphNodeType::Model);
+		terrain.setVolume(new voxel::RawVolume(voxel::Region(mins, mins + glm::ivec3(512, 0, 0))));
+		palette::Palette palette;
+		palette.setColor(0, red);
+		terrain.setPalette(palette);
+		terrain.transform().setLocalTranslation(translation);
+		for (int x : {0, 511, 512}) {
+			terrain.volume()->setVoxel(mins + glm::ivec3(x, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 0));
+		}
+		const int terrainId = graph.emplace(core::move(terrain));
+		palette.setColor(0, blue);
+		// Y crop is 255 (libvxl depth-256 encode limitation); keep 254, drop 255+.
+		for (const glm::ivec3 &offset : {glm::ivec3(1, 254, 511), glm::ivec3(2, 255, 2), glm::ivec3(3, 3, 512)}) {
+			scenegraph::SceneGraphNode chunk(scenegraph::SceneGraphNodeType::Model);
+			const glm::ivec3 pos = mins + offset;
+			chunk.setVolume(new voxel::RawVolume(voxel::Region(pos, pos)));
+			chunk.volume()->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			chunk.setPalette(palette);
+			chunk.transform().setLocalTranslation(translation);
+			graph.emplace(core::move(chunk));
+		}
+		const char *filename = format == &vxl ? "cropped.vxl" : "cropped.aos";
+		SCOPED_TRACE(filename);
+		ASSERT_TRUE(format->save(graph, filename, archive, testSaveCtx));
+		scenegraph::SceneGraph loaded;
+		ASSERT_TRUE(format->load(filename, archive, loaded, testLoadCtx));
+		ASSERT_EQ(loaded.size(), 1u);
+		EXPECT_EQ(loaded.root().property(scenegraph::PropTitle), "Cropped map");
+		const scenegraph::SceneGraphNode &node = *loaded.firstModelNode();
+		ASSERT_EQ(node.region().getDimensionsInVoxels(), glm::ivec3(512, 256, 512));
+		for (const glm::ivec3 &pos : {glm::ivec3(0), glm::ivec3(511, 0, 0), glm::ivec3(1, 254, 511)}) {
+			const voxel::Voxel voxel = node.volume()->voxel(pos);
+			EXPECT_FALSE(voxel::isAir(voxel.getMaterial()));
+			EXPECT_EQ(node.palette().color(voxel.getColor()), pos.y == 254 ? blue : red);
+		}
+		EXPECT_TRUE(voxel::isAir(node.volume()->voxel(3, 3, 0).getMaterial()));
+		EXPECT_EQ(graph.node(terrainId).region().getWidthInVoxels(), 513);
+		EXPECT_FALSE(voxel::isAir(graph.node(terrainId).volume()->voxel(mins + glm::ivec3(512, 0, 0)).getMaterial()));
+	}
 }
 
 } // namespace voxelformat

@@ -26,6 +26,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -170,6 +171,67 @@ glm::ivec3 Format::maxSize() const {
 	return glm::ivec3(-1);
 }
 
+glm::ivec3 Format::cropSize() const {
+	return glm::ivec3(-1);
+}
+
+voxel::RawVolume *Format::mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const glm::ivec3 &maxSize,
+									   palette::Palette &palette, bool skipHidden) const {
+	if (glm::any(glm::lessThanEqual(maxSize, glm::ivec3(0)))) {
+		return nullptr;
+	}
+	const_cast<scenegraph::SceneGraph &>(sceneGraph).updateTransforms();
+	const voxel::Region sceneBounds = sceneGraph.sceneRegion(0, skipHidden);
+	if (!sceneBounds.isValid()) {
+		return nullptr;
+	}
+	const glm::ivec3 size = glm::min(sceneBounds.getDimensionsInVoxels(), maxSize);
+	const glm::ivec3 mins = sceneBounds.getLowerCorner();
+	const glm::ivec3 maxs = mins + size - 1;
+	const voxel::Region bounds(mins, maxs);
+	if (!checkValidRegion(bounds)) {
+		return nullptr;
+	}
+	palette = sceneGraph.mergePalettes(true);
+	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(bounds));
+	bool merged = true;
+	// Clip each model before merging so distant chunks never enlarge the export allocation.
+	sceneGraph.visitChildren(sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+		if (!merged || !node.isAnyModelNode() || (skipHidden && !node.visible()) ||
+			!voxel::intersects(sceneGraph.sceneRegion(node, 0), bounds)) {
+			return;
+		}
+		const voxel::RawVolume *source = sceneGraph.resolveVolume(node);
+		if (source == nullptr) {
+			merged = false;
+			return;
+		}
+		core::ScopedPtr<voxel::RawVolume> transformed;
+		const scenegraph::FrameTransform transform = sceneGraph.transformForFrame(node, 0);
+		if (!transform.isIdentity()) {
+			transformed = voxelutil::applyTransformToVolume(*source, transform.worldMatrix(), node.pivot());
+			if (!transformed) {
+				merged = false;
+				return;
+			}
+			source = transformed;
+		}
+		voxel::Region overlap = source->region();
+		if (!overlap.cropTo(bounds)) {
+			return;
+		}
+		if (node.palette().hash() == palette.hash()) {
+			voxelutil::mergeVolumes(&*volume, source, overlap, overlap);
+		} else {
+			voxelutil::mergeVolumes(&*volume, palette, source, node.palette(), overlap, overlap);
+		}
+	});
+	if (!merged) {
+		return nullptr;
+	}
+	return volume.release();
+}
+
 bool Format::singleVolume() const {
 	return core::getVar(cfg::VoxformatMerge)->boolVal();
 }
@@ -180,9 +242,11 @@ bool Format::supportsReferences() const {
 
 bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
 				  const SaveContext &ctx) {
+	const glm::ivec3 cropsize = cropSize();
+	const bool crop = glm::all(glm::greaterThan(cropsize, glm::ivec3(0)));
 	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
-	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
+	if (!crop && maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
 		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = *iter;
 			const voxel::Region &region = node.region();
@@ -203,18 +267,32 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	}
 
 	const bool saveVisibleOnly = core::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal();
-	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
+	if (crop || (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1)) {
 		Log::debug("Merge volumes before saving as the target format only supports one volume");
-		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
-		if (!merged.hasVolume()) {
+		palette::Palette palette;
+		palette::NormalPalette normalPalette;
+		voxel::RawVolume *volume;
+		if (crop) {
+			volume = mergeVolumes(sceneGraph, cropsize, palette, saveVisibleOnly);
+			if (volume != nullptr) {
+				normalPalette = sceneGraph.firstModelNode()->normalPalette();
+			}
+		} else {
+			scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
+			volume = merged.volume();
+			palette = merged.palette;
+			normalPalette = merged.normalPalette;
+		}
+		if (volume == nullptr) {
 			Log::error("Failed to merge volumes for saving");
 			return false;
 		}
 		scenegraph::SceneGraph mergedSceneGraph;
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
-		mergedNode.setVolume(merged.volume());
-		mergedNode.setPalette(merged.palette);
-		mergedNode.setNormalPalette(merged.normalPalette);
+		mergedSceneGraph.node(0).properties() = sceneGraph.root().properties();
+		mergedNode.setVolume(volume);
+		mergedNode.setPalette(palette);
+		mergedNode.setNormalPalette(normalPalette);
 		mergedSceneGraph.emplace(core::move(mergedNode));
 		return saveGroups(mergedSceneGraph, filename, archive, ctx);
 	}

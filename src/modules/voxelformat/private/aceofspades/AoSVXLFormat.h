@@ -28,7 +28,7 @@ protected:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 	bool saveMetadataTxt(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 const io::ArchivePtr &archive) const;
-	glm::ivec3 maxSize() const override;
+	glm::ivec3 cropSize() const override;
 
 public:
 	bool singleVolume() const override;

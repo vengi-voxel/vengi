@@ -382,9 +382,12 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 	return createPalette(colors, palette);
 }
 
-glm::ivec3 AoSVXLFormat::maxSize() const {
+glm::ivec3 AoSVXLFormat::cropSize() const {
 	// TODO: VOXELFORMAT: slab5 with voxelstein3d has 1024,256,1024
-	return glm::ivec3(512, 256, 512);
+	// libvxl packs Z into 8 bits. At map depth 256, a surface block at z=0 makes
+	// encode treat next_z=256 as pos_key(x+1,y,0) and abort. Keep one less Y so
+	// padded 256-deep maps never store solids at libvxl z=0.
+	return glm::ivec3(512, 255, 512);
 }
 
 bool AoSVXLFormat::singleVolume() const {
@@ -450,10 +453,16 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	}
 	const palette::Palette &palette = node->palette();
 	const voxel::RawVolume *v = node->volume();
-	auto func = [&map, &palette, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
+	const glm::ivec3 mins = v->region().getLowerCorner();
+	// See cropSize(): at depth 256, skip libvxl z=0 only (bottom z=mapHeight-1 is fine).
+	auto func = [&map, &palette, mapHeight, mins](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int libz = mapHeight - 1 - (y - mins.y);
+		if (libz < 0 || libz >= mapHeight || (mapHeight >= 256 && libz == 0)) {
+			return;
+		}
 		const color::RGBA rgba = palette.color(voxel.getColor());
 		const uint32_t color = vxl_color(rgba);
-		libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
+		libvxl_map_set(&map, x - mins.x, z - mins.z, libz, color);
 	};
 	voxelutil::visitVolume(*v, func);
 

@@ -135,6 +135,21 @@ protected:
 	virtual glm::ivec3 maxSize() const;
 
 	/**
+	 * @brief Merge and crop the scene on export instead of splitting it. Nonpositive sizes disable cropping.
+	 * The retained box starts at the lower corner of the scene. Only formats that export a single volume
+	 * should override this; formats that also need point nodes can call mergeVolumes() in saveGroups().
+	 */
+	virtual glm::ivec3 cropSize() const;
+
+	/**
+	 * @brief Merge models within a box of at most @p maxSize voxels, anchored at the scene's lower corner.
+	 * Transforms are baked and palette indices are remapped. The caller owns the returned volume.
+	 * Returns nullptr for an empty scene, invalid size or allocation/transform failure.
+	 */
+	voxel::RawVolume *mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const glm::ivec3 &maxSize,
+								   palette::Palette &palette, bool skipHidden = true) const;
+
+	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
 	 * @param v The volume
