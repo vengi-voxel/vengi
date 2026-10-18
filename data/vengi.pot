@@ -1407,6 +1407,33 @@ msgid ""
 "each region"
 msgstr ""
 
+msgid "Merge MC regions"
+msgstr ""
+
+msgid ""
+"Merge each Minecraft region file into one volume on level.dat / mcworld "
+"load. Disable to keep per-chunk volumes (faster and less memory for large "
+"maps and thumbnails)"
+msgstr ""
+
+msgid "MC load radius"
+msgstr ""
+
+msgid ""
+"Minecraft region files to load around spawn for level.dat / mcworld. -1 = "
+"all regions, 0 = spawn region only, N = Chebyshev distance in region units "
+"(512 blocks)"
+msgstr ""
+
+msgid "MC load region"
+msgstr ""
+
+msgid ""
+"Optional block AABB filter for Minecraft level.dat / mcworld import. Format: "
+"'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are "
+"loaded. Combined with voxformat_mcloadradius when both are set."
+msgstr ""
+
 msgid "Simplify"
 msgstr ""
 
@@ -1417,8 +1444,8 @@ msgid "Mesh simplify ratio"
 msgstr ""
 
 msgid ""
-"Target fraction of triangle indices to keep when applying mesh optimization "
-"(0 = disable simplification)"
+"Target fraction of triangle indices to keep when simplifying meshes on "
+"import or export (0 or 1 = disable)"
 msgstr ""
 
 msgid "Region filter"
@@ -3156,8 +3183,7 @@ msgstr ""
 msgid "Atmosphere"
 msgstr ""
 
-msgid ""
-"World scatter with sun-forward phase, similar to MagicaVoxel atmosphere."
+msgid "World haze that brightens toward the sun."
 msgstr ""
 
 msgid "Settings"
@@ -3171,6 +3197,12 @@ msgid "Sample %i / %i"
 msgstr ""
 
 msgid "Volume truncated to GPU 3D texture / memory limits"
+msgstr ""
+
+msgid "Preparing render"
+msgstr ""
+
+msgid "Preparing"
 msgstr ""
 
 msgid "Render"
