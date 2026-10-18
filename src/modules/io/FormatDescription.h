@@ -159,6 +159,10 @@ bool isA(const io::FormatDescription &check, const io::FormatDescription &desc, 
 uint32_t loadMagic(io::SeekableReadStream &stream);
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic, const io::FormatDescription *descriptions);
 const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic, const io::FormatDescription *descriptions);
+/**
+ * @brief Resolve the output format based on a given input string that is used to match the format - even by fuzzy logic
+ */
+const io::FormatDescription *resolveFormatDescription(const io::FormatDescription *descs, const core::String &query, const core::String &ext);
 
 /**
  * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters

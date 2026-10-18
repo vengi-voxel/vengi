@@ -393,4 +393,56 @@ const io::FormatDescription *getDescription(const io::FileDescription &fileDesc,
 	return io::getDescription(filename, magic, descriptions);
 }
 
+const io::FormatDescription *resolveFormatDescription(const io::FormatDescription *descs, const core::String &query, const core::String &ext) {
+	if (query.empty() || descs == nullptr) {
+		return nullptr;
+	}
+	const core::String needle = query.toLower();
+	const io::FormatDescription *exact = nullptr;
+	const io::FormatDescription *bestSubstr = nullptr;
+	size_t bestSubstrDist = (size_t)-1;
+	size_t substrMatches = 0;
+	const io::FormatDescription *bestFuzzy = nullptr;
+	size_t bestDist = (size_t)-1;
+	bool fuzzyAmbiguous = false;
+
+	for (const io::FormatDescription *desc = descs; desc->valid(); ++desc) {
+		if (!desc->matchesExtension(ext)) {
+			continue;
+		}
+		const core::String nameLower = desc->name.toLower();
+		const size_t dist = core::string::levenshteinDistance(needle, nameLower);
+		if (nameLower == needle) {
+			exact = desc;
+		}
+		if (core::string::contains(nameLower, needle)) {
+			++substrMatches;
+			if (bestSubstr == nullptr || dist < bestSubstrDist ||
+				(dist == bestSubstrDist && desc->name.size() < bestSubstr->name.size())) {
+				bestSubstr = desc;
+				bestSubstrDist = dist;
+			}
+		}
+		if (dist < bestDist) {
+			bestDist = dist;
+			bestFuzzy = desc;
+			fuzzyAmbiguous = false;
+		} else if (dist == bestDist) {
+			fuzzyAmbiguous = true;
+		}
+	}
+
+	if (exact != nullptr) {
+		return exact;
+	}
+	if (substrMatches >= 1u) {
+		return bestSubstr;
+	}
+	const size_t threshold = core_max((size_t)1u, needle.size() / 2u);
+	if (!fuzzyAmbiguous && bestFuzzy != nullptr && bestDist <= threshold) {
+		return bestFuzzy;
+	}
+	return nullptr;
+}
+
 } // namespace io
