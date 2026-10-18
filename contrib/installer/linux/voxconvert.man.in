@@ -183,6 +183,12 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_ldrawdir\fP: Path to the LDraw parts library directory for resolving part references
 .PP
+\fBvoxformat_mcloadradius\fP: Minecraft region files to load around spawn for level.dat / mcworld. -1 = all regions, 0 = spawn region only, N = Chebyshev distance in region units (512 blocks)
+.PP
+\fBvoxformat_mcloadregion\fP: Optional block AABB filter for Minecraft level.dat / mcworld import. Format: 'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are loaded. Combined with voxformat_mcloadradius when both are set.
+.PP
+\fBvoxformat_mcmergeregions\fP: Merge each Minecraft region file into one volume on level.dat / mcworld load. Disable to keep per-chunk volumes (faster and less memory for large maps and thumbnails)
+.PP
 \fBvoxformat_mcseparatewater\fP: Put Minecraft water voxels into a dedicated transparent volume as a child of each region
 .PP
 \fBvoxformat_merge\fP: Merge all objects into one
@@ -191,7 +197,7 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_mesh_simplify\fP: Simplify the mesh when voxelizing a mesh format
 .PP
-\fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when applying mesh optimization (0 = disable simplification)
+\fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when simplifying meshes on import or export (0 or 1 = disable)
 .PP
 \fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
 .PP
