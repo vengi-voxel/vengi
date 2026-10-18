@@ -16,6 +16,9 @@ General:
    - Added support for Trove `.blueprint` (kiwib) files
    - Added support for VoxelCdx files `.vcdx`
    - Added support for Sandbox `vxm` version 13 and `vxa` version 10
+   - Added support for Trenchblock `vox` files
+   - Added support for Ace Of Spades `aos` map support
+   - Added support for Teardown version 2.1.0+
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
    - Fixed VoxelMax `vmaxb` loading and transforms as well as colors and materials
@@ -23,7 +26,6 @@ General:
    - Basic `fbx` material support
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
    - Improved `qb`, `qbt` and `qbcl` pivot support
-   - Added support for Ace Of Spades `aos` map support
    - Fixed Goxel `gox` index out of bounds read
 
 VoxEdit:
@@ -35,6 +37,10 @@ VoxEdit:
 Thumbnailer:
 
    - Added `--pathtracer` with `--quality` (`default`, `preview`, `high`) and `--samples` for GPU pathtraced thumbnails
+
+VoxConvert:
+
+   - Added `--output-format` parameter to specify the target format is extensions are abigious
 
 PalConvert:
 
