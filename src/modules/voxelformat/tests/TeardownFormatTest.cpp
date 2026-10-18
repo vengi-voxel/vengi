@@ -11,7 +11,7 @@ class TeardownFormatTest : public AbstractFormatTest {};
 
 TEST_F(TeardownFormatTest, testLoad) {
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "about.bin", 225);
+	testLoad(sceneGraph, "about.bin", 225, true);
 }
 
 } // namespace voxelformat

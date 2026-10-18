@@ -159,7 +159,18 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		wrap(s.readUInt8(version[i]))
 	}
 
-	Log::debug("Teardown bin version: %u.%u.%u", version[0], version[1], version[2]);
+	const int tdbinVersion = (int)version[0] * 100 + (int)version[1] * 10 + (int)version[2];
+	Log::debug("Teardown bin version: %u.%u.%u (%i)", version[0], version[1], version[2], tdbinVersion);
+	constexpr int MinVersion = 210; // 2.1.0
+	if (tdbinVersion < MinVersion) {
+		Log::error("Teardown bin version %u.%u.%u is too old (need >= 2.1.0). Delete stale .tdbin caches and re-export.",
+				   version[0], version[1], version[2]);
+		return false;
+	}
+	if (tdbinVersion > MinVersion) {
+		Log::warn("Teardown bin version %u.%u.%u is newer than 2.1.0; parsing may fail", version[0], version[1],
+				  version[2]);
+	}
 
 	core::String levelId;
 	wrapBool(s.readString(TDStringLength, levelId, true))
@@ -301,6 +312,17 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 
 		int animator2;
 		wrap(s.readInt32(animator2))
+
+		// 2.1.0: unk6[2], unk7, unk8[4] before tools_info
+		uint8_t unk6[2];
+		wrap(s.readUInt8(unk6[0]))
+		wrap(s.readUInt8(unk6[1]))
+		float unk7;
+		wrap(s.readFloat(unk7))
+		uint8_t unk8[4];
+		for (int j = 0; j < 4; ++j) {
+			wrap(s.readUInt8(unk8[j]))
+		}
 
 		for (uint32_t j = 0; j < 17; ++j) {
 			readToolInfo(s);
@@ -817,20 +839,63 @@ bool TeardownFormat::readWater(io::ReadStream &s) {
 	glm::vec4 color;
 	wrapBool(io::readColor(s, color))
 
-	for (uint32_t i = 0; i < 5; ++i) {
-		float unk;
-		wrap(s.readFloat(unk))
-	}
+	float ringheight;
+	wrap(s.readFloat(ringheight))
+	glm::vec4 pbr;
+	wrapBool(io::readVec4(s, pbr))
 	float drag;
 	wrap(s.readFloat(drag))
-	uint8_t unk2;
-	wrap(s.readUInt8(unk2))
-	for (uint32_t i = 0; i < 25; ++i) {
-		float unk;
-		wrap(s.readFloat(unk))
-	}
-	uint8_t unk6;
-	wrap(s.readUInt8(unk6))
+
+	uint32_t foamColorEmitMode;
+	wrap(s.readUInt32(foamColorEmitMode))
+	core::String foamTexture;
+	wrapBool(s.readString(TDStringLength, foamTexture, true))
+	float foamScale;
+	wrap(s.readFloat(foamScale))
+	float foamScaleLarge;
+	wrap(s.readFloat(foamScaleLarge))
+	float foamScaleSmall;
+	wrap(s.readFloat(foamScaleSmall))
+
+	uint32_t splashTexture;
+	wrap(s.readUInt32(splashTexture))
+	glm::vec4 splashColorA;
+	wrapBool(io::readColor(s, splashColorA))
+	glm::vec4 splashColorB;
+	wrapBool(io::readColor(s, splashColorB))
+	float splashAlphaA;
+	wrap(s.readFloat(splashAlphaA))
+	float splashAlphaB;
+	wrap(s.readFloat(splashAlphaB))
+	float splashEmissiveA;
+	wrap(s.readFloat(splashEmissiveA))
+	float splashEmissiveB;
+	wrap(s.readFloat(splashEmissiveB))
+	float splashDrag;
+	wrap(s.readFloat(splashDrag))
+	float splashStretch;
+	wrap(s.readFloat(splashStretch))
+	float splashLifetime;
+	wrap(s.readFloat(splashLifetime))
+	float splashLifetimeRnd;
+	wrap(s.readFloat(splashLifetimeRnd))
+	float splashGravity;
+	wrap(s.readFloat(splashGravity))
+	float splashGravityRnd;
+	wrap(s.readFloat(splashGravityRnd))
+	float splashVelocityScale;
+	wrap(s.readFloat(splashVelocityScale))
+
+	core::String splashSmall;
+	wrapBool(s.readString(TDStringLength, splashSmall, true))
+	core::String splashMedium;
+	wrapBool(s.readString(TDStringLength, splashMedium, true))
+	core::String splashLarge;
+	wrapBool(s.readString(TDStringLength, splashLarge, true))
+	core::String doFloat;
+	wrapBool(s.readString(TDStringLength, doFloat, true))
+	core::String underwater;
+	wrapBool(s.readString(TDStringLength, underwater, true))
 
 	float visibility;
 	wrap(s.readFloat(visibility))
@@ -1382,6 +1447,8 @@ bool TeardownFormat::readAnimator(io::ReadStream &s) {
 
 	wrap(s.readUInt32(entries))
 	for (uint32_t i = 0; i < entries; ++i) {
+		core::String str;
+		wrapBool(s.readString(TDStringLength, str, true))
 		uint8_t tmp[72];
 		if (s.read(tmp, sizeof(tmp)) != (int)sizeof(tmp)) {
 			return false;
