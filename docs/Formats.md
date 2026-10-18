@@ -52,6 +52,7 @@
 | Teardown bin               | bin         | X       |        |            |         |            |
 | Tiberian Sun               | vxl         | X       | X      |            | X       | X          |
 | Trenchblocks               | vox         | X       | X      |            | X       |            |
+| Trove Blueprint            | blueprint   | X       | X      |            | X       |            |
 | Veloren terrain            | dat         | X       | X      |            | X       |            |
 | Vengi                      | vengi       | X       | X      |            | X       | X          |
 | Voxel3D                    | v3a         | X       | X      |            |         |            |

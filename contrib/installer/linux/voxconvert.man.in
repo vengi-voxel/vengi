@@ -499,6 +499,8 @@ Tiberian Sun (*.vxl)
 .TP
 Trenchblocks (*.vox)
 .TP
+Trove Blueprint (*.blueprint)
+.TP
 UFO:Alien Invasion (*.bsp)
 .TP
 Veloren terrain (*.dat)
@@ -588,6 +590,8 @@ StarMade Template (*.smtpl)
 Tiberian Sun (*.vxl)
 .TP
 Trenchblocks (*.vox)
+.TP
+Trove Blueprint (*.blueprint)
 .TP
 Veloren terrain (*.dat)
 .TP

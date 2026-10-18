@@ -152,6 +152,8 @@ Tiberian Sun (*.vxl)
 .TP
 Trenchblocks (*.vox)
 .TP
+Trove Blueprint (*.blueprint)
+.TP
 UFO:Alien Invasion (*.bsp)
 .TP
 Veloren terrain (*.dat)

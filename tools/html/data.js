@@ -895,6 +895,22 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Trove Blueprint",
+      "extensions": [
+        "blueprint"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x6B697769"
+        }
+      ],
+      "mimetype": "application/x-trove-blueprint",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "Luanti World Edit",
       "extensions": [
         "we"

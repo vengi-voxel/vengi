@@ -290,6 +290,13 @@
 		<comment>Teardown bin</comment>
 		<glob pattern="*.bin"/>
 	</mime-type>
+	<mime-type type="application/x-trove-blueprint">
+		<comment>Trove Blueprint</comment>
+		<glob pattern="*.blueprint"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="kiwi"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-luanti-world-edit">
 		<comment>Luanti World Edit</comment>
 		<glob pattern="*.we"/>

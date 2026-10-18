@@ -777,6 +777,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Trove Blueprint</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-trove-blueprint</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>blueprint</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Luanti World Edit</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

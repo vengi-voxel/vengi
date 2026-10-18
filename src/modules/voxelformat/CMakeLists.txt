@@ -175,6 +175,7 @@ set(SRCS
 	private/starmade/SMTPLFormat.h           private/starmade/SMTPLFormat.cpp
 	private/starmade/SMPalette.h
 	private/teardown/TeardownFormat.cpp      private/teardown/TeardownFormat.h
+	private/trove/TroveBlueprintFormat.h     private/trove/TroveBlueprintFormat.cpp
 	private/veloren/VelorenTerrainFormat.h   private/veloren/VelorenTerrainFormat.cpp
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
@@ -244,6 +245,7 @@ set(TEST_SRCS
 	tests/LuantiWorldEditFormatTest.cpp
 	tests/MeshTriTest.cpp
 	tests/TeardownFormatTest.cpp
+	tests/TroveBlueprintFormatTest.cpp
 	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
