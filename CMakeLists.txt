@@ -192,11 +192,20 @@ include_directories(src/modules/video/shaders)
 include_directories(src/modules)
 
 add_subdirectory(contrib/libs)
+include(${SCRIPTS_CMAKE_DIR}/pch.cmake)
 add_subdirectory(tools)
 
 if (UNITTESTS OR USE_IMGUITESTENGINE)
 	enable_testing()
 	set(CTEST_TEST_TIMEOUT 1800)
+endif()
+if (UNITTESTS)
+	add_test(NAME shared-pch COMMAND ${CMAKE_COMMAND}
+		"-DPCH_TEST_BINARY_DIR=${CMAKE_BINARY_DIR}/pch-test"
+		"-DPCH_TEST_GENERATOR=${CMAKE_GENERATOR}"
+		"-DPCH_TEST_C_COMPILER=${CMAKE_C_COMPILER}"
+		"-DPCH_TEST_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+		-P "${SCRIPTS_CMAKE_DIR}/tests/PchTest.cmake")
 endif()
 add_subdirectory(src)
 
