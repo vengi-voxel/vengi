@@ -1233,7 +1233,7 @@ void MainWindow::update(double nowSeconds) {
 		ImGui::DockBuilderSetNodeSize(dockIdMain, viewport->WorkSize);
 		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.2f, nullptr, &dockIdMain);
 		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.3f, nullptr, &dockIdMain);
-		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &dockIdLeft);
+		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.55f, nullptr, &dockIdLeft);
 		ImGuiID dockIdBrushToolbar = 0;
 		ImGuiID dockIdLeftBottomRest = dockIdLeftDown;
 		const float brushToolbarHeight = _brushPanel.toolbarDockHeight();
@@ -1245,11 +1245,6 @@ void MainWindow::update(double nowSeconds) {
 			// Brush toolbar on top, settings + inspectors below (both visible, not tabbed together).
 			ImGui::DockBuilderSplitNode(dockIdLeftDown, ImGuiDir_Up, splitRatio, &dockIdBrushToolbar,
 										&dockIdLeftBottomRest);
-			ImVec2 toolbarNodeSize(leftDownNode->Size.x, brushToolbarHeight);
-			ImGui::DockBuilderSetNodeSize(dockIdBrushToolbar, toolbarNodeSize);
-			if (ImGuiDockNode *toolbarNode = ImGui::DockBuilderGetNode(dockIdBrushToolbar)) {
-				toolbarNode->SetLocalFlags(toolbarNode->LocalFlags | ImGuiDockNodeFlags_NoResize);
-			}
 		}
 		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.5f, nullptr, &dockIdRight);
 		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &dockIdMain);

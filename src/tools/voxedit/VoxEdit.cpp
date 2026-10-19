@@ -50,7 +50,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("scenegizmo", core::BindingContext::Context1 | core::BindingContext::Context4);
 	core::registerBindingContext("editgizmo", core::BindingContext::Context2 | core::BindingContext::Context4);
 	_allowRelativeMouseMode = true;
-	_iniVersion = 12;
+	_iniVersion = 13;
 	_keybindingsVersion = 6;
 	_wantCrashLogs = true;
 

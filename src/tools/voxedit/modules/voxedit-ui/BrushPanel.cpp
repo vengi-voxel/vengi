@@ -168,13 +168,8 @@ void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandE
 	if (!panel.isOpen()) {
 		return;
 	}
-	float minHeight = toolbarDockHeight();
-	if (sceneMode) {
-		minHeight += ImGui::GetTextLineHeightWithSpacing() * 3.0f;
-	}
-	ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, minHeight), ImVec2(FLT_MAX, minHeight));
 	const core::String &title = makeTitle(ICON_LC_BRUSH, _("Brushes"), id);
-	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar;
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoFocusOnAppearing;
 	if (ui::ScopedPanel::Scope scope = panel.begin(title.c_str(), flags)) {
 		if (sceneMode) {
 			ImGui::TextWrappedUnformatted(
