@@ -643,6 +643,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name);
  * validation failure.
  */
 bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
+bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait = MemoryBarrierType::None);
 /**
  * @brief Wait for the execution of a compute shader
  */

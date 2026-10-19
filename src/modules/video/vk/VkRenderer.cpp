@@ -398,6 +398,10 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	return false;
 }
 
+bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
+	return false;
+}
+
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 }
 

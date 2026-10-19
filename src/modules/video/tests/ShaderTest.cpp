@@ -2,19 +2,62 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
 #include "video/Shader.h"
-#include "io/Filesystem.h"
+#include "app/tests/AbstractTest.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "io/Filesystem.h"
+#include "video/ShaderStorageBuffer.h"
+#include "video/tests/AbstractGLTest.h"
 
 namespace video {
 
-class ShaderTest : public app::AbstractTest {
-};
+class ShaderTest : public app::AbstractTest {};
+
+class IndirectComputeTest : public AbstractGLTest {};
+
+TEST_F(IndirectComputeTest, testDispatchOffsetAndEmptyQueue) {
+	if (!hasFeature(Feature::ComputeShaders)) {
+		GTEST_SKIP() << "Compute shaders required";
+	}
+	Shader shader;
+	ASSERT_TRUE(shader.load("indirect-dispatch-test", R"(
+layout(local_size_x = 8) in;
+layout(std430, binding = 0) buffer Results { uint values[]; };
+void main() { values[gl_GlobalInvocationID.x] = gl_GlobalInvocationID.x + 1u; }
+)",
+							ShaderType::Compute));
+	ASSERT_TRUE(shader.init());
+	ShaderStorageBuffer arguments;
+	const uint32_t counts[] = {0u, 1u, 1u, 0u, 3u, 1u, 1u};
+	ASSERT_TRUE(arguments.create(counts, sizeof(counts)));
+	ShaderStorageBuffer output;
+	const uint32_t zeros[24] = {};
+	ASSERT_TRUE(output.create(zeros, sizeof(zeros)));
+	ASSERT_TRUE(output.bind(0));
+	EXPECT_FALSE(runShaderIndirect(shader.handle(), InvalidId, 0u));
+	EXPECT_FALSE(runShaderIndirect(shader.handle(), arguments.handle(), 1u));
+	ASSERT_TRUE(runShaderIndirect(shader.handle(), arguments.handle(), 0u, MemoryBarrierType::All));
+	const uint32_t *empty = (const uint32_t *)output.map(AccessMode::Read);
+	ASSERT_NE(nullptr, empty);
+	for (uint32_t i = 0; i < 24u; ++i) {
+		EXPECT_EQ(0u, empty[i]);
+	}
+	output.unmap();
+	ASSERT_TRUE(runShaderIndirect(shader.handle(), arguments.handle(), 4u * sizeof(uint32_t), MemoryBarrierType::All));
+	const uint32_t *values = (const uint32_t *)output.map(AccessMode::Read);
+	ASSERT_NE(nullptr, values);
+	for (uint32_t i = 0; i < 24u; ++i) {
+		EXPECT_EQ(i + 1u, values[i]);
+	}
+	output.unmap();
+	output.shutdown();
+	arguments.shutdown();
+	shader.shutdown();
+}
 
 TEST_F(ShaderTest, testInclude) {
-	const io::FilesystemPtr& filesystem = _testApp->filesystem();
+	const io::FilesystemPtr &filesystem = _testApp->filesystem();
 
 	filesystem->homeWrite("foobar.vert", "#define SUCCESS");
 	filesystem->homeWrite("foobar.frag", "#define SUCCESS");
@@ -76,4 +119,4 @@ TEST_F(ShaderTest, testGetSourceEsslIntegerSamplerPrecision) {
 	EXPECT_TRUE(core::string::contains(out, "precision highp usampler2DArray;")) << out.c_str();
 }
 
-}
+} // namespace video

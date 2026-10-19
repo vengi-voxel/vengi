@@ -2893,6 +2893,24 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	return true;
 }
 
+bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
+	video_trace_scoped(RunShaderIndirect);
+	if (buffer == InvalidId || offset % sizeof(uint32_t) != 0u || glDispatchComputeIndirect == nullptr) {
+		return false;
+	}
+	video::useProgram(program);
+	video::syncPendingState();
+	video::validate(program);
+	// This target is distinct from the draw-indirect target cached by bindBuffer().
+	glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, buffer);
+	glDispatchComputeIndirect((GLintptr)offset);
+	glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0);
+	video::checkError();
+	waitShader(wait);
+	statsDrawCall();
+	return true;
+}
+
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
 	video_trace_scoped(LinkShader);
 	const GLuint lid = (GLuint)program;
