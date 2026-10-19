@@ -356,6 +356,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		IM_CHECK(slider.RectFull.Max.x <= increment.RectFull.Min.x);
 		ctx->ItemClick("Increase radius");
 		IM_CHECK_EQ(brush.radius(), 2);
+		// The radius-zero help disappears; allow the scrollbar and widget widths to settle.
+		ctx->Yield(2);
 		ctx->ItemClick("##radius/+");
 		IM_CHECK_EQ(brush.radius(), 3);
 		ctx->ItemClick("##radius/-");
