@@ -4,6 +4,8 @@
 
 #include "../PalettePanel.h"
 #include "TestUtil.h"
+#include "util/VarUtil.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -13,12 +15,12 @@ namespace voxedit {
  * @brief Compute the screen-space center of a palette color cell.
  *
  * The palette grid starts at the window's content region top-left corner. Each cell is
- * a square of @c frameHeight pixels. Cells are laid out left-to-right and wrap when they
+ * a square scaled by @c ve_palettecolorsize relative to the UI frame height. Cells are laid out left-to-right and wrap when they
  * would exceed @c contentRegionWidth. The @c palettePanelIdx is the visual index (after
  * any sort reordering).
  */
 static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
-	const float frameHeight = ImGui::GetFrameHeight();
+	const float frameHeight = ImGui::GetFrameHeight() * core::getVar(cfg::VoxEditPaletteColorSize)->floatVal();
 	const float startX = window->ContentRegionRect.Min.x;
 	const float startY = window->ContentRegionRect.Min.y;
 	const float availWidth = window->ContentRegionRect.Max.x - startX;
@@ -33,6 +35,29 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 }
 
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "color size")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		const char *sizes[] = {"0.5", "1.0", "2.0", "4.0"};
+		for (const char *size : sizes) {
+			util::ScopedVarChange colorSize(cfg::VoxEditPaletteColorSize, size);
+			ctx->Yield(3);
+			ImGuiWindow *window = ImGui::FindWindowByName(id);
+			IM_CHECK(window != nullptr);
+			const float cellSize = ImGui::GetFrameHeight() * core::getVar(cfg::VoxEditPaletteColorSize)->floatVal();
+			const int cols = core_max(1, (int)(window->ContentRegionRect.GetWidth() / cellSize));
+			// Select cells on either side of a row wrap to check drawing and hit boxes.
+			const int indices[] = {0, cols - 1, cols};
+			for (int index : indices) {
+				ctx->MouseMoveToPos(paletteCellCenter(window, index));
+				ctx->MouseClick(0);
+				ctx->Yield();
+				IM_CHECK_EQ(currentPaletteColorIndex(), _sceneMgr->activePalette().view().uiIndex(index));
+			}
+		}
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);

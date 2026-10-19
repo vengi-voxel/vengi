@@ -518,6 +518,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionHeight = available.y + ImGui::GetCursorPosY();
 	const float frameHeight = ImGui::GetFrameHeight();
+	const float colorButtonSize = frameHeight * core::getVar(cfg::VoxEditPaletteColorSize)->floatVal();
 	const ImVec2 windowSize(10.0f * frameHeight, contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int sceneHoveredPaletteColorIdx = currentSceneColor();
@@ -544,15 +545,15 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 				const float windowPosX = ImGui::GetWindowPos().x;
 				const float contentRegionRightEdge =
 					windowPosX + ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x;
-				const float rowWidth = core_max(frameHeight, contentRegionRightEdge - pos.x);
-				const int colorsPerRow = core_max(1, (int)(rowWidth / frameHeight));
+				const float rowWidth = core_max(colorButtonSize, contentRegionRightEdge - pos.x);
+				const int colorsPerRow = core_max(1, (int)(rowWidth / colorButtonSize));
 				const int totalRows = (palette::PaletteMaxColors + colorsPerRow - 1) / colorsPerRow;
 
 				ImGuiListClipper clipper;
-				clipper.Begin(totalRows, frameHeight);
+				clipper.Begin(totalRows, colorButtonSize);
 				while (clipper.Step()) {
 					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
-						ImVec2 cursorPos(pos.x, pos.y + (float)row * frameHeight);
+						ImVec2 cursorPos(pos.x, pos.y + (float)row * colorButtonSize);
 						const int rowStart = row * colorsPerRow;
 						for (int col = 0; col < colorsPerRow; ++col) {
 							const int palettePanelIdx = rowStart + col;
@@ -561,13 +562,13 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 							}
 							const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
 							addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx,
-									 (uint8_t)palettePanelIdx, frameHeight, node, palette, sceneColorIdx,
+									 (uint8_t)palettePanelIdx, colorButtonSize, node, palette, sceneColorIdx,
 									 selectedColorIdx, listener);
 						}
 					}
 				}
 
-				ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + (float)totalRows * frameHeight));
+				ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + (float)totalRows * colorButtonSize));
 
 				drawList->Flags = backupFlags;
 

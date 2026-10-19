@@ -3752,6 +3752,8 @@ core::UUID SceneManager::toNodeUUID(const command::CommandArgs &args, const core
 }
 
 void SceneManager::construct() {
+	const core::VarDef voxEditPaletteColorSize(cfg::VoxEditPaletteColorSize, 1.0f, 0.5f, 4.0f, N_("Palette color size"), N_("Palette color cell size relative to the UI frame height"));
+	core::Var::registerVar(voxEditPaletteColorSize);
 	const core::VarDef voxEditColorWheel(cfg::VoxEditColorWheel, false, N_("Color wheel"), N_("Use the color wheel in the palette color editing"));
 	core::Var::registerVar(voxEditColorWheel);
 	const core::VarDef voxEditShowColorPicker(cfg::VoxEditShowColorPicker, false, N_("Color picker"), N_("Always show the color picker below the palette"));
