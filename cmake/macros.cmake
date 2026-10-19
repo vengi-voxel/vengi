@@ -3,19 +3,6 @@ function(engine_app_id out_var target_name)
 	set(${out_var} "com.github.${CMAKE_PROJECT_NAME}.${target_name}" PARENT_SCOPE)
 endfunction()
 
-# Select the donor with matching PIC/PIE settings.
-function(engine_reuse_sdl3_pch target)
-	if (CMAKE_DISABLE_PRECOMPILE_HEADERS)
-		return()
-	endif()
-	get_target_property(_type ${target} TYPE)
-	if (_type STREQUAL "EXECUTABLE")
-		target_precompile_headers(${target} REUSE_FROM sdl3-pch-executable)
-	elseif (NOT _type STREQUAL "INTERFACE_LIBRARY")
-		target_precompile_headers(${target} REUSE_FROM sdl3-pch)
-	endif()
-endfunction()
-
 function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	get_filename_component(filename ${FILE} NAME)
 	if (NOT EXISTS ${DATA_DIR}/${FILE})
@@ -192,7 +179,6 @@ function(engine_add_executable)
 	# SDL3's SDL_main.h injects WinMain/main into every TU. Keep that disabled by
 	# default; entry-point sources that need it #undef SDL_MAIN_HANDLED first.
 	target_compile_definitions(${_EXE_TARGET} PRIVATE SDL_MAIN_HANDLED)
-	engine_reuse_sdl3_pch(${_EXE_TARGET})
 
 	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
 	set_target_properties(${_EXE_TARGET} PROPERTIES
@@ -515,9 +501,6 @@ function(engine_add_module)
 	if (_LIB_PRIVATE_DEPENDENCIES)
 		target_link_libraries(${_LIB_TARGET} PRIVATE ${_LIB_PRIVATE_DEPENDENCIES})
 	endif()
-	if (_LIB_SRCS)
-		engine_reuse_sdl3_pch(${_LIB_TARGET})
-	endif()
 
 	if (USE_CPPCHECK)
 		find_program(CPPCHECK cppcheck)
@@ -690,8 +673,6 @@ function(engine_target_optimize TARGET)
 	else()
 		target_compile_options(${TARGET} PRIVATE -O3)
 		target_compile_definitions(${TARGET} PRIVATE -DNDEBUG)
-		# The shared PCH uses the project's default optimization settings.
-		set_target_properties(${TARGET} PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 	endif()
 endfunction()
 

@@ -74,3 +74,9 @@ else()
 	add_library(sdl3 INTERFACE)
 	target_link_libraries(sdl3 INTERFACE SDL3::SDL3-static)
 endif()
+set(SDL_PCH
+	<SDL3/SDL.h>
+	<SDL3/SDL_stdinc.h>
+	<SDL3/SDL_atomic.h>
+)
+target_precompile_headers(sdl3 INTERFACE ${SDL_PCH})
