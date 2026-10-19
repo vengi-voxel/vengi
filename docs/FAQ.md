@@ -62,4 +62,4 @@ Please fill a bug report on the [vengi github](https://github.com/vengi-voxel/ve
 
 ## My voxedit UI layout is broken
 
-This might happen when e.g. switching between versions or running a nightly builds. You can easily reset your layout by going to `Edit`->`Options`->`Reset layout`.
+This might happen when e.g. switching between versions or running a nightly builds. You can easily reset your layout by going to `View`->`Reset layout`.
