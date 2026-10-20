@@ -3,14 +3,40 @@
  */
 
 #include "scenegraph/SceneGraphUtil.h"
-#include "scenegraph/SceneGraph.h"
 #include "app/tests/AbstractTest.h"
-#include "voxel/RawVolume.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
+#include <glm/ext/quaternion_trigonometric.hpp>
 
 namespace scenegraph {
 
 class SceneGraphUtilTest : public app::AbstractTest {};
+
+TEST_F(SceneGraphUtilTest, testSampleLocalTransform) {
+	SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
+	keys[0].frameIdx = 4;
+	keys[1].frameIdx = 24;
+	keys[1].transform().setLocalTranslation(glm::vec3(8, 0, 0));
+	keys[1].transform().setLocalScale(glm::vec3(3));
+	keys[1].transform().setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
+	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 0).localTranslation());
+	EXPECT_EQ(glm::vec3(8, 0, 0), sampleLocalTransform(keys, 30).localTranslation());
+	const auto midpoint = sampleLocalTransform(keys, 14);
+	EXPECT_EQ(glm::vec3(4, 0, 0), midpoint.localTranslation());
+	EXPECT_EQ(glm::vec3(2), midpoint.localScale());
+	EXPECT_NEAR(glm::sin(glm::radians(22.5f)), midpoint.localOrientation().y, 0.0001f);
+	keys[0].interpolation = InterpolationType::QuadEaseIn;
+	EXPECT_FLOAT_EQ(2.0f, sampleLocalTransform(keys, 14).localTranslation().x);
+	keys[0].interpolation = InterpolationType::Instant;
+	bool step = false;
+	EXPECT_FLOAT_EQ(0.0f, sampleLocalTransform(keys, 13, &step).localTranslation().x);
+	EXPECT_TRUE(step);
+	EXPECT_FLOAT_EQ(8.0f, sampleLocalTransform(keys, 15).localTranslation().x);
+	EXPECT_FLOAT_EQ(8.0f, sampleLocalTransform(keys, 24).localTranslation().x);
+	keys.resize(1);
+	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 24).localTranslation());
+}
 
 TEST_F(SceneGraphUtilTest, testAddSceneGraphNodes) {
 	SceneGraph source;

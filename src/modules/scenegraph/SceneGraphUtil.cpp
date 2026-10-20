@@ -512,6 +512,34 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	return !destSceneGraph.empty();
 }
 
+SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameIndex frame, bool *step) {
+	core_assert(!keys.empty());
+	size_t next = 0, end = keys.size();
+	while (next < end) {
+		const size_t middle = next + (end - next) / 2;
+		if (keys[middle].frameIdx <= frame)
+			next = middle + 1;
+		else
+			end = middle;
+	}
+	const auto &a = keys[next == 0 ? 0 : next - 1];
+	if (step)
+		*step = a.interpolation == InterpolationType::Instant;
+	if (next == 0 || next == keys.size())
+		return a.transform();
+	const auto &b = keys[next];
+	const double time = interpolate(a.interpolation, frame, a.frameIdx, b.frameIdx);
+	const float t = glm::clamp((float)((time - a.frameIdx) / (b.frameIdx - a.frameIdx)), 0.0f, 1.0f);
+	SceneGraphTransform result;
+	result.setLocalTranslation(glm::mix(a.transform().localTranslation(), b.transform().localTranslation(), t));
+	glm::quat orientation = b.transform().localOrientation();
+	if (a.longRotation && glm::dot(orientation, a.transform().localOrientation()) < 0)
+		orientation *= -1.0f;
+	result.setLocalOrientation(glm::normalize(glm::slerp(a.transform().localOrientation(), orientation, t)));
+	result.setLocalScale(glm::mix(a.transform().localScale(), b.transform().localScale(), t));
+	return result;
+}
+
 double interpolate(InterpolationType interpolationType, double current, double start, double end) {
 	if (glm::abs(start - end) < glm::epsilon<double>()) {
 		return start;

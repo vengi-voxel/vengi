@@ -599,27 +599,8 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 			const SceneGraphKeyFrame *kf = node.keyFrame(start);
 			transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
 		} else {
-			const SceneGraphKeyFrame *source = node.keyFrame(start);
-			const SceneGraphKeyFrame *target = node.keyFrame(end);
-			core_assert_always(source && target);
-			const InterpolationType interpolationType = source->interpolation;
-
-			glm::quat tgtLocalOrientation = target->transform().localOrientation();
-			const glm::quat &srcLocalOrientation = source->transform().localOrientation();
-			if (source->longRotation) {
-				if (glm::dot(tgtLocalOrientation, srcLocalOrientation) < 0.0f) {
-					tgtLocalOrientation *= -1.0f;
-				}
-			}
-
-			const double deltaFrame = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)source->frameIdx, (double)target->frameIdx);
-			const double range = (double)target->frameIdx - (double)source->frameIdx;
-			const float lerpFactor = glm::clamp((float)((deltaFrame - (double)source->frameIdx) / range), 0.0f, 1.0f);
-
-			const glm::vec3 translation = glm::mix(source->transform().localTranslation(), target->transform().localTranslation(), lerpFactor);
-			const glm::quat orientation = glm::slerp(srcLocalOrientation, tgtLocalOrientation, lerpFactor);
-			const glm::vec3 scale = glm::mix(source->transform().localScale(), target->transform().localScale(), lerpFactor);
-			transform.setWorldMatrix(parentTransform.worldMatrix() * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale)));
+			const SceneGraphTransform local = sampleLocalTransform(node.keyFrames(), frameIdx);
+			transform.setWorldMatrix(parentTransform.worldMatrix() * local.calculateLocalMatrix());
 		}
 	}
 	core::ScopedLock scoped(_mutex);

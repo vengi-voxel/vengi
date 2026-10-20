@@ -56,6 +56,12 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 				  bool crop = false, bool createEmpty = false, bool skipHidden = false,
 				  const glm::ivec3 &maxSize = glm::ivec3(128));
 
+/**
+ * @brief Sample local TRS from nonempty, frame-sorted keyframes, clamping outside their range.
+ * @param step If supplied, receives whether the source key uses Instant interpolation.
+ */
+SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameIndex frame, bool *step = nullptr);
+
 double interpolate(InterpolationType interpolationType, double current, double start, double end);
 
 /**
