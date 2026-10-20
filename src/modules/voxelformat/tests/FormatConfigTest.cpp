@@ -177,6 +177,29 @@ TEST_F(FormatConfigTest, testFormatNamesExist) {
 	}
 }
 
+TEST_F(FormatConfigTest, testMeshSimplifyFlags) {
+	const FormatVarMeta *simplify = FormatConfig::findVarMeta(cfg::VoxformatMeshSimplify);
+	ASSERT_NE(simplify, nullptr);
+	EXPECT_NE(0u, simplify->flags & FormatCVarFlag_Load);
+	EXPECT_EQ(0u, simplify->flags & FormatCVarFlag_Save);
+
+	// Ratio is used on import (with voxformat_mesh_simplify) and on export (with voxformat_optimize).
+	const FormatVarMeta *ratio = FormatConfig::findVarMeta(cfg::VoxformatMeshSimplifyRatio);
+	ASSERT_NE(ratio, nullptr);
+	EXPECT_NE(0u, ratio->flags & FormatCVarFlag_Load);
+	EXPECT_NE(0u, ratio->flags & FormatCVarFlag_Save);
+	EXPECT_TRUE(FormatConfig::appliesTo(*ratio, false, GLTFFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*ratio, true, GLTFFormat::format()));
+}
+
+TEST_F(FormatConfigTest, testWithVoxelNormals) {
+	const FormatVarMeta *meta = FormatConfig::findVarMeta(cfg::VoxformatWithVoxelNormals);
+	ASSERT_NE(meta, nullptr);
+	EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, OBJFormat::format()));
+	EXPECT_TRUE(FormatConfig::appliesTo(*meta, true, GLTFFormat::format()));
+	EXPECT_FALSE(FormatConfig::appliesTo(*meta, false, OBJFormat::format()));
+}
+
 TEST_F(FormatConfigTest, testWriteConfigJsonExtra) {
 	io::BufferedReadWriteStream stream;
 	FormatConfig::writeConfigJson(stream, core::getVar(cfg::VoxformatFillHollow));
