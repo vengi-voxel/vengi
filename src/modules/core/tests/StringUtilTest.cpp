@@ -13,6 +13,24 @@ namespace core {
 class StringUtilTest: public testing::Test {
 };
 
+TEST_F(StringUtilTest, testQuotedString) {
+	const String original = "quotes: \" slash: \\ controls: \b\f\n\r\t\x01 utf8: \xc3\xa4";
+	const String quoted = "\"" + string::escape(original) + "\" tail";
+	const char *input = quoted.c_str();
+	String decoded;
+	ASSERT_TRUE(string::parseQuotedString(input, decoded));
+	EXPECT_EQ(original, decoded);
+	EXPECT_STREQ(" tail", input);
+
+	input = R"("\u0041\u00e4\uD800\uDF48\U010348")";
+	ASSERT_TRUE(string::parseQuotedString(input, decoded));
+	EXPECT_EQ("A\xc3\xa4\xf0\x90\x8d\x88\xf0\x90\x8d\x88", decoded);
+	for (const char *invalid : {"no quote", "\"unterminated", "\"trailing\\", R"("\q")", R"("\u12")",
+							   R"("\uXX00")", R"("\uDC00")", R"("\uD800")", R"("\uD800\u0041")", R"("\U110000")"}) {
+		EXPECT_FALSE(string::parseQuotedString(invalid, decoded));
+	}
+}
+
 TEST_F(StringUtilTest, addPostfixToFile) {
 	EXPECT_EQ("foo-bar", core::string::addPostfixToFile("foo", "-bar"));
 	EXPECT_EQ("foo-bar-bar", core::string::addPostfixToFile("foo-bar", "-bar"));

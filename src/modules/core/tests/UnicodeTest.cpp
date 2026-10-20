@@ -11,6 +11,15 @@ namespace unicode {
 class UnicodeTest: public testing::Test {
 };
 
+TEST_F(UnicodeTest, testCodePointToUtf8) {
+	char bytes[5] = {};
+	ASSERT_EQ(4, toUtf8(0x10348, bytes, 4));
+	EXPECT_STREQ("\xf0\x90\x8d\x88", bytes);
+	EXPECT_EQ(0, toUtf8(0x10348, bytes, 3));
+	EXPECT_EQ(0, toUtf8(0xd800, bytes, 4));
+	EXPECT_EQ(0, toUtf8(0x110000, bytes, 4));
+}
+
 TEST_F(UnicodeTest, testCharLengthUtf16) {
 	EXPECT_EQ(1u, charLengthUtf16("a"));
 	EXPECT_EQ(1u, charLengthUtf16("\xE2\x82\xAC")); // 3 bytes in UTF-8, 1 char in UTF-16

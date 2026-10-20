@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Path.h"
 #include "core/StandardLib.h"
+#include "core/Unicode.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/Map.h"
 #include <SDL3/SDL_stdinc.h>
@@ -18,6 +19,101 @@
 
 namespace core {
 namespace string {
+
+core::String escape(const core::String &str) {
+	core::String out;
+	out.reserve(str.size());
+	for (unsigned char c : str) {
+		switch (c) {
+		case '"': out += "\\\""; break;
+		case '\\': out += "\\\\"; break;
+		case '\b': out += "\\b"; break;
+		case '\f': out += "\\f"; break;
+		case '\n': out += "\\n"; break;
+		case '\r': out += "\\r"; break;
+		case '\t': out += "\\t"; break;
+		default:
+			if (c < 0x20) {
+				out += core::String::format("\\u%04x", (unsigned int)c);
+			} else {
+				out += (char)c;
+			}
+		}
+	}
+	return out;
+}
+
+static bool parseUnicodeEscape(const char *&input, int digits, uint32_t &value) {
+	value = 0;
+	for (int i = 0; i < digits; ++i) {
+		const char c = *input;
+		int digit;
+		if (c >= '0' && c <= '9')
+			digit = c - '0';
+		else if (c >= 'a' && c <= 'f')
+			digit = c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F')
+			digit = c - 'A' + 10;
+		else
+			return false;
+		value = (value << 4) | digit;
+		++input;
+	}
+	return true;
+}
+
+bool parseQuotedString(const char *&input, core::String &out) {
+	if (*input != '"')
+		return false;
+	++input;
+	out.clear();
+	while (*input && *input != '"') {
+		char c = *input++;
+		if (c != '\\') {
+			out += c;
+			continue;
+		}
+		c = *input;
+		if (!c)
+			return false;
+		++input;
+		switch (c) {
+		case '"': case '\\': case '/': out += c; break;
+		case 'b': out += '\b'; break;
+		case 'f': out += '\f'; break;
+		case 'n': out += '\n'; break;
+		case 'r': out += '\r'; break;
+		case 't': out += '\t'; break;
+		case 'u': case 'U': {
+			uint32_t value;
+			if (!parseUnicodeEscape(input, c == 'u' ? 4 : 6, value))
+				return false;
+			if (value >= 0xd800 && value <= 0xdbff) {
+				if (*input != '\\' || input[1] != 'u')
+					return false;
+				input += 2;
+				uint32_t low;
+				if (!parseUnicodeEscape(input, 4, low) || low < 0xdc00 || low > 0xdfff)
+					return false;
+				value = 0x10000 + ((value - 0xd800) << 10) + low - 0xdc00;
+			}
+			if (value > 0x10ffff || (value >= 0xd800 && value <= 0xdfff))
+				return false;
+			char utf8[4];
+			const int size = core::unicode::toUtf8(value, utf8, sizeof(utf8));
+			if (size <= 0)
+				return false;
+			out.append(utf8, size);
+			break;
+		}
+		default: return false;
+		}
+	}
+	if (*input != '"')
+		return false;
+	++input;
+	return true;
+}
 
 size_t len(const char *string) {
 	return SDL_strlen(string);

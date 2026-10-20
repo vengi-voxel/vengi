@@ -83,11 +83,11 @@ int toUtf8(uint32_t c, char *buf, size_t bufSize) {
 		return 2;
 	}
 
-	if (c >= 0xdc00 && c < 0xe000) {
+	if (c > 0x10ffff || (c >= 0xd800 && c < 0xe000)) {
 		return 0;
 	}
 
-	if (c >= 0xd800 && c < 0xdc00) {
+	if (c >= 0x10000) {
 		if (bufSize < 4) {
 			return 0;
 		}

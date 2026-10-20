@@ -5,6 +5,7 @@
 #include "Stream.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/Unicode.h"
 #include "core/UUID.h"
@@ -123,66 +124,11 @@ bool WriteStream::writeString(const core::String &string, bool terminate) {
 }
 
 bool WriteStream::writeJsonString(const char *str) {
-	if (write("\"", 1) == -1) {
-		return false;
-	}
-	if (str != nullptr) {
-		for (const unsigned char *p = (const unsigned char *)str; *p != '\0'; ++p) {
-			const char *esc = nullptr;
-			char buf[8];
-			size_t len = 0;
-			switch (*p) {
-			case '"':
-				esc = "\\\"";
-				len = 2;
-				break;
-			case '\\':
-				esc = "\\\\";
-				len = 2;
-				break;
-			case '\b':
-				esc = "\\b";
-				len = 2;
-				break;
-			case '\f':
-				esc = "\\f";
-				len = 2;
-				break;
-			case '\n':
-				esc = "\\n";
-				len = 2;
-				break;
-			case '\r':
-				esc = "\\r";
-				len = 2;
-				break;
-			case '\t':
-				esc = "\\t";
-				len = 2;
-				break;
-			default:
-				if (*p < 0x20u) {
-					SDL_snprintf(buf, sizeof(buf), "\\u%04x", (unsigned int)*p);
-					esc = buf;
-					len = 6;
-				} else {
-					if (write(p, 1) == -1) {
-						return false;
-					}
-					continue;
-				}
-				break;
-			}
-			if (write(esc, len) == -1) {
-				return false;
-			}
-		}
-	}
-	return write("\"", 1) != -1;
+	return writeJsonString(core::String(str ? str : ""));
 }
 
 bool WriteStream::writeJsonString(const core::String &str) {
-	return writeJsonString(str.c_str());
+	return writeString("\"", false) && writeString(core::string::escape(str), false) && writeString("\"", false);
 }
 
 bool WriteStream::writeLine(const core::String &string, const char *lineEnding) {

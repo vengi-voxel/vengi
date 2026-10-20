@@ -46,6 +46,17 @@ double toDouble(const core::String& str);
 
 double toDouble(const char* str);
 
+
+/** Escape a string's contents using JSON escapes, without surrounding quotes. */
+core::String escape(const core::String &str);
+
+/**
+ * @brief Read a double-quoted string and advance input past its closing quote.
+ * Supports JSON escapes and six-digit \U escapes. Unicode escapes are decoded to UTF-8.
+ * @return false for malformed escapes or an unterminated string.
+ */
+bool parseQuotedString(const char *&input, core::String &out);
+
 /**
  * @brief Modifies the string input buffer by looking for the given token, replace the start of the token with @c \0
  * and returns the position after the given token.
