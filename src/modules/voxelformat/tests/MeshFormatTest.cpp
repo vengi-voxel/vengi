@@ -78,7 +78,7 @@ TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
 		size_t indices = 0;
 		size_t normals = 0;
 	};
-	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	util::ScopedVarChange optimize(cfg::VoxformatMeshOptimize, "false");
 	util::ScopedVarChange merge(cfg::VoxformatMergequads, "true");
 	util::ScopedVarChange reuse(cfg::VoxformatReusevertices, "true");
 	scenegraph::SceneGraph graph;
@@ -156,7 +156,7 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 	};
 	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
 	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
-	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	util::ScopedVarChange optimize(cfg::VoxformatMeshOptimize, "false");
 	const glm::vec3 values[] = {glm::normalize(glm::vec3(1, 2, 3)), glm::normalize(glm::vec3(-2, 1, 3))};
 	palette::NormalPalette palette;
 	palette.loadNormalMap(values, 2);
@@ -197,7 +197,7 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
 	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
 	util::ScopedVarChange meshMode(cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::Cubic);
-	util::ScopedVarChange optimize(cfg::VoxformatOptimize, "false");
+	util::ScopedVarChange optimize(cfg::VoxformatMeshOptimize, "false");
 	util::ScopedVarChange materials(cfg::VoxformatWithMaterials, "true");
 	for (int withTexCoords = 0; withTexCoords <= 1; ++withTexCoords) {
 		util::ScopedVarChange texture(cfg::VoxformatWithtexcoords, withTexCoords);

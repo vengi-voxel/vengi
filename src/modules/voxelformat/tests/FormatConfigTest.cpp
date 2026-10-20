@@ -183,7 +183,7 @@ TEST_F(FormatConfigTest, testMeshSimplifyFlags) {
 	EXPECT_NE(0u, simplify->flags & FormatCVarFlag_Load);
 	EXPECT_EQ(0u, simplify->flags & FormatCVarFlag_Save);
 
-	// Ratio is used on import (with voxformat_mesh_simplify) and on export (with voxformat_optimize).
+	// Ratio is used on import (with voxformat_mesh_simplify) and on export (with voxformat_mesh_optimize).
 	const FormatVarMeta *ratio = FormatConfig::findVarMeta(cfg::VoxformatMeshSimplifyRatio);
 	ASSERT_NE(ratio, nullptr);
 	EXPECT_NE(0u, ratio->flags & FormatCVarFlag_Load);

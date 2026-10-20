@@ -1543,7 +1543,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 		const bool withVoxelNormals = supportsNormals && withNormals && core::getVar(cfg::VoxformatWithVoxelNormals)->boolVal() &&
 			(type == voxel::SurfaceExtractionType::Cubic || type == voxel::SurfaceExtractionType::Binary);
-		const bool optimizeMesh = core::getVar(cfg::VoxformatOptimize)->boolVal();
+		const bool optimizeMesh = core::getVar(cfg::VoxformatMeshOptimize)->boolVal();
 		const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();

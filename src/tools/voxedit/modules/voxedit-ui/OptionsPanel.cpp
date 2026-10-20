@@ -86,7 +86,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::VoxformatQuads) || matchesVarFilter(cfg::VoxformatWithColor) ||
 			   matchesVarFilter(cfg::VoxformatWithNormals) || matchesVarFilter(cfg::VoxformatWithVoxelNormals) ||
 			   matchesVarFilter(cfg::VoxformatWithtexcoords) || matchesVarFilter(cfg::VoxformatTransform) ||
-			   matchesVarFilter(cfg::VoxformatOptimize) || matchesVarFilter(cfg::VoxformatMeshSimplifyRatio) ||
+			   matchesVarFilter(cfg::VoxformatMeshOptimize) || matchesVarFilter(cfg::VoxformatMeshSimplifyRatio) ||
 			   matchesVarFilter(cfg::VoxformatMeshMode);
 	case OptionCategory::VoxelImportExport:
 		return matchesVarFilter(cfg::VoxelCreatePalette) || matchesVarFilter(cfg::VoxformatRGBFlattenFactor) ||
@@ -356,11 +356,11 @@ void OptionsPanel::renderMeshExport() {
 	if (matchesVarFilter(cfg::VoxformatTransform)) {
 		ImGui::CheckboxVar(cfg::VoxformatTransform);
 	}
-	if (matchesVarFilter(cfg::VoxformatOptimize)) {
-		ImGui::CheckboxVar(cfg::VoxformatOptimize);
+	if (matchesVarFilter(cfg::VoxformatMeshOptimize)) {
+		ImGui::CheckboxVar(cfg::VoxformatMeshOptimize);
 	}
 	if (matchesVarFilter(cfg::VoxformatMeshSimplifyRatio)) {
-		ImGui::BeginDisabled(!core::getVar(cfg::VoxformatOptimize)->boolVal());
+		ImGui::BeginDisabled(!core::getVar(cfg::VoxformatMeshOptimize)->boolVal());
 		ImGui::InputVarFloat(cfg::VoxformatMeshSimplifyRatio);
 		ImGui::EndDisabled();
 	}

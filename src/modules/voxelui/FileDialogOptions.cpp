@@ -237,7 +237,7 @@ static void renderFormatCVar(const voxelformat::FormatVarMeta &meta, bool save, 
 		disable = voxelSize && voxelSize->intVal() > 0;
 	} else if (!strcmp(meta.name, cfg::VoxformatMeshSimplifyRatio)) {
 		if (save) {
-			const core::VarPtr &optimize = core::getVar(cfg::VoxformatOptimize);
+			const core::VarPtr &optimize = core::getVar(cfg::VoxformatMeshOptimize);
 			disable = !optimize || !optimize->boolVal();
 		} else {
 			const core::VarPtr &simplify = core::getVar(cfg::VoxformatMeshSimplify);

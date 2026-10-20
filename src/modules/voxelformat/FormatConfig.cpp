@@ -120,9 +120,10 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatTransform(cfg::VoxformatTransform, true, N_("Apply transformations"),
 										  N_("Apply the scene graph transform to mesh exports"), core::CV_NOPERSIST);
 	core::registerVar(voxformatTransform);
-	const core::VarDef voxformatOptimize(cfg::VoxformatOptimize, false, N_("Apply optimizations"),
-										 N_("Apply mesh optimization steps to meshes"), core::CV_NOPERSIST);
-	core::registerVar(voxformatOptimize);
+	const core::VarDef voxformatMeshOptimize(cfg::VoxformatMeshOptimize, false, N_("Apply optimizations"),
+											 N_("Apply mesh optimization steps when saving mesh based formats"),
+											 core::CV_NOPERSIST);
+	core::registerVar(voxformatMeshOptimize);
 	const core::VarDef voxformatFillHollow(cfg::VoxformatFillHollow, true, N_("Fill hollow"),
 										   N_("Fill the hollows when voxelizing a mesh format"), core::CV_NOPERSIST);
 	core::registerVar(voxformatFillHollow);
@@ -354,7 +355,7 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxelTextureDedupe, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatAmbientocclusion, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatTransform, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
-	{cfg::VoxformatOptimize, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
+	{cfg::VoxformatMeshOptimize, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatMeshSimplifyRatio, FormatCVarFlag_Load | FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatPointCloud, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatQuads, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
