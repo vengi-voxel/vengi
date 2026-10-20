@@ -40,6 +40,22 @@ namespace voxelformat {
 
 class MeshFormatTest : public AbstractFormatTest {};
 
+TEST_F(MeshFormatTest, testAxisAlignedPlanarMesh) {
+	util::ScopedVarChange mode(cfg::VoxformatVoxelizeMode, "0");
+	util::ScopedVarChange palette(cfg::VoxelCreatePalette, "true");
+	// Both windings must produce voxels, including the side below z = 0.
+	for (const char *face : {"f 1 2 3\n", "f 3 2 1\n"}) {
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		const core::String obj = core::String("v 0 0 0\nv 2 0 0\nv 0 2 0\n") + face;
+		ASSERT_TRUE(archive->add("plane.obj", (const uint8_t *)obj.c_str(), obj.size()));
+		OBJFormat format;
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("plane.obj", archive, graph, testLoadCtx));
+		ASSERT_NE(nullptr, graph.firstModelNode());
+		EXPECT_GT(voxelutil::countVoxels(*graph.firstModelNode()->volume()), 0);
+	}
+}
+
 TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,

@@ -665,7 +665,15 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	trisMins = glm::floor(trisMins);
 	trisMaxs = glm::ceil(trisMaxs);
 
-	if (!useAxisAligned) {
+	if (useAxisAligned) {
+		// A planar surface can face into the voxel just below its only plane.
+		// Include that layer so positive normals do not produce an empty model.
+		for (int axis = 0; axis < 3; ++axis) {
+			if (trisMins[axis] == trisMaxs[axis]) {
+				trisMins[axis] -= 1.0f;
+			}
+		}
+	} else {
 		convertToVoxelGrid(trisMins);
 		convertToVoxelGrid(trisMaxs);
 	}
