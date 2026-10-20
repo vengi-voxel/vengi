@@ -67,6 +67,7 @@
 #include "voxel/VoxelNormalUtil.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
+#include "voxelpathtracer/PathTracerConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelgenerator/LSystem.h"
@@ -3895,6 +3896,7 @@ void SceneManager::construct() {
 	_lastDirectory = core::getVar(cfg::UILastDirectory);
 
 	voxelformat::FormatConfig::init();
+	voxelpathtracer::PathTracerConfig::init();
 
 	_modifier->construct();
 	_mementoHandler->construct();

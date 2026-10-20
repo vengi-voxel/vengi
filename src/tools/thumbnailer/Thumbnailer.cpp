@@ -16,6 +16,7 @@
 #include "voxel/Face.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/FormatThumbnail.h"
+#include "voxelpathtracer/PathTracerConfig.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "voxelrender/RenderUtil.h"
 #include <glm/gtc/constants.hpp>
@@ -39,6 +40,7 @@ app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
 	voxelformat::FormatConfig::init();
+	voxelpathtracer::PathTracerConfig::init();
 
 	registerArg("--input")
 		.setShort("-i")

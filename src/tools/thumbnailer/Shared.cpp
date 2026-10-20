@@ -20,6 +20,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelpathtracer/PathTracer.h"
+#include "voxelpathtracer/PathTracerConfig.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "VoxelpathtracerShaderConstants.h"
 #include "voxelrender/ImageGenerator.h"
@@ -31,8 +32,11 @@ namespace {
 
 void configurePathTracerParams(voxelpathtracer::PathTracerParams &params, const voxelformat::ThumbnailContext &ctx,
 							   voxelpathtracer::PathTracerQuality quality, int samples) {
-	params = voxelpathtracer::PathTracerParams();
-	applyPathTracerQuality(params, quality);
+	voxelpathtracer::PathTracerConfig::init();
+	voxelpathtracer::PathTracerConfig::loadParams(params);
+	if (quality != voxelpathtracer::PathTracerQuality::Default) {
+		applyPathTracerQuality(params, quality);
+	}
 	// Thumbnails should not add an artificial ground plane by default.
 	params.floorEnabled = false;
 	params.vignette = 0.0f;

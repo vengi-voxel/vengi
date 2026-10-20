@@ -124,7 +124,7 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network sound http json)
+set(DEPENDENCIES ui voxelrender voxelformat voxelpathtracer voxelgenerator memento network sound http json)
 set(LUA_SRCS
 	brushes/path.lua
 	brushes/modules/brush.lua

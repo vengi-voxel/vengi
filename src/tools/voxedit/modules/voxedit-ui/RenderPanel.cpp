@@ -25,6 +25,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Region.h"
 #include "voxelpathtracer/PathTracer.h"
+#include "voxelpathtracer/PathTracerConfig.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "VoxelpathtracerShaderConstants.h"
 #include "voxelrender/RenderUtil.h"
@@ -58,6 +59,7 @@ void RenderPanel::applySceneSun() {
 	if (glm::abs(params.sunElevation - sunAngle.x) > 0.01f || glm::abs(params.sunAzimuth - sunAngle.y) > 0.01f) {
 		params.sunElevation = sunAngle.x;
 		params.sunAzimuth = sunAngle.y;
+		voxelpathtracer::PathTracerConfig::saveParams(params);
 		_pathTracer.resetAccumulation();
 	}
 }
@@ -65,6 +67,9 @@ void RenderPanel::applySceneSun() {
 void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	voxelpathtracer::PathTracerState &pstate = _pathTracer.state();
 	voxelpathtracer::PathTracerParams &state = pstate.params;
+	// Pick up Options panel / -set changes before editing the live params.
+	voxelpathtracer::PathTracerConfig::loadParams(state);
+	applySceneSun();
 	int changed = 0;
 
 	const float itemWidth = ImGui::GetFontSize() * 10.0f;
@@ -161,6 +166,8 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 		ImGui::EndMenu();
 	}
 
+	// Keep cvars in sync even for post-process-only tweaks that do not reset accumulation.
+	voxelpathtracer::PathTracerConfig::saveParams(state);
 	if (changed > 0) {
 		_pathTracer.resetAccumulation();
 	}

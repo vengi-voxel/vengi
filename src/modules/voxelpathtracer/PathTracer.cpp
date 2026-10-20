@@ -3,6 +3,7 @@
  */
 
 #include "PathTracer.h"
+#include "PathTracerConfig.h"
 #include "PathTracerScene.h"
 #include "VoxelpathtracerBloomShader.h"
 #include "VoxelpathtracerDisplayShader.h"
@@ -87,6 +88,8 @@ PathTracer::~PathTracer() {
 }
 
 bool PathTracer::init() {
+	PathTracerConfig::init();
+	PathTracerConfig::loadParams(_state.params);
 	return initGpu();
 }
 

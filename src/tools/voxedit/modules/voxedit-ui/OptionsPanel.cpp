@@ -79,7 +79,21 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 		return matchesVarFilter(cfg::ClientShadowMapSize) || matchesVarFilter(cfg::ClientGamma) ||
 			   matchesVarFilter(cfg::ClientVSync);
 	case OptionCategory::Pathtracer:
-		return matchesVarFilter(cfg::VoxEditSunAngle);
+		return matchesVarFilter(cfg::VoxEditSunAngle) || matchesVarFilter(cfg::PathTracerSamples) ||
+			   matchesVarFilter(cfg::PathTracerBounces) || matchesVarFilter(cfg::PathTracerSamplesThisPass) ||
+			   matchesVarFilter(cfg::PathTracerResolution) || matchesVarFilter(cfg::PathTracerExposure) ||
+			   matchesVarFilter(cfg::PathTracerToneMapping) || matchesVarFilter(cfg::PathTracerContrast) ||
+			   matchesVarFilter(cfg::PathTracerSaturation) || matchesVarFilter(cfg::PathTracerVignette) ||
+			   matchesVarFilter(cfg::PathTracerBloom) || matchesVarFilter(cfg::PathTracerVoxelEdge) ||
+			   matchesVarFilter(cfg::PathTracerRenderScale) || matchesVarFilter(cfg::PathTracerDepthOfField) ||
+			   matchesVarFilter(cfg::PathTracerAperture) || matchesVarFilter(cfg::PathTracerFocusDistance) ||
+			   matchesVarFilter(cfg::PathTracerSunIntensity) || matchesVarFilter(cfg::PathTracerSunSoftness) ||
+			   matchesVarFilter(cfg::PathTracerSunColor) || matchesVarFilter(cfg::PathTracerSkyTop) ||
+			   matchesVarFilter(cfg::PathTracerSkyHorizon) || matchesVarFilter(cfg::PathTracerSkyIntensity) ||
+			   matchesVarFilter(cfg::PathTracerFloor) || matchesVarFilter(cfg::PathTracerFloorColor) ||
+			   matchesVarFilter(cfg::PathTracerFloorY) || matchesVarFilter(cfg::PathTracerBackground) ||
+			   matchesVarFilter(cfg::PathTracerBackgroundColor) || matchesVarFilter(cfg::PathTracerFogDensity) ||
+			   matchesVarFilter(cfg::PathTracerFogColor) || matchesVarFilter(cfg::PathTracerAtmosphere);
 	case OptionCategory::MeshExport:
 		return matchesVarFilter(cfg::VoxformatMergequads) || matchesVarFilter(cfg::VoxformatReusevertices) ||
 			   matchesVarFilter(cfg::VoxelTextureDedupe) || matchesVarFilter(cfg::VoxformatAmbientocclusion) ||
@@ -317,6 +331,95 @@ void OptionsPanel::renderRenderer() {
 void OptionsPanel::renderPathtracer() {
 	if (matchesVarFilter(cfg::VoxEditSunAngle)) {
 		sunAngleSettings(core::getVar(cfg::VoxEditSunAngle), true);
+		ImGui::Separator();
+	}
+	if (matchesVarFilter(cfg::PathTracerSamples)) {
+		ImGui::InputVarInt(cfg::PathTracerSamples);
+	}
+	if (matchesVarFilter(cfg::PathTracerBounces)) {
+		ImGui::InputVarInt(cfg::PathTracerBounces);
+	}
+	if (matchesVarFilter(cfg::PathTracerSamplesThisPass)) {
+		ImGui::InputVarInt(cfg::PathTracerSamplesThisPass);
+	}
+	if (matchesVarFilter(cfg::PathTracerResolution)) {
+		ImGui::InputVarInt(cfg::PathTracerResolution);
+	}
+	if (matchesVarFilter(cfg::PathTracerRenderScale)) {
+		ImGui::SliderVarFloat(cfg::PathTracerRenderScale);
+	}
+	if (matchesVarFilter(cfg::PathTracerVoxelEdge)) {
+		ImGui::SliderVarFloat(cfg::PathTracerVoxelEdge);
+	}
+	if (matchesVarFilter(cfg::PathTracerExposure)) {
+		ImGui::SliderVarFloat(cfg::PathTracerExposure);
+	}
+	if (matchesVarFilter(cfg::PathTracerToneMapping)) {
+		ImGui::ComboVar(cfg::PathTracerToneMapping, voxelrender::ToneMappingItems, voxelrender::ToneMappingMax);
+	}
+	if (matchesVarFilter(cfg::PathTracerContrast)) {
+		ImGui::SliderVarFloat(cfg::PathTracerContrast);
+	}
+	if (matchesVarFilter(cfg::PathTracerSaturation)) {
+		ImGui::SliderVarFloat(cfg::PathTracerSaturation);
+	}
+	if (matchesVarFilter(cfg::PathTracerVignette)) {
+		ImGui::SliderVarFloat(cfg::PathTracerVignette);
+	}
+	if (matchesVarFilter(cfg::PathTracerBloom)) {
+		ImGui::SliderVarFloat(cfg::PathTracerBloom);
+	}
+	if (matchesVarFilter(cfg::PathTracerDepthOfField)) {
+		ImGui::CheckboxVar(cfg::PathTracerDepthOfField);
+	}
+	if (matchesVarFilter(cfg::PathTracerAperture)) {
+		ImGui::SliderVarFloat(cfg::PathTracerAperture);
+	}
+	if (matchesVarFilter(cfg::PathTracerFocusDistance)) {
+		ImGui::SliderVarFloat(cfg::PathTracerFocusDistance);
+	}
+	if (matchesVarFilter(cfg::PathTracerSunIntensity)) {
+		ImGui::SliderVarFloat(cfg::PathTracerSunIntensity);
+	}
+	if (matchesVarFilter(cfg::PathTracerSunSoftness)) {
+		ImGui::SliderVarFloat(cfg::PathTracerSunSoftness);
+	}
+	if (matchesVarFilter(cfg::PathTracerSunColor)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerSunColor);
+	}
+	if (matchesVarFilter(cfg::PathTracerSkyTop)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerSkyTop);
+	}
+	if (matchesVarFilter(cfg::PathTracerSkyHorizon)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerSkyHorizon);
+	}
+	if (matchesVarFilter(cfg::PathTracerSkyIntensity)) {
+		ImGui::SliderVarFloat(cfg::PathTracerSkyIntensity);
+	}
+	if (matchesVarFilter(cfg::PathTracerFloor)) {
+		ImGui::CheckboxVar(cfg::PathTracerFloor);
+	}
+	if (matchesVarFilter(cfg::PathTracerFloorColor)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerFloorColor);
+	}
+	if (matchesVarFilter(cfg::PathTracerFloorY)) {
+		ImGui::InputVarFloat(cfg::PathTracerFloorY);
+	}
+	if (matchesVarFilter(cfg::PathTracerBackground)) {
+		static const char *const backgroundTitles[] = {N_("Sky"), N_("Solid"), N_("Transparent")};
+		ImGui::ComboVar(cfg::PathTracerBackground, backgroundTitles, lengthof(backgroundTitles));
+	}
+	if (matchesVarFilter(cfg::PathTracerBackgroundColor)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerBackgroundColor);
+	}
+	if (matchesVarFilter(cfg::PathTracerFogDensity)) {
+		ImGui::SliderVarFloat(cfg::PathTracerFogDensity);
+	}
+	if (matchesVarFilter(cfg::PathTracerFogColor)) {
+		ImGui::ColorEdit3Var(cfg::PathTracerFogColor);
+	}
+	if (matchesVarFilter(cfg::PathTracerAtmosphere)) {
+		ImGui::SliderVarFloat(cfg::PathTracerAtmosphere);
 	}
 }
 

@@ -172,3 +172,43 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_withnormals`       | Export vertex normals to OBJ, glTF/GLB, FBX and PLY    | true/false   |
 | `voxformat_withvoxelnormals`  | Use stored voxel normals with Cubic/Binary extraction when exporting normals; may increase vertex count | true/false |
 | `voxformat_withtexcoords`     | Export texture coordinates                                                               | true/false   |
+
+## Pathtracer
+
+These cvars configure the GPU pathtracer used by voxedit and `vengi-thumbnailer --pathtracer`.
+They can be set from the Options dialog, via `-set`, or as environment variables. Thumbnailer
+`--quality` / `--samples` / `--sunelevation` / `--sunazimuth` override the matching cvars when given.
+
+| Name | Description | Values |
+|------|-------------|--------|
+| `pathtracer_samples` | Per-pixel samples | 1-16384 |
+| `pathtracer_bounces` | Maximum light bounces | 1-64 |
+| `pathtracer_samplesthispass` | Samples computed per frame | 1-64 |
+| `pathtracer_resolution` | Square output size in pixels | 1-8192 |
+| `pathtracer_renderscale` | Trace at a fraction of the output resolution | 0.25-1.0 |
+| `pathtracer_voxeledge` | Fillet exposed voxel corners (`0` = hard cube) | 0.0-1.0 |
+| `pathtracer_exposure` | Exposure compensation in stops | -5.0-5.0 |
+| `pathtracer_tonemapping` | Tone mapping operator (see `r_tonemapping`) | 0-6 |
+| `pathtracer_contrast` | Contrast | 0.5-1.5 |
+| `pathtracer_saturation` | Saturation | 0.0-2.0 |
+| `pathtracer_vignette` | Vignette strength | 0.0-1.0 |
+| `pathtracer_bloom` | Bloom strength | 0.0-2.0 |
+| `pathtracer_dof` | Enable depth of field | true/false |
+| `pathtracer_aperture` | Lens aperture for depth of field | 0.0-0.5 |
+| `pathtracer_focusdistance` | Focus distance for depth of field | 1.0-256.0 |
+| `pathtracer_sunelevation` | Sun elevation in degrees | -90-90 |
+| `pathtracer_sunazimuth` | Sun azimuth in degrees | 0-360 |
+| `pathtracer_sunintensity` | Sun intensity | 0.0-10.0 |
+| `pathtracer_sunsoftness` | Sun disk size in degrees | 0.05-20.0 |
+| `pathtracer_suncolor` | Sun color (RGB) | `r g b` |
+| `pathtracer_skytop` | Sky top color (RGB) | `r g b` |
+| `pathtracer_skyhorizon` | Sky horizon color (RGB) | `r g b` |
+| `pathtracer_skyintensity` | Sky intensity | 0.0-4.0 |
+| `pathtracer_floor` | Enable ground plane | true/false |
+| `pathtracer_floorcolor` | Ground plane color (RGB) | `r g b` |
+| `pathtracer_floory` | Ground plane height | |
+| `pathtracer_background` | `0` = sky, `1` = solid, `2` = transparent | 0/1/2 |
+| `pathtracer_backgroundcolor` | Solid background color (RGB) | `r g b` |
+| `pathtracer_fogdensity` | Fog density | 0.0-0.05 |
+| `pathtracer_fogcolor` | Fog color (RGB) | `r g b` |
+| `pathtracer_atmosphere` | World haze that brightens toward the sun | 0.0-0.05 |

@@ -1,6 +1,7 @@
 set(LIB voxelpathtracer)
 set(SRCS
 	PathTracer.cpp PathTracer.h
+	PathTracerConfig.cpp PathTracerConfig.h
 	PathTracerScene.cpp PathTracerScene.h
 	PathTracerState.h
 	GpuSceneData.cpp GpuSceneData.h
