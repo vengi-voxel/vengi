@@ -21,8 +21,10 @@ enum class OptionCategory : uint8_t {
 	Display,
 	Rendering,
 	Renderer,
+	Pathtracer,
 	MeshExport,
 	VoxelImportExport,
+	Minecraft,
 	AllVariables,
 	Max
 };
@@ -68,8 +70,10 @@ private:
 	void renderDisplay();
 	void renderRendering();
 	void renderRenderer();
+	void renderPathtracer();
 	void renderMeshExport();
 	void renderVoxelImportExport();
+	void renderMinecraft();
 	void renderAllVariables();
 
 	void renderTree();

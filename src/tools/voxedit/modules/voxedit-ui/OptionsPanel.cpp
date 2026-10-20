@@ -4,6 +4,7 @@
 
 #include "OptionsPanel.h"
 #include "IMGUIStyle.h"
+#include "SunAngleSettings.h"
 #include "core/Common.h"
 #include "voxedit-util/SceneManager.h"
 #include "MenuBar.h"
@@ -49,10 +50,12 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 			   matchesVarFilter(cfg::UINotifyDismissMillis) || matchesVarFilter(cfg::VoxEditTipOftheDay);
 	case OptionCategory::Editor:
 		return matchesVarFilter(cfg::VoxEditViewMode) || matchesVarFilter(cfg::VoxEditShowColorPicker) ||
-			   matchesVarFilter(cfg::VoxEditColorWheel) || matchesVarFilter(cfg::VoxEditAnimationSpeed) ||
-			   matchesVarFilter(cfg::VoxEditAutoSaveSeconds) || matchesVarFilter(cfg::VoxEditViewports) ||
-			   matchesVarFilter(cfg::ClientCameraZoomSpeed) || matchesVarFilter(cfg::VoxEditViewdistance) ||
-			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode);
+			   matchesVarFilter(cfg::VoxEditColorWheel) || matchesVarFilter(cfg::VoxEditPaletteColorSize) ||
+			   matchesVarFilter(cfg::VoxEditAnimationSpeed) || matchesVarFilter(cfg::VoxEditAutoSaveSeconds) ||
+			   matchesVarFilter(cfg::VoxEditViewports) || matchesVarFilter(cfg::ClientCameraZoomSpeed) ||
+			   matchesVarFilter(cfg::ClientCameraMovementSpeed) || matchesVarFilter(cfg::VoxEditViewdistance) ||
+			   matchesVarFilter(cfg::CoreColorReduction) || matchesVarFilter(cfg::VoxelMeshMode) ||
+			   matchesVarFilter(cfg::VoxelMeshAlloc);
 	case OptionCategory::Input:
 		return matchesVarFilter(cfg::VoxEditPenPressureAffectsRadius) ||
 			   matchesVarFilter(cfg::VoxEditPenRadiusMin) || matchesVarFilter(cfg::VoxEditPenRadiusMax) ||
@@ -75,17 +78,26 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 	case OptionCategory::Renderer:
 		return matchesVarFilter(cfg::ClientShadowMapSize) || matchesVarFilter(cfg::ClientGamma) ||
 			   matchesVarFilter(cfg::ClientVSync);
+	case OptionCategory::Pathtracer:
+		return matchesVarFilter(cfg::VoxEditSunAngle);
 	case OptionCategory::MeshExport:
 		return matchesVarFilter(cfg::VoxformatMergequads) || matchesVarFilter(cfg::VoxformatReusevertices) ||
 			   matchesVarFilter(cfg::VoxelTextureDedupe) || matchesVarFilter(cfg::VoxformatAmbientocclusion) ||
 			   matchesVarFilter(cfg::VoxformatQuads) || matchesVarFilter(cfg::VoxformatWithColor) ||
-			   matchesVarFilter(cfg::VoxformatWithNormals) || matchesVarFilter(cfg::VoxformatWithtexcoords) ||
-			   matchesVarFilter(cfg::VoxformatTransform) || matchesVarFilter(cfg::VoxformatOptimize);
+			   matchesVarFilter(cfg::VoxformatWithNormals) || matchesVarFilter(cfg::VoxformatWithVoxelNormals) ||
+			   matchesVarFilter(cfg::VoxformatWithtexcoords) || matchesVarFilter(cfg::VoxformatTransform) ||
+			   matchesVarFilter(cfg::VoxformatOptimize) || matchesVarFilter(cfg::VoxformatMeshSimplifyRatio) ||
+			   matchesVarFilter(cfg::VoxformatMeshMode);
 	case OptionCategory::VoxelImportExport:
 		return matchesVarFilter(cfg::VoxelCreatePalette) || matchesVarFilter(cfg::VoxformatRGBFlattenFactor) ||
 			   matchesVarFilter(cfg::VoxformatRGBWeightedAverage) || matchesVarFilter(cfg::VoxformatSaveVisibleOnly) ||
 			   matchesVarFilter(cfg::VoxformatMerge) || matchesVarFilter(cfg::VoxformatScale) ||
-			   matchesVarFilter(cfg::VoxformatFillHollow);
+			   matchesVarFilter(cfg::VoxformatFillHollow) || matchesVarFilter(cfg::VoxformatMeshSimplify) ||
+			   matchesVarFilter(cfg::VoxformatMeshSimplifyRatio) || matchesVarFilter(cfg::VoxelCropOnLoad) ||
+			   matchesVarFilter(cfg::VoxformatVoxelizeMode);
+	case OptionCategory::Minecraft:
+		return matchesVarFilter(cfg::VoxformatMCSeparateWater) || matchesVarFilter(cfg::VoxformatMCMergeRegions) ||
+			   matchesVarFilter(cfg::VoxformatMCLoadRadius) || matchesVarFilter(cfg::VoxformatMCLoadRegion);
 	case OptionCategory::AllVariables: {
 		bool found = false;
 		core::Var::visit([&](const core::VarPtr &var) {
@@ -167,6 +179,9 @@ void OptionsPanel::renderEditor() {
 	if (matchesVarFilter(cfg::VoxEditColorWheel)) {
 		ImGui::CheckboxVar(cfg::VoxEditColorWheel);
 	}
+	if (matchesVarFilter(cfg::VoxEditPaletteColorSize)) {
+		ImGui::SliderVarFloat(cfg::VoxEditPaletteColorSize);
+	}
 	if (matchesVarFilter(cfg::VoxEditAnimationSpeed)) {
 		ImGui::InputVarInt(cfg::VoxEditAnimationSpeed);
 	}
@@ -178,6 +193,9 @@ void OptionsPanel::renderEditor() {
 	}
 	if (matchesVarFilter(cfg::ClientCameraZoomSpeed)) {
 		ImGui::SliderVarFloat(cfg::ClientCameraZoomSpeed);
+	}
+	if (matchesVarFilter(cfg::ClientCameraMovementSpeed)) {
+		ImGui::InputVarFloat(cfg::ClientCameraMovementSpeed);
 	}
 	if (matchesVarFilter(cfg::VoxEditViewdistance)) {
 		ImGui::SliderVarInt(cfg::VoxEditViewdistance);
@@ -296,7 +314,16 @@ void OptionsPanel::renderRenderer() {
 	}
 }
 
+void OptionsPanel::renderPathtracer() {
+	if (matchesVarFilter(cfg::VoxEditSunAngle)) {
+		sunAngleSettings(core::getVar(cfg::VoxEditSunAngle), true);
+	}
+}
+
 void OptionsPanel::renderMeshExport() {
+	if (matchesVarFilter(cfg::VoxformatMeshMode)) {
+		voxelui::comboVar(cfg::VoxformatMeshMode);
+	}
 	if (matchesVarFilter(cfg::VoxformatMergequads)) {
 		ImGui::CheckboxVar(cfg::VoxformatMergequads);
 	}
@@ -317,6 +344,11 @@ void OptionsPanel::renderMeshExport() {
 	}
 	if (matchesVarFilter(cfg::VoxformatWithNormals)) {
 		ImGui::CheckboxVar(cfg::VoxformatWithNormals);
+	}
+	if (matchesVarFilter(cfg::VoxformatWithVoxelNormals)) {
+		ImGui::BeginDisabled(!core::getVar(cfg::VoxformatWithNormals)->boolVal());
+		ImGui::CheckboxVar(cfg::VoxformatWithVoxelNormals);
+		ImGui::EndDisabled();
 	}
 	if (matchesVarFilter(cfg::VoxformatWithtexcoords)) {
 		ImGui::CheckboxVar(cfg::VoxformatWithtexcoords);
@@ -355,6 +387,35 @@ void OptionsPanel::renderVoxelImportExport() {
 	}
 	if (matchesVarFilter(cfg::VoxformatFillHollow)) {
 		ImGui::CheckboxVar(cfg::VoxformatFillHollow);
+	}
+	if (matchesVarFilter(cfg::VoxformatVoxelizeMode)) {
+		voxelui::comboVar(cfg::VoxformatVoxelizeMode);
+	}
+	if (matchesVarFilter(cfg::VoxformatMeshSimplify)) {
+		ImGui::CheckboxVar(cfg::VoxformatMeshSimplify);
+	}
+	if (matchesVarFilter(cfg::VoxformatMeshSimplifyRatio)) {
+		ImGui::BeginDisabled(!core::getVar(cfg::VoxformatMeshSimplify)->boolVal());
+		ImGui::InputVarFloat(cfg::VoxformatMeshSimplifyRatio);
+		ImGui::EndDisabled();
+	}
+	if (matchesVarFilter(cfg::VoxelCropOnLoad)) {
+		ImGui::CheckboxVar(cfg::VoxelCropOnLoad);
+	}
+}
+
+void OptionsPanel::renderMinecraft() {
+	if (matchesVarFilter(cfg::VoxformatMCSeparateWater)) {
+		ImGui::CheckboxVar(cfg::VoxformatMCSeparateWater);
+	}
+	if (matchesVarFilter(cfg::VoxformatMCMergeRegions)) {
+		ImGui::CheckboxVar(cfg::VoxformatMCMergeRegions);
+	}
+	if (matchesVarFilter(cfg::VoxformatMCLoadRadius)) {
+		ImGui::InputVarInt(cfg::VoxformatMCLoadRadius);
+	}
+	if (matchesVarFilter(cfg::VoxformatMCLoadRegion)) {
+		ImGui::InputVarString(cfg::VoxformatMCLoadRegion);
 	}
 }
 
@@ -479,11 +540,17 @@ void OptionsPanel::renderContent() {
 	case OptionCategory::Renderer:
 		renderRenderer();
 		break;
+	case OptionCategory::Pathtracer:
+		renderPathtracer();
+		break;
 	case OptionCategory::MeshExport:
 		renderMeshExport();
 		break;
 	case OptionCategory::VoxelImportExport:
 		renderVoxelImportExport();
+		break;
+	case OptionCategory::Minecraft:
+		renderMinecraft();
 		break;
 	case OptionCategory::AllVariables:
 		renderAllVariables();
@@ -520,8 +587,9 @@ void OptionsPanel::renderTree() {
 		{ICON_LC_MONITOR, _("Viewport"),
 		 {{OptionCategory::Display, _("Display")},
 		  {OptionCategory::Rendering, _("Rendering")},
-		  {}, {}},
-		 2},
+		  {OptionCategory::Pathtracer, _("Pathtracer")},
+		  {}},
+		 3},
 		{ICON_LC_PAINTBRUSH, _("Renderer"),
 		 {{OptionCategory::Renderer, _("Renderer")},
 		  {}, {}, {}},
@@ -529,8 +597,9 @@ void OptionsPanel::renderTree() {
 		{ICON_LC_FILE_OUTPUT, _("Format"),
 		 {{OptionCategory::MeshExport, _("Mesh Export")},
 		  {OptionCategory::VoxelImportExport, _("Voxel Import/Export")},
-		  {}, {}},
-		 2},
+		  {OptionCategory::Minecraft, _("Minecraft")},
+		  {}},
+		 3},
 		{ICON_LC_CODE, _("Advanced"),
 		 {{OptionCategory::AllVariables, _("All Variables")},
 		  {}, {}, {}},

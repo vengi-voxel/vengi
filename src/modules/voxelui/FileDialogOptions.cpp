@@ -236,8 +236,13 @@ static void renderFormatCVar(const voxelformat::FormatVarMeta &meta, bool save, 
 		const core::VarPtr &voxelSize = core::getVar(cfg::VoxformatVoxelSize);
 		disable = voxelSize && voxelSize->intVal() > 0;
 	} else if (!strcmp(meta.name, cfg::VoxformatMeshSimplifyRatio)) {
-		const core::VarPtr &optimize = core::getVar(cfg::VoxformatOptimize);
-		disable = !optimize || !optimize->boolVal();
+		if (save) {
+			const core::VarPtr &optimize = core::getVar(cfg::VoxformatOptimize);
+			disable = !optimize || !optimize->boolVal();
+		} else {
+			const core::VarPtr &simplify = core::getVar(cfg::VoxformatMeshSimplify);
+			disable = !simplify || !simplify->boolVal();
+		}
 	} else if (!strcmp(meta.name, cfg::VoxformatColorAsFloat)) {
 		const core::VarPtr &withColor = core::getVar(cfg::VoxformatWithColor);
 		disable = !supportsColor || !withColor || !withColor->boolVal();
@@ -245,6 +250,9 @@ static void renderFormatCVar(const voxelformat::FormatVarMeta &meta, bool save, 
 		disable = !supportsQuads;
 	} else if (!strcmp(meta.name, cfg::VoxformatWithColor)) {
 		disable = !supportsColor;
+	} else if (!strcmp(meta.name, cfg::VoxformatWithVoxelNormals)) {
+		const core::VarPtr &withNormals = core::getVar(cfg::VoxformatWithNormals);
+		disable = !withNormals || !withNormals->boolVal();
 	} else if (!strcmp(meta.name, cfg::VoxformatWithtexcoords)) {
 		disable = !supportsTexCoords;
 	} else if (!strcmp(meta.name, cfg::VoxformatVoxelizeChunkSize)) {

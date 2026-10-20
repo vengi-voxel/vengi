@@ -207,6 +207,14 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		_selectedCategory = OptionCategory::Renderer;
 		ctx->Yield();
+		_selectedCategory = OptionCategory::Pathtracer;
+		ctx->Yield();
+		_selectedCategory = OptionCategory::MeshExport;
+		ctx->Yield();
+		_selectedCategory = OptionCategory::VoxelImportExport;
+		ctx->Yield();
+		_selectedCategory = OptionCategory::Minecraft;
+		ctx->Yield();
 		_selectedCategory = OptionCategory::UserInterface;
 		ctx->Yield();
 	};
