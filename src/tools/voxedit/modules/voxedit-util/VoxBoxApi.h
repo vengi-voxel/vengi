@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Function.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
@@ -50,6 +51,10 @@ struct VoxBoxState {
 	int count = 0;
 };
 
+using VoxBoxBoolCallback = core::Function<void(bool)>;
+using VoxBoxStateCallback = core::Function<void(VoxBoxState)>;
+using VoxBoxStringCallback = core::Function<void(const core::String &)>;
+
 // Root node property keys for VoxBox metadata
 static constexpr const char *PropVoxBoxId = "voxbox.store.id";
 static constexpr const char *PropVoxBoxCategory = "voxbox.store.category";
@@ -66,10 +71,15 @@ private:
 	core::String _userId;
 	core::String _username;
 
+	bool applyLoginResponse(const core::String &responseBody);
+	VoxBoxState parseSearchResponse(const core::String &responseBody) const;
+	core::String convertDownloadedVox(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info,
+									  const core::String &voxBody) const;
+
 public:
 	static constexpr const char *BASE_URL = "https://voxbox.store";
 
-	bool login(const core::String &username, const core::String &password);
+	void loginAsync(const core::String &username, const core::String &password, VoxBoxBoolCallback &&callback);
 	bool isLoggedIn() const;
 	void logout();
 	void setRefreshToken(const core::String &token);
@@ -77,8 +87,9 @@ public:
 	const core::String &loggedInUserId() const;
 	const core::String &loggedInUsername() const;
 
-	VoxBoxState search(const VoxBoxSearchParams &params = {}) const;
-	core::String download(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info) const;
+	void searchAsync(const VoxBoxSearchParams &params, VoxBoxStateCallback &&callback) const;
+	void downloadAsync(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info,
+					   VoxBoxStringCallback &&callback) const;
 
 	static core::String downloadDir();
 	static core::String vengiPath(const VoxBoxModelInfo &info);
@@ -89,8 +100,8 @@ public:
 	static VoxBoxModelInfo readMetadata(const scenegraph::SceneGraph &sceneGraph);
 	static core::String exportToVox(const io::FilesystemPtr &filesystem, scenegraph::SceneGraph &sceneGraph);
 
-	bool upload(const io::FilesystemPtr &filesystem, const core::String &voxFilePath, const core::String &coverPath,
-				const VoxBoxModelInfo &info) const;
+	void uploadAsync(const io::FilesystemPtr &filesystem, const core::String &voxFilePath, const core::String &coverPath,
+					 const VoxBoxModelInfo &info, VoxBoxBoolCallback &&callback) const;
 };
 
 } // namespace voxedit

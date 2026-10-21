@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "http/Http.h"
 #include "http/Request.h"
+#include "http/RequestAsync.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FilesystemArchive.h"
@@ -59,36 +60,8 @@ VoxBoxLicense VoxBoxLicenseFromStr(const core::String &s) {
 	return VoxBoxLicense::CC0;
 }
 
-bool VoxBoxApi::login(const core::String &username, const core::String &password) {
-	const core::String url = core::String(BASE_URL) + "/api/auth/sign-in";
-
-	json::Json body = json::Json::object();
-	body.set("username", username.c_str());
-	body.set("password", password.c_str());
-	const core::String bodyStr = body.dump();
-
-	http::Request request(url, http::RequestType::POST);
-	request.setFollowRedirects(false);
-	request.setUserAgent(app::App::getInstance()->fullAppname());
-	request.addHeader("Content-Type", "application/json");
-	request.setBody(bodyStr);
-
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("VoxBox login request failed");
-		return false;
-	}
-	if (statusCode != 200) {
-		Log::error("VoxBox login returned status %d", statusCode);
-		return false;
-	}
-
-	stream.seek(0);
-	core::String response;
-	stream.readString((int)stream.size(), response);
-
-	json::Json json = json::Json::parse(response);
+bool VoxBoxApi::applyLoginResponse(const core::String &responseBody) {
+	json::Json json = json::Json::parse(responseBody);
 	if (!json.isValid()) {
 		Log::error("VoxBox login: invalid JSON response");
 		return false;
@@ -104,6 +77,29 @@ bool VoxBoxApi::login(const core::String &username, const core::String &password
 
 	Log::info("VoxBox login successful");
 	return true;
+}
+
+void VoxBoxApi::loginAsync(const core::String &username, const core::String &password, VoxBoxBoolCallback &&callback) {
+	const core::String url = core::String(BASE_URL) + "/api/auth/sign-in";
+
+	json::Json body = json::Json::object();
+	body.set("username", username.c_str());
+	body.set("password", password.c_str());
+
+	http::Request request(url, http::RequestType::POST);
+	request.setFollowRedirects(false);
+	request.setUserAgent(app::App::getInstance()->fullAppname());
+	request.addHeader("Content-Type", "application/json");
+	request.setBody(body.dump());
+
+	http::requestAsync(core::move(request), [this, callback = core::move(callback)](const http::Response &response) mutable {
+		if (!response.success || response.statusCode != 200) {
+			Log::error("VoxBox login returned status %d", response.statusCode);
+			callback(false);
+			return;
+		}
+		callback(applyLoginResponse(response.body));
+	});
 }
 
 bool VoxBoxApi::isLoggedIn() const {
@@ -144,51 +140,11 @@ const core::String &VoxBoxApi::loggedInUsername() const {
 	return _username;
 }
 
-VoxBoxState VoxBoxApi::search(const VoxBoxSearchParams &params) const {
+VoxBoxState VoxBoxApi::parseSearchResponse(const core::String &responseBody) const {
 	VoxBoxState state;
 	state.count = 0;
-	core::String url =
-		core::String::format("%s/api/model/search?page=%d&count=%d", BASE_URL, params.page, params.count);
 
-	if (!params.nameFilter.empty()) {
-		url += "&name=" + params.nameFilter;
-	}
-	if (!params.authorFilter.empty()) {
-		url += "&username=" + params.authorFilter;
-	}
-	if (params.category != VoxBoxCategory::Max) {
-		url += core::String::format("&categories[0]=%s", VoxBoxCategoryStr(params.category));
-	}
-	if (params.license != VoxBoxLicense::Max) {
-		url += core::String::format("&licenses[0]=%s", VoxBoxLicenseStr(params.license));
-	}
-	if (params.useAnimatedFilter) {
-		url += params.filterAnimated ? "&animated=true" : "&animated=false";
-	}
-
-	http::Request request(url, http::RequestType::GET);
-	request.setFollowRedirects(false);
-	request.setUserAgent(app::App::getInstance()->fullAppname());
-	if (isLoggedIn()) {
-		request.addHeader("Cookie", "jwt=" + _refreshToken);
-	}
-
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("VoxBox search request failed");
-		return state;
-	}
-	if (statusCode != 200) {
-		Log::error("VoxBox search returned status %d", statusCode);
-		return state;
-	}
-
-	stream.seek(0);
-	core::String response;
-	stream.readString((int)stream.size(), response);
-
-	json::Json json = json::Json::parse(response);
+	json::Json json = json::Json::parse(responseBody);
 	if (!json.isValid()) {
 		Log::error("VoxBox search: invalid JSON response");
 		return state;
@@ -225,6 +181,47 @@ VoxBoxState VoxBoxApi::search(const VoxBoxSearchParams &params) const {
 
 	Log::info("VoxBox search returned %d models", (int)state.info.size());
 	return state;
+}
+
+static core::String buildSearchUrl(const VoxBoxSearchParams &params) {
+	core::String url =
+		core::String::format("%s/api/model/search?page=%d&count=%d", VoxBoxApi::BASE_URL, params.page, params.count);
+
+	if (!params.nameFilter.empty()) {
+		url += "&name=" + params.nameFilter;
+	}
+	if (!params.authorFilter.empty()) {
+		url += "&username=" + params.authorFilter;
+	}
+	if (params.category != VoxBoxCategory::Max) {
+		url += core::String::format("&categories[0]=%s", VoxBoxCategoryStr(params.category));
+	}
+	if (params.license != VoxBoxLicense::Max) {
+		url += core::String::format("&licenses[0]=%s", VoxBoxLicenseStr(params.license));
+	}
+	if (params.useAnimatedFilter) {
+		url += params.filterAnimated ? "&animated=true" : "&animated=false";
+	}
+	return url;
+}
+
+void VoxBoxApi::searchAsync(const VoxBoxSearchParams &params, VoxBoxStateCallback &&callback) const {
+	http::Request request(buildSearchUrl(params), http::RequestType::GET);
+	request.setFollowRedirects(false);
+	request.setUserAgent(app::App::getInstance()->fullAppname());
+	if (isLoggedIn()) {
+		request.addHeader("Cookie", "jwt=" + _refreshToken);
+	}
+
+	http::requestAsync(core::move(request),
+					   [this, callback = core::move(callback)](const http::Response &response) mutable {
+						   if (!response.success || response.statusCode != 200) {
+							   Log::error("VoxBox search returned status %d", response.statusCode);
+							   callback(VoxBoxState());
+							   return;
+						   }
+						   callback(parseSearchResponse(response.body));
+					   });
 }
 
 // --- Metadata helpers ---
@@ -279,41 +276,16 @@ bool VoxBoxApi::removeDownload(const io::FilesystemPtr &filesystem, const VoxBox
 	return io::Filesystem::sysRemoveFile(filesystem->homeWritePath(vengiPath(info)));
 }
 
-core::String VoxBoxApi::download(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info) const {
-	if (info.voxFile.empty()) {
-		Log::error("VoxBox download: no vox file specified");
-		return "";
-	}
-
-	// download .vox to a temp location
-	const core::String url = core::String::format("%s/api/model/blob?id=%s", BASE_URL, info.id.c_str());
-	http::Request request(url, http::RequestType::GET);
-	request.setFollowRedirects(false);
-	request.setUserAgent(app::App::getInstance()->fullAppname());
-	request.setTimeoutSecond(60);
-
-	io::BufferedReadWriteStream stream;
-	int statusCode = 0;
-	if (!request.execute(stream, &statusCode)) {
-		Log::error("VoxBox download failed for %s", info.name.c_str());
-		return "";
-	}
-	if (!http::isValidStatusCode(statusCode)) {
-		Log::error("VoxBox download returned status %d for %s", statusCode, info.name.c_str());
-		return "";
-	}
-
-	// write temp .vox
+core::String VoxBoxApi::convertDownloadedVox(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info,
+											 const core::String &voxBody) const {
 	const core::String dir = downloadDir();
 	filesystem->sysCreateDir(filesystem->homeWritePath(dir));
 	const core::String tempVoxPath = core::string::path(dir, "temp_" + info.id + ".vox");
-	stream.seek(0);
-	if (filesystem->homeWrite(tempVoxPath, stream) <= 0) {
+	if (!filesystem->homeWrite(tempVoxPath, voxBody)) {
 		Log::error("Failed to write temp vox file");
 		return "";
 	}
 
-	// convert .vox -> scene graph
 	const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
 	scenegraph::SceneGraph sceneGraph;
 	voxelformat::LoadContext loadCtx;
@@ -325,10 +297,8 @@ core::String VoxBoxApi::download(const io::FilesystemPtr &filesystem, const VoxB
 		return "";
 	}
 
-	// embed metadata
 	writeMetadata(sceneGraph, info);
 
-	// save as .vengi
 	core::String vengi = vengiPath(info);
 	voxelformat::SaveContext saveCtx;
 	if (!voxelformat::saveFormat(sceneGraph, filesystem->homeWritePath(vengi), nullptr, archive, saveCtx)) {
@@ -337,11 +307,35 @@ core::String VoxBoxApi::download(const io::FilesystemPtr &filesystem, const VoxB
 		return "";
 	}
 
-	// clean up temp .vox
 	io::Filesystem::sysRemoveFile(filesystem->homeWritePath(tempVoxPath));
-
 	Log::info("Downloaded and converted %s to %s", info.name.c_str(), vengi.c_str());
 	return vengi;
+}
+
+void VoxBoxApi::downloadAsync(const io::FilesystemPtr &filesystem, const VoxBoxModelInfo &info,
+							  VoxBoxStringCallback &&callback) const {
+	if (info.voxFile.empty()) {
+		Log::error("VoxBox download: no vox file specified");
+		callback("");
+		return;
+	}
+
+	const core::String url = core::String::format("%s/api/model/blob?id=%s", BASE_URL, info.id.c_str());
+	http::Request request(url, http::RequestType::GET);
+	request.setFollowRedirects(false);
+	request.setUserAgent(app::App::getInstance()->fullAppname());
+	request.setTimeoutSecond(60);
+
+	const VoxBoxModelInfo infoCopy = info;
+	http::requestAsync(core::move(request), [this, filesystem, infoCopy,
+											 callback = core::move(callback)](const http::Response &response) mutable {
+		if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+			Log::error("VoxBox download returned status %d for %s", response.statusCode, infoCopy.name.c_str());
+			callback("");
+			return;
+		}
+		callback(convertDownloadedVox(filesystem, infoCopy, response.body));
+	});
 }
 
 // --- Export for upload ---
@@ -363,37 +357,43 @@ core::String VoxBoxApi::exportToVox(const io::FilesystemPtr &filesystem, scenegr
 
 // --- Upload ---
 
-bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &voxFilePath,
-					   const core::String &coverPath, const VoxBoxModelInfo &info) const {
+void VoxBoxApi::uploadAsync(const io::FilesystemPtr &filesystem, const core::String &voxFilePath,
+							const core::String &coverPath, const VoxBoxModelInfo &info,
+							VoxBoxBoolCallback &&callback) const {
 	if (!isLoggedIn()) {
 		Log::error("VoxBox upload: not logged in");
-		return false;
+		callback(false);
+		return;
 	}
 
 	io::File voxFile(voxFilePath, io::FileMode::SysRead);
 	if (!voxFile.validHandle()) {
 		Log::error("VoxBox upload: cannot open vox file %s", voxFilePath.c_str());
-		return false;
+		callback(false);
+		return;
 	}
 	void *voxBuf = nullptr;
 	const int voxSize = voxFile.read(&voxBuf);
 	if (voxSize <= 0 || voxBuf == nullptr) {
 		Log::error("VoxBox upload: cannot read vox file %s", voxFilePath.c_str());
-		return false;
+		callback(false);
+		return;
 	}
 
 	io::File coverFile(coverPath, io::FileMode::SysRead);
 	if (!coverFile.validHandle()) {
 		Log::error("VoxBox upload: cannot open cover file %s", coverPath.c_str());
 		delete[] (uint8_t *)voxBuf;
-		return false;
+		callback(false);
+		return;
 	}
 	void *coverBuf = nullptr;
 	const int coverSize = coverFile.read(&coverBuf);
 	if (coverSize <= 0 || coverBuf == nullptr) {
 		Log::error("VoxBox upload: cannot read cover file %s", coverPath.c_str());
 		delete[] (uint8_t *)voxBuf;
-		return false;
+		callback(false);
+		return;
 	}
 
 	const core::String boundary = "----VengiVoxBoxUpload";
@@ -443,7 +443,6 @@ bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &
 	delete[] (uint8_t *)voxBuf;
 	delete[] (uint8_t *)coverBuf;
 
-	// use upload for new, update for existing
 	const bool isUpdate = !info.id.empty();
 	const core::String apiPath = isUpdate ? "/api/model/update" : "/api/model/upload";
 	const core::String uploadUrl = core::String(BASE_URL) + apiPath;
@@ -455,19 +454,16 @@ bool VoxBoxApi::upload(const io::FilesystemPtr &filesystem, const core::String &
 	uploadReq.setBody(bodyStr);
 	uploadReq.setTimeoutSecond(120);
 
-	io::BufferedReadWriteStream responseStream;
-	int statusCode = 0;
-	if (!uploadReq.execute(responseStream, &statusCode)) {
-		Log::error("VoxBox upload request failed");
-		return false;
-	}
-	if (!http::isValidStatusCode(statusCode)) {
-		Log::error("VoxBox upload returned status %d", statusCode);
-		return false;
-	}
-
-	Log::info("VoxBox upload successful for %s", info.name.c_str());
-	return true;
+	const core::String name = info.name;
+	http::requestAsync(core::move(uploadReq), [name, callback = core::move(callback)](const http::Response &response) mutable {
+		if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+			Log::error("VoxBox upload returned status %d", response.statusCode);
+			callback(false);
+			return;
+		}
+		Log::info("VoxBox upload successful for %s", name.c_str());
+		callback(true);
+	});
 }
 
 } // namespace voxedit

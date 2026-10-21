@@ -5,32 +5,38 @@
 #include "HTTPMetricSender.h"
 #include "core/Log.h"
 #include "http/Http.h"
-#include "io/Stream.h"
+#include "http/RequestAsync.h"
 
 namespace metric {
 
-HTTPMetricSender::HTTPMetricSender(const core::String &url, const core::String &userAgent) : _request(url, http::RequestType::POST) {
-	_request.addHeader("Content-Type", "application/json");
-	_request.setUserAgent(userAgent);
+HTTPMetricSender::HTTPMetricSender(const core::String &url, const core::String &userAgent)
+	: _url(url), _userAgent(userAgent) {
 }
 
 bool HTTPMetricSender::send(const char *buffer) const {
-	if (!_request.setBody(buffer)) {
+	if (buffer == nullptr || buffer[0] == '\0') {
 		Log::debug("Failed to set body");
 		return false;
 	}
-	io::NOPWriteStream stream;
-	int statusCode = -1;
-	if (!_request.execute(stream, &statusCode)) {
-		Log::debug("Failed to send metric %s - got status %i", buffer, statusCode);
+	http::Request request(_url, http::RequestType::POST);
+	request.addHeader("Content-Type", "application/json");
+	request.setUserAgent(_userAgent);
+	request.noCache();
+	if (!request.setBody(buffer)) {
+		Log::debug("Failed to set body");
 		return false;
 	}
-	Log::debug("Sent metric %s - got status: %i", buffer, statusCode);
-	return http::isValidStatusCode(statusCode);
+	const core::String payload(buffer);
+	return http::requestAsync(core::move(request), [payload](const http::Response &response) {
+			   if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+				   Log::debug("Failed to send metric %s - got status %i", payload.c_str(), response.statusCode);
+				   return;
+			   }
+			   Log::debug("Sent metric %s - got status: %i", payload.c_str(), response.statusCode);
+		   }) != 0u;
 }
 
 bool HTTPMetricSender::init() {
-	_request.noCache();
 	return true;
 }
 

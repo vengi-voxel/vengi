@@ -60,9 +60,14 @@ void VoxBoxBrowserPanel::open() {
 }
 
 void VoxBoxBrowserPanel::fetchModels() {
+	if (_requestPending) {
+		return;
+	}
 	_requestPending = true;
-	_state = _api.search(_searchParams);
-	_requestPending = false;
+	_api.searchAsync(_searchParams, [this](VoxBoxState state) {
+		_state = core::move(state);
+		_requestPending = false;
+	});
 }
 
 void VoxBoxBrowserPanel::loginPanel() {
@@ -77,6 +82,13 @@ void VoxBoxBrowserPanel::loginPanel() {
 			_showUpload = false;
 			_focusLogin = true;
 		}
+		return;
+	}
+
+	if (_requestPending) {
+		ImGui::Spinner("voxbox_login", ImGui::Size(1.0f));
+		ImGui::SameLine();
+		ImGui::TextUnformatted(_("Logging in..."));
 		return;
 	}
 
@@ -136,14 +148,18 @@ void VoxBoxBrowserPanel::loginPanel() {
 		const bool canLogin = !username.empty() && !password.empty();
 		if (ImGui::DisabledIconButton(ICON_LC_LOG_IN, _("Login"), !canLogin, ImVec2(itemWidth, 0.0f)) ||
 			(submitted && canLogin)) {
-			if (_api.login(username, password)) {
-				_loginError = "";
-				_varPassword->setVal("");
-				_varApiKey->setVal(_api.refreshToken());
-				fetchModels();
-			} else {
-				_loginError = _("Login failed");
-			}
+			_requestPending = true;
+			_loginError = "";
+			_api.loginAsync(username, password, [this](bool ok) {
+				_requestPending = false;
+				if (ok) {
+					_varPassword->setVal("");
+					_varApiKey->setVal(_api.refreshToken());
+					fetchModels();
+				} else {
+					_loginError = _("Login failed");
+				}
+			});
 		}
 		if (ImGui::SmallButton(_("Use API key"))) {
 			_useApiKey = true;
@@ -354,12 +370,15 @@ void VoxBoxBrowserPanel::searchPanel(command::CommandExecutionListener *listener
 				ImGui::TooltipTextUnformatted(_("Remove downloaded file"));
 			} else {
 				if (ImGui::IconButton(ICON_LC_DOWNLOAD, "##download")) {
-					const core::String vengiPath = _api.download(_app->filesystem(), info);
-					if (!vengiPath.empty()) {
-						io::FileDescription fd;
-						fd.set(_app->filesystem()->homeWritePath(vengiPath));
-						_sceneMgr->load(fd);
-					}
+					_requestPending = true;
+					_api.downloadAsync(_app->filesystem(), info, [this](const core::String &vengiPath) {
+						_requestPending = false;
+						if (!vengiPath.empty()) {
+							io::FileDescription fd;
+							fd.set(_app->filesystem()->homeWritePath(vengiPath));
+							_sceneMgr->load(fd);
+						}
+					});
 				}
 				ImGui::TooltipTextUnformatted(_("Download and open"));
 			}
@@ -426,16 +445,21 @@ void VoxBoxBrowserPanel::uploadPanel() {
 	static const io::FormatDescription pngFormat[]{io::format::png(), io::FormatDescription::END};
 	ImGui::InputFile(_("Cover image"), true, &_uploadCoverFile, pngFormat);
 
-	const bool canUpload = !_uploadInfo.name.empty() && !_uploadCoverFile.empty();
+	const bool canUpload = !_uploadInfo.name.empty() && !_uploadCoverFile.empty() && !_requestPending;
 	if (ImGui::DisabledIconButton(ICON_LC_UPLOAD, _("Submit"), !canUpload)) {
 		scenegraph::SceneGraph &sg = _sceneMgr->sceneGraph();
 		const core::String voxPath = VoxBoxApi::exportToVox(_app->filesystem(), sg);
 		if (!voxPath.empty()) {
-			if (_api.upload(_app->filesystem(), voxPath, _uploadCoverFile, _uploadInfo)) {
-				VoxBoxApi::writeMetadata(sg, _uploadInfo);
-				_showUpload = false;
-			}
-			io::Filesystem::sysRemoveFile(voxPath);
+			_requestPending = true;
+			_api.uploadAsync(_app->filesystem(), voxPath, _uploadCoverFile, _uploadInfo,
+							 [this, voxPath](bool ok) {
+								 _requestPending = false;
+								 io::Filesystem::sysRemoveFile(voxPath);
+								 if (ok) {
+									 VoxBoxApi::writeMetadata(_sceneMgr->sceneGraph(), _uploadInfo);
+									 _showUpload = false;
+								 }
+							 });
 		}
 	}
 	ImGui::SameLine();

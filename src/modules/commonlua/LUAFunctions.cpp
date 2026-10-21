@@ -13,6 +13,11 @@
 #include "core/collection/StringSet.h"
 #include "http/Http.h"
 #include "http/Request.h"
+#include "http/RequestAsync.h"
+#include "core/SharedPtr.h"
+#include "core/collection/DynamicMap.h"
+#include "core/concurrent/Atomic.h"
+#include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/File.h"
@@ -1243,11 +1248,41 @@ static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 	}
 }
 
-static int clua_http_requestexec(lua_State *s, http::Request &request) {
+struct LuaHttpPending {
+	core::AtomicBool done{false};
+	http::Response response;
+};
+
+static core_trace_mutex(core::Lock, s_luaHttpMutex, "LuaHttpPending");
+static core::DynamicMap<uint32_t, core::SharedPtr<LuaHttpPending>> s_luaHttpPending core_thread_guarded_by(s_luaHttpMutex);
+static core::AtomicInt s_luaHttpNextId{1};
+
+static int clua_http_push_response(lua_State *s, const http::Response &response) {
+	if (!response.success || !http::isValidStatusCode(response.statusCode)) {
+		if (!response.body.empty()) {
+			Log::error("%s", response.body.c_str());
+		}
+		return 0;
+	}
+	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream((int)response.body.size() + 1);
+	if (!response.body.empty()) {
+		outStream->write(response.body.c_str(), response.body.size());
+		outStream->seek(0);
+	}
+	clua_pushstream(s, outStream);
+	lua_newtable(s);
+	for (const auto &it : response.headers) {
+		lua_pushstring(s, it->first.c_str());
+		lua_pushstring(s, it->second.c_str());
+		lua_settable(s, -3);
+	}
+	return 2;
+}
+
+static int clua_http_requestexec_sync(lua_State *s, http::Request &request) {
 	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream(512);
 	int status = 0;
 	http::Headers outheaders;
-	// TODO: this should be threaded and we should just return a future
 	if (!request.execute(*outStream, &status, &outheaders)) {
 		if (!outStream->empty()) {
 			outStream->seek(0);
@@ -1258,7 +1293,6 @@ static int clua_http_requestexec(lua_State *s, http::Request &request) {
 		delete outStream;
 		return 0;
 	}
-	// TODO: this should get handled in the lua code
 	if (!http::isValidStatusCode(status)) {
 		if (!outStream->empty()) {
 			outStream->seek(0);
@@ -1280,24 +1314,65 @@ static int clua_http_requestexec(lua_State *s, http::Request &request) {
 	return 2;
 }
 
+static int clua_http_request_continuation(lua_State *s, int status, lua_KContext ctx) {
+	(void)status;
+	(void)ctx;
+	const uint32_t id = (uint32_t)lua_tointeger(s, -1);
+	core::SharedPtr<LuaHttpPending> pending;
+	{
+		core::ScopedLock lock(s_luaHttpMutex);
+		if (!s_luaHttpPending.get(id, pending)) {
+			return clua_error(s, "HTTP request %u vanished before completion", id);
+		}
+	}
+	if (!pending->done) {
+		return lua_yieldk(s, 0, 0, clua_http_request_continuation);
+	}
+	{
+		core::ScopedLock lock(s_luaHttpMutex);
+		s_luaHttpPending.remove(id);
+	}
+	lua_pop(s, 1); // pending id
+	const int nresults = clua_http_push_response(s, pending->response);
+	if (nresults == 0) {
+		return clua_error(s, "Failed to execute http request for url: %s (status %d)",
+						  pending->response.url.c_str(), pending->response.statusCode);
+	}
+	return nresults;
+}
+
+static int clua_http_requestexec(lua_State *s, http::Request &&request) {
+	if (!lua_isyieldable(s)) {
+		return clua_http_requestexec_sync(s, request);
+	}
+
+	core::SharedPtr<LuaHttpPending> pending = core::make_shared<LuaHttpPending>();
+	const uint32_t id = (uint32_t)s_luaHttpNextId.increment(1);
+	{
+		core::ScopedLock lock(s_luaHttpMutex);
+		s_luaHttpPending.put(id, pending);
+	}
+
+	if (http::requestAsync(core::move(request), [pending](const http::Response &response) {
+			pending->response = response;
+			pending->done = true;
+		}) == 0u) {
+		core::ScopedLock lock(s_luaHttpMutex);
+		s_luaHttpPending.remove(id);
+		return 0;
+	}
+
+	lua_pushinteger(s, (lua_Integer)id);
+	return lua_yieldk(s, 0, 0, clua_http_request_continuation);
+}
+
 static int clua_http_get(lua_State *s) {
 	const char *url = luaL_checkstring(s, 1);
 	http::Request request(url, http::RequestType::GET);
 	clua_http_headers(s, 2, request);
-	const int ret = clua_http_requestexec(s, request);
+	const int ret = clua_http_requestexec(s, core::move(request));
 	if (ret == 0) {
-		const http::Headers &headers = request.headers();
-		core::String headersStr;
-		for (const auto &it : headers) {
-			if (!headersStr.empty()) {
-				headersStr += ", ";
-			}
-			headersStr += core::String::format("'%s: %s'", it->first.c_str(), it->second.c_str());
-		}
-		clua_error_prepare(s, "Failed to execute get request for url: %s (headers: %s)", request.url().c_str(),
-						  headersStr.c_str());
-		request.~Request();
-		return lua_error(s);
+		return clua_error(s, "Failed to execute get request for url: %s", url);
 	}
 	return ret;
 }
@@ -1305,7 +1380,7 @@ static int clua_http_get(lua_State *s) {
 static int clua_http_get_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "get",
-		"summary": "Perform an HTTP GET request.",
+		"summary": "Perform an HTTP GET request. Yields the script coroutine until the response arrives.",
 		"parameters": [
 			{"name": "url", "type": "string", "description": "The URL to request."},
 			{"name": "headers", "type": "table", "description": "Optional headers table."}
@@ -1338,20 +1413,9 @@ static int clua_http_post(lua_State *s) {
 	const char *body = luaL_checkstring(s, 2);
 	request.setBody(body);
 	clua_http_headers(s, 3, request);
-	const int ret = clua_http_requestexec(s, request);
+	const int ret = clua_http_requestexec(s, core::move(request));
 	if (ret == 0) {
-		const http::Headers &headers = request.headers();
-		core::String headersStr;
-		for (const auto &it : headers) {
-			if (!headersStr.empty()) {
-				headersStr += ", ";
-			}
-			headersStr += core::String::format("'%s: %s'", it->first.c_str(), it->second.c_str());
-		}
-		clua_error_prepare(s, "Failed to execute post request for url: %s and body '%s' (headers: %s)", request.url().c_str(),
-						  request.body().c_str(), headersStr.c_str());
-		request.~Request();
-		return lua_error(s);
+		return clua_error(s, "Failed to execute post request for url: %s", url);
 	}
 	return ret;
 }
@@ -1359,7 +1423,7 @@ static int clua_http_post(lua_State *s) {
 static int clua_http_post_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "post",
-		"summary": "Perform an HTTP POST request.",
+		"summary": "Perform an HTTP POST request. Yields the script coroutine until the response arrives.",
 		"parameters": [
 			{"name": "url", "type": "string", "description": "The URL to request."},
 			{"name": "body", "type": "string", "description": "The request body."},
