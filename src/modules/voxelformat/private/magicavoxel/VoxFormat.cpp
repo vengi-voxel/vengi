@@ -759,9 +759,12 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	ogt_vox_sun sun;
 	core_memset(&sun, 0, sizeof(sun));
 	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
-	const core::String &sunIntensity = rootNode.property(scenegraph::PropSunIntensity);
-	if (!sunIntensity.empty()) {
-		sun.intensity = core::string::toFloat(sunIntensity);
+	const scenegraph::SceneGraphNodeProperties &sunProperties = rootNode.properties();
+	if (sunProperties.hasKey(scenegraph::PropSunIntensity) || sunProperties.hasKey(scenegraph::PropSunColor) ||
+		sunProperties.hasKey(scenegraph::PropSunElevation) || sunProperties.hasKey(scenegraph::PropSunAzimuth) ||
+		sunProperties.hasKey(scenegraph::PropSunArea) || sunProperties.hasKey(scenegraph::PropSunDisk)) {
+		sun.intensity = sunProperties.hasKey(scenegraph::PropSunIntensity) ? rootNode.propertyf(scenegraph::PropSunIntensity) : 1.0f;
+		sun.rgba = {255, 255, 255, 255};
 		sun.area = rootNode.propertyf(scenegraph::PropSunArea);
 		sun.angle[0] = rootNode.propertyf(scenegraph::PropSunElevation);
 		sun.angle[1] = rootNode.propertyf(scenegraph::PropSunAzimuth);
