@@ -1251,13 +1251,15 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 				io::BufferedReadWriteStream buffer(1024 * 3 * sizeof(float));
 				io::BufferedReadWriteStream normals(1024);
 				io::BufferedReadWriteStream uvs(1024);
-				const glm::vec3 pivot = meshExt.pivot * meshExt.size;
+				// Mesh vertices are relative to the volume origin. Bake the origin and pivot
+				// into the mesh while keeping the node's transform intact.
+				const glm::vec3 offset = sceneGraph.resolveRegion(node).getLowerCornerf() - meshExt.pivot * meshExt.size;
 				meshExt.visitByMaterial(c, [&buffer, &normals, &uvs, textured, &mins, &maxs, &vertexCount, &scale,
-											&pivot](const voxel::Mesh &mesh, voxel::IndexType index0,
+											&offset](const voxel::Mesh &mesh, voxel::IndexType index0,
 													voxel::IndexType index1, voxel::IndexType index2) {
-					const glm::vec3 v[] = {(mesh.getVertex(index0).position - pivot) * scale,
-										   (mesh.getVertex(index1).position - pivot) * scale,
-										   (mesh.getVertex(index2).position - pivot) * scale};
+					const glm::vec3 v[] = {(mesh.getVertex(index0).position + offset) * scale,
+										   (mesh.getVertex(index1).position + offset) * scale,
+										   (mesh.getVertex(index2).position + offset) * scale};
 					glm::vec3 n = glm::cross(v[1] - v[0], v[2] - v[0]);
 					const float len = glm::abs(n.x) + glm::abs(n.y) + glm::abs(n.z);
 					if (len > 0.0f)
