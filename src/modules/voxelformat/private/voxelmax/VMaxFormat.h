@@ -294,9 +294,7 @@ private:
 
 public:
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					const io::ArchivePtr &archive, const SaveContext &ctx) override {
-		return false;
-	}
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,

@@ -1274,6 +1274,11 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	return palette.colorCount();
 }
 
+bool VMaxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	return false;
+}
+
 #undef jsonVec
 #undef jsonInt
 #undef jsonFloat
