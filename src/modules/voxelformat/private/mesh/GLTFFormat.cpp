@@ -31,6 +31,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
@@ -39,6 +40,8 @@
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include <float.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/color_space.hpp>
+#include <cmath>
 
 #define CGLTF_MALLOC(size) core_malloc(size)
 #define CGLTF_FREE(ptr) core_free(ptr)
@@ -175,6 +178,125 @@ static scenegraph::InterpolationType gltfInterpolationToSceneGraph(cgltf_interpo
 
 static const char *EXT_VENGI_MATERIALS = "VENGI_materials";
 static const char *EXT_VENGI_PROPERTIES = "VENGI_properties";
+
+// These properties retain the meaning of otherwise untyped glTF nodes across a round trip.
+static const char *PropGltfPoint = "gltf_point";
+static const char *PropGltfDirectionalLight = "gltf_directional_light";
+static const char *PropGltfSceneSun = "gltf_scene_sun";
+
+static bool hasSceneSun(const scenegraph::SceneGraphNode &root) {
+	const auto &props = root.properties();
+	return props.hasKey(scenegraph::PropSunIntensity) || props.hasKey(scenegraph::PropSunColor) ||
+		   props.hasKey(scenegraph::PropSunElevation) || props.hasKey(scenegraph::PropSunAzimuth) ||
+		   props.hasKey(scenegraph::PropSunArea) || props.hasKey(scenegraph::PropSunDisk) ||
+		   props.hasKey(scenegraph::PropSunShadows);
+}
+
+static glm::vec3 sunDirection(const scenegraph::SceneGraphNode &node) {
+	const float elevation = glm::radians(node.propertyf(scenegraph::PropSunElevation));
+	const float azimuth = glm::radians(node.propertyf(scenegraph::PropSunAzimuth));
+	return glm::vec3(glm::cos(elevation) * glm::cos(azimuth), glm::sin(elevation),
+					 glm::cos(elevation) * glm::sin(azimuth));
+}
+
+static void setSunLight(cgltf_light &light, const scenegraph::SceneGraphNode &node) {
+	light.type = cgltf_light_type_directional;
+	light.intensity = node.property(scenegraph::PropSunIntensity).empty() ? 1.0f :
+					  node.propertyf(scenegraph::PropSunIntensity);
+	if (!std::isfinite(light.intensity) || light.intensity < 0.0f) {
+		light.intensity = 1.0f;
+	}
+	const core::String &hex = node.property(scenegraph::PropSunColor);
+	const glm::vec3 srgb = hex.empty() ? glm::vec3(1.0f) : glm::vec3(color::fromRGBA(color::fromHex(hex.c_str())));
+	const glm::vec3 linear = color::srgbToLinear(srgb);
+	for (int i = 0; i < 3; ++i) {
+		light.color[i] = linear[i];
+	}
+}
+
+static void loadDirectionalLight(const cgltf_node *node, scenegraph::SceneGraph &graph,
+								 scenegraph::SceneGraphNode &sgNode) {
+	if (node->light == nullptr || node->light->type != cgltf_light_type_directional) {
+		return;
+	}
+	bool mainSun = true;
+	for (auto iter = graph.beginAll(); iter != graph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &candidate = *iter;
+		if (candidate.id() != sgNode.id() && candidate.property(PropGltfSceneSun) == "true") {
+			mainSun = false;
+			break;
+		}
+	}
+	sgNode.setProperty(PropGltfDirectionalLight, true);
+	sgNode.setProperty(PropGltfSceneSun, mainSun);
+	sgNode.setProperty(scenegraph::PropSunIntensity, node->light->intensity);
+	const glm::vec3 linear(node->light->color[0], node->light->color[1], node->light->color[2]);
+	const glm::vec3 srgb = glm::convertLinearToSRGB(glm::clamp(linear, 0.0f, 1.0f));
+	const color::RGBA rgb((uint8_t)glm::round(srgb.r * 255.0f), (uint8_t)glm::round(srgb.g * 255.0f),
+						  (uint8_t)glm::round(srgb.b * 255.0f), 255);
+	sgNode.setProperty(scenegraph::PropSunColor, rgb);
+	if (!mainSun) {
+		return;
+	}
+	glm::mat4 world;
+	cgltf_node_transform_world(node, glm::value_ptr(world));
+	const glm::vec3 direction = glm::vec3(world[2]);
+	const float length = glm::length(direction);
+	if (!std::isfinite(length) || length < 0.000001f) {
+		return;
+	}
+	scenegraph::SceneGraphNode &root = graph.node(graph.root().id());
+	root.setProperty(scenegraph::PropSunIntensity, node->light->intensity);
+	root.setProperty(scenegraph::PropSunColor, rgb);
+	root.setProperty(scenegraph::PropSunElevation, glm::degrees(glm::asin(glm::clamp(direction.y / length, -1.0f, 1.0f))));
+	float azimuth = glm::degrees(glm::atan(direction.z, direction.x));
+	if (azimuth < -0.00001f) {
+		azimuth += 360.0f;
+	} else if (azimuth < 0.0f) {
+		azimuth = 0.0f;
+	}
+	// Azimuth is undefined at the poles; retain the stored heading when available.
+	if (glm::length(glm::vec2(direction.x, direction.z)) > length * 0.000001f ||
+		root.property(scenegraph::PropSunAzimuth).empty()) {
+		root.setProperty(scenegraph::PropSunAzimuth, azimuth);
+	}
+}
+
+static void loadCamera(const cgltf_camera &camera, scenegraph::SceneGraphNodeCamera &node) {
+	if (camera.type == cgltf_camera_type_orthographic) {
+		node.setOrthographic();
+		node.setWidth((int)glm::round(camera.data.orthographic.xmag * 2.0f));
+		node.setHeight((int)glm::round(camera.data.orthographic.ymag * 2.0f));
+		node.setNearPlane(camera.data.orthographic.znear);
+		node.setFarPlane(camera.data.orthographic.zfar);
+	} else {
+		node.setPerspective();
+		node.setFieldOfView((int)glm::round(glm::degrees(camera.data.perspective.yfov)));
+		node.setAspectRatio(camera.data.perspective.has_aspect_ratio ? camera.data.perspective.aspect_ratio : 0.0f);
+		node.setNearPlane(camera.data.perspective.znear);
+		node.setFarPlane(camera.data.perspective.has_zfar ? camera.data.perspective.zfar : 0.0f);
+	}
+}
+
+static void saveCamera(const scenegraph::SceneGraphNodeCamera &node, cgltf_camera &camera) {
+	camera.name = (char *)node.name().c_str();
+	if (node.isOrthographic()) {
+		camera.type = cgltf_camera_type_orthographic;
+		camera.data.orthographic.xmag = core_max(1, node.width()) * 0.5f;
+		camera.data.orthographic.ymag = core_max(1, node.height()) * 0.5f;
+		camera.data.orthographic.znear = core_max(0.0f, node.nearPlane());
+		camera.data.orthographic.zfar = node.farPlane() > camera.data.orthographic.znear ? node.farPlane() : 1000.0f;
+	} else {
+		camera.type = cgltf_camera_type_perspective;
+		const int fov = node.fieldOfView();
+		camera.data.perspective.yfov = glm::radians((float)(fov > 0 && fov < 180 ? fov : 60));
+		camera.data.perspective.has_aspect_ratio = node.aspectRatio() > 0.0f;
+		camera.data.perspective.aspect_ratio = node.aspectRatio();
+		camera.data.perspective.znear = node.nearPlane() > 0.0f ? node.nearPlane() : 0.1f;
+		camera.data.perspective.has_zfar = node.farPlane() > camera.data.perspective.znear;
+		camera.data.perspective.zfar = node.farPlane();
+	}
+}
 
 static const char *findExtensionData(const cgltf_extension *exts, cgltf_size count, const char *name) {
 	if (exts == nullptr || name == nullptr) {
@@ -677,7 +799,11 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 	// Non-mesh nodes (and mesh nodes that produced no volume) become groups so hierarchy
 	// and animation targets are preserved - including transform-only leaf joints.
 	if (nodeId == parent) {
-		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+		const char *properties = findExtensionData(node->extensions, node->extensions_count, EXT_VENGI_PROPERTIES);
+		const json::Json props = properties ? json::Json::parse(properties) : json::Json::object();
+		const bool point = !node->light && props.contains(PropGltfPoint) && props.get(PropGltfPoint).str() == "true";
+		scenegraph::SceneGraphNode groupNode(node->camera ? scenegraph::SceneGraphNodeType::Camera :
+			(point ? scenegraph::SceneGraphNodeType::Point : scenegraph::SceneGraphNodeType::Group));
 		if (node->name) {
 			groupNode.setName(node->name);
 		}
@@ -688,6 +814,14 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 			applyCgltfNodeTransform(node, sceneGraph.node(nodeId), sceneInputScale());
 			applyVengiNodeProperties(node->extensions, node->extensions_count, sceneGraph.node(nodeId));
 		}
+	}
+
+	if (nodeId != parent) {
+		scenegraph::SceneGraphNode &sgNode = sceneGraph.node(nodeId);
+		if (node->camera && sgNode.isCameraNode()) {
+			loadCamera(*node->camera, scenegraph::toCameraNode(sgNode));
+		}
+		loadDirectionalLight(node, sceneGraph, sgNode);
 	}
 
 	for (cgltf_size ci = 0; ci < node->children_count; ++ci) {
@@ -903,7 +1037,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 		}
 		scene = &data->scenes[0];
 	}
-	// If there's a single scene-level node without a mesh, it's just a wrapper - skip it
+	// Skip identity scene wrappers, preserving cameras, lights and transformed parents.
 	int meshCount = 0;
 	for (cgltf_size ni = 0; ni < scene->nodes_count; ++ni) {
 		meshCount += countGltfMeshNodes_r(scene->nodes[ni]);
@@ -916,7 +1050,10 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 		sceneGraph.node(0).setName(scene->name);
 	}
 
-	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr) {
+	if (scene->nodes_count == 1 && scene->nodes[0]->mesh == nullptr && scene->nodes[0]->camera == nullptr &&
+		scene->nodes[0]->light == nullptr && scene->nodes[0]->children_count > 0 &&
+		!scene->nodes[0]->has_matrix && !scene->nodes[0]->has_translation &&
+		!scene->nodes[0]->has_rotation && !scene->nodes[0]->has_scale) {
 		const cgltf_node *wrapper = scene->nodes[0];
 		nodeMap.put(wrapper, 0);
 		applyVengiNodeProperties(wrapper->extensions, wrapper->extensions_count, sceneGraph.node(0));
@@ -1242,22 +1379,22 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		sgNodeToGltfIdx.put(meshes[meshInfos[mi].meshExtIdx].nodeId, mi);
 	}
 
-	// Collect group nodes (non-mesh parents that aren't root)
-	core::DynamicArray<int> groupNodeIds; // scene graph node IDs of group nodes we need to create
+	// Include cameras, points and empty groups as well as mesh ancestors.
+	core::DynamicArray<int> groupNodeIds;
 	core::DynamicMap<int, int> groupSgNodeToGltfIdx;
-	for (int mi = 0; mi < (int)meshInfos.size(); ++mi) {
-		int sgNodeId = meshes[meshInfos[mi].meshExtIdx].nodeId;
-		int parentId = sceneGraph.parentId(sceneGraph.node(sgNodeId));
-		while (parentId != 0 && !sgNodeToGltfIdx.hasKey(parentId) && !groupSgNodeToGltfIdx.hasKey(parentId)) {
-			groupNodeIds.push_back(parentId);
-			groupSgNodeToGltfIdx.put(parentId, totalMeshes + (int)groupNodeIds.size() - 1);
-			parentId = sceneGraph.parentId(sceneGraph.node(parentId));
+	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.isRootNode() || sgNodeToGltfIdx.hasKey(node.id())) {
+			continue;
 		}
+		groupNodeIds.push_back(node.id());
+		groupSgNodeToGltfIdx.put(node.id(), totalMeshes + (int)groupNodeIds.size() - 1);
 	}
 
-	int totalNodes = totalMeshes + (int)groupNodeIds.size();
-	cgltf_node *nodes = (cgltf_node *)core_malloc(totalNodes * sizeof(cgltf_node));
-	core_memset(nodes, 0, totalNodes * sizeof(cgltf_node));
+	const int totalNodes = totalMeshes + (int)groupNodeIds.size();
+	// Reserve one extra node for a scene sun that has no corresponding imported light.
+	cgltf_node *nodes = (cgltf_node *)core_malloc((totalNodes + 1) * sizeof(cgltf_node));
+	core_memset(nodes, 0, (totalNodes + 1) * sizeof(cgltf_node));
 	// Allocate children pointer arrays - worst case each node could have totalNodes children
 	cgltf_node ***childrenArrays = (cgltf_node ***)core_malloc(totalNodes * sizeof(cgltf_node **));
 	core_memset(childrenArrays, 0, totalNodes * sizeof(cgltf_node **));
@@ -1741,6 +1878,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		}
 	}
 
+	core::Buffer<cgltf_camera> cameras(totalNodes);
+	core::Buffer<cgltf_light> lights(totalNodes + 1);
+	int cameraCount = 0;
+	int lightCount = 0;
+	bool exportedSceneSun = false;
+
 	// Set up group nodes
 	for (int gi = 0; gi < (int)groupNodeIds.size(); ++gi) {
 		int gltfIdx = totalMeshes + gi;
@@ -1749,6 +1892,46 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		setGltfNodeTRS(nodes[gltfIdx], sgNode.transform(0));
 		if (!sgNode.properties().empty()) {
 			nodeExtJson[gltfIdx] = propertiesToVengiExtensionJson(sgNode.properties());
+		}
+		if (sgNode.type() == scenegraph::SceneGraphNodeType::Point) {
+			json::Json props = sgNode.properties().empty() ? json::Json::object() :
+															 json::Json::parse(nodeExtJson[gltfIdx]);
+			props.set(PropGltfPoint, "true");
+			nodeExtJson[gltfIdx] = props.dump();
+		} else if (sgNode.type() == scenegraph::SceneGraphNodeType::Camera) {
+			saveCamera(scenegraph::toCameraNode(sgNode), cameras[cameraCount]);
+			nodes[gltfIdx].camera = &cameras[cameraCount++];
+		}
+		if (sgNode.property(PropGltfDirectionalLight) == "true") {
+			const bool mainSun = sgNode.property(PropGltfSceneSun) == "true";
+			setSunLight(lights[lightCount], mainSun && hasSceneSun(sceneGraph.root()) ? sceneGraph.root() : sgNode);
+			nodes[gltfIdx].light = &lights[lightCount++];
+			if (mainSun && hasSceneSun(sceneGraph.root())) {
+				exportedSceneSun = true;
+				// Root sun angles are world directions. Undo the exported parent transform,
+				// including nonuniform scale, before constructing the light's local rotation.
+				glm::mat4 parentMatrix(1.0f);
+				int parent = sceneGraph.parentId(sgNode);
+				while (parent > 0) {
+					parentMatrix = sceneGraph.node(parent).transform(0).localMatrix() * parentMatrix;
+					parent = sceneGraph.parentId(sceneGraph.node(parent));
+				}
+				if (glm::abs(glm::determinant(glm::mat3(parentMatrix))) > 0.000001f) {
+					glm::vec3 localDirection = glm::inverse(glm::mat3(parentMatrix)) * sunDirection(sceneGraph.root());
+					if (sgNode.transform(0).localScale().z < 0.0f) {
+						localDirection = -localDirection;
+					}
+					const glm::vec3 currentDirection = glm::normalize(
+						glm::mat3(parentMatrix) * glm::vec3(sgNode.transform(0).localMatrix()[2]));
+					const bool directionChanged = glm::dot(currentDirection, sunDirection(sceneGraph.root())) < 0.999999f;
+					const float directionLength = glm::length(localDirection);
+					if (directionChanged && std::isfinite(directionLength) && directionLength > 0.000001f) {
+						const glm::quat rotation(glm::vec3(0.0f, 0.0f, 1.0f), localDirection / directionLength);
+						nodes[gltfIdx].has_rotation = true;
+						core_memcpy(nodes[gltfIdx].rotation, glm::value_ptr(rotation), sizeof(nodes[gltfIdx].rotation));
+					}
+				}
+			}
 		}
 	}
 
@@ -1795,7 +1978,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			nodes[ni].children = childrenArrays[ni];
 		}
 	}
-	cgltf_node **sceneNodes = (cgltf_node **)core_malloc(rootChildCount * sizeof(cgltf_node *));
+	cgltf_node **sceneNodes = (cgltf_node **)core_malloc((rootChildCount + 1) * sizeof(cgltf_node *));
 
 	// Assign children in scene graph order by walking each parent's children list
 	// First, handle root's children
@@ -1836,6 +2019,22 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		}
 	}
 
+	const bool createSceneSun = !exportedSceneSun && hasSceneSun(sceneGraph.root());
+	if (createSceneSun) {
+		cgltf_node &sun = nodes[totalNodes];
+		sun.name = (char *)"Sun";
+		glm::vec3 direction = sunDirection(sceneGraph.root());
+		if (!std::isfinite(direction.x) || !std::isfinite(direction.y) || !std::isfinite(direction.z)) {
+			direction = glm::vec3(0.0f, 1.0f, 0.0f);
+		}
+		const glm::quat orientation(glm::vec3(0.0f, 0.0f, 1.0f), direction);
+		sun.has_rotation = true;
+		core_memcpy(sun.rotation, glm::value_ptr(orientation), sizeof(sun.rotation));
+		setSunLight(lights[lightCount], sceneGraph.root());
+		sun.light = &lights[lightCount++];
+		sceneNodes[rootIdx++] = &sun;
+	}
+
 	// Scene
 	cgltf_scene gltfScene;
 	core_memset(&gltfScene, 0, sizeof(gltfScene));
@@ -1859,8 +2058,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	gltfData.buffer_views_count = totalBufferViews;
 	gltfData.buffers = &gltfBuffer;
 	gltfData.buffers_count = 1;
+	gltfData.cameras = cameras.data();
+	gltfData.cameras_count = cameraCount;
+	gltfData.lights = lights.data();
+	gltfData.lights_count = lightCount;
 	gltfData.nodes = nodes;
-	gltfData.nodes_count = totalNodes;
+	gltfData.nodes_count = totalNodes + (createSceneSun ? 1 : 0);
 	gltfData.scenes = &gltfScene;
 	gltfData.scenes_count = 1;
 	gltfData.scene = &gltfScene;
