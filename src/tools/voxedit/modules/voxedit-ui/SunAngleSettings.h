@@ -7,9 +7,30 @@
 #include "ui/IMGUIEx.h"
 #include "ui/ScopedID.h"
 #include "ui/ScopedStyle.h"
+#include "voxedit-util/SceneManager.h"
 #include <glm/vec3.hpp>
 
 namespace voxedit {
+
+/** @brief Transfer sun settings between the current cvars and scene root properties. */
+inline bool sceneSunSettings(SceneManager &sceneMgr) {
+	bool loaded = false;
+	const auto &root = sceneMgr.sceneGraph().root();
+	const bool stored =
+		!root.property(scenegraph::PropSunElevation).empty() || !root.property(scenegraph::PropSunAzimuth).empty() ||
+		!root.property(scenegraph::PropSunIntensity).empty() || !root.property(scenegraph::PropSunColor).empty() ||
+		!root.property(scenegraph::PropSunArea).empty() || !root.property(scenegraph::PropSunShadows).empty();
+	ImGui::BeginDisabled(!stored);
+	if (ImGui::Button(_("Load sun from scene")))
+		loaded = sceneMgr.sceneLoadSun();
+	ImGui::SetItemTooltipUnformatted(_("Apply the scene root's stored sun settings to the current controls."));
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	if (ImGui::Button(_("Save sun to scene")))
+		sceneMgr.sceneSaveSun();
+	ImGui::SetItemTooltipUnformatted(_("Store the current sun settings on the scene root for saving and export."));
+	return loaded;
+}
 
 /** @brief Edit scene sun angles while preserving shadow-mode availability. */
 inline bool sunAngleSettings(const core::VarPtr &sunAngleVar, bool shadowsEnabled) {

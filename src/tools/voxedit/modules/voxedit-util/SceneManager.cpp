@@ -677,6 +677,76 @@ bool SceneManager::saveModels(const core::String& dir) {
 	return state;
 }
 
+bool SceneManager::sceneSaveSun(bool undo) {
+	if (isLocked())
+		return false;
+	scenegraph::SceneGraphNode settings(scenegraph::SceneGraphNodeType::Group);
+	if (const auto sunAngleVar = core::findVar(cfg::VoxEditSunAngle)) {
+		glm::vec3 sunAngle;
+		sunAngleVar->vec3Val(&sunAngle[0]);
+		settings.setProperty(scenegraph::PropSunElevation, sunAngle.x);
+		settings.setProperty(scenegraph::PropSunAzimuth, sunAngle.y);
+	}
+	settings.setProperty(scenegraph::PropSunIntensity, core::getVar(cfg::PathTracerSunIntensity)->floatVal());
+	settings.setProperty(scenegraph::PropSunArea, core::getVar(cfg::PathTracerSunSoftness)->floatVal());
+	glm::vec3 sunColor;
+	core::getVar(cfg::PathTracerSunColor)->vec3Val(&sunColor[0]);
+	settings.setProperty(scenegraph::PropSunColor, color::getRGB(sunColor));
+	if (const auto shadingMode = core::findVar(cfg::VoxEditShadingMode))
+		settings.setProperty(scenegraph::PropSunShadows, shadingMode->intVal() == 2);
+	auto &root = _sceneGraph.node(_sceneGraph.root().id());
+	bool changed = false;
+	for (const auto &entry : settings.properties()) {
+		changed |= root.property(entry->key) != entry->value;
+	}
+	if (!changed)
+		return false;
+	for (const auto &entry : settings.properties())
+		root.setProperty(entry->key, entry->value);
+	if (undo) {
+		_mementoHandler->markNodePropertyChange(_sceneGraph, root);
+		markDirty();
+	}
+	return true;
+}
+
+bool SceneManager::sceneLoadSun() {
+	const auto &root = _sceneGraph.root();
+	if (!root.property(scenegraph::PropSunElevation).empty() || !root.property(scenegraph::PropSunAzimuth).empty()) {
+		glm::vec3 angle;
+		angle = glm::vec3(35.0f, 135.0f, 0.0f);
+		const auto sunAngleVar = core::findVar(cfg::VoxEditSunAngle);
+		if (sunAngleVar)
+			sunAngleVar->vec3Val(&angle[0]);
+		if (!root.property(scenegraph::PropSunElevation).empty())
+			angle.x = root.propertyf(scenegraph::PropSunElevation);
+		if (!root.property(scenegraph::PropSunAzimuth).empty())
+			angle.y = root.propertyf(scenegraph::PropSunAzimuth);
+		if (sunAngleVar)
+			sunAngleVar->setVal(core::String::format("%.9g %.9g 0", angle.x, angle.y));
+		core::getVar(cfg::PathTracerSunElevation)->setVal(angle.x);
+		core::getVar(cfg::PathTracerSunAzimuth)->setVal(angle.y);
+	}
+	if (!root.property(scenegraph::PropSunIntensity).empty())
+		core::getVar(cfg::PathTracerSunIntensity)->setVal(root.propertyf(scenegraph::PropSunIntensity));
+	if (!root.property(scenegraph::PropSunArea).empty())
+		core::getVar(cfg::PathTracerSunSoftness)->setVal(root.propertyf(scenegraph::PropSunArea));
+	if (!root.property(scenegraph::PropSunColor).empty()) {
+		const glm::vec4 c = color::fromRGBA(color::fromHex(root.property(scenegraph::PropSunColor).c_str()));
+		core::getVar(cfg::PathTracerSunColor)->setVal(core::String::format("%.9g %.9g %.9g", c.r, c.g, c.b));
+	}
+	if (!root.property(scenegraph::PropSunShadows).empty()) {
+		const bool shadows = root.property(scenegraph::PropSunShadows) == "true";
+		if (const auto shadingMode = core::findVar(cfg::VoxEditShadingMode))
+			shadingMode->setVal(shadows ? 2 : 1);
+		if (const auto renderShadow = core::findVar(cfg::VoxEditRendershadow))
+			renderShadow->setVal(shadows);
+	}
+	return !root.property(scenegraph::PropSunElevation).empty() || !root.property(scenegraph::PropSunAzimuth).empty() ||
+		   !root.property(scenegraph::PropSunIntensity).empty() || !root.property(scenegraph::PropSunColor).empty() ||
+		   !root.property(scenegraph::PropSunArea).empty() || !root.property(scenegraph::PropSunShadows).empty();
+}
+
 bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 	if (isLocked()) {
 		return false;
@@ -690,6 +760,7 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 		Log::debug("No filename given for saving");
 		return false;
 	}
+	sceneSaveSun(false);
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
@@ -3240,6 +3311,7 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 	}
 
 	_sceneGraph = core::move(sceneGraph);
+	sceneLoadSun();
 	_sceneRenderer->clear();
 	// stop any running animation
 	core::getVar(cfg::VoxEditAnimationPlaying)->setVal(false);

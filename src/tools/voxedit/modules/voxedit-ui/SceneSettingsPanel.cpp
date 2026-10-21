@@ -49,7 +49,9 @@ void SceneSettingsPanel::sceneColors(ShadingMode shadingMode) {
 }
 
 void SceneSettingsPanel::sceneShadowAndSun(ShadingMode shadingMode) {
-	sunAngleSettings(_sunAngle, shadingMode == ShadingMode::Shadows);
+	if (sunAngleSettings(_sunAngle, shadingMode == ShadingMode::Shadows))
+		_sceneMgr->markDirty();
+	sceneSunSettings(*_sceneMgr.get());
 }
 
 void SceneSettingsPanel::update(const char *id, command::CommandExecutionListener &listener) {
@@ -68,6 +70,7 @@ void SceneSettingsPanel::update(const char *id, command::CommandExecutionListene
 
 		if (ImGui::Combo(_("Shading Mode"), &currentShadingMode, shadingModeItems, lengthof(shadingModeItems))) {
 			_shadingMode->setVal(currentShadingMode);
+			_sceneMgr->markDirty();
 			shadingMode = (ShadingMode)currentShadingMode;
 
 			switch (shadingMode) {

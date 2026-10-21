@@ -639,6 +639,10 @@ public:
 	 * influence on the dirty state handling of the scene.
 	 */
 	bool save(const io::FileDescription &file, bool autosave = false);
+	/** @brief Store current sun cvars on the scene root. UI actions support undo. */
+	bool sceneSaveSun(bool undo = true);
+	/** @brief Apply the scene root's sun properties to the editor and pathtracer cvars. */
+	bool sceneLoadSun();
 	bool saveSelection(const io::FileDescription &file);
 	/**
 	 * @brief Loads a volume from the given file

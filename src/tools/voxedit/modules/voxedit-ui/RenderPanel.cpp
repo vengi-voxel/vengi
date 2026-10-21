@@ -67,9 +67,16 @@ void RenderPanel::applySceneSun() {
 void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	voxelpathtracer::PathTracerState &pstate = _pathTracer.state();
 	voxelpathtracer::PathTracerParams &state = pstate.params;
+	const voxelpathtracer::PathTracerParams previous = state;
 	// Pick up Options panel / -set changes before editing the live params.
 	voxelpathtracer::PathTracerConfig::loadParams(state);
 	applySceneSun();
+	if (previous.sunElevation != state.sunElevation || previous.sunAzimuth != state.sunAzimuth ||
+		previous.sunIntensity != state.sunIntensity || previous.sunSoftness != state.sunSoftness || previous.sunColor != state.sunColor)
+		_pathTracer.resetAccumulation();
+	const float sunIntensity = state.sunIntensity;
+	const float sunSoftness = state.sunSoftness;
+	const glm::vec3 sunColor = state.sunColor;
 	int changed = 0;
 
 	const float itemWidth = ImGui::GetFontSize() * 10.0f;
@@ -140,6 +147,7 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 	if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Lighting"))) {
 		if (sunAngleSettings(_sunAngle, true)) {
 			applySceneSun();
+			_sceneMgr->markDirty();
 			++changed;
 		}
 		ImGui::Separator();
@@ -148,6 +156,12 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 		changed += ImGui::SliderFloat(_("Sun softness"), &state.sunSoftness, 0.05f, 20.0f);
 		ImGui::TooltipTextUnformatted(_("Sun disk size in degrees."));
 		changed += ImGui::ColorEdit3(_("Sun color"), &state.sunColor.x);
+		voxelpathtracer::PathTracerConfig::saveParams(state);
+		if (sceneSunSettings(*_sceneMgr.get())) {
+			voxelpathtracer::PathTracerConfig::loadParams(state);
+			applySceneSun();
+			++changed;
+		}
 		changed += ImGui::ColorEdit3(_("Sky top"), &state.skyTop.x);
 		changed += ImGui::ColorEdit3(_("Sky horizon"), &state.skyHorizon.x);
 		changed += ImGui::SliderFloat(_("Sky intensity"), &state.skyIntensity, 0.0f, 4.0f);
@@ -168,6 +182,8 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 
 	// Keep cvars in sync even for post-process-only tweaks that do not reset accumulation.
 	voxelpathtracer::PathTracerConfig::saveParams(state);
+	if (sunIntensity != state.sunIntensity || sunSoftness != state.sunSoftness || sunColor != state.sunColor)
+		_sceneMgr->markDirty();
 	if (changed > 0) {
 		_pathTracer.resetAccumulation();
 	}

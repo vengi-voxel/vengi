@@ -22,6 +22,7 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/VoxelVertex.h"
@@ -131,8 +132,9 @@ private:
 		while (*_p && !core::string::isspace(*_p) && !strchr("[]{}(),:=;#", *_p)) {
 			result += *_p++;
 		}
-		if (result.empty())
+		if (result.empty()) {
 			_valid = false;
+		}
 		return result;
 	}
 	GodotValue value(int depth = 0) {
@@ -289,26 +291,31 @@ public:
 	core::String path(const GodotDocument &doc, const core::String &name) const {
 		if (core::string::startsWith(name, "res://")) {
 			const core::String project = findGodotProject(core::string::extractDir(doc.filename), _archive);
-			if (!project.empty())
+			if (!project.empty()) {
 				return core::string::extractDir(project) + name.substr(6);
+			}
 			return name.substr(6);
 		}
-		if (core::string::isAbsolutePath(name))
+		if (core::string::isAbsolutePath(name)) {
 			return name;
+		}
 		return core::string::extractDir(doc.filename) + name;
 	}
 	const GodotDocument *externalDocument(const GodotDocument &doc, const GodotValue &ref) {
-		if (ref.text != "ExtResource" || ref.values.size() != 1)
+		if (ref.text != "ExtResource" || ref.values.size() != 1) {
 			return nullptr;
+		}
 		for (const GodotSection &s : doc.sections) {
-			if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text)
+			if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text) {
 				continue;
+			}
 			const core::String filename = path(doc, s.attributes.get("path").text);
 			auto entry = _documents.find(filename);
 			if (entry == _documents.end()) {
 				auto external = core::make_shared<GodotDocument>();
-				if (!readDocument(filename, _archive, *external.get()))
+				if (!readDocument(filename, _archive, *external.get())) {
 					return nullptr;
+				}
 				_documents.put(filename, external);
 				entry = _documents.find(filename);
 			}
@@ -316,33 +323,41 @@ public:
 		}
 		return nullptr;
 	}
+
 	GodotResource resolve(const GodotDocument &doc, const GodotValue &ref) {
-		if (ref.values.size() != 1)
+		if (ref.values.size() != 1) {
 			return {};
+		}
 		if (ref.text == "SubResource") {
 			for (const GodotSection &s : doc.sections) {
-				if (s.tag == "sub_resource" && s.attributes.get("id").text == ref.values[0].text)
+				if (s.tag == "sub_resource" && s.attributes.get("id").text == ref.values[0].text) {
 					return {&doc, &s};
+				}
 			}
 		} else if (const GodotDocument *external = externalDocument(doc, ref)) {
 			for (const GodotSection &resource : external->sections) {
-				if (resource.tag == "resource")
+				if (resource.tag == "resource") {
 					return {external, &resource};
+				}
 			}
 		}
 		return {};
 	}
+
 	core::String type(const GodotResource &resource) const {
-		if (resource.section->tag == "sub_resource")
+		if (resource.section->tag == "sub_resource") {
 			return resource.section->attributes.get("type").text;
+		}
 		return resource.document->sections[0].attributes.get("type").text;
 	}
 	image::ImagePtr texture(const GodotDocument &doc, const GodotValue &ref) {
-		if (ref.text != "ExtResource" || ref.values.size() != 1)
+		if (ref.text != "ExtResource" || ref.values.size() != 1) {
 			return {};
+		}
 		for (const GodotSection &s : doc.sections) {
-			if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text)
+			if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text) {
 				continue;
+			}
 			const core::String filename = path(doc, s.attributes.get("path").text);
 			core::ScopedPtr<io::SeekableReadStream> stream(_archive->readStream(filename));
 			return stream ? image::loadImage(filename, *stream) : image::ImagePtr();
@@ -352,27 +367,32 @@ public:
 };
 
 static glm::vec3 godotVec3(const GodotValue &v, const glm::vec3 &fallback = glm::vec3(0.0f)) {
-	if (v.values.size() != 3)
+	if (v.values.size() != 3) {
 		return fallback;
+	}
 	return glm::vec3(v.values[0].number(), v.values[1].number(), v.values[2].number());
 }
 
 static color::RGBA godotColor(const GodotValue &v) {
-	if (v.values.size() != 4)
+	if (v.values.size() != 4) {
 		return color::RGBA(255, 255, 255, 255);
+	}
 	glm::u8vec4 rgba;
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; ++i) {
 		rgba[i] = (uint8_t)glm::round(glm::clamp((float)v.values[i].number(), 0.0f, 1.0f) * 255.0f);
+	}
 	return color::RGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 }
 
 static MeshMaterialPtr loadGodotMaterial(GodotResources &resources, const GodotDocument &doc, const GodotValue &ref) {
 	const GodotResource resource = resources.resolve(doc, ref);
-	if (!resource)
+	if (!resource) {
 		return {};
+	}
 	const core::String type = resources.type(resource);
-	if (type != "StandardMaterial3D" && type != "ORMMaterial3D")
+	if (type != "StandardMaterial3D" && type != "ORMMaterial3D") {
 		return {};
+	}
 	const GodotValue &p = resource.section->properties;
 	MeshMaterialPtr result = createMaterial(p.get("resource_name").text);
 	result->baseColor = godotColor(p.get("albedo_color"));
@@ -385,8 +405,9 @@ static MeshMaterialPtr loadGodotMaterial(GodotResources &resources, const GodotD
 		result->material.setValue(palette::MaterialSpecular, (float)p.get("metallic_specular").number(0.5));
 	}
 	result->texture = resources.texture(*resource.document, p.get("albedo_texture"));
-	if (p.has("albedo_texture") && p.get("albedo_texture").text != "null" && !result->texture)
+	if (p.has("albedo_texture") && p.get("albedo_texture").text != "null" && !result->texture) {
 		return {};
+	}
 	if (result->texture) {
 		// MeshMaterial blends base color; Godot multiplies it with the texture.
 		// Bake the tint into this import's private image before voxel sampling.
@@ -412,8 +433,9 @@ static MeshMaterialPtr loadGodotMaterial(GodotResources &resources, const GodotD
 									  {"roughness", palette::MaterialRoughness},
 									  {"metallic_specular", palette::MaterialSpecular}};
 	for (const Mapping &m : mapping) {
-		if (p.has(m.name))
+		if (p.has(m.name)) {
 			result->material.setValue(m.property, (float)p.get(m.name).number());
+		}
 	}
 	if (p.get("emission_enabled").text == "true") {
 		const color::RGBA emission = godotColor(p.get("emission"));
@@ -426,25 +448,29 @@ static MeshMaterialPtr loadGodotMaterial(GodotResources &resources, const GodotD
 	for (int i = palette::MaterialMetal; i < (int)palette::MaterialMax; ++i) {
 		const auto prop = (palette::MaterialProperty)i;
 		const core::String key = core::String("metadata/vengi_") + palette::MaterialPropertyName(prop);
-		if (p.has(key))
+		if (p.has(key)) {
 			result->material.setValue(prop, (float)p.get(key).number());
+		}
 	}
 	if (p.has("metadata/vengi_type")) {
 		const int typeId = (int)p.get("metadata/vengi_type").number();
-		if (typeId >= 0 && typeId <= (int)palette::MaterialType::Media)
+		if (typeId >= 0 && typeId <= (int)palette::MaterialType::Media) {
 			result->material.type = (palette::MaterialType)typeId;
-	} else if (result->material.emit > 0.0f)
+		}
+	} else if (result->material.emit > 0.0f) {
 		result->material.type = palette::MaterialType::Emit;
-	else if (result->transparency > 0.0f)
+	} else if (result->transparency > 0.0f) {
 		result->material.type = palette::MaterialType::Glass;
-	else if (result->material.metal > 0.0f)
+	} else if (result->material.metal > 0.0f) {
 		result->material.type = palette::MaterialType::Metal;
+	}
 	return result;
 }
 
 static bool godotBytes(const GodotValue &v, core::DynamicArray<uint8_t> &bytes) {
-	if (v.text != "PackedByteArray")
+	if (v.text != "PackedByteArray") {
 		return false;
+	}
 	bytes = v.bytes;
 	return true;
 }
@@ -459,36 +485,43 @@ static bool loadGodotSurface(const GodotValue &surface, Mesh &mesh, MeshMaterial
 	voxel::IndexArray indices;
 	const GodotValue &arrays = surface.get("arrays");
 	if (!arrays.values.empty()) {
-		if (arrays.values.size() != 13)
+		if (arrays.values.size() != 13) {
 			return false;
+		}
 		const GodotValue &positions = arrays.values[0];
-		if (positions.text != "PackedVector3Array" || positions.values.size() % 3)
+		if (positions.text != "PackedVector3Array" || positions.values.size() % 3) {
 			return false;
+		}
 		const size_t count = positions.values.size() / 3;
 		const GodotValue &colors = arrays.values[3];
 		const GodotValue &uvs = arrays.values[4];
-		if (!colors.values.empty() && colors.values.size() != count * 4)
+		if (!colors.values.empty() && colors.values.size() != count * 4) {
 			return false;
-		if (!uvs.values.empty() && uvs.values.size() != count * 2)
+		}
+		if (!uvs.values.empty() && uvs.values.size() != count * 2) {
 			return false;
+		}
 		for (size_t i = 0; i < count; ++i) {
 			MeshVertex v;
-			for (int j = 0; j < 3; ++j)
+			for (int j = 0; j < 3; ++j) {
 				v.pos[j] = (float)positions.values[i * 3 + j].number(NAN);
+			}
 			if (vertexColors && !colors.values.empty()) {
 				v.color =
 					color::getRGBA(glm::vec4(colors.values[i * 4].number(), colors.values[i * 4 + 1].number(),
 											 colors.values[i * 4 + 2].number(), colors.values[i * 4 + 3].number()));
 			}
-			if (!uvs.values.empty())
+			if (!uvs.values.empty()) {
 				v.uv = glm::vec2(uvs.values[i * 2].number(), uvs.values[i * 2 + 1].number());
+			}
 			v.materialIdx = materialIdx;
 			mesh.vertices.push_back(v);
 		}
 		for (const GodotValue &index : arrays.values[12].values) {
 			const double n = index.number(-1);
-			if (n < 0 || n >= count || glm::floor(n) != n)
+			if (n < 0 || n >= count || glm::floor(n) != n) {
 				return false;
+			}
 			indices.push_back((voxel::IndexType)n);
 		}
 	} else {
@@ -502,25 +535,31 @@ static bool loadGodotSurface(const GodotValue &surface, Mesh &mesh, MeshMaterial
 		// Godot 4: positions precede a separate normal/tangent block. Attributes
 		// (RGBA8 colors, UVs and custom channels) are interleaved in another buffer.
 		const bool compressed = (format & (1ULL << 29)) != 0;
-		if (!(format & 1) || (format & (1ULL << 25)))
+		if (!(format & 1) || (format & (1ULL << 25))) {
 			return false;
+		}
 		core::DynamicArray<uint8_t> vertices, attributes, indexData;
-		if (!godotBytes(surface.get("vertex_data"), vertices))
+		if (!godotBytes(surface.get("vertex_data"), vertices)) {
 			return false;
+		}
 		const size_t positionStride = compressed ? 8 : 12;
 		const size_t normalStride = ((format & 2) ? 4 : 0) + ((format & 4) && !compressed ? 4 : 0);
-		if (vertices.size() < count * (positionStride + normalStride))
+		if (vertices.size() < count * (positionStride + normalStride)) {
 			return false;
+		}
 		size_t attributeStride = (format & 8) ? 4 : 0;
 		const size_t uvOffset = attributeStride;
-		if (format & 16)
+		if (format & 16) {
 			attributeStride += compressed ? 4 : 8;
-		if (format & 32)
+		}
+		if (format & 32) {
 			attributeStride += compressed ? 4 : 8;
+		}
 		static const size_t customSizes[] = {4, 4, 4, 8, 4, 8, 12, 16};
 		for (int c = 0; c < 4; ++c) {
-			if (format & (1ULL << (6 + c)))
+			if (format & (1ULL << (6 + c))) {
 				attributeStride += customSizes[(format >> (13 + c * 3)) & 7];
+			}
 		}
 		if (attributeStride &&
 			(!godotBytes(surface.get("attribute_data"), attributes) || attributes.size() < count * attributeStride))
@@ -549,7 +588,7 @@ static bool loadGodotSurface(const GodotValue &surface, Mesh &mesh, MeshMaterial
 				if (compressed) {
 					const GodotValue &uvScale = surface.get("uv_scale");
 					for (int j = 0; j < 2; ++j) {
-						const float scale = uvScale.values.size() == 4 ? (float)uvScale.values[j].number() : 0.0f;
+						const float scale = uvScale.values.size() == 4u ? (float)uvScale.values[j].number() : 0.0f;
 						uint16_t packed;
 						uv.readUInt16(packed);
 						const float n = packed / 65535.0f;
@@ -574,7 +613,7 @@ static bool loadGodotSurface(const GodotValue &surface, Mesh &mesh, MeshMaterial
 			io::MemoryReadStream indexStream(indexData.data(), indexData.size());
 			for (size_t i = 0; i < indexCount; ++i) {
 				uint32_t index;
-				if (stride == 2) {
+				if (stride == 2u) {
 					uint16_t n;
 					indexStream.readUInt16(n);
 					index = n;
@@ -588,23 +627,26 @@ static bool loadGodotSurface(const GodotValue &surface, Mesh &mesh, MeshMaterial
 		}
 	}
 	const size_t count = mesh.vertices.size() - first;
-	if (count == 0)
+	if (count == 0u) {
 		return false;
+	}
 	for (size_t i = first; i < mesh.vertices.size(); ++i) {
 		mesh.vertices[i].uv.y = 1.0f - mesh.vertices[i].uv.y;
 		const glm::vec3 &p = mesh.vertices[i].pos;
-		if (!glm::all(glm::isfinite(p)))
+		if (!glm::all(glm::isfinite(p))) {
 			return false;
+		}
 	}
 	if (indices.empty()) {
-		for (size_t i = 0; i < count; ++i)
+		for (size_t i = 0; i < count; ++i) {
 			indices.push_back((voxel::IndexType)i);
+		}
 	}
-	if (primitive == 3 && indices.size() % 3)
+	if (primitive == 3 && indices.size() % 3u)
 		return false;
-	if (indices.size() < 3)
+	if (indices.size() < 3u)
 		return false;
-	for (size_t i = 0; i + 2 < indices.size(); i += primitive == 3 ? 3 : 1) {
+	for (size_t i = 0; i + 2u < indices.size(); i += primitive == 3 ? 3u : 1u) {
 		// Godot front faces use clockwise winding.
 		const bool odd = primitive == 4 && (i & 1);
 		mesh.indices.push_back((voxel::IndexType)first + indices[i + (odd ? 1 : 2)]);
@@ -644,7 +686,7 @@ static bool loadGodotPrimitive(GodotResources &resources, const GodotResource &r
 	}
 	if (type == "PlaneMesh" || type == "QuadMesh") {
 		const GodotValue &sizeValue = p.get("size");
-		const glm::vec2 size = sizeValue.values.size() == 2
+		const glm::vec2 size = sizeValue.values.size() == 2u
 								   ? glm::vec2(sizeValue.values[0].number(), sizeValue.values[1].number())
 								   : glm::vec2(type == "PlaneMesh" ? 2.0f : 1.0f);
 		const int orientation = (int)p.get("orientation").number(type == "PlaneMesh" ? 1 : 2);
@@ -718,8 +760,9 @@ static bool loadGodotMesh(GodotResources &resources, const GodotDocument &doc, c
 static bool godotTransform(const GodotValue &properties, glm::mat4 &m) {
 	if (properties.has("transform")) {
 		const GodotValue &v = properties.get("transform");
-		if (v.text != "Transform3D" || v.values.size() != 12)
+		if (v.text != "Transform3D" || v.values.size() != 12u) {
 			return false;
+		}
 		for (int i = 0; i < 12; ++i) {
 			const float n = (float)v.values[i].number(NAN);
 			if (!glm::isfinite(n))
@@ -744,6 +787,97 @@ static bool godotTransform(const GodotValue &properties, glm::mat4 &m) {
 	return true;
 }
 
+static constexpr const char *GodotNodeType = "godot_node_type";
+static constexpr const char *GodotTopLevel = "godot_top_level";
+static constexpr const char *GodotSceneSun = "godot_scene_sun";
+
+static bool loadGodotSun(const GodotValue &properties, scenegraph::SceneGraphNode &node) {
+	const float energy = properties.has("light_energy") ? (float)properties.get("light_energy").number(NAN) : 1.0f;
+	const float area =
+		properties.has("light_angular_distance") ? (float)properties.get("light_angular_distance").number(NAN) : 0.0f;
+	if (!glm::isfinite(energy) || energy < 0.0f || !glm::isfinite(area) || area < 0.0f)
+		return false;
+	const auto &c = properties.get("light_color");
+	if (properties.has("light_color")) {
+		if (c.text != "Color" || c.values.size() != 4u) {
+			return false;
+		}
+		for (const auto &component : c.values) {
+			if (!glm::isfinite(component.number(NAN))) {
+				return false;
+			}
+		}
+	}
+	node.setProperty(GodotNodeType, "DirectionalLight3D");
+	node.setProperty(GodotSceneSun, false);
+	node.setProperty(GodotTopLevel, properties.get("top_level").text == "true");
+	node.setProperty(scenegraph::PropSunIntensity, energy);
+	node.setProperty(scenegraph::PropSunArea, area);
+	node.setProperty(scenegraph::PropSunColor, godotColor(c));
+	node.setProperty(scenegraph::PropSunDisk, properties.get("sky_mode").number() != 1.0);
+	node.setProperty(scenegraph::PropSunShadows, properties.get("shadow_enabled").text == "true");
+	return true;
+}
+
+static glm::mat4 godotWorldMatrix(const scenegraph::SceneGraph &graph, const scenegraph::SceneGraphNode &node) {
+	// Compose local matrices so nonuniform parent scales retain their full basis.
+	glm::mat4 matrix = node.transform(0).calculateLocalMatrix();
+	const auto *basisParent = node.property(GodotTopLevel) == "true" ? nullptr : graph.parentNode(node);
+	while (basisParent) {
+		matrix = basisParent->transform(0).calculateLocalMatrix() * matrix;
+		if (basisParent->property(GodotTopLevel) == "true")
+			break;
+		basisParent = graph.parentNode(*basisParent);
+	}
+	return matrix;
+}
+
+static bool godotSunDirection(const glm::mat4 &matrix, glm::vec3 &direction) {
+	// Light3D disables scale and orthonormalizes its global basis. Its Z axis is
+	// perpendicular to X and Y, which matters under rotated, nonuniform parents.
+	const glm::vec3 normal = glm::cross(glm::vec3(matrix[0]), glm::vec3(matrix[1]));
+	const float length = glm::length(normal);
+	const float determinant = glm::dot(normal, glm::vec3(matrix[2]));
+	if (!glm::isfinite(length) || length < 0.000001f || !glm::isfinite(determinant) || determinant == 0.0f)
+		return false;
+	direction = normal / length;
+	if (determinant < 0.0f)
+		direction = -direction;
+	return true;
+}
+
+static bool applyGodotSun(scenegraph::SceneGraph &graph, scenegraph::SceneGraphNode &sun) {
+	// Godot emits directional light along -Z; +Z points towards the sun.
+	const glm::mat4 matrix = godotWorldMatrix(graph, sun);
+	glm::vec3 direction;
+	if (!godotSunDirection(matrix, direction))
+		return false;
+	float azimuth = glm::degrees(glm::atan(direction.z, direction.x));
+	if (glm::length(glm::vec2(direction.x, direction.z)) < 0.000001f) {
+		// At the zenith/nadir, retain the heading from the horizontal basis axis.
+		const glm::vec3 x(matrix[0]);
+		azimuth = glm::degrees(glm::atan(x.x, -x.z));
+	}
+	if (azimuth < 0.0f)
+		azimuth += 360.0f;
+	bool visible = sun.visible();
+	const scenegraph::SceneGraphNode *parent = graph.parentNode(sun);
+	while (parent) {
+		visible &= parent->visible();
+		parent = graph.parentNode(*parent);
+	}
+	auto &root = graph.node(graph.root().id());
+	root.setProperty(scenegraph::PropSunElevation, glm::degrees(glm::asin(glm::clamp(direction.y, -1.0f, 1.0f))));
+	root.setProperty(scenegraph::PropSunAzimuth, azimuth);
+	sun.setProperty(GodotSceneSun, true);
+	root.setProperty(scenegraph::PropSunIntensity, visible ? sun.propertyf(scenegraph::PropSunIntensity) : 0.0f);
+	for (const char *key :
+		 {scenegraph::PropSunColor, scenegraph::PropSunArea, scenegraph::PropSunDisk, scenegraph::PropSunShadows}) {
+		root.setProperty(key, sun.property(key));
+	}
+	return true;
+}
+
 // Vengi uses frame indices rather than seconds, as does the glTF importer.
 static constexpr double GodotAnimationFPS = 24.0;
 static constexpr int GodotMaxAnimationSamples = 1000000;
@@ -751,7 +885,7 @@ static constexpr const char *GodotAnimationLength = "godot_animation_length/";
 static constexpr const char *GodotAnimationLoop = "godot_animation_loop/";
 
 static core::String godotString(const GodotValue &v) {
-	return v.values.size() == 1 && (v.text == "NodePath" || v.text == "StringName") ? v.values[0].text : v.text;
+	return v.values.size() == 1u && (v.text == "NodePath" || v.text == "StringName") ? v.values[0].text : v.text;
 }
 
 static core::String godotNodePath(const core::String &base, const core::String &relative) {
@@ -798,7 +932,7 @@ static float godotEase(float t, float curve) {
 
 static glm::vec4 sampleGodotTrack(const GodotAnimationTrack &track, double time, double length, bool loop) {
 	const auto &keys = track.keys;
-	if (keys.size() == 1)
+	if (keys.size() == 1u)
 		return keys[0].value;
 	size_t next = 0, upper = keys.size();
 	while (next < upper) {
@@ -1036,6 +1170,7 @@ bool GodotSceneFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 	GodotResources resources(archive);
 	core::StringMap<int> paths;
+	core::DynamicArray<int> suns;
 	bool root = true;
 	for (const GodotSection &section : doc.sections) {
 		if (section.tag != "node")
@@ -1096,6 +1231,8 @@ bool GodotSceneFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		glm::mat4 matrix(1.0f);
 		if (!godotTransform(p, matrix))
 			return false;
+		if (type == "DirectionalLight3D" && glm::length(glm::vec3(matrix[2])) < 0.000001f)
+			return false;
 		matrix[3] *= glm::vec4(sceneInputScale(), 1.0f);
 		node.transform(0).setLocalMatrix(matrix);
 		node.setVisible(p.get("visible").text != "false");
@@ -1113,10 +1250,37 @@ bool GodotSceneFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			if (core::string::startsWith(p.keys[i], "metadata/"))
 				node.setProperty(p.keys[i].substr(9), p.values[i].text);
 		}
+		if (p.has("top_level"))
+			node.setProperty(GodotTopLevel, p.get("top_level").text == "true");
+		if (type == "DirectionalLight3D") {
+			if (!loadGodotSun(p, node))
+				return false;
+			suns.push_back(nodeId);
+		}
 		paths.put(path, nodeId);
 		root = false;
 	}
 	sceneGraph.updateTransforms();
+	// The scene graph has one scene sun. Keep every native light node for export,
+	// and use the first visible directional light for the editor's sun settings.
+	if (!suns.empty()) {
+		int sunId = suns.front();
+		for (int id : suns) {
+			const auto &sun = sceneGraph.node(id);
+			bool visible = sun.visible();
+			const auto *parent = sceneGraph.parentNode(sun);
+			while (parent) {
+				visible &= parent->visible();
+				parent = sceneGraph.parentNode(*parent);
+			}
+			if (visible) {
+				sunId = id;
+				break;
+			}
+		}
+		if (!applyGodotSun(sceneGraph, sceneGraph.node(sunId)))
+			return false;
+	}
 	return !root && loadGodotAnimations(resources, doc, paths, sceneGraph, sceneInputScale());
 }
 
@@ -1143,6 +1307,21 @@ static core::String createTransform(const scenegraph::SceneGraph &sceneGraph, co
 static core::String createColor(const color::RGBA &color) {
 	const glm::vec4 &colorf = color::fromRGBA(color);
 	return core::String::format("Color(%f, %f, %f, %f)", colorf.r, colorf.g, colorf.b, colorf.a);
+}
+
+static bool saveGodotSun(const scenegraph::SceneGraphNode &node, io::SeekableWriteStream &stream) {
+	const float energy =
+		node.property(scenegraph::PropSunIntensity).empty() ? 1.0f : node.propertyf(scenegraph::PropSunIntensity);
+	const float area = node.propertyf(scenegraph::PropSunArea);
+	if (!glm::isfinite(energy) || energy < 0.0f || !glm::isfinite(area) || area < 0.0f)
+		return false;
+	const core::String &hex = node.property(scenegraph::PropSunColor);
+	const color::RGBA c = hex.empty() ? color::RGBA(255, 255, 255, 255) : color::fromHex(hex.c_str());
+	return stream.writeStringFormat(
+		false,
+		"light_color = %s\nlight_energy = %.9g\nlight_angular_distance = %.9g\nshadow_enabled = %s\nsky_mode = %i\n",
+		createColor(c).c_str(), energy, area, node.property(scenegraph::PropSunShadows) == "false" ? "false" : "true",
+		node.property(scenegraph::PropSunDisk) == "false" ? 1 : 0);
 }
 
 // https://docs.godotengine.org/de/4.x/classes/class_standardmaterial3d.html
@@ -1331,6 +1510,8 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			type = "Camera3D";
 		else if (node.isPointNode())
 			type = "Marker3D";
+		else if (node.property(GodotNodeType) == "DirectionalLight3D")
+			type = "DirectionalLight3D";
 		if (node.isRootNode()) {
 			wrapBool(stream.writeStringFormat(false, "[node name=\"%s\" type=\"%s\"]\n",
 											  core::string::escape(name).c_str(), type))
@@ -1342,7 +1523,46 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 		if (node.isAnyModelNode())
 			wrapBool(stream.writeStringFormat(false, "mesh = SubResource(\"%i\")\n", node.id()))
 		wrapBool(stream.writeStringFormat(false, "visible = %s\n", node.visible() ? "true" : "false"))
-		wrapBool(stream.writeStringFormat(false, "transform = %s\n", createTransform(sceneGraph, node, scale).c_str()))
+		const auto &sunSettings = node.property(GodotSceneSun) == "true" ? sceneGraph.root() : node;
+		bool sunDirectionChanged = false;
+		if (node.property(GodotSceneSun) == "true") {
+			const float elevation = glm::radians(sunSettings.propertyf(scenegraph::PropSunElevation));
+			const float azimuth = glm::radians(sunSettings.propertyf(scenegraph::PropSunAzimuth));
+			glm::vec3 current;
+			if (!glm::isfinite(elevation) || !glm::isfinite(azimuth) || !godotSunDirection(godotWorldMatrix(sceneGraph, node), current))
+				return false;
+			const glm::vec3 desired(glm::cos(elevation) * glm::cos(azimuth), glm::sin(elevation),
+									glm::cos(elevation) * glm::sin(azimuth));
+			sunDirectionChanged = glm::length(current - desired) > 0.00001f;
+		}
+		if (sunDirectionChanged) {
+			const auto transform = sceneGraph.transformForFrame(node, 0);
+			const auto &rest = node.allKeyFrames().hasKey("Default") && !node.keyFrames("Default").empty()
+								   ? node.keyFrames("Default")[0].transform()
+								   : node.transform(0);
+			const bool topLevel = node.property(GodotTopLevel) == "true";
+			const glm::vec3 position = (topLevel ? rest.localTranslation() : transform.worldTranslation()) * scale;
+			const glm::vec3 sunScale = topLevel ? rest.localScale() : transform.worldScale();
+			wrapBool(stream.writeStringFormat(false,
+											  "position = Vector3(%.9g, %.9g, %.9g)\nrotation = Vector3(%.9g, %.9g, "
+											  "0)\nscale = Vector3(%.9g, %.9g, %.9g)\n",
+											  position.x, position.y, position.z,
+											  glm::radians(-sunSettings.propertyf(scenegraph::PropSunElevation)),
+											  glm::radians(90.0f - sunSettings.propertyf(scenegraph::PropSunAzimuth)),
+											  sunScale.x, sunScale.y, sunScale.z))
+		} else {
+			wrapBool(
+				stream.writeStringFormat(false, "transform = %s\n", createTransform(sceneGraph, node, scale).c_str()))
+		}
+		if (node.property(GodotNodeType) == "DirectionalLight3D") {
+			wrapBool(stream.writeStringFormat(false, "top_level = %s\n",
+											  sunDirectionChanged || node.property(GodotTopLevel) == "true" ? "true"
+																											: "false"))
+			if (!saveGodotSun(sunSettings, stream))
+				return false;
+		} else if (node.property(GodotTopLevel) == "true") {
+			wrapBool(stream.writeString("top_level = true\n", false))
+		}
 		if (node.isCameraNode()) {
 			const auto &camera = scenegraph::toCameraNode(node);
 			wrapBool(stream.writeStringFormat(false, "projection = %i\nfov = %i\nnear = %.9g\nfar = %.9g\n",
@@ -1563,10 +1783,12 @@ bool GodotSceneFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, con
 	core::StringMap<bool> usedPaths;
 	// Visit parents before children, assigning valid, unique sibling names.
 	core::DynamicArray<int> pending;
+	bool nativeSun = false;
 	pending.push_back(sceneGraph.root().id());
 	paths.put(sceneGraph.root().id(), ".");
 	for (size_t i = 0; i < pending.size(); ++i) {
 		const scenegraph::SceneGraphNode &n = sceneGraph.node(pending[i]);
+		nativeSun |= n.property(GodotNodeType) == "DirectionalLight3D";
 		if (n.isAnyModelNode())
 			steps += (int)n.palette().size() + 1;
 		for (const core::UUID &uuid : n.children()) {
@@ -1620,10 +1842,31 @@ bool GodotSceneFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, con
 	if (!saveNode(meshIdxNodeMap, sceneGraph, node, *stream, meshes, subResourceId, WriterStage::NODES, scale, paths)) {
 		return false;
 	}
+	const scenegraph::SceneGraphNodeProperties &props = node.properties();
+	if (!nativeSun &&
+		(props.hasKey(scenegraph::PropSunElevation) || props.hasKey(scenegraph::PropSunAzimuth) ||
+		 props.hasKey(scenegraph::PropSunIntensity) || props.hasKey(scenegraph::PropSunColor))) {
+		const float elevation =
+			props.hasKey(scenegraph::PropSunElevation) ? node.propertyf(scenegraph::PropSunElevation) : 35.0f;
+		const float azimuth =
+			props.hasKey(scenegraph::PropSunAzimuth) ? node.propertyf(scenegraph::PropSunAzimuth) : 135.0f;
+		if (!glm::isfinite(elevation) || !glm::isfinite(azimuth))
+			return false;
+		core::String sunName = "Sun";
+		while (usedPaths.hasKey(sunName))
+			sunName += "_2";
+		wrapBool(stream->writeStringFormat(false,
+										   "\n[node name=\"%s\" type=\"DirectionalLight3D\" parent=\".\"]\ntop_level = "
+										   "true\nrotation = Vector3(%.9g, %.9g, 0)\n",
+										   sunName.c_str(), glm::radians(-elevation), glm::radians(90.0f - azimuth)))
+		if (!saveGodotSun(node, *stream))
+			return false;
+	}
 	if (!clips.empty()) {
 		core::String playerName = "AnimationPlayer";
-		while (usedPaths.hasKey(playerName))
+		while (usedPaths.hasKey(playerName)) {
 			playerName += "_2";
+		}
 		wrapBool(stream->writeStringFormat(
 			false,
 			"[node name=\"%s\" type=\"AnimationPlayer\" parent=\".\"]\nroot_node = NodePath(\"..\")\nlibraries = {",
