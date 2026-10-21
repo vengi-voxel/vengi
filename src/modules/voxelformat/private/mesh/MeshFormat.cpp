@@ -1607,7 +1607,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	ChunkMeshes nonEmptyMeshes;
 	nonEmptyMeshes.reserve(meshes.size());
 
-	core::Map<int, int> meshIdxNodeMap(meshes.size());
+	core::Map<int, int> meshIdxNodeMap(core_max(1, (int)meshes.size()));
 	// filter out empty meshes
 	for (auto iter = meshes.begin(); iter != meshes.end(); ++iter) {
 		if (!iter->mesh || iter->mesh->isEmpty()) {

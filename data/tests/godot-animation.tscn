@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1ab7a"]
+
+[sub_resource type="Animation" id="Animation_dcval"]
+tracks/0/type = "position_3d"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Box")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 1, 2, 3, 1, 1, 5, 6, 7)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Box")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, 0, 0, 0, 1, 0.5, 1, 0, 0.70710677, 0, 0.70710677, 1, 1, 0, 1, 0, -4.371139e-08)
+tracks/2/type = "scale_3d"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Box")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0.25, 1, 1, 2, 3, 0.75, 1, 3, 4, 5)
+
+[sub_resource type="Animation" id="Animation_m41u6"]
+loop_mode = 1
+tracks/0/type = "position_3d"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Box")
+tracks/0/interp = 0
+tracks/0/loop_wrap = false
+tracks/0/keys = PackedFloat32Array(0, 1, 1, 2, 3, 0.5, 1, 9, 2, 3)
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rs5ce"]
+_data = {
+&"Move": SubResource("Animation_dcval"),
+&"Step": SubResource("Animation_m41u6")
+}
+
+[node name="AnimatedScene" type="Node3D" unique_id=1675105323]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+
+[node name="Rig" type="Node3D" parent="." unique_id=1815359401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3, 4)
+
+[node name="Box" type="MeshInstance3D" parent="Rig" unique_id=68981365]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2, 3)
+mesh = SubResource("BoxMesh_1ab7a")
+
+[node name="Player" type="AnimationPlayer" parent="Rig" unique_id=308722518]
+libraries/Actions = SubResource("AnimationLibrary_rs5ce")
+autoplay = &"Actions/Move"

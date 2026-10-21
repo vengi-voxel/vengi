@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include <glm/vec3.hpp>
 
 namespace voxelformat {
 
 /**
- * @brief Godot 4.x scene exporter
+ * @brief Godot 4.x text scene importer and exporter
  *
- * @li https://docs.godotengine.org/en/stable/contributing/development/file_formats/tscn.html
+ * @li https://docs.godotengine.org/en/stable/engine_details/file_formats/tscn.html
  *
  * @ingroup Formats
  */
@@ -22,13 +22,12 @@ protected:
 	enum class WriterStage : uint8_t { SUB_RESOURCE, NODES };
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						const LoadContext &ctx) override {
-		return false; // loading is not yet supported
-	}
+						const LoadContext &ctx) override;
 
 	bool saveNode(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 				  const scenegraph::SceneGraphNode &node, io::SeekableWriteStream &stream, const ChunkMeshes &meshes,
-				  int &subResourceId, WriterStage stage) const;
+				  int &subResourceId, WriterStage stage, const glm::vec3 &scale,
+				  const core::Map<int, core::String> &paths) const;
 
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
@@ -39,9 +38,9 @@ public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Godot Scene",
 									   "",
-									   {"escn"},
+									   {"escn", "tscn"},
 									   {"[gd_"},
-									   VOX_FORMAT_FLAG_MESH | /* TODO: VOX_FORMAT_FLAG_ANIMATION | */ FORMAT_FLAG_SAVE | FORMAT_FLAG_NO_LOAD};
+									   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

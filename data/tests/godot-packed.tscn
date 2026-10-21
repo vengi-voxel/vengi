@@ -1,0 +1,14 @@
+[gd_scene format=3]
+; Small indexed surface with base64 vertex data, independent of the exporter.
+[sub_resource type="ArrayMesh" id="mesh"]
+_surfaces = [{
+"primitive": 3,
+"format": 34359742465,
+"vertex_count": 3,
+"vertex_data": PackedByteArray("AAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAAAA"),
+"index_count": 3,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0),
+"aabb": AABB(0, 0, 0, 2, 2, 0)
+}]
+[node name="Model" type="MeshInstance3D"]
+mesh = SubResource("mesh")

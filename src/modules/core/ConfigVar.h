@@ -142,6 +142,7 @@ constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
 constexpr const char *VoxformatQBSaveCompressed = "voxformat_qbsavecompressed";
 constexpr const char *VoxformatGLTF_KHR_materials_pbrSpecularGlossiness = "voxformat_gltf_khr_materials_pbrspecularglossiness";
 constexpr const char *VoxformatGLTF_KHR_materials_specular = "voxformat_gltf_khr_materials_specular";
+constexpr const char *VoxformatGodotProject = "voxformat_godotproject";
 constexpr const char *VoxformatImageVolumeMaxDepth = "voxformat_imagevolumemaxdepth";
 constexpr const char *VoxformatImageHeightmapMinHeight = "voxformat_imageheightmapminheight";
 constexpr const char *VoxformatImageVolumeBothSides = "voxformat_imagevolumebothsides";

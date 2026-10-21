@@ -272,6 +272,10 @@ set(TEST_SRCS
 	tests/vox_glasses.h
 )
 set(TEST_FILES
+	"tests/godot-animation.tscn"
+	"tests/godot-packed.tscn"
+	"tests/godot-scene.tscn"
+	"tests/godot-scene-current.tscn"
 	"tests/vmax-regression.zip"
 	"tests/vmax-versions.zip"
 	"tests/0voxel.vmax.zip"

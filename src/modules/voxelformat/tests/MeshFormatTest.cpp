@@ -710,6 +710,32 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[1].color);
 }
 
+TEST_F(MeshFormatTest, testSaveWithoutModels) {
+	class TestMesh : public MeshFormat {
+	public:
+		bool saved = false;
+
+		bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &,
+						const ChunkMeshes &meshes, const core::String &, const io::ArchivePtr &, const glm::vec3 &,
+						bool, bool, bool) override {
+			EXPECT_TRUE(meshIdxNodeMap.empty());
+			EXPECT_TRUE(meshes.empty());
+			saved = true;
+			return true;
+		}
+	};
+	util::ScopedVarChange pointCloud(cfg::VoxformatPointCloud, "false");
+	scenegraph::SceneGraph graph;
+	TestMesh format;
+	EXPECT_FALSE(format.saveGroups(graph, "empty.obj", nullptr, testSaveCtx));
+	EXPECT_FALSE(format.saved);
+
+	scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
+	ASSERT_NE(InvalidNodeId, graph.emplace(core::move(point)));
+	EXPECT_TRUE(format.saveGroups(graph, "point.obj", nullptr, testSaveCtx));
+	EXPECT_TRUE(format.saved);
+}
+
 TEST_F(MeshFormatTest, testSaveWithNodeIdHole) {
 	scenegraph::SceneGraph sceneGraph;
 	{

@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xnbgc"]
+transparency = 1
+albedo_color = Color(0.2, 0.4, 0.8, 0.5)
+metallic = 0.7
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.1, 0.3, 0.9, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_edic0"]
+_surfaces = [{
+"aabb": AABB(0, 0, 0, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0),
+"format": 34359742487,
+"index_count": 3,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0),
+"material": SubResource("StandardMaterial3D_xnbgc"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 3,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 255, 127, 255, 127, 0, 128, 255, 127, 255, 127, 255, 127, 0, 128, 255, 127, 255, 127, 255, 127, 0, 128)
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_kdt2a"]
+_surfaces = [{
+"aabb": AABB(0, 0, 0, 2, 2, 1e-05),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0),
+"format": 34896613399,
+"index_count": 3,
+"index_data": PackedByteArray(0, 0, 1, 0, 2, 0),
+"material": SubResource("StandardMaterial3D_xnbgc"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 3,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 255, 191, 0, 0, 255, 255, 0, 0, 255, 191, 255, 255, 0, 0, 0, 0, 255, 191, 255, 127, 255, 127, 255, 127, 255, 127, 255, 127, 255, 127)
+}]
+
+[node name="GodotScene" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4, 5)
+
+[node name="Group" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 2, 0, 0)
+
+[node name="Uncompressed" type="MeshInstance3D" parent="Group"]
+mesh = SubResource("ArrayMesh_edic0")
+
+[node name="Compressed" type="MeshInstance3D" parent="Group"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+mesh = SubResource("ArrayMesh_kdt2a")
+
+[node name="Camera" type="Camera3D" parent="Group"]
+fov = 60.0
+near = 0.2
+far = 100.0
