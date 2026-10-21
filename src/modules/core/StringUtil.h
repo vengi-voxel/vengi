@@ -46,7 +46,6 @@ double toDouble(const core::String& str);
 
 double toDouble(const char* str);
 
-
 /** Escape a string's contents using JSON escapes, without surrounding quotes. */
 core::String escape(const core::String &str);
 
@@ -108,6 +107,7 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr);
 
 void replaceAllChars(core::String& str, char in, char out);
+void replaceAllChars(core::String& str, const char* in, char out);
 void replaceAllChars(char* str, char in, char out);
 
 bool isNumber(const core::String &in);
@@ -349,6 +349,11 @@ void parseReal2(float *x, float *y, const char **token, float default_x = 0.0f,
 void parseReal3(float *x, float *y, float *z, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f, float default_z = 0.0f);
 bool parseReal(const char **token, float *out);
+/**
+ * @brief Parse a complete, finite decimal number, including scientific notation, independently of the locale.
+ * @return false for invalid or out-of-range input, leaving out unchanged.
+ */
+bool parseDouble(const core::String &in, double &out);
 void parseIVec3(const core::String &in, int32_t *out, const char* delimiters = " \t\r\n\f\v");
 void parseVec3(const core::String &in, float *out, const char* delimiters = " \t\r\n\f\v");
 

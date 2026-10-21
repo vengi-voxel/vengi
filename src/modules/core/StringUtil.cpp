@@ -9,7 +9,9 @@
 #include "core/StandardLib.h"
 #include "core/Unicode.h"
 #include "core/collection/Buffer.h"
+#if 0
 #include "core/collection/Map.h"
+#endif
 #include <SDL3/SDL_stdinc.h>
 #include <ctype.h>
 #include <glm/vec3.hpp>
@@ -362,6 +364,19 @@ void replaceAllChars(char *str, char in, char out) {
 	char *p = str;
 	while (*p != '\0') {
 		if (*p == in) {
+			*p = out;
+		}
+		++p;
+	}
+}
+
+void replaceAllChars(core::String &str, const char *in, char out) {
+	if (in == nullptr || *in == '\0') {
+		return;
+	}
+	char *p = str.c_str();
+	while (*p != '\0') {
+		if (SDL_strchr(in, *p) != nullptr) {
 			*p = out;
 		}
 		++p;
@@ -961,7 +976,7 @@ int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) {
 //  - s >= s_end.
 //  - parse failure.
 //
-static bool tryParseDouble(const char *s, const char *s_end, double *result) {
+static bool tryParseDouble(const char *s, const char *s_end, double *result, bool full = false) {
 	if (s >= s_end) {
 		return false;
 	}
@@ -987,6 +1002,8 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	// Tells whether a loop terminated due to reaching s_end.
 	bool end_not_reached = false;
 	bool leading_decimal_dots = false;
+	bool has_digits = false;
+	bool nonzero = false;
 
 	/*
 			BEGIN PARSING.
@@ -996,6 +1013,8 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	if (*curr == '+' || *curr == '-') {
 		sign = *curr;
 		curr++;
+		if (curr == s_end)
+			goto fail;
 		if ((curr != s_end) && (*curr == '.')) {
 			// accept. Somethig like `.7e+2`, `-.5234`
 			leading_decimal_dots = true;
@@ -1012,6 +1031,8 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	end_not_reached = (curr != s_end);
 	if (!leading_decimal_dots) {
 		while (end_not_reached && IS_DIGIT(*curr)) {
+			has_digits = true;
+			nonzero |= *curr != '0';
 			mantissa *= 10;
 			mantissa += static_cast<int>(*curr - 0x30);
 			curr++;
@@ -1034,13 +1055,15 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 		read = 1;
 		end_not_reached = (curr != s_end);
 		while (end_not_reached && IS_DIGIT(*curr)) {
+			has_digits = true;
+			nonzero |= *curr != '0';
 			static const double pow_lut[] = {
 				1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001,
 			};
 			const int lut_entries = lengthof(pow_lut);
 
 			// NOTE: Don't use powf here, it will absolutely murder precision.
-			mantissa += static_cast<int>(*curr - 0x30) * (read < lut_entries ? pow_lut[read] : powf(10.0, -read));
+			mantissa += (int)(*curr - '0') * (read < lut_entries ? pow_lut[read] : pow(10.0, -read));
 			read++;
 			curr++;
 			end_not_reached = (curr != s_end);
@@ -1056,6 +1079,8 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	// Read the exponent part.
 	if (*curr == 'e' || *curr == 'E') {
 		curr++;
+		if (curr == s_end)
+			goto fail;
 		// Figure out if a sign is present and if it is.
 		end_not_reached = (curr != s_end);
 		if (end_not_reached && (*curr == '+' || *curr == '-')) {
@@ -1072,7 +1097,7 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 		while (end_not_reached && IS_DIGIT(*curr)) {
 			// To avoid annoying MSVC's min/max macro definiton,
 			// Use hardcoded int max value
-			if (exponent > (2147483647 / 10)) { // 2147483647 = std::numeric_limits<int>::max()
+			if (exponent > (2147483647 - (*curr - '0')) / 10) {
 				// Integer overflow
 				goto fail;
 			}
@@ -1088,8 +1113,16 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	}
 
 assemble:
-	*result = (sign == '+' ? 1 : -1) * (exponent ? ldexp(mantissa * powf(5.0, exponent), exponent) : mantissa);
-	return true;
+	{
+		if (full && (curr != s_end || !has_digits))
+			return false;
+		const double value = (sign == '+' ? 1 : -1) *
+			(mantissa != 0.0 && exponent ? ldexp(mantissa * pow(5.0, exponent), exponent) : mantissa);
+		if (full && (SDL_isinf(value) || SDL_isnan(value) || (value == 0.0 && nonzero)))
+			return false;
+		*result = value;
+		return true;
+	}
 fail:
 	return false;
 }
@@ -1104,6 +1137,17 @@ static inline float parseReal(const char **token, double default_value = 0.0) {
 	float f = static_cast<float>(val);
 	(*token) = end;
 	return f;
+}
+
+bool parseDouble(const core::String &in, double &out) {
+	const char *begin = in.c_str();
+	const char *end = begin + in.size();
+	double val;
+	bool ret = tryParseDouble(begin, end, &val, true);
+	if (ret) {
+		out = val;
+	}
+	return ret;
 }
 
 bool parseReal(const char **token, float *out) {

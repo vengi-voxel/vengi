@@ -7,11 +7,33 @@
 #include "core/tests/TestHelper.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include <glm/common.hpp>
 
 namespace core {
 
 class StringUtilTest: public testing::Test {
 };
+
+TEST_F(StringUtilTest, testParseDouble) {
+	const struct {
+		const char *input;
+		double expected;
+	} valid[] = {{"1.25e+1", 12.5}, {"+.5", 0.5}, {"-2.5e-1", -0.25}, {"1e100", 1e100},
+				 {"1e-100", 1e-100}, {"1e308", 1e308}, {"1e-308", 1e-308}, {"0e999", 0.0}};
+	for (const auto &entry : valid) {
+		double value;
+		ASSERT_TRUE(string::parseDouble(entry.input, value)) << entry.input;
+		EXPECT_NEAR(entry.expected, value, glm::abs(entry.expected) * 1e-14) << entry.input;
+	}
+	double value;
+	ASSERT_TRUE(string::parseDouble("-2.5e-1", value));
+	EXPECT_DOUBLE_EQ(-0.25, value);
+	for (const char *input : {"", " ", " 1", "1 ", "+", "+-1", ".", "1junk", "1e", "1e+", "nan", "inf",
+							  "-inf", "1e309", "-1e309", "1e-999", "1,5", "-.", "+.", "1e2147483648"}) {
+		EXPECT_FALSE(string::parseDouble(input, value)) << input;
+		EXPECT_DOUBLE_EQ(-0.25, value);
+	}
+}
 
 TEST_F(StringUtilTest, testQuotedString) {
 	const String original = "quotes: \" slash: \\ controls: \b\f\n\r\t\x01 utf8: \xc3\xa4";
@@ -250,6 +272,17 @@ TEST_F(StringUtilTest, testLowerCamelCase) {
 TEST_F(StringUtilTest, testReplaceAll) {
 	const String str("111222333");
 	EXPECT_EQ("222222222333", core::string::replaceAll(str, "1", "22"));
+}
+
+TEST_F(StringUtilTest, testReplaceAllCharsFromSet) {
+	String str("a-b_c/d");
+	core::string::replaceAllChars(str, "-_", ' ');
+	EXPECT_EQ("a b c/d", str);
+
+	core::string::replaceAllChars(str, "", '.');
+	EXPECT_EQ("a b c/d", str);
+	core::string::replaceAllChars(str, "abc", '.');
+	EXPECT_EQ(". . ./d", str);
 }
 
 TEST_F(StringUtilTest, testReplaceAllEmpty) {
