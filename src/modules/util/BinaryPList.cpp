@@ -5,6 +5,7 @@
 
 #include "BinaryPList.h"
 #include "core/Log.h"
+#include "core/Unicode.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 #include <stdint.h>
@@ -589,7 +590,9 @@ BinaryPList BinaryPList::readDict(io::SeekableReadStream &stream, BPListFormats 
 
 BinaryPList BinaryPList::readNull() {
 	Log::debug("BPLIST: Read null");
-	return BinaryPList{BPListFormats::Null, (uint64_t)0};
+	BinaryPList value;
+	value._tagType = BPListFormats::Null;
+	return value;
 }
 
 BinaryPList BinaryPList::readBool(bool value) {
@@ -642,12 +645,15 @@ BinaryPList BinaryPList::parse(io::SeekableReadStream &stream, BPListState &stat
 	const BPListFormats type = (BPListFormats)(object & 0xF0);
 	const BPListFormats size = (BPListFormats)(object & BPListFormats::Fill);
 	switch (type) {
-	case BPListFormats::True:
-		return readBool(true);
-	case BPListFormats::False:
-		return readBool(false);
 	case BPListFormats::Null:
-		return readNull();
+		// Null and booleans share the zero high nibble; inspect the full marker.
+		if (object == BPListFormats::True) {
+			return readBool(true);
+		}
+		if (object == BPListFormats::False) {
+			return readBool(false);
+		}
+		return object == BPListFormats::Null ? readNull() : BinaryPList{};
 	case BPListFormats::Real:
 		return readReal(stream, size);
 	case BPListFormats::Int:
@@ -669,6 +675,8 @@ BinaryPList BinaryPList::parse(io::SeekableReadStream &stream, BPListState &stat
 		return readDict(stream, size, state);
 
 	// unused or custom types
+	case BPListFormats::True:
+	case BPListFormats::False:
 	case BPListFormats::Int8:
 	case BPListFormats::Int16:
 	case BPListFormats::Int32:
@@ -681,6 +689,165 @@ BinaryPList BinaryPList::parse(io::SeekableReadStream &stream, BPListState &stat
 	}
 	Log::error("BPLIST: Unknown type: %i", (int)object);
 	return BinaryPList{};
+}
+
+namespace {
+
+struct PListWriteObject {
+	const BinaryPList *value = nullptr;
+	const core::String *key = nullptr;
+	core::Buffer<uint64_t> refs;
+};
+
+static uint64_t collectPListObjects(const BinaryPList &value, core::DynamicArray<PListWriteObject> &objects) {
+	const uint64_t index = objects.size();
+	objects.emplace_back();
+	objects[index].value = &value;
+	core::Buffer<uint64_t> refs;
+	if (value.isArray()) {
+		for (const BinaryPList &child : value.asArray()) {
+			refs.push_back(collectPListObjects(child, objects));
+		}
+	} else if (value.isDict()) {
+		for (const auto &entry : value.asDict()) {
+			refs.push_back(objects.size());
+			objects.emplace_back();
+			objects.back().key = &entry->key;
+		}
+		for (const auto &entry : value.asDict()) {
+			refs.push_back(collectPListObjects(entry->value, objects));
+		}
+	}
+	objects[index].refs = core::move(refs);
+	return index;
+}
+
+static uint8_t plistIntWidth(uint64_t value) {
+	if (value <= 0xffu) {
+		return 1;
+	}
+	if (value <= 0xffffu) {
+		return 2;
+	}
+	return value <= 0xffffffffu ? 4 : 8;
+}
+
+static bool writePListInt(io::WriteStream &stream, uint64_t value, uint8_t width) {
+	for (int byte = width - 1; byte >= 0; --byte) {
+		if (!stream.writeUInt8((uint8_t)(value >> (byte * 8)))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static uint8_t plistWidthExponent(uint8_t width) {
+	return width == 8 ? 3 : (width == 4 ? 2 : (width == 2 ? 1 : 0));
+}
+
+static bool writePListLength(io::WriteStream &stream, uint8_t type, uint64_t length) {
+	if (length < 15) {
+		return stream.writeUInt8(type | (uint8_t)length);
+	}
+	const uint8_t width = plistIntWidth(length);
+	return stream.writeUInt8(type | 15) && stream.writeUInt8(0x10 | plistWidthExponent(width)) &&
+		   writePListInt(stream, length, width);
+}
+
+static bool writePListString(io::WriteStream &stream, const core::String &value) {
+	bool ascii = true;
+	for (char c : value) {
+		if ((uint8_t)c >= 128) {
+			ascii = false;
+			break;
+		}
+	}
+	if (ascii) {
+		return writePListLength(stream, 0x50, value.size()) && stream.writeString(value, false);
+	}
+	core::Buffer<uint16_t> utf16(value.size());
+	const int count = core::unicode::toUtf16(value.c_str(), value.size(), utf16.data(), utf16.size());
+	if (count <= 0 || !writePListLength(stream, 0x60, count)) {
+		return false;
+	}
+	for (int i = 0; i < count; ++i) {
+		if (!stream.writeUInt16BE(utf16[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+} // namespace
+
+bool BinaryPList::write(io::SeekableWriteStream &stream) const {
+	if (!valid()) {
+		return false;
+	}
+	core::DynamicArray<PListWriteObject> objects;
+	collectPListObjects(*this, objects);
+	const uint8_t refWidth = plistIntWidth(objects.size() - 1);
+	core::Buffer<uint64_t> offsets;
+	const int64_t start = stream.pos();
+	if (stream.write("bplist00", 8) != 8) {
+		return false;
+	}
+	for (const PListWriteObject &object : objects) {
+		offsets.push_back(stream.pos() - start);
+		if (object.key) {
+			if (!writePListString(stream, *object.key)) {
+				return false;
+			}
+			continue;
+		}
+		const BinaryPList &value = *object.value;
+		if (value.isString()) {
+			if (!writePListString(stream, value.asString())) {
+				return false;
+			}
+		} else if (value.isBoolean() || value.isNull()) {
+			if (!stream.writeUInt8(value.isNull() ? 0 : (value.asBoolean() ? 9 : 8))) {
+				return false;
+			}
+		} else if ((value.type() & 0xf0) == 0x10) {
+			const uint8_t width = plistIntWidth(value.asInt());
+			if (!stream.writeUInt8(0x10 | plistWidthExponent(width)) || !writePListInt(stream, value.asInt(), width)) {
+				return false;
+			}
+		} else if ((value.type() & 0xf0) == 0x20) {
+			if (!stream.writeUInt8(0x23) || !stream.writeDoubleBE(value.asReal())) {
+				return false;
+			}
+		} else if (value.isData()) {
+			const auto &bytes = value.asData();
+			if (!writePListLength(stream, 0x40, bytes.size()) ||
+				(!bytes.empty() && stream.write(bytes.data(), bytes.size()) != (int64_t)bytes.size())) {
+				return false;
+			}
+		} else if (value.isArray() || value.isDict()) {
+			if (!writePListLength(stream, value.isDict() ? 0xd0 : 0xa0, value.size())) {
+				return false;
+			}
+			for (uint64_t ref : object.refs) {
+				if (!writePListInt(stream, ref, refWidth)) {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+	}
+	const uint64_t tableOffset = stream.pos() - start;
+	const uint8_t offsetWidth = plistIntWidth(tableOffset);
+	for (uint64_t offset : offsets) {
+		if (!writePListInt(stream, offset, offsetWidth)) {
+			return false;
+		}
+	}
+	const uint8_t padding[6] = {0, 0, 0, 0, 0, 0};
+	return stream.write(padding, sizeof(padding)) == sizeof(padding) && stream.writeUInt8(offsetWidth) &&
+		   stream.writeUInt8(refWidth) && stream.writeUInt64BE(objects.size()) && stream.writeUInt64BE(0) &&
+		   stream.writeUInt64BE(tableOffset);
 }
 
 } // namespace util

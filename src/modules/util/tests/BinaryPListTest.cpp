@@ -142,4 +142,67 @@ TEST_F(BinaryPListTest, testRejectTruncatedSizedOffset) {
 	EXPECT_EQ(BPListFormats::MAX, BinaryPList::parse(stream).type());
 }
 
+TEST_F(BinaryPListTest, testWriteNestedAndWideReferences) {
+	PListDict dict;
+	dict.put("name", BinaryPList(core::String("non-ascii: \xc3\xa4 \xf0\x9f\x90\xa0")));
+	dict.put("true", BinaryPList(true));
+	dict.put("false", BinaryPList(false));
+	dict.put("real", BinaryPList(-12.25));
+	PListByteArray bytes(70000);
+	for (size_t i = 0; i < bytes.size(); ++i) {
+		bytes[i] = (uint8_t)i;
+	}
+	dict.put("bytes", BinaryPList(core::move(bytes)));
+	PListArray numbers;
+	for (uint32_t i = 0; i < 300; ++i) {
+		numbers.emplace_back(i * 65536u);
+	}
+	dict.put("numbers", BinaryPList(core::move(numbers)));
+	const BinaryPList original(core::move(dict));
+	io::BufferedReadWriteStream stream;
+	ASSERT_TRUE(original.write(stream));
+	stream.seek(0);
+	const BinaryPList loaded = BinaryPList::parse(stream);
+	ASSERT_TRUE(loaded.isDict());
+	EXPECT_EQ("non-ascii: \xc3\xa4 \xf0\x9f\x90\xa0", loaded.getDictEntry("name").asString());
+	EXPECT_TRUE(loaded.getDictEntry("true").asBoolean());
+	EXPECT_FALSE(loaded.getDictEntry("false").asBoolean());
+	EXPECT_DOUBLE_EQ(-12.25, loaded.getDictEntry("real").asReal());
+	ASSERT_EQ(70000u, loaded.getDictEntry("bytes").size());
+	for (size_t i = 0; i < 70000; ++i) {
+		ASSERT_EQ((uint8_t)i, loaded.getDictEntry("bytes").asData()[i]);
+	}
+	const auto &array = loaded.getDictEntry("numbers").asArray();
+	ASSERT_EQ(300u, array.size());
+	for (uint32_t i = 0; i < 300; ++i) {
+		EXPECT_EQ(i * 65536u, array[i].asInt());
+	}
+}
+
+TEST_F(BinaryPListTest, testWriteEmptyAndIntegerWidths) {
+	PListArray array;
+	array.emplace_back(PListDict{});
+	array.emplace_back(PListArray{});
+	array.emplace_back(PListByteArray{});
+	array.emplace_back(core::String());
+	const uint64_t values[] = {0, 255, 256, 65535, 65536, 0xffffffffu, 0x100000000ull, 0xffffffffffffffffull};
+	for (uint64_t value : values) {
+		array.emplace_back(value);
+	}
+	const BinaryPList original(core::move(array));
+	io::BufferedReadWriteStream stream;
+	ASSERT_TRUE(original.write(stream));
+	stream.seek(0);
+	const BinaryPList loaded = BinaryPList::parse(stream);
+	ASSERT_TRUE(loaded.isArray());
+	ASSERT_EQ(12u, loaded.size());
+	for (size_t i = 0; i < 4; ++i) {
+		EXPECT_TRUE(loaded.asArray()[i].empty());
+	}
+	for (size_t i = 0; i < 8; ++i) {
+		EXPECT_EQ(values[i], loaded.asArray()[i + 4].asInt());
+	}
+	EXPECT_FALSE(BinaryPList().write(stream));
+}
+
 } // namespace util

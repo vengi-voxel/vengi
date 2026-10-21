@@ -173,6 +173,9 @@ public:
 
 	static BinaryPList parse(io::SeekableReadStream &stream);
 
+	/** @brief Write dictionaries, arrays, strings, data, numbers and booleans as bplist00. */
+	bool write(io::SeekableWriteStream &stream) const;
+
 	bool empty() const;
 	size_t size() const;
 
