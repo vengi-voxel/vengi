@@ -24,6 +24,9 @@ static const VkCompareOp CompareFuncs[] = {
 };
 static_assert(core::enumVal(CompareFunc::Max) == lengthof(CompareFuncs), "Array sizes don't match Max");
 
+// Sampler depth-compare uses the same convention as GL and as Vulkan depth
+// tests: LESS is Dref < Dtex (reference from the shader, test from the texel).
+
 static const VkBlendFactor BlendModes[] = {
 	VK_BLEND_FACTOR_ZERO,				 // Zero
 	VK_BLEND_FACTOR_ONE,				 // One
@@ -53,6 +56,39 @@ static const VkCullModeFlagBits CullModes[] = {
 	VK_CULL_MODE_FRONT_AND_BACK // FrontAndBack
 };
 static_assert(core::enumVal(Face::Max) == lengthof(CullModes), "Array sizes don't match Max");
+
+// RendererState leaves blend modes/equation at *::Max until explicitly set.
+inline VkBlendOp blendOpFor(BlendEquation eq) {
+	const int idx = core::enumVal(eq);
+	if (idx < 0 || idx >= (int)core::enumVal(BlendEquation::Max)) {
+		return VK_BLEND_OP_ADD;
+	}
+	return BlendEquations[idx];
+}
+
+inline VkBlendFactor blendFactorFor(BlendMode mode) {
+	const int idx = core::enumVal(mode);
+	if (idx < 0 || idx >= (int)core::enumVal(BlendMode::Max)) {
+		return VK_BLEND_FACTOR_ONE;
+	}
+	return BlendModes[idx];
+}
+
+inline VkCompareOp compareOpFor(CompareFunc func) {
+	const int idx = core::enumVal(func);
+	if (idx < 0 || idx >= (int)core::enumVal(CompareFunc::Max)) {
+		return VK_COMPARE_OP_LESS_OR_EQUAL;
+	}
+	return CompareFuncs[idx];
+}
+
+inline VkCullModeFlags cullModeFor(Face face) {
+	const int idx = core::enumVal(face);
+	if (idx < 0 || idx >= (int)core::enumVal(Face::Max)) {
+		return VK_CULL_MODE_BACK_BIT;
+	}
+	return CullModes[idx];
+}
 
 static const VkPolygonMode PolygonModes[] = {
 	VK_POLYGON_MODE_POINT, // Points

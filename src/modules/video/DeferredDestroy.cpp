@@ -56,6 +56,8 @@ void executeDestroy(DestroyResourceType type, Id id) {
 	default:
 		break;
 	}
+	// Resource destroy accounting lives in deleteBuffers/deleteTextures/... so
+	// we do not call statsResourceDestroy() here (avoids double-counting).
 }
 
 void flushReadyDestroys() {
