@@ -37,6 +37,11 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "color size")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
+		ScopedPalette scopedPalette(_sceneMgr);
+		// Row-wrap checks must select populated cells even after using a small palette.
+		palette::Palette palette;
+		IM_CHECK(palette.nippon());
+		IM_CHECK(_sceneMgr->setActivePalette(palette));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		const char *sizes[] = {"0.5", "1.0", "2.0", "4.0"};
