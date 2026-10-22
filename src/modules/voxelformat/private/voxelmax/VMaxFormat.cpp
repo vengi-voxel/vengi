@@ -1234,12 +1234,12 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	}
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(paletteName));
 	if (!stream) {
-		const core::String settingsName = vmaxPaletteSettingsFile(paletteName);
+		const core::String &settingsName = vmaxPaletteSettingsFile(paletteName);
 		core::ScopedPtr<io::SeekableReadStream> settingsStream(archive->readStream(settingsName));
 		if (settingsStream) {
-			const util::BinaryPList settings = vmaxReadPlist(*settingsStream);
+			const util::BinaryPList &settings = vmaxReadPlist(*settingsStream);
 			const util::BinaryPList &colors = settings.getDictEntry("colors");
-			image::ImagePtr image = image::createEmptyImage(settingsName);
+			const image::ImagePtr &image = image::createEmptyImage(settingsName);
 			if (colors.isData() && !colors.empty() && colors.size() % 4 == 0 && colors.size() <= 255 * 4 &&
 				image->loadRGBA(colors.asData().data(), (int)(colors.size() / 4), 1) && palette.load(image)) {
 				applyVmaxPaletteSettings(settings, palette, layers);
@@ -1262,7 +1262,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 	core::String settingsName = vmaxPaletteSettingsFile(paletteName);
 	if (!archive->exists(settingsName)) {
-		const core::String fallback = vmaxJoin(core::string::extractDir(paletteName), "palette.settings.vmaxpsb");
+		const core::String &fallback = vmaxJoin(core::string::extractDir(paletteName), "palette.settings.vmaxpsb");
 		if (archive->exists(fallback)) {
 			settingsName = fallback;
 		} else if (archive->exists("palette.settings.vmaxpsb")) {
@@ -1275,7 +1275,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	if (!settingsName.empty()) {
 		core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream(settingsName));
 		if (paletteSettingsStream) {
-			const util::BinaryPList plist = vmaxReadPlist(*paletteSettingsStream);
+			const util::BinaryPList &plist = vmaxReadPlist(*paletteSettingsStream);
 			applyVmaxPaletteSettings(plist, palette, layers);
 		}
 	} else {
@@ -1711,11 +1711,11 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 		int partIndex = 0;
 		for (const VmaxExportPart &part : parts) {
 			ctx.report("object", objectIndex, (int)graph.size(scenegraph::SceneGraphNodeType::AllModels));
-			const core::String suffix = objectIndex == 0 ? "" : core::String::format("%i", objectIndex + 1);
-			const core::String dataName = "contents" + suffix + ".vmaxb";
-			const core::String paletteName = vmaxPaletteFileForContents(dataName);
-			const core::String settingsName = vmaxPaletteSettingsFile(paletteName);
-			const util::BinaryPList settings = vmaxPaletteSettings(palette, part);
+			const core::String &suffix = objectIndex == 0 ? "" : core::String::format("%i", objectIndex + 1);
+			const core::String &dataName = "contents" + suffix + ".vmaxb";
+			const core::String &paletteName = vmaxPaletteFileForContents(dataName);
+			const core::String &settingsName = vmaxPaletteSettingsFile(paletteName);
+			const util::BinaryPList &settings = vmaxPaletteSettings(palette, part);
 			const core::UUID uuid = split ? core::UUID::generate() : node.uuid();
 			{
 				core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream(dataName));
@@ -1737,7 +1737,7 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 					return false;
 				}
 			}
-			const glm::ivec3 dims = volume->region().getDimensionsInVoxels();
+			const glm::ivec3 &dims = volume->region().getDimensionsInVoxels();
 			const glm::vec3 offset = glm::vec3(volume->region().getLowerCorner()) - node.pivot() * glm::vec3(dims);
 			json::Json object = vmaxNode(node, split ? node.uuid() : pid, offset);
 			if (split) {
