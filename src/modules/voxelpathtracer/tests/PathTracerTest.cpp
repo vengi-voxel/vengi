@@ -128,8 +128,6 @@ voxel::Voxel transmissionSlabVoxel(const palette::Palette &pal, TransmissionCase
 	return voxel::createVoxel(pal, 2);
 }
 
-} // namespace
-
 class PathTracerTest : public video::AbstractGLTest {
 private:
 	using Super = video::AbstractGLTest;
@@ -453,3 +451,5 @@ TEST_F(PathTracerTest, testGpuDisplayTextureSupportsExportAndResize) {
 	EXPECT_EQ(64, pathTracer.texture()->height());
 	ASSERT_TRUE(pathTracer.stop());
 }
+
+} // namespace

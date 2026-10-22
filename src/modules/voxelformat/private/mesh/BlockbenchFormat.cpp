@@ -1519,11 +1519,8 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 	root.set("elements", elements);
 
 	{
-		const palette::Palette *pal = nullptr;
-		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-			pal = &(*iter).palette();
-			break;
-		}
+		const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+		const palette::Palette *pal = node ? &node->palette() : nullptr;
 		if (pal) {
 			image::ImagePtr palImage = image::createEmptyImage("palette");
 			const int palW = 16;

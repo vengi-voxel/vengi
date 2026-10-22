@@ -1695,7 +1695,8 @@ static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 	camera.set(vmax::CameraPanY, 0.0f);
 	camera.set(vmax::CameraZoom, 512.0f);
 	camera.set(vmax::CameraOrigin, vmaxVector(glm::vec3(0.0f)));
-	for (auto iter = graph.begin(scenegraph::SceneGraphNodeType::Camera); iter != graph.end(); ++iter) {
+	const auto iter = graph.begin(scenegraph::SceneGraphNodeType::Camera);
+	if (iter != graph.end()) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const auto transform = graph.transformForFrame(node, 0);
 		glm::vec3 scale, translation;
@@ -1710,7 +1711,6 @@ static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 		camera.set(vmax::CameraRoll, angles.z);
 		camera.set(vmax::CameraZoom, distance);
 		camera.set(vmax::CameraOrigin, vmaxVector(vmaxAxes(position + forward * distance)));
-		break;
 	}
 	return camera;
 }
