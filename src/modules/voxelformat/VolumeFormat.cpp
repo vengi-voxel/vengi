@@ -517,9 +517,9 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
 	}
-	const core::String &ext = core::string::extractExtension(filename);
+	const core::String ext = io::getFormatExtension(filename, voxelformat::voxelSave());
 	if (desc) {
-		if (!desc->matchesExtension(ext)) {
+		if (!io::isA(filename, *desc)) {
 			desc = nullptr;
 		}
 	}
