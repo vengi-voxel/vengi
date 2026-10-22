@@ -22,6 +22,7 @@
 #include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
+#include "voxelformat/private/voxelmax/VMaxFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
@@ -79,6 +80,13 @@ TEST_F(ConvertTest, testVoxToVox) {
 	VoxFormat src;
 	VoxFormat target;
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vox", target);
+}
+
+TEST_F(ConvertTest, testVoxToVMax) {
+	VoxFormat src;
+	VMaxFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vmax.zip", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToBinvox) {

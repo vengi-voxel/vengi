@@ -5,6 +5,8 @@
 #pragma once
 
 #include "core/UUID.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
+#include "scenegraph/SceneGraphNodeType.h"
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include "voxelformat/Format.h"
@@ -155,6 +157,7 @@ class VMaxFormat : public PaletteFormat {
 private:
 	// scene.json
 	struct VMaxObject {
+		scenegraph::SceneGraphNodeProperties properties;
 		core::String n;						   // name
 		core::String pal;					   // palette - only for objects, not for groups
 		core::String data;					   // contents - only for objects, not for groups
@@ -196,6 +199,8 @@ private:
 	};
 
 	struct VmaxLayerMaterials {
+		color::RGBA baseColors[256];
+		bool hasBaseColors = false;
 		VmaxMaterial layers[8];
 		bool present[8]{false, false, false, false, false, false, false, false};
 		int activeLayer = 0; // voxel byte 0-7 from ali
@@ -220,6 +225,8 @@ private:
 
 	// scene.json
 	struct VMaxGroup {
+		scenegraph::SceneGraphNodeProperties properties;
+		scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Group;
 		core::UUID id;
 		core::String name;
 		core::UUID pid;					   // parent id
@@ -234,6 +241,7 @@ private:
 	};
 	// scene nodes hierarchy, groups and volumes
 	struct VMaxScene {
+		scenegraph::SceneGraphNodeProperties properties;
 		// objects are instances of models
 		core::DynamicArray<VMaxObject> objects;
 		core::DynamicArray<VMaxGroup> groups;
@@ -261,6 +269,10 @@ private:
 		core::String background = "#FBFBFBFF"; //
 		core::String lcolor = "#FFFFFFFF";	   //
 	};
+
+	bool onlyOnePalette() const override { return false; }
+	int emptyPaletteIndex() const override { return -1; }
+	glm::ivec3 maxSize() const override { return glm::ivec3(512); }
 
 	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
 							 const glm::vec3 &t_s) const;
@@ -302,7 +314,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"VoxelMax", "", {"vmax.zip", "vmax", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+			"VoxelMax", "", {"vmax.zip", "vmax", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

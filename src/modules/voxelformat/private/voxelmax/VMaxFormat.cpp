@@ -3,6 +3,8 @@
  */
 
 #include "VMaxFormat.h"
+#include "app/App.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
@@ -13,10 +15,13 @@
 #include "core/collection/Map.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/LZFSEReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
+#include "json/JSON.h"
+#include "lzfse.h"
 #include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -29,7 +34,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include "json/JSON.h"
+#include "voxelformat/FormatThumbnail.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -89,13 +95,13 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-// VoxelMax volumes are Z-up. Morton decode already stores (x, z_up, y).
-static glm::vec3 vmaxToVengi(const glm::vec3 &v) {
+// Swap Y and Z between VoxelMax (Z-up) and vengi (Y-up). This is its own inverse.
+static glm::vec3 vmaxAxes(const glm::vec3 &v) {
 	return glm::vec3(v.x, v.z, v.y);
 }
 
 static glm::quat vmaxAxisAngleToQuat(const glm::vec4 &t_r) {
-	const glm::vec3 axis = vmaxToVengi(glm::vec3(t_r));
+	const glm::vec3 axis = vmaxAxes(glm::vec3(t_r));
 	// (x,y,z)->(x,z,y) has det -1, so R conjugates as R(C*axis, -angle).
 	const float angle = -t_r.w;
 	const float len2 = glm::dot(axis, axis);
@@ -114,6 +120,14 @@ static core::String vmaxPaletteFileForContents(const core::String &contentsPath)
 	return "palette.png";
 }
 
+static core::String vmaxPaletteSettingsFile(const core::String &paletteName) {
+	return core::string::stripExtension(paletteName) + ".settings.vmaxpsb";
+}
+
+static bool vmaxHasPalette(const io::ArchivePtr &archive, const core::String &path) {
+	return archive->exists(path) || archive->exists(vmaxPaletteSettingsFile(path));
+}
+
 static core::String vmaxJoin(const core::String &dir, const core::String &name) {
 	if (name.empty()) {
 		return name;
@@ -122,6 +136,18 @@ static core::String vmaxJoin(const core::String &dir, const core::String &name) 
 		return name;
 	}
 	return core::string::path(dir, name);
+}
+
+static void vmaxLoadProperties(const json::Json &json, scenegraph::SceneGraphNodeProperties &properties) {
+	const json::Json props = json.get("vengi_properties");
+	if (!props.isObject()) {
+		return;
+	}
+	for (auto iter = props.begin(); iter != props.end(); ++iter) {
+		if ((*iter).isString()) {
+			properties.put(iter.key(), (*iter).str());
+		}
+	}
 }
 
 // Try LZFSE first (VoxelMax decoder rule), then fall back to raw bplist.
@@ -238,10 +264,10 @@ void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm
 	// VoxelMax uses T * R * S from t_p/t_r/t_s and applies that matrix on the parent chain.
 	// Decoder stores e_c but does not fold it into the matrix.
 	// Voxels stay in the 256 work-area; crop + T(volumeMins) restores those coords.
-	// vmaxToVengi is (x,z,y) (det -1); vmaxAxisAngleToQuat uses -t_r.w so R conjugates.
-	const glm::mat4 local = glm::translate(glm::mat4(1.0f), vmaxToVengi(t_p)) *
+	// vmaxAxes is (x,z,y) (det -1); vmaxAxisAngleToQuat uses -t_r.w so R conjugates.
+	const glm::mat4 local = glm::translate(glm::mat4(1.0f), vmaxAxes(t_p)) *
 							glm::mat4_cast(vmaxAxisAngleToQuat(t_r)) *
-							glm::scale(glm::mat4(1.0f), vmaxToVengi(t_s)) *
+							glm::scale(glm::mat4(1.0f), vmaxAxes(t_s)) *
 							glm::translate(glm::mat4(1.0f), volumeMins);
 	transform.setLocalMatrix(local);
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
@@ -250,6 +276,8 @@ void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm
 
 void VMaxFormat::applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const {
 	scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
+	root.addProperties(scene.properties);
+	root.setProperty(scenegraph::PropSunShadows, scene.shadowint > 0.0f);
 	root.setProperty(scenegraph::PropSunIntensity, scene.lint);
 	root.setProperty(scenegraph::PropSunColor, scene.lcolor);
 	root.setProperty(scenegraph::PropSunElevation, scene.cam.lha);
@@ -278,7 +306,7 @@ void VMaxFormat::applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VM
 void VMaxFormat::addSceneCamera(scenegraph::SceneGraph &sceneGraph, const VMaxCamera &cam) const {
 	// Stick camera: look-at o with pan (px,py), orbit by wa/ha/da (radians), distance z.
 	// MagicaVoxel-style view matrix after Z-up remap; yaw sign matches their (pitch,-yaw,roll).
-	const glm::vec3 target = vmaxToVengi(cam.o) + glm::vec3(cam.px, 0.0f, cam.py);
+	const glm::vec3 target = vmaxAxes(cam.o) + glm::vec3(cam.px, 0.0f, cam.py);
 	const glm::quat quat(glm::vec3(cam.ha, -cam.wa, cam.da));
 	const float distance = cam.z > 0.0f ? cam.z : 512.0f;
 	const glm::vec3 forward = glm::conjugate(quat) * glm::forward();
@@ -371,6 +399,7 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 		return false;
 	}
 
+	vmaxLoadProperties(json, scene.properties);
 	jsonString(json, ao, scene);
 	jsonString(json, ag, scene);
 	jsonString(json, af, scene);
@@ -414,6 +443,7 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 	const json::Json objects = json.get("objects");
 	for (const json::Json &obj : objects) {
 		VMaxObject o;
+		vmaxLoadProperties(obj, o.properties);
 		jsonBool(obj, s, o);
 		jsonBool(obj, h, o);
 		jsonString(obj, n, o);
@@ -443,6 +473,13 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 		const json::Json groups = json.get("groups");
 		for (const json::Json &obj : groups) {
 			VMaxGroup o;
+			vmaxLoadProperties(obj, o.properties);
+			const core::String type = obj.strVal("vengi_type", "");
+			if (type == "camera") {
+				o.type = scenegraph::SceneGraphNodeType::Camera;
+			} else if (type == "point") {
+				o.type = scenegraph::SceneGraphNodeType::Point;
+			}
 			jsonBool(obj, s, o);
 			jsonBool(obj, h, o);
 			jsonString(obj, name, o);
@@ -471,7 +508,13 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
 	Log::debug("Load %i scene groups", (int)scene.groups.size());
 	applySceneMetadata(sceneGraph, scene);
-	addSceneCamera(sceneGraph, scene.cam);
+	bool storedCamera = false;
+	for (const VMaxGroup &group : scene.groups) {
+		storedCamera |= group.type == scenegraph::SceneGraphNodeType::Camera;
+	}
+	if (!storedCamera) {
+		addSceneCamera(sceneGraph, scene.cam);
+	}
 	for (VMaxObject &obj : scene.objects) {
 		obj.data = vmaxJoin(packageDir, obj.data);
 		obj.pal = vmaxJoin(packageDir, obj.pal);
@@ -482,7 +525,8 @@ bool VMaxFormat::loadScenePackage(const io::ArchivePtr &archive, const core::Str
 			return false;
 		}
 		const VMaxGroup &obj = scene.groups[i];
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group, obj.id);
+		scenegraph::SceneGraphNode node(obj.type, obj.id);
+		node.addProperties(obj.properties);
 		node.setName(obj.name);
 		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s);
 		node.setVisible(!obj.h);
@@ -551,8 +595,12 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		const core::String palFile = vmaxPaletteFileForContents(filename);
 		const core::String palPath = vmaxJoin(core::string::extractDir(filename), palFile);
 		Log::debug("Standalone vmaxb palette: %s", palPath.c_str());
-		if (!loadPaletteFromArchive(archive, palPath, vmaxPalette, ctx, layers) &&
-			(palPath == palFile || !loadPaletteFromArchive(archive, palFile, vmaxPalette, ctx, layers))) {
+		bool paletteLoaded = vmaxHasPalette(archive, palPath) &&
+			loadPaletteFromArchive(archive, palPath, vmaxPalette, ctx, layers);
+		if (!paletteLoaded && palPath != palFile && vmaxHasPalette(archive, palFile)) {
+			paletteLoaded = loadPaletteFromArchive(archive, palFile, vmaxPalette, ctx, layers);
+		}
+		if (!paletteLoaded) {
 			if (stream->seek(0) == -1 || !loadPaletteFromVmaxb(*stream, vmaxPalette, layers)) {
 				return false;
 			}
@@ -828,7 +876,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 					continue;
 				}
 				const uint8_t index = (uint8_t)(entry % 256);
-				partPalette.setColor(index, pal.color((uint8_t)color));
+				partPalette.setColor(index, objectLayers.hasBaseColors ? objectLayers.baseColors[color] : pal.color((uint8_t)color));
 				partPalette.setMaterial(index, pal.material((uint8_t)color));
 				if (objectLayers.present[layer]) {
 					applyVmaxLayerMaterial(partPalette, index, objectLayers.layers[layer]);
@@ -850,6 +898,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, part == 0 ? obj.id : core::UUID());
+		node.addProperties(obj.properties);
 		node.setName(part == 0 ? obj.n : core::String::format("%s-%i", obj.n.c_str(), part + 1));
 		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(mins));
 		if (obj.pid.isValid()) {
@@ -879,7 +928,10 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 
 	core::String packageDir;
 	if (vmaxIsPackage(archive, filename, packageDir)) {
-		thumbnailStream = archive->readStream(vmaxJoin(packageDir, thumbnailPath));
+		const core::String path = vmaxJoin(packageDir, thumbnailPath);
+		if (archive->exists(path)) {
+			thumbnailStream = archive->readStream(path);
+		}
 	} else {
 		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 		if (!stream) {
@@ -888,7 +940,9 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 		}
 		const io::ArchivePtr &zipArchive = io::openZipArchive(stream);
 		if (zipArchive) {
-			thumbnailStream = zipArchive->readStream(thumbnailPath);
+			if (zipArchive->exists(thumbnailPath)) {
+				thumbnailStream = zipArchive->readStream(thumbnailPath);
+			}
 		} else {
 			const core::String fullPath = vmaxJoin(core::string::extractDir(filename), thumbnailPath);
 			if (archive->exists(fullPath)) {
@@ -897,7 +951,6 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 		}
 	}
 	if (!thumbnailStream) {
-		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
 		return image::ImagePtr();
 	}
 	Log::debug("Found thumbnail %s in archive %s", thumbnailPath.c_str(), filename.c_str());
@@ -965,6 +1018,8 @@ void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palId
 		resolved.type = palette::MaterialType::Emit;
 	} else if (material.hasTransmission && material.transmission > 0.0) {
 		resolved.type = palette::MaterialType::Glass;
+	} else if (material.hasMetalness && material.metalness > 0.10001) {
+		resolved.type = palette::MaterialType::Metal;
 	} else if (material.hasEmission || material.hasTransmission) {
 		resolved.type = palette::MaterialType::Diffuse;
 	}
@@ -1053,6 +1108,14 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 		applyLayer = firstLayer;
 	}
 
+	// Palette-only import uses the active layer. Object decoding must start from
+	// the original colors when assigning each (layer,color) pair, especially glass alpha.
+	if (!layers.hasBaseColors) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			layers.baseColors[i] = palette.color((uint8_t)i);
+		}
+		layers.hasBaseColors = true;
+	}
 	const util::BinaryPList &lc = plist.getDictEntry("lc");
 	if (applyLayer >= 0 && lc.isData() && layers.present[applyLayer]) {
 		const util::PListByteArray &usage = lc.asData();
@@ -1171,7 +1234,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	}
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(paletteName));
 	if (!stream) {
-		const core::String settingsName = core::string::stripExtension(paletteName) + ".settings.vmaxpsb";
+		const core::String settingsName = vmaxPaletteSettingsFile(paletteName);
 		core::ScopedPtr<io::SeekableReadStream> settingsStream(archive->readStream(settingsName));
 		if (settingsStream) {
 			const util::BinaryPList settings = vmaxReadPlist(*settingsStream);
@@ -1197,8 +1260,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 		return false;
 	}
 
-	core::String settingsName = core::string::stripExtension(paletteName);
-	settingsName.append(".settings.vmaxpsb");
+	core::String settingsName = vmaxPaletteSettingsFile(paletteName);
 	if (!archive->exists(settingsName)) {
 		const core::String fallback = vmaxJoin(core::string::extractDir(paletteName), "palette.settings.vmaxpsb");
 		if (archive->exists(fallback)) {
@@ -1248,6 +1310,13 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 		}
 		return palette.colorCount();
 	}
+	if (core::string::extractExtension(filename) == "vmaxb" &&
+		!vmaxHasPalette(archive, vmaxJoin(core::string::extractDir(filename), paletteName))) {
+		if (loadPaletteFromVmaxb(*archiveStream, palette, layers)) {
+			return palette.colorCount();
+		}
+		archiveStream->seek(0);
+	}
 	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
 	if (zipArchive) {
 		Log::debug("Found zip archive %s", filename.c_str());
@@ -1274,9 +1343,471 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	return palette.colorCount();
 }
 
+static json::Json vmaxVector(const glm::vec3 &v) {
+	json::Json array = json::Json::array();
+	for (int i = 0; i < 3; ++i) {
+		array.push(v[i]);
+	}
+	return array;
+}
+
+static json::Json vmaxProperties(const scenegraph::SceneGraphNode &node) {
+	json::Json props = json::Json::object();
+	for (const auto &entry : node.properties()) {
+		props.set(entry->key.c_str(), entry->value);
+	}
+	return props;
+}
+
+static util::BinaryPList vmaxString(const core::String &value) {
+	return util::BinaryPList(core::String(value));
+}
+
+static util::BinaryPList vmaxInts(const glm::ivec3 &v) {
+	util::PListArray array;
+	for (int i = 0; i < 3; ++i) {
+		array.emplace_back((uint32_t)v[i]);
+	}
+	return util::BinaryPList(core::move(array));
+}
+
+static bool writeVmaxPlist(io::WriteStream &stream, const util::BinaryPList &plist) {
+	io::BufferedReadWriteStream bytes;
+	if (!plist.write(bytes)) {
+		return false;
+	}
+	// LZFSE falls back to uncompressed blocks when compression would grow the input.
+	core::Buffer<uint8_t> encoded(bytes.size() + bytes.size() / 16 + 1024);
+	core::Buffer<uint8_t> scratch(lzfse_encode_scratch_size());
+	const size_t size = lzfse_encode_buffer(encoded.data(), encoded.size(), bytes.getBuffer(), bytes.size(), scratch.data());
+	return size > 0 && stream.write(encoded.data(), size) == (int64_t)size;
+}
+
+struct VmaxExportPart {
+	int colors[256];
+	int layers[256];
+	palette::Material materials[8];
+	int colorCount = 0;
+	int materialCount = 0;
+	uint8_t usage[256]{};
+
+	VmaxExportPart() {
+		core_memset(colors, 0xff, sizeof(colors));
+		core_memset(layers, 0xff, sizeof(layers));
+	}
+};
+
+static core::DynamicArray<VmaxExportPart> vmaxParts(const voxel::RawVolume &volume, const palette::Palette &palette) {
+	bool used[256]{};
+	voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &voxel) {
+		used[voxel.getColor()] = true;
+	});
+	core::DynamicArray<VmaxExportPart> parts;
+	for (int color = 0; color < 256; ++color) {
+		if (!used[color]) {
+			continue;
+		}
+		const palette::Material &material = palette.material((uint8_t)color);
+		bool assigned = false;
+		for (VmaxExportPart &part : parts) {
+			int layer = 0;
+			for (; layer < part.materialCount; ++layer) {
+				if (part.materials[layer] == material) {
+					break;
+				}
+			}
+			if (part.colorCount == 255 || (layer == part.materialCount && layer == 8)) {
+				continue;
+			}
+			if (layer == part.materialCount) {
+				part.materials[part.materialCount++] = material;
+			}
+			part.colors[color] = ++part.colorCount;
+			part.layers[color] = layer;
+			part.usage[part.colors[color]] = (uint8_t)(1u << layer);
+			assigned = true;
+			break;
+		}
+		if (!assigned) {
+			VmaxExportPart part;
+			part.materials[0] = material;
+			part.materialCount = 1;
+			part.colors[color] = ++part.colorCount;
+			part.layers[color] = 0;
+			part.usage[1] = 1;
+			parts.push_back(core::move(part));
+		}
+	}
+	return parts;
+}
+
+static util::BinaryPList vmaxPaletteSettings(const palette::Palette &palette, const VmaxExportPart &part) {
+	util::PListDict settings;
+	settings.put("name", vmaxString(palette.name()));
+	settings.put("ali", vmaxString("1"));
+	settings.put("current", util::BinaryPList((uint32_t)1));
+	settings.put("rt", vmaxString("n"));
+	util::PListByteArray colors(255 * 4);
+	util::PListByteArray usage(256);
+	core_memcpy(usage.data(), part.usage, sizeof(part.usage));
+	for (int i = 0; i < 256; ++i) {
+		if (part.colors[i] > 0) {
+			const color::RGBA rgba = palette.color((uint8_t)i);
+			core_memcpy(colors.data() + (part.colors[i] - 1) * 4, &rgba, 4);
+		}
+	}
+	settings.put("colors", util::BinaryPList(core::move(colors)));
+	settings.put("lc", util::BinaryPList(core::move(usage)));
+	util::PListArray materials;
+	for (int i = 0; i < part.materialCount; ++i) {
+		const palette::Material &source = part.materials[i];
+		util::PListDict material;
+		material.put("mi", vmaxString(core::String::format("%i", i + 1)));
+		material.put("sh", util::BinaryPList(true));
+		material.put("mc", util::BinaryPList(0.1 + 0.8 * source.metal));
+		material.put("rc", util::BinaryPList(0.1 + 0.8 * source.roughness));
+		material.put("sic", util::BinaryPList(20.0 * source.emit));
+		util::PListDict medium;
+		medium.put("t", util::BinaryPList(source.type == palette::MaterialType::Glass ? 1.0 : 0.0));
+		medium.put("i", util::BinaryPList((double)source.indexOfRefraction));
+		medium.put("a", util::BinaryPList((double)source.attenuation));
+		material.put("md", util::BinaryPList(core::move(medium)));
+		materials.emplace_back(core::move(material));
+	}
+	settings.put("materials", util::BinaryPList(core::move(materials)));
+	return util::BinaryPList(core::move(settings));
+}
+
+static util::BinaryPList vmaxMortonBounds(const glm::ivec3 &v, uint32_t morton) {
+	util::PListArray array;
+	array.emplace_back(voxel::mortonIndex((uint8_t)v.x, 0, 0));
+	array.emplace_back(voxel::mortonIndex(0, (uint8_t)v.y, 0));
+	array.emplace_back(voxel::mortonIndex(0, 0, (uint8_t)v.z));
+	array.emplace_back(morton);
+	return util::BinaryPList(core::move(array));
+}
+
+static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &volume, const VmaxExportPart &part,
+							const util::BinaryPList &palette, const core::UUID &uuid, const json::Json &camera) {
+	const glm::ivec3 lower = volume.region().getLowerCorner();
+	const glm::ivec3 dimensions = volume.region().getDimensionsInVoxels();
+	const glm::ivec3 vmaxDimensions = glm::ivec3(dimensions.x, dimensions.z, dimensions.y);
+	const int order = core_max(dimensions.x, core_max(dimensions.y, dimensions.z)) > 256 ? 9 : 8;
+	util::PListArray snapshots;
+	core::Buffer<uint8_t> chunk(32768 * 2);
+	for (int cz = 0; cz < (vmaxDimensions.z + 31) / 32; ++cz) {
+		for (int cy = 0; cy < (vmaxDimensions.y + 31) / 32; ++cy) {
+			for (int cx = 0; cx < (vmaxDimensions.x + 31) / 32; ++cx) {
+				if (app::App::getInstance()->shouldQuit()) {
+					return false;
+				}
+				core_memset(chunk.data(), 0, chunk.size());
+				uint32_t first = 32768, last = 0, count = 0;
+				glm::ivec3 mins(31), maxs(0);
+				util::PListByteArray usage(256);
+				for (int z = 0; z < core_min(32, vmaxDimensions.z - cz * 32); ++z) {
+					for (int y = 0; y < core_min(32, vmaxDimensions.y - cy * 32); ++y) {
+						for (int x = 0; x < core_min(32, vmaxDimensions.x - cx * 32); ++x) {
+							const auto &voxel = volume.voxel(lower + glm::ivec3(cx * 32 + x, cz * 32 + z, cy * 32 + y));
+							const int color = part.colors[voxel.getColor()];
+							if (voxel::isAir(voxel.getMaterial()) || color < 0) {
+								continue;
+							}
+							const uint32_t morton = voxel::mortonIndex((uint8_t)x, (uint8_t)y, (uint8_t)z);
+							chunk[morton * 2] = (uint8_t)part.layers[voxel.getColor()];
+							chunk[morton * 2 + 1] = (uint8_t)color;
+							usage[color] |= (uint8_t)(1u << part.layers[voxel.getColor()]);
+							first = core_min(first, morton);
+							last = core_max(last, morton);
+							mins = glm::min(mins, glm::ivec3(x, y, z));
+							maxs = glm::max(maxs, glm::ivec3(x, y, z));
+							++count;
+						}
+					}
+				}
+				if (count == 0) {
+					continue;
+				}
+				util::PListDict range;
+				range.put("min", vmaxInts(glm::ivec3(0)));
+				range.put("max", vmaxInts(glm::ivec3(31)));
+				util::PListDict extent;
+				extent.put("o", util::BinaryPList((uint32_t)5));
+				extent.put("r", util::BinaryPList(core::move(range)));
+				util::PListDict stats;
+				stats.put("count", util::BinaryPList(count));
+				stats.put("scount", util::BinaryPList((uint32_t)0));
+				stats.put("min", vmaxMortonBounds(mins, first));
+				stats.put("max", vmaxMortonBounds(maxs, last));
+				stats.put("smin", vmaxMortonBounds(glm::ivec3(0), 0));
+				stats.put("smax", vmaxMortonBounds(glm::ivec3(31), 32767));
+				stats.put("extent", util::BinaryPList(core::move(extent)));
+				util::PListDict id;
+				id.put("c", util::BinaryPList(voxel::mortonIndex((uint8_t)cx, (uint8_t)cy, (uint8_t)cz)));
+				id.put("s", util::BinaryPList((uint32_t)1));
+				id.put("t", util::BinaryPList((uint32_t)4)); // checkpoint
+				util::PListByteArray data((last - first + 1) * 2);
+				core_memcpy(data.data(), chunk.data() + first * 2, data.size());
+				util::PListDict storage;
+				storage.put("id", util::BinaryPList(core::move(id)));
+				storage.put("st", util::BinaryPList(core::move(stats)));
+				storage.put("ds", util::BinaryPList(core::move(data)));
+				storage.put("lc", util::BinaryPList(core::move(usage)));
+				storage.put("dlc", util::BinaryPList(util::PListByteArray(256)));
+				util::PListDict snapshot;
+				snapshot.put("s", util::BinaryPList(core::move(storage)));
+				snapshots.emplace_back(core::move(snapshot));
+			}
+		}
+	}
+	util::PListDict viewbox;
+	viewbox.put("min", vmaxInts(glm::ivec3(0)));
+	viewbox.put("max", vmaxInts(glm::ivec3((1 << order) - 1)));
+	util::PListDict tools;
+	tools.put("vp", util::BinaryPList(core::move(viewbox)));
+	tools.put("al", vmaxString("1"));
+	tools.put("mi", util::BinaryPList((uint32_t)1));
+	util::PListDict contents;
+	contents.put("v", util::BinaryPList((uint32_t)4));
+	contents.put("eo", util::BinaryPList((uint32_t)order));
+	contents.put("uuid", vmaxString(uuid.str()));
+	contents.put("snapshots", util::BinaryPList(core::move(snapshots)));
+	contents.put("tools", util::BinaryPList(core::move(tools)));
+	contents.put("pal", palette);
+	util::PListDict view;
+	for (const char *key : {"da", "ha", "wa", "lda", "lha", "lwa", "px", "py", "z"}) {
+		view.put(key, util::BinaryPList((double)camera.get(key).floatVal()));
+	}
+	util::PListArray origin;
+	for (int i = 0; i < 3; ++i) {
+		origin.emplace_back((double)camera.get("o").get(i).floatVal());
+	}
+	view.put("o", util::BinaryPList(core::move(origin)));
+	contents.put("cam", util::BinaryPList(core::move(view)));
+	return writeVmaxPlist(stream, util::BinaryPList(core::move(contents)));
+}
+
+static json::Json vmaxNode(const scenegraph::SceneGraphNode &node, const core::UUID &parent,
+						   const glm::vec3 &volumeOffset = glm::vec3(0.0f)) {
+	json::Json json = json::Json::object();
+	json.set("id", node.uuid().str());
+	json.set("pid", parent.isValid() ? parent.str() : "");
+	json.set("s", node.property("vmax_selected") == "true");
+	json.set("h", !node.visible());
+	json.set("vengi_properties", vmaxProperties(node));
+	const auto &transform = node.transform(0);
+	json.set("t_p", vmaxVector(vmaxAxes(glm::vec3(transform.localMatrix() * glm::vec4(volumeOffset, 1.0f)))));
+	json.set("t_s", vmaxVector(vmaxAxes(transform.localScale())));
+	const glm::quat rotation = glm::normalize(transform.localOrientation());
+	const float angle = glm::angle(rotation);
+	const glm::vec3 axis = angle > 0.000001f ? vmaxAxes(glm::axis(rotation)) : glm::vec3(0.0f, 0.0f, 1.0f);
+	json::Json axisAngle = vmaxVector(axis);
+	axisAngle.push(-angle);
+	json.set("t_r", axisAngle);
+	json.set("e_c", vmaxVector(glm::vec3(0.0f)));
+	json.set("e_mi", vmaxVector(glm::vec3(0.0f)));
+	json.set("e_ma", vmaxVector(glm::vec3(0.0f)));
+	return json;
+}
+
+static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
+	json::Json camera = json::Json::object();
+	camera.set("da", 0.0f);
+	camera.set("ha", 0.19591334f);
+	camera.set("wa", 0.0f);
+	camera.set("lda", 0.0f);
+	camera.set("lha", graph.root().property(scenegraph::PropSunElevation).empty() ? 1.8209133f :
+					  graph.root().propertyf(scenegraph::PropSunElevation));
+	camera.set("lwa", graph.root().property(scenegraph::PropSunAzimuth).empty() ? 0.25f :
+					  graph.root().propertyf(scenegraph::PropSunAzimuth));
+	camera.set("px", 0.0f);
+	camera.set("py", 0.0f);
+	camera.set("z", 512.0f);
+	camera.set("o", vmaxVector(glm::vec3(0.0f)));
+	for (auto iter = graph.begin(scenegraph::SceneGraphNodeType::Camera); iter != graph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const auto transform = graph.transformForFrame(node, 0);
+		glm::vec3 scale, translation;
+		glm::quat rotation;
+		transform.decompose(scale, rotation, translation);
+		const glm::vec3 angles = glm::eulerAngles(rotation);
+		const float distance = node.propertyf("vmax_z") > 0.0f ? node.propertyf("vmax_z") : 512.0f;
+		const glm::vec3 position = -(glm::conjugate(rotation) * transform.worldTranslation());
+		const glm::vec3 forward = glm::conjugate(rotation) * glm::forward();
+		camera.set("ha", angles.x);
+		camera.set("wa", -angles.y);
+		camera.set("da", angles.z);
+		camera.set("z", distance);
+		camera.set("o", vmaxVector(vmaxAxes(position + forward * distance)));
+		break;
+	}
+	return camera;
+}
+
+static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &archive, const SaveContext &ctx) {
+	json::Json scene = json::Json::object();
+	scene.set("v", 4);
+	scene.set("vengi_properties", vmaxProperties(graph.root()));
+	const auto &root = graph.root();
+	const char *floatKeys[] = {"aint", "eint", "outlinesz", "sat", "shadowint", "temp", "cont", "tint", "bloombrad",
+							  "bloomint", "bloomthr", "outlineint"};
+	const float defaults[] = {0.25f, 0.5f, 2.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 4.0f, 0.6f, 1.0f, 0.4f};
+	for (int i = 0; i < lengthof(floatKeys); ++i) {
+		const core::String property = core::String("vmax_") + floatKeys[i];
+		scene.set(floatKeys[i], root.property(property).empty() ? defaults[i] : root.propertyf(property));
+	}
+	if (!root.property(scenegraph::PropSunShadows).empty()) {
+		scene.set("shadowint", root.property(scenegraph::PropSunShadows) == "true" ?
+								core_max(0.001f, scene.get("shadowint").floatVal()) : 0.0f);
+	}
+	scene.set("lint", root.property(scenegraph::PropSunIntensity).empty() ? 0.5f : root.propertyf(scenegraph::PropSunIntensity));
+	scene.set("lcolor", root.property(scenegraph::PropSunColor).empty() ? "#FFFFFFFF" : root.property(scenegraph::PropSunColor));
+	scene.set("background", root.property("background").empty() ? "#FBFBFBFF" : root.property("background"));
+	scene.set("af", root.property("vmax_af").empty() ? "t" : root.property("vmax_af"));
+	scene.set("nrn", root.property("vmax_nrn").empty() || root.property("vmax_nrn") == "true");
+	scene.set("ssr", root.property("vmax_ssr") == "true");
+	const json::Json camera = vmaxCamera(graph);
+	scene.set("cam", camera);
+	json::Json objects = json::Json::array();
+	json::Json groups = json::Json::array();
+	int objectIndex = 0;
+	const bool rootTransform = root.transform(0).localMatrix() != glm::mat4(1.0f);
+	if (rootTransform) {
+		json::Json group = vmaxNode(root, core::UUID());
+		group.set("name", root.name());
+		groups.push(group);
+	}
+	for (auto iter = graph.beginAll(); iter != graph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (node.isRootNode()) {
+			continue;
+		}
+		const auto *parent = graph.parentNode(node);
+		const core::UUID pid = parent && (!parent->isRootNode() || rootTransform) ? parent->uuid() : core::UUID();
+		if (!node.isAnyModelNode()) {
+			json::Json group = vmaxNode(node, pid);
+			group.set("name", node.name());
+			if (node.isCameraNode() || node.isPointNode()) {
+				group.set("vengi_type", node.isCameraNode() ? "camera" : "point");
+			}
+			groups.push(group);
+			if (node.uuid() == graph.activeNodeUUID()) {
+				scene.set("ag", node.uuid().str());
+			}
+			continue;
+		}
+		const voxel::RawVolume *volume = graph.resolveVolume(node);
+		if (!volume) {
+			return false;
+		}
+		const auto &palette = graph.resolvePalette(node);
+		const auto parts = vmaxParts(*volume, palette);
+		const bool split = parts.size() > 1 || !node.children().empty();
+		if (split || parts.empty()) {
+			json::Json group = vmaxNode(node, pid);
+			group.set("name", node.name());
+			groups.push(group);
+		}
+		int partIndex = 0;
+		for (const VmaxExportPart &part : parts) {
+			ctx.report("object", objectIndex, (int)graph.size(scenegraph::SceneGraphNodeType::AllModels));
+			const core::String suffix = objectIndex == 0 ? "" : core::String::format("%i", objectIndex + 1);
+			const core::String dataName = "contents" + suffix + ".vmaxb";
+			const core::String paletteName = vmaxPaletteFileForContents(dataName);
+			const core::String settingsName = vmaxPaletteSettingsFile(paletteName);
+			const util::BinaryPList settings = vmaxPaletteSettings(palette, part);
+			const core::UUID uuid = split ? core::UUID::generate() : node.uuid();
+			{
+				core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream(dataName));
+				if (!stream || !writeVmaxObject(*stream, *volume, part, settings, uuid, camera)) {
+					return false;
+				}
+			}
+			{
+				core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream(settingsName));
+				if (!stream || !settings.write(*stream)) {
+					return false;
+				}
+			}
+			{
+				core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream(paletteName));
+				uint8_t rgba[256 * 4]{};
+				core_memcpy(rgba, settings.getDictEntry("colors").asData().data(), 255 * 4);
+				if (!stream || !image::Image::writePNG(*stream, rgba, 256, 1, 4)) {
+					return false;
+				}
+			}
+			const glm::ivec3 dims = volume->region().getDimensionsInVoxels();
+			const glm::vec3 offset = glm::vec3(volume->region().getLowerCorner()) - node.pivot() * glm::vec3(dims);
+			json::Json object = vmaxNode(node, split ? node.uuid() : pid, offset);
+			if (split) {
+				object.set("id", uuid.str());
+				object.set("t_p", vmaxVector(vmaxAxes(offset)));
+				object.set("t_r", json::Json::parse("[0,0,1,0]"));
+				object.set("t_s", vmaxVector(glm::vec3(1.0f)));
+			}
+			object.set("n", split ? core::String::format("%s-%i", node.name().c_str(), ++partIndex) : node.name());
+			object.set("data", dataName);
+			object.set("pal", paletteName);
+			object.set("hist", "");
+			object.set("ind", vmaxVector(glm::vec3((float)objectIndex, 0.0f, 0.0f)));
+			object.set("t_al", "f");
+			object.set("t_pa", "4");
+			object.set("t_pf", "8");
+			object.set("e_c", vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set("e_mi", vmaxVector(-vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set("e_ma", vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
+			objects.push(object);
+			if (node.uuid() == graph.activeNodeUUID()) {
+				scene.set(split ? "ag" : "ao", node.uuid().str());
+			}
+			++objectIndex;
+		}
+	}
+	scene.set("objects", objects);
+	scene.set("groups", groups);
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream("scene.json"));
+	return stream && stream->writeString(scene.dump(), false);
+}
+
 bool VMaxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
-	return false;
+	io::BufferedReadWriteStream output;
+	if (core::string::extractExtension(filename) == "vmaxb") {
+		if (sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) != 1) {
+			Log::error("Standalone vmaxb export requires one model; use vmax or vmax.zip for scenes");
+			return false;
+		}
+		const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+		const voxel::RawVolume &volume = *sceneGraph.resolveVolume(*node);
+		const core::DynamicArray<VmaxExportPart> parts = vmaxParts(volume, sceneGraph.resolvePalette(*node));
+		if (parts.size() != 1u) {
+			Log::error("Standalone vmaxb supports up to 255 colors and 8 materials; use vmax or vmax.zip");
+			return false;
+		}
+		const auto settings = vmaxPaletteSettings(sceneGraph.resolvePalette(*node), parts[0]);
+		if (!writeVmaxObject(output, volume, parts[0], settings, node->uuid(), vmaxCamera(sceneGraph))) {
+			return false;
+		}
+	} else {
+		io::ZipArchive zip;
+		if (!zip.init(&output) || !writeVmaxPackage(sceneGraph, zip, ctx)) {
+			return false;
+		}
+		if (ctx.thumbnailCreator) {
+			ThumbnailContext thumbnailContext;
+			const auto image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailContext);
+			if (image && image->isLoaded()) {
+				core::ScopedPtr<io::SeekableWriteStream> thumbnail(zip.writeStream("QuickLook/Thumbnail.png"));
+				if (!thumbnail || !image->writePNG(*thumbnail)) {
+					return false;
+				}
+			}
+		}
+		zip.shutdown();
+	}
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	return stream && stream->write(output.getBuffer(), output.size()) == output.size();
 }
 
 #undef jsonVec
