@@ -1154,7 +1154,7 @@ msgstr ""
 msgid "Apply optimizations"
 msgstr ""
 
-msgid "Apply mesh optimization steps to meshes"
+msgid "Apply mesh optimization steps when saving mesh based formats"
 msgstr ""
 
 msgid "Fill hollow"
@@ -1312,6 +1312,14 @@ msgid "KHR_materials_specular"
 msgstr ""
 
 msgid "Apply KHR_materials_specular when saving into the glTF format"
+msgstr ""
+
+msgid "Create Godot project"
+msgstr ""
+
+msgid ""
+"Create project.godot beside the scene and set it as the main scene. Existing "
+"projects are preserved."
 msgstr ""
 
 msgid "Export materials"
@@ -1557,6 +1565,186 @@ msgid "Push"
 msgstr ""
 
 msgid "Pop"
+msgstr ""
+
+msgid "Samples"
+msgstr ""
+
+msgid "Per-pixel pathtracer samples"
+msgstr ""
+
+msgid "Bounces"
+msgstr ""
+
+msgid "Maximum light bounces for the pathtracer"
+msgstr ""
+
+msgid "Pathtracer samples computed per frame"
+msgstr ""
+
+msgid "Samples per pass"
+msgstr ""
+
+msgid "Resolution"
+msgstr ""
+
+msgid "Square pathtracer output size in pixels"
+msgstr ""
+
+msgid "Exposure"
+msgstr ""
+
+msgid "Pathtracer exposure compensation in stops"
+msgstr ""
+
+msgid "Pathtracer tone mapping operator"
+msgstr ""
+
+msgid "Contrast"
+msgstr ""
+
+msgid "Pathtracer contrast"
+msgstr ""
+
+msgid "Saturation"
+msgstr ""
+
+msgid "Pathtracer saturation"
+msgstr ""
+
+msgid "Vignette"
+msgstr ""
+
+msgid "Pathtracer vignette strength"
+msgstr ""
+
+msgid "Aperture"
+msgstr ""
+
+msgid "Pathtracer lens aperture for depth of field"
+msgstr ""
+
+msgid "Focus distance"
+msgstr ""
+
+msgid "Pathtracer focus distance for depth of field"
+msgstr ""
+
+msgid "Pathtracer sun elevation angle in degrees"
+msgstr ""
+
+msgid "Sun elevation"
+msgstr ""
+
+msgid "Sun azimuth"
+msgstr ""
+
+msgid "Pathtracer sun azimuth angle in degrees"
+msgstr ""
+
+msgid "Pathtracer sun intensity"
+msgstr ""
+
+msgid "Sun intensity"
+msgstr ""
+
+msgid "Pathtracer sun disk size in degrees"
+msgstr ""
+
+msgid "Sun softness"
+msgstr ""
+
+msgid "Sun color"
+msgstr ""
+
+msgid "Pathtracer sun color (RGB)"
+msgstr ""
+
+msgid "Sky top"
+msgstr ""
+
+msgid "Pathtracer sky top color (RGB)"
+msgstr ""
+
+msgid "Sky horizon"
+msgstr ""
+
+msgid "Pathtracer sky horizon color (RGB)"
+msgstr ""
+
+msgid "Pathtracer sky intensity"
+msgstr ""
+
+msgid "Sky intensity"
+msgstr ""
+
+msgid "Floor"
+msgstr ""
+
+msgid "Enable the pathtracer ground plane"
+msgstr ""
+
+msgid "Floor color"
+msgstr ""
+
+msgid "Pathtracer ground plane color (RGB)"
+msgstr ""
+
+msgid "Floor Y"
+msgstr ""
+
+msgid "Pathtracer ground plane height"
+msgstr ""
+
+msgid "Depth of field"
+msgstr ""
+
+msgid "Enable pathtracer depth of field"
+msgstr ""
+
+msgid "Background"
+msgstr ""
+
+msgid "0 = sky, 1 = solid, 2 = transparent"
+msgstr ""
+
+msgid "Background color"
+msgstr ""
+
+msgid "Pathtracer solid background color (RGB)"
+msgstr ""
+
+msgid "Fog density"
+msgstr ""
+
+msgid "Pathtracer fog density"
+msgstr ""
+
+msgid "Fog color"
+msgstr ""
+
+msgid "Pathtracer fog color (RGB)"
+msgstr ""
+
+msgid "Voxel edge"
+msgstr ""
+
+msgid "Fillet exposed voxel corners (0 = hard cube)"
+msgstr ""
+
+msgid "Pathtracer bloom strength"
+msgstr ""
+
+msgid "Atmosphere"
+msgstr ""
+
+msgid "Pathtracer world haze that brightens toward the sun"
+msgstr ""
+
+msgid "Render scale"
+msgstr ""
+
+msgid "Trace at a fraction of the output resolution, then upsample"
 msgstr ""
 
 msgid "Movement speed"
@@ -2872,6 +3060,15 @@ msgstr ""
 msgid "Small (grow as needed)"
 msgstr ""
 
+msgid "Sky"
+msgstr ""
+
+msgid "Solid"
+msgstr ""
+
+msgid "Transparent"
+msgstr ""
+
 msgid "General"
 msgstr ""
 
@@ -2899,6 +3096,9 @@ msgstr ""
 msgid "Rendering"
 msgstr ""
 
+msgid "Pathtracer"
+msgstr ""
+
 msgid "Renderer"
 msgstr ""
 
@@ -2906,6 +3106,9 @@ msgid "Mesh Export"
 msgstr ""
 
 msgid "Voxel Import/Export"
+msgstr ""
+
+msgid "Minecraft"
 msgstr ""
 
 msgid "Advanced"
@@ -2999,9 +3202,6 @@ msgstr ""
 msgid "Hue"
 msgstr ""
 
-msgid "Saturation"
-msgstr ""
-
 msgid "Brightness"
 msgstr ""
 
@@ -3072,31 +3272,16 @@ msgstr ""
 msgid "Quality"
 msgstr ""
 
-msgid "Samples"
-msgstr ""
-
 msgid "Per-pixel samples. Higher values reduce noise but take longer."
-msgstr ""
-
-msgid "Bounces"
 msgstr ""
 
 msgid "Maximum light bounces. Increase for glass."
 msgstr ""
 
-msgid "Samples per pass"
-msgstr ""
-
 msgid "Samples computed per frame"
 msgstr ""
 
-msgid "Voxel edge"
-msgstr ""
-
 msgid "Fillet exposed voxel corners. 0 is a hard cube."
-msgstr ""
-
-msgid "Render scale"
 msgstr ""
 
 msgid "Trace at a fraction of the output resolution, then upsample."
@@ -3108,79 +3293,19 @@ msgstr ""
 msgid "Output image size in pixels (square)"
 msgstr ""
 
-msgid "Exposure"
-msgstr ""
-
 msgid "Exposure compensation in stops for tonemapping."
-msgstr ""
-
-msgid "Contrast"
-msgstr ""
-
-msgid "Vignette"
 msgstr ""
 
 msgid "Threshold blur of bright emit and sun highlights."
 msgstr ""
 
-msgid "Depth of field"
-msgstr ""
-
-msgid "Aperture"
-msgstr ""
-
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
-msgstr ""
-
-msgid "Focus distance"
 msgstr ""
 
 msgid "Lighting"
 msgstr ""
 
-msgid "Sun intensity"
-msgstr ""
-
-msgid "Sun softness"
-msgstr ""
-
 msgid "Sun disk size in degrees."
-msgstr ""
-
-msgid "Sun color"
-msgstr ""
-
-msgid "Sky top"
-msgstr ""
-
-msgid "Sky horizon"
-msgstr ""
-
-msgid "Sky intensity"
-msgstr ""
-
-msgid "Floor"
-msgstr ""
-
-msgid "Floor color"
-msgstr ""
-
-msgid "Floor Y"
-msgstr ""
-
-msgid "Background"
-msgstr ""
-
-msgid "Background color"
-msgstr ""
-
-msgid "Fog density"
-msgstr ""
-
-msgid "Fog color"
-msgstr ""
-
-msgid "Atmosphere"
 msgstr ""
 
 msgid "World haze that brightens toward the sun."
@@ -3478,6 +3603,18 @@ msgstr ""
 
 #, c-format
 msgid "FPS: %.2f"
+msgstr ""
+
+msgid "Load sun from scene"
+msgstr ""
+
+msgid "Apply the scene root's stored sun settings to the current controls."
+msgstr ""
+
+msgid "Save sun to scene"
+msgstr ""
+
+msgid "Store the current sun settings on the scene root for saving and export."
 msgstr ""
 
 msgid "Sun angle"
@@ -3786,9 +3923,6 @@ msgid "Lines"
 msgstr ""
 
 msgid "Points"
-msgstr ""
-
-msgid "Solid"
 msgstr ""
 
 msgid "Render mode"
@@ -4489,6 +4623,12 @@ msgstr ""
 
 msgctxt "Temporary merged scene graph node name"
 msgid "merged_temp"
+msgstr ""
+
+msgid "Palette color cell size relative to the UI frame height"
+msgstr ""
+
+msgid "Palette color size"
 msgstr ""
 
 msgid "Color wheel"

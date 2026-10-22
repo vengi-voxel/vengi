@@ -552,7 +552,8 @@ const jsonData = {
     {
       "name": "Godot Scene",
       "extensions": [
-        "escn"
+        "escn",
+        "tscn"
       ],
       "magics": [
         {
@@ -562,8 +563,8 @@ const jsonData = {
       ],
       "mimetype": "application/x-godot-scene",
       "mesh": true,
-      "animation": false,
-      "load": false,
+      "animation": true,
+      "load": true,
       "save": true
     },
     {
@@ -1245,7 +1246,7 @@ const jsonData = {
       "mimetype": "application/x-voxelmax",
       "animation": false,
       "load": true,
-      "save": false
+      "save": true
     },
     {
       "name": "VoxelCdx",

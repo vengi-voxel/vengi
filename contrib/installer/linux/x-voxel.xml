@@ -157,6 +157,14 @@
 			<match type="string" offset="0" value="#bin"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-godot-scene">
+		<comment>Godot Scene</comment>
+		<glob pattern="*.escn"/>
+		<glob pattern="*.tscn"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="[gd_"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-goxel">
 		<comment>Goxel</comment>
 		<glob pattern="*.gox"/>

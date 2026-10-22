@@ -58,7 +58,7 @@
 | Voxel3D                    | v3a         | X       | X      |            |         |            |
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
 | VoxelCdx                   | vcdx        | X       | X      | X          | X       |            |
-| VoxelMax                   | vmax.zip    | X       |        | X          | X       |            |
+| VoxelMax                   | vmax.zip    | X       | X      | X          | X       |            |
 
 ## Mesh formats
 
@@ -71,7 +71,7 @@
 | FBX                        | fbx       | X       | X         |            |
 | Geography Markup Language  | gml       | X       |           |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |
-| Godot Scene                | escn      |         | X         |            |
+| Godot Scene                | escn      | X       | X         | X          |
 | LDraw Model                | ldr       | X       |           |            |
 | LEGO Digital Designer      | lxf       | X       |           |            |
 | OpenStreetMap JSON         | osm.json  | X       |           |            |

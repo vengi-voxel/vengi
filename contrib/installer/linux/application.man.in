@@ -66,6 +66,8 @@ Geography Markup Language (*.gml, *.xml)
 .TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
+Godot Scene (*.escn, *.tscn)
+.TP
 Goxel (*.gox)
 .TP
 Goxel txt (*.txt)

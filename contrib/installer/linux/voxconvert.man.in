@@ -167,6 +167,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_gmlregion\fP: World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' in GML world coordinates. Only applied when the estimated voxel region exceeds the size threshold. Objects fully inside this region are imported, others are skipped.
 .PP
+\fBvoxformat_godotproject\fP: Create project.godot beside the scene and set it as the main scene. Existing projects are preserved.
+.PP
 \fBvoxformat_imageheightmapminheight\fP: The minimum height of the heightmap when importing an image as heightmap
 .PP
 \fBvoxformat_imageimporttype\fP: 0 = plane, 1 = heightmap, 2 = volume
@@ -195,6 +197,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
 .PP
+\fBvoxformat_mesh_optimize\fP: Apply mesh optimization steps when saving mesh based formats
+.PP
 \fBvoxformat_mesh_simplify\fP: Simplify the mesh when voxelizing a mesh format
 .PP
 \fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when simplifying meshes on import or export (0 or 1 = disable)
@@ -202,8 +206,6 @@ Allow to specify input file filter if --input is a directory.
 \fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
 .PP
 \fBvoxformat_mvapplytransform\fP: Bake MagicaVoxel transforms into voxels
-.PP
-\fBvoxformat_optimize\fP: Apply mesh optimization steps to meshes
 .PP
 \fBvoxformat_osmmeterspervoxel\fP: The number of real-world meters each voxel represents in OSM imports
 .PP
@@ -413,6 +415,8 @@ Geography Markup Language (*.gml, *.xml)
 .TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
+Godot Scene (*.escn, *.tscn)
+.TP
 Goxel (*.gox)
 .TP
 Goxel txt (*.txt)
@@ -541,7 +545,7 @@ FBX (*.fbx)
 .TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
-Godot Scene (*.escn)
+Godot Scene (*.escn, *.tscn)
 .TP
 Goxel (*.gox)
 .TP
@@ -600,6 +604,8 @@ Vengi (*.vengi)
 Voxel3D (*.v3a, *.v3b)
 .TP
 VoxelCdx (*.vcdx)
+.TP
+VoxelMax (*.vmax.zip, *.vmax, *.vmaxb)
 .TP
 Wavefront Object (*.obj)
 
