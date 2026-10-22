@@ -601,7 +601,12 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("-->\n");
 	Log::printf("<CPackWiXPatch>\n");
 	Log::printf("	<!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->\n");
+	Log::printf("	<CPackWiXFragment Id=\"CM_C_voxelthumb\">\n");
+	Log::printf("		<ComponentRef Id=\"CM_CP_thumbnailer.thumbnailer.vengi_thumbnailer.exe\" />\n");
+	Log::printf("	</CPackWiXFragment>\n");
 	Log::printf("	<CPackWiXFragment Id=\"CM_CP_voxelthumb.vengi_voxelthumb.dll\">\n");
+	Log::printf("		<RegistryValue Root=\"HKLM\" Key=\"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved\"\n");
+	Log::printf("			Name=\"" VOXTHUMB_CLSID "\" Type=\"string\" Value=\"Vengi thumbnailer\" />\n");
 	Log::printf("		<RegistryKey Root=\"HKCR\" Key=\"CLSID\\" VOXTHUMB_CLSID "\" ForceDeleteOnUninstall=\"yes\">\n");
 	Log::printf("			<RegistryValue Type=\"string\" Value=\"Vengi thumbnailer\" />\n");
 	Log::printf("			<RegistryKey Key=\"InprocServer32\">\n");
@@ -623,7 +628,7 @@ void FormatPrinter::printInstallerWix() {
 	uniqueExtensions.clear();
 	Log::printf("	</CPackWiXFragment>\n");
 	Log::printf("	<CPackWiXFragment Id=\"CM_CP_voxedit.voxedit.vengi_voxedit.exe\">\n");
-	Log::printf("		<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"yes\" Part=\"last\" Action=\"set\" System=\"yes\" />\n");
+	Log::printf("		<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"no\" Part=\"last\" Action=\"set\" System=\"yes\" />\n");
 	Log::printf("\n");
 	Log::printf("		<!-- Open With -->\n");
 	Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi_voxedit.exe\" Type=\"string\" Name=\"FriendlyAppName\" Value=\"Vengi Voxel Editor\"/>\n");

@@ -4,8 +4,12 @@
 	if you are getting weird errors about unclosed tokens, remove the BOM
 -->
 <CPackWiXPatch>
+	<CPackWiXFragment Id="CM_C_voxelthumb">
+		<ComponentRef Id="CM_CP_thumbnailer.thumbnailer.vengi_thumbnailer.exe" />
+	</CPackWiXFragment>
 	<!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->
 	<CPackWiXFragment Id="CM_CP_voxelthumb.vengi_voxelthumb.dll">
+		<RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved" Name="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" Type="string" Value="Vengi thumbnailer" />
 		<RegistryKey Root="HKCR" Key="CLSID\{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" ForceDeleteOnUninstall="yes">
 			<RegistryValue Type="string" Value="Vengi thumbnailer" />
 			<RegistryKey Key="InprocServer32">
@@ -276,7 +280,7 @@
 		</RegistryKey>
 	</CPackWiXFragment>
 	<CPackWiXFragment Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe">
-		<Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]" Permanent="yes" Part="last" Action="set" System="yes" />
+		<Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]" Permanent="no" Part="last" Action="set" System="yes" />
 
 		<!-- Open With -->
 		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe" Type="string" Name="FriendlyAppName" Value="Vengi Voxel Editor"/>

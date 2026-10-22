@@ -30,13 +30,12 @@ static LONG dllRefs = 0;
 	return hr
 #endif
 
-static HRESULT setRegKey(HKEY root, LPTSTR key, LPTSTR val, LPTSTR data) {
+static HRESULT setRegKey(HKEY root, LPCTSTR key, LPCTSTR val, LPCTSTR data) {
 	HKEY hKey;
 	HRESULT hr = HRESULT_FROM_WIN32(
 		RegCreateKeyEx(root, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, NULL));
 	if (SUCCEEDED(hr)) {
-		hr = HRESULT_FROM_WIN32(RegSetValueEx(hKey, val, 0, REG_SZ, reinterpret_cast<LPBYTE>(data),
-											  static_cast<DWORD>(_tcslen(data) * sizeof(TCHAR))));
+		hr = HRESULT_FROM_WIN32(RegSetValueEx(hKey, val, 0, REG_SZ, (const BYTE *)data, (DWORD)((_tcslen(data) + 1) * sizeof(TCHAR))));
 		RegCloseKey(hKey);
 	}
 	return hr;
