@@ -42,51 +42,120 @@
 
 namespace voxelformat {
 
-#define jsonVec(json, name, obj)                                                                                       \
-	if (!(json).contains(#name) || !(json).get(#name).isArray()) {                                                     \
+namespace vmax {
+
+// Scene fields
+constexpr const char *Version = "v";
+constexpr const char *Objects = "objects";
+constexpr const char *Groups = "groups";
+constexpr const char *Camera = "cam";
+constexpr const char *ActiveObject = "ao";
+constexpr const char *ActiveGroup = "ag";
+constexpr const char *ActiveFace = "af";
+constexpr const char *AmbientIntensity = "aint";
+constexpr const char *EnvironmentIntensity = "eint";
+constexpr const char *OutlineSize = "outlinesz";
+constexpr const char *Saturation = "sat";
+constexpr const char *ShadowIntensity = "shadowint";
+constexpr const char *Temperature = "temp";
+constexpr const char *Contrast = "cont";
+constexpr const char *Tint = "tint";
+constexpr const char *Background = "background";
+constexpr const char *SunColor = "lcolor";
+constexpr const char *SunIntensity = "lint";
+constexpr const char *BloomRadius = "bloombrad";
+constexpr const char *BloomIntensity = "bloomint";
+constexpr const char *BloomThreshold = "bloomthr";
+constexpr const char *OutlineIntensity = "outlineint";
+constexpr const char *NativeRenderFlag = "nrn";
+constexpr const char *ScreenSpaceReflections = "ssr";
+
+// Camera fields
+constexpr const char *CameraRoll = "da";
+constexpr const char *CameraPitch = "ha";
+constexpr const char *CameraYaw = "wa";
+constexpr const char *SunRoll = "lda";
+constexpr const char *SunElevation = "lha";
+constexpr const char *SunAzimuth = "lwa";
+constexpr const char *CameraPanX = "px";
+constexpr const char *CameraPanY = "py";
+constexpr const char *CameraZoom = "z";
+constexpr const char *CameraOrigin = "o";
+
+// Object and group fields
+constexpr const char *Id = "id";
+constexpr const char *ParentId = "pid";
+constexpr const char *Selected = "s";
+constexpr const char *Hidden = "h";
+constexpr const char *ObjectName = "n";
+constexpr const char *GroupName = "name";
+constexpr const char *ContentsFile = "data";
+constexpr const char *PaletteFile = "pal";
+constexpr const char *HistoryFile = "hist";
+constexpr const char *Position = "t_p";
+constexpr const char *Rotation = "t_r";
+constexpr const char *LegacyEulerRotation = "t_a";
+constexpr const char *Scale = "t_s";
+constexpr const char *Alignment = "t_al";
+constexpr const char *PivotAlignment = "t_pa";
+constexpr const char *PivotFace = "t_pf";
+constexpr const char *PivotOffset = "t_po";
+constexpr const char *Index = "ind";
+constexpr const char *BoundsCenter = "e_c";
+constexpr const char *BoundsMin = "e_mi";
+constexpr const char *BoundsMax = "e_ma";
+
+// Vengi metadata fields
+constexpr const char *Properties = "vengi_properties";
+constexpr const char *NodeType = "vengi_type";
+
+} // namespace vmax
+
+#define jsonVec(json, key, name, obj)                                                                                  \
+	if (!(json).contains(key) || !(json).get(key).isArray()) {                                                         \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json array '" #name "': %s", dump.c_str());                                          \
+		Log::debug("Failed to parse json array '%s': %s", key, dump.c_str());                                          \
 	} else {                                                                                                           \
 		for (int i = 0; i < (obj).name.length(); ++i) {                                                                \
-			(obj).name[i] = (json).get(#name).get(i).floatVal();                                                       \
+			(obj).name[i] = (json).get(key).get(i).floatVal();                                                         \
 		}                                                                                                              \
 	}
 
-#define jsonInt(json, name, obj)                                                                                       \
-	if (!(json).contains(#name) || !(json).get(#name).isNumberInteger()) {                                             \
+#define jsonInt(json, key, name, obj)                                                                                  \
+	if (!(json).contains(key) || !(json).get(key).isNumberInteger()) {                                                 \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json integer '" #name "': %s", dump.c_str());                                        \
+		Log::debug("Failed to parse json integer '%s': %s", key, dump.c_str());                                        \
 	} else {                                                                                                           \
-		(obj).name = (json).get(#name).intVal();                                                                       \
+		(obj).name = (json).get(key).intVal();                                                                         \
 	}
 
-#define jsonFloat(json, name, obj)                                                                                     \
-	if (!(json).contains(#name)) {                                                                                     \
+#define jsonFloat(json, key, name, obj)                                                                                \
+	if (!(json).contains(key)) {                                                                                       \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json float " #name ": %s", dump.c_str());                                          \
-	} else if ((json).get(#name).isNumberFloat()) {                                                                    \
-		(obj).name = (json).get(#name).floatVal();                                                                     \
-	} else if ((json).get(#name).isNumberInteger()) {                                                                  \
-		(obj).name = (float)(json).get(#name).intVal();                                                                \
+		Log::debug("Failed to parse json float '%s': %s", key, dump.c_str());                                          \
+	} else if ((json).get(key).isNumberFloat()) {                                                                      \
+		(obj).name = (json).get(key).floatVal();                                                                       \
+	} else if ((json).get(key).isNumberInteger()) {                                                                    \
+		(obj).name = (float)(json).get(key).intVal();                                                                  \
 	} else {                                                                                                           \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json float '" #name "': %s", dump.c_str());                                          \
+		Log::debug("Failed to parse json float '%s': %s", key, dump.c_str());                                          \
 	}
 
-#define jsonBool(json, name, obj)                                                                                      \
-	if (!(json).contains(#name) || !(json).get(#name).isBool()) {                                                      \
+#define jsonBool(json, key, name, obj)                                                                                 \
+	if (!(json).contains(key) || !(json).get(key).isBool()) {                                                          \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json bool '" #name "': %s", dump.c_str());                                           \
+		Log::debug("Failed to parse json bool '%s': %s", key, dump.c_str());                                           \
 	} else {                                                                                                           \
-		(obj).name = (json).get(#name).boolVal();                                                                      \
+		(obj).name = (json).get(key).boolVal();                                                                        \
 	}
 
-#define jsonString(json, name, obj)                                                                                    \
-	if (!(json).contains(#name) || !(json).get(#name).isString()) {                                                    \
+#define jsonString(json, key, name, obj)                                                                               \
+	if (!(json).contains(key) || !(json).get(key).isString()) {                                                        \
 		const core::String dump = (json).dump();                                                                       \
-		Log::debug("Failed to parse json string '" #name "': %s", dump.c_str());                                         \
+		Log::debug("Failed to parse json string '%s': %s", key, dump.c_str());                                         \
 	} else {                                                                                                           \
-		(obj).name = (json).get(#name).str().c_str();                                                                  \
+		(obj).name = (json).get(key).str().c_str();                                                                    \
 	}
 
 #define wrap(action)                                                                                                   \
@@ -139,7 +208,7 @@ static core::String vmaxJoin(const core::String &dir, const core::String &name) 
 }
 
 static void vmaxLoadProperties(const json::Json &json, scenegraph::SceneGraphNodeProperties &properties) {
-	const json::Json props = json.get("vengi_properties");
+	const json::Json props = json.get(vmax::Properties);
 	if (!props.isObject()) {
 		return;
 	}
@@ -183,16 +252,16 @@ static glm::vec4 vmaxEulerToAxisAngle(const glm::vec3 &euler) {
 }
 
 static void vmaxParseAxisAngleOrEuler(const json::Json &obj, glm::vec4 &t_r) {
-	if (obj.contains("t_r") && obj.get("t_r").isArray()) {
-		const json::Json &arr = obj.get("t_r");
+	if (obj.contains(vmax::Rotation) && obj.get(vmax::Rotation).isArray()) {
+		const json::Json &arr = obj.get(vmax::Rotation);
 		for (int i = 0; i < 4 && i < (int)arr.size(); ++i) {
 			t_r[i] = arr.get(i).floatVal();
 		}
 		return;
 	}
 	// Legacy SceneKit Euler radians fallback when t_r is absent.
-	if (obj.contains("t_a") && obj.get("t_a").isArray()) {
-		const json::Json &arr = obj.get("t_a");
+	if (obj.contains(vmax::LegacyEulerRotation) && obj.get(vmax::LegacyEulerRotation).isArray()) {
+		const json::Json &arr = obj.get(vmax::LegacyEulerRotation);
 		glm::vec3 euler(0.0f);
 		for (int i = 0; i < 3 && i < (int)arr.size(); ++i) {
 			euler[i] = arr.get(i).floatVal();
@@ -400,68 +469,68 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 	}
 
 	vmaxLoadProperties(json, scene.properties);
-	jsonString(json, ao, scene);
-	jsonString(json, ag, scene);
-	jsonString(json, af, scene);
-	jsonFloat(json, aint, scene);
-	jsonFloat(json, eint, scene);
-	jsonFloat(json, outlinesz, scene);
-	jsonFloat(json, sat, scene);
-	jsonFloat(json, shadowint, scene);
-	jsonFloat(json, temp, scene);
-	jsonFloat(json, cont, scene);
-	jsonFloat(json, tint, scene);
-	jsonString(json, background, scene);
-	jsonString(json, lcolor, scene);
-	jsonFloat(json, bloombrad, scene);
-	jsonFloat(json, bloomint, scene);
-	jsonFloat(json, bloomthr, scene);
-	jsonInt(json, v, scene);
-	jsonFloat(json, outlineint, scene);
-	jsonBool(json, nrn, scene);
-	jsonBool(json, ssr, scene);
-	jsonFloat(json, lint, scene);
+	jsonString(json, vmax::ActiveObject, ao, scene);
+	jsonString(json, vmax::ActiveGroup, ag, scene);
+	jsonString(json, vmax::ActiveFace, af, scene);
+	jsonFloat(json, vmax::AmbientIntensity, aint, scene);
+	jsonFloat(json, vmax::EnvironmentIntensity, eint, scene);
+	jsonFloat(json, vmax::OutlineSize, outlinesz, scene);
+	jsonFloat(json, vmax::Saturation, sat, scene);
+	jsonFloat(json, vmax::ShadowIntensity, shadowint, scene);
+	jsonFloat(json, vmax::Temperature, temp, scene);
+	jsonFloat(json, vmax::Contrast, cont, scene);
+	jsonFloat(json, vmax::Tint, tint, scene);
+	jsonString(json, vmax::Background, background, scene);
+	jsonString(json, vmax::SunColor, lcolor, scene);
+	jsonFloat(json, vmax::BloomRadius, bloombrad, scene);
+	jsonFloat(json, vmax::BloomIntensity, bloomint, scene);
+	jsonFloat(json, vmax::BloomThreshold, bloomthr, scene);
+	jsonInt(json, vmax::Version, v, scene);
+	jsonFloat(json, vmax::OutlineIntensity, outlineint, scene);
+	jsonBool(json, vmax::NativeRenderFlag, nrn, scene);
+	jsonBool(json, vmax::ScreenSpaceReflections, ssr, scene);
+	jsonFloat(json, vmax::SunIntensity, lint, scene);
 
-	if (json.contains("cam") && json.get("cam").isObject()) {
-		const json::Json cam = json.get("cam");
-		jsonFloat(cam, da, scene.cam);
-		jsonFloat(cam, ha, scene.cam);
-		jsonFloat(cam, wa, scene.cam);
-		jsonFloat(cam, lda, scene.cam);
-		jsonFloat(cam, lha, scene.cam);
-		jsonFloat(cam, lwa, scene.cam);
-		jsonFloat(cam, px, scene.cam);
-		jsonFloat(cam, py, scene.cam);
-		jsonFloat(cam, z, scene.cam);
-		jsonVec(cam, o, scene.cam);
+	if (json.contains(vmax::Camera) && json.get(vmax::Camera).isObject()) {
+		const json::Json cam = json.get(vmax::Camera);
+		jsonFloat(cam, vmax::CameraRoll, da, scene.cam);
+		jsonFloat(cam, vmax::CameraPitch, ha, scene.cam);
+		jsonFloat(cam, vmax::CameraYaw, wa, scene.cam);
+		jsonFloat(cam, vmax::SunRoll, lda, scene.cam);
+		jsonFloat(cam, vmax::SunElevation, lha, scene.cam);
+		jsonFloat(cam, vmax::SunAzimuth, lwa, scene.cam);
+		jsonFloat(cam, vmax::CameraPanX, px, scene.cam);
+		jsonFloat(cam, vmax::CameraPanY, py, scene.cam);
+		jsonFloat(cam, vmax::CameraZoom, z, scene.cam);
+		jsonVec(cam, vmax::CameraOrigin, o, scene.cam);
 	}
 
-	if (!json.contains("objects") || !json.get("objects").isArray()) {
+	if (!json.contains(vmax::Objects) || !json.get(vmax::Objects).isArray()) {
 		Log::error("Failed to parse the scene json - expected an array of objects");
 		return false;
 	}
-	const json::Json objects = json.get("objects");
+	const json::Json objects = json.get(vmax::Objects);
 	for (const json::Json &obj : objects) {
 		VMaxObject o;
 		vmaxLoadProperties(obj, o.properties);
-		jsonBool(obj, s, o);
-		jsonBool(obj, h, o);
-		jsonString(obj, n, o);
-		jsonString(obj, data, o);
-		jsonString(obj, pal, o);
-		jsonString(obj, pid, o);
-		jsonString(obj, hist, o);
-		jsonString(obj, id, o);
-		jsonString(obj, t_al, o);
-		jsonString(obj, t_pa, o);
-		jsonString(obj, t_po, o);
-		jsonString(obj, t_pf, o);
-		jsonVec(obj, ind, o);
-		jsonVec(obj, e_c, o);
-		jsonVec(obj, e_mi, o);
-		jsonVec(obj, e_ma, o);
-		jsonVec(obj, t_p, o);
-		jsonVec(obj, t_s, o);
+		jsonBool(obj, vmax::Selected, s, o);
+		jsonBool(obj, vmax::Hidden, h, o);
+		jsonString(obj, vmax::ObjectName, n, o);
+		jsonString(obj, vmax::ContentsFile, data, o);
+		jsonString(obj, vmax::PaletteFile, pal, o);
+		jsonString(obj, vmax::ParentId, pid, o);
+		jsonString(obj, vmax::HistoryFile, hist, o);
+		jsonString(obj, vmax::Id, id, o);
+		jsonString(obj, vmax::Alignment, t_al, o);
+		jsonString(obj, vmax::PivotAlignment, t_pa, o);
+		jsonString(obj, vmax::PivotOffset, t_po, o);
+		jsonString(obj, vmax::PivotFace, t_pf, o);
+		jsonVec(obj, vmax::Index, ind, o);
+		jsonVec(obj, vmax::BoundsCenter, e_c, o);
+		jsonVec(obj, vmax::BoundsMin, e_mi, o);
+		jsonVec(obj, vmax::BoundsMax, e_ma, o);
+		jsonVec(obj, vmax::Position, t_p, o);
+		jsonVec(obj, vmax::Scale, t_s, o);
 		vmaxParseAxisAngleOrEuler(obj, o.t_r);
 		if (o.n.empty() && !o.data.empty()) {
 			o.n = core::string::extractFilename(o.data);
@@ -469,27 +538,27 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene,
 		scene.objects.push_back(o);
 	}
 
-	if (json.contains("groups") && json.get("groups").isArray()) {
-		const json::Json groups = json.get("groups");
+	if (json.contains(vmax::Groups) && json.get(vmax::Groups).isArray()) {
+		const json::Json groups = json.get(vmax::Groups);
 		for (const json::Json &obj : groups) {
 			VMaxGroup o;
 			vmaxLoadProperties(obj, o.properties);
-			const core::String type = obj.strVal("vengi_type", "");
+			const core::String type = obj.strVal(vmax::NodeType, "");
 			if (type == "camera") {
 				o.type = scenegraph::SceneGraphNodeType::Camera;
 			} else if (type == "point") {
 				o.type = scenegraph::SceneGraphNodeType::Point;
 			}
-			jsonBool(obj, s, o);
-			jsonBool(obj, h, o);
-			jsonString(obj, name, o);
-			jsonString(obj, pid, o);
-			jsonString(obj, id, o);
-			jsonVec(obj, e_c, o);
-			jsonVec(obj, e_mi, o);
-			jsonVec(obj, e_ma, o);
-			jsonVec(obj, t_p, o);
-			jsonVec(obj, t_s, o);
+			jsonBool(obj, vmax::Selected, s, o);
+			jsonBool(obj, vmax::Hidden, h, o);
+			jsonString(obj, vmax::GroupName, name, o);
+			jsonString(obj, vmax::ParentId, pid, o);
+			jsonString(obj, vmax::Id, id, o);
+			jsonVec(obj, vmax::BoundsCenter, e_c, o);
+			jsonVec(obj, vmax::BoundsMin, e_mi, o);
+			jsonVec(obj, vmax::BoundsMax, e_ma, o);
+			jsonVec(obj, vmax::Position, t_p, o);
+			jsonVec(obj, vmax::Scale, t_s, o);
 			vmaxParseAxisAngleOrEuler(obj, o.t_r);
 			scene.groups.push_back(o);
 		}
@@ -735,7 +804,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		return true;
 	};
 
-	const util::BinaryPList &version = plist.getDictEntry("v");
+	const util::BinaryPList &version = plist.getDictEntry(vmax::Version);
 	if (version.valid() && (!version.isInt() || version.asInt() > 4u)) {
 		Log::error("Unsupported VoxelMax contents version");
 		return false;
@@ -1568,62 +1637,64 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 	tools.put("al", vmaxString("1"));
 	tools.put("mi", util::BinaryPList((uint32_t)1));
 	util::PListDict contents;
-	contents.put("v", util::BinaryPList((uint32_t)4));
+	contents.put(vmax::Version, util::BinaryPList((uint32_t)4));
 	contents.put("eo", util::BinaryPList((uint32_t)order));
 	contents.put("uuid", vmaxString(uuid.str()));
 	contents.put("snapshots", util::BinaryPList(core::move(snapshots)));
 	contents.put("tools", util::BinaryPList(core::move(tools)));
 	contents.put("pal", palette);
 	util::PListDict view;
-	for (const char *key : {"da", "ha", "wa", "lda", "lha", "lwa", "px", "py", "z"}) {
+	for (const char *key : {vmax::CameraRoll, vmax::CameraPitch, vmax::CameraYaw, vmax::SunRoll, vmax::SunElevation,
+						 vmax::SunAzimuth, vmax::CameraPanX, vmax::CameraPanY, vmax::CameraZoom}) {
 		view.put(key, util::BinaryPList((double)camera.get(key).floatVal()));
 	}
 	util::PListArray origin;
 	for (int i = 0; i < 3; ++i) {
-		origin.emplace_back((double)camera.get("o").get(i).floatVal());
+		origin.emplace_back((double)camera.get(vmax::CameraOrigin).get(i).floatVal());
 	}
-	view.put("o", util::BinaryPList(core::move(origin)));
-	contents.put("cam", util::BinaryPList(core::move(view)));
+	view.put(vmax::CameraOrigin, util::BinaryPList(core::move(origin)));
+	contents.put(vmax::Camera, util::BinaryPList(core::move(view)));
 	return writeVmaxPlist(stream, util::BinaryPList(core::move(contents)));
 }
 
 static json::Json vmaxNode(const scenegraph::SceneGraphNode &node, const core::UUID &parent,
 						   const glm::vec3 &volumeOffset = glm::vec3(0.0f)) {
 	json::Json json = json::Json::object();
-	json.set("id", node.uuid().str());
-	json.set("pid", parent.isValid() ? parent.str() : "");
-	json.set("s", node.property("vmax_selected") == "true");
-	json.set("h", !node.visible());
-	json.set("vengi_properties", vmaxProperties(node));
+	json.set(vmax::Id, node.uuid().str());
+	json.set(vmax::ParentId, parent.isValid() ? parent.str() : "");
+	json.set(vmax::Selected, node.property("vmax_selected") == "true");
+	json.set(vmax::Hidden, !node.visible());
+	json.set(vmax::Properties, vmaxProperties(node));
 	const auto &transform = node.transform(0);
-	json.set("t_p", vmaxVector(vmaxAxes(glm::vec3(transform.localMatrix() * glm::vec4(volumeOffset, 1.0f)))));
-	json.set("t_s", vmaxVector(vmaxAxes(transform.localScale())));
+	json.set(vmax::Position,
+			 vmaxVector(vmaxAxes(glm::vec3(transform.localMatrix() * glm::vec4(volumeOffset, 1.0f)))));
+	json.set(vmax::Scale, vmaxVector(vmaxAxes(transform.localScale())));
 	const glm::quat rotation = glm::normalize(transform.localOrientation());
 	const float angle = glm::angle(rotation);
 	const glm::vec3 axis = angle > 0.000001f ? vmaxAxes(glm::axis(rotation)) : glm::vec3(0.0f, 0.0f, 1.0f);
 	json::Json axisAngle = vmaxVector(axis);
 	axisAngle.push(-angle);
-	json.set("t_r", axisAngle);
-	json.set("e_c", vmaxVector(glm::vec3(0.0f)));
-	json.set("e_mi", vmaxVector(glm::vec3(0.0f)));
-	json.set("e_ma", vmaxVector(glm::vec3(0.0f)));
+	json.set(vmax::Rotation, axisAngle);
+	json.set(vmax::BoundsCenter, vmaxVector(glm::vec3(0.0f)));
+	json.set(vmax::BoundsMin, vmaxVector(glm::vec3(0.0f)));
+	json.set(vmax::BoundsMax, vmaxVector(glm::vec3(0.0f)));
 	return json;
 }
 
 static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 	json::Json camera = json::Json::object();
-	camera.set("da", 0.0f);
-	camera.set("ha", 0.19591334f);
-	camera.set("wa", 0.0f);
-	camera.set("lda", 0.0f);
-	camera.set("lha", graph.root().property(scenegraph::PropSunElevation).empty() ? 1.8209133f :
+	camera.set(vmax::CameraRoll, 0.0f);
+	camera.set(vmax::CameraPitch, 0.19591334f);
+	camera.set(vmax::CameraYaw, 0.0f);
+	camera.set(vmax::SunRoll, 0.0f);
+	camera.set(vmax::SunElevation, graph.root().property(scenegraph::PropSunElevation).empty() ? 1.8209133f :
 					  graph.root().propertyf(scenegraph::PropSunElevation));
-	camera.set("lwa", graph.root().property(scenegraph::PropSunAzimuth).empty() ? 0.25f :
+	camera.set(vmax::SunAzimuth, graph.root().property(scenegraph::PropSunAzimuth).empty() ? 0.25f :
 					  graph.root().propertyf(scenegraph::PropSunAzimuth));
-	camera.set("px", 0.0f);
-	camera.set("py", 0.0f);
-	camera.set("z", 512.0f);
-	camera.set("o", vmaxVector(glm::vec3(0.0f)));
+	camera.set(vmax::CameraPanX, 0.0f);
+	camera.set(vmax::CameraPanY, 0.0f);
+	camera.set(vmax::CameraZoom, 512.0f);
+	camera.set(vmax::CameraOrigin, vmaxVector(glm::vec3(0.0f)));
 	for (auto iter = graph.begin(scenegraph::SceneGraphNodeType::Camera); iter != graph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const auto transform = graph.transformForFrame(node, 0);
@@ -1634,11 +1705,11 @@ static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 		const float distance = node.propertyf("vmax_z") > 0.0f ? node.propertyf("vmax_z") : 512.0f;
 		const glm::vec3 position = -(glm::conjugate(rotation) * transform.worldTranslation());
 		const glm::vec3 forward = glm::conjugate(rotation) * glm::forward();
-		camera.set("ha", angles.x);
-		camera.set("wa", -angles.y);
-		camera.set("da", angles.z);
-		camera.set("z", distance);
-		camera.set("o", vmaxVector(vmaxAxes(position + forward * distance)));
+		camera.set(vmax::CameraPitch, angles.x);
+		camera.set(vmax::CameraYaw, -angles.y);
+		camera.set(vmax::CameraRoll, angles.z);
+		camera.set(vmax::CameraZoom, distance);
+		camera.set(vmax::CameraOrigin, vmaxVector(vmaxAxes(position + forward * distance)));
 		break;
 	}
 	return camera;
@@ -1646,35 +1717,39 @@ static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 
 static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &archive, const SaveContext &ctx) {
 	json::Json scene = json::Json::object();
-	scene.set("v", 4);
-	scene.set("vengi_properties", vmaxProperties(graph.root()));
+	scene.set(vmax::Version, 4);
+	scene.set(vmax::Properties, vmaxProperties(graph.root()));
 	const auto &root = graph.root();
-	const char *floatKeys[] = {"aint", "eint", "outlinesz", "sat", "shadowint", "temp", "cont", "tint", "bloombrad",
-							  "bloomint", "bloomthr", "outlineint"};
+	const char *floatKeys[] = {
+		vmax::AmbientIntensity, vmax::EnvironmentIntensity, vmax::OutlineSize, vmax::Saturation,
+		vmax::ShadowIntensity, vmax::Temperature, vmax::Contrast, vmax::Tint, vmax::BloomRadius,
+		vmax::BloomIntensity, vmax::BloomThreshold, vmax::OutlineIntensity};
 	const float defaults[] = {0.25f, 0.5f, 2.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 4.0f, 0.6f, 1.0f, 0.4f};
 	for (int i = 0; i < lengthof(floatKeys); ++i) {
 		const core::String property = core::String("vmax_") + floatKeys[i];
 		scene.set(floatKeys[i], root.property(property).empty() ? defaults[i] : root.propertyf(property));
 	}
 	if (!root.property(scenegraph::PropSunShadows).empty()) {
-		scene.set("shadowint", root.property(scenegraph::PropSunShadows) == "true" ?
-								core_max(0.001f, scene.get("shadowint").floatVal()) : 0.0f);
+		scene.set(vmax::ShadowIntensity, root.property(scenegraph::PropSunShadows) == "true" ?
+								core_max(0.001f, scene.get(vmax::ShadowIntensity).floatVal()) : 0.0f);
 	}
-	scene.set("lint", root.property(scenegraph::PropSunIntensity).empty() ? 0.5f : root.propertyf(scenegraph::PropSunIntensity));
-	scene.set("lcolor", root.property(scenegraph::PropSunColor).empty() ? "#FFFFFFFF" : root.property(scenegraph::PropSunColor));
-	scene.set("background", root.property("background").empty() ? "#FBFBFBFF" : root.property("background"));
-	scene.set("af", root.property("vmax_af").empty() ? "t" : root.property("vmax_af"));
-	scene.set("nrn", root.property("vmax_nrn").empty() || root.property("vmax_nrn") == "true");
-	scene.set("ssr", root.property("vmax_ssr") == "true");
+	scene.set(vmax::SunIntensity, root.property(scenegraph::PropSunIntensity).empty() ?
+									 0.5f : root.propertyf(scenegraph::PropSunIntensity));
+	scene.set(vmax::SunColor, root.property(scenegraph::PropSunColor).empty() ?
+								 "#FFFFFFFF" : root.property(scenegraph::PropSunColor));
+	scene.set(vmax::Background, root.property("background").empty() ? "#FBFBFBFF" : root.property("background"));
+	scene.set(vmax::ActiveFace, root.property("vmax_af").empty() ? "t" : root.property("vmax_af"));
+	scene.set(vmax::NativeRenderFlag, root.property("vmax_nrn").empty() || root.property("vmax_nrn") == "true");
+	scene.set(vmax::ScreenSpaceReflections, root.property("vmax_ssr") == "true");
 	const json::Json camera = vmaxCamera(graph);
-	scene.set("cam", camera);
+	scene.set(vmax::Camera, camera);
 	json::Json objects = json::Json::array();
 	json::Json groups = json::Json::array();
 	int objectIndex = 0;
 	const bool rootTransform = root.transform(0).localMatrix() != glm::mat4(1.0f);
 	if (rootTransform) {
 		json::Json group = vmaxNode(root, core::UUID());
-		group.set("name", root.name());
+		group.set(vmax::GroupName, root.name());
 		groups.push(group);
 	}
 	for (auto iter = graph.beginAll(); iter != graph.end(); ++iter) {
@@ -1686,13 +1761,13 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 		const core::UUID pid = parent && (!parent->isRootNode() || rootTransform) ? parent->uuid() : core::UUID();
 		if (!node.isAnyModelNode()) {
 			json::Json group = vmaxNode(node, pid);
-			group.set("name", node.name());
+			group.set(vmax::GroupName, node.name());
 			if (node.isCameraNode() || node.isPointNode()) {
-				group.set("vengi_type", node.isCameraNode() ? "camera" : "point");
+				group.set(vmax::NodeType, node.isCameraNode() ? "camera" : "point");
 			}
 			groups.push(group);
 			if (node.uuid() == graph.activeNodeUUID()) {
-				scene.set("ag", node.uuid().str());
+				scene.set(vmax::ActiveGroup, node.uuid().str());
 			}
 			continue;
 		}
@@ -1705,7 +1780,7 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 		const bool split = parts.size() > 1 || !node.children().empty();
 		if (split || parts.empty()) {
 			json::Json group = vmaxNode(node, pid);
-			group.set("name", node.name());
+			group.set(vmax::GroupName, node.name());
 			groups.push(group);
 		}
 		int partIndex = 0;
@@ -1741,31 +1816,31 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 			const glm::vec3 offset = glm::vec3(volume->region().getLowerCorner()) - node.pivot() * glm::vec3(dims);
 			json::Json object = vmaxNode(node, split ? node.uuid() : pid, offset);
 			if (split) {
-				object.set("id", uuid.str());
-				object.set("t_p", vmaxVector(vmaxAxes(offset)));
-				object.set("t_r", json::Json::parse("[0,0,1,0]"));
-				object.set("t_s", vmaxVector(glm::vec3(1.0f)));
+				object.set(vmax::Id, uuid.str());
+				object.set(vmax::Position, vmaxVector(vmaxAxes(offset)));
+				object.set(vmax::Rotation, json::Json::parse("[0,0,1,0]"));
+				object.set(vmax::Scale, vmaxVector(glm::vec3(1.0f)));
 			}
-			object.set("n", split ? core::String::format("%s-%i", node.name().c_str(), ++partIndex) : node.name());
-			object.set("data", dataName);
-			object.set("pal", paletteName);
-			object.set("hist", "");
-			object.set("ind", vmaxVector(glm::vec3((float)objectIndex, 0.0f, 0.0f)));
-			object.set("t_al", "f");
-			object.set("t_pa", "4");
-			object.set("t_pf", "8");
-			object.set("e_c", vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
-			object.set("e_mi", vmaxVector(-vmaxAxes(glm::vec3(dims) * 0.5f)));
-			object.set("e_ma", vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set(vmax::ObjectName, split ? core::String::format("%s-%i", node.name().c_str(), ++partIndex) : node.name());
+			object.set(vmax::ContentsFile, dataName);
+			object.set(vmax::PaletteFile, paletteName);
+			object.set(vmax::HistoryFile, "");
+			object.set(vmax::Index, vmaxVector(glm::vec3((float)objectIndex, 0.0f, 0.0f)));
+			object.set(vmax::Alignment, "f");
+			object.set(vmax::PivotAlignment, "4");
+			object.set(vmax::PivotFace, "8");
+			object.set(vmax::BoundsCenter, vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set(vmax::BoundsMin, vmaxVector(-vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set(vmax::BoundsMax, vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
 			objects.push(object);
 			if (node.uuid() == graph.activeNodeUUID()) {
-				scene.set(split ? "ag" : "ao", node.uuid().str());
+				scene.set(split ? vmax::ActiveGroup : vmax::ActiveObject, node.uuid().str());
 			}
 			++objectIndex;
 		}
 	}
-	scene.set("objects", objects);
-	scene.set("groups", groups);
+	scene.set(vmax::Objects, objects);
+	scene.set(vmax::Groups, groups);
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream("scene.json"));
 	return stream && stream->writeString(scene.dump(), false);
 }
