@@ -194,37 +194,34 @@ void FileDescription::clear() {
 	desc = {};
 }
 
-bool isA(const core::String &file, const io::FormatDescription *desc) {
-	const core::String &extAll = core::string::extractAllExtensions(file);
-	for (; desc->valid(); ++desc) {
-		if (desc->matchesExtension(extAll)) {
-			return true;
+static core::String matchingExtension(const core::String &lowerFilename, const FormatDescription &desc) {
+	core::String match;
+	for (const core::String &ext : desc.exts) {
+		if (ext.size() > match.size() && core::string::endsWith(lowerFilename, "." + ext)) {
+			match = ext;
 		}
 	}
+	return match;
+}
 
-	const core::String &ext = core::string::extractExtension(file);
-	for (; desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext)) {
-			return true;
+core::String getFormatExtension(const core::String &filename, const io::FormatDescription *descriptions) {
+	const core::String lowerFilename = core::string::extractFilenameWithExtension(filename).toLower();
+	core::String match;
+	for (const io::FormatDescription *desc = descriptions; desc->valid(); ++desc) {
+		const core::String ext = matchingExtension(lowerFilename, *desc);
+		if (ext.size() > match.size()) {
+			match = ext;
 		}
 	}
-	return false;
+	return match;
+}
+
+bool isA(const core::String &file, const io::FormatDescription *desc) {
+	return !getFormatExtension(file, desc).empty();
 }
 
 bool isA(const core::String &file, const FormatDescription &desc) {
-	if (!desc.valid()) {
-		return false;
-	}
-	const core::String &extAll = core::string::extractAllExtensions(file);
-	if (desc.matchesExtension(extAll)) {
-		return true;
-	}
-
-	const core::String &ext = core::string::extractExtension(file);
-	if (desc.matchesExtension(ext)) {
-		return true;
-	}
-	return false;
+	return desc.valid() && !matchingExtension(file.toLower(), desc).empty();
 }
 
 bool isImage(const core::String &file) {
@@ -348,10 +345,9 @@ bool isA(const io::FormatDescription &check, const io::FormatDescription &desc, 
 
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic,
 											const io::FormatDescription *descriptions) {
-	const core::String ext = core::string::extractExtension(filename);
-	const core::String extFull = core::string::extractAllExtensions(filename);
+	const core::String ext = getFormatExtension(filename, descriptions);
 	for (const io::FormatDescription *desc = descriptions; desc->valid(); ++desc) {
-		if (!desc->matchesExtension(ext) && !desc->matchesExtension(extFull)) {
+		if (ext.empty() || !desc->matchesExtension(ext)) {
 			continue;
 		}
 		if (magic > 0 && !desc->magics.empty() && !isA(*desc, magic)) {
@@ -373,10 +369,10 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 			return desc;
 		}
 	}
-	if (extFull.empty()) {
+	if (ext.empty()) {
 		Log::debug("Could not identify the format");
 	} else {
-		Log::debug("Could not find a supported format description for '%s' ('%s')", extFull.c_str(), filename.c_str());
+		Log::debug("Could not find a supported format description for '%s' ('%s')", ext.c_str(), filename.c_str());
 	}
 	return nullptr;
 }
@@ -386,7 +382,7 @@ const io::FormatDescription *getDescription(const io::FileDescription &fileDesc,
 	// Group / "All supported" entries are file-dialog filters, not concrete loaders.
 	// Also re-resolve when the selected filter does not match the picked filename.
 	if (fileDesc.desc.valid() && (fileDesc.desc.flags & (FORMAT_FLAG_GROUP | FORMAT_FLAG_ALL)) == 0u &&
-		fileDesc.desc.matchesExtension(core::string::extractExtension(fileDesc.name))) {
+		io::isA(fileDesc.name, fileDesc.desc)) {
 		return &fileDesc.desc;
 	}
 	const core::String filename = fileDesc.name;

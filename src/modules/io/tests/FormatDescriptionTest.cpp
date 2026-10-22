@@ -11,6 +11,26 @@ TEST_F(FormatDescriptionTest, testIsA) {
 	EXPECT_FALSE(isA("something.else", io::format::lua()));
 }
 
+TEST_F(FormatDescriptionTest, testCompoundExtensionPriority) {
+	const FormatDescription formats[] = {
+		{"Generic ZIP", "", {"zip"}, {}, FORMAT_FLAG_SAVE},
+		{"VoxelMax", "", {"vmax.zip", "vmax", "vmaxb"}, {}, FORMAT_FLAG_SAVE},
+		FormatDescription::END
+	};
+	for (const char *filename : {"scene.vmax.zip", "scene.rev2.vmax.zip", "some.dir/SCENE.VMAX.ZIP"}) {
+		SCOPED_TRACE(filename);
+		EXPECT_EQ("vmax.zip", getFormatExtension(filename, formats));
+		EXPECT_EQ(&formats[1], getDescription(filename, 0u, formats));
+		EXPECT_TRUE(isA(filename, formats[1]));
+		EXPECT_TRUE(isA(filename, formats));
+	}
+	EXPECT_EQ("zip", getFormatExtension("plain.zip", formats));
+	EXPECT_EQ(&formats[0], getDescription("plain.zip", 0u, formats));
+	EXPECT_EQ(nullptr, getDescription("unknown.ext", 0u, formats));
+	EXPECT_FALSE(isA("unknown.ext", formats));
+	EXPECT_TRUE(isA("dotted.name.vmax", formats));
+}
+
 TEST_F(FormatDescriptionTest, testIsImage) {
 	ASSERT_TRUE(isImage("foobar.PNG"));
 	ASSERT_TRUE(isImage("foobar.png"));
