@@ -300,6 +300,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	if (needsSplit) {
 		Log::debug("Split volumes before saving as the target format only supports smaller volume sizes");
 		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::copyNode(sceneGraph.root(), newSceneGraph.node(newSceneGraph.root().id()), false);
 		scenegraph::splitVolumes(sceneGraph, newSceneGraph, false, false, saveVisibleOnly, maxsize);
 		return saveGroups(newSceneGraph, filename, archive, ctx);
 	}
