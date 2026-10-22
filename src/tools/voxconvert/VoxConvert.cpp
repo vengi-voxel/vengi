@@ -735,7 +735,8 @@ app::AppState VoxConvert::onInit() {
 				Log::info("Using thumbnail with size %i x %i", thumbnail->width(), thumbnail->height());
 			}
 			const io::FormatDescription *outDesc = nullptr;
-			const core::String &ext = core::string::extractExtension(outfile);
+			const core::String knownExt = io::getFormatExtension(outfile, voxelformat::voxelSave());
+			const core::String ext = knownExt.empty() ? core::string::extractExtension(outfile) : knownExt;
 			if (hasArg("--output-format")) {
 				const core::String &formatName = getArgVal("--output-format");
 				outDesc = io::resolveFormatDescription(voxelformat::voxelSave(), formatName, ext);
