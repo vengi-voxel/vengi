@@ -763,13 +763,13 @@ msgid "Dark Pastel"
 msgstr "Dunkles Pastell"
 
 msgid "Rose Quartz"
-msgstr ""
+msgstr "Rosenquarz"
 
 msgid "Gruvbox Hard"
-msgstr ""
+msgstr "Gruvbox Hard"
 
 msgid "Dracula"
-msgstr ""
+msgstr "Dracula"
 
 msgid "Enable sending anonymous metrics"
 msgstr "Senden anonymer Metriken aktivieren"
@@ -872,6 +872,7 @@ msgstr "Multisample-Buffer"
 
 msgid "Window backbuffer MSAA buffers. 0 disables window MSAA."
 msgstr ""
+"MSAA-Puffer des Fenster-Backbuffers. 0 deaktiviert MSAA für das Fenster."
 
 msgid "Multisample samples"
 msgstr "Multisample-Samples"
@@ -880,6 +881,8 @@ msgid ""
 "Scene viewport sample count. Also used for the window if "
 "cl_multisamplebuffers is > 0."
 msgstr ""
+"Anzahl der Samples für die Szenenansicht. Wird auch für das Fenster "
+"verwendet, wenn cl_multisamplebuffers > 0 ist."
 
 msgid "Enable high DPI mode"
 msgstr "High-DPI-Modus aktivieren"
@@ -918,10 +921,12 @@ msgid "Bloom"
 msgstr "Bloom"
 
 msgid "Bloom passes"
-msgstr ""
+msgstr "Bloom-Durchläufe"
 
 msgid "Number of bloom downsample/upsample passes. Does not reallocate FBOs."
 msgstr ""
+"Anzahl der Bloom-Durchläufe zum Herunter- und Hochskalieren. FBOs werden "
+"dabei nicht neu zugewiesen."
 
 msgid "Activate shadow debug rendering"
 msgstr "Schatten-Debug-Rendering aktivieren"
@@ -978,7 +983,7 @@ msgid "Render voxel normals"
 msgstr "Voxelnormalen rendern"
 
 msgid "None, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
-msgstr ""
+msgstr "Keine, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
 
 msgid "Tone mapping"
 msgstr "Tonemapping"
@@ -1187,6 +1192,8 @@ msgid ""
 "Use stored voxel normals when exporting normals with Cubic or Binary "
 "extraction. May increase vertex count."
 msgstr ""
+"Gespeicherte Voxelnormalen beim Export von Normalen mit kubischer oder "
+"binärer Extraktion verwenden. Kann die Anzahl der Vertices erhöhen."
 
 msgid "Vertex colors as float"
 msgstr "Vertexfarben als Fließkommazahlen"
@@ -1212,8 +1219,8 @@ msgstr "Wende die Szenengraph-Transformation auf Mesh-Exporte an"
 msgid "Apply optimizations"
 msgstr "Optimierungen anwenden"
 
-msgid "Apply mesh optimization steps to meshes"
-msgstr "Wende Mesh-Optimierungsschritte auf Meshes an"
+msgid "Apply mesh optimization steps when saving mesh based formats"
+msgstr "Mesh-Optimierungsschritte beim Speichern von Mesh-Formaten anwenden"
 
 msgid "Fill hollow"
 msgstr "Hohlraum füllen"
@@ -1288,11 +1295,13 @@ msgstr ""
 "Volumina beim Laden auf enge Grenzen zuschneiden, um Speicher zu sparen"
 
 msgid "Dedupe texture atlas"
-msgstr ""
+msgstr "Texturatlas deduplizieren"
 
 msgid ""
 "Reuse identical color patches in the greedy texture atlas to pack more faces"
 msgstr ""
+"Identische Farbflächen im Greedy-Texturatlas wiederverwenden, um mehr "
+"Flächen unterzubringen"
 
 msgid "Create groups"
 msgstr "Gruppen erstellen"
@@ -1324,7 +1333,7 @@ msgctxt ""
 "Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to "
 "keep shared models and node TRS"
 msgid "Bake MagicaVoxel transforms into voxels"
-msgstr ""
+msgstr "MagicaVoxel-Transformationen in die Voxeldaten einrechnen"
 
 msgid "Left handed"
 msgstr "Linkshändig"
@@ -1380,6 +1389,16 @@ msgstr "KHR_materials_specular"
 
 msgid "Apply KHR_materials_specular when saving into the glTF format"
 msgstr "Wende KHR_materials_specular beim Speichern im glTF-Format an"
+
+msgid "Create Godot project"
+msgstr "Godot-Projekt erstellen"
+
+msgid ""
+"Create project.godot beside the scene and set it as the main scene. Existing "
+"projects are preserved."
+msgstr ""
+"project.godot im Verzeichnis der Szene erstellen und die Szene als "
+"Hauptszene festlegen. Bestehende Projekte bleiben erhalten."
 
 msgid "Export materials"
 msgstr "Materialien exportieren"
@@ -1476,12 +1495,53 @@ msgstr ""
 "Führe Oberflächenteile in ein einzelnes Volumen für Minecraft-Skins zusammen"
 
 msgid "Separate water"
-msgstr ""
+msgstr "Wasser trennen"
 
 msgid ""
 "Put Minecraft water voxels into a dedicated transparent volume as a child of "
 "each region"
 msgstr ""
+"Minecraft-Wasservoxel in einem eigenen transparenten Volumen als "
+"Kindknoten jeder Region ablegen"
+
+msgid "Merge MC regions"
+msgstr "MC-Regionen zusammenführen"
+
+msgid ""
+"Merge each Minecraft region file into one volume on level.dat / mcworld "
+"load. Disable to keep per-chunk volumes (faster and less memory for large "
+"maps and thumbnails)"
+msgstr ""
+"Beim Laden von level.dat / mcworld jede Minecraft-Regionsdatei zu einem "
+"Volumen zusammenführen. Deaktivieren, um ein Volumen pro Chunk "
+"beizubehalten (schneller und weniger Speicherbedarf bei großen Karten und "
+"Vorschaubildern)"
+
+msgid "MC load radius"
+msgstr "MC-Laderadius"
+
+msgid ""
+"Minecraft region files to load around spawn for level.dat / mcworld. -1 = "
+"all regions, 0 = spawn region only, N = Chebyshev distance in region units "
+"(512 blocks)"
+msgstr ""
+"Minecraft-Regionsdateien, die bei level.dat / mcworld um den Spawnpunkt "
+"geladen werden. -1 = alle Regionen, 0 = nur die Spawnregion, N = "
+"Tschebyscheff-Abstand in Regionseinheiten (512 Blöcke)"
+
+msgid "MC load region"
+msgstr "MC-Ladebereich"
+
+msgid ""
+"Optional block AABB filter for Minecraft level.dat / mcworld import. Format: "
+"'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are "
+"loaded. Combined with voxformat_mcloadradius when both are set."
+msgstr ""
+"Optionaler achsenparalleler Begrenzungsrahmen (AABB) in Blockkoordinaten "
+"für den Import von Minecraft level.dat / mcworld. Format: 'minX minY minZ "
+"maxX maxY maxZ'. Nur Regionsdateien, die diesen Rahmen schneiden, werden "
+"geladen. Wird mit voxformat_mcloadradius kombiniert, wenn beide gesetzt "
+"sind."
 
 msgid "Simplify"
 msgstr "Vereinfachen"
@@ -1493,11 +1553,11 @@ msgid "Mesh simplify ratio"
 msgstr "Mesh-Vereinfachungsrate"
 
 msgid ""
-"Target fraction of triangle indices to keep when applying mesh optimization "
-"(0 = disable simplification)"
+"Target fraction of triangle indices to keep when simplifying meshes on "
+"import or export (0 or 1 = disable)"
 msgstr ""
-"Zielanteil der zu behaltenden Dreiecksindizes bei Mesh-Optimierung (0 = "
-"keine Vereinfachung)"
+"Zielanteil der Dreiecksindizes, die beim Vereinfachen von Meshes beim "
+"Import oder Export erhalten bleiben (0 oder 1 = deaktivieren)"
 
 msgid "Region filter"
 msgstr "Regionenfilter"
@@ -1575,7 +1635,7 @@ msgid "Volume"
 msgstr "Volumen"
 
 msgid "Fast"
-msgstr ""
+msgstr "Schnell"
 
 msgid "High quality"
 msgstr "Hohe Qualität"
@@ -1616,6 +1676,188 @@ msgstr "Drücken"
 msgid "Pop"
 msgstr "Herausnehmen"
 
+msgid "Samples"
+msgstr "Samples"
+
+msgid "Per-pixel pathtracer samples"
+msgstr "Pathtracer-Samples pro Pixel"
+
+msgid "Bounces"
+msgstr "Bounces"
+
+msgid "Maximum light bounces for the pathtracer"
+msgstr "Maximale Anzahl der Lichtreflexionen für den Pathtracer"
+
+msgid "Pathtracer samples computed per frame"
+msgstr "Pro Frame berechnete Pathtracer-Samples"
+
+msgid "Samples per pass"
+msgstr "Samples pro Durchlauf"
+
+msgid "Resolution"
+msgstr "Auflösung"
+
+msgid "Square pathtracer output size in pixels"
+msgstr "Quadratische Ausgabegröße des Pathtracers in Pixeln"
+
+msgid "Exposure"
+msgstr "Belichtung"
+
+msgid "Pathtracer exposure compensation in stops"
+msgstr "Belichtungskompensation des Pathtracers in Blendenstufen"
+
+msgid "Pathtracer tone mapping operator"
+msgstr "Tonemapping-Operator des Pathtracers"
+
+msgid "Contrast"
+msgstr "Kontrast"
+
+msgid "Pathtracer contrast"
+msgstr "Kontrast des Pathtracers"
+
+msgid "Saturation"
+msgstr "Sättigung"
+
+msgid "Pathtracer saturation"
+msgstr "Sättigung des Pathtracers"
+
+msgid "Vignette"
+msgstr "Vignette"
+
+msgid "Pathtracer vignette strength"
+msgstr "Vignettenstärke des Pathtracers"
+
+msgid "Aperture"
+msgstr "Blende"
+
+msgid "Pathtracer lens aperture for depth of field"
+msgstr "Objektivblende des Pathtracers für die Tiefenschärfe"
+
+msgid "Focus distance"
+msgstr "Fokusabstand"
+
+msgid "Pathtracer focus distance for depth of field"
+msgstr "Fokusabstand des Pathtracers für die Tiefenschärfe"
+
+msgid "Pathtracer sun elevation angle in degrees"
+msgstr "Sonnenhöhenwinkel des Pathtracers in Grad"
+
+msgid "Sun elevation"
+msgstr "Sonnenhöhe"
+
+msgid "Sun azimuth"
+msgstr "Sonnenazimut"
+
+msgid "Pathtracer sun azimuth angle in degrees"
+msgstr "Azimutwinkel der Sonne des Pathtracers in Grad"
+
+msgid "Pathtracer sun intensity"
+msgstr "Sonnenintensität des Pathtracers"
+
+msgid "Sun intensity"
+msgstr "Sonnenintensität"
+
+msgid "Pathtracer sun disk size in degrees"
+msgstr "Größe der Sonnenscheibe des Pathtracers in Grad"
+
+msgid "Sun softness"
+msgstr "Sonnenweichheit"
+
+msgid "Sun color"
+msgstr "Sonnenfarbe"
+
+msgid "Pathtracer sun color (RGB)"
+msgstr "Sonnenfarbe des Pathtracers (RGB)"
+
+msgid "Sky top"
+msgstr "Himmel oben"
+
+msgid "Pathtracer sky top color (RGB)"
+msgstr "Himmelsfarbe im Zenit des Pathtracers (RGB)"
+
+msgid "Sky horizon"
+msgstr "Himmel Horizont"
+
+msgid "Pathtracer sky horizon color (RGB)"
+msgstr "Himmelsfarbe am Horizont des Pathtracers (RGB)"
+
+msgid "Pathtracer sky intensity"
+msgstr "Himmelsintensität des Pathtracers"
+
+msgid "Sky intensity"
+msgstr "Himmelintensität"
+
+msgid "Floor"
+msgstr "Boden"
+
+msgid "Enable the pathtracer ground plane"
+msgstr "Bodenebene des Pathtracers aktivieren"
+
+msgid "Floor color"
+msgstr "Bodenfarbe"
+
+msgid "Pathtracer ground plane color (RGB)"
+msgstr "Farbe der Bodenebene des Pathtracers (RGB)"
+
+msgid "Floor Y"
+msgstr "Boden-Y"
+
+msgid "Pathtracer ground plane height"
+msgstr "Höhe der Bodenebene des Pathtracers"
+
+msgid "Depth of field"
+msgstr "Tiefenschärfe"
+
+msgid "Enable pathtracer depth of field"
+msgstr "Tiefenschärfe des Pathtracers aktivieren"
+
+msgid "Background"
+msgstr "Hintergrund"
+
+msgid "0 = sky, 1 = solid, 2 = transparent"
+msgstr "0 = Himmel, 1 = einfarbig, 2 = transparent"
+
+msgid "Background color"
+msgstr "Hintergrundfarbe"
+
+msgid "Pathtracer solid background color (RGB)"
+msgstr "Einfarbiger Hintergrund des Pathtracers (RGB)"
+
+msgid "Fog density"
+msgstr "Nebeldichte"
+
+msgid "Pathtracer fog density"
+msgstr "Nebeldichte des Pathtracers"
+
+msgid "Fog color"
+msgstr "Nebelfarbe"
+
+msgid "Pathtracer fog color (RGB)"
+msgstr "Nebelfarbe des Pathtracers (RGB)"
+
+msgid "Voxel edge"
+msgstr "Voxelkante"
+
+msgid "Fillet exposed voxel corners (0 = hard cube)"
+msgstr "Freiliegende Voxelecken abrunden (0 = scharfkantiger Würfel)"
+
+msgid "Pathtracer bloom strength"
+msgstr "Bloom-Stärke des Pathtracers"
+
+msgid "Atmosphere"
+msgstr "Atmosphäre"
+
+msgid "Pathtracer world haze that brightens toward the sun"
+msgstr "Dunst des Pathtracers, der sich zur Sonne hin aufhellt"
+
+msgid "Render scale"
+msgstr "Render-Skalierung"
+
+msgid "Trace at a fraction of the output resolution, then upsample"
+msgstr ""
+"Mit einem Bruchteil der Ausgabeauflösung berechnen und anschließend "
+"hochskalieren"
+
 msgid "Movement speed"
 msgstr "Bewegungsgeschwindigkeit"
 
@@ -1624,6 +1866,7 @@ msgstr "Bewegungsgeschwindigkeit in Welteinheiten pro Sekunde im Spielmodus"
 
 msgid "Editor camera movement speed in screen pixels per second"
 msgstr ""
+"Bewegungsgeschwindigkeit der Editor-Kamera in Bildschirmpixeln pro Sekunde"
 
 msgid "Editor movement speed"
 msgstr "Bewegungsgeschwindigkeit im Editor"
@@ -1698,22 +1941,22 @@ msgid "Right"
 msgstr "Rechts"
 
 msgid "AgX"
-msgstr ""
+msgstr "AgX"
 
 msgid "AgX Golden"
-msgstr ""
+msgstr "AgX Golden"
 
 msgid "AgX Punchy"
-msgstr ""
+msgstr "AgX Punchy"
 
 msgid "ACES"
-msgstr ""
+msgstr "ACES"
 
 msgid "Hable"
 msgstr "Hable"
 
 msgid "Reinhard"
-msgstr ""
+msgstr "Reinhard"
 
 msgid "Map colors to palette"
 msgstr "Mappe Farben auf Palette"
@@ -1760,19 +2003,19 @@ msgid "No model"
 msgstr "Kein Modell"
 
 msgid "Drag to orbit, wheel to zoom, double-click to reset"
-msgstr ""
+msgstr "Ziehen zum Umkreisen, Mausrad zum Zoomen, Doppelklick zum Zurücksetzen"
 
 msgid "Select a model"
 msgstr "Modell auswählen"
 
 msgid "Mesh preview not available"
-msgstr ""
+msgstr "Mesh-Vorschau nicht verfügbar"
 
 msgid "No preview"
-msgstr ""
+msgstr "Keine Vorschau"
 
 msgid "Failed to load preview"
-msgstr ""
+msgstr "Vorschau konnte nicht geladen werden"
 
 msgid "Script Browser"
 msgstr "Skript-Browser"
@@ -1881,6 +2124,8 @@ msgstr "Kamerazoomgeschwindigkeit für den Client"
 msgid ""
 "Print mcp.json for MCP clients using the current network settings and quit"
 msgstr ""
+"mcp.json für MCP-Clients mit den aktuellen Netzwerkeinstellungen ausgeben "
+"und beenden"
 
 msgid "Pen pressure controls radius"
 msgstr "Stiftdruck steuert Radius"
@@ -1958,6 +2203,8 @@ msgstr "Eine neue Szene mit UI-Interaktion erstellen"
 msgid ""
 "Set camera zoom for repeatable framing, respecting configured zoom limits"
 msgstr ""
+"Kamerazoom für einen reproduzierbaren Bildausschnitt unter Einhaltung der "
+"konfigurierten Zoomgrenzen festlegen"
 
 msgid "Reset cameras in viewports"
 msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
@@ -2728,10 +2975,10 @@ msgid "Region"
 msgstr "Region"
 
 msgid "Opacity"
-msgstr ""
+msgstr "Deckkraft"
 
 msgid "Fade the whole node without changing voxels"
-msgstr ""
+msgstr "Den gesamten Knoten ausblenden, ohne die Voxeldaten zu ändern"
 
 msgid "Color Histogram"
 msgstr "Farbhistogramm"
@@ -2968,6 +3215,15 @@ msgstr "Volle Vorallokation"
 msgid "Small (grow as needed)"
 msgstr "Klein (nach Bedarf wachsen)"
 
+msgid "Sky"
+msgstr "Himmel"
+
+msgid "Solid"
+msgstr "Voll"
+
+msgid "Transparent"
+msgstr "Transparent"
+
 msgid "General"
 msgstr "Allgemein"
 
@@ -2995,6 +3251,9 @@ msgstr "Anzeige"
 msgid "Rendering"
 msgstr "Rendering"
 
+msgid "Pathtracer"
+msgstr "Pathtracer"
+
 msgid "Renderer"
 msgstr "Renderer"
 
@@ -3003,6 +3262,9 @@ msgstr "Mesh-Export"
 
 msgid "Voxel Import/Export"
 msgstr "Voxel-Import/Export"
+
+msgid "Minecraft"
+msgstr "Minecraft"
 
 msgid "Advanced"
 msgstr "Erweitert"
@@ -3101,9 +3363,6 @@ msgstr "Original"
 msgid "Hue"
 msgstr "Farbton"
 
-msgid "Saturation"
-msgstr "Sättigung"
-
 msgid "Brightness"
 msgstr "Helligkeit"
 
@@ -3176,32 +3435,18 @@ msgstr "Schnelle Vorschau zur Prüfung von Beleuchtung und Materialien"
 msgid "Quality"
 msgstr "Qualität"
 
-msgid "Samples"
-msgstr "Samples"
-
 msgid "Per-pixel samples. Higher values reduce noise but take longer."
-msgstr "Samples pro Pixel. Höhere Werte reduzieren Rauschen, dauern aber länger."
-
-msgid "Bounces"
-msgstr "Bounces"
+msgstr ""
+"Samples pro Pixel. Höhere Werte reduzieren Rauschen, dauern aber länger."
 
 msgid "Maximum light bounces. Increase for glass."
 msgstr "Maximale Lichtreflexionen. Für Glas erhöhen."
 
-msgid "Samples per pass"
-msgstr "Samples pro Durchlauf"
-
 msgid "Samples computed per frame"
 msgstr "Pro Frame berechnete Samples"
 
-msgid "Voxel edge"
-msgstr "Voxelkante"
-
 msgid "Fillet exposed voxel corners. 0 is a hard cube."
 msgstr "Abrunden freiliegender Voxelkanten. 0 ist ein harter Würfel."
-
-msgid "Render scale"
-msgstr "Render-Skalierung"
 
 msgid "Trace at a fraction of the output resolution, then upsample."
 msgstr "Mit einem Bruchteil der Ausgabeauflösung tracen, dann hochskalieren."
@@ -3212,80 +3457,20 @@ msgstr "Dimensionen"
 msgid "Output image size in pixels (square)"
 msgstr "Ausgabegröße in Pixeln (quadratisch)"
 
-msgid "Exposure"
-msgstr "Belichtung"
-
 msgid "Exposure compensation in stops for tonemapping."
 msgstr "Belichtungskompensation in Blendenstufen für Tonemapping."
-
-msgid "Contrast"
-msgstr "Kontrast"
-
-msgid "Vignette"
-msgstr "Vignette"
 
 msgid "Threshold blur of bright emit and sun highlights."
 msgstr "Weichzeichner für helle Emit- und Sonnenlichter."
 
-msgid "Depth of field"
-msgstr "Tiefenschärfe"
-
-msgid "Aperture"
-msgstr "Blende"
-
 msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
 msgstr "Blende für Tiefenschärfe. 0 = Lochkamera (kein DOF)."
-
-msgid "Focus distance"
-msgstr "Fokusabstand"
 
 msgid "Lighting"
 msgstr "Beleuchtung"
 
-msgid "Sun intensity"
-msgstr "Sonnenintensität"
-
-msgid "Sun softness"
-msgstr "Sonnenweichheit"
-
 msgid "Sun disk size in degrees."
 msgstr "Größe der Sonnenscheibe in Grad."
-
-msgid "Sun color"
-msgstr "Sonnenfarbe"
-
-msgid "Sky top"
-msgstr "Himmel oben"
-
-msgid "Sky horizon"
-msgstr "Himmel Horizont"
-
-msgid "Sky intensity"
-msgstr "Himmelintensität"
-
-msgid "Floor"
-msgstr "Boden"
-
-msgid "Floor color"
-msgstr "Bodenfarbe"
-
-msgid "Floor Y"
-msgstr "Boden-Y"
-
-msgid "Background"
-msgstr "Hintergrund"
-
-msgid "Background color"
-msgstr "Hintergrundfarbe"
-
-msgid "Fog density"
-msgstr "Nebeldichte"
-
-msgid "Fog color"
-msgstr "Nebelfarbe"
-
-msgid "Atmosphere"
-msgstr "Atmosphäre"
 
 msgid "World haze that brightens toward the sun."
 msgstr "Weltdunst, der zur Sonne hin aufhellt."
@@ -3302,6 +3487,12 @@ msgstr "Sample %i / %i"
 
 msgid "Volume truncated to GPU 3D texture / memory limits"
 msgstr "Volumen auf GPU-3D-Textur-/Speichergrenzen gekürzt"
+
+msgid "Preparing render"
+msgstr "Rendering wird vorbereitet"
+
+msgid "Preparing"
+msgstr "Vorbereitung"
 
 msgid "Render"
 msgstr "Render"
@@ -3331,7 +3522,7 @@ msgid "Free volume indices: %i"
 msgstr "Freie Volumenindizes: %i"
 
 msgid "Render stats"
-msgstr ""
+msgstr "Renderstatistik"
 
 #, c-format
 msgid "Draw calls: %<PRIu64>"
@@ -3339,31 +3530,31 @@ msgstr "Draw Calls: %<PRIu64>"
 
 #, c-format
 msgid "Pipeline binds: %<PRIu64>"
-msgstr ""
+msgstr "Pipeline-Bindungen: %<PRIu64>"
 
 #, c-format
 msgid "Descriptor binds: %<PRIu64>"
-msgstr ""
+msgstr "Deskriptor-Bindungen: %<PRIu64>"
 
 #, c-format
 msgid "Buffer updates: %<PRIu64>"
-msgstr ""
+msgstr "Pufferaktualisierungen: %<PRIu64>"
 
 #, c-format
 msgid "Render passes: %<PRIu64>"
-msgstr ""
+msgstr "Renderdurchläufe: %<PRIu64>"
 
 #, c-format
 msgid "Fullscreen passes: %<PRIu64>"
-msgstr ""
+msgstr "Vollbilddurchläufe: %<PRIu64>"
 
 #, c-format
 msgid "Blits: %<PRIu64>"
-msgstr ""
+msgstr "Blits: %<PRIu64>"
 
 #, c-format
 msgid "CPU render ms: %.3f"
-msgstr ""
+msgstr "CPU-Renderzeit in ms: %.3f"
 
 #, c-format
 msgid "Camera position: %.2f %.2f %.2f"
@@ -3579,6 +3770,22 @@ msgstr "Befehl: %s (%s)"
 #, c-format
 msgid "FPS: %.2f"
 msgstr "FPS: %.2f"
+
+msgid "Load sun from scene"
+msgstr "Sonneneinstellungen aus Szene laden"
+
+msgid "Apply the scene root's stored sun settings to the current controls."
+msgstr ""
+"Die im Wurzelknoten der Szene gespeicherten Sonneneinstellungen in die "
+"aktuellen Bedienelemente übernehmen."
+
+msgid "Save sun to scene"
+msgstr "Sonneneinstellungen in Szene speichern"
+
+msgid "Store the current sun settings on the scene root for saving and export."
+msgstr ""
+"Die aktuellen Sonneneinstellungen zum Speichern und Exportieren im "
+"Wurzelknoten der Szene ablegen."
 
 msgid "Sun angle"
 msgstr "Sonnenwinkel"
@@ -3859,7 +4066,7 @@ msgid "Grid size"
 msgstr "Rastergröße"
 
 msgid "Apply this axis size to the other axes"
-msgstr ""
+msgstr "Diese Achsengröße auf die anderen Achsen übertragen"
 
 msgid "Gizmo settings"
 msgstr "Gizmo-Einstellungen"
@@ -3889,7 +4096,7 @@ msgid "Ace Of Spades"
 msgstr "Ace Of Spades"
 
 msgid "Minimal"
-msgstr ""
+msgstr "Minimal"
 
 msgid "Default"
 msgstr "Standard"
@@ -3948,9 +4155,6 @@ msgstr "Linien"
 
 msgid "Points"
 msgstr "Punkte"
-
-msgid "Solid"
-msgstr "Voll"
 
 msgid "Render mode"
 msgstr "Rendermodus"
@@ -4060,12 +4264,14 @@ msgstr "Anmeldung notwendig"
 
 msgid "A VoxBox account is required to browse, download and upload assets."
 msgstr ""
+"Zum Durchsuchen, Herunterladen und Hochladen von Assets ist ein "
+"VoxBox-Konto erforderlich."
 
 msgid "API key"
 msgstr "API-Schlüssel"
 
 msgid "Refresh token"
-msgstr ""
+msgstr "Aktualisierungstoken"
 
 msgid "Connect"
 msgstr "Verbinden"
@@ -4092,7 +4298,7 @@ msgid "Use API key"
 msgstr "API-Schlüssel verwenden"
 
 msgid "No account yet? Create one at voxbox.store."
-msgstr ""
+msgstr "Noch kein Konto? Erstellen Sie eines auf voxbox.store."
 
 msgid "VoxBox Store"
 msgstr "VoxBox-Store"
@@ -4245,9 +4451,11 @@ msgid ""
 "How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = "
 "full)"
 msgstr ""
+"Stärke der Gaußschen Weichzeichnung benachbarter Farben (0 = keine, 1 = "
+"vollständig)"
 
 msgid "Opacity at the brush center (0 = none, 1 = full)"
-msgstr ""
+msgstr "Deckkraft in der Pinselmitte (0 = keine, 1 = vollständig)"
 
 msgid "Amount of brighten or darken to apply"
 msgstr "Stärke der Aufhellung oder Abdunkelung"
@@ -4506,22 +4714,24 @@ msgid "Selection actions"
 msgstr "Auswahlaktionen"
 
 msgid "Draw with"
-msgstr ""
+msgstr "Zeichnen mit"
 
 msgid "Stroke"
 msgstr "Strich"
 
 msgid "Drag shape"
-msgstr ""
+msgstr "Form aufziehen"
 
 msgid "Shape"
-msgstr ""
+msgstr "Form"
 
 msgid "Hold and drag to draw with the selected shape."
 msgstr "Gedrückt halten und ziehen, um mit der ausgewählten Form zu zeichnen."
 
 msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
 msgstr ""
+"Radius 0 zeichnet einen einzelnen Würfel. Erhöhen Sie den Radius, um "
+"andere Formen zu verwenden."
 
 msgid "Increase radius"
 msgstr "Radius vergrößern"
@@ -4530,16 +4740,16 @@ msgid "Start from"
 msgstr "Ausgangspunkt"
 
 msgid "Corner"
-msgstr ""
+msgstr "Ecke"
 
 msgid "Drag to define the shape's size."
-msgstr ""
+msgstr "Ziehen, um die Größe der Form festzulegen."
 
 msgid "Mirror"
 msgstr "Spiegelung"
 
 msgid "Apply once per voxel per stroke"
-msgstr ""
+msgstr "Pro Strich einmal auf jedes Voxel anwenden"
 
 msgid "Use selection"
 msgstr "Auswahl verwenden"
@@ -4681,6 +4891,12 @@ msgstr "Splat-Zusammenführung"
 msgctxt "Temporary merged scene graph node name"
 msgid "merged_temp"
 msgstr "merged_temp"
+
+msgid "Palette color cell size relative to the UI frame height"
+msgstr "Größe der Palettenfarbzellen relativ zur Höhe des UI-Rahmens"
+
+msgid "Palette color size"
+msgstr "Palettenfarbgröße"
 
 msgid "Color wheel"
 msgstr "Farbrad"
@@ -4904,79 +5120,79 @@ msgid "View mode"
 msgstr "Oberflächenmodus"
 
 msgid "Show the palette panel"
-msgstr ""
+msgstr "Palettenfenster anzeigen"
 
 msgid "Show the normal palette panel"
-msgstr ""
+msgstr "Normalenpalettenfenster anzeigen"
 
 msgid "Memento"
-msgstr ""
+msgstr "Verlauf"
 
 msgid "Show the memento panel"
-msgstr ""
+msgstr "Verlaufsfenster anzeigen"
 
 msgid "Show the camera panel"
-msgstr ""
+msgstr "Kamerafenster anzeigen"
 
 msgid "Show the L-System panel"
-msgstr ""
+msgstr "L-System-Fenster anzeigen"
 
 msgid "Script"
 msgstr "Skript"
 
 msgid "Show the script panel"
-msgstr ""
+msgstr "Skriptfenster anzeigen"
 
 msgid "Show the network panel"
-msgstr ""
+msgstr "Netzwerkfenster anzeigen"
 
 msgid "Show the game mode panel"
-msgstr ""
+msgstr "Spielmodusfenster anzeigen"
 
 msgid "Assets"
-msgstr ""
+msgstr "Assets"
 
 msgid "Show the asset panels"
-msgstr ""
+msgstr "Asset-Fenster anzeigen"
 
 msgid "Show the render panel"
-msgstr ""
+msgstr "Renderfenster anzeigen"
 
 msgid "Show the animation settings panel"
-msgstr ""
+msgstr "Fenster für Animationseinstellungen anzeigen"
 
 msgid "Animation timeline"
-msgstr ""
+msgstr "Animationszeitleiste"
 
 msgid "Show the animation timeline panel"
-msgstr ""
+msgstr "Animationszeitleiste anzeigen"
 
 msgid "Show the scene panel"
-msgstr ""
+msgstr "Szenenfenster anzeigen"
 
 msgid "Show the tools panel"
-msgstr ""
+msgstr "Werkzeugfenster anzeigen"
 
 msgid "Show the scene settings panel"
-msgstr ""
+msgstr "Fenster für Szeneneinstellungen anzeigen"
 
 msgid "Show the help panel"
-msgstr ""
+msgstr "Hilfefenster anzeigen"
 
 msgid "Node properties"
-msgstr ""
+msgstr "Knoteneigenschaften"
 
 msgid "Show the node properties panel"
-msgstr ""
+msgstr "Fenster für Knoteneigenschaften anzeigen"
 
 msgid "Show the volume/node inspector panel"
-msgstr ""
+msgstr "Volumen-/Knoteninspektor anzeigen"
 
 msgid "Volume inspector"
 msgstr "Volumeninspektor"
 
 msgid "Show the brushes and brush settings panels"
-msgstr ""
+msgstr "Fenster für Pinsel und Pinseleinstellungen anzeigen"
 
 msgid "Show the tip of the day on startup"
 msgstr "Zeige den Tipp des Tages beim Start"
@@ -5636,10 +5852,10 @@ msgid "Random"
 msgstr "Zufällig"
 
 msgid "Blend"
-msgstr ""
+msgstr "Mischen"
 
 msgid "Blur"
-msgstr ""
+msgstr "Weichzeichnen"
 
 msgid "Variation"
 msgstr "Variation"
