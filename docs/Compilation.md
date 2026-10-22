@@ -17,6 +17,24 @@ The project can be built with every ide that supports cmake. QTCreator, Eclipse 
 
 > Set up ninja to speed up the whole build-link-run cycle a lot!
 
+### MSI file associations
+
+The MSI's feature-selection dialog contains **voxedit > File associations** with an entry for each supported extension. Only **.vengi** is selected by default. Enable **.vox** or other types explicitly to open them with VoxEdit, or disable **File associations** entirely. Unchecked extensions retain their existing defaults and are not registered as VoxEdit file types. The importer can still load supported formats from inside VoxEdit.
+
+Selected types are registered in **Open with** and Windows default-app settings. Windows' protected per-user default choices take precedence; use **Open with > Choose another app** or **Settings > Apps > Default apps** if Windows already has a preferred application. The installer does not modify protected `UserChoice` entries or MIME types. Explorer thumbnails are a separate feature and do not select file-opening associations.
+
+The Windows regression is `contrib/installer/windows/tests/FileAssociationsTest.ps1`. Run it on an isolated Windows test machine using 64-bit PowerShell with administrator rights and an interactive desktop:
+
+```powershell
+.\FileAssociationsTest.ps1 -Msi C:\test\vengi.msi -WixPatch C:\source\contrib\installer\windows\wixpatch.xml -VoxelFixture C:\test\sample.vox
+```
+
+Use `-InitialMsi` to remove an existing test installation first. The test installs the default configuration, confirms that `.vengi` is registered and `.vox` does not open in VoxEdit, repairs and removes it, then repeats with both types enabled. `ShellOpenTest.ps1` calls Windows `ShellExecuteEx` on the fixture file and checks the launched process and visible window. It does not invoke VoxEdit directly. The test also checks every generated extension for unwanted registrations, preserves unselected defaults and MIME types, compares protected `UserChoice` entries, and verifies cleanup after removal. It restores temporary competing defaults in a `finally` block and leaves the tested MSI installed.
+
+For unattended selection, the `.vengi` and `.vox` feature IDs are `Assoc_vengi` and `Assoc_vox`. Include the editor feature when using `ADDLOCAL`, for example `ADDLOCAL=CM_C_voxedit,FileAssociations,Assoc_vengi,Assoc_vox`. `ADDLOCAL=ALL` intentionally selects every extension.
+
+The adjacent `CMakeLists.txt` packages a staged Windows payload using the production CPack/WiX configuration. Configure it with `PAYLOAD_DIR` and `CMAKE_SIZEOF_VOID_P=8` for x64, then run `cpack -G WIX` in its build directory. This checks packaging changes without rebuilding the engine; identify the source of the staged binaries when reporting results.
+
 ### Visual Studio Code
 
 * Download ninja [ninja-build.org](https://ninja-build.org/)

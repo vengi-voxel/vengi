@@ -631,11 +631,11 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("		<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"no\" Part=\"last\" Action=\"set\" System=\"yes\" />\n");
 	Log::printf("\n");
 	Log::printf("		<!-- Open With -->\n");
-	Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi_voxedit.exe\" Type=\"string\" Name=\"FriendlyAppName\" Value=\"Vengi Voxel Editor\"/>\n");
-	Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi_voxedit.exe\\shell\\open\\command\" Type=\"string\" Value=\"[#CM_FP_voxedit.voxedit.vengi_voxedit.exe] &quot;%%1&quot;\"/>\n");
+	Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi-voxedit.exe\" Type=\"string\" Name=\"FriendlyAppName\" Value=\"Vengi Voxel Editor\"/>\n");
+	Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi-voxedit.exe\\shell\\open\\command\" Type=\"string\" Value=\"&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%%1&quot;\"/>\n");
 	Log::printf("\n");
 	Log::printf("		<!-- App Paths -->\n");
-	Log::printf("		<RegistryKey Root=\"HKLM\" Key=\"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\vengi_voxedit.exe\">\n");
+	Log::printf("		<RegistryKey Root=\"HKLM\" Key=\"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\vengi-voxedit.exe\">\n");
 	Log::printf("			<RegistryValue Type=\"string\" Value=\"[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]\" />\n");
 	Log::printf("			<RegistryValue Type=\"string\" Name=\"Path\" Value=\"[INSTALL_ROOT]\" />\n");
 	Log::printf("		</RegistryKey>\n");
@@ -646,27 +646,51 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("			<RegistryValue Type=\"string\" Name=\"ApplicationDescription\" Value=\"Vengi Voxel Editor\" />\n");
 	Log::printf("		</RegistryKey>\n");
 	Log::printf("\n");
-	Log::printf("		<!-- Registered file extensions -->\n");
+	Log::printf("\n");
+	Log::printf("		<!-- Default Programs entry -->\n");
+	Log::printf("		<RegistryValue Root=\"HKLM\" Key=\"SOFTWARE\\RegisteredApplications\" Name=\"vengi-voxedit\" Value=\"SOFTWARE\\vengi-voxedit\\Capabilities\" Type=\"string\" />\n");
+	Log::printf("	</CPackWiXFragment>\n");
+	Log::printf("	<CPackWiXFragment Id=\"CM_C_voxedit\">\n");
+	Log::printf("		<Feature Id=\"FileAssociations\" Title=\"File associations\" Description=\"Select the file types to open with VoxEdit. Windows per-user default choices take precedence.\" Level=\"1\" Display=\"expand\">\n");
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		for (const core::String &e : desc->exts) {
 			if (!uniqueExtensions.insert(e)) {
 				continue;
 			}
-			const core::String &m = uniqueMimetype(*desc);
-			Log::printf("		<RegistryValue Root=\"HKLM\" Key=\"Software\\vengi-voxedit\\Capabilities\\FileAssociations\" Name=\".%s\" Value=\"vengi-voxedit.%s\" Type=\"string\" />\n", e.c_str(), e.c_str());
-			Log::printf("		<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi_voxedit.exe\\SupportedTypes\" Name=\".%s\" Value=\"\" Type=\"string\" />\n", e.c_str());
-			Log::printf("		<RegistryValue Root=\"HKCR\" Key=\".%s\\OpenWithProgids\" Name=\"vengi-voxedit.%s\" Value=\"\" Type=\"string\" />\n", e.c_str(), e.c_str());
-			Log::printf("		<ProgId Id=\"vengi-voxedit.%s\" Description=\"%s\" Icon=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\">\n", e.c_str(), desc->name.c_str());
-			Log::printf("			<Extension Id=\"%s\" ContentType=\"%s\">\n", e.c_str(), m.c_str());
-			Log::printf("				<Verb Id=\"open\" TargetFile=\"CM_FP_voxedit.voxedit.vengi_voxedit.exe\" Argument=\"&quot;%%1&quot;\" />\n");
-			Log::printf("			</Extension>\n");
-			Log::printf("		</ProgId>\n");
-			Log::printf("\n");
+			core::String id = e;
+			id.replaceAllChars('.', '_');
+			Log::printf("			<Feature Id=\"Assoc_%s\" Title=\".%s\" Description=\"Open .%s files with VoxEdit (%s). Existing Windows per-user defaults take precedence.\" Level=\"%i\" AllowAdvertise=\"no\">\n", id.c_str(), e.c_str(), e.c_str(), desc->name.c_str(), e == "vengi" ? 1 : 2);
+			Log::printf("				<ComponentRef Id=\"AssocRegistration_%s\" />\n", id.c_str());
+			Log::printf("				<ComponentRef Id=\"CM_CP_voxedit.voxedit.vengi_voxedit.exe\" />\n");
+			Log::printf("			</Feature>\n");
 		}
 	}
-	Log::printf("\n");
-	Log::printf("		<!-- Default Programs entry -->\n");
-	Log::printf("		<RegistryValue Root=\"HKLM\" Key=\"SOFTWARE\\RegisteredApplications\" Name=\"vengi-voxedit\" Value=\"SOFTWARE\\vengi-voxedit\\Capabilities\" Type=\"string\" />\n");
+	Log::printf("		</Feature>\n");
+	Log::printf("	</CPackWiXFragment>\n");
+	Log::printf("	<CPackWiXFragment Id=\"#PRODUCT\">\n");
+	Log::printf("		<DirectoryRef Id=\"INSTALL_ROOT\">\n");
+	uniqueExtensions.clear();
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String &e : desc->exts) {
+			if (!uniqueExtensions.insert(e)) {
+				continue;
+			}
+			core::String id = e;
+			id.replaceAllChars('.', '_');
+			Log::printf("			<Component Id=\"AssocRegistration_%s\" Guid=\"*\">\n", id.c_str());
+			Log::printf("				<RegistryValue Root=\"HKLM\" Key=\"Software\\vengi-voxedit\\Capabilities\\FileAssociations\" Name=\".%s\" Value=\"vengi-voxedit.%s\" Type=\"string\" />\n", e.c_str(), e.c_str());
+			Log::printf("				<RegistryValue Root=\"HKCR\" Key=\"Applications\\vengi-voxedit.exe\\SupportedTypes\" Name=\".%s\" Value=\"\" Type=\"string\" />\n", e.c_str());
+			Log::printf("				<RegistryValue Root=\"HKCR\" Key=\".%s\\OpenWithProgids\" Name=\"vengi-voxedit.%s\" Value=\"\" Type=\"string\" />\n", e.c_str(), e.c_str());
+			Log::printf("				<RegistryKey Root=\"HKCR\" Key=\"vengi-voxedit.%s\">\n", e.c_str());
+			Log::printf("					<RegistryValue Type=\"string\" Value=\"%s\" KeyPath=\"yes\" />\n", desc->name.c_str());
+			Log::printf("					<RegistryValue Key=\"DefaultIcon\" Type=\"string\" Value=\"&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0\" />\n");
+			Log::printf("					<RegistryValue Key=\"shell\\open\\command\" Type=\"string\" Value=\"&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%%1&quot;\" />\n");
+			Log::printf("				</RegistryKey>\n");
+			Log::printf("				<RegistryValue Root=\"HKCR\" Key=\".%s\" Type=\"string\" Value=\"vengi-voxedit.%s\" />\n", e.c_str(), e.c_str());
+			Log::printf("			</Component>\n");
+		}
+	}
+	Log::printf("		</DirectoryRef>\n");
 	Log::printf("	</CPackWiXFragment>\n");
 	Log::printf("</CPackWiXPatch>\n");
 }
