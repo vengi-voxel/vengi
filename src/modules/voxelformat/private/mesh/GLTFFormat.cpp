@@ -1235,7 +1235,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			if (info.hasTexture) {
 				if (info.useGreedyTexture) {
 					vBuf[j * stride + off++] = uvs[j].x;
-					vBuf[j * stride + off++] = 1.0f - uvs[j].y; // GLTF uses top-left origin
+					vBuf[j * stride + off++] = uvs[j].y;
 				} else {
 					const glm::vec2 uv = paletteUV(vertices[j].colorIndex);
 					vBuf[j * stride + off++] = uv.x;
