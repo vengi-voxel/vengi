@@ -135,11 +135,11 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 
 	// Pack bricks in a 3D atlas (X then Y then Z) so the full @c Limit::Max3DTextureSize cube is usable.
 	const int maxBricksPerAxis = core_max(1, maxTextureAxis / BrickSize);
-	const int maxBricks = maxBricksPerAxis * maxBricksPerAxis * maxBricksPerAxis;
-	if (occupiedBricks > maxBricks) {
+	const uint64_t maxBricks = (uint64_t)maxBricksPerAxis * (uint64_t)maxBricksPerAxis * (uint64_t)maxBricksPerAxis;
+	if ((uint64_t)occupiedBricks > maxBricks) {
 		out.bricksTruncated = true;
-		occupiedBricks = maxBricks;
-		Log::warn("Pathtracer brick pool truncated to %i bricks (atlas %ix%ix%i bricks)", maxBricks, maxBricksPerAxis,
+		occupiedBricks = (int)maxBricks;
+		Log::warn("Pathtracer brick pool truncated to %i bricks (atlas %ix%ix%i bricks)", occupiedBricks, maxBricksPerAxis,
 				  maxBricksPerAxis, maxBricksPerAxis);
 	}
 
