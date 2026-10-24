@@ -748,7 +748,7 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 					}
 					if (!uvs.empty() && (cgltf_size)srcIdx < uvAccessor->count) {
 						const cgltf_float *uv = &uvs[(size_t)srcIdx * 2u];
-						v.uv = glm::vec2(uv[0], uv[1]);
+						v.uv = glm::vec2(uv[0], 1.0f - uv[1]);
 					}
 					if (!colors.empty() && (cgltf_size)srcIdx < colAccessor->count) {
 						const cgltf_float *col = &colors[(size_t)srcIdx * colorComps];

@@ -22,6 +22,7 @@ General:
    - Added support for Teardown version 2.1.0+
    - Fixed starmade `sment` format issues
    - Fixed `gltf` and `fbx` import assert when a scene has more than 64 nodes
+   - Fixed inverted texture coordinates on `gltf` import and greedy texture export
    - Fixed VoxelMax `vmaxb` loading and transforms as well as colors and materials
    - Improved `kvx` and `kv6` pivot support
    - Basic `fbx` material support

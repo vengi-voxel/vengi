@@ -7,6 +7,7 @@
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
+#include "image/Image.h"
 #include "io/Stream.h"
 #include "io/MemoryArchive.h"
 #include "palette/Palette.h"
@@ -23,6 +24,64 @@
 namespace voxelformat {
 
 class GLTFFormatTest : public AbstractFormatTest {};
+
+TEST_F(GLTFFormatTest, testImportTextureOrigin) {
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	const color::RGBA red(255, 0, 0);
+	const color::RGBA green(0, 255, 0);
+	const color::RGBA blue(0, 0, 255);
+	const color::RGBA yellow(255, 255, 0);
+	// glTF image rows start at the top. Define the fixture independently of the exporter.
+	const color::RGBA pixels[] = {red, green, blue, yellow};
+	image::Image texture("texture");
+	ASSERT_TRUE(texture.loadRGBA((const uint8_t *)pixels, 2, 2));
+	const core::String json = core::String::format(R"({
+		"asset":{"version":"2.0"},
+		"buffers":[{"uri":"plane.bin","byteLength":120}],
+		"bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":72},
+			{"buffer":0,"byteOffset":72,"byteLength":48}],
+		"accessors":[{"bufferView":0,"componentType":5126,"count":6,"type":"VEC3",
+			"min":[0,0,0],"max":[4,4,0]},
+			{"bufferView":1,"componentType":5126,"count":6,"type":"VEC2"}],
+		"images":[{"uri":"data:image/png;base64,%s"}],
+		"textures":[{"source":0}],
+		"materials":[{"pbrMetallicRoughness":{"baseColorTexture":{"index":0}}}],
+		"meshes":[{"primitives":[{"attributes":{"POSITION":0,"TEXCOORD_0":1},"material":0}]}],
+		"nodes":[{"mesh":0}],"scenes":[{"nodes":[0]}],"scene":0
+	})", texture.pngBase64().c_str());
+	const float buffer[] = {
+		0, 0, 0, 4, 0, 0, 4, 4, 0,
+		0, 0, 0, 4, 4, 0, 0, 4, 0,
+		0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 0
+	};
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("plane.gltf", (const uint8_t *)json.c_str(), json.size()));
+	ASSERT_TRUE(archive->add("plane.bin", (const uint8_t *)buffer, sizeof(buffer)));
+	GLTFFormat format;
+	for (int mode = 0; mode <= 1; ++mode) {
+		SCOPED_TRACE(mode);
+		util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, mode);
+		scenegraph::SceneGraph graph;
+		ASSERT_TRUE(format.loadGroups("plane.gltf", archive, graph, testLoadCtx));
+		const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+		ASSERT_NE(nullptr, node);
+		const voxel::RawVolume *volume = node->volume();
+		ASSERT_NE(nullptr, volume);
+		const int z = volume->region().getLowerZ();
+		// Sample inside each texture quadrant, away from color boundaries.
+		for (int y = 0; y < 4; y += 3) {
+			for (int x = 0; x < 4; x += 3) {
+				SCOPED_TRACE(core::String::format("voxel %i:%i:%i", x, y, z));
+				const voxel::Voxel &voxel = volume->voxel(x, y, z);
+				ASSERT_FALSE(voxel::isAir(voxel.getMaterial()));
+				const color::RGBA expected = y < 2 ? (x < 2 ? blue : yellow) : (x < 2 ? red : green);
+				EXPECT_EQ(expected, node->palette().color(voxel.getColor()));
+			}
+		}
+	}
+}
 
 TEST_F(GLTFFormatTest, testSceneVoxelSize) {
 	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "24");
