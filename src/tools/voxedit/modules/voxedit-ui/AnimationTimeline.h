@@ -44,6 +44,7 @@ private:
 		core::UUID nodeUUID;
 	};
 	core::Buffer<Selection> _selectionBuffer;
+	uint32_t _lastKeyframeSelectionSize = 0;
 	struct KeyframeDragState {
 		core::UUID nodeUUID;
 		scenegraph::SceneGraphKeyFrames keyframes;

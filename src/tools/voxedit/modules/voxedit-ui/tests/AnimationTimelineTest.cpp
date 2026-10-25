@@ -291,6 +291,51 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		IM_CHECK_EQ(sceneGraph.activeNode(), secondNodeId);
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "clear keyframe selection")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->sceneGraph().activeNode());
+		IM_CHECK(node != nullptr);
+
+		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
+		ctx->SetRef(wrapperId);
+		const ImGuiTestItemInfo frameSelector = ctx->ItemInfo("sequencer/currentframeselector");
+		ctx->MouseMove(frameSelector.ID);
+		ctx->MouseDragWithDelta({ImGui::Size(10.0f), 0.0f}, ImGuiMouseButton_Left);
+		const scenegraph::FrameIndex targetFrame = _sceneMgr->currentFrame();
+		IM_CHECK(targetFrame > 0);
+
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("###Add");
+		ctx->Yield();
+		IM_CHECK(node->hasKeyFrameForFrame(targetFrame));
+
+		ctx->SetRef(wrapperId);
+		const core::String nodeLabel = core::String::format("sequencer/###node-%s", node->uuid().str().c_str());
+		const ImGuiTestItemInfo timeline = ctx->ItemInfo(nodeLabel.c_str());
+		const ImGuiTestItemInfo playhead = ctx->ItemInfo("sequencer/currentframeselector");
+		// Start in the empty track (right of the label) so this is a box-select, not a keyframe drag.
+		const ImVec2 selectFrom(timeline.RectFull.Max.x + 8.0f, timeline.RectFull.Min.y);
+		const ImVec2 selectTo(playhead.RectFull.Max.x + ImGui::Size(8.0f), timeline.RectFull.Max.y);
+		dragFromTo(ctx, selectFrom, selectTo);
+		ctx->Yield(2);
+		IM_CHECK(_lastKeyframeSelectionSize > 0);
+
+		// NeoClearSelection used to leak the nested KeyframesToDelete ImVector.
+		_clearSelection = true;
+		ctx->Yield(2);
+		IM_CHECK_EQ(_lastKeyframeSelectionSize, (uint32_t)0);
+		dragFromTo(ctx, selectFrom, selectTo);
+		ctx->Yield(2);
+		IM_CHECK(_lastKeyframeSelectionSize > 0);
+		_clearSelection = true;
+		ctx->Yield(2);
+		IM_CHECK_EQ(_lastKeyframeSelectionSize, (uint32_t)0);
+		IM_CHECK(node->hasKeyFrameForFrame(targetFrame));
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "keyframe context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));

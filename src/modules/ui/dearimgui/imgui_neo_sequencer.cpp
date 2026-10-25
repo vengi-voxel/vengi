@@ -30,12 +30,15 @@ enum class SelectionState {
 	Dragging   // Dragging selection
 };
 
+// ImVector does not destroy its elements. SelectionData holds nested ImVectors,
+// so callers must use this instead of resize(0) or the inner buffers leak.
+static void ClearSelectionData(ImVector<ImGuiNeoTimelineKeyframes> &selectionData) {
+	selectionData.clear_destruct();
+}
+
 struct ImGuiNeoSequencerInternalData {
 	~ImGuiNeoSequencerInternalData() {
-		for (ImGuiNeoTimelineKeyframes &keyframes : SelectionData) {
-			keyframes.KeyframesToDelete.clear();
-		}
-		SelectionData.clear_destruct();
+		ClearSelectionData(SelectionData);
 	}
 	ImVec2 TopLeftCursor = {0, 0};	   // Cursor on top of whole widget
 	ImVec2 TopBarStartCursor = {0, 0}; // Cursor on top, below Zoom slider
@@ -1145,7 +1148,7 @@ void NeoClearSelection() {
 	IM_ASSERT(GNeoSeq->InSequencer && "Not in active sequencer!");
 	ImGuiNeoSequencerInternalData &context = *GNeoSeq->CurrentSequencer;
 	context.Selection.resize(0);
-	context.SelectionData.resize(0);
+	ClearSelectionData(context.SelectionData);
 }
 
 bool NeoIsSelecting() {

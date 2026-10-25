@@ -234,6 +234,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	const scenegraph::FrameIndex frame = currentFrame;
 	if (ImGui::BeginNeoSequencer("sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags, _sceneMgr->sceneGraph().maxFrames())) {
 		core::Buffer<Selection> selectionBuffer;
+		_lastKeyframeSelectionSize = 0;
 		if (_clearSelection) {
 			ImGui::NeoClearSelection();
 			_clearSelection = false;
@@ -263,6 +264,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				}
 			}
 		}
+		_lastKeyframeSelectionSize = (uint32_t)selectionBuffer.size();
 		bool selectionRightClicked = ImGui::IsNeoKeyframeSelectionRightClicked();
 		const bool draggingKeyframes = ImGui::NeoIsDraggingSelection();
 		// check if current frame was changed by dragging the handle
