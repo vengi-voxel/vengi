@@ -225,12 +225,36 @@ void ScenePreview::renderFrame(double deltaSeconds) {
 
 	_renderContext.frameBuffer.bind(true);
 	_renderer.render(_meshState, _renderContext, _camera, true, true);
+	_renderContext.resolveMultisampling();
+	_renderContext.applyBloom();
 	_renderContext.frameBuffer.unbind();
 }
 
+const video::FrameBuffer &ScenePreview::displayFrameBuffer() const {
+	return _renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer : _renderContext.frameBuffer;
+}
+
+void ScenePreview::render(double deltaSeconds, const glm::ivec2 &pixelSize) {
+	if (!ensureInit() || empty()) {
+		return;
+	}
+	resize(pixelSize);
+	renderFrame(deltaSeconds);
+}
+
+image::ImagePtr ScenePreview::image() const {
+	if (!_initialized) {
+		return image::ImagePtr();
+	}
+	return displayFrameBuffer().image("scenepreview", video::FrameBufferAttachment::Color0);
+}
+
+bool ScenePreview::multisamplingEnabled() const {
+	return _renderContext.enableMultisampling;
+}
+
 void ScenePreview::drawImage(const glm::vec2 &size) const {
-	const video::FrameBuffer &fb = _renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer
-																	  : _renderContext.frameBuffer;
+	const video::FrameBuffer &fb = displayFrameBuffer();
 	const glm::vec4 &uv = fb.uv();
 	const video::TexturePtr &texture = fb.texture(video::FrameBufferAttachment::Color0);
 	ImGui::Image(texture->handle(), ImVec2(size.x, size.y), ImVec2(uv.x, uv.y), ImVec2(uv.z, uv.w));
@@ -252,8 +276,7 @@ void ScenePreview::updateAndRender(double deltaSeconds, const glm::vec2 &size, b
 	}
 
 	const ImVec2 cursor = ImGui::GetCursorScreenPos();
-	resize(pixelSizeFor(size));
-	renderFrame(deltaSeconds);
+	render(deltaSeconds, pixelSizeFor(size));
 	drawImage(size);
 	if (interactive) {
 		ImGui::SetCursorScreenPos(cursor);

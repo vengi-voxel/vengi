@@ -7,6 +7,7 @@
 #include "core/NonCopyable.h"
 #include "core/String.h"
 #include "core/TimeProvider.h"
+#include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
 #include "video/Camera.h"
 #include "video/OpenFileMode.h"
@@ -48,6 +49,7 @@ private:
 	void handleOrbitInput(const glm::vec2 &size);
 	void drawImage(const glm::vec2 &size) const;
 	glm::ivec2 pixelSizeFor(const glm::vec2 &widgetSize) const;
+	const video::FrameBuffer &displayFrameBuffer() const;
 
 public:
 	explicit ScenePreview(const core::TimeProviderPtr &timeProvider);
@@ -69,6 +71,16 @@ public:
 	 * @brief Replace the preview scene (takes ownership of @p sceneGraph)
 	 */
 	bool setSceneGraph(scenegraph::SceneGraph &&sceneGraph);
+
+	/**
+	 * @brief Render the current scene into the preview framebuffer (no ImGui).
+	 */
+	void render(double deltaSeconds, const glm::ivec2 &pixelSize);
+	/**
+	 * @brief Color attachment shown in the preview (resolve FBO when MSAA is on).
+	 */
+	image::ImagePtr image() const;
+	bool multisamplingEnabled() const;
 
 	/**
 	 * @brief Draw an interactive preview of the given size (logical ImGui units).
