@@ -843,6 +843,7 @@ public:
 							 bool local);
 	bool nodeResetTransform(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
+	bool nodeUpdateKeyFrameLongRotation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, bool enabled);
 	bool nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
 	bool nodeUpdatePivot(const core::UUID &nodeUUID, const glm::vec3 &pivot);

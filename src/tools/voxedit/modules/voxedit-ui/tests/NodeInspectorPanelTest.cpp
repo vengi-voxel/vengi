@@ -161,6 +161,16 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 			ctx->ComboClick(path.c_str());
 			ctx->Yield();
 		}
+		const core::UUID nodeUUID = _sceneMgr->activeNodeUUID();
+		ctx->ItemClick("Long rotation");
+		ctx->Yield();
+		IM_CHECK(_sceneMgr->sceneGraphNodeByUUID(nodeUUID)->keyFrame(0).longRotation);
+		IM_CHECK(_sceneMgr->undo());
+		ctx->Yield();
+		IM_CHECK(!_sceneMgr->sceneGraphNodeByUUID(nodeUUID)->keyFrame(0).longRotation);
+		IM_CHECK(_sceneMgr->redo());
+		ctx->Yield();
+		IM_CHECK(_sceneMgr->sceneGraphNodeByUUID(nodeUUID)->keyFrame(0).longRotation);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "color histogram")->TestFunc = [=](ImGuiTestContext *ctx) {

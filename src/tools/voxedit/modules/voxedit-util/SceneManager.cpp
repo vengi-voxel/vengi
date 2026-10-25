@@ -8052,6 +8052,26 @@ bool SceneManager::nodeTransformMirror(const core::UUID &nodeUUID, scenegraph::K
 	return false;
 }
 
+bool SceneManager::nodeUpdateKeyFrameLongRotation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
+												  bool enabled) {
+	if (isLocked()) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr || keyFrameIdx < 0 || (size_t)keyFrameIdx >= node->keyFrames()->size()) {
+		return false;
+	}
+	scenegraph::SceneGraphKeyFrame &keyFrame = node->keyFrame(keyFrameIdx);
+	if (keyFrame.longRotation == enabled) {
+		return true;
+	}
+	keyFrame.longRotation = enabled;
+	_sceneGraph.markKeyFramesDirty(node->id());
+	_mementoHandler->markKeyFramesChange(_sceneGraph, *node);
+	markDirty();
+	return true;
+}
+
 bool SceneManager::nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
 													scenegraph::InterpolationType interpolation) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {

@@ -337,6 +337,11 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 		}
 		ImGui::EndCombo();
 	}
+	bool longRotation = keyFrame.longRotation;
+	if (ImGui::Checkbox(_("Long rotation"), &longRotation)) {
+		_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), keyFrameIdx, longRotation);
+	}
+	ImGui::TooltipText(_("Take the longer rotation path to the next keyframe. For a full turn, add an intermediate keyframe."));
 	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_LINE, _("Interpolation details"))) {
 		core::Array<glm::vec2, 20> data;
 		for (size_t i = 0; i < data.size(); ++i) {

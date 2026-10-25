@@ -49,7 +49,7 @@ public:
 	InterpolationType interpolation = InterpolationType::Linear;
 	// Support this by negation of the quaternions - they are equivalent, but interpolating between
 	// ones of different polarity takes the longer path
-	// if longRotation is true the dot of the quaternion should be > 0 otherwise < 0
+	// Controls the segment to the next keyframe. The quaternion dot must be <= 0 for the long path.
 	bool longRotation = false;
 
 	inline void setTransform(const SceneGraphTransform &transform) {

@@ -3121,6 +3121,30 @@ TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
 		<< "Editing should work after undoing an edit that was done within a selection";
 }
 
+TEST_F(SceneManagerTest, testKeyFrameLongRotationUndoRedo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "rotation", voxel::Region{0, 1}));
+	auto &graph = _sceneMgr->sceneGraph();
+	auto &node = graph.node(_sceneMgr->activeNode());
+	ASSERT_TRUE(_sceneMgr->nodeAddKeyFrame(node.uuid(), 20));
+	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(node.uuid(),
+		glm::rotate(glm::half_pi<float>(), glm::vec3(0, 1, 0)), 1, true));
+	const glm::vec3 point(1, 0, 0);
+	const glm::vec3 shortPoint = glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0));
+	EXPECT_GT(shortPoint.x, 0.0f);
+	ASSERT_TRUE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), 0, true));
+	EXPECT_TRUE(node.keyFrame(0).longRotation);
+	const glm::vec3 longPoint = glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0));
+	EXPECT_LT(longPoint.x, 0.0f);
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_FALSE(node.keyFrame(0).longRotation);
+	ASSERT_VEC_NEAR(shortPoint, glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0)), 0.0001f);
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_TRUE(node.keyFrame(0).longRotation);
+	ASSERT_VEC_NEAR(longPoint, glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0)), 0.0001f);
+	EXPECT_FALSE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), -1, true));
+	EXPECT_FALSE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), 10, true));
+}
+
 TEST_F(SceneManagerTest, testRepeatNodeGridUndoRedo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(2, 4, 6, 3, 6, 9)));
 	const int sourceId = _sceneMgr->activeNode();

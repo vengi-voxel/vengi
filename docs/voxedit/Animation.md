@@ -15,6 +15,10 @@ There is a timeline for creating keyframes and you can transform the objects wit
 
 Check out the options in the animation timeline to e.g. create keyframes automatically whenever you change something in the transform data.
 
+Enable **Long rotation** beside the keyframe's interpolation settings in the node inspector to take the longer rotation path to the next keyframe. For example,
+a 90 degree rotation becomes a 270 degree rotation in the opposite direction. Identical endpoint orientations stay still because they do not specify an axis
+for a full turn; add an intermediate keyframe to animate a full turn.
+
 ## Scripting
 
 You can also create animations from [scripts](../LUAScript.md). There is an example available with `animate.lua` where you can create a few character animations based on node names.

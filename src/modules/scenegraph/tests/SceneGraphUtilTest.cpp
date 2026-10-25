@@ -38,6 +38,40 @@ TEST_F(SceneGraphUtilTest, testSampleLocalTransform) {
 	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 24).localTranslation());
 }
 
+TEST_F(SceneGraphUtilTest, testLongRotation) {
+	for (int sign = -1; sign <= 1; sign += 2) {
+		SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
+		keys[1].frameIdx = 20;
+		keys[1].transform().setLocalOrientation(
+			glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)) * (float)sign);
+		for (int frame = 0; frame <= 20; ++frame) {
+			const float t = frame / 20.0f;
+			for (bool longRotation : {false, true}) {
+				keys[0].longRotation = longRotation;
+				const glm::quat actual = sampleLocalTransform(keys, frame).localOrientation();
+				const glm::quat expected = glm::angleAxis(glm::radians(longRotation ? -270.0f : 90.0f) * t,
+														glm::vec3(0, 1, 0));
+				EXPECT_NEAR(1.0f, glm::abs(glm::dot(actual, expected)), 0.00001f) << frame;
+			}
+		}
+	}
+}
+
+TEST_F(SceneGraphUtilTest, testLongRotationIdenticalOrientations) {
+	for (int sign = -1; sign <= 1; sign += 2) {
+		SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
+		keys[0].longRotation = true;
+		const glm::quat orientation = glm::angleAxis(0.7f, glm::normalize(glm::vec3(1, 2, 3)));
+		keys[0].transform().setLocalOrientation(orientation);
+		keys[1].transform().setLocalOrientation(orientation * (float)sign);
+		keys[1].frameIdx = 20;
+		for (int frame = 0; frame <= 20; ++frame) {
+			const glm::quat actual = sampleLocalTransform(keys, frame).localOrientation();
+			EXPECT_NEAR(1.0f, glm::abs(glm::dot(actual, orientation)), 0.00001f);
+		}
+	}
+}
+
 TEST_F(SceneGraphUtilTest, testAddSceneGraphNodes) {
 	SceneGraph source;
 	int groupNodeId = -1;

@@ -533,9 +533,26 @@ SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameI
 	SceneGraphTransform result;
 	result.setLocalTranslation(glm::mix(a.transform().localTranslation(), b.transform().localTranslation(), t));
 	glm::quat orientation = b.transform().localOrientation();
-	if (a.longRotation && glm::dot(orientation, a.transform().localOrientation()) < 0)
-		orientation *= -1.0f;
-	result.setLocalOrientation(glm::normalize(glm::slerp(a.transform().localOrientation(), orientation, t)));
+	const glm::quat start = a.transform().localOrientation();
+	if (a.longRotation) {
+		// Opposite hemispheres select the long arc. slerp would undo this sign choice.
+		if (glm::dot(start, orientation) > 0.0f) {
+			orientation = -orientation;
+		}
+		const float dot = glm::clamp(glm::dot(start, orientation), -1.0f, 1.0f);
+		const glm::quat tangent = orientation - start * dot;
+		const float length = glm::length(tangent);
+		if (length > 0.000001f) {
+			const float angle = glm::acos(dot) * t;
+			orientation = start * glm::cos(angle) + tangent * (glm::sin(angle) / length);
+		} else {
+			// Identical orientations cannot specify the axis of a full turn.
+			orientation = glm::slerp(start, b.transform().localOrientation(), t);
+		}
+	} else {
+		orientation = glm::slerp(start, orientation, t);
+	}
+	result.setLocalOrientation(glm::normalize(orientation));
 	result.setLocalScale(glm::mix(a.transform().localScale(), b.transform().localScale(), t));
 	return result;
 }
