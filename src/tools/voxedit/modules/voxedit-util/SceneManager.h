@@ -264,6 +264,9 @@ protected:
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
+	/** @brief Repeat a volume in a grid, including the source in the counts. */
+	bool nodeRepeat(int nodeId, const glm::ivec3 &counts);
+	bool selectionRepeat(const glm::ivec3 &counts);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeMoveKeyFrame(int nodeId, scenegraph::FrameIndex fromFrameIdx, scenegraph::FrameIndex toFrameIdx);

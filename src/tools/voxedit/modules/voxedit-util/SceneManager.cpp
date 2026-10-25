@@ -5101,6 +5101,24 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Change the name of a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
+	command::Command::registerCommand("noderepeat")
+		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID or UUID to repeat"})
+		.addArg({"x", command::ArgType::Int, false, "", "Total number of tiles along local X"})
+		.addArg({"y", command::ArgType::Int, false, "", "Total number of tiles along local Y"})
+		.addArg({"z", command::ArgType::Int, false, "", "Total number of tiles along local Z"})
+		.setHandler([&](const command::CommandArgs &args) {
+			nodeRepeat(toNodeId(args, InvalidNodeId), glm::ivec3(args.intVal("x"), args.intVal("y"), args.intVal("z")));
+		}).setHelp(_("Repeat a volume along its transformed axes; positive counts include the original (maximum 1024 tiles)"))
+		.setArgumentCompleter(nodeCompleter(_sceneGraph));
+
+	command::Command::registerCommand("selectionrepeat")
+		.addArg({"x", command::ArgType::Int, false, "", "Total number of tiles along X"})
+		.addArg({"y", command::ArgType::Int, false, "", "Total number of tiles along Y"})
+		.addArg({"z", command::ArgType::Int, false, "", "Total number of tiles along Z"})
+		.setHandler([&](const command::CommandArgs &args) {
+			selectionRepeat(glm::ivec3(args.intVal("x"), args.intVal("y"), args.intVal("z")));
+		}).setHelp(_("Repeat selected voxels by their bounds inside the active volume; positive counts include the original"));
+
 	command::Command::registerCommand("nodeduplicate")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID or UUID to duplicate"})
 		.setHandler([&] (const command::CommandArgs& args) {
@@ -7320,6 +7338,140 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		moveNodeToSceneGraph(newNode);
 	} else {
 		markDirty();
+	}
+	return true;
+}
+
+bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
+	if (isLocked() || counts.x < 1 || counts.y < 1 || counts.z < 1) {
+		return false;
+	}
+	// Bound the amount of work before allocating volumes or starting an undo group.
+	if (counts.x > 1024 || counts.y > 1024 || counts.z > 1024 ||
+		(int64_t)counts.x * counts.y * counts.z > 1024) {
+		Log::warn("repeat: at most 1024 tiles are supported");
+		return false;
+	}
+	scenegraph::SceneGraphNode *source = sceneGraphNode(nodeId);
+	if (source == nullptr || !source->isAnyModelNode()) {
+		return false;
+	}
+	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*source);
+	if (volume == nullptr) {
+		return false;
+	}
+	if (counts == glm::ivec3(1)) {
+		return true;
+	}
+	const voxel::Region &region = volume->region();
+	const int activeId = activeNode();
+	const int parentId = _sceneGraph.parentId(*source);
+	const glm::vec3 dimensions(region.getDimensionsInVoxels());
+	scenegraph::SceneGraphNode pattern(scenegraph::SceneGraphNodeType::Model);
+	pattern.setName(source->name());
+	pattern.setPalette(_sceneGraph.resolvePalette(*source));
+	pattern.setNormalPalette(source->normalPalette());
+	pattern.setAllKeyFrames(source->allKeyFrames(), DEFAULT_ANIMATION);
+	pattern.setPivot(source->pivot());
+	pattern.setVisible(source->visible());
+	pattern.setLocked(source->locked());
+	pattern.setOpacity(source->opacity());
+	pattern.setColor(source->color());
+	pattern.addProperties(source->properties());
+	pattern.createVolume(region);
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int x = mins.x; x <= maxs.x; ++x) {
+				voxel::Voxel v = volume->voxel(x, y, z);
+				v.setFlags(0);
+				pattern.volume()->setVoxel(x, y, z, v);
+			}
+		}
+	}
+	memento::ScopedMementoGroup group(*_mementoHandler, "noderepeat");
+	for (int z = 0; z < counts.z; ++z) {
+		for (int y = 0; y < counts.y; ++y) {
+			for (int x = 0; x < counts.x; ++x) {
+				if (x == 0 && y == 0 && z == 0) {
+					continue;
+				}
+				scenegraph::SceneGraphNode tile(scenegraph::SceneGraphNodeType::Model);
+				scenegraph::copyNode(pattern, tile, true);
+				const glm::vec3 offset = glm::vec3(x, y, z) * dimensions;
+				// Offset in parent space to preserve rotation and nonuniform parent scale.
+				for (const auto &entry : tile.allKeyFrames()) {
+					for (scenegraph::SceneGraphKeyFrame &keyFrame : entry->value) {
+						scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+						const glm::vec3 delta = glm::mat3(transform.localMatrix()) * offset;
+						transform.setLocalTranslation(transform.localTranslation() + delta);
+					}
+				}
+				if (moveNodeToSceneGraph(tile, parentId) == InvalidNodeId) {
+					return false;
+				}
+			}
+		}
+	}
+	nodeActivate(activeId);
+	return true;
+}
+
+bool SceneManager::selectionRepeat(const glm::ivec3 &counts) {
+	if (isLocked() || counts.x < 1 || counts.y < 1 || counts.z < 1) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode());
+	if (node == nullptr || node->volume() == nullptr || node->locked()) {
+		return false;
+	}
+	const voxel::Region region = selectionCalculateRegion(*node);
+	if (!region.isValid()) {
+		return false;
+	}
+	voxel::RawVolume *volume = node->volume();
+	const voxel::Region &bounds = volume->region();
+	const glm::ivec3 dimensions = region.getDimensionsInVoxels();
+	// Snapshot the source so copies cannot become input for later tiles.
+	const voxel::RawVolume pattern(*volume, region);
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+	const glm::ivec3 available = bounds.getUpperCorner() - mins;
+	const glm::ivec3 tiles = glm::min(counts, available / dimensions + 1);
+	voxel::Region dirty = voxel::Region::InvalidRegion;
+	for (int z = 0; z < tiles.z; ++z) {
+		for (int y = 0; y < tiles.y; ++y) {
+			for (int x = 0; x < tiles.x; ++x) {
+				if (x == 0 && y == 0 && z == 0) {
+					continue;
+				}
+				const glm::ivec3 offset = glm::ivec3(x, y, z) * dimensions;
+				const glm::ivec3 end = glm::min(maxs, bounds.getUpperCorner() - offset);
+				for (int sz = mins.z; sz <= end.z; ++sz) {
+					for (int sy = mins.y; sy <= end.y; ++sy) {
+						for (int sx = mins.x; sx <= end.x; ++sx) {
+							voxel::Voxel v = pattern.voxel(sx, sy, sz);
+							if ((v.getFlags() & voxel::FlagOutline) == 0) {
+								continue;
+							}
+							v.setFlags(0);
+							const glm::ivec3 pos = glm::ivec3(sx, sy, sz) + offset;
+							if (volume->setVoxel(pos, v)) {
+								if (dirty.isValid()) {
+									dirty.accumulate(pos);
+								} else {
+									dirty = voxel::Region(pos, pos);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (dirty.isValid()) {
+		modified(node->id(), dirty);
 	}
 	return true;
 }

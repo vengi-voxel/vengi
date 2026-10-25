@@ -3121,6 +3121,125 @@ TEST_F(SceneManagerTest, testUndoAfterSelectAndEditDoesNotBlockEditing) {
 		<< "Editing should work after undoing an edit that was done within a selection";
 }
 
+TEST_F(SceneManagerTest, testRepeatNodeGridUndoRedo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(2, 4, 6, 3, 6, 9)));
+	const int sourceId = _sceneMgr->activeNode();
+	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(2, 4, 6), 7));
+	// A selection must not restrict full-node repetition.
+	testSelect(glm::ivec3(2, 4, 6), glm::ivec3(2, 4, 6));
+	ASSERT_EQ(1, command::executeCommands(core::String::format("noderepeat %i 2 2 2", sourceId)));
+	EXPECT_EQ(8u, _sceneMgr->sceneGraph().size());
+	EXPECT_EQ(sourceId, _sceneMgr->activeNode());
+	bool positions[2][2][2] = {};
+	for (const auto &entry : _sceneMgr->sceneGraph().nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		EXPECT_EQ(voxel::Region(2, 4, 6, 3, 6, 9), node.region());
+		EXPECT_EQ(7, node.volume()->voxel(2, 4, 6).getColor());
+		const glm::vec3 translation = node.transform().worldTranslation();
+		const glm::ivec3 tile = glm::ivec3(translation) / glm::ivec3(2, 3, 4);
+		ASSERT_GE(tile.x, 0);
+		ASSERT_LE(tile.x, 1);
+		ASSERT_GE(tile.y, 0);
+		ASSERT_LE(tile.y, 1);
+		ASSERT_GE(tile.z, 0);
+		ASSERT_LE(tile.z, 1);
+		EXPECT_FALSE(positions[tile.x][tile.y][tile.z]);
+		positions[tile.x][tile.y][tile.z] = true;
+	}
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(8u, _sceneMgr->sceneGraph().size());
+}
+
+TEST_F(SceneManagerTest, testRepeatNodeTransformedParent) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(2, 4, 6, 3, 6, 9)));
+	auto &graph = _sceneMgr->sceneGraph();
+	const int sourceId = _sceneMgr->activeNode();
+	scenegraph::SceneGraphNode parent(scenegraph::SceneGraphNodeType::Group);
+	parent.transform().setLocalMatrix(glm::translate(glm::vec3(10, 20, 30)) *
+		glm::rotate(0.7f, glm::vec3(0, 1, 0)) * glm::scale(glm::vec3(2, 3, 4)));
+	const int parentId = graph.emplace(core::move(parent));
+	ASSERT_TRUE(graph.changeParent(sourceId, parentId));
+	graph.updateTransforms();
+	const auto &source = graph.node(sourceId);
+	const glm::mat4 before = source.transform().worldMatrix();
+	const glm::vec3 delta = glm::mat3(before) * glm::vec3(2, 0, 0);
+	ASSERT_EQ(1, command::executeCommands(core::String::format("noderepeat %s 2 1 1", source.uuid().str().c_str())));
+	ASSERT_EQ(2u, graph.size());
+	for (const auto &entry : graph.nodes()) {
+		const auto &node = entry->second;
+		if (!node.isModelNode() || node.id() == sourceId) {
+			continue;
+		}
+		EXPECT_EQ(parentId, graph.parentId(node));
+		ASSERT_VEC_NEAR(glm::vec3(before[3]) + delta, node.transform().worldTranslation(), 0.001f);
+		ASSERT_VEC_NEAR(glm::vec3(before[0]), glm::vec3(node.transform().worldMatrix()[0]), 0.001f);
+		EXPECT_EQ(source.pivot(), node.pivot());
+		EXPECT_EQ(source.palette().hash(), node.palette().hash());
+	}
+}
+
+TEST_F(SceneManagerTest, testRepeatSelectionBoundsAndUndo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(-2, 0, 0, 5, 0, 0)));
+	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(-2, 0, 0), 7));
+	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(-1, 0, 0), 9));
+	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(0, 0, 0), 8));
+	testSelect(glm::ivec3(-2, 0, 0), glm::ivec3(-2, 0, 0));
+	// Select two disconnected voxels without selecting the voxel between them.
+	auto &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
+	voxel::Voxel v = node.volume()->voxel(0, 0, 0);
+	v.setFlags(voxel::FlagOutline);
+	node.volume()->setVoxel(0, 0, 0, v);
+	_sceneMgr->modified(node.uuid(), node.region(), SceneModifiedFlags::NoUndo);
+	ASSERT_EQ(1, command::executeCommands("selectionrepeat 100 1 1"));
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
+	EXPECT_EQ(voxel::Region(-2, 0, 0, 5, 0, 0), testVolume()->region());
+	EXPECT_EQ(9, testVolume()->voxel(-1, 0, 0).getColor());
+	EXPECT_EQ(7, testVolume()->voxel(1, 0, 0).getColor());
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(2, 0, 0).getMaterial()));
+	EXPECT_EQ(8, testVolume()->voxel(3, 0, 0).getColor());
+	EXPECT_EQ(7, testVolume()->voxel(4, 0, 0).getColor());
+	EXPECT_EQ(0, testVolume()->voxel(1, 0, 0).getFlags());
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(1, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(4, 0, 0).getMaterial()));
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(7, testVolume()->voxel(4, 0, 0).getColor());
+}
+
+TEST_F(SceneManagerTest, testRepeatInvalidAndNoOp) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region{0, 1}));
+	const int id = _sceneMgr->activeNode();
+	const int states = _sceneMgr->mementoHandler().stateSize();
+	command::executeCommands(core::String::format("noderepeat %i 0 1 1;noderepeat %i -1 1 1;noderepeat %i 2147483647 2 2;noderepeat -1 2 1 1;noderepeat %i 1 1 1;selectionrepeat 2 2 2", id, id, id, id));
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
+	EXPECT_EQ(states, _sceneMgr->mementoHandler().stateSize());
+}
+
+TEST_F(SceneManagerTest, testRepeatSelectionGrid) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region{0, 2}));
+	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(0), 7));
+	testSelect(glm::ivec3(0), glm::ivec3(0));
+	ASSERT_EQ(1, command::executeCommands("selectionrepeat 2 2 2"));
+	for (int z = 0; z <= 2; ++z) {
+		for (int y = 0; y <= 2; ++y) {
+			for (int x = 0; x <= 2; ++x) {
+				const voxel::Voxel &v = testVolume()->voxel(x, y, z);
+				if (x < 2 && y < 2 && z < 2) {
+					EXPECT_EQ(7, v.getColor());
+					EXPECT_TRUE(voxel::isBlocked(v.getMaterial()));
+				} else {
+					EXPECT_TRUE(voxel::isAir(v.getMaterial()));
+				}
+			}
+		}
+	}
+}
+
 TEST_F(SceneManagerTest, testAddModelAdjacentPositiveX) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 7, 5, 7)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
