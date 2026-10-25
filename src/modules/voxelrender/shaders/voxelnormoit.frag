@@ -1,10 +1,10 @@
 // shader for marching cubes weighted OIT
 
-$in vec3 v_pos;
-$in vec3 v_normal;
-$in vec4 v_color;
-$in vec4 v_glow;
-flat $in uint v_flags;
+in vec3 v_pos;
+in vec3 v_normal;
+in vec4 v_color;
+in vec4 v_glow;
+flat in uint v_flags;
 #include "_shared.glsl"
 #include "_sharedfrag.glsl"
 

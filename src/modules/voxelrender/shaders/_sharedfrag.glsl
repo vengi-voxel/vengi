@@ -19,14 +19,14 @@ layout(std140, binding = 1) uniform u_frag {
 	vec4 u_cameradir;
 };
 
-layout(location = 0) $out vec4 o_color;
-layout(location = 1) $out vec4 o_glow;
+layout(location = 0) out vec4 o_color;
+layout(location = 1) out vec4 o_glow;
 
-$in vec3 v_lightspacepos;
-flat $in vec3 v_nm0;
-flat $in vec3 v_nm1;
-flat $in vec3 v_nm2;
-$constant MaxDepthBuffers 4
+in vec3 v_lightspacepos;
+flat in vec3 v_nm0;
+flat in vec3 v_nm1;
+flat in vec3 v_nm2;
+#pragma constant MaxDepthBuffers 4
 
 layout(binding = 2) uniform sampler2DArrayShadow u_shadowmaptex;
 

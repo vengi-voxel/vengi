@@ -1,4 +1,4 @@
-$in vec2 v_texcoord;
+in vec2 v_texcoord;
 
 layout(binding = 0) uniform sampler2D u_texture;
 layout(binding = 1) uniform sampler2D u_bloomTexture;
@@ -15,7 +15,7 @@ layout(std140, binding = 0) uniform u_display {
 	int u_bloomprecomputed;
 };
 
-layout(location = 0) $out vec4 o_fragcolor;
+layout(location = 0) out vec4 o_fragcolor;
 
 #include "_tonemapping.glsl"
 

@@ -431,44 +431,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 
 	if (finalize) {
-		// TODO: RENDERER: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
-		// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
-		// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
-		core::String replaceIn = "in";
-		core::String replaceOut = "out";
-		core::String replaceWriteOnly = "writeonly";
-		core::String replaceReadOnly = "readonly";
-		core::String replaceRestrict = "restrict";
-		core::String replaceTexture1D = "texture1D";
-		core::String replaceTexture2D = "texture2D";
-		core::String replaceTexture3D = "texture3D";
-		core::String replaceShadow2D = "shadow2D";
-		if (!essl && glslVersion < 130) {
-			replaceIn = "attribute";
-			replaceOut = "varying";
-		} else {
-			replaceTexture1D = "texture";
-			replaceTexture2D = "texture";
-			replaceTexture3D = "texture";
-			replaceShadow2D = "texture";
-		}
-
-		if (glslVersion < 420) {
-			// ARB_shader_image_load_store
-			replaceWriteOnly = "";
-			replaceReadOnly = "";
-			replaceRestrict = "";
-		}
-		src = core::string::replaceAll(src, "$constant", "#define");
-		src = core::string::replaceAll(src, "$in", replaceIn);
-		src = core::string::replaceAll(src, "$writeonly", replaceWriteOnly);
-		src = core::string::replaceAll(src, "$readonly", replaceReadOnly);
-		src = core::string::replaceAll(src, "$restrict", replaceRestrict);
-		src = core::string::replaceAll(src, "$out", replaceOut);
-		src = core::string::replaceAll(src, "$texture1D", replaceTexture1D);
-		src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
-		src = core::string::replaceAll(src, "$texture3D", replaceTexture3D);
-		src = core::string::replaceAll(src, "$shadow2D", replaceShadow2D);
+		src = core::string::replaceAll(src, "#pragma constant", "#define");
 
 		if (essl) {
 			if (glslVersion < 310) {

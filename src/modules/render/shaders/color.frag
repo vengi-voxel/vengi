@@ -1,11 +1,11 @@
-$in vec4 v_color;
-$in vec3 v_normal;
-$in vec4 v_fragpos;
-$in vec4 v_lightpos;
-$in vec4 v_lightcolor;
+in vec4 v_color;
+in vec3 v_normal;
+in vec4 v_fragpos;
+in vec4 v_lightpos;
+in vec4 v_lightcolor;
 
-layout(location = 0) $out vec4 o_color;
-layout(location = 1) $out vec4 o_glow;
+layout(location = 0) out vec4 o_color;
+layout(location = 1) out vec4 o_glow;
 
 void main()
 {

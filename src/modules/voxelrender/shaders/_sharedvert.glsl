@@ -52,16 +52,16 @@ int getLockedFlag() { return u_locked; }
 float getOpacity() { return u_opacity; }
 #endif
 
-$out vec3 v_pos;
-$out vec3 v_normal;
-$out vec4 v_color;
-$out vec4 v_glow;
-flat $out uint v_flags;
+out vec3 v_pos;
+out vec3 v_normal;
+out vec4 v_color;
+out vec4 v_glow;
+flat out uint v_flags;
 
-$out vec3 v_lightspacepos;
-flat $out vec3 v_nm0;
-flat $out vec3 v_nm1;
-flat $out vec3 v_nm2;
+out vec3 v_lightspacepos;
+flat out vec3 v_nm0;
+flat out vec3 v_nm1;
+flat out vec3 v_nm2;
 
 const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 

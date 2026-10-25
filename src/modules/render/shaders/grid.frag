@@ -1,4 +1,4 @@
-$in vec3 v_pos;
+in vec3 v_pos;
 
 layout(std140, binding = 1) uniform u_frag {
 	vec4 u_mins;
@@ -7,8 +7,8 @@ layout(std140, binding = 1) uniform u_frag {
 	vec4 u_majorcolor;
 };
 
-layout(location = 0) $out vec4 o_color;
-layout(location = 1) $out vec4 o_glow;
+layout(location = 0) out vec4 o_color;
+layout(location = 1) out vec4 o_glow;
 
 // Screen-space pixel distance via |grad|, not L1 fwidth (too wide on diagonals).
 float derivLen(float coord) {

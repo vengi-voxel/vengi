@@ -1,9 +1,9 @@
-$in vec3 v_pos;
-$in vec3 v_normal;
-$in vec4 v_color;
-$in vec4 v_glow;
-$in float v_ambientocclusion;
-flat $in uint v_flags;
+in vec3 v_pos;
+in vec3 v_normal;
+in vec4 v_color;
+in vec4 v_glow;
+in float v_ambientocclusion;
+flat in uint v_flags;
 #include "_shared.glsl"
 #include "_sharedfrag.glsl"
 #include "_tonemapping.glsl"

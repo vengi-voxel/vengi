@@ -825,7 +825,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	constants.reserve(4096);
 	for (const auto& e : shaderStruct.constants) {
 		constants += "\t/**\n";
-		constants += "\t * @brief Exported from shader code by @code $constant ";
+		constants += "\t * @brief Exported from shader code by @code #pragma constant ";
 		constants += e->key;
 		constants += " ";
 		constants += e->value;

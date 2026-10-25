@@ -1,4 +1,4 @@
-$in vec2 v_texcoord;
+in vec2 v_texcoord;
 
 layout(binding = 0) uniform usampler3D u_bricks;
 layout(binding = 1) uniform usampler3D u_indirection;
@@ -46,7 +46,7 @@ layout(std140, binding = 0) uniform u_params {
 	int u_brickspercol;
 };
 
-layout(location = 0) $out vec4 o_fragcolor;
+layout(location = 0) out vec4 o_fragcolor;
 
 #include "_brdf.glsl"
 #include "_tonemapping.glsl"

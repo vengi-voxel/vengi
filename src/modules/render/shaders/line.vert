@@ -1,6 +1,6 @@
-layout(location = 0) $in vec4 a_start;
-layout(location = 1) $in vec4 a_end;
-layout(location = 2) $in vec4 a_color;
+layout(location = 0) in vec4 a_start;
+layout(location = 1) in vec4 a_end;
+layout(location = 2) in vec4 a_color;
 
 layout(std140, binding = 0) uniform u_vert {
 	mat4 u_viewprojection;
@@ -9,9 +9,9 @@ layout(std140, binding = 0) uniform u_vert {
 	vec4 u_viewport;
 };
 
-$out vec4 v_color;
-noperspective $out float v_edge;
-noperspective $out float v_half;
+out vec4 v_color;
+noperspective out float v_edge;
+noperspective out float v_half;
 
 void main() {
 	vec4 clip0 = u_viewprojection * (u_model * vec4(a_start.xyz, 1.0));

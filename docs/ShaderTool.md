@@ -35,9 +35,11 @@ There are several variables in the template file that are replaced by the genera
 
 The parser includes a preprocessor.
 
-You can export constants from the GLSL shader code to the generated C++ code by using `$constant`.
+You can export constants from the GLSL shader code to the generated C++ code by using `#pragma constant`. At compile time this is rewritten to `#define`.
 
-Use `$constant varname 42` to generate a method that returns 42 with a name `getVarname`
+Use `#pragma constant varname 42` to generate a method that returns 42 with a name `getVarname`.
+
+Shaders use standard GLSL `in` / `out` / `texture` / `writeonly`. Desktop targets GL 4.3 (GLSL 430 core); ESSL is 300 or newer.
 
 ## Uniform Buffer Objects (UBO)
 

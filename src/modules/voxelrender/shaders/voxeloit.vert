@@ -1,8 +1,8 @@
 // attributes from the VAOs (see VoxelVertex.h)
-layout (location = 0) $in vec3 a_pos;
-layout (location = 1) $in uvec2 a_info;
-layout (location = 2) $in uvec2 a_info2;
-$out float v_ambientocclusion;
+layout (location = 0) in vec3 a_pos;
+layout (location = 1) in uvec2 a_info;
+layout (location = 2) in uvec2 a_info2;
+out float v_ambientocclusion;
 
 #include "_sharedvert.glsl"
 #include "_shared.glsl"

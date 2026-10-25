@@ -7,6 +7,7 @@
 #include "core/ArrayLength.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "core/collection/DynamicStringMap.h"
 #include "Util.h"
 
 namespace shadertool {
@@ -207,6 +208,26 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 	return true;
 }
 
+static void registerConstant(ShaderStruct &shaderStruct, TokenIterator &tok, const core::String &varname,
+							 core::String varvalue, const core::DynamicStringMap<core::String> &defines) {
+	for (int depth = 0; depth < 8; ++depth) {
+		auto it = defines.find(varvalue);
+		if (it == defines.end() || it->value == varvalue) {
+			break;
+		}
+		varvalue = it->value;
+	}
+	auto it = shaderStruct.constants.find(varname);
+	if (it != shaderStruct.constants.end()) {
+		if (it->value != varvalue) {
+			Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate has value %s)",
+					  tok.file(), tok.line(), tok.col(), varname.c_str(), varvalue.c_str(), it->value.c_str());
+		}
+	} else {
+		shaderStruct.constants.put(varname, varvalue);
+	}
+}
+
 bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
 	shaderStruct.filename = shaderFile;
 	shaderStruct.name = shaderFile;
@@ -224,6 +245,8 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 	rawtok.init(&rawtokens);
 
 	bool preprocessorError = false;
+	core::DynamicStringMap<core::String> defines;
+	core::DynamicStringMap<core::String> pragmaConstants;
 
 	while (rawtok.hasNext()) {
 		core::String token = rawtok.next();
@@ -252,10 +275,34 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 						rawtok.file(), rawtok.line(), rawtok.col(), preprocessor.c_str());
 				Log::warn("If this is a shader cvar define, just remove the _");
 			}
+			if (token == "define" && rawtok.hasNext() && rawtok.peekNext() != "#") {
+				defines.put(preprocessor, rawtok.next());
+			}
+		} else if (token == "pragma") {
+			if (rawtok.hasNext() && rawtok.peekNext() == "constant") {
+				rawtok.next();
+				if (!rawtok.hasNext()) {
+					Log::error("Error in %s:%i:%i. Missing name for #pragma constant", rawtok.file(), rawtok.line(),
+							   rawtok.col());
+					preprocessorError = true;
+					break;
+				}
+				const core::String varname = rawtok.next();
+				if (!rawtok.hasNext()) {
+					Log::error("Error in %s:%i:%i. Missing value for #pragma constant %s", rawtok.file(), rawtok.line(),
+							   rawtok.col(), varname.c_str());
+					preprocessorError = true;
+					break;
+				}
+				pragmaConstants.put(varname, rawtok.next());
+			}
 		}
 	}
 	if (preprocessorError) {
 		return false;
+	}
+	for (const auto &e : pragmaConstants) {
+		registerConstant(shaderStruct, rawtok, e->key, e->value, defines);
 	}
 
 	simplecpp::Location loc(files);
@@ -276,36 +323,23 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 		const core::String token = tok.next();
 		Log::trace("token: %s", token.c_str());
 		core::List<Variable>* v = nullptr;
-		if (token == "$in") {
-			if (vertex) {
+		if (token == "in") {
+			// layout(points) in; is a geometry-shader primitive qualifier, not a variable.
+			if (hasLayout && tok.peekNext() == ";") {
+				shaderStruct.in.layout = layout;
+			} else if (vertex) {
 				v = &shaderStruct.attributes;
 			} else {
-				// TODO: use this to validate that each $out of the vertex shader has a $in in the fragment shader
+				// TODO: use this to validate that each out of the vertex shader has an in in the fragment shader
 				//v = &_shaderStruct.varyings;
 			}
-		} else if (token == "$out") {
-			if (vertex) {
+		} else if (token == "out") {
+			if (hasLayout && tok.peekNext() == ";") {
+				shaderStruct.out.layout = layout;
+			} else if (vertex) {
 				v = &shaderStruct.varyings;
 			} else {
 				v = &shaderStruct.outs;
-			}
-		} else if (token == "$constant") {
-			if (!tok.hasNext()) {
-				return false;
-			}
-			const core::String varname = tok.next();
-			if (!tok.hasNext()) {
-				return false;
-			}
-			const core::String varvalue = tok.next();
-			auto it = shaderStruct.constants.find(varname);
-			if (it != shaderStruct.constants.end()) {
-				if (it->value != varvalue) {
-					Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate has value %s)", tok.file(), tok.line(), tok.col(),
-							varname.c_str(), varvalue.c_str(), it->value.c_str());
-				}
-			} else {
-				shaderStruct.constants.put(varname, varvalue);
 			}
 		} else if (token == "layout") {
 			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
@@ -321,10 +355,6 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			shaderStorageBufferFound = true;
 		} else if (token == "uniform") {
 			v = &shaderStruct.uniforms;
-		} else if (hasLayout && token == "in") {
-			shaderStruct.in.layout = layout;
-		} else if (hasLayout && token == "out") {
-			shaderStruct.out.layout = layout;
 		} else if (uniformBufferActive) {
 			if (token == "}") {
 				uniformBufferActive = false;
@@ -413,7 +443,6 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			}
 			continue;
 		}
-		const Variable::Type typeEnum = util::getType(type, tok.line());
 		const bool isArray = tok.peekNext() == "[";
 		int arraySize = 0;
 		if (isArray) {
@@ -433,16 +462,25 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				Log::error("Missing ] for array %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
-			if (tok.next() != ";") {
+			const core::String arraySep = tok.next();
+			if (arraySep == "," || arraySep == ")") {
+				continue;
+			}
+			if (arraySep != ";") {
 				Log::error("Missing ; for array %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		} else {
-			if (tok.next() != ";") {
+			const core::String sep = tok.next();
+			if (sep == "," || sep == ")") {
+				continue;
+			}
+			if (sep != ";") {
 				Log::error("Missing ; for variable %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		}
+		const Variable::Type typeEnum = util::getType(type, tok.line());
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBufferActive) {
 			uniformBuffer.members.insert(Variable{typeEnum, name, arraySize});

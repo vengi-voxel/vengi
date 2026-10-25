@@ -83,7 +83,7 @@ TEST_F(ShaderTest, testGetSourceEsslStripsNoperspective) {
 	Shader::essl = true;
 	Shader::glslVersion = 300;
 	Shader s;
-	const core::String out = s.getSource(ShaderType::Vertex, "noperspective $out float v_edge;\nflat $out float v_keep;\n", true);
+	const core::String out = s.getSource(ShaderType::Vertex, "noperspective out float v_edge;\nflat out float v_keep;\n", true);
 	Shader::essl = savedEssl;
 	Shader::glslVersion = savedVersion;
 	EXPECT_TRUE(core::string::contains(out, "#version 300 es")) << out.c_str();
@@ -98,11 +98,24 @@ TEST_F(ShaderTest, testGetSourceDesktopKeepsNoperspective) {
 	Shader::essl = false;
 	Shader::glslVersion = 430;
 	Shader s;
-	const core::String out = s.getSource(ShaderType::Vertex, "noperspective $out float v_edge;\n", true);
+	const core::String out = s.getSource(ShaderType::Vertex, "noperspective out float v_edge;\n", true);
 	Shader::essl = savedEssl;
 	Shader::glslVersion = savedVersion;
 	EXPECT_TRUE(core::string::contains(out, "noperspective")) << out.c_str();
 	EXPECT_FALSE(core::string::contains(out, " es\n")) << out.c_str();
+}
+
+TEST_F(ShaderTest, testGetSourcePragmaConstantBecomesDefine) {
+	const bool savedEssl = Shader::essl;
+	const int savedVersion = Shader::glslVersion;
+	Shader::essl = false;
+	Shader::glslVersion = 430;
+	Shader s;
+	const core::String out = s.getSource(ShaderType::Vertex, "#pragma constant FilterSize 3\n", true);
+	Shader::essl = savedEssl;
+	Shader::glslVersion = savedVersion;
+	EXPECT_TRUE(core::string::contains(out, "#define FilterSize 3")) << out.c_str();
+	EXPECT_FALSE(core::string::contains(out, "#pragma constant")) << out.c_str();
 }
 
 TEST_F(ShaderTest, testGetSourceEsslIntegerSamplerPrecision) {

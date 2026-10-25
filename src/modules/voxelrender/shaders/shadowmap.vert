@@ -2,7 +2,7 @@
  * @brief Shader to fill the bound shadowmap with the depth values
  */
 
-layout(location = 0) $in vec3 a_pos;
+layout(location = 0) in vec3 a_pos;
 
 layout(std140, binding = 0) uniform u_block {
 	mat4 u_lightviewprojection;

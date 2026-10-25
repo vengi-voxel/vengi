@@ -1,8 +1,8 @@
 layout(points) in;
 layout(line_strip, max_vertices = 64) out;
 
-$in vec3 g_color[];
-$out vec3 v_color;
+in vec3 g_color[];
+out vec3 v_color;
 
 layout(std140, binding = 1) uniform u_geom {
 	int u_sides;

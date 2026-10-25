@@ -153,13 +153,56 @@ TEST_F(ShaderToolTest, testStd430Alignment) {
 	EXPECT_EQ(16u, util::std430Size(vec4ArrayVar)); // 4 * 4 = 16
 }
 
+TEST_F(ShaderToolTest, testParseIgnoresFunctionOutParameters) {
+	ShaderStruct shaderStruct;
+	const core::String buffer =
+		"layout(location = 0) out vec4 o_color;\n"
+		"void loadSurface(uint index, out vec3 albedo, out GpuMaterial mat) {\n"
+		"	albedo = vec3(1.0);\n"
+		"}\n";
+	ASSERT_TRUE(shadertool::parse("**unittest**", shaderStruct, "funcout.frag", buffer, false));
+	ASSERT_EQ(1u, shaderStruct.outs.size());
+	EXPECT_EQ("o_color", shaderStruct.outs.begin()->value.name);
+}
+
+TEST_F(ShaderToolTest, testParseGeometryLayoutInIsNotAttribute) {
+	ShaderStruct shaderStruct;
+	const core::String buffer =
+		"layout(points) in;\n"
+		"layout(line_strip, max_vertices = 64) out;\n"
+		"in vec3 g_color[];\n"
+		"out vec3 v_color;\n";
+	ASSERT_TRUE(shadertool::parse("**unittest**", shaderStruct, "geom.geom", buffer, false));
+	ASSERT_EQ(0u, shaderStruct.attributes.size());
+	ASSERT_EQ(1u, shaderStruct.outs.size());
+	EXPECT_EQ("v_color", shaderStruct.outs.begin()->value.name);
+}
+
+TEST_F(ShaderToolTest, testParsePragmaDirectives) {
+	ShaderStruct shaderStruct;
+	const core::String buffer =
+		"in vec2 a_pos;\n"
+		"in vec2 a_texcoord;\n"
+		"#define FLAGBLOOM 2u\n"
+		"#pragma constant FlagBloom FLAGBLOOM\n"
+		"uniform mat4 u_viewprojection;\n"
+		"layout(location = 0) out vec2 v_texcoord;\n";
+	ASSERT_TRUE(shadertool::parse("**unittest**", shaderStruct, "pragma.vert", buffer, true));
+	ASSERT_EQ(2u, shaderStruct.attributes.size());
+	ASSERT_EQ(1u, shaderStruct.constants.size());
+	ASSERT_EQ("FlagBloom", shaderStruct.constants.begin()->first);
+	ASSERT_EQ("2u", shaderStruct.constants.begin()->value);
+	ASSERT_EQ(1u, shaderStruct.varyings.size());
+	ASSERT_EQ(1u, shaderStruct.uniforms.size());
+}
+
 TEST_F(ShaderToolTest, testEsslFinalizeStripsNoperspective) {
 	const bool savedEssl = video::Shader::essl;
 	const int savedVersion = video::Shader::glslVersion;
 	video::Shader::essl = true;
 	video::Shader::glslVersion = 300;
 	video::Shader shader;
-	const core::String out = shader.getSource(video::ShaderType::Vertex, "noperspective $out float v_edge;\n", true);
+	const core::String out = shader.getSource(video::ShaderType::Vertex, "noperspective out float v_edge;\n", true);
 	video::Shader::essl = savedEssl;
 	video::Shader::glslVersion = savedVersion;
 	EXPECT_TRUE(core::string::contains(out, "#version 300 es")) << out.c_str();

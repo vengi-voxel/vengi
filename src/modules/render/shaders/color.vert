@@ -7,15 +7,15 @@ layout(std140, binding = 0) uniform u_uniformblock {
 	vec4 u_lightcolor;
 };
 
-layout(location = 1) $in vec4 a_pos;
-layout(location = 2) $in vec4 a_color;
-layout(location = 3) $in vec3 a_normal;
+layout(location = 1) in vec4 a_pos;
+layout(location = 2) in vec4 a_color;
+layout(location = 3) in vec3 a_normal;
 
-$out vec4 v_color;
-$out vec3 v_normal;
-$out vec4 v_fragpos;
-$out vec4 v_lightpos;
-$out vec4 v_lightcolor;
+out vec4 v_color;
+out vec3 v_normal;
+out vec4 v_fragpos;
+out vec4 v_lightpos;
+out vec4 v_lightcolor;
 
 void main()
 {

@@ -1,9 +1,9 @@
-$in vec4 v_color;
-noperspective $in float v_edge;
-noperspective $in float v_half;
+in vec4 v_color;
+noperspective in float v_edge;
+noperspective in float v_half;
 
-layout(location = 0) $out vec4 o_color;
-layout(location = 1) $out vec4 o_glow;
+layout(location = 0) out vec4 o_color;
+layout(location = 1) out vec4 o_glow;
 
 void main() {
 	float dist = abs(v_edge);
