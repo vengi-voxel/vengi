@@ -279,7 +279,6 @@ uint32_t NormalPalette::hash() const {
 	return _hash;
 }
 
-
 void NormalPalette::markDirty() {
 	core::DirtyState::markDirty();
 	_hashDirty = true;

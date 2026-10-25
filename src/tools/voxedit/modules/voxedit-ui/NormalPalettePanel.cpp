@@ -302,7 +302,7 @@ void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &n
 	drawList->AddLine(center, pinPos, IM_COL32(255, 0, 0, 255));
 	drawList->AddCircleFilled(pinPos, 4.0f * dpiScale, IM_COL32(255, 0, 0, 255));
 
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+	if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 		const ImVec2 mousePos = ImGui::GetMousePos();
 		bool clicked = false;
 		bool front = true;
