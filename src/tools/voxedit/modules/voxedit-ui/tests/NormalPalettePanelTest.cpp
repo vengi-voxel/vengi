@@ -28,10 +28,10 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 			IM_CHECK_EQ(core::getVar(cfg::VoxEditPaletteColorSize)->floatVal(), value);
 			ctx->KeyPress(ImGuiKey_Escape);
 			ctx->SetRef(id);
-			ctx->ScrollToTop(id);
-			ctx->Yield(2);
 			ImGuiWindow *window = ImGui::FindWindowByName(id);
 			IM_CHECK(window != nullptr);
+			ctx->ScrollToTop(window->ID);
+			ctx->Yield(2);
 			const float cellSize = ImGui::GetFrameHeight() * value;
 			const int columns = core_max(1, (int)(window->ContentRegionRect.GetWidth() / cellSize));
 			for (int index : {0, columns - 1, columns}) {
@@ -114,7 +114,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->ItemClick("normal-0");
 		ctx->MouseMove("Longitude");
 		const ImVec2 grab = ctx->ItemInfo("Longitude").RectFull.GetCenter();
-		const int states = _sceneMgr->mementoHandler().stateSize();
+		const size_t states = _sceneMgr->mementoHandler().stateSize();
 		ctx->MouseDown();
 		ctx->MouseMoveToPos(ImVec2(grab.x + 25.0f, grab.y));
 		ctx->Yield(2);

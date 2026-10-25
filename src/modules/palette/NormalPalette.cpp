@@ -354,6 +354,10 @@ bool NormalPalette::load(const char *paletteName) {
 		return load(img);
 	}
 	_size = core_min(paletteToLoad.colorCount(), NormalPaletteMaxNormals);
+	// Color palette images may pad the exported normal entries to 256 pixels.
+	while (_size > 0 && paletteToLoad.color(_size - 1).a == 0) {
+		--_size;
+	}
 	for (int i = 0; i < _size; ++i) {
 		_normals[i] = paletteToLoad.color(i);
 	}
