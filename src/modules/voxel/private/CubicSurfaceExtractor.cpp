@@ -361,13 +361,15 @@ static void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadLi
 	}
 }
 
-static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
+static IndexType addVertex(bool reuseVertices, bool computeAmbientOcclusion, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
 	core_trace_scoped(AddVertex);
-	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
+	// When AO is disabled, use a constant so adjacent same-material faces share indices
+	// and mergeQuads can collapse long coplanar runs (see issue #72).
+	const uint8_t ambientOcclusion = computeAmbientOcclusion ? vertexAmbientOcclusion(
 		!isAir(face1) && !isTransparent(face1),
 		!isAir(face2) && !isTransparent(face2),
-		!isAir(corner) && !isTransparent(corner));
+		!isAir(corner) && !isTransparent(corner)) : (uint8_t)3;
 
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(x, y, ct);
@@ -524,23 +526,23 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 
 				// X [A] LEFT
 				if (isQuadNeeded(voxelCurrentMaterial, voxelLeftMaterial, FaceNames::NegativeX)) {
-					const IndexType v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
-					const IndexType v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_1_4 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
 							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, translate);
-					const IndexType v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_2_8 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
 							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, translate);
-					const IndexType v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_3_5 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate);
 					vecQuads[core::enumVal(FaceNames::NegativeX)][regX].emplace_back(v_0_1, v_1_4, v_2_8, v_3_5);
 				} else if (isTransparentQuadNeeded(voxelCurrentMaterial, voxelLeftMaterial, FaceNames::NegativeX)) {
-					const IndexType v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
-					const IndexType v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_1_4 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
 							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, translate);
-					const IndexType v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_2_8 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
 							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, translate);
-					const IndexType v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_3_5 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate);
 					vecQuadsT[core::enumVal(FaceNames::NegativeX)][regX].emplace_back(v_0_1, v_1_4, v_2_8, v_3_5);
 				}
@@ -555,13 +557,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
 
-					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_2 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ,     voxelLeft, previousSliceVertices, &result->mesh[0],
 							voxelBelowMaterial, voxelBeforeMaterial, _voxelBelowRightBefore, translate);
-					const IndexType v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_1_3 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  &result->mesh[0],
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate);
-					const IndexType v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  &result->mesh[0],
 							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, translate);
-					const IndexType v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, &result->mesh[0],
+					const IndexType v_3_6 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, &result->mesh[0],
 							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
 					vecQuads[core::enumVal(FaceNames::PositiveX)][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 				} else if (isTransparentQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, FaceNames::PositiveX)) {
@@ -573,13 +575,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
 
-					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_2 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ,     voxelLeft, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowMaterial, voxelBeforeMaterial, _voxelBelowRightBefore, translate);
-					const IndexType v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_1_3 = addVertex(reuseVertices, ambientOcclusion, regX, regY,     regZ + 1, voxelLeft, currentSliceVerticesT,  &result->mesh[1],
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate);
-					const IndexType v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVerticesT,  &result->mesh[1],
 							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, translate);
-					const IndexType v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_3_6 = addVertex(reuseVertices, ambientOcclusion, regX, regY + 1, regZ,     voxelLeft, previousSliceVerticesT, &result->mesh[1],
 							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
 					vecQuadsT[core::enumVal(FaceNames::PositiveX)][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 				}
@@ -596,13 +598,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType voxelBelowBehindMaterial      = voxelBelowBehind.getMaterial();
 					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
 
-					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
-					const IndexType v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_1_2 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, translate);
-					const IndexType v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_2_3 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
 							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, translate);
-					const IndexType v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_3_4 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ + 1, voxelCurrent, currentSliceVertices,  &result->mesh[0],
 							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, translate);
 					vecQuads[core::enumVal(FaceNames::NegativeY)][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
 				} else if (isTransparentQuadNeeded(voxelCurrentMaterial, voxelBelowMaterial, FaceNames::NegativeY)) {
@@ -616,13 +618,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType voxelBelowBehindMaterial      = voxelBelowBehind.getMaterial();
 					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
 
-					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, translate);
-					const IndexType v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_1_2 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ,     voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, translate);
-					const IndexType v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_2_3 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
 							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, translate);
-					const IndexType v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_3_4 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ + 1, voxelCurrent, currentSliceVerticesT,  &result->mesh[1],
 							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, translate);
 					vecQuadsT[core::enumVal(FaceNames::NegativeY)][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
 				}
@@ -637,13 +639,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBefore = voxelRightBefore.getMaterial();
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
 
-					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_5 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ,     voxelBelow, previousSliceVertices, &result->mesh[0],
 							voxelBeforeMaterial, voxelLeftMaterial, voxelLeftBeforeMaterial, translate);
-					const IndexType v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVertices, &result->mesh[0],
+					const IndexType v_1_6 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ,     voxelBelow, previousSliceVertices, &result->mesh[0],
 							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
-					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVertices,  &result->mesh[0],
 							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, translate);
-					const IndexType v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVertices,  &result->mesh[0],
+					const IndexType v_3_8 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ + 1, voxelBelow, currentSliceVertices,  &result->mesh[0],
 							voxelLeftMaterial, _voxelAboveBehind, _voxelAboveLeftBehind, translate);
 					vecQuads[core::enumVal(FaceNames::PositiveY)][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 				} else if (isTransparentQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, FaceNames::PositiveY)) {
@@ -654,13 +656,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBefore = voxelRightBefore.getMaterial();
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
 
-					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_5 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ,     voxelBelow, previousSliceVerticesT, &result->mesh[1],
 							voxelBeforeMaterial, voxelLeftMaterial, voxelLeftBeforeMaterial, translate);
-					const IndexType v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_1_6 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ,     voxelBelow, previousSliceVerticesT, &result->mesh[1],
 							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
-					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVerticesT,  &result->mesh[1],
 							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, translate);
-					const IndexType v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVerticesT,  &result->mesh[1],
+					const IndexType v_3_8 = addVertex(reuseVertices, ambientOcclusion, regX,     regY, regZ + 1, voxelBelow, currentSliceVerticesT,  &result->mesh[1],
 							voxelLeftMaterial, _voxelAboveBehind, _voxelAboveLeftBehind, translate);
 					vecQuadsT[core::enumVal(FaceNames::PositiveY)][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 				}
@@ -673,13 +675,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType voxelAboveRightBeforeMaterial = voxelAboveRightBefore.getMaterial();
 					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
 
-					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX,     regY,     regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, translate); //1
-					const IndexType v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_1_5 = addVertex(reuseVertices, ambientOcclusion, regX,     regY + 1, regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate); //5
-					const IndexType v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_2_6 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, translate); //6
-					const IndexType v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
+					const IndexType v_3_2 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY,     regZ, voxelCurrent, previousSliceVertices, &result->mesh[0],
 							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, translate); //2
 					vecQuads[core::enumVal(FaceNames::NegativeZ)][regZ].emplace_back(v_0_1, v_1_5, v_2_6, v_3_2);
 				} else if (isTransparentQuadNeeded(voxelCurrentMaterial, voxelBeforeMaterial, FaceNames::NegativeZ)) {
@@ -689,13 +691,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType voxelAboveRightBeforeMaterial = voxelAboveRightBefore.getMaterial();
 					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
 
-					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_1 = addVertex(reuseVertices, ambientOcclusion, regX,     regY,     regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, translate); //1
-					const IndexType v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_1_5 = addVertex(reuseVertices, ambientOcclusion, regX,     regY + 1, regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, translate); //5
-					const IndexType v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_2_6 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, translate); //6
-					const IndexType v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_3_2 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY,     regZ, voxelCurrent, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, translate); //2
 					vecQuadsT[core::enumVal(FaceNames::NegativeZ)][regZ].emplace_back(v_0_1, v_1_5, v_2_6, v_3_2);
 				}
@@ -707,13 +709,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px1py0pz().getMaterial();
 					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny0pz().getMaterial();
 
-					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
+					const IndexType v_0_4 = addVertex(reuseVertices, ambientOcclusion, regX,     regY,     regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
 							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, translate); //4
-					const IndexType v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
+					const IndexType v_1_8 = addVertex(reuseVertices, ambientOcclusion, regX,     regY + 1, regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
 							_voxelAboveBehind, voxelLeftMaterial, voxelAboveLeftMaterial, translate); //8
-					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
 							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, translate); //7
-					const IndexType v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
+					const IndexType v_3_3 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY,     regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuads[core::enumVal(FaceNames::PositiveZ)][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				} else if (isTransparentQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, FaceNames::PositiveZ)) {
@@ -722,13 +724,13 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px1py0pz().getMaterial();
 					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny0pz().getMaterial();
 
-					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_0_4 = addVertex(reuseVertices, ambientOcclusion, regX,     regY,     regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, translate); //4
-					const IndexType v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_1_8 = addVertex(reuseVertices, ambientOcclusion, regX,     regY + 1, regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
 							_voxelAboveBehind, voxelLeftMaterial, voxelAboveLeftMaterial, translate); //8
-					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_2_7 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
 							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, translate); //7
-					const IndexType v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
+					const IndexType v_3_3 = addVertex(reuseVertices, ambientOcclusion, regX + 1, regY,     regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuadsT[core::enumVal(FaceNames::PositiveZ)][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				}
