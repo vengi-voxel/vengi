@@ -3,13 +3,17 @@
  */
 
 #include "KV6Format.h"
+#include "KFAFormat.h"
 #include "SLABShared.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "color/RGBA.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
@@ -18,12 +22,9 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
-#include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include <glm/gtc/quaternion.hpp>
-#include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <float.h>
@@ -52,45 +53,6 @@ struct State {
 	int32_t xoffsets[256]{};
 	uint16_t xyoffsets[256][256]{};
 };
-
-struct KFAPoint3d {
-	float x;
-	float y;
-	float z;
-};
-
-// Each hinge is a 1-D axis of rotation
-struct KFAHinge {
-	int32_t id;		// index to this sprite
-	int32_t parent; // index to parent sprite (-1=none)
-	// if parent is -1 the p[0] values are the mins of the object - the pivot
-	KFAPoint3d p[2]; // "velcro" point of each object [0 = child (self), 1 = parent]
-	// given vector v[0], returns a and b that makes (v[0], a, b) orthonormal
-	// r1.x = a.x * cos(frmval) + b.x * sin(frmval);
-	// r1.y = a.y * cos(frmval) + b.y * sin(frmval);
-	// r1.z = a.z * cos(frmval) + b.z * sin(frmval);
-	// r2.x = a.x * sin(frmval) - b.x * cos(frmval);
-	// r2.y = a.y * sin(frmval) - b.y * cos(frmval);
-	// r2.z = a.z * sin(frmval) - b.z * cos(frmval);
-	KFAPoint3d v[2]; // axis vector of rotation for each object [0 = child (self), 1 = parent]
-	int16_t vmin;	 // min value
-	int16_t vmax;	 // max value
-	int8_t type;	 // 0 == rotate
-	int8_t filler[7]{};
-};
-
-struct KFASeqTyp {
-	int32_t time;
-	int32_t frame;
-};
-
-struct KFAData {
-	core::Buffer<KFAHinge> hinge; //[numhinge]
-	// These are the hinge euler angles.
-	core::DynamicArray<core::Buffer<float>> frmval; //[numfrm][numhin]
-	core::Buffer<KFASeqTyp> seq;				//[seqnum]
-};
-
 
 // lighting value that distributes above a radius of 3 around the position
 static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, const voxel::Voxel &) {
@@ -154,8 +116,6 @@ static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, cons
 	}
 	return j;
 }
-
-const uint32_t MAXSPRITES = 1024;
 
 } // namespace priv
 
@@ -243,261 +203,10 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 		return false;                                                                                                  \
 	}
 
-bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &archive, const voxel::RawVolume *volume,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return false;
-	}
-	uint32_t magic;
-	wrap(stream->readUInt32(magic))
-	if (magic != FourCC('K', 'w', 'l', 'k')) {
-		Log::error("Invalid kwalk magic number");
-		return false;
-	}
-	core::String kv6Name;
-	wrapBool(stream->readPascalStringUInt32LE(kv6Name))
-	Log::debug("kv6Name: %s", kv6Name.c_str());
-
-	priv::KFAData kfa;
-	uint32_t numHinge;
-	wrap(stream->readUInt32(numHinge))
-	if (numHinge >= priv::MAXSPRITES) {
-		Log::error("Max allowed hinges exceeded: %u (max is %u)", numHinge, priv::MAXSPRITES);
-		return false;
-	}
-	Log::debug("numhinge: %u", numHinge);
-	kfa.hinge.reserve(numHinge);
-	for (uint32_t i = 0; i < numHinge; ++i) {
-		priv::KFAHinge hinge;
-		hinge.id = i;
-		wrap(stream->readInt32(hinge.parent))
-		for (int n = 0; n < 2; ++n) {
-			wrap(stream->readFloat(hinge.p[n].x))
-			wrap(stream->readFloat(hinge.p[n].z))
-			wrap(stream->readFloat(hinge.p[n].y))
-		}
-		for (int n = 0; n < 2; ++n) {
-			wrap(stream->readFloat(hinge.v[n].x))
-			wrap(stream->readFloat(hinge.v[n].z))
-			wrap(stream->readFloat(hinge.v[n].y))
-		}
-		wrap(stream->readInt16(hinge.vmin))
-		wrap(stream->readInt16(hinge.vmax))
-		wrap(stream->readInt8(hinge.type))
-		wrap2(stream->skip(7))
-		kfa.hinge.push_back(hinge);
-	}
-	uint32_t numFrames;
-	wrap(stream->readUInt32(numFrames))
-	Log::debug("numfrm: %u", numFrames);
-	if (numFrames > 65536) {
-		Log::error("Max allowed frames exceeded: %u (max is %u)", numFrames, 65536);
-		return false;
-	}
-	kfa.frmval.resize(numFrames);
-	for (uint32_t i = 0; i < numFrames; ++i) {
-		kfa.frmval[i].reserve(numHinge);
-		for (uint32_t j = 0; j < numHinge; ++j) {
-			// 0 is 0 degrees, 16384 is 90 degrees, -16384 is -90 degrees
-			int16_t angle;
-			wrap(stream->readInt16(angle))
-			kfa.frmval[i].push_back((float)angle / 65536.0f);
-		}
-	}
-	uint32_t numSequences;
-	wrap(stream->readUInt32(numSequences))
-	Log::debug("numseq: %u", numSequences);
-	kfa.seq.reserve(numSequences);
-	for (uint32_t i = 0; i < numSequences; ++i) {
-		priv::KFASeqTyp seq;
-		wrap(stream->readInt32(seq.time))
-		wrap(stream->readInt32(seq.frame))
-		kfa.seq.push_back(seq);
-	}
-
-	// TODO: VOXELFORMAT: the order here matters for the references in the kfa structs
-	core::Buffer<voxel::RawVolume *> volumes =
-		voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ, voxel::Connectivity::EighteenConnected);
-	if (volumes.empty()) {
-		Log::error("Could not split volume into single objects");
-		return false;
-	}
-
-	Log::debug("Split into %i objects", (int)volumes.size());
-
-	// In slab6, numspr can be <= numhin, but we can now create transform-only nodes for extra hinges
-	if (kfa.hinge.size() > volumes.size()) {
-		Log::debug("More hinges (%d) than volumes (%d) - creating transform-only nodes for extra hinges",
-				  (int)kfa.hinge.size(), (int)volumes.size());
-	}
-
-	// Create sorting array to ensure proper parent-child ordering
-	// Simple topological sort: process nodes with no unprocessed dependencies first
-	core::Buffer<int32_t> hingeSort;
-	hingeSort.reserve(kfa.hinge.size());
-	core::Buffer<bool> processed(kfa.hinge.size(), 0);
-
-	// First, add all root hinges (parent=-1)
-	for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
-		if (kfa.hinge[i].parent < 0) {
-			hingeSort.push_back(i);
-			processed[i] = true;
-		}
-	}
-
-	// Then iteratively add hinges whose parents have been processed
-	bool addedAny = true;
-	while (addedAny) {
-		addedAny = false;
-		for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
-			if (processed[i]) {
-				continue;
-			}
-			const int32_t parentIdx = kfa.hinge[i].parent;
-			if (parentIdx >= 0 && parentIdx < (int32_t)kfa.hinge.size() && processed[parentIdx]) {
-				// Parent has been processed, so we can process this hinge
-				hingeSort.push_back(i);
-				processed[i] = true;
-				addedAny = true;
-			}
-		}
-	}
-
-	// Add any remaining hinges that couldn't be sorted (broken parent references)
-	for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
-		if (!processed[i]) {
-			Log::warn("Hinge %d has invalid parent reference, adding to end", i);
-			hingeSort.push_back(i);
-		}
-	}
-
-	// Map to track node IDs for parent-child relationships
-	// This maps hinge ID (not index) to node ID
-	core::Buffer<int> nodeIdsByHingeId(kfa.hinge.size(), InvalidNodeId);
-
-	// Process ALL hinges in sorted order to ensure parents are created before children
-	// Create nodes directly in the scene graph, handling parent relationships properly
-	// In slab6, some hinges may not have corresponding volumes - create transform-only nodes for those
-	uint32_t volumeIdx = 0;
-	for (size_t sortIdx = 0; sortIdx < hingeSort.size(); ++sortIdx) {
-		const uint32_t hingeIdx = hingeSort[sortIdx];
-		const priv::KFAHinge &hinge = kfa.hinge[hingeIdx];
-
-		// Use available volume if we have one, otherwise create a transform-only node
-		voxel::RawVolume *v = nullptr;
-		if (volumeIdx < volumes.size()) {
-			v = volumes[volumeIdx];
-			volumeIdx++; // Only increment when we actually use a volume
-		}
-
-		// Create pivot from hinge data - for root nodes, p[0] contains the position
-		glm::vec3 pivot;
-		if (hinge.parent < 0) {
-			// For root nodes, slab6 stores the negative position in p[0]
-			pivot.x = -hinge.p[0].x;
-			pivot.y = -hinge.p[0].z; // swap y and z here
-			pivot.z = -hinge.p[0].y;
-		} else {
-			pivot.x = hinge.p[0].x;
-			pivot.y = hinge.p[0].z; // swap y and z here
-			pivot.z = hinge.p[0].y;
-		}
-
-		scenegraph::SceneGraphNode node(v != nullptr ? scenegraph::SceneGraphNodeType::Model
-													 : scenegraph::SceneGraphNodeType::Group);
-		node.setPivot(pivot);
-		core::String name;
-		const core::String &basename = core::string::extractFilename(filename);
-		if (v != nullptr) {
-			node.setVolume(v);
-			node.setPalette(palette);
-			name = core::String::format("%s_hinge_%d", basename.c_str(), hinge.id);
-		} else {
-			name = core::String::format("%s_hinge_%d_transform", basename.c_str(), hinge.id);
-		}
-		node.setName(name);
-
-		// Add keyframes based on sequence data
-		// TODO: fix key frame idx
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		scenegraph::SceneGraphTransform transform;
-
-#if 0
-		if (v != nullptr) {
-			// Get the volume's region and calculate offset from original volume
-			const voxel::Region &volumeRegion = v->region();
-			const voxel::Region &originalRegion = volume->region();
-
-			// Calculate translation offset like slab6 does in spr[].p
-			// In slab6: spr[numspr].p.x = x0-kv->xpiv; (where x0 is the min bound of the split volume)
-			// Calculate the offset of this volume from the original volume's origin
-			// Volume regions are already in vengi coordinate system, so no axis swap needed
-			const glm::vec3 translation = volumeRegion.getLowerCornerf() - originalRegion.getLowerCornerf();
-
-			// Apply the translation offset
-			transform.setLocalTranslation(translation);
-			v->region().shift(-translation);
-		}
-#endif
-		// Set default rotation based on sequence data
-		if (!kfa.seq.empty() && !kfa.frmval.empty()) {
-			if (hinge.type == 0) { // rotation
-				// Try to use the first valid frame for default pose
-				for (const priv::KFASeqTyp &seq : kfa.seq) {
-					int32_t actualFrame = seq.frame;
-					if (actualFrame < 0) {
-						actualFrame = ~actualFrame;
-					}
-					if (actualFrame >= 0 && actualFrame < (int32_t)kfa.frmval.size() &&
-						hingeIdx < kfa.frmval[actualFrame].size()) {
-						const glm::vec3 axis(hinge.v[0].x, hinge.v[0].z, hinge.v[0].y); // Convert slab6 coord to vengi
-						const float frameValue = kfa.frmval[actualFrame][hingeIdx];
-						const float angle = frameValue * glm::two_pi<float>();
-						if (glm::length(axis) > 0.001f) {
-							const glm::quat rotation = glm::angleAxis(angle, glm::normalize(axis));
-							transform.setLocalOrientation(rotation);
-						}
-						break; // Use first valid frame as default pose
-					}
-				}
-			} else {
-				Log::warn("Unhandled hinge type: %i", hinge.type);
-			}
-		}
-
-		// Set the transform on the node
-		node.setTransform(keyFrameIdx, transform);
-
-		// Determine parent node ID
-		int parentNodeId = 0; // Default to root
-		if (hinge.parent >= 0 && hinge.parent < (int32_t)nodeIdsByHingeId.size()) {
-			parentNodeId = nodeIdsByHingeId[hinge.parent];
-			if (parentNodeId == InvalidNodeId) {
-				// Parent hasn't been created yet (shouldn't happen with proper sorting), use root
-				Log::warn("Parent node not found for hinge %d (parent %d), using root", hinge.id, hinge.parent);
-				parentNodeId = 0;
-			}
-		}
-
-		// Add node to scene graph directly
-		int nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
-		if (nodeId == InvalidNodeId) {
-			Log::error("Failed to add node for hinge %d to scene graph", hinge.id);
-			return false;
-		}
-
-		// Store node ID by hinge ID for parent-child relationships
-		if (hinge.id >= 0 && hinge.id < (int32_t)nodeIdsByHingeId.size()) {
-			nodeIdsByHingeId[hinge.id] = nodeId;
-		}
-	}
-	return true;
-}
-
-bool KV6Format::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+bool KV6Format::loadRawVolume(const core::String &filename, const io::ArchivePtr &archive, voxel::RawVolume *&volume,
+							  palette::Palette &palette, glm::vec3 &kenPivot, const LoadContext &ctx,
+							  core::Buffer<KFAFormat::KenSpriteVox> *kenVoxels) {
+	volume = nullptr;
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -522,11 +231,10 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	glm::vec3 pivot;
-	wrap(stream->readFloat(pivot.x)) // width
-	wrap(stream->readFloat(pivot.z)) // depth
-	wrap(stream->readFloat(pivot.y)) // height
-
-	glm::vec3 normalizedPivot = pivot / glm::vec3(width, height, depth);
+	wrap(stream->readFloat(pivot.x)) // Ken x / width
+	wrap(stream->readFloat(pivot.z)) // Ken y / depth stored in vengi z
+	wrap(stream->readFloat(pivot.y)) // Ken z / height stored in vengi y
+	kenPivot = glm::vec3(pivot.x, pivot.z, pivot.y);
 
 	const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
 	if (!region.isValid()) {
@@ -607,7 +315,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 		}
 	}
 
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	volume = new voxel::RawVolume(region);
+	if (kenVoxels != nullptr) {
+		kenVoxels->clear();
+		kenVoxels->reserve(numvoxs);
+	}
 
 	int idx = 0;
 	// TODO: PERF: use volume sampler
@@ -618,17 +330,47 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 				const uint8_t normalIndex = vox.normal == 255 ? NO_NORMAL : vox.normal + NORMAL_PALETTE_OFFSET;
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col, normalIndex);
 				volume->setVoxel((int)x, (int)((height - 1) - vox.z), (int)y, col);
+				if (kenVoxels != nullptr) {
+					KFAFormat::KenSpriteVox kv;
+					kv.x = (uint16_t)x;
+					kv.y = (uint16_t)y;
+					kv.z = vox.z;
+					kv.vis = (uint8_t)vox.vis;
+					kenVoxels->push_back(kv);
+				}
 			}
 		}
 	}
+	return true;
+}
+
+bool KV6Format::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	voxel::RawVolume *volume = nullptr;
+	glm::vec3 kenPivot(0.0f);
+	core::Buffer<KFAFormat::KenSpriteVox> kenVoxels;
+	if (!loadRawVolume(filename, archive, volume, palette, kenPivot, ctx, &kenVoxels)) {
+		return false;
+	}
 
 	const core::String &basename = core::string::stripExtension(filename);
-	if (archive->exists(basename + ".kfa")) {
-		if (loadKFA(basename + ".kfa", archive, volume, sceneGraph, palette)) {
-			delete volume;
-			return true;
+	const bool loadKfa = core::getVar(cfg::VoxformatKV6LoadKFA)->boolVal();
+	if (loadKfa && archive->exists(basename + ".kfa")) {
+		KFAFormat::Data kfa;
+		if (KFAFormat::parse(basename + ".kfa", archive, kfa)) {
+			if (KFAFormat::apply(kfa, volume, kenPivot, sceneGraph, palette, core::string::extractFilename(filename),
+								 kenVoxels)) {
+				delete volume;
+				return true;
+			}
 		}
+		Log::warn("Failed to apply kfa sidecar for %s - loading as a single volume", filename.c_str());
 	}
+
+	const voxel::Region &region = volume->region();
+	const glm::vec3 normalizedPivot =
+		glm::vec3(kenPivot.x, kenPivot.z, kenPivot.y) /
+		glm::vec3(region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 	palette::NormalPalette normalPalette;
 	normalPalette.slab6();
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

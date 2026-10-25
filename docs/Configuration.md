@@ -166,6 +166,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_voxelize_chunksize`| Chunk size for chunked voxelization (clamped to 16-512)                                  | 128          |
 | `voxformat_voxelsize`         | The number of voxels on the largest axis (0 = disabled, use scale cvars instead). Single mesh exports only. | 0            |
 | `voxformat_vxllodhva`         | Load the HVA file for VXL animations                                                     | true/false   |
+| `voxformat_kv6loadkfa`        | Load the KFA sidecar for KV6 hinge animations                                            | true/false   |
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
 | `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
 | `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 | true/false   |

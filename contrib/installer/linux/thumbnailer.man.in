@@ -140,6 +140,8 @@ Override the pathtracer sample count from the selected quality. Only used with \
 .PP
 \fBvoxformat_imagevolumemaxdepth\fP: The maximum depth of the volume when importing an image as volume
 .PP
+\fBvoxformat_kv6loadkfa\fP: Load the kfa sidecar for kv6 hinge animations
+.PP
 \fBvoxformat_ldrawdir\fP: Path to the LDraw parts library directory for resolving part references
 .PP
 \fBvoxformat_mcloadradius\fP: Minecraft region files to load around spawn for level.dat / mcworld. -1 = all regions, 0 = spawn region only, N = Chebyshev distance in region units (512 blocks)

@@ -3,8 +3,14 @@
  */
 
 #include "voxelformat/private/slab6/KV6Format.h"
+#include "voxelformat/private/slab6/KFAFormat.h"
 #include "AbstractFormatTest.h"
+#include "core/FourCC.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"
+#include "io/Stream.h"
+#include "color/RGBA.h"
+#include "palette/Palette.h"
 #include "palette/NormalPalette.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
@@ -12,6 +18,7 @@
 #include "voxel/Region.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/gtc/epsilon.hpp>
 
 namespace voxelformat {
 
@@ -82,11 +89,13 @@ TEST_F(KV6FormatTest, testRemapNormalPalettes) {
 TEST_F(KV6FormatTest, testLoad) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test.kv6", 1);
+	if (HasFatalFailure() || IsSkipped()) {
+		return;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
-	const voxel::Region &region = node->region();
-	const voxel::Region expectedRegion(0, 0, 0, 2, 2, 0);
 	ASSERT_NE(nullptr, node);
-	EXPECT_EQ(expectedRegion, region);
+	const voxel::Region expectedRegion(0, 0, 0, 2, 2, 0);
+	EXPECT_EQ(expectedRegion, node->region());
 }
 
 TEST_F(KV6FormatTest, testSaveCubeModel) {
@@ -179,6 +188,246 @@ TEST_F(KV6FormatTest, testSaveLoadDirtyWorldTranslation) {
 	KV6Format f;
 	testSaveLoadBakedPivot("kv6-dirty-translation.kv6", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
 						   glm::vec3(0.5f, 0.0f, 0.5f), false);
+}
+
+static bool writeTestKfa(io::SeekableWriteStream &stream, const core::String &kv6Name, int16_t frame1ChildAngle,
+						 bool stopMarkerAtZero = false) {
+	if (!stream.writeUInt32(FourCC('K', 'w', 'l', 'k'))) {
+		return false;
+	}
+	if (!stream.writePascalStringUInt32LE(kv6Name)) {
+		return false;
+	}
+	if (!stream.writeUInt32(2)) {
+		return false;
+	}
+	if (!stream.writeInt32(-1)) {
+		return false;
+	}
+	for (int i = 0; i < 12; ++i) {
+		if (!stream.writeFloat(0.0f)) {
+			return false;
+		}
+	}
+	if (!stream.writeInt16(0) || !stream.writeInt16(0) || !stream.writeInt8(0)) {
+		return false;
+	}
+	for (int i = 0; i < 7; ++i) {
+		if (!stream.writeInt8(0)) {
+			return false;
+		}
+	}
+	if (!stream.writeInt32(0)) {
+		return false;
+	}
+	if (!stream.writeFloat(0.0f) || !stream.writeFloat(0.0f) || !stream.writeFloat(0.0f)) {
+		return false;
+	}
+	if (!stream.writeFloat(5.0f) || !stream.writeFloat(0.0f) || !stream.writeFloat(0.0f)) {
+		return false;
+	}
+	if (!stream.writeFloat(0.0f) || !stream.writeFloat(0.0f) || !stream.writeFloat(1.0f)) {
+		return false;
+	}
+	if (!stream.writeFloat(0.0f) || !stream.writeFloat(0.0f) || !stream.writeFloat(1.0f)) {
+		return false;
+	}
+	if (!stream.writeInt16(0) || !stream.writeInt16(0) || !stream.writeInt8(0)) {
+		return false;
+	}
+	for (int i = 0; i < 7; ++i) {
+		if (!stream.writeInt8(0)) {
+			return false;
+		}
+	}
+	if (!stream.writeUInt32(2)) {
+		return false;
+	}
+	if (!stream.writeInt16(0) || !stream.writeInt16(0)) {
+		return false;
+	}
+	if (!stream.writeInt16(0) || !stream.writeInt16(frame1ChildAngle)) {
+		return false;
+	}
+	if (stopMarkerAtZero) {
+		if (!stream.writeUInt32(3)) {
+			return false;
+		}
+		if (!stream.writeInt32(0) || !stream.writeInt32(-1)) {
+			return false;
+		}
+		if (!stream.writeInt32(200) || !stream.writeInt32(0)) {
+			return false;
+		}
+		if (!stream.writeInt32(1000) || !stream.writeInt32(1)) {
+			return false;
+		}
+	} else {
+		if (!stream.writeUInt32(2)) {
+			return false;
+		}
+		if (!stream.writeInt32(0) || !stream.writeInt32(0)) {
+			return false;
+		}
+		if (!stream.writeInt32(1000) || !stream.writeInt32(1)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+TEST_F(KV6FormatTest, testKfaTwoLimbs) {
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	palette::Palette pal;
+	pal.tryAdd(color::RGBA(255, 0, 0, 255));
+	node.setPalette(pal);
+	node.createVolume(voxel::Region(0, 0, 0, 5, 0, 0));
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	node.volume()->setVoxel(5, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	graph.emplace(core::move(node));
+	graph.updateTransforms();
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	KV6Format kv6;
+	ASSERT_TRUE(kv6.save(graph, "twolimbs.kv6", archive, testSaveCtx));
+
+	io::BufferedReadWriteStream kfaStream;
+	ASSERT_TRUE(writeTestKfa(kfaStream, "twolimbs.kv6", 16384));
+	ASSERT_TRUE(archive->add("twolimbs.kfa", kfaStream.getBuffer(), (size_t)kfaStream.size()));
+
+	KFAFormat::Data parsed;
+	ASSERT_TRUE(KFAFormat::parse("twolimbs.kfa", archive, parsed));
+	ASSERT_EQ(2u, parsed.hinges.size());
+	EXPECT_EQ(-1, parsed.hinges[0].parent);
+	EXPECT_EQ(0, parsed.hinges[1].parent);
+	ASSERT_EQ(2u, parsed.numFrames);
+	ASSERT_EQ(2u, parsed.seq.size());
+	EXPECT_EQ(24, KFAFormat::timeToFrame(1000));
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(kv6.load("twolimbs.kv6", archive, loaded, testLoadCtx));
+	EXPECT_EQ(2u, loaded.size());
+	EXPECT_TRUE(loaded.hasAnimation(DEFAULT_ANIMATION));
+
+	const scenegraph::SceneGraphNode *rootLimb = nullptr;
+	const scenegraph::SceneGraphNode *childLimb = nullptr;
+	for (const auto &e : loaded.nodes()) {
+		const scenegraph::SceneGraphNode &n = e->value;
+		if (!n.isModelNode()) {
+			continue;
+		}
+		if (n.property("kfa.hinge") == "0") {
+			rootLimb = &n;
+		} else if (n.property("kfa.hinge") == "1") {
+			childLimb = &n;
+		}
+	}
+	ASSERT_NE(nullptr, rootLimb);
+	ASSERT_NE(nullptr, childLimb);
+	EXPECT_EQ(rootLimb->id(), loaded.parentId(*childLimb));
+	EXPECT_GE(childLimb->keyFrames().size(), 2u);
+	EXPECT_TRUE(childLimb->hasKeyFrame(0));
+	EXPECT_TRUE(childLimb->hasKeyFrame(12));
+	EXPECT_TRUE(childLimb->hasKeyFrame(24));
+	// Velcro is on the child at Ken (5,0,0); origin must not stay at volume (0,0,0)
+	EXPECT_FALSE(glm::all(glm::epsilonEqual(childLimb->pivot(), glm::vec3(0.0f), 0.0001f)));
+}
+
+TEST_F(KV6FormatTest, testKfaStopMarkerAtZero) {
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	palette::Palette pal;
+	pal.tryAdd(color::RGBA(255, 0, 0, 255));
+	node.setPalette(pal);
+	node.createVolume(voxel::Region(0, 0, 0, 5, 0, 0));
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	node.volume()->setVoxel(5, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	graph.emplace(core::move(node));
+	graph.updateTransforms();
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	KV6Format kv6;
+	ASSERT_TRUE(kv6.save(graph, "twolimbs.kv6", archive, testSaveCtx));
+
+	io::BufferedReadWriteStream kfaStream;
+	ASSERT_TRUE(writeTestKfa(kfaStream, "twolimbs.kv6", 16384, true));
+	ASSERT_TRUE(archive->add("twolimbs.kfa", kfaStream.getBuffer(), (size_t)kfaStream.size()));
+
+	KFAFormat::Data parsed;
+	ASSERT_TRUE(KFAFormat::parse("twolimbs.kfa", archive, parsed));
+	ASSERT_EQ(3u, parsed.seq.size());
+	EXPECT_EQ(-1, parsed.seq[0].frame);
+	EXPECT_EQ(0, parsed.seq[0].time);
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(kv6.load("twolimbs.kv6", archive, loaded, testLoadCtx));
+	const scenegraph::SceneGraphNode *childLimb = nullptr;
+	for (const auto &e : loaded.nodes()) {
+		const scenegraph::SceneGraphNode &n = e->value;
+		if (n.isModelNode() && n.property("kfa.hinge") == "1") {
+			childLimb = &n;
+		}
+	}
+	ASSERT_NE(nullptr, childLimb);
+	EXPECT_TRUE(childLimb->hasKeyFrame(0));
+	EXPECT_TRUE(childLimb->hasKeyFrame(5));
+	const scenegraph::KeyFrameIndex kf0 = childLimb->keyFrameForFrame(0);
+	const scenegraph::KeyFrameIndex kf5 = childLimb->keyFrameForFrame(5);
+	ASSERT_NE(InvalidKeyFrame, kf0);
+	ASSERT_NE(InvalidKeyFrame, kf5);
+	EXPECT_EQ(childLimb->transform(kf0).localTranslation(), childLimb->transform(kf5).localTranslation());
+}
+
+TEST_F(KV6FormatTest, testAnasplitKfa) {
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "anasplit.kv6", 13);
+	if (HasFatalFailure() || IsSkipped()) {
+		return;
+	}
+	if (!sceneGraph.hasAnimation(DEFAULT_ANIMATION)) {
+		GTEST_SKIP() << "anasplit.kfa was not applied";
+	}
+	int transformHinges = 0;
+	int models = 0;
+	bool foundRoot = false;
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (node.isModelNode()) {
+			++models;
+			EXPECT_FALSE(node.property("kfa.hinge").empty());
+		} else if (node.type() == scenegraph::SceneGraphNodeType::Group && !node.property("kfa.hinge").empty()) {
+			++transformHinges;
+		}
+		if (node.property("kfa.hinge") == "3") {
+			foundRoot = true;
+			EXPECT_EQ(0, sceneGraph.parentId(node));
+			EXPECT_TRUE(node.hasKeyFrame(0));
+		}
+	}
+	EXPECT_EQ(13, models);
+	EXPECT_GE(transformHinges, 1);
+	EXPECT_TRUE(foundRoot);
+
+	const scenegraph::SceneGraphNode *hinge2 = nullptr;
+	int pivotedModels = 0;
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (node.isModelNode() && !glm::all(glm::epsilonEqual(node.pivot(), glm::vec3(0.0f), 0.0001f))) {
+			++pivotedModels;
+		}
+		if (node.property("kfa.hinge") == "2") {
+			hinge2 = &node;
+		}
+	}
+	EXPECT_GE(pivotedModels, 1);
+	if (hinge2 != nullptr) {
+		// seq 2208ms/pose1 -> 53, 2808ms/pose3 -> 67. Ken lerps hinge angles;
+		// those in-between frames must be baked or the limbs fly apart.
+		EXPECT_TRUE(hinge2->hasKeyFrame(53));
+		EXPECT_TRUE(hinge2->hasKeyFrame(60));
+		EXPECT_TRUE(hinge2->hasKeyFrame(67));
+	}
 }
 
 } // namespace voxelformat

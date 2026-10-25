@@ -38,6 +38,7 @@
 #include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
+#include "voxelformat/private/slab6/KV6Format.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 
 #include <string.h>
@@ -161,6 +162,9 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatVXLLoadHVA(cfg::VoxformatVXLLoadHVA, true, N_("Load HVA"),
 										   N_("Load the hva for animations"), core::CV_NOPERSIST);
 	core::registerVar(voxformatVXLLoadHVA);
+	const core::VarDef voxformatKV6LoadKFA(cfg::VoxformatKV6LoadKFA, true, N_("Load KFA"),
+										   N_("Load the kfa sidecar for kv6 hinge animations"), core::CV_NOPERSIST);
+	core::registerVar(voxformatKV6LoadKFA);
 	const core::VarDef voxelCropOnLoad(
 		cfg::VoxelCropOnLoad, false, N_("Crop on load"),
 		N_("Crop volumes to tight bounds on load to save memory"), core::CV_NOPERSIST);
@@ -422,6 +426,7 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatMCLoadRadius, FormatCVarFlag_Load, {&DatFormat::format(), &MCWorldFormat::format()}, {}},
 	{cfg::VoxformatMCLoadRegion, FormatCVarFlag_Load, {&DatFormat::format(), &MCWorldFormat::format()}, {}},
 	{cfg::VoxformatVXLLoadHVA, FormatCVarFlag_Load, {&VXLFormat::format()}, {}},
+	{cfg::VoxformatKV6LoadKFA, FormatCVarFlag_Load, {&KV6Format::format()}, {}},
 	{cfg::VoxformatMVApplyTransform, FormatCVarFlag_Load, {&VoxFormat::format()}, {}},
 	{cfg::VoxformatQBTMergeCompounds, FormatCVarFlag_Load, {&QBTFormat::format()}, {}},
 	{cfg::VoxelCropOnLoad, FormatCVarFlag_Load | FormatCVarFlag_All, {}, {}},

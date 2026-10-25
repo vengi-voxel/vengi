@@ -6,7 +6,7 @@
 
 | Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations |
 | :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- |
-| AceOfSpades                | kv6         | X       | X      |            | X       |            |
+| AceOfSpades*               | kv6         | X       | X      |            | X       | X          |
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
 | AceOfSpades Workshop       | aos         | X       | X      |            | X       |            |
 | AnimaToon                  | scn         | X       |        |            |         | X          |
@@ -59,6 +59,8 @@
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
 | VoxelCdx                   | vcdx        | X       | X      | X          | X       |            |
 | VoxelMax                   | vmax.zip    | X       | X      | X          | X       |            |
+
+> *Hinge animations are loaded from a same-basename KWALK `.kfa` sidecar.
 
 ## Mesh formats
 

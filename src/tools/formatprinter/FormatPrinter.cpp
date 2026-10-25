@@ -491,6 +491,7 @@ void FormatPrinter::printMarkdownTables() {
 	core::StringMap<core::String> voxelFormatHints;
 	voxelFormatHints.put("ldr", "Find the part library at https://library.ldraw.org/");
 	voxelFormatHints.put("mpd", "Find the part library at https://library.ldraw.org/");
+	voxelFormatHints.put("kv6", "Hinge animations are loaded from a same-basename KWALK `.kfa` sidecar.");
 
 	Log::printf("# Formats\n");
 	Log::printf("\n");

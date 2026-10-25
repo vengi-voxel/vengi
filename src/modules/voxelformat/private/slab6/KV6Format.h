@@ -6,6 +6,8 @@
 
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/private/slab6/KFAFormat.h"
+#include <glm/vec3.hpp>
 
 namespace voxelformat {
 /**
@@ -24,19 +26,15 @@ protected:
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
-	/**
-	 * @brief KWALK kv6 sprite animations
-	 *
-	 * The kfa file and the kv6 file must have the same basename
-	 *
-	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/share/documentation/kwalkhlp.txt
-	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/source/kwalk.cpp
-	 * Example files at https://github.com/Ericson2314/Voxlap/tree/no-asm/share (anasplit.kfa)
-	 */
-	bool loadKFA(const core::String &filename, const io::ArchivePtr &archive, const voxel::RawVolume *volume,
-				 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
-
 public:
+	/**
+	 * @brief Load the KV6 sprite as a single volume without applying a KFA sidecar
+	 * @param[out] kenPivot Pivot in Ken / KV6 space (x, y, z)
+	 */
+	bool loadRawVolume(const core::String &filename, const io::ArchivePtr &archive, voxel::RawVolume *&volume,
+					   palette::Palette &palette, glm::vec3 &kenPivot, const LoadContext &ctx,
+					   core::Buffer<KFAFormat::KenSpriteVox> *kenVoxels = nullptr);
+
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
@@ -45,8 +43,11 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{
-			"AceOfSpades", "", {"kv6"}, {"Kvxl"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"AceOfSpades",
+									  "",
+									  {"kv6"},
+									  {"Kvxl"},
+									  VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 

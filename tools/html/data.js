@@ -1125,7 +1125,7 @@ const jsonData = {
         }
       ],
       "mimetype": "application/x-aceofspades",
-      "animation": false,
+      "animation": true,
       "load": true,
       "save": true
     },

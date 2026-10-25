@@ -25,6 +25,7 @@ General:
    - Fixed inverted texture coordinates on `gltf` import and greedy texture export
    - Fixed VoxelMax `vmaxb` loading and transforms as well as colors and materials
    - Improved `kvx` and `kv6` pivot support
+   - Added KWALK `.kfa` hinge animation support for `kv6` sprites
    - Basic `fbx` material support
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
    - Improved `qb`, `qbt` and `qbcl` pivot support

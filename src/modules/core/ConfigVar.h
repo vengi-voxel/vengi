@@ -138,6 +138,7 @@ constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
 constexpr const char *VoxformatVOXAnimAsNodes = "voxformat_voxanimasnodes";
 constexpr const char *VoxformatMVApplyTransform = "voxformat_mvapplytransform";
 constexpr const char *VoxformatVXLLoadHVA = "voxformat_vxllodhva";
+constexpr const char *VoxformatKV6LoadKFA = "voxformat_kv6loadkfa";
 constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
 constexpr const char *VoxformatQBSaveCompressed = "voxformat_qbsavecompressed";
 constexpr const char *VoxformatGLTF_KHR_materials_pbrSpecularGlossiness = "voxformat_gltf_khr_materials_pbrspecularglossiness";

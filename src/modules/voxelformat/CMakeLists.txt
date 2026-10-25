@@ -167,6 +167,7 @@ set(SRCS
 	private/sandbox/VXTFormat.h              private/sandbox/VXTFormat.cpp
 	private/slab6/KVXFormat.h                private/slab6/KVXFormat.cpp
 	private/slab6/KV6Format.h                private/slab6/KV6Format.cpp
+	private/slab6/KFAFormat.h                private/slab6/KFAFormat.cpp
 	private/slab6/SLAB6VoxFormat.h           private/slab6/SLAB6VoxFormat.cpp
 	private/slab6/SLABShared.h               private/slab6/SLABShared.cpp
 	private/spritestack/SpriteStackFormat.h  private/spritestack/SpriteStackFormat.cpp
