@@ -170,28 +170,13 @@ void LSystemPanel::update(const char *id) {
 			if (nodeId != InvalidNodeId) {
 				const scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(nodeId);
 				if (const voxel::RawVolume *v = _sceneMgr->sceneGraph().resolveVolume(node)) {
-					const voxel::Region &region = v->region();
-					const glm::ivec3 &mins = region.getLowerCorner();
-					const glm::ivec3 dim = region.getDimensionsInVoxels();
-					const glm::ivec3 bottomCenter = mins + glm::ivec3(dim.x / 2, 0, dim.z / 2);
-					_sceneMgr->modifier().setReferencePosition(bottomCenter);
-
-					const float oldLength = _conf.length;
-					_conf.length = (float)dim.y / (float)(_conf.iterations + 1);
-					if (_conf.length < 1.0f) {
-						_conf.length = 1.0f;
-					}
-					if (oldLength > 0.0001f) {
-						const float scale = _conf.length / oldLength;
-						_conf.minLength *= scale;
-						_conf.width *= scale;
-						_conf.widthIncrement *= scale;
-						_conf.leafRadius *= scale;
+					if (voxelgenerator::lsystem::adoptToRegion(_conf, v->region())) {
+						_sceneMgr->modifier().setReferencePosition(_conf.position);
 					}
 				}
 			}
 		}
-		ImGui::TooltipTextUnformatted(_("Adopt the L-System parameters to the current volume dimensions"));
+		ImGui::TooltipTextUnformatted(_("Scale the L-System so the generated shape fits the current volume"));
 
 		if (ImGui::OkButton()) {
 			_conf.position = _sceneMgr->modifier().referencePosition();

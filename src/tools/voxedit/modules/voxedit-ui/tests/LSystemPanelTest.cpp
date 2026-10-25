@@ -84,6 +84,12 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		ctx->ItemClick("Adopt Dimensions");
 		ctx->Yield();
+		const voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+		IM_CHECK(volume != nullptr);
+		const voxel::Voxel wood = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		const voxel::Region bounds = voxelgenerator::lsystem::evaluateRegion(_conf, wood);
+		IM_CHECK(bounds.isValid());
+		IM_CHECK(volume->region().containsRegion(bounds));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "cancel generation")->TestFunc = [=](ImGuiTestContext *ctx) {

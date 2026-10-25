@@ -243,6 +243,76 @@ TEST_F(LSystemTests, testConstantLengthByDefault) {
 	EXPECT_FLOAT_EQ(exec.step.pos.y, 0.5f);
 }
 
+TEST_F(LSystemTests, testEvaluateRegionMatchesGeneration) {
+	LSystemConfig config;
+	config.axiom = "F[+FL]F";
+	config.length = 4.0f;
+	config.width = 3.0f;
+	config.leafRadius = 2.0f;
+	config.leafColor = 2;
+	config.position = glm::ivec3(2, 3, 4);
+	voxel::RawVolume volume(voxel::Region(-32, 32));
+	LSystemExecutionState exec;
+	generate(config, volume, exec);
+
+	const voxel::Voxel wood = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Region bounds = evaluateRegion(config, wood);
+	ASSERT_TRUE(bounds.isValid());
+
+	voxel::Region occupied = voxel::Region::InvalidRegion;
+	voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &v) {
+		if (voxel::isAir(v.getMaterial())) {
+			return;
+		}
+		if (occupied.isValid()) {
+			occupied.accumulate(x, y, z);
+		} else {
+			occupied = voxel::Region(x, y, z, x, y, z);
+		}
+	});
+	EXPECT_EQ(bounds, occupied);
+}
+
+TEST_F(LSystemTests, testAdoptToRegionFitsSimpleTree) {
+	LSystemConfig config;
+	for (const auto &t : defaultTemplates()) {
+		if (t.name == "Simple Tree") {
+			config = t.config;
+			break;
+		}
+	}
+	ASSERT_FALSE(config.axiom.empty());
+
+	const voxel::Voxel wood = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Region target(0, 31);
+	const voxel::Region unscaled = evaluateRegion(config, wood);
+	ASSERT_TRUE(unscaled.isValid());
+	ASSERT_FALSE(target.containsRegion(unscaled));
+
+	ASSERT_TRUE(adoptToRegion(config, target));
+	const voxel::Region bounds = evaluateRegion(config, wood);
+	ASSERT_TRUE(bounds.isValid());
+	EXPECT_TRUE(target.containsRegion(bounds)) << bounds.toString().c_str() << " not in " << target.toString().c_str();
+	EXPECT_EQ(bounds.getLowerY(), target.getLowerY());
+}
+
+TEST_F(LSystemTests, testAdoptLiftsWidthBelowOrigin) {
+	LSystemConfig config;
+	config.axiom = "F";
+	config.length = 4.0f;
+	config.width = 5.0f;
+	config.leafRadius = 0.0f;
+	config.iterations = 0;
+	const voxel::Region target(0, 15);
+	ASSERT_TRUE(adoptToRegion(config, target));
+	const voxel::Voxel wood = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Region bounds = evaluateRegion(config, wood);
+	ASSERT_TRUE(bounds.isValid());
+	EXPECT_TRUE(target.containsRegion(bounds));
+	EXPECT_EQ(bounds.getLowerY(), target.getLowerY());
+	EXPECT_GT(config.position.y, target.getLowerY());
+}
+
 TEST_F(LSystemTests, testInvalidRule) {
 	const core::DynamicArray<LSystemTemplate> &templates = defaultTemplates();
 	LSystemConfig conf;

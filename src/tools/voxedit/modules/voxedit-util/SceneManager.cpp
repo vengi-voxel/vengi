@@ -6270,9 +6270,21 @@ void SceneManager::lsystem(const voxelgenerator::lsystem::LSystemConfig &conf) {
 		return;
 	}
 	_lsystem->voxel = _modifier->cursorVoxel();
+	_mementoHandler->beginGroup("LSystem generation");
+	const voxel::Region needed = voxelgenerator::lsystem::evaluateRegion(_lsystem->config, _lsystem->voxel);
+	if (needed.isValid() && !v->region().containsRegion(needed)) {
+		voxel::Region expanded = v->region();
+		expanded.accumulate(needed);
+		nodeResize(_lsystem->nodeId, expanded);
+		v = volume(_lsystem->nodeId);
+		if (v == nullptr) {
+			_lsystemRunning = false;
+			_mementoHandler->endGroup();
+			return;
+		}
+	}
 	voxelgenerator::lsystem::prepareState(_lsystem->config, _lsystem->state);
 	_lsystemRunning = true;
-	_mementoHandler->beginGroup("LSystem generation");
 }
 
 void SceneManager::stepLSystem() {

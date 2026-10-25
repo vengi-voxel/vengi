@@ -10,6 +10,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
 #include "math/Random.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -102,6 +103,18 @@ struct LSystemTemplate {
 core::DynamicArray<LSystemTemplate> defaultTemplates();
 
 void prepareState(const LSystemConfig &conf, LSystemState &state);
+
+/**
+ * @return Axis-aligned bounds of every voxel the L-system would write, or InvalidRegion if none.
+ */
+voxel::Region evaluateRegion(const LSystemConfig &conf, const voxel::Voxel &voxel);
+
+/**
+ * Scale length, width, leaf radius and related sizes so the generated shape fits
+ * @p target, and set @c conf.position so it sits on the floor, centered in XZ.
+ * @return @c false if the L-system produces no voxels
+ */
+bool adoptToRegion(LSystemConfig &conf, const voxel::Region &target);
 
 /**
  * @brief Generate voxels according to the given L-System rules

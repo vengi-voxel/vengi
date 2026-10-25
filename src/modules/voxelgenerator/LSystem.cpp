@@ -69,6 +69,107 @@ void prepareState(const LSystemConfig &conf, LSystemState &state) {
 	}
 }
 
+namespace {
+
+struct BoundsCollector {
+	voxel::Region region = voxel::Region::InvalidRegion;
+
+	bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
+		if (region.isValid()) {
+			region.accumulate(x, y, z);
+		} else {
+			region = voxel::Region(x, y, z, x, y, z);
+		}
+		return true;
+	}
+
+	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
+		return setVoxel(pos.x, pos.y, pos.z, voxel);
+	}
+};
+
+void scaleSizeParams(LSystemConfig &conf, float scale) {
+	conf.length *= scale;
+	conf.minLength *= scale;
+	conf.width *= scale;
+	conf.widthIncrement *= scale;
+	conf.leafRadius *= scale;
+}
+
+void placeOnFloorCentered(LSystemConfig &conf, const voxel::Region &bounds, const voxel::Region &target) {
+	const glm::ivec3 bmin = bounds.getLowerCorner();
+	const glm::ivec3 bdim = bounds.getDimensionsInVoxels();
+	const glm::ivec3 tmin = target.getLowerCorner();
+	const glm::ivec3 tdim = target.getDimensionsInVoxels();
+	conf.position.x += tmin.x + (tdim.x - bdim.x) / 2 - bmin.x;
+	conf.position.y += tmin.y - bmin.y;
+	conf.position.z += tmin.z + (tdim.z - bdim.z) / 2 - bmin.z;
+}
+
+} // namespace
+
+voxel::Region evaluateRegion(const LSystemConfig &conf, const voxel::Voxel &voxel) {
+	LSystemState state;
+	prepareState(conf, state);
+	LSystemExecutionState exec;
+	BoundsCollector collector;
+	while (step(collector, voxel, state, exec)) {
+	}
+	return collector.region;
+}
+
+static float fitScale(const glm::ivec3 &src, const glm::ivec3 &dst) {
+	float scale = (float)dst.x / (float)glm::max(1, src.x);
+	scale = glm::min(scale, (float)dst.y / (float)glm::max(1, src.y));
+	scale = glm::min(scale, (float)dst.z / (float)glm::max(1, src.z));
+	return scale;
+}
+
+bool adoptToRegion(LSystemConfig &conf, const voxel::Region &target) {
+	if (!target.isValid()) {
+		return false;
+	}
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	LSystemConfig probe = conf;
+	probe.position = glm::ivec3(0);
+	voxel::Region bounds = evaluateRegion(probe, voxel);
+	if (!bounds.isValid()) {
+		return false;
+	}
+
+	const glm::ivec3 tgtSize = target.getDimensionsInVoxels();
+	float scale = fitScale(bounds.getDimensionsInVoxels(), tgtSize);
+	if (scale <= 0.0f) {
+		return false;
+	}
+
+	for (int attempt = 0; attempt < 6; ++attempt) {
+		LSystemConfig scaled = conf;
+		scaled.position = glm::ivec3(0);
+		scaleSizeParams(scaled, scale);
+		bounds = evaluateRegion(scaled, voxel);
+		if (!bounds.isValid()) {
+			return false;
+		}
+		const glm::ivec3 size = bounds.getDimensionsInVoxels();
+		if (size.x <= tgtSize.x && size.y <= tgtSize.y && size.z <= tgtSize.z) {
+			conf = scaled;
+			placeOnFloorCentered(conf, bounds, target);
+			return true;
+		}
+		scale *= glm::min(0.95f, fitScale(size, tgtSize));
+	}
+
+	scaleSizeParams(conf, scale);
+	conf.position = glm::ivec3(0);
+	bounds = evaluateRegion(conf, voxel);
+	if (!bounds.isValid()) {
+		return false;
+	}
+	placeOnFloorCentered(conf, bounds, target);
+	return true;
+}
+
 // https://paulbourke.net/fractals/lsys/
 core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	core::DynamicArray<LSystemTemplate> templates;

@@ -35,6 +35,7 @@
 #include <glm/gtx/transform.hpp>
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
+#include "voxelgenerator/LSystem.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -3387,6 +3388,28 @@ TEST_F(SceneManagerTest, testCalculateHash) {
 	ASSERT_NE(nullptr, node);
 	node->palette().setColor(1, color::RGBA(1, 2, 3, 255));
 	EXPECT_NE(resized, _sceneMgr->calculateHash());
+}
+
+TEST_F(SceneManagerTest, testLSystemExpandsRegion) {
+	const voxel::Region start(0, 7);
+	ASSERT_TRUE(_sceneMgr->newScene(true, "lsystem_expand", start));
+	voxelgenerator::lsystem::LSystemConfig config;
+	config.axiom = "FFFF";
+	config.length = 4.0f;
+	config.width = 1.0f;
+	config.leafRadius = 0.0f;
+	config.iterations = 0;
+	config.position = glm::ivec3(4, 0, 4);
+	_sceneMgr->lsystem(config);
+	for (int i = 0; i < 32 && _sceneMgr->lsystemRunning(); ++i) {
+		_sceneMgr->update((double)i * 0.016);
+	}
+	ASSERT_FALSE(_sceneMgr->lsystemRunning());
+	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, v);
+	EXPECT_TRUE(v->region().containsRegion(start));
+	EXPECT_GT(v->region().getUpperY(), start.getUpperY());
+	EXPECT_FALSE(voxel::isAir(v->voxel(4, 16, 4).getMaterial()));
 }
 
 } // namespace voxedit
