@@ -3,7 +3,7 @@
  */
 
 #include "LUAScriptParameters.h"
-#include "DragAndDropPayload.h"
+#include "PaletteColorInput.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "imgui.h"
@@ -83,26 +83,8 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 			}
 			case voxelgenerator::LUAParameterType::ColorIndex: {
 				int val = core::string::toInt(str);
-				if (palette && val >= 0 && val < palette->colorCount()) {
-					const float size = ImGui::Height(1);
-					const ImVec2 v1 = ImGui::GetCursorScreenPos();
-					const ImVec2 v2(v1.x + size, v1.y + size);
-					ImDrawList *drawList = ImGui::GetWindowDrawList();
-					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette->color(val)));
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
-				}
-				if (ImGui::InputIntWithButtons(p.name.c_str(), &val)) {
-					if (!palette || (val >= 0 && val < palette->colorCount())) {
-						str = core::string::toString(val);
-					}
-				}
-				if (palette && ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload *payload =
-							ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
-						const int palIdx = *(const uint8_t *)payload->Data;
-						str = core::string::toString(palIdx);
-					}
-					ImGui::EndDragDropTarget();
+				if (voxelui::paletteColorIndexInput(p.name.c_str(), &val, palette)) {
+					str = core::string::toString(val);
 				}
 				break;
 			}

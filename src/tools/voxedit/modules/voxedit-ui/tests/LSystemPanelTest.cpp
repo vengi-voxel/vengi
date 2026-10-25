@@ -4,6 +4,8 @@
 
 #include "../LSystemPanel.h"
 #include "TestUtil.h"
+#include "core/Var.h"
+#include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
@@ -64,6 +66,28 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(_conf.leafColor, 2);
 		ctx->ItemInputValue("Iterations", 3);
 		IM_CHECK_EQ(_conf.iterations, 3);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "leaf color palette drop")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(ensurePanelVisible(ctx, "View/Palette", cfg::VoxEditShowPalette));
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
+		IM_CHECK(focusWindow(ctx, id));
+
+		ctx->ItemInputValue("Leaf color", -1);
+		IM_CHECK_EQ(_conf.leafColor, -1);
+
+		ImGuiWindow *palWindow = ImGui::FindWindowByName(TITLE_PALETTE);
+		IM_CHECK(palWindow != nullptr);
+		const float cellSize = ImGui::GetFrameHeight() * core::getVar(cfg::VoxEditPaletteColorSize)->floatVal();
+		const ImVec2 palPos(palWindow->ContentRegionRect.Min.x + cellSize * 2.5f,
+							palWindow->ContentRegionRect.Min.y + cellSize * 0.5f);
+		const ImGuiTestItemInfo item = ctx->ItemInfo("Leaf color");
+		IM_CHECK(item.ID != 0);
+
+		dragFromTo(ctx, palPos, item.RectFull.GetCenter());
+		const int expected = _sceneMgr->activePalette().view().uiIndex(2);
+		IM_CHECK_EQ(_conf.leafColor, expected);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "add delete rule")->TestFunc = [=](ImGuiTestContext *ctx) {

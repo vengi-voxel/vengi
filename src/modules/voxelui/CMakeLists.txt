@@ -3,6 +3,7 @@ set(SRCS
 	FileDialogOptions.h FileDialogOptions.cpp
 	LUAApiWidget.h LUAApiWidget.cpp
 	LUAScriptParameters.h LUAScriptParameters.cpp
+	PaletteColorInput.h PaletteColorInput.cpp
 	ScenePreview.h ScenePreview.cpp
 	ScriptApi.h ScriptApi.cpp
 	ScriptBrowserPanel.h ScriptBrowserPanel.cpp

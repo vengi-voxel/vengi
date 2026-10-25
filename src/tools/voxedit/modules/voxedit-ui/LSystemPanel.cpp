@@ -14,6 +14,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelgenerator/LSystem.h"
+#include "voxelui/PaletteColorInput.h"
 
 namespace voxedit {
 
@@ -134,9 +135,8 @@ void LSystemPanel::update(const char *id) {
 		}
 		ImGui::TooltipTextUnformatted(_("Random angle variation in degrees; 0 disables variation"));
 		ImGui::InputInt(_("Seed"), &_conf.seed);
-		// TODO: LSYSTEM: make this a color select box - like the lua script color input parameters e.g. - which is also a drop target of the palette color
-		ImGui::InputInt(_("Leaf color"), &_conf.leafColor);
-		ImGui::TooltipTextUnformatted(_("Leaf palette index (1-255), or -1 to use the current voxel"));
+		voxelui::paletteColorIndexInput(_("Leaf color"), &_conf.leafColor, &_sceneMgr->activePalette(), -1);
+		ImGui::TooltipTextUnformatted(_("Leaf palette index, or -1 to use the current voxel. Drag a palette color here."));
 		ImGui::InputFloat(_("Width"), &_conf.width);
 		ImGui::TooltipTextUnformatted(_("The initial width of the segments"));
 		ImGui::InputFloat(_("Width increment"), &_conf.widthIncrement);
