@@ -2433,6 +2433,24 @@ static int luaVoxel_lsystem_generate(lua_State *s) {
 	config.iterations = iterations;
 	config.leafRadius = leafRadius;
 	config.position = glm::ivec3(posX, posY, posZ);
+	if (!lua_isnoneornil(s, 14)) {
+		luaL_checktype(s, 14, LUA_TTABLE);
+		lua_getfield(s, 14, "lengthScale");
+		config.lengthScale = (float)luaL_optnumber(s, -1, config.lengthScale);
+		lua_pop(s, 1);
+		lua_getfield(s, 14, "minLength");
+		config.minLength = (float)luaL_optnumber(s, -1, config.minLength);
+		lua_pop(s, 1);
+		lua_getfield(s, 14, "angleVariation");
+		config.angleVariation = glm::radians((float)luaL_optnumber(s, -1, 0.0));
+		lua_pop(s, 1);
+		lua_getfield(s, 14, "seed");
+		config.seed = (int)luaL_optinteger(s, -1, config.seed);
+		lua_pop(s, 1);
+		lua_getfield(s, 14, "leafColor");
+		config.leafColor = (int)luaL_optinteger(s, -1, config.leafColor);
+		lua_pop(s, 1);
+	}
 
 	if (!voxelgenerator::lsystem::parseRules(rulesStr, config.rules)) {
 		return clua_error(s, "Failed to parse L-system rules. Expected format: '{ A rule } { B rule }'");
@@ -2482,6 +2500,21 @@ static int luaVoxel_lsystem_templates(lua_State *s) {
 
 		lua_pushnumber(s, t.config.leafRadius);
 		lua_setfield(s, -2, "leafRadius");
+
+		lua_pushnumber(s, t.config.lengthScale);
+		lua_setfield(s, -2, "lengthScale");
+
+		lua_pushnumber(s, t.config.minLength);
+		lua_setfield(s, -2, "minLength");
+
+		lua_pushnumber(s, glm::degrees(t.config.angleVariation));
+		lua_setfield(s, -2, "angleVariation");
+
+		lua_pushinteger(s, t.config.seed);
+		lua_setfield(s, -2, "seed");
+
+		lua_pushinteger(s, t.config.leafColor);
+		lua_setfield(s, -2, "leafColor");
 
 		// Build rules string in format "{ A rule } { B rule }"
 		core::String rulesStr;
@@ -6725,7 +6758,8 @@ static int luaVoxel_lsystem_generate_jsonhelp(lua_State* s) {
 			{"name": "leafRadius", "type": "number", "description": "Radius for leaf spheres (optional, default 8)."},
 			{"name": "posX", "type": "integer", "description": "X position offset (optional, default 0)."},
 			{"name": "posY", "type": "integer", "description": "Y position offset (optional, default 0)."},
-			{"name": "posZ", "type": "integer", "description": "Z position offset (optional, default 0)."}
+			{"name": "posZ", "type": "integer", "description": "Z position offset (optional, default 0)."},
+			{"name": "options", "type": "table", "description": "Optional settings: lengthScale (default 1), minLength (default 0.5), angleVariation in degrees (default 0), seed (default 1), leafColor palette index (default -1 uses current voxel). A template table can be passed directly."}
 		],
 		"returns": []})";
 	lua_pushstring(s, json);
@@ -6735,10 +6769,10 @@ static int luaVoxel_lsystem_generate_jsonhelp(lua_State* s) {
 static int luaVoxel_lsystem_templates_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "templates",
-		"summary": "Get all built-in L-system templates. Each template contains name, description, axiom, rules, angle, length, width, widthIncrement, iterations, and leafRadius.",
+		"summary": "Get all built-in L-system templates. Each template contains name, description, axiom, rules, angle, length, width, widthIncrement, iterations, leafRadius, lengthScale, minLength, angleVariation (degrees), seed, and leafColor.",
 		"parameters": [],
 		"returns": [
-			{"type": "table", "description": "An array of template tables with fields: name, description, axiom, rules, angle, length, width, widthIncrement, iterations, leafRadius."}
+			{"type": "table", "description": "An array of template tables with fields: name, description, axiom, rules, angle, length, width, widthIncrement, iterations, leafRadius, lengthScale, minLength, angleVariation (degrees), seed, leafColor."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -7892,6 +7926,8 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 					metaName = luaVoxel_metashape();
 				} else if (SDL_strcmp(name, "g_import") == 0) {
 					metaName = luaVoxel_metaimporter();
+				} else if (SDL_strcmp(name, "g_lsystem") == 0) {
+					metaName = luaVoxel_metalsystem();
 				} else if (SDL_strcmp(name, "g_algorithm") == 0) {
 					metaName = luaVoxel_metaalgorithm();
 				} else if (SDL_strcmp(name, "g_sculpt") == 0) {

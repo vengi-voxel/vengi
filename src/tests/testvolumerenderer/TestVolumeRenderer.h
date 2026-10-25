@@ -24,6 +24,7 @@ private:
 
 	void doRender() override;
 	bool createMaterialScene();
+	bool createLSystemScene(const core::String &name);
 	bool loadScene(const core::String &filename);
 	bool addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, const glm::mat4 &worldMatrix);
 	void addReferenceInstances(int count);

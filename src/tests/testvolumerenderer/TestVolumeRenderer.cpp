@@ -19,6 +19,9 @@
 #include "video/Renderer.h"
 #include "video/Types.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxelgenerator/LSystem.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
@@ -60,6 +63,7 @@ app::AppState TestVolumeRenderer::onConstruct() {
 		.setShort("-i")
 		.setDescription("Optional voxel model to load instead of the built-in material scene")
 		.addFlag(ARGUMENT_FLAG_FILE);
+	registerArg("--lsystem").setDescription("Render the named L-system template with separate wood and leaf colors");
 	registerArg("--instances")
 		.setDescription("Add N mesh-reference copies of volume 0 (MDI batching stress; default 0)");
 
@@ -158,6 +162,39 @@ bool TestVolumeRenderer::createMaterialScene() {
 	return true;
 }
 
+bool TestVolumeRenderer::createLSystemScene(const core::String &name) {
+	for (const auto &t : voxelgenerator::lsystem::defaultTemplates()) {
+		if (t.name != name) {
+			continue;
+		}
+		_palette.setSize(3);
+		_palette.setColor(0, color::RGBA(0, 0, 0, 0));
+		_palette.setColor(1, color::RGBA(110, 65, 30));
+		_palette.setColor(2, color::RGBA(60, 140, 35));
+		voxel::RawVolume generated(voxel::Region(-128, -16, -128, 128, 255, 128));
+		voxel::RawVolumeWrapper wrapper(&generated);
+		auto config = t.config;
+		config.leafColor = 2;
+		voxelgenerator::lsystem::LSystemState state;
+		voxelgenerator::lsystem::prepareState(config, state);
+		voxelgenerator::lsystem::LSystemExecutionState exec;
+		while (voxelgenerator::lsystem::step(wrapper, voxel::createVoxel(_palette, 1), state, exec)) {
+		}
+		voxel::RawVolume *volume = voxelutil::cropVolume(&generated);
+		if (volume == nullptr) {
+			volume = new voxel::RawVolume(generated);
+		}
+		if (!addVolume(0, volume, &_palette, glm::mat4(1.0f))) {
+			return false;
+		}
+		voxelrender::configureCamera(camera(), volume->region(), voxelrender::SceneCameraMode::Free, 500.0f);
+		camera().update(0.0);
+		return true;
+	}
+	Log::error("Unknown L-system template '%s'", name.c_str());
+	return false;
+}
+
 void TestVolumeRenderer::addReferenceInstances(int count) {
 	if (count <= 0) {
 		return;
@@ -248,7 +285,11 @@ app::AppState TestVolumeRenderer::onInit() {
 	_renderContext.renderMode = voxelrender::RenderMode::Scene;
 	configureRendererFeatures();
 
-	if (hasArg("--input")) {
+	if (hasArg("--lsystem")) {
+		if (!createLSystemScene(getArgVal("--lsystem"))) {
+			return app::AppState::InitFailure;
+		}
+	} else if (hasArg("--input")) {
 		const core::String filename = getArgVal("--input");
 		if (!loadScene(filename)) {
 			return app::AppState::InitFailure;

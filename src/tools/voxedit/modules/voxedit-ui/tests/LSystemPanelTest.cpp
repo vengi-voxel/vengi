@@ -52,6 +52,16 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("Length", 5.0f);
 		IM_CHECK_EQ((int)_conf.length, 5);
 
+		ctx->ItemInputValue("Length scale", 0.85f);
+		IM_CHECK(_conf.lengthScale > 0.84f && _conf.lengthScale < 0.86f);
+		ctx->ItemInputValue("Minimum length", 1.0f);
+		IM_CHECK_EQ(_conf.minLength, 1.0f);
+		ctx->ItemInputValue("Angle variation", 5.0f);
+		IM_CHECK_EQ((int)glm::degrees(_conf.angleVariation), 5);
+		ctx->ItemInputValue("Seed", 42);
+		IM_CHECK_EQ(_conf.seed, 42);
+		ctx->ItemInputValue("Leaf color", 2);
+		IM_CHECK_EQ(_conf.leafColor, 2);
 		ctx->ItemInputValue("Iterations", 3);
 		IM_CHECK_EQ(_conf.iterations, 3);
 	};

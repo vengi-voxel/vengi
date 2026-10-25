@@ -125,6 +125,18 @@ void LSystemPanel::update(const char *id) {
 		ImGui::TooltipTextUnformatted(_("The angle in degrees"));
 		ImGui::InputFloat(_("Length"), &_conf.length);
 		ImGui::TooltipTextUnformatted(_("The length of the segments"));
+		ImGui::InputFloat(_("Length scale"), &_conf.lengthScale);
+		ImGui::TooltipTextUnformatted(_("Multiply segment length after drawing; 1 keeps the length constant"));
+		ImGui::InputFloat(_("Minimum length"), &_conf.minLength);
+		float angleVariation = glm::degrees(_conf.angleVariation);
+		if (ImGui::InputFloat(_("Angle variation"), &angleVariation)) {
+			_conf.angleVariation = glm::radians(glm::max(0.0f, angleVariation));
+		}
+		ImGui::TooltipTextUnformatted(_("Random angle variation in degrees; 0 disables variation"));
+		ImGui::InputInt(_("Seed"), &_conf.seed);
+		// TODO: LSYSTEM: make this a color select box - like the lua script color input parameters e.g. - which is also a drop target of the palette color
+		ImGui::InputInt(_("Leaf color"), &_conf.leafColor);
+		ImGui::TooltipTextUnformatted(_("Leaf palette index (1-255), or -1 to use the current voxel"));
 		ImGui::InputFloat(_("Width"), &_conf.width);
 		ImGui::TooltipTextUnformatted(_("The initial width of the segments"));
 		ImGui::InputFloat(_("Width increment"), &_conf.widthIncrement);
@@ -171,6 +183,7 @@ void LSystemPanel::update(const char *id) {
 					}
 					if (oldLength > 0.0001f) {
 						const float scale = _conf.length / oldLength;
+						_conf.minLength *= scale;
 						_conf.width *= scale;
 						_conf.widthIncrement *= scale;
 						_conf.leafRadius *= scale;

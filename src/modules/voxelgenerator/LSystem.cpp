@@ -35,7 +35,12 @@ void prepareState(const LSystemConfig &conf, LSystemState &state) {
 	state.length = conf.length;
 	state.width = conf.width;
 	state.widthIncrement = conf.widthIncrement;
-	state.leafRadius = conf.leafRadius;
+	state.leafRadius = glm::max(0.0f, conf.leafRadius);
+	state.lengthScale = glm::max(0.0f, conf.lengthScale);
+	state.minLength = glm::max(0.0f, conf.minLength);
+	state.angleVariation = glm::max(0.0f, conf.angleVariation);
+	state.seed = conf.seed;
+	state.leafColor = conf.leafColor;
 
 	for (int i = 0; i < conf.iterations; i++) {
 		core::String nextSentence = "";
@@ -80,7 +85,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	simpleTree.config.iterations = 4;
 	simpleTree.config.leafRadius = 4.0f;
 	simpleTree.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]LX" },
+		{ 'X', "F[!+X][!-X][!>X][!<X]LX" },
 		{ 'F', "FF" }
 	};
 	templates.push_back(simpleTree);
@@ -160,8 +165,8 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	monopodialTree.config.iterations = 4;
 	monopodialTree.config.leafRadius = 4.0f;
 	monopodialTree.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]LX" },
-		{ 'F', "FF" }
+		{ 'X', "FF[!+B][!-B][!>B][!<B]!X" },
+		{ 'B', "F[!+B][!>B]L" }
 	};
 	templates.push_back(monopodialTree);
 
@@ -191,7 +196,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	broadCanopy.config.iterations = 4;
 	broadCanopy.config.leafRadius = 4.0f;
 	broadCanopy.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]LX" },
+		{ 'X', "F[!+X][!-X][!>X][!<X]LX" },
 		{ 'F', "F" }
 	};
 	templates.push_back(broadCanopy);
@@ -200,15 +205,15 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	coniferLike.name = "Conifer-like";
 	coniferLike.description = "A cone-shaped tree resembling a conifer.";
 	coniferLike.config.axiom = "X";
-	coniferLike.config.angle = glm::radians(20.0f);
+	coniferLike.config.angle = glm::radians(35.0f);
 	coniferLike.config.length = 2.0f;
 	coniferLike.config.width = 2.0f;
 	coniferLike.config.widthIncrement = 0.3f;
 	coniferLike.config.iterations = 4;
-	coniferLike.config.leafRadius = 4.0f;
+	coniferLike.config.leafRadius = 2.0f;
 	coniferLike.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]FX" },
-		{ 'F', "FF" }
+		{ 'X', "FF[!++B][!--B][!>>B][!<<B]!X" },
+		{ 'B', "FBL" }
 	};
 	templates.push_back(coniferLike);
 
@@ -238,7 +243,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	fern3D.config.iterations = 4;
 	fern3D.config.leafRadius = 3.0f;
 	fern3D.config.rules = {
-		{ 'X', "F[+X][-X]LX" },
+		{ 'X', "F[!+X][!-X][!>X]LX" },
 		{ 'F', "FF" }
 	};
 	templates.push_back(fern3D);
@@ -269,7 +274,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	alienFlower.config.iterations = 4;
 	alienFlower.config.leafRadius = 3.0f;
 	alienFlower.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]LX" },
+		{ 'X', "F[!+X][!-X][!>X][!<X]LX" },
 		{ 'F', "F" }
 	};
 	templates.push_back(alienFlower);
@@ -282,10 +287,10 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	bamboo.config.length = 3.0f;
 	bamboo.config.width = 1.5f;
 	bamboo.config.widthIncrement = 0.0f;
-	bamboo.config.iterations = 4;
+	bamboo.config.iterations = 3;
 	bamboo.config.leafRadius = 4.0f;
 	bamboo.config.rules = {
-		{ 'F', "FF[+L][-L][>L][<L]F" }
+		{ 'F', "FF[+FL][-FL][>FL][<FL]F" }
 	};
 	templates.push_back(bamboo);
 
@@ -293,17 +298,35 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	pineTree.name = "Pine Tree";
 	pineTree.description = "A tall, conical evergreen tree.";
 	pineTree.config.axiom = "X";
-	pineTree.config.angle = glm::radians(18.0f);
+	pineTree.config.angle = glm::radians(35.0f);
 	pineTree.config.length = 2.0f;
 	pineTree.config.width = 2.0f;
 	pineTree.config.widthIncrement = 0.2f;
 	pineTree.config.iterations = 5;
-	pineTree.config.leafRadius = 4.0f;
+	pineTree.config.leafRadius = 2.0f;
 	pineTree.config.rules = {
-		{ 'X', "F[+X][-X][>X][<X]FX" },
-		{ 'F', "FF" }
+		{ 'X', "FF[!++B][!--B][!>>B][!<<B]!X" },
+		{ 'B', "FBL" }
 	};
 	templates.push_back(pineTree);
+
+	LSystemTemplate naturalTree;
+	naturalTree.name = "Natural Branching Tree";
+	naturalTree.description = "Irregular branching with shorter outer segments and tapered limbs.";
+	naturalTree.config.axiom = "X";
+	naturalTree.config.angle = glm::radians(28.0f);
+	naturalTree.config.angleVariation = glm::radians(5.0f);
+	naturalTree.config.length = 5.0f;
+	naturalTree.config.lengthScale = 0.85f;
+	naturalTree.config.minLength = 1.0f;
+	naturalTree.config.width = 4.0f;
+	naturalTree.config.widthIncrement = 0.8f;
+	naturalTree.config.iterations = 4;
+	naturalTree.config.leafRadius = 2.0f;
+	naturalTree.config.rules = {
+		{ 'X', "FF[!+X][!->X][!<X]!FL" }
+	};
+	templates.push_back(naturalTree);
 
 	// https://en.wikipedia.org/wiki/Dragon_curve
 	LSystemTemplate dragonCurve;

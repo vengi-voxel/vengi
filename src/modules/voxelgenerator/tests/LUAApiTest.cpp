@@ -1450,6 +1450,23 @@ TEST_F(LUAApiTest, testLSystemGenerate) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testLSystemOptions) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			g_lsystem.generate(volume, "FFF", "", 1, 25, 3, 1, 0.5, 0, 1, 0, 0, 0,
+				{lengthScale = 0.5, minLength = 1, angleVariation = 0, seed = 42, leafColor = 2})
+			assert(volume:voxel(0, 6, 0) == 1, "Expected decaying segment endpoint")
+			assert(volume:voxel(0, 7, 0) == -1, "Expected length decay to stop before 7")
+			g_lsystem.generate(volume, "L", "", 1, 25, 1, 1, 0.5, 0, 1, 5, 5, 5,
+				{leafColor = 2})
+			assert(volume:voxel(5, 5, 5) == 2, "Expected separate leaf color")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testLSystemTemplates) {
 	const core::String script = R"(
 		function main(node, region, color)
@@ -1461,6 +1478,10 @@ TEST_F(LUAApiTest, testLSystemTemplates) {
 			assert(t.rules ~= nil, "Expected template rules")
 			assert(t.angle ~= nil, "Expected template angle")
 			assert(t.iterations ~= nil, "Expected template iterations")
+			assert(t.lengthScale == 1, "Expected constant default length")
+			assert(t.seed == 1, "Expected reproducible default seed")
+			assert(t.leafColor == -1, "Expected current voxel for leaves")
+			assert(t.angleVariation == 0, "Expected no default variation")
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;
@@ -1487,7 +1508,7 @@ TEST_F(LUAApiTest, testLSystemTemplateGenerate) {
 			local volume = node:volume()
 			local templates = g_lsystem.templates()
 			local t = templates[1]
-			g_lsystem.generate(volume, t.axiom, t.rules, color, t.angle, t.length, t.width, t.widthIncrement, t.iterations, t.leafRadius)
+			g_lsystem.generate(volume, t.axiom, t.rules, color, t.angle, t.length, t.width, t.widthIncrement, t.iterations, t.leafRadius, 0, 0, 0, t)
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;
