@@ -4,6 +4,8 @@
 
 #include "voxelgenerator/LSystem.h"
 #include "app/tests/AbstractTest.h"
+#include "color/RGBA.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -311,6 +313,39 @@ TEST_F(LSystemTests, testAdoptLiftsWidthBelowOrigin) {
 	EXPECT_TRUE(target.containsRegion(bounds));
 	EXPECT_EQ(bounds.getLowerY(), target.getLowerY());
 	EXPECT_GT(config.position.y, target.getLowerY());
+}
+
+TEST_F(LSystemTests, testDefaultLeafColorPicksGreen) {
+	palette::Palette palette;
+	ASSERT_TRUE(palette.nippon());
+	const int idx = defaultLeafColor(palette);
+	ASSERT_GE(idx, 0);
+	ASSERT_LT(idx, palette.colorCount());
+	EXPECT_EQ(idx, palette.getClosestMatch(color::RGBA(60, 140, 35)));
+	const color::RGBA c = palette.color(idx);
+	EXPECT_GE(c.g, c.r);
+	EXPECT_GE(c.g, c.b);
+}
+
+TEST_F(LSystemTests, testDefaultLeafColorEmptyPalette) {
+	palette::Palette palette;
+	EXPECT_EQ(-1, defaultLeafColor(palette));
+}
+
+TEST_F(LSystemTests, testLeafColorZeroIsUsed) {
+	LSystemConfig config;
+	config.axiom = "L";
+	config.leafRadius = 1.0f;
+	config.leafColor = 0;
+	config.iterations = 0;
+	voxel::RawVolume volume(voxel::Region(-4, 4));
+	LSystemExecutionState exec;
+	generate(config, volume, exec);
+	int leaves = 0;
+	voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {
+		leaves += v.getColor() == 0 && !voxel::isAir(v.getMaterial());
+	});
+	EXPECT_GT(leaves, 0);
 }
 
 TEST_F(LSystemTests, testInvalidRule) {

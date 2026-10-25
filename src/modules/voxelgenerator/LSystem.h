@@ -12,6 +12,10 @@
 #include "math/Random.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+
+namespace palette {
+class Palette;
+}
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -66,7 +70,7 @@ struct LSystemConfig {
 	float minLength = 0.5f;
 	float angleVariation = 0.0f;
 	int seed = 1;
-	// -1 uses the current turtle voxel, otherwise a palette index in [1, 255].
+	// -1 uses the current turtle voxel, otherwise a palette index in [0, 255].
 	int leafColor = -1;
 };
 
@@ -83,7 +87,7 @@ struct LSystemState {
 	float minLength = 0.5f;
 	float angleVariation = 0.0f;
 	int seed = 1;
-	// -1 uses the current turtle voxel, otherwise a palette index in [1, 255].
+	// -1 uses the current turtle voxel, otherwise a palette index in [0, 255].
 	int leafColor = -1;
 };
 
@@ -103,6 +107,9 @@ struct LSystemTemplate {
 core::DynamicArray<LSystemTemplate> defaultTemplates();
 
 void prepareState(const LSystemConfig &conf, LSystemState &state);
+
+/** Closest foliage green in @p palette, or -1 if the palette has no usable color. */
+int defaultLeafColor(const palette::Palette &palette);
 
 /**
  * @return Axis-aligned bounds of every voxel the L-system would write, or InvalidRegion if none.
@@ -214,7 +221,7 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 		// Oversample the sphere to close potential holes.
 		const float leafDistance = glm::round(2.0f * state.leafRadius);
 		const int leavesVoxelCnt = (int)(glm::pow(leafDistance, 3) * 2.0f);
-		const voxel::Voxel leaf = state.leafColor > 0 && state.leafColor < 256
+		const voxel::Voxel leaf = state.leafColor >= 0 && state.leafColor < 256
 			? voxel::createVoxel(voxel::VoxelType::Generic, state.leafColor)
 			: execState.step.voxel;
 		for (int j = 0; j < leavesVoxelCnt; j++) {

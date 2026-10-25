@@ -18,11 +18,31 @@
 
 namespace voxedit {
 
+void LSystemPanel::resolveDefaultLeafColor() {
+	if (!_resolveLeafColor) {
+		return;
+	}
+	const int match = voxelgenerator::lsystem::defaultLeafColor(_sceneMgr->activePalette());
+	if (match >= 0) {
+		_conf.leafColor = match;
+		_resolveLeafColor = false;
+	}
+}
+
+void LSystemPanel::applyTemplate(int templateIdx) {
+	if (templateIdx < 0 || templateIdx >= (int)_templates.size()) {
+		return;
+	}
+	_templateIdx = templateIdx;
+	_conf = _templates[templateIdx].config;
+	_resolveLeafColor = true;
+	resolveDefaultLeafColor();
+}
+
 bool LSystemPanel::init() {
 	_templates = voxelgenerator::lsystem::defaultTemplates();
 	if (!_templates.empty()) {
-		_templateIdx = 0;
-		_conf = _templates[0].config;
+		applyTemplate(0);
 	}
 	return true;
 }
@@ -48,6 +68,7 @@ void LSystemPanel::update(const char *id) {
 	const core::String &title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
 	if (ui::ScopedPanel::Scope scope =
 			panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
+		resolveDefaultLeafColor();
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(_("Edit"))) {
 				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY,_("Copy"))) {
@@ -136,7 +157,8 @@ void LSystemPanel::update(const char *id) {
 		ImGui::TooltipTextUnformatted(_("Random angle variation in degrees; 0 disables variation"));
 		ImGui::InputInt(_("Seed"), &_conf.seed);
 		voxelui::paletteColorIndexInput(_("Leaf color"), &_conf.leafColor, &_sceneMgr->activePalette(), -1);
-		ImGui::TooltipTextUnformatted(_("Leaf palette index, or -1 to use the current voxel. Drag a palette color here."));
+		ImGui::TooltipTextUnformatted(
+			_("Defaults to the closest green in the node palette. -1 uses the current voxel. Drag a palette color here."));
 		ImGui::InputFloat(_("Width"), &_conf.width);
 		ImGui::TooltipTextUnformatted(_("The initial width of the segments"));
 		ImGui::InputFloat(_("Width increment"), &_conf.widthIncrement);
@@ -151,8 +173,7 @@ void LSystemPanel::update(const char *id) {
 			for (int i = 0; i < (int)_templates.size(); ++i) {
 				const bool isSelected = (_templateIdx == i);
 				if (ImGui::Selectable(_templates[i].name.c_str(), isSelected)) {
-					_templateIdx = i;
-					_conf = _templates[i].config;
+					applyTemplate(i);
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();

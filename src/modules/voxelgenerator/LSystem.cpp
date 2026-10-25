@@ -4,8 +4,10 @@
 
 #include "LSystem.h"
 #include "app/I18N.h"
+#include "color/RGBA.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
+#include "palette/Palette.h"
 
 namespace voxelgenerator {
 namespace lsystem {
@@ -67,6 +69,14 @@ void prepareState(const LSystemConfig &conf, LSystemState &state) {
 
 		state.sentence = nextSentence;
 	}
+}
+
+int defaultLeafColor(const palette::Palette &palette) {
+	const int match = palette.getClosestMatch(color::RGBA(60, 140, 35));
+	if (match < 0 || match > 255) {
+		return -1;
+	}
+	return match;
 }
 
 namespace {

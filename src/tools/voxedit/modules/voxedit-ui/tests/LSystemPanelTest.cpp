@@ -40,7 +40,17 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->Yield();
 			// after selecting a template, the axiom should be filled
 			IM_CHECK(!_conf.axiom.empty());
+			IM_CHECK_EQ(_conf.leafColor, voxelgenerator::lsystem::defaultLeafColor(_sceneMgr->activePalette()));
 		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "default leaf color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
+		IM_CHECK(focusWindow(ctx, id));
+		const int expected = voxelgenerator::lsystem::defaultLeafColor(_sceneMgr->activePalette());
+		IM_CHECK(expected >= 0);
+		IM_CHECK_EQ(_conf.leafColor, expected);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {

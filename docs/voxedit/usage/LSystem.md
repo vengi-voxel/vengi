@@ -16,7 +16,7 @@ The L-System (Lindenmayer System) generator allows you to create complex procedu
 * **Minimum length**: Lower bound when length scaling is enabled. Fractional lengths are supported.
 * **Angle variation**: Random variation around the rotation angle in degrees. Use `0` to disable it.
 * **Seed**: Controls both angle variation and leaf sampling. The same settings and seed reproduce the same tree.
-* **Leaf color**: Palette index for foliage, or `-1` to use the current turtle voxel. Drag a color from the palette panel onto the field. Does not change the color of subsequent branches.
+* **Leaf color**: Palette index for foliage. Defaults to the closest green in the node palette. `-1` uses the current turtle voxel. Drag a color from the palette panel onto the field. Does not change the color of subsequent branches.
 * **Width**: The initial width of the segments.
 * **Width increment**: The amount to increment or decrement the width when using width commands.
 * **Iterations**: The number of times the rules are applied to the axiom. Higher values create more complex structures but take longer to generate.

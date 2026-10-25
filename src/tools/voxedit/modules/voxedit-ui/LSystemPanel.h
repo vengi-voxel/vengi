@@ -19,8 +19,12 @@ private:
 	SceneManagerPtr _sceneMgr;
 	int _templateIdx = -1;
 
+	bool _resolveLeafColor = true;
+
 	void copyRulesToClipboard();
 	void pasteRulesFromClipboard();
+	void applyTemplate(int templateIdx);
+	void resolveDefaultLeafColor();
 
 public:
 	LSystemPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "lsystem"), _sceneMgr(sceneMgr) {
