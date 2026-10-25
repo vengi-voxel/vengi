@@ -593,11 +593,11 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		return false;
 	}
 	voxel::Region srcRegion = region;
-	if (!src.region().containsRegion(srcRegion)) {
-		srcRegion.cropTo(src.region());
+	if (!srcRegion.cropTo(src.region())) {
+		return false;
 	}
-	if (!_region.containsRegion(srcRegion)) {
-		srcRegion.cropTo(_region);
+	if (!srcRegion.cropTo(_region)) {
+		return false;
 	}
 
 	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&src, this, srcRegion](int start, int end) {

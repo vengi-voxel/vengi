@@ -97,7 +97,7 @@ TEST_F(RawVolumeTest, testCopyInto) {
 }
 
 // https://github.com/vengi-voxel/vengi/issues/770
-TEST_F(RawVolumeTest, DISABLED_testCopyIntoOutsideSource) {
+TEST_F(RawVolumeTest, testCopyIntoOutsideSource) {
 	RawVolume src(Region{0, 3});
 	const Region copyRegion(0, 0, 5, 3, 3, 5);
 	RawVolume dst(copyRegion);
@@ -108,6 +108,45 @@ TEST_F(RawVolumeTest, DISABLED_testCopyIntoOutsideSource) {
 	for (int y = 0; y <= 3; ++y) {
 		for (int x = 0; x <= 3; ++x) {
 			EXPECT_EQ(original, dst.voxel(x, y, 5));
+		}
+	}
+}
+
+TEST_F(RawVolumeTest, testCopyIntoDisjointRegions) {
+	const Voxel original = voxel::createVoxel(VoxelType::Generic, 42);
+	for (int axis = 0; axis < 3; ++axis) {
+		for (int direction = -1; direction <= 1; direction += 2) {
+			RawVolume src(Region{0, 3});
+			Region dstRegion = src.region();
+			glm::ivec3 offset(0);
+			offset[axis] = direction * 5;
+			dstRegion.shift(offset);
+			RawVolume dst(dstRegion);
+			dst.fill(original);
+			EXPECT_FALSE(dst.copyInto(src));
+			// The request overlaps both volumes, but they have no common voxels.
+			Region request = src.region();
+			request.accumulate(dstRegion);
+			EXPECT_FALSE(dst.copyInto(src, request));
+			EXPECT_EQ(original, dst.voxel(dstRegion.getLowerCorner()));
+			EXPECT_EQ(original, dst.voxel(dstRegion.getUpperCorner()));
+		}
+	}
+}
+
+TEST_F(RawVolumeTest, testCopyIntoPartialOverlap) {
+	RawVolume src(Region{-2, 1});
+	const Voxel copied = voxel::createVoxel(VoxelType::Generic, 7);
+	src.fill(copied);
+	RawVolume dst(Region{0, 3});
+	const Voxel original = voxel::createVoxel(VoxelType::Generic, 42);
+	dst.fill(original);
+	ASSERT_TRUE(dst.copyInto(src, Region{-3, 2}));
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 3; ++x) {
+				EXPECT_EQ(x <= 1 && y <= 1 && z <= 1 ? copied : original, dst.voxel(x, y, z));
+			}
 		}
 	}
 }
