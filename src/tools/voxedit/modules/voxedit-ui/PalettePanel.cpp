@@ -48,22 +48,77 @@ static bool dragAndDropSortColors() {
 	return ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
 }
 
+void PalettePanel::pasteColor(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, bool selection) {
+	if (!_hasCopiedColor || _sceneMgr->isLocked()) {
+		return;
+	}
+	memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "pastecolor");
+	bool changed = false;
+	auto paste = [&](uint8_t index) {
+		if (node.palette().color(index) != _copiedColor) {
+			changed |= _sceneMgr->nodeSetColor(node.uuid(), index, _copiedColor);
+		}
+	};
+	if (selection && _selectedIndices.has(paletteColorIdx)) {
+		for (const auto &entry : _selectedIndices) {
+			paste(entry->key);
+		}
+	} else {
+		paste(paletteColorIdx);
+	}
+	if (changed) {
+		_sceneMgr->markDirty();
+	}
+}
+
+void PalettePanel::pasteMaterial(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node) {
+	if (!_hasCopiedMaterial || _sceneMgr->isLocked()) {
+		return;
+	}
+	palette::Palette &palette = node.palette();
+	bool changed = false;
+	auto paste = [&](uint8_t index) {
+		if (palette.material(index) != _copiedMaterial) {
+			palette.setMaterial(index, _copiedMaterial);
+			changed = true;
+		}
+	};
+	if (_selectedIndices.has(paletteColorIdx)) {
+		for (const auto &entry : _selectedIndices) {
+			paste(entry->key);
+		}
+	} else {
+		paste(paletteColorIdx);
+	}
+	if (changed) {
+		palette.markSave();
+		_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+		_sceneMgr->markDirty();
+	}
+}
+
 void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 									 command::CommandExecutionListener &listener, palette::Palette &palette) {
 	const char buf[2] = {(char)paletteColorIdx, '\0'};
 	if (ImGui::BeginPopupContextItem(buf)) {
-		if (showColorPicker(paletteColorIdx, node, listener)) {
-			_colorPickerChange = true;
-		} else if (_colorPickerChange) {
-			_colorPickerChange = false;
-			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
-		}
-
+		const bool existingColor = paletteColorIdx < palette.colorCount();
 		const color::RGBA color = palette.color(paletteColorIdx);
-		const bool usableColor = color.a > 0;
+		const bool usableColor = existingColor && color.a > 0;
 		const bool singleSelection = _selectedIndices.size() == 1;
-		// we might open the context menu for a color that is not in the selection
 		const bool isCurrentInSelection = _selectedIndices.has(paletteColorIdx);
+		if (existingColor) {
+			if (showColorPicker(paletteColorIdx, node, listener)) {
+				_colorPickerChange = true;
+			} else if (_colorPickerChange) {
+				_colorPickerChange = false;
+				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+			}
+			core::String name = palette.colorName(paletteColorIdx);
+			if (ImGui::InputText(_("Name"), &name)) {
+				palette.setColorName(paletteColorIdx, name);
+				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+			}
+		}
 		if (usableColor) {
 			int typeIdx = (int)palette.material(paletteColorIdx).type;
 			if (typeIdx < 0 || typeIdx >= lengthof(palette::MaterialTypeNames)) {
@@ -104,7 +159,17 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					}
 				}
 			}
+		}
 
+		ImGui::SeparatorText(_("Color"));
+		if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy color"), nullptr, false, existingColor)) {
+			_copiedColor = palette.color(paletteColorIdx);
+			_hasCopiedColor = true;
+		}
+		if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste color"), nullptr, false, _hasCopiedColor)) {
+			pasteColor(paletteColorIdx, node, true);
+		}
+		if (usableColor) {
 			if (color.a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
@@ -117,6 +182,18 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					}
 				}
 			}
+		}
+
+		ImGui::SeparatorText(_("Material"));
+		if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy material"), nullptr, false, existingColor)) {
+			_copiedMaterial = palette.material(paletteColorIdx);
+			_hasCopiedMaterial = true;
+		}
+		if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste material"), nullptr, false,
+								_hasCopiedMaterial && existingColor)) {
+			pasteMaterial(paletteColorIdx, node);
+		}
+		if (usableColor) {
 			if (ImGui::IconMenuItem(ICON_LC_OCTAGON_MINUS, _("Reset material"))) {
 				memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "resetmaterial");
 				if (isCurrentInSelection) {
@@ -127,6 +204,10 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					_sceneMgr->nodeResetMaterial(node.uuid(), paletteColorIdx);
 				}
 			}
+		}
+
+		if (usableColor) {
+			ImGui::SeparatorText(_("Palette entries"));
 			if (isCurrentInSelection) {
 				core::String modelFromColorCmd = "colortomodel ";
 				bool first = true;
@@ -193,12 +274,6 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					ImGui::EndMenu();
 				}
 			}
-		}
-
-		core::String name = palette.colorName(paletteColorIdx);
-		if (ImGui::InputText(_("Name"), &name)) {
-			palette.setColorName(paletteColorIdx, name);
-			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 
 		ImGui::EndPopup();
@@ -318,9 +393,7 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 
 			handleDragAndDrop(paletteColorIdx, node, palette);
 
-			if (existingColor) {
-				handleContextMenu(paletteColorIdx, node, listener, palette);
-			}
+			handleContextMenu(paletteColorIdx, node, listener, palette);
 		}
 	}
 
@@ -329,12 +402,10 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 2.0f);
 
 		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_C)) {
-			_copyPaletteColorIdx = (int)paletteColorIdx;
+			_copiedColor = palette.color(paletteColorIdx);
+			_hasCopiedColor = true;
 		} else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
-			if (_copyPaletteColorIdx != -1) {
-				palette.copy((uint8_t)_copyPaletteColorIdx, paletteColorIdx);
-				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
-			}
+			pasteColor(paletteColorIdx, node, false);
 		}
 	} else if (existingColor && paletteColorIdx == sceneColorIdx) {
 		if (color.a > 0) {

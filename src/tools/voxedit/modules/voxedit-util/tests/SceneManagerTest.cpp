@@ -1355,6 +1355,30 @@ TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
 	EXPECT_EQ(1u, _sceneMgr->sceneGraph().animations().size());
 }
 
+TEST_F(SceneManagerTest, testSetColorTransparencyUndoRedo) {
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	const core::UUID nodeUUID = _sceneMgr->activeNodeUUID();
+	const palette::Palette &palette = _sceneMgr->activePalette();
+	for (uint8_t alpha : {128, 255}) {
+		const color::RGBA previousColor = palette.color(1);
+		const voxel::Voxel previousVoxel = _sceneMgr->volume(nodeUUID)->voxel(testMins());
+		const color::RGBA nextColor(23, 45, 67, alpha);
+		{
+			memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "change alpha");
+			ASSERT_TRUE(_sceneMgr->nodeSetColor(nodeUUID, 1, nextColor));
+		}
+		EXPECT_EQ(nextColor, palette.color(1));
+		const voxel::VoxelType expectedType = alpha == 255 ? voxel::VoxelType::Generic : voxel::VoxelType::Transparent;
+		EXPECT_EQ(expectedType, _sceneMgr->volume(nodeUUID)->voxel(testMins()).getMaterial());
+		ASSERT_TRUE(_sceneMgr->undo());
+		EXPECT_EQ(previousColor, palette.color(1));
+		EXPECT_EQ(previousVoxel, _sceneMgr->volume(nodeUUID)->voxel(testMins()));
+		ASSERT_TRUE(_sceneMgr->redo());
+		EXPECT_EQ(nextColor, palette.color(1));
+		EXPECT_EQ(expectedType, _sceneMgr->volume(nodeUUID)->voxel(testMins()).getMaterial());
+	}
+}
+
 TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	EXPECT_EQ("scene.vengi", _sceneMgr->getSuggestedFilename());
 	sceneMgr()->setLastFilename("test.vengi");

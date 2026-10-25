@@ -4,9 +4,10 @@
 
 #include "../PalettePanel.h"
 #include "TestUtil.h"
+#include "memento/MementoHandler.h"
 #include "util/VarUtil.h"
-#include "voxedit-util/Config.h"
 #include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -15,9 +16,8 @@ namespace voxedit {
  * @brief Compute the screen-space center of a palette color cell.
  *
  * The palette grid starts at the window's content region top-left corner. Each cell is
- * a square scaled by @c ve_palettecolorsize relative to the UI frame height. Cells are laid out left-to-right and wrap when they
- * would exceed @c contentRegionWidth. The @c palettePanelIdx is the visual index (after
- * any sort reordering).
+ * a square scaled by @c ve_palettecolorsize relative to the UI frame height. Cells are laid out left-to-right and wrap
+ * when they would exceed @c contentRegionWidth. The @c palettePanelIdx is the visual index (after any sort reordering).
  */
 static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 	const float frameHeight = ImGui::GetFrameHeight() * core::getVar(cfg::VoxEditPaletteColorSize)->floatVal();
@@ -30,8 +30,7 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 	}
 	const int col = palettePanelIdx % cols;
 	const int row = palettePanelIdx / cols;
-	return ImVec2(startX + col * frameHeight + frameHeight * 0.5f,
-				  startY + row * frameHeight + frameHeight * 0.5f);
+	return ImVec2(startX + col * frameHeight + frameHeight * 0.5f, startY + row * frameHeight + frameHeight * 0.5f);
 }
 
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
@@ -77,7 +76,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->ItemClick("###Ok");
 			palette::Palette check;
 			check.load(palette::Palette::builtIn[i]);
-			const palette::Palette& activePalette = _sceneMgr->activePalette();
+			const palette::Palette &activePalette = _sceneMgr->activePalette();
 			IM_CHECK_EQ(activePalette.colorCount(), check.colorCount());
 			IM_CHECK_EQ(activePalette.color(0), check.color(0));
 		}
@@ -92,7 +91,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
 		ctx->ItemClick("//$FOCUSED/Ok");
 		ctx->MenuClick("File/Export");
-		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
 		IM_CHECK_EQ(activePalette.colorCount(), 16);
 		IM_CHECK_EQ(activePalette.color(0), color::RGBA(0, 0, 0, 255));
 		IM_CHECK_EQ(activePalette.color(4), color::RGBA(255, 255, 255, 255));
@@ -109,7 +108,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 
-		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
 		const color::RGBA slot0 = activePalette.color(0);
 		const color::RGBA slot1 = activePalette.color(1);
 
@@ -134,7 +133,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ImGuiWindow *window = ImGui::FindWindowByName(id);
 		IM_CHECK(window != nullptr);
 
-		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
 		const color::RGBA slot0 = activePalette.color(0);
 		const color::RGBA slot1 = activePalette.color(1);
 		const int index0 = activePalette.view().uiIndex(0);
@@ -541,9 +540,125 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(metalInfo.ID != 0);
 		const ImGuiTestItemInfo typeInfo = ctx->ItemInfo("//$FOCUSED/Type", ImGuiTestOpFlags_NoError);
 		IM_CHECK(typeInfo.ID != 0);
+		const ImGuiTestItemInfo copyColor = ctx->ItemInfo("//$FOCUSED/Copy color");
+		const ImGuiTestItemInfo pasteColor = ctx->ItemInfo("//$FOCUSED/Paste color");
+		const ImGuiTestItemInfo copyMaterial = ctx->ItemInfo("//$FOCUSED/Copy material");
+		const ImGuiTestItemInfo pasteMaterial = ctx->ItemInfo("//$FOCUSED/Paste material");
+		const ImGuiTestItemInfo resetMaterial = ctx->ItemInfo("//$FOCUSED/Reset material");
+		IM_CHECK(copyColor.RectFull.Min.y > metalInfo.RectFull.Max.y);
+		IM_CHECK(pasteColor.RectFull.Min.y >= copyColor.RectFull.Max.y);
+		IM_CHECK(copyMaterial.RectFull.Min.y > pasteColor.RectFull.Max.y);
+		IM_CHECK(pasteMaterial.RectFull.Min.y >= copyMaterial.RectFull.Max.y);
+		IM_CHECK(resetMaterial.RectFull.Min.y >= pasteMaterial.RectFull.Max.y);
 
 		ctx->KeyPress(ImGuiKey_Escape);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "copy paste color and material context menu")->TestFunc =
+		[=](ImGuiTestContext *ctx) {
+			IM_CHECK(prepareUITest(ctx));
+			ScopedPalette scopedPalette(_sceneMgr);
+			_selectedIndices.clear();
+			_hasCopiedColor = false;
+			_hasCopiedMaterial = false;
+			palette::Palette source;
+			const color::RGBA copiedColor(23, 45, 67, 128);
+			source.setColor(0, copiedColor);
+			palette::Material copiedMaterial;
+			copiedMaterial.type = palette::MaterialType::Media;
+			copiedMaterial.setValue(palette::MaterialDensity, 0.65f);
+			copiedMaterial.setValue(palette::MaterialPhase, 0.35f);
+			source.setMaterial(0, copiedMaterial);
+			IM_CHECK(_sceneMgr->setActivePalette(source));
+			IM_CHECK(focusWindow(ctx, id));
+			ctx->Yield(2);
+			ImGuiWindow *window = ImGui::FindWindowByName(id);
+			IM_CHECK(window != nullptr);
+			auto openMenu = [&](int cell) {
+				ctx->SetRef(id);
+				ctx->MouseMoveToPos(paletteCellCenter(window, cell));
+				ctx->MouseClick(ImGuiMouseButton_Right);
+				ctx->Yield();
+			};
+			openMenu(0);
+			IM_CHECK((ctx->ItemInfo("//$FOCUSED/Paste color").ItemFlags & ImGuiItemFlags_Disabled) != 0);
+			IM_CHECK((ctx->ItemInfo("//$FOCUSED/Paste material").ItemFlags & ImGuiItemFlags_Disabled) != 0);
+			ctx->ItemClick("//$FOCUSED/Copy color");
+			openMenu(0);
+			ctx->ItemClick("//$FOCUSED/Copy material");
+			IM_CHECK(_hasCopiedColor && _hasCopiedMaterial);
+			// Changing the source after copying must not change either copied value.
+			_sceneMgr->activePalette().setColor(0, color::RGBA(1, 2, 3, 255));
+			_sceneMgr->activePalette().setMaterial(0, {});
+
+			const int targetId = _sceneMgr->addModelChild("paste target", 8, 8, 8);
+			IM_CHECK(targetId != InvalidNodeId);
+			_sceneMgr->nodeActivate(_sceneMgr->sceneGraphNode(targetId)->uuid());
+			palette::Palette target;
+			palette::Material targetMaterial;
+			targetMaterial.type = palette::MaterialType::Glass;
+			targetMaterial.setValue(palette::MaterialIndexOfRefraction, 1.5f);
+			for (int index = 0; index < 3; ++index) {
+				target.setColor(index, color::RGBA(100 + index, 110, 120, 255));
+				target.setMaterial(index, targetMaterial);
+				target.setColorName(index, core::String::format("target %i", index));
+			}
+			target.view().exchangeUIIndices(0, 2);
+			IM_CHECK(_sceneMgr->setActivePalette(target));
+			IM_CHECK(focusWindow(ctx, id));
+			ctx->Yield(2);
+			// Select actual indices 2 and 1 using the reordered visual cells 0 and 1.
+			ctx->SetRef(id);
+			ctx->MouseMoveToPos(paletteCellCenter(window, 0));
+			ctx->MouseClick();
+			ctx->KeyDown(ImGuiMod_Ctrl);
+			ctx->MouseMoveToPos(paletteCellCenter(window, 1));
+			ctx->MouseClick();
+			ctx->KeyUp(ImGuiMod_Ctrl);
+			IM_CHECK_EQ(_selectedIndices.size(), 2u);
+			openMenu(0);
+			ctx->ItemClick("//$FOCUSED/Paste material");
+			const palette::Palette &result = _sceneMgr->activePalette();
+			for (int index : {1, 2}) {
+				IM_CHECK(result.material(index) == copiedMaterial);
+				IM_CHECK_EQ(result.color(index), target.color(index));
+				IM_CHECK_EQ(result.colorName(index), target.colorName(index));
+			}
+			IM_CHECK(result.material(0) == targetMaterial);
+			IM_CHECK(_sceneMgr->undo());
+			IM_CHECK(result.material(1) == targetMaterial && result.material(2) == targetMaterial);
+			IM_CHECK(_sceneMgr->redo());
+			IM_CHECK(result.material(1) == copiedMaterial && result.material(2) == copiedMaterial);
+
+			// A right-click outside the selection pastes only into that entry.
+			openMenu(2);
+			ctx->ItemClick("//$FOCUSED/Paste color");
+			IM_CHECK_EQ(result.color(0), copiedColor);
+			IM_CHECK(result.material(0) == targetMaterial);
+			IM_CHECK_EQ(result.colorName(0), target.colorName(0));
+			IM_CHECK_EQ(result.color(1), target.color(1));
+			IM_CHECK_EQ(result.color(2), target.color(2));
+			IM_CHECK(_sceneMgr->undo());
+			IM_CHECK_EQ(result.color(0), target.color(0));
+			IM_CHECK(_sceneMgr->redo());
+			IM_CHECK_EQ(result.color(0), copiedColor);
+
+			openMenu(0);
+			ctx->ItemClick("//$FOCUSED/Paste color");
+			for (int index : {1, 2}) {
+				IM_CHECK_EQ(result.color(index), copiedColor);
+				IM_CHECK(result.material(index) == copiedMaterial);
+				IM_CHECK_EQ(result.colorName(index), target.colorName(index));
+			}
+			IM_CHECK(_sceneMgr->undo());
+			IM_CHECK_EQ(result.color(1), target.color(1));
+			IM_CHECK_EQ(result.color(2), target.color(2));
+			openMenu(3);
+			ctx->ItemClick("//$FOCUSED/Paste color");
+			IM_CHECK_EQ(result.color(3), copiedColor);
+			IM_CHECK_EQ(result.colorCount(), 4);
+			IM_CHECK(_sceneMgr->dirty());
+		};
 
 	IM_REGISTER_TEST(engine, testCategory(), "copy paste color")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
@@ -564,8 +679,12 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		ctx->KeyPress(ImGuiMod_Ctrl | ImGuiKey_C);
 		ctx->Yield();
-		IM_CHECK_EQ(_copyPaletteColorIdx, 0);
+		IM_CHECK(_hasCopiedColor);
+		IM_CHECK_EQ(_copiedColor, color0);
 
+		const palette::Material destinationMaterial = activePalette.material(1);
+		const core::String destinationName = activePalette.colorName(1);
+		_sceneMgr->activePalette().setColor(0, color::RGBA(1, 2, 3, 255));
 		// hover over cell 1 and press Ctrl+V
 		const ImVec2 pos1 = paletteCellCenter(window, 1);
 		ctx->MouseMoveToPos(pos1);
@@ -573,6 +692,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->KeyPress(ImGuiMod_Ctrl | ImGuiKey_V);
 		ctx->Yield();
 		IM_CHECK_EQ(activePalette.color(1), color0);
+		IM_CHECK(activePalette.material(1) == destinationMaterial);
+		IM_CHECK_EQ(activePalette.colorName(1), destinationName);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "closest color match")->TestFunc = [=](ImGuiTestContext *ctx) {

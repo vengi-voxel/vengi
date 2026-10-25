@@ -4,14 +4,16 @@
 
 #pragma once
 
+#include "color/RGBA.h"
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/Set.h"
+#include "palette/Material.h"
 #include "palette/PaletteCache.h"
 #include "palette/PaletteView.h"
-#include "ui/dearimgui/imgui.h"
 #include "ui/Panel.h"
+#include "ui/dearimgui/imgui.h"
 #include <glm/vec4.hpp>
 
 namespace scenegraph {
@@ -47,7 +49,10 @@ private:
 	const uint32_t _redColor;
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
-	int32_t _copyPaletteColorIdx = -1;
+	bool _hasCopiedColor = false;
+	color::RGBA _copiedColor;
+	bool _hasCopiedMaterial = false;
+	palette::Material _copiedMaterial;
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
 	core::String _lospecID;
@@ -58,6 +63,8 @@ private:
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void createPopups(scenegraph::SceneGraphNode &node);
 
+	void pasteColor(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, bool selection);
+	void pasteMaterial(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node);
 	void handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 						   command::CommandExecutionListener &listener, palette::Palette &palette);
 	void handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);
@@ -75,7 +82,7 @@ private:
 public:
 	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, palette::PaletteCache &paletteCache);
 	void update(const char *id, command::CommandExecutionListener &listener);
-	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
+	void onNewPaletteImport(const core::String &paletteName, bool setActive, bool searchBestColors);
 	bool hasFocus() const;
 	const PaletteSelection &selectedIndices() const;
 #ifdef IMGUI_ENABLE_TEST_ENGINE

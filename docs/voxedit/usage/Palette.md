@@ -23,12 +23,15 @@ Direct LoSpec palette import is possible and next to LoSpec you can import or ex
 ## Shortcuts
 
 * **Ctrl + C**: Copy the hovered color.
-* **Ctrl + V**: Paste the copied color into the hovered slot.
+* **Ctrl + V**: Paste the copied RGBA color into the hovered slot, preserving its material and name.
 
 ## Context Menu
 
-Right-click on a color to open the context menu:
+Right-click on a color to open the context menu. Color, name, and material editors are at the top; actions below are grouped into **Color**, **Material**, and **Palette entries**:
 
+* **Copy Color / Paste Color**: Copy RGBA only, preserving the destination material and name. Colors can also be pasted into empty slots.
+* **Copy Material / Paste Material**: Copy the complete material type and properties, preserving the destination color and name. Paste is available after copying a material.
+* Pasting from the context menu applies to all selected entries when the clicked entry is selected; otherwise it applies only to the clicked entry. One undo restores the whole paste. Copied values remain available when switching nodes or palettes.
 * **Color Picker**: Adjust the color using the color picker.
 * **Material Properties**: Choose material type (Diffuse / Metal / Glass / Emit / Blend / Media). Changing type applies that type's property defaults. Then adjust metal, roughness, IOR, emit, and the other sliders.
 * **Remove Alpha**: Remove transparency from the color.

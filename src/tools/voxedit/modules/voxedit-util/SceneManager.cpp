@@ -7665,7 +7665,6 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 	palette::Palette &palette = node.palette();
 	const bool existingColor = palIdx < palette.colorCount();
 	const bool oldHasAlpha = palette.color(palIdx).a != 255;
-	palette.setColor(palIdx, color);
 	const bool newHasAlpha = color.a != 255;
 	if (existingColor) {
 		if (oldHasAlpha && !newHasAlpha) {
@@ -7674,6 +7673,8 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 			nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 	}
+	// Volume undo snapshots must keep the previous palette until alpha conversion is recorded.
+	palette.setColor(palIdx, color);
 	palette.markSave();
 	_mementoHandler->markPaletteChange(_sceneGraph, node);
 	return true;
