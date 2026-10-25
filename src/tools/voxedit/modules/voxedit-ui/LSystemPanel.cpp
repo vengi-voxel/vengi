@@ -156,6 +156,9 @@ void LSystemPanel::update(const char *id) {
 		}
 		ImGui::TooltipTextUnformatted(_("Random angle variation in degrees; 0 disables variation"));
 		ImGui::InputInt(_("Seed"), &_conf.seed);
+		int branchColor = _sceneMgr->modifier().cursorVoxel().getColor();
+		voxelui::paletteColorIndexInput(_("Branch color"), &branchColor, &_sceneMgr->activePalette(), 0, -1, true);
+		ImGui::TooltipTextUnformatted(_("Wood color from the current palette selection. Change it in the palette panel."));
 		voxelui::paletteColorIndexInput(_("Leaf color"), &_conf.leafColor, &_sceneMgr->activePalette(), -1);
 		ImGui::TooltipTextUnformatted(
 			_("Defaults to the closest green in the node palette. -1 uses the current voxel. Drag a palette color here."));

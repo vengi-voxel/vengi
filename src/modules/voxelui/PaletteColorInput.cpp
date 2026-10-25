@@ -30,7 +30,7 @@ static bool indexInRange(int val, const palette::Palette *palette, int minIndex,
 }
 
 bool paletteColorIndexInput(const char *label, int *index, const palette::Palette *palette, int minIndex,
-							int maxIndex) {
+							int maxIndex, bool readOnly) {
 	if (index == nullptr) {
 		return false;
 	}
@@ -46,13 +46,14 @@ bool paletteColorIndexInput(const char *label, int *index, const palette::Palett
 	}
 
 	bool changed = false;
-	if (ImGui::InputIntWithButtons(label, &val)) {
+	const ImGuiInputTextFlags flags = readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None;
+	if (ImGui::InputIntWithButtons(label, &val, 1, 100, flags) && !readOnly) {
 		if (indexInRange(val, palette, minIndex, maxIndex)) {
 			*index = val;
 			changed = true;
 		}
 	}
-	if (palette != nullptr && ImGui::BeginDragDropTarget()) {
+	if (!readOnly && palette != nullptr && ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			const int palIdx = *(const uint8_t *)payload->Data;
 			if (indexInRange(palIdx, palette, minIndex, maxIndex)) {

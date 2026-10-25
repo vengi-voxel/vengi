@@ -8,7 +8,9 @@
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -51,6 +53,21 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int expected = voxelgenerator::lsystem::defaultLeafColor(_sceneMgr->activePalette());
 		IM_CHECK(expected >= 0);
 		IM_CHECK_EQ(_conf.leafColor, expected);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "branch color readonly")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(ensurePanelVisible(ctx, "View/L-System", cfg::VoxEditShowLSystem));
+		IM_CHECK(focusWindow(ctx, id));
+
+		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 5));
+		ctx->Yield();
+		const ImGuiTestItemInfo item = ctx->ItemInfo("Branch color");
+		IM_CHECK(item.ID != 0);
+		IM_CHECK_EQ(_sceneMgr->modifier().cursorVoxel().getColor(), 5);
+
+		ctx->ItemInputValue("Branch color", 7);
+		IM_CHECK_EQ(_sceneMgr->modifier().cursorVoxel().getColor(), 5);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "parameter changes")->TestFunc = [=](ImGuiTestContext *ctx) {
