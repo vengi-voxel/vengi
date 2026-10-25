@@ -1,4 +1,4 @@
-// dear imgui, v1.93.0 WIP
+// dear imgui, v1.93.1 WIP
 // (widgets code)
 
 /*
@@ -2707,7 +2707,7 @@ bool ImGui::DragBehavior(ImGuiID id, ImGuiDataType data_type, void* p_v, float v
         {
             // Canceling action reverts to initial value
             size_t data_size = DataTypeGetInfo(data_type)->Size;
-            bool value_changed = memcmp(p_v, &g.ActiveIdValueOnActivation, data_size);
+            bool value_changed = memcmp(p_v, &g.ActiveIdValueOnActivation, data_size) != 0;
             memcpy(p_v, &g.ActiveIdValueOnActivation, data_size);
             ClearActiveID();
             return value_changed;
@@ -3329,7 +3329,7 @@ bool ImGui::SliderBehavior(const ImRect& bb, ImGuiID id, ImGuiDataType data_type
         {
             // Canceling action reverts to initial value
             size_t data_size = DataTypeGetInfo(data_type)->Size;
-            bool value_changed = memcmp(p_v, &g.ActiveIdValueOnActivation, data_size);
+            bool value_changed = memcmp(p_v, &g.ActiveIdValueOnActivation, data_size) != 0;
             memcpy(p_v, &g.ActiveIdValueOnActivation, data_size);
             ClearActiveID();
             return value_changed;
@@ -9151,7 +9151,7 @@ int ImGui::PlotEx(ImGuiPlotType plot_type, const char* label, float (*values_get
             const float v1 = values_getter(data, (v1_idx + values_offset + 1) % values_count);
             const ImVec2 tp1 = ImVec2( t1, 1.0f - ImSaturate((v1 - scale_min) * inv_scale) );
 
-            // NB: Draw calls are merged together by the DrawList system. Still, we should render our batch are lower level to save a bit of CPU.
+            // We could render lower-level to save a bit of CPU.
             ImVec2 pos0 = ImLerp(inner_bb.Min, inner_bb.Max, tp0);
             ImVec2 pos1 = ImLerp(inner_bb.Min, inner_bb.Max, (plot_type == ImGuiPlotType_Lines) ? tp1 : ImVec2(tp1.x, histogram_zero_line_t));
             if (plot_type == ImGuiPlotType_Lines)
@@ -9162,6 +9162,8 @@ int ImGui::PlotEx(ImGuiPlotType plot_type, const char* label, float (*values_get
             {
                 if (pos1.x >= pos0.x + 2.0f)
                     pos1.x -= 1.0f;
+                if (pos0.y > pos1.y)
+                    ImSwap(pos0.y, pos1.y);
                 window->DrawList->AddRectFilled(pos0, pos1, idx_hovered == v1_idx ? col_hovered : col_base);
             }
 

@@ -1,4 +1,4 @@
-// dear imgui, v1.93.0 WIP
+// dear imgui, v1.93.1 WIP
 // (main code and documentation)
 
 // Help:
@@ -403,6 +403,19 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                           - likewise io.MousePos and GetMousePos() will use OS coordinates.
                             If you query mouse positions to interact with non-imgui coordinates you will need to offset them, e.g. subtract GetWindowViewport()->Pos.
 
+   2026/10/15 (1.93.1) - commented out legacy names/functions which were obsoleted from 1.90.7 (May 2024) to 1.91.1 (Sept 2024):
+                          - `ImGuiMod_Shortcut`                  --> `ImGuiMod_Ctrl` (since 1.90.7 it maps to Cmd on macOS)
+                          - `ImGuiCol_TabActive`                 --> `ImGuiCol_TabSelected`
+                          - `ImGuiCol_TabUnfocused`              --> `ImGuiCol_TabDimmed`
+                          - `ImGuiCol_TabUnfocusedActive`        --> `ImGuiCol_TabDimmedSelected`
+                          - `ImGuiSelectableFlags_DontClosePopups`-> `ImGuiSelectableFlags_NoAutoClosePopups`
+                          - `PushButtonRepeat(bool repeat)`      --> `PushItemFlag(ImGuiItemFlags_ButtonRepeat, repeat)`
+                          - `PopButtonRepeat()`                  --> `PopItemFlag()`
+                          - `PushTabStop(bool tab_stop)`         --> `PushItemFlag(ImGuiItemFlags_NoTabStop, !tab_stop);`
+                          - `PopTabStop()`                       --> `PopItemFlag()`
+                          - `io.GetClipboardTextFn`              --> `platform_io.Platform_GetClipboardTextFn`
+                          - `io.SetClipboardTextFn`              --> `platform_io.Platform_SetClipboardTextFn`
+                          - `io.ClipboardUserData`               --> `platform_io.Platform_ClipboardUserData`
    2026/10/07 (1.93.0) - large cleanup/refactor of ImDrawList. many issues and inconsistencies fixed! (#9504)
                          BELOW IS A SIMPLIFIED/SHORTENED RECAP OF CHANGES. READ CHANGELOG AND LINKS ABOVE FOR MORE DETAILS!
                          useful links:
@@ -423,7 +436,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                        - AddRect(), AddCircle(), AddNgon(), AddEllipse(), AddTriangle(), AddQuad(): defaulting to "inside" stroke. All closed shapes with thickness=1.0f will appear identical. The difference for thickness>1.0f shapes may be minimal since very large strokes were not well supported for widgets, but stroke will default inside widgets.
                        - AddCircle(), AddNgon(): removed +0.5f offset added to radius. This fixes inconsistencies in the API. Use `ImDrawFlags_StrokeLegacy` to use old method if required. Or you can apply the offset manually!
                        - AddRectFilled(): non-integer coordinates will now display anti-aliased edges. Previously, non-integer coordinates rendered with aliased edges snapped by the rasterizer.
-                       - AddRect(), AddRectFilled(): rectangles with inverted coordinates won't be visible unless using ImDrawList_StrokeLegacy mode.
+                       - AddRect(), AddRectFilled(): rectangles with inverted coordinates won't be visible unless using ImDrawFlags_StrokeLegacy mode.
                          With inverted coordinates:
                           - Legacy `AddRect()` rounding off         -> visible but incorrect outer size.
                           - Legacy `AddRect()` rounding on          -> visible but very glitchy.
@@ -446,8 +459,8 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                        - obsoleted style.AntiAliasedLinesUseTex and ImDrawListFlags_AntiAliasedLinesUseTex, as the new line rendering code always uses textures.
  - 2026/09/30 (1.93.0) - ImFont: renamed `AddRemapChar()` to `AddRemapCodepoint()` (rarely used, marked internal). (#609, #5748)
  - 2026/09/18 (1.93.0) - ImGuiTextFilter: removed `float width` parameter of `Draw(const char* filter, float width)`: prefer using `SetNextItemWidth(float)` which is standard. Kept inline redirection function.
- - 2026/08/03 (1.93.0) - Style: obsoleted `style.CurveTessellationTol (default 1.25)` which was in Pixels² unit in favor of `style.CurveTessellationMaxError` (default 1.12)` which is in Pixels unit.
-                         - style.CurveTessellationMaxError == sqrf(style.CurveTessellationTol).
+ - 2026/08/03 (1.93.0) - Style: obsoleted `style.CurveTessellationTol` (default 1.25) which was in Pixels² unit in favor of `style.CurveTessellationMaxError` (default 1.12) which is in Pixels unit.
+                         - style.CurveTessellationMaxError == sqrtf(style.CurveTessellationTol).
  - 2026/07/20 (1.92.9) - DragXXX, SliderXXX, InputScalar: with `ImGuiItemFlags_LiveEditOnInputScalar` now defaulting to being disabled:
                          inputting a value with the keyboard doesn't write intermediate values to backing variable. (#9476)
                          - Before: DragFloat() with user typing "123" --> write back 1, then 12, then 123.
@@ -11825,6 +11838,15 @@ static void ImGui::ErrorCheckNewFrameSanityChecks()
     // #define IM_ASSERT(EXPR)   do { if (SomeCode(EXPR)) SomeMoreCode(); } while (0)   // Correct!
     if (true) IM_ASSERT(1); else IM_ASSERT(0);
 
+    // Check user IM_VEC2_CLASS_EXTRA macro
+    // (IF YOU GET A "ambiguous overload" COMPILE ERROR HERE: does your IM_VEC2_CLASS_EXTRA macro contains an operator=?
+    //    e.g. ImVec2& operator=(const MyPoint & p) { x = p.x; y = p.y; return *this; }
+    //  You should be able to remove it if you have the corresponding constructor:
+    //    e.g. IM_NODEBUGSTEP constexpr inline ImVec2(const MyPoint& f) : x(f.x), y(f.y) {}
+    //  Allowing you to add this extra operator to ImVec2 would prevent our whole codebase from using v = {x,y} assignment style.
+    //  PLEASE GET IN TOUCH IF REMOVING THE operator= IS A PROBLEM TO YOU)
+    ImVec2 v; v = { 1.0f, 2.0f };
+
     // Emscripten backends are often imprecise in their submission of DeltaTime. (#6114, #3644)
     // Ideally the Emscripten app/backend should aim to fix or smooth this value and avoid feeding zero, but we tolerate it.
 #ifdef __EMSCRIPTEN__
@@ -11884,10 +11906,10 @@ static void ImGui::ErrorCheckNewFrameSanityChecks()
     }
 
     // Remap legacy clipboard handlers (OBSOLETED in 1.91.1, August 2024)
-    if (g.IO.GetClipboardTextFn != NULL && (g.PlatformIO.Platform_GetClipboardTextFn == NULL || g.PlatformIO.Platform_GetClipboardTextFn == Platform_GetClipboardTextFn_DefaultImpl))
-        g.PlatformIO.Platform_GetClipboardTextFn = [](ImGuiContext* ctx) { return ctx->IO.GetClipboardTextFn(ctx->IO.ClipboardUserData); };
-    if (g.IO.SetClipboardTextFn != NULL && (g.PlatformIO.Platform_SetClipboardTextFn == NULL || g.PlatformIO.Platform_SetClipboardTextFn == Platform_SetClipboardTextFn_DefaultImpl))
-        g.PlatformIO.Platform_SetClipboardTextFn = [](ImGuiContext* ctx, const char* text) { return ctx->IO.SetClipboardTextFn(ctx->IO.ClipboardUserData, text); };
+    //if (g.IO.GetClipboardTextFn != NULL && (g.PlatformIO.Platform_GetClipboardTextFn == NULL || g.PlatformIO.Platform_GetClipboardTextFn == Platform_GetClipboardTextFn_DefaultImpl))
+    //    g.PlatformIO.Platform_GetClipboardTextFn = [](ImGuiContext* ctx) { return ctx->IO.GetClipboardTextFn(ctx->IO.ClipboardUserData); };
+    //if (g.IO.SetClipboardTextFn != NULL && (g.PlatformIO.Platform_SetClipboardTextFn == NULL || g.PlatformIO.Platform_SetClipboardTextFn == Platform_SetClipboardTextFn_DefaultImpl))
+    //    g.PlatformIO.Platform_SetClipboardTextFn = [](ImGuiContext* ctx, const char* text) { return ctx->IO.SetClipboardTextFn(ctx->IO.ClipboardUserData, text); };
 
     // Remap legacy CurveTessellationTol into CurveTessellationMaxError (OBSOLETED in 1.93.0, August 2026)
     if (g.Style.CurveTessellationTol != 0.0f)
@@ -22508,7 +22530,7 @@ static const char* FormatTextureRefForDebugDisplay(char* buf, int buf_size, ImTe
     char* buf_end = buf + buf_size;
     if (tex_ref._TexData != NULL)
         buf_p += ImFormatString(buf_p, buf_end - buf_p, "#%03d: ", tex_ref._TexData->UniqueID);
-    ImFormatString(buf_p, buf_end - buf_p, "0x%X", ImGui::DebugTextureIDToU64(tex_ref.GetTexID()));
+    ImFormatString(buf_p, buf_end - buf_p, "0x%" IM_PRIX64, ImGui::DebugTextureIDToU64(tex_ref.GetTexID()));
     return buf;
 }
 
