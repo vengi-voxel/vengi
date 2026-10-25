@@ -34,6 +34,16 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 }
 
 void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "palette cell size options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		util::ScopedVarChange size(cfg::VoxEditPaletteColorSize, "1.0");
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Options");
+		ctx->ItemInputValue("//$FOCUSED/Palette color size", 2.0f);
+		IM_CHECK_EQ(core::getVar(cfg::VoxEditPaletteColorSize)->floatVal(), 2.0f);
+		ctx->KeyPress(ImGuiKey_Escape);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "color size")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		ScopedPalette scopedPalette(_sceneMgr);

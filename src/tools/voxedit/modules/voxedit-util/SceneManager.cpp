@@ -7597,6 +7597,63 @@ bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t pal
 	return true;
 }
 
+bool SceneManager::nodeSetNormal(const core::UUID &nodeUUID, uint8_t index, const color::RGBA &normal) {
+	if (isLocked() || index >= palette::NormalPaletteMaxNormals || normal.a == 0) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr || !node->isModelNode()) {
+		return false;
+	}
+	palette::NormalPalette &palette = node->normalPalette();
+	if (index < palette.size() && palette.normal(index) == normal) {
+		return true;
+	}
+	palette.setNormal(index, normal);
+	palette.markSave();
+	_mementoHandler->markNormalPaletteChange(_sceneGraph, *node);
+	markDirty();
+	return true;
+}
+
+bool SceneManager::nodeSwapNormals(const core::UUID &nodeUUID, uint8_t first, uint8_t second) {
+	if (isLocked() || first >= palette::NormalPaletteMaxNormals || second >= palette::NormalPaletteMaxNormals ||
+		first == second) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr || !node->isModelNode()) {
+		return false;
+	}
+	palette::NormalPalette &palette = node->normalPalette();
+	const color::RGBA a = palette.normal(first);
+	const color::RGBA b = palette.normal(second);
+	if (a.a == 0 && b.a == 0) {
+		return false;
+	}
+	memento::ScopedMementoGroup group(*_mementoHandler, "swap normals");
+	voxel::RawVolumeWrapper wrapper(node->volume());
+	voxelutil::visitVolumeParallel(wrapper, [&](int x, int y, int z, voxel::Voxel voxel) {
+		if (voxel.getNormal() == first + NORMAL_PALETTE_OFFSET) {
+			voxel.setNormal(second + NORMAL_PALETTE_OFFSET);
+		} else if (voxel.getNormal() == second + NORMAL_PALETTE_OFFSET) {
+			voxel.setNormal(first + NORMAL_PALETTE_OFFSET);
+		} else {
+			return;
+		}
+		wrapper.setVoxel(x, y, z, voxel);
+	});
+	if (wrapper.dirtyRegion().isValid()) {
+		modified(node->id(), wrapper.dirtyRegion());
+	}
+	palette.setNormal(first, b);
+	palette.setNormal(second, a);
+	palette.markSave();
+	_mementoHandler->markNormalPaletteChange(_sceneGraph, *node);
+	markDirty();
+	return true;
+}
+
 bool SceneManager::nodeResetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
 	palette::Palette &palette = node.palette();
 	palette.setMaterial(palIdx, {});

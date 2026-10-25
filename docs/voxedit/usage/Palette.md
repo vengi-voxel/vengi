@@ -8,6 +8,9 @@ You can re-order the palette colors by __Hue__, __Saturation__, __Brightness__ o
 
 Direct LoSpec palette import is possible and next to LoSpec you can import or export a lot other palette [formats](../../Formats.md), too.
 
+Both palette panels have an **Options > Palette color size** slider. It controls the
+shared `ve_palettecolorsize` setting, from 0.5 to 4 times the UI frame height.
+
 ## Selection
 
 * **Left Click**: Select a single color. This sets the current voxel color for painting.
@@ -51,3 +54,27 @@ Changing the normal palette maps existing voxel normals to the closest direction
 in the new palette. This can introduce approximation because palettes contain different
 directions. Undo restores both the previous palette and the previous normal indices.
 Changing the color palette preserves voxel normals.
+
+
+### Editing normal entries
+
+Left-click any normal slot, including an empty slot, to select it. Adjust the vector,
+longitude/latitude, axis presets, flip, or rotation controls below the grid. Valid edits
+immediately update the direction and its color swatch. Directions are normalized; zero
+and non-finite vectors are rejected. Each slider drag or completed input edit is one
+undoable change. Editing an entry affects every voxel referencing it without changing
+the stored normal indices.
+
+An empty slot becomes populated as soon as a valid direction is entered. **Add normal**
+can also create the default direction without editing it. Selecting an empty slot alone
+does not activate it for painting. The grid contains 255 normal entries; a voxel with
+no normal is a separate state, not an extra editable slot.
+
+Right-click a slot to **Copy normal**, **Paste normal**, or **Duplicate normal**. Copy/paste
+also works with Ctrl+C / Ctrl+V over the grid, including pasting into empty slots and
+across nodes. Copies are snapshots of the direction, independent of later source edits.
+
+Drag an entry onto another slot to swap them. Painted voxel references are swapped too,
+so their directions remain unchanged. Dropping onto an empty slot moves the entry.
+Entry edits, paste, duplication, and swaps support undo/redo; a swap restores both the
+palette entries and voxel references in one undo.

@@ -98,10 +98,6 @@ inline size_t NormalPalette::size() const {
 	return _size;
 }
 
-inline void NormalPalette::setNormal(uint8_t index, const color::RGBA &normal) {
-	_normals[index] = normal;
-}
-
 inline const color::RGBA &NormalPalette::normal(uint8_t index) const {
 	return _normals[index];
 }

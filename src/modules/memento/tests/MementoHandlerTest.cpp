@@ -114,6 +114,29 @@ protected:
 	};
 };
 
+TEST_F(MementoHandlerTest, testNormalPaletteUndoUsesFinalGroupedSnapshot) {
+	scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(core::UUID(1));
+	ASSERT_NE(nullptr, node);
+	palette::NormalPalette original;
+	original.setNormal(0, glm::vec3(1, 0, 0));
+	node->setNormalPalette(original);
+	ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
+	palette::NormalPalette intermediate;
+	intermediate.setNormal(0, glm::vec3(0, 1, 0));
+	{
+		ScopedMementoGroup group(_mementoHandler, "volume and normals");
+		ASSERT_TRUE(_mementoHandler.markModification(_sceneGraph, *node, node->region()));
+		node->setNormalPalette(intermediate);
+		ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
+	}
+	palette::NormalPalette final;
+	final.setNormal(0, glm::vec3(0, 0, 1));
+	node->setNormalPalette(final);
+	ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
+	const MementoState state = firstState(_mementoHandler.undo());
+	EXPECT_EQ(intermediate.hash(), state.normalPalette.hash());
+}
+
 TEST_F(MementoHandlerTest, testMarkUndo) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);

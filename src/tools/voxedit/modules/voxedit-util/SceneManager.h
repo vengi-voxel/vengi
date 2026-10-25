@@ -865,6 +865,10 @@ public:
 	bool nodeSetOpacity(const core::UUID &nodeUUID, float opacity);
 	bool nodeActivate(const core::UUID &nodeUUID);
 	bool nodeUnreference(const core::UUID &nodeUUID);
+	/** Edit a normal entry without changing voxel indices. */
+	bool nodeSetNormal(const core::UUID &nodeUUID, uint8_t index, const color::RGBA &normal);
+	/** Exchange entries and voxel references, preserving the painted directions. */
+	bool nodeSwapNormals(const core::UUID &nodeUUID, uint8_t first, uint8_t second);
 	void nodeGroupRemoveNormals();
 	bool nodeRemoveNormals(const core::UUID &nodeUUID);
 	/**

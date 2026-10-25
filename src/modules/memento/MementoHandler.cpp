@@ -556,7 +556,9 @@ void MementoHandler::undoPaletteChange(MementoState &s) {
 void MementoHandler::undoNormalPaletteChange(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
-		for (const MementoState &prevS : group.states) {
+		// The final snapshot includes all changes in a grouped volume/palette edit.
+		for (int j = (int)group.states.size() - 1; j >= 0; --j) {
+			const MementoState &prevS = group.states[j];
 			if (prevS.nodeUUID == s.nodeUUID) {
 				s.normalPalette = prevS.normalPalette;
 				return;

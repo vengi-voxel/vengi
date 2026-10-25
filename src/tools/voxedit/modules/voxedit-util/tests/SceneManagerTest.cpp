@@ -190,6 +190,88 @@ TEST_F(SceneManagerTest, testColorPaletteRemapPreservesNormals) {
 	EXPECT_EQ(normals.hash(), _sceneMgr->sceneGraph().node(nodeId).normalPalette().hash());
 }
 
+TEST_F(SceneManagerTest, testEditNormalPaletteEntryUndoRedo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 1, 0, 0)));
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
+	palette::NormalPalette before;
+	before.setNormal(0, glm::vec3(1, 0, 0));
+	node.setNormalPalette(before);
+	const voxel::Voxel painted(voxel::VoxelType::Generic, 3, NORMAL_PALETTE_OFFSET, voxel::FlagOutline);
+	ASSERT_TRUE(testVolume()->setVoxel(0, 0, 0, painted));
+	ASSERT_TRUE(_sceneMgr->mementoHandler().markModification(_sceneMgr->sceneGraph(), node, testVolume()->region()));
+	ASSERT_TRUE(_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node));
+	const color::RGBA direction = palette::NormalPalette::toRGBA(glm::vec3(0, 1, 0));
+	ASSERT_TRUE(_sceneMgr->nodeSetNormal(node.uuid(), 4, direction));
+	EXPECT_EQ(5u, node.normalPalette().size());
+	EXPECT_EQ(direction, node.normalPalette().normal(4));
+	EXPECT_TRUE(node.normalPalette().needsSave());
+	EXPECT_EQ(painted, testVolume()->voxel(0, 0, 0));
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(before.hash(), node.normalPalette().hash());
+	EXPECT_EQ(1u, node.normalPalette().size());
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(direction, node.normalPalette().normal(4));
+	ASSERT_TRUE(_sceneMgr->nodeSetNormal(node.uuid(), 0, direction));
+	EXPECT_EQ(direction, node.normalPalette().normal(0));
+	EXPECT_EQ(painted, testVolume()->voxel(0, 0, 0));
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(before.normal(0), node.normalPalette().normal(0));
+	const int states = _sceneMgr->mementoHandler().stateSize();
+	EXPECT_TRUE(_sceneMgr->nodeSetNormal(node.uuid(), 0, before.normal(0)));
+	EXPECT_EQ(states, _sceneMgr->mementoHandler().stateSize());
+	EXPECT_FALSE(_sceneMgr->nodeSetNormal(node.uuid(), palette::NormalPaletteMaxNormals, direction));
+	EXPECT_FALSE(_sceneMgr->nodeSetNormal(node.uuid(), 0, color::RGBA(0, 0, 0, 0)));
+}
+
+TEST_F(SceneManagerTest, testSwapNormalPaletteEntriesPreservesDirections) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 3, 0, 0)));
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
+	palette::NormalPalette before;
+	before.setNormal(0, glm::vec3(1, 0, 0));
+	before.setNormal(1, glm::vec3(0, 1, 0));
+	node.setNormalPalette(before);
+	const voxel::Voxel first(voxel::VoxelType::Generic, 3, NORMAL_PALETTE_OFFSET, voxel::FlagOutline);
+	const voxel::Voxel second(voxel::VoxelType::Transparent, 4, NORMAL_PALETTE_OFFSET + 1);
+	const voxel::Voxel noNormal(voxel::VoxelType::Generic, 5, NO_NORMAL);
+	ASSERT_TRUE(testVolume()->setVoxel(0, 0, 0, first));
+	ASSERT_TRUE(testVolume()->setVoxel(1, 0, 0, second));
+	ASSERT_TRUE(testVolume()->setVoxel(2, 0, 0, noNormal));
+	ASSERT_TRUE(_sceneMgr->mementoHandler().markModification(_sceneMgr->sceneGraph(), node, testVolume()->region()));
+	ASSERT_TRUE(_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node));
+	ASSERT_TRUE(_sceneMgr->nodeSwapNormals(node.uuid(), 0, 1));
+	EXPECT_EQ(before.normal(1), node.normalPalette().normal(0));
+	EXPECT_EQ(before.normal(0), node.normalPalette().normal(1));
+	voxel::Voxel changedFirst = first;
+	changedFirst.setNormal(NORMAL_PALETTE_OFFSET + 1);
+	voxel::Voxel changedSecond = second;
+	changedSecond.setNormal(NORMAL_PALETTE_OFFSET);
+	EXPECT_EQ(changedFirst, testVolume()->voxel(0, 0, 0));
+	EXPECT_EQ(changedSecond, testVolume()->voxel(1, 0, 0));
+	EXPECT_EQ(noNormal, testVolume()->voxel(2, 0, 0));
+	EXPECT_TRUE(voxel::isAir(testVolume()->voxel(3, 0, 0).getMaterial()));
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(before.hash(), node.normalPalette().hash());
+	EXPECT_EQ(first, testVolume()->voxel(0, 0, 0));
+	EXPECT_EQ(second, testVolume()->voxel(1, 0, 0));
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(changedFirst, testVolume()->voxel(0, 0, 0));
+	EXPECT_EQ(changedSecond, testVolume()->voxel(1, 0, 0));
+	const palette::NormalPalette swapped = node.normalPalette();
+	ASSERT_TRUE(_sceneMgr->nodeSwapNormals(node.uuid(), 0, 4));
+	EXPECT_EQ(5u, node.normalPalette().size());
+	EXPECT_EQ(0, node.normalPalette().normal(0).a);
+	EXPECT_EQ(swapped.normal(0), node.normalPalette().normal(4));
+	EXPECT_EQ(4 + NORMAL_PALETTE_OFFSET, testVolume()->voxel(1, 0, 0).getNormal());
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(swapped.hash(), node.normalPalette().hash());
+	EXPECT_EQ(changedSecond, testVolume()->voxel(1, 0, 0));
+	ASSERT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(4 + NORMAL_PALETTE_OFFSET, testVolume()->voxel(1, 0, 0).getNormal());
+	EXPECT_FALSE(_sceneMgr->nodeSwapNormals(node.uuid(), 1, 1));
+	EXPECT_FALSE(_sceneMgr->nodeSwapNormals(node.uuid(), 1, palette::NormalPaletteMaxNormals));
+	EXPECT_FALSE(_sceneMgr->nodeSwapNormals(node.uuid(), 0, 3));
+}
+
 TEST_F(SceneManagerTest, testLoadNormalPaletteRemapsAndUndoRedo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 2, 0, 0)));
 	const int nodeId = _sceneMgr->activeNode();

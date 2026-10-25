@@ -157,12 +157,19 @@ glm::vec3 NormalPalette::toVec3(const color::RGBA &rgba) {
 }
 
 int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
+	const float lengthSquared = glm::dot(normal, normal);
+	if (glm::any(glm::isnan(normal)) || glm::any(glm::isinf(normal)) ||
+		(glm::isnan(lengthSquared) || glm::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
+		return PaletteNormalNotFound;
+	}
+	const glm::vec3 direction = glm::normalize(normal);
 	int closestIndex = PaletteNormalNotFound;
-	float maxDot = -1.0f;
-
+	float maxDot = -2.0f;
 	for (int i = 0; i < _size; ++i) {
-		const float dot = glm::dot(normal, toVec3(_normals[i]));
-
+		if (_normals[i].a == 0) {
+			continue;
+		}
+		const float dot = glm::dot(direction, glm::normalize(toVec3(_normals[i])));
 		if (dot > maxDot) {
 			maxDot = dot;
 			closestIndex = i;
@@ -174,29 +181,38 @@ int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
 void NormalPalette::createRemap(const NormalPalette &target, uint8_t *remap) const {
 	for (int i = 0; i < NormalPaletteMaxNormals; ++i) {
 		remap[i] = NO_NORMAL_REMAP_FOUND;
-		if (i >= _size) {
+		if (i >= _size || normal(i).a == 0) {
 			continue;
 		}
 		if (i < (int)target.size() && normal(i) == target.normal(i)) {
 			remap[i] = (uint8_t)i;
-			continue;
-		}
-		const glm::vec3 source = glm::normalize(normal3f(i));
-		float maxDot = -2.0f;
-		for (int j = 0; j < (int)target.size(); ++j) {
-			const float dot = glm::dot(source, glm::normalize(target.normal3f(j)));
-			if (dot > maxDot) {
-				maxDot = dot;
-				remap[i] = (uint8_t)j;
+		} else {
+			const int match = target.getClosestMatch(normal3f(i));
+			if (match != PaletteNormalNotFound) {
+				remap[i] = (uint8_t)match;
 			}
 		}
 	}
 }
 
-void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
-	_normals[index] = toRGBA(normal);
-	_size = core_max(index, _size);
+void NormalPalette::setNormal(uint8_t index, const color::RGBA &normal) {
+	if (index >= NormalPaletteMaxNormals) {
+		return;
+	}
+	_normals[index] = normal;
+	if (normal.a != 0) {
+		_size = core_max((int)index + 1, _size);
+	}
 	markDirty();
+}
+
+void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
+	const float lengthSquared = glm::dot(normal, normal);
+	if (glm::any(glm::isnan(normal)) || glm::any(glm::isinf(normal)) ||
+		(glm::isnan(lengthSquared) || glm::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
+		return;
+	}
+	setNormal(index, toRGBA(glm::normalize(normal)));
 }
 
 void NormalPalette::loadNormalMap(const glm::vec3 *normals, int size) {
@@ -265,6 +281,9 @@ void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
 	constexpr float scale = 2.0f / 255.0f;
 	for (int i = 0; i < _size; ++i) {
 		const color::RGBA &rgba = _normals[i];
+		if (rgba.a == 0) {
+			continue;
+		}
 		vec4f[i].x = (float)rgba.r * scale - 1.0f;
 		vec4f[i].y = (float)rgba.g * scale - 1.0f;
 		vec4f[i].z = (float)rgba.b * scale - 1.0f;
@@ -334,7 +353,7 @@ bool NormalPalette::load(const char *paletteName) {
 		}
 		return load(img);
 	}
-	_size = paletteToLoad.colorCount();
+	_size = core_min(paletteToLoad.colorCount(), NormalPaletteMaxNormals);
 	for (int i = 0; i < _size; ++i) {
 		_normals[i] = paletteToLoad.color(i);
 	}

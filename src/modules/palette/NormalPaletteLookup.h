@@ -64,8 +64,11 @@ public:
 
 				// Find closest palette normal
 				int bestIndex = PaletteNormalNotFound;
-				float maxDot = -1.0f;
+				float maxDot = -2.0f;
 				for (size_t i = 0; i < palette.size(); ++i) {
+					if (palette.normal(i).a == 0) {
+						continue;
+					}
 					const float dot = glm::dot(normal, normals[i]);
 					if (dot > maxDot) {
 						maxDot = dot;
