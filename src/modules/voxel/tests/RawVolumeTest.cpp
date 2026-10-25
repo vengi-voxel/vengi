@@ -96,6 +96,22 @@ TEST_F(RawVolumeTest, testCopyInto) {
 	ASSERT_EQ(42, v.voxel(1, 1, 1).getColor());
 }
 
+// https://github.com/vengi-voxel/vengi/issues/770
+TEST_F(RawVolumeTest, DISABLED_testCopyIntoOutsideSource) {
+	RawVolume src(Region{0, 3});
+	const Region copyRegion(0, 0, 5, 3, 3, 5);
+	RawVolume dst(copyRegion);
+	const Voxel original = voxel::createVoxel(VoxelType::Generic, 42);
+	dst.fill(original);
+
+	EXPECT_FALSE(dst.copyInto(src, copyRegion));
+	for (int y = 0; y <= 3; ++y) {
+		for (int x = 0; x <= 3; ++x) {
+			EXPECT_EQ(original, dst.voxel(x, y, 5));
+		}
+	}
+}
+
 TEST_F(RawVolumeTest, testSamplerPeek) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
