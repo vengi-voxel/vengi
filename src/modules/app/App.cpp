@@ -887,9 +887,8 @@ AppState App::onInit() {
 		Log::debug("Failed to set SDL app metadata: %s", SDL_GetError());
 	}
 
-	uint32_t flags = SDL_INIT_EVENTS;
 	SDL_SetMainReady();
-	SDL_Init(flags);
+	SDL_Init(0);
 
 	Log::debug("Initialize the log system");
 	Log::init();
