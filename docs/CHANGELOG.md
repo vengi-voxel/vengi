@@ -29,16 +29,21 @@ General:
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
    - Improved `qb`, `qbt` and `qbcl` pivot support
    - Fixed Goxel `gox` index out of bounds read
+   - Improved windows installed (msi)
 
 VoxEdit:
 
    - Improved line rendering quality for the viewport
    - Fixed and improved normal painting
    - Replaced the CPU Yocto pathtracer with a GPU voxel pathtracer
+   - Improved animation timeline
+   - Improved palette panel
+   - Improved normal palette panel
 
 Thumbnailer:
 
    - Added `--pathtracer` with `--quality` (`default`, `preview`, `high`) and `--samples` for GPU pathtraced thumbnails
+   - Fixed windows integration
 
 VoxConvert:
 
