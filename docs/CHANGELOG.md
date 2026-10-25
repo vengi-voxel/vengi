@@ -29,7 +29,7 @@ General:
    - Implemented `gltf` extensions `VENGI_materials` and `VENGI_properties`
    - Improved `qb`, `qbt` and `qbcl` pivot support
    - Fixed Goxel `gox` index out of bounds read
-   - Improved windows installed (msi)
+   - Improved windows installer (msi)
 
 VoxEdit:
 
