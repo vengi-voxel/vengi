@@ -512,6 +512,13 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	return !destSceneGraph.empty();
 }
 
+static glm::vec3 interpolateVec3(InterpolationType interpolationType, double current, double start, double end,
+								const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3) {
+	return glm::vec3((float)interpolate(interpolationType, current, start, end, p0.x, p1.x, p2.x, p3.x),
+					 (float)interpolate(interpolationType, current, start, end, p0.y, p1.y, p2.y, p3.y),
+					 (float)interpolate(interpolationType, current, start, end, p0.z, p1.z, p2.z, p3.z));
+}
+
 SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameIndex frame, bool *step) {
 	core_assert(!keys.empty());
 	size_t next = 0, end = keys.size();
@@ -522,53 +529,62 @@ SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameI
 		else
 			end = middle;
 	}
-	const auto &a = keys[next == 0 ? 0 : next - 1];
+	const size_t prev = next == 0 ? 0 : next - 1;
+	const auto &a = keys[prev];
 	if (step)
 		*step = a.interpolation == InterpolationType::Instant;
 	if (next == 0 || next == keys.size())
 		return a.transform();
 	const auto &b = keys[next];
-	const double time = interpolate(a.interpolation, frame, a.frameIdx, b.frameIdx);
-	const float t = glm::clamp((float)((time - a.frameIdx) / (b.frameIdx - a.frameIdx)), 0.0f, 1.0f);
+	const auto &p0 = prev > 0 ? keys[prev - 1] : a;
+	const auto &p3 = next + 1 < keys.size() ? keys[next + 1] : b;
+	const double current = (double)frame;
+	const double start = (double)a.frameIdx;
+	const double endTime = (double)b.frameIdx;
+	const double time = interpolate(a.interpolation, current, start, endTime);
+	const float t = glm::clamp((float)((time - start) / (endTime - start)), 0.0f, 1.0f);
 	SceneGraphTransform result;
-	result.setLocalTranslation(glm::mix(a.transform().localTranslation(), b.transform().localTranslation(), t));
+	result.setLocalTranslation(interpolateVec3(a.interpolation, current, start, endTime,
+											   p0.transform().localTranslation(), a.transform().localTranslation(),
+											   b.transform().localTranslation(), p3.transform().localTranslation()));
+	result.setLocalScale(interpolateVec3(a.interpolation, current, start, endTime, p0.transform().localScale(),
+										 a.transform().localScale(), b.transform().localScale(),
+										 p3.transform().localScale()));
 	glm::quat orientation = b.transform().localOrientation();
-	const glm::quat start = a.transform().localOrientation();
+	const glm::quat startOrient = a.transform().localOrientation();
 	if (a.longRotation) {
 		// Opposite hemispheres select the long arc. slerp would undo this sign choice.
-		if (glm::dot(start, orientation) > 0.0f) {
+		if (glm::dot(startOrient, orientation) > 0.0f) {
 			orientation = -orientation;
 		}
-		const float dot = glm::clamp(glm::dot(start, orientation), -1.0f, 1.0f);
-		const glm::quat tangent = orientation - start * dot;
+		const float dot = glm::clamp(glm::dot(startOrient, orientation), -1.0f, 1.0f);
+		const glm::quat tangent = orientation - startOrient * dot;
 		const float length = glm::length(tangent);
 		if (length > 0.000001f) {
 			const float angle = glm::acos(dot) * t;
-			orientation = start * glm::cos(angle) + tangent * (glm::sin(angle) / length);
+			orientation = startOrient * glm::cos(angle) + tangent * (glm::sin(angle) / length);
 		} else {
 			// Identical orientations cannot specify the axis of a full turn.
-			orientation = glm::slerp(start, b.transform().localOrientation(), t);
+			orientation = glm::slerp(startOrient, b.transform().localOrientation(), t);
 		}
 	} else {
-		orientation = glm::slerp(start, orientation, t);
+		orientation = glm::slerp(startOrient, orientation, t);
 	}
 	result.setLocalOrientation(glm::normalize(orientation));
-	result.setLocalScale(glm::mix(a.transform().localScale(), b.transform().localScale(), t));
 	return result;
 }
 
-double interpolate(InterpolationType interpolationType, double current, double start, double end) {
+double interpolate(InterpolationType interpolationType, double current, double start, double end, double p0, double p1,
+				   double p2, double p3) {
 	if (glm::abs(start - end) < glm::epsilon<double>()) {
-		return start;
+		return p1;
 	}
 	if (interpolationType == InterpolationType::CatmullRom) {
-		// For CatmullRom, we need 4 control points. Using start/end as the middle two points
-		// and extending beyond them for smoother interpolation
 		const double t = (current - start) / (end - start);
-		return util::easing::catmullRom(start, start, end, end, t);
+		return util::easing::catmullRom(p0, p1, p2, p3, t);
 	}
 
-	double t = 0.0f;
+	double t = 0.0;
 	switch (interpolationType) {
 	case InterpolationType::Instant:
 		t = util::easing::full(current, start, end);
@@ -595,14 +611,17 @@ double interpolate(InterpolationType interpolationType, double current, double s
 		t = util::easing::cubicInOut(current, start, end);
 		break;
 	case InterpolationType::CubicBezier:
-		// Default control points for a smooth ease-in-out curve
 		t = util::easing::cubicBezier(current, start, end, 0.1, 1.0);
 		break;
 	case InterpolationType::CatmullRom:
 	case InterpolationType::Max:
 		break;
 	}
-	return start + (end - start) * t;
+	return p1 + (p2 - p1) * t;
+}
+
+double interpolate(InterpolationType interpolationType, double current, double start, double end) {
+	return interpolate(interpolationType, current, start, end, start, start, end, end);
 }
 
 void offsetNodeWorldTransforms(SceneGraphNode &node, const glm::vec3 &delta) {

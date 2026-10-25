@@ -343,18 +343,39 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 	}
 	ImGui::TooltipText(_("Take the longer rotation path to the next keyframe. For a full turn, add an intermediate keyframe."));
 	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_LINE, _("Interpolation details"))) {
+		double p0 = 0.0;
+		double p1 = 0.0;
+		double p2 = 1.0;
+		double p3 = 1.0;
+		const scenegraph::SceneGraphKeyFrames *keys = node.keyFrames();
+		if (keys != nullptr && keyFrame.interpolation == scenegraph::InterpolationType::CatmullRom &&
+			keyFrameIdx + 1 < (scenegraph::KeyFrameIndex)keys->size()) {
+			const size_t i = (size_t)keyFrameIdx;
+			p1 = (*keys)[i].transform().localTranslation().x;
+			p2 = (*keys)[i + 1].transform().localTranslation().x;
+			p0 = i > 0 ? (*keys)[i - 1].transform().localTranslation().x : p1;
+			p3 = i + 2 < keys->size() ? (*keys)[i + 2].transform().localTranslation().x : p2;
+		}
 		core::Array<glm::vec2, 20> data;
+		float ymin = 0.0f;
+		float ymax = 1.0f;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
-			const double v = scenegraph::interpolate(keyFrame.interpolation, t, 0.0, 1.0);
+			const double v = scenegraph::interpolate(keyFrame.interpolation, t, 0.0, 1.0, p0, p1, p2, p3);
 			data[i] = glm::vec2((float)t, (float)v);
+			ymin = glm::min(ymin, (float)v);
+			ymax = glm::max(ymax, (float)v);
+		}
+		if (ymax - ymin < 0.001f) {
+			ymin -= 0.5f;
+			ymax += 0.5f;
 		}
 		ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs;
 		if (ImPlot::BeginPlot("##plotintertype", ImVec2(-1, 0), flags)) {
 			ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
 			ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
 			ImPlot::SetupAxisLimits(ImAxis_X1, 0.0f, 1.0f, ImGuiCond_Once);
-			ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0f, 1.0f, ImGuiCond_Once);
+			ImPlot::SetupAxisLimits(ImAxis_Y1, ymin, ymax, ImGuiCond_Always);
 			const char *lineTitle = scenegraph::InterpolationTypeStr[currentInterpolation];
 			ImPlotSpec spec;
 			spec.Flags = ImPlotLineFlags_None;

@@ -58,10 +58,21 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 
 /**
  * @brief Sample local TRS from nonempty, frame-sorted keyframes, clamping outside their range.
+ * CatmullRom uses the neighboring key values as spline controls for translation and scale.
  * @param step If supplied, receives whether the source key uses Instant interpolation.
  */
 SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameIndex frame, bool *step = nullptr);
 
+/**
+ * @brief Interpolate a 1D value. @p current / @p start / @p end are the time range.
+ * CatmullRom uses all four values; other types ease between @p p1 and @p p2.
+ */
+double interpolate(InterpolationType interpolationType, double current, double start, double end, double p0, double p1,
+				   double p2, double p3);
+
+/**
+ * @brief Time remap onto @c [start, end]. CatmullRom without neighbors duplicates the endpoints.
+ */
 double interpolate(InterpolationType interpolationType, double current, double start, double end);
 
 /**

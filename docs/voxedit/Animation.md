@@ -19,6 +19,8 @@ Enable **Long rotation** beside the keyframe's interpolation settings in the nod
 a 90 degree rotation becomes a 270 degree rotation in the opposite direction. Identical endpoint orientations stay still because they do not specify an axis
 for a full turn; add an intermediate keyframe to animate a full turn.
 
+**CatmullRom** interpolates translation and scale with a cubic spline through the neighboring keyframe values. Rotation still uses slerp between the two keys of the current segment. The first and last segments duplicate the endpoint when a neighbor is missing.
+
 ## Scripting
 
 You can also create animations from [scripts](../LUAScript.md). There is an example available with `animate.lua` where you can create a few character animations based on node names.

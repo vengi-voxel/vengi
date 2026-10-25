@@ -153,6 +153,31 @@ static inline scenegraph::InterpolationType toInterpolationType(const json::Json
 	Log::warn("Unsupported interpolation type: %s", val.c_str());
 	return defaultValue;
 }
+
+static inline const char *fromInterpolationType(scenegraph::InterpolationType type) {
+	switch (type) {
+	case scenegraph::InterpolationType::Instant:
+		return "step";
+	case scenegraph::InterpolationType::Linear:
+		return "linear";
+	case scenegraph::InterpolationType::QuadEaseIn:
+	case scenegraph::InterpolationType::CubicEaseIn:
+		return "ease_in";
+	case scenegraph::InterpolationType::QuadEaseOut:
+	case scenegraph::InterpolationType::CubicEaseOut:
+		return "ease_out";
+	case scenegraph::InterpolationType::QuadEaseInOut:
+	case scenegraph::InterpolationType::CubicEaseInOut:
+		return "ease_in_out";
+	case scenegraph::InterpolationType::CubicBezier:
+		return "bezier";
+	case scenegraph::InterpolationType::CatmullRom:
+		return "catmullrom";
+	case scenegraph::InterpolationType::Max:
+		break;
+	}
+	return "linear";
+}
 #endif
 
 template<class T>
@@ -1699,7 +1724,7 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 					json::Json channelKf = json::Json::object();
 					channelKf.set("channel", channel);
 					channelKf.set("time", (double)time);
-					channelKf.set("interpolation", "linear");
+					channelKf.set("interpolation", priv::fromInterpolationType(kf.interpolation));
 					channelKf.set("uuid", core::UUID::generate().str());
 					json::Json dp = json::Json::object();
 					dp.set("x", invertXZ ? -(double)value.x : (double)value.x);

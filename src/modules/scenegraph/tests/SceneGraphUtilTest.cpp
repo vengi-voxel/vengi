@@ -38,6 +38,54 @@ TEST_F(SceneGraphUtilTest, testSampleLocalTransform) {
 	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 24).localTranslation());
 }
 
+TEST_F(SceneGraphUtilTest, testSampleLocalTransformCatmullRom) {
+	auto makeKey = [](FrameIndex frame, float x, InterpolationType type) {
+		SceneGraphKeyFrame kf;
+		kf.frameIdx = frame;
+		kf.interpolation = type;
+		kf.transform().setLocalTranslation(glm::vec3(x, 0.0f, 0.0f));
+		kf.transform().setLocalScale(glm::vec3(1.0f + x * 0.1f, 1.0f, 1.0f));
+		return kf;
+	};
+
+	// Two keys: neighbors are duplicated, midpoint stays on the chord
+	{
+		SceneGraphKeyFrames keys;
+		keys.push_back(makeKey(0, 0.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(10, 10.0f, InterpolationType::CatmullRom));
+		EXPECT_FLOAT_EQ(0.0f, sampleLocalTransform(keys, 0).localTranslation().x);
+		EXPECT_FLOAT_EQ(5.0f, sampleLocalTransform(keys, 5).localTranslation().x);
+		EXPECT_FLOAT_EQ(10.0f, sampleLocalTransform(keys, 10).localTranslation().x);
+	}
+
+	// Four keys (0, 10, 10, 0): the middle segment overshoots like Blockbench/THREE.SplineCurve
+	{
+		SceneGraphKeyFrames keys;
+		keys.push_back(makeKey(0, 0.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(10, 10.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(20, 10.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(30, 0.0f, InterpolationType::CatmullRom));
+		EXPECT_FLOAT_EQ(0.0f, sampleLocalTransform(keys, 0).localTranslation().x);
+		EXPECT_FLOAT_EQ(10.0f, sampleLocalTransform(keys, 10).localTranslation().x);
+		EXPECT_FLOAT_EQ(11.25f, sampleLocalTransform(keys, 15).localTranslation().x);
+		EXPECT_FLOAT_EQ(10.0f, sampleLocalTransform(keys, 20).localTranslation().x);
+		EXPECT_FLOAT_EQ(0.0f, sampleLocalTransform(keys, 30).localTranslation().x);
+		EXPECT_FLOAT_EQ(2.125f, sampleLocalTransform(keys, 15).localScale().x);
+
+		keys[1].interpolation = InterpolationType::Linear;
+		EXPECT_FLOAT_EQ(10.0f, sampleLocalTransform(keys, 15).localTranslation().x);
+	}
+
+	// First segment has no p0: uses (p1, p1, p2, p3)
+	{
+		SceneGraphKeyFrames keys;
+		keys.push_back(makeKey(0, 0.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(10, 10.0f, InterpolationType::CatmullRom));
+		keys.push_back(makeKey(20, 30.0f, InterpolationType::CatmullRom));
+		EXPECT_FLOAT_EQ(3.75f, sampleLocalTransform(keys, 5).localTranslation().x);
+	}
+}
+
 TEST_F(SceneGraphUtilTest, testLongRotation) {
 	for (int sign = -1; sign <= 1; sign += 2) {
 		SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
@@ -366,9 +414,12 @@ TEST_F(SceneGraphUtilTest, testInterpolate) {
 	// t = 0.5 -> 0.5 * 1.5 = 0.75. Value = 0 + 10 * 0.75 = 7.5
 	EXPECT_DOUBLE_EQ(7.5, interpolate(InterpolationType::QuadEaseOut, 5.0, 0.0, 10.0));
 
-	// CatmullRom
-	// t = 0.5 -> 5.0
+	// CatmullRom without neighbors duplicates the endpoints
 	EXPECT_DOUBLE_EQ(5.0, interpolate(InterpolationType::CatmullRom, 5.0, 0.0, 10.0));
+	EXPECT_DOUBLE_EQ(5.0, interpolate(InterpolationType::CatmullRom, 0.5, 0.0, 1.0, 0.0, 0.0, 10.0, 10.0));
+	// Four values: midpoint of (0, 10, 10, 0) overshoots
+	EXPECT_DOUBLE_EQ(11.25, interpolate(InterpolationType::CatmullRom, 0.5, 0.0, 1.0, 0.0, 10.0, 10.0, 0.0));
+	EXPECT_DOUBLE_EQ(2.5, interpolate(InterpolationType::QuadEaseIn, 0.5, 0.0, 1.0, 0.0, 0.0, 10.0, 10.0));
 }
 
 TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {

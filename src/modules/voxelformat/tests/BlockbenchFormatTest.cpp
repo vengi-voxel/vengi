@@ -3,11 +3,15 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/ScopedPtr.h"
 #include "core/Unicode.h"
 #include "core/collection/Buffer.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/MemoryArchive.h"
 #include "palette/Palette.h"
 #include "math/tests/TestMathHelper.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
@@ -200,6 +204,75 @@ TEST_F(BlockbenchFormatTest, testSave) {
 	pal.magicaVoxel();
 	testSave("testSave.bbmodel", &f, pal,
 			 voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color));
+}
+
+TEST_F(BlockbenchFormatTest, testSaveLoadInterpolation) {
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setName("bone");
+	node.createVolume(voxel::Region(0, 0));
+	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	const int nodeId = graph.emplace(core::move(node));
+	ASSERT_NE(InvalidNodeId, nodeId);
+
+	const core::String clip = "wave";
+	ASSERT_TRUE(graph.addAnimation(clip));
+	for (const auto &entry : graph.nodes()) {
+		scenegraph::SceneGraphNode &n = entry->value;
+		n.setAnimation(clip);
+		n.setKeyFrames(n.keyFrames(DEFAULT_ANIMATION));
+	}
+	ASSERT_TRUE(graph.setAnimation(clip));
+
+	scenegraph::SceneGraphNode &animNode = graph.node(nodeId);
+	const scenegraph::SceneGraphTransform rest = animNode.transform(0);
+	struct KeySpec {
+		scenegraph::FrameIndex frame;
+		scenegraph::InterpolationType interpolation;
+		glm::vec3 delta;
+	};
+	const KeySpec specs[] = {
+		{24, scenegraph::InterpolationType::CatmullRom, glm::vec3(4.0f, 0.0f, 0.0f)},
+		{48, scenegraph::InterpolationType::Instant, glm::vec3(8.0f, 0.0f, 0.0f)},
+		{72, scenegraph::InterpolationType::QuadEaseIn, glm::vec3(12.0f, 0.0f, 0.0f)},
+	};
+	for (const KeySpec &spec : specs) {
+		const int key = animNode.addKeyFrame(spec.frame);
+		ASSERT_NE(InvalidKeyFrame, key);
+		scenegraph::SceneGraphTransform t = rest;
+		t.setLocalTranslation(rest.localTranslation() + spec.delta);
+		animNode.setTransform(key, t);
+		animNode.keyFrame(key).interpolation = spec.interpolation;
+	}
+	animNode.keyFrame(0).interpolation = scenegraph::InterpolationType::CatmullRom;
+	graph.updateTransforms();
+
+	BlockbenchFormat format;
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(format.save(graph, "interp.bbmodel", archive, testSaveCtx));
+
+	core::ScopedPtr<io::SeekableReadStream> jsonStream(archive->readStream("interp.bbmodel"));
+	ASSERT_TRUE(jsonStream);
+	core::String json;
+	ASSERT_TRUE(jsonStream->readString((int)jsonStream->size(), json));
+	EXPECT_NE(core::String::npos, json.find("\"catmullrom\""));
+	EXPECT_NE(core::String::npos, json.find("\"step\""));
+	EXPECT_NE(core::String::npos, json.find("\"ease_in\""));
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load("interp.bbmodel", archive, loaded, testLoadCtx));
+	ASSERT_TRUE(loaded.hasAnimation(clip));
+	ASSERT_TRUE(loaded.setAnimation(clip));
+	scenegraph::SceneGraphNode *loadedNode = loaded.findNodeByName("bone");
+	ASSERT_NE(nullptr, loadedNode);
+	auto expectInterpolation = [&](scenegraph::FrameIndex frame, scenegraph::InterpolationType type) {
+		scenegraph::KeyFrameIndex kfIdx = InvalidKeyFrame;
+		ASSERT_TRUE(loadedNode->hasKeyFrameForFrame(frame, &kfIdx));
+		EXPECT_EQ(type, loadedNode->keyFrame(kfIdx).interpolation) << frame;
+	};
+	expectInterpolation(24, scenegraph::InterpolationType::CatmullRom);
+	expectInterpolation(48, scenegraph::InterpolationType::Instant);
+	expectInterpolation(72, scenegraph::InterpolationType::QuadEaseIn);
 }
 
 } // namespace voxelformat
