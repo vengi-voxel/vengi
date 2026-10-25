@@ -96,8 +96,8 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseI
 	if (!Super::onMouseWheel(windowHandle, x, y, mouseId)) {
 		SDL_Event ev{};
 		ev.type = SDL_EVENT_MOUSE_WHEEL;
-		ev.wheel.x = (int)x;
-		ev.wheel.y = (int)y;
+		ev.wheel.x = x;
+		ev.wheel.y = y;
 		ev.wheel.which = mouseId;
 		ev.wheel.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		processEvent(ev);
