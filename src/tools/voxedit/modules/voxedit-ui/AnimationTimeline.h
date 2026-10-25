@@ -9,6 +9,7 @@
 #include "core/UUID.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -35,13 +36,19 @@ private:
 	double _frameTimeSeconds = 0.0;
 	double _fps = 22.0;
 	int32_t _startFrame = 0;
-	int32_t _endFrame = -1;
+	int32_t _endFrame = 100;
+	bool _frameAll = true;
 	core::UUID _lastActivedNodeUUID;
 	struct Selection {
 		scenegraph::FrameIndex frameIdx;
 		core::UUID nodeUUID;
 	};
 	core::Buffer<Selection> _selectionBuffer;
+	struct KeyframeDragState {
+		core::UUID nodeUUID;
+		scenegraph::SceneGraphKeyFrames keyframes;
+	};
+	core::DynamicArray<KeyframeDragState> _keyframeDragStates;
 	core::Set<core::UUID, 11, core::UUIDHash> _keyframeDragChangedNodes;
 	SceneManagerPtr _sceneMgr;
 
@@ -66,7 +73,7 @@ public:
 
 inline void AnimationTimeline::resetFrames() {
 	_startFrame = 0;
-	_endFrame = -1;
+	_frameAll = true;
 }
 
 } // namespace voxedit

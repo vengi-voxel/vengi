@@ -208,7 +208,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		IM_CHECK_EQ((int)_fps, 30);
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "crop frames")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "frame all")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
@@ -217,7 +217,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		ctx->ItemClick(ICON_LC_ARROW_RIGHT_LEFT);
 		ctx->Yield();
 		IM_CHECK_EQ(_startFrame, (int32_t)0);
-		IM_CHECK(_endFrame < 200);
+		IM_CHECK_EQ(_endFrame, 100);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "play pause toggle")->TestFunc = [=](ImGuiTestContext *ctx) {

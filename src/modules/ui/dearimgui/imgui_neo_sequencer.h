@@ -18,8 +18,8 @@ enum ImGuiNeoSequencerFlags_ {
 	ImGuiNeoSequencerFlags_AllowLengthChanging = 1 << 0, // Allows changing length of sequence
 	ImGuiNeoSequencerFlags_EnableSelection = 1 << 1,	 // Enables selection of keyframes
 	ImGuiNeoSequencerFlags_HideZoom = 1 << 2,			 // Disables zoom bar
-	// ImGuiNeoSequencerFlags_PH                 = 1 << 3, // PLACEHOLDER
-	ImGuiNeoSequencerFlags_AlwaysShowHeader = 1 << 4, // Enables overlay header, keeping it visible when scrolling
+	ImGuiNeoSequencerFlags_Navigation = 1 << 3,			 // Pan, zoom, scrollbar and resizable labels
+	ImGuiNeoSequencerFlags_AlwaysShowHeader = 1 << 4,	 // Enables overlay header, keeping it visible when scrolling
 
 	// Selection options, only work with enable selection flag
 	ImGuiNeoSequencerFlags_Selection_EnableDragging = 1 << 5,
@@ -104,7 +104,8 @@ IMGUI_API void PopNeoSequencerStyleColor(int count = 1);
 
 IMGUI_API bool BeginNeoSequencer(const char *id, FrameIndexType *frame, FrameIndexType *startFrame,
 								 FrameIndexType *endFrame, const ImVec2 &size = ImVec2(0, 0),
-								 ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_None);
+								 ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_None,
+								 FrameIndexType lastFrame = 100);
 IMGUI_API void EndNeoSequencer(); // Call only when BeginNeoSequencer() returns true!!
 
 IMGUI_API bool BeginNeoGroup(const char *label, bool *open = nullptr);
@@ -117,7 +118,9 @@ IMGUI_API void EndNeoTimeLine(); // Call only when BeginNeoTimeline() returns tr
 // Fully customizable timeline with per key callback
 IMGUI_API bool BeginNeoTimelineEx(const char *label, bool *open = nullptr,
 								  ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
-IMGUI_API void NeoKeyframe(int32_t *value);
+// Update drag positions separately when resolving collisions before drawing keyframes.
+IMGUI_API void NeoUpdateKeyframe(int32_t *value);
+IMGUI_API void NeoKeyframe(int32_t *value, bool update = true);
 
 IMGUI_API bool IsNeoKeyframeHovered();
 IMGUI_API bool IsNeoKeyframeSelected();

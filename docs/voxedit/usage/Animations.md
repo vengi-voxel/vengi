@@ -8,7 +8,15 @@ Here you can change, create or delete animations from a scene.
 
 ![voxedit-timeline](../../img/voxedit-timeline.png)
 
-The timeline visualized the key frames for each node for each animation.
+The timeline shows the keyframes for each node in the active animation.
+
+- Ctrl + mouse wheel: zoom horizontally around the pointer.
+- Shift + mouse wheel: pan horizontally.
+- Middle mouse drag: pan horizontally.
+- Mouse wheel: scroll through node rows.
+- Bottom scrollbar: pan through frames while keeping node names stationary.
+- Home or the Frame all button: fit all keyframes with some extra space.
+- Center playhead: center the view on the current frame without changing zoom.
 
 ## Cameras
 

@@ -35,10 +35,15 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::TooltipTextUnformatted(_("Delete the current keyframe of the active nodes"));
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_LC_ARROW_RIGHT_LEFT)) {
-		_startFrame = 0;
-		_endFrame = core_max(64, maxFrame + 1);
+		_frameAll = true;
 	}
-	ImGui::TooltipTextUnformatted(_("Crop frames"));
+	ImGui::TooltipTextUnformatted(_("Frame all (Home)"));
+	ImGui::SameLine();
+	if (ImGui::Button(_("Center playhead"))) {
+		const int32_t span = _endFrame - _startFrame;
+		_startFrame = core_max(0, currentFrame - span / 2);
+		_endFrame = _startFrame + span;
+	}
 	ImGui::SameLine();
 
 	if (_animationPlaying->boolVal()) {
@@ -76,21 +81,66 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 									  scenegraph::SceneGraphNode &node) {
 	const char *icon = nodeIcon(node.type());
-	const core::String &label = core::String::format("%s %s###node-%s", icon, node.name().c_str(), node.uuid().str().c_str());
+	const core::String &label =
+		core::String::format("%s %s###node-%s", icon, node.name().c_str(), node.uuid().str().c_str());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const core::UUID activeNode = sceneGraph.activeNodeUUID();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		bool keyFrameChanged = false;
-		for (scenegraph::SceneGraphKeyFrame &kf : *node.keyFrames()) {
-			int32_t oldFrameIdx = kf.frameIdx;
-			ImGui::NeoKeyframe(&kf.frameIdx);
-			if (kf.frameIdx < 0) {
-				kf.frameIdx = 0;
+		if (ImGui::NeoIsDraggingSelection() && ImGui::NeoHasSelection()) {
+			KeyframeDragState *original = nullptr;
+			for (KeyframeDragState &state : _keyframeDragStates) {
+				if (state.nodeUUID == node.uuid()) {
+					original = &state;
+					break;
+				}
 			}
-			if (oldFrameIdx != kf.frameIdx) {
+			if (original == nullptr) {
+				_keyframeDragStates.push_back({node.uuid(), *node.keyFrames()});
+			} else if (original->keyframes.size() == node.keyFrames()->size()) {
+				// Rebuild every preview from the initial layout, including unselected neighbors.
+				// Keep the buffer allocation: the sequencer identifies selected keys by address.
+				for (size_t i = 0; i < original->keyframes.size(); ++i) {
+					keyFrameChanged |= (*node.keyFrames())[i].frameIdx != original->keyframes[i].frameIdx;
+					(*node.keyFrames())[i] = original->keyframes[i];
+				}
+			}
+		}
+		scenegraph::SceneGraphKeyFrames &keyframes = *node.keyFrames();
+		int32_t dragOffset = 0;
+		int32_t minimumOffset = INT32_MIN;
+		core::Buffer<size_t> movedKeys;
+		for (size_t i = 0; i < keyframes.size(); ++i) {
+			scenegraph::SceneGraphKeyFrame &kf = keyframes[i];
+			const int32_t oldFrame = kf.frameIdx;
+			ImGui::NeoUpdateKeyframe(&kf.frameIdx);
+			if (oldFrame != kf.frameIdx) {
+				dragOffset = kf.frameIdx - oldFrame;
+				minimumOffset = core_max(minimumOffset, (int32_t)i - oldFrame);
+				movedKeys.push_back(i);
 				keyFrameChanged = true;
 			}
-
+		}
+		if (dragOffset < minimumOffset) {
+			// Leave enough nonnegative frames for all preceding keys.
+			for (size_t index : movedKeys) {
+				keyframes[index].frameIdx += minimumOffset - dragOffset;
+			}
+			dragOffset = minimumOffset;
+		}
+		// The restored array is in its original order. Keep that order, pushing
+		// neighbors in the drag direction rather than letting selected keys cross them.
+		if (dragOffset < 0) {
+			for (size_t i = keyframes.size(); i > 1; --i) {
+				keyframes[i - 2].frameIdx = core_min(keyframes[i - 2].frameIdx, keyframes[i - 1].frameIdx - 1);
+			}
+		} else if (dragOffset > 0) {
+			for (size_t i = 1; i < keyframes.size(); ++i) {
+				keyframes[i].frameIdx = core_max(keyframes[i].frameIdx, keyframes[i - 1].frameIdx + 1);
+			}
+		}
+		for (scenegraph::SceneGraphKeyFrame &kf : keyframes) {
+			ImGui::NeoKeyframe(&kf.frameIdx, false);
 			if (ImGui::IsNeoKeyframeHovered()) {
 				ImGui::BeginTooltip();
 				const char *interpolation = scenegraph::InterpolationTypeStr[(int)kf.interpolation];
@@ -99,18 +149,10 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			}
 		}
 		if (keyFrameChanged) {
-			scenegraph::SceneGraphNode &mutableNode = sceneGraph.node(node.id());
-			scenegraph::SceneGraphKeyFrames *kfs = mutableNode.keyFrames();
-			if (kfs != nullptr) {
-				kfs->sort([](const scenegraph::SceneGraphKeyFrame &a, const scenegraph::SceneGraphKeyFrame &b) {
-					return a.frameIdx > b.frameIdx;
-				});
-				for (size_t i = 1; i < kfs->size(); ++i) {
-					if ((*kfs)[i].frameIdx <= (*kfs)[i - 1].frameIdx) {
-						(*kfs)[i].frameIdx = (*kfs)[i - 1].frameIdx + 1;
-					}
-				}
-			}
+			// Scene graph evaluation expects sorted frames after the UI preview is drawn.
+			keyframes.sort([](const scenegraph::SceneGraphKeyFrame &a, const scenegraph::SceneGraphKeyFrame &b) {
+				return a.frameIdx > b.frameIdx;
+			});
 			sceneGraph.markKeyFramesDirty(node.id());
 			_keyframeDragChangedNodes.insert(node.uuid());
 		}
@@ -137,6 +179,11 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 }
 
 void AnimationTimeline::recordMovedKeyFrames() {
+	if (!_keyframeDragStates.empty()) {
+		// Sorting the committed frames changes address-based selection identities.
+		_clearSelection = true;
+	}
+	_keyframeDragStates.clear();
 	if (_keyframeDragChangedNodes.empty()) {
 		return;
 	}
@@ -169,12 +216,23 @@ static void fillDisplayNodes_r(const scenegraph::SceneGraph &sceneGraph, const s
 void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_AlwaysShowHeader;
 	flags |= ImGuiNeoSequencerFlags_EnableSelection;
-	flags |= ImGuiNeoSequencerFlags_AllowLengthChanging;
+	flags |= ImGuiNeoSequencerFlags_HideZoom;
+	flags |= ImGuiNeoSequencerFlags_Navigation;
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDragging;
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
 
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && !ImGui::GetIO().WantTextInput &&
+		ImGui::IsKeyPressed(ImGuiKey_Home)) {
+		_frameAll = true;
+	}
+	if (_frameAll) {
+		const int32_t lastFrame = _sceneMgr->sceneGraph().maxFrames();
+		_startFrame = 0;
+		_endFrame = lastFrame > 0 ? lastFrame + core_max(2, lastFrame / 10) : 100;
+		_frameAll = false;
+	}
 	const scenegraph::FrameIndex frame = currentFrame;
-	if (ImGui::BeginNeoSequencer("sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
+	if (ImGui::BeginNeoSequencer("sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags, _sceneMgr->sceneGraph().maxFrames())) {
 		core::Buffer<Selection> selectionBuffer;
 		if (_clearSelection) {
 			ImGui::NeoClearSelection();
@@ -271,9 +329,6 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
-	if (_endFrame == -1) {
-		_endFrame = core_max(64, maxFrame + 1);
-	}
 
 	if (_animationPlaying->boolVal()) {
 		_frameTimeSeconds += deltaFrameSeconds;

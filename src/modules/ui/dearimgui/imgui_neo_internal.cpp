@@ -41,57 +41,32 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 
 	const ImRect barArea = {cursor + ImVec2{style.FramePadding.x + valuesWidth, style.FramePadding.y}, cursor + size};
 
-	const uint32_t viewEnd = endFrame + offsetFrame;
 	const uint32_t viewStart = startFrame + offsetFrame;
+	const uint32_t count = (uint32_t)((float)(endFrame - startFrame + 1) / zoom);
+	const float perFrameWidth = GetPerFrameWidth(size.x, valuesWidth, endFrame, startFrame, zoom);
+	if (!drawFrameLines || perFrameWidth <= 0.0f) {
+		return;
+	}
 
-	if (drawFrameLines) {
-		const int32_t count = (int32_t)((float)((viewEnd + 1) - viewStart) / zoom);
-
-		int32_t counter = 0;
-		uint32_t primaryFrames = pow(10, counter++);
-		uint32_t secondaryFrames = pow(10, counter);
-
-		float perFrameWidth = GetPerFrameWidth(size.x, valuesWidth, endFrame, startFrame, zoom);
-
-		if (perFrameWidth <= 0.0f)
-			return;
-
-		while (perFrameWidth < maxPixelsPerTick) {
-			primaryFrames = pow(10, counter++);
-			secondaryFrames = pow(10, counter);
-
-			perFrameWidth *= (float)primaryFrames;
-		}
-
-		if (primaryFrames == 0 || secondaryFrames == 0) {
-			primaryFrames = 1;
-			secondaryFrames = 10;
-		}
-
-		for (int32_t i = 0; i < count; i++) {
-			const bool primaryFrame = ((viewStart + i) % primaryFrames == 0);
-			const bool secondaryFrame = ((viewStart + i) % secondaryFrames == 0);
-
-			if (!primaryFrame && !secondaryFrame)
-				continue;
-
-			const float lineHeight = secondaryFrame ? barArea.GetSize().y : barArea.GetSize().y / 2.0f;
-
-			const ImVec2 p1 = {barArea.Min.x + (float)i * (perFrameWidth / (float)primaryFrames), barArea.Max.y};
-			const ImVec2 p2 = {barArea.Min.x + (float)i * (perFrameWidth / (float)primaryFrames),
-							   barArea.Max.y - lineHeight};
-
-			drawList->AddLine(p1, p2, IM_COL32_WHITE, 1.0f);
-
-			if (drawFrameText && secondaryFrame) {
-				char text[10];
-				const int printRes = snprintf(text, sizeof(text), "%i", viewStart + i);
-				if (printRes > 0) {
-					drawList->AddText(NULL, 0, {p1.x + 2.0f, barArea.Min.y}, IM_COL32_WHITE, text);
-				}
-			}
+	// Visit visible ticks rather than every frame when the view is zoomed out.
+	uint32_t step = 1;
+	while (perFrameWidth * (float)step < maxPixelsPerTick && step < 100000000) {
+		step *= 10;
+	}
+	const uint32_t first = (viewStart + step - 1) / step * step;
+	drawList->PushClipRect(barArea.Min, barArea.Max, true);
+	for (uint32_t frame = first; frame < viewStart + count; frame += step) {
+		const bool major = frame % (step * 10) == 0;
+		const float lineHeight = major ? barArea.GetHeight() : barArea.GetHeight() / 2.0f;
+		const float x = barArea.Min.x + (float)(frame - viewStart) * perFrameWidth;
+		drawList->AddLine(ImVec2(x, barArea.Max.y), ImVec2(x, barArea.Max.y - lineHeight), IM_COL32_WHITE);
+		if (drawFrameText && major) {
+			char text[16];
+			snprintf(text, sizeof(text), "%u", frame);
+			drawList->AddText(ImVec2(x + 2.0f, barArea.Min.y), IM_COL32_WHITE, text);
 		}
 	}
+	drawList->PopClipRect();
 }
 
 void RenderNeoTimelineLabel(const char *label, const ImVec2 &cursor, const ImVec2 &size, const ImVec4 &color,
@@ -159,8 +134,6 @@ void RenderNeoSequencerCurrentFrame(const ImVec4 &color, const ImVec4 &topColor,
 	const Vec2Pair pair = getCurrentFrameLine(pointerBB, timelineHeight);
 
 	drawList->AddLine(pair.a, pair.b, ColorConvertFloat4ToU32(color), lineWidth);
-
-	drawList->PopClipRect();
 
 	{ // Top pointer has custom shape, we have to create it
 		const ImVec2 size = pointerBB.GetSize();
