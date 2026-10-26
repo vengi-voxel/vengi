@@ -78,6 +78,7 @@
 #include "voxelformat/private/sandbox/VXRFormat.h"
 #include "voxelformat/private/sandbox/VXTFormat.h"
 #include "voxelformat/private/slab6/KV6Format.h"
+#include "voxelformat/private/pnd3d/KVOFormat.h"
 #include "voxelformat/private/slab6/KVXFormat.h"
 #include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/spritestack/SpriteStackFormat.h"
@@ -156,6 +157,7 @@ const io::FormatDescription *voxelFormats() {
 												 V3AFormat::format(),
 												 ThingFormat::format(),
 												 KV6Format::format(),
+												 KVOFormat::format(),
 												 VXLFormat::format(),
 												 AoSVXLFormat::format(),
 												 AoSFormat::format(),
@@ -222,6 +224,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<KVXFormat>();
 		} else if (io::isA(KV6Format::format(), desc, ext, magic)) {
 			return core::make_shared<KV6Format>();
+		} else if (io::isA(KVOFormat::format(), desc, ext, magic)) {
+			return core::make_shared<KVOFormat>();
 		} else if (io::isA(SproxelFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SproxelFormat>();
 		} else if (io::isA(CubFormat::format(), desc, ext, magic)) {

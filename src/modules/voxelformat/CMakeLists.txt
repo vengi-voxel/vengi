@@ -166,6 +166,7 @@ set(SRCS
 	private/sandbox/VXRFormat.h              private/sandbox/VXRFormat.cpp
 	private/sandbox/VXTFormat.h              private/sandbox/VXTFormat.cpp
 	private/slab6/KVXFormat.h                private/slab6/KVXFormat.cpp
+	private/pnd3d/KVOFormat.h                private/pnd3d/KVOFormat.cpp
 	private/slab6/KV6Format.h                private/slab6/KV6Format.cpp
 	private/slab6/KFAFormat.h                private/slab6/KFAFormat.cpp
 	private/slab6/SLAB6VoxFormat.h           private/slab6/SLAB6VoxFormat.cpp
@@ -214,6 +215,7 @@ set(TEST_SRCS
 	tests/GoxTxtFormatTest.cpp
 	tests/KenShapeFormatTest.cpp
 	tests/KVXFormatTest.cpp
+	tests/KVOFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/MapFormatTest.cpp
 	tests/MeshFormatTest.cpp
