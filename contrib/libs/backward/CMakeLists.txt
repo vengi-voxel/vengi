@@ -115,6 +115,13 @@ else()
 	endif()
 endif()
 
+# MSVC picks these up via #pragma comment(lib) in backward.h. MinGW/GCC
+# (including the MSYS2 CI job) does not, so executables fail to link
+# GetModuleInformation / EnumProcessModules without an explicit dependency.
+if (WIN32)
+	list(APPEND BACKWARD_LIBRARIES psapi dbghelp)
+endif()
+
 macro(map_definitions var_prefix define_prefix)
 	foreach(def ${ARGN})
 		if (${${var_prefix}${def}})
@@ -136,7 +143,7 @@ list(APPEND BACKWARD_INCLUDE_DIRS .)
 
 target_include_directories(backward PUBLIC ${BACKWARD_INCLUDE_DIRS})
 target_compile_definitions(backward PUBLIC ${BACKWARD_DEFINITIONS})
-target_link_libraries(backward ${BACKWARD_LIBRARIES})
+target_link_libraries(backward PUBLIC ${BACKWARD_LIBRARIES})
 mark_as_advanced(BACKWARD_INCLUDE_DIRS BACKWARD_DEFINITIONS BACKWARD_LIBRARIES)
 
 # Expand each definition in BACKWARD_DEFINITIONS to its own cmake var and export
