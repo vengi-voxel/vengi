@@ -7,6 +7,7 @@
 #include "core/SharedPtr.h"
 #include "core/UUID.h"
 #include "ui/Panel.h"
+#include "ui/IMGUIEx.h"
 #include "voxel/Region.h"
 
 namespace scenegraph {
@@ -35,8 +36,19 @@ private:
 	int _strokeView = -1;
 	glm::ivec3 _lastPos{0};
 	bool _lastPosValid = false;
+	glm::ivec3 _target{0};
+	struct TargetView {
+		ImDrawList *draw = nullptr;
+		ImVec2 origin;
+		ImVec2 min;
+		ImVec2 max;
+		float cell = 1.0f;
+	};
+	TargetView _targetViews[3];
 
 	static glm::ivec3 voxelPosition(int view, const voxel::Region &region, int slice, int u, int v);
+	static glm::ivec2 viewPosition(int view, const voxel::Region &region, const glm::ivec3 &pos);
+	void drawTarget(const voxel::Region &region);
 	void drawView(int view, scenegraph::SceneGraphNode &node, const ImVec2 &size);
 	void editLine(scenegraph::SceneGraphNode &node, const glm::ivec3 &from, const glm::ivec3 &to, bool erase);
 	void finishStroke();

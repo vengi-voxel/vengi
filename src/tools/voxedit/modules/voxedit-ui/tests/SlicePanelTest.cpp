@@ -14,6 +14,51 @@
 namespace voxedit {
 
 void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "target crosses follow all planes")->TestFunc =
+		[=](ImGuiTestContext *ctx) {
+			IM_CHECK(prepareUITest(ctx));
+			util::ScopedVarChange visible(cfg::VoxEditShowSlices, "true");
+			const voxel::Region region(glm::ivec3(-3, -4, -5), glm::ivec3(4, 3, 2));
+			IM_CHECK(_sceneMgr->newScene(true, "slice targets", region));
+			ctx->Yield();
+			IM_CHECK(focusWindow(ctx, id));
+			const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
+			for (int view = 0; view < 3; ++view) {
+				ctx->MouseMove(canvases[view]);
+				ctx->Yield();
+				const TargetView &hovered = _targetViews[view];
+				IM_CHECK(hovered.draw != nullptr);
+				ctx->MouseMoveToPos(
+					ImVec2(hovered.origin.x + 2.5f * hovered.cell, hovered.origin.y + 3.5f * hovered.cell));
+				ctx->Yield();
+				IM_CHECK(_target == voxelPosition(view, region, _slices[view], 2, 3));
+				for (int projectedView = 0; projectedView < 3; ++projectedView) {
+					const TargetView &targetView = _targetViews[projectedView];
+					IM_CHECK(targetView.draw != nullptr);
+					const glm::ivec2 projected = viewPosition(projectedView, region, _target);
+					const int depthAxes[] = {2, 0, 1};
+					IM_CHECK(voxelPosition(projectedView, region, _target[depthAxes[projectedView]], projected.x,
+										   projected.y) == _target);
+					bool left = false, right = false, top = false, bottom = false;
+					for (const ImDrawVert &vertex : targetView.draw->VtxBuffer) {
+						if (vertex.col != IM_COL32(255, 235, 100, 255)) {
+							continue;
+						}
+						left |= vertex.pos.x <= targetView.min.x + 2.0f;
+						right |= vertex.pos.x >= targetView.max.x - 2.0f;
+						top |= vertex.pos.y <= targetView.min.y + 2.0f;
+						bottom |= vertex.pos.y >= targetView.max.y - 2.0f;
+					}
+					IM_CHECK(left && right && top && bottom);
+				}
+			}
+			const glm::ivec3 lastTarget = _target;
+			ctx->MouseMoveToPos(ImVec2(0, 0));
+			ctx->Yield();
+			IM_CHECK(_target == lastTarget);
+			IM_CHECK_EQ(voxelutil::countVoxels(*_sceneMgr->sceneGraph().node(_sceneMgr->activeNode()).volume()), 0);
+		};
+
 	IM_REGISTER_TEST(engine, testCategory(), "edit all planes and undo")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange visible(cfg::VoxEditShowSlices, "false");
