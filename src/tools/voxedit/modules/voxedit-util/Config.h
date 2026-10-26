@@ -28,6 +28,7 @@ constexpr const char *VoxEditViewMode = "ve_viewmode";
 constexpr const char *VoxEditShowPalette = "ve_showpalette";
 constexpr const char *VoxEditShowNormalPalette = "ve_shownormalpalette";
 constexpr const char *VoxEditShowMemento = "ve_showmemento";
+constexpr const char *VoxEditShowSlices = "ve_showslices";
 constexpr const char *VoxEditShowCamera = "ve_showcamera";
 constexpr const char *VoxEditShowLSystem = "ve_showlsystem";
 constexpr const char *VoxEditShowScript = "ve_showscript";

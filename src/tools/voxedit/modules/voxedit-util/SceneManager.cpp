@@ -3911,6 +3911,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditShowNormalPalette);
 	const core::VarDef voxEditShowMemento(cfg::VoxEditShowMemento, true, N_("Memento"), N_("Show the memento panel"));
 	core::Var::registerVar(voxEditShowMemento);
+	const core::VarDef voxEditShowSlices(cfg::VoxEditShowSlices, false, N_("2D Views"), N_("Show editable back, right and top slices of the selected model"));
+	core::Var::registerVar(voxEditShowSlices);
 	const core::VarDef voxEditShowCamera(cfg::VoxEditShowCamera, true, N_("Camera"), N_("Show the camera panel"));
 	core::Var::registerVar(voxEditShowCamera);
 	const core::VarDef voxEditShowLSystem(cfg::VoxEditShowLSystem, true, N_("L-System"), N_("Show the L-System panel"));

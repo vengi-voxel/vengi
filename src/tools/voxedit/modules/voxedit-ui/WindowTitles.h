@@ -13,6 +13,7 @@
 #define TITLE_ANIMATION_TIMELINE "###animationtimeline"
 #define TITLE_TOOLS "###toolspanel"
 #define TITLE_MEMENTO "###mementopanel"
+#define TITLE_SLICES "###slicepanel"
 #define TITLE_CAMERA "###camerapanel"
 #define TITLE_SCENEDEBUGPANEL "###scenedebugpanel"
 #define TITLE_ASSET_MODELS "###assetmodels"

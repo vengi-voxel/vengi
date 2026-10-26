@@ -16,6 +16,7 @@
 #include "voxedit-ui/ModelAssetPanel.h"
 #include "voxedit-ui/BrushPanel.h"
 #include "voxedit-ui/CameraPanel.h"
+#include "voxedit-ui/SlicePanel.h"
 #include "voxedit-ui/GameModePanel.h"
 #include "voxedit-ui/HelpPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
@@ -108,6 +109,7 @@ private:
 	AnimationTimeline _animationTimeline;
 	AnimationPanel _animationPanel;
 	CameraPanel _cameraPanel;
+	SlicePanel _slicePanel;
 	SceneDebugPanel _sceneDebugPanel;
 	SceneSettingsPanel _sceneSettingsPanel;
 	HelpPanel _helpPanel;

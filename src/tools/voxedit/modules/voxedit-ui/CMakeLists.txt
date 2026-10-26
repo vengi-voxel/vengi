@@ -6,6 +6,7 @@ set(SRCS
 	ImageAssetPanel.h ImageAssetPanel.cpp
 	ModelAssetPanel.h ModelAssetPanel.cpp
 	CameraPanel.h CameraPanel.cpp
+	SlicePanel.h SlicePanel.cpp
 	DragAndDropPayload.h
 	GameModePanel.cpp GameModePanel.h
 	Gizmo.h
@@ -63,6 +64,7 @@ if (USE_IMGUITESTENGINE)
 		tests/ImageAssetPanelTest.cpp
 		tests/ModelAssetPanelTest.cpp
 		tests/CameraPanelTest.cpp
+		tests/SlicePanelTest.cpp
 		tests/GameModePanelTest.cpp
 		tests/HelpPanelTest.cpp
 		tests/NodeInspectorPanelTest.cpp

@@ -203,6 +203,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CheckboxVar(cfg::VoxEditShowScript);
 			ImGui::CheckboxVar(cfg::VoxEditShowMemento);
 			ImGui::CheckboxVar(cfg::VoxEditShowCamera);
+			ImGui::CheckboxVar(cfg::VoxEditShowSlices);
 			ImGui::CheckboxVar(cfg::VoxEditShowLSystem);
 			ImGui::CheckboxVar(cfg::VoxEditShowNetwork);
 			ImGui::CheckboxVar(cfg::VoxEditShowGameMode);

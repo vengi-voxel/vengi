@@ -30,6 +30,7 @@ A few of the features are:
 * Mirroring system for symmetric editing along any axis
 * Ruler/measurement tool for distance measurement between points
 * Slice view for inspecting cross-sections of volumes
+* Editable Back, Right and Top slices of the selected model in the [2D Views panel](usage/2DViews.md)
 * Path tracer rendering
 * [Game mode](usage/GameMode.md) with physics-based first-person walkthrough
 * Session recording and playback for editing sessions

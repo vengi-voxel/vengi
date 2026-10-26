@@ -24,6 +24,7 @@ set(DOCS
 	voxedit/usage/Network.md
 	voxedit/usage/Camera.md
 	voxedit/usage/Viewport.md
+	voxedit/usage/2DViews.md
 	voxedit/usage/Assets.md
 	voxedit/usage/Tools.md
 	voxedit/usage/Renderer.md
