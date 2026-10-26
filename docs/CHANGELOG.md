@@ -40,6 +40,7 @@ VoxEdit:
    - Improved animation timeline
    - Improved palette panel
    - Improved normal palette panel
+   - Improved lsystem panel
 
 Thumbnailer:
 
