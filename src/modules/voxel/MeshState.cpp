@@ -351,18 +351,19 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
-	const glm::ivec3 meshSizeMinusOne(s - 1);
 	voxel::Region completeRegion = v->region();
 	completeRegion.shiftUpperCorner(1, 1, 1);
 
-	// convert to step coordinates that are needed to extract
-	// the given region mesh size ranges
-	// the boundaries are special - that's why we take care of this with
-	// the offset of 1 - see the cubic surface extractor docs
+	// Convert the dirty region to mesh-chunk coordinates.
+	// Expand by 1 voxel in each direction:
+	// - +1: cubic extractor assigns positive-direction boundary faces to the
+	//   neighboring chunk with the greater coordinate (see CubicSurfaceExtractor)
+	// - -1: extractors peek at neighbors / AO samples one voxel outside the chunk
 	// Use floor division (not C++ truncation) so that negative coordinates
 	// correctly map to the chunk with the lower index.
+	// Resulting neighbor counts for a single voxel: interior=1, face=2, edge=4, corner=8
 	auto floorDiv = [](int a, int b) { return (a / b) - (a % b != 0 && (a ^ b) < 0); };
-	const glm::ivec3 lv = region.getLowerCorner() - meshSizeMinusOne;
+	const glm::ivec3 lv = region.getLowerCorner() - 1;
 	const glm::ivec3 uv = region.getUpperCorner() + 1;
 	const glm::ivec3 l(floorDiv(lv.x, s), floorDiv(lv.y, s), floorDiv(lv.z, s));
 	const glm::ivec3 u(floorDiv(uv.x, s), floorDiv(uv.y, s), floorDiv(uv.z, s));

@@ -39,16 +39,18 @@ TEST_F(MeshStateTest, testExtractRegion) {
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
 	meshState.scheduleRegionExtraction(0, region);
-	// With floor division, the meshSizeMinusOne subtraction correctly maps
-	// negative coordinates to the previous chunk, scheduling more chunks.
-	// The completeRegion intersection check filters out non-overlapping ones,
-	// but for a small volume like [-1,1]^3 most chunks still intersect.
+	// +/-1 expansion with floor division maps near-boundary voxels onto the
+	// neighboring chunk index; completeRegion filters non-overlapping ones.
 	EXPECT_LT(0, meshState.pendingExtractions());
 
 	(void)meshState.shutdown();
 }
 
-TEST_F(MeshStateTest, testExtractRegionBoundary) {
+// https://github.com/vengi-voxel/vengi/issues/201
+// A single-voxel dirty region must schedule only the chunks that share that
+// voxel (or its +/-1 neighborhood): interior=1, face=2, edge=4, corner=8.
+TEST_F(MeshStateTest, testExtractRegionNeighborCounts) {
+	// meshSize=16 -> chunks [0,15] and [16,31] on each axis
 	voxel::RawVolume v(voxel::Region(0, 31));
 
 	MeshState meshState;
@@ -60,14 +62,36 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
-	// worst case scenario - touching all adjacent regions
-	const voxel::Region region(15, 15);
-	meshState.scheduleRegionExtraction(0, region);
-	EXPECT_EQ(8, meshState.pendingExtractions());
 
-	const voxel::Region region2(14, 14);
-	meshState.scheduleRegionExtraction(0, region2);
-	EXPECT_EQ(9, meshState.pendingExtractions());
+	// Interior of chunk [0,15] - only that chunk
+	meshState.scheduleRegionExtraction(0, voxel::Region(8, 8, 8, 8, 8, 8));
+	EXPECT_EQ(1, meshState.pendingExtractions()) << "interior voxel must schedule 1 chunk";
+
+	// Upper X face of chunk [0,15] - this chunk + +X neighbor
+	meshState.clearPendingExtractions();
+	meshState.scheduleRegionExtraction(0, voxel::Region(15, 8, 8, 15, 8, 8));
+	EXPECT_EQ(2, meshState.pendingExtractions()) << "face voxel must schedule 2 chunks";
+
+	// Upper X+Y edge - 2x2 neighborhood in X/Y
+	meshState.clearPendingExtractions();
+	meshState.scheduleRegionExtraction(0, voxel::Region(15, 15, 8, 15, 15, 8));
+	EXPECT_EQ(4, meshState.pendingExtractions()) << "edge voxel must schedule 4 chunks";
+
+	// Upper X+Y+Z corner - full 2x2x2 neighborhood
+	meshState.clearPendingExtractions();
+	meshState.scheduleRegionExtraction(0, voxel::Region(15, 15, 15, 15, 15, 15));
+	EXPECT_EQ(8, meshState.pendingExtractions()) << "corner voxel must schedule 8 chunks";
+
+	// Lower face of chunk [16,31] (internal boundary) also needs both sides
+	meshState.clearPendingExtractions();
+	meshState.scheduleRegionExtraction(0, voxel::Region(16, 8, 8, 16, 8, 8));
+	EXPECT_EQ(2, meshState.pendingExtractions()) << "internal lower-face voxel must schedule 2 chunks";
+
+	// Deep interior of the second chunk (issue #201 style) - still only 1
+	meshState.clearPendingExtractions();
+	meshState.scheduleRegionExtraction(0, voxel::Region(20, 10, 12, 20, 10, 12));
+	EXPECT_EQ(1, meshState.pendingExtractions()) << "interior must not fan out to neighboring chunks";
+
 	(void)meshState.shutdown();
 }
 
@@ -241,12 +265,10 @@ TEST_F(MeshStateTest, testSingleChunkVolume) {
 	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
 
 	meshState.scheduleRegionExtraction(0, v.region());
-	// Volume [0,14] fits in chunk [0,15]. completeRegion = [0,15] (shifted).
-	// Only chunk [0,15] should intersect.
-	const int n = meshState.pendingExtractions();
-	// With meshSizeMinusOne subtraction and floor division, we may get
-	// extra chunks, but they should be filtered by completeRegion intersection.
-	EXPECT_GE(n, 1);
+	// Volume [0,14] fits in chunk [0,15]. completeRegion = [0,15] (shifted +1).
+	// Upper faces at 14 are not on a mesh-chunk boundary (boundary is 15), so
+	// only chunk [0,15] should be scheduled.
+	EXPECT_EQ(1, meshState.pendingExtractions());
 
 	(void)meshState.shutdown();
 }
