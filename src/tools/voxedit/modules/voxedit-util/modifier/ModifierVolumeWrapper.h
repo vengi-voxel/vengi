@@ -93,6 +93,7 @@ public:
 				return false;
 			}
 			// Preserve the FlagOutline (selection) flag when modifying voxels
+			const voxel::Voxel previousVoxel = *_currentVoxel;
 			const uint8_t existingFlags = _currentVoxel->getFlags();
 			if (_volume->_erase) {
 				if (!_volume->_normalPaint) {
@@ -113,6 +114,9 @@ public:
 			// Restore FlagOutline from original solid voxel
 			if (existingFlags & voxel::FlagOutline) {
 				_currentVoxel->setFlags(existingFlags);
+			}
+			if (*_currentVoxel == previousVoxel) {
+				return false;
 			}
 			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
 			if (dirtyRegion.isValid()) {
