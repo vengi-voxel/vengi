@@ -188,9 +188,14 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_nowSeconds = nowSeconds;
 	_brushContext.fixedOrthoSideView = _sliceMode || (camera != nullptr && camera->isOrthoAligned());
 	if (Brush *brush = currentBrush()) {
-		if (brush->wantsContinuousExecution() && _actionExecuteButton.pressed() &&
+		if (brush->wantsContinuousExecution() && (_actionExecuteButton.pressed() || _deleteExecuteButton.pressed()) &&
 			nowSeconds >= _nextContinuousExecution) {
-			_actionExecuteButton.execute(true);
+			if (_actionExecuteButton.pressed()) {
+				_actionExecuteButton.execute(true);
+			}
+			if (_deleteExecuteButton.pressed()) {
+				_deleteExecuteButton.execute(true);
+			}
 			_nextContinuousExecution = nowSeconds + 0.1;
 		}
 	}
