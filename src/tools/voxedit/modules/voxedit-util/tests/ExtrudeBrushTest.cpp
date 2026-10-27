@@ -396,6 +396,50 @@ TEST_F(ExtrudeBrushTest, testExtrudeCarveNoFlagChange) {
 	brush.shutdown();
 }
 
+// A gizmo drag reports the face behind the handle; that must not retarget the axis.
+TEST_F(ExtrudeBrushTest, testBeginBrushKeepsFaceWhenGizmoActive) {
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+
+	BrushContext ctx;
+	ctx.targetVolumeRegion = voxel::Region(0, 5);
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	brush.endBrush(ctx);
+	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveX);
+
+	ctx.cursorFace = voxel::FaceNames::PositiveY;
+	ctx.brushGizmoActive = true;
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveX)
+		<< "Gizmo interaction must keep the face picked from the voxel click";
+	brush.endBrush(ctx);
+
+	ctx.brushGizmoActive = false;
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveY)
+		<< "A later voxel-face click should still be able to change direction";
+	brush.endBrush(ctx);
+	brush.shutdown();
+}
+
+TEST_F(ExtrudeBrushTest, testApplyGizmoKeepsFace) {
+	ExtrudeBrush brush;
+	ASSERT_TRUE(brush.init());
+
+	BrushContext ctx;
+	ctx.cursorFace = voxel::FaceNames::PositiveX;
+	ASSERT_TRUE(brush.beginBrush(ctx));
+	brush.endBrush(ctx);
+
+	glm::mat4 delta(1.0f);
+	delta[3][0] = 2.0f;
+	EXPECT_TRUE(brush.applyBrushGizmo(ctx, glm::mat4(1.0f), delta, BrushGizmo_TranslateX));
+	EXPECT_EQ(brush.depth(), 2);
+	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveX);
+	brush.shutdown();
+}
+
 // beginBrush with no valid face succeeds but does not update the stored face
 TEST_F(ExtrudeBrushTest, testBeginBrushNoFace) {
 	ExtrudeBrush brush;

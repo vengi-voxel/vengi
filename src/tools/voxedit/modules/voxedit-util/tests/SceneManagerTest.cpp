@@ -3470,4 +3470,31 @@ TEST_F(SceneManagerTest, testLSystemExpandsRegion) {
 	EXPECT_FALSE(voxel::isAir(v->voxel(4, 16, 4).getMaterial()));
 }
 
+TEST_F(SceneManagerTest, testExtrudeGizmoClickDoesNotChangeFace) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "extrude_gizmo", voxel::Region(-3, 3)));
+	ASSERT_TRUE(testSetVoxel(glm::ivec3(0), 1));
+	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	voxel::Voxel selected = volume->voxel(0, 0, 0);
+	selected.setFlags(voxel::FlagOutline);
+	volume->setVoxel(0, 0, 0, selected);
+
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setBrushType(BrushType::Extrude);
+	modifier.setModifierType(ModifierType::Place);
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveX);
+
+	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
+	command::executeCommands("+actionexecute 1 0.0");
+	command::executeCommands("-actionexecute 1 1.0");
+	EXPECT_EQ(modifier.extrudeBrush().face(), voxel::FaceNames::PositiveX);
+
+	_sceneMgr->setViewportGizmoActive(true);
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	command::executeCommands("+actionexecute 1 2.0");
+	command::executeCommands("-actionexecute 1 3.0");
+	EXPECT_EQ(modifier.extrudeBrush().face(), voxel::FaceNames::PositiveX)
+		<< "Clicking the extrude gizmo must not pick a new face";
+}
+
 } // namespace voxedit

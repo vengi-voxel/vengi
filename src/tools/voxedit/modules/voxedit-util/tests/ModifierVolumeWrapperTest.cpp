@@ -127,4 +127,30 @@ TEST_F(ModifierVolumeWrapperTest, testOverride) {
 	ASSERT_EQ(2, volume.voxel(1, 1, 1).getColor());
 }
 
+TEST_F(ModifierVolumeWrapperTest, testIdenticalWritesDoNotDirtyVolume) {
+	voxel::RawVolume volume(voxel::Region(-1, 1));
+	const voxel::Voxel original(voxel::VoxelType::Generic, 3, 42, voxel::FlagOutline, 5);
+	volume.setVoxel(0, 0, 0, original);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	for (ModifierType type : {ModifierType::Paint, ModifierType::Override, ModifierType::NormalPaint}) {
+		ModifierVolumeWrapper wrapper(node, type);
+		voxel::Voxel input(original);
+		input.setFlags(0);
+		EXPECT_FALSE(wrapper.setVoxel(0, 0, 0, input));
+		EXPECT_FALSE(wrapper.dirtyRegion().isValid());
+		EXPECT_EQ(original, volume.voxel(0, 0, 0));
+	}
+	ModifierVolumeWrapper normals(node, ModifierType::NormalPaint);
+	voxel::Voxel input(original);
+	input.setNormal(43);
+	EXPECT_TRUE(normals.setVoxel(0, 0, 0, input));
+	EXPECT_TRUE(normals.dirtyRegion().isValid());
+	ModifierVolumeWrapper eraseNormals(node, ModifierType::NormalPaint | ModifierType::Erase);
+	EXPECT_TRUE(eraseNormals.setVoxel(0, 0, 0, {}));
+	ModifierVolumeWrapper repeatedErase(node, ModifierType::NormalPaint | ModifierType::Erase);
+	EXPECT_FALSE(repeatedErase.setVoxel(0, 0, 0, {}));
+	EXPECT_FALSE(repeatedErase.dirtyRegion().isValid());
+}
+
 } // namespace voxedit
