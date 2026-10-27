@@ -20,6 +20,12 @@ The shape brush creates geometric primitives by spanning a box in the viewport. 
 The shape is automatically oriented based on the surface normal of the face where you started dragging.
 This allows you to naturally create shapes aligned with your viewing direction.
 
+## Transform brush
+
+The Transform brush adjusts selected voxels with move, rotate, scale, or shear.
+Panel values and the viewport handle control the same operation. Changes appear
+as a preview while the model remains unchanged.
+
 ## Paint brush
 
 The paint brush provides various methods for coloring and modifying existing voxels. The brush only affects existing voxels and won't place new ones, making it ideal for recoloring models without changing their geometry.
