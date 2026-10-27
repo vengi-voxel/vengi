@@ -27,14 +27,16 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	}
 	Modifier &modifier = _sceneMgr->modifier();
 	_sliceAction = modifier.isSliceMode();
+	// Gizmo hover is latched from the previous viewport frame. A click on the
+	// extrude/transform handle must not start a brush action or pick a new face
+	if (_sceneMgr->isViewportGizmoActive() || modifier.isBrushGizmoActive()) {
+		return initialDown;
+	}
 	if (_furtherAction && !modifier.aborted()) {
 		execute(false);
 		return initialDown;
 	}
 	if (initialDown) {
-		if (modifier.isBrushGizmoActive()) {
-			return initialDown;
-		}
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
 			modifier.setModifierType(_newType);
