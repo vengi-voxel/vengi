@@ -16,7 +16,11 @@ ModifierButton::ModifierButton(SceneManager *sceneMgr, ModifierType newType) : _
 }
 
 bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
+	const bool wasPressed = pressed();
 	const bool initialDown = Super::handleDown(key, pressedMillis);
+	if (wasPressed) {
+		return initialDown;
+	}
 	// scene mode (including scene+gizmo)
 	if ((core::bindingContext() & core::BindingContext::Context1) != 0) {
 		return initialDown;
