@@ -103,6 +103,7 @@ bool CommandListTool::execute(const json::Json &id, const json::Json &args, Tool
 					a.set("desc", arg.description.c_str());
 				}
 				switch (arg.type) {
+				case command::ArgType::Rest:
 				case command::ArgType::String:
 					a.set("type", "string");
 					break;
