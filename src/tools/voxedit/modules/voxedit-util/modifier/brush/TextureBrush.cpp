@@ -61,7 +61,7 @@ void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWr
 		return;
 	}
 
-	voxelutil::applyTextureToFace(wrapper, region, wrapper.node().palette(), _aabbFace, _image, _uv0, _uv1,
+	voxelutil::applyTextureToFace(wrapper, region, wrapper.node().palette(), _boxGesture.face(), _image, _uv0, _uv1,
 								  _projectOntoSurface);
 }
 

@@ -23,12 +23,12 @@ bool PlaneBrush::beginBrush(const BrushContext &ctx) {
 }
 
 int PlaneBrush::calculateThickness(const BrushContext &ctx) const {
-	const math::Axis axis = voxel::faceToAxis(_aabbFace);
+	const math::Axis axis = voxel::faceToAxis(_boxGesture.face());
 	const int idx = math::getIndexForAxis(axis);
 	const voxel::Region region = Super::calcRegion(ctx);
 	if (ctx.modifierType == ModifierType::Place) {
 		// don't allow negative direction - only allow growth into the face direction
-		if (voxel::isNegativeFace(_aabbFace)) {
+		if (voxel::isNegativeFace(_boxGesture.face())) {
 			if (_initialPlanePos[idx] < ctx.cursorPosition[idx]) {
 				return 0;
 			}
@@ -49,12 +49,12 @@ void PlaneBrush::reset() {
 
 void PlaneBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
 	Super::preExecute(ctx, volume);
-	if (!_boxMode) {
-		_secondPosValid = false;
+	if (!_boxGesture.active()) {
+		_boxGesture.clearSecondPosition();
 		return;
 	}
 	// we only need to calculate the second position once
-	if (_secondPosValid) {
+	if (_boxGesture.hasSecondPosition()) {
 		return;
 	}
 	// here we determine the surface region of the extrusion plane
@@ -68,17 +68,15 @@ void PlaneBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vol
 
 	voxel::Region region;
 	if (ctx.modifierType == ModifierType::Place) {
-		region = voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel, ctx.cursorVoxel, 1);
+		region = voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _boxGesture.face(), _hitVoxel, ctx.cursorVoxel, 1);
 	} else if (ctx.modifierType == ModifierType::Erase) {
-		region = voxelutil::erasePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel);
+		region = voxelutil::erasePlaneRegion(*volume, _initialPlanePos, _boxGesture.face(), _hitVoxel);
 	} else if (ctx.modifierType == ModifierType::Override) {
-		region = voxelutil::overridePlaneRegion(*volume, _initialPlanePos, _aabbFace, ctx.cursorVoxel);
+		region = voxelutil::overridePlaneRegion(*volume, _initialPlanePos, _boxGesture.face(), ctx.cursorVoxel);
 	}
-	_aabbFirstPos = region.getLowerCorner();
-	_aabbSecondPos = region.getUpperCorner();
 	// after we have calculated the region we use the mins and maxs and only use the mouse
 	// cursor position in the volume to determine the 3rd dimension of the brush aabb.
-	_secondPosValid = true;
+	_boxGesture.setPlaneBounds(region);
 }
 
 void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -87,15 +85,15 @@ void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	if (thickness <= 0) {
 		return;
 	}
-	if (_aabbFace == voxel::FaceNames::Max) {
-		_aabbFace = ctx.cursorFace;
+	if (_boxGesture.face() == voxel::FaceNames::Max) {
+		_boxGesture.setFace(ctx.cursorFace);
 	}
 	if (ctx.modifierType == ModifierType::Place) {
-		voxelutil::extrudePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, ctx.cursorVoxel, thickness);
+		voxelutil::extrudePlane(wrapper, _initialPlanePos, _boxGesture.face(), _hitVoxel, ctx.cursorVoxel, thickness);
 	} else if (ctx.modifierType == ModifierType::Erase) {
-		voxelutil::erasePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
+		voxelutil::erasePlane(wrapper, _initialPlanePos, _boxGesture.face(), _hitVoxel, thickness);
 	} else if (ctx.modifierType == ModifierType::Override) {
-		voxelutil::overridePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
+		voxelutil::overridePlane(wrapper, _initialPlanePos, _boxGesture.face(), _hitVoxel, thickness);
 	}
 }
 

@@ -25,9 +25,9 @@ SelectBrush::SelectBrush(SceneManager *sceneManager)
 
 select::AABBBrushState SelectBrush::buildState(const BrushContext &ctx) const {
 	select::AABBBrushState state;
-	state.boxMode = _boxMode;
-	state.aabbFace = _aabbFace;
-	state.aabbFirstPos = applyGridResolution(_aabbFirstPos, ctx.gridResolution);
+	state.boxMode = _boxGesture.active();
+	state.aabbFace = _boxGesture.face();
+	state.aabbFirstPos = applyGridResolution(_boxGesture.firstPosition(), ctx.gridResolution);
 	state.cursorPosition = currentCursorPosition(ctx);
 	state.radius = radius();
 	return state;
@@ -124,8 +124,8 @@ bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	if (activeStrategy()->beginBrush(ctx, state)) {
 		_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
 		// When the strategy handles beginBrush itself (e.g. Lasso), Super::beginBrush
-		// is not called, so _aabbFace must be set here for buildState() to work.
-		_aabbFace = ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY;
+		// is not called, so capture the face here for buildState() to work.
+		_boxGesture.setFace(ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY);
 		return true;
 	}
 	return Super::beginBrush(ctx);

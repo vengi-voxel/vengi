@@ -5,7 +5,6 @@
 #include "ModifierButton.h"
 #include "Modifier.h"
 #include "../SceneManager.h"
-#include "brush/AABBBrush.h"
 #include "brush/Brush.h"
 #include "core/BindingContext.h"
 #include "core/Log.h"
@@ -42,8 +41,8 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		modifier.beginBrush();
 		// Stroke mode paints continuously while held; apply the first dab immediately
 		// so click-and-drag does not wait for the next Modifier::update tick.
-		if (AABBBrush *aabbBrush = modifier.currentAABBBrush()) {
-			if (aabbBrush->anyStrokeMode()) {
+		if (Brush *brush = modifier.currentBrush()) {
+			if (brush->executeOnPress()) {
 				execute(true);
 			}
 		}

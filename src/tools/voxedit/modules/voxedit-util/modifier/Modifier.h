@@ -405,7 +405,7 @@ inline bool Modifier::isMode(ModifierType modifierType) const {
 }
 
 inline bool Modifier::aborted() const {
-	if (const AABBBrush *brush = currentAABBBrush()) {
+	if (const Brush *brush = currentBrush()) {
 		return brush->aborted(_brushContext);
 	}
 	return false;

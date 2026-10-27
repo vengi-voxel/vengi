@@ -123,6 +123,43 @@ protected:
 
 };
 
+TEST_F(ModifierTest, testGestureDispatchDoesNotRequireAABBBrush) {
+	class GestureBrush : public Brush {
+	protected:
+		void generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &, const BrushContext &, const voxel::Region &) override {
+		}
+
+	public:
+		bool stepped = false;
+		GestureBrush() : Brush(BrushType::Ruler) {}
+		voxel::Region calcRegion(const BrushContext &ctx) const override {
+			return voxel::Region(ctx.cursorPosition, ctx.cursorPosition);
+		}
+		bool needsAdditionalAction(const BrushContext &) const override { return !stepped; }
+		void step(const BrushContext &) override { stepped = true; }
+		bool aborted(const BrushContext &) const override { return stepped; }
+		glm::ivec3 currentCursorPosition(const BrushContext &) const override { return glm::ivec3(3, 4, 5); }
+	};
+	class GestureModifier : public Modifier {
+	public:
+		GestureModifier(Brush *brush) : Modifier(nullptr, core::make_shared<IModifierRenderer>()) {
+			_brushes.clear();
+			_brushes.push_back(brush);
+			_brushType = brush->type();
+		}
+	};
+	GestureBrush brush;
+	GestureModifier modifier(&brush);
+	EXPECT_EQ(nullptr, modifier.currentAABBBrush());
+	EXPECT_EQ(glm::ivec3(3, 4, 5), modifier.currentCursorPosition());
+	EXPECT_TRUE(modifier.needsAdditionalAction());
+	EXPECT_FALSE(modifier.aborted());
+	modifier.executeAdditionalAction();
+	EXPECT_TRUE(brush.stepped);
+	EXPECT_FALSE(modifier.needsAdditionalAction());
+	EXPECT_TRUE(modifier.aborted());
+}
+
 TEST_F(ModifierTest, testNormalBrushDoesNotChangePlacementNormal) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());

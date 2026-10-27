@@ -443,6 +443,28 @@ public:
 		return false;
 	}
 
+	/** Whether the first sample is applied immediately when the action button is pressed. */
+	virtual bool executeOnPress() const {
+		return false;
+	}
+
+	/** Capture an intermediate gesture step, such as the second corner before defining depth. */
+	virtual void step(const BrushContext &ctx) {
+	}
+
+	virtual bool needsAdditionalAction(const BrushContext &ctx) const {
+		return false;
+	}
+
+	virtual bool aborted(const BrushContext &ctx) const {
+		return false;
+	}
+
+	/** Cursor position constrained by the active gesture. */
+	virtual glm::ivec3 currentCursorPosition(const BrushContext &ctx) const {
+		return ctx.cursorPosition;
+	}
+
 	/**
 	 * @brief Calculate the region this brush will modify
 	 *

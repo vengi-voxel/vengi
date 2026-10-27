@@ -11,7 +11,6 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
-#include "voxelutil/VolumeSelect.h"
 
 namespace voxedit {
 
@@ -54,65 +53,23 @@ void AABBBrush::construct() {
 
 void AABBBrush::onSceneChange() {
 	Super::onSceneChange();
-	_secondPosValid = false;
-	_boxMode = false;
-	_aabbFace = voxel::FaceNames::Max;
-	_strokeHasLastPos = false;
-	_strokeActive = false;
-	_strokeDirtyRegion = voxel::Region::InvalidRegion;
-	_pendingUndoRegion = voxel::Region::InvalidRegion;
+	_boxGesture.end();
+	_strokeGesture.reset();
 }
 
 void AABBBrush::reset() {
 	Super::reset();
-	_secondPosValid = false;
-	_boxMode = false;
-	// Preserve _mode (Box/Stroke/Center) - it is a user preference set via UI commands
-	// (e.g., SelectBrush::setSelectMode(Paint) calls setStrokeMode()). Resetting it here
-	// causes a mismatch: the derived brush still shows its mode in the UI, but the
-	// underlying AABBBrush reverts to AABB behavior after a brush type round-trip.
-	_aabbFace = voxel::FaceNames::Max;
-	_aabbFirstPos = glm::ivec3(0);
-	_aabbSecondPos = glm::ivec3(0);
-	_strokeHasLastPos = false;
-	_strokeActive = false;
-	_strokeDirtyRegion = voxel::Region::InvalidRegion;
-	_pendingUndoRegion = voxel::Region::InvalidRegion;
+	// Gesture state is transient; preserve the mode and radius preferences.
+	_boxGesture.reset();
+	_strokeGesture.reset();
 }
 
 glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const {
-	glm::ivec3 pos = inPos;
-	if (resolution.x > 0 && pos.x % resolution.x != 0) {
-		pos.x = (pos.x / resolution.x) * resolution.x;
-	}
-	if (resolution.y > 0 && pos.y % resolution.y != 0) {
-		pos.y = (pos.y / resolution.y) * resolution.y;
-	}
-	if (resolution.z > 0 && pos.z % resolution.z != 0) {
-		pos.z = (pos.z / resolution.z) * resolution.z;
-	}
-	return pos;
+	return BoxGesture::snapToGrid(inPos, resolution);
 }
 
 bool AABBBrush::needsAdditionalAction(const BrushContext &ctx) const {
-	if (radius() > 0 || ctx.lockedAxis != math::Axis::None) {
-		return false;
-	}
-	const voxel::Region &region = calcRegion(ctx);
-	const glm::ivec3 &delta = region.getDimensionsInVoxels();
-	int greater = 0;
-	int equal = 0;
-	for (int i = 0; i < 3; ++i) {
-		if (delta[i] > ctx.gridResolution[i]) {
-			++greater;
-		} else if (delta[i] == ctx.gridResolution[i]) {
-			++equal;
-		}
-	}
-	// if two dimensions are spanning the plane already but one is not,
-	// we need to span the third dimension by allowing the cursor to
-	// still move
-	return greater == 2 && equal == 1;
+	return radius() == 0 && ctx.lockedAxis == math::Axis::None && BoxGesture::needsDepth(ctx, calcRegion(ctx));
 }
 
 voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion,
@@ -174,8 +131,8 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	setErrorReason("");
 
 	// Path accumulation is only for a live mouse-drag stroke on the real volume.
-	// Preview execute() must not advance _strokeLastPos / dirty accumulation.
-	if (anyStrokeMode() && _strokeActive && !ctx.preview) {
+	// Preview execute() must not advance the stroke gesture or dirty accumulation.
+	if (anyStrokeMode() && _strokeGesture.active() && !ctx.preview) {
 		const glm::ivec3 end = currentCursorPosition(ctx);
 		auto runDab = [&](const glm::ivec3 &center) {
 			BrushContext dabCtx = ctx;
@@ -185,29 +142,8 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 			generateMirrored(sceneGraph, wrapper, dabCtx, region);
 		};
 
-		if (_strokeHasLastPos && _strokeLastPos != end) {
-			bool skipFirst = true;
-			voxelutil::bresenham3d(_strokeLastPos, end, [&](const glm::ivec3 &p) {
-				if (skipFirst) {
-					skipFirst = false;
-					return;
-				}
-				runDab(p);
-			});
-		} else {
-			runDab(end);
-		}
-		_strokeLastPos = end;
-		_strokeHasLastPos = true;
-
-		const voxel::Region &dirty = wrapper.dirtyRegion();
-		if (dirty.isValid()) {
-			if (_strokeDirtyRegion.isValid()) {
-				_strokeDirtyRegion.accumulate(dirty);
-			} else {
-				_strokeDirtyRegion = dirty;
-			}
-		}
+		_strokeGesture.visit(end, runDab);
+		_strokeGesture.accumulate(wrapper.dirtyRegion());
 		return true;
 	}
 
@@ -218,25 +154,11 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 }
 
 voxel::Region AABBBrush::consumePendingUndoRegion() {
-	const voxel::Region region = _pendingUndoRegion;
-	_pendingUndoRegion = voxel::Region::InvalidRegion;
-	return region;
+	return _strokeGesture.consumePendingUndoRegion();
 }
 
 glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &ctx) const {
-	glm::ivec3 pos = ctx.cursorPosition;
-	if (_secondPosValid) {
-		if (radius() > 0) {
-			return _aabbSecondPos;
-		}
-		const math::Axis axis = voxel::faceToAxis(_aabbFace);
-		if (axis != math::Axis::None) {
-			const int idx = math::getIndexForAxis(axis);
-			pos[(idx + 1) % 3] = _aabbSecondPos[(idx + 1) % 3];
-			pos[(idx + 2) % 3] = _aabbSecondPos[(idx + 2) % 3];
-		}
-	}
-	return pos;
+	return _boxGesture.cursorPosition(ctx, radius());
 }
 
 bool AABBBrush::wantBox() const {
@@ -244,24 +166,15 @@ bool AABBBrush::wantBox() const {
 }
 
 bool AABBBrush::beginBrush(const BrushContext &ctx) {
-	// Stroke mode must always be able to start, even if a previous box span was left active.
-	if (anyStrokeMode()) {
-		_boxMode = false;
-	} else if (_boxMode) {
+	// A stroke can start even if a previous box span was left active.
+	if (!anyStrokeMode() && _boxGesture.active()) {
 		return false;
 	}
-
-	// the order here matters - don't change _boxMode earlier here
-	_aabbFirstPos = applyGridResolution(ctx.cursorPosition, ctx.gridResolution);
+	_boxGesture.begin(ctx, wantBox());
 	_lastCursorPos = ctx.cursorPosition;
-	_secondPosValid = false;
-	_boxMode = wantBox();
-	_aabbFace = ctx.cursorFace;
-	_strokeHasLastPos = false;
-	_strokeDirtyRegion = voxel::Region::InvalidRegion;
-	_pendingUndoRegion = voxel::Region::InvalidRegion;
+	_strokeGesture.reset();
 	if (anyStrokeMode()) {
-		_strokeActive = true;
+		_strokeGesture.begin();
 		_sceneModifiedFlags = strokeAccumFlags();
 	}
 	return true;
@@ -275,14 +188,14 @@ void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 		// we have to update the preview each time we move the cursor if the brush
 		// is either spanning an aabb or follows the cursor in stroke mode.
 		// Single-voxel shape stroke uses the red face cursor instead.
-		if (_boxMode || (anyStrokeMode() && !preferFaceCursorPreview())) {
+		if (_boxGesture.active() || (anyStrokeMode() && !preferFaceCursorPreview())) {
 			markDirty();
 		}
 	}
 }
 
 bool AABBBrush::active() const {
-	return _boxMode || anyStrokeMode();
+	return _boxGesture.active() || anyStrokeMode();
 }
 
 bool AABBBrush::aborted(const BrushContext &ctx) const {
@@ -290,31 +203,22 @@ bool AABBBrush::aborted(const BrushContext &ctx) const {
 	if (anyStrokeMode()) {
 		return false;
 	}
-	return _aabbFace == voxel::FaceNames::Max && ctx.lockedAxis == math::Axis::None;
+	return _boxGesture.face() == voxel::FaceNames::Max && ctx.lockedAxis == math::Axis::None;
 }
 
 void AABBBrush::step(const BrushContext &ctx) {
-	if (!_boxMode || radius() > 0 || ctx.lockedAxis != math::Axis::None) {
-		return;
-	}
-	glm::ivec3 pos = currentCursorPosition(ctx);
-	_aabbSecondPos = pos;
-	if (!_secondPosValid || pos != _aabbSecondPos) {
+	if (_boxGesture.step(ctx, radius())) {
 		markDirty();
 	}
-	_secondPosValid = true;
 }
 
 void AABBBrush::endBrush(BrushContext &ctx) {
-	if (anyStrokeMode() && _strokeDirtyRegion.isValid()) {
-		_pendingUndoRegion = _strokeDirtyRegion;
+	if (anyStrokeMode()) {
+		_strokeGesture.end();
+	} else {
+		_strokeGesture.reset();
 	}
-	_strokeDirtyRegion = voxel::Region::InvalidRegion;
-	_strokeHasLastPos = false;
-	_strokeActive = false;
-	_secondPosValid = false;
-	_boxMode = false;
-	_aabbFace = voxel::FaceNames::Max;
+	_boxGesture.end();
 }
 
 bool AABBBrush::isMode(uint32_t mode) const {
@@ -324,8 +228,7 @@ bool AABBBrush::isMode(uint32_t mode) const {
 void AABBBrush::setMode(uint32_t mode) {
 	_mode = mode;
 	if (anyStrokeMode()) {
-		_boxMode = false;
-		_secondPosValid = false;
+		_boxGesture.stopSpanning();
 		_sceneModifiedFlags = strokeAccumFlags();
 	} else {
 		_sceneModifiedFlags = SceneModifiedFlags::All;
@@ -338,23 +241,10 @@ void AABBBrush::setRadius(int radius) {
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
-	const glm::ivec3 &pos = currentCursorPosition(ctx);
-	if (!anyStrokeMode() && centerMode()) {
-		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, ctx.gridResolution);
-		const glm::ivec3 &delta = glm::abs(pos - first);
-		return voxel::Region(first - delta, first + delta);
+	if (anyStrokeMode()) {
+		return StrokeGesture::region(currentCursorPosition(ctx), radius(), ctx.gridResolution);
 	}
-	const glm::ivec3 &first = anyStrokeMode() ? pos : applyGridResolution(_aabbFirstPos, ctx.gridResolution);
-	const int rad = radius();
-	if (rad > 0) {
-		// TODO: BRUSH: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
-		return voxel::Region(first - rad, first + rad);
-	}
-
-	const glm::ivec3 &size = ctx.gridResolution;
-	const glm::ivec3 &mins = (glm::min)(first, pos);
-	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
-	return voxel::Region(mins, maxs);
+	return _boxGesture.region(ctx, centerMode());
 }
 
 } // namespace voxedit

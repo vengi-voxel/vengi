@@ -187,26 +187,11 @@ void Modifier::setHighlightRegion(const voxel::Region &region, uint64_t renderRe
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_nowSeconds = nowSeconds;
 	_brushContext.fixedOrthoSideView = _sliceMode || (camera != nullptr && camera->isOrthoAligned());
-	if (AABBBrush *aabbBrush = currentAABBBrush()) {
-		if (aabbBrush->anyStrokeMode()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
-				_actionExecuteButton.execute(true);
-				_nextContinuousExecution = nowSeconds + 0.1;
-			}
-		}
-	} else if (_brushType == BrushType::Stamp) {
-		if (_stampBrush.continuousMode()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
-				_actionExecuteButton.execute(true);
-				_nextContinuousExecution = nowSeconds + 0.1;
-			}
-		}
-	} else if (Brush *b = currentBrush()) {
-		if (b->wantsContinuousExecution()) {
-			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
-				_actionExecuteButton.execute(true);
-				_nextContinuousExecution = nowSeconds + 0.1;
-			}
+	if (Brush *brush = currentBrush()) {
+		if (brush->wantsContinuousExecution() && _actionExecuteButton.pressed() &&
+			nowSeconds >= _nextContinuousExecution) {
+			_actionExecuteButton.execute(true);
+			_nextContinuousExecution = nowSeconds + 0.1;
 		}
 	}
 	if (Brush *brush = currentBrush()) {
@@ -258,7 +243,7 @@ void Modifier::executeAdditionalAction() {
 	if (isMode(ModifierType::ColorPicker)) {
 		return;
 	}
-	if (AABBBrush *brush = currentAABBBrush()) {
+	if (Brush *brush = currentBrush()) {
 		brush->step(_brushContext);
 	}
 }
@@ -271,14 +256,14 @@ bool Modifier::needsAdditionalAction() {
 	if (_sliceRegion.isValid()) {
 		return false;
 	}
-	if (const AABBBrush *brush = currentAABBBrush()) {
+	if (const Brush *brush = currentBrush()) {
 		return brush->needsAdditionalAction(_brushContext);
 	}
 	return false;
 }
 
 glm::ivec3 Modifier::currentCursorPosition() {
-	if (AABBBrush *brush = currentAABBBrush()) {
+	if (Brush *brush = currentBrush()) {
 		return brush->currentCursorPosition(_brushContext);
 	}
 	return _brushContext.cursorPosition;

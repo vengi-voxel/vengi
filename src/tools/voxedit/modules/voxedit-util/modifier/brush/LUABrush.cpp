@@ -629,7 +629,7 @@ bool LUABrush::active() const {
 }
 
 voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
-	if (_wantBox && _boxMode) {
+	if (_wantBox && _boxGesture.active()) {
 		return Super::calcRegion(ctx);
 	}
 
@@ -712,8 +712,8 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	voxelgenerator::luaVoxel_setGlobalData(s, voxelgenerator::luaVoxel_globalscenegraph(), &sceneGraph);
 
 	BrushContext ctxCopy = ctx;
-	if (_wantBox && _aabbFace != voxel::FaceNames::Max) {
-		ctxCopy.cursorFace = _aabbFace;
+	if (_wantBox && _boxGesture.face() != voxel::FaceNames::Max) {
+		ctxCopy.cursorFace = _boxGesture.face();
 	}
 	voxelgenerator::luaVoxel_setGlobalData(s, luaBrush_metaname(), &ctxCopy);
 

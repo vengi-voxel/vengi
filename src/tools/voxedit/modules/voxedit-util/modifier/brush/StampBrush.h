@@ -77,6 +77,9 @@ public:
 
 	void setContinuousMode(bool continuous);
 	bool continuousMode() const;
+	bool wantsContinuousExecution() const override {
+		return continuousMode();
+	}
 
 	/**
 	 * @brief Either convert all voxels of the stamp to the given voxel, or create a new stamp with the given voxel

@@ -1542,6 +1542,64 @@ TEST_F(SceneManagerTest, testTraceClearsPreviousNormal) {
 	}
 }
 
+TEST_F(SceneManagerTest, testStrokeGestureInputAndUndo) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "stroke_gesture", voxel::Region(0, 0, 0, 8, 2, 2)));
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.shapeBrush().setStrokeMode();
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
+	command::executeCommands("+actionexecute 1 0.0");
+	EXPECT_FALSE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial())) << "Apply the first dab on press";
+	modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.update(1.0, nullptr);
+	for (int x = 0; x <= 4; ++x) {
+		EXPECT_FALSE(voxel::isAir(volume->voxel(x, 0, 0).getMaterial())) << x;
+	}
+	command::executeCommands("-actionexecute 1 1.0");
+	EXPECT_FALSE(modifier.shapeBrush().strokeActive());
+	ASSERT_TRUE(_sceneMgr->undo());
+	volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	for (int x = 0; x <= 4; ++x) {
+		EXPECT_TRUE(voxel::isAir(volume->voxel(x, 0, 0).getMaterial())) << "One undo removes the entire stroke";
+	}
+}
+
+TEST_F(SceneManagerTest, testStampGestureScheduling) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "stamp_gesture", voxel::Region(0, 0, 0, 8, 2, 2)));
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setBrushType(BrushType::Stamp);
+	StampBrush &stamp = modifier.stampBrush();
+	palette::Palette palette;
+	palette.nippon();
+	stamp.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1), palette);
+	stamp.setCenterMode(false);
+	stamp.setContinuousMode(false);
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
+	command::executeCommands("+actionexecute 1 0.0");
+	modifier.update(1.0, nullptr);
+	EXPECT_TRUE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial()));
+	command::executeCommands("-actionexecute 1 1.0");
+	EXPECT_FALSE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial()));
+
+	stamp.setContinuousMode(true);
+	modifier.setCursorPosition(glm::ivec3(3, 0, 0), voxel::FaceNames::PositiveY);
+	command::executeCommands("+actionexecute 1 2.0");
+	EXPECT_TRUE(voxel::isAir(volume->voxel(3, 0, 0).getMaterial())) << "Stamp still waits for the continuous tick";
+	modifier.update(2.0, nullptr);
+	EXPECT_FALSE(voxel::isAir(volume->voxel(3, 0, 0).getMaterial()));
+	modifier.setCursorPosition(glm::ivec3(6, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.update(3.0, nullptr);
+	EXPECT_FALSE(voxel::isAir(volume->voxel(6, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume->voxel(4, 0, 0).getMaterial())) << "Stamp retains its existing spacing behavior";
+	command::executeCommands("-actionexecute 1 3.0");
+}
+
 TEST_F(SceneManagerTest, testTemporaryEraseUsesViewportTransform) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "erase_transform", voxel::Region(-3, 3)));
 	const glm::ivec3 target(0, 0, 0);

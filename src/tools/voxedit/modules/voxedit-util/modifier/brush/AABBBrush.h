@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Brush.h"
+#include "BoxGesture.h"
+#include "StrokeGesture.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 
@@ -77,6 +79,8 @@ enum BrushFlags : uint32_t {
  * @sa ShapeBrush - generates geometric shapes within the AABB
  * @sa PaintBrush - recolors voxels within the AABB
  * @sa SelectBrush - selects voxels within the AABB
+ * @sa BoxGesture - captures the box anchors and constrains the depth step
+ * @sa StrokeGesture - samples a continuous path and accumulates its dirty region
  */
 class AABBBrush : public Brush {
 private:
@@ -86,50 +90,10 @@ private:
 	glm::ivec3 _lastCursorPos{-100000};
 
 protected:
-	/**
-	 * True if currently spanning an AABB (between beginBrush() and endBrush()).
-	 * The first position of the AABB is now set.
-	 */
-	bool _boxMode = false;
-
-	/**
-	 * True if the AABB has both valid mins and maxs positions, but the maxs
-	 * can still be modified by calling step(). This represents the intermediate
-	 * state where two corners are set but the third dimension can still be adjusted.
-	 */
-	bool _secondPosValid = false;
-
-	/**
-	 * When spanning an AABB, this stores which face was initially hit.
-	 * This determines the primary plane being spanned and affects how the third
-	 * dimension is extended.
-	 */
-	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
-
-	uint32_t _mode = BRUSH_MODE_BOX; ///< Current brush mode flags
-	int _radius = 0;				  ///< Radius for stroke mode (0 = single voxel dab)
-
-	/**
-	 * The first corner position of the AABB, set by beginBrush()
-	 */
-	glm::ivec3 _aabbFirstPos{0};
-
-	/**
-	 * The second corner position of the AABB, updated by step().
-	 * Together with the first position, this defines two dimensions of the AABB.
-	 * The cursor can then be used to span the third dimension.
-	 */
-	glm::ivec3 _aabbSecondPos{0};
-
-	/** Last dab center while stroke-dragging; used to Bresenham-fill gaps */
-	glm::ivec3 _strokeLastPos{0};
-	bool _strokeHasLastPos = false;
-	/** True between beginBrush() and endBrush() while in stroke mode */
-	bool _strokeActive = false;
-	/** Accumulated dirty region across continuous stroke dabs (NoUndo) */
-	voxel::Region _strokeDirtyRegion = voxel::Region::InvalidRegion;
-	/** Region handed to ModifierButton after endBrush for a single undo entry */
-	voxel::Region _pendingUndoRegion = voxel::Region::InvalidRegion;
+	BoxGesture _boxGesture;
+	StrokeGesture _strokeGesture;
+	uint32_t _mode = BRUSH_MODE_BOX; ///< User preference for box, center or stroke interaction
+	int _radius = 0; ///< Radius for stroke mode (0 = single voxel dab)
 
 	/**
 	 * @brief Snap a position to the grid resolution
@@ -200,7 +164,7 @@ public:
 	 * @sa needsAdditionalAction() - checks if more input is needed
 	 * @sa step() - updates the second position
 	 */
-	glm::ivec3 currentCursorPosition(const BrushContext &ctx) const;
+	glm::ivec3 currentCursorPosition(const BrushContext &ctx) const override;
 
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 
@@ -234,7 +198,7 @@ public:
 	 * @sa beginBrush() - initiates the AABB spanning
 	 * @sa endBrush() - completes the operation
 	 */
-	void step(const BrushContext &ctx);
+	void step(const BrushContext &ctx) override;
 
 	void endBrush(BrushContext &ctx) override;
 	void abort(BrushContext &ctx) override {
@@ -251,7 +215,7 @@ public:
 	 * @param[in] ctx The brush context
 	 * @return True if the face is invalid and no axis lock is set
 	 */
-	bool aborted(const BrushContext &ctx) const;
+	bool aborted(const BrushContext &ctx) const override;
 
 	/**
 	 * @brief Check if the user needs to perform another action to complete the AABB
@@ -268,7 +232,7 @@ public:
 	 *
 	 * @sa currentCursorPosition() - gets the effective cursor position during extension
 	 */
-	virtual bool needsAdditionalAction(const BrushContext &ctx) const;
+	bool needsAdditionalAction(const BrushContext &ctx) const override;
 
 	/**
 	 * @brief Enable center mode - AABB expands symmetrically around first position
@@ -323,6 +287,12 @@ public:
 	int radius() const;
 
 	int previewRadius() const override;
+	bool wantsContinuousExecution() const override {
+		return anyStrokeMode();
+	}
+	bool executeOnPress() const override {
+		return anyStrokeMode();
+	}
 };
 
 inline int AABBBrush::radius() const {
@@ -352,7 +322,7 @@ inline bool AABBBrush::anyStrokeMode() const {
 }
 
 inline bool AABBBrush::strokeActive() const {
-	return _strokeActive;
+	return _strokeGesture.active();
 }
 
 inline bool AABBBrush::strokeMode() const {

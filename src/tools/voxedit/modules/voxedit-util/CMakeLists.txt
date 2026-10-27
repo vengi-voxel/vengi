@@ -1,5 +1,7 @@
 set(SRCS
 	modifier/brush/AABBBrush.cpp modifier/brush/AABBBrush.h
+	modifier/brush/BoxGesture.cpp modifier/brush/BoxGesture.h
+	modifier/brush/StrokeGesture.cpp modifier/brush/StrokeGesture.h
 	modifier/brush/BrushGizmo.h
 	modifier/brush/BrushGizmoUtil.cpp modifier/brush/BrushGizmoUtil.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
@@ -146,6 +148,7 @@ set(TEST_SRCS
 	tests/ModifierVolumeWrapperTest.cpp
 	tests/PreviewManagerTest.cpp
 	tests/BrushRadiusPreviewTest.cpp
+	tests/BrushGestureTest.cpp
 	tests/NormalBrushTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PlaneBrushTest.cpp

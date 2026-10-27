@@ -101,7 +101,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	int width = 0;
 	int height = 0;
 	int depth = 0;
-	voxel::FaceNames face = anyStrokeMode() ? ctx.cursorFace : _aabbFace;
+	voxel::FaceNames face = anyStrokeMode() ? ctx.cursorFace : _boxGesture.face();
 	if (face == voxel::FaceNames::Max) {
 		face = voxel::FaceNames::PositiveX;
 	}
