@@ -35,6 +35,15 @@
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
 
+bool VoxEdit::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
+	if (_mainWindow && _mainWindow->isSlicePanelHovered()) {
+		// The slice canvas handles zoom itself, before the model viewport bindings consume it.
+		ImGui::GetIO().AddMouseWheelEvent(x, y);
+		return true;
+	}
+	return Super::onMouseWheel(windowHandle, x, y, mouseId);
+}
+
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				 const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
 				 const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer)
@@ -873,6 +882,8 @@ app::AppState VoxEdit::onRunning() {
 	const voxedit::Viewport *viewport = renderHovered ? nullptr : _mainWindow->hoveredViewport();
 	if (renderHovered) {
 		core::setBindingContext(core::BindingContext::Context1);
+	} else if (_mainWindow->isSlicePanelHovered()) {
+		core::setBindingContext(core::BindingContext::Context2);
 	} else if (viewport) {
 		int ctx = 0;
 		if (viewport->isGameMode()) {

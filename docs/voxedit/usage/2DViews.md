@@ -1,29 +1,7 @@
 # 2D Views
 
-Open **View -> 2D Views** to edit the selected model as voxel cells. The panel shows
-Back (XY), Right (ZY), and Top (XZ) views together. Other nodes and scene transforms
-are excluded; coordinates refer to the selected model's volume. Select a model node
-with its own volume to edit it. Locked models cannot be edited.
+Open **View -> 2D Views** to edit the selected model as voxel cells. The panel shows Back (XY), Right (ZY), and Top (XZ) views together. Other nodes and scene transforms are excluded; coordinates refer to the selected model's volume. Select a model node with its own volume to edit it.
 
-Each view has its own slice slider: Z for Back, X for Right, and Y for Top. All
-three views support the same controls:
+Model edit bindings apply while the pointer is over a slice canvas. For example, **C** picks the voxel under the target using the default [bindings](../../Configuration.md).
 
-| Control | Action |
-| --- | --- |
-| Left click or drag | Draw with the selected palette color |
-| Right click or drag | Erase voxels on the selected slice |
-| Alt + left click | Pick a voxel's color and normal from the selected slice |
-| Mouse wheel | Zoom |
-| Middle drag | Pan |
-| Fit | Reset zoom and pan |
-
-A stroke changes only the current slice and can be undone or redone as one action.
-Existing voxel selections limit edits. **Grid** displays cell boundaries, with red
-outlines for occupied cells on the slice. **Background** displays voxels behind
-empty slice cells with reduced opacity. Background voxels provide context and are
-not edited or picked through the current slice.
-
-Slice positions remain set when the panel is hidden. Selecting another model
-centers its slices and resets the views. Resizing a volume clamps slice positions
-to its new bounds. The panel is included in the All, Tiberian Sun, and Red Alert 2
-view presets.
+The active brush and all its options apply to a one-voxel-thick working volume. Choose the **Select** brush and its selection mode to select voxels on the current slice. Selected cells have blue outlines. With the Select or Transform brush, drag either of the two small translation handles to move those voxels along the plane's axes.

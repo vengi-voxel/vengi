@@ -72,6 +72,7 @@ public:
 			const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer);
 
 	void onRenderUI() override;
+	bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
 
 	void onDropFile(void *windowHandle, const core::String &file) override;
 	void onDropText(void *windowHandle, const core::String& text) override;

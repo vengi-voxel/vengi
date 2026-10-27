@@ -23,6 +23,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		return initialDown;
 	}
 	Modifier &modifier = _sceneMgr->modifier();
+	_sliceAction = modifier.isSliceMode();
 	if (_furtherAction && !modifier.aborted()) {
 		execute(false);
 		return initialDown;
@@ -34,7 +35,9 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
 			modifier.setModifierType(_newType);
-			_sceneMgr->trace(false, true);
+			if (!_sliceAction) {
+				_sceneMgr->trace(false, true);
+			}
 		}
 		modifier.beginBrush();
 		// Stroke mode paints continuously while held; apply the first dab immediately
@@ -58,6 +61,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 		Modifier &modifier = _sceneMgr->modifier();
 		if (modifier.isBrushGizmoActive()) {
 			modifier.endBrush();
+			_sliceAction = false;
 			return allUp;
 		}
 		_furtherAction = modifier.needsAdditionalAction();
@@ -66,6 +70,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 			return allUp;
 		}
 		execute(false);
+		_sliceAction = false;
 	} else {
 		Log::trace("Not all modifier keys were released - skipped action execution for %i", (int)_newType);
 	}
@@ -74,6 +79,13 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 
 void ModifierButton::execute(bool continuous) {
 	Modifier &modifier = _sceneMgr->modifier();
+	if (modifier.isBrushGizmoActive()) {
+		return;
+	}
+	const bool previousSliceMode = modifier.isSliceMode();
+	if (_sliceAction) {
+		modifier.setSliceMode(true);
+	}
 	int nodes = 0;
 	auto func = [&](scenegraph::SceneGraphNode &node) {
 		if (!node.visible()) {
@@ -90,10 +102,20 @@ void ModifierButton::execute(bool continuous) {
 		modifier.execute(_sceneMgr->sceneGraph(), node, modifierFunc);
 		++nodes;
 	};
-	_sceneMgr->nodeForeachGroup(func);
+	if (_sliceAction) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->activeNode())) {
+			if (!node->locked()) {
+				func(*node);
+			}
+		}
+	} else {
+		_sceneMgr->nodeForeachGroup(func);
+	}
 	if (!continuous && _oldType != ModifierType::None) {
 		modifier.setModifierType(_oldType);
-		_sceneMgr->trace(false, true);
+		if (!_sliceAction) {
+			_sceneMgr->trace(false, true);
+		}
 		_oldType = ModifierType::None;
 	}
 	if (!continuous) {
@@ -105,10 +127,15 @@ void ModifierButton::execute(bool continuous) {
 				auto undoFunc = [&](const core::UUID &nodeUUID) {
 					_sceneMgr->modified(nodeUUID, pendingRegion, SceneModifiedFlags::MarkUndo);
 				};
-				_sceneMgr->nodeForeachGroup(undoFunc);
+				if (_sliceAction) {
+					undoFunc(_sceneMgr->activeNodeUUID());
+				} else {
+					_sceneMgr->nodeForeachGroup(undoFunc);
+				}
 			}
 		}
 	}
+	modifier.setSliceMode(previousSliceMode);
 	if (nodes == 0) {
 		Log::warn("Could not execute the desired action on any visible node");
 	}

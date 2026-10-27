@@ -203,6 +203,7 @@ public:
 	Viewport *visibleViewport();
 	Viewport *activeViewport() const;
 	bool isRenderPanelHovered() const;
+	bool isSlicePanelHovered() const { return _slicePanel.isHovered(); }
 	bool isRenderPanelPreparing() const;
 	float renderPanelPrepProgress() const;
 	void syncActiveCamera();

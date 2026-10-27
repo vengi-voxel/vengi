@@ -25,6 +25,7 @@ private:
 	ModifierType _oldType = ModifierType::None;
 	// some actions might need a second action to complete the command
 	bool _furtherAction = false;
+	bool _sliceAction = false;
 public:
 	/**
 	 * @param[in] newType This ModifierType is set if the action button is triggered. No matter which type is
@@ -44,6 +45,7 @@ public:
 	 * @sa Modifier::aabbStep()
 	 */
 	void execute(bool continuous);
+	bool slicePressed() const { return _sliceAction && pressed(); }
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
 };

@@ -71,6 +71,11 @@ protected:
 	// this can be useful when the user is interaction with the ui elements
 	// and we don't want to modify the volume
 	bool _locked = false;
+	bool _sliceMode = false;
+	voxel::Region _sliceRegion = voxel::Region::InvalidRegion;
+	core::SharedPtr<voxel::RawVolume> _sliceVolume;
+	core::UUID _sliceNodeUUID;
+	voxel::RawVolume *workingVolume(scenegraph::SceneGraphNode &node);
 	// set to true while the brush gizmo is being interacted with
 	// prevents the action button from committing intermediate transforms
 	bool _brushGizmoActive = false;
@@ -113,6 +118,19 @@ protected:
 
 public:
 	Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
+	void setSliceMode(bool active) {
+		_sliceMode = active;
+	}
+	void setSliceRegion(const voxel::Region &region);
+	bool isSliceMode() const {
+		return _sliceMode;
+	}
+	bool sliceActionPressed() const {
+		return _actionExecuteButton.slicePressed();
+	}
+	bool sliceDeletePressed() const {
+		return _deleteExecuteButton.slicePressed();
+	}
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account

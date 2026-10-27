@@ -254,6 +254,8 @@ bool Viewport::isFixedCamera() const {
 }
 
 void Viewport::updateViewportInput(float headerSize) {
+	_sceneMgr->modifier().setSliceMode(false);
+	_sceneMgr->modifier().setSliceRegion(voxel::Region::InvalidRegion);
 	const ImVec2 windowPos = ImGui::GetWindowPos();
 	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);

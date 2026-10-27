@@ -186,7 +186,7 @@ void Modifier::setHighlightRegion(const voxel::Region &region, uint64_t renderRe
 
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_nowSeconds = nowSeconds;
-	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
+	_brushContext.fixedOrthoSideView = _sliceMode || (camera != nullptr && camera->isOrthoAligned());
 	if (AABBBrush *aabbBrush = currentAABBBrush()) {
 		if (aabbBrush->anyStrokeMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextContinuousExecution) {
@@ -215,12 +215,15 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 }
 
 void Modifier::onSceneChange() {
+	_sliceVolume = nullptr;
 	for (Brush *b : _brushes) {
 		b->onSceneChange();
 	}
 }
 
 void Modifier::reset() {
+	_sliceRegion = voxel::Region::InvalidRegion;
+	_sliceVolume = nullptr;
 	_brushContext.gridResolution = glm::ivec3(1);
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
@@ -265,6 +268,9 @@ void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 }
 
 bool Modifier::needsAdditionalAction() {
+	if (_sliceRegion.isValid()) {
+		return false;
+	}
 	if (const AABBBrush *brush = currentAABBBrush()) {
 		return brush->needsAdditionalAction(_brushContext);
 	}
@@ -308,6 +314,40 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
+void Modifier::setSliceRegion(const voxel::Region &region) {
+	if (_sliceRegion == region) {
+		return;
+	}
+	if (Brush *brush = currentBrush()) {
+		if (brush->hasPendingChanges()) {
+			const core::UUID &uuid = _sliceRegion.isValid() ? _sliceNodeUUID : _sceneMgr->activeNodeUUID();
+			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(uuid)) {
+				_sceneMgr->modified(uuid, _sliceRegion.isValid() ? _sliceRegion : node->region(), SceneModifiedFlags::MarkUndo);
+			}
+		}
+		brush->onSceneChange();
+	}
+	_sliceRegion = region;
+	_sliceVolume = nullptr;
+}
+
+voxel::RawVolume *Modifier::workingVolume(scenegraph::SceneGraphNode &node) {
+	if (!_sliceRegion.isValid()) {
+		return node.volume();
+	}
+	voxel::Region region = _sliceRegion;
+	if (!region.cropTo(node.region())) {
+		return nullptr;
+	}
+	if (!_sliceVolume || _sliceVolume->region() != region || _sliceNodeUUID != node.uuid()) {
+		_sliceVolume = core::make_shared<voxel::RawVolume>(*node.volume(), region);
+		_sliceNodeUUID = node.uuid();
+	} else {
+		_sliceVolume->copyInto(*node.volume());
+	}
+	return _sliceVolume.get();
+}
+
 bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 					   const ModifiedRegionCallback &callback) {
 	if (_locked) {
@@ -317,7 +357,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		return false;
 	}
 
-	voxel::RawVolume *volume = node.volume();
+	voxel::RawVolume *volume = workingVolume(node);
 	if (volume == nullptr) {
 		Log::debug("No volume given - can't perform action");
 		return false;
@@ -388,6 +428,9 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 		_brushContext.cursorPosition =
 			updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 	}
+	if (_sliceRegion.isValid()) {
+		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
+	}
 	brush->preExecute(_brushContext, volume);
 }
 
@@ -404,6 +447,13 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		volumeModifierType = ModifierType::NormalPaint | (modifierType & ModifierType::Erase);
 	}
 	ModifierVolumeWrapper wrapper(node, volumeModifierType, _selectBrush.box3D().selectionRegion());
+	if (_sliceRegion.isValid()) {
+		voxel::RawVolume *slice = workingVolume(node);
+		if (slice == nullptr) {
+			return false;
+		}
+		wrapper.setVolume(slice);
+	}
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 	const bool prevPreview = _brushContext.preview;
@@ -411,6 +461,9 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	if (brush->clampToVolume()) {
 		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
 		_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
+	}
+	if (_sliceRegion.isValid()) {
+		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
 	}
 	_brushContext.cursorVoxel = voxel;
 	brush->execute(sceneGraph, wrapper, _brushContext);
@@ -421,6 +474,11 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		wrapper.autoSelectNewVoxels();
 	} else if (!brush->managesOwnSelection()) {
 		wrapper.growSelectionToNewVoxels();
+	}
+	if (_sliceRegion.isValid()) {
+		// The brush sees a real one-voxel-thick volume, including algorithms that
+		// access raw volume data. Only this plane is copied back to the model.
+		node.volume()->copyInto(*_sliceVolume.get());
 	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
@@ -653,7 +711,10 @@ void Modifier::flushPendingBrushChanges() {
 	}
 	resetPreview();
 	brush->markClean();
-	voxel::RawVolume *activeVolume = node->volume();
+	voxel::RawVolume *activeVolume = workingVolume(*node);
+	if (activeVolume == nullptr) {
+		return;
+	}
 	preExecuteBrush(activeVolume);
 	executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
 		[this, &sceneGraph](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
@@ -699,8 +760,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 		}
 	}
 
-	// Handle brush preview with deferred updates
-	if (!isMode(ModifierType::ColorPicker)) {
+	if (!_sliceRegion.isValid() && !isMode(ModifierType::ColorPicker)) {
 		ctx.brushActive = brush && brush->active();
 		// Bootstrap: TransformBrush/ExtrudeBrush need preview before internal state exists
 		if (!ctx.brushActive && brush &&
@@ -709,7 +769,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 		}
 	}
 
-	if (_brushType == BrushType::Normal && !core::getVar(cfg::RenderNormals)->boolVal()) {
+	if (!_sliceRegion.isValid() && _brushType == BrushType::Normal && !core::getVar(cfg::RenderNormals)->boolVal()) {
 		ctx.brushActive = false;
 		brush->markDirty();
 	}

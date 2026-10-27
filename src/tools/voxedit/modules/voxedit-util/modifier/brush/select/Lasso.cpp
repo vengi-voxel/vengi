@@ -8,6 +8,7 @@
 #include "math/Ray.h"
 #include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxedit-util/modifier/brush/BrushGizmo.h"
@@ -89,7 +90,7 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 	_modifiedFlags = SceneModifiedFlags::All;
 	_screenDragging = false;
 
-	const glm::mat4 invModel = glm::inverse(_sceneManager->worldMatrix());
+	const glm::mat4 invModel = _sceneManager->modifier().isSliceMode() ? glm::mat4(1.0f) : glm::inverse(_sceneManager->worldMatrix());
 
 	glm::vec2 bmin = _screenPoints[0];
 	glm::vec2 bmax = _screenPoints[0];
