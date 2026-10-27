@@ -62,7 +62,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	}
 	if (allUp) {
 		Modifier &modifier = _sceneMgr->modifier();
-		if (modifier.isBrushGizmoActive()) {
+		if (_sceneMgr->isViewportGizmoActive() || modifier.isBrushGizmoActive()) {
 			modifier.endBrush();
 			_sliceAction = false;
 			return allUp;
