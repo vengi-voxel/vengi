@@ -58,7 +58,7 @@ void BrushPanelExtrude::update(BrushPanelContext &ctx, command::CommandExecution
 	ImGui::Text(_("Direction: %s"), voxel::faceNameString(extrudeFace));
 
 	int depth = brush.depth();
-	if (depth == 0 && !ctx.sceneMgr->hasSelection(node->uuid())) {
+	if (depth == 0 && node != nullptr && !ctx.sceneMgr->hasSelection(node->uuid())) {
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
 	// All depth/offset changes are preview-only. The preview system creates a fresh
