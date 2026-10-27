@@ -4,6 +4,7 @@
 
 #include "App.h"
 #include "app/AppCommand.h"
+#include "command/Alias.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "command/CommandHandler.h"
@@ -947,6 +948,13 @@ AppState App::onInit() {
 }
 
 void App::onAfterInit() {
+	const io::FilePtr &aliasesFile = _filesystem->open(_appname + ".aliases");
+	const core::String &aliasesContent = aliasesFile->load();
+	if (!aliasesContent.empty()) {
+		Log::debug("Load aliases from '%s'", aliasesFile->name().c_str());
+		command::Alias::parse(aliasesContent);
+	}
+
 	Log::debug("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
@@ -975,6 +983,7 @@ void App::onAfterInit() {
 		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		command::executeCommands(command + " " + args);
 	}
+
 	const core::String &autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
@@ -1621,6 +1630,8 @@ void App::usage() const {
 	Log::info("------------");
 	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or command line parameter.",
 			  _appname.c_str());
+	Log::info("Command aliases are stored in %s.aliases and can be created with: alias <name> \"command1 ; command2\"",
+			  _appname.c_str());
 	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
 	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");
 	Log::info("take precedence over the one that is found in the configuration file. Next is the configuration");
@@ -1774,7 +1785,11 @@ bool App::saveConfiguration() {
 			ss += "\"\n";
 		},
 		0u);
-	return _filesystem->homeWrite(filename, ss);
+	const bool savedVars = _filesystem->homeWrite(filename, ss);
+	const core::String aliasesFilename = _appname + ".aliases";
+	Log::debug("save the command aliases to '%s'", aliasesFilename.c_str());
+	const bool savedAliases = _filesystem->homeWrite(aliasesFilename, command::Alias::serialize());
+	return savedVars && savedAliases;
 }
 
 void App::shutdownTimeout() {

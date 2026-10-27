@@ -1,5 +1,6 @@
 set(SRCS
 	ActionButton.h ActionButton.cpp
+	Alias.h Alias.cpp
 	CommandHandler.h CommandHandler.cpp
 	CommandCompleter.h CommandCompleter.cpp
 	Command.h Command.cpp
@@ -9,6 +10,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io)
 
 set(TEST_SRCS
 	tests/ActionButtonTest.cpp
+	tests/AliasTest.cpp
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
 	tests/TestHelper.h

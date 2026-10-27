@@ -3,6 +3,7 @@
  */
 
 #include "Command.h"
+#include "Alias.h"
 #include "core/ArrayLength.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
@@ -66,6 +67,21 @@ core::String Command::usage() const {
 bool Command::parseArgs(const core::DynamicArray<core::String>& rawArgs, CommandArgs& out) const {
 	size_t argIdx = 0;
 	for (const CommandArg &argDef : _args) {
+		if (argDef.type == ArgType::Rest) {
+			if (argIdx < rawArgs.size()) {
+				core::String joined = rawArgs[argIdx];
+				for (size_t i = argIdx + 1; i < rawArgs.size(); ++i) {
+					joined.append(" ");
+					joined.append(rawArgs[i]);
+				}
+				out.set(argDef.name, joined);
+			} else if (!argDef.optional) {
+				return false;
+			} else if (!argDef.defaultVal.empty()) {
+				out.set(argDef.name, argDef.defaultVal);
+			}
+			return true;
+		}
 		if (argIdx < rawArgs.size()) {
 			out.set(argDef.name, rawArgs[argIdx]);
 		} else if (!argDef.optional) {
@@ -223,8 +239,11 @@ bool Command::execute(const core::String& command, const core::DynamicArray<core
 }
 
 void Command::shutdown() {
-	core::ScopedLock lock(_lock);
-	_cmds.clear();
+	{
+		core::ScopedLock lock(_lock);
+		_cmds.clear();
+	}
+	Alias::shutdown();
 }
 
 Command& Command::setHelp(const core::String &help) {

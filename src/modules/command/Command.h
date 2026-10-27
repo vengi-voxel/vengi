@@ -26,7 +26,11 @@ enum class ArgType : uint8_t {
 	String,
 	Int,
 	Float,
-	Bool
+	Bool,
+	/**
+	 * Remaining tokens joined with spaces. Must be the last argument.
+	 */
+	Rest
 };
 
 class Command;

@@ -3,6 +3,7 @@
  */
 
 #include "AppCommand.h"
+#include "command/Alias.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/StringUtil.h"
@@ -18,6 +19,14 @@ namespace app {
 namespace AppCommand {
 
 void init(const core::TimeProviderPtr& timeProvider) {
+	command::Alias::construct();
+	if (command::Command *aliasCmd = command::Command::getCommand("alias")) {
+		aliasCmd->setHelp(_("Create, update or list command aliases"));
+	}
+	if (command::Command *unaliasCmd = command::Command::getCommand("unalias")) {
+		unaliasCmd->setHelp(_("Remove a command alias"));
+	}
+
 	command::CommandArg cvarArg("name", command::ArgType::String, false, "", "Variable name");
 	cvarArg.completer = command::cvarCompleter();
 

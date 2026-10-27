@@ -59,6 +59,18 @@ TEST_F(CommandTest, textExecuteParameter) {
 	EXPECT_EQ("42", parameter);
 }
 
+TEST_F(CommandTest, testRestArgumentJoinsRemainingTokens) {
+	core::String parameter;
+	Command::registerCommand("testrest")
+		.addArg({"first", ArgType::String, false, ""})
+		.addArg({"rest", ArgType::Rest, false, ""})
+		.setHandler([&](const CommandArgs &args) {
+			parameter = args.str("first") + "|" + args.str("rest");
+		});
+	EXPECT_EQ(1, Command::execute("testrest one two three"));
+	EXPECT_EQ("one|two three", parameter);
+}
+
 TEST_F(CommandTest, textExecuteSemicolonAsParameter) {
 	core::String parameter = "command not executed at all";
 	int testExecuted = 0;

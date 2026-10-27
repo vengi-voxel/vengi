@@ -49,6 +49,27 @@ To get a list of supported commands (they might differ from application to appli
 
 You can also get a list when doing `./vengi-app --help` on the command line.
 
+## Aliases
+
+You can bind several commands to a single name. Aliases are persisted next to the cvars (`{appname}.aliases` in the same directory as `{appname}.vars`) and they are registered as commands, so they can be bound to keys.
+
+```
+alias mynode "copy; pastenewnode; select none"
+```
+
+* `alias` lists all aliases
+* `alias <name>` prints a single alias
+* `alias <name> "command1 ; command2"` creates or updates an alias
+* `unalias <name>` removes an alias
+
+The quoted command string is required when the alias body contains spaces or semicolons, because `;` otherwise splits the console input into separate commands.
+
+After creating an alias you can bind it like any other command:
+
+```
+bind f1 mynode model
+```
+
 ## Key bindings
 
 You can also modify or add key bindings to commands. Type `bindlist` to the console to get a list of the current active bindings

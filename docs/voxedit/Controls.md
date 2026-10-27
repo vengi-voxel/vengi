@@ -20,6 +20,8 @@ You can also change the bindings in the console by using the `bind` command.
 
 To get a list of bindable commands, type the `cmdlist` command to the console and hit enter.
 
+You can also bind an [alias](../Configuration.md#aliases) that runs several commands at once (`alias mynode "copy; pastenewnode; select none"`).
+
 ## Key bindings
 
 ### Contexts
