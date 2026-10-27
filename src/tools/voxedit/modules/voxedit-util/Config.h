@@ -64,6 +64,7 @@ constexpr const char *VoxEditPlaneSize = "ve_planesize";
 constexpr const char *VoxEditShowPlane = "ve_showplane";
 constexpr const char *VoxEditShowaxis = "ve_showaxis";
 constexpr const char *VoxEditCursorDetails = "ve_cursordetails";
+constexpr const char *VoxEditShapeFaceCursor = "ve_shapefacecursor";
 constexpr const char *VoxEditAutoKeyFrame = "ve_autokeyframe";
 constexpr const char *VoxEditGizmoOperations = "ve_gizmooperations";
 constexpr const char *VoxEditGizmoPivot = "ve_gizmopivot";

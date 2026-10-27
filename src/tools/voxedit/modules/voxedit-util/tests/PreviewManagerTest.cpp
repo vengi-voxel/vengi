@@ -14,6 +14,8 @@
 #include "voxel/VoxelNormalUtil.h"
 #include "voxelrender/RenderContext.h"
 #include "video/Camera.h"
+#include "util/VarUtil.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
@@ -194,8 +196,32 @@ TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
 		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
 		triggerPreviewUpdate(modifier, palette);
 		const BrushPreview &preview = modifier.brushPreview();
+		EXPECT_FALSE(preview.useSimplePreview);
+		EXPECT_FALSE(preview.simplePreviewRegion.isValid());
+		EXPECT_EQ(modifier.previewVolume(), nullptr);
+		EXPECT_FALSE(preview.showOutlinePreview);
+	}
+
+	{
+		util::ScopedVarChange scoped(cfg::VoxEditShapeFaceCursor, "false");
+		for (int i = 0; i < 3; ++i) {
+			const glm::ivec3 pos(i, 0, 0);
+			modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
+			triggerPreviewUpdate(modifier, palette);
+			const BrushPreview &preview = modifier.brushPreview();
+			EXPECT_TRUE(preview.useSimplePreview);
+			EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(pos, pos));
+		}
+	}
+
+	modifier.shapeBrush().setRadius(2);
+	for (int i = 0; i < 3; ++i) {
+		const glm::ivec3 pos(i, 0, 0);
+		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
+		triggerPreviewUpdate(modifier, palette);
+		const BrushPreview &preview = modifier.brushPreview();
 		EXPECT_TRUE(preview.useSimplePreview);
-		EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(pos, pos));
+		EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(pos - 2, pos + 2));
 	}
 	modifier.shutdown();
 	mgr.shutdown();

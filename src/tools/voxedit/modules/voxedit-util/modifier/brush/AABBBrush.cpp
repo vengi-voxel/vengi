@@ -273,8 +273,9 @@ void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 	if (ctx.cursorPosition != _lastCursorPos) {
 		_lastCursorPos = ctx.cursorPosition;
 		// we have to update the preview each time we move the cursor if the brush
-		// is either spanning an aabb or follows the cursor in stroke mode
-		if (_boxMode || anyStrokeMode()) {
+		// is either spanning an aabb or follows the cursor in stroke mode.
+		// Single-voxel shape stroke uses the red face cursor instead.
+		if (_boxMode || (anyStrokeMode() && !preferFaceCursorPreview())) {
 			markDirty();
 		}
 	}

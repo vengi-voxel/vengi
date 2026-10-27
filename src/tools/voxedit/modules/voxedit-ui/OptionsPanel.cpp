@@ -68,7 +68,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 		return matchesVarFilter(cfg::VoxEditShowgrid) || matchesVarFilter(cfg::VoxEditShowaxis) ||
 			   matchesVarFilter(cfg::VoxEditShowlockedaxis) || matchesVarFilter(cfg::VoxEditShowaabb) ||
 			   matchesVarFilter(cfg::VoxEditShowBones) || matchesVarFilter(cfg::VoxEditShowPlane) ||
-			   matchesVarFilter(cfg::VoxEditPlaneSize);
+			   matchesVarFilter(cfg::VoxEditPlaneSize) || matchesVarFilter(cfg::VoxEditShapeFaceCursor);
 	case OptionCategory::Rendering:
 		return matchesVarFilter(cfg::RenderOutline) || matchesVarFilter(cfg::RenderSelectionTint) ||
 			   matchesVarFilter(cfg::RenderNormals) || matchesVarFilter(cfg::RenderCheckerBoard) ||
@@ -261,6 +261,9 @@ void OptionsPanel::renderDisplay() {
 	}
 	if (matchesVarFilter(cfg::VoxEditPlaneSize)) {
 		ImGui::IconSliderVarInt(ICON_LC_GRIP, cfg::VoxEditPlaneSize);
+	}
+	if (matchesVarFilter(cfg::VoxEditShapeFaceCursor)) {
+		ImGui::IconCheckboxVar(ICON_LC_SQUARE, cfg::VoxEditShapeFaceCursor);
 	}
 }
 

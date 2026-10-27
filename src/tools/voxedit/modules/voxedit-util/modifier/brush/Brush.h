@@ -358,6 +358,16 @@ public:
 	}
 
 	/**
+	 * @brief When true, skip filled cube/volume preview and keep the red face cursor.
+	 *
+	 * Single-voxel stroke (radius 0) would otherwise draw a 1x1x1 cube that hides
+	 * the face-aligned cursor.
+	 */
+	virtual bool preferFaceCursorPreview() const {
+		return false;
+	}
+
+	/**
 	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
 	 *
 	 * Called after endBrush() by the modifier button to push a single deferred undo entry

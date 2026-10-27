@@ -85,6 +85,7 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const core::VarPtr &showAxis = core::getVar(cfg::VoxEditShowaxis);
 		const core::VarPtr &showAabb = core::getVar(cfg::VoxEditShowaabb);
 		const core::VarPtr &showBones = core::getVar(cfg::VoxEditShowBones);
+		const core::VarPtr &faceCursor = core::getVar(cfg::VoxEditShapeFaceCursor);
 
 		// Toggle grid off and on
 		const bool gridBefore = showGrid->boolVal();
@@ -121,6 +122,14 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("Bones");
 		ctx->Yield();
 		IM_CHECK_EQ(showBones->boolVal(), bonesBefore);
+
+		const bool faceCursorBefore = faceCursor->boolVal();
+		ctx->ItemClick("Face cursor for single voxel");
+		ctx->Yield();
+		IM_CHECK_EQ(faceCursor->boolVal(), !faceCursorBefore);
+		ctx->ItemClick("Face cursor for single voxel");
+		ctx->Yield();
+		IM_CHECK_EQ(faceCursor->boolVal(), faceCursorBefore);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "rendering toggles")->TestFunc = [=](ImGuiTestContext *ctx) {

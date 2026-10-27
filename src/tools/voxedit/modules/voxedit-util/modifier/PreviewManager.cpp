@@ -215,6 +215,10 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	if (!brush) {
 		return;
 	}
+	// Single-voxel stroke keeps the red face cursor; a 1x1x1 cube would hide it.
+	if (brush->preferFaceCursorPreview()) {
+		return;
+	}
 
 	// Shared radius footprint for any brush that reports previewRadius() >= 0.
 	// Built before the per-frame-flush early-out so sculpt (and similar) still get it.

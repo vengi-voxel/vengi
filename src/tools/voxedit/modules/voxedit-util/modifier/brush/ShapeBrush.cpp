@@ -6,7 +6,9 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
+#include "core/Var.h"
 #include "palette/Palette.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -15,6 +17,9 @@ namespace voxedit {
 
 void ShapeBrush::construct() {
 	Super::construct();
+	const core::VarDef voxEditShapeFaceCursor(cfg::VoxEditShapeFaceCursor, true, N_("Face cursor for single voxel"),
+											  N_("Use the red face cursor instead of a full cube preview when the shape brush radius is 0"));
+	core::Var::registerVar(voxEditShapeFaceCursor);
 	for (int type = ShapeType::Min; type < ShapeType::Max; ++type) {
 		const core::String &cmd = core::String::format("shape%s", ShapeTypeCmdStr[type]);
 		const core::String &help = core::String::format(_("Change the shape type to %s"), _(ShapeTypeStr[type]));
@@ -65,11 +70,26 @@ math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm
 	return math::Axis::None;
 }
 
+bool ShapeBrush::preferFaceCursorPreview() const {
+	if (!anyStrokeMode() || radius() != 0) {
+		return false;
+	}
+	if (const core::VarPtr &var = core::findVar(cfg::VoxEditShapeFaceCursor)) {
+		return var->boolVal();
+	}
+	return true;
+}
+
 void ShapeBrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
+	const bool faceCursorPreview = preferFaceCursorPreview();
+	if (faceCursorPreview != _lastFaceCursorPreview) {
+		_lastFaceCursorPreview = faceCursorPreview;
+		markDirty();
+	}
 	if (_lastCursorFace != ctx.cursorFace) {
 		_lastCursorFace = ctx.cursorFace;
-		if (anyStrokeMode()) {
+		if (anyStrokeMode() && radius() > 0) {
 			markDirty();
 		}
 	}

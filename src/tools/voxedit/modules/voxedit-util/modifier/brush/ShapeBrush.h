@@ -34,6 +34,7 @@ class ShapeBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 	voxel::FaceNames _lastCursorFace = voxel::FaceNames::Max;
+	bool _lastFaceCursorPreview = true;
 
 protected:
 	/**
@@ -81,8 +82,10 @@ public:
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool isSimplePreview() const override {
-		return shapeType() == ShapeType::Box;
+		return shapeType() == ShapeType::Box && !preferFaceCursorPreview();
 	}
+
+	bool preferFaceCursorPreview() const override;
 
 	/**
 	 * @return The currently active shape type

@@ -333,7 +333,7 @@ inline int AABBBrush::radius() const {
 }
 
 inline int AABBBrush::previewRadius() const {
-	if (!anyStrokeMode()) {
+	if (!anyStrokeMode() || _radius <= 0) {
 		return -1;
 	}
 	return _radius;

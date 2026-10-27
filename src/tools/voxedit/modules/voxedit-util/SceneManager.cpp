@@ -3880,6 +3880,9 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditShowaxis);
 	const core::VarDef voxEditCursorDetails(cfg::VoxEditCursorDetails, 1, 0, 3, N_("Cursor details"), N_("Print cursor details in edit mode - measure distance to reference position in mode 3"));
 	core::Var::registerVar(voxEditCursorDetails);
+	const core::VarDef voxEditShapeFaceCursor(cfg::VoxEditShapeFaceCursor, true, N_("Face cursor for single voxel"),
+											  N_("Use the red face cursor instead of a full cube preview when the shape brush radius is 0"));
+	core::Var::registerVar(voxEditShapeFaceCursor);
 	const core::VarDef voxEditAutoKeyFrame(cfg::VoxEditAutoKeyFrame, true, N_("Auto Keyframe"), N_("Automatically create keyframes when changing transforms"));
 	core::Var::registerVar(voxEditAutoKeyFrame);
 	const core::VarDef voxEditGizmoOperations(cfg::VoxEditGizmoOperations, 3, N_("Gizmo operations"), N_("Bitmask of gizmo operations in scene mode"));

@@ -7,6 +7,7 @@
 #include "Toolbar.h"
 #include "command/CommandHandler.h"
 #include "ui/IMGUIEx.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ShapeType.h"
@@ -86,6 +87,9 @@ void BrushPanelShape::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		bool noOverlap = brush.strokeNoOverlap();
 		if (ImGui::Checkbox(_("Apply once per voxel per stroke"), &noOverlap)) {
 			command::executeCommands(noOverlap ? "setshapebrushstrokenooverlap" : "setshapebrushstroke", &listener);
+		}
+		if (brush.radius() == 0) {
+			ImGui::CheckboxVar(cfg::VoxEditShapeFaceCursor);
 		}
 	}
 }

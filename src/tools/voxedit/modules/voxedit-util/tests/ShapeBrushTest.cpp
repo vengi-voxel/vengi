@@ -9,6 +9,8 @@
 #include "voxedit-util/modifier/brush/PaintBrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "app/tests/AbstractTest.h"
+#include "util/VarUtil.h"
+#include "voxedit-util/Config.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -111,21 +113,31 @@ protected:
 
 TEST_F(ShapeBrushTest, testZeroRadiusStroke) {
 	TestShapeBrush brush;
+	brush.construct();
 	ASSERT_TRUE(brush.init());
 	brush.setStrokeMode();
 	brush.setRadius(2);
 	brush.setShapeType(ShapeType::Cone);
 	brush.setRadius(0);
 	EXPECT_EQ(brush.shapeType(), ShapeType::Box);
-	EXPECT_TRUE(brush.isSimplePreview());
+	EXPECT_TRUE(brush.preferFaceCursorPreview());
+	EXPECT_FALSE(brush.isSimplePreview());
+	EXPECT_EQ(brush.previewRadius(), -1);
 	BrushContext ctx;
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	brush.update(ctx, 0.0);
 	brush.markClean();
 	ctx.cursorPosition = glm::ivec3(1, 2, 3);
 	brush.update(ctx, 0.1);
-	EXPECT_TRUE(brush.dirty());
+	EXPECT_FALSE(brush.dirty());
 	EXPECT_EQ(brush.calcRegion(ctx), voxel::Region(ctx.cursorPosition, ctx.cursorPosition));
+	{
+		util::ScopedVarChange scoped(cfg::VoxEditShapeFaceCursor, "false");
+		brush.update(ctx, 0.2);
+		EXPECT_FALSE(brush.preferFaceCursorPreview());
+		EXPECT_TRUE(brush.isSimplePreview());
+		EXPECT_TRUE(brush.dirty());
+	}
 	brush.setRadius(2);
 	EXPECT_EQ(brush.shapeType(), ShapeType::Cone);
 	brush.setRadius(0);

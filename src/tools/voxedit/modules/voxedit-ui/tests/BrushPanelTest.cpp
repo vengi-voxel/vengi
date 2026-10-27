@@ -369,6 +369,15 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		brush.setRadius(2);
 		ctx->Yield();
 		ctx->ItemOpen("Advanced");
+		brush.setRadius(0);
+		ctx->Yield();
+		const core::VarPtr &faceCursor = core::getVar(cfg::VoxEditShapeFaceCursor);
+		const bool faceCursorBefore = faceCursor->boolVal();
+		ctx->ItemClick("Face cursor for single voxel");
+		IM_CHECK_EQ(faceCursor->boolVal(), !faceCursorBefore);
+		faceCursor->setVal(faceCursorBefore);
+		brush.setRadius(2);
+		ctx->Yield();
 		ctx->ItemClick("Apply once per voxel per stroke");
 		IM_CHECK(brush.strokeNoOverlap());
 		ctx->ItemClick("Drag shape");
