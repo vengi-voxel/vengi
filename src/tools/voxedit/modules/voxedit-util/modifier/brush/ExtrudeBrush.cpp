@@ -74,7 +74,7 @@ bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
 	}
 	// Only update the stored face when the cursor is actually over a voxel face.
 	// When triggered from the panel (cursorFace == Max), keep the last face from a viewport click.
-	if (ctx.cursorFace != voxel::FaceNames::Max) {
+	if (ctx.cursorFace != voxel::FaceNames::Max && !ctx.brushGizmoActive) {
 		_face = ctx.cursorFace;
 	}
 	_active = true;
