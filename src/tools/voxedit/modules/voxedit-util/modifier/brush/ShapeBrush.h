@@ -6,6 +6,7 @@
 
 #include "../ShapeType.h"
 #include "AABBBrush.h"
+#include "ShapeOperation.h"
 
 namespace voxedit {
 
@@ -37,23 +38,6 @@ private:
 	bool _lastFaceCursorPreview = true;
 
 protected:
-	/**
-	 * @brief Determine the shape dimensions based on face orientation
-	 *
-	 * Extracts width, height, and depth from the AABB dimensions based on which
-	 * face was hit. This allows shapes to be oriented correctly relative to the
-	 * surface the user was interacting with.
-	 *
-	 * @param[in] face The face that was hit when starting the AABB
-	 * @param[in] dimensions The AABB dimensions
-	 * @param[out] width Shape width perpendicular to face normal
-	 * @param[out] height Shape height along face normal
-	 * @param[out] depth Shape depth perpendicular to face normal and width
-	 * @return The axis aligned with the face normal
-	 */
-	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
-										int &depth) const;
-
 	ShapeType _shapeType = ShapeType::Box; ///< Current shape being generated
 	int _thickness = 1; ///< Wall thickness for hollow shapes (e.g., Circle, Torus)
 
@@ -91,6 +75,7 @@ public:
 	 * @return The currently active shape type
 	 */
 	ShapeType shapeType() const;
+	ShapeSettings settings() const;
 
 	/**
 	 * @return The wall thickness for hollow shapes

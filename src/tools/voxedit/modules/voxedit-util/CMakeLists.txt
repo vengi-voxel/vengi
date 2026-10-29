@@ -12,6 +12,7 @@ set(SRCS
 	modifier/brush/PaintBrush.cpp modifier/brush/PaintBrush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
 	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
+	modifier/brush/ShapeOperation.cpp modifier/brush/ShapeOperation.h
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
