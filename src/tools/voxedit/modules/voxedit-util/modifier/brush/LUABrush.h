@@ -33,7 +33,6 @@ class LUABrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 
-	mutable lua::LUA _lua;
 	noise::Noise _noise;
 	voxelgenerator::LuaDirtyRegions _dirtyRegions;
 	io::FilesystemPtr _filesystem;
@@ -52,6 +51,9 @@ private:
 
 	core::DynamicArray<voxelgenerator::LUAParameterDescription> _parameterDescription;
 	core::DynamicArray<core::String> _parameters;
+
+	// Lua finalizers access the resources above, so destroy the state first.
+	mutable lua::LUA _lua;
 
 	bool initLuaState();
 

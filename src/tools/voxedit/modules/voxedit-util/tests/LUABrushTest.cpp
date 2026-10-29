@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/brush/LUASelectionMode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -67,6 +68,39 @@ TEST_F(LUABrushTest, testPathBrush) {
 	EXPECT_TRUE(hasVoxels) << "Pathfinder should have placed at least one voxel along the path";
 
 	brush.shutdown();
+}
+
+TEST_F(LUABrushTest, testRetainedVolumesFinalizeBeforeToolResources) {
+	const core::String filename = "/tmp/vengi-lua-tool-finalizers.lua";
+	ASSERT_TRUE(io::Filesystem::sysWrite(filename, core::String("function generate(node)\n"
+																" retained = node:volume()\n"
+																" retained:setVoxel(0, 0, 0, 2)\n"
+																"end\n"
+																"select = generate\n")));
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)));
+	const int id = scene.emplace(core::move(node));
+	scene.setActiveNode(id);
+	ModifierVolumeWrapper wrapper(scene.node(id), ModifierType::Override);
+	BrushContext input;
+	// Keep the scene alive while each tool's destructor finalizes retained Lua volumes.
+	{
+		LUABrush brush(_testApp->filesystem());
+		ASSERT_TRUE(brush.init());
+		ASSERT_TRUE(brush.loadScript(filename));
+		ASSERT_TRUE(brush.execute(scene, wrapper, input));
+		EXPECT_EQ(2, scene.node(id).volume()->voxel(0, 0, 0).getColor());
+	}
+	scene.node(id).volume()->clear();
+	{
+		LUASelectionMode mode(_testApp->filesystem());
+		ASSERT_TRUE(mode.init());
+		ASSERT_TRUE(mode.loadScript(filename));
+		mode.execute(scene, wrapper, input, wrapper.region(), glm::ivec3(0), voxel::FaceNames::PositiveY);
+		EXPECT_EQ(2, scene.node(id).volume()->voxel(0, 0, 0).getColor());
+	}
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(filename));
 }
 
 } // namespace voxedit
