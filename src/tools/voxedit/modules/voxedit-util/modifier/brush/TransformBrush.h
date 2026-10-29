@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Brush.h"
+#include "TransformOperation.h"
 #include "SnapshotHelper.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
@@ -15,15 +16,6 @@
 #include <glm/vec3.hpp>
 
 namespace voxedit {
-
-enum class TransformMode : uint8_t {
-	Move,
-	Shear,
-	Scale,
-	Rotate,
-
-	Max
-};
 
 // clang-format off
 static constexpr const char *TransformModeStr[] = {
@@ -47,38 +39,11 @@ static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "Transfor
  *
  * @ingroup Brushes
  */
-class TransformBrush : public Brush {
+class TransformBrush : public Brush, public TransformOperation {
 private:
 	using Super = Brush;
-
-	TransformMode _transformMode = TransformMode::Move;
-	voxel::VoxelSampling _voxelSampling = voxel::VoxelSampling::Nearest;
 	bool _active = false;
 	voxel::RawVolume *_lastVolume = nullptr;
-
-	SnapshotHelper _snapshotHelper;
-	// Center of selection (used as pivot for scale/rotate)
-	glm::vec3 _snapshotCenter{0.0f};
-
-	// Cached region for preview (union of snapshot + transformed bounding box)
-	voxel::Region _cachedRegion;
-	bool _cachedRegionValid = false;
-	// Previous frame's transformed destination region (for dirty region tracking)
-	mutable voxel::Region _prevTransformedRegion = voxel::Region::InvalidRegion;
-
-	// Transform parameters
-	glm::ivec3 _moveOffset{0};
-	glm::ivec3 _shearOffset{0};
-	glm::vec3 _scale{1.0f, 1.0f, 1.0f};
-	glm::vec3 _rotationDegrees{0.0f, 0.0f, 0.0f};
-
-	void applyTransform(ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
-	void eraseSnapshotPositions(ModifierVolumeWrapper &wrapper);
-	void applyInverseMapping(ModifierVolumeWrapper &wrapper);
-	voxel::Region computeTransformedRegion() const;
-	voxel::Region computeDestinationRegion() const;
-	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
-	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
