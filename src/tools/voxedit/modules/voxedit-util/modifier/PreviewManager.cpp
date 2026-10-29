@@ -255,24 +255,36 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	bool simplePreview = isSimplePreview(brush, region);
 
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
+		const bool needsNeighbors = modifier.brushType() == BrushType::Paint &&
+									modifier.paintBrush().paintMode() == PaintBrush::PaintMode::Blur;
+		auto generatePreview = [&](core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &outputRegion) {
+			voxel::Region readRegion = outputRegion;
+			if (needsNeighbors) {
+				readRegion.grow(1);
+			}
+			if (!canAllocatePreviewRegion(readRegion, maxPreviewExtent + 2)) {
+				return;
+			}
+			createOrClearPreviewVolume(existingVolume, volume, readRegion);
+			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+			dummyNode.setUnownedVolume(volume);
+			if (needsNeighbors) {
+				dummyNode.setPalette(activePalette);
+			}
+			if (normalPaint) {
+				dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
+			}
+			modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
+			if (readRegion != outputRegion) {
+				volume = new voxel::RawVolume(*volume, outputRegion);
+			}
+		};
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
-			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
-			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
-			mirrorDummyNode.setUnownedVolume(_previewMirrorVolume);
-			if (normalPaint) {
-				mirrorDummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
-			}
-			modifier.executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel, {}, true);
+			generatePreview(_previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 		}
-		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
-		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-		dummyNode.setUnownedVolume(_previewVolume);
-		if (normalPaint) {
-			dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
-		}
-		modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
+		generatePreview(_previewVolume, region);
 
 		// For selection brushes: remove voxels without FlagOutline from the preview
 		// volume. The preview is a copy of the real volume, and only voxels that the

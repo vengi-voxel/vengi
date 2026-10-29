@@ -4,6 +4,7 @@
 
 #include "ModifierEx.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "../modifier/PreviewManager.h"
 #include "app/tests/AbstractTest.h"
 #include "command/Command.h"
@@ -168,6 +169,74 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 		EXPECT_EQ(cleared, node.volume()->voxel(pos));
 		EXPECT_EQ(original, node.volume()->voxel(0, 0, 0));
 		modifier.endBrush();
+		modifier.shutdown();
+		mgr.shutdown();
+	}
+}
+
+TEST_F(PreviewManagerTest, testBlurPreviewMatchesFullVolumeIncludingMirrors) {
+	for (bool mirror : {false, true}) {
+		auto renderer = core::make_shared<TrackingModifierRenderer>();
+		SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+						 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+		mgr.construct();
+		ASSERT_TRUE(mgr.init());
+		ASSERT_TRUE(mgr.newScene(true, "blur preview", voxel::Region(-5, 5)));
+		auto &node = mgr.sceneGraph().node(mgr.activeNode());
+		palette::Palette palette;
+		for (int i = 0; i < 256; ++i) {
+			palette.setColor(i, color::RGBA(i, i, i));
+		}
+		node.setPalette(palette);
+		ModifierEx modifier(&mgr, renderer);
+		modifier.construct();
+		ASSERT_TRUE(modifier.init());
+		modifier.setBrushType(BrushType::Paint);
+		modifier.setModifierType(ModifierType::Paint);
+		PaintBrush &brush = modifier.paintBrush();
+		brush.setPaintMode(PaintBrush::PaintMode::Blur);
+		brush.setRadius(0);
+		brush.setBlendOpacity(1.0f);
+		if (mirror) {
+			brush.setMirrorAxis(math::Axis::X, glm::ivec3(0));
+		}
+		const glm::ivec3 pos(2, 0, 0);
+		glm::ivec3 mirrorPos = pos;
+		glm::ivec3 mirrorMax = pos;
+		brush.getMirrorBox(mirrorPos, mirrorMax);
+		for (const glm::ivec3 &center : {pos, mirrorPos}) {
+			node.volume()->setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 0, 5));
+			node.volume()->setVoxel(center + glm::ivec3(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 200, 5));
+		}
+		const voxel::RawVolume original(*node.volume());
+		const uint64_t paletteHash = node.palette().hash();
+		const size_t history = mgr.mementoHandler().stateSize();
+		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveY);
+		modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 1));
+		PreviewManager preview;
+		preview.construct();
+		ASSERT_TRUE(preview.init(renderer));
+		preview.updateBrushVolumePreview(modifier, node.palette(), node.volume(), mgr.sceneGraph());
+		scenegraph::SceneGraphNode expected(scenegraph::SceneGraphNodeType::Model);
+		expected.setVolume(new voxel::RawVolume(original));
+		expected.setPalette(node.palette());
+		ModifierVolumeWrapper expectedOutput(expected, ModifierType::Paint);
+		BrushContext input = modifier.brushContext();
+		input.preview = true;
+		ASSERT_TRUE(brush.execute(mgr.sceneGraph(), expectedOutput, input));
+		ASSERT_NE(nullptr, preview.previewVolume());
+		EXPECT_EQ(voxel::Region(pos, pos), preview.previewVolume()->region());
+		EXPECT_FALSE(original.voxel(pos) == expected.volume()->voxel(pos));
+		EXPECT_EQ(expected.volume()->voxel(pos), preview.previewVolume()->voxel(pos));
+		if (mirror) {
+			ASSERT_NE(nullptr, preview.previewMirrorVolume());
+			EXPECT_EQ(voxel::Region(mirrorPos, mirrorPos), preview.previewMirrorVolume()->region());
+			EXPECT_EQ(expected.volume()->voxel(mirrorPos), preview.previewMirrorVolume()->voxel(mirrorPos));
+		}
+		EXPECT_EQ(paletteHash, node.palette().hash());
+		EXPECT_EQ(history, mgr.mementoHandler().stateSize());
+		EXPECT_EQ(0, core_memcmp(original.data(), node.volume()->data(), voxel::RawVolume::size(original.region())));
+		preview.shutdown();
 		modifier.shutdown();
 		mgr.shutdown();
 	}
