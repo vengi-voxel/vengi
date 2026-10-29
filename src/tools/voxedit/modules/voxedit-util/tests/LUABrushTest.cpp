@@ -70,6 +70,52 @@ TEST_F(LUABrushTest, testPathBrush) {
 	brush.shutdown();
 }
 
+TEST_F(LUABrushTest, testScriptFailureReportsStatusAndRetainedWrites) {
+	const core::String filename = "/tmp/vengi-brush-execution-failure.lua";
+	for (bool writes : {false, true}) {
+		SCOPED_TRACE(writes);
+		const core::String source = core::String::format(
+			"function arguments() return {{name='fail', type='int', default='1', min='0', max='1'}} end\n"
+			"function generate(node, region, color, fail)\n"
+			" if fail == 1 then\n"
+			"  %s\n"
+			"  error('intentional failure')\n"
+			" end\n"
+			" node:volume():setVoxel(0, 0, 0, color)\n"
+			"end\n",
+			writes ? "retained = node:volume(); retained:setVoxel(1, 0, 0, color)" : "");
+		ASSERT_TRUE(io::Filesystem::sysWrite(filename, source));
+		LUABrush brush(_testApp->filesystem());
+		ASSERT_TRUE(brush.init());
+		ASSERT_TRUE(brush.loadScript(filename));
+		scenegraph::SceneGraph scene;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(-1, 1)));
+		const int id = scene.emplace(core::move(node));
+		scene.setActiveNode(id);
+		BrushContext input;
+		input.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+		ModifierVolumeWrapper failed(scene.node(id), ModifierType::Override);
+		EXPECT_FALSE(brush.execute(scene, failed, input));
+		EXPECT_FALSE(brush.errorReason().empty());
+		if (writes) {
+			EXPECT_EQ(2, scene.node(id).volume()->voxel(1, 0, 0).getColor());
+			EXPECT_EQ(voxel::Region(1, 0, 0, 1, 0, 0), failed.dirtyRegion());
+		} else {
+			EXPECT_FALSE(failed.dirtyRegion().isValid());
+		}
+		ASSERT_EQ(1u, brush.parameters().size());
+		brush.parameters()[0] = "0";
+		input.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 3);
+		ModifierVolumeWrapper recovered(scene.node(id), ModifierType::Override);
+		EXPECT_TRUE(brush.execute(scene, recovered, input));
+		EXPECT_TRUE(brush.errorReason().empty());
+		EXPECT_EQ(3, scene.node(id).volume()->voxel(0, 0, 0).getColor());
+		brush.shutdown();
+	}
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(filename));
+}
+
 TEST_F(LUABrushTest, testRetainedVolumeArgumentsAcrossInvocations) {
 	const core::String filename = "/tmp/vengi-brush-retained-arguments.lua";
 	ASSERT_TRUE(io::Filesystem::sysWrite(filename, core::String("function generate(node, region, color)\n"

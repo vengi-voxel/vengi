@@ -91,6 +91,7 @@ void Brush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) 
 }
 
 bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	setErrorReason("");
 	voxel::Region region = calcRegion(ctx);
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
@@ -106,7 +107,7 @@ bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &w
 			generate(sceneGraph, wrapper, ctx, second);
 		}
 	}
-	return true;
+	return _errorReason.empty();
 }
 
 void Brush::endBrush(BrushContext &ctx) {

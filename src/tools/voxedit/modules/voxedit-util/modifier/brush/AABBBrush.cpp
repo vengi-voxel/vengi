@@ -144,13 +144,13 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 
 		_strokeGesture.visit(end, runDab);
 		_strokeGesture.accumulate(wrapper.dirtyRegion());
-		return true;
+		return errorReason().empty();
 	}
 
 	voxel::Region region = calcRegion(ctx);
 	region = extendRegionInOrthoMode(region, wrapper.region(), ctx);
 	generateMirrored(sceneGraph, wrapper, ctx, region);
-	return true;
+	return errorReason().empty();
 }
 
 voxel::Region AABBBrush::consumePendingUndoRegion() {

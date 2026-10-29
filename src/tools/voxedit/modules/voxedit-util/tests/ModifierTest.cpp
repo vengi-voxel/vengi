@@ -12,6 +12,7 @@
 #include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxelrender/RenderContext.h"
 #include "voxel/Face.h"
@@ -122,6 +123,56 @@ protected:
 	}
 
 };
+
+TEST_F(ModifierTest, testFailedBrushStillNotifiesPartialWrites) {
+	class FailingBrush : public AABBBrush {
+	protected:
+		void generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+					  const voxel::Region &) override {
+			wrapper.setVoxel(0, 0, 0, ctx.cursorVoxel);
+			setErrorReason("intentional failure");
+		}
+
+	public:
+		FailingBrush() : AABBBrush(BrushType::Ruler, ModifierType::Override, ModifierType::Override) {
+			setStrokeMode();
+		}
+	};
+	class FailingModifier : public Modifier {
+	public:
+		FailingModifier(SceneManager *sceneMgr, const core::SharedPtr<FailingBrush> &brush)
+			: Modifier(sceneMgr, core::make_shared<IModifierRenderer>()) {
+			for (Brush *&registered : _brushes) {
+				if (registered->type() == brush->type()) {
+					registered = brush.get();
+				}
+			}
+			_brushType = brush->type();
+		}
+	};
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	mgr.construct();
+	ASSERT_TRUE(mgr.init());
+	ASSERT_TRUE(mgr.newScene(true, "failed brush", voxel::Region(-1, 1)));
+	auto brush = core::make_shared<FailingBrush>();
+	FailingModifier modifier(&mgr, brush);
+	modifier.construct();
+	modifier.setModifierType(ModifierType::Override);
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	ASSERT_TRUE(modifier.beginBrush());
+	scenegraph::SceneGraph &scene = mgr.sceneGraph();
+	scenegraph::SceneGraphNode &node = scene.node(mgr.activeNode());
+	voxel::Region notified = voxel::Region::InvalidRegion;
+	EXPECT_FALSE(modifier.execute(
+		scene, node, [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) { notified = region; }));
+	EXPECT_EQ(voxel::Region(0, 0), notified);
+	EXPECT_EQ(2, node.volume()->voxel(0, 0, 0).getColor());
+	modifier.endBrush();
+	modifier.shutdown();
+	mgr.shutdown();
+}
 
 TEST_F(ModifierTest, testGestureDispatchDoesNotRequireAABBBrush) {
 	class GestureBrush : public Brush {

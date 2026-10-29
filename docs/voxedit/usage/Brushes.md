@@ -117,6 +117,8 @@ Execute custom [Lua scripts](../../LUAScript.md) with this brush. Scripts can pe
 
 Check the scripts panel to see available scripts and their parameters. Many scripts use the reference position, cursor position, or current selection to define where they operate.
 
+Script errors are reported to the editor. Changes made before an error remain part of the edit and can be undone.
+
 ## Select brush
 
 The select brush doesn't modify voxels directly. Instead, it creates selection regions that limit where other operations can affect voxels (like the [script](../../LUAScript.md) execution) or for copy/pasting.

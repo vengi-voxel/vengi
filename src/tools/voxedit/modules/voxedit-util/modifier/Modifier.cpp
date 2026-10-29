@@ -363,9 +363,10 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	if (_brushContext.modifierType == ModifierType::NormalPaint) {
 		_brushContext.cursorVoxel.setNormal(_brushContext.normalIndex + NORMAL_PALETTE_OFFSET);
 	}
-	executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
+	const bool success =
+		executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
 	_brushContext.cursorVoxel = cursorVoxel; // set back the original voxel
-	return true;
+	return success;
 }
 
 /**
@@ -456,7 +457,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
 	}
 	_brushContext.cursorVoxel = voxel;
-	brush->execute(sceneGraph, wrapper, _brushContext);
+	const bool success = brush->execute(sceneGraph, wrapper, _brushContext);
 	const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
 		&& brush->type() != BrushType::Normal;
 	const bool isPlacementModifier = modifierType == ModifierType::Place;
@@ -492,7 +493,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	_brushContext.cursorPosition = prevCursorPos;
 	_brushContext.cursorVoxel = prevVoxel;
 	_brushContext.preview = prevPreview;
-	return true;
+	return success;
 }
 
 Brush *Modifier::currentBrush() {

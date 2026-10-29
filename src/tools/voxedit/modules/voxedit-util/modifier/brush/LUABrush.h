@@ -56,6 +56,7 @@ private:
 	mutable lua::LUA _lua;
 
 	bool initLuaState();
+	void recordScriptFailure(ModifierVolumeWrapper &wrapper, int nodeId);
 
 	bool wantBox() const override;
 

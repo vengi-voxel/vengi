@@ -4,6 +4,7 @@
 
 #include "LUABrush.h"
 #include "BrushGizmoUtil.h"
+#include "app/I18NMarkers.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/Log.h"
@@ -698,13 +699,34 @@ voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region(glm::ivec3(minX, minY, minZ), glm::ivec3(maxX, maxY, maxZ));
 }
 
+void LUABrush::recordScriptFailure(ModifierVolumeWrapper &wrapper, int nodeId) {
+	setErrorReason(N_("Brush script execution failed"));
+	// Closing the failed VM finalizes even volume wrappers retained in Lua globals.
+	// The current scene and brush context are still alive here.
+	initLuaState();
+	voxel::Region dirtyRegion;
+	if (_dirtyRegions.get(nodeId, dirtyRegion) && dirtyRegion.isValid()) {
+		wrapper.addToDirtyRegion(dirtyRegion.getLowerCorner());
+		wrapper.addToDirtyRegion(dirtyRegion.getUpperCorner());
+	}
+	// Restore functions and keep argument values so the next invocation can recover.
+	if (luaL_dostring(_lua, _scriptSource.c_str())) {
+		Log::error("Failed to restore brush script: %s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);
+		_scriptLoaded = false;
+	}
+	lua_settop(_lua, 0);
+}
+
 void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						const voxel::Region &region) {
 	if (!_scriptLoaded) {
+		setErrorReason(N_("Brush script execution failed"));
 		return;
 	}
 
 	_dirtyRegions.clear();
+	const int nodeId = wrapper.node().id();
 
 	lua_State *s = _lua.state();
 
@@ -723,6 +745,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	if (luaL_dostring(s, _scriptSource.c_str())) {
 		Log::error("Failed to reload brush script: %s", lua_tostring(s, -1));
 		lua_pop(s, 1);
+		recordScriptFailure(wrapper, nodeId);
 		return;
 	}
 	lua_settop(s, top);
@@ -732,6 +755,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	if (!lua_isfunction(s, -1)) {
 		Log::error("Brush script lost its generate() function");
 		lua_pop(s, 1);
+		recordScriptFailure(wrapper, nodeId);
 		return;
 	}
 
@@ -740,6 +764,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	if (voxelgenerator::luaVoxel_pushscenegraphnode(s, node) == 0) {
 		Log::error("Failed to push scene graph node for brush script");
 		lua_pop(s, 1);
+		recordScriptFailure(wrapper, nodeId);
 		return;
 	}
 
@@ -748,6 +773,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 		Log::error("Failed to push region for brush script");
 		lua_pop(s, 2);
 		lua_gc(s, LUA_GCCOLLECT, 0);
+		recordScriptFailure(wrapper, nodeId);
 		return;
 	}
 
@@ -762,6 +788,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 			Log::error("Failed to push brush script arguments");
 			lua_settop(s, top);
 			lua_gc(s, LUA_GCCOLLECT, 0);
+			recordScriptFailure(wrapper, nodeId);
 			return;
 		}
 		nargs += (int)_parameterDescription.size();
@@ -772,6 +799,7 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 		Log::error("Error executing brush script: %s", lua_tostring(s, -1));
 		lua_pop(s, 1);
 		lua_gc(s, LUA_GCCOLLECT, 0);
+		recordScriptFailure(wrapper, nodeId);
 		return;
 	}
 
