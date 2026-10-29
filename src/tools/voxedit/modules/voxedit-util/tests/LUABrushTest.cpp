@@ -70,6 +70,31 @@ TEST_F(LUABrushTest, testPathBrush) {
 	brush.shutdown();
 }
 
+TEST_F(LUABrushTest, testRetainedVolumeArgumentsAcrossInvocations) {
+	const core::String filename = "/tmp/vengi-brush-retained-arguments.lua";
+	ASSERT_TRUE(io::Filesystem::sysWrite(filename, core::String("function generate(node, region, color)\n"
+																" retained = node:volume()\n"
+																" retained:setVoxel(0, 0, 0, color)\n"
+																"end\n")));
+	LUABrush brush(_testApp->filesystem());
+	ASSERT_TRUE(brush.init());
+	ASSERT_TRUE(brush.loadScript(filename));
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(-1, 1)));
+	const int id = scene.emplace(core::move(node));
+	scene.setActiveNode(id);
+	BrushContext input;
+	input.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	for (int i = 0; i < 2; ++i) {
+		ModifierVolumeWrapper wrapper(scene.node(id), ModifierType::Override);
+		ASSERT_TRUE(brush.execute(scene, wrapper, input));
+		EXPECT_EQ(2, scene.node(id).volume()->voxel(0, 0, 0).getColor());
+	}
+	brush.shutdown();
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(filename));
+}
+
 TEST_F(LUABrushTest, testRetainedVolumesFinalizeBeforeToolResources) {
 	const core::String filename = "/tmp/vengi-lua-tool-finalizers.lua";
 	ASSERT_TRUE(io::Filesystem::sysWrite(filename, core::String("function generate(node)\n"
