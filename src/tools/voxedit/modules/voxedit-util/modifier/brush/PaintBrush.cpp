@@ -223,6 +223,8 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		return;
 	}
 
+	const bool changesPalette =
+		_paintMode == PaintMode::Brighten || _paintMode == PaintMode::Darken || _paintMode == PaintMode::Variation;
 	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance);
 	if (floodFill()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
@@ -236,12 +238,22 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			const voxel::Voxel newVoxel = mix(wrapper, ctx.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
-		voxelutil::visitVolumeParallel(wrapper, region, func);
+		if (changesPalette) {
+			// Palette insertion and closest-color lookup share mutable state.
+			voxelutil::visitVolume(wrapper, region, func);
+		} else {
+			voxelutil::visitVolumeParallel(wrapper, region, func);
+		}
 	} else {
 		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
-		voxelutil::visitVolumeParallel(wrapper, region, func);
+		if (changesPalette) {
+			// Palette insertion and closest-color lookup share mutable state.
+			voxelutil::visitVolume(wrapper, region, func);
+		} else {
+			voxelutil::visitVolumeParallel(wrapper, region, func);
+		}
 	}
 }
 

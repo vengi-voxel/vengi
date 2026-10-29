@@ -12,6 +12,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 
@@ -390,6 +391,44 @@ TEST_F(PaintBrushTest, testBlendPreviewDoesNotBlockContinuousStroke) {
 
 	brush.endBrush(brushContext);
 	brush.shutdown();
+}
+
+TEST_F(PaintBrushTest, testPaletteChangingModesMatchSerialEvaluation) {
+	class RegionPaintBrush : public PaintBrush {
+	public:
+		using PaintBrush::generate;
+	};
+	const voxel::Region region(0, 0, 0, 31, 31, 15);
+	voxel::RawVolume original(region);
+	original.fill(voxel::Voxel(voxel::VoxelType::Generic, 0, existingNormalIndex));
+	palette::Palette palette;
+	palette.setColor(0, color::RGBA(80, 112, 144));
+	palette.setSize(1);
+	for (PaintBrush::PaintMode mode : {PaintBrush::PaintMode::Brighten, PaintBrush::PaintMode::Darken}) {
+		scenegraph::SceneGraph scene;
+		scenegraph::SceneGraphNode expected(scenegraph::SceneGraphNodeType::Model);
+		expected.setVolume(new voxel::RawVolume(original));
+		expected.setPalette(palette);
+		scenegraph::SceneGraphNode actual(scenegraph::SceneGraphNodeType::Model);
+		actual.setVolume(new voxel::RawVolume(original));
+		actual.setPalette(palette);
+		RegionPaintBrush brush;
+		brush.setPaintMode(mode);
+		brush.setStrength(1.5f);
+		BrushContext input;
+		ModifierVolumeWrapper expectedOutput(expected, ModifierType::Paint);
+		// Establish a serial reference by evaluating one voxel at a time.
+		voxelutil::visitVolume(original, [&](int x, int y, int z, const voxel::Voxel &) {
+			const glm::ivec3 pos(x, y, z);
+			brush.generate(scene, expectedOutput, input, voxel::Region(pos, pos));
+		});
+		ModifierVolumeWrapper actualOutput(actual, ModifierType::Paint);
+		brush.generate(scene, actualOutput, input, region);
+		EXPECT_GT(expected.palette().colorCount(), palette.colorCount());
+		EXPECT_EQ(expected.palette().hash(), actual.palette().hash());
+		EXPECT_EQ(0, core_memcmp(expected.volume()->data(), actual.volume()->data(), voxel::RawVolume::size(region)));
+		EXPECT_EQ(region, actualOutput.dirtyRegion());
+	}
 }
 
 } // namespace voxedit
