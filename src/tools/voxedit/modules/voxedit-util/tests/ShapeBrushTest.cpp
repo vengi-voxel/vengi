@@ -111,6 +111,36 @@ protected:
 	}
 };
 
+TEST_F(ShapeBrushTest, testMovingMirrorPlaneInvalidatesPreview) {
+	ShapeBrush brush;
+	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(0)));
+	brush.markClean();
+	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(3)));
+	EXPECT_TRUE(brush.dirty());
+	glm::ivec3 mins(0);
+	glm::ivec3 maxs(0);
+	ASSERT_TRUE(brush.getMirrorBox(mins, maxs));
+	EXPECT_EQ(glm::ivec3(0, 0, 5), mins);
+	EXPECT_EQ(mins, maxs);
+	brush.markClean();
+	EXPECT_FALSE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(3)));
+	EXPECT_FALSE(brush.dirty());
+}
+
+TEST_F(ShapeBrushTest, testVolumeClampingChangesInvalidatePreview) {
+	ShapeBrush brush;
+	brush.markClean();
+	brush.setClampToVolume(true);
+	EXPECT_TRUE(brush.clampToVolume());
+	EXPECT_TRUE(brush.dirty());
+	brush.markClean();
+	brush.setClampToVolume(true);
+	EXPECT_FALSE(brush.dirty());
+	brush.setClampToVolume(false);
+	EXPECT_FALSE(brush.clampToVolume());
+	EXPECT_TRUE(brush.dirty());
+}
+
 TEST_F(ShapeBrushTest, testZeroRadiusStroke) {
 	TestShapeBrush brush;
 	brush.construct();

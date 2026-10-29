@@ -54,7 +54,11 @@ void Brush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 void Brush::setClampToVolume(bool clampToVolume) {
+	if (_clampToVolume == clampToVolume) {
+		return;
+	}
 	_clampToVolume = clampToVolume;
+	markDirty();
 }
 
 bool Brush::clampToVolume() const {
@@ -70,11 +74,7 @@ void Brush::toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 }
 
 bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
-	if (_mirrorAxis == axis) {
-		if (_mirrorPos != mirrorPos) {
-			_mirrorPos = mirrorPos;
-			return true;
-		}
+	if (_mirrorAxis == axis && _mirrorPos == mirrorPos) {
 		return false;
 	}
 	_mirrorPos = mirrorPos;
