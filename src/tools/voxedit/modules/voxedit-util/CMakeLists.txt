@@ -149,6 +149,7 @@ set(TEST_SRCS
 	tests/PreviewManagerTest.cpp
 	tests/BrushRadiusPreviewTest.cpp
 	tests/BrushGestureTest.cpp
+	tests/BrushInputTest.cpp
 	tests/NormalBrushTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PlaneBrushTest.cpp
