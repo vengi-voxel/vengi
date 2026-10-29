@@ -403,15 +403,8 @@ int SceneGraph::nextModelNode(int nodeId) const {
 			}
 		}
 	}
-	bool found = false;
-	for (iterator modelIter = beginModel(); modelIter != end(); ++modelIter) {
-		if ((*modelIter).id() == nodeId) {
-			found = true;
-			continue;
-		}
-		if (found) {
-			return (*modelIter).id();
-		}
+	for (iterator modelIter(nodeId + 1, _nextNodeId, SceneGraphNodeType::Model, this); modelIter != end(); ++modelIter) {
+		return (*modelIter).id();
 	}
 	return InvalidNodeId;
 }

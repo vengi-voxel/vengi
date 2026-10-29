@@ -1620,6 +1620,177 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
 	EXPECT_EQ(1, validNodes) << "Node under rotated group should be found at its rotated world position";
 }
 
+TEST_F(SceneGraphTest, testIteratorIdOrder) {
+	SceneGraph sceneGraph;
+	for (int i = 0; i < 4; ++i) {
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	int expectedId = 0;
+	int count = 0;
+	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		EXPECT_EQ(expectedId, (*iter).id());
+		++expectedId;
+		++count;
+	}
+	EXPECT_EQ(5, count);
+	EXPECT_TRUE(sceneGraph.end() == SceneGraph::iterator(5, 5, SceneGraphNodeType::Max, &sceneGraph));
+}
+
+TEST_F(SceneGraphTest, testIteratorModelFilter) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	int model1 = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 1));
+		model1 = sceneGraph.emplace(core::move(node));
+		ASSERT_NE(InvalidNodeId, model1);
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	int model2 = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 1));
+		model2 = sceneGraph.emplace(core::move(node));
+		ASSERT_NE(InvalidNodeId, model2);
+	}
+
+	int count = 0;
+	int lastId = -1;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		EXPECT_EQ(SceneGraphNodeType::Model, (*iter).type());
+		EXPECT_GT((*iter).id(), lastId);
+		lastId = (*iter).id();
+		++count;
+	}
+	EXPECT_EQ(2, count);
+	EXPECT_EQ(model2, lastId);
+	ASSERT_NE(nullptr, sceneGraph.firstModelNode());
+	EXPECT_EQ(model1, sceneGraph.firstModelNode()->id());
+}
+
+TEST_F(SceneGraphTest, testIteratorAllModelsIncludesReferences) {
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	SceneGraph sceneGraph;
+	int modelId = InvalidNodeId;
+	{
+		SceneGraphNode model(SceneGraphNodeType::Model);
+		model.setUnownedVolume(&volume);
+		modelId = sceneGraph.emplace(core::move(model));
+		ASSERT_NE(InvalidNodeId, modelId);
+	}
+	int refId = InvalidNodeId;
+	{
+		SceneGraphNode reference(SceneGraphNodeType::ModelReference);
+		ASSERT_TRUE(reference.setReference(sceneGraph.node(modelId)));
+		refId = sceneGraph.emplace(core::move(reference));
+		ASSERT_NE(InvalidNodeId, refId);
+	}
+
+	int modelCount = 0;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		EXPECT_EQ(SceneGraphNodeType::Model, (*iter).type());
+		++modelCount;
+	}
+	EXPECT_EQ(1, modelCount);
+
+	int allModelCount = 0;
+	bool sawModel = false;
+	bool sawRef = false;
+	int lastId = -1;
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
+		EXPECT_GT((*iter).id(), lastId);
+		lastId = (*iter).id();
+		if ((*iter).id() == modelId) {
+			sawModel = true;
+		}
+		if ((*iter).id() == refId) {
+			sawRef = true;
+		}
+		++allModelCount;
+	}
+	EXPECT_EQ(2, allModelCount);
+	EXPECT_TRUE(sawModel);
+	EXPECT_TRUE(sawRef);
+}
+
+TEST_F(SceneGraphTest, testIteratorSkipsRemovedIds) {
+	SceneGraph sceneGraph;
+	int id1 = InvalidNodeId;
+	int id2 = InvalidNodeId;
+	int id3 = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		id1 = sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		id2 = sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		id3 = sceneGraph.emplace(core::move(node));
+	}
+	ASSERT_EQ(1, id1);
+	ASSERT_EQ(2, id2);
+	ASSERT_EQ(3, id3);
+	ASSERT_TRUE(sceneGraph.removeNode(id2, false));
+	EXPECT_FALSE(sceneGraph.hasNode(id2));
+
+	int prevId = -1;
+	int count = 0;
+	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		EXPECT_NE(id2, (*iter).id());
+		EXPECT_GT((*iter).id(), prevId);
+		prevId = (*iter).id();
+		++count;
+	}
+	EXPECT_EQ(3, count);
+}
+
+TEST_F(SceneGraphTest, testIteratorBeginModelEmpty) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	EXPECT_EQ(sceneGraph.beginModel(), sceneGraph.end());
+	EXPECT_EQ(nullptr, sceneGraph.firstModelNode());
+}
+
+TEST_F(SceneGraphTest, testNextModelNodeFallbackById) {
+	SceneGraph sceneGraph;
+	int modelA = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 1));
+		modelA = sceneGraph.emplace(core::move(node));
+		ASSERT_NE(InvalidNodeId, modelA);
+	}
+	int groupId = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		groupId = sceneGraph.emplace(core::move(node));
+		ASSERT_NE(InvalidNodeId, groupId);
+	}
+	int modelB = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 1));
+		modelB = sceneGraph.emplace(core::move(node), groupId);
+		ASSERT_NE(InvalidNodeId, modelB);
+	}
+	EXPECT_EQ(modelB, sceneGraph.nextModelNode(modelA));
+	EXPECT_EQ(InvalidNodeId, sceneGraph.nextModelNode(modelB));
+}
+
 TEST_F(SceneGraphTest, testRemoveUnusedColors) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.createVolume(voxel::Region(0, 0, 0, 2, 2, 2));

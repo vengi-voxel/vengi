@@ -170,9 +170,71 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, MergeSamePaletteChunks)(benchmark::State
 	}
 }
 
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, IterateBeginEndAll)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < state.range(0); ++i) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+		sceneGraph.emplace(core::move(node));
+	}
+	for (auto _ : state) {
+		int n = 0;
+		for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+			n += (*iter).id();
+		}
+		benchmark::DoNotOptimize(n);
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, IterateBeginModel)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < state.range(0); ++i) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region(0, 0, 0, 0, 0, 0));
+		sceneGraph.emplace(core::move(node));
+	}
+	for (auto _ : state) {
+		int n = 0;
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			n += (*iter).id();
+		}
+		benchmark::DoNotOptimize(n);
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, IterateMapNodes)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < state.range(0); ++i) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+		sceneGraph.emplace(core::move(node));
+	}
+	for (auto _ : state) {
+		int n = 0;
+		for (const auto &entry : sceneGraph.nodes()) {
+			n += entry->value.id();
+		}
+		benchmark::DoNotOptimize(n);
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, ConstructEndOnly)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	for (int i = 0; i < state.range(0); ++i) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+		sceneGraph.emplace(core::move(node));
+	}
+	for (auto _ : state) {
+		auto endIt = sceneGraph.end();
+		benchmark::DoNotOptimize(endIt);
+	}
+}
+
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, Init);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SceneGraphNode);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, SizeModel);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, IterateBeginEndAll)->Arg(64)->Arg(256)->Arg(1024);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, IterateBeginModel)->Arg(64)->Arg(256)->Arg(1024);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, IterateMapNodes)->Arg(64)->Arg(256)->Arg(1024);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, ConstructEndOnly)->Arg(64)->Arg(256)->Arg(1024);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesMany);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodes256);

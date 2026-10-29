@@ -351,60 +351,60 @@ public:
 		int _endNodeId = -1;
 		SceneGraphNodeType _filter = SceneGraphNodeType::Max;
 		const SceneGraph *_sceneGraph = nullptr;
-	public:
-		constexpr iterator() {
+		SceneGraphNode *_node = nullptr;
+
+		static inline bool typeMatches(SceneGraphNodeType type, SceneGraphNodeType filter) {
+			if (type == filter || filter == SceneGraphNodeType::All) {
+				return true;
+			}
+			if (filter == SceneGraphNodeType::AllModels) {
+				return type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference;
+			}
+			return false;
 		}
 
-		iterator(int startNodeId, int endNodeId, SceneGraphNodeType filter, const SceneGraph *sceneGraph) :
-				_startNodeId(startNodeId), _endNodeId(endNodeId), _filter(filter), _sceneGraph(sceneGraph) {
+		void skipToMatch() {
+			_node = nullptr;
+			const SceneGraphNodes &nodes = _sceneGraph->nodes();
 			while (_startNodeId != _endNodeId) {
-				if (!_sceneGraph->hasNode(_startNodeId)) {
-					++_startNodeId;
-					continue;
-				}
-				SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
-				if (type == _filter || _filter == SceneGraphNodeType::All) {
-					break;
-				} else if (_filter == SceneGraphNodeType::AllModels) {
-					if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
-						break;
+				const auto iter = nodes.find(_startNodeId);
+				if (iter != nodes.end()) {
+					SceneGraphNode &node = iter->value;
+					if (typeMatches(node.type(), _filter)) {
+						_node = &node;
+						return;
 					}
 				}
 				++_startNodeId;
 			}
 		}
 
+	public:
+		constexpr iterator() {
+		}
+
+		iterator(int startNodeId, int endNodeId, SceneGraphNodeType filter, const SceneGraph *sceneGraph) :
+				_startNodeId(startNodeId), _endNodeId(endNodeId), _filter(filter), _sceneGraph(sceneGraph) {
+			skipToMatch();
+		}
+
 		inline SceneGraphNode& operator*() const {
-			return _sceneGraph->node(_startNodeId);
+			core_assert(_node != nullptr);
+			return *_node;
 		}
 
 		iterator &operator++() {
 			core_assert_msg(_sceneGraph->_nextNodeId == _endNodeId, "Concurrent modification detected!");
 			if (_startNodeId != _endNodeId) {
-				for (;;) {
-					++_startNodeId;
-					if (_startNodeId == _endNodeId) {
-						break;
-					}
-					if (!_sceneGraph->hasNode(_startNodeId)) {
-						continue;
-					}
-					SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
-					if (type == _filter || _filter == SceneGraphNodeType::All) {
-						break;
-					} else if (_filter == SceneGraphNodeType::AllModels) {
-						if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
-							break;
-						}
-					}
-				}
+				++_startNodeId;
+				skipToMatch();
 			}
-
 			return *this;
 		}
 
 		inline SceneGraphNode& operator->() const {
-			return _sceneGraph->node(_startNodeId);
+			core_assert(_node != nullptr);
+			return *_node;
 		}
 
 		inline bool operator!=(const iterator& rhs) const {
@@ -425,7 +425,9 @@ public:
 	}
 
 	inline auto end() {
-		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
+		// O(1) sentinel: operator== only compares _startNodeId. Starting at 0
+		// with filter Max used to walk every id looking for a type that never exists.
+		return iterator(_nextNodeId, _nextNodeId, SceneGraphNodeType::Max, this);
 	}
 
 	inline auto beginAll() const {
@@ -441,7 +443,7 @@ public:
 	}
 
 	inline auto end() const {
-		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
+		return iterator(_nextNodeId, _nextNodeId, SceneGraphNodeType::Max, this);
 	}
 
 	/**
