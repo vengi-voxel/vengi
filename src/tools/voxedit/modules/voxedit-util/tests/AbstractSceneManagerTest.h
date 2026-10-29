@@ -146,6 +146,14 @@ protected:
 		Super::TearDown();
 	}
 
+	bool onInitApp() override {
+		if (!Super::onInitApp()) {
+			return false;
+		}
+		_testApp->filesystem()->registerPath("brushes/");
+		return _testApp->filesystem()->registerPath("selectionmodes/");
+	}
+
 	void SetUp() override {
 		Super::SetUp();
 		const auto timeProvider = core::make_shared<core::TimeProvider>();
