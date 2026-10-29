@@ -118,12 +118,7 @@ public:
 			if (*_currentVoxel == previousVoxel) {
 				return false;
 			}
-			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
-			if (dirtyRegion.isValid()) {
-				dirtyRegion.accumulate(_posInVolume);
-			} else {
-				dirtyRegion = voxel::Region(_posInVolume.x, _posInVolume.y, _posInVolume.z, _posInVolume.x, _posInVolume.y, _posInVolume.z);
-			}
+			_volume->addToDirtyRegion(glm::ivec3(_posInVolume));
 			return true;
 		}
 	};
@@ -208,11 +203,7 @@ public:
 		}
 		v.setFlags(v.getFlags() | flags);
 		sampler.setVoxel(v);
-		if (_dirtyRegion.isValid()) {
-			_dirtyRegion.accumulate(x, y, z);
-		} else {
-			_dirtyRegion = voxel::Region(x, y, z, x, y, z);
-		}
+		addToDirtyRegion(glm::ivec3(x, y, z));
 		return true;
 	}
 
@@ -235,11 +226,7 @@ public:
 		}
 		v.setFlags(v.getFlags() & ~flags);
 		sampler.setVoxel(v);
-		if (_dirtyRegion.isValid()) {
-			_dirtyRegion.accumulate(x, y, z);
-		} else {
-			_dirtyRegion = voxel::Region(x, y, z, x, y, z);
-		}
+		addToDirtyRegion(glm::ivec3(x, y, z));
 		return true;
 	}
 

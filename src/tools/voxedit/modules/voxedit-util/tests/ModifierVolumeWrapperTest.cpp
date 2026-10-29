@@ -8,6 +8,7 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -151,6 +152,30 @@ TEST_F(ModifierVolumeWrapperTest, testIdenticalWritesDoNotDirtyVolume) {
 	ModifierVolumeWrapper repeatedErase(node, ModifierType::NormalPaint | ModifierType::Erase);
 	EXPECT_FALSE(repeatedErase.setVoxel(0, 0, 0, {}));
 	EXPECT_FALSE(repeatedErase.dirtyRegion().isValid());
+}
+
+TEST_F(ModifierVolumeWrapperTest, testParallelWritesAndFlagsRetainCompleteDirtyBounds) {
+	voxel::RawVolume volume(voxel::Region(-16, 16));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	const voxel::Voxel value = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int repeat = 0; repeat < 4; ++repeat) {
+		volume.clear();
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		voxelutil::visitVolumeParallel(
+			wrapper, [&](int x, int y, int z, const voxel::Voxel &) { wrapper.setVoxel(x, y, z, value); },
+			voxelutil::VisitAll());
+		EXPECT_EQ(volume.region(), wrapper.dirtyRegion());
+		ModifierVolumeWrapper flags(node, ModifierType::Override);
+		voxelutil::visitVolumeParallel(
+			flags, [&](int x, int y, int z, const voxel::Voxel &) { flags.setFlagAt(x, y, z, voxel::FlagOutline); });
+		EXPECT_EQ(volume.region(), flags.dirtyRegion());
+		ModifierVolumeWrapper cleared(node, ModifierType::Override);
+		voxelutil::visitVolumeParallel(cleared, [&](int x, int y, int z, const voxel::Voxel &) {
+			cleared.removeFlagAt(x, y, z, voxel::FlagOutline);
+		});
+		EXPECT_EQ(volume.region(), cleared.dirtyRegion());
+	}
 }
 
 } // namespace voxedit
