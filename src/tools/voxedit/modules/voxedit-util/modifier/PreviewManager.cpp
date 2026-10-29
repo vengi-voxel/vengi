@@ -195,6 +195,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 
 	// Allow subclasses to wait for pending operations before freeing old preview volumes
 	_modifierRenderer->waitForPendingExtractions();
+	_previewPalette = activePalette;
 
 	// Reset preview state
 	resetPreview();
@@ -255,7 +256,8 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	bool simplePreview = isSimplePreview(brush, region);
 
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
-		const bool needsNeighbors = modifier.brushType() == BrushType::Paint &&
+		const bool paintPreview = modifier.brushType() == BrushType::Paint;
+		const bool needsNeighbors = paintPreview &&
 									modifier.paintBrush().paintMode() == PaintBrush::PaintMode::Blur;
 		auto generatePreview = [&](core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &outputRegion) {
 			voxel::Region readRegion = outputRegion;
@@ -268,13 +270,16 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			createOrClearPreviewVolume(existingVolume, volume, readRegion);
 			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 			dummyNode.setUnownedVolume(volume);
-			if (needsNeighbors) {
-				dummyNode.setPalette(activePalette);
+			if (paintPreview) {
+				dummyNode.setPalette(_previewPalette);
 			}
 			if (normalPaint) {
 				dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
 			}
 			modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
+			if (paintPreview) {
+				_previewPalette = dummyNode.palette();
+			}
 			if (readRegion != outputRegion) {
 				volume = new voxel::RawVolume(*volume, outputRegion);
 			}

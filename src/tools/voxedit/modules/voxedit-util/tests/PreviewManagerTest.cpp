@@ -174,6 +174,81 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 	}
 }
 
+TEST_F(PreviewManagerTest, testPaintPreviewRendersWithItsOwnPalette) {
+	for (PaintBrush::PaintMode mode : {PaintBrush::PaintMode::Blend, PaintBrush::PaintMode::Blur}) {
+		for (bool mirror : {false, true}) {
+			SCOPED_TRACE((int)mode);
+			SCOPED_TRACE(mirror);
+			auto renderer = core::make_shared<TrackingModifierRenderer>();
+			SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+							 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+			mgr.construct();
+			ASSERT_TRUE(mgr.init());
+			ASSERT_TRUE(mgr.newScene(true, "paint preview palette", voxel::Region(-5, 5)));
+			auto &node = mgr.sceneGraph().node(mgr.activeNode());
+			node.palette().setColor(0, color::RGBA(40, 40, 40));
+			node.palette().setColor(1, color::RGBA(200, 200, 200));
+			node.palette().setSize(2);
+			ModifierEx modifier(&mgr, renderer);
+			modifier.construct();
+			ASSERT_TRUE(modifier.init());
+			modifier.setBrushType(BrushType::Paint);
+			modifier.setModifierType(ModifierType::Paint);
+			PaintBrush &brush = modifier.paintBrush();
+			brush.setPaintMode(mode);
+			brush.setRadius(0);
+			brush.setBlendOpacity(0.5f);
+			if (mirror) {
+				brush.setMirrorAxis(math::Axis::X, glm::ivec3(0));
+			}
+			const glm::ivec3 pos(2, 0, 0);
+			glm::ivec3 mirrorPos = pos;
+			glm::ivec3 mirrorMax = pos;
+			brush.getMirrorBox(mirrorPos, mirrorMax);
+			for (const glm::ivec3 &center : {pos, mirrorPos}) {
+				node.volume()->setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 0));
+				node.volume()->setVoxel(center + glm::ivec3(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1));
+			}
+			const voxel::RawVolume original(*node.volume());
+			const uint64_t paletteHash = node.palette().hash();
+			const size_t history = mgr.mementoHandler().stateSize();
+			modifier.setCursorPosition(pos, voxel::FaceNames::PositiveY);
+			modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 1));
+			modifier.previewManager().updateBrushVolumePreview(modifier, node.palette(), node.volume(), mgr.sceneGraph());
+			brush.markClean();
+			video::Camera camera;
+			voxelrender::RenderContext renderContext;
+			modifier.render(renderContext, camera, node.palette());
+			const ModifierRendererContext &rendered = renderer->lastContext;
+			ASSERT_NE(nullptr, rendered.previewVolume);
+			ASSERT_NE(nullptr, rendered.palette);
+			EXPECT_NE(&node.palette(), rendered.palette);
+			scenegraph::SceneGraphNode expected(scenegraph::SceneGraphNodeType::Model);
+			expected.setVolume(new voxel::RawVolume(original));
+			expected.setPalette(node.palette());
+			ModifierVolumeWrapper output(expected, ModifierType::Paint);
+			BrushContext input = modifier.brushContext();
+			input.preview = true;
+			ASSERT_TRUE(brush.execute(mgr.sceneGraph(), output, input));
+			const auto expectedColor = [&](const glm::ivec3 &p) {
+				return expected.palette().color(expected.volume()->voxel(p).getColor());
+			};
+			EXPECT_NE(node.palette().color(0), expectedColor(pos));
+			EXPECT_EQ(expectedColor(pos), rendered.palette->color(rendered.previewVolume->voxel(pos).getColor()));
+			if (mirror) {
+				ASSERT_NE(nullptr, rendered.previewMirrorVolume);
+				EXPECT_EQ(expectedColor(mirrorPos),
+						  rendered.palette->color(rendered.previewMirrorVolume->voxel(mirrorPos).getColor()));
+			}
+			EXPECT_EQ(paletteHash, node.palette().hash());
+			EXPECT_EQ(history, mgr.mementoHandler().stateSize());
+			EXPECT_EQ(0, core_memcmp(original.data(), node.volume()->data(), voxel::RawVolume::size(original.region())));
+			modifier.shutdown();
+			mgr.shutdown();
+		}
+	}
+}
+
 TEST_F(PreviewManagerTest, testBlurPreviewMatchesFullVolumeIncludingMirrors) {
 	for (bool mirror : {false, true}) {
 		auto renderer = core::make_shared<TrackingModifierRenderer>();

@@ -793,7 +793,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 			ctx.outlinePreviewColor = preview.outlinePreviewColor;
 		}
 		if (ctx.previewVolume || ctx.useSimplePreview || ctx.showOutlinePreview) {
-			ctx.palette = &activePalette;
+			ctx.palette = _previewManager.previewPalette();
 		}
 	} else {
 		// Clear cached preview state when the brush is not active to prevent stale

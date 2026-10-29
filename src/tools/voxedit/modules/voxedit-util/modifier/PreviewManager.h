@@ -11,6 +11,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "palette/Palette.h"
 #include "color/RGBA.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -57,6 +58,7 @@ private:
 	core::ScopedPtr<voxel::RawVolume> _previewMirrorVolume;
 	core::VarPtr _maxSuggestedVolumeSizePreview;
 	BrushPreview _brushPreview;
+	palette::Palette _previewPalette;
 	double _nextPreviewUpdateSeconds = 0;
 
 	/**
@@ -76,6 +78,9 @@ public:
 	void shutdown();
 
 	const BrushPreview &brushPreview() const;
+	palette::Palette *previewPalette() {
+		return &_previewPalette;
+	}
 	voxel::RawVolume *previewVolume() const;
 	voxel::RawVolume *previewMirrorVolume() const;
 
